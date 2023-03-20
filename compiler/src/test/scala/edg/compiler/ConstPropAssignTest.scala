@@ -110,7 +110,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
 
   it should "handle forced set and ignore subsequent assignments" in {
     val constProp = new ConstProp()
-    constProp.setForcedValue(DesignPath() + "a", IntValue(3), "forced")
+    constProp.addAssignValue(IndirectDesignPath() + "a", IntValue(3), DesignPath(), "forced", forced=true)
     constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
     constProp.addAssignValue(IndirectDesignPath() + "a", IntValue(2))  // should be ignored from above forced-set
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(3)))
@@ -163,7 +163,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp1.getValue(IndirectDesignPath() + "a") should equal(None)
 
     val constProp2 = new ConstProp()
-    constProp2.setForcedValue(DesignPath() + "a", IntValue(3), "forced")
+    constProp2.addAssignValue(IndirectDesignPath() + "a", IntValue(3), DesignPath(), "forced", forced=true)
     constProp2.addDeclaration(DesignPath() + "a", ValInit.Integer)
     constProp2.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(3)))
   }
