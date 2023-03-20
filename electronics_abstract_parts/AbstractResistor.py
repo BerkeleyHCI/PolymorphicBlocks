@@ -34,7 +34,8 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
     return Resistor(resistance=cls.parse_resistor(properties['Value']))
 
   @init_in_parent
-  def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO),
+               voltage: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())
@@ -42,8 +43,10 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
 
     self.resistance = self.ArgParameter(resistance)
     self.power = self.ArgParameter(power)  # operating power range
+    self.voltage = self.ArgParameter(voltage)  # operating voltage range
     self.actual_resistance = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())
+    self.actual_voltage_rating = self.Parameter(RangeExpr())
 
   def contents(self):
     super().contents()
@@ -51,8 +54,10 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
     self.description = DescriptionString(
       "<b>resistance:</b> ", DescriptionString.FormatUnits(self.actual_resistance, "Ω"),
       " <b>of spec</b> ", DescriptionString.FormatUnits(self.resistance, "Ω"), "\n",
-      "<b>power:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
-      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.power, "W")
+      "<b>power rating:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.power, "W"), "\n",
+      "<b>voltage rating:</b> ", DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.voltage, "V")
     )
 
 
@@ -92,6 +97,7 @@ from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate 
 class TableResistor(SmdStandardPackage, ResistorStandardPinning, PartsTableFootprint, GeneratorBlock):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
+  VOLTAGE_RATING = PartsTableColumn(Range)
 
   SMD_FOOTPRINT_MAP = {
     '01005': None,
@@ -110,10 +116,10 @@ class TableResistor(SmdStandardPackage, ResistorStandardPinning, PartsTableFootp
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.resistance, self.power,
+    self.generator(self.select_part, self.resistance, self.power, self.voltage,
                    self.part, self.footprint_spec, self.smd_min_package)
 
-  def select_part(self, resistance: Range, power_dissipation: Range,
+  def select_part(self, resistance: Range, power_dissipation: Range, voltage: Range,
                   part_spec: str, footprint_spec: str, smd_min_package: str) -> None:
     minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(smd_min_package, self.SMD_FOOTPRINT_MAP)
     parts = self._get_table().filter(lambda row: (
@@ -121,14 +127,16 @@ class TableResistor(SmdStandardPackage, ResistorStandardPinning, PartsTableFootp
         (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
         (row[self.KICAD_FOOTPRINT] not in minimum_invalid_footprints) and
         row[self.RESISTANCE].fuzzy_in(resistance) and
-        power_dissipation.fuzzy_in(row[self.POWER_RATING])
+        power_dissipation.fuzzy_in(row[self.POWER_RATING]) and
+        voltage.fuzzy_in(row[self.VOLTAGE_RATING])
     )).sort_by(self._row_sort_by)
-    part = parts.first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
+    part = parts.first(f"no resistors in {resistance} Ohm, {power_dissipation} W, {voltage} V")
 
     self.assign(self.actual_part, part[self.PART_NUMBER_COL])
     self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
     self.assign(self.actual_resistance, part[self.RESISTANCE])
     self.assign(self.actual_power_rating, part[self.POWER_RATING])
+    self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
 
     self._make_footprint(part)
 

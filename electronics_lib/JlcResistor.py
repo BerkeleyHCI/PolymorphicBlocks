@@ -27,6 +27,7 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
     'resistance': re.compile("(^|\s)(\S+Ω)($|\s)"),
     'tolerance': re.compile("(^|\s)(±\S+%)($|\s)"),
     'power': re.compile("(^|\s)(\S+W)($|\s)"),
+    'voltage': re.compile("(^|\s)(\S+V)($|\s)"),
   }
 
   @classmethod
@@ -50,6 +51,9 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
 
         new_cols[cls.POWER_RATING] = Range.zero_to_upper(
           PartParserUtil.parse_value(extracted_values['power'][1], 'W'))
+
+        new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
+          PartParserUtil.parse_value(extracted_values['voltage'][1], 'V'))
 
         return new_cols
       except (KeyError, PartParserUtil.ParseError):
