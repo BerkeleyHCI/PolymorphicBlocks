@@ -4,8 +4,8 @@ from math import log10, ceil
 from typing import List, Tuple
 
 from electronics_model import *
-from . import Analog, Resistor, Filter
-from .Categories import InternalSubcircuit, DiscreteApplication
+from . import Analog, Resistor
+from .Categories import InternalSubcircuit
 from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, ESeriesRatioValue
 
 
