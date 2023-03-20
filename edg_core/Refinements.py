@@ -12,11 +12,17 @@ DesignPath = Iterable[str]
 DesignPostfix = Iterable[str]
 
 
+# refinement value that indicates a param value (and generates into a directed assign)
+class ParamValue():
+  def __init__(self, path: DesignPath):
+    self.path = path
+
+
 class Refinements():
   def __init__(self, class_refinements: Iterable[Tuple[Type[Block], Type[Block]]] = [],
                instance_refinements: Iterable[Tuple[DesignPath, Type[Block]]] = [],
                class_values: Iterable[Tuple[Type[Block], DesignPostfix, edgir.LitTypes]] = [],
-               instance_values: Iterable[Tuple[DesignPath, edgir.LitTypes]] = []):
+               instance_values: Iterable[Tuple[DesignPath, Union[edgir.LitTypes, ParamValue]]] = []):
     self.class_refinements = class_refinements
     self.instance_refinements = instance_refinements
     self.class_values = class_values
@@ -42,10 +48,13 @@ class Refinements():
       val_entry.cls_param.param_path.CopyFrom(edgir.LocalPathList(target_subpath))
       val_entry.expr.CopyFrom(edgir.lit_to_valuelit(target_value))
 
-    for (src_path, target_value) in self.instance_values:
+    for (src_path, target_value_path) in self.instance_values:
       val_entry = pb.values.add()
       val_entry.path.CopyFrom(edgir.LocalPathList(src_path))
-      val_entry.expr.CopyFrom(edgir.lit_to_valuelit(target_value))
+      if isinstance(target_value_path, ParamValue):
+        val_entry.param.CopyFrom(edgir.LocalPathList(target_value_path.path))
+      else:
+        val_entry.expr.CopyFrom(edgir.lit_to_valuelit(target_value_path))
 
     return pb
 

@@ -32,4 +32,4 @@ from .BaseBackend import BaseBackend
 
 from .BufferSerializer import BufferDeserializer, BufferSerializer
 from .ScalaCompilerInterface import ScalaCompiler, CompiledDesign, CompilerCheckError
-from .Refinements import Refinements
+from .Refinements import Refinements, ParamValue
