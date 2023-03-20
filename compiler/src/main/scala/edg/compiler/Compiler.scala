@@ -143,7 +143,7 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
 
   if (initialize) {  // seed only on the initial object creation (and not forks, which would duplicate work)
     for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
-      constProp.setForcedValue(path, value, "path refinement")
+      constProp.addAssignValue(path.asIndirect, value, DesignPath(), "path refinement", forced=true)
     }
 
     elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq()) // seed with root
@@ -181,7 +181,7 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     cloned.elaboratePending.initFrom(elaboratePending)
     cloned.constProp.initFrom(constProp)
     additionalRefinements.instanceValues.foreach { case (path, value) =>
-      cloned.constProp.setForcedValue(path, value, "path refinement")
+      cloned.constProp.addAssignValue(path.asIndirect, value, DesignPath(), "path refinement", forced=true)
     }
     val additionalRefinementClassValuesByClass = additionalRefinements.classValues.groupBy(_._1._1)
     def processBlockAdditionalRefinements(path: DesignPath, block: Block): Unit = {
@@ -193,7 +193,8 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
         case ((refinementClass, postfix), value) =>
           val paramPath = path ++ postfix
           if (!cloned.refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
-            cloned.constProp.setForcedValue(path ++ postfix, value, s"${refinementClass.toSimpleString} class refinement")
+            cloned.constProp.addAssignValue(path.asIndirect ++ postfix, value, DesignPath(),
+              s"${refinementClass.toSimpleString} class refinement", forced=true)
           }
       }
 
@@ -495,7 +496,8 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
       case ((refinementClass, postfix), value) =>
         val paramPath = path ++ postfix
         if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
-          constProp.setForcedValue(path ++ postfix, value, s"${refinementClass.toSimpleString} class refinement")
+          constProp.addAssignValue(path.asIndirect ++ postfix, value, DesignPath(),
+            s"${refinementClass.toSimpleString} class refinement", forced=true)
         }
     }
 

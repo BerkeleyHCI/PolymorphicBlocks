@@ -58,7 +58,7 @@ class ConstProp() {
 
   // Params that have a forced/override value, and the name and target expr.
   // The value is tracked so we know which expr takes precedence.
-  private val forcedParams = mutable.Map[IndirectDesignPath, (String, expr.ValueExpr)]()
+  private val forcedParams = mutable.Set[IndirectDesignPath]()
 
   // Overassigns, for error tracking
   // This only tracks overassigns that were discarded, not including assigns that took effect.
@@ -187,23 +187,26 @@ class ConstProp() {
     * Adds a directed assignment (param <- expr) and propagates as needed
     */
   def addAssignExpr(target: IndirectDesignPath, targetExpr: expr.ValueExpr,
-                    root: DesignPath, constrName: String): Unit = {
+                    root: DesignPath, constrName: String, forced: Boolean = false): Unit = {
     require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
     val paramSourceRecord = (root, constrName, targetExpr)
 
-    forcedParams.get(target) match { // check for overassign based on forced status
-      case Some(expr) if expr == (constrName, targetExpr) => // this is the forced param
-        require(!params.valueDefinedAt(target), s"forced value must be set before value is resolved, prior ${paramSource(target)}")
-        params.addNode(target, Seq(), overwrite = true) // forced can overwrite other records
-      case Some(expr) =>
-        return // ignore forced params - discard the new assign
-      case None => // non-forced, check for and record over-assigns
+    if (forced) {
+      require(!forcedParams.contains(target), s"attempt to re-force $target")
+      forcedParams.add(target)
+      require(!params.valueDefinedAt(target), s"forced value must be set before value is resolved, prior ${paramSource(target)}")
+      params.addNode(target, Seq(), overwrite = true) // forced can overwrite other records
+    } else {
+      if (!forcedParams.contains(target)) {
         if (params.nodeDefinedAt(target)) {
           val record = discardOverassigns.getOrElseUpdate(target, OverassignRecord())
           record.assigns.add(paramSourceRecord)
           return // first set "wins"
         }
         params.addNode(target, Seq())
+      } else {
+        return  // ignored - param was forced, discard the new assign
+      }
     }
 
     val assign = AssignRecord(target, root, targetExpr)
@@ -216,31 +219,19 @@ class ConstProp() {
   /** Sets a value directly (without the expr), convenience wrapper around addAssignment
     */
   def addAssignValue(target: IndirectDesignPath, value: ExprValue,
-                     root: DesignPath, constrName: String): Unit = {
-    addAssignExpr(target, ExprBuilder.ValueExpr.Literal(value.toLit), root, constrName)
+                     root: DesignPath, constrName: String, forced: Boolean = false): Unit = {
+    addAssignExpr(target, ExprBuilder.ValueExpr.Literal(value.toLit), root, constrName, forced)
   }
 
   /** Adds a directed assignment (param1 <- param2), checking for root reachability
     */
   def addAssignEqual(target: IndirectDesignPath, source: IndirectDesignPath,
-                     root: DesignPath, constrName: String): Unit = {
+                     root: DesignPath, constrName: String, forced: Boolean = false): Unit = {
     val pathPrefix = root.asIndirect.toLocalPath.steps
     val (sourcePrefix, sourcePostfix) = source.toLocalPath.steps.splitAt(pathPrefix.length)
     require(sourcePrefix == pathPrefix)
     addAssignExpr(target, ExprBuilder.ValueExpr.Ref(LocalPath(steps = sourcePostfix)),
-      root, constrName=constrName)
-  }
-
-  /** Sets a value directly, and ignores subsequent assignments. Idempotent.
-    * TODO: this still preserve semantics that forbid over-assignment, even if those don't do anything
-    */
-  def setForcedValue(target: DesignPath, value: ExprValue, constrName: String): Unit = {
-    val targetIndirect = target.asIndirect
-    val expr = ExprBuilder.ValueExpr.Literal(value.toLit)
-    require(!paramTypes.contains(targetIndirect),
-      f"must set forced value before param declaration processed at $target <= ${value.toStringValue}")
-    forcedParams.put(targetIndirect, (constrName, expr))
-    addAssignExpr(targetIndirect, expr, DesignPath(), constrName)
+      root, constrName=constrName, forced)
   }
 
   /**
