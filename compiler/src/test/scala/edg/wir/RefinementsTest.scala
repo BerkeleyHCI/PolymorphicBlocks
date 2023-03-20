@@ -78,11 +78,11 @@ class RefinementsTest extends AnyFlatSpec {
               cls = Some(ElemBuilder.LibraryPath("base1")),
               paramPath = Some(ExprBuilder.Ref("param1")))
           ),
-          value = Some(IntValue(1).toLit)
+          value = hdl.Refinements.Value.Value.Expr(IntValue(1).toLit)
         ),
         hdl.Refinements.Value(
           source = hdl.Refinements.Value.Source.Path((IndirectDesignPath() + "elt1").toLocalPath),
-          value = Some(IntValue(1).toLit)
+          value = hdl.Refinements.Value.Value.Expr(IntValue(1).toLit)
         ),
       )
     ))

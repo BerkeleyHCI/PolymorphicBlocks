@@ -166,6 +166,14 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "block" + "superParam") should equal(Some(IntValue(3)))
   }
 
+  "Compiler on design with path assignments" should "work" in {
+    val (compiler, compiled) = testCompile(inputDesign, library, refinements = Refinements(
+      instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("subclassBlock")),  // need the sub param
+      instanceValues = Map(DesignPath() + "block" + "superParam" -> IntValue(3)),
+      instanceAssigns = Map(DesignPath() + "block" + "subParam" -> (DesignPath() + "block" + "superParam"))))
+    compiler.getValue(IndirectDesignPath() + "block" + "subParam") should equal(Some(IntValue(3)))
+  }
+
   "Compiler on design with path values" should "supersede class values" in {
     val (compiler, compiled) = testCompile(inputDesign, library, refinements = Refinements(
       classValues = Map((LibraryPath("superclassBlock"), Ref("superParam")) -> IntValue(0)),

@@ -470,9 +470,9 @@ class MultimeterTest(JlcBoardTop):
         (['driver', 'diode', 'manufacturer_spec'], 'Micro Commercial Co'),
         (['driver', 'diode', 'part_spec'], 'GS1G-LTP'),
         (['gate', 'amp_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q2
+        (['gate', 'pwr_fet', 'footprint_spec'], ParamValue(['gate', 'amp_fet', 'footprint_spec'])),  # Q1
         (['gate', 'ctl_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D1
-        (['gate', 'btn_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D2
-        (['gate', 'pwr_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
+        (['gate', 'btn_diode', 'footprint_spec'], ParamValue(['gate', 'ctl_diode', 'footprint_spec'])),  # D2
         # (['reg_5v', 'power_path', 'inductor', 'footprint_spec'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
 
         (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),

@@ -355,17 +355,17 @@ class TestHighSwitch(BoardTop):
 
         # keep netlist footprints as libraries change
         (['light[0]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['light[0]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['light[1]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['light[1]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['light[2]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['light[2]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['light[3]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['light[3]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['light[4]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['light[4]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['light[5]', 'drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['light[5]', 'drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['light[0]', 'drv[1]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
+        (['light[1]', 'drv[0]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
+        (['light[1]', 'drv[1]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
+        (['light[2]', 'drv[0]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
+        (['light[2]', 'drv[1]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
+        (['light[3]', 'drv[0]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
+        (['light[3]', 'drv[1]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
+        (['light[4]', 'drv[0]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
+        (['light[4]', 'drv[1]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
+        (['light[5]', 'drv[0]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
+        (['light[5]', 'drv[1]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
       ],
       class_refinements=[
         (PptcFuse, CanFuse)
