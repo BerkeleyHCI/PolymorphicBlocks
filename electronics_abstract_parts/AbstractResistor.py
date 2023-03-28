@@ -15,7 +15,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
   RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
 
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
-    assert symbol_name == 'Device:R'
+    assert symbol_name in ('Device:R', 'Device:R_Small')
     return {'1': self.a, '2': self.b}
 
   @classmethod

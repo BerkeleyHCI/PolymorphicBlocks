@@ -2,7 +2,8 @@ import inspect
 import os
 from typing import Type, Any, Optional, Mapping, Dict, List
 
-from edg_core import Block, GeneratorBlock, BasePort, Vector, init_in_parent, ArrayStringLike, StringLike, non_library
+from edg_core import Block, GeneratorBlock, BasePort, Vector, init_in_parent, ArrayStringLike, StringLike, non_library, \
+    Bundle
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
 from .PassivePort import Passive
@@ -93,6 +94,20 @@ class KiCadSchematicBlock(Block):
 
         return port
 
+    def _port_from_path(self, path: str) -> Optional[BasePort]:
+        """Returns the corresponding Port given a path string, recursing into bundles as needed"""
+        def inner(root: Any, components: List[str]) -> Optional[BasePort]:
+            if not components:
+                if isinstance(root, BasePort):
+                    return root
+                else:
+                    return None  # invalid type
+            elif hasattr(root, components[0]) and isinstance(root, (Bundle, Block)):
+                return inner(getattr(root, components[0]), components[1:])
+            else:
+                return None
+        return inner(self, path.split('.'))
+
     def import_kicad(self, filepath: str, locals: Mapping[str, Any] = {},
                      *, nodes: Mapping[str, Optional[BasePort]] = {}, conversions: Mapping[str, CircuitPort] = {}):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
@@ -100,13 +115,16 @@ class KiCadSchematicBlock(Block):
         from electronics_abstract_parts import Resistor, Capacitor, Opamp
         SYMBOL_MAP: Mapping[str, Type[KiCadInstantiableBlock]] = {
             'Device:R': Resistor,
+            'Device:R_Small': Resistor,
             'Device:C': Capacitor,
+            'Device:C_Small': Capacitor,
             'Device:C_Polarized': Capacitor,
+            'Device:C_Polarized_Small': Capacitor,
             'Simulation_SPICE:OPAMP': Opamp,
             'edg_importable:Opamp': Opamp,
         }
 
-        with open(filepath, "r") as file:
+        with open(filepath, "r", encoding='utf-8') as file:
             file_data = file.read()
         sch = KiCadSchematic(file_data)
 
@@ -162,17 +180,18 @@ class KiCadSchematicBlock(Block):
                     raise ValueError(f"unknown label type {net_label.__class__}")
 
             for global_label_name in port_label_names:
+                global_label_port = self._port_from_path(global_label_name)
                 if global_label_name in nodes:  # nodes if needed
                     assert not hasattr(self, global_label_name), \
                         f"global label {global_label_name} has both node and boundary port"
                     node = nodes[global_label_name]
                     if node is not None:
                         net_ports.insert(0, node)
-                elif hasattr(self, global_label_name) and isinstance(getattr(self, global_label_name), BasePort):
+                elif global_label_port is not None:
                     # connect to boundary port, but not links
-                    net_ports.insert(0, getattr(self, global_label_name))
-                assert global_label_name in nodes or hasattr(self, global_label_name), \
-                    f"global label {global_label_name} must connect to boundary port or node"
+                    net_ports.insert(0, global_label_port)
+                else:
+                    raise ValueError(f"global label {global_label_name} must connect to boundary port or node")
 
             connection = self.connect(*net_ports)
 

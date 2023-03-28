@@ -49,7 +49,7 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
   CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
 
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
-    assert symbol_name in ('Device:C', 'Device:C_Polarized')
+    assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
     return {'1': self.pos, '2': self.neg}
 
   @classmethod
@@ -270,9 +270,13 @@ class DummyCapacitorFootprint(DummyDevice, Capacitor, FootprintBlock):
     )
 
 
-class DecouplingCapacitor(DiscreteApplication):
+class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
   """Optionally polarized capacitor used for DC decoupling, with VoltageSink connections with voltage inference.
   Implemented as a shim block."""
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
+    return {'1': self.pwr, '2': self.gnd}
+
   @init_in_parent
   def __init__(self, capacitance: RangeLike) -> None:
     super().__init__()

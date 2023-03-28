@@ -680,9 +680,9 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     import edg.ExprBuilder.ValueExpr
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
       val innerBlockLibrary = innerBlock.asInstanceOf[wir.BlockLibrary]
-      val innerBlockTemplate = library.getBlock(innerBlockLibrary.target).get  // TODO better error handling
+      val innerBlockTemplate = library.getBlock(innerBlockLibrary.target)
 
-        innerBlockTemplate.ports.asPairs.foreach { case (portName, port) =>
+      innerBlockTemplate.map { innerBlockTemplate => innerBlockTemplate.ports.asPairs.foreach { case (portName, port) =>
         import edgir.elem.elem
         val portPostfix = Seq(innerBlockName, portName)
         port.is match {
@@ -818,7 +818,7 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
             }
         }
       }
-    }
+    }}
 
     block.getLinks.foreach {
       case (innerLinkName, innerLink: wir.Link) => innerLink.getPorts.foreach { case (portName, port) =>
