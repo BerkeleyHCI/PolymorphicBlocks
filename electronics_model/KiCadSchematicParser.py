@@ -1,6 +1,6 @@
 import itertools
 from enum import Enum
-from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple
+from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple, Union
 
 import math
 import sexpdata  # type: ignore
@@ -197,6 +197,43 @@ class SchematicOrder(Enum):
 
 
 class KiCadSchematic:
+  T = TypeVar('T')
+  @staticmethod
+  def _connected_components(connected: List[List[T]]) -> List[List[T]]:
+    """Given a list of connections (as a list components in that connection),
+    returns the set of connected components by combining connections where components
+    are connected to each other.
+    Somewhat maintains order"""
+    # transform the list of connections into an adjacency list
+    adjacency: Dict['T', List['T']] = {}
+    for components in connected:
+      for component in components:
+        adjacency.setdefault(component, []).extend(components)
+    # traverse the graph and build connected components
+    all_components = list(itertools.chain(*connected))
+    seen_components = set()
+    connected_components: List[List['T']] = []
+    for component in all_components:
+      if component in seen_components:  # already seen and part of another connection
+        continue
+      connection_components = []
+
+      def traverse_component(component: 'T') -> None:
+        if component in seen_components:  # already seen, don't need to traverse again
+          return
+        seen_components.add(component)
+
+        for connected in adjacency.get(component, []):
+          if connected not in connected_components:
+            connection_components.append(connected)
+
+        for connected in adjacency.get(component, []):
+          traverse_component(connected)
+
+      traverse_component(component)
+      connected_components.append(connection_components)
+    return connected_components
+
   def __init__(self, data: str, order: SchematicOrder = SchematicOrder.xy):
     schematic_top = sexpdata.loads(data)
     assert parse_symbol(schematic_top[0]) == 'kicad_sch'
@@ -210,6 +247,8 @@ class KiCadSchematic:
     labels: List[KiCadBaseLabel] = [KiCadLabel(elt) for elt in sexp_dict.get('label', [])]
     labels.extend([KiCadGlobalLabel(elt) for elt in sexp_dict.get('global_label', [])])
     labels.extend([KiCadHierarchicalLabel(elt) for elt in sexp_dict.get('hierarchical_label', [])])
+    # TODO support hierarchy with sheet_instances and symbol_instances
+    # TODO also check for intersections - currently pins and labels need to be at wire ends
 
     all_symbols = [KiCadSymbol(elt) for elt in sexp_dict.get('symbol', [])]
     # separate out power and non-power symbols, power symbols stay internal
@@ -228,60 +267,42 @@ class KiCadSchematic:
     # now, actually build the netlist, with graph traversal to find connected components
     # and by converting wires (and stuff) into lists of connected points
 
-    # build adjacency matrix
-    edges: Dict[PointType, List[PointType]] = {}
-    for wire in wires:
-      edges.setdefault(wire.pt1, []).append(wire.pt2)
-      edges.setdefault(wire.pt2, []).append(wire.pt1)
+    # start by building a list of connected wire points
+    wires_points = [[wire.pt1, wire.pt2] for wire in wires]
+    wires_points = self._connected_components(wires_points)
 
-    # build adjacency matrix for pin locations
-    pin_points: Dict[PointType, List[KiCadPin]] = {}
+    # build a list of pins and labels by point
+    pin_labels_by_point: Dict[PointType, List[Union[KiCadPin, KiCadBaseLabel]]] = {}
+    labels_by_name: Dict[str, List[Union[KiCadPin, KiCadBaseLabel]]] = {}  # this also shares a namespace w/ power symbols
     for pin in symbol_pins:
-      pin_points.setdefault(pin.pt, []).append(pin)
-
-    # build adjacency matrix for labels and symbols
-    label_points: Dict[PointType, List[KiCadBaseLabel]] = {}
-    label_by_name: Dict[str, List[PointType]] = {}  # this also shares a namespace w/ power symbols
+      pin_labels_by_point.setdefault(pin.pt, []).append(pin)
     for label in labels:
-      label_points.setdefault(label.pt, []).append(label)
-      label_by_name.setdefault(label.name, []).append(label.pt)
-
+      pin_labels_by_point.setdefault(label.pt, []).append(label)
+      labels_by_name.setdefault(label.name, []).append(label)
     power_symbols = [symbol for symbol in all_symbols if self.lib_symbols[symbol.lib_ref].is_power]
     power_pins = list(itertools.chain(*[[KiCadPin(symbol, pin)
                                          for pin in self.lib_symbols[symbol.lib_ref].pins]
                                         for symbol in power_symbols]))
     for power_pin in power_pins:
-      label_by_name.setdefault(power_pin.symbol.properties['Value'], []).append(power_pin.pt)
+      # note that the power pin itself is handled in the component pin iteration
+      labels_by_name.setdefault(power_pin.symbol.properties['Value'], []).append(power_pin)
 
-    for name, points in label_by_name.items():
-      for other_point in points[1:]:
-        edges.setdefault(points[0], []).append(other_point)
-        edges.setdefault(other_point, []).append(points[0])
+    # transform that into a list of elements
+    wires_elts: List[List[Union[KiCadPin, KiCadBaseLabel]]] = [
+      list(itertools.chain(*[pin_labels_by_point.get(point, [])
+                             for point in points]))
+      for points in wires_points]
 
-    # TODO support hierarchy with sheet_instances and symbol_instances
-    # TODO also check for intersections - currently pins and labels need to be at wire ends
+    # sanity check to ensure there aren't any degenerate connections
+    # TODO IMPLEMENT ME
 
-    # traverse the graph and build up nets
-    seen_points: Set[PointType] = set()
+    # traverse the elements to account for labels
+    for (name, name_labels) in labels_by_name.items():
+      wires_elts.append(name_labels)
+    wires_elts = self._connected_components(wires_elts)
+
     self.nets: List[ParsedNet] = []
-    # roughly preserves symbol ordering
-    all_points = list(itertools.chain(pin_points.keys(), label_points.keys()))
-    for point in all_points:  # traverse in symbol / pin order to preserve ordering
-      if point in seen_points:
-        continue  # already seen and part of another net
-      net_pins: List[KiCadPin] = []
-      net_labels: List[KiCadBaseLabel] = []
-      def traverse_point(point: PointType) -> None:
-        if point in seen_points:
-          return  # already seen, don't traverse again
-        seen_points.add(point)
-
-        for pin in pin_points.get(point, []):
-          net_pins.append(pin)
-        for label in label_points.get(point, []):
-          net_labels.append(label)
-        for point2 in edges.get(point, []):
-          traverse_point(point2)
-
-      traverse_point(point)
-      self.nets.append(ParsedNet(net_labels, net_pins))
+    for elts in wires_elts:
+      pins = [elt for elt in elts if isinstance(elt, KiCadPin)]
+      labels = [elt for elt in elts if isinstance(elt, KiCadBaseLabel)]
+      self.nets.append(ParsedNet(labels, pins))
