@@ -14,13 +14,14 @@ import edgir.schema.schema
   */
 trait Library {
   // returns whether subclass is a subclass of (or equivalent to) superclass, traversing up the library
+  // returns false if either subclass is missing
   def blockIsSubclassOf(subclass: ref.LibraryPath, superclass: ref.LibraryPath): Boolean = {
     if (subclass == superclass) {
       true
     } else {
-      getBlock(subclass, true).get.superclasses.exists {
+      getBlock(subclass, true).toOption.map { elt => elt.superclasses.exists {
         blockIsSubclassOf(_, superclass)
-      }
+      }}.getOrElse(false)
     }
   }
 

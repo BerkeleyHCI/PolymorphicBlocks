@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import Optional, cast, Dict
 
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -8,7 +8,11 @@ from .StandardPinningFootprint import StandardPinningFootprint
 
 
 @abstract_block
-class FerriteBead(PassiveComponent):
+class FerriteBead(PassiveComponent, KiCadImportableBlock):
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:L_Ferrite', 'Device:L_Ferrite_Small')
+    return {'1': self.a, '2': self.b}
+
   @init_in_parent
   def __init__(self, *, current: RangeLike = Default(RangeExpr.ZERO),
                hf_impedance: RangeLike = Default(RangeExpr.ALL),
@@ -116,8 +120,12 @@ class TableFerriteBead(SmdStandardPackage, FerriteBeadStandardPinning, PartsTabl
     )
 
 
-class SeriesPowerFerriteBead(DiscreteApplication):
+class SeriesPowerFerriteBead(DiscreteApplication, KiCadImportableBlock):
   """Series ferrite bead for power applications"""
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:L_Ferrite', 'Device:L_Ferrite_Small')
+    return {'1': self.pwr_in, '2': self.pwr_out}
+
   @init_in_parent
   def __init__(self, hf_impedance: RangeLike = Default(RangeExpr.ALL),
                dc_resistance: RangeLike = Default(RangeExpr.ALL)) -> None:

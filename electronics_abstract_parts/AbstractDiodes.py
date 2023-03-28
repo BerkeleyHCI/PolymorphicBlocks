@@ -51,7 +51,7 @@ class Diode(KiCadImportableBlock, BaseDiode):
   TODO power? capacitance? leakage current?
   """
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
-    assert symbol_name == 'Device:D'
+    assert symbol_name in ('Device:D', 'Device:D_Small')
     return {'A': self.anode, 'K': self.cathode}
 
   @init_in_parent

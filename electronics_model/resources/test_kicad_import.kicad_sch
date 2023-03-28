@@ -176,7 +176,7 @@
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid a8f9f58a-4aa6-48fb-915f-461e000613f8)
     (property "Reference" "R2" (id 0) (at 100.33 80.01 90))
-    (property "Value" "51" (id 1) (at 100.33 82.55 90))
+    (property "Value" "51 ±5%" (id 1) (at 100.33 82.55 90))
     (property "Footprint" "" (id 2) (at 100.33 88.138 90)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -214,7 +214,7 @@
       (reference "R1") (unit 1) (value "51") (footprint "")
     )
     (path "/a8f9f58a-4aa6-48fb-915f-461e000613f8"
-      (reference "R2") (unit 1) (value "51") (footprint "")
+      (reference "R2") (unit 1) (value "51 ±5%") (footprint "")
     )
   )
 )
