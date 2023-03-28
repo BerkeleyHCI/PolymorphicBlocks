@@ -127,7 +127,7 @@ class Connection():
       for link_facing_port in link_facing_ports:
         allocatable_link_ports = link_ports_by_type[type(self._baseport_leaf_type(link_facing_port))]
         if not allocatable_link_ports:
-          raise UnconnectableError(f"No remaining link ports to {link_facing_port}")
+          raise UnconnectableError(f"No remaining link ports to {link_facing_port._name_from(self.parent)}")
         allocated_link_port = allocatable_link_ports[0]
 
         if isinstance(allocated_link_port, BaseVector):  # array on link side, can connect as many as needed
