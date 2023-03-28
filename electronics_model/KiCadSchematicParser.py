@@ -268,7 +268,10 @@ class KiCadSchematic:
     # and by converting wires (and stuff) into lists of connected points
 
     # start by building a list of connected wire points
-    wires_points = [[wire.pt1, wire.pt2] for wire in wires]
+    wires_points = []
+    wires_points.extend([pin.pt] for pin in symbol_pins)  # make sure all points are represented
+    wires_points.extend([label.pt] for label in labels)
+    wires_points.extend([[wire.pt1, wire.pt2] for wire in wires])
     wires_points = self._connected_components(wires_points)
 
     # build a list of pins and labels by point
@@ -288,17 +291,17 @@ class KiCadSchematic:
       labels_by_name.setdefault(power_pin.symbol.properties['Value'], []).append(power_pin)
 
     # transform that into a list of elements
-    wires_elts: List[List[Union[KiCadPin, KiCadBaseLabel]]] = [
+    # make sure all elements are seeded in the list
+    wires_elts: List[List[Union[KiCadPin, KiCadBaseLabel]]] = [  # transform points into list of KiCad elements
       list(itertools.chain(*[pin_labels_by_point.get(point, [])
                              for point in points]))
       for points in wires_points]
+    wires_elts.extend([name_labels for (name, name_labels) in labels_by_name.items()])
 
     # sanity check to ensure there aren't any degenerate connections
     # TODO IMPLEMENT ME
 
-    # traverse the elements to account for labels
-    for (name, name_labels) in labels_by_name.items():
-      wires_elts.append(name_labels)
+    # run connections again, this time including label connections
     wires_elts = self._connected_components(wires_elts)
 
     self.nets: List[ParsedNet] = []
