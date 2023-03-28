@@ -104,6 +104,8 @@ class KiCadSchematicBlock(Block):
                     return None  # invalid type
             elif hasattr(root, components[0]) and isinstance(root, (Bundle, Block)):
                 return inner(getattr(root, components[0]), components[1:])
+            else:
+                return None
         return inner(self, path.split('.'))
 
     def import_kicad(self, filepath: str, locals: Mapping[str, Any] = {},
