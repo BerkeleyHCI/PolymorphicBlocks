@@ -32,7 +32,7 @@ from .CircuitPackingBlock import NetPackingBlock, PackedVoltageSource
 from .PartParserUtil import PartParserUtil
 
 from .KiCadImportableBlock import KiCadImportableBlock, KiCadInstantiableBlock
-from .KiCadSchematicBlock import KiCadSchematicBlock
+from .KiCadSchematicBlock import KiCadSchematicBlock, KiCadBlackbox, KiCadBlackboxBase
 
 from .RefdesRefinementPass import RefdesRefinementPass
 from .NetlistBackend import NetlistBackend
