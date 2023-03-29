@@ -59,13 +59,13 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
                                                   'Sensor_Temperature:MCP9700AT-ETT', 'Sensor_Temperature:MCP9700AT-ETT - MCP9700AT-ETT',
                                                   ['dut', 'U1'], ['dut', 'U1'],
                                                   ['electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock',
-                                                   'electronics_model.KiCadSchematicBlock.KiCadBlackboxComponent']))
+                                                   'electronics_model.KiCadSchematicBlock.KiCadBlackbox']))
     self.assertEqual(net.blocks['dut.SYM1'], FBlock('Symbol:Symbol_ESD-Logo_CopperTop', 'SYM1',
                                                     # expected value is wonky because netlisting combines part and value
                                                     'Graphic:SYM_ESD_Small', 'Graphic:SYM_ESD_Small - SYM_ESD_Small',
                                                     ['dut', 'SYM1'], ['dut', 'SYM1'],
                                                     ['electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock',
-                                                     'electronics_model.KiCadSchematicBlock.KiCadBlackboxComponent']))
+                                                     'electronics_model.KiCadSchematicBlock.KiCadBlackbox']))
     self.assertEqual(net.blocks['dut.res'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '',
                                                    ['dut', 'res'], ['dut', 'res'],
                                                    ['electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock',

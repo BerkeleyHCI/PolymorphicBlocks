@@ -107,6 +107,8 @@
     (uuid 21362588-9ca4-4df5-aaff-e66a21a01f68)
   )
 
+  (no_connect (at 74.93 96.52) (uuid 843af354-12a1-4cdb-ab0a-a91df7523d22))
+
   (wire (pts (xy 91.44 86.36) (xy 91.44 96.52))
     (stroke (width 0) (type default) (color 0 0 0 0))
     (uuid 03903112-54ec-4875-b5c3-fcc4ec71e52c)
@@ -142,16 +144,11 @@
 
   (label "node" (at 91.44 86.36 180)
     (effects (font (size 1.27 1.27)) (justify right bottom))
-    (uuid 836fde0b-300e-46a9-ac27-5f3fb762315d)
+    (uuid 133759c5-2b81-4eb7-96df-02e89055667e)
   )
   (label "GND" (at 111.76 86.36 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid f8594364-7085-4d63-b6db-0503245aaae3)
-  )
-
-  (hierarchical_label "PORT_A" (shape input) (at 74.93 96.52 180)
-    (effects (font (size 1.27 1.27)) (justify right))
-    (uuid 4f0edceb-c4f5-4bc1-9e9b-6ba792a4e8b1)
+    (uuid 724aabcb-49a8-4b55-a67b-a0df1763da14)
   )
 
   (symbol (lib_id "Device:R") (at 83.82 96.52 90) (unit 1)
@@ -173,7 +170,7 @@
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid a8f9f58a-4aa6-48fb-915f-461e000613f8)
     (property "Reference" "R2" (id 0) (at 100.33 80.01 90))
-    (property "Value" "51" (id 1) (at 100.33 82.55 90))
+    (property "Value" "51 ±5%" (id 1) (at 100.33 82.55 90))
     (property "Footprint" "" (id 2) (at 100.33 88.138 90)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -211,7 +208,7 @@
       (reference "R1") (unit 1) (value "51") (footprint "")
     )
     (path "/a8f9f58a-4aa6-48fb-915f-461e000613f8"
-      (reference "R2") (unit 1) (value "51") (footprint "")
+      (reference "R2") (unit 1) (value "51 ±5%") (footprint "")
     )
   )
 )

@@ -137,10 +137,11 @@ class TableDeratingCapacitor(SmdStandardPackage, CapacitorStandardPinning, Table
   # LOOSELY approximated from https://www.maximintegrated.com/en/design/technical-documents/tutorials/5/5527.html
 
   @init_in_parent
-  def __init__(self, *args, single_nominal_capacitance: RangeLike = Default((0, 22)*uFarad), **kwargs):
+  def __init__(self, *args, single_nominal_capacitance: RangeLike = Default((0, 22)*uFarad),
+               derate_capacitance: BoolLike = True, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator(self.select_part, self.capacitance, self.voltage,
-                   single_nominal_capacitance, self.voltage_rating_derating,
+                   single_nominal_capacitance, self.voltage_rating_derating, derate_capacitance,
                    self.part, self.footprint_spec, self.smd_min_package)
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
@@ -149,7 +150,7 @@ class TableDeratingCapacitor(SmdStandardPackage, CapacitorStandardPinning, Table
     # the description string in the main superclass
 
   def select_part(self, capacitance: Range, voltage: Range, single_nominal_capacitance: Range,
-                  voltage_rating_derating: float,
+                  voltage_rating_derating: float, derate_capacitance: bool,
                   part_spec: str, footprint_spec: str, smd_min_package: str) -> None:
     derated_voltage = voltage / voltage_rating_derating
     minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(smd_min_package, self.SMD_FOOTPRINT_MAP)
@@ -164,7 +165,9 @@ class TableDeratingCapacitor(SmdStandardPackage, CapacitorStandardPinning, Table
     )).sort_by(self._row_sort_by)
 
     def add_derated_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if voltage.upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages
+      if not derate_capacitance:
+        derated = row[self.CAPACITANCE]
+      elif voltage.upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages
         derated = row[self.CAPACITANCE]
       elif row[self.NOMINAL_CAPACITANCE] <= self.DERATE_MIN_CAPACITANCE:  # don't derate below 1uF
         derated = row[self.CAPACITANCE]

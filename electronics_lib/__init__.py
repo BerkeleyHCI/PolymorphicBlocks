@@ -1,6 +1,7 @@
 from electronics_abstract_parts import *
 
 from .JlcPart import JlcPart
+from .JlcBlackbox import KiCadJlcBlackbox
 
 from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
 from .JlcResistor import JlcResistor
