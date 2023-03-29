@@ -241,7 +241,7 @@ class KiCadSchematic:
         seen_components.add(component)
 
         for connected in adjacency.get(component, []):
-          if connected not in connected_components:
+          if connected not in connection_components:
             connection_components.append(connected)
 
         for connected in adjacency.get(component, []):
