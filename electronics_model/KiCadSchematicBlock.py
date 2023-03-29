@@ -1,22 +1,49 @@
 import inspect
 import os
-from typing import Type, Any, Optional, Mapping, Dict, List
+from abc import abstractmethod
+from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, TypeVar
 
 from edg_core import Block, GeneratorBlock, BasePort, Vector, init_in_parent, ArrayStringLike, StringLike, non_library, \
-    Bundle
+    Bundle, InternalBlock
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
 from .PassivePort import Passive
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import KiCadSchematic, KiCadPin, KiCadLabel, KiCadGlobalLabel, KiCadHierarchicalLabel, \
-    KiCadPowerLabel
+    KiCadPowerLabel, KiCadSymbol, KiCadLibSymbol
 
 
 @non_library
-class KiCadBlackboxComponent(FootprintBlock, GeneratorBlock):
+class KiCadBlackboxBase(InternalBlock):
+    """Abstract class for black box handlers, which parses a KiCad symbol and creates the corresponding Block."""
+    BlackboxSelfType = TypeVar('BlackboxSelfType', bound='KiCadBlackboxBase')
+
+    @classmethod
+    @abstractmethod
+    def block_from_symbol(cls: Type[BlackboxSelfType], symbol: KiCadSymbol, lib: KiCadLibSymbol) -> \
+            Tuple[BlackboxSelfType, Callable[[BlackboxSelfType], Mapping[str, BasePort]]]:
+        """Creates a blackbox block from a schematic symbol. Returns the block template and a function that given
+        the block, returns mapping from the schematic pin name to the associated port."""
+        ...
+
+
+class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalBlock):
     """A footprint block that is fully defined (both value fields and structural pins) by its argument parameters
     and has all passive ports.
     """
+    @classmethod
+    def block_from_symbol(cls, symbol: KiCadSymbol, lib: KiCadLibSymbol) -> \
+            Tuple['KiCadBlackbox', Callable[['KiCadBlackbox'], Mapping[str, BasePort]]]:
+        pin_numbers = [pin.number for pin in lib.pins]
+        refdes_prefix = symbol.refdes.rstrip('0123456789?')
+        block_model = KiCadBlackbox(
+            pin_numbers, refdes_prefix, symbol.properties['Footprint'],
+            kicad_part=symbol.lib, kicad_value=symbol.properties.get('Value', ''),
+            kicad_datasheet=symbol.properties.get('Datasheet', ''))
+        def block_pinning(block: KiCadBlackbox) -> Mapping[str, BasePort]:
+            return {pin: block.ports.request(pin) for pin in pin_numbers}
+        return block_model, block_pinning
+
     @init_in_parent
     def __init__(self, kicad_pins: ArrayStringLike, kicad_refdes_prefix: StringLike, kicad_footprint: StringLike,
                  kicad_part: StringLike, kicad_value: StringLike, kicad_datasheet: StringLike):
@@ -133,14 +160,20 @@ class KiCadSchematicBlock(Block):
 
         for symbol in sch.symbols:
             if 'Footprint' in symbol.properties and symbol.properties['Footprint']:  # footprints are blackboxed
-                pins = sch.lib_symbols[symbol.lib_ref].pins
-                pin_numbers = [pin.number for pin in pins]
-                refdes_prefix = symbol.refdes.rstrip('0123456789?')
-                blackbox_block = self.Block(KiCadBlackboxComponent(
-                    pin_numbers, refdes_prefix, symbol.properties['Footprint'],
-                    kicad_part=symbol.lib, kicad_value=symbol.properties.get('Value', ''),
-                    kicad_datasheet=symbol.properties.get('Datasheet', '')))
-                block_pinning = {pin: blackbox_block.ports.request(pin) for pin in pin_numbers}
+                handler: Type[KiCadBlackboxBase] = KiCadBlackbox  # default
+                if 'edg_blackbox' in symbol.properties:
+                    handler_name = symbol.properties['edg_blackbox']
+                    container_globals = inspect.stack()[1][0].f_globals
+                    assert handler_name in container_globals, \
+                        f"edg_blackbox handler {handler_name} must be imported into current global scope"
+                    handler = container_globals[handler_name]
+                    assert issubclass(handler, KiCadBlackboxBase), \
+                        f"edg_blackbox handler {handler_name} must subclass KiCadBlackboxBase"
+
+                block_model, block_pinning_creator = handler.block_from_symbol(
+                    symbol, sch.lib_symbols[symbol.lib_ref])
+                blackbox_block = self.Block(block_model)
+                block_pinning = block_pinning_creator(blackbox_block)
                 setattr(self, symbol.refdes, blackbox_block)
             elif hasattr(self, symbol.refdes):  # sub-block defined in the Python Block, schematic only for connections
                 assert not symbol.properties['Value'] or symbol.properties['Value'] == '~',\
