@@ -63,6 +63,16 @@ class KiCadSchematicParserTest(unittest.TestCase):
     with self.assertRaises(ValueError):
       KiCadSchematic(file_data)
 
+  def test_noconnect(self):
+    with open(os.path.join(os.path.dirname(__file__), "resources", "test_kicad_import_nc.kicad_sch"), "r") as file:
+      file_data = file.read()
+    sch = KiCadSchematic(file_data)
+    nets = [net_to_tuple(x) for x in sch.nets]
+    self.assertEqual(len(nets), 3)
+    self.assertIn((set(), {'R1.1'}), nets)
+    self.assertIn(({(KiCadLabel, 'node')}, {'R1.2', 'R2.1', 'C1.1'}), nets)
+    self.assertIn(({(KiCadLabel, 'GND')}, {'R2.2', 'C1.2'}), nets)
+
   def check_bad_noconnect(self, filename):
     with open(os.path.join(os.path.dirname(__file__), "resources", filename), "r") as file:
       file_data = file.read()
@@ -70,10 +80,10 @@ class KiCadSchematicParserTest(unittest.TestCase):
       KiCadSchematic(file_data)
 
   def test_kicad_noconnect_disconnected(self):
-    self.check_bad_noconnect("test_kicad_import_badnc_dis.kicad_sch")
+    self.check_bad_noconnect("test_kicad_import_nc_baddis.kicad_sch")
 
   def test_kicad_noconnect_multiple(self):
-    self.check_bad_noconnect("test_kicad_import_badnc_mult.kicad_sch")
+    self.check_bad_noconnect("test_kicad_import_nc_badmult.kicad_sch")
 
   def test_kicad_mirrorx(self):
     self.check_schematic_fet("test_kicad_import_mirrorx.kicad_sch")
