@@ -201,7 +201,8 @@ class KiCadSchematicBlock(Block):
                 net_name = net_label_names.pop()
             else:
                 net_name = None
-            if net_name is not None:
+            if net_name is not None and net_name not in port_label_names:
+                # allow port names to overlap with net names, in which case port name takes priority
                 assert not hasattr(self, net_name), f"net name {net_name} already exists in Block"
                 setattr(self, net_name, connection)
 

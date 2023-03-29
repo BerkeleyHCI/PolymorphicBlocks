@@ -113,12 +113,12 @@ class KiCadBlockAliasedPort(KiCadSchematicBlock):
         self.import_kicad(self.file_path("resources", "test_kicad_import.kicad_sch"))
 
 
-class KiCadBlockAliasedPortOk(KiCadSchematicBlock):
+class KiCadBlockOverlappedPort(KiCadSchematicBlock):
     """Block that has a port with the same name as an internal net, but is also connected to the port."""
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(Passive())
-        self.GND = self.Port(Passive())
+        self.GND2 = self.Port(Passive())
         self.import_kicad(self.file_path("resources", "test_kicad_import_gndport.kicad_sch"))
 
 
@@ -153,12 +153,12 @@ class KiCadImportProtoTestCase(unittest.TestCase):
     def test_modified_symbol_block(self):
         self.check_connectivity(KiCadModifiedSymbolBlock)
 
-    def test_aliased_port_ok(self):
-        self.check_connectivity(KiCadBlockAliasedPortOk)
-
     def test_aliased_port(self):
         with self.assertRaises(AssertionError):
             self.check_connectivity(KiCadBlockAliasedPort)
+
+    def test_overlapped_port(self):
+        self.check_connectivity(KiCadBlockOverlappedPort)
 
     def check_connectivity(self, cls: Type[KiCadSchematicBlock]):
         """Checks the connectivity of the generated proto, since the examples have similar structures."""
