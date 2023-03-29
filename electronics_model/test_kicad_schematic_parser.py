@@ -34,7 +34,7 @@ class KiCadSchematicParserTest(unittest.TestCase):
     self.assertEqual(len(nets), 3)
     self.assertIn(({(KiCadGlobalLabel, 'PORT_A')}, {'R1.1'}), nets)
     self.assertIn(({(KiCadLabel, 'node')}, {'R1.2', 'R2.1', 'C1.1'}), nets)
-    self.assertIn(({(KiCadLabel, 'Test_Net_1')}, {'R2.2', 'C1.2'}), nets)
+    self.assertIn(({(KiCadLabel, 'GND')}, {'R2.2', 'C1.2'}), nets)
 
     symbols = [(x.refdes, x.lib) for x in sch.symbols]
     self.assertIn(('R1', 'Device:R'), symbols)
@@ -50,7 +50,7 @@ class KiCadSchematicParserTest(unittest.TestCase):
     self.assertEqual(len(nets), 3)
     self.assertIn(({(KiCadPowerLabel, '+VDC'), (KiCadGlobalLabel, 'PORT_A')}, {'R1.1'}), nets)
     self.assertIn(({(KiCadLabel, 'node')}, {'R1.2', 'R2.1', 'C1.1'}), nets)
-    self.assertIn(({(KiCadPowerLabel, 'GND'), (KiCadLabel, 'Test_Net_1')}, {'R2.2', 'C1.2'}), nets)
+    self.assertIn(({(KiCadPowerLabel, 'GND')}, {'R2.2', 'C1.2'}), nets)
 
     symbols = [(x.refdes, x.lib) for x in sch.symbols]
     self.assertIn(('R1', 'Device:R'), symbols)
