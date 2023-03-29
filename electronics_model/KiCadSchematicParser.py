@@ -288,7 +288,7 @@ class KiCadSchematic:
                                        for elt in extract_only(sexp_dict.get('lib_symbols', []))[1:]]}  # discard car
 
     wires = [KiCadWire(elt) for elt in sexp_dict.get('wire', [])]
-    labels: List[KiCadBaseLabel] = [KiCadLabel(elt) for elt in sexp_dict.get('label', [])]
+    labels: List[KiCadTunnel] = [KiCadLabel(elt) for elt in sexp_dict.get('label', [])]
     labels.extend([KiCadGlobalLabel(elt) for elt in sexp_dict.get('global_label', [])])
     labels.extend([KiCadHierarchicalLabel(elt) for elt in sexp_dict.get('hierarchical_label', [])])
     markers = [KiCadNoConnect(elt) for elt in sexp_dict.get('no_connect', [])]
@@ -312,6 +312,8 @@ class KiCadSchematic:
     power_pins = list(itertools.chain(*[[KiCadPin(symbol, pin)
                                          for pin in self.lib_symbols[symbol.lib_ref].pins]
                                         for symbol in power_symbols]))
+    labels.extend([KiCadPowerLabel(power_pin.symbol.properties['Value'], power_pin.pt)
+                   for power_pin in power_pins])
 
     # now, actually build the netlist, with graph traversal to find connected components
     # and by converting wires (and stuff) into lists of connected points
@@ -332,18 +334,13 @@ class KiCadSchematic:
     for label in labels:
       elts_by_point.setdefault(label.pt, []).append(label)
       labels_by_name.setdefault(label.name, []).append(label)
-    for power_pin in power_pins:  # generate into a pseudo-label
-      power_pin_name = power_pin.symbol.properties['Value']
-      power_pin_label = KiCadPowerLabel(power_pin_name, power_pin.pt)
-      elts_by_point.setdefault(power_pin.pt, []).append(power_pin_label)
-      labels_by_name.setdefault(power_pin_name, []).append(power_pin_label)
     for marker in markers:
       elts_by_point.setdefault(marker.pt, []).append(marker)
 
     # transform that into a list of elements
     # make sure all elements are seeded in the list
     nets_elts: List[List[Union[KiCadPin, KiCadTunnel, KiCadMarker]]] = [  # transform points into KiCad elements
-      self._deduplicate_list(itertools.chain(*[elts_by_point.get(point, [])  # deduplicate
+      self._deduplicate_list(itertools.chain(*[elts_by_point.get(point, [])
                              for point in points]))
       for points in wires_points]
 
