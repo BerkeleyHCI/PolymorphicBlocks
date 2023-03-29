@@ -144,6 +144,22 @@ class KiCadPowerLabel(KiCadTunnel):  # not really a label, but behaves like a la
     self.pt = pt
 
 
+class KiCadMarker:
+  def __repr__(self):
+    return f"{self.__class__.__name__}({self.pt})"
+
+  def __init__(self):
+    self.pt: PointType
+
+
+class KiCadNoConnect(KiCadMarker):
+  def __init__(self, sexp: List[Any]):
+    super().__init__()
+    sexp_dict = group_by_car(sexp)
+    assert parse_symbol(sexp[0]) == 'no_connect'
+    self.pt = parse_xy(extract_only(sexp_dict['at']), 'at')
+
+
 class KiCadSymbol:
   def __repr__(self):
     return f"{self.__class__.__name__}({self.refdes}, {self.lib} @ {self.pos})"
@@ -264,6 +280,7 @@ class KiCadSchematic:
     labels: List[KiCadBaseLabel] = [KiCadLabel(elt) for elt in sexp_dict.get('label', [])]
     labels.extend([KiCadGlobalLabel(elt) for elt in sexp_dict.get('global_label', [])])
     labels.extend([KiCadHierarchicalLabel(elt) for elt in sexp_dict.get('hierarchical_label', [])])
+    markers = [KiCadNoConnect(elt) for elt in sexp_dict.get('no_connect', [])]
     # TODO support hierarchy with sheet_instances and symbol_instances
     # TODO also check for intersections - currently pins and labels need to be at wire ends
 
@@ -292,42 +309,55 @@ class KiCadSchematic:
     wires_points: List[List[PointType]] = []
     wires_points.extend([pin.pt] for pin in symbol_pins)  # make sure all points are represented
     wires_points.extend([label.pt] for label in labels)
+    wires_points.extend([marker.pt] for marker in markers)
     wires_points.extend([[wire.pt1, wire.pt2] for wire in wires])
     wires_points = self._connected_components(wires_points)
 
     # build a list of pins and labels by point
-    pin_labels_by_point: Dict[PointType, List[Union[KiCadPin, KiCadTunnel]]] = {}
-    labels_by_name: Dict[str, List[Union[KiCadPin, KiCadTunnel]]] = {}  # it will not be a KiCadPin but needed for invariant typing
+    elts_by_point: Dict[PointType, List[Union[KiCadPin, KiCadTunnel, KiCadMarker]]] = {}
+    labels_by_name: Dict[str, List[Union[KiCadPin, KiCadTunnel, KiCadMarker]]] = {}  # it will not be a KiCadPin but needed for invariant typing
     for pin in symbol_pins:
-      pin_labels_by_point.setdefault(pin.pt, []).append(pin)
+      elts_by_point.setdefault(pin.pt, []).append(pin)
     for label in labels:
-      pin_labels_by_point.setdefault(label.pt, []).append(label)
+      elts_by_point.setdefault(label.pt, []).append(label)
       labels_by_name.setdefault(label.name, []).append(label)
     for power_pin in power_pins:  # generate into a pseudo-label
       power_pin_name = power_pin.symbol.properties['Value']
       power_pin_label = KiCadPowerLabel(power_pin_name, power_pin.pt)
-      pin_labels_by_point.setdefault(power_pin.pt, []).append(power_pin_label)
+      elts_by_point.setdefault(power_pin.pt, []).append(power_pin_label)
       labels_by_name.setdefault(power_pin_name, []).append(power_pin_label)
+    for marker in markers:
+      elts_by_point.setdefault(marker.pt, []).append(marker)
 
     # transform that into a list of elements
     # make sure all elements are seeded in the list
-    wires_elts: List[List[Union[KiCadPin, KiCadTunnel]]] = [  # transform points into list of KiCad elements
-      list(set(itertools.chain(*[pin_labels_by_point.get(point, [])  # deduplicate
+    nets_elts: List[List[Union[KiCadPin, KiCadTunnel, KiCadMarker]]] = [  # transform points into KiCad elements
+      list(set(itertools.chain(*[elts_by_point.get(point, [])  # deduplicate
                              for point in points])))
       for points in wires_points]
 
     # sanity check to ensure there aren't any degenerate connections
     # labels don't create wire endpoints / junctions and we don't process connections mid-wire
-    for elts in wires_elts:
-      if len(elts) == 1 and isinstance(elts[0], KiCadBaseLabel):
-        raise ValueError(f"disconnected net label at {elts[0].name}")
+    for net_elts in nets_elts:
+      if len(net_elts) == 1 and isinstance(net_elts[0], KiCadBaseLabel):
+        raise ValueError(f"disconnected net label at {net_elts[0].name}")
 
     # run connections again, to propagate label connections
-    wires_elts.extend([name_labels for (name, name_labels) in labels_by_name.items()])
-    wires_elts = self._connected_components(wires_elts)
+    nets_elts.extend([name_labels for (name, name_labels) in labels_by_name.items()])
+    nets_elts = self._connected_components(nets_elts)
 
     self.nets: List[ParsedNet] = []
-    for elts in wires_elts:
-      elts_pins = [elt for elt in elts if isinstance(elt, KiCadPin)]
-      elts_labels = [elt for elt in elts if isinstance(elt, KiCadTunnel)]
-      self.nets.append(ParsedNet(elts_labels, elts_pins))
+    for net_elts in nets_elts:
+      net_pins = [elt for elt in net_elts if isinstance(elt, KiCadPin)]
+      net_labels = [elt for elt in net_elts if isinstance(elt, KiCadTunnel)]
+      parsed_net = ParsedNet(net_labels, net_pins)
+
+      net_markers = [elt for elt in net_elts if isinstance(elt, KiCadMarker)]
+      for marker in net_markers:
+        if isinstance(marker, KiCadNoConnect):
+          if len(net_pins) < 1:
+            raise ValueError(f"no-connect with no connected pins at {parsed_net}")
+          elif len(net_pins) > 1:
+            raise ValueError(f"no-connect with multiple connected pins at {parsed_net}")
+
+      self.nets.append(parsed_net)
