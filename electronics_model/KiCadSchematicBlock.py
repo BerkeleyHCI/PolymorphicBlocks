@@ -160,7 +160,17 @@ class KiCadSchematicBlock(Block):
 
         for symbol in sch.symbols:
             if 'Footprint' in symbol.properties and symbol.properties['Footprint']:  # footprints are blackboxed
-                block_model, block_pinning_creator = KiCadBlackbox.block_from_symbol(
+                handler: Type[KiCadBlackboxBase] = KiCadBlackbox  # default
+                if 'edg_blackbox' in symbol.properties:
+                    handler_name = symbol.properties['edg_blackbox']
+                    container_globals = inspect.stack()[1][0].f_globals
+                    assert handler_name in container_globals, \
+                        f"edg_blackbox handler {handler_name} must be imported into current global scope"
+                    handler = container_globals[handler_name]
+                    assert issubclass(handler, KiCadBlackboxBase), \
+                        f"edg_blackbox handler {handler_name} must subclass KiCadBlackboxBase"
+
+                block_model, block_pinning_creator = handler.block_from_symbol(
                     symbol, sch.lib_symbols[symbol.lib_ref])
                 blackbox_block = self.Block(block_model)
                 block_pinning = block_pinning_creator(blackbox_block)

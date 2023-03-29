@@ -214,7 +214,7 @@
     (property "JLCPCB Part #" "C127949" (id 5) (at 137.16 91.44 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "edg_blackbox_handler" "" (id 4) (at 137.16 91.44 0)
+    (property "edg_blackbox" "KiCadJlcBlackbox" (id 4) (at 137.16 91.44 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid 85a63f52-cb96-47de-84fb-1423402bc02a))

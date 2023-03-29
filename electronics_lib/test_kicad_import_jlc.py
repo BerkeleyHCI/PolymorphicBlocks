@@ -3,6 +3,7 @@ import unittest
 import edgir
 from edg_core import Builder
 from electronics_model import KiCadSchematicBlock, Passive
+from .JlcBlackbox import KiCadJlcBlackbox  # needed for import_kicad
 
 
 class JlcBlackboxBlock(KiCadSchematicBlock):
@@ -66,5 +67,4 @@ class JlcImportBlackboxTestCase(unittest.TestCase):
         self.assertIn(edgir.AssignLit(['U1', 'kicad_part'], 'Sensor_Temperature:MCP9700AT-ETT'), constraints)
         self.assertIn(edgir.AssignLit(['U1', 'kicad_value'], 'MCP9700AT-ETT'), constraints)
         self.assertIn(edgir.AssignLit(['U1', 'kicad_datasheet'], 'http://ww1.microchip.com/downloads/en/DeviceDoc/21942e.pdf'), constraints)
-        self.assertIn(edgir.AssignLit(['U1', 'lcsc_part'], 'C127949'), constraints)
-        self.assertIn(edgir.AssignLit(['U1', 'actual_basic_part'], False), constraints)
+        self.assertIn(edgir.AssignLit(['U1', 'kicad_jlcpcb_part'], 'C127949'), constraints)

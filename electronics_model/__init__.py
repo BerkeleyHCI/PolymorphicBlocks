@@ -32,7 +32,10 @@ from .CircuitPackingBlock import NetPackingBlock, PackedVoltageSource
 from .PartParserUtil import PartParserUtil
 
 from .KiCadImportableBlock import KiCadImportableBlock, KiCadInstantiableBlock
-from .KiCadSchematicBlock import KiCadSchematicBlock, KiCadBlackbox, KiCadBlackboxBase
+from .KiCadSchematicBlock import KiCadSchematicBlock
+# for power users to build custom blackbox handlers
+from .KiCadSchematicParser import KiCadSymbol, KiCadLibSymbol
+from .KiCadSchematicBlock import KiCadBlackbox, KiCadBlackboxBase
 
 from .RefdesRefinementPass import RefdesRefinementPass
 from .NetlistBackend import NetlistBackend
