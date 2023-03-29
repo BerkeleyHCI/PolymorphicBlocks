@@ -291,7 +291,7 @@ class KiCadSchematic:
     labels: List[KiCadTunnel] = [KiCadLabel(elt) for elt in sexp_dict.get('label', [])]
     labels.extend([KiCadGlobalLabel(elt) for elt in sexp_dict.get('global_label', [])])
     labels.extend([KiCadHierarchicalLabel(elt) for elt in sexp_dict.get('hierarchical_label', [])])
-    markers = [KiCadNoConnect(elt) for elt in sexp_dict.get('no_connect', [])]
+    markers: List[KiCadMarker] = [KiCadNoConnect(elt) for elt in sexp_dict.get('no_connect', [])]
     # TODO support hierarchy with sheet_instances and symbol_instances
     # TODO also check for intersections - currently pins and labels need to be at wire ends
 

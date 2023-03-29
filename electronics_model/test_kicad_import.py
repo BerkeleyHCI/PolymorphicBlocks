@@ -153,7 +153,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
     def test_modified_symbol_block(self):
         self.check_connectivity(KiCadModifiedSymbolBlock)
 
-    def test_aliased_port(self):
+    def test_aliased_port_ok(self):
         self.check_connectivity(KiCadBlockAliasedPortOk)
 
     def test_aliased_port(self):
