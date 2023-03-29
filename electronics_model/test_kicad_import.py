@@ -104,6 +104,15 @@ class KiCadModifiedSymbolBlock(KiCadSchematicBlock):
         self.import_kicad(self.file_path("resources", "test_kicad_import_modified_symbol.kicad_sch"))
 
 
+class KiCadBlockAliasedPort(KiCadSchematicBlock):
+    """Block that has a port with the same name as an internal net."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(Passive())
+        self.GND = self.Port(Passive())
+        self.import_kicad(self.file_path("resources", "test_kicad_import.kicad_sch"))
+
+
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_block(self):
         self.check_connectivity(KiCadBlock)
@@ -134,6 +143,10 @@ class KiCadImportProtoTestCase(unittest.TestCase):
 
     def test_modified_symbol_block(self):
         self.check_connectivity(KiCadModifiedSymbolBlock)
+
+    def test_aliased_port(self):
+        with self.assertRaises(AssertionError):
+            self.check_connectivity(KiCadBlockAliasedPort)
 
     def check_connectivity(self, cls: Type[KiCadSchematicBlock]):
         """Checks the connectivity of the generated proto, since the examples have similar structures."""
