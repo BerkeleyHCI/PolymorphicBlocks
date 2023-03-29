@@ -57,6 +57,12 @@ class KiCadSchematicParserTest(unittest.TestCase):
     self.assertIn(('R2', 'Device:R'), symbols)
     self.assertIn(('C1', 'Device:C'), symbols)
 
+  def test_degenerate_label(self):
+    with open(os.path.join(os.path.dirname(__file__), "resources", "test_kicad_import_badlabel.kicad_sch"), "r") as file:
+      file_data = file.read()
+    with self.assertRaises(ValueError):
+      KiCadSchematic(file_data)
+
   def test_kicad_mirrorx(self):
     self.check_schematic_fet("test_kicad_import_mirrorx.kicad_sch")
 

@@ -312,15 +312,18 @@ class KiCadSchematic:
     # transform that into a list of elements
     # make sure all elements are seeded in the list
     wires_elts: List[List[Union[KiCadPin, KiCadTunnel]]] = [  # transform points into list of KiCad elements
-      list(itertools.chain(*[pin_labels_by_point.get(point, [])
-                             for point in points]))
+      list(set(itertools.chain(*[pin_labels_by_point.get(point, [])  # deduplicate
+                             for point in points])))
       for points in wires_points]
-    wires_elts.extend([name_labels for (name, name_labels) in labels_by_name.items()])
 
     # sanity check to ensure there aren't any degenerate connections
-    # TODO IMPLEMENT ME
+    # labels don't create wire endpoints / junctions and we don't process connections mid-wire
+    for elts in wires_elts:
+      if len(elts) == 1 and isinstance(elts[0], KiCadBaseLabel):
+        raise ValueError(f"disconnected net label at {elts[0].name}")
 
-    # run connections again, this time including label connections
+    # run connections again, to propagate label connections
+    wires_elts.extend([name_labels for (name, name_labels) in labels_by_name.items()])
     wires_elts = self._connected_components(wires_elts)
 
     self.nets: List[ParsedNet] = []
