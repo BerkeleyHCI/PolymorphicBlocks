@@ -1,6 +1,6 @@
 import itertools
 from enum import Enum
-from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple, Union
+from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple, Union, Iterable
 
 import math
 import sexpdata  # type: ignore
@@ -267,6 +267,17 @@ class KiCadSchematic:
       connected_components.append(connection_components)
     return connected_components
 
+  @staticmethod
+  def _deduplicate_list(elts: Iterable[T]) -> List[T]:
+    """Deduplicates a list while preserving order, keeping the first unique element"""
+    seen: Set[KiCadSchematic.T] = set()
+    output = []
+    for elt in elts:
+      if elt not in seen:
+        output.append(elt)
+        seen.add(elt)
+    return output
+
   def __init__(self, data: str, order: SchematicOrder = SchematicOrder.xy):
     schematic_top = sexpdata.loads(data)
     assert parse_symbol(schematic_top[0]) == 'kicad_sch'
@@ -332,8 +343,8 @@ class KiCadSchematic:
     # transform that into a list of elements
     # make sure all elements are seeded in the list
     nets_elts: List[List[Union[KiCadPin, KiCadTunnel, KiCadMarker]]] = [  # transform points into KiCad elements
-      list(set(itertools.chain(*[elts_by_point.get(point, [])  # deduplicate
-                             for point in points])))
+      self._deduplicate_list(itertools.chain(*[elts_by_point.get(point, [])  # deduplicate
+                             for point in points]))
       for points in wires_points]
 
     # sanity check to ensure there aren't any degenerate connections
