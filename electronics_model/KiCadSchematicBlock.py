@@ -8,7 +8,8 @@ from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
 from .PassivePort import Passive
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
-from .KiCadSchematicParser import KiCadSchematic, KiCadPin, KiCadLabel, KiCadGlobalLabel, KiCadHierarchicalLabel
+from .KiCadSchematicParser import KiCadSchematic, KiCadPin, KiCadLabel, KiCadGlobalLabel, KiCadHierarchicalLabel, \
+    KiCadPowerLabel
 
 
 @non_library
@@ -172,7 +173,7 @@ class KiCadSchematicBlock(Block):
             net_label_names = set()
             port_label_names = set()
             for net_label in net.labels:
-                if isinstance(net_label, KiCadLabel):  # only these are used for naming the net
+                if isinstance(net_label, (KiCadLabel, KiCadPowerLabel)):  # only these are used for naming the net
                     net_label_names.add(net_label.name)
                 elif isinstance(net_label, (KiCadGlobalLabel, KiCadHierarchicalLabel)):  # must connect to port or node
                     port_label_names.add(net_label.name)  # add to set to deduplicate
@@ -200,7 +201,8 @@ class KiCadSchematicBlock(Block):
                 net_name = net_label_names.pop()
             else:
                 net_name = None
-            if net_name is not None:
+            if net_name is not None and net_name not in port_label_names:
+                # allow port names to overlap with net names, in which case port name takes priority
                 assert not hasattr(self, net_name), f"net name {net_name} already exists in Block"
                 setattr(self, net_name, connection)
 

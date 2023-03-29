@@ -104,6 +104,24 @@ class KiCadModifiedSymbolBlock(KiCadSchematicBlock):
         self.import_kicad(self.file_path("resources", "test_kicad_import_modified_symbol.kicad_sch"))
 
 
+class KiCadBlockAliasedPort(KiCadSchematicBlock):
+    """Block that has a port with the same name as an internal net."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(Passive())
+        self.GND = self.Port(Passive())
+        self.import_kicad(self.file_path("resources", "test_kicad_import.kicad_sch"))
+
+
+class KiCadBlockOverlappedPort(KiCadSchematicBlock):
+    """Block that has a port with the same name as an internal net, but is also connected to the port."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(Passive())
+        self.GND2 = self.Port(Passive())
+        self.import_kicad(self.file_path("resources", "test_kicad_import_gndport.kicad_sch"))
+
+
 class KiCadImportProtoTestCase(unittest.TestCase):
     def test_block(self):
         self.check_connectivity(KiCadBlock)
@@ -135,13 +153,20 @@ class KiCadImportProtoTestCase(unittest.TestCase):
     def test_modified_symbol_block(self):
         self.check_connectivity(KiCadModifiedSymbolBlock)
 
+    def test_aliased_port(self):
+        with self.assertRaises(AssertionError):
+            self.check_connectivity(KiCadBlockAliasedPort)
+
+    def test_overlapped_port(self):
+        self.check_connectivity(KiCadBlockOverlappedPort)
+
     def check_connectivity(self, cls: Type[KiCadSchematicBlock]):
         """Checks the connectivity of the generated proto, since the examples have similar structures."""
         pb = cls()._elaborated_def_to_proto()
         constraints = list(map(lambda pair: pair.value, pb.constraints))
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'Test_Net_1'
+        expected_conn.connected.link_port.ref.steps.add().name = 'GND'
         expected_conn.connected.link_port.ref.steps.add().name = 'passives'
         expected_conn.connected.link_port.ref.steps.add().allocate = ''
         expected_conn.connected.block_port.ref.steps.add().name = 'C1'
@@ -149,7 +174,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         self.assertIn(expected_conn, constraints)
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.connected.link_port.ref.steps.add().name = 'Test_Net_1'
+        expected_conn.connected.link_port.ref.steps.add().name = 'GND'
         expected_conn.connected.link_port.ref.steps.add().name = 'passives'
         expected_conn.connected.link_port.ref.steps.add().allocate = ''
         expected_conn.connected.block_port.ref.steps.add().name = 'R2'

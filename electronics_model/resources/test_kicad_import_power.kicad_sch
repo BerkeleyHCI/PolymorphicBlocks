@@ -228,13 +228,15 @@
     (uuid d68ed73e-45b3-441c-84c3-918bed62b055)
   )
 
+  (text "Specifically, power symbols should\nbe able to connect to a differently named\nexternal port"
+    (at 66.04 104.14 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 3eb374f1-069a-4727-96c8-82fe39515659)
+  )
+
   (label "node" (at 91.44 86.36 180)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 836fde0b-300e-46a9-ac27-5f3fb762315d)
-  )
-  (label "Test_Net_1" (at 111.76 86.36 0)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid f8594364-7085-4d63-b6db-0503245aaae3)
   )
 
   (global_label "PORT_A" (shape input) (at 74.93 96.52 180) (fields_autoplaced)
