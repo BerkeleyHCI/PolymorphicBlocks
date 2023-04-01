@@ -10,4 +10,14 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
   This generates per-switch diodes which allows multiple keys to be pressed simultaneously.
   Diode anodes are attached to the rows, while cathodes go through each switch to the cols.
   """
+  @init_in_parent
+  def __init__(self, nrows: IntLike, ncols: IntLike):
+    super().__init__()
 
+    self.rows = self.Port(Vector(DigitalSink.empty()))
+    self.cols = self.Port(Vector(DigitalSingleSource.empty()))
+
+    self.generator(self.generate, nrows, ncols)
+
+  def generate(self, rows: int, cols: int):
+    pass
