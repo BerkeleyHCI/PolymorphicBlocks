@@ -7,7 +7,7 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
   (with all cols weakly pulled low).
   This uses the Switch abstract class, which can be refined into e.g. a tactile switch or mechanical keyswitch.
 
-  This generates per-switch diodes which allows multiple keys to be pressed once. Diode anodes are attached to
-  the rows, while cathodes go through each switch to the cols.
+  This generates per-switch diodes which allows multiple keys to be pressed simultaneously.
+  Diode anodes are attached to the rows, while cathodes go through each switch to the cols.
   """
 
