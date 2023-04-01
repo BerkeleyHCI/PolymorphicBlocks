@@ -411,7 +411,40 @@ class DigitalBidir(DigitalBase, NotConnectablePort):
     return self._convert(DigitalBidirAdapterOpenDrain())
 
 
+class DigitalSingleSourceBridge(CircuitPortBridge):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.outer_port = self.Port(DigitalSingleSource(
+      # voltage_out=RangeExpr(),
+      # output_thresholds=RangeExpr(),
+      # pulldown_capable=BoolExpr(),
+      # low_signal_driver=BoolExpr()
+    ))
+
+    # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
+    # The outer port's current_limits is untouched and should be defined in tte port def.
+    # TODO: it's a slightly optimization to handle them here. Should it be done?
+    # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
+    self.inner_link = self.Port(DigitalSink(
+      # voltage_limits=RangeExpr.ALL,
+      # current_draw=RangeExpr(),
+      # input_thresholds=RangeExpr.EMPTY_DIT
+    ))
+
+  def contents(self) -> None:
+    super().contents()
+
+    # self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+    # self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO subtract internal current drawn
+    # self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
+    #
+    # self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
+
+
 class DigitalSingleSource(DigitalBase):
+  bridge_type = DigitalSingleSourceBridge
+
   @staticmethod
   def low_from_supply(neg: Port[VoltageLink], is_pulldown: bool = False) -> DigitalSingleSource:
     return DigitalSingleSource(
