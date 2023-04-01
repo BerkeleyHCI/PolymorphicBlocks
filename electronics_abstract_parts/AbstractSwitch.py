@@ -50,14 +50,13 @@ class RotaryEncoder(DiscreteComponent):
 
 @abstract_block
 class RotaryEncoderWithSwitch(RotaryEncoder):
-  """Rotary encoder that also adds a switch pin, with ratings assumed to be the same between the
-  switch and encoder."""
+  """Rotary encoder that also adds a switch pin (sharing a common with the encoder),
+  with ratings assumed to be the same between the switch and encoder."""
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
 
-    self.sw1 = self.Port(Passive.empty())
-    self.sw2 = self.Port(Passive.empty())
+    self.sw = self.Port(Passive.empty())
 
 
 class DigitalSwitch(HumanInterface):
@@ -130,6 +129,5 @@ class DigitalRotaryEncoderWithSwitch(HumanInterface):
     )
     self.connect(self.a, self.package.a.adapt_to(dio_model))
     self.connect(self.b, self.package.b.adapt_to(dio_model))
-    self.connect(self.sw, self.package.sw1.adapt_to(dio_model))
+    self.connect(self.sw, self.package.sw.adapt_to(dio_model))
     self.connect(self.gnd, self.package.c.adapt_to(Ground()))
-    self.connect(self.gnd, self.package.sw2.adapt_to(Ground()))
