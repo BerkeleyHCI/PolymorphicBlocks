@@ -55,6 +55,7 @@ class DigitalLink(CircuitLink):
     self._has_high_signal_driver = self.Parameter(BoolExpr())
 
     # these are only used for defining bridges
+    # TODO can these be moved into the bridge only so they're not evaluated everywhere?
     self._only_low_single_source_driver = self.Parameter(BoolExpr())
     self._only_high_single_source_driver = self.Parameter(BoolExpr())
 
@@ -144,8 +145,15 @@ class DigitalLink(CircuitLink):
     self.require(self._has_low_signal_driver.implies(self.pullup_capable), "requires pullup capable connection")
     self.require(self._has_high_signal_driver.implies(self.pulldown_capable), "requires pulldown capable connection")
 
+    only_single_source_driver = ~self.source.is_connected() & (self.bidirs.length() == 0) & (self.single_sources.length() > 0)
     self.assign(self._only_high_single_source_driver,
-                (self.single_sources.length() > 0) & self.single_sources.all())
+                only_single_source_driver &
+                self.single_sources.all(lambda x: x.high_signal_driver) &
+                ~self.single_sources.all(lambda x: x.low_signal_driver))
+    self.assign(self._only_low_single_source_driver,
+                only_single_source_driver &
+                ~self.single_sources.all(lambda x: x.high_signal_driver) &
+                self.single_sources.all(lambda x: x.low_signal_driver))
 
 
 class DigitalBase(CircuitPort[DigitalLink]):
@@ -427,10 +435,10 @@ class DigitalSingleSourceBridge(CircuitPortBridge):
     self.outer_port = self.Port(DigitalSingleSource(
       voltage_out=RangeExpr(),
       output_thresholds=RangeExpr(),
-      # pulldown_capable=BoolExpr(),
-      # pullup_capable=BoolExpr(),
-      # low_signal_driver=BoolExpr()
-      # high_signal_driver=BoolExpr()
+      pulldown_capable=BoolExpr(),
+      pullup_capable=BoolExpr(),
+      low_signal_driver=BoolExpr(),
+      high_signal_driver=BoolExpr(),
     ))
 
     # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
@@ -438,19 +446,23 @@ class DigitalSingleSourceBridge(CircuitPortBridge):
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
     self.inner_link = self.Port(DigitalSink(
-      # voltage_limits=RangeExpr.ALL,
-      # current_draw=RangeExpr(),
-      # input_thresholds=RangeExpr.EMPTY_DIT
+      voltage_limits=RangeExpr.ALL,
+      current_draw=RangeExpr.ZERO,  # single source does not draw any current
+      input_thresholds=RangeExpr.EMPTY
     ))
 
   def contents(self) -> None:
     super().contents()
 
-    # self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
-    # self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO subtract internal current drawn
-    # self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
-    #
-    # self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
+    self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+    self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
+    self.assign(self.outer_port.pullup_capable, self.inner_link.link().pullup_capable)
+    self.assign(self.outer_port.pulldown_capable, self.inner_link.link().pulldown_capable)
+    self.assign(self.outer_port.low_signal_driver, self.inner_link.link()._only_low_single_source_driver)
+    self.assign(self.outer_port.high_signal_driver, self.inner_link.link()._only_high_single_source_driver)
+    self.require(self.outer_port.low_signal_driver | self.outer_port.high_signal_driver &
+                 ~(self.outer_port.low_signal_driver & self.outer_port.high_signal_driver),
+                 "must have either (exclusive or) high or low signal drivers internally")
 
 
 class DigitalSingleSource(DigitalBase):

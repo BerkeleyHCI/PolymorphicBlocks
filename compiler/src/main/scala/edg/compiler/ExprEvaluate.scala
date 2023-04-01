@@ -247,7 +247,7 @@ object ExprEvaluate {
         case _ => RangeEmpty  // TODO how should sum behave on empty ranges?
       }
 
-      case (Op.ANY_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
+      case (Op.ALL_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
       case (Op.ALL_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.forall(_ == true))
       case (Op.ANY_TRUE, ArrayValue.Empty(_)) => BooleanValue(false)
       case (Op.ANY_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.contains(true))
