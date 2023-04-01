@@ -6,6 +6,7 @@ from .Categories import *
 
 @abstract_block
 class Switch(KiCadImportableBlock, DiscreteComponent):
+  """Two-ported device that closes a circuit when pressed."""
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'Switch:SW_SPST'
     return {'1': self.a, '2': self.b}
@@ -21,7 +22,18 @@ class Switch(KiCadImportableBlock, DiscreteComponent):
     self.voltage = self.ArgParameter(voltage)
 
 
+@abstract_block
+class TactileSwitch(Switch):
+  """Abstract class (category) for a tactile switch."""
+
+
+@abstract_block
+class MechanicalKeyswitch(Switch):
+  """Abstract class (category) for a mechanical keyboard switch, including sockets."""
+
+
 class DigitalSwitch(HumanInterface):
+  """Wrapper around Switch that provides a digital port which is pulled low (to GND) when pressed."""
   def __init__(self) -> None:
     super().__init__()
 

@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class SmtSwitch(Switch, FootprintBlock):
+class SmtSwitch(TactileSwitch, FootprintBlock):
   def contents(self) -> None:
     super().contents()
 
@@ -18,7 +18,7 @@ class SmtSwitch(Switch, FootprintBlock):
     # PTS820 J25K SMTR LFS, 2.5mm actuator height (from board)
 
 
-class SmtSwitchRa(Switch, FootprintBlock):
+class SmtSwitchRa(TactileSwitch, FootprintBlock):
   def contents(self) -> None:
     super().contents()
 
@@ -32,7 +32,7 @@ class SmtSwitchRa(Switch, FootprintBlock):
     )
 
 
-class KailhSocket(Switch, FootprintBlock):
+class KailhSocket(MechanicalKeyswitch, FootprintBlock):
   """Kailh mechanical keyboard hotswap socket.
   Requires an external library, Keyswitch Kicad Library, can be installed from the
   KiCad Plugin and Content Manager, or from GitHub https://github.com/perigoso/keyswitch-kicad-library

@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class JlcSwitch(Switch, JlcPart, FootprintBlock):
+class JlcSwitch(TactileSwitch, JlcPart, FootprintBlock):
   def contents(self) -> None:
     super().contents()
 
