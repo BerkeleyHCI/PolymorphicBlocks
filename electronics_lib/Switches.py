@@ -9,8 +9,8 @@ class SmtSwitch(TactileSwitch, FootprintBlock):
       'SW', 'Button_Switch_SMD:SW_Push_SPST_NO_Alps_SKRK',  # 3.9mm x 2.9mm
       # 'Button_Switch_SMD:SW_SPST_CK_KXT3',  # 3.0mm x 2.0mm
       {
-        '1': self.b,
-        '2': self.a,
+        '1': self.a,
+        '2': self.b,
       },
       part='3.9x2.9mm Switch'
     )
@@ -25,8 +25,8 @@ class SmtSwitchRa(TactileSwitch, FootprintBlock):
     self.footprint(
       'SW', 'Button_Switch_SMD:SW_SPST_EVQP7C',  # 3.5mm x 2.9/3.55mm w/ boss
       {
-        '1': self.b,
-        '2': self.a,
+        '1': self.a,
+        '2': self.b,
       },
       part='EVQ-P7C01P'
     )
