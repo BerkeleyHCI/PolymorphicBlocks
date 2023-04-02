@@ -72,11 +72,7 @@ class DigitalSwitch(HumanInterface):
     self.package = self.Block(Switch(current=self.out.link().current_drawn,
                                      voltage=self.out.link().voltage))
 
-    self.connect(self.out, self.package.a.adapt_to(DigitalSingleSource(
-      voltage_out=self.gnd.link().voltage,
-      output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
-      pulldown_capable=False, low_signal_driver=True
-    )))
+    self.connect(self.out, self.package.a.adapt_to(DigitalSingleSource.low_from_supply(self.gnd)))
     self.connect(self.gnd, self.package.b.adapt_to(Ground()))
 
 
@@ -94,11 +90,7 @@ class DigitalRotaryEncoder(HumanInterface):
     self.package = self.Block(RotaryEncoder(current=self.a.link().current_drawn.hull(self.b.link().current_drawn),
                                             voltage=self.a.link().voltage.hull(self.b.link().voltage)))
 
-    dio_model = DigitalSingleSource(
-      voltage_out=self.gnd.link().voltage,
-      output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
-      pulldown_capable=False, low_signal_driver=True
-    )
+    dio_model = DigitalSingleSource.low_from_supply(self.gnd)
     self.connect(self.a, self.package.a.adapt_to(dio_model))
     self.connect(self.b, self.package.b.adapt_to(dio_model))
     self.connect(self.gnd, self.package.c.adapt_to(Ground()))
@@ -122,11 +114,7 @@ class DigitalRotaryEncoderWithSwitch(HumanInterface):
       current=self.a.link().current_drawn.hull(self.b.link().current_drawn).hull(self.sw.link().current_drawn),
       voltage=self.a.link().voltage.hull(self.b.link().voltage).hull(self.sw.link().voltage)))
 
-    dio_model = DigitalSingleSource(
-      voltage_out=self.gnd.link().voltage,
-      output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
-      pulldown_capable=False, low_signal_driver=True
-    )
+    dio_model = DigitalSingleSource.low_from_supply(self.gnd)
     self.connect(self.a, self.package.a.adapt_to(dio_model))
     self.connect(self.b, self.package.b.adapt_to(dio_model))
     self.connect(self.sw, self.package.sw.adapt_to(dio_model))
