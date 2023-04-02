@@ -23,10 +23,6 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
     self.generator(self.generate, nrows, ncols)
 
   def generate(self, rows: int, cols: int):
-    # col voltage is used as a proxy for voltage, since (properly) using the row voltage causes a circular dependency
-    cols_voltage = self.cols.hull(lambda port: port.link().voltage)
-    diode_model = Diode(current=(0, 0)*Amp, reverse_voltage=cols_voltage, voltage_drop=self.voltage_drop)
-
     row_ports = {}
     for row in range(rows):
       row_ports[row] = self.rows.append_elt(DigitalSingleSource.empty(), str(row))
@@ -41,7 +37,12 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
           voltage=row_port.link().voltage,
           current=row_port.link().current_drawn
         ))
-        d = self.d[f"{col},{row}"] = self.Block(diode_model)
+        d = self.d[f"{col},{row}"] = self.Block(Diode(
+          current=row_port.link().current_drawn,
+          # col voltage is used as a proxy, since (properly) using the row voltage causes a circular dependency
+          reverse_voltage=col_port.link().current_drawn,
+          voltage_drop=self.voltage_drop
+        ))
         lowest_output = col_port.link().voltage.lower() + d.actual_voltage_drop.lower()
         highest_output = col_port.link().output_thresholds.lower() + d.actual_voltage_drop.upper()
         self.connect(d.anode.adapt_to(DigitalSingleSource(
