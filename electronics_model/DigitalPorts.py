@@ -145,7 +145,8 @@ class DigitalLink(CircuitLink):
     self.require(self._has_low_signal_driver.implies(self.pullup_capable), "requires pullup capable connection")
     self.require(self._has_high_signal_driver.implies(self.pulldown_capable), "requires pulldown capable connection")
 
-    only_single_source_driver = ~self.source.is_connected() & (self.bidirs.length() == 0) & (self.single_sources.length() > 0)
+    only_single_source_driver = ~self.source.is_connected() & (self.bidirs.length() == 1) & \
+                                (self.single_sources.length() > 0)
     self.assign(self._only_high_single_source_driver,
                 only_single_source_driver &
                 self.single_sources.all(lambda x: x.high_signal_driver) &
@@ -217,7 +218,7 @@ class DigitalSink(DigitalBase):
 
   def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO), *,
-               input_thresholds: RangeLike = Default(RangeExpr.EMPTY_DIT)) -> None:
+               input_thresholds: RangeLike = Default(RangeExpr.EMPTY)) -> None:
     super().__init__()
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
@@ -238,7 +239,7 @@ class DigitalSourceBridge(CircuitPortBridge):
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
     self.inner_link = self.Port(DigitalSink(voltage_limits=RangeExpr.ALL,
                                             current_draw=RangeExpr(),
-                                            input_thresholds=RangeExpr.EMPTY_DIT))
+                                            input_thresholds=RangeExpr.EMPTY))
 
   def contents(self) -> None:
     super().contents()
@@ -289,7 +290,7 @@ class DigitalSource(DigitalBase):
     return DigitalSource(model.voltage_out, model.current_limits, output_thresholds=model.output_thresholds,
                          pullup_capable=model.pullup_capable, pulldown_capable=model.pulldown_capable)
 
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL), *,
                output_thresholds: RangeLike = Default(RangeExpr.ALL),
                pullup_capable: BoolLike = Default(False),
@@ -405,9 +406,9 @@ class DigitalBidir(DigitalBase, NotConnectablePort):
 
   def __init__(self, *, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO),
-               voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+               voltage_out: RangeLike = Default(RangeExpr.ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL),
-               input_thresholds: RangeLike = Default(RangeExpr.EMPTY_DIT),
+               input_thresholds: RangeLike = Default(RangeExpr.EMPTY),
                output_thresholds: RangeLike = Default(RangeExpr.ALL),
                pullup_capable: BoolLike = Default(False),
                pulldown_capable: BoolLike = Default(False)) -> None:
@@ -435,8 +436,8 @@ class DigitalSingleSourceBridge(CircuitPortBridge):
     self.outer_port = self.Port(DigitalSingleSource(
       voltage_out=RangeExpr(),
       output_thresholds=RangeExpr(),
-      pulldown_capable=BoolExpr(),
-      pullup_capable=BoolExpr(),
+      pulldown_capable=False,
+      pullup_capable=False,
       low_signal_driver=BoolExpr(),
       high_signal_driver=BoolExpr(),
     ))
@@ -445,10 +446,13 @@ class DigitalSingleSourceBridge(CircuitPortBridge):
     # The outer port's current_limits is untouched and should be defined in tte port def.
     # TODO: it's a slightly optimization to handle them here. Should it be done?
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.inner_link = self.Port(DigitalSink(
+    self.inner_link = self.Port(DigitalBidir(
+      voltage_out=RangeExpr.EMPTY,  # don't contribute to the link voltage
       voltage_limits=RangeExpr.ALL,
       current_draw=RangeExpr.ZERO,  # single source does not draw any current
-      input_thresholds=RangeExpr.EMPTY
+      input_thresholds=RangeExpr.EMPTY,
+      output_thresholds=RangeExpr.ALL,  # don't contribute to the link thresholds
+      pulldown_capable=True, pullup_capable=True  # ideal port, checked at upper link
     ))
 
   def contents(self) -> None:
@@ -456,8 +460,6 @@ class DigitalSingleSourceBridge(CircuitPortBridge):
 
     self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
     self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
-    self.assign(self.outer_port.pullup_capable, self.inner_link.link().pullup_capable)
-    self.assign(self.outer_port.pulldown_capable, self.inner_link.link().pulldown_capable)
     self.assign(self.outer_port.low_signal_driver, self.inner_link.link()._only_low_single_source_driver)
     self.assign(self.outer_port.high_signal_driver, self.inner_link.link()._only_high_single_source_driver)
     self.require(self.outer_port.low_signal_driver | self.outer_port.high_signal_driver &
@@ -486,7 +488,7 @@ class DigitalSingleSource(DigitalBase):
       high_signal_driver=not is_pullup
     )
 
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
                output_thresholds: RangeLike = Default(RangeExpr.ALL), *,
                pullup_capable: BoolLike = Default(False),
                pulldown_capable: BoolLike = Default(False),

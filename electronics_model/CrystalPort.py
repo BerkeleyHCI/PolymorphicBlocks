@@ -22,7 +22,7 @@ class CrystalLink(Link):
 class CrystalPort(Bundle[CrystalLink]):
   link_type = CrystalLink
 
-  def __init__(self, frequency: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
+  def __init__(self, frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
     self.a = self.Port(Passive())  # TODO can this have voltages?
     self.b = self.Port(Passive())
@@ -34,7 +34,7 @@ class CrystalDriver(Bundle[CrystalLink]):
   link_type = CrystalLink
 
   def __init__(self, frequency_limits: RangeLike = Default(RangeExpr.ALL),
-               voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
+               voltage_out: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
     self.voltage_out = self.Parameter(RangeExpr(voltage_out))
     self.xtal_in = self.Port(Passive())

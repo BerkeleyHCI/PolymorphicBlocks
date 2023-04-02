@@ -10,7 +10,7 @@ class DummyPassive(DummyDevice):
 
 class DummyVoltageSource(DummyDevice):
   @init_in_parent
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
 
@@ -109,7 +109,7 @@ class ForcedDigitalSinkCurrentDraw(DummyDevice, NetBlock):
     self.pwr_in = self.Port(DigitalSink(
       current_draw=forced_current_draw,
       voltage_limits=RangeExpr.ALL,
-      input_thresholds=RangeExpr.EMPTY_DIT
+      input_thresholds=RangeExpr.EMPTY
     ), [Input])
 
     self.pwr_out = self.Port(DigitalSource(

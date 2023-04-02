@@ -10,7 +10,7 @@ class Inductor(PassiveComponent):
   @init_in_parent
   def __init__(self, inductance: RangeLike,
                current: RangeLike = Default(RangeExpr.ZERO),
-               frequency: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
+               frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())
