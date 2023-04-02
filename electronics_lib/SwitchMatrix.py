@@ -40,7 +40,7 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
         d = self.d[f"{col},{row}"] = self.Block(Diode(
           current=row_port.link().current_drawn,
           # col voltage is used as a proxy, since (properly) using the row voltage causes a circular dependency
-          reverse_voltage=col_port.link().current_drawn,
+          reverse_voltage=col_port.link().voltage,
           voltage_drop=self.voltage_drop
         ))
         lowest_output = col_port.link().voltage.lower() + d.actual_voltage_drop.lower()
