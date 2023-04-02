@@ -25,7 +25,6 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
   def generate(self, rows: int, cols: int):
     # col voltage is used as a proxy for voltage, since (properly) using the row voltage causes a circular dependency
     cols_voltage = self.cols.hull(lambda port: port.link().voltage)
-    switch_model = Switch(cols_voltage)
     diode_model = Diode(current=(0, 0)*Amp, reverse_voltage=cols_voltage, voltage_drop=self.voltage_drop)
 
     row_ports = {}
@@ -38,7 +37,10 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
       col_port = cast(DigitalSink, self.cols.append_elt(DigitalSink.empty(), str(col)))
       col_port_model = DigitalSink()  # ideal, negligible current draw (assumed) and thresholds checked at other side
       for (row, row_port) in row_ports.items():
-        sw = self.sw[f"{col},{row}"] = self.Block(switch_model)
+        sw = self.sw[f"{col},{row}"] = self.Block(Switch(
+          voltage=row_port.link().voltage,
+          current=row_port.link().current_drawn
+        ))
         d = self.d[f"{col},{row}"] = self.Block(diode_model)
         lowest_output = col_port.link().voltage.lower() + d.actual_voltage_drop.lower()
         highest_output = col_port.link().output_thresholds.lower() + d.actual_voltage_drop.upper()
