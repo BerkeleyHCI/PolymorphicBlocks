@@ -23,9 +23,9 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
     self.generator(self.generate, nrows, ncols)
 
   def generate(self, rows: int, cols: int):
-    switch_model = Switch()
     # col voltage is used as a proxy for voltage, since (properly) using the row voltage causes a circular dependency
     cols_voltage = self.cols.hull(lambda port: port.link().voltage)
+    switch_model = Switch(cols_voltage)
     diode_model = Diode(current=(0, 0)*Amp, reverse_voltage=cols_voltage, voltage_drop=self.voltage_drop)
 
     row_ports = {}
