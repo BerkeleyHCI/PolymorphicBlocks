@@ -137,7 +137,7 @@ class AnalogSource(AnalogBase):
       impedance=impedance
     )
 
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL),
                impedance: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()

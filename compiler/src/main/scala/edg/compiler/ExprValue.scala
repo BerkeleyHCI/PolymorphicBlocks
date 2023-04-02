@@ -1,10 +1,9 @@
 package edg.compiler
 
+import edg.ExprBuilder.Literal
 import edgir.lit.lit
 
 import scala.collection.mutable
-import edg.ExprBuilder.Literal
-import edg.compiler.CompilerError.EmptyRange
 
 
 // Base trait for expression values in edgir, should be consistent with init.proto and lit.proto
@@ -21,7 +20,13 @@ object ExprValue {
     case lit.ValueLit.Type.Text(literal) => TextValue(literal.`val`)
     case lit.ValueLit.Type.Range(literal) => (literal.getMinimum.`type`, literal.getMaximum.`type`) match {
       case (lit.ValueLit.Type.Floating(literalMin), lit.ValueLit.Type.Floating(literalMax)) =>
-        RangeValue(literalMin.`val`.toFloat, literalMax.`val`.toFloat)
+        val minFloat = literalMin.`val`.toFloat
+        val maxFloat = literalMax.`val`.toFloat
+        if (minFloat.isNaN && maxFloat.isNaN) {  // special form for empty range
+          RangeEmpty
+        } else {
+          RangeValue(minFloat, maxFloat)
+        }
       case _ => throw new IllegalArgumentException(s"Malformed range literal $literal")
     }
     case lit.ValueLit.Type.Array(arrayLiteral) =>

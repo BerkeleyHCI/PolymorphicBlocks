@@ -45,7 +45,8 @@ from .AbstractFets import SwitchFet, TableSwitchFet
 
 from .AbstractSolidStateRelay import SolidStateRelay, AnalogIsolatedSwitch
 from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer, AnalogMuxer
-from .AbstractSwitch import Switch, DigitalSwitch
+from .AbstractSwitch import Switch, TactileSwitch, MechanicalKeyswitch, DigitalSwitch
+from .AbstractSwitch import RotaryEncoder, RotaryEncoderWithSwitch, DigitalRotaryEncoder, DigitalRotaryEncoderWithSwitch
 from .AbstractOpamp import Opamp
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
 from .AbstractSpiMemory import SpiMemory

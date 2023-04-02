@@ -47,7 +47,7 @@ class I2cMaster(Bundle[I2cLink]):
     self.scl = self.Port(DigitalSource.from_bidir(model))
     self.sda = self.Port(model)
 
-    self.frequency = self.Parameter(RangeExpr(Default(RangeExpr.EMPTY_ZERO)))
+    self.frequency = self.Parameter(RangeExpr(Default(RangeExpr.ZERO)))
     self.has_pullup = self.Parameter(BoolExpr(has_pullup))
 
 

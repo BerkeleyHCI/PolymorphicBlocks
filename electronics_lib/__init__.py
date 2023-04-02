@@ -18,6 +18,7 @@ from .CustomDiode import CustomDiode
 from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
+from .RotaryEncoder_Ec11 import Ec11eWithSwitch, Ec11j15WithSwitch
 from .JlcCrystal import JlcCrystal
 from .JlcOscillator import JlcOscillator
 from .JlcSwitches import JlcSwitch
@@ -106,3 +107,6 @@ from .Bldc_Drv8313 import Drv8313
 
 from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc
 from .Mag_Qmc5883l import Mag_Qmc5883l
+
+from .LedMatrix import CharlieplexedLedMatrix
+from .SwitchMatrix import SwitchMatrix

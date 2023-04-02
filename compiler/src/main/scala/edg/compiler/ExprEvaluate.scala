@@ -156,7 +156,7 @@ object ExprEvaluate {
         case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
       }
       case Op.WITHIN => (lhs, rhs) match {  // lhs contained within rhs
-        case (RangeEmpty, _: RangeValue) => BooleanValue(true)  // empty contained within anything
+        case (RangeEmpty, _: RangeType) => BooleanValue(true)  // empty contained within anything, even itself
         case (_: RangeValue, RangeEmpty) => BooleanValue(false)  // empty contains nothing
         case (FloatPromotable(_), RangeEmpty) => BooleanValue(false)  // empty contains nothing, not even single points
         case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
@@ -247,7 +247,7 @@ object ExprEvaluate {
         case _ => RangeEmpty  // TODO how should sum behave on empty ranges?
       }
 
-      case (Op.ANY_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
+      case (Op.ALL_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
       case (Op.ALL_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.forall(_ == true))
       case (Op.ANY_TRUE, ArrayValue.Empty(_)) => BooleanValue(false)
       case (Op.ANY_TRUE, ArrayValue.ExtractBoolean(vals)) => BooleanValue(vals.contains(true))

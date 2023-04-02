@@ -271,7 +271,7 @@ class ConstProp() {
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap
 
   def getErrors: Seq[CompilerError] = {
-    val overassignErrors = discardOverassigns.map { case (target, record) =>
+    discardOverassigns.map { case (target, record) =>
       val propagatedAssign = paramSource.get(target).map { case (root, constrName, value) =>
         CompilerError.OverAssignCause.Assign(target, root, constrName, value)
       }.toSeq
@@ -280,15 +280,5 @@ class ConstProp() {
       }
       CompilerError.OverAssign(target, propagatedAssign ++ discardedAssigns)
     }.toSeq
-
-    // Also get all empty range assignments
-    val emptyRangeErrors = params.toMap.collect {
-      case (targetPath, RangeEmpty) =>
-        paramSource.get(targetPath).map { case (root, constrName, value) =>
-          CompilerError.EmptyRange(targetPath, root, constrName, value)
-        }
-    }.flatten.toSeq
-
-    overassignErrors ++ emptyRangeErrors
   }
 }
