@@ -165,7 +165,7 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
 class VoltageSource(VoltageBase):
   bridge_type = VoltageSourceBridge
 
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
@@ -173,14 +173,3 @@ class VoltageSource(VoltageBase):
 
 
 Power = PortTag(VoltageSink)  # General positive voltage port, should only be mutually exclusive with the below
-
-
-# Note: in the current model, no explicit "power tag" is equivalent to digital / noisy supply
-# TODO bring these back, on an optional basis
-# PowerAnalog = PortTag(VoltageSink)  # Analog power supply, ideally kept isolated from digital supply
-# PowerRf = PortTag(VoltageSink)  # RF power supply
-# Power1v8 = PortTag(VoltageSink)  # 1.8v tolerant power input port
-# Power2v5 = PortTag(VoltageSink)  # 2.5v tolerant power input port
-# Power3v3 = PortTag(VoltageSink)  # 3.3v tolerant power input port
-# Power5v = PortTag(VoltageSink)  # 5.0v tolerant power input port
-# Power12v = PortTag(VoltageSink)  # 12v tolerant power input port

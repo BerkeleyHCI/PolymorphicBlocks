@@ -17,6 +17,7 @@ class BaseBoardTop(DesignTop):
         (Capacitor, GenericMlcc),
         (Inductor, JlcInductor),  # TODO: replace with generic inductor
         (Switch, SmtSwitch),
+        (RotaryEncoderWithSwitch, Ec11j15WithSwitch),
         (Diode, JlcDiode),  # TODO: replace with non-distributor parts list
         (ZenerDiode, JlcZenerDiode),  # TODO: replace with non-distributor parts list
         (Fet, JlcFet),  # TODO: replace with non-distributor parts list

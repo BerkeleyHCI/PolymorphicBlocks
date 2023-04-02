@@ -11,7 +11,7 @@ from .StandardPinningFootprint import StandardPinningFootprint
 class Fuse(InternalSubcircuit, Block):
   @init_in_parent
   def __init__(self, trip_current: RangeLike, *, hold_current: RangeLike = Default(RangeExpr.ALL),
-               voltage: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
+               voltage: RangeLike = Default(RangeExpr.ZERO)) -> None:
     """Model-wise, equivalent to a VoltageSource|Sink passthrough, with a trip rating."""
     super().__init__()
 
