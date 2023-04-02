@@ -442,10 +442,6 @@ class DigitalSingleSourceBridge(CircuitPortBridge):
       high_signal_driver=BoolExpr(),
     ))
 
-    # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
-    # The outer port's current_limits is untouched and should be defined in tte port def.
-    # TODO: it's a slightly optimization to handle them here. Should it be done?
-    # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
     self.inner_link = self.Port(DigitalBidir(
       voltage_out=RangeExpr.EMPTY,  # don't contribute to the link voltage
       voltage_limits=RangeExpr.ALL,

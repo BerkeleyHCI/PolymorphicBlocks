@@ -36,7 +36,7 @@ class KailhSocket(MechanicalKeyswitch, FootprintBlock):
   """Kailh mechanical keyboard hotswap socket.
   Requires an external library, Keyswitch Kicad Library, can be installed from the
   KiCad Plugin and Content Manager, or from GitHub https://github.com/perigoso/keyswitch-kicad-library
-  Even after the content manager install, it must also be manually added to the footprint table,
+  Even after the content manager install, it must also be manually added to the footprint table:
   Name: Switch_Keyboard_Hotswap_Kailh
   Location: ${KICAD6_3RD_PARTY}/footprints/com_github_perigoso_keyswitch-kicad-library/Switch_Keyboard_Hotswap_Kailh.pretty
   """
