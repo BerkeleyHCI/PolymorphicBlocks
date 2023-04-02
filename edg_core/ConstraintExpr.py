@@ -323,8 +323,6 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
   ALL: Range = Range.all()
   INF: Range = Range(float('inf'), float('inf'))
   ZERO: Range = Range(0.0, 0.0)
-  EMPTY_ZERO: Range = Range(0.0, 0.0)  # PLACEHOLDER, for a proper "empty" range type in future
-  EMPTY_DIT: Range = Range(1.5, 1.5)  # PLACEHOLDER, for input thresholds as a typical safe band
   EMPTY = Range(float('NaN'), float('NaN'))  # special marker to define an empty range, which is subset-eq of any range
 
   @classmethod

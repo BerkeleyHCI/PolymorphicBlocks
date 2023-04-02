@@ -156,7 +156,7 @@ object ExprEvaluate {
         case _ => throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
       }
       case Op.WITHIN => (lhs, rhs) match {  // lhs contained within rhs
-        case (RangeEmpty, _: RangeValue) => BooleanValue(true)  // empty contained within anything
+        case (RangeEmpty, _: RangeType) => BooleanValue(true)  // empty contained within anything, even itself
         case (_: RangeValue, RangeEmpty) => BooleanValue(false)  // empty contains nothing
         case (FloatPromotable(_), RangeEmpty) => BooleanValue(false)  // empty contains nothing, not even single points
         case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>

@@ -13,18 +13,19 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
   Diode anodes are attached to the rows, while cathodes go through each switch to the cols.
   """
   @init_in_parent
-  def __init__(self, nrows: IntLike, ncols: IntLike):
+  def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7)*Volt):
     super().__init__()
 
     self.rows = self.Port(Vector(DigitalSink.empty()))
     self.cols = self.Port(Vector(DigitalSingleSource.empty()))
+    self.voltage_drop = self.ArgParameter(voltage_drop)
 
     self.generator(self.generate, nrows, ncols)
 
   def generate(self, rows: int, cols: int):
     switch_model = Switch()
     max_voltage = self.rows.hull(lambda port: port.link().voltage)  # TODO assumes 0 is ground
-    diode_model = Diode(current=(0, 0)*Amp, reverse_voltage=max_voltage)
+    diode_model = Diode(current=(0, 0)*Amp, reverse_voltage=max_voltage, voltage_drop=self.voltage_drop)
 
     col_ports = {}
     for col in range(cols):
@@ -40,10 +41,11 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
         d = self.d[f"{col},{row}"] = self.Block(diode_model)
         self.connect(d.anode.adapt_to(switch_b_model), row_port)
         self.connect(d.cathode, sw.a)
-        output_voltages = (row_port.link().output_thresholds.upper() - d.actual_voltage_drop.upper(),
-                           row_port.link().voltage.upper() - d.actual_voltage_drop.lower())
+        lowest_output = row_port.link().output_thresholds.upper() - d.actual_voltage_drop.upper()
+        highest_output = row_port.link().voltage.upper() - d.actual_voltage_drop.lower()
         self.connect(sw.b.adapt_to(DigitalSingleSource(
-          voltage_out=output_voltages, output_thresholds=output_voltages,
+          voltage_out=(lowest_output, highest_output),
+          output_thresholds=(-float('inf'), lowest_output),
           pulldown_capable=False, high_signal_driver=True
         )), col_port)
 
