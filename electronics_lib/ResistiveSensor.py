@@ -12,7 +12,7 @@ class ConnectorResistiveSensor(Analog, Block):
     self.resistance_range = self.ArgParameter(resistance_range)
     self.fixed_resistance = self.ArgParameter(fixed_resistance)
 
-    self.input = self.Port(VoltageSink.empty(), [Input])
+    self.input = self.Port(VoltageSink.empty(), [Power])
     self.output = self.Port(AnalogSource.empty(), [Output])
     self.gnd = self.Port(Ground.empty(), [Common])
 
