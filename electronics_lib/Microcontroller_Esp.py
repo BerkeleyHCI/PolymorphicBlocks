@@ -1,5 +1,4 @@
 from electronics_abstract_parts import *
-from .PassiveConnector import PassiveConnector
 
 # contains common blocks for ESP microcontrollers
 

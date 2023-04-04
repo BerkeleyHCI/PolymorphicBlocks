@@ -2,7 +2,6 @@ import unittest
 from typing import Optional, Dict
 
 from edg import *
-from .test_robotdriver import LipoConnector
 from .test_bldc import PowerOutConnector
 
 

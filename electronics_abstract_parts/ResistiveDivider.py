@@ -89,7 +89,6 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
   def generate_divider(self, ratio: Range, impedance: Range, series: int, tolerance: float) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
     """
-
     # TODO: not fully optimal in that the ratio doesn't need to be recalculated if we're shifting both decades
     # (to achieve some impedance spec), but it uses shared infrastructure that doesn't assume this ratio optimization
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DividerValues)
