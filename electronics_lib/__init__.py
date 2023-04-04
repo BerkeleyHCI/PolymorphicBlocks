@@ -86,7 +86,7 @@ from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .AnalogSwitch_Nlas4157 import Nlas4157
 from .CanTransceiver_Iso1050 import Iso1050dub
 from .CanTransceiver_Sn65hvd230 import Sn65hvd230
-from .BatteryProtector_S8200A import BatteryProtector_S8200A
+from .BatteryProtector_S8261A import BatteryProtector_S8261A
 from .Distance_Vl53l0x import Vl53l0x, Vl53l0xApplication, Vl53l0xConnector, Vl53l0xArray
 from .Isolator_Cbmud1200 import Cbmud1200l
 from .GateDriver_Ir2301 import Ir2301
