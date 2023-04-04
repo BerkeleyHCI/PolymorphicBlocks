@@ -1,7 +1,4 @@
-from typing import *
-
 from electronics_abstract_parts import *
-from .PassiveConnector import PassiveConnector
 from .JlcPart import JlcPart
 
 

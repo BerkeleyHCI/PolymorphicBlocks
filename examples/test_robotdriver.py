@@ -3,21 +3,6 @@ import unittest
 from edg import *
 
 
-class LipoConnector(Connector, Battery):
-  @init_in_parent
-  def __init__(self, voltage: RangeLike = Default((2.5, 4.2)*Volt), *args,
-               actual_voltage: RangeLike = Default((2.5, 4.2)*Volt), **kwargs):
-    super().__init__(voltage, *args, **kwargs)
-    self.conn = self.Block(PassiveConnector())
-
-    self.connect(self.gnd, self.conn.pins.request('1').adapt_to(GroundSource()))
-    self.connect(self.pwr, self.conn.pins.request('2').adapt_to(VoltageSource(
-      voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
-      current_limits=(0, 5.5)*Amp,  # arbitrary assuming low capacity, 10 C discharge
-    )))
-    self.assign(self.actual_capacity, (500, 600)*mAmp)  # arbitrary
-
-
 class MotorConnector(Connector, Block):
   @init_in_parent
   def __init__(self, current_draw: RangeLike):

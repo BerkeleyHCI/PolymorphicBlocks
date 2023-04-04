@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class BatteryProtector_S8200A_Device(InternalSubcircuit, FootprintBlock):
+class BatteryProtector_S8261A_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -28,16 +29,18 @@ class BatteryProtector_S8200A_Device(InternalSubcircuit, FootprintBlock):
         '5': self.vdd,
         '6': self.vss,
       },
-      mfr='ABLIC', part='S-8200ABE-M6T1U',
+      mfr='ABLIC', part='S-8261ABJMD-G3JT2S',
       datasheet='https://www.mouser.com/datasheet/2/360/S8200A_E-1365901.pdf'
     )
+    self.assign(self.lcsc_part, 'C28081')
+    self.assign(self.actual_basic_part, False)
 
-class BatteryProtector_S8200A(PowerConditioner, Block):
+class BatteryProtector_S8261A(PowerConditioner, Block):
   @init_in_parent
   def __init__(self) -> None:
     super().__init__()
 
-    self.ic = self.Block(BatteryProtector_S8200A_Device())
+    self.ic = self.Block(BatteryProtector_S8261A_Device())
 
     self.pwr_out = self.Port(VoltageSource.empty())
     self.gnd_out = self.Port(GroundSource.empty())
@@ -65,7 +68,7 @@ class BatteryProtector_S8200A(PowerConditioner, Block):
     super().contents()
 
     self.vdd_res = self.Block(
-      SeriesPowerResistor(330 * Ohm(tol=0.10))  # while 330 is preferred, the actual acceptable range is 150-1k
+      SeriesPowerResistor(470 * Ohm(tol=0.10))  # while 470 is preferred, the actual acceptable range is 300-1k
     ).connected(self.pwr_in, self.ic.vdd)
 
     self.connect(self.pwr_in, self.pwr_out)
