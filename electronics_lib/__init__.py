@@ -110,3 +110,4 @@ from .Mag_Qmc5883l import Mag_Qmc5883l
 
 from .LedMatrix import CharlieplexedLedMatrix
 from .SwitchMatrix import SwitchMatrix
+from .ResistiveSensor import ConnectorResistiveSensor
