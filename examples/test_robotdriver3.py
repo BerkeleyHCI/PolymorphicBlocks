@@ -2,7 +2,6 @@ import unittest
 
 from edg import *
 
-from .test_robotdriver import LipoConnector
 from .test_robotdriver import PwmConnector
 
 
