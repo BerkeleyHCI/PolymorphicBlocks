@@ -15,9 +15,9 @@ class ConnectorResistiveSensor(Analog, Block):
 
     self.input = self.Port(VoltageSink.empty(), [Input])
     self.output = self.Port(AnalogSource.empty(), [Output])
-    self.gnd = self.Port(Ground.empty())
+    self.gnd = self.Port(Ground.empty(), [Common])
 
-    # TODO deduplicate with ResistiveDivider class?
+    # TODO deduplicate with ResistiveDivider class
     self.actual_ratio = self.Parameter(RangeExpr())
     self.actual_impedance = self.Parameter(RangeExpr())
     self.actual_series_impedance = self.Parameter(RangeExpr())
