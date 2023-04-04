@@ -1,5 +1,4 @@
 from electronics_abstract_parts import *
-from .PassiveConnector import PassiveConnector
 
 
 class ConnectorResistiveSensor(Analog, Block):
