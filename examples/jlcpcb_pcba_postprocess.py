@@ -34,7 +34,10 @@ PART_ROTATIONS = {
   'C6568': -90,  # CP2102 USB UART
   'C190271': 180,  # SOT-23-6 93LC56 EEPROM
   'C73478': 180,  # SOT-23-5 LP5907 1.2v reg
+  'C80670': 180,  # SOT-23-5 LP5907 3.3v reg
   'C976032': -90,  # LGA-16 QMC5883L
+
+  'C650309': -90,  # AD5941
 }
 
 _FOOTPRINT_ROTATIONS = {
@@ -44,6 +47,8 @@ _FOOTPRINT_ROTATIONS = {
   'Package_TO_SOT_SMD:SOT-223-3_TabPin2': 180,
   'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': -90,
   'Package_SO:SOIC-8_5.23x5.23mm_P1.27mm': -90,
+
+  'Connector_Coaxial:BNC_Amphenol_B6252HB-NPP3G-50_Horizontal': 180,
 }
 
 # footprint position export doesn't include the footprint library name
@@ -54,6 +59,8 @@ PACKAGE_ROTATIONS = {footprint.split(':')[-1]: rot for footprint, rot in _FOOTPR
 _FOOTPRINT_OFFSETS = {
   'Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11': (0, -1.25),
   'RF_Module:ESP32-WROOM-32': (0, 0.8),
+
+  'Connector_Coaxial:BNC_Amphenol_B6252HB-NPP3G-50_Horizontal': (0, -2.5),
 }
 PACKAGE_OFFSETS = {footprint.split(':')[-1]: offset for footprint, offset in _FOOTPRINT_OFFSETS.items()}
 

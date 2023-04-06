@@ -230,9 +230,10 @@ class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
 
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
       (SwdTargetPort, ['swd'] if swd_connected else []),
+      (AnalogSource, dac_requests), (AnalogSink, adc_requests),
       (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
       (UartPort, uart_requests),
-      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
+      (DigitalBidir, gpio_requests),
     ], assignments)
     self.generator_set_allocation(allocated)
 
@@ -340,9 +341,10 @@ class Mdbt50q_1mv2_Device(Nrf52840Base_Device, JlcPart, FootprintBlock):
 
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
       (SwdTargetPort, ['swd'] if swd_connected else []),
+      (AnalogSource, dac_requests), (AnalogSink, adc_requests),
       (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
       (UartPort, uart_requests),
-      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
+      (DigitalBidir, gpio_requests),
     ], assignments)
     self.generator_set_allocation(allocated)
 

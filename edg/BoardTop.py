@@ -38,6 +38,8 @@ class BaseBoardTop(DesignTop):
         (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetHeader),
 
         (SpiMemory, W25q),
+
+        (Speaker, ConnectorSpeaker),
       ], class_values=[
         (SmdStandardPackage, ['smd_min_package'], '0603'),
       ]

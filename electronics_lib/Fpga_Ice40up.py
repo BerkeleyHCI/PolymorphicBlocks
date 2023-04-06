@@ -180,9 +180,10 @@ class Ice40up_Device(PinMappable, BaseIoController, InternalSubcircuit, Generato
     system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
 
     allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+      (AnalogSource, dac_requests), (AnalogSink, adc_requests),
       (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
       (UartPort, uart_requests), (CanControllerPort, can_requests),
-      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
+      (DigitalBidir, gpio_requests),
     ], assignments)
     self.generator_set_allocation(allocated)
 

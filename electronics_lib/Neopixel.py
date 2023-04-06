@@ -2,6 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
+@abstract_block_default(lambda: Ws2812b)
 class Neopixel(Light, Block):
     """Abstract base class for Neopixel-type LEDs including the Vdd/Gnd/Din/Dout interface."""
     def __init__(self) -> None:
