@@ -20,7 +20,7 @@ class GenerateBom(BaseBackend):      # creates and populates .csv file
         bom_list = BomTransform(design).run()
 
         bom_string = io.StringIO()
-        csv_data = ['Id', 'Designator', 'Package', 'Quantity',
+        csv_data = ['Id', 'Designator', 'Footprint', 'Quantity',
                     'Designation', 'Supplier and Ref', 'JLCPCB Part #']  # populates headers
         writer = csv.writer(bom_string, lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(csv_data)

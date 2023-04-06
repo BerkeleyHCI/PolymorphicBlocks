@@ -209,9 +209,10 @@ class Nucleo_F303k8(PinMappable, Microcontroller, BaseIoController, GeneratorBlo
 
     allocated = Stm32f303Base_Device.mappable_ios(self.gnd, self.pwr_3v3, self.pwr_3v3)\
       .remap_pins(self.RESOURCE_PIN_REMAP).allocate([
+        (AnalogSource, dac_requests), (AnalogSink, adc_requests),
         (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
         (UartPort, uart_requests), (CanControllerPort, can_requests),
-        (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
+        (DigitalBidir, gpio_requests),
     ], assignments)
     self.generator_set_allocation(allocated)
 

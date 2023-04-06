@@ -192,9 +192,10 @@ class Rp2040_Device(PinMappable, BaseIoController, InternalSubcircuit, Generator
                usb_requests: List[str], can_requests: List[str], swd_connected: bool) -> None:
     allocated = self.pinmaps.allocate([
       (SwdTargetPort, ['swd'] if swd_connected else []),
+      (AnalogSource, dac_requests), (AnalogSink, adc_requests),
       (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
       (UartPort, uart_requests), (CanControllerPort, can_requests),
-      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
+      (DigitalBidir, gpio_requests),
     ], assignments)
     self.generator_set_allocation(allocated)
 
