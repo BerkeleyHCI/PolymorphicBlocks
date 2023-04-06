@@ -4,7 +4,7 @@ from edg import *
 from .test_high_switch import CalSolPowerConnector, CalSolCanBlock, CanFuse
 
 
-class TestDatalogger(BoardTop):
+class Datalogger(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -199,4 +199,4 @@ class TestDatalogger(BoardTop):
 
 class DataloggerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(TestDatalogger)
+    compile_board_inplace(Datalogger)

@@ -247,7 +247,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     self.connect(self.sw_merge.pwr_out, self.power_path.switch)
 
 
-class FcmlTest(JlcBoardTop):
+class Fcml(JlcBoardTop):
   """FPGA + FCML (flying cpacitor multilevel converter) test circuit,
   plus a bunch of other hardware blocks to test like RP2040"""
   def contents(self) -> None:
@@ -436,4 +436,4 @@ class FcmlTest(JlcBoardTop):
 
 class FcmlTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(FcmlTest)
+    compile_board_inplace(Fcml)

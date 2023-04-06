@@ -21,7 +21,7 @@ class UartConnector(Connector, Block):
     )), [Power])
 
 
-class UsbUartTest(JlcBoardTop):
+class UsbUart(JlcBoardTop):
   """USB UART converter board"""
   def contents(self) -> None:
     super().contents()
@@ -81,4 +81,4 @@ class UsbUartTest(JlcBoardTop):
 
 class UsbUartTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(UsbUartTest)
+    compile_board_inplace(UsbUart)

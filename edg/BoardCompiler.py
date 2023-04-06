@@ -49,7 +49,7 @@ def compile_board_inplace(design: Type[Block]) -> CompiledDesign:
   designfile = inspect.getfile(design)
   compiled = compile_board(
     design,
-    os.path.join(os.path.dirname(designfile), os.path.splitext(designfile)[0]),
+    os.path.join(os.path.dirname(designfile), design.__name__),
     design.__name__)
 
   return compiled

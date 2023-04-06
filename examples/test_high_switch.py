@@ -238,7 +238,7 @@ class LightsDriver(Block):
         self.connect(driver.output, self.conn.out[i])
 
 
-class TestHighSwitch(BoardTop):
+class HighSwitch(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -375,4 +375,4 @@ class TestHighSwitch(BoardTop):
 
 class HighSwitchTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(TestHighSwitch)
+    compile_board_inplace(HighSwitch)

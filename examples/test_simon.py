@@ -31,7 +31,7 @@ class DomeButtonConnector(Connector, FootprintBlock):
     )
 
 
-class TestSimon(BoardTop):
+class Simon(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -130,4 +130,4 @@ class TestSimon(BoardTop):
 
 class SimonTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(TestSimon)
+    compile_board_inplace(Simon)

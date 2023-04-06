@@ -13,7 +13,7 @@ import unittest
 from edg import *
 
 
-class KeyboardTest(JlcBoardTop):
+class Keyboard(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -28,4 +28,4 @@ class KeyboardTest(JlcBoardTop):
 
 class KeyboardTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(KeyboardTest)
+    compile_board_inplace(Keyboard)

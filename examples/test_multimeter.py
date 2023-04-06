@@ -224,7 +224,7 @@ class FetPowerGate(PowerSwitch, KiCadSchematicBlock, Block):
       })
 
 
-class MultimeterTest(JlcBoardTop):
+class Multimeter(JlcBoardTop):
   """A BLE multimeter with volts/ohms/diode mode - everything but the curent mode.
   Basically an ADC and programmable constant current driver with ranging circuits.
   Good up to the specified VOLTAGE_RATING, in any measurement mode.
@@ -497,4 +497,4 @@ class MultimeterTest(JlcBoardTop):
 
 class MultimeterTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(MultimeterTest)
+    compile_board_inplace(Multimeter)
