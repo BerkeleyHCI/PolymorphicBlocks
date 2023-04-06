@@ -28,4 +28,4 @@ class Keyboard(JlcBoardTop):
 
 class KeyboardTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(Keyboard)
+    compile_board_inplace(Keyboard, False)
