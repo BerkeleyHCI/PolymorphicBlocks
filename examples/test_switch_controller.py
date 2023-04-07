@@ -4,7 +4,7 @@ from edg import *
 from .test_usb_uart import UartConnector
 
 
-class SwitchControllerBoard(JlcBoardTop):
+class SwitchController(JlcBoardTop):
   """Test board for an energy harvesting development project, that can control power to and
   communicate with the DUT.
   """
@@ -129,4 +129,4 @@ class SwitchControllerBoard(JlcBoardTop):
 
 class SwitchControllerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(SwitchControllerBoard)
+    compile_board_inplace(SwitchController)

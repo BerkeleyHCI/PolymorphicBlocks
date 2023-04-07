@@ -2,12 +2,12 @@ import cProfile, pstats, io
 from pstats import SortKey
 
 from edg import compile_board_inplace
-from examples.test_datalogger import TestDatalogger
+from examples.test_datalogger import Datalogger
 
 if __name__ == '__main__':
   pr = cProfile.Profile()
   pr.enable()
-  compile_board_inplace(TestDatalogger)
+  compile_board_inplace(Datalogger)
   pr.disable()
 
   s = io.StringIO()

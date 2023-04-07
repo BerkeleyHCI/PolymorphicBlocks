@@ -19,4 +19,4 @@ class BatteryProtectorCircuit(BoardTop):
 
 class BatteryProtectorCircuitTestCase(unittest.TestCase):
   def test_design_battery_protector(self) -> None:
-    compile_board_inplace(BatteryProtectorCircuit)
+    compile_board_inplace(BatteryProtectorCircuit, False)

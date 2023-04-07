@@ -39,6 +39,13 @@ class JlcDiode(TableDiode, JlcTablePart, JlcBaseDiode, FootprintBlock):
        TableDiode.FORWARD_VOLTAGE: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
        TableDiode.REVERSE_RECOVERY: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 's')),
      }),
+    (re.compile("(\S+V) .*\S+W (?:Single )?(\S+V)@\S+A (\S+s) (?:\S+A@\S+V )?(\S+A) .* Switching Diode.*"),
+     lambda match: {
+       TableDiode.VOLTAGE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
+       TableDiode.CURRENT_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), 'A')),
+       TableDiode.FORWARD_VOLTAGE: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'V')),
+       TableDiode.REVERSE_RECOVERY: Range.zero_to_upper(PartParserUtil.parse_value(match.group(3), 's')),
+     }),
   ]
 
   @classmethod
@@ -48,6 +55,7 @@ class JlcDiode(TableDiode, JlcTablePart, JlcBaseDiode, FootprintBlock):
         'Schottky Barrier Diodes (SBD)',
         'Diodes - General Purpose',
         'Diodes - Fast Recovery Rectifiers',
+        'Switching Diode',
       ]:
         return None
       footprint = cls.PACKAGE_FOOTPRINT_MAP.get(row[cls._PACKAGE_HEADER])

@@ -4,7 +4,6 @@ from .ConstraintExpr import Default
 from .ArrayExpr import ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr, ArrayRangeExpr, ArrayStringExpr
 from .ArrayExpr import ArrayBoolLike, ArrayFloatLike, ArrayIntLike, ArrayRangeLike, ArrayStringLike
 from .Ports import Port, Bundle
-from .NotConnectablePort import NotConnectableBlock, NotConnectablePort
 from .Link import Link
 from .DesignTop import DesignTop
 from .HierarchyBlock import Block, ImplicitConnect, init_in_parent, abstract_block, abstract_block_default

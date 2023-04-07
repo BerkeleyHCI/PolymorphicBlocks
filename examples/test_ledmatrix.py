@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class LedMatrixTest(JlcBoardTop):
+class LedMatrix(JlcBoardTop):
   """A USB-connected WiFi-enabled LED matrix that demonstrates a charlieplexing LED matrix generator.
   """
   def contents(self) -> None:
@@ -84,4 +84,4 @@ class LedMatrixTest(JlcBoardTop):
 
 class LedMatrixTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(LedMatrixTest)
+    compile_board_inplace(LedMatrix)

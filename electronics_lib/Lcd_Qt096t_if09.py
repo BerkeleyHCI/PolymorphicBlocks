@@ -29,7 +29,9 @@ class Qt096t_if09_Device(InternalSubcircuit, Block):
     self.spi = self.Port(SpiSlave.empty())
     self.connect(self.spi.sck, self.conn.pins.request('6').adapt_to(io_model))  # scl
     self.connect(self.spi.mosi, self.conn.pins.request('5').adapt_to(io_model))  # sda
-    self.spi.miso.not_connected()
+
+    self.miso_nc = self.Block(DigitalBidirNotConnected())
+    self.connect(self.spi.miso, self.miso_nc.port)
 
     self.leda = self.Export(self.conn.pins.request('1'))  # TODO maybe something else?
 

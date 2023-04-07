@@ -14,7 +14,7 @@ from .PassivePort import Passive, PassiveLink
 from .VoltagePorts import VoltageSource, VoltageSink, Power, VoltageLink
 from .Ground import Ground, GroundSource, Common
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource, DigitalLink
-from .DigitalPorts import DigitalBidirAdapterOpenDrain
+from .DigitalPorts import DigitalBidirAdapterOpenDrain, DigitalBidirNotConnected
 from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
 from .UartPort import UartPort, UartLink
 from .SpiPort import SpiMaster, SpiSlave, SpiLink

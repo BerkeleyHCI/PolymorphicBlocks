@@ -242,7 +242,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
       })
 
 
-class UsbSourceMeasureTest(JlcBoardTop):
+class UsbSourceMeasure(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -453,4 +453,4 @@ class UsbSourceMeasureTest(JlcBoardTop):
 
 class UsbSourceMeasureTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(UsbSourceMeasureTest)
+    compile_board_inplace(UsbSourceMeasure)

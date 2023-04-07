@@ -27,7 +27,7 @@ class FpgaProgrammingHeader(Connector, Block):
     self.connect(self.reset, self.conn.pins.request('10').adapt_to(DigitalSink()))
 
 
-class UsbFpgaProgrammerTest(JlcBoardTop):
+class UsbFpgaProgrammer(JlcBoardTop):
   """USB UART converter board"""
   def contents(self) -> None:
     super().contents()
@@ -79,4 +79,4 @@ class UsbFpgaProgrammerTest(JlcBoardTop):
 
 class UsbFpgaProgrammerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(UsbFpgaProgrammerTest)
+    compile_board_inplace(UsbFpgaProgrammer)
