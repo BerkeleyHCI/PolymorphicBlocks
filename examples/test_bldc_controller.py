@@ -66,7 +66,7 @@ class PowerOutConnector(Connector, Block):
     )), [Power])
 
 
-class BldcDriver(JlcBoardTop):
+class BldcController(JlcBoardTop):
   """Test BLDC (brushless DC motor) driver circuit with position feedback and USB PD
   """
   def contents(self) -> None:
@@ -269,6 +269,6 @@ class BldcDriver(JlcBoardTop):
     )
 
 
-class BldcDriverTestCase(unittest.TestCase):
+class BldcControllerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(BldcDriver)
+    compile_board_inplace(BldcController)

@@ -2,7 +2,7 @@ import unittest
 from typing import Optional, Dict
 
 from edg import *
-from .test_bldc import PowerOutConnector
+from .test_bldc_controller import PowerOutConnector
 
 
 class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
