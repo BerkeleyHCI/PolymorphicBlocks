@@ -131,6 +131,7 @@ class PeripheralPinAssign(AssignablePinGroup):
         return AssignedPins(assigned_pins=group_dict, not_connected=not_connected)
     return None
 
+
 class PinAssignmentUtil:
   """Utility for pin assignment, given a list of ports and assignable pin definitions, assigns each leaf CircuitPort
   port to a pin."""

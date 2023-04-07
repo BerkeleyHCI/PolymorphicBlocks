@@ -51,7 +51,9 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Block):
         self.spi = self.Port(SpiSlave.empty())
         self.connect(self.spi.sck, self.conn.pins.request('11').adapt_to(din_model))
         self.connect(self.spi.mosi, self.conn.pins.request('12').adapt_to(din_model))
-        self.spi.miso.not_connected()
+
+        self.miso_nc = self.Block(DigitalBidirNotConnected())
+        self.connect(self.spi.miso, self.miso_nc.port)
 
         self.dc = self.Export(self.conn.pins.request('10').adapt_to(din_model))
         self.res = self.Export(self.conn.pins.request('9').adapt_to(din_model))
