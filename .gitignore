@@ -1,15 +1,13 @@
 .mypy_cache
 __pycache__
 
-*.edg
-*.lib
-*.pdf
-
 # Netlists from the unit tests are committed as a change-detector, so we know when
 # an example has changed and can at least make sure it's intentional.
-# Other netlists (eg, generated from the IDE or normal usage) are ignored.
-examples/*.net
+# Other netlists and generated files (eg, generated from the IDE or normal usage) are ignored.
+examples/*/*.edg
+examples/*/*.pdf
 /*.net
+BlinkyExample/
 
 *.raw
 *.plt
