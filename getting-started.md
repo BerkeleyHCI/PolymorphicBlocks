@@ -141,7 +141,7 @@ Try building the example now:
 - <details> <summary>If not using the IDE</summary>
   
   Run `python blinkly_skeleton.py` from the command line.
-  If all worked, this should create a folder `PolymorphicBlocks/blinky_skeleton` with a netlist `BlinkyExample.net` inside.
+  If all worked, this should create a folder `PolymorphicBlocks/BlinkyExample` with a netlist `BlinkyExample.net` inside.
   </details>
 - <details> <summary>Resolving common errors</summary>
   
