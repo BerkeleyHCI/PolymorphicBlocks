@@ -86,6 +86,42 @@ class Sk6812Mini_E(Neopixel, FootprintBlock):
         )
 
 
+class Sk6805_ECc15(Neopixel, JlcPart, FootprintBlock):
+    """SK6805-EC15 Neopixel RGB LED in 1.5x1.5 (0606)."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.vdd.init_from(VoltageSink(
+            voltage_limits=(3.7, 5.5) * Volt,
+            current_draw=(1, 1 + 5*3) * mAmp,  # 1 mA static type + up to 5mA/ch
+        ))
+        self.gnd.init_from(Ground())
+        self.din.init_from(DigitalSink.from_supply(
+            self.gnd, self.vdd,
+            voltage_limit_tolerance=(-0.5, 0.5),
+            input_threshold_factor=(0.3, 0.7),
+        ))
+        self.dout.init_from(DigitalSource.from_supply(
+            self.gnd, self.vdd,
+            current_limits=0*mAmp(tol=0),
+        ))
+
+    def contents(self) -> None:
+        self.footprint(
+            'D', 'LED_SMT:LED_SK6812_EC15_1.5x1.5mm',
+            {
+                '1': self.din,
+                '2': self.vdd,
+                '3': self.dout,
+                '4': self.gnd,
+
+            },
+            mfr='Opsco Optoelectronics', part='SK6805-EC15',
+            datasheet='https://cdn-shop.adafruit.com/product-files/4492/Datasheet.pdf'
+        )
+        self.assign(self.lcsc_part, 'C2890035')
+        self.assign(self.actual_basic_part, False)
+
+
 class NeopixelArray(Light, GeneratorBlock):
     """An array of Neopixels"""
 
