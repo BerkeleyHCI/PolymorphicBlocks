@@ -277,7 +277,6 @@ You can also inspect the details of the power connection by mousing over it:
 ### Adding a Voltage Regulator
 To run the STM32 within its rated voltage limits, we'll need a voltage regulator to lower the 5v from USB to the common 3.3v power expected by modern devices.
 **Repeat the add block flow** with a `VoltageRegulator` block, **then update the power (between the USB and the microcontroller) and ground connections**.
-**Make sure to delete the previous power and ground connections, otherwise it will error out from over-connection.**
 
 ```diff
   self.usb = self.Block(UsbCReceptacle())
@@ -374,8 +373,8 @@ Recompiling in the IDE yields this block diagram and no errors:
 > </details>
 
 ### Deeper Inspection
-One major benefit of this HDL-based design flow is the design automation that is encapsulated in the libraries.
 Here, we were able to place down a buck converter - a non-trivial subcircuit - with just one line of code.
+A major benefit of this HDL-based design flow is the design automation that is encapsulated in the libraries.
 The library writer has done the hard work of figuring out how to size the capacitors and inductors, and wrapped it into this neat `VoltageRegulator` block.
 
 You may want to inspect the results.
@@ -491,7 +490,6 @@ _In this section, we clean up the prior example by consolidating some repetitive
 
 ### Implicit Connections
 Because some connections (like power and ground) are very common, the HDL provides the idea of an implicit connection scope to automatically make them when a block is instantiated.
-In our example, we can get rid of the explicit power and ground connections.
 The implicit scope defines the connections to make and the conditions for which ports to connect (through tags):
 
 ```python
