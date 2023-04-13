@@ -2,14 +2,16 @@ from __future__ import annotations
 
 from typing import *
 
+from deprecated import deprecated
+
 import edgir
-from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding, NameBinding
+from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding
 from .Blocks import BlockElaborationState
 from .ConstraintExpr import ConstraintExpr
 from .Core import non_library
 from .HdlUserExceptions import *
 from .HierarchyBlock import Block
-from .Ports import BasePort, Port
+from .Ports import Port
 
 
 @non_library
@@ -29,144 +31,8 @@ class GeneratorBlock(Block):
     req_params: Tuple[ConstraintExpr, ...]  # all required params for generator to fire
     fn_args: Tuple[ConstraintExpr, ...]  # params to unpack for the generator function
 
-  ConstrType1 = TypeVar('ConstrType1', bound=Any)
-  ConstrCastable1 = TypeVar('ConstrCastable1', bound=Any)
-  ConstrType2 = TypeVar('ConstrType2', bound=Any)
-  ConstrCastable2 = TypeVar('ConstrCastable2', bound=Any)
-  ConstrType3 = TypeVar('ConstrType3', bound=Any)
-  ConstrCastable3 = TypeVar('ConstrCastable3', bound=Any)
-  ConstrType4 = TypeVar('ConstrType4', bound=Any)
-  ConstrCastable4 = TypeVar('ConstrCastable4', bound=Any)
-  ConstrType5 = TypeVar('ConstrType5', bound=Any)
-  ConstrCastable5 = TypeVar('ConstrCastable5', bound=Any)
-  ConstrType6 = TypeVar('ConstrType6', bound=Any)
-  ConstrCastable6 = TypeVar('ConstrCastable6', bound=Any)
-  ConstrType7 = TypeVar('ConstrType7', bound=Any)
-  ConstrCastable7 = TypeVar('ConstrCastable7', bound=Any)
-  ConstrType8 = TypeVar('ConstrType8', bound=Any)
-  ConstrCastable8 = TypeVar('ConstrCastable8', bound=Any)
-  ConstrType9 = TypeVar('ConstrType9', bound=Any)
-  ConstrCastable9 = TypeVar('ConstrCastable9', bound=Any)
-  ConstrType10 = TypeVar('ConstrType10', bound=Any)
-  ConstrCastable10 = TypeVar('ConstrCastable10', bound=Any)
-  ConstrType11 = TypeVar('ConstrType11', bound=Any)
-  ConstrCastable11 = TypeVar('ConstrCastable11', bound=Any)
-
-  # These are super ugly, both in that it's manually enumerating all the possible argument numbers
-  # (but there's precedent in how Scala's libraries are written!) and that the generator can't actually take
-  # the *Like types (eg, BoolLike - it can only take a BoolExpr), but this is needed to allow the *Like types
-  # in constructor argument lists, and avoid piping them through to an explicit parameter.
-  # While @init_in_parent remaps the arguments from a *Like type in the input to a *Expr type into the constructor,
-  # expressing that function signature remapping isn't quite possible with mypy.
-  # So this is the least worst option, a bit more ugliness for the advanced generator functionality rather than
-  # for the common case of block definition.
-  @overload
-  def generator(self, fn: Callable[[], None]) -> None: ...
-  @overload
-  def generator(self, fn: Callable[[ConstrType1], None],
-                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]]) -> None: ...
-  @overload
-  def generator(self, fn: Callable[[ConstrType1, ConstrType2], None],
-                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExpr[ConstrType2, ConstrCastable2]]) -> None: ...
-  @overload
-  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3], None],
-                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExpr[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExpr[ConstrType3, ConstrCastable3]]) -> None: ...
-  @overload
-  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4], None],
-                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExpr[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExpr[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExpr[ConstrType4, ConstrCastable4]]) -> None: ...
-  @overload
-  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
-                                    ConstrType5], None],
-                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExpr[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExpr[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExpr[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExpr[ConstrType5, ConstrCastable5]]) -> None: ...
-  @overload
-  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
-                                    ConstrType5, ConstrType6], None],
-                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExpr[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExpr[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExpr[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExpr[ConstrType5, ConstrCastable5]],
-                req6: Union[ConstrCastable6, ConstraintExpr[ConstrType6, ConstrCastable6]]) -> None: ...
-  @overload
-  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
-                                    ConstrType5, ConstrType6, ConstrType7], None],
-                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExpr[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExpr[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExpr[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExpr[ConstrType5, ConstrCastable5]],
-                req6: Union[ConstrCastable6, ConstraintExpr[ConstrType6, ConstrCastable6]],
-                req7: Union[ConstrCastable7, ConstraintExpr[ConstrType7, ConstrCastable7]]) -> None: ...
-  @overload
-  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
-                                    ConstrType5, ConstrType6, ConstrType7, ConstrType8], None],
-                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExpr[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExpr[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExpr[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExpr[ConstrType5, ConstrCastable5]],
-                req6: Union[ConstrCastable6, ConstraintExpr[ConstrType6, ConstrCastable6]],
-                req7: Union[ConstrCastable7, ConstraintExpr[ConstrType7, ConstrCastable7]],
-                req8: Union[ConstrCastable8, ConstraintExpr[ConstrType8, ConstrCastable8]]) -> None: ...
-
-  @overload
-  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
-                                    ConstrType5, ConstrType6, ConstrType7, ConstrType8,
-                                    ConstrType9], None],
-                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExpr[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExpr[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExpr[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExpr[ConstrType5, ConstrCastable5]],
-                req6: Union[ConstrCastable6, ConstraintExpr[ConstrType6, ConstrCastable6]],
-                req7: Union[ConstrCastable7, ConstraintExpr[ConstrType7, ConstrCastable7]],
-                req8: Union[ConstrCastable8, ConstraintExpr[ConstrType8, ConstrCastable8]],
-                req9: Union[ConstrCastable9, ConstraintExpr[ConstrType9, ConstrCastable9]]) -> None: ...
-
-  @overload
-  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
-                                    ConstrType5, ConstrType6, ConstrType7, ConstrType8,
-                                    ConstrType9, ConstrType10], None],
-                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExpr[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExpr[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExpr[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExpr[ConstrType5, ConstrCastable5]],
-                req6: Union[ConstrCastable6, ConstraintExpr[ConstrType6, ConstrCastable6]],
-                req7: Union[ConstrCastable7, ConstraintExpr[ConstrType7, ConstrCastable7]],
-                req8: Union[ConstrCastable8, ConstraintExpr[ConstrType8, ConstrCastable8]],
-                req9: Union[ConstrCastable9, ConstraintExpr[ConstrType9, ConstrCastable9]],
-                req10: Union[ConstrCastable10, ConstraintExpr[ConstrType10, ConstrCastable10]]) -> None: ...
-
-  @overload
-  def generator(self, fn: Callable[[ConstrType1, ConstrType2, ConstrType3, ConstrType4,
-                                    ConstrType5, ConstrType6, ConstrType7, ConstrType8,
-                                    ConstrType9, ConstrType10, ConstrType11], None],
-                req1: Union[ConstrCastable1, ConstraintExpr[ConstrType1, ConstrCastable1]],
-                req2: Union[ConstrCastable2, ConstraintExpr[ConstrType2, ConstrCastable2]],
-                req3: Union[ConstrCastable3, ConstraintExpr[ConstrType3, ConstrCastable3]],
-                req4: Union[ConstrCastable4, ConstraintExpr[ConstrType4, ConstrCastable4]],
-                req5: Union[ConstrCastable5, ConstraintExpr[ConstrType5, ConstrCastable5]],
-                req6: Union[ConstrCastable6, ConstraintExpr[ConstrType6, ConstrCastable6]],
-                req7: Union[ConstrCastable7, ConstraintExpr[ConstrType7, ConstrCastable7]],
-                req8: Union[ConstrCastable8, ConstraintExpr[ConstrType8, ConstrCastable8]],
-                req9: Union[ConstrCastable9, ConstraintExpr[ConstrType9, ConstrCastable9]],
-                req10: Union[ConstrCastable9, ConstraintExpr[ConstrType10, ConstrCastable10]],
-                req11: Union[ConstrCastable11, ConstraintExpr[ConstrType11, ConstrCastable11]]) -> None: ...
-
-
-  # TODO don't ignore the type and fix so the typer understands the above are subsumed by this
-  def generator(self, fn: Callable[..., None], *reqs: ConstraintExpr) -> None:  # type: ignore
+  @deprecated(reason="use self.GeneratorParam(...) instead")
+  def generator(self, fn: Callable[..., None], *reqs: Any) -> None:  # type: ignore
     """
     Registers a generator function
     :param fn: function (of self) to invoke, where the parameter list lines up with reqs
