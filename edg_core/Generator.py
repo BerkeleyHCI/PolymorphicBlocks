@@ -36,7 +36,7 @@ class GeneratorBlock(Block):
     self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
     self._generator_params = self.manager.new_dict(GeneratorParam)
 
-  def GeneratorParam(self, param: ConstraintExpr[WrappedType, CastableType]) -> GeneratorParam[WrappedType]:
+  def GeneratorParam(self, param: ConstraintExpr[WrappedType, CastableType]) -> GeneratorParam[WrappedType, CastableType]:
     """Declares some parameter to be a generator, returning its GeneratorParam wrapper that
     can be .get()'d from within the generate() function."""
     assert hasattr(self, "generate"), "GeneratorParam must be used with generate()"
