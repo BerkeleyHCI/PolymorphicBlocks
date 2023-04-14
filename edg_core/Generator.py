@@ -14,15 +14,46 @@ from .HierarchyBlock import Block
 from .Ports import Port
 
 
+WrappedType = TypeVar('WrappedType', covariant=True)
+CastableType = TypeVar('CastableType', contravariant=True)
+class GeneratorParam(Generic[WrappedType, CastableType]):
+  def __init__(self, expr: ConstraintExpr[WrappedType, CastableType]):
+    self._expr = expr
+    self._value: Optional[WrappedType] = None  # set externally
+
+  def get(self) -> WrappedType:
+    assert self._value is not None, "parameter has no value"
+    return self._value
+
+
 @non_library
 class GeneratorBlock(Block):
-  """Part which generates into a subcircuit, given fully resolved parameters.
-  Generation happens after a solver run.
-  Allows much more power and customization in the elaboration of a subcircuit.
+  """Block which allows arbitrary Python code to generate its internal subcircuit,
+  and unlike regular Blocks can rely on Python values of solved parameters.
   """
   def __init__(self):
     super().__init__()
     self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
+    self._generator_params = self.manager.new_dict(GeneratorParam)
+
+  def GeneratorParam(self, param: ConstraintExpr[WrappedType, CastableType]) -> GeneratorParam[WrappedType]:
+    """Declares some parameter to be a generator, returning its GeneratorParam wrapper that
+    can be .get()'d from within the generate() function."""
+    assert hasattr(self, "generate"), "GeneratorParam must be used with generate()"
+    if self._elaboration_state != BlockElaborationState.init:
+      raise BlockDefinitionError(self, "can't call GeneratorParameter(...) outside __init__",
+                                 "call GeneratorParameter(...) inside __init__ only, and remember to call super().__init__()")
+    if not isinstance(param, ConstraintExpr):
+      raise TypeError(f"param to GeneratorParameter(...) must be ConstraintExpr, got {param} of type {type(param)}")
+    if param.binding is None:
+      raise BlockDefinitionError(self, "GeneratorParameter(...) param must be bound")
+    if not isinstance(param.binding, (InitParamBinding, AllocatedBinding, IsConnectedBinding)):
+      raise BlockDefinitionError(self, "GeneratorParameter(...) param must be an __init__ param, port requested, or port is_connected")
+
+    elt = GeneratorParam(param)
+    self._generator_params.register(elt)
+
+    return elt
 
   # Generator dependency data
   #
