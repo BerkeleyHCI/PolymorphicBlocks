@@ -14,10 +14,10 @@ from .HierarchyBlock import Block
 from .Ports import Port
 
 
-WrappedType = TypeVar('WrappedType', covariant=True)
-CastableType = TypeVar('CastableType', contravariant=True)
-class GeneratorParam(Generic[WrappedType, CastableType]):
-  def __init__(self, expr: ConstraintExpr[WrappedType, CastableType]):
+WrappedType = TypeVar('WrappedType', bound=Any)
+CastableType = TypeVar('CastableType', bound=Any)
+class GeneratorParam(Generic[WrappedType]):
+  def __init__(self, expr: ConstraintExpr[WrappedType, Any]):
     self._expr = expr
     self._value: Optional[WrappedType] = None  # set externally
 
@@ -36,9 +36,13 @@ class GeneratorBlock(Block):
     self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
     self._generator_params = self.manager.new_dict(GeneratorParam)
 
-  def GeneratorParam(self, param: ConstraintExpr[WrappedType, CastableType]) -> GeneratorParam[WrappedType, CastableType]:
+  def GeneratorParam(self, param: Union[ConstraintExpr[WrappedType, CastableType], CastableType],
+                     tpe: Optional[Type[WrappedType]] = None) -> GeneratorParam[WrappedType]:
     """Declares some parameter to be a generator, returning its GeneratorParam wrapper that
-    can be .get()'d from within the generate() function."""
+    can be .get()'d from within the generate() function.
+
+    tpe exists only to provide a type hint to mypy, since it can't seen to infer WrappedType.
+    It can be omitted if not static type checking."""
     assert hasattr(self, "generate"), "GeneratorParam must be used with generate()"
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call GeneratorParameter(...) outside __init__",
