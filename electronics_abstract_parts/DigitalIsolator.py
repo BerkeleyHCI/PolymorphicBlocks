@@ -22,7 +22,7 @@ class DigitalIsolator(Interface, GeneratorBlock):
       self.out_b = self.Port(Vector(DigitalSource.empty()), optional=True)
 
       self.in_a_requested = self.GeneratorParam(self.in_a.requested())
-      self.out_b_requested = self.GeneratorParam(self.out_a.requested())
+      self.out_b_requested = self.GeneratorParam(self.out_b.requested())
       self.in_b_requested = self.GeneratorParam(self.in_b.requested())
       self.out_a_requested = self.GeneratorParam(self.out_a.requested())
 

@@ -97,7 +97,7 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
     self.cc = self.Port(UsbCcPort.empty(), optional=True)  # external connectivity defines the circuit
 
     self.pwr_connected = self.GeneratorParam(self.pwr.is_connected())
-    self.cc_connected = self.GeneratorParam(self.pwr.is_connected())
+    self.cc_connected = self.GeneratorParam(self.cc.is_connected())
 
   def generate(self) -> None:
     super().generate()
