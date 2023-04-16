@@ -49,7 +49,7 @@ class GeneratorBlock(Block):
 
     tpe exists only to provide a type hint to mypy, since it can't seen to infer WrappedType.
     It can be omitted if not static type checking."""
-    assert hasattr(self, "generate"), "GeneratorParam must be used with generate()"
+    assert type(self).generate is not GeneratorBlock.generate, "GeneratorParam must be used with generate()"
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call GeneratorParameter(...) outside __init__",
                                  "call GeneratorParameter(...) inside __init__ only, and remember to call super().__init__()")
@@ -94,7 +94,7 @@ class GeneratorBlock(Block):
 
   def generate(self):
     """Generate function which has access to the value of generator params. Implement me."""
-    raise NotImplementedError
+    pass
 
   # Generator serialization and parsing
   #
