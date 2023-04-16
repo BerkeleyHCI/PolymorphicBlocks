@@ -11,10 +11,10 @@ class GeneratorInnerBlock(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.generator(self.generate1, self.ports.requested())
+    self.ports_requested = self.GeneratorParam(self.ports.requested(), List[str])
 
-  def generate1(self, elements: List[str]) -> None:
-    assert elements == ['0', 'named', '1'], f"bad elements {elements}"
+  def generate(self) -> None:
+    assert self.ports_requested.get() == ['0', 'named', '1']
     self.ports.append_elt(TestPortSink((-1, 1)))
     self.ports.append_elt(TestPortSink((-5, 5)), 'named')
     self.ports.append_elt(TestPortSink((-2, 2)))
@@ -48,29 +48,26 @@ class TestGeneratorPortVector(unittest.TestCase):
     self.assertEqual(pb.constraints[3].value, edgir.AssignLit(['ports', '1', 'range_param'], Range(-2, 2)))
 
 
-class GeneratorInnerBlockInvalid(GeneratorBlock):
+class InnerBlockInvalid(Block):
   def __init__(self) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.generator(self.generate1, self.ports.requested())
-
-  def generate1(self, elements: List[str]) -> None:
     self.ports.append_elt(TestPortSink(), 'haha')
 
 
-class TestGeneratorElementsInvalid(Block):
+class TestElementsInvalid(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.block = self.Block(GeneratorInnerBlockInvalid())
+    self.block = self.Block(InnerBlockInvalid())
 
     self.source0 = self.Block(TestBlockSource(1.0))
     self.connect(self.source0.port, self.block.ports.request('nope'))
 
 
-class TestGeneratorPortVectorInvalid(unittest.TestCase):
+class TestPortVectorInvalid(unittest.TestCase):
   def test_generator_error(self):
     with self.assertRaises(CompilerCheckError):
-      ScalaCompiler.compile(TestGeneratorElementsInvalid)
+      ScalaCompiler.compile(TestElementsInvalid)
 
 
 class GeneratorWrapperBlock(Block):
@@ -119,10 +116,10 @@ class GeneratorArrayParam(GeneratorBlock):
   def __init__(self, param: ArrayRangeLike) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.generator(self.generate1, param)
+    self.param_value = self.GeneratorParam(param, List[Range])
 
-  def generate1(self, elements: List[Range]) -> None:
-    for elt in elements:
+  def generate(self) -> None:
+    for elt in self.param_value.get():
       created_port = self.ports.append_elt(TestPortSink(elt))  # any port
     self.require(created_port.link().sinks_range == Range(-2, 1))
 
