@@ -125,6 +125,10 @@ class Vector(BaseVector, Generic[VectorType]):
     assert self._elts is not None, "no elts defined"
     return self._elts[item]
 
+  def items(self) -> ItemsView[str, VectorType]:
+    assert self._elts is not None, "no elts defined"
+    return self._elts.items()
+
   # unlike most other LibraryElement types, the names are stored in _elts and _allocates
   def _name_of_child(self, subelt: Any) -> str:
     from .HierarchyBlock import Block

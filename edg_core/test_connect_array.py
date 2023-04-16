@@ -20,6 +20,7 @@ class TestBlockSinkElasticArray(GeneratorBlock):
     self.sinks_requested = self.GeneratorParam(self.sinks.requested())
 
   def generate(self):
+    super().generate()
     for request in self.sinks_requested.get():
       self.sinks.append_elt(TestPortSink(), request)
 

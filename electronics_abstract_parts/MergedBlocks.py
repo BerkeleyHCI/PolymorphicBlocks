@@ -13,11 +13,12 @@ class MergedVoltageSource(DummyDevice, NetBlock, GeneratorBlock):
       voltage_out=RangeExpr(),
       current_limits=RangeExpr.ALL
     ))
-    self.generator(self.generate, self.pwr_ins.requested())
+    self.in_requested = self.GeneratorParam(self.pwr_ins.requested())
 
-  def generate(self, in_requests: List[str]):
+  def generate(self):
+    super().generate()
     self.pwr_ins.defined()
-    for in_request in in_requests:
+    for in_request in self.in_requested.get():
       self.pwr_ins.append_elt(VoltageSink(
         voltage_limits=RangeExpr.ALL,
         current_draw=self.pwr_out.link().current_drawn
@@ -42,11 +43,12 @@ class MergedDigitalSource(DummyDevice, NetBlock, GeneratorBlock):
       output_thresholds=RangeExpr(),
       pullup_capable=BoolExpr(), pulldown_capable=BoolExpr()
     ))
-    self.generator(self.generate, self.ins.requested())
+    self.in_requested = self.GeneratorParam(self.ins.requested())
 
-  def generate(self, in_requests: List[str]):
+  def generate(self):
+    super().generate()
     self.ins.defined()
-    for in_request in in_requests:
+    for in_request in self.in_requested.get():
       self.ins.append_elt(DigitalSink(
         current_draw=self.out.link().current_drawn,
       ), in_request)
@@ -83,11 +85,12 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorB
     ))
     self.inputs = self.Port(Vector(AnalogSink.empty()))
 
-    self.generator(self.generate, self.inputs.requested())
+    self.in_requested = self.GeneratorParam(self.inputs.requested())
 
-  def generate(self, in_requests: List[str]):
+  def generate(self):
+    super().generate()
     self.inputs.defined()
-    for in_request in in_requests:
+    for in_request in self.in_requested.get():
       self.inputs.append_elt(AnalogSink(
         voltage_limits=RangeExpr.ALL,
         current_draw=self.output.link().current_drawn,
@@ -111,9 +114,10 @@ class MergedSpiMaster(DummyDevice, GeneratorBlock):
     super().__init__()
     self.ins = self.Port(Vector(SpiSlave.empty()))
     self.out = self.Port(SpiMaster.empty())
-    self.generator(self.generate, self.ins.requested())
+    self.in_requested = self.GeneratorParam(self.ins.requested())
 
-  def generate(self, in_requests: List[str]):
+  def generate(self):
+    super().generate()
     self.sck_merge = self.Block(MergedDigitalSource())
     self.connect(self.sck_merge.out, self.out.sck)
     self.mosi_merge = self.Block(MergedDigitalSource())
@@ -121,7 +125,7 @@ class MergedSpiMaster(DummyDevice, GeneratorBlock):
     miso_net = self.connect(self.out.miso)  # can be directly connected
 
     self.ins.defined()
-    for in_request in in_requests:
+    for in_request in self.in_requested.get():
       in_port = self.ins.append_elt(SpiSlave.empty(), in_request)
       self.connect(miso_net, in_port.miso)
       self.connect(self.sck_merge.ins.request(in_request), in_port.sck)

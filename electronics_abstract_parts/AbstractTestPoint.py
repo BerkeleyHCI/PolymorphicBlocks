@@ -51,6 +51,7 @@ class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
     self.io_requested = self.GeneratorParam(self.io.requested())
 
   def generate(self):
+    super().generate()
     self.tp = ElementDict[DigitalTestPoint]()
     for requested in self.io_requested.get():
       tp = self.tp[requested] = self.Block(DigitalTestPoint())

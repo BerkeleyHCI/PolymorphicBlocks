@@ -256,7 +256,7 @@ class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
     self.sense_in_connected = self.GeneratorParam(self.sense_in.is_connected())
 
   def generate(self):
-    super().contents()
+    super().generate()
 
     if self.sense_in_connected.get():
       self.connect(self.pwr_in.as_analog_source(), self.sense_in)
