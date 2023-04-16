@@ -1,7 +1,7 @@
 import unittest
 
 from . import *
-from .ScalaCompilerInterface import ScalaCompiler
+from .HdlUserExceptions import BlockDefinitionError
 
 
 class BadGeneratorTestCase(unittest.TestCase):
@@ -13,7 +13,7 @@ class BadGeneratorTestCase(unittest.TestCase):
       # this is missing a self.generator statement
 
   def test_missing_generator(self) -> None:
-    with self.assertRaises(AssertionError):
+    with self.assertRaises(BlockDefinitionError):
       self.InvalidMissingGeneratorBlock()._elaborated_def_to_proto()
 
 

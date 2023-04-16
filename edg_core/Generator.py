@@ -86,25 +86,33 @@ class GeneratorBlock(Block):
         f"generator parameter {i} {req_param} not an __init__ parameter (or missing @init_in_parent)"
     self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, reqs)
 
+  def generate(self):
+    """Generate function which has access to the value of generator params. Implement me."""
+    raise NotImplementedError
+
   # Generator serialization and parsing
   #
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     if self._elaboration_state != BlockElaborationState.post_generate:  # only write generator on the stub definition
-      assert self._generator is not None, f"{self} did not define a generator"
-
       pb = edgir.HierarchyBlock()
       ref_map = self._get_ref_map(edgir.LocalPath())
-      pb.generator.SetInParent()  # even if rest of the fields are empty, make sure to create a record
-      for req_param in self._generator.req_params:
-        pb.generator.required_params.add().CopyFrom(ref_map[req_param])
       pb = self._populate_def_proto_block_base(pb)
+      pb.generator.SetInParent()  # even if rest of the fields are empty, make sure to create a record
+
+      if self._generator is not None:  # legacy generator style
+        for req_param in self._generator.req_params:
+          pb.generator.required_params.add().CopyFrom(ref_map[req_param])
+      elif type(self).generate is not GeneratorBlock.generate:
+        for name, gen_param in self._generator_params.items():
+          pb.generator.required_params.add().CopyFrom(ref_map[gen_param._expr])
+      else:
+        raise BlockDefinitionError(self, "Generator missing generate implementation", "define generate")
       return pb
     else:
       return super()._def_to_proto()
 
   def _generated_def_to_proto(self, generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]]) -> \
       edgir.HierarchyBlock:
-    assert self._generator is not None, f"{self} did not define a generator"
     assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
     self._elaboration_state = BlockElaborationState.contents
 
@@ -113,17 +121,19 @@ class GeneratorBlock(Block):
     self._elaboration_state = BlockElaborationState.generate
 
     # Translate parameter values to function arguments
-    for (name, port) in self._ports.items():
-      # TODO cleaner, oddly-stateful, detection of connected_link
-      if isinstance(port, Port):
-        port.link()  # lazy-initialize connected_link refs so it's ready for params
-
     ref_map = self._get_ref_map(edgir.LocalPath())
     generate_values_map = {path.SerializeToString(): value for (path, value) in generate_values}
-    fn_args = [arg_param._from_lit(generate_values_map[ref_map[arg_param].SerializeToString()])
-               for arg_param in self._generator.fn_args]
 
-    self._generator.fn(*fn_args)
+    if self._generator is not None:  # legacy generator style
+      fn_args = [arg_param._from_lit(generate_values_map[ref_map[arg_param].SerializeToString()])
+                 for arg_param in self._generator.fn_args]
+      self._generator.fn(*fn_args)
+    elif type(self).generate is not GeneratorBlock.generate:
+      for name, gen_param in self._generator_params.items():
+        gen_param._value = gen_param._expr._from_lit(generate_values_map[ref_map[gen_param._expr].SerializeToString()])
+      self.generate()
+    else:
+      raise BlockDefinitionError(self, "Generator missing generate implementation", "define generate")
 
     self._elaboration_state = BlockElaborationState.post_generate
 
