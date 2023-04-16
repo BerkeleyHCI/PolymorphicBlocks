@@ -40,11 +40,14 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
   @init_in_parent
   def __init__(self, switch_size: IntLike = 0):
     super().__init__()
-    self.generator(self.generate, self.inputs.requested(), switch_size)
+    self.switch_size_value = self.GeneratorParam(switch_size, int)
+    self.inputs_requested = self.GeneratorParam(self.inputs.requested(), List[str])
 
-  def generate(self, elts: List[str], switch_size: int):
+  def generate(self):
     import math
 
+    switch_size = self.switch_size_value.get()
+    elts = self.inputs_requested.get()
     assert switch_size > 1, f"switch size {switch_size} must be greater than 1"
     assert len(elts) > 1, "passthrough AnalogSwitchTree not (yet?) supported"
     self.sw = ElementDict[AnalogSwitch]()
@@ -121,11 +124,11 @@ class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
       impedance=self.device.analog_on_resistance + self.inputs.hull(lambda x: x.link().source_impedance)
     )))
 
-    self.generator(self.generate, self.inputs.requested())
+    self.inputs_requested = self.GeneratorParam(self.inputs.requested(), List[str])
 
-  def generate(self, elts: List[str]):
+  def generate(self):
     self.inputs.defined()
-    for elt in elts:
+    for elt in self.inputs_requested.get():
       self.connect(
         self.inputs.append_elt(AnalogSink().empty(), elt),
         self.device.inputs.request(elt).adapt_to(AnalogSink(
@@ -161,11 +164,11 @@ class AnalogDemuxer(Interface, GeneratorBlock):
       impedance=self.device.analog_on_resistance + self.outputs.hull(lambda x: x.link().sink_impedance)
     )))
 
-    self.generator(self.generate, self.outputs.requested())
+    self.outputs_requested = self.GeneratorParam(self.outputs.requested(), List[str])
 
-  def generate(self, elts: List[str]):
+  def generate(self):
     self.outputs.defined()
-    for elt in elts:
+    for elt in self.outputs_requested.get():
       self.connect(
         self.outputs.append_elt(AnalogSource().empty(), elt),
         self.device.inputs.request(elt).adapt_to(AnalogSource(

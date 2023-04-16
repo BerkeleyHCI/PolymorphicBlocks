@@ -252,12 +252,13 @@ class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
     # but this must be an explicit opt-in
     sense_in_reqd_param = self.ArgParameter(sense_in_reqd)
     self.require(sense_in_reqd_param.implies(self.sense_in.is_connected()))
-    self.generator(self.generate, self.sense_in.is_connected())
 
-  def generate(self, sense_in_connected: bool):
+    self.sense_in_connected = self.GeneratorParam(self.sense_in.is_connected(), bool)
+
+  def generate(self):
     super().contents()
 
-    if sense_in_connected:
+    if self.sense_in_connected.get():
       self.connect(self.pwr_in.as_analog_source(), self.sense_in)
     self.connect(self.res.pwr_out.as_analog_source(), self.sense_out)
 
