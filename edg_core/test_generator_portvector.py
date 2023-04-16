@@ -11,7 +11,7 @@ class GeneratorInnerBlock(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.ports_requested = self.GeneratorParam(self.ports.requested(), List[str])
+    self.ports_requested = self.GeneratorParam(self.ports.requested())
 
   def generate(self) -> None:
     assert self.ports_requested.get() == ['0', 'named', '1']

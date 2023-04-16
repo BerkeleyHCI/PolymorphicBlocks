@@ -19,7 +19,7 @@ class BadGeneratorTestCase(unittest.TestCase):
     def __init__(self) -> None:
       super().__init__()
       self.param = self.Parameter(FloatExpr())
-      self.param_value = self.GeneratorParam(self.param, float)
+      self.param_value = self.GeneratorParam(self.param)
 
     def generate(self) -> None:
       super().generate()

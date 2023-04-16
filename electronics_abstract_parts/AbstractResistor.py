@@ -253,7 +253,7 @@ class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
     sense_in_reqd_param = self.ArgParameter(sense_in_reqd)
     self.require(sense_in_reqd_param.implies(self.sense_in.is_connected()))
 
-    self.sense_in_connected = self.GeneratorParam(self.sense_in.is_connected(), bool)
+    self.sense_in_connected = self.GeneratorParam(self.sense_in.is_connected())
 
   def generate(self):
     super().contents()

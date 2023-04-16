@@ -17,7 +17,7 @@ class TestBlockSinkElasticArray(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.sinks = self.Port(Vector(TestPortSink()))
-    self.sinks_requested = self.GeneratorParam(self.sinks.requested(), List[str])
+    self.sinks_requested = self.GeneratorParam(self.sinks.requested())
 
   def generate(self):
     for request in self.sinks_requested.get():

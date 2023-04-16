@@ -36,6 +36,12 @@ class GeneratorBlock(Block):
     self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
     self._generator_params = self.manager.new_dict(GeneratorParam)
 
+  @overload  # where the param is direct (not a *Like in a Union[...]), we don't need the optional tpe
+  def GeneratorParam(self, param: ConstraintExpr[WrappedType, CastableType]) -> GeneratorParam[WrappedType]: ...
+  @overload
+  def GeneratorParam(self, param: Union[ConstraintExpr[WrappedType, CastableType], CastableType],
+                     tpe: Optional[Type[WrappedType]] = None) -> GeneratorParam[WrappedType]: ...
+
   def GeneratorParam(self, param: Union[ConstraintExpr[WrappedType, CastableType], CastableType],
                      tpe: Optional[Type[WrappedType]] = None) -> GeneratorParam[WrappedType]:
     """Declares some parameter to be a generator, returning its GeneratorParam wrapper that

@@ -118,7 +118,7 @@ class GeneratorIsConnected(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(TestPortSource(2.0), optional=True)
-    self.port_connected = self.GeneratorParam(self.port.is_connected(), bool)
+    self.port_connected = self.GeneratorParam(self.port.is_connected())
     self.connected = self.Parameter(BoolExpr())
 
   def generate(self) -> None:
