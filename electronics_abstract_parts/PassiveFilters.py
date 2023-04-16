@@ -95,12 +95,13 @@ class DigitalLowPassRcArray(DigitalFilter, GeneratorBlock):
     self.impedance = self.ArgParameter(impedance)
     self.cutoff_freq = self.ArgParameter(cutoff_freq)
 
-    self.generator(self.generate, self.output.requested())
+    self.output_requested = self.GeneratorParam(self.output.requested())
 
-  def generate(self, outputs: List[str]):
+  def generate(self):
+    super().generate()
     self.elts = ElementDict[DigitalLowPassRc]()
     model = DigitalLowPassRc(self.impedance, self.cutoff_freq)
-    for requested in outputs:
+    for requested in self.output_requested.get():
       self.elts[requested] = elt = self.Block(model)
       self.connect(self.input.append_elt(DigitalSink.empty(), requested), elt.input)
       self.connect(self.output.append_elt(DigitalSource.empty(), requested), elt.output)

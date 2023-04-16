@@ -315,11 +315,12 @@ class LedArray(GeneratorBlock):
     super().__init__()
     self.ios = self.Port(Vector(DigitalSink.empty()), [Input])
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.generator(self.generate, count)
+    self.count_value = self.GeneratorParam(count, int)
 
-  def generate(self, count: int) -> None:
+  def generate(self) -> None:
+    super().generate()
     self.led = ElementDict[IndicatorLed]()
-    for i in range(count):
+    for i in range(self.count_value.get()):
       io = self.ios.append_elt(DigitalSink.empty())
       self.led[i] = self.Block(IndicatorLed())
       self.connect(io, self.led[i].signal)

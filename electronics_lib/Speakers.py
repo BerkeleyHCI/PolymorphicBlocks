@@ -144,11 +144,11 @@ class Tpa2005d1(Interface, GeneratorBlock):
     self.sig = self.Port(AnalogSink.empty(), [Input])
     self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
-    self.generator(self.generate, gain)
+    self.gain_value = self.GeneratorParam(gain, Range)
 
-  def generate(self, gain: Range):
+  def generate(self):
     import math
-    super().contents()
+    super().generate()
 
     self.pwr_cap = self.Block(DecouplingCapacitor(
       capacitance=0.1*uFarad(tol=0.2),  # recommended Vcc cap per 11.1
@@ -158,7 +158,7 @@ class Tpa2005d1(Interface, GeneratorBlock):
     )).connected(self.gnd, self.pwr)  # "charge reservoir" recommended cap per 11.1, 2.2-10uF (+20% tolerance)
 
     # Note, gain = 2 * (142k to 158k)/Ri, recommended gain < 20V/V
-    res_value = Range.cancel_multiply(2 * Range(142e3, 158e3), 1 / gain)
+    res_value = Range.cancel_multiply(2 * Range(142e3, 158e3), 1 / self.gain_value.get())
     in_res_model = Resistor(
       resistance=res_value
     )

@@ -55,11 +55,12 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
         self.kicad_value = self.ArgParameter(kicad_value)
         self.kicad_datasheet = self.ArgParameter(kicad_datasheet)
 
-        self.generator(self.generate, kicad_pins)
+        self.kicad_pins_value = self.GeneratorParam(kicad_pins, List[str])
 
-    def generate(self, kicad_pins: List[str]):
+    def generate(self):
+        super().generate()
         mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)
-                   for pin_name in kicad_pins}
+                   for pin_name in self.kicad_pins_value.get()}
         self.ports.defined()
         self.footprint(self.kicad_refdes_prefix, self.kicad_footprint, mapping,
                        part=self.kicad_part, value=self.kicad_value, datasheet=self.kicad_datasheet)

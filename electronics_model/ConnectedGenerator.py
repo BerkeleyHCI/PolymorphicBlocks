@@ -36,10 +36,11 @@ class BaseConnectedGenerator(DefaultConnectionBlock, GeneratorBlock, Generic[Out
     self.in_default = self.Port(self.INPUTS_TYPE.empty())
     self.in_is_connected = self.ArgParameter(in_is_connected)
 
-    self.generator(self.generate, self.in_is_connected)
+    self.in_is_connected_value = self.GeneratorParam(in_is_connected, bool)
 
-  def generate(self, input_connected: bool):
-    if input_connected:
+  def generate(self):
+    super().generate()
+    if self.in_is_connected_value.get():
       self.connect(self.out, self.in_connected)
       self.in_default.init_from(self.INPUTS_TYPE())  # create ideal port
     else:

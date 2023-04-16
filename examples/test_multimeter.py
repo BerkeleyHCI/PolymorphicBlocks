@@ -27,11 +27,12 @@ class ResistorMux(Interface, KiCadImportableBlock, GeneratorBlock):
     self.input = self.Port(Passive.empty())  # resistor side
     self.com = self.Export(self.switch.com)  # switch side
 
-    self.generator(self.generate, resistances)
+    self.resistances_value = self.GeneratorParam(resistances, List[Range])
 
-  def generate(self, resistances: List[Range]):
+  def generate(self):
+    super().generate()
     self.res = ElementDict[Resistor]()
-    for i, resistance in enumerate(resistances):
+    for i, resistance in enumerate(self.resistances_value.get()):
       if resistance.upper == float('inf'):  # open circuit for this step
         self.dummy = self.Block(DummyPassive())
         self.connect(self.dummy.io, self.switch.inputs.request(str(i)))

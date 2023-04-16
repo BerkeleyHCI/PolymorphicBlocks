@@ -96,14 +96,16 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
     self.connect(self.usb, self.conn.usb)
     self.cc = self.Port(UsbCcPort.empty(), optional=True)  # external connectivity defines the circuit
 
-    self.generator(self.generate, self.pwr.is_connected(), self.cc.is_connected())
+    self.pwr_connected = self.GeneratorParam(self.pwr.is_connected())
+    self.cc_connected = self.GeneratorParam(self.pwr.is_connected())
 
-  def generate(self, pwr_connected: bool, cc_connected: bool) -> None:
-    if cc_connected:  # if CC externally connected, connect directly to USB port
+  def generate(self) -> None:
+    super().generate()
+    if self.cc_connected.get():  # if CC externally connected, connect directly to USB port
       self.connect(self.cc, self.conn.cc)
       self.require(self.cc.is_connected().implies(self.pwr.is_connected()),
                    "USB power not used when CC connected")
-    elif pwr_connected:  # otherwise generate the pulldown resistors for USB2 mode
+    elif self.pwr_connected.get():  # otherwise generate the pulldown resistors for USB2 mode
       (self.cc_pull, ), _ = self.chain(self.conn.cc, self.Block(UsbCcPulldownResistor()))
       self.connect(self.cc_pull.gnd, self.gnd)
       self.require(self.pwr.voltage_out == UsbConnector.USB2_VOLTAGE_RANGE,
