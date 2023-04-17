@@ -7,14 +7,14 @@ from .Microcontroller_Esp import EspProgrammingHeader
 
 
 @abstract_block
-class Esp32c3_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock):
+class Esp32c3_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock):
   """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5, and USB.
   PlatformIO: use board ID esp32-c3-devkitm-1
 
   Chip datasheet: https://espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf
   """
-  def __init__(self, **kwargs) -> None:
-    super().__init__(**kwargs)
+  def __init__(self) -> None:
+    super().__init__()
 
     self.pwr = self.Port(VoltageSink(
       voltage_limits=(3.0, 3.6)*Volt,  # section 4.2
@@ -94,19 +94,11 @@ class Esp32c3_Device(PinMappable, BaseIoController, InternalSubcircuit, Generato
 
     # TODO add JTAG support
 
-    self.generator(self.generate, self.pin_assigns,
-                   self.gpio.requested(), self.adc.requested(),
-                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
-                   self.usb.requested())
-
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-  def generate(self, assignments: List[str],
-               gpio_requests: List[str], adc_requests: List[str],
-               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
-               usb_requests: List[str]) -> None: ...
-
+  def generate(self) -> None:
+    super().generate()
 
 class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
   """ESP32C module
@@ -137,27 +129,17 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
     'GPIO0': '18',
   }
 
-  def generate(self, assignments: List[str],
-               gpio_requests: List[str], adc_requests: List[str],
-               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
-               usb_requests: List[str]) -> None:
-    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
+  def generate(self) -> None:
+    super().generate()
 
-    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
-      (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
-      (UartPort, uart_requests),
-      (AnalogSink, adc_requests), (DigitalBidir, gpio_requests),
-    ], assignments)
-    self.generator_set_allocation(allocated)
-
-    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports(), allocated)
-    self.assign(self.io_current_draw, io_current_draw)
+    system_pinmaps = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
+    io_pinmaps = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP)
 
     self.assign(self.lcsc_part, 'C2934560')
     self.assign(self.actual_basic_part, False)
     self.footprint(
       'U', 'RF_Module:ESP-WROOM-02',
-      dict(chain(system_pins.items(), io_pins.items())),
+      dict(chain(system_pinmaps.items(), self._allocate_pins(io_pinmaps).items())),
       mfr='Espressif Systems', part='ESP32-C3-WROOM-02',
       datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf',
     )

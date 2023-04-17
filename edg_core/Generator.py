@@ -49,7 +49,6 @@ class GeneratorBlock(Block):
 
     tpe exists only to provide a type hint to mypy, since it can't seen to infer WrappedType.
     It can be omitted if not static type checking."""
-    assert type(self).generate is not GeneratorBlock.generate, "GeneratorParam must be used with generate()"
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call GeneratorParameter(...) outside __init__",
                                  "call GeneratorParameter(...) inside __init__ only, and remember to call super().__init__()")
@@ -106,6 +105,7 @@ class GeneratorBlock(Block):
       pb.generator.SetInParent()  # even if rest of the fields are empty, make sure to create a record
 
       if self._generator is not None:  # legacy generator style
+        assert len(self._generator_params.items()) == 0, "self.generator() must not have GeneratorParams"
         for req_param in self._generator.req_params:
           pb.generator.required_params.add().CopyFrom(ref_map[req_param])
       elif type(self).generate is not GeneratorBlock.generate:
