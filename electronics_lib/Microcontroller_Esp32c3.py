@@ -13,8 +13,8 @@ class Esp32c3_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock
 
   Chip datasheet: https://espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf
   """
-  def __init__(self) -> None:
-    super().__init__()
+  def __init__(self, **kwargs) -> None:
+    super().__init__(**kwargs)
 
     self.pwr = self.Port(VoltageSink(
       voltage_limits=(3.0, 3.6)*Volt,  # section 4.2
@@ -40,7 +40,8 @@ class Esp32c3_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock
     # similarly, the programming UART is fixed and allocated separately
     self.uart0 = self.Port(UartPort(dio_model), optional=True)
 
-    self.system_pinmaps = VariantPinRemapper({
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return {
       'Vdd': self.pwr,
       'Vss': self.gnd,
       'EN': self.en,
@@ -49,7 +50,18 @@ class Esp32c3_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock
       'GPIO9': self.io9,
       'TXD': self.uart0.tx,
       'RXD': self.uart0.rx,
-    })
+    }
+
+  def _io_pinmap(self) -> PinMapUtil:
+    # TODO DEDUP DIO MODEL
+    dio_model = DigitalBidir.from_supply(  # table 4.4
+      self.gnd, self.pwr,
+      voltage_limit_tolerance=(-0.3, 0.3)*Volt,
+      current_limits=(-28, 40)*mAmp,
+      current_draw=(0, 0)*Amp,
+      input_threshold_factor=(0.25, 0.75),
+      pullup_capable=True, pulldown_capable=True,
+    )
 
     adc_model = AnalogSink(
       voltage_limits=(0, 2.5) * Volt,  # table 15, effective ADC range
@@ -61,7 +73,7 @@ class Esp32c3_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock
     spi_model = SpiMaster(DigitalBidir.empty(), (0, 60)*MHertz)  # section 3.4.2, max block in GP master mode
     i2c_model = I2cMaster(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s
 
-    self.abstract_pinmaps = PinMapUtil([  # section 2.2
+    return PinMapUtil([  # section 2.2
       PinResource('GPIO0', {'GPIO0': dio_model, 'ADC1_CH0': adc_model}),  # also XTAL_32K_P
       PinResource('GPIO1', {'GPIO1': dio_model, 'ADC1_CH1': adc_model}),  # also XTAL_32K_N
       # PinResource('GPIO2', {'GPIO2': dio_model, 'ADC1_CH2': adc_model}),  # boot pin, non-allocatable
@@ -92,11 +104,6 @@ class Esp32c3_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock
       }),
     ])
 
-    # TODO add JTAG support
-
-  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
-  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
-
   def generate(self) -> None:
     super().generate()
 
@@ -105,44 +112,43 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf
   """
-  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-    'Vdd': '1',
-    'Vss': ['9', '19'],  # 19 is EP
-    'EN': '2',
-    'GPIO2': '16',
-    'GPIO8': '7',
-    'GPIO9': '8',
-    'RXD': '11',  # RXD, GPIO20
-    'TXD': '12',  # TXD, GPIO21
-  }
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return VariantPinRemapper(super()._system_pinmap()).remap({
+      'Vdd': '1',
+      'Vss': ['9', '19'],  # 19 is EP
+      'EN': '2',
+      'GPIO2': '16',
+      'GPIO8': '7',
+      'GPIO9': '8',
+      'RXD': '11',  # RXD, GPIO20
+      'TXD': '12',  # TXD, GPIO21
+    })
 
-  RESOURCE_PIN_REMAP = {
-    'MTMS': '3',  # GPIO4
-    'MTDI': '4',  # GPIO5
-    'MTCK': '5',  # GPIO6
-    'MTDO': '6',  # GPIO7
-    'GPIO10': '10',
-    'GPIO18': '13',
-    'GPIO19': '14',
-    'GPIO3': '15',
-    'GPIO1': '17',
-    'GPIO0': '18',
-  }
+  def _io_pinmap(self) -> PinMapUtil:
+    return super()._io_pinmap().remap_pins({
+      'MTMS': '3',  # GPIO4
+      'MTDI': '4',  # GPIO5
+      'MTCK': '5',  # GPIO6
+      'MTDO': '6',  # GPIO7
+      'GPIO10': '10',
+      'GPIO18': '13',
+      'GPIO19': '14',
+      'GPIO3': '15',
+      'GPIO1': '17',
+      'GPIO0': '18',
+    })
 
   def generate(self) -> None:
     super().generate()
 
-    system_pinmaps = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
-    io_pinmaps = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP)
-
-    self.assign(self.lcsc_part, 'C2934560')
-    self.assign(self.actual_basic_part, False)
     self.footprint(
       'U', 'RF_Module:ESP-WROOM-02',
-      dict(chain(system_pinmaps.items(), self._allocate_pins(io_pinmaps).items())),
+      self._make_pinning(),
       mfr='Espressif Systems', part='ESP32-C3-WROOM-02',
       datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf',
     )
+    self.assign(self.lcsc_part, 'C2934560')
+    self.assign(self.actual_basic_part, False)
 
 
 class Esp32c3_Wroom02(PinMappable, Microcontroller, Radiofrequency, IoController, Block):

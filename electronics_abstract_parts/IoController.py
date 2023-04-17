@@ -113,8 +113,8 @@ class BaseIoController(Block):
 @non_library
 class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
   """BaseIoController with generator code to set pin mappings"""
-  def __init__(self) -> None:
-    super().__init__()
+  def __init__(self, **kwargs) -> None:
+    super().__init__(**kwargs)
     from edg_core.Generator import GeneratorParam
     # TODO dedup w/ BaseIoController _io_ports
     self._pinmap_io_ports: List[Tuple[Type[Port], Vector[Any]]] = [  # ordered by assignment order, most restrictive should be first
@@ -130,29 +130,23 @@ class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
 
     self.assignments_value = self.GeneratorParam(self.pin_assigns)
 
-  def _allocate_pins(self, io_pinmaps: PinMapUtil) -> Dict[str, CircuitPort]:
-    allocated = io_pinmaps.allocate(
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    """Implement me. Defines the fixed pin mappings from pin number to port."""
+    raise NotImplementedError
+
+  def _io_pinmap(self) -> PinMapUtil:
+    """Implement me. Defines the assignable IO pinmaps."""
+    raise NotImplementedError
+
+  def _make_pinning(self) -> Dict[str, CircuitPort]:
+    allocated = self._io_pinmap().allocate(
       [(port_tpe, self.io_requested[str(port_tpe)].get()) for (port_tpe, io_port) in self._pinmap_io_ports],
       self.assignments_value.get())
     self.generator_set_allocation(allocated)
     io_pins, current_draw = self._instantiate_from(self._get_io_ports(), allocated)
     self.assign(self.io_current_draw, current_draw)
 
-    return io_pins
-
-  # def generate(self):
-  #   super().generate()
-  #
-  #   self.assign(self.has_chip_pu, True)
-  #
-  #   self.assign(self.lcsc_part, 'C701342')
-  #   self.assign(self.actual_basic_part, False)
-  #   self.footprint(
-  #     'U', 'RF_Module:ESP32-WROOM-32',
-  #     dict(chain(self.system_pinmaps.items(), self.allocate_pins(io_pinmaps).items())),
-  #     mfr='Espressif Systems', part='ESP32-WROOM-32',
-  #     datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf',
-  #   )
+    return dict(chain(self._system_pinmap().items(), io_pins.items()))
 
 
 @abstract_block_default(lambda: IdealIoController)
