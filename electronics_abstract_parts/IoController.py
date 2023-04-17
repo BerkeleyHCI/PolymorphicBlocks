@@ -1,7 +1,9 @@
-from typing import List, Dict, Tuple
+from itertools import chain
+from typing import List, Dict, Tuple, Type, Any, Optional
 
 from electronics_model import *
-from .PinMappable import AllocatedResource
+from . import VariantPinRemapper
+from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
 from .Categories import ProgrammableController, IdealModel
 
 
@@ -27,8 +29,9 @@ class BaseIoController(Block):
 
     self.io_current_draw = self.Parameter(RangeExpr())  # total current draw for all leaf-level IO sinks
 
-    self._io_ports: List[BasePort] = [
-      self.gpio, self.adc, self.dac, self.spi, self.i2c, self.uart, self.usb, self.can]
+    # TODO dedup w/ pinmapping IO port w/ port type
+    self._io_ports: List[BasePort] = [  # ordered by assignment order, most restrictive should be first
+      self.dac, self.adc, self.spi, self.i2c, self.uart, self.usb, self.can, self.gpio]
 
   def _get_io_ports(self) -> List[BasePort]:
     """Returns all the IO ports of this BaseIoController as a list"""
@@ -105,6 +108,51 @@ class BaseIoController(Block):
         raise NotImplementedError(f"unknown allocation pin type {allocation.pin}")
 
     return (pinmap, io_current_draw_builder)
+
+
+class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
+  """BaseIoController with generator code to set pin mappings"""
+  def __init__(self) -> None:
+    super().__init__()
+    from edg_core.Generator import GeneratorParam
+    # TODO dedup w/ BaseIoController _io_ports
+    self._pinmap_io_ports: List[Tuple[Type[Port], Vector[Any]]] = [  # ordered by assignment order, most restrictive should be first
+      (AnalogSource, self.dac), (AnalogSink, self.adc),
+      (SpiMaster, self.spi), (I2cMaster, self.i2c), (UartPort, self.uart),
+      (UsbDevicePort, self.usb), (CanControllerPort, self.can),
+      (DigitalBidir, self.gpio)
+    ]
+
+    self.io_requested = ElementDict[GeneratorParam[List[str]]]()
+    self.assignments_value = self.GeneratorParam(self.pin_assigns)
+
+  def contents(self) -> None:
+    for (port_tpe, io_port) in self._pinmap_io_ports:
+      self.io_requested[str(port_tpe)] = self.GeneratorParam(io_port.requested())
+
+  def allocate_pins(self, io_pinmaps: PinMapUtil) -> Dict[str, CircuitPort]:
+    allocated = io_pinmaps.allocate(
+      [(port_tpe, self.io_requested[str(port_tpe)].get()) for (port_tpe, io_port) in self._pinmap_io_ports],
+      self.assignments_value.get())
+    self.generator_set_allocation(allocated)
+    io_pins, current_draw = self._instantiate_from(self._get_io_ports(), allocated)
+    self.assign(self.io_current_draw, current_draw)
+
+    return io_pins
+
+  def generate(self):
+    super().generate()
+
+    self.assign(self.has_chip_pu, True)
+
+    self.assign(self.lcsc_part, 'C701342')
+    self.assign(self.actual_basic_part, False)
+    self.footprint(
+      'U', 'RF_Module:ESP32-WROOM-32',
+      dict(chain(self.system_pinmaps.items(), self.allocate_pins(io_pinmaps).items())),
+      mfr='Espressif Systems', part='ESP32-WROOM-32',
+      datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf',
+    )
 
 
 @abstract_block_default(lambda: IdealIoController)
