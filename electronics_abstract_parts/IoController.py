@@ -31,16 +31,26 @@ class BaseIoController(Block):
     self._io_ports: List[BasePort] = [  # ordered by assignment order, most restrictive should be first
       self.dac, self.adc, self.spi, self.i2c, self.uart, self.usb, self.can, self.gpio]
 
+  def _type_of_io(self, io_port: BasePort) -> Type[Port]:
+    if isinstance(io_port, Vector):
+      return io_port.elt_type()
+    elif isinstance(io_port, Port):
+      return type(io_port)
+    else:
+      raise NotImplementedError(f"unknown port type {io_port}")
+
   def _export_ios_from(self, inner: 'BaseIoController', excludes: List[BasePort] = []) -> None:
     """Exports all the IO ports from an inner BaseIoController to this block's IO ports.
     Optional exclude list, for example if a more complex connection is needed."""
     assert isinstance(inner, BaseIoController), "can only export from inner block of type BaseIoController"
-    assert len(self._io_ports) == len(inner._io_ports), "self and inner must have same IO ports"
+    self_ios_by_type = {self._type_of_io(io_port): io_port for io_port in self._io_ports}
     exclude_set = IdentitySet(*excludes)
-    for (self_io, inner_io) in zip(self._io_ports, inner._io_ports):
-      assert self_io._type_of() == inner_io._type_of(), "IO ports must be of same type"
-      if self_io not in exclude_set:
-        self.connect(self_io, inner_io)
+    for inner_io in inner._io_ports:
+      if inner_io in exclude_set:
+        continue
+      inner_io_type = self._type_of_io(inner_io)
+      assert inner_io_type in self_ios_by_type, f"outer missing IO of type {inner_io_type}"
+      self.connect(self_ios_by_type[inner_io_type], inner_io)
     self.assign(self.io_current_draw, inner.io_current_draw)
 
   @staticmethod
@@ -110,18 +120,20 @@ class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
     from edg_core.Generator import GeneratorParam
-
     self.io_requested = ElementDict[GeneratorParam[List[str]]]()
     self.io_connected = ElementDict[GeneratorParam[bool]]()
-    for io_port in self._io_ports:
+
+    self.pin_assigns_value = self.GeneratorParam(self.pin_assigns)
+
+  def contents(self):
+    super().contents()
+    for io_port in self._io_ports:  # defined in contents() so subclass __init__ can define additional _io_ports
       if isinstance(io_port, Vector):
         self.io_requested[str(io_port.elt_type())] = self.GeneratorParam(io_port.requested())
       elif isinstance(io_port, Port):
         self.io_connected[str(type(io_port))] = self.GeneratorParam(io_port.is_connected())
       else:
         raise NotImplementedError(f"unknown port type {io_port}")
-
-    self.assignments_value = self.GeneratorParam(self.pin_assigns)
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     """Implement me. Defines the fixed pin mappings from pin number to port."""
@@ -145,7 +157,7 @@ class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
       else:
         raise NotImplementedError(f"unknown port type {io_port}")
 
-    allocated = self._io_pinmap().allocate(allocation_list, self.assignments_value.get())
+    allocated = self._io_pinmap().allocate(allocation_list, self.pin_assigns_value.get())
     self.generator_set_allocation(allocated)
     io_pins, current_draw = self._instantiate_from(self._io_ports, allocated)
     self.assign(self.io_current_draw, current_draw)

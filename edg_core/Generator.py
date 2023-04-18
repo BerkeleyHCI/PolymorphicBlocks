@@ -48,9 +48,9 @@ class GeneratorBlock(Block):
 
     tpe exists only to provide a type hint to mypy, since it can't seen to infer WrappedType.
     It can be omitted if not static type checking."""
-    if self._elaboration_state != BlockElaborationState.init:
-      raise BlockDefinitionError(self, "can't call GeneratorParameter(...) outside __init__",
-                                 "call GeneratorParameter(...) inside __init__ only, and remember to call super().__init__()")
+    if self._elaboration_state not in (BlockElaborationState.init, BlockElaborationState.contents):
+      raise BlockDefinitionError(self, "can't call GeneratorParameter(...) outside __init__ or contents",
+                                 "call GeneratorParameter(...) inside __init__ or contents only, and remember to call super().__init__()")
     if not isinstance(param, ConstraintExpr):
       raise TypeError(f"param to GeneratorParameter(...) must be ConstraintExpr, got {param} of type {type(param)}")
     if param.binding is None:
