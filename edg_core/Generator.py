@@ -6,12 +6,11 @@ from deprecated import deprecated
 
 import edgir
 from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding
-from .Blocks import BlockElaborationState
+from .Blocks import BlockElaborationState, AbstractBlockProperty
 from .ConstraintExpr import ConstraintExpr
 from .Core import non_library
 from .HdlUserExceptions import *
 from .HierarchyBlock import Block
-from .Ports import Port
 
 
 WrappedType = TypeVar('WrappedType', bound=Any)
@@ -111,6 +110,8 @@ class GeneratorBlock(Block):
       elif type(self).generate is not GeneratorBlock.generate:
         for name, gen_param in self._generator_params.items():
           pb.generator.required_params.add().CopyFrom(ref_map[gen_param._expr])
+      elif (self.__class__, AbstractBlockProperty) in self._elt_properties:
+        pass  # abstract blocks allowed to not define a generator
       else:
         raise BlockDefinitionError(self, "Generator missing generate implementation", "define generate")
       return pb
@@ -130,6 +131,7 @@ class GeneratorBlock(Block):
     ref_map = self._get_ref_map(edgir.LocalPath())
     generate_values_map = {path.SerializeToString(): value for (path, value) in generate_values}
 
+    assert (self.__class__, AbstractBlockProperty) not in self._elt_properties  # abstract blocks can't generate
     if self._generator is not None:  # legacy generator style
       fn_args = [arg_param._from_lit(generate_values_map[ref_map[arg_param].SerializeToString()])
                  for arg_param in self._generator.fn_args]

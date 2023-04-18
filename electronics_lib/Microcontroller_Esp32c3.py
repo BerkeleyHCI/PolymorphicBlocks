@@ -1,4 +1,3 @@
-from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
@@ -22,7 +21,7 @@ class Esp32c3_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
-    dio_model = DigitalBidir.from_supply(  # table 4.4
+    self._dio_model = DigitalBidir.from_supply(  # table 4.4
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,
       current_limits=(-28, 40)*mAmp,
@@ -32,13 +31,13 @@ class Esp32c3_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock
     )
 
     # section 2.4: strapping IOs that need a fixed value to boot, and currently can't be allocated as GPIO
-    self.en = self.Port(dio_model)  # needs external pullup
-    self.io2 = self.Port(dio_model)  # needs external pullup
-    self.io8 = self.Port(dio_model)  # needs external pullup, may control prints
-    self.io9 = self.Port(dio_model, optional=True)  # internally pulled up for SPI boot, connect to GND for download
+    self.en = self.Port(self._dio_model)  # needs external pullup
+    self.io2 = self.Port(self._dio_model)  # needs external pullup
+    self.io8 = self.Port(self._dio_model)  # needs external pullup, may control prints
+    self.io9 = self.Port(self._dio_model, optional=True)  # internally pulled up for SPI boot, connect to GND for download
 
     # similarly, the programming UART is fixed and allocated separately
-    self.uart0 = self.Port(UartPort(dio_model), optional=True)
+    self.uart0 = self.Port(UartPort(self._dio_model), optional=True)
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return {
@@ -53,16 +52,6 @@ class Esp32c3_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock
     }
 
   def _io_pinmap(self) -> PinMapUtil:
-    # TODO DEDUP DIO MODEL
-    dio_model = DigitalBidir.from_supply(  # table 4.4
-      self.gnd, self.pwr,
-      voltage_limit_tolerance=(-0.3, 0.3)*Volt,
-      current_limits=(-28, 40)*mAmp,
-      current_draw=(0, 0)*Amp,
-      input_threshold_factor=(0.25, 0.75),
-      pullup_capable=True, pulldown_capable=True,
-    )
-
     adc_model = AnalogSink(
       voltage_limits=(0, 2.5) * Volt,  # table 15, effective ADC range
       current_draw=(0, 0) * Amp,
@@ -74,21 +63,21 @@ class Esp32c3_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock
     i2c_model = I2cMaster(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s
 
     return PinMapUtil([  # section 2.2
-      PinResource('GPIO0', {'GPIO0': dio_model, 'ADC1_CH0': adc_model}),  # also XTAL_32K_P
-      PinResource('GPIO1', {'GPIO1': dio_model, 'ADC1_CH1': adc_model}),  # also XTAL_32K_N
+      PinResource('GPIO0', {'GPIO0': self._dio_model, 'ADC1_CH0': adc_model}),  # also XTAL_32K_P
+      PinResource('GPIO1', {'GPIO1': self._dio_model, 'ADC1_CH1': adc_model}),  # also XTAL_32K_N
       # PinResource('GPIO2', {'GPIO2': dio_model, 'ADC1_CH2': adc_model}),  # boot pin, non-allocatable
-      PinResource('GPIO3', {'GPIO3': dio_model, 'ADC1_CH3': adc_model}),
-      PinResource('MTMS', {'GPIO4': dio_model, 'ADC1_CH4': adc_model}),
-      PinResource('MTDI', {'GPIO5': dio_model, 'ADC2_CH0': adc_model}),
-      PinResource('MTCK', {'GPIO6': dio_model}),
-      PinResource('MTDO', {'GPIO7': dio_model}),
+      PinResource('GPIO3', {'GPIO3': self._dio_model, 'ADC1_CH3': adc_model}),
+      PinResource('MTMS', {'GPIO4': self._dio_model, 'ADC1_CH4': adc_model}),
+      PinResource('MTDI', {'GPIO5': self._dio_model, 'ADC2_CH0': adc_model}),
+      PinResource('MTCK', {'GPIO6': self._dio_model}),
+      PinResource('MTDO', {'GPIO7': self._dio_model}),
       # PinResource('GPIO8', {'GPIO8': dio_model}),  # boot pin, non-allocatable
       # PinResource('GPIO9', {'GPIO9': dio_model}),  # boot pin, non-allocatable
-      PinResource('GPIO10', {'GPIO10': dio_model}),
-      PinResource('VDD_SPI', {'GPIO11': dio_model}),
+      PinResource('GPIO10', {'GPIO10': self._dio_model}),
+      PinResource('VDD_SPI', {'GPIO11': self._dio_model}),
       # SPI pins skipped - internal to the modules supported so far
-      PinResource('GPIO18', {'GPIO18': dio_model}),
-      PinResource('GPIO19', {'GPIO19': dio_model}),
+      PinResource('GPIO18', {'GPIO18': self._dio_model}),
+      PinResource('GPIO19', {'GPIO19': self._dio_model}),
       # PinResource('GPIO20', {'GPIO20': dio_model}),  # boot pin, non-allocatable
       # PinResource('GPIO21', {'GPIO21': dio_model}),  # boot pin, non-allocatable
 
@@ -104,8 +93,6 @@ class Esp32c3_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock
       }),
     ])
 
-  def generate(self) -> None:
-    super().generate()
 
 class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
   """ESP32C module
