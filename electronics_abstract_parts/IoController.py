@@ -1,8 +1,7 @@
 from itertools import chain
-from typing import List, Dict, Tuple, Type, Any, Optional
+from typing import List, Dict, Tuple, Type, Any
 
 from electronics_model import *
-from . import VariantPinRemapper
 from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
 from .Categories import ProgrammableController, IdealModel
 
@@ -29,13 +28,8 @@ class BaseIoController(Block):
 
     self.io_current_draw = self.Parameter(RangeExpr())  # total current draw for all leaf-level IO sinks
 
-    # TODO dedup w/ pinmapping IO port w/ port type
     self._io_ports: List[BasePort] = [  # ordered by assignment order, most restrictive should be first
       self.dac, self.adc, self.spi, self.i2c, self.uart, self.usb, self.can, self.gpio]
-
-  def _get_io_ports(self) -> List[BasePort]:
-    """Returns all the IO ports of this BaseIoController as a list"""
-    return self._io_ports
 
   def _export_ios_from(self, inner: 'BaseIoController', excludes: List[BasePort] = []) -> None:
     """Exports all the IO ports from an inner BaseIoController to this block's IO ports.
@@ -116,17 +110,16 @@ class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
     from edg_core.Generator import GeneratorParam
-    # TODO dedup w/ BaseIoController _io_ports
-    self._pinmap_io_ports: List[Tuple[Type[Port], Vector[Any]]] = [  # ordered by assignment order, most restrictive should be first
-      (AnalogSource, self.dac), (AnalogSink, self.adc),
-      (SpiMaster, self.spi), (I2cMaster, self.i2c), (UartPort, self.uart),
-      (UsbDevicePort, self.usb), (CanControllerPort, self.can),
-      (DigitalBidir, self.gpio)
-    ]
 
     self.io_requested = ElementDict[GeneratorParam[List[str]]]()
-    for (port_tpe, io_port) in self._pinmap_io_ports:
-      self.io_requested[str(port_tpe)] = self.GeneratorParam(io_port.requested())
+    self.io_connected = ElementDict[GeneratorParam[bool]]()
+    for io_port in self._io_ports:
+      if isinstance(io_port, Vector):
+        self.io_requested[str(io_port.elt_type())] = self.GeneratorParam(io_port.requested())
+      elif isinstance(io_port, Port):
+        self.io_connected[str(type(io_port))] = self.GeneratorParam(io_port.is_connected())
+      else:
+        raise NotImplementedError(f"unknown port type {io_port}")
 
     self.assignments_value = self.GeneratorParam(self.pin_assigns)
 
@@ -140,10 +133,10 @@ class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
 
   def _make_pinning(self) -> Dict[str, CircuitPort]:
     allocated = self._io_pinmap().allocate(
-      [(port_tpe, self.io_requested[str(port_tpe)].get()) for (port_tpe, io_port) in self._pinmap_io_ports],
+      [(io_port.elt_type(), self.io_requested[str(io_port.elt_type())].get()) for io_port in self._io_ports],
       self.assignments_value.get())
     self.generator_set_allocation(allocated)
-    io_pins, current_draw = self._instantiate_from(self._get_io_ports(), allocated)
+    io_pins, current_draw = self._instantiate_from(self._io_ports, allocated)
     self.assign(self.io_current_draw, current_draw)
 
     return dict(chain(self._system_pinmap().items(), io_pins.items()))
@@ -176,14 +169,6 @@ class IdealIoController(IoController, IdealModel, GeneratorBlock):
     self.pwr.init_from(VoltageSink())
     self.gnd.init_from(Ground())
 
-    dio_model = DigitalBidir(
-      voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage),
-      pullup_capable=True, pulldown_capable=True
-    )
-
-    self.gpio.defined()
-    for elt in gpio_requests:
-      self.gpio.append_elt(dio_model, elt)
     self.adc.defined()
     for elt in adc_requests:
       self.adc.append_elt(AnalogSink(), elt)
@@ -192,6 +177,16 @@ class IdealIoController(IoController, IdealModel, GeneratorBlock):
       self.dac.append_elt(AnalogSource(
         voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage)
       ), elt)
+
+    dio_model = DigitalBidir(
+      voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage),
+      pullup_capable=True, pulldown_capable=True
+    )
+
+    self.gpio.defined()
+    for elt in gpio_requests:
+      self.gpio.append_elt(dio_model, elt)
+
     self.spi.defined()
     for elt in spi_requests:
       self.spi.append_elt(SpiMaster(dio_model), elt)
