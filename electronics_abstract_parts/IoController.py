@@ -132,9 +132,20 @@ class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
     raise NotImplementedError
 
   def _make_pinning(self) -> Dict[str, CircuitPort]:
-    allocated = self._io_pinmap().allocate(
-      [(io_port.elt_type(), self.io_requested[str(io_port.elt_type())].get()) for io_port in self._io_ports],
-      self.assignments_value.get())
+    allocation_list = []
+    for io_port in self._io_ports:
+      if isinstance(io_port, Vector):  # derive Vector connections from requested
+        allocation_list.append((io_port.elt_type(), self.io_requested[str(io_port.elt_type())].get()))
+      elif isinstance(io_port, Port):  # derive Port connections from is_connected
+        if self.io_connected[str(type(io_port))].get():
+          requested = [self._name_of_child(io_port)]  # generate requested name from port name if connected
+        else:
+          requested = []
+        allocation_list.append((type(io_port), requested))
+      else:
+        raise NotImplementedError(f"unknown port type {io_port}")
+
+    allocated = self._io_pinmap().allocate(allocation_list, self.assignments_value.get())
     self.generator_set_allocation(allocated)
     io_pins, current_draw = self._instantiate_from(self._io_ports, allocated)
     self.assign(self.io_current_draw, current_draw)
