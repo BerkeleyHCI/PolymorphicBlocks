@@ -332,11 +332,16 @@ class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnect
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator(self.generate, self.can.requested(), self.usb.requested(),
-                   self.pin_assigns, self.gpio.requested(), self.swd_swo_pin, self.swd_tdi_pin)
+    self.can_requested = self.GeneratorParam(self.can.requested())
+    self.usb_requested = self.GeneratorParam(self.usb.requested())
+    self.gpio_requested = self.GeneratorParam(self.gpio.requested())
 
-  def contents(self):
-    super().contents()
+    self.pin_assigns_value = self.GeneratorParam(self.pin_assigns)
+    self.swd_swo_pin_value = self.GeneratorParam(self.swd_swo_pin)
+    self.swd_tdi_pin_value = self.GeneratorParam(self.swd_tdi_pin)
+
+  def generate(self):
+    super().generate()
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
@@ -367,23 +372,22 @@ class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnect
                                         imp.Block(Lpc1549SwdPull()),
                                         self.ic.swd)
 
-  def generate(self, can_requested: List[str], usb_requested: List[str],
-               pin_assigns: List[str], gpio_requested: List[str], swd_swo_pin: str, swd_tdi_pin: str) -> None:
-    if can_requested or usb_requested:  # tighter frequency tolerances from CAN and USB usage require a crystal
+    if self.can_requested.get() or self.usb_requested.get():  # crystal needed for CAN or USB b/c tighter freq tolerance
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.xtal)
 
-    if swd_swo_pin != 'NC':
+    inner_pin_assigns = self.pin_assigns_value.get().copy()
+    if self.swd_swo_pin_value.get() != 'NC':
       self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
-      pin_assigns.append(f'swd_swo={swd_swo_pin}')
-    if swd_tdi_pin != 'NC':
+      inner_pin_assigns.append(f'swd_swo={self.swd_swo_pin_value.get()}')
+    if self.swd_tdi_pin_value.get() != 'NC':
       self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
-      pin_assigns.append(f'swd_tdi={swd_tdi_pin}')
-    self.assign(self.ic.pin_assigns, pin_assigns)
+      inner_pin_assigns.append(f'swd_tdi={self.swd_tdi_pin_value.get()}')
+    self.assign(self.ic.pin_assigns, inner_pin_assigns)
 
     gpio_model = DigitalBidir.empty()
-    for gpio_name in gpio_requested:
+    for gpio_name in self.gpio_requested.get():
       self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
     self.gpio.defined()
 
