@@ -10,6 +10,9 @@ from edg_core import *
 from edg_core.Core import NonLibraryProperty
 
 
+EDG_PROTO_VERSION = 1
+
+
 class LibraryElementIndexer:
   """Indexer for libraries, recursively searches modules and their LibraryElements."""
   def __init__(self):
@@ -137,6 +140,8 @@ if __name__ == '__main__':
           response_result = response.run_backend.results.add()
           response_result.path.CopyFrom(path)
           response_result.text = backend_result
+      elif request.HasField('get_proto_version'):
+        response.get_proto_version = EDG_PROTO_VERSION
       else:
         raise RuntimeError(f"Unknown request {request}")
     except BaseException as e:

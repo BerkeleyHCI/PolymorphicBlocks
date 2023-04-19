@@ -410,7 +410,7 @@ class HdlRequest(google.protobuf.message.Message):
     ELABORATE_GENERATOR_FIELD_NUMBER: builtins.int
     RUN_REFINEMENT_FIELD_NUMBER: builtins.int
     RUN_BACKEND_FIELD_NUMBER: builtins.int
-    GET_VERSION_FIELD_NUMBER: builtins.int
+    GET_PROTO_VERSION_FIELD_NUMBER: builtins.int
     @property
     def index_module(self) -> global___ModuleName:
         """returns an index of IR elements in a Python module"""
@@ -424,7 +424,7 @@ class HdlRequest(google.protobuf.message.Message):
     def run_refinement(self) -> global___RefinementRequest: ...
     @property
     def run_backend(self) -> global___BackendRequest: ...
-    get_version: builtins.int
+    get_proto_version: builtins.int
     """no data"""
     def __init__(
         self,
@@ -434,11 +434,11 @@ class HdlRequest(google.protobuf.message.Message):
         elaborate_generator: global___GeneratorRequest | None = ...,
         run_refinement: global___RefinementRequest | None = ...,
         run_backend: global___BackendRequest | None = ...,
-        get_version: builtins.int = ...,
+        get_proto_version: builtins.int = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "get_version", b"get_version", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "get_version", b"get_version", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["request", b"request"]) -> typing_extensions.Literal["index_module", "get_library_element", "elaborate_generator", "run_refinement", "run_backend", "get_version"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "get_proto_version", b"get_proto_version", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "get_proto_version", b"get_proto_version", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["request", b"request"]) -> typing_extensions.Literal["index_module", "get_library_element", "elaborate_generator", "run_refinement", "run_backend", "get_proto_version"] | None: ...
 
 global___HdlRequest = HdlRequest
 

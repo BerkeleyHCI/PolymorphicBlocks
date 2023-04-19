@@ -121,7 +121,7 @@ message HdlRequest {
     RefinementRequest run_refinement = 5;
     BackendRequest run_backend = 4;
 
-    uint32 get_version = 90;  // no data
+    uint32 get_proto_version = 90;  // no data
   }
 }
 
