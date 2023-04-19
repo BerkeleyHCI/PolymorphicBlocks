@@ -1,1 +1,1 @@
-include compiler/edg-compiler-precompiled.jar
+include edg/edg-compiler-precompiled.jar

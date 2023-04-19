@@ -79,13 +79,8 @@ object CompilerServerMain {
   }
 
   def main(args: Array[String]): Unit = {
-    val hdlServerFile = new File("edg_hdl_server/__main__.py")  // relative path
-    val hdlServerOption = if (hdlServerFile.exists()) {
-      println(s"Using local $hdlServerFile")
-      Some(hdlServerFile)
-    } else {
-      None
-    }
+    val hdlServerOption = PythonInterface.serverFileOption(None)  // local relative path
+    hdlServerOption.foreach { serverFile => println(s"Using local $serverFile") }
     val pyIf = new ForwardingPythonInterface(hdlServerOption)
     val pyLib = new PythonInterfaceLibrary()
     pyLib.withPythonInterface(pyIf) {

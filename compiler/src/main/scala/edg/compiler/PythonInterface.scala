@@ -113,6 +113,23 @@ class ProtobufStdioSubprocess
 }
 
 
+object PythonInterface {
+  private val kHdlServerFilePath = "edg_hdl_server/__main__.py"
+  // returns the HDL server Python script if it exists locally, otherwise returns None.
+  def serverFileOption(root: Option[File] = None): Option[File] = {
+    val hdlServerFile = root match {
+      case Some(root) => new File(root, kHdlServerFilePath)
+      case None => new File(kHdlServerFilePath)
+    }
+    if (hdlServerFile.exists()) {
+      Some(hdlServerFile)
+    } else {
+      None
+    }
+  }
+}
+
+
 /** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles
   * them down to IR.
   * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
