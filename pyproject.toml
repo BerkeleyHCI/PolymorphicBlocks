@@ -28,9 +28,9 @@ requires-python = ">=3.9"
 packages = ["edgir", "edgrpc", "edg_core", "edg_hdl_server", "electronics_model", "electronics_abstract_parts", "electronics_lib", "edg"]
 
 [tool.setuptools.package-data]
-edg_core = ["*.jar", "*.csv"]
-electronics_abstract_parts = ["*.csv", "*.kicad_sch"]
-electronics_lib = ["*.csv", "*.kicad_sch"]
+edg_core = ["resources/edg-compiler-precompiled.jar"]
+electronics_abstract_parts = ["resources/*.kicad_sch"]
+electronics_lib = ["resources/Pruned_JLCPCB SMT Parts Library(20220419).csv", "resources/*.kicad_sch"]
 
 [project.urls]
 Homepage = "https://github.com/BerkeleyHCI/PolymorphicBlocks"
