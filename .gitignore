@@ -23,6 +23,9 @@ BlinkyExample/
 
 Pipfile.lock
 
+# Python packaging
+edg.egg-info
+
 # mypy
 .mypy_cache/
 .dmypy.json

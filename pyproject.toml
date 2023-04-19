@@ -24,6 +24,9 @@ dependencies = [
 ]
 requires-python = ">=3.9"
 
+[tool.setuptools]
+packages = ["edgir", "edgrpc", "edg_core", "electronics_model", "electronics_abstract_parts", "electronics_lib", "edg"]
+
 [project.urls]
 Homepage = "https://github.com/BerkeleyHCI/PolymorphicBlocks"
 
