@@ -50,8 +50,8 @@ class CompiledDesign:
 
 
 class ScalaCompilerInstance:
-  PRECOMPIED_RELPATH = "compiler/edg-compiler-precompiled.jar"
-  DEV_RELPATH = "compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
+  DEV_RELPATH = "../compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
+  PRECOMPIED_RELPATH = "../compiler/edg-compiler-precompiled.jar"
 
   def __init__(self, *, suppress_stderr: bool = False):
     self.process: Optional[Any] = None
@@ -61,13 +61,15 @@ class ScalaCompilerInstance:
 
   def check_started(self) -> None:
     if self.process is None:
-      if os.path.exists(self.DEV_RELPATH):
-        jar_path = self.DEV_RELPATH
+      dev_path = os.path.join(os.path.dirname(__file__), self.DEV_RELPATH)
+      precompiled_path = os.path.join(os.path.dirname(__file__), self.PRECOMPIED_RELPATH)
+      if os.path.exists(dev_path):
+        jar_path = dev_path
         print("Using development JAR")
-      elif os.path.exists(self.PRECOMPIED_RELPATH):
-        jar_path = self.PRECOMPIED_RELPATH
+      elif os.path.exists(precompiled_path):
+        jar_path = precompiled_path
       else:
-        raise ValueError("No EDG Compiler JAR found")
+        raise ValueError(f"No EDG Compiler JAR found")
 
       self.process = subprocess.Popen(
         ['java', '-jar', jar_path],
