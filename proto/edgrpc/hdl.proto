@@ -120,6 +120,8 @@ message HdlRequest {
     GeneratorRequest elaborate_generator = 3;  // returns the elaborated IR
     RefinementRequest run_refinement = 5;
     BackendRequest run_backend = 4;
+
+    uint32 get_version = 90;  // no data
   }
 }
 
@@ -130,6 +132,8 @@ message HdlResponse {
     GeneratorResponse elaborate_generator = 3;
     RefinementResponse run_refinement = 5;
     BackendResponse run_backend = 4;
+
+    uint32 get_proto_version = 90;
 
     ErrorResponse error = 99;
   }

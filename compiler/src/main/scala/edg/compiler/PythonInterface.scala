@@ -116,11 +116,16 @@ class ProtobufStdioSubprocess
 /** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles
   * them down to IR.
   * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
+  *
+  * If the serverFile is specified, run that; otherwise use "python -m edg_hdl_server" for the global package.
   */
-class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
+class PythonInterface(serverFile: Option[File], pythonInterpreter: String = "python") {
+  val command = serverFile match {  // -u for unbuffered mode
+    case Some(serverFile) => Seq(pythonInterpreter, "-u", serverFile.getAbsolutePath)
+    case None => Seq(pythonInterpreter, "-u", "-m", "edg_hdl_server")
+  }
   protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
-    edgrpc.HdlResponse,
-    Seq(pythonInterpreter, "-u", serverFile.getAbsolutePath))  // in unbuffered mode
+    edgrpc.HdlResponse, command)
   val processOutputStream: InputStream = process.outputStream
   val processErrorStream: InputStream = process.errorStream
 
