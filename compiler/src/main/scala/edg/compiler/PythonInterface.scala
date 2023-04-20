@@ -114,7 +114,7 @@ class ProtobufStdioSubprocess
 
 
 object PythonInterface {
-  private val kHdlServerFilePath = "edg_hdl_server/__main__.py"
+  private val kHdlServerFilePath = "HdlInterfaceServer.py"
   // returns the HDL server Python script if it exists locally, otherwise returns None.
   def serverFileOption(root: Option[File] = None): Option[File] = {
     val hdlServerFile = root match {

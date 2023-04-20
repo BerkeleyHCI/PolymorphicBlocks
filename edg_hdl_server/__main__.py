@@ -79,9 +79,7 @@ def class_from_library(elt: edgir.LibraryPath, expected_superclass: Type[Library
   return cls
 
 
-# In some cases stdout seems to buffer excessively, in which case starting python with -u seems to work
-# https://stackoverflow.com/a/35467658/5875811
-if __name__ == '__main__':
+def run_server():
   stdin_deserializer = BufferDeserializer(edgrpc.HdlRequest, sys.stdin.buffer)
   stdout_serializer = BufferSerializer[edgrpc.HdlResponse](sys.stdout.buffer)
 
@@ -154,3 +152,9 @@ if __name__ == '__main__':
 
     sys.stdout.buffer.write(stdin_deserializer.read_stdout())
     stdout_serializer.write(response)
+
+
+# In some cases stdout seems to buffer excessively, in which case starting python with -u seems to work
+# https://stackoverflow.com/a/35467658/5875811
+if __name__ == '__main__':
+  run_server()
