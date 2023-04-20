@@ -51,7 +51,7 @@ class CompiledDesign:
 
 class ScalaCompilerInstance:
   DEV_RELPATH = "../compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
-  PRECOMPIED_RELPATH = "../compiler/edg-compiler-precompiled.jar"
+  PRECOMPIED_RELPATH = "resources/edg-compiler-precompiled.jar"
 
   def __init__(self, *, suppress_stderr: bool = False):
     self.process: Optional[Any] = None
