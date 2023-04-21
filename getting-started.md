@@ -86,10 +86,7 @@ However, you can't do both (since they would duplicate the same results), but yo
 ## A top-level design: Blinky
 _In this example, we will create a circuit consisting of a LED and switch connected to a microcontroller._
 
-For now, you will be working directly in the `PoylmorphicBlocks` repository folder directly.
-In the future, we will improve the flow to allow adding `PolymorphicBlocks` as a package dependency.
-
-Start by opening `blinky_skeleton.py`, which is pre-populated with this skeleton code:
+Start by creating a `blinky.py`, and filling it with this skeleton code:
 
 ```python
 from edg import *
@@ -104,6 +101,11 @@ class BlinkyExample(SimpleBoardTop):
 if __name__ == "__main__":
   compile_board_inplace(BlinkyExample)
 ```
+
+> If using the IDE, `blinky.py` must be within the project directory.
+> Make sure you've set up the project according to the [setup document](setup.md).
+> 
+> If using the command line, `blinky.py` can be created anywhere.
 
 - `from edg import *` brings in the base classes for circuit construction, like `SimpleBoardTop`.
 - `class BlinkyExample` contains the (top-level) circuit you're going to build, and it extends the top-level hierarchical block base class `SimpleBoardTop`.
@@ -131,7 +133,7 @@ Try building the example now:
      > - Changes to `__init__` do not re-compile instantiating classes, even if default values have been updated.
   3. The design should build, and you should get a run log that looks something like:
      ```
-     Starting compilation of blinky_skeleton.BlinkyExample
+     Starting compilation of blinky.BlinkyExample
      Using interpreter from configured SDK [...]
      [... lots of compilation output here ...]
      Completed: generate netlist: wrote [...]
@@ -140,8 +142,8 @@ Try building the example now:
      ![run menu](docs/ide/ide_run_config.png)
 - <details> <summary>If not using the IDE</summary>
   
-  Run `python blinkly_skeleton.py` from the command line.
-  If all worked, this should create a folder `PolymorphicBlocks/BlinkyExample` with a netlist `BlinkyExample.net` inside.
+  Run `python blinky.py` from the command line.
+  If all worked, this should create a folder `BlinkyExample` with a netlist `BlinkyExample.net` inside.
   </details>
 - <details> <summary>Resolving common errors</summary>
   
@@ -153,7 +155,7 @@ Try building the example now:
 ### Creating the microcontroller and LED
 For this simple example, we connect an LED to a STM32F103 microcontroller, and have everything powered by a USB type-C receptacle.
 
-**In `blinky_skeleton.py`, `# your implementation here`, add this code** to instantiate the microcontroller and LED as follows:
+**In `blinky.py`, `# your implementation here`, add this code** to instantiate the microcontroller and LED as follows:
 ```diff
   super().contents()
 - # your implementation here
