@@ -26,6 +26,7 @@ Pipfile.lock
 # Python packaging
 build
 edg.egg-info
+dist
 
 # mypy
 .mypy_cache/
