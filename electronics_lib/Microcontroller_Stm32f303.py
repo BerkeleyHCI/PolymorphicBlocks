@@ -4,45 +4,46 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Stm32f303Base_Device():
   @staticmethod
-  def mappable_ios(gnd: Union[VoltageSource, VoltageSink], vdd: Union[VoltageSource, VoltageSink],
-                   vdda: Union[VoltageSource, VoltageSink]) -> PinMapUtil:
+class Stm32f303Base_Device(PinMappableIoController):
+  RESOURCE_PIN_REMAP: Dict[str, str]
+
+  def _io_pinmap(self) -> PinMapUtil:
     """Returns the mappable for a STM32F303 device with the input power and ground references.
     This allows a shared definition between discrete chips and microcontroller boards"""
     # these are common to all IO blocks
     input_threshold_factor = (0.3, 0.7)  # TODO relaxed (but more complex) bounds available for different IO blocks
     current_limits = (-20, 20)*mAmp  # Section 6.3.14, TODO loose with relaxed VOL/VOH
     dio_tc_model = DigitalBidir.from_supply(
-      gnd, vdd,
+      self.gnd, self.vdd,
       voltage_limit_abs=(-0.3, 0.3) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tc_switch_model = DigitalBidir.from_supply(
-      gnd, vdd,
+      self.gnd, self.vdd,
       voltage_limit_abs=(-0.3, 0.3) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=(-3, 0),  # Table 13, note 1, can sink 3 mA and should not source current
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tt_model = DigitalBidir.from_supply(
-      gnd, vdd,
+      self.gnd, self.vdd,
       voltage_limit_abs=(-0.3, 3.6) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tta_model = DigitalBidir.from_supply(
-      gnd, vdd,
-      voltage_limit_abs=(-0.3 * Volt, vdda.link().voltage.lower() + 0.3 * Volt),  # Table 19
+      self.gnd, self.vdd,
+      voltage_limit_abs=(-0.3 * Volt, self.vdda.link().voltage.lower() + 0.3 * Volt),  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_ft_model = DigitalBidir.from_supply(
-      gnd, vdd,
+      self.gnd, self.vdd,
       voltage_limit_abs=(-0.3, 5.5) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
@@ -50,7 +51,7 @@ class Stm32f303Base_Device():
     )
     dio_ftf_model = dio_ft_model
     dio_boot0_model = DigitalBidir.from_supply(
-      gnd, vdd,
+      self.gnd, self.vdd,
       voltage_limit_abs=(-0.3, 5.5) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
