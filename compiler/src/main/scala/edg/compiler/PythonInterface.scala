@@ -21,12 +21,20 @@ object ProtobufStdioSubprocess {
 }
 
 
-class ProtobufStdioSubprocess
-    [RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
+class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
     responseType: scalapb.GeneratedMessageCompanion[ResponseType],
-    args: Seq[String]) {
+    pythonPaths: Seq[String], args: Seq[String]) {
   protected val process: Either[Process, Throwable] = try {
-    Left(new ProcessBuilder(args: _*).start())
+    val processBuilder = new ProcessBuilder(args: _*)
+    if (pythonPaths.nonEmpty) {
+      val env = processBuilder.environment()
+      val pythonPathString = pythonPaths.mkString(";")
+      Option(env.get("PYTHONPATH")) match {  // merge existing PYTHONPATH if exists
+        case None => env.put("PYTHONPATH", pythonPathString)
+        case Some(envPythonPath) => env.put("PYTHONPATH", envPythonPath + ";" + pythonPathString)
+      }
+    }
+    Left(processBuilder.start())
   } catch {
     case e: Throwable => Right(e)  // if it fails store the exception to be thrown when we can 
   }
@@ -113,14 +121,36 @@ class ProtobufStdioSubprocess
 }
 
 
+object PythonInterface {
+  private val kHdlServerFilePath = "edg_hdl_server/__main__.py"
+  // returns the HDL server Python script if it exists locally, otherwise returns None.
+  def serverFileOption(root: Option[File] = None): Option[File] = {
+    val hdlServerFile = root match {
+      case Some(root) => new File(root, kHdlServerFilePath)
+      case None => new File(kHdlServerFilePath)
+    }
+    if (hdlServerFile.exists()) {
+      Some(hdlServerFile)
+    } else {
+      None
+    }
+  }
+}
+
+
 /** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles
   * them down to IR.
   * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
+  *
+  * If the serverFile is specified, run that; otherwise use "python -m edg_hdl_server" for the global package.
   */
-class PythonInterface(serverFile: File, pythonInterpreter: String = "python") {
+class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], pythonInterpreter: String = "python") {
+  val command = serverFile match {  // -u for unbuffered mode
+    case Some(serverFile) => Seq(pythonInterpreter, "-u", serverFile.getAbsolutePath)
+    case None => Seq(pythonInterpreter, "-u", "-m", "edg_hdl_server")
+  }
   protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
-    edgrpc.HdlResponse,
-    Seq(pythonInterpreter, "-u", serverFile.getAbsolutePath))  // in unbuffered mode
+    edgrpc.HdlResponse, pythonPaths, command)
   val processOutputStream: InputStream = process.outputStream
   val processErrorStream: InputStream = process.errorStream
 
