@@ -1,4 +1,3 @@
-from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
@@ -35,7 +34,6 @@ class Lpc1549Base_Device(PinMappableIoController, InternalSubcircuit, GeneratorB
                               optional=True)
 
     self.swd = self.Port(SwdTargetPort().empty())
-
     self._io_ports.insert(0, self.swd)
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:

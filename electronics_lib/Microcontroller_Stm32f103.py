@@ -1,4 +1,3 @@
-from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
@@ -7,7 +6,15 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Stm32f103Base_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Stm32f103Base_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+  PACKAGE: str  # package name for footprint(...)
+  PART: str  # part name for footprint(...)
+  LCSC_PART: str
+  LCSC_BASIC_PART: bool
+
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
+  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -35,14 +42,19 @@ class Stm32f103Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Ge
 
     self.swd = self.Port(SwdTargetPort().empty())
 
-    self.generator(self.generate, self.pin_assigns,
-                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
-                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
-                   self.usb.requested(), self.can.requested(), self.swd.is_connected())
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return VariantPinRemapper({  # Pin/peripheral resource definitions (table 3)
+      'Vbat': self.pwr,
+      'VddA': self.pwr,
+      'VssA': self.gnd,
+      'Vss': self.gnd,
+      'Vdd': self.pwr,
+      'BOOT0': self.gnd,
+      'OSC_IN': self.osc.xtal_in,  # TODO remappable to PD0
+      'OSC_OUT': self.osc.xtal_out,  # TODO remappable to PD1
+    }).remap(self.SYSTEM_PIN_REMAP)
 
-  def contents(self) -> None:
-    super().contents()
-
+  def _io_pinmap(self) -> PinMapUtil:
     # Port models
     dio_ft_model = DigitalBidir.from_supply(
       self.gnd, self.pwr,
@@ -76,19 +88,7 @@ class Stm32f103Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Ge
     spi_model = SpiMaster(DigitalBidir.empty())
     i2c_model = I2cMaster(DigitalBidir.empty())
 
-    # Pin/peripheral resource definitions (table 3)
-    self.system_pinmaps = VariantPinRemapper({
-      'Vbat': self.pwr,
-      'VddA': self.pwr,
-      'VssA': self.gnd,
-      'Vss': self.gnd,
-      'Vdd': self.pwr,
-      'BOOT0': self.gnd,
-      'OSC_IN': self.osc.xtal_in,  # TODO remappable to PD0
-      'OSC_OUT': self.osc.xtal_out,  # TODO remappable to PD1
-    })
-
-    self.abstract_pinmaps = PinMapUtil([  # Table 5, partial table for 48-pin only
+    return PinMapUtil([  # Table 5, partial table for 48-pin only
       PinResource('PA0', {'PA0': dio_std_model, 'ADC12_IN0': adc_model}),
       PinResource('PA1', {'PA1': dio_std_model, 'ADC12_IN1': adc_model}),
       PinResource('PA2', {'PA2': dio_std_model, 'ADC12_IN2': adc_model}),
@@ -162,41 +162,19 @@ class Stm32f103Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Ge
       PeripheralFixedResource('I2C1', i2c_model, {
         'scl': ['PB6', 'PB8'], 'sda': ['PB7', 'PB9']
       }),
-    ])
+    ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
-  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
-  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
-  PACKAGE: str  # package name for footprint(...)
-  PART: str  # part name for footprint(...)
-  JLC_PART: str  # part number for lcsc_part
-  JLC_BASIC_PART: bool
-
-  def generate(self, assignments: List[str],
-               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
-               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
-               usb_requests: List[str], can_requests: List[str], swd_connected: bool) -> None:
-    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
-
-    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
-      (SwdTargetPort, ['swd'] if swd_connected else []),
-      (AnalogSource, dac_requests), (AnalogSink, adc_requests),
-      (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
-      (UartPort, uart_requests), (CanControllerPort, can_requests),
-      (DigitalBidir, gpio_requests),
-    ], assignments)
-    self.generator_set_allocation(allocated)
-
-    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
-    self.assign(self.io_current_draw, io_current_draw)
+  def generate(self) -> None:
+    super().generate()
 
     self.footprint(
       'U', self.PACKAGE,
-      dict(chain(system_pins.items(), io_pins.items())),
+      self._make_pinning(),
       mfr='STMicroelectronics', part=self.PART,
       datasheet='https://www.st.com/resource/en/datasheet/stm32f103c8.pdf'
     )
-    self.assign(self.lcsc_part, self.JLC_PART)
-    self.assign(self.actual_basic_part, self.JLC_BASIC_PART)
+    self.assign(self.lcsc_part, self.LCSC_PART)
+    self.assign(self.actual_basic_part, self.LCSC_BASIC_PART)
 
 
 class Stm32f103_48_Device(Stm32f103Base_Device):
@@ -255,9 +233,9 @@ class Stm32f103_48_Device(Stm32f103Base_Device):
   }
   PACKAGE = 'Package_QFP:LQFP-48_7x7mm_P0.5mm'
   PART = 'STM32F103xxT6'
-  JLC_PART = 'C8734'  # C8T6 variant - basic part
+  LCSC_PART = 'C8734'  # C8T6 variant - basic part
   # C77994 for GD32F103C8T6, probably mostly drop-in compatible, NOT basic part
-  JLC_BASIC_PART = True
+  LCSC_BASIC_PART = True
 
 
 class UsbDpPullUp(InternalSubcircuit, Block):
@@ -279,11 +257,17 @@ class Stm32f103Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConne
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator(self.generate, self.can.requested(), self.usb.requested(),
-                   self.pin_assigns, self.gpio.requested(), self.swd_swo_pin, self.swd_tdi_pin)
+    self.can_requested = self.GeneratorParam(self.can.requested())
+    self.usb_requested = self.GeneratorParam(self.usb.requested())
+    self.gpio_requested = self.GeneratorParam(self.gpio.requested())
 
-  def contents(self):
-    super().contents()
+    self.pin_assigns_value = self.GeneratorParam(self.pin_assigns)
+    self.swd_swo_pin_value = self.GeneratorParam(self.swd_swo_pin)
+    self.swd_tdi_pin_value = self.GeneratorParam(self.swd_tdi_pin)
+
+
+  def generate(self):
+    super().generate()
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
@@ -306,16 +290,15 @@ class Stm32f103Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConne
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
-  def generate(self, can_requests: List[str], usb_requests: List[str],
-               pin_assigns: List[str], gpio_requested: List[str], swd_swo_pin: str, swd_tdi_pin: str) -> None:
-    if can_requests or usb_requests:  # tighter frequency tolerances from CAN and USB usage require a crystal
+    # TODO refactor this out into a common crystal-gen util
+    if self.can_requested.get() or self.usb_requested.get():  # crystal needed for CAN or USB b/c tighter freq tolerance
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.osc)
 
-    if usb_requests:
-      assert len(usb_requests) == 1
-      usb_request_name = usb_requests[0]
+    if self.usb_requested.get():
+      assert len(self.usb_requested.get()) == 1
+      usb_request_name = self.usb_requested.get()[0]
       usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_request_name)
       self.connect(usb_port, self.ic.usb.request(usb_request_name))
 
@@ -324,16 +307,18 @@ class Stm32f103Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConne
       self.connect(usb_port, self.usb_pull.usb)
     self.usb.defined()
 
-    if swd_swo_pin != 'NC':
+    # TODO refactor this out into a common SWD remap util
+    inner_pin_assigns = self.pin_assigns_value.get().copy()
+    if self.swd_swo_pin_value.get() != 'NC':
       self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
-      pin_assigns.append(f'swd_swo={swd_swo_pin}')
-    if swd_tdi_pin != 'NC':
+      inner_pin_assigns.append(f'swd_swo={self.swd_swo_pin_value.get()}')
+    if self.swd_tdi_pin_value.get() != 'NC':
       self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
-      pin_assigns.append(f'swd_tdi={swd_tdi_pin}')
-    self.assign(self.ic.pin_assigns, pin_assigns)
+      inner_pin_assigns.append(f'swd_tdi={self.swd_tdi_pin_value.get()}')
+    self.assign(self.ic.pin_assigns, inner_pin_assigns)
 
     gpio_model = DigitalBidir.empty()
-    for gpio_name in gpio_requested:
+    for gpio_name in self.gpio_requested.get():
       self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
     self.gpio.defined()
 
