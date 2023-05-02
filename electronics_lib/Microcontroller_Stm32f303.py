@@ -4,7 +4,6 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-  @staticmethod
 class Stm32f303Base_Device(PinMappableIoController):
   RESOURCE_PIN_REMAP: Dict[str, str]
 

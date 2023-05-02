@@ -6,14 +6,13 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Nrf52840Base_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock):
+class Nrf52840Base_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """nRF52840 base device and IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
   PACKAGE: str  # package name for footprint(...)
   MANUFACTURER: str
   PART: str  # part name for footprint(...)
   DATASHEET: str
-  LCSC_PART: str
 
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
@@ -56,7 +55,7 @@ class Nrf52840Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Gen
     """Returns the mappable for given the input power and ground references.
     This separates the system pins definition from the IO pins definition."""
     dio_model = DigitalBidir.from_supply(
-      self.gnd, self.vdd,
+      self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-6, 6)*mAmp,  # minimum current, high drive, Vdd>2.7
       current_draw=(0, 0)*Amp,
@@ -66,7 +65,7 @@ class Nrf52840Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Gen
     dio_lf_model = dio_model  # "standard drive, low frequency IO only" (differences not modeled)
 
     adc_model = AnalogSink(
-      voltage_limits=(self.gnd.link().voltage.upper(), self.vdd.link().voltage.lower()) +
+      voltage_limits=(self.gnd.link().voltage.upper(), self.pwr.link().voltage.lower()) +
                      (-0.3, 0.3) * Volt,
       current_draw=(0, 0) * Amp,
       impedance=Range.from_lower(1)*MOhm
@@ -177,10 +176,9 @@ class Nrf52840Base_Device(PinMappable, BaseIoController, InternalSubcircuit, Gen
       mfr=self.MANUFACTURER, part=self.PART,
       datasheet=self.DATASHEET
     )
-    self.assign(self.lcsc_part, self.LCSC_PART)
-    self.assign(self.actual_basic_part, False)
 
-class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
+
+class Holyiot_18010_Device(Nrf52840Base_Device):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': '14',
     'Vss': ['1', '25', '37'],
@@ -227,7 +225,7 @@ class Holyiot_18010_Device(Nrf52840Base_Device, FootprintBlock):
   MANUFACTURER = 'Holyiot'
   PART = '18010'
   DATASHEET = 'http://www.holyiot.com/tp/2019042516322180424.pdf'
-  # TODO NOT A JLC PART
+
 
 class Holyiot_18010(PinMappable, Microcontroller, Radiofrequency, IoController):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
@@ -250,7 +248,7 @@ class Holyiot_18010(PinMappable, Microcontroller, Radiofrequency, IoController):
                                    self.ic.swd)
 
 
-class Mdbt50q_1mv2_Device(Nrf52840Base_Device, JlcPart, FootprintBlock):
+class Mdbt50q_1mv2_Device(Nrf52840Base_Device, JlcPart):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': ['28', '30'],  # 28=Vdd, 30=VddH; 31=DccH is disconnected - from section 8.3 for input voltage <3.6v
     'Vss': ['1', '2', '15', '33', '55'],
@@ -318,8 +316,11 @@ class Mdbt50q_1mv2_Device(Nrf52840Base_Device, JlcPart, FootprintBlock):
   MANUFACTURER = 'Raytac'
   PART = 'MDBT50Q-1MV2'
   DATASHEET = 'https://www.raytac.com/download/index.php?index_id=43'
-  LCSC_PART = 'C5118826'
 
+  def contents(self):
+    super().contents()
+    self.assign(self.lcsc_part, 'C5118826')
+    self.assign(self.actual_basic_part, False)
 
 class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
   def __init__(self):

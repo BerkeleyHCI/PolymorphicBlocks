@@ -223,6 +223,7 @@ class Rp2040(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, I
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.usb_requested = self.GeneratorParam(self.usb.requested())
+    self.gpio_requested = self.GeneratorParam(self.gpio.requested())
 
     self.pin_assigns_value = self.GeneratorParam(self.pin_assigns)
     self.swd_swo_pin_value = self.GeneratorParam(self.swd_swo_pin)
