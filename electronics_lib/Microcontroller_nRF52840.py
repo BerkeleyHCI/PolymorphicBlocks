@@ -1,5 +1,4 @@
 from typing import *
-from itertools import chain
 
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
