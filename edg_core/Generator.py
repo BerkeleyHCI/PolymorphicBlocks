@@ -24,6 +24,9 @@ class GeneratorParam(Generic[WrappedType]):
     assert self._value is not None, "parameter has no value"
     return self._value
 
+  def expr(self) -> ConstraintExpr[WrappedType, Any]:
+    return self._expr
+
 
 @non_library
 class GeneratorBlock(Block):

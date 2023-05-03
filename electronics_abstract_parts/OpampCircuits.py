@@ -1,10 +1,10 @@
 from math import ceil, log10
 from typing import List, Tuple, Dict
 
-from electronics_model import *
 from electronics_abstract_parts import Resistor, Capacitor
+from electronics_model import *
 from .AbstractOpamp import Opamp
-from .Categories import AnalogFilter, OpampApplication
+from .Categories import OpampApplication
 from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
 
@@ -84,9 +84,11 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
     self.output = self.Port(AnalogSource.empty(), [Output])
     self.reference = self.Port(AnalogSink.empty(), optional=True)  # optional zero reference, defaults to GND
 
-    self.amplification = self.ArgParameter(amplification)
-
-    self.generator(self.generate_resistors, amplification, impedance, series, tolerance, self.reference.is_connected())
+    self.amplification = self.GeneratorParam(amplification, Range)
+    self.impedance = self.GeneratorParam(impedance, Range)
+    self.series = self.GeneratorParam(series, int)
+    self.tolerance = self.GeneratorParam(tolerance, float)
+    self.reference_connected = self.GeneratorParam(self.reference.is_connected())
 
     self.actual_amplification = self.Parameter(RangeExpr())
 
@@ -95,19 +97,18 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
 
     self.description = DescriptionString(
       "<b>amplification:</b> ", DescriptionString.FormatUnits(self.actual_amplification, ""),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.amplification, "")
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.amplification.expr(), "")
     )
 
-  def generate_resistors(self, amplification: Range, impedance: Range, series: int, tolerance: float,
-                         reference_connected: bool) -> None:
-    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, AmplifierValues)
-    top_resistance, bottom_resistance = calculator.find(AmplifierValues(amplification, impedance))
+  def generate(self) -> None:
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.series.get()], self.tolerance.get(), AmplifierValues)
+    top_resistance, bottom_resistance = calculator.find(AmplifierValues(self.amplification.get(), self.impedance.get()))
 
     self.amp = self.Block(Opamp())  # needed as forward reference for modeling
-    self.r1 = self.Block(Resistor(Range.from_tolerance(top_resistance, tolerance)))
-    self.r2 = self.Block(Resistor(Range.from_tolerance(bottom_resistance, tolerance)))
+    self.r1 = self.Block(Resistor(Range.from_tolerance(top_resistance, self.tolerance.get())))
+    self.r2 = self.Block(Resistor(Range.from_tolerance(bottom_resistance, self.tolerance.get())))
 
-    if reference_connected:
+    if self.reference_connected.get():
       reference_type: CircuitPort = AnalogSink(
         impedance=self.r1.actual_resistance + self.r2.actual_resistance
       )
@@ -209,9 +210,11 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     self.output_reference = self.Port(AnalogSink.empty())
     self.output = self.Port(AnalogSource.empty())
 
-    self.generator(self.generate_resistors, ratio, input_impedance, series, tolerance)
+    self.ratio = self.GeneratorParam(ratio, Range)
+    self.input_impedance = self.GeneratorParam(input_impedance, Range)
+    self.series = self.GeneratorParam(series, int)
+    self.tolerance = self.GeneratorParam(tolerance, float)
 
-    self.ratio = self.ArgParameter(ratio)
     self.actual_ratio = self.Parameter(RangeExpr())
 
   def contents(self):
@@ -219,18 +222,18 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
 
     self.description = DescriptionString(
       "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.ratio, "")
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.ratio.expr(), "")
     )
 
-  def generate_resistors(self, ratio: Range, input_impedance: Range, series: int, tolerance: float) -> None:
-    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DifferentialValues)
-    r1_resistance, rf_resistance = calculator.find(DifferentialValues(ratio, input_impedance))
+  def generate(self) -> None:
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.series.get()], self.tolerance.get(), DifferentialValues)
+    r1_resistance, rf_resistance = calculator.find(DifferentialValues(self.ratio.get(), self.input_impedance.get()))
 
     self.amp = self.Block(Opamp())
-    self.r1 = self.Block(Resistor(Range.from_tolerance(r1_resistance, tolerance)))
-    self.r2 = self.Block(Resistor(Range.from_tolerance(r1_resistance, tolerance)))
-    self.rf = self.Block(Resistor(Range.from_tolerance(rf_resistance, tolerance)))
-    self.rg = self.Block(Resistor(Range.from_tolerance(rf_resistance, tolerance)))
+    self.r1 = self.Block(Resistor(Range.from_tolerance(r1_resistance, self.tolerance.get())))
+    self.r2 = self.Block(Resistor(Range.from_tolerance(r1_resistance, self.tolerance.get())))
+    self.rf = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.tolerance.get())))
+    self.rg = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.tolerance.get())))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
@@ -330,9 +333,11 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
     self.output = self.Port(AnalogSource.empty())
     self.reference = self.Port(AnalogSink.empty())  # negative reference for the input and output signals
 
-    self.generator(self.generate_components, factor, capacitance, series, tolerance)
+    self.factor = self.GeneratorParam(factor, Range)
+    self.capacitance = self.GeneratorParam(capacitance, Range)
+    self.series = self.GeneratorParam(series, int)
+    self.tolerance = self.GeneratorParam(tolerance, float)
 
-    self.factor = self.ArgParameter(factor)
     self.actual_factor = self.Parameter(RangeExpr())
 
   def contents(self) -> None:
@@ -340,16 +345,16 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
 
     self.description = DescriptionString(
       "<b>factor:</b> ", DescriptionString.FormatUnits(self.actual_factor, ""),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.factor, "")
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.factor.expr(), "")
     )
 
-  def generate_components(self, factor: Range, capacitance: Range, series: int, tolerance: float) -> None:
-    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, IntegratorValues)
-    sel_resistance, sel_capacitance = calculator.find(IntegratorValues(factor, capacitance))
+  def generate(self) -> None:
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.series.get()], self.tolerance.get(), IntegratorValues)
+    sel_resistance, sel_capacitance = calculator.find(IntegratorValues(self.factor.get(), self.capacitance.get()))
 
-    self.r = self.Block(Resistor(resistance=Range.from_tolerance(sel_resistance, tolerance)))
+    self.r = self.Block(Resistor(resistance=Range.from_tolerance(sel_resistance, self.tolerance.get())))
     self.c = self.Block(Capacitor(
-      capacitance=Range.from_tolerance(sel_capacitance, tolerance),
+      capacitance=Range.from_tolerance(sel_capacitance, self.tolerance.get()),
       voltage=self.output.link().voltage
     ))
 
