@@ -4,6 +4,7 @@ from typing import *
 from electronics_abstract_parts import *
 
 
+@abstract_block
 class Stm32f303Base_Device(PinMappableIoController):
   """Base class for STM32F303 devices.
   Unlike other microcontrollers, this one also supports dev boards (Nucleo-32) which can be
@@ -22,12 +23,13 @@ class Stm32f303Base_Device(PinMappableIoController):
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
-      'Vbat': self._vdd,  # TODO Vbat pin
-      'VddA': self._vdda,
-      'VssA': self._gnd,
+      # TODO remapping currently doesn't work for these which are chip-only (not on dev board) pins
+      # 'Vbat': self._vdd,
+      # 'VddA': self._vdda,
+      # 'VssA': self._gnd,
       'Vss': self._gnd,
       'Vdd': self._vdd,
-      'BOOT0': self._gnd,
+      # 'BOOT0': self._gnd,
     }).remap(self.SYSTEM_PIN_REMAP)
 
   def _io_pinmap(self) -> PinMapUtil:
@@ -161,14 +163,14 @@ class Stm32f303Base_Device(PinMappableIoController):
       PeripheralFixedPin('SWD', SwdTargetPort(dio_ft_model), {  # TODO some are FTf pins
         'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST'  # note: SWO is PB3
       }),
-    ])
+    ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
 
 class Nucleo_F303k8(Stm32f303Base_Device, GeneratorBlock, FootprintBlock):
   """Nucleo32 F303K8 configured as power source from USB."""
   SYSTEM_PIN_REMAP = {
     'Vss': ['4', '17'],
-    'Vdd': ['29'],
+    'Vdd': '29',
   }
   RESOURCE_PIN_REMAP = {
     'PA9': '1',  # CN3.1, D1
@@ -198,8 +200,8 @@ class Nucleo_F303k8(Stm32f303Base_Device, GeneratorBlock, FootprintBlock):
     'PB3': '30',  # CN4.15, D13
   }
 
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
+  def __init__(self):
+    super().__init__()
 
     self.pwr_5v = self.Port(VoltageSource(
       voltage_out=(4.75 - 0.58, 5.1) * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
