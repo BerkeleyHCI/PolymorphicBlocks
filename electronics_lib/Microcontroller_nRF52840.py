@@ -354,7 +354,7 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, Radiofrequency, IoControllerWit
 
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
-    self._export_ios_from(self.ic, excludes=[self.usb, self.gpio])  # SWO/TDI must be mixed into GPIOs
+    self._export_ios_from(self.ic, excludes=[self.ic.usb, self.ic.swd, self.ic.gpio])  # SWO/TDI must be mixed into GPIOs
     self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
     self.connect(self.swd.swd, self.ic.swd)

@@ -275,7 +275,7 @@ class Stm32f103Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConne
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
       # USB requires additional circuitry, and SWO/TDI must be mixed into GPIOs
-      self._export_ios_from(self.ic, excludes=[self.usb, self.gpio])
+      self._export_ios_from(self.ic, excludes=[self.ic.usb, self.ic.usb, self.ic.gpio])
       self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
       self.connect(self.swd.swd, self.ic.swd)

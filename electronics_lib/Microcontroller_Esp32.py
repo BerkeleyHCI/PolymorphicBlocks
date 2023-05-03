@@ -52,13 +52,6 @@ class Esp32_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock, 
     # similarly, the programming UART is fixed and allocated separately
     self.uart0 = self.Port(UartPort(dio_model), optional=True)
 
-    # TODO add JTAG support
-
-    self.generator(self.generate, self.pin_assigns,
-                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
-                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
-                   self.can.requested())
-
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
       'Vdd': self.pwr,

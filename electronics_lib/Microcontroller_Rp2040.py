@@ -239,7 +239,7 @@ class Rp2040(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, I
       # https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf
       self.ic = imp.Block(Rp2040_Device(pin_assigns=ArrayStringExpr()))
       # USB requires additional circuitry, and SWO/TDI must be mixed into GPIOs
-      self._export_ios_from(self.ic, excludes=[self.usb, self.gpio])
+      self._export_ios_from(self.ic, excludes=[self.ic.usb, self.ic.swd, self.ic.gpio])
       self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
       self.connect(self.swd.swd, self.ic.swd)
