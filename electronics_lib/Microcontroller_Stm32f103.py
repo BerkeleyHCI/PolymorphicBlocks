@@ -266,7 +266,6 @@ class Stm32f103Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConne
     self.swd_swo_pin_value = self.GeneratorParam(self.swd_swo_pin)
     self.swd_tdi_pin_value = self.GeneratorParam(self.swd_tdi_pin)
 
-
   def generate(self):
     super().generate()
 
