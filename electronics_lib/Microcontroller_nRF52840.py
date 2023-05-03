@@ -164,7 +164,7 @@ class Nrf52840Base_Device(PinMappableIoController, InternalSubcircuit, Generator
       PeripheralFixedResource('UART1', uart_model, {
         'tx': hf_io_pins, 'rx': hf_io_pins,
       }),
-    ])
+    ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
   def generate(self) -> None:
     super().generate()

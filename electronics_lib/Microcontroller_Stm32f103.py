@@ -41,6 +41,7 @@ class Stm32f103Base_Device(PinMappableIoController, InternalSubcircuit, Generato
                          optional=True)  # Table 22
 
     self.swd = self.Port(SwdTargetPort().empty())
+    self._io_ports.insert(0, self.swd)
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({  # Pin/peripheral resource definitions (table 3)
@@ -275,7 +276,7 @@ class Stm32f103Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConne
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
       # USB requires additional circuitry, and SWO/TDI must be mixed into GPIOs
-      self._export_ios_from(self.ic, excludes=[self.ic.usb, self.ic.usb, self.ic.gpio])
+      self._export_ios_from(self.ic, excludes=[self.ic.usb, self.ic.swd, self.ic.gpio])
       self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
       self.connect(self.swd.swd, self.ic.swd)
