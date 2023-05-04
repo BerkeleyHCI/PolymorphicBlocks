@@ -12,9 +12,10 @@ class Ld1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.actual_quiescent_current, (5, 10) * mAmp)
     self.assign(self.actual_dropout, (0, 1.2) * Volt)
 
-    self.generator(self.select_part, output_voltage)
+    self.output_voltage = self.GeneratorParam(output_voltage)
 
-  def select_part(self, output_voltage: Range):
+  def generate(self):
+    super().generate()
     parts = [  # output voltage
       (Range(1.140, 1.260), 'LD1117S12TR', 'C155612'),
       (Range(1.76, 1.84), 'LD1117S18TR', 'C80598'),
@@ -23,8 +24,8 @@ class Ld1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
       (Range(4.9, 5.1), 'LD1117S50TR', 'C134077'),
     ]
     suitable_parts = [(part_out, part_number, lcsc_part) for part_out, part_number, lcsc_part in parts
-                      if part_out.fuzzy_in(output_voltage)]
-    assert suitable_parts, f"no regulator with compatible output {output_voltage}"
+                      if part_out.fuzzy_in(self.output_voltage.get())]
+    assert suitable_parts, "no regulator with compatible output"
     part_output_voltage, part_number, lcsc_part = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage)
@@ -65,9 +66,10 @@ class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     self.assign(self.actual_quiescent_current, (0, 500) * uAmp)  # typ is 250uA
     self.assign(self.actual_dropout, (0, 0.6) * Volt)  # worst-case, typ is 0.35
 
-    self.generator(self.select_part, output_voltage)
+    self.output_voltage = self.GeneratorParam(output_voltage)
 
-  def select_part(self, output_voltage: Range):
+  def generate(self):
+    super().generate()
     TOLERANCE = 0.03  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [  # output voltage
       (1.185, 'LDL1117S12R'),
@@ -79,8 +81,8 @@ class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
       (5.0, 'LDL1117S50R'),
     ]
     suitable_parts = [(part_out_nominal, part_number) for part_out_nominal, part_number in parts
-                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in output_voltage]
-    assert suitable_parts, f"no regulator with compatible output {output_voltage}"
+                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in self.output_voltage.get()]
+    assert suitable_parts, "no regulator with compatible output"
     part_output_voltage_nominal, part_number = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
@@ -126,9 +128,11 @@ class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
       input_thresholds=(0.4, 2.0)*Volt
     ))
 
-    self.generator(self.select_part, output_voltage)
+    self.output_voltage = self.GeneratorParam(output_voltage)
 
-  def select_part(self, output_voltage: Range):
+  def generate(self):
+    super().generate()
+
     TOLERANCE = 0.02
     parts = [
       # output voltage, quiescent current
@@ -141,8 +145,8 @@ class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
       # (1.5, 'AP2204K-1.5'),
     ]
     suitable_parts = [part for part in parts
-                      if Range.from_tolerance(part[0], TOLERANCE) in output_voltage]
-    assert suitable_parts, f"no regulator with compatible output {output_voltage}"
+                      if Range.from_tolerance(part[0], TOLERANCE) in self.output_voltage.get()]
+    assert suitable_parts, "no regulator with compatible output"
     part_output_voltage_nominal, part_number, jlc_number = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
@@ -209,9 +213,10 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.pwr_out.current_limits, (0, 300) * mAmp)
     self.assign(self.actual_quiescent_current, (0.01, 50) * uAmp)  # typ is 250uA
 
-    self.generator(self.select_part, output_voltage)
+    self.output_voltage = self.GeneratorParam(output_voltage)
 
-  def select_part(self, output_voltage: Range):
+  def generate(self):
+    super().generate()
     TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [  # output voltage, part number, (dropout typ @ 30mA, dropout max @ 100mA), max current, lcsc
       (1.5, 'XC6209F152MR-G', (0.50, 0.60), 'C216623'),
@@ -219,8 +224,8 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
       (5.0, 'XC6209F502MR-G', (0.05, 0.21), 'C222571'),
     ]
     suitable_parts = [part for part in parts
-                      if Range.from_tolerance(part[0], TOLERANCE) in output_voltage]
-    assert suitable_parts, f"no regulator with compatible output {output_voltage}"
+                      if Range.from_tolerance(part[0], TOLERANCE) in self.output_voltage.get()]
+    assert suitable_parts, "no regulator with compatible output"
     part_output_voltage_nominal, part_number, part_dropout, lcsc_part = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
@@ -266,9 +271,10 @@ class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.actual_quiescent_current, (0.01, 15000) * uAmp)  # GND pin current
     self.assign(self.actual_dropout, (15, 500) * mVolt)
 
-    self.generator(self.select_part, output_voltage)
+    self.output_voltage = self.GeneratorParam(output_voltage)
 
-  def select_part(self, output_voltage: Range):
+  def generate(self):
+    super().generate()
     TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [  # output voltage
       (2.5, 'AP2210K-2.5', 'C460340'),
@@ -277,8 +283,8 @@ class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
       (5.0, 'AP2210K-5.0', 'C500758'),
     ]
     suitable_parts = [part for part in parts
-                      if Range.from_tolerance(part[0], TOLERANCE) in output_voltage]
-    assert suitable_parts, f"no regulator with compatible output {output_voltage}"
+                      if Range.from_tolerance(part[0], TOLERANCE) in self.output_voltage.get()]
+    assert suitable_parts, "no regulator with compatible output"
     part_output_voltage_nominal, part_number, jlc_number = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
@@ -326,9 +332,10 @@ class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.actual_quiescent_current, (0.2, 425) * uAmp)
     self.assign(self.actual_dropout, (50, 250) * mVolt)
 
-    self.generator(self.select_part, output_voltage)
+    self.output_voltage = self.GeneratorParam(output_voltage)
 
-  def select_part(self, output_voltage: Range):
+  def generate(self):
+    super().generate()
     parts = [  # output voltage, Table in 6.5 tolerance varies by output voltage
       (Range.from_tolerance(1.2, 0.03), 'LP5907MFX-1.2/NOPB', 'C73478'),
       (Range.from_tolerance(1.5, 0.03), 'LP5907MFX-1.5/NOPB', 'C133570'),
@@ -345,8 +352,8 @@ class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     ]
     # TODO should prefer parts by closeness to nominal (center) specified voltage
     suitable_parts = [part for part in parts
-                      if part[0] in output_voltage]
-    assert suitable_parts, f"no regulator with compatible output {output_voltage}"
+                      if part[0] in self.output_voltage.get()]
+    assert suitable_parts, "no regulator with compatible output"
     part_output_voltage, part_number, jlc_number = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage)
