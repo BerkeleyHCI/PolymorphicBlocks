@@ -5,12 +5,9 @@ from typing import *
 from deprecated import deprecated
 
 import edgir
-from . import Range, ArrayRangeExpr, ArrayRangeLike, ArrayBoolExpr, ArrayBoolLike, ArrayFloatExpr, ArrayIntExpr, \
-  ArrayIntLike, ArrayFloatLike, ArrayStringLike, ArrayStringExpr
 from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding
 from .Blocks import BlockElaborationState, AbstractBlockProperty
-from .ConstraintExpr import ConstraintExpr, RangeLike, RangeExpr, IntExpr, BoolExpr, BoolLike, IntLike, FloatExpr, \
-  FloatLike, StringExpr, StringLike
+from .ConstraintExpr import ConstraintExpr
 from .Core import non_library
 from .HdlUserExceptions import *
 from .HierarchyBlock import Block
@@ -19,6 +16,7 @@ from .HierarchyBlock import Block
 ExprType = TypeVar('ExprType', bound=Any)
 WrappedType = TypeVar('WrappedType', bound=Any)
 class GeneratorParam(Generic[ExprType, WrappedType]):
+  # TODO: currently this is compositional (has-a expr), but it may make sense for this to be-a expr with a .get()
   def __init__(self, expr: ExprType):
     self._expr = expr
     self._value: Optional[WrappedType] = None  # set externally
@@ -41,6 +39,11 @@ class GeneratorBlock(Block):
     super().__init__()
     self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
     self._generator_params = self.manager.new_dict(GeneratorParam)
+
+  from .ConstraintExpr import RangeLike, RangeExpr, IntExpr, BoolExpr, BoolLike, IntLike, FloatExpr, \
+    FloatLike, StringExpr, StringLike
+  from .ArrayExpr import ArrayRangeExpr, ArrayRangeLike, ArrayBoolExpr, ArrayBoolLike, ArrayFloatExpr, ArrayIntExpr, \
+    ArrayIntLike, ArrayFloatLike, ArrayStringLike, ArrayStringExpr
 
   # all the case need to be defined since it can't infer the types when there's a *Like
   # type ignore is needed because IntLike overlaps BoolLike
