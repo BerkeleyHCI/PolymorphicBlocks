@@ -20,8 +20,8 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
     self.cols = self.Port(Vector(DigitalSink.empty()))
     self.voltage_drop = self.ArgParameter(voltage_drop)
 
-    self.nrows_value = self.GeneratorParam(nrows, int)
-    self.ncols_value = self.GeneratorParam(nrows, int)
+    self.nrows_value = self.GeneratorParam(nrows)
+    self.ncols_value = self.GeneratorParam(nrows)
 
   def generate(self):
     super().generate()

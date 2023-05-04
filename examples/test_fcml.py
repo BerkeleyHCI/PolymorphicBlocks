@@ -72,7 +72,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     self.fet_rds = self.ArgParameter(fet_rds)
     self.gate_res = self.ArgParameter(gate_res)
 
-    self.is_first_value = self.GeneratorParam(is_first, bool)
+    self.is_first_value = self.GeneratorParam(is_first)
     self.high_boot_out_connected = self.GeneratorParam(self.high_boot_out.is_connected())
 
   def generate(self):
@@ -199,8 +199,8 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
     self.fet_rds = self.ArgParameter(fet_rds)
 
-    self.levels_value = self.GeneratorParam(levels, int)
-    self.ratios_value = self.GeneratorParam(ratios, Range)
+    self.levels_value = self.GeneratorParam(levels)
+    self.ratios_value = self.GeneratorParam(ratios)
 
   def generate(self):
     levels = self.levels_value.get()

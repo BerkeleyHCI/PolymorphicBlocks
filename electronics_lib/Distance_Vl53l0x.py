@@ -131,8 +131,8 @@ class Vl53l0xArray(DistanceSensor, GeneratorBlock):
     self.xshut = self.Port(Vector(DigitalSink.empty()))
     self.gpio1 = self.Port(Vector(DigitalBidir.empty()), optional=True)
 
-    self.count_value = self.GeneratorParam(count, int)
-    self.first_xshut_fixed_value = self.GeneratorParam(first_xshut_fixed, bool)
+    self.count_value = self.GeneratorParam(count)
+    self.first_xshut_fixed_value = self.GeneratorParam(first_xshut_fixed)
 
   def generate(self):
     super().generate()

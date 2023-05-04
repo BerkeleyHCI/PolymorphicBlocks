@@ -36,7 +36,7 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
     self.assign(self.lcsc_part, kicad_jlcpcb_part)
     self.assign(self.actual_basic_part, False)  # assumed
 
-    self.kicad_pins_value = self.GeneratorParam(kicad_pins, List[str])
+    self.kicad_pins_value = self.GeneratorParam(kicad_pins)
 
   def generate(self):
     super().generate()

@@ -43,26 +43,27 @@ class GeneratorBlock(Block):
     self._generator_params = self.manager.new_dict(GeneratorParam)
 
   # all the case need to be defined since it can't infer the types when there's a *Like
+  # type ignore is needed because IntLike overlaps BoolLike
   @overload
-  def GeneratorParam(self, param: RangeLike) -> GeneratorParam[RangeExpr, Range]: ...
+  def GeneratorParam(self, param: RangeLike) -> GeneratorParam[RangeExpr, Range]: ...  # type: ignore
   @overload
-  def GeneratorParam(self, param: BoolLike) -> GeneratorParam[BoolExpr, bool]: ...
+  def GeneratorParam(self, param: BoolLike) -> GeneratorParam[BoolExpr, bool]: ...  # type: ignore
   @overload
-  def GeneratorParam(self, param: IntLike) -> GeneratorParam[IntExpr, int]: ...
+  def GeneratorParam(self, param: IntLike) -> GeneratorParam[IntExpr, int]: ...  # type: ignore
   @overload
-  def GeneratorParam(self, param: FloatLike) -> GeneratorParam[FloatExpr, float]: ...
+  def GeneratorParam(self, param: FloatLike) -> GeneratorParam[FloatExpr, float]: ...  # type: ignore
   @overload
-  def GeneratorParam(self, param: StringLike) -> GeneratorParam[StringExpr, float]: ...
+  def GeneratorParam(self, param: StringLike) -> GeneratorParam[StringExpr, float]: ...  # type: ignore
   @overload
-  def GeneratorParam(self, param: ArrayRangeLike) -> GeneratorParam[ArrayRangeExpr, list[Range]]: ...
+  def GeneratorParam(self, param: ArrayRangeLike) -> GeneratorParam[ArrayRangeExpr, list[Range]]: ...  # type: ignore
   @overload
-  def GeneratorParam(self, param: ArrayBoolLike) -> GeneratorParam[ArrayBoolExpr, list[bool]]: ...
+  def GeneratorParam(self, param: ArrayBoolLike) -> GeneratorParam[ArrayBoolExpr, list[bool]]: ...  # type: ignore
   @overload
-  def GeneratorParam(self, param: ArrayIntLike) -> GeneratorParam[ArrayIntExpr, list[int]]: ...
+  def GeneratorParam(self, param: ArrayIntLike) -> GeneratorParam[ArrayIntExpr, list[int]]: ...  # type: ignore
   @overload
-  def GeneratorParam(self, param: ArrayFloatLike) -> GeneratorParam[ArrayFloatExpr, list[float]]: ...
+  def GeneratorParam(self, param: ArrayFloatLike) -> GeneratorParam[ArrayFloatExpr, list[float]]: ...  # type: ignore
   @overload
-  def GeneratorParam(self, param: ArrayStringLike) -> GeneratorParam[ArrayStringExpr, list[str]]: ...
+  def GeneratorParam(self, param: ArrayStringLike) -> GeneratorParam[ArrayStringExpr, list[str]]: ...  # type: ignore
 
   def GeneratorParam(self, param: Union[ConstraintExpr, Any]) -> GeneratorParam:
     """Declares some parameter to be a generator, returning its GeneratorParam wrapper that

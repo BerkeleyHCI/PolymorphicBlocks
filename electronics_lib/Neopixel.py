@@ -97,7 +97,7 @@ class NeopixelArray(Light, GeneratorBlock):
         self.vdd = self.Port(VoltageSink.empty(), [Power])
         self.gnd = self.Port(Ground.empty(), [Common])
 
-        self.count_value = self.GeneratorParam(count, int)
+        self.count_value = self.GeneratorParam(count)
 
     def generate(self):
         super().generate()

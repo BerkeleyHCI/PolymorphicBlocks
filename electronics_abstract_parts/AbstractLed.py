@@ -82,7 +82,7 @@ class IndicatorLedArray(Light, GeneratorBlock):
 
     self.color = self.ArgParameter(color)
     self.current_draw = self.ArgParameter(current_draw)
-    self.count_value = self.GeneratorParam(count, int)
+    self.count_value = self.GeneratorParam(count)
 
   def generate(self):
     super().generate()
@@ -145,7 +145,7 @@ class IndicatorSinkLedArray(Light, GeneratorBlock):
     self.color = self.ArgParameter(color)
     self.current_draw = self.ArgParameter(current_draw)
 
-    self.count_value = self.GeneratorParam(count, int)
+    self.count_value = self.GeneratorParam(count)
 
   def generate(self):
     super().generate()

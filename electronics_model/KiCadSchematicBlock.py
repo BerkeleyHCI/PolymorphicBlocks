@@ -55,7 +55,7 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
         self.kicad_value = self.ArgParameter(kicad_value)
         self.kicad_datasheet = self.ArgParameter(kicad_datasheet)
 
-        self.kicad_pins_value = self.GeneratorParam(kicad_pins, List[str])
+        self.kicad_pins_value = self.GeneratorParam(kicad_pins)
 
     def generate(self):
         super().generate()

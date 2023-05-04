@@ -31,7 +31,7 @@ class GeneratorDependency(GeneratorBlock):
   def __init__(self, float_preset: FloatLike) -> None:
     super().__init__()
     self.float_param = self.Parameter(FloatExpr())
-    self.float_value = self.GeneratorParam(float_preset, float)
+    self.float_value = self.GeneratorParam(float_preset)
 
   def generate(self) -> None:
     self.assign(self.float_param, self.float_value.get() * 2)
@@ -49,8 +49,8 @@ class GeneratorMultiParameter(GeneratorBlock):
     super().__init__()
     self.float_param1 = self.Parameter(FloatExpr())
     self.float_param2 = self.Parameter(FloatExpr())
-    self.float_value1 = self.GeneratorParam(float_preset1, float)
-    self.float_value2 = self.GeneratorParam(float_preset2, float)
+    self.float_value1 = self.GeneratorParam(float_preset1)
+    self.float_value2 = self.GeneratorParam(float_preset2)
 
   def generate(self) -> None:
     self.assign1 = self.assign(self.float_param1, self.float_value1.get() * 3)

@@ -27,7 +27,7 @@ class ResistorMux(Interface, KiCadImportableBlock, GeneratorBlock):
     self.input = self.Port(Passive.empty())  # resistor side
     self.com = self.Export(self.switch.com)  # switch side
 
-    self.resistances_value = self.GeneratorParam(resistances, List[Range])
+    self.resistances_value = self.GeneratorParam(resistances)
 
   def generate(self):
     super().generate()

@@ -315,7 +315,7 @@ class LedArray(GeneratorBlock):
     super().__init__()
     self.ios = self.Port(Vector(DigitalSink.empty()), [Input])
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.count_value = self.GeneratorParam(count, int)
+    self.count_value = self.GeneratorParam(count)
 
   def generate(self) -> None:
     super().generate()

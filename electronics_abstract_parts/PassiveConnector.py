@@ -19,7 +19,7 @@ class PassiveConnector(InternalSubcircuit, GeneratorBlock, FootprintBlock):
     self.pins = self.Port(Vector(Passive().empty()))
     self.actual_length = self.Parameter(IntExpr())
 
-    self.length_value = self.GeneratorParam(length, int)
+    self.length_value = self.GeneratorParam(length)
     self.pins_requested = self.GeneratorParam(self.pins.requested())
 
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:

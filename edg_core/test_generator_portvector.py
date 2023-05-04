@@ -116,7 +116,7 @@ class GeneratorArrayParam(GeneratorBlock):
   def __init__(self, param: ArrayRangeLike) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.param_value = self.GeneratorParam(param, List[Range])
+    self.param_value = self.GeneratorParam(param)
 
   def generate(self) -> None:
     for elt in self.param_value.get():

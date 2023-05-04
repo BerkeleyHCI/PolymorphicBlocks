@@ -120,8 +120,8 @@ class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
     from edg_core.Generator import GeneratorParam
-    self.io_requested = ElementDict[GeneratorParam[List[str]]]()
-    self.io_connected = ElementDict[GeneratorParam[bool]]()
+    self.io_requested = ElementDict[GeneratorParam[ArrayStringExpr, List[str]]]()
+    self.io_connected = ElementDict[GeneratorParam[ArrayBoolExpr, bool]]()
 
     self.pin_assigns_value = self.GeneratorParam(self.pin_assigns)
 

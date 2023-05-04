@@ -144,7 +144,7 @@ class Tpa2005d1(Interface, GeneratorBlock):
     self.sig = self.Port(AnalogSink.empty(), [Input])
     self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
-    self.gain_value = self.GeneratorParam(gain, Range)
+    self.gain_value = self.GeneratorParam(gain)
 
   def generate(self):
     import math

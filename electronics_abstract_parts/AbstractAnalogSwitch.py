@@ -40,7 +40,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
   @init_in_parent
   def __init__(self, switch_size: IntLike = 0):
     super().__init__()
-    self.switch_size_value = self.GeneratorParam(switch_size, int)
+    self.switch_size_value = self.GeneratorParam(switch_size)
     self.inputs_requested = self.GeneratorParam(self.inputs.requested())
 
   def generate(self):

@@ -38,7 +38,7 @@ class E93Lc_B_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
 
     self.actual_size = self.Parameter(IntExpr())
 
-    self.size_value = self.GeneratorParam(size, Range)
+    self.size_value = self.GeneratorParam(size)
 
   def generate(self):
     super().generate()

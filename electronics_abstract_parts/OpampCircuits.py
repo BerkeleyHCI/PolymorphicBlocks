@@ -84,10 +84,10 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
     self.output = self.Port(AnalogSource.empty(), [Output])
     self.reference = self.Port(AnalogSink.empty(), optional=True)  # optional zero reference, defaults to GND
 
-    self.amplification = self.GeneratorParam(amplification, Range)
-    self.impedance = self.GeneratorParam(impedance, Range)
-    self.series = self.GeneratorParam(series, int)
-    self.tolerance = self.GeneratorParam(tolerance, float)
+    self.amplification = self.GeneratorParam(amplification)
+    self.impedance = self.GeneratorParam(impedance)
+    self.series = self.GeneratorParam(series)
+    self.tolerance = self.GeneratorParam(tolerance)
     self.reference_connected = self.GeneratorParam(self.reference.is_connected())
 
     self.actual_amplification = self.Parameter(RangeExpr())
@@ -210,10 +210,10 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     self.output_reference = self.Port(AnalogSink.empty())
     self.output = self.Port(AnalogSource.empty())
 
-    self.ratio = self.GeneratorParam(ratio, Range)
-    self.input_impedance = self.GeneratorParam(input_impedance, Range)
-    self.series = self.GeneratorParam(series, int)
-    self.tolerance = self.GeneratorParam(tolerance, float)
+    self.ratio = self.GeneratorParam(ratio)
+    self.input_impedance = self.GeneratorParam(input_impedance)
+    self.series = self.GeneratorParam(series)
+    self.tolerance = self.GeneratorParam(tolerance)
 
     self.actual_ratio = self.Parameter(RangeExpr())
 
@@ -333,10 +333,10 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
     self.output = self.Port(AnalogSource.empty())
     self.reference = self.Port(AnalogSink.empty())  # negative reference for the input and output signals
 
-    self.factor = self.GeneratorParam(factor, Range)
-    self.capacitance = self.GeneratorParam(capacitance, Range)
-    self.series = self.GeneratorParam(series, int)
-    self.tolerance = self.GeneratorParam(tolerance, float)
+    self.factor = self.GeneratorParam(factor)
+    self.capacitance = self.GeneratorParam(capacitance)
+    self.series = self.GeneratorParam(series)
+    self.tolerance = self.GeneratorParam(tolerance)
 
     self.actual_factor = self.Parameter(RangeExpr())
 

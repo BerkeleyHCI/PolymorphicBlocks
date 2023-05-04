@@ -12,7 +12,7 @@ class TeRc(TestPoint, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, size: StringLike = '0805'):
     super().__init__()
-    self.size_value = self.GeneratorParam(size, str)
+    self.size_value = self.GeneratorParam(size)
 
   def generate(self) -> None:
     super().generate()

@@ -25,7 +25,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
 
     self.io = self.Port(Vector(DigitalBidir().empty()), optional=True)
 
-    self.addr_lsb = self.GeneratorParam(addr_lsb, int)
+    self.addr_lsb = self.GeneratorParam(addr_lsb)
     self.pin_assigns_value = self.GeneratorParam(self.pin_assigns)
     self.io_requested = self.GeneratorParam(self.io.requested())
 
