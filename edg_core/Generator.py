@@ -53,7 +53,7 @@ class GeneratorBlock(Block):
   @overload
   def GeneratorParam(self, param: FloatLike) -> GeneratorParam[FloatExpr, float]: ...  # type: ignore
   @overload
-  def GeneratorParam(self, param: StringLike) -> GeneratorParam[StringExpr, float]: ...  # type: ignore
+  def GeneratorParam(self, param: StringLike) -> GeneratorParam[StringExpr, str]: ...  # type: ignore
   @overload
   def GeneratorParam(self, param: ArrayRangeLike) -> GeneratorParam[ArrayRangeExpr, list[Range]]: ...  # type: ignore
   @overload
@@ -81,8 +81,8 @@ class GeneratorBlock(Block):
     if not isinstance(param.binding, (InitParamBinding, AllocatedBinding, IsConnectedBinding)):
       raise BlockDefinitionError(self, "GeneratorParameter(...) param must be an __init__ param, port requested, or port is_connected")
 
-    elt = GeneratorParam(param)
-    self._generator_params.register(elt)
+    elt = GeneratorParam(param)  # type: ignore
+    self._generator_params.register(elt)  # type: ignore
 
     return elt
 
