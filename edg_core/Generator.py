@@ -5,18 +5,21 @@ from typing import *
 from deprecated import deprecated
 
 import edgir
+from . import Range, ArrayRangeExpr, ArrayRangeLike, ArrayBoolExpr, ArrayBoolLike, ArrayFloatExpr, ArrayIntExpr, \
+  ArrayIntLike, ArrayFloatLike, ArrayStringLike, ArrayStringExpr
 from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding
 from .Blocks import BlockElaborationState, AbstractBlockProperty
-from .ConstraintExpr import ConstraintExpr
+from .ConstraintExpr import ConstraintExpr, RangeLike, RangeExpr, IntExpr, BoolExpr, BoolLike, IntLike, FloatExpr, \
+  FloatLike, StringExpr, StringLike
 from .Core import non_library
 from .HdlUserExceptions import *
 from .HierarchyBlock import Block
 
 
+ExprType = TypeVar('ExprType', bound=Any)
 WrappedType = TypeVar('WrappedType', bound=Any)
-CastableType = TypeVar('CastableType', bound=Any)
-class GeneratorParam(Generic[WrappedType]):
-  def __init__(self, expr: ConstraintExpr[WrappedType, Any]):
+class GeneratorParam(Generic[ExprType, WrappedType]):
+  def __init__(self, expr: ExprType):
     self._expr = expr
     self._value: Optional[WrappedType] = None  # set externally
 
@@ -24,10 +27,11 @@ class GeneratorParam(Generic[WrappedType]):
     assert self._value is not None, "parameter has no value"
     return self._value
 
-  def expr(self) -> ConstraintExpr[WrappedType, Any]:
+  def expr(self) -> ExprType:
     return self._expr
 
 
+CastableType = TypeVar('CastableType', bound=Any)
 @non_library
 class GeneratorBlock(Block):
   """Block which allows arbitrary Python code to generate its internal subcircuit,
@@ -38,14 +42,29 @@ class GeneratorBlock(Block):
     self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
     self._generator_params = self.manager.new_dict(GeneratorParam)
 
-  @overload  # where the param is direct (not a *Like in a Union[...]), we don't need the optional tpe
-  def GeneratorParam(self, param: ConstraintExpr[WrappedType, CastableType]) -> GeneratorParam[WrappedType]: ...
+  # all the case need to be defined since it can't infer the types when there's a *Like
   @overload
-  def GeneratorParam(self, param: Union[ConstraintExpr[WrappedType, CastableType], CastableType],
-                     tpe: Optional[Type[WrappedType]] = None) -> GeneratorParam[WrappedType]: ...
+  def GeneratorParam(self, param: RangeLike) -> GeneratorParam[RangeExpr, Range]: ...
+  @overload
+  def GeneratorParam(self, param: BoolLike) -> GeneratorParam[BoolExpr, bool]: ...
+  @overload
+  def GeneratorParam(self, param: IntLike) -> GeneratorParam[IntExpr, int]: ...
+  @overload
+  def GeneratorParam(self, param: FloatLike) -> GeneratorParam[FloatExpr, float]: ...
+  @overload
+  def GeneratorParam(self, param: StringLike) -> GeneratorParam[StringExpr, float]: ...
+  @overload
+  def GeneratorParam(self, param: ArrayRangeLike) -> GeneratorParam[ArrayRangeExpr, list[Range]]: ...
+  @overload
+  def GeneratorParam(self, param: ArrayBoolLike) -> GeneratorParam[ArrayBoolExpr, list[bool]]: ...
+  @overload
+  def GeneratorParam(self, param: ArrayIntLike) -> GeneratorParam[ArrayIntExpr, list[int]]: ...
+  @overload
+  def GeneratorParam(self, param: ArrayFloatLike) -> GeneratorParam[ArrayFloatExpr, list[float]]: ...
+  @overload
+  def GeneratorParam(self, param: ArrayStringLike) -> GeneratorParam[ArrayStringExpr, list[str]]: ...
 
-  def GeneratorParam(self, param: Union[ConstraintExpr[WrappedType, CastableType], CastableType],
-                     tpe: Optional[Type[WrappedType]] = None) -> GeneratorParam[WrappedType]:
+  def GeneratorParam(self, param: Union[ConstraintExpr, Any]) -> GeneratorParam:
     """Declares some parameter to be a generator, returning its GeneratorParam wrapper that
     can be .get()'d from within the generate() function.
 
