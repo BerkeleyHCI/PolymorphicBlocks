@@ -112,22 +112,27 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
     self.actual = self.Port(AnalogSink.empty())
     self.output = self.Port(AnalogSource.empty())
 
-    self.generator(self.generate_amp, output_resistance, input_resistance, diode_spec,
-                   series, tolerance)
+    self.output_resistance = self.ArgParameter(output_resistance)
+    self.input_resistance = self.GeneratorParam(input_resistance)
+    self.diode_spec = self.GeneratorParam(diode_spec)
+    self.series = self.GeneratorParam(series)
+    self.tolerance = self.GeneratorParam(tolerance)
 
-  def generate_amp(self, output_resistance: Range, input_resistance: Range, diode_spec: str,
-                   series: int, tolerance: float) -> None:
+  def generate(self) -> None:
+    super().generate()
+
     # The 1/4 factor is a way to specify the series resistance of the divider assuming both resistors are equal,
     # since the DividerValues util only takes the parallel resistance
-    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DividerValues)
-    top_resistance, bottom_resistance = calculator.find(DividerValues(Range.from_tolerance(0.5, tolerance),
-                                                                      input_resistance / 4))
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.series.get()], self.tolerance.get(), DividerValues)
+    top_resistance, bottom_resistance = calculator.find(DividerValues(Range.from_tolerance(0.5, self.tolerance.get()),
+                                                                      self.input_resistance.get() / 4))
 
     self.amp = self.Block(Opamp())
-    self.rtop = self.Block(Resistor(resistance=Range.from_tolerance(top_resistance, tolerance)))
-    self.rbot = self.Block(Resistor(resistance=Range.from_tolerance(bottom_resistance, tolerance)))
-    self.rout = self.Block(Resistor(resistance=output_resistance))
+    self.rtop = self.Block(Resistor(resistance=Range.from_tolerance(top_resistance, self.tolerance.get())))
+    self.rbot = self.Block(Resistor(resistance=Range.from_tolerance(bottom_resistance, self.tolerance.get())))
+    self.rout = self.Block(Resistor(resistance=self.output_resistance))
 
+    diode_spec = self.diode_spec.get()
     if diode_spec:
       self.diode = self.Block(Diode(  # TODO should be encoded as a voltage difference?
         reverse_voltage=self.amp.out.voltage_out,

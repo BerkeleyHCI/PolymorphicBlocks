@@ -19,30 +19,40 @@ class ESeriesResistor(ResistorStandardPinning, SmdStandardPackage, GeneratorBloc
                footprint_spec: StringLike = Default(""), **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.generator(self.select_resistor, self.resistance, self.power, series, tolerance,
-                   footprint_spec, self.smd_min_package)
+    self.resistance_value = self.GeneratorParam(self.resistance)
+    self.power_value = self.GeneratorParam(self.power)
+    self.series = self.GeneratorParam(series)
+    self.tolerance = self.GeneratorParam(tolerance)
+    self.footprint_spec = self.GeneratorParam(footprint_spec)
+    self.smd_min_package_value = self.GeneratorParam(self.smd_min_package)
 
-  def select_resistor(self, resistance: Range, power: Range, series: int, tolerance: float,
-                      footprint_spec: str, smd_min_package: str) -> None:
+  def generate(self) -> None:
+    super().generate()
+
+    resistance = self.resistance_value.get()
+    tolerance = self.tolerance.get()
+    series = self.series.get()
+
     if series == 0:  # exact, not matched to E-series
       selected_center = resistance.center()
     else:
       selected_series = ESeriesUtil.choose_preferred_number(resistance, ESeriesUtil.SERIES[series], tolerance)
       if selected_series is None:
-        raise ValueError(f"no resistor within {resistance} in series {series} and tolerance {tolerance}")
+        raise ValueError("no matching resistor")
       selected_center = selected_series
 
     selected_range = Range.from_tolerance(selected_center, tolerance)
     if not selected_range.fuzzy_in(resistance):
       raise ValueError(f"chosen resistances tolerance {tolerance} not within {resistance}")
 
-    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(smd_min_package, TableResistor.SMD_FOOTPRINT_MAP)
+    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(
+      self.smd_min_package_value.get(), TableResistor.SMD_FOOTPRINT_MAP)
     suitable_packages = [(package_power, package) for package_power, package in self.PACKAGE_POWER
-                         if package_power >= power.upper and
-                         (not footprint_spec or package == footprint_spec) and
+                         if package_power >= self.power_value.get().upper and
+                         (not self.footprint_spec.get() or package == self.footprint_spec.get()) and
                          (package not in minimum_invalid_footprints)]
     if not suitable_packages:
-      raise ValueError(f"no resistor package for {power.upper} W power")
+      raise ValueError("no suitable resistor packages")
 
     self.assign(self.actual_resistance, selected_range)
     self.assign(self.actual_power_rating, Range.zero_to_upper(suitable_packages[0][0]))

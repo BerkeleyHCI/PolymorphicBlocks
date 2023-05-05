@@ -13,20 +13,20 @@ class LowPassRc(AnalogFilter, GeneratorBlock):
   def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike,
                voltage: RangeLike):
     super().__init__()
-    self.impedance = self.ArgParameter(impedance)
-    self.cutoff_freq = self.ArgParameter(cutoff_freq)
+    self.impedance = self.GeneratorParam(impedance)
+    self.cutoff_freq = self.GeneratorParam(cutoff_freq)
     self.voltage = self.ArgParameter(voltage)
 
     self.input = self.Port(Passive.empty())
     self.output = self.Port(Passive.empty())
     self.gnd = self.Port(Passive.empty())
 
-    self.generator(self.generate_rc, self.cutoff_freq, self.impedance)
+  def generate(self) -> None:
+    super().generate()
 
-  def generate_rc(self, cutoff_freq: Range, impedance: Range) -> None:
-    self.r = self.Block(Resistor(resistance=self.impedance))  # TODO maybe support power?
+    self.r = self.Block(Resistor(resistance=self.impedance.expr()))  # TODO maybe support power?
     # cutoff frequency is 1/(2 pi R C)
-    capacitance = Range.cancel_multiply(1 / (2 * pi * impedance), 1 / cutoff_freq)
+    capacitance = Range.cancel_multiply(1 / (2 * pi * self.impedance.get()), 1 / self.cutoff_freq.get())
 
     self.c = self.Block(Capacitor(capacitance=capacitance*Farad, voltage=self.voltage))
     self.connect(self.input, self.r.a)
