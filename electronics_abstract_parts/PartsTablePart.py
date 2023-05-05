@@ -3,6 +3,7 @@ from typing import Optional, Union, Any
 
 from electronics_model import *
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
+from .StandardPinningFootprint import StandardPinningFootprint
 
 
 @non_library
@@ -49,6 +50,8 @@ class PartsTablePart(Block):
 
 @non_library
 class PartsTableSelector(PartsTablePart, GeneratorBlock):
+  """PartsTablePart that includes the parts selection framework logic.
+  Subclasses only need to extend _row_filter and _row_generate with part-specific logic."""
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.part_value = self.GeneratorParam(self.part)
@@ -88,7 +91,12 @@ class PartsTableFootprint(PartsTablePart, Block):
 
 
 @non_library
-class PartsTableFootprintSelector(PartsTableSelector, PartsTableFootprint, FootprintBlock):
+class PartsTableFootprintSelector(PartsTableSelector, PartsTableFootprint, StandardPinningFootprint, FootprintBlock):
+  """PartsTableFootprint that includes the parts selection framework logic and footprint generator,
+  including rows by a footprint spec.
+  Subclasses must additionally define the fields required by StandardPinningFootprint, which defines the
+  footprint name to pin mapping."""
+
   # this needs to be defined by the implementing subclass
   REFDES_PREFIX: str
 
