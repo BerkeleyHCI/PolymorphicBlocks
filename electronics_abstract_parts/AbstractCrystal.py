@@ -1,5 +1,5 @@
 from electronics_model import *
-from . import PartsTableFootprint, PartsTableColumn, Capacitor, PartsTableRow
+from . import PartsTableFootprintSelector, PartsTableColumn, Capacitor, PartsTableRow
 from .Categories import *
 from .StandardPinningFootprint import StandardPinningFootprint
 
@@ -47,39 +47,26 @@ class CrystalStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
 
 
 @non_library
-class TableCrystal(CrystalStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableCrystal(CrystalStandardPinning, PartsTableFootprintSelector):
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)
+
+  REFDES_PREFIX = 'X'
 
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     """Discrete crystal component."""
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.frequency, self.part, self.footprint_spec)
+    self.frequency_value = self.GeneratorParam(self.frequency)
 
-  def select_part(self, frequency: Range, part_spec: str, footprint_spec: str) -> None:
-    parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        row[self.FREQUENCY] in frequency
-    ))
-    part = parts.first(f"no crystal matching f={frequency} Hz")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      (row[self.FREQUENCY] in self.frequency_value.get())
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-    self.assign(self.actual_frequency, part[self.FREQUENCY])
-    self.assign(self.actual_capacitance, part[self.CAPACITANCE])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'X', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_frequency, row[self.FREQUENCY])
+    self.assign(self.actual_capacitance, row[self.CAPACITANCE])
 
 
 class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate from part?

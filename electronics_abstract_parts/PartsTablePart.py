@@ -48,6 +48,34 @@ class PartsTablePart(Block):
 
 
 @non_library
+class PartsTableSelector(PartsTablePart, GeneratorBlock):
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.part_value = self.GeneratorParam(self.part)
+
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    """Returns whether the candidate row satisfies the requirements (should be kept).
+    Only called within generate(), so has access to GeneratorParam.get().
+    Subclasses should chain this by and-ing with a  super() call."""
+    return not self.part_value.get() or (self.part_value.get() == row[self.PART_NUMBER_COL])
+
+  def _row_generate(self, row: PartsTableRow) -> None:
+    """Once a row is selected, this is called to generate the implementation given the part selection.
+    Subclasses super chain this with a super() call.
+    If there is no matching row, this is not called."""
+    self.assign(self.actual_part, row[self.PART_NUMBER_COL])
+
+  def generate(self):
+    matching_rows = self._get_table().filter(lambda row: self._row_filter(row))
+    self.assign(self.matching_parts, matching_rows.map(lambda row: row[self.PART_NUMBER_COL]))
+    if len(matching_rows) > 0:
+      selected_row = matching_rows.first()
+      self._row_generate(selected_row)
+    else:  # if no matching part, generate a parameter error instead of crashing
+      self.require(False, "no matching part")
+
+
+@non_library
 class PartsTableFootprint(PartsTablePart, Block):
   """A PartsTablePart for footprints that defines footprint-specific columns and a footprint spec arg-param.
   This Block doesn't need to directly be a footprint, only that the part search can filter on footprint."""
@@ -57,3 +85,28 @@ class PartsTableFootprint(PartsTablePart, Block):
   def __init__(self, *args, footprint_spec: StringLike = Default(""), **kwargs):
     super().__init__(*args, **kwargs)
     self.footprint_spec = self.ArgParameter(footprint_spec)  # actual_footprint left to the actual footprint
+
+
+@non_library
+class PartsTableFootprintSelector(PartsTableSelector, PartsTableFootprint, FootprintBlock):
+  # this needs to be defined by the implementing subclass
+  REFDES_PREFIX: str
+
+  @init_in_parent
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.footprint_spec_value = self.GeneratorParam(self.footprint_spec)
+
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      ((not self.footprint_spec_value.get()) or self.footprint_spec_value.get() == row[self.KICAD_FOOTPRINT])
+
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.footprint(
+      self.REFDES_PREFIX, row[self.KICAD_FOOTPRINT],
+      self._make_pinning(row[self.KICAD_FOOTPRINT]),
+      mfr=row[self.MANUFACTURER_COL], part=row[self.PART_NUMBER_COL],
+      value=row[self.DESCRIPTION_COL],
+      datasheet=row[self.DATASHEET_COL]
+    )
