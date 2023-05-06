@@ -87,3 +87,10 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
         return match_fn(parsed_values)
 
     return None  # exhausted all options
+
+
+class JlcTableSelector(JlcTablePart, PartsTableSelector):
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.lcsc_part, row[self.LCSC_PART_HEADER])
+    self.assign(self.actual_basic_part, row[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
