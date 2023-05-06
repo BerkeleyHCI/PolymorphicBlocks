@@ -74,10 +74,6 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock):
     If there is no matching row, this is not called."""
     self.assign(self.actual_part, row[self.PART_NUMBER_COL])
 
-  def _row_sort_by(self, row: PartsTableRow) -> Any:
-    """Sorting key for each row."""
-    return 0
-
   def generate(self):
     matching_table = self._get_table().filter(lambda row: self._row_filter(row))
     postprocessed_table = self._table_postprocess(matching_table)

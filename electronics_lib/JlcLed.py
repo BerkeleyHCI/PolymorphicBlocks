@@ -72,5 +72,6 @@ class JlcLed(LedStandardFootprint, JlcTableSelector, SmdStandardPackageSelector,
     super()._row_generate(row)
     self.assign(self.actual_color, row[self.COLOR])
 
-  def _row_sort_by(self, row: PartsTableRow) -> Any:
-    return [row[self.BASIC_PART_HEADER], row[self.KICAD_FOOTPRINT], row[self.COST]]
+  @classmethod
+  def _row_sort_by(cls, row: PartsTableRow) -> Any:
+    return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
