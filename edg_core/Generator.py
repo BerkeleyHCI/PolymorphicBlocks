@@ -5,7 +5,7 @@ from typing import *
 from deprecated import deprecated
 
 import edgir
-from . import IdentityDict
+from .IdentityDict import IdentityDict
 from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding
 from .Blocks import BlockElaborationState, AbstractBlockProperty
 from .ConstraintExpr import ConstraintExpr
@@ -106,7 +106,7 @@ class GeneratorBlock(Block):
       self._generator_params_list.append(param)
 
   def get(self, param: ConstraintExpr[WrappedType, Any]) -> WrappedType:
-    ...
+    return self._generator_param_values[param]
 
   # Generator dependency data
   #
@@ -186,6 +186,8 @@ class GeneratorBlock(Block):
     elif type(self).generate is not GeneratorBlock.generate:
       for name, gen_param in self._generator_params.items():
         gen_param._value = gen_param._expr._from_lit(generate_values_map[ref_map[gen_param._expr].SerializeToString()])
+      for param in self._generator_params_list:
+        self._generator_param_values[param] = param._from_lit(generate_values_map[ref_map[param].SerializeToString()])
       self.generate()
     else:
       raise BlockDefinitionError(self, "Generator missing generate implementation", "define generate")

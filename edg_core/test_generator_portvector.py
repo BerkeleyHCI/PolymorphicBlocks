@@ -11,10 +11,10 @@ class GeneratorInnerBlock(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.ports_requested = self.GeneratorParam(self.ports.requested())
+    self.generator_param(self.ports.requested())
 
   def generate(self) -> None:
-    assert self.ports_requested.get() == ['0', 'named', '1']
+    assert self.get(self.ports.requested()) == ['0', 'named', '1']
     self.ports.append_elt(TestPortSink((-1, 1)))
     self.ports.append_elt(TestPortSink((-5, 5)), 'named')
     self.ports.append_elt(TestPortSink((-2, 2)))
@@ -116,10 +116,11 @@ class GeneratorArrayParam(GeneratorBlock):
   def __init__(self, param: ArrayRangeLike) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))
-    self.param_value = self.GeneratorParam(param)
+    self.param = self.ArgParameter(param)
+    self.generator_param(self.param)
 
   def generate(self) -> None:
-    for elt in self.param_value.get():
+    for elt in self.get(self.param):
       created_port = self.ports.append_elt(TestPortSink(elt))  # any port
     self.require(created_port.link().sinks_range == Range(-2, 1))
 
