@@ -2,10 +2,10 @@ from typing import *
 import re
 from electronics_abstract_parts import *
 
-from .JlcPart import JlcTablePart, DescriptionParser
+from .JlcPart import JlcTablePart, DescriptionParser, JlcTableSelector
 
 
-class JlcBaseFet(BaseTableFet, JlcTablePart):
+class JlcBaseFet(BaseTableFet, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     'SOT23-3': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
@@ -76,14 +76,8 @@ class JlcBaseFet(BaseTableFet, JlcTablePart):
 
 
 class JlcFet(JlcBaseFet, TableFet):
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
+  pass
 
 
 class JlcSwitchFet(JlcBaseFet, TableSwitchFet):
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
+  pass

@@ -59,8 +59,14 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock):
   def _row_filter(self, row: PartsTableRow) -> bool:
     """Returns whether the candidate row satisfies the requirements (should be kept).
     Only called within generate(), so has access to GeneratorParam.get().
-    Subclasses should chain this by and-ing with a  super() call."""
+    Subclasses should chain this by and-ing with a super() call."""
     return not self.part_value.get() or (self.part_value.get() == row[self.PART_NUMBER_COL])
+
+  def _table_postprocess(self, table: PartsTable) -> PartsTable:
+    """Optional postprocessing step that takes a table and returns a transformed table.
+    Only called within generate(), so has access to GeneratorParam.get().
+    Subclasses should chain with the results of a super() call."""
+    return table
 
   def _row_generate(self, row: PartsTableRow) -> None:
     """Once a row is selected, this is called to generate the implementation given the part selection.
@@ -69,10 +75,11 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock):
     self.assign(self.actual_part, row[self.PART_NUMBER_COL])
 
   def generate(self):
-    matching_rows = self._get_table().filter(lambda row: self._row_filter(row))
-    self.assign(self.matching_parts, matching_rows.map(lambda row: row[self.PART_NUMBER_COL]))
-    if len(matching_rows) > 0:
-      selected_row = matching_rows.first()
+    matching_table = self._get_table().filter(lambda row: self._row_filter(row))
+    postprocessed_table = self._table_postprocess(matching_table)
+    self.assign(self.matching_parts, postprocessed_table.map(lambda row: row[self.PART_NUMBER_COL]))
+    if len(postprocessed_table) > 0:
+      selected_row = postprocessed_table.first()
       self._row_generate(selected_row)
     else:  # if no matching part, generate a parameter error instead of crashing
       self.require(False, "no matching part")

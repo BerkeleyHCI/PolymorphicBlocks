@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcTableSelector, DescriptionParser
 
 
-class JlcCrystal(TableCrystal, JlcTableSelector, FootprintBlock):
+class JlcCrystal(TableCrystal, JlcTableSelector):
   SERIES_PACKAGE_FOOTPRINT_MAP = {
     ('X3225', 'SMD-3225_4P'): 'Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm',
   }

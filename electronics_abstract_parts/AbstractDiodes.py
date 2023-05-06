@@ -3,7 +3,7 @@ from typing import Dict
 from electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprint
+from .PartsTablePart import PartsTableFootprintSelector
 from .StandardPinningFootprint import StandardPinningFootprint
 
 
@@ -84,48 +84,35 @@ class Diode(KiCadImportableBlock, BaseDiode):
 
 
 @non_library
-class TableDiode(Diode, BaseDiodeStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableDiode(Diode, BaseDiodeStandardPinning, PartsTableFootprintSelector, GeneratorBlock):
   VOLTAGE_RATING = PartsTableColumn(Range)  # tolerable blocking voltages, positive
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable currents, average
   FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
   REVERSE_RECOVERY = PartsTableColumn(Range)  # possible reverse recovery time
 
+  REFDES_PREFIX = 'D'
+
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.reverse_voltage, self.current, self.voltage_drop,
-                   self.reverse_recovery_time, self.part, self.footprint_spec)
+    self.reverse_voltage_value = self.GeneratorParam(self.reverse_voltage)
+    self.current_value = self.GeneratorParam(self.current)
+    self.voltage_drop_value = self.GeneratorParam(self.voltage_drop)
+    self.reverse_recovery_time_value = self.GeneratorParam(self.reverse_recovery_time)
 
-  def select_part(self, reverse_voltage: Range, current: Range, voltage_drop: Range,
-                  reverse_recovery_time: Range, part_spec: str, footprint_spec: str) -> None:
-    parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        reverse_voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and
-        current.fuzzy_in(row[self.CURRENT_RATING]) and
-        row[self.FORWARD_VOLTAGE].fuzzy_in(voltage_drop) and
-        row[self.REVERSE_RECOVERY].fuzzy_in(reverse_recovery_time)
-    ))
-    part = parts.first(f"no diodes in Vr,max={reverse_voltage} V, I={current} A, Vf={voltage_drop} V, trr={reverse_recovery_time} s")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      self.reverse_voltage_value.get().fuzzy_in(row[self.VOLTAGE_RATING]) and \
+      self.current_value.get().fuzzy_in(row[self.CURRENT_RATING]) and \
+      row[self.FORWARD_VOLTAGE].fuzzy_in(self.voltage_drop_value.get()) and \
+      row[self.REVERSE_RECOVERY].fuzzy_in(self.reverse_recovery_time_value.get())
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-
-    self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
-    self.assign(self.actual_current_rating, part[self.CURRENT_RATING])
-    self.assign(self.actual_voltage_drop, part[self.FORWARD_VOLTAGE])
-    self.assign(self.actual_reverse_recovery_time, part[self.REVERSE_RECOVERY])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'D', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
+    self.assign(self.actual_current_rating, row[self.CURRENT_RATING])
+    self.assign(self.actual_voltage_drop, row[self.FORWARD_VOLTAGE])
+    self.assign(self.actual_reverse_recovery_time, row[self.REVERSE_RECOVERY])
 
 
 @abstract_block
@@ -154,39 +141,25 @@ class ZenerDiode(BaseDiode, DiscreteSemiconductor):
 
 
 @non_library
-class TableZenerDiode(ZenerDiode, BaseDiodeStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableZenerDiode(ZenerDiode, BaseDiodeStandardPinning, PartsTableFootprintSelector, GeneratorBlock):
   ZENER_VOLTAGE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)  # tolerable power
+
+  REFDES_PREFIX = 'D'
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.zener_voltage, self.part, self.footprint_spec)
+    self.zener_voltage_value = self.GeneratorParam(self.zener_voltage)
 
-  def select_part(self, zener_voltage: Range, part_spec: str, footprint_spec: str) -> None:
-    parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        row[self.ZENER_VOLTAGE].fuzzy_in(zener_voltage)
-    ))
-    part = parts.first(f"no zener diodes in Vz={zener_voltage} V")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      row[self.ZENER_VOLTAGE].fuzzy_in(self.zener_voltage_value.get())
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-
-    self.assign(self.actual_zener_voltage, part[self.ZENER_VOLTAGE])
-    self.assign(self.actual_power_rating, part[self.POWER_RATING])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'D', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_zener_voltage, row[self.ZENER_VOLTAGE])
+    self.assign(self.actual_power_rating, row[self.POWER_RATING])
 
 
 class ProtectionZenerDiode(Protection):
