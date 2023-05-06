@@ -89,7 +89,7 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
     return None  # exhausted all options
 
 
-class JlcTableSelector(JlcTablePart, PartsTableSelector):
+class JlcTableSelector(PartsTableSelector, JlcTablePart):
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.lcsc_part, row[self.LCSC_PART_HEADER])
