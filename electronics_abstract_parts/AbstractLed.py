@@ -82,12 +82,13 @@ class IndicatorLedArray(Light, GeneratorBlock):
 
     self.color = self.ArgParameter(color)
     self.current_draw = self.ArgParameter(current_draw)
-    self.count_value = self.GeneratorParam(count)
+    self.count = self.ArgParameter(count)
+    self.generator_param(self.count)
 
   def generate(self):
     super().generate()
     self.led = ElementDict[IndicatorLed]()
-    for led_i in range(self.count_value.get()):
+    for led_i in range(self.get(self.count)):
       led = self.led[str(led_i)] = self.Block(IndicatorLed(self.color, current_draw=self.current_draw))
       self.connect(self.signals.append_elt(DigitalSink.empty(), str(led_i)), led.signal)
       self.connect(led.gnd, self.gnd)
@@ -144,13 +145,13 @@ class IndicatorSinkLedArray(Light, GeneratorBlock):
 
     self.color = self.ArgParameter(color)
     self.current_draw = self.ArgParameter(current_draw)
-
-    self.count_value = self.GeneratorParam(count)
+    self.count = self.ArgParameter(count)
+    self.generator_param(self.count)
 
   def generate(self):
     super().generate()
     self.led = ElementDict[IndicatorSinkLed]()
-    for led_i in range(self.count_value.get()):
+    for led_i in range(self.get(self.count)):
       led = self.led[str(led_i)] = self.Block(IndicatorSinkLed(self.color, current_draw=self.current_draw))
       self.connect(self.signals.append_elt(DigitalSink.empty(), str(led_i)), led.signal)
       self.connect(led.pwr, self.pwr)

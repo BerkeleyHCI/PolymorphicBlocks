@@ -136,23 +136,18 @@ class TableFet(FetStandardPinning, BaseTableFet, PartsTableFootprintSelector, Ge
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.drain_voltage_value = self.GeneratorParam(self.drain_voltage)
-    self.drain_current_value = self.GeneratorParam(self.drain_current)
-    self.gate_voltage_value = self.GeneratorParam(self.gate_voltage)
-    self.rds_on_value = self.GeneratorParam(self.rds_on)
-    self.gate_charge_value = self.GeneratorParam(self.gate_charge)
-    self.power_value = self.GeneratorParam(self.power)
-    self.channel_value = self.GeneratorParam(self.channel)
+    self.generator_param(self.drain_voltage, self.drain_current, self.gate_voltage, self.rds_on, self.gate_charge,
+                         self.power, self.channel)
 
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
-      row[self.CHANNEL] == self.channel_value.get() and \
-      self.drain_voltage_value.get().fuzzy_in(row[self.VDS_RATING]) and \
-      self.drain_current_value.get().fuzzy_in(row[self.IDS_RATING]) and \
-      self.gate_voltage_value.get().fuzzy_in(row[self.VGS_RATING]) and \
-      row[self.RDS_ON].fuzzy_in(self.rds_on_value.get()) and \
-      row[self.GATE_CHARGE].fuzzy_in(self.gate_charge_value.get()) and \
-      self.power_value.get().fuzzy_in(row[self.POWER_RATING])
+      row[self.CHANNEL] == self.get(self.channel) and \
+      self.get(self.drain_voltage).fuzzy_in(row[self.VDS_RATING]) and \
+      self.get(self.drain_current).fuzzy_in(row[self.IDS_RATING]) and \
+      self.get(self.gate_voltage).fuzzy_in(row[self.VGS_RATING]) and \
+      row[self.RDS_ON].fuzzy_in(self.get(self.rds_on)) and \
+      row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
+      self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
@@ -199,15 +194,8 @@ class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFoot
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.frequency_value = self.GeneratorParam(self.frequency)
-    self.drain_voltage_value = self.GeneratorParam(self.drain_voltage)
-    self.drain_current_value = self.GeneratorParam(self.drain_current)
-    self.gate_voltage_value = self.GeneratorParam(self.gate_voltage)
-    self.rds_on_value = self.GeneratorParam(self.rds_on)
-    self.gate_charge_value = self.GeneratorParam(self.gate_charge)
-    self.power_value = self.GeneratorParam(self.power)
-    self.channel_value = self.GeneratorParam(self.channel)
-    self.drive_current_value = self.GeneratorParam(self.drive_current)
+    self.generator_param(self.frequency, self.drain_voltage, self.drain_current, self.gate_voltage, self.rds_on,
+                         self.gate_charge, self.power, self.channel, self.drive_current)
 
     self.actual_static_power = self.Parameter(RangeExpr())
     self.actual_switching_power = self.Parameter(RangeExpr())
@@ -215,13 +203,13 @@ class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFoot
 
   def _row_filter(self, row: PartsTableRow) -> bool:  # here this is just a pre-filter step
     return super()._row_filter(row) and \
-      row[self.CHANNEL] == self.channel_value.get() and \
-      self.drain_voltage_value.get().fuzzy_in(row[self.VDS_RATING]) and \
-      self.drain_current_value.get().fuzzy_in(row[self.IDS_RATING]) and \
-      self.gate_voltage_value.get().fuzzy_in(row[self.VGS_RATING]) and \
-      row[self.RDS_ON].fuzzy_in(self.rds_on_value.get()) and \
-      row[self.GATE_CHARGE].fuzzy_in(self.gate_charge_value.get()) and \
-      self.power_value.get().fuzzy_in(row[self.POWER_RATING])
+      row[self.CHANNEL] == self.get(self.channel) and \
+      self.get(self.drain_voltage).fuzzy_in(row[self.VDS_RATING]) and \
+      self.get(self.drain_current).fuzzy_in(row[self.IDS_RATING]) and \
+      self.get(self.gate_voltage).fuzzy_in(row[self.VGS_RATING]) and \
+      row[self.RDS_ON].fuzzy_in(self.get(self.rds_on)) and \
+      row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
+      self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
@@ -238,14 +226,14 @@ class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFoot
     self.assign(self.actual_total_power, row[self.TOTAL_POWER])
 
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
-    drive_current = self.drive_current_value.get()
+    drive_current = self.get(self.drive_current)
     gate_drive_rise, gate_drive_fall = drive_current.upper, -drive_current.lower
     assert gate_drive_rise > 0 and gate_drive_fall > 0, \
       f"got nonpositive gate currents rise={gate_drive_rise} A and fall={gate_drive_fall} A"
 
-    drain_current = self.drain_current_value.get()
-    drain_voltage = self.drain_voltage_value.get()
-    frequency = self.frequency_value.get()
+    drain_current = self.get(self.drain_current)
+    drain_voltage = self.get(self.drain_voltage)
+    frequency = self.get(self.frequency)
 
     def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}

@@ -95,17 +95,14 @@ class TableDiode(Diode, BaseDiodeStandardPinning, PartsTableFootprintSelector, G
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.reverse_voltage_value = self.GeneratorParam(self.reverse_voltage)
-    self.current_value = self.GeneratorParam(self.current)
-    self.voltage_drop_value = self.GeneratorParam(self.voltage_drop)
-    self.reverse_recovery_time_value = self.GeneratorParam(self.reverse_recovery_time)
+    self.generator_param(self.reverse_voltage, self.current, self.voltage_drop, self.reverse_recovery_time)
 
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
-      self.reverse_voltage_value.get().fuzzy_in(row[self.VOLTAGE_RATING]) and \
-      self.current_value.get().fuzzy_in(row[self.CURRENT_RATING]) and \
-      row[self.FORWARD_VOLTAGE].fuzzy_in(self.voltage_drop_value.get()) and \
-      row[self.REVERSE_RECOVERY].fuzzy_in(self.reverse_recovery_time_value.get())
+      self.get(self.reverse_voltage).fuzzy_in(row[self.VOLTAGE_RATING]) and \
+      self.get(self.current).fuzzy_in(row[self.CURRENT_RATING]) and \
+      row[self.FORWARD_VOLTAGE].fuzzy_in(self.get(self.voltage_drop)) and \
+      row[self.REVERSE_RECOVERY].fuzzy_in(self.get(self.reverse_recovery_time))
 
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
@@ -150,11 +147,11 @@ class TableZenerDiode(ZenerDiode, BaseDiodeStandardPinning, PartsTableFootprintS
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.zener_voltage_value = self.GeneratorParam(self.zener_voltage)
+    self.generator_param(self.zener_voltage)
 
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
-      row[self.ZENER_VOLTAGE].fuzzy_in(self.zener_voltage_value.get())
+      row[self.ZENER_VOLTAGE].fuzzy_in(self.get(self.zener_voltage))
 
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)

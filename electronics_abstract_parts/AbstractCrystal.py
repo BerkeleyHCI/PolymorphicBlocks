@@ -57,11 +57,11 @@ class TableCrystal(CrystalStandardPinning, PartsTableFootprintSelector):
   def __init__(self, *args, **kwargs) -> None:
     """Discrete crystal component."""
     super().__init__(*args, **kwargs)
-    self.frequency_value = self.GeneratorParam(self.frequency)
+    self.generator_param(self.frequency)
 
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
-      (row[self.FREQUENCY] in self.frequency_value.get())
+      (row[self.FREQUENCY] in self.get(self.frequency))
 
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
