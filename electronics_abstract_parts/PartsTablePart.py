@@ -27,10 +27,9 @@ class PartsTablePart(Block):
     ...
 
   @classmethod
-  @abstractmethod
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
-    """Defines a sorting key for rows of this parts table. Implement me."""
-    ...
+    """Defines an optional sorting key for rows of this parts table."""
+    return []
 
   @classmethod
   def _get_table(cls) -> PartsTable:
