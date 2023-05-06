@@ -5,6 +5,7 @@ from typing import *
 from deprecated import deprecated
 
 import edgir
+from . import IdentityDict
 from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding
 from .Blocks import BlockElaborationState, AbstractBlockProperty
 from .ConstraintExpr import ConstraintExpr
@@ -39,6 +40,8 @@ class GeneratorBlock(Block):
     super().__init__()
     self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
     self._generator_params = self.manager.new_dict(GeneratorParam)
+    self._generator_params_list: list[ConstraintExpr] = []
+    self._generator_param_values = IdentityDict[ConstraintExpr, Any]()
 
   from .ConstraintExpr import RangeLike, RangeExpr, IntExpr, BoolExpr, BoolLike, IntLike, FloatExpr, \
     FloatLike, StringExpr, StringLike
@@ -70,10 +73,7 @@ class GeneratorBlock(Block):
 
   def GeneratorParam(self, param: Union[ConstraintExpr, Any]) -> GeneratorParam:
     """Declares some parameter to be a generator, returning its GeneratorParam wrapper that
-    can be .get()'d from within the generate() function.
-
-    tpe exists only to provide a type hint to mypy, since it can't seen to infer WrappedType.
-    It can be omitted if not static type checking."""
+    can be .get()'d from within the generate() function."""
     if self._elaboration_state not in (BlockElaborationState.init, BlockElaborationState.contents):
       raise BlockDefinitionError(self, "can't call GeneratorParameter(...) outside __init__ or contents",
                                  "call GeneratorParameter(...) inside __init__ or contents only, and remember to call super().__init__()")
@@ -88,6 +88,25 @@ class GeneratorBlock(Block):
     self._generator_params.register(elt)  # type: ignore
 
     return elt
+
+  def generator_param(self, *params: ConstraintExpr) -> None:
+    """Declares some parameter to be a generator, so in generate() it can be used in self.get().
+    Parameters that have not been called in generator_param will error out if used in self.get()."""
+    if self._elaboration_state not in (BlockElaborationState.init, BlockElaborationState.contents):
+      raise BlockDefinitionError(self, "can't call generator_param(...) outside __init__ or contents",
+                                 "call generator_param(...) inside __init__ or contents only, and remember to call super().__init__()")
+    for param in params:
+      if not isinstance(param, ConstraintExpr):
+        raise TypeError(f"param to generator_param(...) must be ConstraintExpr, got {param} of type {type(param)}")
+      if param.binding is None:
+        raise BlockDefinitionError(self, "generator_param(...) param must be bound")
+      if not isinstance(param.binding, (InitParamBinding, AllocatedBinding, IsConnectedBinding)):
+        raise BlockDefinitionError(self, "generator_param(...) param must be an __init__ param, port requested, or port is_connected")
+
+      self._generator_params_list.append(param)
+
+  def get(self, param: ConstraintExpr[WrappedType, Any]) -> WrappedType:
+    ...
 
   # Generator dependency data
   #
@@ -136,6 +155,8 @@ class GeneratorBlock(Block):
       elif type(self).generate is not GeneratorBlock.generate:
         for name, gen_param in self._generator_params.items():
           pb.generator.required_params.add().CopyFrom(ref_map[gen_param._expr])
+        for param in self._generator_params_list:
+          pb.generator.required_params.add().CopyFrom(ref_map[param])
       elif (self.__class__, AbstractBlockProperty) in self._elt_properties:
         pass  # abstract blocks allowed to not define a generator
       else:

@@ -31,10 +31,11 @@ class GeneratorDependency(GeneratorBlock):
   def __init__(self, float_preset: FloatLike) -> None:
     super().__init__()
     self.float_param = self.Parameter(FloatExpr())
-    self.float_value = self.GeneratorParam(float_preset)
+    self.float_preset = self.ArgParameter(float_preset)
+    self.generator_param(self.float_preset)
 
   def generate(self) -> None:
-    self.assign(self.float_param, self.float_value.get() * 2)
+    self.assign(self.float_param, self.get(self.float_preset) * 2)
 
 
 class TestGeneratorMultiParameter(Block):
@@ -49,12 +50,13 @@ class GeneratorMultiParameter(GeneratorBlock):
     super().__init__()
     self.float_param1 = self.Parameter(FloatExpr())
     self.float_param2 = self.Parameter(FloatExpr())
-    self.float_value1 = self.GeneratorParam(float_preset1)
-    self.float_value2 = self.GeneratorParam(float_preset2)
+    self.float_preset1 = self.ArgParameter(float_preset1)
+    self.float_preset2 = self.ArgParameter(float_preset2)
+    self.generator_param(self.float_preset1, self.float_preset2)
 
   def generate(self) -> None:
-    self.assign1 = self.assign(self.float_param1, self.float_value1.get() * 3)
-    self.assign2 = self.assign(self.float_param2, self.float_value2.get() + 7)
+    self.assign1 = self.assign(self.float_param1, self.get(self.float_preset1) * 3)
+    self.assign2 = self.assign(self.float_param2, self.get(self.float_preset2) + 7)
 
 
 class TestGenerator(unittest.TestCase):
@@ -118,11 +120,12 @@ class GeneratorIsConnected(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(TestPortSource(2.0), optional=True)
-    self.port_connected = self.GeneratorParam(self.port.is_connected())
+
+    self.generator_param(self.port.is_connected())
     self.connected = self.Parameter(BoolExpr())
 
   def generate(self) -> None:
-    if self.port_connected.get():
+    if self.get(self.port.is_connected()):
       self.assign(self.connected, True)
     else:
       self.assign(self.connected, False)
