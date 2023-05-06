@@ -4,7 +4,7 @@ from electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprintSelector
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @non_library
@@ -20,7 +20,9 @@ class BaseDiode(DiscreteSemiconductor):
 
 
 @non_library
-class BaseDiodeStandardPinning(BaseDiode, StandardPinningFootprint[BaseDiode]):
+class BaseDiodeStandardFootprint(BaseDiode, StandardFootprint[BaseDiode]):
+  REFDES_PREFIX = 'D'
+
   FOOTPRINT_PINNING_MAP = {
     (
       'Diode_SMD:D_MiniMELF',
@@ -84,13 +86,11 @@ class Diode(KiCadImportableBlock, BaseDiode):
 
 
 @non_library
-class TableDiode(Diode, BaseDiodeStandardPinning, PartsTableFootprintSelector, GeneratorBlock):
+class TableDiode(Diode, BaseDiodeStandardFootprint, PartsTableFootprintSelector, GeneratorBlock):
   VOLTAGE_RATING = PartsTableColumn(Range)  # tolerable blocking voltages, positive
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable currents, average
   FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
   REVERSE_RECOVERY = PartsTableColumn(Range)  # possible reverse recovery time
-
-  REFDES_PREFIX = 'D'
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
@@ -138,11 +138,9 @@ class ZenerDiode(BaseDiode, DiscreteSemiconductor):
 
 
 @non_library
-class TableZenerDiode(ZenerDiode, BaseDiodeStandardPinning, PartsTableFootprintSelector, GeneratorBlock):
+class TableZenerDiode(ZenerDiode, BaseDiodeStandardFootprint, PartsTableFootprintSelector, GeneratorBlock):
   ZENER_VOLTAGE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)  # tolerable power
-
-  REFDES_PREFIX = 'D'
 
   @init_in_parent
   def __init__(self, *args, **kwargs):

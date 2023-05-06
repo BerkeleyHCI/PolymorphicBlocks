@@ -4,7 +4,7 @@ from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -43,7 +43,7 @@ class FerriteBead(PassiveComponent, KiCadImportableBlock):
 
 
 @non_library
-class FerriteBeadStandardPinning(FerriteBead, StandardPinningFootprint[FerriteBead]):
+class FerriteBeadStandardFootprint(FerriteBead, StandardFootprint[FerriteBead]):
   FOOTPRINT_PINNING_MAP = {
     (
       'Inductor_SMD:L_0201_0603Metric',
@@ -64,7 +64,7 @@ class FerriteBeadStandardPinning(FerriteBead, StandardPinningFootprint[FerriteBe
 
 from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate leaf-class mixin
 @non_library
-class TableFerriteBead(SmdStandardPackage, FerriteBeadStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableFerriteBead(SmdStandardPackage, FerriteBeadStandardFootprint, PartsTableFootprint, GeneratorBlock):
   CURRENT_RATING = PartsTableColumn(Range)
   HF_IMPEDANCE = PartsTableColumn(Range)
   DC_RESISTANCE = PartsTableColumn(Range)

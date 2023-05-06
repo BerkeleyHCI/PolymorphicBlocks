@@ -1,9 +1,10 @@
 from typing import Optional, Any, Dict
 
 from electronics_model import *
-from . import PartsTableColumn, PartsTableRow, PartsTableFootprintSelector, PartsTable
+from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
+from .PartsTablePart import PartsTableFootprintSelector
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -81,7 +82,9 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor):
 
 
 @non_library
-class FetStandardPinning(Fet, StandardPinningFootprint[Fet]):
+class FetStandardFootprint(Fet, StandardFootprint[Fet]):
+  REFDES_PREFIX = 'Q'
+
   FOOTPRINT_PINNING_MAP = {
     'Package_TO_SOT_SMD:SOT-23': lambda block: {
       '1': block.gate,
@@ -128,11 +131,9 @@ class BaseTableFet(Fet):
   GATE_CHARGE = PartsTableColumn(Range)  # units of C
   CHANNEL = PartsTableColumn(str)  # either 'P' or 'N'
 
-  REFDES_PREFIX = 'Q'
-
 
 @non_library
-class TableFet(FetStandardPinning, BaseTableFet, PartsTableFootprintSelector, GeneratorBlock):
+class TableFet(FetStandardFootprint, BaseTableFet, PartsTableFootprintSelector, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -186,7 +187,7 @@ class SwitchFet(Fet):
 
 
 @non_library
-class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFootprintSelector, GeneratorBlock):
+class TableSwitchFet(SwitchFet, FetStandardFootprint, BaseTableFet, PartsTableFootprintSelector, GeneratorBlock):
   SWITCHING_POWER = PartsTableColumn(Range)
   STATIC_POWER = PartsTableColumn(Range)
   TOTAL_POWER = PartsTableColumn(Range)

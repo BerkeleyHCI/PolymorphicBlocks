@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class CustomFet(FetStandardPinning, GeneratorBlock):
+class CustomFet(FetStandardFootprint, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, footprint_spec: StringLike = Default(""),
                manufacturer_spec: StringLike = Default(""), part_spec: StringLike = Default(""), **kwargs):

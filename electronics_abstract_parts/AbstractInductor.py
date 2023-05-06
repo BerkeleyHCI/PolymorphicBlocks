@@ -2,7 +2,7 @@ from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -40,7 +40,7 @@ class Inductor(PassiveComponent):
 
 
 @non_library
-class InductorStandardPinning(Inductor, StandardPinningFootprint[Inductor]):
+class InductorStandardFootprint(Inductor, StandardFootprint[Inductor]):
   FOOTPRINT_PINNING_MAP = {
     (
       'Inductor_SMD:L_0201_0603Metric',
@@ -73,7 +73,7 @@ class InductorStandardPinning(Inductor, StandardPinningFootprint[Inductor]):
 
 from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate leaf-class mixin
 @non_library
-class TableInductor(SmdStandardPackage, InductorStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableInductor(SmdStandardPackage, InductorStandardFootprint, PartsTableFootprint, GeneratorBlock):
   INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance
   FREQUENCY_RATING = PartsTableColumn(Range)  # tolerable frequencies
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable current

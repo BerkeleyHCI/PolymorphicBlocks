@@ -7,7 +7,7 @@ from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
 from .PartsTablePart import PartsTableFootprint
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -77,7 +77,7 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
 
 
 @non_library
-class CapacitorStandardPinning(Capacitor, StandardPinningFootprint[Capacitor]):
+class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
   # IMPORTANT! DummyFootprint doesn't use this, it will break on anything that isn't this pinning
   FOOTPRINT_PINNING_MAP = {
     (
@@ -107,7 +107,7 @@ class TableCapacitor(Capacitor):
 
 from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate leaf-class mixin
 @non_library
-class TableDeratingCapacitor(SmdStandardPackage, CapacitorStandardPinning, TableCapacitor, PartsTableFootprint, GeneratorBlock):
+class TableDeratingCapacitor(SmdStandardPackage, CapacitorStandardFootprint, TableCapacitor, PartsTableFootprint, GeneratorBlock):
   """Abstract table-based capacitor with derating based on a part-part voltage coefficient."""
   VOLTCO = PartsTableColumn(float)
   DERATED_CAPACITANCE = PartsTableColumn(Range)

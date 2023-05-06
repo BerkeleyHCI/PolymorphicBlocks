@@ -5,7 +5,7 @@ from .AbstractResistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 class ResistorArrayElement(Resistor):  # to avoid an abstract part error
@@ -49,7 +49,7 @@ class ResistorArray(PassiveComponent, MultipackBlock):
 
 
 @non_library
-class ResistorArrayStandardPinning(ResistorArray, StandardPinningFootprint[ResistorArray]):
+class ResistorArrayStandardFootprint(ResistorArray, StandardFootprint[ResistorArray]):
   # TODO some way to ensure the resistor count is sufficient?
   FOOTPRINT_PINNING_MAP = {  # these are all the footprints in KiCad as of 2022 05 31
     (
@@ -85,7 +85,7 @@ class ResistorArrayStandardPinning(ResistorArray, StandardPinningFootprint[Resis
 
 
 @non_library
-class TableResistorArray(ResistorArrayStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableResistorArray(ResistorArrayStandardFootprint, PartsTableFootprint, GeneratorBlock):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   COUNT = PartsTableColumn(int)

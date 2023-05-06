@@ -4,7 +4,7 @@ from electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -51,7 +51,7 @@ class PptcFuse(Fuse):
 
 
 @non_library
-class FuseStandardPinning(Fuse, StandardPinningFootprint[Fuse]):
+class FuseStandardFootprint(Fuse, StandardFootprint[Fuse]):
   FOOTPRINT_PINNING_MAP = {
     (
       'Resistor_SMD:R_0201_0603Metric',
@@ -72,7 +72,7 @@ class FuseStandardPinning(Fuse, StandardPinningFootprint[Fuse]):
 
 from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate leaf-class mixin
 @non_library
-class TableFuse(SmdStandardPackage, FuseStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableFuse(SmdStandardPackage, FuseStandardFootprint, PartsTableFootprint, GeneratorBlock):
   TRIP_CURRENT = PartsTableColumn(Range)
   HOLD_CURRENT = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)

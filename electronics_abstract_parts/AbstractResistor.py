@@ -5,7 +5,7 @@ from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprint
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -62,7 +62,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
 
 
 @non_library
-class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
+class ResistorStandardFootprint(Resistor, StandardFootprint[Resistor]):
   FOOTPRINT_PINNING_MAP = {
     (
       'Resistor_SMD:R_0201_0603Metric',
@@ -94,7 +94,7 @@ class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
 
 from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate leaf-class mixin
 @non_library
-class TableResistor(SmdStandardPackage, ResistorStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableResistor(SmdStandardPackage, ResistorStandardFootprint, PartsTableFootprint, GeneratorBlock):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)

@@ -1,7 +1,7 @@
 from electronics_model import *
 from . import PartsTableFootprintSelector, PartsTableColumn, Capacitor, PartsTableRow
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -29,7 +29,9 @@ class Crystal(DiscreteComponent):
 
 
 @non_library
-class CrystalStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
+class CrystalStandardFootprint(Crystal, StandardFootprint[Crystal]):
+  REFDES_PREFIX = 'X'
+
   FOOTPRINT_PINNING_MAP = {
     'Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm': lambda block: {
       '1': block.crystal.a,
@@ -47,11 +49,9 @@ class CrystalStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
 
 
 @non_library
-class TableCrystal(CrystalStandardPinning, PartsTableFootprintSelector):
+class TableCrystal(CrystalStandardFootprint, PartsTableFootprintSelector):
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)
-
-  REFDES_PREFIX = 'X'
 
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
