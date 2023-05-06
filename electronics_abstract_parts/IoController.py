@@ -119,19 +119,15 @@ class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
   """BaseIoController with generator code to set pin mappings"""
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
-    from edg_core.Generator import GeneratorParam
-    self.io_requested = ElementDict[GeneratorParam[ArrayStringExpr]]()
-    self.io_connected = ElementDict[GeneratorParam[BoolExpr]]()
-
-    self.pin_assigns_value = self.GeneratorParam(self.pin_assigns)
+    self.generator_param(self.pin_assigns)
 
   def contents(self):
     super().contents()
     for io_port in self._io_ports:  # defined in contents() so subclass __init__ can define additional _io_ports
       if isinstance(io_port, Vector):
-        self.io_requested[str(io_port.elt_type())] = self.GeneratorParam(io_port.requested())
+        self.generator_param(io_port.requested())
       elif isinstance(io_port, Port):
-        self.io_connected[str(type(io_port))] = self.GeneratorParam(io_port.is_connected())
+        self.generator_param(io_port.is_connected())
       else:
         raise NotImplementedError(f"unknown port type {io_port}")
 
@@ -147,9 +143,9 @@ class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
     allocation_list = []
     for io_port in self._io_ports:
       if isinstance(io_port, Vector):  # derive Vector connections from requested
-        allocation_list.append((io_port.elt_type(), self.io_requested[str(io_port.elt_type())].get()))
+        allocation_list.append((io_port.elt_type(), self.get(io_port.requested())))
       elif isinstance(io_port, Port):  # derive Port connections from is_connected
-        if self.io_connected[str(type(io_port))].get():
+        if self.get(io_port.is_connected()):
           requested = [self._name_of_child(io_port)]  # generate requested name from port name if connected
         else:
           requested = []
@@ -157,7 +153,7 @@ class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
       else:
         raise NotImplementedError(f"unknown port type {io_port}")
 
-    allocated = self._io_pinmap().allocate(allocation_list, self.pin_assigns_value.get())
+    allocated = self._io_pinmap().allocate(allocation_list, self.get(self.pin_assigns))
     self.generator_set_allocation(allocated)
     io_pins, current_draw = self._instantiate_from(self._io_ports, allocated)
     self.assign(self.io_current_draw, current_draw)
@@ -180,24 +176,18 @@ class IdealIoController(IoController, IdealModel, GeneratorBlock):
   Output have voltages at pwr/gnd, all other parameters are ideal."""
   def __init__(self) -> None:
     super().__init__()
-    self.adc_requested = self.GeneratorParam(self.adc.requested())
-    self.dac_requested = self.GeneratorParam(self.dac.requested())
-    self.gpio_requested = self.GeneratorParam(self.gpio.requested())
-    self.spi_requested = self.GeneratorParam(self.spi.requested())
-    self.i2c_requested = self.GeneratorParam(self.i2c.requested())
-    self.uart_requested = self.GeneratorParam(self.uart.requested())
-    self.usb_requested = self.GeneratorParam(self.usb.requested())
-    self.can_requested = self.GeneratorParam(self.can.requested())
+    self.generator_param(self.adc.requested(), self.dac.requested(), self.gpio.requested(), self.spi.requested(),
+                         self.i2c.requested(), self.uart.requested(), self.usb.requested(), self.can.requested())
 
   def generate(self) -> None:
     self.pwr.init_from(VoltageSink())
     self.gnd.init_from(Ground())
 
     self.adc.defined()
-    for elt in self.adc_requested.get():
+    for elt in self.get(self.adc.requested()):
       self.adc.append_elt(AnalogSink(), elt)
     self.dac.defined()
-    for elt in self.dac_requested.get():
+    for elt in self.get(self.dac.requested()):
       self.dac.append_elt(AnalogSource(
         voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage)
       ), elt)
@@ -208,21 +198,21 @@ class IdealIoController(IoController, IdealModel, GeneratorBlock):
     )
 
     self.gpio.defined()
-    for elt in self.gpio_requested.get():
+    for elt in self.get(self.gpio.requested()):
       self.gpio.append_elt(dio_model, elt)
 
     self.spi.defined()
-    for elt in self.spi_requested.get():
+    for elt in self.get(self.spi.requested()):
       self.spi.append_elt(SpiMaster(dio_model), elt)
     self.i2c.defined()
-    for elt in self.i2c_requested.get():
+    for elt in self.get(self.i2c.requested()):
       self.i2c.append_elt(I2cMaster(dio_model), elt)
     self.uart.defined()
-    for elt in self.uart_requested.get():
+    for elt in self.get(self.uart.requested()):
       self.uart.append_elt(UartPort(dio_model), elt)
     self.usb.defined()
-    for elt in self.usb_requested.get():
+    for elt in self.get(self.usb.requested()):
       self.usb.append_elt(UsbDevicePort(), elt)
     self.can.defined()
-    for elt in self.can_requested.get():
+    for elt in self.get(self.can.requested()):
       self.can.append_elt(CanControllerPort(dio_model), elt)

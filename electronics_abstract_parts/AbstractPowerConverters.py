@@ -185,15 +185,18 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.switch = self.Port(VoltageSink.empty())  # current draw defined as average
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.input_voltage = self.GeneratorParam(input_voltage)
-    self.output_voltage = self.GeneratorParam(output_voltage)
-    self.frequency = self.GeneratorParam(frequency)
-    self.output_current = self.GeneratorParam(output_current)
-    self.inductor_current_ripple = self.GeneratorParam(inductor_current_ripple)
-    self.efficiency = self.GeneratorParam(efficiency)
-    self.input_voltage_ripple = self.GeneratorParam(input_voltage_ripple)
-    self.output_voltage_ripple = self.GeneratorParam(output_voltage_ripple)
-    self.dutycycle_limit = self.GeneratorParam(dutycycle_limit)
+    self.input_voltage = self.ArgParameter(input_voltage)
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.frequency = self.ArgParameter(frequency)
+    self.output_current = self.ArgParameter(output_current)
+    self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
+    self.efficiency = self.ArgParameter(efficiency)
+    self.input_voltage_ripple = self.ArgParameter(input_voltage_ripple)
+    self.output_voltage_ripple = self.ArgParameter(output_voltage_ripple)
+    self.dutycycle_limit = self.ArgParameter(dutycycle_limit)
+    self.generator_param(self.input_voltage, self.output_voltage, self.frequency, self.output_current,
+                         self.inductor_current_ripple, self.efficiency,
+                         self.input_voltage_ripple, self.output_voltage_ripple, self.dutycycle_limit)
 
     self.current_limits = self.ArgParameter(current_limits)
     self.inductor_scale = self.ArgParameter(inductor_scale)
@@ -206,8 +209,8 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
-      " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit.expr(), ""), "\n",
-      "<b>output current avg:</b> ", DescriptionString.FormatUnits(self.output_current.expr(), "A"),
+      " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit, ""), "\n",
+      "<b>output current avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
       ", <b>ripple:</b> ", DescriptionString.FormatUnits(self.actual_inductor_current_ripple, "A")
     )
 
@@ -225,21 +228,21 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
   def generate(self) -> None:
     super().generate()
-    input_voltage = self.input_voltage.get()
-    output_voltage = self.output_voltage.get()
-    frequency = self.frequency.get()
-    output_current = self.output_current.get()
-    inductor_current_ripple = self.inductor_current_ripple.get()
-    input_voltage_ripple = self.input_voltage_ripple.get()
-    output_voltage_ripple = self.output_voltage_ripple.get()
+    input_voltage = self.get(self.input_voltage)
+    output_voltage = self.get(self.output_voltage)
+    frequency = self.get(self.frequency)
+    output_current = self.get(self.output_current)
+    inductor_current_ripple = self.get(self.inductor_current_ripple)
+    input_voltage_ripple = self.get(self.input_voltage_ripple)
+    output_voltage_ripple = self.get(self.output_voltage_ripple)
 
-    dutycycle = output_voltage / input_voltage / self.efficiency.get()
+    dutycycle = output_voltage / input_voltage / self.get(self.efficiency)
     self.assign(self.actual_dutycycle, dutycycle)
     # if these are violated, these generally mean that the converter will start tracking the input
     # these can (maybe?) be waived if tracking (plus losses) is acceptable
-    self.require(self.actual_dutycycle.within(self.dutycycle_limit.expr()), "dutycycle outside limit")
+    self.require(self.actual_dutycycle.within(self.dutycycle_limit), "dutycycle outside limit")
     # these are actual numbers to be used in calculations, accounting for tracking behavior
-    effective_dutycycle = dutycycle.bound_to(self.dutycycle_limit.get())
+    effective_dutycycle = dutycycle.bound_to(self.get(self.dutycycle_limit))
 
     # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
     # this range must be constructed manually to not double-count the tolerance stackup of the voltages
@@ -266,7 +269,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       current_draw=self.pwr_out.link().current_drawn * dutycycle
     )))
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
-      voltage_out=self.output_voltage.expr(),
+      voltage_out=self.output_voltage,
       current_limits=(0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
                       (self.actual_inductor_current_ripple.upper() / 2))
     )))
@@ -339,15 +342,18 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.switch = self.Port(VoltageSource.empty())  # current draw defined as average
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.input_voltage = self.GeneratorParam(input_voltage)
-    self.output_voltage = self.GeneratorParam(output_voltage)
-    self.frequency = self.GeneratorParam(frequency)
-    self.output_current = self.GeneratorParam(output_current)
-    self.inductor_current_ripple = self.GeneratorParam(inductor_current_ripple)
-    self.efficiency = self.GeneratorParam(efficiency)
-    self.input_voltage_ripple = self.GeneratorParam(input_voltage_ripple)
-    self.output_voltage_ripple = self.GeneratorParam(output_voltage_ripple)
-    self.dutycycle_limit = self.GeneratorParam(dutycycle_limit)
+    self.input_voltage = self.ArgParameter(input_voltage)
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.frequency = self.ArgParameter(frequency)
+    self.output_current = self.ArgParameter(output_current)
+    self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
+    self.efficiency = self.ArgParameter(efficiency)
+    self.input_voltage_ripple = self.ArgParameter(input_voltage_ripple)
+    self.output_voltage_ripple = self.ArgParameter(output_voltage_ripple)
+    self.dutycycle_limit = self.ArgParameter(dutycycle_limit)
+    self.generator_param(self.input_voltage, self.output_voltage, self.frequency, self.output_current,
+                         self.inductor_current_ripple, self.efficiency,
+                         self.input_voltage_ripple, self.output_voltage_ripple, self.dutycycle_limit)
 
     self.current_limits = self.ArgParameter(current_limits)
 
@@ -359,28 +365,28 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_dutycycle, ""),
-      " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit.expr(), ""), "\n",
-      "<b>output current avg:</b> ", DescriptionString.FormatUnits(self.output_current.expr(), "A"),
+      " <b>of limits:</b> ", DescriptionString.FormatUnits(self.dutycycle_limit, ""), "\n",
+      "<b>output current avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
       ", <b>ripple:</b> ", DescriptionString.FormatUnits(self.actual_inductor_current_ripple, "A")
     )
 
   def generate(self) -> None:
     super().generate()
-    input_voltage = self.input_voltage.get()
-    output_voltage = self.output_voltage.get()
-    frequency = self.frequency.get()
-    output_current = self.output_current.get()
-    inductor_current_ripple = self.inductor_current_ripple.get()
-    input_voltage_ripple = self.input_voltage_ripple.get()
-    output_voltage_ripple = self.output_voltage_ripple.get()
+    input_voltage = self.get(self.input_voltage)
+    output_voltage = self.get(self.output_voltage)
+    frequency = self.get(self.frequency)
+    output_current = self.get(self.output_current)
+    inductor_current_ripple = self.get(self.inductor_current_ripple)
+    input_voltage_ripple = self.get(self.input_voltage_ripple)
+    output_voltage_ripple = self.get(self.output_voltage_ripple)
 
-    dutycycle = 1 - input_voltage / output_voltage * self.efficiency.get()
+    dutycycle = 1 - input_voltage / output_voltage * self.get(self.efficiency)
     self.assign(self.actual_dutycycle, dutycycle)
     # if these are violated, these generally mean that the converter will start tracking the input
     # these can (maybe?) be waived if tracking (plus losses) is acceptable
-    self.require(self.actual_dutycycle.within(self.dutycycle_limit.expr()), "dutycycle outside limit")
+    self.require(self.actual_dutycycle.within(self.dutycycle_limit), "dutycycle outside limit")
     # these are actual numbers to be used in calculations
-    effective_dutycycle = dutycycle.bound_to(self.dutycycle_limit.get())
+    effective_dutycycle = dutycycle.bound_to(self.get(self.dutycycle_limit))
 
     # Calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
     # This range must be constructed manually to not double-count the tolerance stackup of the voltages
@@ -407,7 +413,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       current_draw=self.pwr_out.link().current_drawn / (1 - effective_dutycycle)
     )))
     self.connect(self.switch, self.inductor.b.adapt_to(VoltageSource(
-      voltage_out=self.output_voltage.expr(),
+      voltage_out=self.output_voltage,
       current_limits=(0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
                       (self.actual_inductor_current_ripple.upper() / 2))
     )))
@@ -480,16 +486,19 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.pwr_out = self.Port(VoltageSink.empty())  # only used for the output cap
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.input_voltage = self.GeneratorParam(input_voltage)
-    self.output_voltage = self.GeneratorParam(output_voltage)
-    self.frequency = self.GeneratorParam(frequency)
-    self.output_current = self.GeneratorParam(output_current)
-    self.inductor_current_ripple = self.GeneratorParam(inductor_current_ripple)
-    self.current_limits = self.GeneratorParam(current_limits)
-    self.efficiency = self.GeneratorParam(efficiency)
-    self.input_voltage_ripple = self.GeneratorParam(input_voltage_ripple)
-    self.output_voltage_ripple = self.GeneratorParam(output_voltage_ripple)
+    self.input_voltage = self.ArgParameter(input_voltage)
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.frequency = self.ArgParameter(frequency)
+    self.output_current = self.ArgParameter(output_current)
+    self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
+    self.current_limits = self.ArgParameter(current_limits)
+    self.efficiency = self.ArgParameter(efficiency)
+    self.input_voltage_ripple = self.ArgParameter(input_voltage_ripple)
+    self.output_voltage_ripple = self.ArgParameter(output_voltage_ripple)
     # duty cycle limits not supported, since the crossover point has a dutycycle of 0 (boost) and 1 (buck)
+    self.generator_param(self.input_voltage, self.output_voltage, self.frequency, self.output_current,
+                         self.inductor_current_ripple, self.current_limits, self.efficiency,
+                         self.input_voltage_ripple, self.output_voltage_ripple)
 
     # TODO, this is a hack and should be replaced by the actual peak current
     self.inductor_spec_peak_current = self.Parameter(FloatExpr())
@@ -504,24 +513,24 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.description = DescriptionString(
       "<b>duty cycle:</b> ", DescriptionString.FormatUnits(self.actual_buck_dutycycle, ""), " (buck)",
       ", ", DescriptionString.FormatUnits(self.actual_boost_dutycycle, ""), " (boost)\n",
-      "<b>output current avg:</b> ", DescriptionString.FormatUnits(self.output_current.expr(), "A"),
+      "<b>output current avg:</b> ", DescriptionString.FormatUnits(self.output_current, "A"),
       ", <b>ripple:</b> ", DescriptionString.FormatUnits(self.actual_inductor_current_ripple, "A")
     )
 
   def generate(self) -> None:
     super().generate()
-    input_voltage = self.input_voltage.get()
-    output_voltage = self.output_voltage.get()
-    frequency = self.frequency.get()
-    output_current = self.output_current.get()
-    inductor_current_ripple = self.inductor_current_ripple.get()
-    input_voltage_ripple = self.input_voltage_ripple.get()
-    output_voltage_ripple = self.output_voltage_ripple.get()
+    input_voltage = self.get(self.input_voltage)
+    output_voltage = self.get(self.output_voltage)
+    frequency = self.get(self.frequency)
+    output_current = self.get(self.output_current)
+    inductor_current_ripple = self.get(self.inductor_current_ripple)
+    input_voltage_ripple = self.get(self.input_voltage_ripple)
+    output_voltage_ripple = self.get(self.output_voltage_ripple)
 
     # clip each mode's duty cycle to that mode's operating range
-    buck_dutycycle = (output_voltage / input_voltage / self.efficiency.get()).bound_to(Range(-float('inf'), 1))
+    buck_dutycycle = (output_voltage / input_voltage / self.get(self.efficiency)).bound_to(Range(-float('inf'), 1))
     self.assign(self.actual_buck_dutycycle, buck_dutycycle)
-    boost_dutycycle = (1 - input_voltage / output_voltage * self.efficiency.get()).bound_to(Range(0, float('inf')))
+    boost_dutycycle = (1 - input_voltage / output_voltage * self.get(self.efficiency)).bound_to(Range(0, float('inf')))
     self.assign(self.actual_boost_dutycycle, boost_dutycycle)
 
     # Calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
@@ -565,8 +574,8 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       current_draw=(min_current, inductor_spec_peak_current)  # peak currents
     )))
     self.connect(self.switch_out, self.inductor.b.adapt_to(VoltageSource(
-      voltage_out=self.output_voltage.expr(),
-      current_limits=(0, self.current_limits.expr().intersect(self.inductor.actual_current_rating).upper() -
+      voltage_out=self.output_voltage,
+      current_limits=(0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
                       (self.actual_inductor_current_ripple.upper() / 2))
     )))
 

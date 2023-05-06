@@ -63,10 +63,11 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
                series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)) -> None:
     super().__init__()
 
-    self.ratio = self.GeneratorParam(ratio)
-    self.impedance = self.GeneratorParam(impedance)
-    self.series = self.GeneratorParam(series)
-    self.tolerance = self.GeneratorParam(tolerance)
+    self.ratio = self.ArgParameter(ratio)
+    self.impedance = self.ArgParameter(impedance)
+    self.series = self.ArgParameter(series)
+    self.tolerance = self.ArgParameter(tolerance)
+    self.generator_param(self.ratio, self.impedance, self.series, self.tolerance)
 
     self.actual_ratio = self.Parameter(RangeExpr())
     self.actual_impedance = self.Parameter(RangeExpr())
@@ -81,9 +82,9 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
 
     self.description = DescriptionString(
       "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
-      " <b>of spec</b> ", DescriptionString.FormatUnits(self.ratio.expr(), ""),
+      " <b>of spec</b> ", DescriptionString.FormatUnits(self.ratio, ""),
       "\n<b>impedance:</b> ", DescriptionString.FormatUnits(self.actual_impedance, "Ω"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.impedance.expr(), "Ω"))
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.impedance, "Ω"))
 
 
   def generate(self) -> None:
@@ -93,14 +94,14 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
 
     # TODO: not fully optimal in that the ratio doesn't need to be recalculated if we're shifting both decades
     # (to achieve some impedance spec), but it uses shared infrastructure that doesn't assume this ratio optimization
-    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.series.get()], self.tolerance.get(), DividerValues)
-    top_resistance, bottom_resistance = calculator.find(DividerValues(self.ratio.get(), self.impedance.get()))
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.get(self.series)], self.get(self.tolerance), DividerValues)
+    top_resistance, bottom_resistance = calculator.find(DividerValues(self.get(self.ratio), self.get(self.impedance)))
 
     self.top_res = self.Block(Resistor(
-      resistance=Range.from_tolerance(top_resistance, self.tolerance.get())
+      resistance=Range.from_tolerance(top_resistance, self.get(self.tolerance))
     ))
     self.bottom_res = self.Block(Resistor(
-      resistance=Range.from_tolerance(bottom_resistance, self.tolerance.get())
+      resistance=Range.from_tolerance(bottom_resistance, self.get(self.tolerance))
     ))
 
     self.connect(self.top_res.a, self.top)

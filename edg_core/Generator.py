@@ -39,55 +39,8 @@ class GeneratorBlock(Block):
   def __init__(self):
     super().__init__()
     self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
-    self._generator_params = self.manager.new_dict(GeneratorParam)
     self._generator_params_list: list[ConstraintExpr] = []
     self._generator_param_values = IdentityDict[ConstraintExpr, Any]()
-
-  from .ConstraintExpr import RangeLike, RangeExpr, IntExpr, BoolExpr, BoolLike, IntLike, FloatExpr, \
-    FloatLike, StringExpr, StringLike
-  from .ArrayExpr import ArrayRangeExpr, ArrayRangeLike, ArrayBoolExpr, ArrayBoolLike, ArrayFloatExpr, ArrayIntExpr, \
-    ArrayIntLike, ArrayFloatLike, ArrayStringLike, ArrayStringExpr
-
-  # all the case need to be defined since it can't infer the types when there's a *Like
-  # type ignore is needed because IntLike overlaps BoolLike
-  @overload
-  def GeneratorParam(self, param: RangeLike) -> GeneratorParam[RangeExpr, Range]: ...  # type: ignore
-  @overload
-  def GeneratorParam(self, param: BoolLike) -> GeneratorParam[BoolExpr, bool]: ...  # type: ignore
-  @overload
-  def GeneratorParam(self, param: IntLike) -> GeneratorParam[IntExpr, int]: ...  # type: ignore
-  @overload
-  def GeneratorParam(self, param: FloatLike) -> GeneratorParam[FloatExpr, float]: ...  # type: ignore
-  @overload
-  def GeneratorParam(self, param: StringLike) -> GeneratorParam[StringExpr, str]: ...  # type: ignore
-  @overload
-  def GeneratorParam(self, param: ArrayRangeLike) -> GeneratorParam[ArrayRangeExpr, list[Range]]: ...  # type: ignore
-  @overload
-  def GeneratorParam(self, param: ArrayBoolLike) -> GeneratorParam[ArrayBoolExpr, list[bool]]: ...  # type: ignore
-  @overload
-  def GeneratorParam(self, param: ArrayIntLike) -> GeneratorParam[ArrayIntExpr, list[int]]: ...  # type: ignore
-  @overload
-  def GeneratorParam(self, param: ArrayFloatLike) -> GeneratorParam[ArrayFloatExpr, list[float]]: ...  # type: ignore
-  @overload
-  def GeneratorParam(self, param: ArrayStringLike) -> GeneratorParam[ArrayStringExpr, list[str]]: ...  # type: ignore
-
-  def GeneratorParam(self, param: Union[ConstraintExpr, Any]) -> GeneratorParam:
-    """Declares some parameter to be a generator, returning its GeneratorParam wrapper that
-    can be .get()'d from within the generate() function."""
-    if self._elaboration_state not in (BlockElaborationState.init, BlockElaborationState.contents):
-      raise BlockDefinitionError(self, "can't call GeneratorParameter(...) outside __init__ or contents",
-                                 "call GeneratorParameter(...) inside __init__ or contents only, and remember to call super().__init__()")
-    if not isinstance(param, ConstraintExpr):
-      raise TypeError(f"param to GeneratorParameter(...) must be ConstraintExpr, got {param} of type {type(param)}")
-    if param.binding is None:
-      raise BlockDefinitionError(self, "GeneratorParameter(...) param must be bound")
-    if not isinstance(param.binding, (InitParamBinding, AllocatedBinding, IsConnectedBinding)):
-      raise BlockDefinitionError(self, "GeneratorParameter(...) param must be an __init__ param, port requested, or port is_connected")
-
-    elt = GeneratorParam(param)  # type: ignore
-    self._generator_params.register(elt)  # type: ignore
-
-    return elt
 
   def generator_param(self, *params: ConstraintExpr) -> None:
     """Declares some parameter to be a generator, so in generate() it can be used in self.get().
@@ -149,12 +102,10 @@ class GeneratorBlock(Block):
       pb.generator.SetInParent()  # even if rest of the fields are empty, make sure to create a record
 
       if self._generator is not None:  # legacy generator style
-        assert len(self._generator_params.items()) == 0, "self.generator() must not have GeneratorParams"
+        assert len(self._generator_params_list) == 0, "self.generator() must not have generator_params()"
         for req_param in self._generator.req_params:
           pb.generator.required_params.add().CopyFrom(ref_map[req_param])
       elif type(self).generate is not GeneratorBlock.generate:
-        for name, gen_param in self._generator_params.items():
-          pb.generator.required_params.add().CopyFrom(ref_map[gen_param._expr])
         for param in self._generator_params_list:
           pb.generator.required_params.add().CopyFrom(ref_map[param])
       elif (self.__class__, AbstractBlockProperty) in self._elt_properties:
@@ -184,8 +135,6 @@ class GeneratorBlock(Block):
                  for arg_param in self._generator.fn_args]
       self._generator.fn(*fn_args)
     elif type(self).generate is not GeneratorBlock.generate:
-      for name, gen_param in self._generator_params.items():
-        gen_param._value = gen_param._expr._from_lit(generate_values_map[ref_map[gen_param._expr].SerializeToString()])
       for param in self._generator_params_list:
         self._generator_param_values[param] = param._from_lit(generate_values_map[ref_map[param].SerializeToString()])
       self.generate()

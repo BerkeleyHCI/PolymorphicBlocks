@@ -342,12 +342,8 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, Radiofrequency, IoControllerWit
     self.ic = self.Block(Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr()))  # defined in generator to mix in SWO/TDI
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
 
-    self.usb_requested = self.GeneratorParam(self.usb.requested())
-    self.gpio_requested = self.GeneratorParam(self.gpio.requested())
-
-    self.pin_assigns_value = self.GeneratorParam(self.pin_assigns)
-    self.swd_swo_pin_value = self.GeneratorParam(self.swd_swo_pin)
-    self.swd_tdi_pin_value = self.GeneratorParam(self.swd_tdi_pin)
+    self.generator_param(self.usb.requested(), self.gpio.requested(),
+                         self.pin_assigns, self.swd_swo_pin, self.swd_tdi_pin)
 
   def generate(self) -> None:
     super().generate()
@@ -359,7 +355,7 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, Radiofrequency, IoControllerWit
 
     self.connect(self.swd.swd, self.ic.swd)
 
-    if self.usb_requested.get():
+    if self.get(self.usb.requested()):
       self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
 
     with self.implicit_connect(
@@ -368,9 +364,9 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, Radiofrequency, IoControllerWit
     ) as imp:
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-    if self.usb_requested.get():
-      assert len(self.usb_requested.get()) == 1
-      usb_request_name = self.usb_requested.get()[0]
+    if self.get(self.usb.requested()):
+      assert len(self.get(self.usb.requested())) == 1
+      usb_request_name = self.get(self.usb.requested())[0]
       usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_request_name)
       self.usb_res = self.Block(Mdbt50q_UsbSeriesResistor())
       self.connect(self.ic.usb.request(usb_request_name), self.usb_res.usb_inner)
@@ -378,16 +374,16 @@ class Mdbt50q_1mv2(PinMappable, Microcontroller, Radiofrequency, IoControllerWit
     self.usb.defined()
 
     # TODO refactor this out into a common SWD remap util
-    inner_pin_assigns = self.pin_assigns_value.get().copy()
-    if self.swd_swo_pin_value.get() != 'NC':
+    inner_pin_assigns = self.get(self.pin_assigns).copy()
+    if self.get(self.swd_swo_pin) != 'NC':
       self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
-      inner_pin_assigns.append(f'swd_swo={self.swd_swo_pin_value.get()}')
-    if self.swd_tdi_pin_value.get() != 'NC':
+      inner_pin_assigns.append(f'swd_swo={self.get(self.swd_swo_pin)}')
+    if self.get(self.swd_tdi_pin) != 'NC':
       self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
-      inner_pin_assigns.append(f'swd_tdi={self.swd_tdi_pin_value.get()}')
+      inner_pin_assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
     self.assign(self.ic.pin_assigns, inner_pin_assigns)
 
     gpio_model = DigitalBidir.empty()
-    for gpio_name in self.gpio_requested.get():
+    for gpio_name in self.get(self.gpio.requested()):
       self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
     self.gpio.defined()

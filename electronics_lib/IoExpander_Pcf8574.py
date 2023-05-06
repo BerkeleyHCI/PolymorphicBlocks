@@ -25,9 +25,8 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
 
     self.io = self.Port(Vector(DigitalBidir().empty()), optional=True)
 
-    self.addr_lsb = self.GeneratorParam(addr_lsb)
-    self.pin_assigns_value = self.GeneratorParam(self.pin_assigns)
-    self.io_requested = self.GeneratorParam(self.io.requested())
+    self.addr_lsb = self.ArgParameter(addr_lsb)
+    self.generator_param(self.addr_lsb, self.pin_assigns, self.io.requested())
 
   def generate(self) -> None:
     dout_model = DigitalBidir.from_supply(  # same between TI and NXP versions
@@ -37,7 +36,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
       input_threshold_factor=(0.3, 0.7)
     )
 
-    addr_lsb = self.addr_lsb.get()
+    addr_lsb = self.get(self.addr_lsb)
     self.require((addr_lsb < 8) & (addr_lsb >= 0), f"addr_lsb={addr_lsb} must be within [0, 8)")
 
     pinmaps = PinMapUtil([
@@ -62,7 +61,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
       '16': self.vdd,
     }
 
-    allocated = pinmaps.allocate([(DigitalBidir, self.io_requested.get())], self.pin_assigns_value.get())
+    allocated = pinmaps.allocate([(DigitalBidir, self.get(self.io.requested()))], self.get(self.pin_assigns))
     io_pins: Dict[str, CircuitPort] = {
       allocation.pin: self.io.append_elt(dout_model, allocation.name)  # type: ignore
       for allocation in allocated}

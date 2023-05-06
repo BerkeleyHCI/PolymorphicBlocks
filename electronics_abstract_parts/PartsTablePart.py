@@ -54,13 +54,13 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock):
   Subclasses only need to extend _row_filter and _row_generate with part-specific logic."""
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.part_value = self.GeneratorParam(self.part)
+    self.generator_param(self.part)
 
   def _row_filter(self, row: PartsTableRow) -> bool:
     """Returns whether the candidate row satisfies the requirements (should be kept).
     Only called within generate(), so has access to GeneratorParam.get().
     Subclasses should chain this by and-ing with a super() call."""
-    return not self.part_value.get() or (self.part_value.get() == row[self.PART_NUMBER_COL])
+    return not self.get(self.part) or (self.get(self.part) == row[self.PART_NUMBER_COL])
 
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     """Optional postprocessing step that takes a table and returns a transformed table.
@@ -110,11 +110,11 @@ class PartsTableFootprintSelector(PartsTableSelector, PartsTableFootprint, Stand
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.footprint_spec_value = self.GeneratorParam(self.footprint_spec)
+    self.generator_param(self.footprint_spec)
 
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
-      ((not self.footprint_spec_value.get()) or self.footprint_spec_value.get() == row[self.KICAD_FOOTPRINT])
+      ((not self.get(self.footprint_spec)) or self.get(self.footprint_spec) == row[self.KICAD_FOOTPRINT])
 
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)

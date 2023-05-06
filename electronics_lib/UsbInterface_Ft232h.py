@@ -171,10 +171,8 @@ class Ft232hl(Interface, GeneratorBlock):
     self.acbus = self.Export(self.ic.acbus)
 
     # the generator is needed to mux the shared MPSSE and ADBUS pins
-    self.uart_connected = self.GeneratorParam(self.uart.is_connected())
-    self.mpsse_connected = self.GeneratorParam(self.mpsse.is_connected())
-    self.mpsse_cs_connected = self.GeneratorParam(self.mpsse_cs.is_connected())
-    self.adbus_requested = self.GeneratorParam(self.adbus.requested())
+    self.generator_param(self.uart.is_connected(), self.mpsse.is_connected(), self.mpsse_cs.is_connected(),
+                         self.adbus.requested())
 
   def contents(self) -> None:
     # connections from Figure 6.1, bus powered configuration
@@ -226,27 +224,27 @@ class Ft232hl(Interface, GeneratorBlock):
 
   def generate(self) -> None:
     # make connections and pin mutual exclusion constraints
-    if self.uart_connected.get():
+    if self.get(self.uart.is_connected()):
       self.connect(self.uart.tx, self.ic.adbus.request('0'))
       self.connect(self.uart.rx, self.ic.adbus.request('1'))
     self.require(self.uart.is_connected().implies(~self.mpsse.is_connected()))
-    self.require(self.uart.is_connected().implies('0' not in self.adbus_requested.get() and
-                                                  '1' not in self.adbus_requested.get()))
+    self.require(self.uart.is_connected().implies('0' not in self.get(self.adbus.requested()) and
+                                                  '1' not in self.get(self.adbus.requested())))
 
-    if self.mpsse_connected.get():
+    if self.get(self.mpsse.is_connected()):
       self.connect(self.mpsse.sck, self.ic.adbus.request('0'))
       self.connect(self.mpsse.mosi, self.ic.adbus.request('1'))
       self.connect(self.mpsse.miso, self.ic.adbus.request('2'))
-    if self.mpsse_cs_connected.get():
+    if self.get(self.mpsse_cs.is_connected()):
       self.connect(self.mpsse_cs, self.ic.adbus.request('3'))
     # UART mutual exclusion already handled above
-    self.require(self.mpsse.is_connected().implies('0' not in self.adbus_requested.get() and
-                                                   '1' not in self.adbus_requested.get() and
-                                                   '2' not in self.adbus_requested.get()))
-    self.require(self.mpsse_cs.is_connected().implies('3' not in self.adbus_requested.get()))
+    self.require(self.mpsse.is_connected().implies('0' not in self.get(self.adbus.requested()) and
+                                                   '1' not in self.get(self.adbus.requested()) and
+                                                   '2' not in self.get(self.adbus.requested())))
+    self.require(self.mpsse_cs.is_connected().implies('3' not in self.get(self.adbus.requested())))
 
     # require something to be connected
-    self.require(self.uart.is_connected() | self.mpsse.is_connected() | bool(self.adbus_requested.get()))
+    self.require(self.uart.is_connected() | self.mpsse.is_connected() | bool(self.get(self.adbus.requested())))
 
-    for elt in self.adbus_requested.get():
+    for elt in self.get(self.adbus.requested()):
       self.connect(self.adbus.append_elt(DigitalBidir.empty(), elt), self.ic.adbus.request(elt))

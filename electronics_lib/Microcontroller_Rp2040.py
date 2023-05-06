@@ -222,12 +222,8 @@ class Rp2040Usb(InternalSubcircuit, Block):
 class Rp2040(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.usb_requested = self.GeneratorParam(self.usb.requested())
-    self.gpio_requested = self.GeneratorParam(self.gpio.requested())
-
-    self.pin_assigns_value = self.GeneratorParam(self.pin_assigns)
-    self.swd_swo_pin_value = self.GeneratorParam(self.swd_swo_pin)
-    self.swd_tdi_pin_value = self.GeneratorParam(self.swd_tdi_pin)
+    self.generator_param(self.usb.requested(), self.gpio.requested(),
+                         self.pin_assigns, self.swd_swo_pin, self.swd_tdi_pin)
 
   def generate(self) -> None:
     super().generate()
@@ -265,14 +261,14 @@ class Rp2040(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, I
     self.vreg_out_cap = self.Block(DecouplingCapacitor(1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
 
     # TODO refactor this out into a common crystal-gen util
-    if self.usb_requested.get():  # tighter frequency tolerances from USB usage require a crystal
+    if self.get(self.usb.requested()):  # tighter frequency tolerances from USB usage require a crystal
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))  # 12MHz required for USB
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.xosc)
 
-    if self.usb_requested.get():
-      assert len(self.usb_requested.get()) == 1
-      usb_request_name = self.usb_requested.get()[0]
+    if self.get(self.usb.requested()):
+      assert len(self.get(self.usb.requested())) == 1
+      usb_request_name = self.get(self.usb.requested())[0]
       (self.usb_res, ), self.usb_chain = self.chain(
         self.ic.usb.request(usb_request_name),
         self.Block(Rp2040Usb()),
@@ -280,16 +276,16 @@ class Rp2040(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, I
     self.usb.defined()
 
     # TODO refactor this out into a common SWD remap util
-    inner_pin_assigns = self.pin_assigns_value.get().copy()
-    if self.swd_swo_pin_value.get() != 'NC':
+    inner_pin_assigns = self.get(self.pin_assigns).copy()
+    if self.get(self.swd_swo_pin) != 'NC':
       self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
-      inner_pin_assigns.append(f'swd_swo={self.swd_swo_pin_value.get()}')
-    if self.swd_tdi_pin_value.get() != 'NC':
+      inner_pin_assigns.append(f'swd_swo={self.get(self.swd_swo_pin)}')
+    if self.get(self.swd_tdi_pin) != 'NC':
       self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
-      inner_pin_assigns.append(f'swd_tdi={self.swd_tdi_pin_value.get()}')
+      inner_pin_assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
     self.assign(self.ic.pin_assigns, inner_pin_assigns)
 
     gpio_model = DigitalBidir.empty()
-    for gpio_name in self.gpio_requested.get():
+    for gpio_name in self.get(self.gpio.requested()):
       self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
     self.gpio.defined()

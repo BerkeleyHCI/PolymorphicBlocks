@@ -21,14 +21,11 @@ class DigitalIsolator(Interface, GeneratorBlock):
       self.in_b = self.Port(Vector(DigitalSink.empty()), optional=True)
       self.out_b = self.Port(Vector(DigitalSource.empty()), optional=True)
 
-      self.in_a_requested = self.GeneratorParam(self.in_a.requested())
-      self.out_b_requested = self.GeneratorParam(self.out_b.requested())
-      self.in_b_requested = self.GeneratorParam(self.in_b.requested())
-      self.out_a_requested = self.GeneratorParam(self.out_a.requested())
+      self.generator_param(self.in_a.requested(), self.out_b.requested(), self.in_b.requested(), self.out_a.requested())
 
   def generate(self):  # validity checks
       super().generate()
-      assert self.in_a_requested.get() == self.out_b_requested.get(), \
-          f"in_a={self.in_a_requested.get()} and out_b={self.out_b_requested.get()} must be equal"
-      assert self.in_b_requested.get() == self.out_a_requested.get(), \
-          f"in_b={self.in_b_requested.get()} and out_a={self.out_a_requested.get()} must be equal"
+      assert self.get(self.in_a.requested()) == self.get(self.out_b.requested()), \
+          "in_a requested and out_b requested must be equal"
+      assert self.get(self.in_b.requested()) == self.get(self.out_a.requested()), \
+          "in_b requested and out_a requested must be equal"

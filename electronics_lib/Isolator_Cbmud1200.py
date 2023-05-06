@@ -60,7 +60,7 @@ class Cbmud1200l(DigitalIsolator, GeneratorBlock):
 
   def generate(self):
     super().generate()
-    assert not self.in_b_requested.get() and not self.out_a_requested.get(), f"device has no b->a channels"
+    assert not self.get(self.in_b.requested()) and not self.get(self.out_a.requested()), f"device has no b->a channels"
 
     self.ic = self.Block(Cbmud1200l_Device())
     self.connect(self.pwr_a, self.ic.vdd1)
@@ -76,7 +76,7 @@ class Cbmud1200l(DigitalIsolator, GeneratorBlock):
     self.cap_a = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd_a, self.pwr_a)
     self.cap_b = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd_b, self.pwr_b)
 
-    for elt_name, (in_a_port, out_b_port) in zip(self.in_a_requested.get(), channel_pairs):
+    for elt_name, (in_a_port, out_b_port) in zip(self.get(self.in_a.requested()), channel_pairs):
       self.connect(self.in_a.append_elt(DigitalSink.empty(), elt_name), in_a_port)
       self.connect(self.out_b.append_elt(DigitalSource.empty(), elt_name), out_b_port)
 

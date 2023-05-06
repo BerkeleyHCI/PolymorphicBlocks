@@ -97,14 +97,15 @@ class NeopixelArray(Light, GeneratorBlock):
         self.vdd = self.Port(VoltageSink.empty(), [Power])
         self.gnd = self.Port(Ground.empty(), [Common])
 
-        self.count_value = self.GeneratorParam(count)
+        self.count = self.ArgParameter(count)
+        self.generator_param(self.count)
 
     def generate(self):
         super().generate()
         self.led = ElementDict[Neopixel]()
 
         last_signal_pin: Port[DigitalLink] = self.din
-        for led_i in range(self.count_value.get()):
+        for led_i in range(self.get(self.count)):
             led = self.led[str(led_i)] = self.Block(Neopixel())
             self.connect(last_signal_pin, led.din)
             self.connect(self.vdd, led.vdd)

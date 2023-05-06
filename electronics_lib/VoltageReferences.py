@@ -12,7 +12,8 @@ class Ref30xx_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     self.assign(self.actual_quiescent_current, (42, 59) * uAmp)  # table 7.5
     self.assign(self.actual_dropout, (1, 50) * mVolt)  # table 7.5
 
-    self.output_voltage = self.GeneratorParam(output_voltage)
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.generator_param(self.output_voltage)
 
   def generate(self):
     parts = [  # output voltage, table 7.5
@@ -24,7 +25,7 @@ class Ref30xx_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
       (Range(4.088, 4.104), 'REF3040', 'C19415'),  # REF3040AIDBZR
     ]
     suitable_parts = [(part_out, part_number, lcsc_part) for part_out, part_number, lcsc_part in parts
-                      if part_out.fuzzy_in(self.output_voltage.get())]
+                      if part_out.fuzzy_in(self.get(self.output_voltage))]
     assert suitable_parts, "no regulator with compatible output"
     part_output_voltage, part_number, lcsc_part = suitable_parts[0]
 

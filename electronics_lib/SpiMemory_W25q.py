@@ -36,12 +36,13 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
 
     self.actual_size = self.Parameter(IntExpr())
 
-    self.size_value = self.GeneratorParam(size)
+    self.size = self.ArgParameter(size)
+    self.generator_param(self.size)
 
   def generate(self):
     super().generate()
-    suitable_parts = [part for part in self.PARTS if part[0] in self.size_value.get()]
-    assert suitable_parts, f"no memory in requested size range {self.size_value.get()}"
+    suitable_parts = [part for part in self.PARTS if part[0] in self.get(self.size)]
+    assert suitable_parts, "no memory in requested size range"
     part_size, part_pn, part_datasheet, part_lcsc, part_lcsc_basic = suitable_parts[0]
 
     self.assign(self.actual_size, part_size)

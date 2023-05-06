@@ -36,12 +36,13 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
     self.assign(self.lcsc_part, kicad_jlcpcb_part)
     self.assign(self.actual_basic_part, False)  # assumed
 
-    self.kicad_pins_value = self.GeneratorParam(kicad_pins)
+    self.kicad_pins = self.ArgParameter(kicad_pins)
+    self.generator_param(self.kicad_pins)
 
   def generate(self):
     super().generate()
     mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)
-               for pin_name in self.kicad_pins_value.get()}
+               for pin_name in self.get(self.kicad_pins)}
     self.ports.defined()
     self.footprint(self.kicad_refdes_prefix, self.kicad_footprint, mapping,
                    part=self.kicad_part, value=self.kicad_value, datasheet=self.kicad_datasheet)

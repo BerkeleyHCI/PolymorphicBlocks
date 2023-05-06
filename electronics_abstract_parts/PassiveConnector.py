@@ -19,8 +19,8 @@ class PassiveConnector(InternalSubcircuit, GeneratorBlock, FootprintBlock):
     self.pins = self.Port(Vector(Passive().empty()))
     self.actual_length = self.Parameter(IntExpr())
 
-    self.length_value = self.GeneratorParam(length)
-    self.pins_requested = self.GeneratorParam(self.pins.requested())
+    self.length = self.ArgParameter(length)
+    self.generator_param(self.length, self.pins.requested())
 
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     """Returns the part footprint, manufacturer, and name given the number of pins (length).
@@ -30,11 +30,11 @@ class PassiveConnector(InternalSubcircuit, GeneratorBlock, FootprintBlock):
   def generate(self):
     super().generate()
     max_pin_index = 0
-    for pin in self.pins_requested.get():
+    for pin in self.get(self.pins.requested()):
       self.pins.append_elt(Passive(), pin)
       assert pin != '0', "cannot have zero pin, explicit pin numbers through suggested_name are required"
       max_pin_index = max(max_pin_index, int(pin))
-    length = self.length_value.get()
+    length = self.get(self.length)
     if length == 0:
       length = max_pin_index
 

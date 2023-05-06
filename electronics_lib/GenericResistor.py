@@ -18,20 +18,19 @@ class ESeriesResistor(ResistorStandardPinning, SmdStandardPackage, GeneratorBloc
   def __init__(self, *args, series: IntLike = Default(24), tolerance: FloatLike = Default(0.01),
                footprint_spec: StringLike = Default(""), **kwargs):
     super().__init__(*args, **kwargs)
+    self.series = self.ArgParameter(series)
+    self.tolerance = self.ArgParameter(tolerance)
+    self.footprint_spec = self.ArgParameter(footprint_spec)
 
-    self.resistance_value = self.GeneratorParam(self.resistance)
-    self.power_value = self.GeneratorParam(self.power)
-    self.series = self.GeneratorParam(series)
-    self.tolerance = self.GeneratorParam(tolerance)
-    self.footprint_spec = self.GeneratorParam(footprint_spec)
-    self.smd_min_package_value = self.GeneratorParam(self.smd_min_package)
+    self.generator_param(self.resistance, self.power, self.series, self.tolerance, self.footprint_spec,
+                         self.smd_min_package)
 
   def generate(self) -> None:
     super().generate()
 
-    resistance = self.resistance_value.get()
-    tolerance = self.tolerance.get()
-    series = self.series.get()
+    resistance = self.get(self.resistance)
+    tolerance = self.get(self.tolerance)
+    series = self.get(self.series)
 
     if series == 0:  # exact, not matched to E-series
       selected_center = resistance.center()
@@ -46,10 +45,10 @@ class ESeriesResistor(ResistorStandardPinning, SmdStandardPackage, GeneratorBloc
       raise ValueError(f"chosen resistances tolerance {tolerance} not within {resistance}")
 
     minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(
-      self.smd_min_package_value.get(), TableResistor.SMD_FOOTPRINT_MAP)
+      self.get(self.smd_min_package), TableResistor.SMD_FOOTPRINT_MAP)
     suitable_packages = [(package_power, package) for package_power, package in self.PACKAGE_POWER
-                         if package_power >= self.power_value.get().upper and
-                         (not self.footprint_spec.get() or package == self.footprint_spec.get()) and
+                         if package_power >= self.get(self.power).upper and
+                         (not self.get(self.footprint_spec) or package == self.get(self.footprint_spec)) and
                          (package not in minimum_invalid_footprints)]
     if not suitable_packages:
       raise ValueError("no suitable resistor packages")

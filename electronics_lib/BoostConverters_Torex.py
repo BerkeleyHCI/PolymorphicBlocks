@@ -32,8 +32,9 @@ class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
     self.sw = self.Port(VoltageSink())
     self.vout = self.Port(VoltageSource().empty())
 
-    self.output_voltage = self.GeneratorParam(output_voltage)
-    self.frequency = self.GeneratorParam(frequency)
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.frequency = self.ArgParameter(frequency)
+    self.generator_param(self.output_voltage, self.frequency)
 
     self.actual_current_limit = self.Parameter(RangeExpr())  # set by part number
     self.actual_frequency = self.Parameter(RangeExpr())  # set by part number
@@ -43,10 +44,10 @@ class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
 
     part_number_voltage, part_voltage, part_current = [
       (part, part_voltage, part_current) for (part, part_voltage, part_current) in self.parts_output_voltage_current
-      if part_voltage in self.output_voltage.get()][0]
+      if part_voltage in self.get(self.output_voltage)][0]
     part_number_frequency, part_frequency = [
       (part, part_frequency) for (part, part_frequency) in self.parts_frequency
-      if part_frequency in self.frequency.get()][0]  # lower frequency preferred, 'safer' option for compatibility
+      if part_frequency in self.get(self.frequency)][0]  # lower frequency preferred, 'safer' option for compatibility
     part_number_package, part_package = self.parts_package[0]  # SOT-23-5 hardcoded for now
 
     self.assign(self.actual_frequency, part_frequency)

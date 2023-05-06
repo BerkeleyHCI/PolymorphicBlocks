@@ -12,16 +12,17 @@ class TeRc(TestPoint, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, size: StringLike = '0805'):
     super().__init__()
-    self.size_value = self.GeneratorParam(size)
+    self.size = self.ArgParameter(size)
+    self.generator_param(self.size)
 
   def generate(self) -> None:
     super().generate()
-    if self.size_value.get() not in self._PART_TABLE:
+    if self.get(self.size) not in self._PART_TABLE:
       allowed_sizes = ', '.join(self._PART_TABLE.keys())
-      self.require(False, f"invalid size designator '{self.size_value.get()}', must be in ({allowed_sizes})")
+      self.require(False, f"invalid size designator '{self.get(self.size)}', must be in ({allowed_sizes})")
       return
 
-    part, footprint = self._PART_TABLE[self.size_value.get()]
+    part, footprint = self._PART_TABLE[self.get(self.size)]
     self.footprint(
       'TP', footprint,
       {
