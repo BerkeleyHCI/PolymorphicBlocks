@@ -187,6 +187,18 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
       else:
         raise NotImplementedError(f"unknown port type {io_port}")
 
+  def _make_export_io(self, self_io: Port, inner_io: Port):
+    """Connects the my external IO to some inner IO.
+    These can either be top-level ports or a requested element in an array.
+    This function can be overloaded to handle special cases, e.g. if additional circuitry is required.
+    Called within generate, has access to generator params."""
+    self.connect(self_io, inner_io)
+
+  def _inner_pin_assigns(self) -> List[str]:
+    """Integration point to define additional pin assigns to pass to the inner device.
+    Called within generate, has access to generator params."""
+    return []
+
   def generate(self):
     super().generate()
     inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in self.ic._io_ports}
@@ -200,17 +212,19 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
         assert isinstance(inner_io, Vector)
         for io_requested in self.get(self_io.requested()):
           self_io_elt = self_io.append_elt(self_io.elt_type().empty(), io_requested)
-          self.connect(self_io_elt, inner_io.request(io_requested))
+          self._make_export_io(self_io_elt, inner_io.request(io_requested))
       else:
-        assert isinstance(self_io, Port)
+        assert isinstance(self_io, Port) and isinstance(inner_io, Port)
         if self.get(self_io.is_connected()):
-          self.connect(inner_io, self_io)
+          self._make_export_io(self_io, inner_io)
 
     self.assign(self.io_current_draw, self.ic.io_current_draw)
 
-    # TODO make extensible
-    self.assign(self.ic.pin_assigns, self.pin_assigns)
+    extended_pin_assigns = self.get(self.pin_assigns).copy()
+    extended_pin_assigns.extend(self._inner_pin_assigns())
+    self.assign(self.ic.pin_assigns, extended_pin_assigns)
     self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+
 
 @abstract_block_default(lambda: IdealIoController)
 class IoController(ProgrammableController, BaseIoController):

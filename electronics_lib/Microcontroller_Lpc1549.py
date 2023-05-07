@@ -364,6 +364,14 @@ class Lpc1549Base(Microcontroller, BaseIoControllerExportable, IoControllerWithS
                                         imp.Block(Lpc1549SwdPull()),
                                         self.ic.swd)
 
+  def _inner_pin_assigns(self) -> List[str]:
+    pin_assigns = super()._inner_pin_assigns()
+    if self.get(self.swd_swo_pin) != 'NC':
+      pin_assigns.append(f'swd_swo={self.get(self.swd_swo_pin)}')
+    if self.get(self.swd_tdi_pin) != 'NC':
+      pin_assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
+    return pin_assigns
+
   def generate(self):
     super().generate()
 
@@ -372,13 +380,10 @@ class Lpc1549Base(Microcontroller, BaseIoControllerExportable, IoControllerWithS
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.xtal)
 
-    inner_pin_assigns = self.get(self.pin_assigns).copy()
     if self.get(self.swd_swo_pin) != 'NC':
       self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
-      inner_pin_assigns.append(f'swd_swo={self.get(self.swd_swo_pin)}')
     if self.get(self.swd_tdi_pin) != 'NC':
       self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
-      inner_pin_assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
 
 
 class Lpc1549_48(Lpc1549Base):
