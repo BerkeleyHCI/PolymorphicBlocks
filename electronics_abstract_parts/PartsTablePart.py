@@ -6,12 +6,10 @@ from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
 from .StandardFootprint import StandardFootprint
 
 
-@non_library
-class PartsTablePart(Block):
-  """A 'mixin' for a part that contains a (cached) parts table and filters based on it.
+class PartsTableBase:
+  """A base class defining infrastructure for building a (cached) parts table.
   Subclasses should implement _make_table, which returns the underlying parts table.
-  Additional filtering can be done by the generator.
-  Defines a PART_NUMBER table column and a part spec arg-param."""
+  Additional filtering can be done by the generator."""
   _TABLE: Optional[PartsTable] = None
 
   # These need to be implemented by the part table
@@ -27,17 +25,19 @@ class PartsTablePart(Block):
     ...
 
   @classmethod
-  def _row_sort_by(cls, row: PartsTableRow) -> Any:
-    """Defines an optional sorting key for rows of this parts table."""
-    return []
-
-  @classmethod
   def _get_table(cls) -> PartsTable:
     if cls._TABLE is None:
       cls._TABLE = cls._make_table()
       if len(cls._TABLE) == 0:
         raise ValueError(f"{cls.__name__} _make_table returned empty table")
     return cls._TABLE
+
+
+@non_library
+class PartsTablePart(Block):
+  """A mixin for a part that is selected from a table, defining parameters to allow manual part selection
+  as well as matching parts.
+  Subclasses must implement this."""
 
   @init_in_parent
   def __init__(self, *args, part: StringLike = Default(""), **kwargs):
@@ -48,7 +48,7 @@ class PartsTablePart(Block):
 
 
 @non_library
-class PartsTableSelector(PartsTablePart, GeneratorBlock):
+class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
   """PartsTablePart that includes the parts selection framework logic.
   Subclasses only need to extend _row_filter and _row_generate with part-specific logic."""
   def __init__(self, *args, **kwargs):
@@ -66,6 +66,11 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock):
     Only called within generate(), so has access to GeneratorParam.get().
     Subclasses should chain with the results of a super() call."""
     return table
+
+  @classmethod
+  def _row_sort_by(cls, row: PartsTableRow) -> Any:
+    """Defines an optional sorting key for rows of this parts table."""
+    return []
 
   def _row_generate(self, row: PartsTableRow) -> None:
     """Once a row is selected, this is called to generate the implementation given the part selection.

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 from electronics_model import *
-from . import PartsTableFootprint, PartsTableColumn, PartsTableRow
+from . import PartsTableFootprint, PartsTableColumn, PartsTableRow, PartsTableSelector
 from .Categories import *
 
 
@@ -29,7 +29,7 @@ class Oscillator(DiscreteApplication):
 
 
 @non_library
-class TableOscillator(Oscillator, PartsTableFootprint, GeneratorBlock):
+class TableOscillator(Oscillator, PartsTableSelector, PartsTableFootprint):
   """Provides basic part table matching functionality for oscillators, by frequency only.
   Unlike other table-based passive components, additional pin modeling is required.
   No default footprints are provided since these may be non-standard."""
@@ -38,24 +38,12 @@ class TableOscillator(Oscillator, PartsTableFootprint, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.frequency, self.part, self.footprint_spec)
+    self.generator_param(self.frequency)
 
-  def select_part(self, frequency: Range, part_spec: str, footprint_spec: str) -> None:
-    parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        row[self.FREQUENCY] in frequency
-    ))
-    part = parts.first(f"no oscillator matching f={frequency} Hz")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      row[self.FREQUENCY] in self.get(self.frequency)
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-    self.assign(self.actual_frequency, part[self.FREQUENCY])
-
-    self._implementation(part)
-
-  @abstractmethod
-  def _implementation(self, part: PartsTableRow) -> None:
-    """Implement me. This defines the implementation given the selected part.
-    Unlike passives, this doesn't necessarily create a footprint, since it may need a supporting capacitor."""
-    ...
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_frequency, row[self.FREQUENCY])

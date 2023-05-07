@@ -2,10 +2,10 @@ from typing import List, Optional, Any, Dict
 import re
 
 from electronics_abstract_parts import *
-from .JlcPart import JlcPart, JlcTablePart
+from .JlcPart import JlcPart, JlcTableSelector
 
 
-class JlcCapacitor(TableDeratingCapacitor, JlcTablePart, FootprintBlock):
+class JlcCapacitor(TableDeratingCapacitor, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     # 0201 not in parts table, C_0201_0603Metric
 

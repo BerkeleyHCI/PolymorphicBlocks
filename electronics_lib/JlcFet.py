@@ -2,7 +2,7 @@ from typing import *
 import re
 from electronics_abstract_parts import *
 
-from .JlcPart import JlcTablePart, DescriptionParser, JlcTableSelector
+from .JlcPart import DescriptionParser, JlcTableSelector
 
 
 class JlcBaseFet(BaseTableFet, JlcTableSelector):

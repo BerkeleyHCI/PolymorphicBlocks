@@ -21,9 +21,7 @@ class JlcPart(Block):
 
 DescriptionParser = Tuple[re.Pattern,
                           Callable[[re.Match], Dict[PartsTableColumn, Any]]]
-
-@non_library
-class JlcTablePart(JlcPart, PartsTableFootprint):
+class JlcTableBase(PartsTableBase):
   """Defines common table headers, columns, and functionality for parsing JLCPCB parts tables."""
   PART_NUMBER_COL = 'MFR.Part'  # used only for translation to the PartsTableFootprint col
   MANUFACTURER_COL = 'Manufacturer'
@@ -44,11 +42,11 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
   @classmethod
   def _jlc_table(cls) -> PartsTable:
     """Returns the full JLC parts table, saving the result for future use."""
-    if JlcTablePart.__JLC_TABLE is None:  # specifically this class, so results are visible to subclasses
-      JlcTablePart.__JLC_TABLE = PartsTable.from_csv_files(PartsTable.with_source_dir([
+    if JlcTableBase.__JLC_TABLE is None:  # specifically this class, so results are visible to subclasses
+      JlcTableBase.__JLC_TABLE = PartsTable.from_csv_files(PartsTable.with_source_dir([
         'Pruned_JLCPCB SMT Parts Library(20220419).csv'
       ], 'resources'), encoding='gb2312')
-    return JlcTablePart.__JLC_TABLE
+    return JlcTableBase.__JLC_TABLE
 
   @classmethod
   def _parse_jlcpcb_common(cls, row: PartsTableRow) -> Dict[PartsTableColumn, Any]:
@@ -89,7 +87,7 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
     return None  # exhausted all options
 
 
-class JlcTableSelector(PartsTableSelector, JlcTablePart):
+class JlcTableSelector(PartsTableSelector, JlcPart, JlcTableBase):
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.lcsc_part, row[self.LCSC_PART_HEADER])
