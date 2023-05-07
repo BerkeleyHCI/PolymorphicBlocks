@@ -326,13 +326,12 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Lpc1549Base(Microcontroller, BaseIoControllerExportable, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
+class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable):
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic: Lpc1549Base_Device
-    self.generator_param(self.swd_swo_pin, self.swd_tdi_pin)
 
   def contents(self):
     super().contents()
@@ -364,14 +363,6 @@ class Lpc1549Base(Microcontroller, BaseIoControllerExportable, IoControllerWithS
                                         imp.Block(Lpc1549SwdPull()),
                                         self.ic.swd)
 
-  def _inner_pin_assigns(self) -> List[str]:
-    pin_assigns = super()._inner_pin_assigns()
-    if self.get(self.swd_swo_pin) != 'NC':
-      pin_assigns.append(f'swd_swo={self.get(self.swd_swo_pin)}')
-    if self.get(self.swd_tdi_pin) != 'NC':
-      pin_assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
-    return pin_assigns
-
   def generate(self):
     super().generate()
 
@@ -379,11 +370,6 @@ class Lpc1549Base(Microcontroller, BaseIoControllerExportable, IoControllerWithS
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.xtal)
-
-    if self.get(self.swd_swo_pin) != 'NC':
-      self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
-    if self.get(self.swd_tdi_pin) != 'NC':
-      self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
 
 
 class Lpc1549_48(Lpc1549Base):
