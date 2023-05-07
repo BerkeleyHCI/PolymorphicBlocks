@@ -219,14 +219,13 @@ class Rp2040Usb(InternalSubcircuit, Block):
       UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
 
 
-class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
+class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator_param(self.usb.requested(), self.gpio.requested(),
-                         self.pin_assigns, self.swd_swo_pin, self.swd_tdi_pin)
+    self.ic: Rp2040_Device
 
-  def generate(self) -> None:
-    super().generate()
+  def contents(self) -> None:
+    super().contents()
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
@@ -234,10 +233,6 @@ class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, 
     ) as imp:
       # https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf
       self.ic = imp.Block(Rp2040_Device(pin_assigns=ArrayStringExpr()))
-      # USB requires additional circuitry, and SWO/TDI must be mixed into GPIOs
-      self._export_ios_from(self.ic, excludes=[self.ic.usb, self.ic.swd, self.ic.gpio])
-      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
-
       self.connect(self.swd.swd, self.ic.swd)
 
       self.iovdd_cap = ElementDict[DecouplingCapacitor]()
@@ -260,32 +255,16 @@ class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, 
 
     self.vreg_out_cap = self.Block(DecouplingCapacitor(1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
 
+  def _make_export_io(self, self_io: Port, inner_io: Port):
+    if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
+      (self.usb_res, ), self.usb_chain = self.chain(inner_io, self.Block(Rp2040Usb()), self_io)
+    else:
+      super()._make_export_io(self_io, inner_io)
+
+  def generate(self):
+    super().generate()
     # TODO refactor this out into a common crystal-gen util
     if self.get(self.usb.requested()):  # tighter frequency tolerances from USB usage require a crystal
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))  # 12MHz required for USB
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.xosc)
-
-    if self.get(self.usb.requested()):
-      assert len(self.get(self.usb.requested())) == 1
-      usb_request_name = self.get(self.usb.requested())[0]
-      (self.usb_res, ), self.usb_chain = self.chain(
-        self.ic.usb.request(usb_request_name),
-        self.Block(Rp2040Usb()),
-        self.usb.append_elt(UsbDevicePort.empty(), usb_request_name))
-    self.usb.defined()
-
-    # TODO refactor this out into a common SWD remap util
-    inner_pin_assigns = self.get(self.pin_assigns).copy()
-    if self.get(self.swd_swo_pin) != 'NC':
-      self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
-      inner_pin_assigns.append(f'swd_swo={self.get(self.swd_swo_pin)}')
-    if self.get(self.swd_tdi_pin) != 'NC':
-      self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
-      inner_pin_assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
-    self.assign(self.ic.pin_assigns, inner_pin_assigns)
-
-    gpio_model = DigitalBidir.empty()
-    for gpio_name in self.get(self.gpio.requested()):
-      self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
-    self.gpio.defined()

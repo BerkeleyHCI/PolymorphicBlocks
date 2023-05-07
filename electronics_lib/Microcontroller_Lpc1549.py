@@ -365,7 +365,7 @@ class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoControl
 
   def generate(self):
     super().generate()
-
+    # TODO refactor this out into a common crystal-gen util
     if self.get(self.can.requested()) or self.get(self.usb.requested()):  # crystal needed for CAN or USB b/c tighter freq tolerance
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
       self.connect(self.crystal.gnd, self.gnd)

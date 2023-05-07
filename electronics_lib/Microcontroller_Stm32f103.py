@@ -253,26 +253,21 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
+class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable):
   DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator_param(self.can.requested(), self.usb.requested(), self.gpio.requested(),
-                         self.pin_assigns, self.swd_swo_pin, self.swd_tdi_pin)
+    self.ic: Stm32f103Base_Device
 
-  def generate(self):
-    super().generate()
+  def contents(self):
+    super().contents()
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
-      # USB requires additional circuitry, and SWO/TDI must be mixed into GPIOs
-      self._export_ios_from(self.ic, excludes=[self.ic.usb, self.ic.swd, self.ic.gpio])
-      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
-
       self.connect(self.swd.swd, self.ic.swd)
 
       self.pwr_cap = ElementDict[DecouplingCapacitor]()
@@ -285,37 +280,22 @@ class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, IoContr
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
+  def _make_export_io(self, self_io: Port, inner_io: Port):
+    if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
+      self.usb_pull = self.Block(UsbDpPullUp(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
+      self.connect(self.usb_pull.pwr, self.pwr)
+      self.connect(inner_io, self_io, self.usb_pull.usb)
+    else:
+      super()._make_export_io(self_io, inner_io)
+
+  def generate(self):
+    super().generate()
+
     # TODO refactor this out into a common crystal-gen util
     if self.get(self.can.requested()) or self.get(self.usb.requested()):  # crystal needed for CAN or USB b/c tighter freq tolerance
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.crystal.crystal, self.ic.osc)
-
-    if self.get(self.usb.requested()):
-      assert len(self.get(self.usb.requested())) == 1
-      usb_request_name = self.get(self.usb.requested())[0]
-      usb_port = self.usb.append_elt(UsbDevicePort.empty(), usb_request_name)
-      self.connect(usb_port, self.ic.usb.request(usb_request_name))
-
-      self.usb_pull = self.Block(UsbDpPullUp(resistance=1.5*kOhm(tol=0.01)))  # required by datasheet Table 44  # TODO proper tolerancing?
-      self.connect(self.usb_pull.pwr, self.pwr)
-      self.connect(usb_port, self.usb_pull.usb)
-    self.usb.defined()
-
-    # TODO refactor this out into a common SWD remap util
-    inner_pin_assigns = self.get(self.pin_assigns).copy()
-    if self.get(self.swd_swo_pin) != 'NC':
-      self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
-      inner_pin_assigns.append(f'swd_swo={self.get(self.swd_swo_pin)}')
-    if self.get(self.swd_tdi_pin) != 'NC':
-      self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
-      inner_pin_assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
-    self.assign(self.ic.pin_assigns, inner_pin_assigns)
-
-    gpio_model = DigitalBidir.empty()
-    for gpio_name in self.get(self.gpio.requested()):
-      self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
-    self.gpio.defined()
 
 
 class Stm32f103_48(Stm32f103Base):
