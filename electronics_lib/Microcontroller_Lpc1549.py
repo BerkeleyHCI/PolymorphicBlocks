@@ -1,7 +1,6 @@
 from typing import *
 
 from electronics_abstract_parts import *
-from electronics_lib import OscillatorCrystal
 from .JlcPart import JlcPart
 
 
@@ -326,8 +325,10 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable):
+class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable,
+                  WithCrystalGenerator):
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
+  DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
@@ -341,6 +342,10 @@ class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoControl
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))  # defined in generator to mix in SWO/TDI
+      (self.swd_pull, ), _ = self.chain(self.swd_node,
+                                        imp.Block(Lpc1549SwdPull()),
+                                        self.ic.swd)
+      self.connect(self.xtal_node, self.ic.xtal)
 
       # one set of 0.1, 0.01uF caps for each Vdd, Vss pin, per reference schematic
       self.pwr_cap = ElementDict[DecouplingCapacitor]()
@@ -359,17 +364,8 @@ class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoControl
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-      (self.swd_pull, ), _ = self.chain(self.swd_node,
-                                        imp.Block(Lpc1549SwdPull()),
-                                        self.ic.swd)
-
-  def generate(self):
-    super().generate()
-    # TODO refactor this out into a common crystal-gen util
-    if self.get(self.can.requested()) or self.get(self.usb.requested()):  # crystal needed for CAN or USB b/c tighter freq tolerance
-      self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
-      self.connect(self.crystal.gnd, self.gnd)
-      self.connect(self.crystal.crystal, self.ic.xtal)
+  def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
+    return super()._crystal_required or self.get(self.can.requested()) or self.get(self.usb.requested())
 
 
 class Lpc1549_48(Lpc1549Base):

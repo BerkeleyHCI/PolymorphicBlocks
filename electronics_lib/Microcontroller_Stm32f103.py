@@ -1,7 +1,6 @@
 from typing import *
 
 from electronics_abstract_parts import *
-from electronics_lib import OscillatorCrystal
 from .JlcPart import JlcPart
 
 
@@ -255,6 +254,7 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 @abstract_block
 class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable):
   DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
+  DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
@@ -288,14 +288,8 @@ class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, IoContr
     else:
       super()._make_export_io(self_io, inner_io)
 
-  def generate(self):
-    super().generate()
-
-    # TODO refactor this out into a common crystal-gen util
-    if self.get(self.can.requested()) or self.get(self.usb.requested()):  # crystal needed for CAN or USB b/c tighter freq tolerance
-      self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
-      self.connect(self.crystal.gnd, self.gnd)
-      self.connect(self.crystal.crystal, self.ic.osc)
+  def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
+    return super()._crystal_required or self.get(self.can.requested()) or self.get(self.usb.requested())
 
 
 class Stm32f103_48(Stm32f103Base):

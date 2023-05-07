@@ -165,6 +165,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
     return dict(chain(self._system_pinmap().items(), io_pins.items()))
 
 
+@non_library
 class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
   """BaseIoController wrapper (this is a BaseIoController, which wraps another BaseIoController)
   which automatically exports my IOs from the internal IOs in an extensible way (additional connects

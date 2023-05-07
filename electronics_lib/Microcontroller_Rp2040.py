@@ -1,7 +1,6 @@
 from typing import *
 
 from electronics_abstract_parts import *
-from electronics_lib import OscillatorCrystal
 from .JlcPart import JlcPart
 
 
@@ -219,7 +218,10 @@ class Rp2040Usb(InternalSubcircuit, Block):
       UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
 
 
-class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable):
+class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable,
+             WithCrystalGenerator):
+  DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
+
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic: Rp2040_Device
@@ -261,10 +263,5 @@ class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, 
     else:
       super()._make_export_io(self_io, inner_io)
 
-  def generate(self):
-    super().generate()
-    # TODO refactor this out into a common crystal-gen util
-    if self.get(self.usb.requested()):  # tighter frequency tolerances from USB usage require a crystal
-      self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))  # 12MHz required for USB
-      self.connect(self.crystal.gnd, self.gnd)
-      self.connect(self.crystal.crystal, self.ic.xosc)
+  def _crystal_required(self) -> bool:  # crystal needed for USB b/c tighter freq tolerance
+    return super()._crystal_required or self.get(self.usb.requested())
