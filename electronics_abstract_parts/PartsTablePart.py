@@ -35,10 +35,8 @@ class PartsTableBase:
 
 @non_library
 class PartsTablePart(Block):
-  """A mixin for a part that is selected from a table, defining parameters to allow manual part selection
-  as well as matching parts.
-  Subclasses must implement this."""
-
+  """An interface mixin for a part that is selected from a table, defining parameters to allow manual part selection
+  as well as matching parts."""
   @init_in_parent
   def __init__(self, *args, part: StringLike = Default(""), **kwargs):
     super().__init__(*args, **kwargs)

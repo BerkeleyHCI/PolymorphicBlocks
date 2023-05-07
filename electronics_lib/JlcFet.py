@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcBaseFet(BaseTableFet, JlcTableSelector):
+class JlcBaseFet(BaseTableFet, JlcTableSelector, PartsTableFootprint):
   PACKAGE_FOOTPRINT_MAP = {
     'SOT23-3': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',

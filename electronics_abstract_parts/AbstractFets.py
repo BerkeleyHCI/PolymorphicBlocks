@@ -133,7 +133,7 @@ class BaseTableFet(Fet):
 
 
 @non_library
-class TableFet(FetStandardFootprint, BaseTableFet, PartsTableFootprintSelector, GeneratorBlock):
+class TableFet(FetStandardFootprint, BaseTableFet, PartsTableFootprintSelector):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
