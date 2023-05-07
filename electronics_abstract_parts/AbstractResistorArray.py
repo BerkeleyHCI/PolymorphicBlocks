@@ -116,10 +116,11 @@ class TableResistorArray(ResistorArrayStandardFootprint, PartsTableFootprintSele
       powers_hull.fuzzy_in(row[self.POWER_RATING])
 
   def _row_generate(self, row: PartsTableRow) -> None:
-    super()._row_generate(row)
-    for i in range(row[self.COUNT]):
+    for i in range(row[self.COUNT]):  # must generate ports before creating the footprint
       self.a.append_elt(Passive(), str(i))
       self.b.append_elt(Passive(), str(i))
+
+    super()._row_generate(row)
 
     self.assign(self.actual_count, row[self.COUNT])
     self.assign(self.actual_resistance, row[self.RESISTANCE])
