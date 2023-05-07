@@ -325,8 +325,8 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable,
-                  WithCrystalGenerator):
+class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoController,
+                  BaseIoControllerExportable):
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
 
@@ -365,7 +365,8 @@ class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoControl
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
   def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
-    return super()._crystal_required or self.get(self.can.requested()) or self.get(self.usb.requested())
+    return len(self.get(self.can.requested())) > 0 or len(self.get(self.usb.requested())) > 0 \
+        or super()._crystal_required()
 
 
 class Lpc1549_48(Lpc1549Base):

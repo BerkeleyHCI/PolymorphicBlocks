@@ -1,9 +1,10 @@
-from electronics_abstract_parts import OscillatorCrystal
+from .IoController import IoController
+from .AbstractCrystal import OscillatorCrystal
 from electronics_model import *
 
 
 @non_library
-class WithCrystalGenerator(GeneratorBlock):
+class WithCrystalGenerator(IoController, GeneratorBlock):
   """A Block generator mixin that checks if a crystal oscillator is needed, and if so generates it."""
   DEFAULT_CRYSTAL_FREQUENCY: Range
 

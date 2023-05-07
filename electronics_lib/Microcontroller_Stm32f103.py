@@ -252,8 +252,8 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable,
-                    WithCrystalGenerator):
+class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoController,
+                    BaseIoControllerExportable):
   DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
 
@@ -291,7 +291,8 @@ class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, IoContr
       super()._make_export_io(self_io, inner_io)
 
   def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
-    return super()._crystal_required or self.get(self.can.requested()) or self.get(self.usb.requested())
+    return len(self.get(self.can.requested())) > 0 or len(self.get(self.usb.requested())) > 0 \
+        or super()._crystal_required()
 
 
 class Stm32f103_48(Stm32f103Base):

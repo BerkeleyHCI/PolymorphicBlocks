@@ -218,8 +218,8 @@ class Rp2040Usb(InternalSubcircuit, Block):
       UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
 
 
-class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable,
-             WithCrystalGenerator):
+class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoController,
+             BaseIoControllerExportable,):
   DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
 
   def __init__(self, **kwargs):
@@ -235,7 +235,7 @@ class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, 
     ) as imp:
       # https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf
       self.ic = imp.Block(Rp2040_Device(pin_assigns=ArrayStringExpr()))
-      self.connect(self.xtal_node, self.ic.xtal)
+      self.connect(self.xtal_node, self.ic.xosc)
       self.connect(self.swd_node, self.ic.swd)
 
       self.iovdd_cap = ElementDict[DecouplingCapacitor]()
@@ -265,4 +265,4 @@ class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, 
       super()._make_export_io(self_io, inner_io)
 
   def _crystal_required(self) -> bool:  # crystal needed for USB b/c tighter freq tolerance
-    return super()._crystal_required or self.get(self.usb.requested())
+    return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()
