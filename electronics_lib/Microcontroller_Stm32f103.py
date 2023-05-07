@@ -252,7 +252,8 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable):
+class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, BaseIoControllerExportable,
+                    WithCrystalGenerator):
   DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
 
