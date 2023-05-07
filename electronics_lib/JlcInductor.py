@@ -2,10 +2,10 @@ from typing import *
 import re
 from electronics_abstract_parts import *
 
-from .JlcPart import JlcTablePart, DescriptionParser
+from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcInductor(TableInductor, JlcTablePart, FootprintBlock):
+class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     '0402': 'Inductor_SMD:L_0402_1005Metric',
     '0603': 'Inductor_SMD:L_0603_1608Metric',
@@ -100,8 +100,3 @@ class JlcInductor(TableInductor, JlcTablePart, FootprintBlock):
   @classmethod
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)

@@ -1,10 +1,10 @@
 import re
 from typing import Optional, Dict, Any, List
 from electronics_abstract_parts import *
-from .JlcPart import JlcTablePart, DescriptionParser
+from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcResistorArray(TableResistorArray, JlcTablePart, FootprintBlock):
+class JlcResistorArray(TableResistorArray, JlcTableSelector):
   SERIES_PACKAGE_FOOTPRINT_MAP = {
     ('4D03', '0603_x4'): 'Resistor_SMD:R_Array_Concave_4x0603',  # 1206 overall size
     ('4D03', 'RES-ARRAY-SMD'): 'Resistor_SMD:R_Array_Concave_4x0603',  # same as above, but inconsistent footprint field
@@ -47,8 +47,3 @@ class JlcResistorArray(TableResistorArray, JlcTablePart, FootprintBlock):
     return cls._jlc_table().map_new_columns(parse_row).sort_by(
       lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
     )
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)

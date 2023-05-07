@@ -3,7 +3,7 @@ from typing import Optional, cast
 from electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprint
+from .PartsTablePart import PartsTableFootprint, PartsTableFootprintSelector
 from .StandardFootprint import StandardFootprint
 
 
@@ -52,6 +52,8 @@ class PptcFuse(Fuse):
 
 @non_library
 class FuseStandardFootprint(Fuse, StandardFootprint[Fuse]):
+  REFDES_PREFIX = 'F'
+
   FOOTPRINT_PINNING_MAP = {
     (
       'Resistor_SMD:R_0201_0603Metric',
@@ -69,14 +71,6 @@ class FuseStandardFootprint(Fuse, StandardFootprint[Fuse]):
     },
   }
 
-
-from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate leaf-class mixin
-@non_library
-class TableFuse(SmdStandardPackage, FuseStandardFootprint, PartsTableFootprint, GeneratorBlock):
-  TRIP_CURRENT = PartsTableColumn(Range)
-  HOLD_CURRENT = PartsTableColumn(Range)
-  VOLTAGE_RATING = PartsTableColumn(Range)
-
   SMD_FOOTPRINT_MAP = {
     '01005': None,
     '0201': 'Resistor_SMD:R_0201_0603Metric',
@@ -91,41 +85,29 @@ class TableFuse(SmdStandardPackage, FuseStandardFootprint, PartsTableFootprint, 
     '2512': 'Resistor_SMD:R_2512_6332Metric',
   }
 
+
+@non_library
+class TableFuse(FuseStandardFootprint, PartsTableFootprintSelector):
+  TRIP_CURRENT = PartsTableColumn(Range)
+  HOLD_CURRENT = PartsTableColumn(Range)
+  VOLTAGE_RATING = PartsTableColumn(Range)
+
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.trip_current, self.hold_current, self.voltage,
-                   self.part, self.footprint_spec, self.smd_min_package)
+    self.generator_param(self.trip_current, self.hold_current, self.voltage)
 
-  def select_part(self, trip_current: Range, hold_current: Range, voltage: Range,
-                  part_spec: str, footprint_spec: str, smd_min_package: str) -> None:
-    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(smd_min_package, self.SMD_FOOTPRINT_MAP)
-    parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        (row[self.KICAD_FOOTPRINT] not in minimum_invalid_footprints) and
-        row[self.TRIP_CURRENT].fuzzy_in(trip_current) and
-        row[self.HOLD_CURRENT].fuzzy_in(hold_current) and
-        voltage.fuzzy_in(row[self.VOLTAGE_RATING])
-    )).sort_by(self._row_sort_by)
-    part = parts.first(f"no matching part")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      row[self.TRIP_CURRENT].fuzzy_in(self.get(self.trip_current)) and \
+      row[self.HOLD_CURRENT].fuzzy_in(self.get(self.hold_current)) and \
+      self.get(self.voltage).fuzzy_in(row[self.VOLTAGE_RATING])
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-    self.assign(self.actual_trip_current, part[self.TRIP_CURRENT])
-    self.assign(self.actual_hold_current, part[self.HOLD_CURRENT])
-    self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'F', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_trip_current, row[self.TRIP_CURRENT])
+    self.assign(self.actual_hold_current, row[self.HOLD_CURRENT])
+    self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
 
 
 class SeriesPowerPptcFuse(Protection):
