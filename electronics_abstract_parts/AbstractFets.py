@@ -212,20 +212,6 @@ class TableSwitchFet(SwitchFet, FetStandardFootprint, BaseTableFet, PartsTableFo
       row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
-  def _row_generate(self, row: PartsTableRow) -> None:
-    super()._row_generate(row)
-    self.assign(self.actual_drain_voltage_rating, row[self.VDS_RATING])
-    self.assign(self.actual_drain_current_rating, row[self.IDS_RATING])
-    self.assign(self.actual_gate_voltage_rating, row[self.VGS_RATING])
-    self.assign(self.actual_gate_drive, row[self.VGS_DRIVE])
-    self.assign(self.actual_rds_on, row[self.RDS_ON])
-    self.assign(self.actual_power_rating, row[self.POWER_RATING])
-    self.assign(self.actual_gate_charge, row[self.GATE_CHARGE])
-
-    self.assign(self.actual_static_power, row[self.STATIC_POWER])
-    self.assign(self.actual_switching_power, row[self.SWITCHING_POWER])
-    self.assign(self.actual_total_power, row[self.TOTAL_POWER])
-
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     drive_current = self.get(self.drive_current)
     gate_drive_rise, gate_drive_fall = drive_current.upper, -drive_current.lower
@@ -252,3 +238,17 @@ class TableSwitchFet(SwitchFet, FetStandardFootprint, BaseTableFet, PartsTableFo
         return None
 
     return super()._table_postprocess(table).map_new_columns(process_row)
+
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_drain_voltage_rating, row[self.VDS_RATING])
+    self.assign(self.actual_drain_current_rating, row[self.IDS_RATING])
+    self.assign(self.actual_gate_voltage_rating, row[self.VGS_RATING])
+    self.assign(self.actual_gate_drive, row[self.VGS_DRIVE])
+    self.assign(self.actual_rds_on, row[self.RDS_ON])
+    self.assign(self.actual_power_rating, row[self.POWER_RATING])
+    self.assign(self.actual_gate_charge, row[self.GATE_CHARGE])
+
+    self.assign(self.actual_static_power, row[self.STATIC_POWER])
+    self.assign(self.actual_switching_power, row[self.SWITCHING_POWER])
+    self.assign(self.actual_total_power, row[self.TOTAL_POWER])
