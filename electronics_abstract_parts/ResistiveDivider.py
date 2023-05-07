@@ -65,6 +65,9 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
 
     self.ratio = self.ArgParameter(ratio)
     self.impedance = self.ArgParameter(impedance)
+    self.series = self.ArgParameter(series)
+    self.tolerance = self.ArgParameter(tolerance)
+    self.generator_param(self.ratio, self.impedance, self.series, self.tolerance)
 
     self.actual_ratio = self.Parameter(RangeExpr())
     self.actual_impedance = self.Parameter(RangeExpr())
@@ -73,8 +76,6 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
     self.top = self.Port(Passive.empty())
     self.center = self.Port(Passive.empty())
     self.bottom = self.Port(Passive.empty())
-
-    self.generator(self.generate_divider, self.ratio, self.impedance, series, tolerance)
 
   def contents(self) -> None:
     super().contents()
@@ -86,19 +87,21 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.impedance, "Ω"))
 
 
-  def generate_divider(self, ratio: Range, impedance: Range, series: int, tolerance: float) -> None:
+  def generate(self) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
     """
+    super().generate()
+
     # TODO: not fully optimal in that the ratio doesn't need to be recalculated if we're shifting both decades
     # (to achieve some impedance spec), but it uses shared infrastructure that doesn't assume this ratio optimization
-    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DividerValues)
-    top_resistance, bottom_resistance = calculator.find(DividerValues(ratio, impedance))
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.get(self.series)], self.get(self.tolerance), DividerValues)
+    top_resistance, bottom_resistance = calculator.find(DividerValues(self.get(self.ratio), self.get(self.impedance)))
 
     self.top_res = self.Block(Resistor(
-      resistance=Range.from_tolerance(top_resistance, tolerance)
+      resistance=Range.from_tolerance(top_resistance, self.get(self.tolerance))
     ))
     self.bottom_res = self.Block(Resistor(
-      resistance=Range.from_tolerance(bottom_resistance, tolerance)
+      resistance=Range.from_tolerance(bottom_resistance, self.get(self.tolerance))
     ))
 
     self.connect(self.top_res.a, self.top)

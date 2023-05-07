@@ -47,5 +47,6 @@ class BlockDefinitionError(EdslUserError):
   def __init__(self, block, exc: str, resolution: str = ''):
     super().__init__(f"invalid block definition for {type(block)}: {exc}", resolution)
 
+
 class ChainError(BlockDefinitionError):
   """Base error for bad elements in a chain connect"""

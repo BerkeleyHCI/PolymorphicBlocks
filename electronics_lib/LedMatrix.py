@@ -20,9 +20,15 @@ class CharlieplexedLedMatrix(Light, GeneratorBlock):
     # note that IOs supply both the positive and negative
     self.ios = self.Port(Vector(DigitalSink.empty()))
 
-    self.generator(self.generate, rows, cols)
+    self.rows = self.ArgParameter(rows)
+    self.cols = self.ArgParameter(cols)
+    self.generator_param(self.rows, self.cols)
 
-  def generate(self, rows: int, cols: int):
+  def generate(self):
+    super().generate()
+    rows = self.get(self.rows)
+    cols = self.get(self.cols)
+
     io_voltage = self.ios.hull(lambda x: x.link().voltage)
     io_voltage_upper = io_voltage.upper()
     io_voltage_lower = self.ios.hull(lambda x: x.link().output_thresholds).upper()

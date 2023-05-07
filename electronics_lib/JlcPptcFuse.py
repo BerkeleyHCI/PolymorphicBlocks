@@ -2,10 +2,10 @@ from typing import *
 import re
 from electronics_abstract_parts import *
 
-from .JlcPart import JlcTablePart, DescriptionParser
+from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcPptcFuse(PptcFuse, TableFuse, JlcTablePart, FootprintBlock):
+class JlcPptcFuse(PptcFuse, TableFuse, SmdStandardPackageSelector, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     '0402': 'Resistor_SMD:R_0402_1005Metric',
     '0603': 'Resistor_SMD:R_0603_1608Metric',
@@ -49,12 +49,3 @@ class JlcPptcFuse(PptcFuse, TableFuse, JlcTablePart, FootprintBlock):
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
-
-  @classmethod
-  def _row_sort_by(cls, row: PartsTableRow) -> Any:
-    return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)

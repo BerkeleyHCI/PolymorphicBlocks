@@ -2,7 +2,7 @@ from typing import *
 import re
 from electronics_abstract_parts import *
 
-from .JlcPart import JlcTablePart, DescriptionParser
+from .JlcPart import DescriptionParser, JlcTableSelector
 
 
 class JlcBaseDiode:
@@ -16,7 +16,7 @@ class JlcBaseDiode:
   }
 
 
-class JlcDiode(TableDiode, JlcTablePart, JlcBaseDiode, FootprintBlock):
+class JlcDiode(TableDiode, JlcTableSelector, JlcBaseDiode):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(\S+V) (\S+V)@\S+A (\S+A) .* Schottky Barrier Diodes \(SBD\).*"),
      lambda match: {
@@ -74,13 +74,8 @@ class JlcDiode(TableDiode, JlcTablePart, JlcBaseDiode, FootprintBlock):
       lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
     )
 
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
 
-
-class JlcZenerDiode(TableZenerDiode, JlcTablePart, JlcBaseDiode, FootprintBlock):
+class JlcZenerDiode(TableZenerDiode, JlcTableSelector, JlcBaseDiode):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("\S+A@\S+V (±\S+%) \S+Ω (?:Single )?(\S+W) (\S+V).* Zener Diodes.*"),
      lambda match: {
@@ -116,8 +111,3 @@ class JlcZenerDiode(TableZenerDiode, JlcTablePart, JlcBaseDiode, FootprintBlock)
     return cls._jlc_table().map_new_columns(parse_row).sort_by(
       lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
     )
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)

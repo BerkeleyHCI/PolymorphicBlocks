@@ -48,11 +48,12 @@ class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
   def __init__(self):
     super().__init__()
     self.io = self.Port(Vector(DigitalSink().empty()), [InOut])
-    self.generator(self.generate, self.io.requested())
+    self.generator_param(self.io.requested())
 
-  def generate(self, requesteds: List[str]):
+  def generate(self):
+    super().generate()
     self.tp = ElementDict[DigitalTestPoint]()
-    for requested in requesteds:
+    for requested in self.get(self.io.requested()):
       tp = self.tp[requested] = self.Block(DigitalTestPoint())
       self.connect(self.io.append_elt(DigitalSink.empty(), requested), tp.io)
 

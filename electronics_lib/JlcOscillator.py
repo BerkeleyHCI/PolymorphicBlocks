@@ -1,7 +1,7 @@
 import re
 from typing import Optional, Dict, Any, List
 from electronics_abstract_parts import *
-from .JlcPart import JlcPart, JlcTablePart, DescriptionParser
+from .JlcPart import JlcPart, JlcTableBase, DescriptionParser
 
 
 class JlcOscillator_Device(InternalSubcircuit, Block):
@@ -50,9 +50,7 @@ class Sg8101cg_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, self.in_actual_basic_part)
 
 
-class JlcOscillator(TableOscillator, JlcTablePart, Block):
-  """TODO: this technically shouldn't be a JlcPart?
-  TODO: this also really shouldn't provide the decoupling capacitor, but it's convenient for now"""
+class JlcOscillator(TableOscillator, JlcTableBase, Block):
   SERIES_DEVICE_MAP = {
     'SG-8101CG': Sg8101cg_Device,
   }
@@ -90,7 +88,7 @@ class JlcOscillator(TableOscillator, JlcTablePart, Block):
       lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
     )
 
-  def _implementation(self, row: PartsTableRow) -> None:
+  def _row_generate(self, row: PartsTableRow) -> None:
     for series, device_cls in self.SERIES_DEVICE_MAP.items():
       if row[self.PART_NUMBER_COL].startswith(series):
         self.device = self.Block(device_cls(

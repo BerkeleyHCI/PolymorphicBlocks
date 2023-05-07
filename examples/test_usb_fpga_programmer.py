@@ -47,14 +47,14 @@ class UsbFpgaProgrammer(JlcBoardTop):
       self.ft232 = imp.Block(Ft232hl())
       (self.usb_esd, ), self.usb_chain = self.chain(
         self.usb.usb, imp.Block(UsbEsdDiode()), self.ft232.usb)
-      (self.led0, ), _ = self.chain(self.ft232.acbus0, imp.Block(IndicatorLed(Led.White)))  # TXDEN
-      (self.led1, ), _ = self.chain(self.ft232.acbus3, imp.Block(IndicatorLed(Led.Green)))  # RXLED
-      (self.led2, ), _ = self.chain(self.ft232.acbus4, imp.Block(IndicatorLed(Led.Yellow)))  # TXLED
+      (self.led0, ), _ = self.chain(self.ft232.acbus.request('0'), imp.Block(IndicatorLed(Led.White)))  # TXDEN
+      (self.led1, ), _ = self.chain(self.ft232.acbus.request('3'), imp.Block(IndicatorLed(Led.Green)))  # RXLED
+      (self.led2, ), _ = self.chain(self.ft232.acbus.request('4'), imp.Block(IndicatorLed(Led.Yellow)))  # TXLED
 
       self.out = imp.Block(FpgaProgrammingHeader())
       self.connect(self.ft232.mpsse, self.out.spi)
-      self.connect(self.ft232.adbus4, self.out.cs)
-      self.connect(self.ft232.adbus7, self.out.reset)
+      self.connect(self.ft232.adbus.request('4'), self.out.cs)
+      self.connect(self.ft232.adbus.request('7'), self.out.reset)
 
     # Misc board
     self.duck = self.Block(DuckLogo())

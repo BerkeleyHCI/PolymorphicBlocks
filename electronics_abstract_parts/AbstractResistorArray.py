@@ -3,9 +3,9 @@ from typing import List
 from electronics_model import *
 from .AbstractResistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprint
+from .PartsTablePart import PartsTableFootprintSelector
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 class ResistorArrayElement(Resistor):  # to avoid an abstract part error
@@ -49,7 +49,9 @@ class ResistorArray(PassiveComponent, MultipackBlock):
 
 
 @non_library
-class ResistorArrayStandardPinning(ResistorArray, StandardPinningFootprint[ResistorArray]):
+class ResistorArrayStandardFootprint(ResistorArray, StandardFootprint[ResistorArray]):
+  REFDES_PREFIX = 'RN'
+
   # TODO some way to ensure the resistor count is sufficient?
   FOOTPRINT_PINNING_MAP = {  # these are all the footprints in KiCad as of 2022 05 31
     (
@@ -85,7 +87,7 @@ class ResistorArrayStandardPinning(ResistorArray, StandardPinningFootprint[Resis
 
 
 @non_library
-class TableResistorArray(ResistorArrayStandardPinning, PartsTableFootprint, GeneratorBlock):
+class TableResistorArray(ResistorArrayStandardFootprint, PartsTableFootprintSelector):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   COUNT = PartsTableColumn(int)
@@ -93,50 +95,33 @@ class TableResistorArray(ResistorArrayStandardPinning, PartsTableFootprint, Gene
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.count, self.a.requested(), self.b.requested(),
-                   self.resistances, self.powers, self.part, self.footprint_spec)
+    self.generator_param(self.count, self.a.requested(), self.b.requested(), self.resistances, self.powers)
 
-  def select_part(self, count: int, a_requests: List[str], b_requests: List[str],
-                  resistances: List[Range], power_dissipations: List[Range],
-                  part_spec: str, footprint_spec: str) -> None:
+  def _row_filter(self, row: PartsTableRow) -> bool:
     # TODO some kind of range intersect construct?
-    resistances_min = max([resistance.lower for resistance in resistances])
-    resistances_max = min([resistance.upper for resistance in resistances])
+    resistances_min = max([resistance.lower for resistance in self.get(self.resistances)])
+    resistances_max = min([resistance.upper for resistance in self.get(self.resistances)])
     assert resistances_min <= resistances_max, "resistances do not intersect"
     resistance_intersect = Range(resistances_min, resistances_max)
 
-    powers_min = min([power.lower for power in power_dissipations])
-    powers_max = max([power.upper for power in power_dissipations])
+    powers_min = min([power.lower for power in self.get(self.powers)])
+    powers_max = max([power.upper for power in self.get(self.powers)])
     powers_hull = Range(powers_min, powers_max)
 
-    parts = self._get_table().filter(lambda row: (
-            (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-            (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-            (count == 0 or count == row[self.COUNT]) and
-            (row[self.COUNT] >= len(a_requests) and row[self.COUNT] >= len(b_requests)) and
-            row[self.RESISTANCE].fuzzy_in(resistance_intersect) and
-            powers_hull.fuzzy_in(row[self.POWER_RATING])
-    ))
-    part = parts.first(f"no resistors in {resistance_intersect} Ohm, {powers_hull} W")
+    return super()._row_filter(row) and \
+      (self.get(self.count) == 0 or self.get(self.count) == row[self.COUNT]) and \
+      (row[self.COUNT] >= len(self.get(self.a.requested())) and \
+       row[self.COUNT] >= len(self.get(self.b.requested()))) and \
+      row[self.RESISTANCE].fuzzy_in(resistance_intersect) and \
+      powers_hull.fuzzy_in(row[self.POWER_RATING])
 
-    # actually create terminals
-    for i in range(part[self.COUNT]):
+  def _row_generate(self, row: PartsTableRow) -> None:
+    for i in range(row[self.COUNT]):  # must generate ports before creating the footprint
       self.a.append_elt(Passive(), str(i))
       self.b.append_elt(Passive(), str(i))
 
-    self.assign(self.actual_count, part[self.COUNT])
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-    self.assign(self.actual_resistance, part[self.RESISTANCE])
-    self.assign(self.actual_power_rating, part[self.POWER_RATING])
+    super()._row_generate(row)
 
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'RN', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+    self.assign(self.actual_count, row[self.COUNT])
+    self.assign(self.actual_resistance, row[self.RESISTANCE])
+    self.assign(self.actual_power_rating, row[self.POWER_RATING])

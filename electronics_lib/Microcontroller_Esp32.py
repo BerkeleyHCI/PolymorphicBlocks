@@ -7,11 +7,14 @@ from .Microcontroller_Esp import EspProgrammingHeader
 
 
 @abstract_block
-class Esp32_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Esp32_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """Base class for ESP32 series microcontrollrs with WiFi and Bluetooth (classic and LE)
 
   Chip datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
   """
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
+  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -21,7 +24,7 @@ class Esp32_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorB
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
-    self.dio_model = dio_model = DigitalBidir.from_supply(  # section 5.2, table 15
+    self._dio_model = dio_model = DigitalBidir.from_supply(  # section 5.2, table 15
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-28, 40)*mAmp,
@@ -29,7 +32,7 @@ class Esp32_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorB
       input_threshold_factor=(0.25, 0.75),
       pullup_capable=True, pulldown_capable=True,
     )
-    sdio_model = DigitalBidir.from_supply(  # section 5.2, table 15, for SDIO power domain pins
+    self._sdio_model = DigitalBidir.from_supply(  # section 5.2, table 15, for SDIO power domain pins
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-28, 20)*mAmp,  # reduced sourcing capability
@@ -49,7 +52,8 @@ class Esp32_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorB
     # similarly, the programming UART is fixed and allocated separately
     self.uart0 = self.Port(UartPort(dio_model), optional=True)
 
-    self.system_pinmaps = VariantPinRemapper({
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return VariantPinRemapper({
       'Vdd': self.pwr,
       'Vss': self.gnd,
       'CHIP_PU': self.chip_pu,
@@ -59,22 +63,11 @@ class Esp32_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorB
       # 'MTDI': ...,  # disconnected, internally pulled down for strapping - 3.3v LDO
       'U0RXD': self.uart0.rx,
       'U0TXD': self.uart0.tx,
-    })
+    }).remap(self.SYSTEM_PIN_REMAP)
 
-    self.abstract_pinmaps = self.mappable_ios(dio_model, sdio_model, self.gnd, self.pwr)
-
-    # TODO add JTAG support
-
-    self.generator(self.generate, self.pin_assigns,
-                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
-                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
-                   self.can.requested())
-
-  @staticmethod
-  def mappable_ios(dio_model: DigitalBidir, sdio_model: DigitalBidir,
-                   gnd: VoltageSink, pwr: VoltageSink) -> PinMapUtil:
-    adc_model = AnalogSink.from_supply(gnd, pwr)  # TODO: no specs in datasheet?!
-    dac_model = AnalogSource.from_supply(gnd, pwr)  # TODO: no specs in datasheet?!
+  def _io_pinmap(self) -> PinMapUtil:
+    adc_model = AnalogSink.from_supply(self.gnd, self.pwr)  # TODO: no specs in datasheet?!
+    dac_model = AnalogSource.from_supply(self.gnd, self.pwr)  # TODO: no specs in datasheet?!
 
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiMaster(DigitalBidir.empty(), (0, 80)*MHertz)  # section 4.1.17
@@ -90,41 +83,41 @@ class Esp32_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorB
 
       PinResource('VDET_1', {'ADC1_CH6': adc_model}),  # also input-only 'GPIO34': dio_model, RTC_GPIO
       PinResource('VDET_2', {'ADC1_CH7': adc_model}),  # also input-only 'GPIO35': dio_model,  RTC_GPIO
-      PinResource('32K_XP', {'GPIO32': dio_model, 'ADC1_CH4': adc_model}),  # also RTC_GPIO, 32K_XP
-      PinResource('32K_XN', {'GPIO33': dio_model, 'ADC1_CH5': adc_model}),  # also RTC_GPIO, 32K_XN
+      PinResource('32K_XP', {'GPIO32': self._dio_model, 'ADC1_CH4': adc_model}),  # also RTC_GPIO, 32K_XP
+      PinResource('32K_XN', {'GPIO33': self._dio_model, 'ADC1_CH5': adc_model}),  # also RTC_GPIO, 32K_XN
 
-      PinResource('GPIO25', {'GPIO25': dio_model, 'ADC2_CH8': adc_model, 'DAC_1': dac_model}),  # also RTC_GPIO
-      PinResource('GPIO26', {'GPIO26': dio_model, 'ADC2_CH9': adc_model, 'DAC_2': dac_model}),  # also RTC_GPIO
-      PinResource('GPIO27', {'GPIO27': dio_model, 'ADC2_CH7': adc_model}),  # also RTC_GPIO
+      PinResource('GPIO25', {'GPIO25': self._dio_model, 'ADC2_CH8': adc_model, 'DAC_1': dac_model}),  # also RTC_GPIO
+      PinResource('GPIO26', {'GPIO26': self._dio_model, 'ADC2_CH9': adc_model, 'DAC_2': dac_model}),  # also RTC_GPIO
+      PinResource('GPIO27', {'GPIO27': self._dio_model, 'ADC2_CH7': adc_model}),  # also RTC_GPIO
 
-      PinResource('MTMS', {'GPIO14': dio_model, 'ADC2_CH6': adc_model}),  # also RTC_GPIO
-      PinResource('MTDI', {'GPIO12': dio_model, 'ADC2_CH5': adc_model}),  # also RTC_GPIO, noncritical strapping pin
-      PinResource('MTCK', {'GPIO13': dio_model, 'ADC2_CH4': adc_model}),  # also RTC_GPIO
-      PinResource('MTDO', {'GPIO15': dio_model, 'ADC2_CH3': adc_model}),  # also RTC_GPIO, noncritical strapping pin
+      PinResource('MTMS', {'GPIO14': self._dio_model, 'ADC2_CH6': adc_model}),  # also RTC_GPIO
+      PinResource('MTDI', {'GPIO12': self._dio_model, 'ADC2_CH5': adc_model}),  # also RTC_GPIO, noncritical strapping pin
+      PinResource('MTCK', {'GPIO13': self._dio_model, 'ADC2_CH4': adc_model}),  # also RTC_GPIO
+      PinResource('MTDO', {'GPIO15': self._dio_model, 'ADC2_CH3': adc_model}),  # also RTC_GPIO, noncritical strapping pin
 
-      # PinResource('GPIO2', {'GPIO2': dio_model, 'ADC2_CH2': adc_model}),  # also RTC_GPIO, strapping pin
-      # PinResource('GPIO0', {'GPIO0': dio_model, 'ADC2_CH1': adc_model}),  # also RTC_GPIO, strapping pin
-      PinResource('GPIO4', {'GPIO4': dio_model, 'ADC2_CH0': adc_model}),  # also RTC_GPIO
+      # PinResource('GPIO2', {'GPIO2': self._dio_model, 'ADC2_CH2': adc_model}),  # also RTC_GPIO, strapping pin
+      # PinResource('GPIO0', {'GPIO0': self._dio_model, 'ADC2_CH1': adc_model}),  # also RTC_GPIO, strapping pin
+      PinResource('GPIO4', {'GPIO4': self._dio_model, 'ADC2_CH0': adc_model}),  # also RTC_GPIO
 
       # VDD_SDIO
-      PinResource('GPIO16', {'GPIO16': sdio_model}),
-      PinResource('GPIO17', {'GPIO17': sdio_model}),
-      PinResource('SD_DATA_2', {'GPIO9': sdio_model}),
-      PinResource('SD_DATA_3', {'GPIO10': sdio_model}),
-      PinResource('SD_CMD', {'GPIO11': sdio_model}),
-      PinResource('SD_CLK', {'GPIO6': sdio_model}),
-      PinResource('SD_DATA_0', {'GPIO7': sdio_model}),
-      PinResource('SD_DATA_1', {'GPIO8': sdio_model}),
+      PinResource('GPIO16', {'GPIO16': self._sdio_model}),
+      PinResource('GPIO17', {'GPIO17': self._sdio_model}),
+      PinResource('SD_DATA_2', {'GPIO9': self._sdio_model}),
+      PinResource('SD_DATA_3', {'GPIO10': self._sdio_model}),
+      PinResource('SD_CMD', {'GPIO11': self._sdio_model}),
+      PinResource('SD_CLK', {'GPIO6': self._sdio_model}),
+      PinResource('SD_DATA_0', {'GPIO7': self._sdio_model}),
+      PinResource('SD_DATA_1', {'GPIO8': self._sdio_model}),
 
       # VDD_3P3_CPU
-      PinResource('GPIO5', {'GPIO5': dio_model}),
-      PinResource('GPIO18', {'GPIO18': dio_model}),
-      PinResource('GPIO23', {'GPIO23': dio_model}),
-      PinResource('GPIO19', {'GPIO19': dio_model}),
-      PinResource('GPIO22', {'GPIO22': dio_model}),
-      # PinResource('U0RXD', {'GPIO3': dio_model}),  # for programming, technically reallocatable
-      # PinResource('U0TXD', {'GPIO1': dio_model}),  # for programming, technically reallocatable
-      PinResource('GPIO21', {'GPIO21': dio_model}),
+      PinResource('GPIO5', {'GPIO5': self._dio_model}),
+      PinResource('GPIO18', {'GPIO18': self._dio_model}),
+      PinResource('GPIO23', {'GPIO23': self._dio_model}),
+      PinResource('GPIO19', {'GPIO19': self._dio_model}),
+      PinResource('GPIO22', {'GPIO22': self._dio_model}),
+      # PinResource('U0RXD', {'GPIO3': self._dio_model}),  # for programming, technically reallocatable
+      # PinResource('U0TXD', {'GPIO1': self._dio_model}),  # for programming, technically reallocatable
+      PinResource('GPIO21', {'GPIO21': self._dio_model}),
 
       # section 4.2, table 12: peripheral pin assignments
       # note LED and motor PWMs can be assigned to any pin
@@ -140,15 +133,7 @@ class Esp32_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorB
       PeripheralAnyResource('VSPI', spi_model),
 
       PeripheralAnyResource('TWAI', can_model),
-    ])
-
-  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
-  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
-
-  def generate(self, assignments: List[str],
-               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
-               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
-               can_requests: List[str]) -> None: ...
+    ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
 
 class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
@@ -197,35 +182,21 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
     'GPIO23': '37',
   }
 
-  def generate(self, assignments: List[str],
-               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
-               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
-               can_requests: List[str]) -> None:
-    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
-
-    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
-      (AnalogSource, dac_requests), (AnalogSink, adc_requests),
-      (SpiMaster, spi_requests), (I2cMaster, i2c_requests), (UartPort, uart_requests),
-      (CanControllerPort, can_requests),
-      (DigitalBidir, gpio_requests),
-    ], assignments)
-    self.generator_set_allocation(allocated)
-
-    io_pins, current_draw = self._instantiate_from(self._get_io_ports(), allocated)
-    self.assign(self.io_current_draw, current_draw)
+  def generate(self) -> None:
+    super().generate()
     self.assign(self.has_chip_pu, True)
 
     self.assign(self.lcsc_part, 'C701342')
     self.assign(self.actual_basic_part, False)
     self.footprint(
       'U', 'RF_Module:ESP32-WROOM-32',
-      dict(chain(system_pins.items(), io_pins.items())),
+      self._make_pinning(),
       mfr='Espressif Systems', part='ESP32-WROOM-32',
       datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf',
     )
 
 
-class Esp32_Wroom_32(PinMappable, Microcontroller, Radiofrequency, IoController, Block):
+class Esp32_Wroom_32(Microcontroller, Radiofrequency, IoController, Block):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
   NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.
   """
@@ -275,7 +246,6 @@ class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
     'U0RXD': '36',  # fixed programming pin, board connected to USB UART w/ jumper
     'U0TXD': '37',  # fixed programming pin, board connected to USB UART w/ jumper
   }
-
   RESOURCE_PIN_REMAP = {
     # 'SENSOR_VP': '3',  # camera CSI_Y6
     # 'SENSOR_VN': '4',  # camera CSI_Y7
@@ -311,32 +281,18 @@ class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
     # 'GPIO23': '39',  # camera CSI_HREF
   }
 
-  def generate(self, assignments: List[str],
-               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
-               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
-               can_requests: List[str]) -> None:
-    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
-
-    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
-      (AnalogSource, dac_requests), (AnalogSink, adc_requests),
-      (SpiMaster, spi_requests), (I2cMaster, i2c_requests), (UartPort, uart_requests),
-      (CanControllerPort, can_requests),
-      (DigitalBidir, gpio_requests),
-    ], assignments)
-    self.generator_set_allocation(allocated)
-
-    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports(), allocated)
-    self.assign(self.io_current_draw, io_current_draw)
+  def generate(self) -> None:
+    super().generate()
     self.assign(self.has_chip_pu, False)
 
     self.footprint(
       'U', 'edg:ESP32-WROVER-DEV',
-      dict(chain(system_pins.items(), io_pins.items())),
+      self._make_pinning(),
       mfr='', part='ESP32-WROVER-DEV',
     )
 
 
-class Esp32_Wrover_Dev(PinMappable, Microcontroller, Radiofrequency, IoController, Block):
+class Esp32_Wrover_Dev(Microcontroller, Radiofrequency, IoController, Block):
   """Wrapper around Esp32_Wover_Dev fitting the IoController interface
   """
   def __init__(self):
