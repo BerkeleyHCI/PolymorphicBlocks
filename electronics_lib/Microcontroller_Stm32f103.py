@@ -268,6 +268,7 @@ class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, IoContr
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
+      self.connect(self.xtal_node, self.ic.xtal)
       self.connect(self.swd_node, self.ic.swd)
 
       self.pwr_cap = ElementDict[DecouplingCapacitor]()

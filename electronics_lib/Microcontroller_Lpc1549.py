@@ -342,10 +342,10 @@ class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoControl
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))  # defined in generator to mix in SWO/TDI
+      self.connect(self.xtal_node, self.ic.xtal)
       (self.swd_pull, ), _ = self.chain(self.swd_node,
                                         imp.Block(Lpc1549SwdPull()),
                                         self.ic.swd)
-      self.connect(self.xtal_node, self.ic.xtal)
 
       # one set of 0.1, 0.01uF caps for each Vdd, Vss pin, per reference schematic
       self.pwr_cap = ElementDict[DecouplingCapacitor]()

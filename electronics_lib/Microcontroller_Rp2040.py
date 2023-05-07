@@ -235,6 +235,7 @@ class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, 
     ) as imp:
       # https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf
       self.ic = imp.Block(Rp2040_Device(pin_assigns=ArrayStringExpr()))
+      self.connect(self.xtal_node, self.ic.xtal)
       self.connect(self.swd_node, self.ic.swd)
 
       self.iovdd_cap = ElementDict[DecouplingCapacitor]()
