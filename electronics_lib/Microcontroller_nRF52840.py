@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Nrf52840Base_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Nrf52840Base_Device(IoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """nRF52840 base device and IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
   PACKAGE: str  # package name for footprint(...)
@@ -226,7 +226,7 @@ class Holyiot_18010_Device(Nrf52840Base_Device):
   DATASHEET = 'http://www.holyiot.com/tp/2019042516322180424.pdf'
 
 
-class Holyiot_18010(PinMappable, Microcontroller, Radiofrequency, IoController):
+class Holyiot_18010(Microcontroller, Radiofrequency, IoController):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
@@ -334,7 +334,7 @@ class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
     self.connect(self.usb_outer.dm, self.res_dm.b.adapt_to(DigitalBidir()))
 
 
-class Mdbt50q_1mv2(PinMappable, Microcontroller, Radiofrequency, IoControllerWithSwdTargetConnector, IoController,
+class Mdbt50q_1mv2(Microcontroller, Radiofrequency, IoControllerWithSwdTargetConnector, IoController,
                    GeneratorBlock):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
   def __init__(self, **kwargs):

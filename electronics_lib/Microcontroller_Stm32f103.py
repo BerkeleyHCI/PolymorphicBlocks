@@ -6,7 +6,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Stm32f103Base_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Stm32f103Base_Device(IoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
   LCSC_PART: str
@@ -253,7 +253,7 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Stm32f103Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
+class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
   DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
 
   def __init__(self, **kwargs):

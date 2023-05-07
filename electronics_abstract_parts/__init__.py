@@ -71,7 +71,7 @@ from .DigitalIsolator import DigitalIsolator
 from .I2cPullup import I2cPullup
 from .UsbBitBang import UsbBitBang
 
-from .IoController import BaseIoController, IoController, PinMappableIoController
+from .IoController import BaseIoController, IoController, IoControllerPinmapGenerator
 from .PinMappable import PinMappable, PinMapUtil
 from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 from .VariantPinRemapper import VariantPinRemapper

@@ -5,7 +5,7 @@ from electronics_lib import OscillatorCrystal
 from .JlcPart import JlcPart
 
 
-class Rp2040_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Rp2040_Device(IoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -219,7 +219,7 @@ class Rp2040Usb(InternalSubcircuit, Block):
       UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
 
 
-class Rp2040(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
+class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.generator_param(self.usb.requested(), self.gpio.requested(),

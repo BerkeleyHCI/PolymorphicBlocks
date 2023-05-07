@@ -7,14 +7,14 @@ from .Categories import ProgrammableController, IdealModel
 
 
 @non_library
-class BaseIoController(Block):
+class BaseIoController(PinMappable, Block):
   """An abstract IO controller block, that takes power input and provides a grab-bag of common IOs.
   A base interface for microcontrollers and microcontroller-like devices (eg, FPGAs).
   Pin assignments are handled via refinements and can be assigned to pins' allocated names.
 
   This should not be instantiated as a generic block."""
-  def __init__(self) -> None:
-    super().__init__()
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
 
     self.gpio = self.Port(Vector(DigitalBidir.empty()), optional=True)
     self.adc = self.Port(Vector(AnalogSink.empty()), optional=True)
@@ -115,10 +115,10 @@ class BaseIoController(Block):
 
 
 @non_library
-class PinMappableIoController(PinMappable, BaseIoController, GeneratorBlock):
+class IoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
   """BaseIoController with generator code to set pin mappings"""
-  def __init__(self, **kwargs) -> None:
-    super().__init__(**kwargs)
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
     self.generator_param(self.pin_assigns)
 
   def contents(self):

@@ -6,7 +6,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Lpc1549Base_Device(PinMappableIoController, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Lpc1549Base_Device(IoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
   LCSC_PART: str
@@ -326,7 +326,7 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
+class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
 
   def __init__(self, **kwargs):

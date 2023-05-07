@@ -87,7 +87,7 @@ class JlcTableBase(PartsTableBase):
     return None  # exhausted all options
 
 
-class JlcTableSelector(PartsTableSelector, JlcPart, JlcTableBase):
+class JlcTableSelector(PartsTableSelector, JlcPart, JlcTableBase, PartsTableFootprint):
   @classmethod
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
