@@ -359,7 +359,7 @@ class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoControl
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-      (self.swd_pull, ), _ = self.chain(self.swd.swd,
+      (self.swd_pull, ), _ = self.chain(self.swd_node,
                                         imp.Block(Lpc1549SwdPull()),
                                         self.ic.swd)
 

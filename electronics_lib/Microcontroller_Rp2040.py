@@ -233,7 +233,7 @@ class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, IoController, 
     ) as imp:
       # https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf
       self.ic = imp.Block(Rp2040_Device(pin_assigns=ArrayStringExpr()))
-      self.connect(self.swd.swd, self.ic.swd)
+      self.connect(self.swd_node, self.ic.swd)
 
       self.iovdd_cap = ElementDict[DecouplingCapacitor]()
       for i in range(6):  # one per IOVdd, combining USBVdd and IOVdd pin 49 per the example

@@ -19,10 +19,12 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
     self.swd_swo_pin = self.ArgParameter(swd_swo_pin)
     self.swd_tdi_pin = self.ArgParameter(swd_tdi_pin)
     self.generator_param(self.swd_swo_pin, self.swd_tdi_pin)
+    self.swd_node = self.connect()  # connect this internal node to the microcontroller
 
   def contents(self):
     super().contents()
     self.swd = self.Block(SwdCortexTargetWithSwoTdiConnector())
+    self.connect(self.swd_node, self.swd.swd)
     self.connect(self.swd.pwr, self.pwr)
     self.connect(self.swd.gnd, self.gnd)
 
