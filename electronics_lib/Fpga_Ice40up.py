@@ -30,7 +30,7 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
 
 
 @abstract_block
-class Ice40up_Device(IoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   """Base class for iCE40 UltraPlus FPGAs, 2.8k-5.2k logic cells."""
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name

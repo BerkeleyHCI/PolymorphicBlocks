@@ -1,5 +1,7 @@
 from itertools import chain
-from typing import List, Dict, Tuple, Type, Any
+from typing import List, Dict, Tuple, Type
+
+from deprecated import deprecated
 
 from electronics_model import *
 from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
@@ -39,6 +41,7 @@ class BaseIoController(PinMappable, Block):
     else:
       raise NotImplementedError(f"unknown port type {io_port}")
 
+  @deprecated("use BaseIoControllerExportable")
   def _export_ios_from(self, inner: 'BaseIoController', excludes: List[BasePort] = []) -> None:
     """Exports all the IO ports from an inner BaseIoController to this block's IO ports.
     Optional exclude list, for example if a more complex connection is needed."""
@@ -52,6 +55,7 @@ class BaseIoController(PinMappable, Block):
       assert inner_io_type in self_ios_by_type, f"outer missing IO of type {inner_io_type}"
       self.connect(self_ios_by_type[inner_io_type], inner_io)
     self.assign(self.io_current_draw, inner.io_current_draw)
+
 
   @staticmethod
   def _instantiate_from(ios: List[BasePort], allocations: List[AllocatedResource]) -> \
@@ -115,7 +119,7 @@ class BaseIoController(PinMappable, Block):
 
 
 @non_library
-class IoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
+class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
   """BaseIoController with generator code to set pin mappings"""
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
@@ -160,6 +164,53 @@ class IoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
 
     return dict(chain(self._system_pinmap().items(), io_pins.items()))
 
+
+class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
+  """BaseIoController wrapper (this is a BaseIoController, which wraps another BaseIoController)
+  which automatically exports my IOs from the internal IOs in an extensible way (additional connects
+  to internal IOs are allowed).
+  The export is also customizable, e.g. if additional subcircuits are needed for some connection.
+  Also defines a function for adding additional internal pin assignments.
+  The internal device (self.ic) must have been created (e.g., in contents()) before this generate() is called."""
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
+    self.ic: BaseIoController
+    self.generator_param(self.pin_assigns)
+
+  def contents(self):
+    super().contents()  # TODO can this be deduplicated w/ BaseIoControllerPinmapGenerator?
+    for io_port in self._io_ports:  # defined in contents() so subclass __init__ can define additional _io_ports
+      if isinstance(io_port, Vector):
+        self.generator_param(io_port.requested())
+      elif isinstance(io_port, Port):
+        self.generator_param(io_port.is_connected())
+      else:
+        raise NotImplementedError(f"unknown port type {io_port}")
+
+  def generate(self):
+    super().generate()
+    inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in self.ic._io_ports}
+    for self_io in self._io_ports:
+      self_io_type = self._type_of_io(self_io)
+      assert self_io_type in inner_ios_by_type, f"inner missing IO of type {self_io_type}"
+      inner_io = inner_ios_by_type[self_io_type]
+
+      if isinstance(self_io, Vector):
+        self_io.defined()
+        assert isinstance(inner_io, Vector)
+        for io_requested in self.get(self_io.requested()):
+          self_io_elt = self_io.append_elt(self_io.elt_type().empty(), io_requested)
+          self.connect(self_io_elt, inner_io.request(io_requested))
+      else:
+        assert isinstance(self_io, Port)
+        if self.get(self_io.is_connected()):
+          self.connect(inner_io, self_io)
+
+    self.assign(self.io_current_draw, self.ic.io_current_draw)
+
+    # TODO make extensible
+    self.assign(self.ic.pin_assigns, self.pin_assigns)
+    self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
 @abstract_block_default(lambda: IdealIoController)
 class IoController(ProgrammableController, BaseIoController):

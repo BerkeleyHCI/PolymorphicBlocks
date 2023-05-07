@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Nrf52840Base_Device(IoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Nrf52840Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """nRF52840 base device and IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
   PACKAGE: str  # package name for footprint(...)

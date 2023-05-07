@@ -5,7 +5,7 @@ from electronics_lib import OscillatorCrystal
 from .JlcPart import JlcPart
 
 
-class Rp2040_Device(IoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Rp2040_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 

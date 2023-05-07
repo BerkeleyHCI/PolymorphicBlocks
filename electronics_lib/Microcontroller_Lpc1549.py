@@ -6,7 +6,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Lpc1549Base_Device(IoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Lpc1549Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
   LCSC_PART: str
@@ -326,24 +326,22 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
+class Lpc1549Base(Microcontroller, BaseIoControllerExportable, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator_param(self.can.requested(), self.usb.requested(), self.gpio.requested(),
-                         self.pin_assigns, self.swd_swo_pin, self.swd_tdi_pin)
+    self.ic: Lpc1549Base_Device
+    self.generator_param(self.swd_swo_pin, self.swd_tdi_pin)
 
-  def generate(self):
-    super().generate()
+  def contents(self):
+    super().contents()
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))  # defined in generator to mix in SWO/TDI
-      self._export_ios_from(self.ic, excludes=[self.ic.gpio, self.ic.swd])  # SWO/TDI must be mixed into GPIOs
-      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
       # one set of 0.1, 0.01uF caps for each Vdd, Vss pin, per reference schematic
       self.pwr_cap = ElementDict[DecouplingCapacitor]()
@@ -366,6 +364,9 @@ class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoControl
                                         imp.Block(Lpc1549SwdPull()),
                                         self.ic.swd)
 
+  def generate(self):
+    super().generate()
+
     if self.get(self.can.requested()) or self.get(self.usb.requested()):  # crystal needed for CAN or USB b/c tighter freq tolerance
       self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
       self.connect(self.crystal.gnd, self.gnd)
@@ -378,12 +379,6 @@ class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, IoControl
     if self.get(self.swd_tdi_pin) != 'NC':
       self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
       inner_pin_assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
-    self.assign(self.ic.pin_assigns, inner_pin_assigns)
-
-    gpio_model = DigitalBidir.empty()
-    for gpio_name in self.get(self.gpio.requested()):
-      self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
-    self.gpio.defined()
 
 
 class Lpc1549_48(Lpc1549Base):

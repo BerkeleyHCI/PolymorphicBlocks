@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class Stm32f303Base_Device(IoControllerPinmapGenerator):
+class Stm32f303Base_Device(BaseIoControllerPinmapGenerator):
   """Base class for STM32F303 devices.
   Unlike other microcontrollers, this one also supports dev boards (Nucleo-32) which can be
   a power source, so there's a bit more complexity here."""

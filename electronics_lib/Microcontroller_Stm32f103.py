@@ -6,7 +6,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Stm32f103Base_Device(IoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Stm32f103Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
   LCSC_PART: str
