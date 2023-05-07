@@ -88,6 +88,10 @@ class JlcTableBase(PartsTableBase):
 
 
 class JlcTableSelector(PartsTableSelector, JlcPart, JlcTableBase):
+  @classmethod
+  def _row_sort_by(cls, row: PartsTableRow) -> Any:
+    return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
+
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.lcsc_part, row[self.LCSC_PART_HEADER])

@@ -49,7 +49,3 @@ class JlcPptcFuse(PptcFuse, TableFuse, SmdStandardPackageSelector, JlcTableSelec
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
-
-  @classmethod
-  def _row_sort_by(cls, row: PartsTableRow) -> Any:
-    return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]

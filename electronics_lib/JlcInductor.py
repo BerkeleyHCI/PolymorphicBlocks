@@ -96,7 +96,3 @@ class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
-
-  @classmethod
-  def _row_sort_by(cls, row: PartsTableRow) -> Any:
-    return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]

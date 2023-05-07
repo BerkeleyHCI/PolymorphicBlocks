@@ -237,7 +237,7 @@ class Holyiot_18010(PinMappable, Microcontroller, Radiofrequency, IoController):
     super().contents()
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
-    self._export_ios_from(self.ic)
+    self._export_ios_from(self.ic, excludes=[self.ic.swd])
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
