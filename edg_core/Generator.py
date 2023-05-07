@@ -14,22 +14,6 @@ from .HdlUserExceptions import *
 from .HierarchyBlock import Block
 
 
-ExprType = TypeVar('ExprType', bound=ConstraintExpr, covariant=True)
-WrappedType = TypeVar('WrappedType', bound=Any)
-class GeneratorParam(Generic[ExprType]):
-  # TODO: currently this is compositional (has-a expr), but it may make sense for this to be-a expr with a .get()
-  def __init__(self, expr: ExprType):
-    self._expr = expr
-    self._value: Optional[Any] = None  # set externally
-
-  def get(self: GeneratorParam[ConstraintExpr[WrappedType, Any]]) -> WrappedType:
-    assert self._value is not None, "parameter has no value"
-    return self._value
-
-  def expr(self) -> ExprType:
-    return self._expr
-
-
 CastableType = TypeVar('CastableType', bound=Any)
 @non_library
 class GeneratorBlock(Block):
@@ -58,6 +42,7 @@ class GeneratorBlock(Block):
 
       self._generator_params_list.append(param)
 
+  WrappedType = TypeVar('WrappedType', bound=Any)
   def get(self, param: ConstraintExpr[WrappedType, Any]) -> WrappedType:
     return self._generator_param_values[param]
 
