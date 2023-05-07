@@ -179,16 +179,8 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
               self.PARALLEL_CAPACITANCE: row[self.CAPACITANCE] * count}
 
     return table.map_new_columns(add_derated_row).filter(lambda row: (
-        row[self.DERATED_CAPACITANCE] in self.get(self.capacitance)
+        row[self.PARALLEL_DERATED_CAPACITANCE] in self.get(self.capacitance)
     ))
-    # # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table.
-    # # An empty parts table handles the case where it's below the minimum or does not match within a series.
-    # derated_max_min_capacitance = max(derated_parts.map(lambda row: row[self.DERATED_CAPACITANCE].lower))
-    #
-    # if capacitance.lower <= derated_max_min_capacitance:
-    #   self._make_single_capacitor(derated_parts, capacitance, voltage)
-    # else:  # Otherwise, generate multiple capacitors
-    #   self._make_parallel_capacitors(derated_parts, capacitance, voltage)
 
   def _row_generate(self, row: PartsTableRow) -> None:
     if row[self.PARALLEL_COUNT] == 1:
