@@ -51,7 +51,6 @@ class Sg8101cg_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
 
 
 class JlcOscillator(TableOscillator, JlcTableBase, Block):
-  """TODO: this also really shouldn't provide the decoupling capacitor, but it's convenient for now"""
   SERIES_DEVICE_MAP = {
     'SG-8101CG': Sg8101cg_Device,
   }

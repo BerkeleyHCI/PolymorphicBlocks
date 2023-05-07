@@ -31,7 +31,7 @@ class Oscillator(DiscreteApplication):
 @non_library
 class TableOscillator(Oscillator, PartsTableSelector, PartsTableFootprint):
   """Provides basic part table matching functionality for oscillators, by frequency only.
-  Unlike other table-based passive components, additional pin modeling is required.
+  Unlike other table-based passive components, this should generate the full application circuit.
   No default footprints are provided since these may be non-standard."""
   FREQUENCY = PartsTableColumn(Range)
 

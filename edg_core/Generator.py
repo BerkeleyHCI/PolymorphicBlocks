@@ -53,7 +53,7 @@ class GeneratorBlock(Block):
     req_params: Tuple[ConstraintExpr, ...]  # all required params for generator to fire
     fn_args: Tuple[ConstraintExpr, ...]  # params to unpack for the generator function
 
-  @deprecated(reason="use self.GeneratorParam(...) instead")
+  @deprecated(reason="implement self.generate() instead (using self.get(...), self.generator_param(...))")
   def generator(self, fn: Callable[..., None], *reqs: Any) -> None:  # type: ignore
     """
     Registers a generator function
@@ -86,13 +86,14 @@ class GeneratorBlock(Block):
       pb = self._populate_def_proto_block_base(pb)
       pb.generator.SetInParent()  # even if rest of the fields are empty, make sure to create a record
 
-      if self._generator is not None:  # legacy generator style
-        assert len(self._generator_params_list) == 0, "self.generator() must not have generator_params()"
-        for req_param in self._generator.req_params:
-          pb.generator.required_params.add().CopyFrom(ref_map[req_param])
-      elif type(self).generate is not GeneratorBlock.generate:
+      if type(self).generate is not GeneratorBlock.generate:
+        assert self._generator is None, "new-style generator may not define self.generator(...)"
         for param in self._generator_params_list:
           pb.generator.required_params.add().CopyFrom(ref_map[param])
+      elif self._generator is not None:  # legacy generator style
+        assert len(self._generator_params_list) == 0, "legacy self.generator(...) must not have generator_params()"
+        for req_param in self._generator.req_params:
+          pb.generator.required_params.add().CopyFrom(ref_map[req_param])
       elif (self.__class__, AbstractBlockProperty) in self._elt_properties:
         pass  # abstract blocks allowed to not define a generator
       else:
@@ -115,14 +116,14 @@ class GeneratorBlock(Block):
     generate_values_map = {path.SerializeToString(): value for (path, value) in generate_values}
 
     assert (self.__class__, AbstractBlockProperty) not in self._elt_properties  # abstract blocks can't generate
-    if self._generator is not None:  # legacy generator style
-      fn_args = [arg_param._from_lit(generate_values_map[ref_map[arg_param].SerializeToString()])
-                 for arg_param in self._generator.fn_args]
-      self._generator.fn(*fn_args)
-    elif type(self).generate is not GeneratorBlock.generate:
+    if type(self).generate is not GeneratorBlock.generate:
       for param in self._generator_params_list:
         self._generator_param_values[param] = param._from_lit(generate_values_map[ref_map[param].SerializeToString()])
       self.generate()
+    elif self._generator is not None:  # legacy generator style
+      fn_args = [arg_param._from_lit(generate_values_map[ref_map[arg_param].SerializeToString()])
+                 for arg_param in self._generator.fn_args]
+      self._generator.fn(*fn_args)
     else:
       raise BlockDefinitionError(self, "Generator missing generate implementation", "define generate")
 

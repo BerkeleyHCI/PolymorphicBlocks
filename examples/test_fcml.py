@@ -204,6 +204,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     self.generator_param(self.levels, self.ratios)
 
   def generate(self):
+    super().generate()
     levels = self.get(self.levels)
     assert levels >= 2, "levels must be 2 or more"
     self.power_path = self.Block(BuckConverterPowerPath(

@@ -16,6 +16,7 @@ class Ref30xx_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     self.generator_param(self.output_voltage)
 
   def generate(self):
+    super().generate()
     parts = [  # output voltage, table 7.5
       (Range(1.2475, 1.2525), 'REF3012', 'C34674'),  # REF3012AIDBZR
       (Range(2.044, 2.052), 'REF3020', 'C26804'),  # REF3020AIDBZR

@@ -56,7 +56,6 @@ class BaseIoController(PinMappable, Block):
       self.connect(self_ios_by_type[inner_io_type], inner_io)
     self.assign(self.io_current_draw, inner.io_current_draw)
 
-
   @staticmethod
   def _instantiate_from(ios: List[BasePort], allocations: List[AllocatedResource]) -> \
       Tuple[Dict[str, CircuitPort], RangeExpr]:
@@ -178,8 +177,8 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
     self.ic: BaseIoController
     self.generator_param(self.pin_assigns)
 
-  def contents(self):
-    super().contents()  # TODO can this be deduplicated w/ BaseIoControllerPinmapGenerator?
+  def contents(self):  # TODO can this be deduplicated w/ BaseIoControllerPinmapGenerator?
+    super().contents()
     for io_port in self._io_ports:  # defined in contents() so subclass __init__ can define additional _io_ports
       if isinstance(io_port, Vector):
         self.generator_param(io_port.requested())
@@ -189,16 +188,15 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
         raise NotImplementedError(f"unknown port type {io_port}")
 
   def _make_export_io(self, self_io: Port, inner_io: Port):
-    """Connects the my external IO to some inner IO.
-    These can either be top-level ports or a requested element in an array.
+    """Connects my external IO to some inner IO, with IOs being either top-level ports or array elements.
     This function can be overloaded to handle special cases, e.g. if additional circuitry is required.
     Called within generate, has access to generator params."""
     self.connect(self_io, inner_io)
 
   def _inner_pin_assigns(self) -> List[str]:
-    """Integration point to define additional pin assigns to pass to the inner device.
+    """Integration point to define pin assigns to pass to the inner device.
     Called within generate, has access to generator params."""
-    return []
+    return self.get(self.pin_assigns).copy()
 
   def generate(self):
     super().generate()
@@ -221,9 +219,7 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
 
     self.assign(self.io_current_draw, self.ic.io_current_draw)
 
-    extended_pin_assigns = self.get(self.pin_assigns).copy()
-    extended_pin_assigns.extend(self._inner_pin_assigns())
-    self.assign(self.ic.pin_assigns, extended_pin_assigns)
+    self.assign(self.ic.pin_assigns, self._inner_pin_assigns())
     self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
 
