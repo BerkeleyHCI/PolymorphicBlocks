@@ -55,13 +55,14 @@ If you have not modified any of the .scala files, you do not need to recompile t
 ### Packaging
 Largely based on [this tutorial](https://realpython.com/pypi-publish-python-package/).
 
-Local
+Local:
 - Install in editable mode (package refers to this source directory, instead of making a copy): `python -m pip install -e .`
 
 Upload:
 - Build the package (creates a `dist` folder with a `.whl` (zipped) file): `python -m build`
 - Optionally, upload to TestPyPI: `twine upload -r testpypi dist/*`
 - Upload to PiPI: `twine upload dist/*`
+
 
 ## Frontend Architecture
 _Some documentation may be out of date._
