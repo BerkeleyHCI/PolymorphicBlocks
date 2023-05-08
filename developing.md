@@ -61,8 +61,8 @@ Local:
 Upload:
 - These dependencies are necessary: `python -m pip install build twine`
 - Build the package (creates a `dist` folder with a `.whl` (zipped) file): `python -m build`
-- Optionally, upload to TestPyPI: `twine upload -r testpypi dist/*`
-- Upload to PyPI: `twine upload dist/*`
+- Optionally, upload to TestPyPI: `python -m twine upload -r testpypi dist/*`
+- Upload to PyPI: `python -m twine upload dist/*`
 
 
 ## Frontend Architecture
