@@ -59,6 +59,7 @@ Local:
 - Install in editable mode (package refers to this source directory, instead of making a copy): `python -m pip install -e .`
 
 Upload:
+- These dependencies are necessary: `python -m pip install build twine`
 - Build the package (creates a `dist` folder with a `.whl` (zipped) file): `python -m build`
 - Optionally, upload to TestPyPI: `twine upload -r testpypi dist/*`
 - Upload to PyPI: `twine upload dist/*`
