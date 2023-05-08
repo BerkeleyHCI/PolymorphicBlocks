@@ -61,7 +61,7 @@ Local:
 Upload:
 - Build the package (creates a `dist` folder with a `.whl` (zipped) file): `python -m build`
 - Optionally, upload to TestPyPI: `twine upload -r testpypi dist/*`
-- Upload to PiPI: `twine upload dist/*`
+- Upload to PyPI: `twine upload dist/*`
 
 
 ## Frontend Architecture
