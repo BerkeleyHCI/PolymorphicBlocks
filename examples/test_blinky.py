@@ -445,3 +445,13 @@ class BlinkyTestCase(unittest.TestCase):
 
   def test_design_packed(self) -> None:
     compile_board_inplace(TestBlinkyPacked, False)
+
+
+if __name__ == "__main__":
+  # this unit test can also be run as __main__ to test a non-unit-test environment
+  compile_board_inplace(TestBlinkyEmpty, False)
+  compile_board_inplace(TestBlinkyComplete, False)
+  compile_board_inplace(TestBlinkyWithLibrary, False)
+  compile_board_inplace(TestBlinkyWithLibraryExport, False)
+  compile_board_inplace(TestBlinkyArray, False)
+  compile_board_inplace(TestBlinkyPacked, False)

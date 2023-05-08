@@ -227,7 +227,16 @@ class LibraryElement(Refable, metaclass=ElementMeta):
   def _static_def_name(cls) -> str:
     """If this library element is defined by class (all instances have an equivalent library definition),
     returns the definition name. Otherwise, should crash."""
-    return cls.__module__ + "." + cls.__name__
+    if cls.__module__ == "__main__":
+      # when the top-level design is run as main, the module name is __main__ which is meaningless
+      # and breaks when the HDL server tries to resolve the __main__ reference (to itself),
+      # so this needs to resolve the correct name
+      import inspect
+      import os
+      module = os.path.splitext(os.path.basename(inspect.getfile(cls)))[0]
+    else:
+      module = cls.__module__
+    return module + "." + cls.__name__
 
   def _get_def_name(self) -> str:
     """Returns the definition name"""

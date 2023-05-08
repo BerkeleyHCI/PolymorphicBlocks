@@ -28,4 +28,3 @@ def edg_to_dict(obj: Union[BasePort, BaseBlock]) -> Dict[str, Any]:
       }
   else:
     raise ValueError
-
