@@ -119,7 +119,8 @@ class SwdDebugger(BoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Stm32f103_48),
-        (['mcu', 'swd'], SwdCortexTargetTc2050Nl),
+        (['mcu', 'swd'], SwdCortexTargetTc2050),
+        (['mcu', 'swd', 'conn'], TagConnectNonLegged),
         (['sw_usb', 'package'], SmtSwitchRa),
         (['sw_tgt', 'package'], SmtSwitchRa),
         (['usb_reg'], Ap2204k),
