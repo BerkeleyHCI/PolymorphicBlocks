@@ -2,7 +2,7 @@ from typing import *
 
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
-from .Microcontroller_Esp import EspAutoProgrammingHeader
+from .Microcontroller_Esp import EspProgrammingPins
 
 
 @abstract_block
@@ -195,7 +195,7 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
     )
 
 
-class Esp32_Wroom_32(Microcontroller, Radiofrequency, IoController, Block):
+class Esp32_Wroom_32(Microcontroller, Radiofrequency, IoController, BaseIoControllerExportable, Block):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
   NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.
   """
@@ -206,9 +206,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, IoController, Block):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.ic = imp.Block(Esp32_Wroom_32_Device(pin_assigns=self.pin_assigns))
-      self._export_ios_from(self.ic)
-      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+      self.ic = imp.Block(Esp32_Wroom_32_Device(pin_assigns=ArrayStringExpr()))
 
       self.vcc_cap0 = imp.Block(DecouplingCapacitor(22 * uFarad(tol=0.2)))  # C1
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
@@ -219,7 +217,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, IoController, Block):
       # by default instantiate a programming switch, TODO option to disable as a config
       (self.prog, ), _ = self.chain(imp.Block(DigitalSwitch()), self.ic.io0)
 
-      self.uart0 = imp.Block(EspAutoProgrammingHeader())
+      self.uart0 = imp.Block(EspProgrammingPins())
       self.connect(self.uart0.uart, self.ic.uart0)
 
 
@@ -291,7 +289,7 @@ class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
     )
 
 
-class Esp32_Wrover_Dev(Microcontroller, Radiofrequency, IoController, Block):
+class Esp32_Wrover_Dev(Microcontroller, Radiofrequency, IoController, BaseIoControllerExportable, Block):
   """Wrapper around Esp32_Wover_Dev fitting the IoController interface
   """
   def __init__(self):
@@ -305,8 +303,6 @@ class Esp32_Wrover_Dev(Microcontroller, Radiofrequency, IoController, Block):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.ic = imp.Block(Esp32_Wrover_Dev_Device(pin_assigns=self.pin_assigns))
-      self._export_ios_from(self.ic)
-      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+      self.ic = imp.Block(Esp32_Wrover_Dev_Device(pin_assigns=ArrayStringExpr()))
 
       self.connect(self.io2, self.ic.io2)

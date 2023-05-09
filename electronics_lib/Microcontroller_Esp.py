@@ -6,17 +6,28 @@ from electronics_lib import PinHeader254, TagConnect
 
 
 @abstract_block_default(lambda: EspProgrammingPins)
-class EspAutoProgrammingHeader(ProgrammingConnector):
-  """Abstract programming header for ESP series micros, including reset and IO0 for auto-programming."""
+class EspProgrammingHeader(ProgrammingConnector):
+  """Abstract programming header for ESP series micros, defining a UART connection.
+  Circuitry to reset / enter programming mode must be external."""
   def __init__(self) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.uart = self.Port(UartPort.empty(), [Output])
+    self.uart = self.Port(UartPort.empty())
 
 
-class EspProgrammingPins(EspAutoProgrammingHeader):
+@abstract_block
+class EspAutoProgrammingHeader(EspProgrammingHeader):
+  """Abstract programming header for ESP series micros, including reset and IO0 for auto-programming."""
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.en = self.Port(DigitalSource.empty())  # effectively a reset pin
+    self.boot = self.Port(DigitalSource.empty())  # IO0 on ESP32, IO9 on ESP32C3
+
+
+class EspProgrammingPins(EspProgrammingHeader):
   """Programming header for ESP series micros using 2.54mm headers, matching the pinning in the reference schematics.
   TODO: does NOT support auto-programming (but needs to be compatible with the interface)."""
   def contents(self) -> None:
@@ -46,3 +57,37 @@ class EspProgrammingTc2030(EspAutoProgrammingHeader):
     self.connect(self.gnd, self.conn.pins.request('5').adapt_to(Ground()))
 
     # TODO CTS on pin 2, RTS on pin 6
+
+
+@non_library
+class HasEspProgramming(IoController, GeneratorBlock):
+  """A mixin for a block (typically an IoController wrapper) that has a ESP style programming header.
+  Can generate into the standard UART cable, the auto-programming header, or TODO a boundary port."""
+  def __init__(self, programming: StringLike = "uart-button"):
+    super().__init__()
+    self.programming = self.ArgParameter(programming)  # programming connector to generate
+    self.generator_param(self.programming)
+    self.program_uart_node = self.connect()
+    self.program_en_node = self.connect()
+    self.program_boot_node = self.connect()
+
+  def generate(self):
+    super().generate()
+    programming = self.get(self.programming)
+
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      if programming == "uart-button":  # default, uart-only header with boot button
+        self.prog = imp.Block(EspProgrammingHeader())
+        self.connect(self.program_uart_node, self.prog.uart)  # reset and boot disconnected
+        self.boot = imp.Block(DigitalSwitch())
+        self.connect(self.boot.out, self.program_boot_node)
+      elif programming == "uart-auto":  # UART with auto-programming
+        self.prog = imp.Block(EspAutoProgrammingHeader())
+        self.connect(self.program_uart_node, self.prog.uart)
+        self.connect(self.program_en_node, self.prog.en)
+        self.connect(self.program_boot_node, self.prog.boot)
+      else:
+        self.require(False, "unknown programming connector mode")

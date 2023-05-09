@@ -90,7 +90,7 @@ class SwitchController(JlcBoardTop):
         (['mcu'], Esp32_Wroom_32),
         (['reg_3v3'], Ld1117),
 
-        (['target', 'conn'], PinHeader254),
+        (['conn', 'conn'], PinHeader254),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -114,9 +114,6 @@ class SwitchController(JlcBoardTop):
           'lcd_reset=30',
           'lcd_cs=29',
         ]),
-      ],
-      class_refinements=[
-        (PassiveConnector, PinHeader254),
       ],
       class_values=[
         (Er_Oled_091_3, ['device', 'vbat_min'], 3.2),  # allow this to work off 3.3 with tolerance

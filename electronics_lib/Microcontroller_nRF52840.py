@@ -230,7 +230,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, IoController):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.ic = self.Block(Holyiot_18010_Device(pin_assigns=self.pin_assigns))
+    self.ic = self.Block(Holyiot_18010_Device(pin_assigns=ArrayStringExpr()))
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
 
   def contents(self):

@@ -18,7 +18,8 @@ class SwdCortexTargetHeader(SwdCortexTargetWithSwoTdiConnector):
 
 
 class SwdCortexTargetTagConnect(SwdCortexTargetWithSwoTdiConnector, FootprintBlock):
-  """OFFICIAL tag connect SWD header using the TC2030 series cables."""
+  """OFFICIAL tag connect SWD header using the TC2030 series cables.
+  https://www.tag-connect.com/wp-content/uploads/bsk-pdf-manager/TC2030-CTX_1.pdf"""
   def contents(self):
     super().contents()
     self.conn = self.Block(TagConnect(6))

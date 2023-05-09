@@ -56,7 +56,7 @@ from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Stm32f303 import Nucleo_F303k8
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2
-from .Microcontroller_Esp import EspProgrammingPins, EspProgrammingTc2030
+from .Microcontroller_Esp import EspAutoProgrammingHeader, EspProgrammingPins, EspProgrammingTc2030, HasEspProgramming
 from .Microcontroller_Esp32c3 import Esp32c3_Wroom02
 from .Microcontroller_Esp32 import Esp32_Wroom_32, Esp32_Wrover_Dev
 from .Microcontroller_Rp2040 import Rp2040
