@@ -1,10 +1,10 @@
 import re
 from typing import Optional, Dict, Any
 from electronics_abstract_parts import *
-from .JlcPart import JlcTablePart
+from electronics_lib.JlcPart import JlcTableSelector
 
 
-class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
+class JlcResistor(TableResistor, SmdStandardPackageSelector, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     # 0201 not in parts table, R_0201_0603Metric
 
@@ -60,12 +60,3 @@ class JlcResistor(TableResistor, JlcTablePart, FootprintBlock):
         return None
 
     return cls._jlc_table().map_new_columns(parse_row)
-
-  @classmethod
-  def _row_sort_by(cls, row: PartsTableRow) -> Any:
-    return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)

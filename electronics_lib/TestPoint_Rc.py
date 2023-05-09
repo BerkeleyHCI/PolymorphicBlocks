@@ -12,21 +12,23 @@ class TeRc(TestPoint, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, size: StringLike = '0805'):
     super().__init__()
-    self.generator(self.generate, size)
+    self.size = self.ArgParameter(size)
+    self.generator_param(self.size)
 
-  def generate(self, size: str) -> None:
-    super().contents()
-    if size in self._PART_TABLE:
-      part, footprint = self._PART_TABLE[size]
-      self.footprint(
-        'TP', footprint,
-        {
-          '1': self.io,
-        },
-        value=self.tp_name,
-        mfr='TE Connectivity', part=part,
-        datasheet='https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1773266&DocType=DS&DocLang=English'
-      )
-    else:
+  def generate(self) -> None:
+    super().generate()
+    if self.get(self.size) not in self._PART_TABLE:
       allowed_sizes = ', '.join(self._PART_TABLE.keys())
-      self.require(False, f"invalid size designator '{size}', must be in ({allowed_sizes})")
+      self.require(False, f"invalid size designator '{self.get(self.size)}', must be in ({allowed_sizes})")
+      return
+
+    part, footprint = self._PART_TABLE[self.get(self.size)]
+    self.footprint(
+      'TP', footprint,
+      {
+        '1': self.io,
+      },
+      value=self.tp_name,
+      mfr='TE Connectivity', part=part,
+      datasheet='https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1773266&DocType=DS&DocLang=English'
+    )

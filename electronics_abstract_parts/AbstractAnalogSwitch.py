@@ -40,11 +40,15 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
   @init_in_parent
   def __init__(self, switch_size: IntLike = 0):
     super().__init__()
-    self.generator(self.generate, self.inputs.requested(), switch_size)
+    self.switch_size = self.ArgParameter(switch_size)
+    self.generator_param(self.switch_size, self.inputs.requested())
 
-  def generate(self, elts: List[str], switch_size: int):
+  def generate(self):
     import math
+    super().generate()
 
+    switch_size = self.get(self.switch_size)
+    elts = self.get(self.inputs.requested())
     assert switch_size > 1, f"switch size {switch_size} must be greater than 1"
     assert len(elts) > 1, "passthrough AnalogSwitchTree not (yet?) supported"
     self.sw = ElementDict[AnalogSwitch]()
@@ -121,11 +125,12 @@ class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
       impedance=self.device.analog_on_resistance + self.inputs.hull(lambda x: x.link().source_impedance)
     )))
 
-    self.generator(self.generate, self.inputs.requested())
+    self.generator_param(self.inputs.requested())
 
-  def generate(self, elts: List[str]):
+  def generate(self):
+    super().generate()
     self.inputs.defined()
-    for elt in elts:
+    for elt in self.get(self.inputs.requested()):
       self.connect(
         self.inputs.append_elt(AnalogSink().empty(), elt),
         self.device.inputs.request(elt).adapt_to(AnalogSink(
@@ -161,11 +166,12 @@ class AnalogDemuxer(Interface, GeneratorBlock):
       impedance=self.device.analog_on_resistance + self.outputs.hull(lambda x: x.link().sink_impedance)
     )))
 
-    self.generator(self.generate, self.outputs.requested())
+    self.generator_param(self.outputs.requested())
 
-  def generate(self, elts: List[str]):
+  def generate(self):
+    super().generate()
     self.outputs.defined()
-    for elt in elts:
+    for elt in self.get(self.outputs.requested()):
       self.connect(
         self.outputs.append_elt(AnalogSource().empty(), elt),
         self.device.inputs.request(elt).adapt_to(AnalogSource(

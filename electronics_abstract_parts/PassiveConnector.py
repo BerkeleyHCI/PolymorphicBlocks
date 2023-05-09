@@ -1,4 +1,4 @@
-from typing import List, Tuple, Iterable
+from typing import Tuple, Iterable
 from electronics_abstract_parts import *
 
 
@@ -19,19 +19,22 @@ class PassiveConnector(InternalSubcircuit, GeneratorBlock, FootprintBlock):
     self.pins = self.Port(Vector(Passive().empty()))
     self.actual_length = self.Parameter(IntExpr())
 
-    self.generator(self.generate, length, self.pins.requested())
+    self.length = self.ArgParameter(length)
+    self.generator_param(self.length, self.pins.requested())
 
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     """Returns the part footprint, manufacturer, and name given the number of pins (length).
     Implementing classes must implement this method."""
     raise NotImplementedError
 
-  def generate(self, length: int, pins: List[str]):
+  def generate(self):
+    super().generate()
     max_pin_index = 0
-    for pin in pins:
+    for pin in self.get(self.pins.requested()):
       self.pins.append_elt(Passive(), pin)
       assert pin != '0', "cannot have zero pin, explicit pin numbers through suggested_name are required"
       max_pin_index = max(max_pin_index, int(pin))
+    length = self.get(self.length)
     if length == 0:
       length = max_pin_index
 
@@ -44,6 +47,6 @@ class PassiveConnector(InternalSubcircuit, GeneratorBlock, FootprintBlock):
     (footprint, mfr, part) = self.part_footprint_mfr_name(length)
     self.footprint(
       'J', footprint,
-      {pin: self.pins[pin] for pin in pins},
+      {pin_name: pin_port for (pin_name, pin_port) in self.pins.items()},
       mfr, part
     )

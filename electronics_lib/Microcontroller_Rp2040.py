@@ -1,12 +1,10 @@
-from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from electronics_lib import OscillatorCrystal
 from .JlcPart import JlcPart
 
 
-class Rp2040_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Rp2040_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -47,40 +45,27 @@ class Rp2040_Device(PinMappable, BaseIoController, InternalSubcircuit, Generator
                           optional=True)
 
     self.swd = self.Port(SwdTargetPort().empty())
-
-    self.generator(self.generate, self.pin_assigns,
-                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
-                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
-                   self.usb.requested(), self.can.requested(), self.swd.is_connected())
+    self._io_ports.insert(0, self.swd)
 
   def contents(self) -> None:
     super().contents()
 
     # Port models
-    dio_ft_model = DigitalBidir.from_supply(  # Table 623
+    self._dio_ft_model = DigitalBidir.from_supply(  # Table 623
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-12, 12)*mAmp,  # by IOH / IOL modes
       input_threshold_abs=(0.8, 2.0)*Volt,  # for IOVdd=3.3, TODO other IOVdd ranges
       pullup_capable=True, pulldown_capable=True
     )
-    dio_std_model = dio_ft_model  # exactly the same characteristics
-    dio_usb_model = dio_ft_model  # similar enough, main difference seems to be PUR/PDR resistance
+    self._dio_std_model = self._dio_ft_model  # exactly the same characteristics
 
-    self.qspi.init_from(SpiMaster(dio_std_model))
-    self.qspi_cs.init_from(dio_std_model)
+    self.qspi.init_from(SpiMaster(self._dio_std_model))
+    self.qspi_cs.init_from(self._dio_std_model)
 
-    adc_model = AnalogSink(  # Table 625
-      voltage_limits=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
-      impedance=(100, float('inf')) * kOhm
-    )
-
-    uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty())
-    i2c_model = I2cMaster(DigitalBidir.empty())
-
-    # Pin/peripheral resource definitions (table 3)
-    self.system_pins: Dict[str, CircuitPort] = {
+  # Pin/peripheral resource definitions (table 3)
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return {
       # '51': QSPI_SD3
       '52': self.qspi.sck,
       '53': self.qspi.mosi,  # IO0
@@ -113,39 +98,51 @@ class Rp2040_Device(PinMappable, BaseIoController, InternalSubcircuit, Generator
       '57': self.gnd,  # pad
     }
 
-    self.pinmaps = PinMapUtil([  # Table 5, partial table for 48-pin only
-      PinResource('2', {'GPIO0': dio_ft_model}),
-      PinResource('3', {'GPIO1': dio_ft_model}),
-      PinResource('4', {'GPIO2': dio_ft_model}),
-      PinResource('5', {'GPIO3': dio_ft_model}),
-      PinResource('6', {'GPIO4': dio_ft_model}),
-      PinResource('7', {'GPIO5': dio_ft_model}),
-      PinResource('8', {'GPIO6': dio_ft_model}),
-      PinResource('9', {'GPIO7': dio_ft_model}),
-      PinResource('11', {'GPIO8': dio_ft_model}),
-      PinResource('12', {'GPIO9': dio_ft_model}),
-      PinResource('13', {'GPIO10': dio_ft_model}),
-      PinResource('14', {'GPIO11': dio_ft_model}),
-      PinResource('15', {'GPIO12': dio_ft_model}),
-      PinResource('16', {'GPIO13': dio_ft_model}),
-      PinResource('17', {'GPIO14': dio_ft_model}),
-      PinResource('18', {'GPIO15': dio_ft_model}),
-      PinResource('27', {'GPIO16': dio_ft_model}),
-      PinResource('28', {'GPIO17': dio_ft_model}),
-      PinResource('29', {'GPIO18': dio_ft_model}),
-      PinResource('30', {'GPIO19': dio_ft_model}),
-      PinResource('31', {'GPIO20': dio_ft_model}),
-      PinResource('32', {'GPIO21': dio_ft_model}),
+  def _io_pinmap(self) -> PinMapUtil:
+    dio_usb_model = self._dio_ft_model  # similar enough, main difference seems to be PUR/PDR resistance
 
-      PinResource('34', {'GPIO22': dio_ft_model}),
-      PinResource('35', {'GPIO23': dio_ft_model}),
-      PinResource('36', {'GPIO24': dio_ft_model}),
-      PinResource('37', {'GPIO25': dio_ft_model}),
+    adc_model = AnalogSink(  # Table 625
+      voltage_limits=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
+      impedance=(100, float('inf')) * kOhm
+    )
 
-      PinResource('38', {'GPIO26': dio_std_model, 'ADC0': adc_model}),
-      PinResource('39', {'GPIO27': dio_std_model, 'ADC1': adc_model}),
-      PinResource('40', {'GPIO28': dio_std_model, 'ADC2': adc_model}),
-      PinResource('41', {'GPIO29': dio_std_model, 'ADC3': adc_model}),
+    uart_model = UartPort(DigitalBidir.empty())
+    spi_model = SpiMaster(DigitalBidir.empty())
+    i2c_model = I2cMaster(DigitalBidir.empty())
+
+    return PinMapUtil([
+      PinResource('2', {'GPIO0': self._dio_ft_model}),
+      PinResource('3', {'GPIO1': self._dio_ft_model}),
+      PinResource('4', {'GPIO2': self._dio_ft_model}),
+      PinResource('5', {'GPIO3': self._dio_ft_model}),
+      PinResource('6', {'GPIO4': self._dio_ft_model}),
+      PinResource('7', {'GPIO5': self._dio_ft_model}),
+      PinResource('8', {'GPIO6': self._dio_ft_model}),
+      PinResource('9', {'GPIO7': self._dio_ft_model}),
+      PinResource('11', {'GPIO8': self._dio_ft_model}),
+      PinResource('12', {'GPIO9': self._dio_ft_model}),
+      PinResource('13', {'GPIO10': self._dio_ft_model}),
+      PinResource('14', {'GPIO11': self._dio_ft_model}),
+      PinResource('15', {'GPIO12': self._dio_ft_model}),
+      PinResource('16', {'GPIO13': self._dio_ft_model}),
+      PinResource('17', {'GPIO14': self._dio_ft_model}),
+      PinResource('18', {'GPIO15': self._dio_ft_model}),
+      PinResource('27', {'GPIO16': self._dio_ft_model}),
+      PinResource('28', {'GPIO17': self._dio_ft_model}),
+      PinResource('29', {'GPIO18': self._dio_ft_model}),
+      PinResource('30', {'GPIO19': self._dio_ft_model}),
+      PinResource('31', {'GPIO20': self._dio_ft_model}),
+      PinResource('32', {'GPIO21': self._dio_ft_model}),
+
+      PinResource('34', {'GPIO22': self._dio_ft_model}),
+      PinResource('35', {'GPIO23': self._dio_ft_model}),
+      PinResource('36', {'GPIO24': self._dio_ft_model}),
+      PinResource('37', {'GPIO25': self._dio_ft_model}),
+
+      PinResource('38', {'GPIO26': self._dio_std_model, 'ADC0': adc_model}),
+      PinResource('39', {'GPIO27': self._dio_std_model, 'ADC1': adc_model}),
+      PinResource('40', {'GPIO28': self._dio_std_model, 'ADC2': adc_model}),
+      PinResource('41', {'GPIO29': self._dio_std_model, 'ADC3': adc_model}),
 
       # fixed-pin peripherals
       PeripheralFixedPin('USB', UsbDevicePort(dio_usb_model), {
@@ -181,30 +178,17 @@ class Rp2040_Device(PinMappable, BaseIoController, InternalSubcircuit, Generator
         'scl': ['GPIO3', 'GPIO7', 'GPIO11', 'GPIO15', 'GPIO19', 'GPIO23', 'GPIO25', 'GPIO27']
       }),
 
-      PeripheralFixedPin('SWD', SwdTargetPort(dio_std_model), {
+      PeripheralFixedPin('SWD', SwdTargetPort(self._dio_std_model), {
         'swdio': '25', 'swclk': '24', 'reset': '26',  # reset is 'run'
       }),
     ])
 
-  def generate(self, assignments: List[str],
-               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
-               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
-               usb_requests: List[str], can_requests: List[str], swd_connected: bool) -> None:
-    allocated = self.pinmaps.allocate([
-      (SwdTargetPort, ['swd'] if swd_connected else []),
-      (AnalogSource, dac_requests), (AnalogSink, adc_requests),
-      (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
-      (UartPort, uart_requests), (CanControllerPort, can_requests),
-      (DigitalBidir, gpio_requests),
-    ], assignments)
-    self.generator_set_allocation(allocated)
-
-    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
-    self.assign(self.io_current_draw, io_current_draw)
+  def generate(self) -> None:
+    super().generate()
 
     self.footprint(
       'U', 'Package_DFN_QFN:QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm',
-      dict(chain(self.system_pins.items(), io_pins.items())),
+      self._make_pinning(),
       mfr='Raspberry Pi', part='RP2040',
       datasheet='https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf'
     )
@@ -234,13 +218,15 @@ class Rp2040Usb(InternalSubcircuit, Block):
       UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
 
 
-class Rp2040(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
+class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoController,
+             BaseIoControllerExportable,):
+  DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
+
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator(self.generate, self.usb.requested(),
-                   self.pin_assigns, self.gpio.requested(), self.swd_swo_pin, self.swd_tdi_pin)
+    self.ic: Rp2040_Device
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     with self.implicit_connect(
@@ -249,11 +235,8 @@ class Rp2040(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, I
     ) as imp:
       # https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf
       self.ic = imp.Block(Rp2040_Device(pin_assigns=ArrayStringExpr()))
-      # USB requires additional circuitry, and SWO/TDI must be mixed into GPIOs
-      self._export_ios_from(self.ic, excludes=[self.usb, self.gpio])
-      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
-
-      self.connect(self.swd.swd, self.ic.swd)
+      self.connect(self.xtal_node, self.ic.xosc)
+      self.connect(self.swd_node, self.ic.swd)
 
       self.iovdd_cap = ElementDict[DecouplingCapacitor]()
       for i in range(6):  # one per IOVdd, combining USBVdd and IOVdd pin 49 per the example
@@ -266,7 +249,6 @@ class Rp2040(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, I
       self.connect(self.ic.qspi, self.mem.spi)
       self.connect(self.ic.qspi_cs, self.mem.cs)
 
-
     self.connect(self.pwr, self.ic.vreg_vin, self.ic.adc_avdd, self.ic.usb_vdd)
     self.connect(self.ic.vreg_vout, self.ic.dvdd)
 
@@ -276,31 +258,11 @@ class Rp2040(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, I
 
     self.vreg_out_cap = self.Block(DecouplingCapacitor(1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
 
-  def generate(self, usb_requests: List[str],
-               pin_assigns: List[str], gpio_requested: List[str], swd_swo_pin: str, swd_tdi_pin: str) -> None:
-    if usb_requests:  # tighter frequency tolerances from USB usage require a crystal
-      self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))  # 12MHz required for USB
-      self.connect(self.crystal.gnd, self.gnd)
-      self.connect(self.crystal.crystal, self.ic.xosc)
+  def _make_export_io(self, self_io: Port, inner_io: Port):
+    if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
+      (self.usb_res, ), self.usb_chain = self.chain(inner_io, self.Block(Rp2040Usb()), self_io)
+    else:
+      super()._make_export_io(self_io, inner_io)
 
-    if usb_requests:
-      assert len(usb_requests) == 1
-      usb_request_name = usb_requests[0]
-      (self.usb_res, ), self.usb_chain = self.chain(
-        self.ic.usb.request(usb_request_name),
-        self.Block(Rp2040Usb()),
-        self.usb.append_elt(UsbDevicePort.empty(), usb_request_name))
-    self.usb.defined()
-
-    if swd_swo_pin != 'NC':
-      self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
-      pin_assigns.append(f'swd_swo={swd_swo_pin}')
-    if swd_tdi_pin != 'NC':
-      self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
-      pin_assigns.append(f'swd_tdi={swd_tdi_pin}')
-    self.assign(self.ic.pin_assigns, pin_assigns)
-
-    gpio_model = DigitalBidir.empty()
-    for gpio_name in gpio_requested:
-      self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
-    self.gpio.defined()
+  def _crystal_required(self) -> bool:  # crystal needed for USB b/c tighter freq tolerance
+    return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()

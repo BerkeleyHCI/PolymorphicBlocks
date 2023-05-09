@@ -15,8 +15,6 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
       current_draw=(2.5, 100)*uAmp  # TODO propagate current draw from loads
     ))
 
-    self.addr_lsb = self.ArgParameter(addr_lsb)
-
     i2c_model = DigitalBidir.from_supply(  # same between TI and NXP versions
       self.gnd, self.vdd,
       current_limits=(-3, 0)*mAmp,
@@ -27,9 +25,10 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
 
     self.io = self.Port(Vector(DigitalBidir().empty()), optional=True)
 
-    self.generator(self.generate, self.addr_lsb, self.pin_assigns, self.io.requested())
+    self.addr_lsb = self.ArgParameter(addr_lsb)
+    self.generator_param(self.addr_lsb, self.pin_assigns, self.io.requested())
 
-  def generate(self, addr_lsb: int, assignments: List[str], io_allocates: List[str]) -> None:
+  def generate(self) -> None:
     dout_model = DigitalBidir.from_supply(  # same between TI and NXP versions
       self.gnd, self.vdd,
       current_limits=(-25, 0.3)*mAmp,  # highly limited sourcing current
@@ -37,7 +36,8 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
       input_threshold_factor=(0.3, 0.7)
     )
 
-    self.require((self.addr_lsb < 8) & (self.addr_lsb >= 0), "addr_lsb must be within [0, 8)")
+    addr_lsb = self.get(self.addr_lsb)
+    self.require((addr_lsb < 8) & (addr_lsb >= 0), f"addr_lsb={addr_lsb} must be within [0, 8)")
 
     pinmaps = PinMapUtil([
       PinResource('4', {'P0': dout_model}),
@@ -61,7 +61,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
       '16': self.vdd,
     }
 
-    allocated = pinmaps.allocate([(DigitalBidir, io_allocates)], assignments)
+    allocated = pinmaps.allocate([(DigitalBidir, self.get(self.io.requested()))], self.get(self.pin_assigns))
     io_pins: Dict[str, CircuitPort] = {
       allocation.pin: self.io.append_elt(dout_model, allocation.name)  # type: ignore
       for allocation in allocated}

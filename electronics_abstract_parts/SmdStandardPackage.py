@@ -1,5 +1,6 @@
 from typing import List, Optional, Dict
 
+from electronics_abstract_parts import PartsTableFootprintSelector, PartsTableRow
 from electronics_model import *
 
 @abstract_block
@@ -47,3 +48,18 @@ class SmdStandardPackage(Block):
       if mapped_result is not None:
         mapped_results.append(mapped_result)
     return mapped_results
+
+
+@non_library
+class SmdStandardPackageSelector(PartsTableFootprintSelector, SmdStandardPackage):
+  SMD_FOOTPRINT_MAP: Dict[str, Optional[str]]  # subclass-defined, maps standard packages (e.g., 0402) to footprints
+
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.generator_param(self.smd_min_package)
+
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(  # TODO optimize to not run for every row
+      self.get(self.smd_min_package), self.SMD_FOOTPRINT_MAP)
+    return super()._row_filter(row) and \
+      (row[self.KICAD_FOOTPRINT] not in minimum_invalid_footprints)

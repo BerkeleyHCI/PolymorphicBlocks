@@ -72,11 +72,13 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     self.fet_rds = self.ArgParameter(fet_rds)
     self.gate_res = self.ArgParameter(gate_res)
 
-    self.generator(self.generate, is_first, self.high_boot_out.is_connected())
+    self.is_first = self.ArgParameter(is_first)
+    self.generator_param(self.is_first, self.high_boot_out.is_connected())
 
-  def generate(self, is_first: bool, high_boot_out_connected: bool):
+  def generate(self):
+    super().generate()
     # control path is still defined in HDL
-    if is_first:
+    if self.get(self.is_first):
       low_pwm: Port[DigitalLink] = self.low_pwm
       high_pwm: Port[DigitalLink] = self.high_pwm
       self.gnd_ctl.init_from(VoltageSink())  # ideal port, not connected
@@ -102,7 +104,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     self.connect(self.driver.low_in, low_pwm)
     self.connect(self.driver.high_gnd, self.high_out)
 
-    if high_boot_out_connected:  # leave port disconnected if not used, otherwise it presents an unsolved interface
+    if self.get(self.high_boot_out.is_connected()):  # leave port disconnected if not used, to avoid an unsolved interface
       self.connect(self.driver.high_pwr, self.high_boot_out)  # schematic connected to boot diode
 
     # size the flying cap for max voltage change at max current
@@ -111,7 +113,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     flying_cap_capacitance = self.high_out.link().current_drawn.upper() / self.frequency.lower() / (self.in_voltage.upper() * MAX_FLYING_CAP_DV_PERCENT)
 
     self.import_kicad(
-      self.file_path("resources", f"{self.__class__.__name__}_{is_first}.kicad_sch"),
+      self.file_path("resources", f"{self.__class__.__name__}_{self.get(self.is_first)}.kicad_sch"),
       locals={
         'fet_model': Fet.NFet(
           drain_voltage=self.in_voltage,
@@ -197,12 +199,16 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
     self.fet_rds = self.ArgParameter(fet_rds)
 
-    self.generator(self.generate, levels, ratios)
+    self.levels = self.ArgParameter(levels)
+    self.ratios = self.ArgParameter(ratios)
+    self.generator_param(self.levels, self.ratios)
 
-  def generate(self, levels: int, ratios: Range):
+  def generate(self):
+    super().generate()
+    levels = self.get(self.levels)
     assert levels >= 2, "levels must be 2 or more"
     self.power_path = self.Block(BuckConverterPowerPath(
-      self.pwr_in.link().voltage, self.pwr_in.link().voltage * ratios, self.frequency,
+      self.pwr_in.link().voltage, self.pwr_in.link().voltage * self.get(self.ratios), self.frequency,
       self.pwr_out.link().current_drawn, Range.all(),  # TODO add current limits from FETs
       inductor_current_ripple=self.inductor_current_ripple,
       input_voltage_ripple=250*mVolt,

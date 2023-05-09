@@ -315,11 +315,13 @@ class LedArray(GeneratorBlock):
     super().__init__()
     self.ios = self.Port(Vector(DigitalSink.empty()), [Input])
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.generator(self.generate, count)
+    self.count = self.ArgParameter(count)
+    self.generator_param(self.count)
 
-  def generate(self, count: int) -> None:
+  def generate(self) -> None:
+    super().generate()
     self.led = ElementDict[IndicatorLed]()
-    for i in range(count):
+    for i in range(self.get(self.count)):
       io = self.ios.append_elt(DigitalSink.empty())
       self.led[i] = self.Block(IndicatorLed())
       self.connect(io, self.led[i].signal)
@@ -443,3 +445,13 @@ class BlinkyTestCase(unittest.TestCase):
 
   def test_design_packed(self) -> None:
     compile_board_inplace(TestBlinkyPacked, False)
+
+
+if __name__ == "__main__":
+  # this unit test can also be run as __main__ to test a non-unit-test environment
+  compile_board_inplace(TestBlinkyEmpty, False)
+  compile_board_inplace(TestBlinkyComplete, False)
+  compile_board_inplace(TestBlinkyWithLibrary, False)
+  compile_board_inplace(TestBlinkyWithLibraryExport, False)
+  compile_board_inplace(TestBlinkyArray, False)
+  compile_board_inplace(TestBlinkyPacked, False)

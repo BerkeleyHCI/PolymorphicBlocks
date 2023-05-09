@@ -10,23 +10,24 @@ from .Categories import *
 class LowPassRc(AnalogFilter, GeneratorBlock):
   """Passive-typed low-pass RC specified by the resistor value (impedance) and -3dB (~70%) cutoff frequency."""
   @init_in_parent
-  def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike,
-               voltage: RangeLike):
+  def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike, voltage: RangeLike):
     super().__init__()
-    self.impedance = self.ArgParameter(impedance)
-    self.cutoff_freq = self.ArgParameter(cutoff_freq)
-    self.voltage = self.ArgParameter(voltage)
-
     self.input = self.Port(Passive.empty())
     self.output = self.Port(Passive.empty())
     self.gnd = self.Port(Passive.empty())
 
-    self.generator(self.generate_rc, self.cutoff_freq, self.impedance)
+    self.impedance = self.ArgParameter(impedance)
+    self.cutoff_freq = self.ArgParameter(cutoff_freq)
+    self.voltage = self.ArgParameter(voltage)
 
-  def generate_rc(self, cutoff_freq: Range, impedance: Range) -> None:
+    self.generator_param(self.impedance, self.cutoff_freq)
+
+  def generate(self) -> None:
+    super().generate()
+
     self.r = self.Block(Resistor(resistance=self.impedance))  # TODO maybe support power?
     # cutoff frequency is 1/(2 pi R C)
-    capacitance = Range.cancel_multiply(1 / (2 * pi * impedance), 1 / cutoff_freq)
+    capacitance = Range.cancel_multiply(1 / (2 * pi * self.get(self.impedance)), 1 / self.get(self.cutoff_freq))
 
     self.c = self.Block(Capacitor(capacitance=capacitance*Farad, voltage=self.voltage))
     self.connect(self.input, self.r.a)
@@ -95,12 +96,13 @@ class DigitalLowPassRcArray(DigitalFilter, GeneratorBlock):
     self.impedance = self.ArgParameter(impedance)
     self.cutoff_freq = self.ArgParameter(cutoff_freq)
 
-    self.generator(self.generate, self.output.requested())
+    self.generator_param(self.output.requested())
 
-  def generate(self, outputs: List[str]):
+  def generate(self):
+    super().generate()
     self.elts = ElementDict[DigitalLowPassRc]()
     model = DigitalLowPassRc(self.impedance, self.cutoff_freq)
-    for requested in outputs:
+    for requested in self.get(self.output.requested()):
       self.elts[requested] = elt = self.Block(model)
       self.connect(self.input.append_elt(DigitalSink.empty(), requested), elt.input)
       self.connect(self.output.append_elt(DigitalSource.empty(), requested), elt.output)
