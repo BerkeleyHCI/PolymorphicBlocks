@@ -1,9 +1,8 @@
-from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
-from .Microcontroller_Esp import EspProgrammingHeader
+from .Microcontroller_Esp import EspAutoProgrammingHeader
 
 
 @abstract_block
@@ -220,7 +219,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, IoController, Block):
       # by default instantiate a programming switch, TODO option to disable as a config
       (self.prog, ), _ = self.chain(imp.Block(DigitalSwitch()), self.ic.io0)
 
-      self.uart0 = imp.Block(EspProgrammingHeader())
+      self.uart0 = imp.Block(EspAutoProgrammingHeader())
       self.connect(self.uart0.uart, self.ic.uart0)
 
 
