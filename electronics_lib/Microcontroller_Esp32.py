@@ -2,7 +2,7 @@ from typing import *
 
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
-from .Microcontroller_Esp import EspProgrammingPins
+from .Microcontroller_Esp import HasEspProgramming
 
 
 @abstract_block
@@ -195,7 +195,7 @@ class Esp32_Wroom_32_Device(Esp32_Device, FootprintBlock, JlcPart):
     )
 
 
-class Esp32_Wroom_32(Microcontroller, Radiofrequency, IoController, BaseIoControllerExportable, Block):
+class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, IoController, BaseIoControllerExportable):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
   NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.
   """
@@ -207,18 +207,15 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, IoController, BaseIoContro
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.ic = imp.Block(Esp32_Wroom_32_Device(pin_assigns=ArrayStringExpr()))
+      self.connect(self.program_uart_node, self.ic.uart0)
+      self.connect(self.program_en_node, self.ic.chip_pu)
+      self.connect(self.program_boot_node, self.ic.io0)
 
       self.vcc_cap0 = imp.Block(DecouplingCapacitor(22 * uFarad(tol=0.2)))  # C1
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
       # strapping pins are by default pulled to SPI boot, and can be reconfigured to download boot
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
-
-      # by default instantiate a programming switch, TODO option to disable as a config
-      (self.prog, ), _ = self.chain(imp.Block(DigitalSwitch()), self.ic.io0)
-
-      self.uart0 = imp.Block(EspProgrammingPins())
-      self.connect(self.uart0.uart, self.ic.uart0)
 
 
 class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
