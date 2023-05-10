@@ -46,6 +46,9 @@ class EspProgrammingTc2030(EspAutoProgrammingHeader):
   (https://www.tag-connect.com/product/tc2030-ftdi-ttl-232rg-vsw3v3)
   but adding the auto-programming pins (and using DTR instead of CTS into the cable).
   Power pins compatible with the official SWD header.
+
+  Per boot docs, EN is connected to RTS and boot is connected to DTR (CTS on the original pinning,
+  since it doesn't have a DTR pin).
   """
   def contents(self) -> None:
     super().contents()
@@ -56,7 +59,8 @@ class EspProgrammingTc2030(EspAutoProgrammingHeader):
     self.connect(self.uart.tx, self.conn.pins.request('4').adapt_to(DigitalSource()))
     self.connect(self.gnd, self.conn.pins.request('5').adapt_to(Ground()))
 
-    # TODO CTS on pin 2, RTS on pin 6
+    self.connect(self.en, self.conn.pins.request('6').adapt_to(DigitalSource()))  # RTS
+    self.connect(self.boot, self.conn.pins.request('2').adapt_to(DigitalSource()))  # CTS
 
 
 @non_library
