@@ -236,8 +236,8 @@
     (uuid fe9ad2a4-5bc3-458d-854f-47070715bb30)
   )
 
-  (text "Based on:\nhttps://dl.espressif.com/dl/schematics/SCH_ESP32-C3-DEVKITM-1_V1_20200915A.pdf\nhttps://dl.espressif.com/dl/schematics/esp32_devkitc_v4-sch-20180607a.pdf"
-    (at 114.3 114.3 0)
+  (text "Based on:\nhttps://dl.espressif.com/dl/schematics/SCH_ESP32-C3-DEVKITM-1_V1_20200915A.pdf\nhttps://dl.espressif.com/dl/schematics/esp32_devkitc_v4-sch-20180607a.pdf\n\nNote: FET version may not work in all cases, see\nhttps://forum.micropython.org/viewtopic.php?f=18&t=4966"
+    (at 114.3 127 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid f60f3898-2e9b-49d4-b814-73bbdd1783e5)
   )
