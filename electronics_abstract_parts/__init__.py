@@ -40,6 +40,7 @@ from .AbstractLed import Led, LedStandardFootprint, RgbLedCommonAnode, LedColor,
 from .AbstractLed import IndicatorLed, IndicatorSinkLed, IndicatorSinkLedResistor, VoltageIndicatorLed, IndicatorSinkRgbLed
 from .AbstractLed import IndicatorSinkPackedRgbLed
 from .AbstractLed import IndicatorLedArray, IndicatorSinkLedArray
+from .AbstractBjt import Bjt, BjtStandardFootprint, TableBjt
 from .AbstractFets import Fet, FetStandardFootprint, BaseTableFet, TableFet
 from .AbstractFets import SwitchFet, TableSwitchFet
 
