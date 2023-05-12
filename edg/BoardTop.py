@@ -20,6 +20,7 @@ class BaseBoardTop(DesignTop):
         (RotaryEncoderWithSwitch, Ec11j15WithSwitch),
         (Diode, JlcDiode),  # TODO: replace with non-distributor parts list
         (ZenerDiode, JlcZenerDiode),  # TODO: replace with non-distributor parts list
+        (Bjt, JlcBjt),  # TODO: replace with non-distributor parts list
         (Fet, JlcFet),  # TODO: replace with non-distributor parts list
         (SwitchFet, JlcSwitchFet),  # TODO: replace with non-distributor parts list
         (Led, SmtLed),
@@ -93,6 +94,7 @@ class JlcBoardTop(BaseBoardTop):
         (Led, JlcLed),
         (ZenerDiode, JlcZenerDiode),
         (Diode, JlcDiode),
+        (Bjt, JlcBjt),
         (Fet, JlcFet),
 
         (Fpc050Bottom, Afc01),

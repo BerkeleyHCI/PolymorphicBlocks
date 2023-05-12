@@ -72,6 +72,16 @@ class BjtStandardFootprint(Bjt, StandardFootprint[Bjt]):
       '2': block.emitter,
       '3': block.collector,
     },
+    'Package_TO_SOT_SMD:SOT-89-3': lambda block: {
+      '1': block.base,
+      '2': block.collector,
+      '3': block.emitter,
+    },
+    'Package_TO_SOT_SMD:SOT-323_SC-70': lambda block: {
+      '1': block.base,
+      '2': block.emitter,
+      '3': block.collector,
+    },
   }
 
 

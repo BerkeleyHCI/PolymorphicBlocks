@@ -24,7 +24,7 @@ class JlcBaseFet(BaseTableFet, JlcTableSelector, PartsTableFootprint):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(\S+V) (\S+A) (\S+W) (\S+Ω)@(\S+V),\S+A (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
      lambda match: {
-       JlcBaseFet.CHANNEL: match.group(7),
+       TableFet.CHANNEL: match.group(7),
        TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
        TableFet.IDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'A')),
        # Vgs isn't specified, so the Ron@Vgs is used as a lower bound; assumed symmetric
@@ -39,7 +39,7 @@ class JlcBaseFet(BaseTableFet, JlcTableSelector, PartsTableFootprint):
     # Some of them have the power entry later, for whatever reason
     (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
      lambda match: {
-       JlcBaseFet.CHANNEL: match.group(7),
+       TableFet.CHANNEL: match.group(7),
        TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
        TableFet.IDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'A')),
        # Vgs isn't specified, so the Ron@Vgs is used as a lower bound; assumed symmetric

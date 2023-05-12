@@ -13,6 +13,7 @@ from .JlcFerriteBead import JlcFerriteBead
 from .Leds import SmtLed, ThtLed, SmtRgbLed, ThtRgbLed
 from .JlcLed import JlcLed
 from .JlcDiode import JlcDiode, JlcZenerDiode
+from .JlcBjt import JlcBjt
 from .JlcFet import JlcFet, JlcSwitchFet
 from .CustomDiode import CustomDiode
 from .CustomFet import CustomFet
