@@ -86,7 +86,7 @@ class Sk6812Mini_E(Neopixel, FootprintBlock):
         )
 
 
-class Sk6805_ECc15(Neopixel, JlcPart, FootprintBlock):
+class Sk6805_Ec15(Neopixel, JlcPart, FootprintBlock):
     """SK6805-EC15 Neopixel RGB LED in 1.5x1.5 (0606)."""
     def __init__(self) -> None:
         super().__init__()
