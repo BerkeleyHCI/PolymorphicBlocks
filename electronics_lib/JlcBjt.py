@@ -26,7 +26,7 @@ class JlcBjt(TableBjt, JlcTableSelector):
        TableBjt.CHANNEL: match.group(5),
        TableBjt.VCE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
        TableBjt.ICE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(3), 'A')),
-       TableBjt.GAIN: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), '')),
+       TableBjt.GAIN: Range.exact(PartParserUtil.parse_value(match.group(4), '')),
        TableBjt.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'W')),
      }),
   ]

@@ -96,3 +96,35 @@ class HasEspProgramming(IoController, GeneratorBlock):
         self.connect(self.program_boot_node, self.prog.boot)
       else:
         self.require(False, "unknown programming connector mode")
+
+
+class EspAutoProgram(KiCadSchematicBlock):
+  """Auto-programming header for the ESP series, to drive the target EN (reset) and BOOT (e.g., IO0) pins."""
+  def __init__(self):
+    super().__init__()
+    self.dtr = self.Port(DigitalSink.empty())
+    self.rts = self.Port(DigitalSink.empty())
+
+    self.en = self.Port(DigitalSource.empty())
+    self.boot = self.Port(DigitalSource.empty())
+
+  def contents(self):
+    super().contents()
+    signal_voltage = self.dtr.link().voltage.hull(self.rts.link().voltage)
+    signal_thresholds = self.dtr.link().output_thresholds.hull(self.rts.link().output_thresholds)
+    bjt_model = Bjt(collector_voltage=signal_voltage, collector_current=(0, 0)*Amp, channel='NPN')
+    self.q_en = self.Block(bjt_model)
+    self.q_boot = self.Block(bjt_model)
+
+    output_model = DigitalSource(voltage_out=signal_voltage, current_limits=(0, 0)*Amp,  # simplified for signal only
+                                 output_thresholds=signal_thresholds)
+    self.import_kicad(
+      self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'dtr_res.1': DigitalSink(),
+        'rts_res.1': DigitalSink(),
+        'q_en.E': DigitalSink(),
+        'q_boot.E': DigitalSink(),
+        'q_en.C':  output_model,
+        'q_boot.C': output_model
+      })

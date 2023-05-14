@@ -31,7 +31,7 @@ from .Opamp_Opa197 import Opa197
 from .Opamp_Lmv321 import Lmv321
 
 from .PassiveConnector import PassiveConnector  # otherwise aliases with the module
-from .PassiveConnector import PinHeader254, PinSocket254, PinHeader127DualShrouded
+from .PassiveConnector import PinHeader254, PinSocket254, PinHeader254DualShroudedInline, PinHeader127DualShrouded
 from .PassiveConnector import TagConnect, TagConnectLegged, TagConnectNonLegged
 from .PassiveConnector import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl
 from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Afc01, Te1734839
@@ -58,6 +58,7 @@ from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Stm32f303 import Nucleo_F303k8
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2
 from .Microcontroller_Esp import EspAutoProgrammingHeader, EspProgrammingPins, EspProgrammingTc2030, HasEspProgramming
+from .Microcontroller_Esp import EspAutoProgram
 from .Microcontroller_Esp32c3 import Esp32c3_Wroom02
 from .Microcontroller_Esp32 import Esp32_Wroom_32, Esp32_Wrover_Dev
 from .Microcontroller_Rp2040 import Rp2040

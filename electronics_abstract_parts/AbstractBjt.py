@@ -102,7 +102,7 @@ class TableBjt(BjtStandardFootprint, PartsTableFootprintSelector):
       row[self.CHANNEL] == self.get(self.channel) and \
       self.get(self.collector_voltage).fuzzy_in(row[self.VCE_RATING]) and \
       self.get(self.collector_current).fuzzy_in(row[self.ICE_RATING]) and \
-      self.get(self.gain).fuzzy_in(row[self.GAIN]) and \
+      row[self.GAIN].fuzzy_in(self.get(self.gain)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
   def _row_generate(self, row: PartsTableRow) -> None:
