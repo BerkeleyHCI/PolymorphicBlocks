@@ -55,9 +55,9 @@ class SevenSegment(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.rgb_pull, self.rgb_tp, self.rgb, ), _ = self.chain(
-        self.mcu.gpio.request('rgb').as_open_drain(),
-        imp.Block(PullupResistor(10*kOhm(tol=0.05))),
+        self.mcu.gpio.request('rgb'),
         imp.Block(DigitalTestPoint()),
+        imp.Block(L74Ahct1g125()),
         imp.Block(NeopixelArray(4*7)))
 
       (self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
