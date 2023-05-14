@@ -48,6 +48,8 @@ class SevenSegment(JlcBoardTop):
 
       self.env = imp.Block(EnvironmentalSensor_Bme680())
       self.connect(self.i2c, self.env.i2c)
+      self.als = imp.Block(LightSensor_Bh1750())
+      self.connect(self.i2c, self.als.i2c)
 
     # 5V DOMAIN
     with self.implicit_connect(

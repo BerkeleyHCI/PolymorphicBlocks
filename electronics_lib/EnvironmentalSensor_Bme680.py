@@ -19,7 +19,7 @@ class Bme680_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             voltage_limit_abs=(-0.3*Volt, self.vddio.voltage_limits.upper()+0.3),
             input_threshold_factor=(0.2, 0.8)
         )
-        self.i2c = self.Port(I2cSlave(dio_model))
+        self.i2c = self.Port(I2cSlave(dio_model, [0x76]))
 
     def contents(self) -> None:
         self.footprint(
@@ -29,7 +29,7 @@ class Bme680_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 '2': self.vddio,  # different in SPI mode
                 '3': self.i2c.sda,
                 '4': self.i2c.scl,
-                '5': self.gnd,  # different in SPI mode
+                '5': self.gnd,  # TODO address
                 '6': self.vddio,
                 '7': self.gnd,
                 '8': self.vdd,
