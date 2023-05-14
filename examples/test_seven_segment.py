@@ -41,6 +41,13 @@ class SevenSegment(JlcBoardTop):
       (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
       (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
 
+      self.i2c = self.mcu.i2c.request('i2c')
+      (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
+        self.i2c,
+        imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
+
+      self.env = imp.Block(EnvironmentalSensor_Bme680())
+      self.connect(self.i2c, self.env.i2c)
 
     # 5V DOMAIN
     with self.implicit_connect(
@@ -53,12 +60,19 @@ class SevenSegment(JlcBoardTop):
         imp.Block(DigitalTestPoint()),
         imp.Block(NeopixelArray(4*7)))
 
+      (self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
+        self.mcu.dac.request('spk'),
+        self.Block(AnalogTestPoint()),
+        imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
+        self.Block(Speaker()))
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32_Wroom_32),
         (['reg_3v3'], Ld1117),
         (['pwr_conn', 'conn'], JstPhKVertical),
+        (['spk', 'conn'], JstPhKVertical),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -69,6 +83,7 @@ class SevenSegment(JlcBoardTop):
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
         (Neopixel, Sk6805_Ec15),
+        (Speaker, ConnectorSpeaker),
       ],
       class_values=[
       ]

@@ -507,7 +507,8 @@ class DigitalBidirAdapterOpenDrain(CircuitPortAdapter[DigitalSingleSource]):
   @init_in_parent
   def __init__(self):
     super().__init__()
-    self.src = self.Port(DigitalSink(  # otherwise ideal
+    self.src = self.Port(DigitalBidir(  # otherwise ideal
+      voltage_out=RangeExpr(),
       current_draw=RangeExpr()
     ))
     self.dst = self.Port(DigitalSingleSource(
@@ -516,4 +517,5 @@ class DigitalBidirAdapterOpenDrain(CircuitPortAdapter[DigitalSingleSource]):
       pulldown_capable=False,
       low_signal_driver=True
     ))
+    self.assign(self.src.voltage_out, self.dst.link().voltage)
     self.assign(self.src.current_draw, self.dst.link().current_drawn)
