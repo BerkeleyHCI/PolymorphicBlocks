@@ -7,13 +7,13 @@ class Er_Oled_091_3_Outline(InternalSubcircuit, FootprintBlock):
     def contents(self) -> None:
         super().contents()
         self.footprint('U', 'edg:Lcd_Er_Oled0.91_3_Outline', {},
-                       'EastRising', 'ER-OLED-0.91-e')
+                       'EastRising', 'ER-OLED-0.91-e',
+                       datasheet='https://www.buydisplay.com/download/manual/ER-OLED0.91-3_Series_Datasheet.pdf')
 
 
 class Er_Oled_091_3_Device(InternalSubcircuit, Block):
     """15-pin FPC connector for the ER-OLED-0.91-3* device, configured to run off
-    internal DC/DC
-    https://www.buydisplay.com/download/manual/ER-OLED0.91-3_Series_Datasheet.pdf"""
+    internal DC/DC"""
     def __init__(self) -> None:
         super().__init__()
 
