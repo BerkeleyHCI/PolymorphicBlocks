@@ -344,7 +344,7 @@ class DigitalBidirBridge(CircuitPortBridge):
     # self.assign(self.outer_port.pulldown_capable, self.inner_link.link().pulldown_capable)
 
 
-class DigitalBidirNotConnected(Block):
+class DigitalBidirNotConnected(InternalBlock, Block):
   """Not-connected dummy block for Digital bidir ports"""
   def __init__(self) -> None:
     super().__init__()

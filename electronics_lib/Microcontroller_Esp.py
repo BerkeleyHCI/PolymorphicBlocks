@@ -98,7 +98,7 @@ class HasEspProgramming(IoController, GeneratorBlock):
         self.require(False, "unknown programming connector mode")
 
 
-class EspAutoProgram(KiCadSchematicBlock):
+class EspAutoProgram(Interface, KiCadSchematicBlock):
   """Auto-programming header for the ESP series, to drive the target EN (reset) and BOOT (e.g., IO0) pins."""
   def __init__(self):
     super().__init__()
