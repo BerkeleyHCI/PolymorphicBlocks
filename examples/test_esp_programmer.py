@@ -43,8 +43,6 @@ class EspProgrammer(JlcBoardTop):
       self.usbconv = imp.Block(Cp2102())
       (self.usb_esd, ), self.usb_chain = self.chain(
         self.usb_uart.usb, imp.Block(UsbEsdDiode()), self.usbconv.usb)
-      (self.led, ), _ = self.chain(
-        self.usbconv.nsuspend, imp.Block(IndicatorLed(Led.White)))
 
       # for target power only
       self.reg_3v3 = imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05)))
@@ -63,6 +61,7 @@ class EspProgrammer(JlcBoardTop):
       self.connect(self.auto.en, self.out.en)
       self.connect(self.auto.boot, self.out.boot)
 
+      (self.led, ), _ = self.chain(self.usbconv.suspend, imp.Block(IndicatorSinkLed(Led.White)))
       (self.led_en, ), _ = self.chain(self.usbconv.rts, imp.Block(IndicatorSinkLed(Led.Red)))
 
   def refinements(self) -> Refinements:
@@ -72,7 +71,7 @@ class EspProgrammer(JlcBoardTop):
       ],
       instance_values=[
         (['refdes_prefix'], 'U'),  # unique refdes for panelization
-        (['vusb_protect', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (['vusb_protect', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),
         # 2.2uF generates a 1206, but 4.7uF allows a 0805
         (['reg_3v3', 'ic', 'out_cap', 'cap', 'capacitance'], Range.from_tolerance(4.7e-6, 0.2)),
       ],
