@@ -135,8 +135,12 @@ class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
     ))
     self.dst = self.Port(DigitalSource(
       voltage_out=self.src.link().voltage,
-      # TODO propagation of current limits?
-      output_thresholds=(0, self.src.link().voltage.lower())
+      output_thresholds=(  # use infinity for the other rail
+        (self.src.link().voltage.lower() > 0).then_else(FloatExpr._to_expr_type(-float('inf')),
+                                                        self.src.link().voltage.upper()),
+        (self.src.link().voltage.lower() > 0).then_else(self.src.link().voltage.lower(),
+                                                        FloatExpr._to_expr_type(float('inf')))
+      )
     ))
     self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
 
