@@ -14,9 +14,9 @@ class Ec11eWithSwitch(RotaryEncoderWithSwitch, JlcPart, FootprintBlock):
       {
         'A': self.a,
         'B': self.b,
-        'C': self.c,
+        'C': self.com,
         'S1': self.sw,
-        'S2': self.c,
+        'S2': self.com,
       },
       mfr='Alps Alpine', part='EC11E18244A5',
       datasheet='https://tech.alpsalpine.com/assets/products/catalog/ec11.en.pdf'
@@ -37,9 +37,9 @@ class Ec11j15WithSwitch(RotaryEncoderWithSwitch, JlcPart, FootprintBlock):
       {
         'A': self.a,
         'B': self.b,
-        'C': self.c,
+        'C': self.com,
         'S1': self.sw,
-        'S2': self.c,
+        'S2': self.com,
       },
       mfr='Alps Alpine', part='EC11J1525402',
       # datasheet / catalog doesn't appear to be available from the manufacturer like the PTH ersion

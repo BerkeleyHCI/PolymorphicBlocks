@@ -35,11 +35,13 @@ class SevenSegment(JlcBoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
-
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
       (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
       (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
+
+      self.sw = ElementDict[DigitalSwitch]()
+      for i in range(4):
+        (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
 
       self.i2c = self.mcu.i2c.request('i2c')
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
@@ -86,6 +88,7 @@ class SevenSegment(JlcBoardTop):
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
         (Neopixel, Sk6805_Ec15),
         (Speaker, ConnectorSpeaker),
+        (TactileSwitch, Skrtlae010),
       ],
       class_values=[
       ]

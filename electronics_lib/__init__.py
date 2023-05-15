@@ -22,7 +22,7 @@ from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .RotaryEncoder_Ec11 import Ec11eWithSwitch, Ec11j15WithSwitch
 from .JlcCrystal import JlcCrystal
 from .JlcOscillator import JlcOscillator
-from .JlcSwitches import JlcSwitch
+from .JlcSwitches import JlcSwitch, Skrtlae010
 from .JlcPptcFuse import JlcPptcFuse
 from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1
 from .Opamp_Mcp6001 import Mcp6001

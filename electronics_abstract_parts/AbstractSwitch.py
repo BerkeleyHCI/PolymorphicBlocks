@@ -9,14 +9,14 @@ class Switch(KiCadImportableBlock, DiscreteComponent):
   """Two-ported device that closes a circuit when pressed."""
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'Switch:SW_SPST'
-    return {'1': self.a, '2': self.b}
+    return {'1': self.sw, '2': self.com}
 
   @init_in_parent
   def __init__(self, voltage: RangeLike, current: RangeLike = Default(0*Amp(tol=0))) -> None:
     super().__init__()
 
-    self.a = self.Port(Passive.empty())
-    self.b = self.Port(Passive.empty())
+    self.sw = self.Port(Passive.empty())
+    self.com = self.Port(Passive.empty())
 
     self.current = self.ArgParameter(current)
     self.voltage = self.ArgParameter(voltage)
@@ -42,7 +42,7 @@ class RotaryEncoder(DiscreteComponent):
 
     self.a = self.Port(Passive.empty())
     self.b = self.Port(Passive.empty())
-    self.c = self.Port(Passive.empty())
+    self.com = self.Port(Passive.empty())
 
     self.current = self.ArgParameter(current)
     self.voltage = self.ArgParameter(voltage)
@@ -72,8 +72,8 @@ class DigitalSwitch(HumanInterface):
     self.package = self.Block(Switch(current=self.out.link().current_drawn,
                                      voltage=self.out.link().voltage))
 
-    self.connect(self.out, self.package.a.adapt_to(DigitalSingleSource.low_from_supply(self.gnd)))
-    self.connect(self.gnd, self.package.b.adapt_to(Ground()))
+    self.connect(self.out, self.package.sw.adapt_to(DigitalSingleSource.low_from_supply(self.gnd)))
+    self.connect(self.gnd, self.package.com.adapt_to(Ground()))
 
 
 class DigitalRotaryEncoder(HumanInterface):
@@ -93,7 +93,7 @@ class DigitalRotaryEncoder(HumanInterface):
     dio_model = DigitalSingleSource.low_from_supply(self.gnd)
     self.connect(self.a, self.package.a.adapt_to(dio_model))
     self.connect(self.b, self.package.b.adapt_to(dio_model))
-    self.connect(self.gnd, self.package.c.adapt_to(Ground()))
+    self.connect(self.gnd, self.package.com.adapt_to(Ground()))
 
 
 class DigitalRotaryEncoderWithSwitch(HumanInterface):
@@ -118,4 +118,4 @@ class DigitalRotaryEncoderWithSwitch(HumanInterface):
     self.connect(self.a, self.package.a.adapt_to(dio_model))
     self.connect(self.b, self.package.b.adapt_to(dio_model))
     self.connect(self.sw, self.package.sw.adapt_to(dio_model))
-    self.connect(self.gnd, self.package.c.adapt_to(Ground()))
+    self.connect(self.gnd, self.package.com.adapt_to(Ground()))
