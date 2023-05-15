@@ -85,6 +85,7 @@ from .RfModules import Xbee_S3b, BlueSmirf
 from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, NeopixelArray
 from .Lcd_Qt096t_if09 import Qt096t_if09
 from .Oled_Er_Oled_091_3 import Er_Oled_091_3
+from .Oled_Er_Oled_022 import Er_Oled022_1
 from .Oled_Er_Oled_028 import Er_Oled028_1
 from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
 from .EInk_E2154fs091 import E2154fs091

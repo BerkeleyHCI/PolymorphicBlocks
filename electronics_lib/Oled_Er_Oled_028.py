@@ -61,11 +61,20 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
         self.connect(self.conn.pins.request('17').adapt_to(Ground()), self.vss)  # BS1, 0 for any serial
 
         self.spi = self.Port(SpiSlave.empty())
-        self.connect(self.spi.sck, self.conn.pins.request('13').adapt_to(din_model))
-        self.connect(self.spi.mosi, self.conn.pins.request('12').adapt_to(din_model))
+        self.connect(self.spi.sck, self.conn.pins.request('13').adapt_to(din_model))  # DB0
+        self.connect(self.spi.mosi, self.conn.pins.request('12').adapt_to(din_model))  # DB1
 
         self.miso_nc = self.Block(DigitalBidirNotConnected())
         self.connect(self.spi.miso, self.miso_nc.port)
+
+        self.connect(self.vss, self.conn.pins.request('10').adapt_to(Ground()))  # DB3
+        self.connect(self.vss, self.conn.pins.request('9').adapt_to(Ground()))  # DB4
+        self.connect(self.vss, self.conn.pins.request('8').adapt_to(Ground()))  # DB5
+        self.connect(self.vss, self.conn.pins.request('7').adapt_to(Ground()))  # DB6
+        self.connect(self.vss, self.conn.pins.request('6').adapt_to(Ground()))  # DB7
+
+        self.connect(self.vss, self.conn.pins.request('15').adapt_to(Ground()))  # RW
+        self.connect(self.vss, self.conn.pins.request('14').adapt_to(Ground()))  # ER
 
         self.dc = self.Export(self.conn.pins.request('18').adapt_to(din_model))  # ground if unused
         self.cs = self.Export(self.conn.pins.request('19').adapt_to(din_model))

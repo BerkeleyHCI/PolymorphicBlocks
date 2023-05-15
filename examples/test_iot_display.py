@@ -30,7 +30,7 @@ class IotDisplay(JlcBoardTop):
 
       (self.reg_12v, self.tp_12v), _ = self.chain(
         self.pwr,
-        imp.Block(BoostConverter(output_voltage=(11.5, 16)*Volt)),
+        imp.Block(BoostConverter(output_voltage=(12, 15)*Volt)),
         self.Block(VoltageTestPoint())
       )
       self.v12 = self.connect(self.reg_12v.pwr_out)
@@ -50,13 +50,14 @@ class IotDisplay(JlcBoardTop):
       for i in range(4):
         (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
 
-      self.oled = imp.Block(Er_Oled028_1())
-      self.connect(self.oled.pwr, self.v3v3)
-      self.connect(self.oled.vcc, self.v12)
-      self.connect(self.mcu.spi.request('oled'), self.oled.spi)
-      self.connect(self.mcu.gpio.request('oled_rst'), self.oled.reset)
-      self.connect(self.mcu.gpio.request('oled_dc'), self.oled.dc)
-      self.connect(self.mcu.gpio.request('oled_cs'), self.oled.cs)
+      self.oled28 = imp.Block(Er_Oled028_1())
+      self.oled22 = imp.Block(Er_Oled022_1())
+      self.connect(self.v3v3, self.oled28.pwr, self.oled22.pwr)
+      self.connect(self.v12, self.oled28.vcc, self.oled22.vcc)
+      self.connect(self.mcu.spi.request('oled'), self.oled28.spi, self.oled22.spi)
+      self.connect(self.mcu.gpio.request('oled_rst'), self.oled28.reset, self.oled22.reset)
+      self.connect(self.mcu.gpio.request('oled_dc'), self.oled28.dc, self.oled22.dc)
+      self.connect(self.mcu.gpio.request('oled_cs'), self.oled28.cs, self.oled22.cs)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -76,6 +77,7 @@ class IotDisplay(JlcBoardTop):
       ],
       class_values=[
         (Er_Oled028_1, ["device", "vcc", "voltage_limits"], Range(11.5, 16)),  # abs max ratings instead of recommended
+        (Er_Oled022_1, ["device", "vcc", "voltage_limits"], Range(12, 15)),  # abs max ratings instead of recommended
       ]
     )
 
