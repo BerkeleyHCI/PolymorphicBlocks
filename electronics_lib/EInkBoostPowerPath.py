@@ -29,17 +29,17 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
   def contents(self):
     super().contents()
 
-    self.boost_sw = self.Block(Fet.NFet(
+    self.fet = self.Block(Fet.NFet(
       drain_voltage=self.voltage_out.hull((0, 0)*Volt),
       drain_current=self.current,
       gate_voltage=(0, 5)*Volt,
       rds_on=(0, 400)*mOhm
     ))
-    self.boost_ind = self.Block(Inductor(
+    self.inductor = self.Block(Inductor(
       inductance=self.inductance,
       current=self.current
     ))
-    self.boost_res = self.Block(Resistor(
+    self.sense = self.Block(Resistor(
       resistance=self.resistance
     ))
     self.in_cap = self.Block(DecouplingCapacitor(
@@ -52,6 +52,8 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
       reverse_recovery_time=(0, 500e-9)  # guess from Digikey's classification for "fast recovery"
     )
     self.diode = self.Block(diode_model)
+    self.boot_neg_diode = self.Block(diode_model)
+    self.boot_gnd_diode = self.Block(diode_model)
 
     self.boot_cap = self.Block(Capacitor(
       capacitance=self.out_capacitance, voltage=self.voltage_out

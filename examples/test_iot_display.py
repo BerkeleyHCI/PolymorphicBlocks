@@ -52,12 +52,14 @@ class IotDisplay(JlcBoardTop):
 
       self.oled28 = imp.Block(Er_Oled028_1())
       self.oled22 = imp.Block(Er_Oled022_1())
-      self.connect(self.v3v3, self.oled28.pwr, self.oled22.pwr)
+      self.epd = imp.Block(Er_Epd027_2())
+      self.connect(self.v3v3, self.oled28.pwr, self.oled22.pwr, self.epd.pwr)
       self.connect(self.v12, self.oled28.vcc, self.oled22.vcc)
-      self.connect(self.mcu.spi.request('oled'), self.oled28.spi, self.oled22.spi)
-      self.connect(self.mcu.gpio.request('oled_rst'), self.oled28.reset, self.oled22.reset)
-      self.connect(self.mcu.gpio.request('oled_dc'), self.oled28.dc, self.oled22.dc)
-      self.connect(self.mcu.gpio.request('oled_cs'), self.oled28.cs, self.oled22.cs)
+      self.connect(self.mcu.spi.request('oled'), self.oled28.spi, self.oled22.spi, self.epd.spi)
+      self.connect(self.mcu.gpio.request('oled_rst'), self.oled28.reset, self.oled22.reset, self.epd.reset)
+      self.connect(self.mcu.gpio.request('oled_dc'), self.oled28.dc, self.oled22.dc, self.epd.dc)
+      self.connect(self.mcu.gpio.request('oled_cs'), self.oled28.cs, self.oled22.cs, self.epd.cs)
+      self.connect(self.mcu.gpio.request('epd_busy'), self.epd.busy)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
