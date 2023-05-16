@@ -338,7 +338,7 @@ class HighSwitch(BoardTop):
         # the hold current wasn't modeled at the time of manufacture and turns out to be out of limits
         (['can', 'can_fuse', 'fuse', 'actual_hold_current'], Range(0.1, 0.1)),
         # JLC does not have frequency specs, must be checked TODO
-        (['pwr', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['pwr', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
         # JLC does not have gate charge spec, so ignore the power calc TODO
         (['light[0]', 'drv[0]', 'drv', 'frequency'], Range(0, 0)),
         (['light[0]', 'drv[1]', 'drv', 'frequency'], Range(0, 0)),

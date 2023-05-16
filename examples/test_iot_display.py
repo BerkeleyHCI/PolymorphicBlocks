@@ -47,7 +47,7 @@ class IotDisplay(JlcBoardTop):
       (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
 
       self.sw = ElementDict[DigitalSwitch]()
-      for i in range(4):
+      for i in range(3):
         (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
 
       self.oled28 = imp.Block(Er_Oled028_1())
@@ -72,7 +72,9 @@ class IotDisplay(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
 
         ]),
-        (['mcu', 'programming'], 'uart-auto')
+        (['mcu', 'programming'], 'uart-auto'),
+        (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
+        (['reg_12v', 'power_path', 'inductor', 'actual_frequency_rating'], Range(0, 7e6)),
       ],
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),

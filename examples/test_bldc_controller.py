@@ -251,7 +251,7 @@ class BldcController(JlcBoardTop):
         (['conv', 'out_low_switch', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-223-3_TabPin2'),
 
         # JLC does not have frequency specs, must be checked TODO
-        (['conv', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['conv', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
         (['conv', 'power_path', 'inductor', 'lcsc_part'], 'C497840'),  # selected part out of stock
 
         # keep netlist footprints as libraries change
