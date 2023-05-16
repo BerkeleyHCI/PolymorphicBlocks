@@ -105,5 +105,6 @@ class Er_Epd027_2(EInk, Block):
         self.vcc_cap2 = self.Block(DecouplingCapacitor(capacitance=10*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vcc)
 
-        self.boost = self.Block(EInkBoostPowerPath((0, 20)*Volt, (0, 400)*mAmp, 47*uHenry(tol=0.2),
+        # current limit based on 200mA saturation current of reference inductor
+        self.boost = self.Block(EInkBoostPowerPath((0, 20)*Volt, (0, 200)*mAmp, 47*uHenry(tol=0.2),
                                                    1*uFarad(tol=0.2), 4.7*uFarad(tol=0.2), 2.2*Ohm(tol=0.01)))
