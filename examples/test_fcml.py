@@ -123,7 +123,8 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
         ),
         'flying_cap_model': Capacitor(  # flying cap
           capacitance=(flying_cap_capacitance, float('inf')*Farad),
-          voltage=self.in_voltage
+          voltage=self.in_voltage,
+          exact_capacitance=True
         ),
         'boot_diode_model': SeriesPowerDiode(
           reverse_voltage=self.in_voltage + self.low_boot_in.link().voltage,  # upper bound

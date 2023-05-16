@@ -143,13 +143,11 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
   # LOOSELY approximated from https://www.maximintegrated.com/en/design/technical-documents/tutorials/5/5527.html
 
   @init_in_parent
-  def __init__(self, *args, single_nominal_capacitance: RangeLike = Default((0, 22)*uFarad),
-               derate_capacitance: BoolLike = True, **kwargs):
+  def __init__(self, *args, single_nominal_capacitance: RangeLike = Default((0, 22)*uFarad), **kwargs):
     super().__init__(*args, **kwargs)
     self.single_nominal_capacitance = self.ArgParameter(single_nominal_capacitance)
-    self.derate_capacitance = self.ArgParameter(derate_capacitance)  # TODO DEPRECATED - use exact_capacitance
     self.generator_param(self.capacitance, self.voltage, self.single_nominal_capacitance,
-                         self.voltage_rating_derating, self.exact_capacitance, self.derate_capacitance)
+                         self.voltage_rating_derating, self.exact_capacitance)
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
 
@@ -161,7 +159,7 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
 
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     def add_derated_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if not self.get(self.derate_capacitance) or not self.get(self.exact_capacitance):
+      if not self.get(self.exact_capacitance):
         derated = row[self.CAPACITANCE]
       elif self.get(self.voltage).upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages
         derated = row[self.CAPACITANCE]
