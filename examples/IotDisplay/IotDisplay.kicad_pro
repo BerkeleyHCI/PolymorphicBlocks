@@ -221,7 +221,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "EspProgrammer.kicad_pro",
+    "filename": "IotDisplay.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -255,7 +255,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "EspProgrammer.net",
+      "netlist": "IotDisplay.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""
