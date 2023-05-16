@@ -183,7 +183,7 @@ class Datalogger(BoardTop):
         # the hold current wasn't modeled at the time of manufacture and turns out to be out of limits
         (['can', 'can_fuse', 'fuse', 'actual_hold_current'], Range(0.1, 0.1)),
         # JLC does not have frequency specs, must be checked TODO
-        (['pwr_5v', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all),
+        (['pwr_5v', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
         (['eink', 'boost_ind', 'actual_frequency_rating'], Range.all()),
         # JLC does not have gate voltage tolerance specs, and the inferred one is low
         (['eink', 'boost_sw', 'gate_voltage'], Range(3, 10)),
