@@ -89,6 +89,7 @@ from .Oled_Er_Oled_022 import Er_Oled022_1
 from .Oled_Er_Oled_028 import Er_Oled028_1
 from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
 from .EInk_E2154fs091 import E2154fs091
+from .EInk_Er_Epd027_2 import Er_Epd027_2
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .AnalogSwitch_Nlas4157 import Nlas4157
 from .CanTransceiver_Iso1050 import Iso1050dub
