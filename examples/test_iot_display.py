@@ -79,6 +79,7 @@ class IotDisplay(JlcBoardTop):
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
         (TestPoint, CompactKeystone5015),
+        (Fpc050Bottom, Fpc050BottomFlip),
       ],
       class_values=[
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),  # for parts commonality w/ other zeners on panel

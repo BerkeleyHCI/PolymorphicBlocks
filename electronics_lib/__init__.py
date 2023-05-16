@@ -34,7 +34,7 @@ from .PassiveConnector import PassiveConnector  # otherwise aliases with the mod
 from .PassiveConnector import PinHeader254, PinSocket254, PinHeader254DualShroudedInline, PinHeader127DualShrouded
 from .PassiveConnector import TagConnect, TagConnectLegged, TagConnectNonLegged
 from .PassiveConnector import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl
-from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Afc01, Te1734839
+from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, Fpc050BottomFlip, HiroseFh12sh, Afc01, Afc07, Te1734839
 
 from .Jumpers import SolderJumperTriangular
 
