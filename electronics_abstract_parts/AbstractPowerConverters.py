@@ -278,12 +278,14 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                                          (frequency.lower * input_voltage_ripple))
     self.in_cap = self.Block(DecouplingCapacitor(
       capacitance=input_capacitance*Farad,
+      exact_capacitance=True
     )).connected(self.gnd, self.pwr_in)
     # TODO size based on transient response, add to voltage tolerance stackups
     output_capacitance = Range.from_lower(inductor_current_ripple.upper /
                                           (8 * frequency.lower * output_voltage_ripple))
     self.out_cap = self.Block(DecouplingCapacitor(
       capacitance=output_capacitance*Farad,
+      exact_capacitance=True
     )).connected(self.gnd, self.pwr_out)
 
 
@@ -428,11 +430,13 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                                          (frequency.lower * input_voltage_ripple))
     self.in_cap = self.Block(DecouplingCapacitor(
       capacitance=input_capacitance*Farad,
+      exact_capacitance=True
     )).connected(self.gnd, self.pwr_in)
     output_capacitance = Range.from_lower(output_current.upper * effective_dutycycle.upper /
                                           (frequency.lower * output_voltage_ripple))
     self.out_cap = self.Block(DecouplingCapacitor(
       capacitance=output_capacitance*Farad,
+      exact_capacitance=True
     )).connected(self.gnd, self.pwr_out)
 
 
@@ -585,6 +589,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                            (frequency.lower * input_voltage_ripple))
     self.in_cap = self.Block(DecouplingCapacitor(
       capacitance=Range.from_lower(max(input_buck_min_cap, input_boost_min_cap))*Farad,
+      exact_capacitance=True
     )).connected(self.gnd, self.pwr_in)
 
     # calculated with steady-state ripple
@@ -592,4 +597,5 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     output_boost_min_cap = output_current.upper * boost_dutycycle.upper / (frequency.lower * output_voltage_ripple)
     self.out_cap = self.Block(DecouplingCapacitor(
       capacitance=Range.from_lower(max(output_buck_min_cap, output_boost_min_cap))*Farad,
+      exact_capacitance=True
     )).connected(self.gnd, self.pwr_out)
