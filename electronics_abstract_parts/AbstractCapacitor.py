@@ -15,7 +15,8 @@ class UnpolarizedCapacitor(PassiveComponent):
   """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
   @init_in_parent
   def __init__(self, capacitance: RangeLike, voltage: RangeLike, *,
-               voltage_rating_derating: FloatLike = 0.5) -> None:
+               voltage_rating_derating: FloatLike = 0.5,
+               exact_capacitance: BoolLike = False) -> None:
     super().__init__()
 
     self.capacitance = self.ArgParameter(capacitance)
@@ -26,6 +27,10 @@ class UnpolarizedCapacitor(PassiveComponent):
     # 0.5 is the general rule of thumb for ceramic capacitors: https://www.sparkfun.com/news/1271
     # this does not apply to capacitance derating, which is handled separately
     self.voltage_rating_derating = self.ArgParameter(voltage_rating_derating)
+
+    # indicates whether the capacitance is exact (True) or nominal (False - typical case)
+    # in particular, nominal capacitance does not capacitance derate
+    self.exact_capacitance = self.ArgParameter(exact_capacitance)
 
     self.actual_capacitance = self.Parameter(RangeExpr())
     self.actual_voltage_rating = self.Parameter(RangeExpr())
@@ -142,9 +147,9 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
                derate_capacitance: BoolLike = True, **kwargs):
     super().__init__(*args, **kwargs)
     self.single_nominal_capacitance = self.ArgParameter(single_nominal_capacitance)
-    self.derate_capacitance = self.ArgParameter(derate_capacitance)
+    self.derate_capacitance = self.ArgParameter(derate_capacitance)  # TODO DEPRECATED - use exact_capacitance
     self.generator_param(self.capacitance, self.voltage, self.single_nominal_capacitance,
-                         self.voltage_rating_derating, self.derate_capacitance)
+                         self.voltage_rating_derating, self.exact_capacitance, self.derate_capacitance)
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
 
@@ -156,7 +161,7 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
 
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     def add_derated_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if not self.get(self.derate_capacitance):
+      if not self.get(self.derate_capacitance) or not self.get(self.exact_capacitance):
         derated = row[self.CAPACITANCE]
       elif self.get(self.voltage).upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages
         derated = row[self.CAPACITANCE]
@@ -232,10 +237,10 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     return {'1': self.pwr, '2': self.gnd}
 
   @init_in_parent
-  def __init__(self, capacitance: RangeLike) -> None:
+  def __init__(self, capacitance: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
     super().__init__()
 
-    self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr()))
+    self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
     self.gnd = self.Export(self.cap.neg.adapt_to(Ground()), [Common])
     self.pwr = self.Export(self.cap.pos.adapt_to(VoltageSink(
       voltage_limits=(self.cap.actual_voltage_rating + self.gnd.link().voltage).hull(self.gnd.link().voltage),
