@@ -78,10 +78,12 @@ class IotDisplay(JlcBoardTop):
       ],
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
+        (TestPoint, CompactKeystone5015),
       ],
       class_values=[
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),  # for parts commonality w/ other zeners on panel
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
 
         (Er_Oled028_1, ["device", "vcc", "voltage_limits"], Range(11.5, 16)),  # abs max ratings instead of recommended
         (Er_Oled022_1, ["device", "vcc", "voltage_limits"], Range(12, 15)),  # abs max ratings instead of recommended
