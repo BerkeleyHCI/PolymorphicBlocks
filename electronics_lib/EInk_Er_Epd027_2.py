@@ -108,12 +108,12 @@ class Er_Epd027_2(EInk, GeneratorBlock):
         self.vshr_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
             .connected(self.gnd, self.device.vshr)
         self.vsl_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
-            .connected(self.gnd, self.device.vsh)
+            .connected(self.device.vsl, self.gnd)
         self.vcom_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
             .connected(self.gnd, self.device.vcom)
 
         # current limit based on 200mA saturation current of reference inductor
-        self.boost = self.Block(EInkBoostPowerPath((0, 20)*Volt, (0, 200)*mAmp, 47*uHenry(tol=0.2),
+        self.boost = self.Block(EInkBoostPowerPath(20*Volt(tol=0), (0, 200)*mAmp, 47*uHenry(tol=0.2),
                                                    1*uFarad(tol=0.2), 4.7*uFarad(tol=0.2), 2.2*Ohm(tol=0.01)))
         self.connect(self.gnd, self.boost.gnd)
         self.connect(self.pwr, self.boost.pwr_in)
