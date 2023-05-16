@@ -512,7 +512,7 @@ class DigitalBidirAdapterOpenDrain(CircuitPortAdapter[DigitalSingleSource]):
       current_draw=RangeExpr()
     ))
     self.dst = self.Port(DigitalSingleSource(
-      voltage_out=self.src.link().voltage,
+      voltage_out=(0, 0)*Volt,  # TODO should propagate from src voltage lower, but creates a circular dependency
       output_thresholds=(self.src.link().output_thresholds.lower(), float('inf')),
       pulldown_capable=False,
       low_signal_driver=True
