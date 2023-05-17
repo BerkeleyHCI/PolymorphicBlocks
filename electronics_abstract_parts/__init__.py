@@ -63,7 +63,7 @@ from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetWithS
 from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, AnalogTestPoint
 from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint
 from .AbstractJumper import Jumper, DigitalJumper
-from .PassiveConnector import PassiveConnector
+from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
 
 from .UsbConnectors import UsbConnector, UsbHostConnector, UsbDeviceConnector, UsbEsdDiode
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver, CanEsdDiode

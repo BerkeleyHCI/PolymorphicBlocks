@@ -3,16 +3,16 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class PassiveConnector(InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class PassiveConnector(InternalSubcircuit, Block):
   """A base Block that is an elastic n-ported connector with passive type.
+  Interface only, no implementation.
+
   Intended as an infrastructural block where a particular connector series is not fixed,
   but can be selected through the refinements system.
   An optional length argument can be specified, which forces total number of pins. This must be larger
   than the maximum pin index (but can be smaller, unassigned pins are NC).
   The allocated pin names correlate with the footprint pin, 1-indexed (per electronics convention).
   It is up to the instantiating layer to set the pinmap (or allow the user to set it by refinements)."""
-  allowed_pins: Iterable[int]
-
   @init_in_parent
   def __init__(self, length: IntLike = 0):
     super().__init__()
@@ -20,6 +20,15 @@ class PassiveConnector(InternalSubcircuit, GeneratorBlock, FootprintBlock):
     self.actual_length = self.Parameter(IntExpr())
 
     self.length = self.ArgParameter(length)
+
+
+@abstract_block
+class FootprintPassiveConnector(PassiveConnector, GeneratorBlock, FootprintBlock):
+  """PassiveConnector that is a footprint and provides some base functionality for generation."""
+  allowed_pins: Iterable[int]
+
+  def contents(self):
+    super().contents()
     self.generator_param(self.length, self.pins.requested())
 
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:

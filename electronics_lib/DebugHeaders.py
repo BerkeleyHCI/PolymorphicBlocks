@@ -1,5 +1,6 @@
 from electronics_abstract_parts import *
-from .PassiveConnector import PinHeader127DualShrouded, TagConnect
+from .PassiveConnector_Header import PinHeader127DualShrouded
+from .PassiveConnector_TagConnect import TagConnect
 
 
 class SwdCortexTargetHeader(SwdCortexTargetWithSwoTdiConnector):

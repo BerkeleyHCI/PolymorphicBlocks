@@ -8,7 +8,7 @@ from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
-class Inductor(PassiveComponent, KiCadInstantiableBlock):
+class Inductor(PassiveComponent, KiCadImportableBlock):
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Device:L', 'Device:L_Small')
     return {'1': self.a, '2': self.b}
