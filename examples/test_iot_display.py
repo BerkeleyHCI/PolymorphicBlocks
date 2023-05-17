@@ -55,7 +55,7 @@ class IotDisplay(JlcBoardTop):
       self.epd = imp.Block(Er_Epd027_2())
       self.connect(self.v3v3, self.oled28.pwr, self.oled22.pwr, self.epd.pwr)
       self.connect(self.v12, self.oled28.vcc, self.oled22.vcc)
-      self.connect(self.mcu.spi.request('oled'), self.oled28.spi, self.oled22.spi, self.epd.spi)
+      self.connect(self.mcu.spi.request('spi'), self.oled28.spi, self.oled22.spi, self.epd.spi)
       self.connect(self.mcu.gpio.request('oled_rst'), self.oled28.reset, self.oled22.reset, self.epd.reset)
       self.connect(self.mcu.gpio.request('oled_dc'), self.oled28.dc, self.oled22.dc, self.epd.dc)
       self.connect(self.mcu.gpio.request('oled_cs'), self.oled28.cs, self.oled22.cs, self.epd.cs)
@@ -70,7 +70,19 @@ class IotDisplay(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-
+          'ledr=8',
+          'ledg=9',
+          'ledb=10',
+          'sw0=14',
+          'sw1=13',
+          'sw2=12',
+          'oled_rst=26',
+          'oled_cs=27',
+          'oled_dc=28',
+          'spi.sck=29',
+          'spi.mosi=30',
+          'spi.miso=NC',
+          'epd_busy=31',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
