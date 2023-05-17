@@ -98,7 +98,7 @@ class JlcBoardTop(BaseBoardTop):
         (Fet, JlcFet),
 
         (Fpc050Bottom, Afc01),
-        (Fpc050Top, Afc07),
+        (Fpc050Top, Afc07Top),
         (UsbEsdDiode, Pesd5v0x1bt),
         (Opamp, Lmv321),
         (SpiMemory, W25q),  # 128M version is a basic part

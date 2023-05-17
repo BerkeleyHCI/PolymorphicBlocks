@@ -70,7 +70,7 @@ class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
             "Jushuo", f"AFC01-S{length:02d}FCA-00")  # CA is T&R packaging
 
 
-class Afc07(Fpc050Top, FootprintPassiveConnector, JlcPart):
+class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
   """Jushuo AFC07 series slide-lock top-contact 0.5mm-pitch FPC connectors, with partial JLC numbers for some parts
   and re-using the probably-compatible but not-purpose-designed FH12 footprint."""
   _afc07_pins = set(range(4, 60+1))  # as listed by the part table
