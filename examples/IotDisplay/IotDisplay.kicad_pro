@@ -62,10 +62,10 @@
         }
       ],
       "drc_exclusions": [
-        "hole_clearance|140770000|45100000|c047e5a2-24f5-4745-b601-c5020de43387|296bd740-43f0-40c5-8ffe-c6a5e817dacd",
-        "hole_clearance|140770000|45300000|c047e5a2-24f5-4745-b601-c5020de43387|f9607cbe-6790-4961-be86-be1c55c894e4",
-        "hole_clearance|140770000|50700000|b2faedc7-5e84-4226-80f0-c5c17152b6d3|cda0598e-2e40-4129-b900-7720889ea81b",
-        "hole_clearance|140770000|50900000|b2faedc7-5e84-4226-80f0-c5c17152b6d3|f7a47f6a-d80d-46ec-8ffd-00083fc3d672"
+        "hole_clearance|35095000|129100000|8372d105-4292-484a-b545-199e306afe1b|c43afb39-9d6c-4b7e-9533-2e5885f09dc8",
+        "hole_clearance|35095000|129300000|4a6e305d-5450-4150-9abe-90c708475955|c43afb39-9d6c-4b7e-9533-2e5885f09dc8",
+        "hole_clearance|35095000|134700000|6ac9fa48-e17b-4c73-8ba3-98a05c17faf5|fdcad2c4-b0c8-495e-8faa-9126f9a720dd",
+        "hole_clearance|35095000|134900000|b0acbc71-e4d1-4ed9-accb-24d47fe2f9c4|fdcad2c4-b0c8-495e-8faa-9126f9a720dd"
       ],
       "meta": {
         "filename": "board_design_settings.json",
@@ -228,7 +228,7 @@
     "classes": [
       {
         "bus_width": 12,
-        "clearance": 0.15,
+        "clearance": 0.16,
         "diff_pair_gap": 0.15,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.15,
@@ -238,7 +238,7 @@
         "name": "Default",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.15,
+        "track_width": 0.2,
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
