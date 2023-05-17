@@ -52,7 +52,7 @@ class HiroseFh12sh(Fpc050Bottom, FootprintPassiveConnector):
 
 
 class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
-  """Jushuo AFC01 series bottom-entry 0.5mm-pitch FPC connectors, with partial JLC numbers for some parts
+  """Jushuo AFC01 series bottom-contact 0.5mm-pitch FPC connectors, with partial JLC numbers for some parts
   and re-using the probably-compatible but not-purpose-designed FH12 footprint."""
   _afc01_pins = set(range(4, 60+1))  # as listed by the part table
   allowed_pins = _afc01_pins.intersection(HiroseFh12sh._kicad_pins)
@@ -71,10 +71,10 @@ class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
 
 
 class Afc07(Fpc050Top, FootprintPassiveConnector, JlcPart):
-  """Jushuo AFC07 series top-entry 0.5mm-pitch FPC connectors, with partial JLC numbers for some parts
+  """Jushuo AFC07 series slide-lock top-contact 0.5mm-pitch FPC connectors, with partial JLC numbers for some parts
   and re-using the probably-compatible but not-purpose-designed FH12 footprint."""
-  _afc01_pins = set(range(4, 60+1))  # as listed by the part table
-  allowed_pins = _afc01_pins.intersection(HiroseFh12sh._kicad_pins)
+  _afc07_pins = set(range(4, 60+1))  # as listed by the part table
+  allowed_pins = _afc07_pins.intersection(HiroseFh12sh._kicad_pins)
   PART_NUMBERS = {  # partial list of the ones currently used
     8: 'C262581',
     24: 'C262643',
@@ -85,7 +85,7 @@ class Afc07(Fpc050Top, FootprintPassiveConnector, JlcPart):
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
     self.assign(self.actual_basic_part, False)
     return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
-            "Jushuo", f"AFC01-S{length:02d}FCA-00")  # CA is packaging
+            "Jushuo", f"AFC01-S{length:02d}ECA-00")  # CA is packaging
 
 
 class Te1734839(Fpc050Top, FootprintPassiveConnector):
