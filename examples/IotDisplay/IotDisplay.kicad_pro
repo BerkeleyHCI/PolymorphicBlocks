@@ -61,12 +61,7 @@
           "width": 0.16
         }
       ],
-      "drc_exclusions": [
-        "hole_clearance|35095000|129100000|8372d105-4292-484a-b545-199e306afe1b|c43afb39-9d6c-4b7e-9533-2e5885f09dc8",
-        "hole_clearance|35095000|129300000|4a6e305d-5450-4150-9abe-90c708475955|c43afb39-9d6c-4b7e-9533-2e5885f09dc8",
-        "hole_clearance|35095000|134700000|6ac9fa48-e17b-4c73-8ba3-98a05c17faf5|fdcad2c4-b0c8-495e-8faa-9126f9a720dd",
-        "hole_clearance|35095000|134900000|b0acbc71-e4d1-4ed9-accb-24d47fe2f9c4|fdcad2c4-b0c8-495e-8faa-9126f9a720dd"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
