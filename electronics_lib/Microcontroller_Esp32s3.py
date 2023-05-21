@@ -42,6 +42,7 @@ class Esp32s3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
       'CHIP_PU': self.chip_pu,
       'GND': self.gnd,
 
+      'GPIO0': self.io0,
       'U0RXD': self.uart0.rx,
       'U0TXD': self.uart0.tx,
     }).remap(self.SYSTEM_PIN_REMAP)
