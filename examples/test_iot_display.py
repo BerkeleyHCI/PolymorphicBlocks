@@ -41,6 +41,7 @@ class IotDisplay(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
+      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
       (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
@@ -64,25 +65,25 @@ class IotDisplay(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32_Wroom_32),
+        (['mcu'], Esp32s3_Wroom_1),
         (['reg_3v3'], Ld1117),
         (['reg_12v'], Ap3012),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          'ledr=8',
-          'ledg=9',
-          'ledb=10',
-          'sw0=14',
-          'sw1=13',
-          'sw2=12',
-          'oled_rst=26',
-          'oled_cs=27',
-          'oled_dc=28',
-          'spi.sck=29',
-          'spi.mosi=30',
+          'ledr=7',
+          'ledg=8',
+          'ledb=9',
+          'sw0=12',
+          'sw1=11',
+          'sw2=10',
+          'oled_rst=38',
+          'oled_cs=31',
+          'oled_dc=32',
+          'spi.sck=33',
+          'spi.mosi=34',
           'spi.miso=NC',
-          'epd_busy=31',
+          'epd_busy=35',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
