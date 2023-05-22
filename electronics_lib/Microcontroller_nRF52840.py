@@ -78,7 +78,7 @@ class Nrf52840Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, G
       'P0.00', 'P0.01', 'P0.26', 'P0.27', 'P0.04',
       'P0.05', 'P0.06', 'P0.07', 'P0.08', 'P1.08', 'P1.09', 'P0.11', 'P0.12',
       'P0.14', 'P0.16', 'P0.19', 'P0.21', 'P0.23', 'P0.25',  # 'P0.18'
-      'P0.13', 'P0.15', 'P0.17', 'P0.20', 'P0.22', 'P0.24',  # 'P1.00'
+      'P0.13', 'P0.15', 'P0.17', 'P0.20', 'P0.22', 'P0.24',  'P1.00',
     ]
 
     return PinMapUtil([  # Section 7.1.2 with QIAA aQFN73 & QFAA QFN48 pins only
@@ -366,13 +366,13 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, IoControllerWithSwdTargetCon
 
 class Feather_Nrf52840_Device(Nrf52840Base_Device):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-    'reset': '1',
-    '3v': '2',
-    'gnd': '4',
+    'Vdd': '2',  # 3v3
+    'Vss': '4',
 
-    'vbus': '26',
-    'en': '27',
-    'vbat': '28',
+    # 'reset': '1',
+    # 'Vbus': '26',
+    # 'EN': '27',  # controls the onboard 3.3 LDO, internally pulled up
+    # 'Vbat': '28',
   }
   RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
     'P0.31': '3',  # AREF
@@ -401,7 +401,8 @@ class Feather_Nrf52840_Device(Nrf52840Base_Device):
 
     # note onboard LED1 at P1.15, LED2 at P1.10
     # note onboard switch at P1.02, reset switch at P0.18
-    # note onboard neopixel at P0.16
+    # note onboard neopixel at P0.16 (data out not broken out)
+    # note onboard VBAT sense divider at P0.29
   }
 
   PACKAGE = '...'
