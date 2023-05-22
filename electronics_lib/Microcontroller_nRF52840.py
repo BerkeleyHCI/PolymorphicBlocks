@@ -362,3 +362,17 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, IoControllerWithSwdTargetCon
       self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
     else:
       super()._make_export_io(self_io, inner_io)
+
+
+class Feather_Nrf52840_Device(Nrf52840Base_Device):
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+
+  }
+  RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
+
+  }
+
+  PACKAGE = '...'
+  MANUFACTURER = 'Feather nRF52840 Express'
+  PART = 'Feather '
+  DATASHEET = 'https://learn.adafruit.com/assets/68545'
