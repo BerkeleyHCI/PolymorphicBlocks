@@ -245,7 +245,10 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
         ),
         'fet.S': VoltageSource(
           voltage_out=self.pwr_lo.link().voltage.hull(
-            self.pwr_hi.link().voltage - self.diode.actual_voltage_drop),
+            # use the spec voltage drop since using the actual voltage drop causes a circular dependency
+            # (where current depends on voltage, but the diode voltage drop depends on the diode selection
+            # which depends on the current through)
+            self.pwr_hi.link().voltage - self.diode_voltage_drop),
         ),
         'pdr.2': Ground(),
       })

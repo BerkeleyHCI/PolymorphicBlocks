@@ -77,8 +77,9 @@ class IotDisplay(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
-        (['reg_3v3'], Ld1117),
+        (['reg_3v3'], Ldl1117),
         (['reg_12v'], Ap3012),
+        (['batt', 'conn'], JstPhKVertical),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -99,6 +100,9 @@ class IotDisplay(JlcBoardTop):
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
         (['reg_12v', 'power_path', 'inductor', 'actual_frequency_rating'], Range(0, 7e6)),
+
+        # (['reg_3v3', 'ic', 'actual_dropout'], ),
+        # (['reg_3v3', 'ic', 'pwr_out', 'current_limits'], Range(0, 800e-3)),
       ],
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),

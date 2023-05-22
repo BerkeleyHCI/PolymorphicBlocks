@@ -57,7 +57,7 @@ class Ld1117(LinearRegulator):
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
+class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -74,18 +74,18 @@ class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     super().generate()
     TOLERANCE = 0.03  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [  # output voltage
-      (1.185, 'LDL1117S12R'),
-      (1.5, 'LDL1117S15R'),
-      (1.8, 'LDL1117S18R'),
-      (2.5, 'LDL1117S25R'),
-      (3.0, 'LDL1117S30R'),
-      (3.3, 'LDL1117S33R'),
-      (5.0, 'LDL1117S50R'),
+      (1.185, 'LDL1117S12R', 'C2926949'),
+      # (1.5, 'LDL1117S15R'),  # not listed at JLC
+      (1.8, 'LDL1117S18R', 'C2926947'),
+      (2.5, 'LDL1117S25R', 'C2926456'),
+      (3.0, 'LDL1117S30R', 'C2798214'),
+      (3.3, 'LDL1117S33R', 'C435835'),
+      (5.0, 'LDL1117S50R', 'C970558'),
     ]
-    suitable_parts = [(part_out_nominal, part_number) for part_out_nominal, part_number in parts
-                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in self.get(self.output_voltage)]
+    suitable_parts = [part for part in parts
+                      if Range.from_tolerance(part[0], TOLERANCE) in self.get(self.output_voltage)]
     assert suitable_parts, "no regulator with compatible output"
-    part_output_voltage_nominal, part_number = suitable_parts[0]
+    part_output_voltage_nominal, part_number, jlc_number = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
     self.footprint(
@@ -98,6 +98,8 @@ class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
       mfr='STMicroelectronics', part=part_number,
       datasheet='https://www.st.com/content/ccc/resource/technical/document/datasheet/group3/0e/5a/00/ca/10/1a/4f/a5/DM00366442/files/DM00366442.pdf/jcr:content/translations/en.DM00366442.pdf',
     )
+    self.assign(self.lcsc_part, jlc_number)
+    self.assign(self.actual_basic_part, False)
 
 
 class Ldl1117(LinearRegulator):
@@ -105,7 +107,7 @@ class Ldl1117(LinearRegulator):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.ic = imp.Block(Ld1117_Device(self.output_voltage))
+      self.ic = imp.Block(Ldl1117_Device(self.output_voltage))
       self.in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
       self.out_cap = imp.Block(DecouplingCapacitor(capacitance=4.7 * uFarad(tol=0.2)))
 
