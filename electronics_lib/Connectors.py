@@ -52,7 +52,8 @@ class LipoConnector(Connector, Battery):
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
       current_limits=(0, 5.5)*Amp,  # arbitrary assuming low capacity, 10 C discharge
     )))
-    self.chg_adapter = self.Block(PassiveAdapterVoltageSink())
-    self.connect(pwr_pin, self.chg_adapter.src)
-    self.connect(self.chg, self.chg_adapter.dst)
+    chg_adapter = self.Block(PassiveAdapterVoltageSink())
+    setattr(self, '(adapter)chg', chg_adapter)  # hack so the netlister recognizes this as an adapter
+    self.connect(pwr_pin, chg_adapter.src)
+    self.connect(self.chg, chg_adapter.dst)
     self.assign(self.actual_capacity, (500, 600)*mAmp)  # arbitrary
