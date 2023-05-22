@@ -173,6 +173,9 @@ function createNames(prefix, count, startIndex) {
 
 const yMargin = (yPitch - yLength) / 2
 
+
+// Generate LED chain for segments
+//
 var ledNum = 0
 for (digitCenter of digitCenters) {
   const a1 = segPt(digitCenter, [-xLength/2, yPitch])
@@ -290,73 +293,77 @@ const my = createLed(segPt([0, 0], [-metaXPitch/2, -metaYPitch/2]), 0, "My")  //
 const m4 = createLed(segPt([0, 0], [metaXPitch/2, -metaYPitch/2]), 0, "M4")
 
 
-// Generate mounting holes between left and right groups of digits
-for (i=0; i<digitCenters.length - 1; i+=2) {
+// Generate outline
+//
+var outlineElts = []
+for (digitCenter of digitCenters) {  // outline closed-path for each segment
+  const segmentOutline = geo.path([
+    // upper segment
+    segPt(digitCenter, [-xPitch/2 - outlineWidth/2, yMargin + yLength + outlineWidth/4]),  // /4 is arbitrary to make it line up
+    segPt(digitCenter, [-xLength/2 - outlineWidth/4, yPitch + outlineWidth/2]),
+    segPt(digitCenter, [xLength/2 + outlineWidth/4, yPitch + outlineWidth/2]),
+    segPt(digitCenter, [xPitch/2 + outlineWidth/2, yMargin + yLength + outlineWidth/4]),
+    // lower segment
+    segPt(digitCenter, [xPitch/2 + outlineWidth/2, -yMargin - yLength - outlineWidth/4]),
+    segPt(digitCenter, [xLength/2 + outlineWidth/4, -yPitch - outlineWidth/2]),
+    segPt(digitCenter, [-xLength/2 - outlineWidth/4, -yPitch - outlineWidth/2]),
+    segPt(digitCenter, [-xPitch/2 - outlineWidth/2, -yMargin - yLength - outlineWidth/4]),
+  ])
+
+  const segmentCutouts = geo.union(
+    geo.path([  // upper cutout
+      segPt(digitCenter, [-xPitch/2 + outlineWidth/2, yPitch - outlineWidth/2]),  // A
+      segPt(digitCenter, [xPitch/2 - outlineWidth/2, yPitch - outlineWidth/2]),  // A2
+      segPt(digitCenter, [xPitch/2 - outlineWidth/2, outlineWidth/2]),  // B2
+      segPt(digitCenter, [-xPitch/2 + outlineWidth/2, outlineWidth/2]),  // G1
+      // segPt(digitCenter, [-xPitch/2 + outlineWidth/2, yPitch - outlineWidth/2]),
+    ]),
+    geo.path([  // lower cutout
+      segPt(digitCenter, [-xPitch/2 + outlineWidth/2, -outlineWidth/2]),
+      segPt(digitCenter, [xPitch/2 - outlineWidth/2, -outlineWidth/2]),
+      segPt(digitCenter, [xPitch/2 - outlineWidth/2, -yPitch + outlineWidth/2]),
+      segPt(digitCenter, [-xPitch/2 + outlineWidth/2, -yPitch + outlineWidth/2]),
+      // segPt(digitCenter, [-xPitch/2 + outlineWidth/2, -outlineWidth/2]),
+    ])
+  )
+  
+  const segmentWithCutout = geo.difference(segmentOutline, segmentCutouts)  
+  outlineElts.push(segmentWithCutout)
+}
+
+for (i=0; i<digitCenters.length - 1; i++) {  // outline closed-path (joiner) between each segment
+  const xDelta = outlineWidth / 4  // make the joiner overlap into the segment to avoid exact-intersection which seems to confuse the union algo
+  const joiner = geo.path([
+    segPt(digitCenters[i], [xPitch/2 + outlineWidth/2 - xDelta, outlineJoinerWidth/2]),
+    segPt(digitCenters[i+1], [-xPitch/2 - outlineWidth/2 + xDelta, outlineJoinerWidth/2]),
+    segPt(digitCenters[i+1], [-xPitch/2 - outlineWidth/2 + xDelta, -outlineJoinerWidth/2]),
+    segPt(digitCenters[i], [xPitch/2 + outlineWidth/2 - xDelta, -outlineJoinerWidth/2]),
+  ])
+  outlineElts.push(joiner)
+}
+
+var unionOutline = outlineElts[0]
+for (i=1; i<outlineElts.length; i++) {
+  unionOutline = geo.union(unionOutline, outlineElts[i])
+}
+
+board.addShape("interior", unionOutline);
+
+
+// Generate mechanical mounting holes
+//
+for (i=0; i<digitCenters.length - 1; i+=2) {  // clearance holes in left- and right-side joiners
   const center = pCenter(digitCenters[i], digitCenters[i+1])
   board.add(mountingHole, {translate: segPt(center, [0, mountingHolePitch/2])})
   board.add(mountingHole, {translate: segPt(center, [0, -mountingHolePitch/2])})
 }
 
-
-// Generate outline
-for (digitCenter of digitCenters) {
-  board.wire([  // top outline
-    segPt(digitCenter, [-xPitch/2 - outlineWidth/2, outlineJoinerWidth/2]),
-    segPt(digitCenter, [-xPitch/2 - outlineWidth/2, yMargin + yLength + outlineWidth/4]),  // /4 is arbitrary to make it line up
-    segPt(digitCenter, [-xLength/2 - outlineWidth/4, yPitch + outlineWidth/2]),
-    segPt(digitCenter, [xLength/2 + outlineWidth/4, yPitch + outlineWidth/2]),
-    segPt(digitCenter, [xPitch/2 + outlineWidth/2, yMargin + yLength + outlineWidth/4]),
-    segPt(digitCenter, [xPitch/2 + outlineWidth/2, outlineJoinerWidth/2]),
-  ], traceWidth, "Edge.Cuts")
-
-  board.wire([  // bottom outline
-    segPt(digitCenter, [-xPitch/2 - outlineWidth/2, -outlineJoinerWidth/2]),
-    segPt(digitCenter, [-xPitch/2 - outlineWidth/2, -yMargin - yLength - outlineWidth/4]),
-    segPt(digitCenter, [-xLength/2 - outlineWidth/4, -yPitch - outlineWidth/2]),
-    segPt(digitCenter, [xLength/2 + outlineWidth/4, -yPitch - outlineWidth/2]),
-    segPt(digitCenter, [xPitch/2 + outlineWidth/2, -yMargin - yLength - outlineWidth/4]),
-    segPt(digitCenter, [xPitch/2 + outlineWidth/2, -outlineJoinerWidth/2]),
-  ], traceWidth, "Edge.Cuts")
-  
-  board.wire([  // top cutout
-    segPt(digitCenter, [-xPitch/2 + outlineWidth/2, yPitch - outlineWidth/2]),  // A
-    segPt(digitCenter, [xPitch/2 - outlineWidth/2, yPitch - outlineWidth/2]),  // A2
-    segPt(digitCenter, [xPitch/2 - outlineWidth/2, outlineWidth/2]),  // B2
-    segPt(digitCenter, [-xPitch/2 + outlineWidth/2, outlineWidth/2]),  // G1
-    segPt(digitCenter, [-xPitch/2 + outlineWidth/2, yPitch - outlineWidth/2]),
-  ], traceWidth, "Edge.Cuts")
-  
-  board.wire([  // bottom cutout
-    segPt(digitCenter, [-xPitch/2 + outlineWidth/2, -outlineWidth/2]),
-    segPt(digitCenter, [xPitch/2 - outlineWidth/2, -outlineWidth/2]),
-    segPt(digitCenter, [xPitch/2 - outlineWidth/2, -yPitch + outlineWidth/2]),
-    segPt(digitCenter, [-xPitch/2 + outlineWidth/2, -yPitch + outlineWidth/2]),
-    segPt(digitCenter, [-xPitch/2 + outlineWidth/2, -outlineWidth/2]),
-  ], traceWidth, "Edge.Cuts")
-}
-
-board.wire([  // left closure
-  segPt(digitCenters[0], [-xPitch/2 - outlineWidth/2, outlineJoinerWidth/2]),
-  segPt(digitCenters[0], [-xPitch/2 - outlineWidth/2, -outlineJoinerWidth/2]),
-], traceWidth, "Edge.Cuts")
-for (i=0; i<digitCenters.length - 1; i++) {
-  board.wire([  // top joiner
-    segPt(digitCenters[i], [xPitch/2 + outlineWidth/2, outlineJoinerWidth/2]),
-    segPt(digitCenters[i+1], [-xPitch/2 - outlineWidth/2, outlineJoinerWidth/2]),
-  ], traceWidth, "Edge.Cuts")
-  board.wire([  // bottom joiner
-    segPt(digitCenters[i], [xPitch/2 + outlineWidth/2, -outlineJoinerWidth/2]),
-    segPt(digitCenters[i+1], [-xPitch/2 - outlineWidth/2, -outlineJoinerWidth/2]),
-  ], traceWidth, "Edge.Cuts")
-}
-board.wire([  // right closure
-  segPt(digitCenters[digitCenters.length-1], [xPitch/2 + outlineWidth/2, outlineJoinerWidth/2]),
-  segPt(digitCenters[digitCenters.length-1], [xPitch/2 + outlineWidth/2, -outlineJoinerWidth/2]),
-], traceWidth, "Edge.Cuts")
-
-const mount1 = board.add(m2_5, { translate: [6.7 / 25.4, 20.5 / 25.4], label: "mount1" })
+const mount1 = board.add(m2_5, { translate: [6.7 / 25.4, 20.5 / 25.5], label: "mount1" })
 const mount2 = board.add(m2_5, { translate: [-9.6 / 25.4, -26.8 / 25.4], label: "mount2" })
 
+
+// Generate switches
+//
 const switchPitch = 26.5/3 / 25.4
 
 function createSwitch(pt, rot, name) {  // creates a switch with associated routing, and returns it; pt is the board outline intersection
@@ -398,4 +405,3 @@ renderPCB({
   },
   mm_per_unit: 25.4
 });
-
