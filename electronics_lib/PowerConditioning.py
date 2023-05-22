@@ -216,6 +216,9 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
   def contents(self):
     super().contents()
 
+    # FET behavior requires the high priority path to be higher voltage
+    self.require(self.pwr_hi.link().voltage.lower() > self.pwr_lo.link().voltage.upper())
+
     output_current_draw = self.pwr_out.link().current_drawn
     self.pdr = self.Block(Resistor(10*kOhm(tol=0.01)))
     self.diode = self.Block(Diode(
@@ -227,7 +230,7 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
       drain_voltage=(0, self.pwr_hi.link().voltage.upper() - self.pwr_lo.link().voltage.lower()),
       drain_current=output_current_draw,
       # gate voltage accounts for a possible power on transient
-      gate_voltage=(0, (self.pwr_hi.link().voltage.hull(self.pwr_lo.link().voltage).upper())),
+      gate_voltage=(-self.pwr_hi.link().voltage.upper(), (self.pwr_hi.link().voltage.upper())),
       rds_on=self.fet_rds_on
     ))
 
