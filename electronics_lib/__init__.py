@@ -50,7 +50,7 @@ from .BoostConverters_AnalogDevices import Ltc3429
 from .BoostConverters_DiodesInc import Ap3012
 from .BoostConverters_Torex import Xc9142
 from .BuckBoostConverter_Custom import CustomBuckBoostConverter
-from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge
+from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Microcontroller_Stm32f103 import Stm32f103_48
@@ -95,6 +95,7 @@ from .AnalogSwitch_Nlas4157 import Nlas4157
 from .CanTransceiver_Iso1050 import Iso1050dub
 from .CanTransceiver_Sn65hvd230 import Sn65hvd230
 from .BatteryProtector_S8261A import BatteryProtector_S8261A
+from .BatteryCharger_Mcp73831 import Mcp73831
 from .Distance_Vl53l0x import Vl53l0x, Vl53l0xApplication, Vl53l0xConnector, Vl53l0xArray
 from .Isolator_Cbmud1200 import Cbmud1200l
 from .GateDriver_Ir2301 import Ir2301
