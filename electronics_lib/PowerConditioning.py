@@ -191,3 +191,58 @@ class DiodePowerMerge(PowerConditioner, Block):
     )), self.pwr_in2)
 
     self.connect(self.merge.pwr_out, self.pwr_out)
+
+
+class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
+  """Power merge block for two power inputs, where the high priority input (e.g. USB) is higher voltage and
+  the low priority input is lower voltage (e.g. battery).
+  The higher priority input incurs a diode drop, while the lower priority input has a FET.
+  As a side effect, the FET power path also acts as reverse polarity protection.
+  """
+  @init_in_parent
+  def __init__(self, diode_voltage_drop: RangeLike, fet_rds_on: RangeLike) -> None:
+    super().__init__()
+
+    self.gnd = self.Port(Ground.empty())
+    self.pwr_hi = self.Port(VoltageSink.empty())  # high-priority higher-voltage source
+    self.pwr_lo = self.Port(VoltageSink.empty())  # low-priority lower-voltage source
+    self.pwr_out = self.Port(VoltageSource.empty())
+
+    self.diode_voltage_drop = self.ArgParameter(diode_voltage_drop)
+    self.fet_rds_on = self.ArgParameter(fet_rds_on)
+
+  def contents(self):
+    super().contents()
+
+    output_current_draw = self.pwr_out.link().current_drawn
+    self.pdr = self.Block(Resistor(10*kOhm(tol=0.01)))
+    self.diode = self.Block(Diode(
+      reverse_voltage=(0, self.pwr_lo.link().voltage.upper()),
+      current=output_current_draw,
+      voltage_drop=self.diode_voltage_drop,
+    ))
+    self.fet = self.Block(Fet.PFet(  # doesn't account for reverse protection
+      drain_voltage=(0, self.pwr_hi.link().voltage.upper() - self.pwr_lo.link().voltage.lower()),
+      drain_current=output_current_draw,
+      gate_voltage=(0, self.pwr_lo.link().voltage.upper()),
+      rds_on=self.fet_rds_on
+    ))
+
+    self.import_kicad(
+      self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'pdr.1': VoltageSink(),
+        'diode.A': VoltageSink(
+          current_draw=output_current_draw
+        ),
+        'diode.K': VoltageSink(),  # arbitrary to make the connection
+        'fet.G': VoltageSink(),
+        'fet.D': VoltageSink(
+          current_draw=output_current_draw
+        ),
+        'fet.S': VoltageSource(
+          voltage_out=self.pwr_lo.link().voltage.hull(
+            self.pwr_hi.link().voltage - self.diode.actual_voltage_drop),
+        ),
+        'pdr.2': Ground(),
+      })
