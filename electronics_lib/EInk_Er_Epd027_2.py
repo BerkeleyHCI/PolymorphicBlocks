@@ -40,6 +40,11 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
         self.gdr = self.Export(self.conn.pins.request('2'))
         self.rese = self.Export(self.conn.pins.request('3'))
 
+        # NC in this part, but for compatibility, some displays have VGL here and need a capacitor
+        self.nc_vgl = self.Export(self.conn.pins.request('4').adapt_to(VoltageSource(
+            voltage_out=(-15, -2.5)*Volt,  # inferred from power selection register
+            current_limits=0*mAmp(tol=0)  # only for external capacitor
+        )), optional=True)
         self.vshr = self.Export(self.conn.pins.request('5').adapt_to(VoltageSource(
             voltage_out=(0, 11)*Volt,  # inferred from power selection register
             current_limits=0*mAmp(tol=0)  # only for external capacitor
@@ -81,8 +86,12 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
 class Er_Epd027_2(EInk, GeneratorBlock):
     """EK79651AB-based white/black/red 2.7" 176x264 e-paper display.
     (Probably) compatible with https://www.waveshare.com/w/upload/b/ba/2.7inch_e-Paper_V2_Specification.pdf,
-    and https://www.waveshare.com/w/upload/7/7b/2.7inch-e-paper-b-v2-specification.pdf"""
-    def __init__(self) -> None:
+    and https://www.waveshare.com/w/upload/7/7b/2.7inch-e-paper-b-v2-specification.pdf
+
+    compatibility indicates whether to generate additional circuitry to allow this to be used with similar displays.
+    """
+    @init_in_parent
+    def __init__(self, *, compatibility: BoolLike = False) -> None:
         super().__init__()
         self.device = self.Block(Er_Epd027_2_Device())
         self.gnd = self.Export(self.device.vss, [Common])
@@ -93,7 +102,8 @@ class Er_Epd027_2(EInk, GeneratorBlock):
         self.dc = self.Export(self.device.dc, optional=True)
         self.busy = self.Export(self.device.busy, optional=True)
 
-        self.generator_param(self.dc.is_connected())
+        self.compatibility = self.ArgParameter(compatibility)
+        self.generator_param(self.dc.is_connected(), self.compatibility)
 
     def contents(self):
         super().contents()
@@ -130,3 +140,7 @@ class Er_Epd027_2(EInk, GeneratorBlock):
             self.connect(self.gnd.as_digital_source(), self.device.bs)
         else:  # 3-line serial, BS high
             self.connect(self.pwr.as_digital_source(), self.device.bs)
+
+        if self.get(self.compatibility):
+            self.nc_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
+                .connected(self.device.nc_vgl, self.gnd)
