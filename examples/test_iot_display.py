@@ -31,7 +31,7 @@ class IotDisplay(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.charger, ), _ = self.chain(
-        self.vusb, imp.Block(Mcp73831(200*mAmp(tol=0.1))), self.batt.chg
+        self.vusb, imp.Block(Mcp73831(200*mAmp(tol=0.2))), self.batt.chg
       )
       (self.charge_led, ), _ = self.chain(
         self.Block(IndicatorSinkLed(Led.Yellow)), self.charger.stat
