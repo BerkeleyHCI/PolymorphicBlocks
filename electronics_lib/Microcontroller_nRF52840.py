@@ -365,6 +365,8 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, IoControllerWithSwdTargetCon
 
 
 class Feather_Nrf52840_Device(Nrf52840Base_Device):
+  """Feather nRF52840 acting as a voltage source"""
+
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': '2',  # 3v3
     'Vss': '4',
@@ -410,17 +412,26 @@ class Feather_Nrf52840_Device(Nrf52840Base_Device):
   PART = 'Feather nRF52840 Express'
   DATASHEET = 'https://learn.adafruit.com/assets/68545'
 
+  def __init__(self):
+    super().__init__()
+    mbr120_drop = (0, 0.340)*Volt
+    ap2112_3v3_out = 3.3*Volt(tol=0.015)  # note dropout voltage up to 400mV, current up to 600mA
+    self.pwr_5v = self.Port(VoltageSource(
+      voltage_out=UsbConnector.USB2_VOLTAGE_RANGE - mbr120_drop,
+      current_limits=UsbConnector.USB2_CURRENT_LIMITS
+    ), optional=True)
+    self.pwr_3v3 = self.Port(VoltageSource(
+      voltage_out=ap2112_3v3_out,
+      current_limits=UsbConnector.USB2_CURRENT_LIMITS
+    ), optional=True)
+    self.gnd = self.Port(GroundSource(), optional=True)
 
-class Feather_Nrf52840(Microcontroller, Radiofrequency, IoController, Block):
-  """Wrapper around Feather_Nrf52840 fitting the IoController interface
-  """
-  def contents(self) -> None:
-    super().contents()
+    self._vdd = self.pwr_3v3
+    self._gnd = self.gnd
 
-    with self.implicit_connect(
-        ImplicitConnect(self.pwr, [Power]),
-        ImplicitConnect(self.gnd, [Common])
-    ) as imp:
-      self.ic = imp.Block(Feather_Nrf52840_Device(pin_assigns=self.pin_assigns))
-      self._export_ios_from(self.ic)
-      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    pinmap = super()._system_pinmap()
+    pinmap.update({
+      '26': self.pwr_5v
+    })
+    return pinmap
