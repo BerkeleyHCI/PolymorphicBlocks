@@ -409,3 +409,18 @@ class Feather_Nrf52840_Device(Nrf52840Base_Device):
   MANUFACTURER = 'Adafruit'
   PART = 'Feather nRF52840 Express'
   DATASHEET = 'https://learn.adafruit.com/assets/68545'
+
+
+class Feather_Nrf52840(Microcontroller, Radiofrequency, IoController, Block):
+  """Wrapper around Feather_Nrf52840 fitting the IoController interface
+  """
+  def contents(self) -> None:
+    super().contents()
+
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      self.ic = imp.Block(Feather_Nrf52840_Device(pin_assigns=self.pin_assigns))
+      self._export_ios_from(self.ic)
+      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
