@@ -37,17 +37,22 @@ class LipoConnector(Connector, Battery):
   BE PREPARED FOR REVERSE POLARITY CONNECTIONS.
   Default pinning has ground being pin 1, and power being pin 2.
 
-  Connector type not specified, up to the user through a refinement.
-  Uses pins 1 and 2."""
+  Connector type not specified, up to the user through a refinement."""
   @init_in_parent
   def __init__(self, voltage: RangeLike = Default((2.5, 4.2)*Volt), *args,
                actual_voltage: RangeLike = Default((2.5, 4.2)*Volt), **kwargs):
+    from electronics_model.PassivePort import PassiveAdapterVoltageSink
     super().__init__(voltage, *args, **kwargs)
+    self.chg = self.Port(VoltageSink.empty(), optional=True)  # ideal port for charging
     self.conn = self.Block(PassiveConnector())
 
     self.connect(self.gnd, self.conn.pins.request('1').adapt_to(GroundSource()))
-    self.connect(self.pwr, self.conn.pins.request('2').adapt_to(VoltageSource(
+    pwr_pin = self.conn.pins.request('2')
+    self.connect(self.pwr, pwr_pin.adapt_to(VoltageSource(
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
       current_limits=(0, 5.5)*Amp,  # arbitrary assuming low capacity, 10 C discharge
     )))
+    self.chg_adapter = self.Block(PassiveAdapterVoltageSink())
+    self.connect(pwr_pin, self.chg_adapter.src)
+    self.connect(self.chg, self.chg_adapter.dst)
     self.assign(self.actual_capacity, (500, 600)*mAmp)  # arbitrary

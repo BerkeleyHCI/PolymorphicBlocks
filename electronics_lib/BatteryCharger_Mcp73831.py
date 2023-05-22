@@ -52,7 +52,7 @@ class Mcp73831(PowerConditioner, Block):
     self.ic = self.Block(Mcp73831_Device(charging_current=RangeExpr()))
 
     self.pwr_bat = self.Export(self.ic.vbat, [Output])
-    self.pwr = self.Export(self.ic.vdd, [Power])
+    self.pwr = self.Export(self.ic.vdd, [Input, Power])
     self.gnd = self.Export(self.ic.vss, [Common])
     self.stat = self.Export(self.ic.stat)  # hi-Z when not charging, low when charging, high when done
 
@@ -68,9 +68,9 @@ class Mcp73831(PowerConditioner, Block):
     self.require(self.prog_res.actual_resistance.within((2, 67)*kOhm), "prog must be within charge impedance range")
 
     self.vdd_cap = self.Block(  # not formally specified on the datasheet, but this is used in the reference board
-      DecouplingCapacitor(4.7*uFarad(tol=0.10))
+      DecouplingCapacitor(4.7*uFarad(tol=0.2))
     ).connected(self.gnd, self.pwr)
 
     self.vbat_cap = self.Block(  # can be ceramic, tantalum, aluminum electrolytic
-      DecouplingCapacitor(4.7*uFarad(tol=0.10))
+      DecouplingCapacitor(4.7*uFarad(tol=0.2))
     ).connected(self.gnd, self.pwr_bat)
