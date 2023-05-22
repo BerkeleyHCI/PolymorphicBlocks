@@ -21,7 +21,7 @@ class Mcp73831_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     ))
     self.vbat = self.Port(VoltageSource(
       voltage_out=(4.168, 4.232)*Volt,  # -2 variant
-      current_limits=charging_current.hull(0*Amp(tol=0))
+      current_limits=self.charging_current.hull(0*Amp(tol=0))
     ))
     self.prog = self.Port(Passive())
 

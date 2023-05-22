@@ -1,3 +1,5 @@
+from typing import Optional, cast
+
 from electronics_abstract_parts import *
 
 
@@ -224,7 +226,8 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
     self.fet = self.Block(Fet.PFet(  # doesn't account for reverse protection
       drain_voltage=(0, self.pwr_hi.link().voltage.upper() - self.pwr_lo.link().voltage.lower()),
       drain_current=output_current_draw,
-      gate_voltage=(0, self.pwr_lo.link().voltage.upper()),
+      # gate voltage accounts for a possible power on transient
+      gate_voltage=(0, (self.pwr_hi.link().voltage.hull(self.pwr_lo.link().voltage).upper())),
       rds_on=self.fet_rds_on
     ))
 
@@ -246,3 +249,14 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
         ),
         'pdr.2': Ground(),
       })
+
+  def connected_from(self, gnd: Optional[Port[VoltageLink]] = None, pwr_hi: Optional[Port[VoltageLink]] = None,
+                     pwr_lo: Optional[Port[VoltageLink]] = None) -> 'PriorityPowerOr':
+    """Convenience function to connect ports, returning this object so it can still be given a name."""
+    if gnd is not None:
+      cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+    if pwr_hi is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr_hi, self.pwr_hi)
+    if pwr_lo is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr_lo, self.pwr_lo)
+    return self
