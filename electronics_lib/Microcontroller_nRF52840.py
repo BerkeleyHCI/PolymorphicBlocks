@@ -366,13 +366,45 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, IoControllerWithSwdTargetCon
 
 class Feather_Nrf52840_Device(Nrf52840Base_Device):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    'reset': '1',
+    '3v': '2',
+    'gnd': '4',
 
+    'vbus': '26',
+    'en': '27',
+    'vbat': '28',
   }
   RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
+    'P0.31': '3',  # AREF
+    'P0.04': '5',  # A0
+    'P0.05': '6',  # A1
+    'P0.30': '7',  # A2
+    'P0.28': '8',  # A3
+    'P0.02': '9',  # A4
+    'P0.03': '10',  # A5
+    'P0.14': '11',  # SCK
+    'P0.13': '12',  # MOSI
+    'P0.15': '13',  # MISO
+    'P0.24': '14',  # RXD
+    'P0.25': '15',  # TXD
+    'P0.10': '16',  # D2
 
+    'P0.12': '17',  # SDA
+    'P0.11': '18',  # SCL
+    'P1.08': '19',  # D5
+    'P0.07': '20',  # D6
+    'P0.26': '21',  # D9
+    'P0.27': '22',  # D10
+    'P0.06': '23',  # D11
+    'P0.08': '24',  # D12
+    'P1.09': '25',  # D13
+
+    # note onboard LED1 at P1.15, LED2 at P1.10
+    # note onboard switch at P1.02, reset switch at P0.18
+    # note onboard neopixel at P0.16
   }
 
   PACKAGE = '...'
-  MANUFACTURER = 'Feather nRF52840 Express'
-  PART = 'Feather '
+  MANUFACTURER = 'Adafruit'
+  PART = 'Feather nRF52840 Express'
   DATASHEET = 'https://learn.adafruit.com/assets/68545'
