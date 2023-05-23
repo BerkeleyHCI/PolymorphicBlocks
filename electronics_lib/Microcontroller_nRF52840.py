@@ -364,7 +364,7 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, IoControllerWithSwdTargetCon
       super()._make_export_io(self_io, inner_io)
 
 
-class Feather_Nrf52840_Device(Nrf52840Base_Device):
+class Feather_Nrf52840(Nrf52840Base_Device):
   """Feather nRF52840 acting as a voltage source"""
 
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {

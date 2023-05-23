@@ -89,38 +89,15 @@ class BldcController(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    # technically this needs to bootstrap w/ 5v before the MCU
-    # negotiates a higher voltage, but the BLDC driver needs
-    # at least 8v, so this "assumes" the USB will be at least 9v
-    self.usb = self.Block(UsbCReceptacle(
-      voltage_out=(9.0*0.9, 12*1.1)*Volt,
-      current_limits=(0, 5)*Amp))
+    self.mcu = self.Block(Feather_Nrf52840())
+    self.motor_pwr = self.Block(LipoConnector(voltage=(2.5, 4.2)*Volt*6, actual_voltage=(2.5, 4.2)*Volt*6))
 
-    self.vusb = self.connect(self.usb.pwr)
+    self.vusb = self.connect(self.mcu.pwr_usb)
+    self.v3v3 = self.connect(self.mcu.pwr_3v3)
+    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
+      self.mcu.gnd, self.motor_pwr.gnd)
+    self.gnd = self.connect(self.gnd_merge.pwr_out)
     self.gnd = self.connect(self.usb.gnd)
-
-    self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
-
-    # POWER
-    with self.implicit_connect(
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      (self.prot_vusb, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-        self.vusb,
-        imp.Block(ProtectionZenerDiode(voltage=15*Volt(tol=0.1))),
-        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
-        self.Block(VoltageTestPoint()),
-        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
-      )
-      self.v3v3 = self.connect(self.reg_3v3.pwr_out)
-
-      (self.reg_5v, self.tp_5v), _ = self.chain(
-        self.vusb,
-        imp.Block(LinearRegulator(output_voltage=5.0*Volt(tol=0.05))),
-        self.Block(VoltageTestPoint()),
-      )
-      self.v5 = self.connect(self.reg_5v.pwr_out)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
@@ -130,6 +107,9 @@ class BldcController(JlcBoardTop):
       self.mcu = imp.Block(IoController())
 
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
+      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
+      (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
+      (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
 
       i2c_bus = self.mcu.i2c.request('i2c')
       (self.i2c_pull, self.i2c_tp), _ = self.chain(
@@ -139,18 +119,41 @@ class BldcController(JlcBoardTop):
       (self.mag, ), _ = self.chain(imp.Block(MagneticEncoder()), self.mcu.adc.request('mag'))
       (self.i2c, ), _ = self.chain(imp.Block(I2cConnector()), i2c_bus)
 
+    # HALL SENSOR
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.hall = imp.Block(BldcHallSensor())
+      self.connect(self.vusb, self.hall.pwr)
+      # TODO CONNECTIONS
+
     # BLDC CONTROLLER
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      self.vsense = imp.Block(VoltageSenseDivider(full_scale_voltage=(3.0, 3.3)*Volt))
+      self.connect(self.motor_pwr.pwr, self.vsense.input)
+      self.connect(self.vsense.output, self.mcu.adc.request('vsense'))
+
+      self.isense = self.Block(OpampCurrentSensor(
+        resistance=0.05*Ohm(tol=0.01),
+        ratio=Range.from_tolerance(20, 0.05), input_impedance=10*kOhm(tol=0.05)
+      ))
+      self.connect(self.motor_pwr.pwr, self.isense.pwr_in)
+      self.connect(self.isense.pwr, self.v3v3)
+      self.connect(self.isense.ref, ...)  # TODO reference divider for bidirectional sense
+      self.connect(self.isense.output, self.mcu.adc.request('isense'))
+
       self.bldc_drv = imp.Block(Drv8313())
-      self.connect(self.vusb, self.bldc_drv.pwr)
+      self.connect(self.isense.pwr_out, self.bldc_drv.pwr)
 
       self.connect(self.mcu.gpio.request('bldc_reset'), self.bldc_drv.nreset)
       (self.bldc_fault_tp, ), _ = self.chain(self.mcu.gpio.request('bldc_fault'),
                                              self.Block(DigitalTestPoint()),
                                              self.bldc_drv.nfault)
-      self.connect(self.mcu.gpio.request_vector('bldc_en'), self.bldc_drv.ens)
+      (self.bldc_en_tp, ), _ = self.chain(self.mcu.gpio.request_vector('bldc_en'),
+                                          self.Block(DigitalArrayTestPoint()),
+                                          self.bldc_drv.ens)
       (self.bldc_in_tp, ), _ = self.chain(self.mcu.gpio.request_vector('bldc_in'),
                                           self.Block(DigitalArrayTestPoint()),
                                           self.bldc_drv.ins)
