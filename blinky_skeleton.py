@@ -5,6 +5,7 @@ class BlinkyExample(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
     # your implementation here
+    self.ducks = self.Block(Analog())
 
 
 if __name__ == "__main__":

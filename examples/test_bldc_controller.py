@@ -97,15 +97,12 @@ class BldcController(JlcBoardTop):
     self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
       self.mcu.gnd, self.motor_pwr.gnd)
     self.gnd = self.connect(self.gnd_merge.pwr_out)
-    self.gnd = self.connect(self.usb.gnd)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(IoController())
-
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
       (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
@@ -113,8 +110,7 @@ class BldcController(JlcBoardTop):
 
       i2c_bus = self.mcu.i2c.request('i2c')
       (self.i2c_pull, self.i2c_tp), _ = self.chain(
-        i2c_bus, imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
-        self.pd.i2c)
+        i2c_bus, imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
 
       (self.mag, ), _ = self.chain(imp.Block(MagneticEncoder()), self.mcu.adc.request('mag'))
       (self.i2c, ), _ = self.chain(imp.Block(I2cConnector()), i2c_bus)
