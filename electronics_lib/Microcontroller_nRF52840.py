@@ -385,7 +385,7 @@ class Feather_Nrf52840(Nrf52840Base_Io):
     'Vss': '4',
 
     # 'reset': '1',
-    # 'Vbus': '26',
+    'Vbus': '26',
     # 'EN': '27',  # controls the onboard 3.3 LDO, internally pulled up
     # 'Vbat': '28',
   }
@@ -441,10 +441,4 @@ class Feather_Nrf52840(Nrf52840Base_Io):
 
     self._vdd = self.pwr_3v3
     self._gnd = self.gnd
-
-  def _system_pinmap(self) -> Dict[str, CircuitPort]:
-    pinmap = super()._system_pinmap()
-    pinmap.update({
-      '26': self.pwr_5v
-    })
-    return pinmap
+    self._vbus = self.pwr_usb

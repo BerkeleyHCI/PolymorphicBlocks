@@ -115,13 +115,26 @@ class BldcController(JlcBoardTop):
       (self.mag, ), _ = self.chain(imp.Block(MagneticEncoder()), self.mcu.adc.request('mag'))
       (self.i2c, ), _ = self.chain(imp.Block(I2cConnector()), i2c_bus)
 
+      (self.ref_div, self.ref_buf), _ = self.chain(
+        imp.Block(VoltageDivider(output_voltage=1.5*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
+        imp.Block(OpampFollower())
+      )
+
     # HALL SENSOR
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.hall = imp.Block(BldcHallSensor())
       self.connect(self.vusb, self.hall.pwr)
-      # TODO CONNECTIONS
+      self.hall_pull = ElementDict[PullupResistor]()
+      for (num, hall_pin) in enumerate([self.hall.u, self.hall.v, self.hall.w]):
+        hall_id = str(num + 1)
+        (self.hall_pull[hall_id], ), _ = self.chain(
+          hall_pin,
+          imp.Block(PullupResistor(4.7*kOhm(tol=0.05))),
+          self.mcu.gpio.request(f'hall_{hall_id}')
+        )
+        self.connect(self.v3v3, self.hall_pull[hall_id].pwr)
 
     # BLDC CONTROLLER
     with self.implicit_connect(
@@ -137,8 +150,8 @@ class BldcController(JlcBoardTop):
       ))
       self.connect(self.motor_pwr.pwr, self.isense.pwr_in)
       self.connect(self.isense.pwr, self.v3v3)
-      self.connect(self.isense.ref, ...)  # TODO reference divider for bidirectional sense
-      self.connect(self.isense.output, self.mcu.adc.request('isense'))
+      self.connect(self.isense.ref, self.ref_buf.output)
+      self.connect(self.isense.out, self.mcu.adc.request('isense'))
 
       self.bldc_drv = imp.Block(Drv8313())
       self.connect(self.isense.pwr_out, self.bldc_drv.pwr)
@@ -160,22 +173,19 @@ class BldcController(JlcBoardTop):
       self.curr = ElementDict[CurrentSenseResistor]()
       self.curr_amp = ElementDict[Amplifier]()
       self.curr_tp = ElementDict[AnalogTestPoint]()
-      for i in ['1', '2', '3']:
-        self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
-            .connected(self.usb.gnd, self.bldc_drv.pgnds.request(i))
-
-        self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
-        self.connect(self.curr_amp[i].pwr, self.v3v3)
-        (_, self.curr_tp[i], ), _ = self.chain(self.curr[i].sense_out, self.curr_amp[i],
-                                            self.Block(AnalogTestPoint()),
-                                            self.mcu.adc.request(f'curr_{i}'))
+      # for i in ['1', '2', '3']:
+      #   self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
+      #       .connected(self.gnd_merge.pwr_out, self.bldc_drv.pgnds.request(i))
+      #
+      #   self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
+      #   self.connect(self.curr_amp[i].pwr, self.v3v3)
+      #   (_, self.curr_tp[i], ), _ = self.chain(self.curr[i].sense_out, self.curr_amp[i],
+      #                                       self.Block(AnalogTestPoint()),
+      #                                       self.mcu.adc.request(f'curr_{i}'))
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Stm32f103_48),
-        (['reg_3v3'], Ldl1117),
-        (['reg_5v'], Ldl1117),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
