@@ -112,10 +112,10 @@ class BldcController(JlcBoardTop):
       (self.i2c_pull, self.i2c_tp), _ = self.chain(
         i2c_bus, imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
 
-      (self.mag, ), _ = self.chain(imp.Block(MagneticEncoder()), self.mcu.adc.request('mag'))
       (self.i2c, ), _ = self.chain(imp.Block(I2cConnector()), i2c_bus)
 
       (self.ref_div, self.ref_buf), _ = self.chain(
+        self.v3v3,
         imp.Block(VoltageDivider(output_voltage=1.5*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
         imp.Block(OpampFollower())
       )
@@ -140,11 +140,12 @@ class BldcController(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.vsense = imp.Block(VoltageSenseDivider(full_scale_voltage=(3.0, 3.3)*Volt))
+      self.vsense = imp.Block(VoltageSenseDivider(full_scale_voltage=(3.0, 3.3)*Volt,
+                                                  impedance=10*kOhm(tol=0.2)))
       self.connect(self.motor_pwr.pwr, self.vsense.input)
       self.connect(self.vsense.output, self.mcu.adc.request('vsense'))
 
-      self.isense = self.Block(OpampCurrentSensor(
+      self.isense = imp.Block(OpampCurrentSensor(
         resistance=0.05*Ohm(tol=0.01),
         ratio=Range.from_tolerance(20, 0.05), input_impedance=10*kOhm(tol=0.05)
       ))
@@ -173,15 +174,15 @@ class BldcController(JlcBoardTop):
       self.curr = ElementDict[CurrentSenseResistor]()
       self.curr_amp = ElementDict[Amplifier]()
       self.curr_tp = ElementDict[AnalogTestPoint]()
-      # for i in ['1', '2', '3']:
-      #   self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
-      #       .connected(self.gnd_merge.pwr_out, self.bldc_drv.pgnds.request(i))
-      #
-      #   self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
-      #   self.connect(self.curr_amp[i].pwr, self.v3v3)
-      #   (_, self.curr_tp[i], ), _ = self.chain(self.curr[i].sense_out, self.curr_amp[i],
-      #                                       self.Block(AnalogTestPoint()),
-      #                                       self.mcu.adc.request(f'curr_{i}'))
+      for i in ['1', '2', '3']:
+        self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
+            .connected(self.gnd_merge.pwr_out, self.bldc_drv.pgnds.request(i))
+
+        self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
+        self.connect(self.curr_amp[i].pwr, self.v3v3)
+        (_, self.curr_tp[i], ), _ = self.chain(self.curr[i].sense_out, self.curr_amp[i],
+                                            self.Block(AnalogTestPoint()),
+                                            self.mcu.adc.request(f'curr_{i}'))
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
