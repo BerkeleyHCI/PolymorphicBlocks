@@ -525,6 +525,18 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
             path, s"(default)${blockLibraryPath.toSimpleString}.$refinedNewParam")
         }
       }
+      val refinedNewPorts = blockPb.ports.toSeqMap.keys.toSet -- unrefinedPb.ports.toSeqMap.keys
+      refinedNewPorts.foreach { refinedNewPort =>
+        blockPb.ports(refinedNewPort).is match {
+          case _: elem.PortLike.Is.LibElem =>
+            constProp.addAssignValue(path.asIndirect + refinedNewPort + IndirectStep.IsConnected, BooleanValue(false),
+              path, s"(refined_not_connected)${blockLibraryPath.toSimpleString}.$refinedNewPort")
+          case _: elem.PortLike.Is.Array =>
+            constProp.addAssignValue(path.asIndirect + refinedNewPort + IndirectStep.Allocated, ArrayValue(Seq()),
+              path, s"(refined_not_connected)${blockLibraryPath.toSimpleString}.$refinedNewPort")
+          case _=> throw new IllegalArgumentException(s"unknown port $refinedNewPort")
+        }
+      }
     }
 
     val newBlock = if (blockPb.generator.isEmpty) {

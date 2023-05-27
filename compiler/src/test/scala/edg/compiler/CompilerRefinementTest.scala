@@ -6,7 +6,7 @@ import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
 import edg.{CompilerTestUtil, wir}
-import edg.wir.{DesignPath, IndirectDesignPath, Refinements}
+import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, Refinements}
 
 import scala.collection.SeqMap
 
@@ -57,6 +57,17 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
         ),
         ports = SeqMap(
           "port" -> Port.Library("port"),
+        )
+      ),
+      Block.Block("subclassPortBlock", // contains a new port
+        superclasses = Seq("superclassBlock"),
+        params = SeqMap(
+          "superParam" -> ValInit.Integer,
+        ),
+        ports = SeqMap(
+          "port" -> Port.Library("port"),
+          "newPort" -> Port.Library("port"),
+          "newArray" -> Port.Array("port", Seq(), Port.Library("port")),
         )
       ),
       Block.Block("block",  // specifically no superclass
@@ -139,6 +150,15 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
       instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("subclassDefaultBlock")),
       instanceValues = Map(DesignPath() + "block" + "defaultParam" -> IntValue(3))))
     compiler.getValue(IndirectDesignPath() + "block" + "defaultParam") should equal(Some(IntValue(3)))
+  }
+
+  "Compiler on refinement with new ports" should "work" in {
+    val (compiler, compiled) = testCompile(inputDesign, library, refinements = Refinements(
+      instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("subclassPortBlock"))))
+    compiler.getValue(IndirectDesignPath() + "block" + "newPort" + IndirectStep.IsConnected) should equal(
+      Some(BooleanValue(false)))
+    compiler.getValue(IndirectDesignPath() + "block" + "newArray" + IndirectStep.Allocated) should equal(
+      Some(ArrayValue(Seq())))
   }
 
   "Compiler on design with subclass values" should "work" in {
