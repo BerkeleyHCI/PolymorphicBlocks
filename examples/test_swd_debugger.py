@@ -3,6 +3,59 @@ import unittest
 from edg import *
 
 
+class SwdCortexSourceHeaderHorizontal(ProgrammingConnector, FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSink(), [Power])
+    self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
+    self.swd = self.Port(SwdTargetPort(), [Input])
+    self.swo = self.Port(DigitalBidir(), optional=True)
+    self.tdi = self.Port(DigitalBidir(), optional=True)
+
+  def contents(self):
+    super().contents()
+
+    self.footprint(
+      'J', 'edg:PinHeader_2x05_P1.27mm_Horizontal_Shrouded',
+      {
+        '1': self.pwr,
+        '2': self.swd.swdio,
+        '3': self.gnd,
+        '4': self.swd.swclk,
+        '5': self.gnd,
+        '6': self.swo,
+        # '7': ,  # key pin technically doesn't exist
+        '8': self.tdi,  # or NC
+        '9': self.gnd,
+        '10': self.swd.reset,
+      },
+      mfr='CNC Tech', part='3220-10-0200-00',
+      value='SWD'
+    )
+
+
+class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
+    self.swd = self.Port(SwdTargetPort.empty(), [Input])
+    self.swo = self.Port(DigitalBidir.empty(), optional=True)
+
+  def contents(self):
+    super().contents()
+
+    self.conn = self.Block(PinHeader254DualShroudedInline(6))
+    self.connect(self.pwr, self.conn.pins.request('1').adapt_to(VoltageSink()))
+    self.connect(self.swd.swdio, self.conn.pins.request('2').adapt_to(DigitalBidir()))  # also TMS
+    self.connect(self.swd.reset, self.conn.pins.request('3').adapt_to(DigitalSink()))
+    self.connect(self.swd.swclk, self.conn.pins.request('4').adapt_to(DigitalSink()))
+    self.connect(self.gnd, self.conn.pins.request('5').adapt_to(Ground()))
+    self.connect(self.swo, self.conn.pins.request('6').adapt_to(DigitalBidir()))
+
+
 class SwdSourceBitBang(InternalSubcircuit, Block):
   def __init__(self) -> None:
     super().__init__()
@@ -88,7 +141,7 @@ class SwdDebugger(JlcBoardTop):
             ImplicitConnect(self.vtarget, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.target = imp.Block(SwdCortexSourceHeaderHorizontal())
+      self.target = imp.Block(SwdCortexSourceTagConnect())
       self.connect(self.target_drv.swd, self.target.swd)
       self.connect(self.target_drv.swo_in, self.target.swo)
 

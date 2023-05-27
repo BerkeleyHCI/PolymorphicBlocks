@@ -1,5 +1,5 @@
 from electronics_abstract_parts import *
-from .PassiveConnector import PinHeader127DualShrouded, TagConnect
+from .PassiveConnector import PinHeader127DualShrouded, TagConnect, PinHeader254DualShroudedInline
 
 
 class SwdCortexTargetHeader(SwdCortexTargetWithSwoTdiConnector):
@@ -46,35 +46,3 @@ class SwdCortexTargetTc2050(SwdCortexTargetWithSwoTdiConnector, Block):
     self.connect(self.swo, self.conn.pins.request('8').adapt_to(DigitalBidir()))
     self.connect(self.tdi, self.conn.pins.request('7').adapt_to(DigitalBidir()))
     self.connect(self.swd.reset, self.conn.pins.request('6').adapt_to(DigitalSource()))
-
-
-class SwdCortexSourceHeaderHorizontal(ProgrammingConnector, FootprintBlock):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.pwr = self.Port(VoltageSink(), [Power])
-    self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
-    self.swd = self.Port(SwdTargetPort(), [Input])
-    self.swo = self.Port(DigitalBidir(), optional=True)
-    self.tdi = self.Port(DigitalBidir(), optional=True)
-
-  def contents(self):
-    super().contents()
-
-    self.footprint(
-      'J', 'edg:PinHeader_2x05_P1.27mm_Horizontal_Shrouded',
-      {
-        '1': self.pwr,
-        '2': self.swd.swdio,
-        '3': self.gnd,
-        '4': self.swd.swclk,
-        '5': self.gnd,
-        '6': self.swo,
-        # '7': ,  # key pin technically doesn't exist
-        '8': self.tdi,  # or NC
-        '9': self.gnd,
-        '10': self.swd.reset,
-      },
-      mfr='CNC Tech', part='3220-10-0200-00',
-      value='SWD'
-    )
