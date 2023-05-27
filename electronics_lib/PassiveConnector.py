@@ -38,6 +38,14 @@ class PinSocket254(PassiveConnector):
             "Generic", f"PinSocket2.54 1x{length}")
 
 
+class PinHeader254DualShroudedInline(PassiveConnector):
+  """Generic 2.54mm dual-row pin header in edge-inline."""
+  allowed_pins = {6}
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    return (f'edg:PinHeader_2x{length//2:02d}_P2.54mm_EdgeInline',
+            "Generic", f"PinHeader2.54 Shrouded 2x{length//2}")
+
+
 class PinHeader127DualShrouded(PassiveConnector, JlcPart):
   """Generic dual-row 1.27mm pin header in vertical through-hole pinned in zigzag."""
   allowed_pins = [10]  # TODO support more

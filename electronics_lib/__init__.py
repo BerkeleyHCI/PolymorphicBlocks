@@ -30,7 +30,7 @@ from .Opamp_Opa197 import Opa197
 from .Opamp_Lmv321 import Lmv321
 
 from .PassiveConnector import PassiveConnector  # otherwise aliases with the module
-from .PassiveConnector import PinHeader254, PinSocket254, PinHeader127DualShrouded
+from .PassiveConnector import PinHeader254, PinSocket254, PinHeader254DualShroudedInline, PinHeader127DualShrouded
 from .PassiveConnector import TagConnect, TagConnectLegged, TagConnectNonLegged
 from .PassiveConnector import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl
 from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Afc01, Te1734839
