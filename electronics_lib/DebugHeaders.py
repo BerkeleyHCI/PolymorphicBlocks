@@ -17,7 +17,7 @@ class SwdCortexTargetHeader(SwdCortexTargetWithSwoTdiConnector):
     self.connect(self.swd.reset, self.conn.pins.request('10').adapt_to(DigitalSource()))
 
 
-class SwdCortexTargetTagConnect(SwdCortexTargetWithSwoTdiConnector, FootprintBlock):
+class SwdCortexTargetTagConnect(SwdCortexTargetWithSwoTdiConnector, Block):
   """OFFICIAL tag connect SWD header using the TC2030 series cables."""
   def contents(self):
     super().contents()
@@ -32,7 +32,7 @@ class SwdCortexTargetTagConnect(SwdCortexTargetWithSwoTdiConnector, FootprintBlo
     self.require(~self.tdi.is_connected())
 
 
-class SwdCortexTargetTc2050(SwdCortexTargetWithSwoTdiConnector, FootprintBlock):
+class SwdCortexTargetTc2050(SwdCortexTargetWithSwoTdiConnector, Block):
   """UNOFFICIAL tag connect SWD header, maintaining physical pin compatibility with the 2x05 1.27mm header."""
   def contents(self):
     super().contents()
