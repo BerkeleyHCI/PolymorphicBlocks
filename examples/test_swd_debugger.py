@@ -51,6 +51,8 @@ class SwdDebugger(BoardTop):
         ImplicitConnect(self.vusb, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      self.vusb_protect = imp.Block(ProtectionZenerDiode(voltage=(5.25, 6)*Volt))
+
       self.usb_reg = imp.Block(LinearRegulator(3.3*Volt(tol=0.05)))
       self.v3v3 = self.connect(self.usb_reg.pwr_out)
 
@@ -103,6 +105,9 @@ class SwdDebugger(BoardTop):
         (['usb_reg'], Ap2204k),
       ],
       instance_values=[
+        (['refdes_prefix'], 'S'),  # unique refdes for panelization
+        (['vusb_protect', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),
+
         (['mcu', 'crystal', 'frequency'], Range.from_tolerance(8000000, 0.005)),
         (['mcu', 'pin_assigns'], [
           # these are pinnings on stock st-link
@@ -118,7 +123,10 @@ class SwdDebugger(BoardTop):
           'sw=38',
         ]),
         (['mcu', 'swd_swo_pin'], 'PB3'),
-      ]
+      ],
+      class_values=[
+        (SmdStandardPackage, ["smd_min_package"], "0402"),
+      ],
     )
 
 
