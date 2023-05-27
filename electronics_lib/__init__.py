@@ -42,7 +42,7 @@ from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTagConnect, SwdC
 from .DebugHeaders import SwdCortexSourceHeaderHorizontal
 from .SdCards import SdCard, SdSocket, MicroSdSocket
 
-from .LinearRegulators import Ld1117, Ldl1117, Ap2204k_Block, Ap2204k, Xc6209, Ap2210, Lp5907
+from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Xc6209, Ap2210, Lp5907
 from .VoltageReferences import Ref30xx
 from .BuckConverter_TexasInstruments import Tps561201, Tps54202h
 from .BuckConverter_Ap3418 import Ap3418

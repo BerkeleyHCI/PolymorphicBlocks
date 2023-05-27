@@ -171,41 +171,32 @@ class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     self.assign(self.actual_basic_part, False)
 
 
-class Ap2204k_Block(InternalSubcircuit, Block):
-  """AP2204 application circuit with the EN pin available."""
-  @init_in_parent
-  def __init__(self, output_voltage: RangeLike) -> None:
-    super().__init__()
-
-    self.ic = self.Block(Ap2204k_Device(output_voltage))
-    self.pwr_in = self.Export(self.ic.pwr_in, [Power])
-    self.pwr_out = self.Export(self.ic.pwr_out)
-    self.gnd = self.Export(self.ic.gnd, [Common])
-    self.en = self.Export(self.ic.en)
-
-    self.in_cap = self.Block(DecouplingCapacitor(capacitance=1.1 * uFarad(tol=0.2)))
-    self.out_cap = self.Block(DecouplingCapacitor(capacitance=2.2 * uFarad(tol=0.2)))
-
-    self.connect(self.pwr_in, self.in_cap.pwr)
-    self.connect(self.pwr_out, self.out_cap.pwr)
-    self.connect(self.gnd, self.in_cap.gnd, self.out_cap.gnd)
-
-
-class Ap2204k(LinearRegulator):
-  """AP2204K block providing the LinearRegulator interface, with EN tied high
-  TODO: can there just be one block, with optional EN?
+class Ap2204k(LinearRegulator, GeneratorBlock):
+  """AP2204K block providing the LinearRegulator interface and optional enable (tied high if not connected).
   """
-  def contents(self):
-    self.ic = self.Block(Ap2204k_Block(self.output_voltage))
+  @init_in_parent
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
+    self.en = self.Port(DigitalSink.empty(), optional=True)
+    self.generator_param(self.en.is_connected())
 
+  def contents(self):
+    super().contents()
+    self.ic = self.Block(Ap2204k_Device(self.output_voltage))
+    self.connect(self.pwr_in, self.ic.pwr_in)
     self.connect(self.pwr_out, self.ic.pwr_out)
     self.connect(self.gnd, self.ic.gnd)
-    assert self.pwr_in.bridge_type is not None  # TODO get rid of this
-    bridge = self.Block(self.pwr_in.bridge_type())
-    setattr(self, '(bridge)pwr_in_bridge', bridge)  # TODO there should be a create_bridge or something; setattr used to avoid creating extra hierarchy for netlisting
-    self.connect(self.pwr_in, bridge.outer_port)
-    self.connect(bridge.inner_link, self.ic.pwr_in)
-    self.connect(bridge.inner_link.as_digital_source(), self.ic.en)
+    self.in_cap = self.Block(DecouplingCapacitor(capacitance=1.1 * uFarad(tol=0.2)))\
+      .connected(self.gnd, self.pwr_in)
+    self.out_cap = self.Block(DecouplingCapacitor(capacitance=2.2 * uFarad(tol=0.2)))\
+      .connected(self.gnd, self.pwr_out)
+
+  def generate(self):
+    super().generate()
+    if self.get(self.en.is_connected()):
+      self.connect(self.en, self.ic.en)
+    else:  # by default tie high to enable regulator
+      self.connect(self.pwr_in.as_digital_source(), self.ic.en)
 
 
 class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):

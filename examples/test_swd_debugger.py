@@ -56,7 +56,7 @@ class SwdDebugger(BoardTop):
       self.usb_esd = imp.Block(UsbEsdDiode())
       self.usb_net = self.connect(self.usb.usb, self.usb_esd.usb)
 
-      self.target_reg = imp.Block(Ap2204k_Block(3.3*Volt(tol=0.05)))
+      self.target_reg = imp.Block(Ap2204k(3.3*Volt(tol=0.05)))
 
     self.v3v3 = self.connect(self.usb_reg.pwr_out)
     self.vtarget = self.connect(self.target_reg.pwr_out)
