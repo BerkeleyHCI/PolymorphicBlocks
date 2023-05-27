@@ -38,7 +38,7 @@ class SwdSourceBitBang(InternalSubcircuit, Block):
     self.connect(self.swo_res.b.adapt_to(DigitalSink()), self.swo_in)
 
 
-class SwdDebugger(BoardTop):
+class SwdDebugger(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -58,13 +58,6 @@ class SwdDebugger(BoardTop):
 
       self.target_reg = imp.Block(Ap2204k(3.3*Volt(tol=0.05)))
       self.vtarget = self.connect(self.target_reg.pwr_out)
-
-    with self.implicit_connect(
-        ImplicitConnect(self.vtarget, [Power]),
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.target = imp.Block(SwdCortexSourceHeaderHorizontal())
-      self.led_target = imp.Block(VoltageIndicatorLed())
 
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
@@ -91,9 +84,20 @@ class SwdDebugger(BoardTop):
       self.connect(self.mcu.gpio.request('target_reset'), self.target_drv.reset_in)
       self.connect(self.mcu.gpio.request('target_swo'), self.target_drv.swo_out)
 
+    with self.implicit_connect(
+            ImplicitConnect(self.vtarget, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.target = imp.Block(SwdCortexSourceHeaderHorizontal())
       self.connect(self.target_drv.swd, self.target.swd)
       self.connect(self.target_drv.swo_in, self.target.swo)
 
+      self.led_target = imp.Block(VoltageIndicatorLed(Led.Green))
+      (self.target_sense, ), _ = self.chain(
+        self.vtarget,
+        imp.Block(VoltageDivider(output_voltage=1.65*Volt(tol=0.05), impedance=4.7/2*kOhm(tol=0.05))),
+        self.mcu.adc.request('target_vsense')
+      )
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -111,6 +115,7 @@ class SwdDebugger(BoardTop):
         (['mcu', 'crystal', 'frequency'], Range.from_tolerance(8000000, 0.005)),
         (['mcu', 'pin_assigns'], [
           # these are pinnings on stock st-link
+          'target_vsense=PA0',
           'target_swclk=PB13',
           'target_swdio_out=PB14',
           'target_swdio_in=PB12',
