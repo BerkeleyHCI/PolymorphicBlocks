@@ -104,6 +104,7 @@ from .SpiMemory_93Lc import E93Lc_B
 from .UsbUart_Cp2102 import Cp2102
 from .UsbInterface_Ft232h import Ft232hl
 from .Logic_74Ahct import L74Ahct1g125
+from .Camera_Ov2640_Fpc24 import Ov2640_Fpc24
 
 from .Labels import DuckLogo, LeadFreeIndicator, IdDots4, LemurLogo
 from .Mechanicals import Outline_Pn1332
