@@ -68,7 +68,7 @@ class SwdDebugger(JlcBoardTop):
       (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
       (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
 
-      (self.led_tgt, ), _ = self.chain(self.mcu.gpio.request(f'led_tgt'),
+      (self.led_tgt, ), _ = self.chain(self.mcu.gpio.request(f'led_target'),
                                        imp.Block(IndicatorLed(Led.Yellow)))
       (self.led_usb, ), _ = self.chain(self.mcu.gpio.request(f'led_usb'),
                                        imp.Block(IndicatorLed(Led.White)))
@@ -121,7 +121,7 @@ class SwdDebugger(JlcBoardTop):
           'target_swdio_in=PB12',
           'target_reset=PB0',
           'target_swo=PA10',
-          'led_tgt=PA9',
+          'led_target=PA9',
           # these are custom additional parts
           'led_usb=14',
           'target_reg_en=16',
