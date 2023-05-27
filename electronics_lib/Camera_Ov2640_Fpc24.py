@@ -9,7 +9,7 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Block):
         self.conn = self.Block(Fpc050Bottom(length=30))
 
         self.dgnd = self.Export(self.conn.pins.request('10').adapt_to(Ground()))
-        self.agnd = self.Export(self.conn.pins.request('10').adapt_to(Ground()))
+        self.agnd = self.Export(self.conn.pins.request('23').adapt_to(Ground()))
         self.dovdd = self.Export(self.conn.pins.request('14').adapt_to(VoltageSink(
             voltage_limits=(1.71, 3.3)*Volt,  # Table 6, absolute maximum (Table 5) is 4.5v
             current_draw=(6, 15)*mAmp  # active typ to max
@@ -31,16 +31,16 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Block):
         di_model = DigitalSink.from_bidir(dio_model)
         # TODO this should be a DVP interface, but needs support for nested port arrays
         self.y = self.Port(Vector(DigitalSource.empty()))
-        self.y.append_elt(self.conn.pins.request('1').adapt_to(do_model), '0')
-        self.y.append_elt(self.conn.pins.request('2').adapt_to(do_model), '1')
-        self.y.append_elt(self.conn.pins.request('3').adapt_to(do_model), '4')
-        self.y.append_elt(self.conn.pins.request('4').adapt_to(do_model), '3')
-        self.y.append_elt(self.conn.pins.request('5').adapt_to(do_model), '5')
-        self.y.append_elt(self.conn.pins.request('6').adapt_to(do_model), '2')
-        self.y.append_elt(self.conn.pins.request('7').adapt_to(do_model), '6')
-        self.y.append_elt(self.conn.pins.request('9').adapt_to(do_model), '7')
-        self.y.append_elt(self.conn.pins.request('11').adapt_to(do_model), '8')
-        self.y.append_elt(self.conn.pins.request('13').adapt_to(do_model), '9')
+        self.connect(self.y.append_elt(DigitalSource.empty(), '0'), self.conn.pins.request('1').adapt_to(do_model))
+        self.connect(self.y.append_elt(DigitalSource.empty(), '1'), self.conn.pins.request('2').adapt_to(do_model))
+        self.connect(self.y.append_elt(DigitalSource.empty(), '4'), self.conn.pins.request('3').adapt_to(do_model))
+        self.connect(self.y.append_elt(DigitalSource.empty(), '3'), self.conn.pins.request('4').adapt_to(do_model))
+        self.connect(self.y.append_elt(DigitalSource.empty(), '5'), self.conn.pins.request('5').adapt_to(do_model))
+        self.connect(self.y.append_elt(DigitalSource.empty(), '2'), self.conn.pins.request('6').adapt_to(do_model))
+        self.connect(self.y.append_elt(DigitalSource.empty(), '6'), self.conn.pins.request('7').adapt_to(do_model))
+        self.connect(self.y.append_elt(DigitalSource.empty(), '7'), self.conn.pins.request('9').adapt_to(do_model))
+        self.connect(self.y.append_elt(DigitalSource.empty(), '8'), self.conn.pins.request('11').adapt_to(do_model))
+        self.connect(self.y.append_elt(DigitalSource.empty(), '9'), self.conn.pins.request('13').adapt_to(do_model))
 
         self.pclk = self.Export(self.conn.pins.request('8').adapt_to(do_model))  # tacked on a 15pF cap
         self.xclk = self.Export(self.conn.pins.request('12').adapt_to(di_model))
@@ -79,8 +79,8 @@ class Ov2640_Fpc24(Sensor, GeneratorBlock):
 
         self.sio = self.Export(self.device.sio)
 
-        self.pwdn = self.Export(DigitalSink.empty(), optional=True)
-        self.reset = self.Export(DigitalSink.empty(), optional=True)
+        self.pwdn = self.Port(DigitalSink.empty(), optional=True)
+        self.reset = self.Port(DigitalSink.empty(), optional=True)
         self.generator_param(self.pwdn.is_connected(), self.reset.is_connected())
 
     def contents(self):
