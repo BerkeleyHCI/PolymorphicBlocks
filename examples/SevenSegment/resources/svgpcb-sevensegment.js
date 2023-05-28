@@ -170,7 +170,7 @@ const yMargin = (yPitch - yLength) / 2
 //
 var digitNum = 0
 for (digitCenter of digitCenters) {
-  const baseName = "seg[" + digitNum + "]"
+  const baseName = "digit[" + digitNum + "]"
   
   const a1 = segPt(digitCenter, [-xLength/2, yPitch])
   const a2 = segPt(digitCenter, [xLength/2, yPitch])
