@@ -73,7 +73,7 @@ class EspProgrammer(JlcBoardTop):
         (['refdes_prefix'], 'U'),  # unique refdes for panelization
         (['vusb_protect', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),
         # 2.2uF generates a 1206, but 4.7uF allows a 0805
-        (['reg_3v3', 'ic', 'out_cap', 'cap', 'capacitance'], Range.from_tolerance(4.7e-6, 0.2)),
+        (['reg_3v3', 'out_cap', 'cap', 'capacitance'], Range.from_tolerance(4.7e-6, 0.2)),
       ],
       class_refinements=[
       ],
