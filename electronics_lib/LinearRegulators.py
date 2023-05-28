@@ -199,6 +199,72 @@ class Ap2204k(LinearRegulator, GeneratorBlock):
       self.connect(self.pwr_in.as_digital_source(), self.ic.en)
 
 
+class Xc6206p_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
+  @init_in_parent
+  def __init__(self, output_voltage: RangeLike):
+    super().__init__()
+
+    self.assign(self.pwr_in.voltage_limits, (1.8, 6.0) * Volt)
+    self.assign(self.actual_quiescent_current, (1, 3) * uAmp)  # supply current
+
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.generator_param(self.output_voltage)
+
+  def generate(self):
+    super().generate()
+    parts = [  # output range, part number, (dropout typ @10mA, max @100mA), max current, lcsc, basic part
+      # +/-0.03v tolerance for Vout < 1.5v
+      (Range.from_abs_tolerance(1.2, 0.03), 'XC6206P122MR-G', (0.46, 0.96), 0.06, 'C424699', False),
+      (Range.from_abs_tolerance(1.2, 0.03), 'XC6206P132MR', (0.46, 0.96), 0.06, 'C424700', False),
+      (Range.from_tolerance(1.5, 0.02), 'XC6206P152MR', (0.30, 0.86), 0.06, 'C424701', False),
+      (Range.from_tolerance(1.8, 0.02), 'XC6206P182MR-G', (0.15, 0.78), 0.08, 'C2831490', False),
+      (Range.from_tolerance(1.8, 0.02), 'XC6206P182MR', (0.15, 0.78), 0.08, 'C21659', False),  # non -G version, higher stock
+
+      (Range.from_tolerance(2.0, 0.02), 'XC6206P202MR-G', (0.10, 0.78), 0.12, 'C2891260', False),
+      (Range.from_tolerance(2.5, 0.02), 'XC6206P252MR', (0.10, 0.71), 0.15, 'C15906', False),
+      (Range.from_tolerance(2.8, 0.02), 'XC6206P282MR', (0.10, 0.71), 0.15, 'C14255', False),
+
+      (Range.from_tolerance(3.0, 0.02), 'XC6206P302MR-G', (0.075, 0.68), 0.20, 'C9972', False),
+      (Range.from_tolerance(3.3, 0.02), 'XC6206P332MR', (0.075, 0.68), 0.20, 'C5446', True),  # basic part preferred
+      (Range.from_tolerance(3.3, 0.02), 'XC6206P332MR-G', (0.075, 0.68), 0.20, 'C2891264', False),
+      (Range.from_tolerance(3.6, 0.02), 'XC6206P362MR-G', (0.075, 0.68), 0.20, 'C34705', False),
+
+      (Range.from_tolerance(4.0, 0.02), 'XC6206P402MR', (0.06, 0.63), 0.25, 'C484266', False),
+
+      (Range.from_tolerance(5.0, 0.02), 'XC6206P502MR', (0.05, 0.60), 0.25, 'C16767', False),
+    ]
+    suitable_parts = [part for part in parts
+                      if part[0] in self.get(self.output_voltage)]
+    assert suitable_parts, "no regulator with compatible output"
+    part_output_voltage_nominal, part_number, part_dropout, part_max_current, lcsc_part, basic_part = suitable_parts[0]
+
+    self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt)
+    self.assign(self.actual_dropout, part_dropout * Volt)
+    self.assign(self.pwr_out.current_limits, (0, part_max_current) * Amp)
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-23',
+      {
+        '1': self.gnd,
+        '2': self.pwr_out,
+        '3': self.pwr_in,
+      },
+      mfr='Torex Semiconductor Ltd', part=part_number,
+      datasheet='https://product.torexsemi.com/system/files/series/xc6206.pdf',
+    )
+    self.assign(self.lcsc_part, lcsc_part)
+    self.assign(self.actual_basic_part, basic_part)
+
+
+class Xc6206p(LinearRegulator):
+  """XC6206P LDOs in SOT-23 which seem popular in some open-source designs and some are JLC basic parts."""
+  def contents(self) -> None:
+    self.ic = self.Block(Xc6206p_Device(output_voltage=self.output_voltage))
+    self.in_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))\
+      .connected(self.gnd, self.pwr_in)
+    self.out_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))\
+      .connected(self.gnd, self.pwr_out)
+
+
 class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   # Also pin-compatible with MCP1802 and NJM2882F (which has a noise bypass pin)
   @init_in_parent
