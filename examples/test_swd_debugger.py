@@ -119,7 +119,6 @@ class SwdDebugger(JlcBoardTop):
       self.mcu = imp.Block(IoController())
 
       (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
 
       (self.led_tgt, ), _ = self.chain(self.mcu.gpio.request(f'led_target'),
                                        imp.Block(IndicatorLed(Led.Yellow)))
@@ -158,7 +157,6 @@ class SwdDebugger(JlcBoardTop):
         (['mcu'], Stm32f103_48),
         (['mcu', 'swd'], SwdCortexTargetTagConnect),
         (['mcu', 'swd', 'conn'], TagConnectNonLegged),
-        (['sw', 'package'], SmtSwitchRa),
         (['usb_reg'], Ap2204k),
       ],
       instance_values=[
@@ -177,8 +175,7 @@ class SwdDebugger(JlcBoardTop):
           'led_target=PA9',
           # these are custom additional parts
           'led_usb=13',
-          'target_reg_en=22',
-          'sw=38',
+          'target_reg_en=38',
         ]),
 
         # 2.2uF generates a 1206, but 4.7uF allows a 0805
