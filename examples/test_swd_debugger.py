@@ -180,6 +180,11 @@ class SwdDebugger(JlcBoardTop):
           'target_reg_en=16',
           'sw=38',
         ]),
+
+        # 2.2uF generates a 1206, but 4.7uF allows a 0805
+        (['usb_reg', 'out_cap', 'cap', 'capacitance'], Range.from_tolerance(4.7e-6, 0.2)),
+        (['target_reg', 'out_cap', 'cap', 'capacitance'], Range.from_tolerance(4.7e-6, 0.2)),
+
         (['mcu', 'swd_swo_pin'], 'PB3'),
       ],
       class_values=[
