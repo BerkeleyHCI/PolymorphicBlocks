@@ -39,7 +39,6 @@ from .Jumpers import SolderJumperTriangular
 
 from .DebugHeaders import SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTagConnect, SwdCortexTargetTc2050
-from .DebugHeaders import SwdCortexSourceHeaderHorizontal
 from .SdCards import SdCard, SdSocket, MicroSdSocket
 
 from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Xc6209, Ap2210, Lp5907
