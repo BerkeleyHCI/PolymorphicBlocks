@@ -29,18 +29,19 @@ from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
 from .Opamp_Lmv321 import Lmv321
 
-from .PassiveConnector import PassiveConnector, PinHeader254, PinSocket254, PinHeader127DualShrouded
+from .PassiveConnector import PassiveConnector  # otherwise aliases with the module
+from .PassiveConnector import PinHeader254, PinSocket254, PinHeader254DualShroudedInline, PinHeader127DualShrouded
+from .PassiveConnector import TagConnect, TagConnectLegged, TagConnectNonLegged
 from .PassiveConnector import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl
 from .PassiveConnector import Fpc050, Fpc050Top, Fpc050Bottom, HiroseFh12sh, Afc01, Te1734839
 
 from .Jumpers import SolderJumperTriangular
 
 from .DebugHeaders import SwdCortexTargetHeader
-from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTc2050Nl
-from .DebugHeaders import SwdCortexSourceHeaderHorizontal
+from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTagConnect, SwdCortexTargetTc2050
 from .SdCards import SdCard, SdSocket, MicroSdSocket
 
-from .LinearRegulators import Ld1117, Ldl1117, Ap2204k_Block, Ap2204k, Xc6209, Ap2210, Lp5907
+from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Xc6209, Ap2210, Lp5907
 from .VoltageReferences import Ref30xx
 from .BuckConverter_TexasInstruments import Tps561201, Tps54202h
 from .BuckConverter_Ap3418 import Ap3418
