@@ -51,7 +51,8 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Block):
 
         # formally this is SCCB (serial camera control bus), but is I2C compatible
         # https://e2e.ti.com/support/processors-group/processors/f/processors-forum/6092/sccb-vs-i2c
-        self.sio = self.Port(I2cSlave.empty())
+        # 0x60 for write, 0x61 for read, translated to the 7-bit address
+        self.sio = self.Port(I2cSlave(DigitalBidir.empty(), [0x30]))
         self.connect(self.sio.scl, self.conn.pins.request('20').adapt_to(dio_model))
         self.connect(self.sio.sda, self.conn.pins.request('22').adapt_to(dio_model))
 
@@ -89,7 +90,7 @@ class Ov2640_Fpc24(Sensor, GeneratorBlock):
             .connected(self.device.dgnd, self.device.dovdd)
         self.pclk_cap = self.Block(Capacitor(capacitance=15*pFarad(tol=0.2), voltage=self.pclk.link().voltage))
         self.connect(self.pclk_cap.neg.adapt_to(Ground()), self.gnd)
-        self.connect(self.pclk_cap.pos.adapt_to(DigitalSink()), self.gnd)
+        self.connect(self.pclk_cap.pos.adapt_to(DigitalSink()), self.pclk)
 
         self.reset_pull = self.Block(PullupResistor(10*kOhm(tol=0.05))).connected(self.pwr, self.device.reset)
         self.reset_cap = self.Block(Capacitor(capacitance=0.1*uFarad(tol=0.2), voltage=self.pwr.link().voltage))

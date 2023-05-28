@@ -236,9 +236,9 @@ class Xc6206p_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     suitable_parts = [part for part in parts
                       if part[0] in self.get(self.output_voltage)]
     assert suitable_parts, "no regulator with compatible output"
-    part_output_voltage_nominal, part_number, part_dropout, part_max_current, lcsc_part, basic_part = suitable_parts[0]
+    part_output_voltage, part_number, part_dropout, part_max_current, lcsc_part, basic_part = suitable_parts[0]
 
-    self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt)
+    self.assign(self.actual_target_voltage, part_output_voltage * Volt)
     self.assign(self.actual_dropout, part_dropout * Volt)
     self.assign(self.pwr_out.current_limits, (0, part_max_current) * Amp)
     self.footprint(
@@ -258,11 +258,15 @@ class Xc6206p_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
 class Xc6206p(LinearRegulator):
   """XC6206P LDOs in SOT-23 which seem popular in some open-source designs and some are JLC basic parts."""
   def contents(self) -> None:
-    self.ic = self.Block(Xc6206p_Device(output_voltage=self.output_voltage))
-    self.in_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))\
-      .connected(self.gnd, self.pwr_in)
-    self.out_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))\
-      .connected(self.gnd, self.pwr_out)
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.ic = imp.Block(Xc6206p_Device(output_voltage=self.output_voltage))
+      self.in_cap = imp.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
+      self.out_cap = imp.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
+
+      self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
+      self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
 class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):

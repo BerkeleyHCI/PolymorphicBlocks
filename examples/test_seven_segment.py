@@ -35,9 +35,9 @@ class SevenSegment(JlcBoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
-      (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
-      (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
+      (self.ledr, ), _ = self.chain(self.mcu.gpio.request('ledr'), imp.Block(IndicatorLed(Led.Red)))
+      (self.ledg, ), _ = self.chain(self.mcu.gpio.request('ledg'), imp.Block(IndicatorLed(Led.Green)))
+      (self.ledb, ), _ = self.chain(self.mcu.gpio.request('ledb'), imp.Block(IndicatorLed(Led.Blue)))
 
       self.sw = ElementDict[DigitalSwitch]()
       for i in range(4):
@@ -83,7 +83,7 @@ class SevenSegment(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32_Wroom_32),
-        (['reg_3v3'], Ld1117),
+        (['reg_3v3'], Ldl1117),
         (['pwr_conn', 'conn'], JstPhKVertical),
         (['spk', 'conn'], JstPhKVertical),
       ],
@@ -96,10 +96,12 @@ class SevenSegment(JlcBoardTop):
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
         (Neopixel, Sk6805_Ec15),
-        (Speaker, ConnectorSpeaker),
         (TactileSwitch, Skrtlae010),
+        (Speaker, ConnectorSpeaker),
+        (TestPoint, CompactKeystone5015),
       ],
       class_values=[
+        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
       ]
     )
 
