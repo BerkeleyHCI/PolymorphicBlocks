@@ -6,7 +6,7 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Block):
     def __init__(self) -> None:
         super().__init__()
 
-        self.conn = self.Block(Fpc050Bottom(length=30))
+        self.conn = self.Block(Fpc050Bottom(length=24))
 
         self.dgnd = self.Export(self.conn.pins.request('10').adapt_to(Ground()))
         self.agnd = self.Export(self.conn.pins.request('23').adapt_to(Ground()))

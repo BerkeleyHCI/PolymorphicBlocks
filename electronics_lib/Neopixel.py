@@ -107,7 +107,7 @@ class Sk6805_Ec15(Neopixel, JlcPart, FootprintBlock):
 
     def contents(self) -> None:
         self.footprint(
-            'D', 'LED_SMT:LED_SK6812_EC15_1.5x1.5mm',
+            'D', 'LED_SMD:LED_SK6812_EC15_1.5x1.5mm',
             {
                 '1': self.din,
                 '2': self.vdd,
