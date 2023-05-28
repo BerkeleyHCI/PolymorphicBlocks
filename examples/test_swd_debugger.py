@@ -118,7 +118,7 @@ class SwdDebugger(JlcBoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      (self.usb_esd, ), self.usb_chaini = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+      (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
       (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
 
       (self.led_tgt, ), _ = self.chain(self.mcu.gpio.request(f'led_target'),

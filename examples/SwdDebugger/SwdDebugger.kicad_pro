@@ -61,12 +61,7 @@
           "width": 0.16
         }
       ],
-      "drc_exclusions": [
-        "hole_clearance|140770000|45100000|c047e5a2-24f5-4745-b601-c5020de43387|296bd740-43f0-40c5-8ffe-c6a5e817dacd",
-        "hole_clearance|140770000|45300000|c047e5a2-24f5-4745-b601-c5020de43387|f9607cbe-6790-4961-be86-be1c55c894e4",
-        "hole_clearance|140770000|50700000|b2faedc7-5e84-4226-80f0-c5c17152b6d3|cda0598e-2e40-4129-b900-7720889ea81b",
-        "hole_clearance|140770000|50900000|b2faedc7-5e84-4226-80f0-c5c17152b6d3|f7a47f6a-d80d-46ec-8ffd-00083fc3d672"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
@@ -221,7 +216,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "EspProgrammer.kicad_pro",
+    "filename": "SwdDebugger.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -255,7 +250,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "EspProgrammer.net",
+      "netlist": "SwdDebugger.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""
