@@ -49,8 +49,6 @@ const mountingHolePitch = 44.5 / 25.4
 const mountingHole = via(4.5 / 25.4, 0 / 25.4)
 
 // ELECTRICAL PARAMETERS
-const prefix = "D"
-
 const silkWidth = 0.1 / 25.4
 const traceWidth = 0.2 / 25.4
 const traceVia = via(0.3 / 25.4, 0.7 / 25.4)
@@ -118,29 +116,31 @@ function createLed(pt, rot, name) {  // creates a LED with associated routing, a
   return led
 }
 
-// creates a line of LEDs for the segment between p1 and p2, for an array of led names
+// creates a line of LEDs for the segment between p1 and p2
 // returns the array of created LEDs
-function generateSegment(pt1, pt2, rot, names) {
+function generateSegment(count, pt1, pt2, rot, baseName, baseCount) {
   output = []
   board.wire([pt1, pt2], silkWidth, "F.SilkS")
   dist = Math.sqrt((pt2[0] - pt1[0])**2 + (pt2[1] - pt1[1])**2)
 
   diff = pDiff(pt2, pt1)
-  incr = [diff[0] / names.length, diff[1] / names.length]
+  incr = [diff[0] / count, diff[1] / count]
   halfIncr = [incr[0] / 2, incr[1] / 2]
   curr = [pt1[0] + incr[0] / 2, pt1[1] + incr[1] / 2]
 
   const wirePoints = []
 
   // create LEDs and add points to the list
-  names.forEach(function (name, i) {
-    const led = createLed(curr, rot, name)
+  const leds = []
+  for (i=0; i<count; i++) {
+    var led = createLed(curr, rot, baseName + "[" + (baseCount + i) + "]")
+    leds.push(led)
     output.push(led)
     wirePoints.push(led.pad("1"))
     wirePoints.push(led.pad("3"))
 
     curr = pAdd(curr, incr)
-  })
+  }
 
   // wire up points
   board.wire(path(
@@ -163,25 +163,18 @@ function segPt(center, pt) {
   return pAdd(center, [pt[0] + pt[1] * slope, pt[1]])
 }
 
-function createNames(prefix, count, startIndex) {
-  output = []
-  for (var i=0; i<count; i++) {
-    output.push(prefix + (startIndex + i))
-  }
-  return output
-}
-
 const yMargin = (yPitch - yLength) / 2
 
 
 // Generate LED chain for segments
 //
-var ledNum = 0
+var digitNum = 0
 for (digitCenter of digitCenters) {
+  const baseName = "seg[" + digitNum + "]"
+  
   const a1 = segPt(digitCenter, [-xLength/2, yPitch])
   const a2 = segPt(digitCenter, [xLength/2, yPitch])
-  const segA = generateSegment(a1, a2,
-           0, createNames(prefix, segmentLeds, ledNum + 0*segmentLeds))
+  const segA = generateSegment(segmentLeds, a1, a2, 0, baseName + ".leds", segmentLeds*0)
 
   const b1 = segPt(digitCenter, [xPitch/2, yLength + yMargin])
   const b2 = segPt(digitCenter, [xPitch/2, yMargin])
@@ -190,8 +183,7 @@ for (digitCenter of digitCenters) {
     ["fillet", traceCornerFilet, segPt(digitCenter, [xPitch/2, yPitch])],
     b1
   ), traceWidth)
-  const segB = generateSegment(b1, b2, 
-           -90, createNames(prefix, segmentLeds, ledNum + 1*segmentLeds))
+  const segB = generateSegment(segmentLeds, b1, b2,  -90, baseName + ".leds", segmentLeds*1)
   board.add(traceVia, {translate: b2})
 
   const c1 = segPt(digitCenter, [xPitch/2, - yMargin])
@@ -200,8 +192,7 @@ for (digitCenter of digitCenters) {
     b2, c1
   ], traceWidth, "B.Cu")
   board.add(traceVia, {translate: c1})
-  const segC = generateSegment(c1, c2, 
-           -90, createNames(prefix, segmentLeds, ledNum + 2*segmentLeds))
+  const segC = generateSegment(segmentLeds, c1, c2, -90, baseName + ".leds", segmentLeds*2)
 
   const d1 = segPt(digitCenter, [xLength/2, -yPitch])
   const d2 = segPt(digitCenter, [-xLength/2, -yPitch])
@@ -210,8 +201,7 @@ for (digitCenter of digitCenters) {
     ["fillet", traceCornerFilet, segPt(digitCenter, [xPitch/2, -yPitch])],
     d1
   ), traceWidth)
-  const segD = generateSegment(d1, d2,
-           180, createNames(prefix, segmentLeds, ledNum + 3*segmentLeds))
+  const segD = generateSegment(segmentLeds, d1, d2, 180, baseName + ".leds", segmentLeds*3)
 
   const e1 = segPt(digitCenter, [-xPitch/2, -yMargin - yLength])
   const e2 = segPt(digitCenter, [-xPitch/2, -yMargin])
@@ -220,8 +210,7 @@ for (digitCenter of digitCenters) {
     ["fillet", traceCornerFilet, segPt(digitCenter, [-xPitch/2, -yPitch])],
     e1
   ), traceWidth)
-  const segE = generateSegment(e1, e2, 
-           90, createNames(prefix, segmentLeds, ledNum + 4*segmentLeds))
+  const segE = generateSegment(segmentLeds, e1, e2, 90, baseName + ".leds", segmentLeds*4)
   board.add(traceVia, {translate: e2})
   
   const f1 = segPt(digitCenter, [-xPitch/2, yMargin])
@@ -230,8 +219,7 @@ for (digitCenter of digitCenters) {
     e2, f1
   ], traceWidth, "B.Cu")
   board.add(traceVia, {translate: f1})
-  const segF = generateSegment(f1, f2, 
-           90, createNames(prefix, segmentLeds, ledNum + 5*segmentLeds))
+  const segF = generateSegment(segmentLeds, f1, f2, 90, baseName + ".leds", segmentLeds*5)
 
   // outer parallel trace segment for prev g2 -> a1
   const f2o = segPt(f2, [-traceParallelOffset, 0])
@@ -276,19 +264,19 @@ for (digitCenter of digitCenters) {
     g1
   ), traceWidth, "B.Cu")
   board.add(traceVia, {translate: g1})
-  const segG = generateSegment(g1, g2, 
-           0, createNames(prefix, segmentLeds, ledNum + 6*segmentLeds))
+  const segG = generateSegment(segmentLeds, g1, g2, 0, baseName + ".leds", segmentLeds*6)
   board.add(traceVia, {translate: g2})
   
-  ledNum = ledNum + 7*segmentLeds
+  digitNum = digitNum + 1
 }
 
-const c1 = createLed(segPt([0, 0], [0, colonPitch/2]), -90, "C1")
-const c2 = createLed(segPt([0, 0], [0, -colonPitch/2]), -90, "C2")
+const c1 = createLed(segPt([0, 0], [0, colonPitch/2]), -90, "center.leds[0]")
+const c2 = createLed(segPt([0, 0], [0, -colonPitch/2]), -90, "center.leds[1]")
 
-const m1 = createLed(segPt([0, 0], [-metaXPitch/2, metaYPitch/2]), 0, "M1")
-const m2 = createLed(segPt([0, 0], [metaXPitch/2, metaYPitch/2]), 0, "M2")
+const m1 = createLed(segPt([0, 0], [-metaXPitch/2, metaYPitch/2]), 0, "meta.leds[0]")
+const m2 = createLed(segPt([0, 0], [metaXPitch/2, metaYPitch/2]), 0, "meta.leds[1]")
 
+// no LEDs are intended to go here, this is just for positioning
 const my = createLed(segPt([0, 0], [-metaXPitch/2, -metaYPitch/2]), 0, "My")  // opaque
 const m4 = createLed(segPt([0, 0], [metaXPitch/2, -metaYPitch/2]), 0, "M4")
 
@@ -379,7 +367,7 @@ function createSwitch(pt, rot, name) {  // creates a switch with associated rout
 }
 
 for (i=0; i<4; i++) {
-  const sw = createSwitch(segPt([0, 0], [(i - 1.5) * switchPitch, outlineJoinerWidth/2]), 0, "sw" + i)
+  const sw = createSwitch(segPt([0, 0], [(i - 1.5) * switchPitch, outlineJoinerWidth/2]), 0, "sw[" + i + "]")
 }
 
 
