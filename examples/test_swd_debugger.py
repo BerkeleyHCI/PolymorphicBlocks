@@ -176,8 +176,8 @@ class SwdDebugger(JlcBoardTop):
           'target_swo=PA10',
           'led_target=PA9',
           # these are custom additional parts
-          'led_usb=14',
-          'target_reg_en=16',
+          'led_usb=13',
+          'target_reg_en=22',
           'sw=38',
         ]),
 
