@@ -73,16 +73,21 @@ class SevenSegment(JlcBoardTop):
       (self.center, ), _ = self.chain(last_digit, imp.Block(NeopixelArray(2)))
       (self.meta, ), _ = self.chain(self.center.dout, imp.Block(NeopixelArray(2)))
 
-      (self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
-        self.mcu.dac.request('spk'),
+      (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
+        self.mcu.gpio.request('spk'),
+        imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
         self.Block(AnalogTestPoint()),
         imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
         self.Block(Speaker()))
 
+    self.mount = ElementDict[MountingHole]()
+    for i in range(2):
+      self.mount[i] = self.Block(MountingHole_M2_5())
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32_Wroom_32),
+        (['mcu'], Esp32s3_Wroom_1),
         (['reg_3v3'], Ldl1117),
         (['pwr_conn', 'conn'], JstPhKVertical),
         (['spk', 'conn'], JstPhKVertical),
@@ -96,7 +101,7 @@ class SevenSegment(JlcBoardTop):
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
         (Neopixel, Sk6805_Ec15),
-        (TactileSwitch, Skrtlae010),
+        (Switch, Skrtlae010),
         (Speaker, ConnectorSpeaker),
         (TestPoint, CompactKeystone5015),
       ],

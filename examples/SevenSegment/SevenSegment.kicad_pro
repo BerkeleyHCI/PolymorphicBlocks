@@ -62,10 +62,12 @@
         }
       ],
       "drc_exclusions": [
-        "hole_clearance|140770000|45100000|c047e5a2-24f5-4745-b601-c5020de43387|296bd740-43f0-40c5-8ffe-c6a5e817dacd",
-        "hole_clearance|140770000|45300000|c047e5a2-24f5-4745-b601-c5020de43387|f9607cbe-6790-4961-be86-be1c55c894e4",
-        "hole_clearance|140770000|50700000|b2faedc7-5e84-4226-80f0-c5c17152b6d3|cda0598e-2e40-4129-b900-7720889ea81b",
-        "hole_clearance|140770000|50900000|b2faedc7-5e84-4226-80f0-c5c17152b6d3|f7a47f6a-d80d-46ec-8ffd-00083fc3d672"
+        "courtyards_overlap|178960001|42770001|46e1b858-db42-4fb5-a938-5b6245f78a82|e97327e5-e3f3-4f16-a4c3-d6fc56bc5266",
+        "courtyards_overlap|178960001|51770001|d5bf2c74-b175-4a62-9d1f-133624edefa1|e97327e5-e3f3-4f16-a4c3-d6fc56bc5266",
+        "hole_clearance|140770000|45100000|33c388d5-df7f-4808-9dcb-40b4d3f3b286|696c4f65-4297-4df4-99e5-33af22dfb9a8",
+        "hole_clearance|140770000|45300000|33c388d5-df7f-4808-9dcb-40b4d3f3b286|b00849fc-cd6e-479c-821c-2ae2016c09d3",
+        "hole_clearance|140770000|50700000|47bf8b08-fa80-4c42-9604-b5659499df32|b633782e-99bc-4df8-b211-058366e7fc43",
+        "hole_clearance|140770000|50900000|47bf8b08-fa80-4c42-9604-b5659499df32|40574199-dac6-42d4-92b3-0c2c2d22de9c"
       ],
       "meta": {
         "filename": "board_design_settings.json",
@@ -107,7 +109,7 @@
         "silk_over_copper": "warning",
         "silk_overlap": "warning",
         "skew_out_of_range": "error",
-        "solder_mask_bridge": "warning",
+        "solder_mask_bridge": "ignore",
         "starved_thermal": "ignore",
         "text_height": "warning",
         "text_thickness": "warning",
@@ -221,7 +223,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "EspProgrammer.kicad_pro",
+    "filename": "RobotCrawler.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -239,7 +241,41 @@
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.15,
-        "via_diameter": 0.6,
+        "via_diameter": 0.7,
+        "via_drill": 0.3,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.15,
+        "diff_pair_gap": 0.15,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.15,
+        "line_style": 0,
+        "microvia_diameter": 0.6858,
+        "microvia_drill": 0.3302,
+        "name": "Battery",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.5,
+        "via_diameter": 0.7,
+        "via_drill": 0.3,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.15,
+        "diff_pair_gap": 0.15,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.15,
+        "line_style": 0,
+        "microvia_diameter": 0.6858,
+        "microvia_drill": 0.3302,
+        "name": "Power",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.3,
+        "via_diameter": 0.7,
         "via_drill": 0.3,
         "wire_width": 6
       }
@@ -249,13 +285,26 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": []
+    "netclass_patterns": [
+      {
+        "netclass": "Battery",
+        "pattern": "vbatt"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "v3v3"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "gnd"
+      }
+    ]
   },
   "pcbnew": {
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "EspProgrammer.net",
+      "netlist": "RobotCrawler.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""
