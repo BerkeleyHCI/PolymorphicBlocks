@@ -98,7 +98,7 @@ class RobotCrawler(RobotCrawlerSpec):
 
       self.oled = imp.Block(Er_Oled_096_1_1())
       self.connect(self.i2c, self.oled.i2c)
-      self.connect(self.mcu.gpio.request('oled_res'), self.oled.reset)
+      self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
 
     # CAMERA MULTI DOMAIN
     with self.implicit_connect(
@@ -180,6 +180,8 @@ class RobotCrawler(RobotCrawlerSpec):
           'y[9]=15',
           'href=14',
           'vsync=13',
+
+          'oled_reset=8',
         ]),
         (['mcu', 'programming'], 'uart-auto')
       ],
