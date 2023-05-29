@@ -36,7 +36,7 @@ class Bh1750_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class LightSensor_Bh1750(LightSensor, Block):
+class Bh1750(LightSensor, Block):
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Bh1750_Device())

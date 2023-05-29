@@ -41,7 +41,7 @@ class Bme680_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class EnvironmentalSensor_Bme680(EnvironmentalSensor, Block):
+class Bme680(EnvironmentalSensor, Block):
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Bme680_Device())

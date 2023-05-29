@@ -48,9 +48,9 @@ class SevenSegment(JlcBoardTop):
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
 
-      self.env = imp.Block(EnvironmentalSensor_Bme680())
+      self.env = imp.Block(Bme680())
       self.connect(self.i2c, self.env.i2c)
-      self.als = imp.Block(LightSensor_Bh1750())
+      self.als = imp.Block(Bh1750())
       self.connect(self.i2c, self.als.i2c)
 
     # 5V DOMAIN
@@ -63,15 +63,18 @@ class SevenSegment(JlcBoardTop):
         imp.Block(L74Ahct1g125()),
         imp.Block(DigitalTestPoint()))
 
-      last_digit = self.rgb_shift.output
       self.digit = ElementDict[NeopixelArray]()
       for i in range(4):
-        self.digit[i] = digit = imp.Block(NeopixelArray(2*7))
-        self.connect(last_digit, digit.din)
-        last_digit = digit.dout
+        self.digit[i] = imp.Block(NeopixelArray(2*7))
+      self.center = imp.Block(NeopixelArray(2))
+      self.meta = imp.Block(NeopixelArray(2))
 
-      (self.center, ), _ = self.chain(last_digit, imp.Block(NeopixelArray(2)))
-      (self.meta, ), _ = self.chain(self.center.dout, imp.Block(NeopixelArray(2)))
+      self.connect(self.rgb_shift.output, self.digit[0].din)
+      self.connect(self.digit[0].dout, self.digit[1].din)
+      self.connect(self.digit[1].dout, self.meta.din)
+      self.connect(self.meta.dout, self.center.din)
+      self.connect(self.center.dout, self.digit[2].din)
+      self.connect(self.digit[2].dout, self.digit[3].din)
 
       (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
         self.mcu.gpio.request('spk'),
@@ -94,7 +97,19 @@ class SevenSegment(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
+          'ledr=4',
+          'ledg=5',
+          'ledb=6',
+          'i2c.sda=7',
+          'i2c.scl=8',
+          'rgb=12',
 
+          'sw0=32',
+          'sw1=33',
+          'sw2=34',
+          'sw3=35',
+
+          'spk=31',
         ]),
         (['mcu', 'programming'], 'uart-auto')
       ],
