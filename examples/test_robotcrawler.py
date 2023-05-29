@@ -96,6 +96,10 @@ class RobotCrawler(RobotCrawlerSpec):
       (self.ledg, ), _ = self.chain(self.mcu.gpio.request('ledg'), imp.Block(IndicatorLed(Led.Green)))
       (self.ledb, ), _ = self.chain(self.mcu.gpio.request('ledb'), imp.Block(IndicatorLed(Led.Blue)))
 
+      self.oled = imp.Block(Er_Oled_096_1_1())
+      self.connect(self.i2c, self.oled.i2c)
+      self.connect(self.mcu.gpio.request('oled_res'), self.oled.reset)
+
     # CAMERA MULTI DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
@@ -190,6 +194,8 @@ class RobotCrawler(RobotCrawlerSpec):
         (Ov2640_Fpc24, ['device', 'dovdd', 'voltage_limits'], Range(1.71, 4.5)),
         (Ov2640_Fpc24, ['device', 'dvdd', 'voltage_limits'], Range(1.1, 1.36)),  # allow 1v2
         (Ov2640_Fpc24, ['device', 'avdd', 'voltage_limits'], Range(2.3, 3.0)),  # allow 2v5
+        (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
+        (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
       ]
     )
 
