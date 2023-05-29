@@ -107,10 +107,10 @@ class RobotCrawler(RobotCrawlerSpec):
 
       for i in range(2, 10):  # TODO need a request_vector(elts)
         self.connect(self.cam.y.request(str(i)), self.mcu.gpio.request(f"y[{i}]"))
-      self.connect(self.cam.pclk, self.mcu.gpio.request())
-      self.connect(self.cam.xclk, self.mcu.gpio.request())
-      self.connect(self.cam.href, self.mcu.gpio.request())
-      self.connect(self.cam.vsync, self.mcu.gpio.request())
+      self.connect(self.cam.pclk, self.mcu.gpio.request('pclk'))
+      self.connect(self.cam.xclk, self.mcu.gpio.request('xclk'))
+      self.connect(self.cam.href, self.mcu.gpio.request('href'))
+      self.connect(self.cam.vsync, self.mcu.gpio.request('vsync'))
       self.connect(self.cam.sio, self.i2c)
 
     # VBATT DOMAIN
@@ -146,7 +146,36 @@ class RobotCrawler(RobotCrawlerSpec):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
+          'servo1=31',
+          'servo1_fb=4',
+          'servo2=32',
+          'servo2_fb=5',
+          'servo3=12',
+          'servo3_fb=6',
+          'servo4=11',
+          'servo4_fb=7',
 
+          'i2c.scl=10',
+          'i2c.sda=9',
+
+          'rgb=38',
+
+          'ledr=33',
+          'ledg=34',
+          'ledb=35',
+
+          'y[4]=25',
+          'y[3]=24',
+          'y[5]=23',
+          'y[2]=22',
+          'y[6]=21',
+          'pclk=20',
+          'y[7]=19',
+          'y[8]=18',
+          'xclk=17',
+          'y[9]=15',
+          'href=14',
+          'vsync=13',
         ]),
         (['mcu', 'programming'], 'uart-auto')
       ],

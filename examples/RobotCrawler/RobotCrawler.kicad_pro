@@ -223,7 +223,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "SwdDebugger.kicad_pro",
+    "filename": "RobotCrawler.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -254,10 +254,27 @@
         "line_style": 0,
         "microvia_diameter": 0.6858,
         "microvia_drill": 0.3302,
+        "name": "Battery",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.5,
+        "via_diameter": 0.7,
+        "via_drill": 0.3,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.15,
+        "diff_pair_gap": 0.15,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.15,
+        "line_style": 0,
+        "microvia_diameter": 0.6858,
+        "microvia_drill": 0.3302,
         "name": "Power",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.2,
+        "track_width": 0.3,
         "via_diameter": 0.7,
         "via_drill": 0.3,
         "wire_width": 6
@@ -270,16 +287,12 @@
     "netclass_assignments": null,
     "netclass_patterns": [
       {
-        "netclass": "Power",
-        "pattern": "vtarget"
+        "netclass": "Battery",
+        "pattern": "vbatt"
       },
       {
         "netclass": "Power",
         "pattern": "v3v3"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "vusb"
       },
       {
         "netclass": "Power",
@@ -291,7 +304,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "SwdDebugger.net",
+      "netlist": "RobotCrawler.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""
