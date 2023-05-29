@@ -40,7 +40,7 @@ class RobotCrawlerSpec(BoardTop):
     self.compass = self.Block(Mag_Qmc5883l())
 
 
-class RobotCrawler(RobotCrawlerSpec):
+class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
   """Implementation of the crawler robot, that implements what is needed to connect the interface blocks
   as well as optional additional blocks.
   """

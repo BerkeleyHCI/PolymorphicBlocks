@@ -1,4 +1,5 @@
 import argparse
+from typing import List, Dict
 
 import sexpdata  # type: ignore
 
@@ -13,7 +14,7 @@ from electronics_model.KiCadSchematicParser import group_by_car, parse_symbol
 # defined as original name to list of renamed names, assigned in order
 # (first component matching the original name takes the first name in the rename list,
 # second takes the second name, and so on)
-remap_table = {}
+remap_table: Dict[str, List[str]] = {}
 remap_table['led'] = []
 for digit in range(4):
   for segment, segment_name in enumerate(['a', 'b', 'c', 'd', 'e', 'f', 'g']):
