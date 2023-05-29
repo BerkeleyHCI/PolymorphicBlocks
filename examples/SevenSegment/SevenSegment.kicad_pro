@@ -61,14 +61,7 @@
           "width": 0.16
         }
       ],
-      "drc_exclusions": [
-        "courtyards_overlap|178960001|42770001|46e1b858-db42-4fb5-a938-5b6245f78a82|e97327e5-e3f3-4f16-a4c3-d6fc56bc5266",
-        "courtyards_overlap|178960001|51770001|d5bf2c74-b175-4a62-9d1f-133624edefa1|e97327e5-e3f3-4f16-a4c3-d6fc56bc5266",
-        "hole_clearance|140770000|45100000|33c388d5-df7f-4808-9dcb-40b4d3f3b286|696c4f65-4297-4df4-99e5-33af22dfb9a8",
-        "hole_clearance|140770000|45300000|33c388d5-df7f-4808-9dcb-40b4d3f3b286|b00849fc-cd6e-479c-821c-2ae2016c09d3",
-        "hole_clearance|140770000|50700000|47bf8b08-fa80-4c42-9604-b5659499df32|b633782e-99bc-4df8-b211-058366e7fc43",
-        "hole_clearance|140770000|50900000|47bf8b08-fa80-4c42-9604-b5659499df32|40574199-dac6-42d4-92b3-0c2c2d22de9c"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
@@ -223,7 +216,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "RobotCrawler.kicad_pro",
+    "filename": "SevenSegment.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -241,40 +234,6 @@
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.15,
-        "via_diameter": 0.7,
-        "via_drill": 0.3,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.15,
-        "diff_pair_gap": 0.15,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.15,
-        "line_style": 0,
-        "microvia_diameter": 0.6858,
-        "microvia_drill": 0.3302,
-        "name": "Battery",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.5,
-        "via_diameter": 0.7,
-        "via_drill": 0.3,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.15,
-        "diff_pair_gap": 0.15,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.15,
-        "line_style": 0,
-        "microvia_diameter": 0.6858,
-        "microvia_drill": 0.3302,
-        "name": "Power",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.3,
         "via_diameter": 0.7,
         "via_drill": 0.3,
         "wire_width": 6
@@ -304,7 +263,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "RobotCrawler.net",
+      "netlist": "SevenSegment.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""
