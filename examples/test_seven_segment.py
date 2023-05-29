@@ -100,6 +100,7 @@ class SevenSegment(JlcBoardTop):
         (['spk', 'conn'], JstPhKVertical),
       ],
       instance_values=[
+        (['refdes_prefix'], 'C'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
           'ledr=4',
           'ledg=5',

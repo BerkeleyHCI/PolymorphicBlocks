@@ -90,6 +90,7 @@ class IotDisplay(JlcBoardTop):
         (['batt', 'conn'], JstPhKVertical),
       ],
       instance_values=[
+        (['refdes_prefix'], 'D'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
           'ledr=7',
           'ledg=8',
