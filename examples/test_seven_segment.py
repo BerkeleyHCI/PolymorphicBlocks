@@ -83,6 +83,10 @@ class SevenSegment(JlcBoardTop):
         imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
         self.Block(Speaker()))
 
+      self.v5v_sense = imp.Block(VoltageSenseDivider(full_scale_voltage=3.0*Volt(tol=0.1), impedance=(1, 10)*kOhm))
+      self.connect(self.v5v_sense.input, self.pwr)
+      self.connect(self.v5v_sense.output, self.mcu.adc.request('v5v_sense'))
+
     self.mount = ElementDict[MountingHole]()
     for i in range(2):
       self.mount[i] = self.Block(MountingHole_M2_5())
@@ -100,8 +104,8 @@ class SevenSegment(JlcBoardTop):
           'ledr=4',
           'ledg=5',
           'ledb=6',
-          'i2c.sda=7',
-          'i2c.scl=8',
+          'i2c.sda=8',
+          'i2c.scl=9',
           'rgb=12',
 
           'sw0=32',
@@ -109,6 +113,7 @@ class SevenSegment(JlcBoardTop):
           'sw2=34',
           'sw3=35',
 
+          'v5v_sense=7',
           'spk=31',
         ]),
         (['mcu', 'programming'], 'uart-auto')
