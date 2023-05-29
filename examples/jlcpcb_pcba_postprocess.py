@@ -6,7 +6,7 @@ from typing import Dict
 parser = argparse.ArgumentParser(description='Post-process KiCad BoM and position files to be compatible with JLC.')
 parser.add_argument('file_path_prefix', type=str,
                     help='Path prefix to the part data, without the .csv or -top-post.csv postfix, ' +
-                         'for example test_ledmatrix/gerbers/LedMatrixTest')
+                         'for example LedMatrix/gerbers/LedMatrix')
 args = parser.parse_args()
 
 
