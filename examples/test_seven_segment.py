@@ -58,10 +58,10 @@ class SevenSegment(JlcBoardTop):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.rgb_tp, self.rgb_shift), _ = self.chain(
+      (self.rgb_shift, self.rgb_tp), _ = self.chain(
         self.mcu.gpio.request('rgb'),
-        imp.Block(DigitalTestPoint()),
-        imp.Block(L74Ahct1g125()))
+        imp.Block(L74Ahct1g125()),
+        imp.Block(DigitalTestPoint()))
 
       last_digit = self.rgb_shift.output
       self.digit = ElementDict[NeopixelArray]()
