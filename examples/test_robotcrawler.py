@@ -149,6 +149,7 @@ class RobotCrawler(RobotCrawlerSpec):
         (['batt', 'conn'], JstPhKVertical),
       ],
       instance_values=[
+        (['refdes_prefix'], 'R'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
           'servo1=31',
           'servo1_fb=4',
