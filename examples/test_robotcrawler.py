@@ -64,17 +64,15 @@ class RobotCrawler(RobotCrawlerSpec):
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-      (self.reg_2v5, self.tp_2v5), _ = self.chain(
+      (self.reg_2v5, ), _ = self.chain(
         self.vbatt,
-        imp.Block(VoltageRegulator(output_voltage=2.5*Volt(tol=0.05))),
-        self.Block(VoltageTestPoint())
+        imp.Block(VoltageRegulator(output_voltage=2.5*Volt(tol=0.05)))
       )
       self.v2v5 = self.connect(self.reg_2v5.pwr_out)
 
-      (self.reg_1v2, self.tp_1v2), _ = self.chain(
+      (self.reg_1v2, ), _ = self.chain(
         self.vbatt,
-        imp.Block(VoltageRegulator(output_voltage=1.2*Volt(tol=0.05))),
-        self.Block(VoltageTestPoint())
+        imp.Block(VoltageRegulator(output_voltage=1.2*Volt(tol=0.05)))
       )
       self.v1v2 = self.connect(self.reg_1v2.pwr_out)
 
@@ -132,9 +130,8 @@ class RobotCrawler(RobotCrawlerSpec):
       self.connect(self.mcu.adc.request('servo3_fb'), self.servo3.fb)
       self.connect(self.mcu.adc.request('servo4_fb'), self.servo4.fb)
 
-      (self.rgb_tp, self.rgbs), _ = self.chain(
+      (self.rgbs, ), _ = self.chain(
         self.mcu.gpio.request('rgb'),
-        imp.Block(DigitalTestPoint()),
         imp.Block(NeopixelArray(4)))
 
 
