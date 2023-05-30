@@ -22,28 +22,34 @@ PART_ROTATIONS = {
   'C86832': -90,  # PCF8574 IO expander
   'C500769': -90,  # AP3418 buck converter
   'C50506': -90,  # DRV8833 dual motor driver
-  'C7972': 180,  # SOT-23-5 LMV opamp
   'C92482': -90,  # DRV8313 BLDC driver
   'C132291': -90,  # FUSB302B
   'C508453': 180,  # FET
 
-  'C112032': 180,  # LDO
-  'C460356': 180,  # SOT-23-5 boost converter
   'C2962219': -90,  # 2x5 1.27mm header shrouded
   'C126830': 90,  # "SOT-23" USB ESD protector
   'C6568': -90,  # CP2102 USB UART
-  'C190271': 180,  # SOT-23-6 93LC56 EEPROM
-  'C73478': 180,  # SOT-23-5 LP5907 1.2v reg
-  'C80670': 180,  # SOT-23-5 LP5907 3.3v reg
   'C976032': -90,  # LGA-16 QMC5883L
 
   'C650309': -90,  # AD5941
+
+  'C424093': -90,  # MCP73831T
+  'C842287': -90,  # 74AHCT1G125
+  'C113367': -90,  # PAM8302
+  'C2890035': -90,  # SK6805-EC15
+  'C125972': 90,  # BME680
+
+  'C262645': 180,  # AFC07 FPC 30
+  'C262669': 180  # AFC01 FPC 24
 }
 
 _FOOTPRINT_ROTATIONS = {
   'Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11': 0,
   'RF_Module:ESP32-WROOM-32': -90,
   'Package_TO_SOT_SMD:SOT-23': 180,
+  'Package_TO_SOT_SMD:SOT-23-5': 180,
+  'Package_TO_SOT_SMD:SOT-23-6': 180,
+  'Package_TO_SOT_SMD:SOT-323_SC-70': 180,
   'Package_TO_SOT_SMD:SOT-223-3_TabPin2': 180,
   'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': -90,
   'Package_SO:SOIC-8_5.23x5.23mm_P1.27mm': -90,
@@ -56,6 +62,13 @@ PACKAGE_ROTATIONS = {footprint.split(':')[-1]: rot for footprint, rot in _FOOTPR
 
 # translational offsets using KiCad coordinate conventions, -y is up
 # offsets estimated visually
+PART_OFFSETS = {
+  'C262669': (0, -0.5),  # AFC01 FPC 24
+  'C262671': (0, -0.5),  # AFC01 FPC 30
+  'C262643': (0, -1),  # AFC07 FPC 24
+  'C262645': (0, -1),  # AFC07 FPC 30
+  'C110293': (0, 0.1),  # SKRTLAE010 R/A switch
+}
 _FOOTPRINT_OFFSETS = {
   'Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11': (0, -1.25),
   'RF_Module:ESP32-WROOM-32': (0, 0.8),
@@ -123,7 +136,13 @@ if __name__ == '__main__':
         lcsc_opt = refdes_lcsc_map.get(refdes, None)
 
         # correct offsets before applying rotation
-        if package in PACKAGE_OFFSETS:
+        if lcsc_opt is not None and lcsc_opt in PART_OFFSETS:
+          (xoff, yoff) = PART_OFFSETS[lcsc_opt]
+          rot = math.radians(float(row[rot_index]))
+          row[x_index] = str((float(row[x_index]) + xoff * math.cos(rot) + yoff * math.sin(rot)))
+          row[y_index] = str((float(row[y_index]) + xoff * math.sin(rot) - yoff * math.cos(rot)))
+          print(f"correct offset for row {i+1} ref {refdes}, {lcsc_opt}")
+        elif package in PACKAGE_OFFSETS:
           (xoff, yoff) = PACKAGE_OFFSETS[package]
           rot = math.radians(float(row[rot_index]))
           row[x_index] = str((float(row[x_index]) + xoff * math.cos(rot) + yoff * math.sin(rot)))
