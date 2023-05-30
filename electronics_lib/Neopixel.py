@@ -113,7 +113,6 @@ class Sk6805_Ec15(Neopixel, JlcPart, FootprintBlock):
                 '2': self.vdd,
                 '3': self.dout,
                 '4': self.gnd,
-
             },
             mfr='Opsco Optoelectronics', part='SK6805-EC15',
             datasheet='https://cdn-shop.adafruit.com/product-files/4492/Datasheet.pdf'
@@ -124,7 +123,6 @@ class Sk6805_Ec15(Neopixel, JlcPart, FootprintBlock):
 
 class NeopixelArray(Light, GeneratorBlock):
     """An array of Neopixels"""
-
     @init_in_parent
     def __init__(self, count: IntLike):
         super().__init__()

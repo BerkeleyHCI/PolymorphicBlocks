@@ -64,7 +64,7 @@ class EspProgrammingTc2030(EspAutoProgrammingHeader):
 
 @non_library
 class HasEspProgramming(IoController, GeneratorBlock):
-  """A mixin for a block (typically an IoController wrapper) that has a ESP style programming header.
+  """A mixin for a block (typically an IoController wrapper) that has an ESP style programming header.
   Can generate into the standard UART cable, the auto-programming header, or TODO a boundary port."""
   @init_in_parent
   def __init__(self, programming: StringLike = "uart-button"):

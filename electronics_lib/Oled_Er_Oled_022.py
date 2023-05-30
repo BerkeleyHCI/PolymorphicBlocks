@@ -62,13 +62,15 @@ class Er_Oled022_1_Device(InternalSubcircuit, Block):
         self.cs = self.Export(self.conn.pins.request('8').adapt_to(din_model))
         self.dc = self.Export(self.conn.pins.request('10').adapt_to(din_model))
 
-        self.connect(self.vss, self.conn.pins.request('12').adapt_to(Ground()))  # RW
-        self.connect(self.vss, self.conn.pins.request('11').adapt_to(Ground()))  # ER
-        self.connect(self.vss, self.conn.pins.request('16').adapt_to(Ground()))  # DB3
-        self.connect(self.vss, self.conn.pins.request('17').adapt_to(Ground()))  # DB4
-        self.connect(self.vss, self.conn.pins.request('18').adapt_to(Ground()))  # DB5
-        self.connect(self.vss, self.conn.pins.request('19').adapt_to(Ground()))  # DB6
-        self.connect(self.vss, self.conn.pins.request('20').adapt_to(Ground()))  # DB7
+        self.connect(self.vss,
+                     self.conn.pins.request('12').adapt_to(Ground()),  # RW
+                     self.conn.pins.request('11').adapt_to(Ground()),  # ER
+                     self.conn.pins.request('16').adapt_to(Ground()),  # DB3
+                     self.conn.pins.request('17').adapt_to(Ground()),  # DB4
+                     self.conn.pins.request('18').adapt_to(Ground()),  # DB5
+                     self.conn.pins.request('19').adapt_to(Ground()),  # DB6
+                     self.conn.pins.request('20').adapt_to(Ground()))  # DB7
+
 
 class Er_Oled022_1(Oled, Block):
     """SSD1305-based 2.2" 128x32 monochrome OLED."""
@@ -93,7 +95,7 @@ class Er_Oled022_1(Oled, Block):
 
         self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vdd)
-        self.vdd_cap2 = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))) \
+        self.vdd_cap2 = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vdd)
 
         self.vcc_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))\
