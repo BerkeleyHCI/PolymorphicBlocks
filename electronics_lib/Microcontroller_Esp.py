@@ -28,8 +28,7 @@ class EspAutoProgrammingHeader(EspProgrammingHeader):
 
 
 class EspProgrammingPins(EspProgrammingHeader):
-  """Programming header for ESP series micros using 2.54mm headers, matching the pinning in the reference schematics.
-  TODO: does NOT support auto-programming (but needs to be compatible with the interface)."""
+  """Programming header for ESP series micros using 2.54mm headers, matching the pinning in the reference schematics."""
   def contents(self) -> None:
     super().contents()
 
@@ -99,7 +98,7 @@ class HasEspProgramming(IoController, GeneratorBlock):
 
 
 class EspAutoProgram(Interface, KiCadSchematicBlock):
-  """Auto-programming header for the ESP series, to drive the target EN (reset) and BOOT (e.g., IO0) pins."""
+  """Auto-programming circuit for the ESP series, to drive the target EN (reset) and BOOT (e.g., IO0) pins."""
   def __init__(self):
     super().__init__()
     self.dtr = self.Port(DigitalSink.empty())
