@@ -79,7 +79,8 @@ class EspProgrammer(JlcBoardTop):
       ],
       class_values=[
         (SmdStandardPackage, ["smd_min_package"], "0402"),
-        (TableBjt, ["footprint_spec"], "Package_TO_SOT_SMD:SOT-323_SC-70")
+        (TableBjt, ["footprint_spec"], "Package_TO_SOT_SMD:SOT-323_SC-70"),
+        (TableBjt, ["part"], "BC846BW 1B"),  # default option is OOS
       ],
     )
 

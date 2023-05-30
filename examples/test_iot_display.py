@@ -109,6 +109,7 @@ class IotDisplay(JlcBoardTop):
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
         (['reg_12v', 'power_path', 'inductor', 'actual_frequency_rating'], Range(0, 7e6)),
+        (['pwr_or', 'diode', 'part'], 'B5819W SL'),  # autopicked one is OOS
       ],
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
@@ -118,6 +119,7 @@ class IotDisplay(JlcBoardTop):
       class_values=[
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),  # for parts commonality w/ other zeners on panel
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (Diode, ['part'], 'B0520W'),  # autopicked one is OOS, use common one with other diode
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
 
         (Er_Oled028_1, ["device", "vcc", "voltage_limits"], Range(11.5, 16)),  # abs max ratings instead of recommended

@@ -128,6 +128,7 @@ class SevenSegment(JlcBoardTop):
       ],
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
+        (Tpa2005d1, ['ic', 'lcsc_part'], 'C113367'),  # use PAM8302AASCR, since TPA2005D1 is out of stock
       ]
     )
 
