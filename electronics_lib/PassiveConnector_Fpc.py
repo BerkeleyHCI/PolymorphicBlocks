@@ -85,7 +85,7 @@ class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
     self.assign(self.actual_basic_part, False)
     return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
-            "Jushuo", f"AFC01-S{length:02d}ECA-00")  # CA is packaging
+            "Jushuo", f"AFC07-S{length:02d}ECA-00")  # CA is packaging
 
 
 class Te1734839(Fpc050Top, FootprintPassiveConnector):
