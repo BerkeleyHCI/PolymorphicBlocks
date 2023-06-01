@@ -111,7 +111,7 @@ class Er_Oled_096_1_1(Oled, GeneratorBlock):
             .connected(self.gnd, self.device.vdd)
         self.vbat_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vbat)
-        self.vcc_cap = self.Block(DecouplingCapacitor(capacitance=2.2*uFarad(tol=0.2)))\
+        self.vcc_cap = self.Block(DecouplingCapacitor(capacitance=(2.2*0.8, 20)*uFarad))\
             .connected(self.gnd, self.device.vcc)
 
     def generate(self):
