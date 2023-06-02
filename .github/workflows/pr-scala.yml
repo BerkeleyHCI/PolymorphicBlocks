@@ -45,4 +45,5 @@ jobs:
     steps:
     - uses: jrouly/scalafmt-native-action@v2
       with:
+        version: '3.7.3'
         arguments: '--list'
