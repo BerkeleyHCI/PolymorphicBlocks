@@ -79,7 +79,8 @@ object ExprBuilder {
       def apply(path: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
         expr = expr.ValueExpr.Expr.Ref(path)
       )
-      def apply(path: String*): expr.ValueExpr = expr.ValueExpr( // convenience method
+      // convenience method
+      def apply(path: String*): expr.ValueExpr = expr.ValueExpr(
         expr = expr.ValueExpr.Expr.Ref(ExprBuilder.Ref(path: _*))
       )
 
