@@ -43,7 +43,6 @@ jobs:
   scalafmt-lint:
     runs-on: ubuntu-latest
     steps:
-    - name: checking code style
     - uses: jrouly/scalafmt-native-action@v2
       with:
         version: '3.7.3'
