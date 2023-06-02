@@ -67,7 +67,8 @@ object EdgirUtils {
       case expr.ValueExpr.Expr.ExportedTunnel(exported) =>
         (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
           case (true, false) => connection.update(_.exportedTunnel.exteriorPort := fn(exported.getExteriorPort))
-          case (false, true) => connection.update(_.exportedTunnel.internalBlockPort := fn(exported.getInternalBlockPort))
+          case (false, true) =>
+            connection.update(_.exportedTunnel.internalBlockPort := fn(exported.getInternalBlockPort))
           case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
           case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
         }
@@ -86,7 +87,8 @@ object EdgirUtils {
       case expr.ValueExpr.Expr.ExportedArray(exported) =>
         (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
           case (true, false) => connection.update(_.exportedArray.exteriorPort := fn(exported.getExteriorPort))
-          case (false, true) => connection.update(_.exportedArray.internalBlockPort := fn(exported.getInternalBlockPort))
+          case (false, true) =>
+            connection.update(_.exportedArray.internalBlockPort := fn(exported.getInternalBlockPort))
           case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
           case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
         }

@@ -43,7 +43,6 @@ sealed trait Errorable[+T] {
   def mapErr(errFn: String => String): Errorable[T]
 }
 
-
 object Errorable {
   case class Success[T](obj: T) extends Errorable[T] {
     override def get: T = obj
@@ -100,7 +99,7 @@ object Errorable {
   }
 
   def apply[T](obj: Option[T], errMsg: => String): Errorable[T] = {
-    require(obj != null)  // as a guard, the user should fix this and make sure Option cannot be null
+    require(obj != null) // as a guard, the user should fix this and make sure Option cannot be null
     obj match {
       case Some(obj) => Success(obj)
       case None => Error(errMsg)

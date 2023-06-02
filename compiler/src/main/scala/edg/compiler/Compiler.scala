@@ -12,11 +12,10 @@ import edgir.schema.schema
 
 import scala.collection.{SeqMap, mutable}
 
-
 sealed trait ElaborateRecord
 object ElaborateRecord {
-  sealed trait ElaborateTask extends ElaborateRecord  // an elaboration task that can be run
-  sealed trait ElaborateDependency extends ElaborateRecord  // an elaboration dependency source
+  sealed trait ElaborateTask extends ElaborateRecord // an elaboration task that can be run
+  sealed trait ElaborateDependency extends ElaborateRecord // an elaboration dependency source
 
   // step 1/2 for blocks: replaces library reference blocks with the concrete block from the library
   case class ExpandBlock(blockPath: DesignPath, blockClass: ref.LibraryPath) extends ElaborateTask
@@ -26,8 +25,12 @@ object ElaborateRecord {
   case class LinkArray(linkPath: DesignPath) extends ElaborateTask
 
   // Defines the type of a parameter, may be held back by partial compilation rules
-  case class Parameter(containerPath: DesignPath, blockClass: Option[ref.LibraryPath], postfix: ref.LocalPath,
-                       param: init.ValInit) extends ElaborateTask
+  case class Parameter(
+      containerPath: DesignPath,
+      blockClass: Option[ref.LibraryPath],
+      postfix: ref.LocalPath,
+      param: init.ValInit
+  ) extends ElaborateTask
 
   // Connection to be elaborated, to set port parameter, IS_CONNECTED, and CONNECTED_LINK equivalences.
   // Only elaborates the direct connect, and for bundles, creates sub-Connect tasks since it needs
@@ -42,9 +45,9 @@ object ElaborateRecord {
   // Created but never run for abstract blocks with abstract port array.
   case class ElaboratePortArray(path: DesignPath) extends ElaborateTask
 
-  case class Port(path: DesignPath) extends ElaborateDependency  // when expanded
+  case class Port(path: DesignPath) extends ElaborateDependency // when expanded
 
-  case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency  // when solved
+  case class ParamValue(paramPath: IndirectDesignPath) extends ElaborateDependency // when solved
 
   // The next tasks are a series for array connection
 
@@ -62,35 +65,45 @@ object ElaborateRecord {
   // Once lowered to single connects, rewrites constraints to replace the ALLOCATE with a concrete port name,
   // allocated from the port's ELEMENTS.
   // Requires: array-connections expanded, port's ELEMENTS defined.
-  case class RewriteConnectAllocate(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
-                                    arrayConstraintNames: Seq[String], portIsLink: Boolean)
-      extends ElaborateTask with ElaborateDependency
+  case class RewriteConnectAllocate(
+      parent: DesignPath,
+      portPath: Seq[String],
+      constraintNames: Seq[String],
+      arrayConstraintNames: Seq[String],
+      portIsLink: Boolean
+  ) extends ElaborateTask with ElaborateDependency
 
   // Sets a PortArray's IS_CONNECTED based off all the connected constraints.
   // Requires: array-connections expanded, ALLOCATE replaced with concrete indices
-  case class ResolveArrayIsConnected(parent: DesignPath, portPath: Seq[String], constraintNames: Seq[String],
-                                     arrayConstraintNames: Seq[String], portIsLink: Boolean)
-      extends ElaborateTask
+  case class ResolveArrayIsConnected(
+      parent: DesignPath,
+      portPath: Seq[String],
+      constraintNames: Seq[String],
+      arrayConstraintNames: Seq[String],
+      portIsLink: Boolean
+  ) extends ElaborateTask
 }
 
-
-/** Configuration for partial compilation, where the compiler intentionally leaves some design subtree
-  * unelaboated, eg as a template for design space exploration.
+/** Configuration for partial compilation, where the compiler intentionally leaves some design subtree unelaboated, eg
+  * as a template for design space exploration.
   */
 case class PartialCompile(
-  blocks: Seq[DesignPath] = Seq(),  // do not elaborate these blocks
-  params: Seq[DesignPath] = Seq(),  // do not propagate values into these params (assignments are discarded)
-  classes: Seq[ref.LibraryPath] = Seq(),  // do not elaborate blocks of these classes
-  classParams: Seq[(ref.LibraryPath, ref.LocalPath)] = Seq()  // do not propagate values into params of these classes
+    blocks: Seq[DesignPath] = Seq(), // do not elaborate these blocks
+    params: Seq[DesignPath] = Seq(), // do not propagate values into these params (assignments are discarded)
+    classes: Seq[ref.LibraryPath] = Seq(), // do not elaborate blocks of these classes
+    classParams: Seq[(ref.LibraryPath, ref.LocalPath)] = Seq() // do not propagate values into params of these classes
 ) {
-  def ++(that: PartialCompile): PartialCompile = {  // concatenates two partial compilation rules
-    PartialCompile(blocks ++ that.blocks, params ++ that.params,
-      classes ++ that.classes, classParams ++ that.classParams)
+  def ++(that: PartialCompile): PartialCompile = { // concatenates two partial compilation rules
+    PartialCompile(
+      blocks ++ that.blocks,
+      params ++ that.params,
+      classes ++ that.classes,
+      classParams ++ that.classParams
+    )
   }
 
   def isEmpty = blocks.isEmpty && params.isEmpty && classes.isEmpty && classParams.isEmpty
 }
-
 
 // Utility class that provides a namespace for suggestedName, including a shared default naming pool for where
 // suggestedName is not haven.
@@ -103,28 +116,34 @@ class AssignNamer() {
   }
 }
 
-
 /** Compiler for a particular design, with an associated library to elaborate references from.
   *
   * During the compilation process, internal data structures are mutated.
   *
-  * Port parameters are propagated by expanding connect and export statements between connected ports
-  * into equalities between all contained parameters.
-  * This expansion triggers when the link-side port is fully elaborated, as its parameters are used.
-  * CONNECTED_LINK is a symlink that is resolved by ConstProp.
+  * Port parameters are propagated by expanding connect and export statements between connected ports into equalities
+  * between all contained parameters. This expansion triggers when the link-side port is fully elaborated, as its
+  * parameters are used. CONNECTED_LINK is a symlink that is resolved by ConstProp.
   */
-class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Library,
-                        val refinements: Refinements, val partial: PartialCompile,
-                        initialize: Boolean) {
+class Compiler private (
+    inputDesignPb: schema.Design,
+    val library: edg.wir.Library,
+    val refinements: Refinements,
+    val partial: PartialCompile,
+    initialize: Boolean
+) {
   // public constructor that does not expose init, which is internal only
-  def this(inputDesignPb: schema.Design, library: edg.wir.Library,
-           refinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()) = {
+  def this(
+      inputDesignPb: schema.Design,
+      library: edg.wir.Library,
+      refinements: Refinements = Refinements(),
+      partial: PartialCompile = PartialCompile()
+  ) = {
     this(inputDesignPb, library, refinements, partial, true)
   }
 
   // Working design tree data structure
-  private var root = new wir.Block(inputDesignPb.getContents, None)  // TODO refactor to unify root / non-root cases
-  require(root.getPorts.isEmpty, "design top may not have ports")  // also don't need to elaborate top ports
+  private var root = new wir.Block(inputDesignPb.getContents, None) // TODO refactor to unify root / non-root cases
+  require(root.getPorts.isEmpty, "design top may not have ports") // also don't need to elaborate top ports
 
   def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
   def resolveBlock(path: DesignPath): wir.BlockLike = root.resolve(path.steps).asInstanceOf[wir.BlockLike]
@@ -141,19 +160,18 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     }
   }
 
-  if (initialize) {  // seed only on the initial object creation (and not forks, which would duplicate work)
+  if (initialize) { // seed only on the initial object creation (and not forks, which would duplicate work)
     for ((path, value) <- refinements.instanceValues) { // seed const prop with path assertions
-      constProp.addAssignValue(path.asIndirect, value, DesignPath(), "path refinement", forced=true)
+      constProp.addAssignValue(path.asIndirect, value, DesignPath(), "path refinement", forced = true)
     }
     for ((path, source) <- refinements.instanceAssigns) {
-      constProp.addAssignEqual(path.asIndirect, source.asIndirect, DesignPath(), "path refinement", forced=true)
+      constProp.addAssignEqual(path.asIndirect, source.asIndirect, DesignPath(), "path refinement", forced = true)
     }
 
     elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq()) // seed with root
 
     // this is done inside expandBlock which isn't called for the root
-    constProp.addAssignValue(IndirectDesignPath() + IndirectStep.Name, TextValue(""),
-      DesignPath(), "name")
+    constProp.addAssignValue(IndirectDesignPath() + IndirectStep.Name, TextValue(""), DesignPath(), "name")
     processParamDeclarations(DesignPath(), Some(root.getBlockClass), root)
   }
 
@@ -161,9 +179,10 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
   private val refinementClassValuesByClass = refinements.classValues.groupBy(_._1._1)
   private val refinementInstanceValuePaths = (refinements.instanceValues.keys ++ refinements.instanceAssigns.keys).toSet
 
-  def filterRefinementClassValues(blockClass: ref.LibraryPath,
-                                  classValuesByClass: Map[ref.LibraryPath, Map[(ref.LibraryPath, ref.LocalPath), ExprValue]],
-                                 ): Seq[((ref.LibraryPath, ref.LocalPath), ExprValue)] = {
+  def filterRefinementClassValues(
+      blockClass: ref.LibraryPath,
+      classValuesByClass: Map[ref.LibraryPath, Map[(ref.LibraryPath, ref.LocalPath), ExprValue]],
+  ): Seq[((ref.LibraryPath, ref.LocalPath), ExprValue)] = {
     classValuesByClass.collect {
       case (refinementClass, refinementClassValues) if library.blockIsSubclassOf(blockClass, refinementClass) =>
         refinementClassValues
@@ -171,7 +190,8 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
   }
 
   // Supplemental elaboration data structures
-  private val expandedArrayConnectConstraints = SingleWriteHashMap[DesignPath, Seq[String]]()  // constraint path -> new constraint names
+  private val expandedArrayConnectConstraints =
+    SingleWriteHashMap[DesignPath, Seq[String]]() // constraint path -> new constraint names
 
   // TODO this should get moved into the design tree
   private val errors = mutable.ListBuffer[CompilerError]()
@@ -179,12 +199,12 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
   // Creates a new copy of this compiler including all the work done already.
   // Useful for design space exploration, where the non-search portions of the design have been compiled.
   def fork(additionalRefinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()): Compiler = {
-    val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, initialize=false)
+    val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, initialize = false)
     cloned.root = root.cloned
     cloned.elaboratePending.initFrom(elaboratePending)
     cloned.constProp.initFrom(constProp)
     additionalRefinements.instanceValues.foreach { case (path, value) =>
-      cloned.constProp.addAssignValue(path.asIndirect, value, DesignPath(), "path refinement", forced=true)
+      cloned.constProp.addAssignValue(path.asIndirect, value, DesignPath(), "path refinement", forced = true)
     }
     val additionalRefinementClassValuesByClass = additionalRefinements.classValues.groupBy(_._1._1)
     def processBlockAdditionalRefinements(path: DesignPath, block: Block): Unit = {
@@ -196,14 +216,19 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
         case ((refinementClass, postfix), value) =>
           val paramPath = path ++ postfix
           if (!cloned.refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
-            cloned.constProp.addAssignValue(path.asIndirect ++ postfix, value, DesignPath(),
-              s"${refinementClass.toSimpleString} class refinement", forced=true)
+            cloned.constProp.addAssignValue(
+              path.asIndirect ++ postfix,
+              value,
+              DesignPath(),
+              s"${refinementClass.toSimpleString} class refinement",
+              forced = true
+            )
           }
       }
 
-      block.getBlocks foreach {  // recurse
+      block.getBlocks.foreach { // recurse
         case (subblockName, subblock: Block) => processBlockAdditionalRefinements(path + subblockName, subblock)
-        case (subblockName, subblock: BlockLibrary) =>  // ignored
+        case (subblockName, subblock: BlockLibrary) => // ignored
       }
     }
     processBlockAdditionalRefinements(DesignPath(), cloned.root)
@@ -248,7 +273,8 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
       constProp.addAssignEqual(
         connect.toLinkPortPath.asIndirect + connectedStep,
         connect.toBlockPortPath.asIndirect + connectedStep,
-        connect.root, "connect"
+        connect.root,
+        "connect"
       )
     }
 
@@ -257,8 +283,11 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
       case toLinkPort: wir.Bundle =>
         for (portName <- toLinkPort.getPorts.keys) {
           elaboratePending.addNode(
-            ElaborateRecord.Connect(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName,
-              connect.root),
+            ElaborateRecord.Connect(
+              connect.toLinkPortPath + portName,
+              connect.toBlockPortPath + portName,
+              connect.root
+            ),
             Seq()
           )
           constProp.setConnection(connect.toLinkPortPath + portName, connect.toBlockPortPath + portName)
@@ -267,9 +296,12 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     }
   }
 
-  protected def resolvePortConnectivity(containerPath: DesignPath, portPostfix: Seq[String],
-                                        constraint: Option[(String, expr.ValueExpr)]): Unit = {
-    val container = resolve(containerPath).asInstanceOf[wir.HasMutableConstraints]  // block or link
+  protected def resolvePortConnectivity(
+      containerPath: DesignPath,
+      portPostfix: Seq[String],
+      constraint: Option[(String, expr.ValueExpr)]
+  ): Unit = {
+    val container = resolve(containerPath).asInstanceOf[wir.HasMutableConstraints] // block or link
     val constraintExpr = constraint.map { case (constrName, constr) => (constrName, constr.expr) }
 
     // Returns the topmost port for some port path that may be an inner port of a bundle.
@@ -279,7 +311,7 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
       // Returns the deepest applicable postfix, starting from a port
       def resolveRecursive(portPath: DesignPath, port: wir.PortLike, postfix: Seq[String]): Seq[String] = {
         port match {
-          case _: wir.Port | _: wir.Bundle | _: wir.PortLibrary =>  // don't recurse into these
+          case _: wir.Port | _: wir.Bundle | _: wir.PortLibrary => // don't recurse into these
             // note that libraries in arrays may not yet have been elaborated
             Seq()
           case port: wir.PortArray =>
@@ -287,38 +319,57 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
         }
       }
       val blockLike = resolve(blockPath).asInstanceOf[wir.HasMutablePorts]
-      containerPath + portPostfix.head ++ resolveRecursive(blockPath + portPostfix.head, blockLike.getPorts(portPostfix.head), portPostfix.tail)
+      containerPath + portPostfix.head ++ resolveRecursive(
+        blockPath + portPostfix.head,
+        blockLike.getPorts(portPostfix.head),
+        portPostfix.tail
+      )
     }
 
     constraintExpr match {
       case Some((constrName, expr.ValueExpr.Expr.Connected(connected))) =>
         require(container.isInstanceOf[wir.Block])
-        constProp.addAssignValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-          BooleanValue(true), containerPath, s"$containerPath.$constrName")
+        constProp.addAssignValue(
+          containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+          BooleanValue(true),
+          containerPath,
+          s"$containerPath.$constrName"
+        )
       case Some((constrName, expr.ValueExpr.Expr.Exported(exported))) =>
         val exportedToTop = exteriorTopPort(containerPath, exported.getExteriorPort.getRef.steps.map(_.getName))
         constProp.addAssignEqual(
           containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
           exportedToTop.asIndirect + IndirectStep.IsConnected,
-          containerPath, s"$containerPath.$constrName")
-      case Some((constrName, expr.ValueExpr.Expr.ExportedTunnel(exported))) =>  // same as exported case
+          containerPath,
+          s"$containerPath.$constrName"
+        )
+      case Some((constrName, expr.ValueExpr.Expr.ExportedTunnel(exported))) => // same as exported case
         // Since the exterior port refers to a child block of the current container,
         // it would not have been elaborated yet so we cannot inspect into it.
         // This relies on tunnel exports being simple (port to port, not port to inner port).
         constProp.addAssignEqual(
           containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
           containerPath.asIndirect ++ exported.getExteriorPort.getRef + IndirectStep.IsConnected,
-          containerPath, s"$containerPath.$constrName")
+          containerPath,
+          s"$containerPath.$constrName"
+        )
       case None =>
-        constProp.addAssignValue(containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
-          BooleanValue(false), containerPath, s"${containerPath ++ portPostfix}.(not connected)")
+        constProp.addAssignValue(
+          containerPath.asIndirect ++ portPostfix + IndirectStep.IsConnected,
+          BooleanValue(false),
+          containerPath,
+          s"${containerPath ++ portPostfix}.(not connected)"
+        )
 
       case Some((_, _)) => throw new IllegalArgumentException
     }
   }
 
-  protected def paramMatchesPartial(containerPath: DesignPath, blockClass: Option[ref.LibraryPath],
-                                    postfix: ref.LocalPath): Boolean = {
+  protected def paramMatchesPartial(
+      containerPath: DesignPath,
+      blockClass: Option[ref.LibraryPath],
+      postfix: ref.LocalPath
+  ): Boolean = {
     if (partial.params.contains(containerPath ++ postfix)) {
       return true
     }
@@ -332,7 +383,11 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
   }
 
   // Called for each param declaration, currently just registers the declaration and type signature.
-  protected def processParamDeclarations(root: DesignPath, blockClass: Option[ref.LibraryPath], hasParams: wir.HasParams): Unit = {
+  protected def processParamDeclarations(
+      root: DesignPath,
+      blockClass: Option[ref.LibraryPath],
+      hasParams: wir.HasParams
+  ): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
       val postfix = ExprBuilder.Ref(paramName)
       if (paramMatchesPartial(root, blockClass, postfix)) {
@@ -345,8 +400,12 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
   }
 
   // Elaborates the port, mutating it in-place. Recursive.
-  protected def elaboratePort(path: DesignPath, containerPath: DesignPath,
-                              container: wir.HasMutablePorts, port: wir.PortLike): Unit = {
+  protected def elaboratePort(
+      path: DesignPath,
+      containerPath: DesignPath,
+      container: wir.HasMutablePorts,
+      port: wir.PortLike
+  ): Unit = {
     // Instantiate as needed
     val instantiated = port match {
       case port: wir.PortLibrary =>
@@ -363,7 +422,7 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
         val newPort = wir.PortLike.fromIrPort(portPb)
         container.elaborate(path.lastString, newPort)
         newPort
-      case port: wir.PortArray => port  // no instantiation needed
+      case port: wir.PortArray => port // no instantiation needed
       case port => throw new NotImplementedError(s"unknown unelaborated port $port")
     }
     elaboratePending.setValue(ElaborateRecord.Port(path), None)
@@ -371,92 +430,110 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     // Process and recurse as needed
     instantiated match {
       case port: wir.Port =>
-        constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
-          containerPath, "name")
+        constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), containerPath, "name")
         processParamDeclarations(path, None, port)
       case port: wir.Bundle =>
-        constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
-          containerPath, "name")
+        constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), containerPath, "name")
         processParamDeclarations(path, None, port)
         for ((childPortName, childPort) <- port.getPorts) {
           elaboratePort(path + childPortName, containerPath, port, childPort)
         }
       case port: wir.PortArray =>
-        if (port.portsSet) {  // set ELEMENTS if ports is defined by array, otherwise ports are dependent on ELEMENTS
-          constProp.addAssignValue(path.asIndirect + IndirectStep.Elements,
+        if (port.portsSet) { // set ELEMENTS if ports is defined by array, otherwise ports are dependent on ELEMENTS
+          constProp.addAssignValue(
+            path.asIndirect + IndirectStep.Elements,
             ArrayValue(port.getPorts.keys.toSeq.map(TextValue(_))),
-            containerPath, "block-defined elements")
+            containerPath,
+            "block-defined elements"
+          )
         }
-        elaboratePending.addNode(ElaborateRecord.ElaboratePortArray(path), Seq(  // does recursive elaboration + LENGTH
-          ElaborateRecord.ParamValue(path.asIndirect + IndirectStep.Elements)
-        ))
+        elaboratePending.addNode(
+          ElaborateRecord.ElaboratePortArray(path),
+          Seq( // does recursive elaboration + LENGTH
+            ElaborateRecord.ParamValue(path.asIndirect + IndirectStep.Elements))
+        )
       case port => throw new NotImplementedError(s"unknown instantiated port $port")
     }
   }
 
   // Attempts to process a parameter constraint, returning true if it is a matching constraint
-  def processAssignConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr,
-                              constrValue: expr.ValueExpr): Boolean = constrValue.expr match {
+  def processAssignConstraint(
+      blockPath: DesignPath,
+      constrName: String,
+      constr: expr.ValueExpr,
+      constrValue: expr.ValueExpr
+  ): Boolean = constrValue.expr match {
     case expr.ValueExpr.Expr.Assign(assign) =>
       constProp.addAssignExpr(
         blockPath.asIndirect ++ assign.dst.get,
-        assign.src.get, blockPath, constrName)
+        assign.src.get,
+        blockPath,
+        constrName
+      )
       true
     case expr.ValueExpr.Expr.AssignTunnel(assign) =>
       // same as normal assign case, but would not enforce locality of references
       constProp.addAssignExpr(
         blockPath.asIndirect ++ assign.dst.get,
-        assign.src.get, blockPath, constrName)
+        assign.src.get,
+        blockPath,
+        constrName
+      )
       true
     case _ => false
   }
 
   // Attempts to process a connected constraint, returning true if it is a matching constraint
-  def processConnectedConstraint(blockPath: DesignPath, constrName: String, constr: expr.ValueExpr,
-                                 isInLink: Boolean): Boolean = {
+  def processConnectedConstraint(
+      blockPath: DesignPath,
+      constrName: String,
+      constr: expr.ValueExpr,
+      isInLink: Boolean
+  ): Boolean = {
     import edg.ExprBuilder.ValueExpr
     constr.expr match {
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
-        case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
-          require(!isInLink)
-          elaboratePending.addNode(
-            ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort, blockPath),
-            Seq(ElaborateRecord.Port(blockPath ++ linkPort))
-          )
-          constProp.setConnection(blockPath ++ linkPort, blockPath ++ blockPort)
-          true
-        case _ => false  // anything with allocates is not processed
-      }
+          case (ValueExpr.Ref(blockPort), ValueExpr.Ref(linkPort)) =>
+            require(!isInLink)
+            elaboratePending.addNode(
+              ElaborateRecord.Connect(blockPath ++ linkPort, blockPath ++ blockPort, blockPath),
+              Seq(ElaborateRecord.Port(blockPath ++ linkPort))
+            )
+            constProp.setConnection(blockPath ++ linkPort, blockPath ++ blockPort)
+            true
+          case _ => false // anything with allocates is not processed
+        }
       case expr.ValueExpr.Expr.Exported(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
-        case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
-          if (!isInLink) {
+          case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
+            if (!isInLink) {
+              elaboratePending.addNode(
+                ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort, blockPath),
+                Seq(ElaborateRecord.Port(blockPath ++ extPort))
+              )
+              constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
+            } else { // for links, the internal port is towards the inner link, so the args are flipped
+              elaboratePending.addNode(
+                ElaborateRecord.Connect(blockPath ++ intPort, blockPath ++ extPort, blockPath),
+                Seq(ElaborateRecord.Port(blockPath ++ intPort))
+              )
+              constProp.setConnection(blockPath ++ intPort, blockPath ++ extPort)
+            }
+            true
+          case _ => false // anything with allocates is not processed
+        }
+      case expr.ValueExpr.Expr.ExportedTunnel(exported) =>
+        (exported.getExteriorPort, exported.getInternalBlockPort) match {
+          case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
+            require(!isInLink)
             elaboratePending.addNode(
               ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort, blockPath),
               Seq(ElaborateRecord.Port(blockPath ++ extPort))
             )
             constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
-          } else {  // for links, the internal port is towards the inner link, so the args are flipped
-            elaboratePending.addNode(
-              ElaborateRecord.Connect(blockPath ++ intPort, blockPath ++ extPort, blockPath),
-              Seq(ElaborateRecord.Port(blockPath ++ intPort))
-            )
-            constProp.setConnection(blockPath ++ intPort, blockPath ++ extPort)
-          }
-          true
-        case _ => false  // anything with allocates is not processed
-      }
-      case expr.ValueExpr.Expr.ExportedTunnel(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
-        case (ValueExpr.Ref(extPort), ValueExpr.Ref(intPort)) =>
-          require(!isInLink)
-          elaboratePending.addNode(
-            ElaborateRecord.Connect(blockPath ++ extPort, blockPath ++ intPort, blockPath),
-            Seq(ElaborateRecord.Port(blockPath ++ extPort))
-          )
-          constProp.setConnection(blockPath ++ extPort, blockPath ++ intPort)
-          true
-        case _ => false  // anything with allocates is not processed
-      }
-      case _ => false  // not defined
+            true
+          case _ => false // anything with allocates is not processed
+        }
+      case _ => false // not defined
     }
   }
 
@@ -499,21 +576,26 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
       case ((refinementClass, postfix), value) =>
         val paramPath = path ++ postfix
         if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
-          constProp.addAssignValue(path.asIndirect ++ postfix, value, DesignPath(),
-            s"${refinementClass.toSimpleString} class refinement", forced=true)
+          constProp.addAssignValue(
+            path.asIndirect ++ postfix,
+            value,
+            DesignPath(),
+            s"${refinementClass.toSimpleString} class refinement",
+            forced = true
+          )
         }
     }
 
     // additional processing needed for the refinement case
     if (unrefinedType.isDefined) {
-      if (!library.blockIsSubclassOf(blockLibraryPath, libraryPath)) {  // check refinement validity
+      if (!library.blockIsSubclassOf(blockLibraryPath, libraryPath)) { // check refinement validity
         errors += CompilerError.RefinementSubclassError(path, blockLibraryPath, libraryPath)
       }
 
-      val unrefinedPb = library.getBlock(libraryPath) match {  // add subclass (refinement) default params
+      val unrefinedPb = library.getBlock(libraryPath) match { // add subclass (refinement) default params
         case Errorable.Success(unrefinedPb) =>
           unrefinedPb
-        case Errorable.Error(err) =>  // this doesn't stop elaboration, but does raise an error
+        case Errorable.Error(err) => // this doesn't stop elaboration, but does raise an error
           import edgir.elem.elem
           errors += CompilerError.LibraryError(path, libraryPath, err)
           elem.HierarchyBlock()
@@ -521,20 +603,32 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
       val refinedNewParams = blockPb.params.toSeqMap.keys.toSet -- unrefinedPb.params.toSeqMap.keys
       refinedNewParams.foreach { refinedNewParam =>
         blockPb.paramDefaults.get(refinedNewParam).foreach { refinedDefault =>
-          constProp.addAssignExpr(path.asIndirect + refinedNewParam, refinedDefault,
-            path, s"(default)${blockLibraryPath.toSimpleString}.$refinedNewParam")
+          constProp.addAssignExpr(
+            path.asIndirect + refinedNewParam,
+            refinedDefault,
+            path,
+            s"(default)${blockLibraryPath.toSimpleString}.$refinedNewParam"
+          )
         }
       }
       val refinedNewPorts = blockPb.ports.toSeqMap.keys.toSet -- unrefinedPb.ports.toSeqMap.keys
       refinedNewPorts.foreach { refinedNewPort =>
         blockPb.ports(refinedNewPort).is match {
           case _: elem.PortLike.Is.LibElem =>
-            constProp.addAssignValue(path.asIndirect + refinedNewPort + IndirectStep.IsConnected, BooleanValue(false),
-              path, s"(refined_not_connected)${blockLibraryPath.toSimpleString}.$refinedNewPort")
+            constProp.addAssignValue(
+              path.asIndirect + refinedNewPort + IndirectStep.IsConnected,
+              BooleanValue(false),
+              path,
+              s"(refined_not_connected)${blockLibraryPath.toSimpleString}.$refinedNewPort"
+            )
           case _: elem.PortLike.Is.Array =>
-            constProp.addAssignValue(path.asIndirect + refinedNewPort + IndirectStep.Allocated, ArrayValue(Seq()),
-              path, s"(refined_not_connected)${blockLibraryPath.toSimpleString}.$refinedNewPort")
-          case _=> throw new IllegalArgumentException(s"unknown port $refinedNewPort")
+            constProp.addAssignValue(
+              path.asIndirect + refinedNewPort + IndirectStep.Allocated,
+              ArrayValue(Seq()),
+              path,
+              s"(refined_not_connected)${blockLibraryPath.toSimpleString}.$refinedNewPort"
+            )
+          case _ => throw new IllegalArgumentException(s"unknown port $refinedNewPort")
         }
       }
     }
@@ -549,8 +643,7 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     val parent = resolveBlock(parentPath).asInstanceOf[wir.Block]
     parent.elaborate(blockName, newBlock)
 
-    constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
-      path, "name")
+    constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), path, "name")
     processParamDeclarations(path, Some(newBlock.getBlockClass), newBlock)
 
     newBlock.getPorts.foreach { case (portName, port) =>
@@ -584,8 +677,7 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     val newLink = new wir.Link(linkPb)
 
     // Elaborate ports and parameters
-    constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString),
-      path, "name")
+    constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), path, "name")
     processParamDeclarations(path, None, newLink)
 
     newLink.getPorts.foreach { case (portName, port) =>
@@ -596,8 +688,11 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     newLink.getPorts.collect { case (portName, port: wir.PortArray) =>
       require(!port.portsSet) // links can't have fixed array elts
       constProp.addAssignEqual(
-        path.asIndirect + portName + IndirectStep.Elements, path.asIndirect + portName + IndirectStep.Allocated,
-          path, s"$portName (link array-from-connects)")
+        path.asIndirect + portName + IndirectStep.Elements,
+        path.asIndirect + portName + IndirectStep.Allocated,
+        path,
+        s"$portName (link array-from-connects)"
+      )
     }
 
     // Links can only elaborate when their port arrays are ready
@@ -627,8 +722,11 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     // For all arrays, size ELEMENTS directly from ALLOCATED
     model.getPorts.collect { case (portName, port: wir.PortArray) =>
       constProp.addAssignEqual(
-        path.asIndirect + portName + IndirectStep.Elements, path.asIndirect + portName + IndirectStep.Allocated,
-        path, s"$portName (link-array array-from-connects)")
+        path.asIndirect + portName + IndirectStep.Elements,
+        path.asIndirect + portName + IndirectStep.Allocated,
+        path,
+        s"$portName (link-array array-from-connects)"
+      )
     }
 
     val arrayPortDeps = model.getPorts.collect { case (portName, port: wir.PortArray) =>
@@ -642,7 +740,8 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
   protected def runGenerator(path: DesignPath, generator: wir.Generator): Unit = {
     val reqParamValues = generator.getDependencies.map { reqParam =>
       reqParam -> constProp.getValue(path.asIndirect ++ reqParam).getOrElse(
-        throw new IllegalArgumentException(f"missing param ${path.asIndirect ++ reqParam}"))
+        throw new IllegalArgumentException(f"missing param ${path.asIndirect ++ reqParam}")
+      )
     }
 
     // Run generator and plug in
@@ -651,32 +750,36 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
         val generatedPorts = generator.applyGenerated(generatedPb)
         generatedPorts.foreach { portName =>
           val portArray = generator.getPorts(portName).asInstanceOf[wir.PortArray]
-          constProp.addAssignValue(path.asIndirect + portName + IndirectStep.Elements,
+          constProp.addAssignValue(
+            path.asIndirect + portName + IndirectStep.Elements,
             ArrayValue(portArray.getPorts.keys.toSeq.map(TextValue(_))),
-            path, "generator-defined elements")
-          // the rest was already handled when elaboratePorts on the generator stub
+            path,
+            "generator-defined elements"
+          )
+        // the rest was already handled when elaboratePorts on the generator stub
         }
       case Errorable.Error(err) =>
         errors += CompilerError.GeneratorError(path, generator.getBlockClass, err)
     }
   }
 
-  /** Elaborate a block, mainly processing its internal blocks, links, and connected and parameter constraints.
-    * The block should already have had its interface (ports and parameters) expanded.
+  /** Elaborate a block, mainly processing its internal blocks, links, and connected and parameter constraints. The
+    * block should already have had its interface (ports and parameters) expanded.
     */
   protected def elaborateBlock(path: DesignPath): Unit = {
     val block = resolveBlock(path).asInstanceOf[wir.Block]
 
     block match {
       case block: wir.Generator => runGenerator(path, block)
-      case _ =>  // ignored
+      case _ => // ignored
     }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
       elaboratePending.addNode(
         ElaborateRecord.ExpandBlock(path + innerBlockName, innerBlock.asInstanceOf[BlockLibrary].target),
-        Seq())
+        Seq()
+      )
     }
 
     block.getLinks.foreach {
@@ -694,265 +797,372 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
       val innerBlockLibrary = innerBlock.asInstanceOf[wir.BlockLibrary]
       val innerBlockTemplate = library.getBlock(innerBlockLibrary.target)
 
-      innerBlockTemplate.map { innerBlockTemplate => innerBlockTemplate.ports.asPairs.foreach { case (portName, port) =>
-        import edgir.elem.elem
-        val portPostfix = Seq(innerBlockName, portName)
-        port.is match {
-          case _: elem.PortLike.Is.Array =>  // array case: connectivity delayed to lowering
-            connectedConstraints.connectionsByBlockPort(portPostfix) match {
-              case PortConnections.ArrayConnect(constrName, constr) => constr.expr match {
-                case expr.ValueExpr.Expr.ConnectedArray(connected) =>
-                  val linkPortPostfix = connected.getLinkPort match {
-                    case ValueExpr.Ref(linkPortPostfix) => linkPortPostfix
-                    case ValueExpr.RefAllocate(linkPortPostfix, _) => linkPortPostfix
-                    case _ => throw new IllegalArgumentException
+      innerBlockTemplate.map { innerBlockTemplate =>
+        innerBlockTemplate.ports.asPairs.foreach { case (portName, port) =>
+          import edgir.elem.elem
+          val portPostfix = Seq(innerBlockName, portName)
+          port.is match {
+            case _: elem.PortLike.Is.Array => // array case: connectivity delayed to lowering
+              connectedConstraints.connectionsByBlockPort(portPostfix) match {
+                case PortConnections.ArrayConnect(constrName, constr) => constr.expr match {
+                    case expr.ValueExpr.Expr.ConnectedArray(connected) =>
+                      val linkPortPostfix = connected.getLinkPort match {
+                        case ValueExpr.Ref(linkPortPostfix) => linkPortPostfix
+                        case ValueExpr.RefAllocate(linkPortPostfix, _) => linkPortPostfix
+                        case _ => throw new IllegalArgumentException
+                      }
+                      val linkElements = path.asIndirect + linkPortPostfix.head + IndirectStep.Elements
+                      val blockPortElements = path.asIndirect ++ portPostfix + IndirectStep.Elements
+                      elaboratePending.addNode(
+                        ElaborateRecord.AssignLinkElements(
+                          linkElements,
+                          blockPortElements,
+                          path
+                        ),
+                        Seq(ElaborateRecord.ParamValue(blockPortElements))
+                      )
+                      constProp.addAssignEqual(
+                        path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                        linkElements,
+                        path,
+                        "array connect ALLOCATED from link ELEMENTS"
+                      )
+
+                      val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
+                      // Note: actual expansion task set on the link side
+                      val resolveConnectedTask =
+                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
+                      elaboratePending.addNode(
+                        resolveConnectedTask,
+                        Seq(
+                          ElaborateRecord.ElaboratePortArray(path ++ portPostfix),
+                          expandArrayTask
+                        )
+                      )
+
+                    case expr.ValueExpr.Expr.ExportedArray(exported) => // note internal port is portPostfix
+                      val ValueExpr.Ref(extPostfix) = exported.getExteriorPort
+                      constProp.addAssignEqual(
+                        path.asIndirect ++ extPostfix + IndirectStep.Elements,
+                        path.asIndirect ++ portPostfix + IndirectStep.Elements,
+                        path,
+                        constrName
+                      )
+                      constProp.addAssignEqual(
+                        path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                        path.asIndirect ++ extPostfix + IndirectStep.Allocated,
+                        path,
+                        constrName
+                      )
+                      val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
+                      elaboratePending.addNode(
+                        expandArrayTask,
+                        Seq(
+                          ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements),
+                          // allocated must run first, it depends on constraints not being lowered
+                          ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated)
+                        )
+                      )
+                      val resolveConnectedTask =
+                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
+                      elaboratePending.addNode(
+                        resolveConnectedTask,
+                        Seq(
+                          ElaborateRecord.ElaboratePortArray(path ++ portPostfix),
+                          expandArrayTask
+                        )
+                      )
+
+                    case _ => throw new IllegalArgumentException(s"invalid array connect to array $constr")
                   }
-                  val linkElements = path.asIndirect + linkPortPostfix.head + IndirectStep.Elements
-                  val blockPortElements = path.asIndirect ++ portPostfix + IndirectStep.Elements
-                  elaboratePending.addNode(ElaborateRecord.AssignLinkElements(
-                    linkElements, blockPortElements, path),
-                    Seq(ElaborateRecord.ParamValue(blockPortElements)))
-                  constProp.addAssignEqual(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
-                    linkElements,
-                    path, "array connect ALLOCATED from link ELEMENTS")
 
-                  val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
-                  // Note: actual expansion task set on the link side
-                  val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
-                  elaboratePending.addNode(resolveConnectedTask, Seq(
-                    ElaborateRecord.ElaboratePortArray(path ++ portPostfix),
-                    expandArrayTask
-                  ))
-
-                case expr.ValueExpr.Expr.ExportedArray(exported) =>  // note internal port is portPostfix
-                  val ValueExpr.Ref(extPostfix) = exported.getExteriorPort
-                  constProp.addAssignEqual(path.asIndirect ++ extPostfix + IndirectStep.Elements,
-                    path.asIndirect ++ portPostfix + IndirectStep.Elements,
-                    path, constrName)
-                  constProp.addAssignEqual(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
-                    path.asIndirect ++ extPostfix + IndirectStep.Allocated,
-                    path, constrName)
-                  val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
-                  elaboratePending.addNode(expandArrayTask,
-                    Seq(
-                      ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Elements),
-                      // allocated must run first, it depends on constraints not being lowered
-                      ElaborateRecord.ParamValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated)
-                  ))
-                  val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
-                  elaboratePending.addNode(resolveConnectedTask, Seq(
-                    ElaborateRecord.ElaboratePortArray(path ++ portPostfix),
-                    expandArrayTask))
-
-                case _ => throw new IllegalArgumentException(s"invalid array connect to array $constr")
-              }
-
-              case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-                val namer = new AssignNamer()
-                val connectNames = singleConnects.map { case (suggestedName, _, _) => namer.name(suggestedName) }
-                val connectTerms = ExprBuilder.ValueExpr.LiteralArrayText(connectNames)
-                val arrayConnectTermss = arrayConnects.map { case (suggestedName, _, constr) =>
-                  val allocatedVals = constr.expr match {
-                    case expr.ValueExpr.Expr.ConnectedArray(connected) => connected.getLinkPort match {
-                      case ValueExpr.RefAllocate(linkPath, _) =>
-                        ValueExpr.Ref(ref.LocalPath(steps = Seq(
-                          ref.LocalStep(step = ref.LocalStep.Step.Name(linkPath.head)),
-                          ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(value = ref.Reserved.ELEMENTS))
-                        )))
-                      case ValueExpr.Ref(linkPath) =>  // exactly the same as the RefAllocate case
-                        ValueExpr.Ref(ref.LocalPath(steps = Seq(
-                          ref.LocalStep(step = ref.LocalStep.Step.Name(linkPath.head)),
-                          ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(value = ref.Reserved.ELEMENTS))
-                        )))
+                case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
+                  val namer = new AssignNamer()
+                  val connectNames = singleConnects.map { case (suggestedName, _, _) => namer.name(suggestedName) }
+                  val connectTerms = ExprBuilder.ValueExpr.LiteralArrayText(connectNames)
+                  val arrayConnectTermss = arrayConnects.map { case (suggestedName, _, constr) =>
+                    val allocatedVals = constr.expr match {
+                      case expr.ValueExpr.Expr.ConnectedArray(connected) => connected.getLinkPort match {
+                          case ValueExpr.RefAllocate(linkPath, _) =>
+                            ValueExpr.Ref(ref.LocalPath(steps =
+                              Seq(
+                                ref.LocalStep(step = ref.LocalStep.Step.Name(linkPath.head)),
+                                ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(value = ref.Reserved.ELEMENTS))
+                              )
+                            ))
+                          case ValueExpr.Ref(linkPath) => // exactly the same as the RefAllocate case
+                            ValueExpr.Ref(ref.LocalPath(steps =
+                              Seq(
+                                ref.LocalStep(step = ref.LocalStep.Step.Name(linkPath.head)),
+                                ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(value = ref.Reserved.ELEMENTS))
+                              )
+                            ))
+                          case _ => throw new IllegalArgumentException
+                        }
+                      case expr.ValueExpr.Expr.ExportedArray(_) =>
+                        // Can't array-export from an allocated array, since it's unclear what the actual internal
+                        // ELEMENTS are since there isn't a specified correlation from ALLOCATED (available here) to
+                        // (potentially post-generate) ELEMENTS.
+                        // Possible semantics here might be to just use the ALLOCATED available here, but that is
+                        // subtly different from ELEMENTS in edge cases, so for now the user must explicitly unroll
+                        // the array.
+                        throw new IllegalArgumentException("unsupported array export to allocate")
                       case _ => throw new IllegalArgumentException
                     }
-                    case expr.ValueExpr.Expr.ExportedArray(_) =>
-                      // Can't array-export from an allocated array, since it's unclear what the actual internal
-                      // ELEMENTS are since there isn't a specified correlation from ALLOCATED (available here) to
-                      // (potentially post-generate) ELEMENTS.
-                      // Possible semantics here might be to just use the ALLOCATED available here, but that is
-                      // subtly different from ELEMENTS in edge cases, so for now the user must explicitly unroll
-                      // the array.
-                      throw new IllegalArgumentException("unsupported array export to allocate")
-                    case _ => throw new IllegalArgumentException
+                    val allocatedName = ValueExpr.Literal(namer.name(suggestedName) + "_")
+                    ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT, allocatedName, allocatedVals)
                   }
-                  val allocatedName = ValueExpr.Literal(namer.name(suggestedName) + "_")
-                  ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT, allocatedName, allocatedVals)
-                }
-                constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
-                  ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,
-                    ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss)),
-                  path, ""
-                )
+                  constProp.addAssignExpr(
+                    path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                    ValueExpr.UnarySetOp(
+                      expr.UnarySetExpr.Op.FLATTEN,
+                      ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss)
+                    ),
+                    path,
+                    ""
+                  )
 
-                val expandArrayConnectTasks = arrayConnects.map { case (allocated, constrName, constr) =>
-                  ElaborateRecord.ExpandArrayConnections(path, constrName)
-                }
-                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
-                elaboratePending.addNode(resolveAllocateTask,
-                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) ++ expandArrayConnectTasks)
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
-                elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
-
-              case PortConnections.AllocatedTunnelExport(connects) =>
-                // similar to AllocatedConnect case, except only with single-element connects
-                val namer = new AssignNamer()
-                val connectNames = connects.map { case (suggestedName, _, _) => namer.name(suggestedName) }
-                constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
-                  ExprBuilder.ValueExpr.LiteralArrayText(connectNames),
-                  path, ""
-                )
-                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, connects.map(_._2), Seq(), false)
-                elaboratePending.addNode(resolveAllocateTask,
-                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, connects.map(_._2), Seq(), false)
-                elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
-
-              case PortConnections.NotConnected =>
-                constProp.addAssignValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
-                  path, "not connected")
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
-                elaboratePending.addNode(resolveConnectedTask, Seq(
-                  ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
-
-              case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
-            }
-
-          case _ =>  // leaf only, no array support
-            connectedConstraints.connectionsByBlockPort(portPostfix) match {
-              case PortConnections.SingleConnect(constrName, constr) =>
-                resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
-              case PortConnections.TunnelExport(constrName, constr) =>
-                resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
-              case PortConnections.NotConnected =>
-                resolvePortConnectivity(path, portPostfix, None)
-              case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
-            }
-        }
-      }
-    }}
-
-    block.getLinks.foreach {
-      case (innerLinkName, innerLink: wir.Link) => innerLink.getPorts.foreach { case (portName, port) =>
-        val portPostfix = Seq(innerLinkName, portName)
-        port match {
-          case _: wir.PortArray =>  // array case: connectivity delayed to lowering
-            connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
-              case PortConnections.ArrayConnect(constrName, constr) =>
-                throw new NotImplementedError()
-
-              case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-                require(arrayConnects.isEmpty)  // flattening (array-array w/o LinkArray) connections currently not used
-                val namer = new AssignNamer()
-                val connectNames = singleConnects.map { case (suggestedName, constrName, _) =>
-                  val allocatedName = namer.name(suggestedName)
-                  // because link ports elements are always defined by incoming connects, no waiting for elements
-                  // is needed and the allocate can be rewritten here
-                  block.mapConstraint(constrName) { constr =>
-                    constr.connectUpdateRef { case ValueExpr.RefAllocate(`portPostfix`, `suggestedName`) =>
-                      ValueExpr.Ref((portPostfix :+ allocatedName): _*)
-                    }
+                  val expandArrayConnectTasks = arrayConnects.map { case (allocated, constrName, constr) =>
+                    ElaborateRecord.ExpandArrayConnections(path, constrName)
                   }
-                  allocatedName
-                }
-                constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
-                  ExprBuilder.ValueExpr.LiteralArrayText(connectNames),
-                  path, ""
-                )
-                elaboratePending.addNode(
-                  ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), Seq(), false),
-                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+                  val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(
+                    path,
+                    portPostfix,
+                    singleConnects.map(_._2),
+                    arrayConnects.map(_._2),
+                    false
+                  )
+                  elaboratePending.addNode(
+                    resolveAllocateTask,
+                    Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) ++ expandArrayConnectTasks
+                  )
+                  val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(
+                    path,
+                    portPostfix,
+                    singleConnects.map(_._2),
+                    arrayConnects.map(_._2),
+                    false
+                  )
+                  elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
-              case PortConnections.NotConnected =>
-                constProp.addAssignValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
-                  path, "not connected")
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
-                elaboratePending.addNode(resolveConnectedTask, Seq(
-                  ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+                case PortConnections.AllocatedTunnelExport(connects) =>
+                  // similar to AllocatedConnect case, except only with single-element connects
+                  val namer = new AssignNamer()
+                  val connectNames = connects.map { case (suggestedName, _, _) => namer.name(suggestedName) }
+                  constProp.addAssignExpr(
+                    path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                    ExprBuilder.ValueExpr.LiteralArrayText(connectNames),
+                    path,
+                    ""
+                  )
+                  val resolveAllocateTask =
+                    ElaborateRecord.RewriteConnectAllocate(path, portPostfix, connects.map(_._2), Seq(), false)
+                  elaboratePending.addNode(
+                    resolveAllocateTask,
+                    Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix))
+                  )
+                  val resolveConnectedTask =
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, connects.map(_._2), Seq(), false)
+                  elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
-              case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
-            }
-
-          case _ =>
-            connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
-              case PortConnections.SingleConnect(constrName, constr) =>
-                resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
-              case PortConnections.NotConnected =>
-                resolvePortConnectivity(path, portPostfix, None)
-              case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
-            }
-        }
-      }
-      case (innerLinkName, innerLink: wir.LinkArray) => innerLink.getModelPorts.foreach { case (portName, port) =>
-        val portPostfix = Seq(innerLinkName, portName)
-        port match {
-          case _: wir.PortArray => // array case: connectivity delayed to lowering
-            connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
-              case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
-                require(singleConnects.isEmpty)  // link arrays cannot have single connects on ports
-                // array ports on link arrays are nested two deep, first (outer, resolved here) by connects
-                // then (inner, resolved separately) by the link's ELEMENTS
-                val namer = new AssignNamer()
-                val suggestedNames = arrayConnects.map { case (suggestedName, constrName, _) =>
-                  val allocatedName = namer.name(suggestedName)
-                  block.mapConstraint(constrName) { constr =>
-                    // similarly, to the regular link case, allocates can be rewritten here
-                    constr.arrayUpdateRef { case ValueExpr.RefAllocate(`portPostfix`, None) =>
-                      ValueExpr.Ref((portPostfix :+ allocatedName): _*)
-                    }
-                  }
-                  allocatedName
-                }
-                constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
-                  ExprBuilder.ValueExpr.LiteralArrayText(suggestedNames),
-                  path, ""
-                )
-                val expandArrayTasks = arrayConnects.map { case (allocated, constrName, constr) =>
-                  val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
-                  elaboratePending.addNode(expandArrayTask,
-                    Seq(ElaborateRecord.ParamValue(path.asIndirect + portPostfix.head + IndirectStep.Elements)))
-                  expandArrayTask
-                }
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), arrayConnects.map(_._2), false)
-                elaboratePending.addNode(resolveConnectedTask,
-                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) ++
-                  expandArrayTasks)
-
-              case PortConnections.NotConnected =>  // TODO what are NC semantics for link array?
-                constProp.addAssignValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
-                  path, "not connected")
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
-                elaboratePending.addNode(resolveConnectedTask, Seq(
-                  ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
-
-              case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
-            }
-          case _ =>  // non-array, eg Port or Bundle
-            connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
-              case PortConnections.ArrayConnect(constrName, constr) => constr.expr match {
-                case expr.ValueExpr.Expr.ConnectedArray(connected) =>
-                  val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
-                  elaboratePending.addNode(expandArrayTask, Seq(
-                    ElaborateRecord.ParamValue(path.asIndirect + portPostfix.head + IndirectStep.Elements)
-                  ))
-                  // Note: actual expansion task set on the link side
-                  val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
-                  elaboratePending.addNode(resolveConnectedTask, Seq(
-                    ElaborateRecord.ElaboratePortArray(path ++ portPostfix),
-                    expandArrayTask))
+                case PortConnections.NotConnected =>
+                  constProp.addAssignValue(
+                    path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                    ArrayValue(Seq()),
+                    path,
+                    "not connected"
+                  )
+                  val resolveConnectedTask =
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                  elaboratePending.addNode(
+                    resolveConnectedTask,
+                    Seq(
+                      ElaborateRecord.ElaboratePortArray(path ++ portPostfix)
+                    )
+                  )
 
                 case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
               }
 
-              case PortConnections.NotConnected =>
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
-                elaboratePending.addNode(resolveConnectedTask, Seq(
-                  ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
-
-              case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
-            }
+            case _ => // leaf only, no array support
+              connectedConstraints.connectionsByBlockPort(portPostfix) match {
+                case PortConnections.SingleConnect(constrName, constr) =>
+                  resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
+                case PortConnections.TunnelExport(constrName, constr) =>
+                  resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
+                case PortConnections.NotConnected =>
+                  resolvePortConnectivity(path, portPostfix, None)
+                case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
+              }
+          }
         }
       }
+    }
+
+    block.getLinks.foreach {
+      case (innerLinkName, innerLink: wir.Link) => innerLink.getPorts.foreach { case (portName, port) =>
+          val portPostfix = Seq(innerLinkName, portName)
+          port match {
+            case _: wir.PortArray => // array case: connectivity delayed to lowering
+              connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
+                case PortConnections.ArrayConnect(constrName, constr) =>
+                  throw new NotImplementedError()
+
+                case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
+                  require(
+                    arrayConnects.isEmpty
+                  ) // flattening (array-array w/o LinkArray) connections currently not used
+                  val namer = new AssignNamer()
+                  val connectNames = singleConnects.map { case (suggestedName, constrName, _) =>
+                    val allocatedName = namer.name(suggestedName)
+                    // because link ports elements are always defined by incoming connects, no waiting for elements
+                    // is needed and the allocate can be rewritten here
+                    block.mapConstraint(constrName) { constr =>
+                      constr.connectUpdateRef { case ValueExpr.RefAllocate(`portPostfix`, `suggestedName`) =>
+                        ValueExpr.Ref((portPostfix :+ allocatedName): _*)
+                      }
+                    }
+                    allocatedName
+                  }
+                  constProp.addAssignExpr(
+                    path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                    ExprBuilder.ValueExpr.LiteralArrayText(connectNames),
+                    path,
+                    ""
+                  )
+                  elaboratePending.addNode(
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), Seq(), false),
+                    Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix))
+                  )
+
+                case PortConnections.NotConnected =>
+                  constProp.addAssignValue(
+                    path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                    ArrayValue(Seq()),
+                    path,
+                    "not connected"
+                  )
+                  val resolveConnectedTask =
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                  elaboratePending.addNode(
+                    resolveConnectedTask,
+                    Seq(
+                      ElaborateRecord.ElaboratePortArray(path ++ portPostfix)
+                    )
+                  )
+
+                case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
+              }
+
+            case _ =>
+              connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
+                case PortConnections.SingleConnect(constrName, constr) =>
+                  resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
+                case PortConnections.NotConnected =>
+                  resolvePortConnectivity(path, portPostfix, None)
+                case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
+              }
+          }
+        }
+      case (innerLinkName, innerLink: wir.LinkArray) => innerLink.getModelPorts.foreach { case (portName, port) =>
+          val portPostfix = Seq(innerLinkName, portName)
+          port match {
+            case _: wir.PortArray => // array case: connectivity delayed to lowering
+              connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
+                case PortConnections.AllocatedConnect(singleConnects, arrayConnects) =>
+                  require(singleConnects.isEmpty) // link arrays cannot have single connects on ports
+                  // array ports on link arrays are nested two deep, first (outer, resolved here) by connects
+                  // then (inner, resolved separately) by the link's ELEMENTS
+                  val namer = new AssignNamer()
+                  val suggestedNames = arrayConnects.map { case (suggestedName, constrName, _) =>
+                    val allocatedName = namer.name(suggestedName)
+                    block.mapConstraint(constrName) { constr =>
+                      // similarly, to the regular link case, allocates can be rewritten here
+                      constr.arrayUpdateRef { case ValueExpr.RefAllocate(`portPostfix`, None) =>
+                        ValueExpr.Ref((portPostfix :+ allocatedName): _*)
+                      }
+                    }
+                    allocatedName
+                  }
+                  constProp.addAssignExpr(
+                    path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                    ExprBuilder.ValueExpr.LiteralArrayText(suggestedNames),
+                    path,
+                    ""
+                  )
+                  val expandArrayTasks = arrayConnects.map { case (allocated, constrName, constr) =>
+                    val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
+                    elaboratePending.addNode(
+                      expandArrayTask,
+                      Seq(ElaborateRecord.ParamValue(path.asIndirect + portPostfix.head + IndirectStep.Elements))
+                    )
+                    expandArrayTask
+                  }
+                  val resolveConnectedTask =
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), arrayConnects.map(_._2), false)
+                  elaboratePending.addNode(
+                    resolveConnectedTask,
+                    Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) ++
+                      expandArrayTasks
+                  )
+
+                case PortConnections.NotConnected => // TODO what are NC semantics for link array?
+                  constProp.addAssignValue(
+                    path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                    ArrayValue(Seq()),
+                    path,
+                    "not connected"
+                  )
+                  val resolveConnectedTask =
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                  elaboratePending.addNode(
+                    resolveConnectedTask,
+                    Seq(
+                      ElaborateRecord.ElaboratePortArray(path ++ portPostfix)
+                    )
+                  )
+
+                case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
+              }
+            case _ => // non-array, eg Port or Bundle
+              connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
+                case PortConnections.ArrayConnect(constrName, constr) => constr.expr match {
+                    case expr.ValueExpr.Expr.ConnectedArray(connected) =>
+                      val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
+                      elaboratePending.addNode(
+                        expandArrayTask,
+                        Seq(
+                          ElaborateRecord.ParamValue(path.asIndirect + portPostfix.head + IndirectStep.Elements)
+                        )
+                      )
+                      // Note: actual expansion task set on the link side
+                      val resolveConnectedTask =
+                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
+                      elaboratePending.addNode(
+                        resolveConnectedTask,
+                        Seq(
+                          ElaborateRecord.ElaboratePortArray(path ++ portPostfix),
+                          expandArrayTask
+                        )
+                      )
+
+                    case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
+                  }
+
+                case PortConnections.NotConnected =>
+                  val resolveConnectedTask =
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                  elaboratePending.addNode(
+                    resolveConnectedTask,
+                    Seq(
+                      ElaborateRecord.ElaboratePortArray(path ++ portPostfix)
+                    )
+                  )
+
+                case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
+              }
+          }
+        }
       case _ => throw new IllegalArgumentException
     }
 
@@ -963,10 +1173,9 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     }
   }
 
-  /** Elaborate the unelaborated link at path (but where the parent has been elaborated and is reachable from root),
-    * and adds it to the parent and replaces the lib_elem proto entry with a placeholder unknown.
-    * Adds children to the pending queue, and adds constraints to constProp.
-    * Expands connects in the parent, as needed.
+  /** Elaborate the unelaborated link at path (but where the parent has been elaborated and is reachable from root), and
+    * adds it to the parent and replaces the lib_elem proto entry with a placeholder unknown. Adds children to the
+    * pending queue, and adds constraints to constProp. Expands connects in the parent, as needed.
     */
   protected def elaborateLink(path: DesignPath): Unit = {
     import edg.ExprBuilder.{Ref, ValueExpr}
@@ -1006,17 +1215,21 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
                 val connectTerms = ExprBuilder.ValueExpr.LiteralArrayText(connectNames)
                 val arrayConnectTermss = arrayConnects.map { case (suggestedName, _, constr) =>
                   val ValueExpr.MapExtract(ValueExpr.Ref(extPostfix), Ref(_)) = constr.getExportedArray.getExteriorPort
-                  val allocatedVals = ValueExpr.Ref(ref.LocalPath(steps=
-                    extPostfix.map(step => ref.LocalStep(step=ref.LocalStep.Step.Name(step))) :+
-                        ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(value=ref.Reserved.ALLOCATED))
+                  val allocatedVals = ValueExpr.Ref(ref.LocalPath(steps =
+                    extPostfix.map(step => ref.LocalStep(step = ref.LocalStep.Step.Name(step))) :+
+                      ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(value = ref.Reserved.ALLOCATED))
                   ))
                   val allocatedName = ValueExpr.Literal(namer.name(suggestedName) + "_")
                   ValueExpr.BinSetOp(expr.BinarySetExpr.Op.CONCAT, allocatedName, allocatedVals)
                 }
-                constProp.addAssignExpr(path.asIndirect ++ portPostfix + IndirectStep.Allocated,
-                  ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.FLATTEN,
-                    ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss)),
-                  path, ""
+                constProp.addAssignExpr(
+                  path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                  ValueExpr.UnarySetOp(
+                    expr.UnarySetExpr.Op.FLATTEN,
+                    ValueExpr.Array(Seq(connectTerms) ++ arrayConnectTermss)
+                  ),
+                  path,
+                  ""
                 )
 
                 arrayConnects.foreach { case (allocated, constrName, constr) =>
@@ -1025,30 +1238,61 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
                     case extPort => throw new IllegalArgumentException(s"unknown exported exterior $extPort")
                   }
                   val ValueExpr.RefAllocate(intPostfix, _) = constr.getExportedArray.getInternalBlockPort
-                  elaboratePending.addNode(ElaborateRecord.ExpandArrayConnections(path, constrName), Seq(
-                    ElaborateRecord.ParamValue(path.asIndirect ++ extPostfix + IndirectStep.Elements),
-                    // allocated must run first, it depends on constraints not being lowered
-                    ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Allocated)
-                  ))
+                  elaboratePending.addNode(
+                    ElaborateRecord.ExpandArrayConnections(path, constrName),
+                    Seq(
+                      ElaborateRecord.ParamValue(path.asIndirect ++ extPostfix + IndirectStep.Elements),
+                      // allocated must run first, it depends on constraints not being lowered
+                      ElaborateRecord.ParamValue(path.asIndirect ++ intPostfix + IndirectStep.Allocated)
+                    )
+                  )
                 }
 
-                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), true)
-                elaboratePending.addNode(resolveAllocateTask, Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+                val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(
+                  path,
+                  portPostfix,
+                  singleConnects.map(_._2),
+                  arrayConnects.map(_._2),
+                  true
+                )
+                elaboratePending.addNode(
+                  resolveAllocateTask,
+                  Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix))
+                )
 
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), arrayConnects.map(_._2), false)
-                elaboratePending.addNode(resolveConnectedTask, Seq(
-                  resolveAllocateTask))
+                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(
+                  path,
+                  portPostfix,
+                  singleConnects.map(_._2),
+                  arrayConnects.map(_._2),
+                  false
+                )
+                elaboratePending.addNode(
+                  resolveConnectedTask,
+                  Seq(
+                    resolveAllocateTask
+                  )
+                )
 
               case PortConnections.NotConnected =>
-                constProp.addAssignValue(path.asIndirect ++ portPostfix + IndirectStep.Allocated, ArrayValue(Seq()),
-                  path, "not connected")
-                val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
-                elaboratePending.addNode(resolveConnectedTask, Seq(
-                  ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+                constProp.addAssignValue(
+                  path.asIndirect ++ portPostfix + IndirectStep.Allocated,
+                  ArrayValue(Seq()),
+                  path,
+                  "not connected"
+                )
+                val resolveConnectedTask =
+                  ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                elaboratePending.addNode(
+                  resolveConnectedTask,
+                  Seq(
+                    ElaborateRecord.ElaboratePortArray(path ++ portPostfix)
+                  )
+                )
 
               case connects => throw new IllegalArgumentException(s"invalid connections to element $connects")
             }
-          case _ =>  // everything else generated
+          case _ => // everything else generated
             connectedConstraints.connectionsByLinkPort(portPostfix, true) match {
               case PortConnections.SingleConnect(constrName, constr) =>
                 resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
@@ -1071,14 +1315,23 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     val link = resolve(path).asInstanceOf[wir.LinkArray]
 
     val linkElements = ArrayValue.ExtractText(
-      constProp.getValue(path.asIndirect + IndirectStep.Elements).get)
+      constProp.getValue(path.asIndirect + IndirectStep.Elements).get
+    )
     val linkPortArrayElements = link.getModelPorts.collect {
       case (portName, port: wir.PortArray) =>
         val portElements = ArrayValue.ExtractText(
-          constProp.getValue(path.asIndirect + portName + IndirectStep.Elements).get)
-        constProp.addAssignValue(path.asIndirect + portName + IndirectStep.Length, IntValue(portElements.size),
-          path, "elements-defined count")
-        elaboratePending.setValue(ElaborateRecord.ElaboratePortArray(path + portName), None) // resolved in initPortsFromModel
+          constProp.getValue(path.asIndirect + portName + IndirectStep.Elements).get
+        )
+        constProp.addAssignValue(
+          path.asIndirect + portName + IndirectStep.Length,
+          IntValue(portElements.size),
+          path,
+          "elements-defined count"
+        )
+        elaboratePending.setValue(
+          ElaborateRecord.ElaboratePortArray(path + portName),
+          None
+        ) // resolved in initPortsFromModel
         portName -> portElements
     }
 
@@ -1089,19 +1342,25 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
           constProp.addAssignEqual(
             path.asIndirect + portName + index + IndirectStep.Elements,
             path.asIndirect + IndirectStep.Elements,
-            path, s"$portName.$index (link-array ports-from-elts)")
+            path,
+            s"$portName.$index (link-array ports-from-elts)"
+          )
         }
         linkElements.foreach { elementIndex =>
           constProp.addAssignEqual(
             path.asIndirect + elementIndex + portName + IndirectStep.Allocated,
             path.asIndirect + portName + IndirectStep.Elements,
-            path, s"$elementIndex.$portName (link-array inner-port-array from outer-elts)")
+            path,
+            s"$elementIndex.$portName (link-array inner-port-array from outer-elts)"
+          )
         }
       case (portName, port) =>
         constProp.addAssignEqual(
           path.asIndirect + portName + IndirectStep.Elements,
           path.asIndirect + IndirectStep.Elements,
-          path, s"$portName (link-array ports-from-elts)")
+          path,
+          s"$portName (link-array ports-from-elts)"
+        )
     }
     // Then expand the port-arrays
     link.initPortsFromModel(linkPortArrayElements).foreach { case (createdPortPostfix, createdPort) =>
@@ -1133,16 +1392,21 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
         case _ => // non-array like Port and Bundle
           (portPostfix, (constrName, constr))
       }
-    }.groupBy(_._1).foreach { case (portPostfix, elts) =>  // actually resolve (delayed if array)
+    }.groupBy(_._1).foreach { case (portPostfix, elts) => // actually resolve (delayed if array)
       val constrNamesConstrs = elts.map { _._2 }
       link.getModelPorts(portPostfix(1)) match {
         case _: wir.PortArray =>
           val constrNames = constrNamesConstrs.map { case (constrName, constr) => constrName }
-          val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, constrNames, Seq(), false)
-          elaboratePending.addNode(resolveConnectedTask, Seq(
-            ElaborateRecord.ElaboratePortArray(path ++ portPostfix)))
+          val resolveConnectedTask =
+            ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, constrNames, Seq(), false)
+          elaboratePending.addNode(
+            resolveConnectedTask,
+            Seq(
+              ElaborateRecord.ElaboratePortArray(path ++ portPostfix)
+            )
+          )
         case _ => // non-array like Port and Bundle
-          val Seq((constrName, constr)) = constrNamesConstrs  // can only be one element
+          val Seq((constrName, constr)) = constrNamesConstrs // can only be one element
           resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
       }
     }
@@ -1162,64 +1426,77 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     }
     // since this only adds child ports to arrays (instead of creating the array in the parent),
     // we don't set the ElaborateRecord.Port(...) here
-    constProp.addAssignValue(path.asIndirect + IndirectStep.Length, IntValue(port.getPorts.size),
-      path, "elements-defined count")
+    constProp.addAssignValue(
+      path.asIndirect + IndirectStep.Length,
+      IntValue(port.getPorts.size),
+      path,
+      "elements-defined count"
+    )
   }
 
   // Sets the link's ELEMENTS from the first block-side port (source) ELEMENTS available,
   // and checks that block-side port ELEMENTS are consistent.
   protected def assignLinkElements(record: ElaborateRecord.AssignLinkElements): Unit = {
     if (constProp.getValue(record.target).isEmpty) {
-      constProp.addAssignEqual(record.target, record.source,
-        record.containerPath, "array connect link ELEMENTS from block-side ELEMENTS")
+      constProp.addAssignEqual(
+        record.target,
+        record.source,
+        record.containerPath,
+        "array connect link ELEMENTS from block-side ELEMENTS"
+      )
     }
     val linkElements = constProp.getValue(record.target).get.asInstanceOf[ArrayValue[TextValue]]
     val blockPortElements = constProp.getValue(record.source).get.asInstanceOf[ArrayValue[TextValue]]
     if (linkElements.values.toSet != blockPortElements.values.toSet) {
-      errors.append(CompilerError.InconsistentLinkArrayElements(record.containerPath,
-        record.target, linkElements,
-        record.source, blockPortElements))
+      errors.append(CompilerError.InconsistentLinkArrayElements(
+        record.containerPath,
+        record.target,
+        linkElements,
+        record.source,
+        blockPortElements
+      ))
     }
   }
 
   // Once all array-connects have defined lengths, this lowers the array-connect statements by replacing them
   // with single leaf-level connections.
   protected def expandArrayConnections(record: ElaborateRecord.ExpandArrayConnections): Unit = {
-    val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
+    val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints] // can be block or link
 
     import edg.ExprBuilder.{Ref, ValueExpr}
     val newConstrNames = parentBlock.getConstraints(record.constraintName).expr match {
-      case expr.ValueExpr.Expr.ExportedArray(exported) => (exported.getExteriorPort, exported.getInternalBlockPort) match {
-        case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
-          val intPortArrayElts = ArrayValue.ExtractText(  // propagates inner to outer
-            constProp.getValue(record.parent.asIndirect ++ intPortArray + IndirectStep.Elements).get)
-          parentBlock.mapMultiConstraint(record.constraintName) { constr =>
-            intPortArrayElts.map { index =>
-              val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
-                case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*)
-              }.connectUpdateRef {
-                case ValueExpr.Ref(ref) if ref == intPortArray => ValueExpr.Ref((ref :+ index): _*)
+      case expr.ValueExpr.Expr.ExportedArray(exported) =>
+        (exported.getExteriorPort, exported.getInternalBlockPort) match {
+          case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
+            val intPortArrayElts = ArrayValue.ExtractText( // propagates inner to outer
+              constProp.getValue(record.parent.asIndirect ++ intPortArray + IndirectStep.Elements).get)
+            parentBlock.mapMultiConstraint(record.constraintName) { constr =>
+              intPortArrayElts.map { index =>
+                val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
+                  case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*)
+                }.connectUpdateRef {
+                  case ValueExpr.Ref(ref) if ref == intPortArray => ValueExpr.Ref((ref :+ index): _*)
+                }
+                s"${record.constraintName}.$index" -> newConstr
               }
-              s"${record.constraintName}.$index" -> newConstr
-            }
-          }.keys
+            }.keys
 
-        case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), _), ValueExpr.RefAllocate(_, _)) =>
-          val extPortArrayElts = ArrayValue.ExtractText(  // propagates outer to inner
-            constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
-          parentBlock.mapMultiConstraint(record.constraintName) { constr =>
-            extPortArrayElts.map { index =>
-              val newConstr = constr.asSingleConnection.connectUpdateRef {
-                case ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)) =>
-                  ValueExpr.Ref((extPortArray ++ Seq(index) ++ extPortInner): _*)
-                // inner side remains an allocate
+          case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), _), ValueExpr.RefAllocate(_, _)) =>
+            val extPortArrayElts = ArrayValue.ExtractText( // propagates outer to inner
+              constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
+            parentBlock.mapMultiConstraint(record.constraintName) { constr =>
+              extPortArrayElts.map { index =>
+                val newConstr = constr.asSingleConnection.connectUpdateRef {
+                  case ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)) =>
+                    ValueExpr.Ref((extPortArray ++ Seq(index) ++ extPortInner): _*)
+                  // inner side remains an allocate
+                }
+                s"${record.constraintName}.$index" -> newConstr
               }
-              s"${record.constraintName}.$index" -> newConstr
-            }
-          }.keys
+            }.keys
 
-        case _ => throw new IllegalArgumentException("unsupported array export")
-      }
+          case _ => throw new IllegalArgumentException("unsupported array export")
+        }
       case expr.ValueExpr.Expr.ConnectedArray(connected) =>
         // in all cases, the expansion is by link's elements, and any link-side allocations must be resolved
         val linkArrayPostfix = Seq(connected.getLinkPort.getRef.steps.head.getName)
@@ -1230,9 +1507,9 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
             val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
               case ValueExpr.Ref(ref) if !ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
               case ValueExpr.RefAllocate(ref, None) if !ref.startsWith(linkArrayPostfix) =>
-                ValueExpr.RefAllocate(ref, None)  // allocate stays intact
+                ValueExpr.RefAllocate(ref, None) // allocate stays intact
               case ValueExpr.RefAllocate(ref, Some(suggestedName)) if !ref.startsWith(linkArrayPostfix) =>
-                ValueExpr.RefAllocate(ref, Some(s"${suggestedName}_$index"))  // index tacked onto suggested name
+                ValueExpr.RefAllocate(ref, Some(s"${suggestedName}_$index")) // index tacked onto suggested name
             }.connectUpdateRef {
               case ValueExpr.Ref(ref) if ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
             }
@@ -1244,10 +1521,14 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     }
 
     expandedArrayConnectConstraints.put(record.parent + record.constraintName, newConstrNames.toSeq)
-    newConstrNames foreach { constrName =>
+    newConstrNames.foreach { constrName =>
       // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
-      processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName),
-        parentBlock.isInstanceOf[wir.Link])
+      processConnectedConstraint(
+        record.parent,
+        constrName,
+        parentBlock.getConstraints(constrName),
+        parentBlock.isInstanceOf[wir.Link]
+      )
     }
   }
 
@@ -1255,12 +1536,13 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
   // by replacing ALLOCATEs with concrete indices.
   // This must also handle internal-side export statements.
   protected def rewriteConnectAllocate(record: ElaborateRecord.RewriteConnectAllocate): Unit = {
-    val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
+    val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints] // can be block or link
     val portElements = ArrayValue.ExtractText(
-      constProp.getValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Elements).get)
+      constProp.getValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Elements).get
+    )
     // Update constraint names given expanded array constraints
     val combinedConstrNames = record.constraintNames ++
-        record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
+      record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
 
     import edg.ExprBuilder.ValueExpr
     val suggestedNames = combinedConstrNames.flatMap { constrName =>
@@ -1270,46 +1552,50 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
     }.toSet
 
     val freeNames = portElements.filter(!suggestedNames.contains(_)).iterator
-    combinedConstrNames foreach { constrName =>
-      parentBlock.mapConstraint(constrName) { constr => constr.connectUpdateRef {
-        case ValueExpr.RefAllocate(record.portPath, Some(suggestedName)) =>
-          if (portElements.contains(suggestedName)) {
-            ValueExpr.Ref((record.portPath :+ suggestedName):_*)
-          } else {
-            ValueExpr.RefAllocate(record.portPath, Some(f"not in array: $suggestedName"))
-          }
-        case ValueExpr.RefAllocate(record.portPath, None) =>
-          if (freeNames.hasNext) {
-            ValueExpr.Ref((record.portPath :+ freeNames.next()): _*)
-          } else {
-            ValueExpr.RefAllocate(record.portPath, Some(f"no free ports"))
-          }
-      } }
+    combinedConstrNames.foreach { constrName =>
+      parentBlock.mapConstraint(constrName) { constr =>
+        constr.connectUpdateRef {
+          case ValueExpr.RefAllocate(record.portPath, Some(suggestedName)) =>
+            if (portElements.contains(suggestedName)) {
+              ValueExpr.Ref((record.portPath :+ suggestedName): _*)
+            } else {
+              ValueExpr.RefAllocate(record.portPath, Some(f"not in array: $suggestedName"))
+            }
+          case ValueExpr.RefAllocate(record.portPath, None) =>
+            if (freeNames.hasNext) {
+              ValueExpr.Ref((record.portPath :+ freeNames.next()): _*)
+            } else {
+              ValueExpr.RefAllocate(record.portPath, Some(f"no free ports"))
+            }
+        }
+      }
     }
 
-    combinedConstrNames foreach { constrName =>
+    combinedConstrNames.foreach { constrName =>
       // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
       processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName), record.portIsLink)
     }
   }
 
   protected def resolveArrayIsConnected(record: ElaborateRecord.ResolveArrayIsConnected): Unit = {
-    val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints]  // can be block or link
+    val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints] // can be block or link
     val combinedConstrNames = record.constraintNames ++
-        record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
+      record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
 
     import edg.ExprBuilder.ValueExpr
     val allocatedIndexToConstraint = combinedConstrNames.flatMap { constrName =>
       parentBlock.getConstraints(constrName).connectMapRef {
         case ValueExpr.Ref(record.portPath :+ index) => Some((Seq(index), constrName))
-        case ValueExpr.Ref(record.portPath :+ index :+ interior) => Some((Seq(index, interior), constrName))  // for link arrays
-        case ValueExpr.RefAllocate(record.portPath, _) => None  // allocate should be resolved by here, except for bad designs
+        case ValueExpr.Ref(record.portPath :+ index :+ interior) =>
+          Some((Seq(index, interior), constrName)) // for link arrays
+        case ValueExpr.RefAllocate(record.portPath, _) =>
+          None // allocate should be resolved by here, except for bad designs
       }
     }.toMap
 
     val portArray = resolve(record.parent ++ record.portPath).asInstanceOf[wir.PortArray]
     portArray.getPorts.foreach {
-      case (index, innerPort: wir.PortArray) =>  // for link arrays
+      case (index, innerPort: wir.PortArray) => // for link arrays
         require(innerPort.isElaborated)
         innerPort.getPorts.foreach { case (subIndex, subPort) =>
           val constraintOption = allocatedIndexToConstraint.get(Seq(index, subIndex)).map { constrName =>
@@ -1342,23 +1628,23 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
       readyList.foreach { elaborateRecord =>
         try {
           elaborateRecord match {
-            case elaborateRecord@ElaborateRecord.ExpandBlock(blockPath, blockClass) =>
+            case elaborateRecord @ ElaborateRecord.ExpandBlock(blockPath, blockClass) =>
               if (partial.blocks.contains(blockPath) || partial.classes.contains(blockClass)) {
                 partialCompileIgnoredRecords.add(elaborateRecord)
               } else {
                 expandBlock(blockPath)
                 elaboratePending.setValue(elaborateRecord, None)
               }
-            case elaborateRecord@ElaborateRecord.Block(blockPath) =>
+            case elaborateRecord @ ElaborateRecord.Block(blockPath) =>
               elaborateBlock(blockPath)
               elaboratePending.setValue(elaborateRecord, None)
-            case elaborateRecord@ElaborateRecord.Link(linkPath) =>
+            case elaborateRecord @ ElaborateRecord.Link(linkPath) =>
               elaborateLink(linkPath)
               elaboratePending.setValue(elaborateRecord, None)
-            case elaborateRecord@ElaborateRecord.LinkArray(linkPath) =>
+            case elaborateRecord @ ElaborateRecord.LinkArray(linkPath) =>
               elaborateLinkArray(linkPath)
               elaboratePending.setValue(elaborateRecord, None)
-            case elaborateRecord@ElaborateRecord.Parameter(root, blockClass, postfix, param) =>
+            case elaborateRecord @ ElaborateRecord.Parameter(root, blockClass, postfix, param) =>
               if (paramMatchesPartial(root, blockClass, postfix)) {
                 partialCompileIgnoredRecords.add(elaborateRecord)
               } else {
@@ -1404,7 +1690,6 @@ class Compiler private (inputDesignPb: schema.Design, val library: edg.wir.Libra
   def evaluateExpr(root: DesignPath, value: expr.ValueExpr): ExprResult = {
     new ExprEvaluatePartial(constProp, root).map(value)
   }
-
 
   // Primarily used for unit tests, TODO clean up this API?
   private[edg] def getValue(path: IndirectDesignPath): Option[ExprValue] = constProp.getValue(path)

@@ -2,16 +2,14 @@ package edg.util
 
 import scala.collection.mutable
 
-
-/** A dependency graph data structure, containing Key -> Key directed edges can be added, and Key -> Value mappings.
-  * A node is "ready" when all its input edges have values.
-  * Will not detect cyclic dependencies, but can tolerate them.
+/** A dependency graph data structure, containing Key -> Key directed edges can be added, and Key -> Value mappings. A
+  * node is "ready" when all its input edges have values. Will not detect cyclic dependencies, but can tolerate them.
   * Tracks the frontier, so getReady() is fast.
   */
 class DependencyGraph[KeyType, ValueType] {
   private val values = mutable.HashMap[KeyType, ValueType]()
   private val inverseDeps = mutable.HashMap[KeyType, mutable.Set[KeyType]]()
-  private val deps = mutable.HashMap[KeyType, mutable.Set[KeyType]]()  // cache structure tracking undefined deps
+  private val deps = mutable.HashMap[KeyType, mutable.Set[KeyType]]() // cache structure tracking undefined deps
   private val ready = mutable.Set[KeyType]()
 
   // Copies data from another dependency graph into this one, like a shallow clone
@@ -34,9 +32,12 @@ class DependencyGraph[KeyType, ValueType] {
         require(overwrite, s"reinsertion of dependency for node $node <- $dependencies without overwrite=true")
         // TODO can this requirement be eliminated?
         require(prevDeps.subsetOf(dependencies.toSet), "update of dependencies without being a superset of prior")
-      case None =>  // nothing if no previous dependencies
+      case None => // nothing if no previous dependencies
     }
-    require(!values.isDefinedAt(node), s"reinsertion of dependency for node with value $node = ${values(node)} <- $dependencies")
+    require(
+      !values.isDefinedAt(node),
+      s"reinsertion of dependency for node with value $node = ${values(node)} <- $dependencies"
+    )
     val remainingDeps = (dependencies.toSet -- values.keySet).to(mutable.Set)
 
     deps.put(node, remainingDeps)

@@ -9,22 +9,24 @@ import edg.wir.DesignPath
 
 import scala.collection.SeqMap
 
-
 class DesignStructuralValidateTest extends AnyFlatSpec {
-  behavior of "DesignStructuralValidate"
+  behavior.of("DesignStructuralValidate")
 
   it should "return no errors on a elaborated design" in {
     val dsv = new DesignStructuralValidate()
-    val dut = Design(Block.Block("topDesign",
+    val dut = Design(Block.Block(
+      "topDesign",
       blocks = SeqMap(
-        "source" -> Block.Block(selfClass="sourceContainerBlock",
+        "source" -> Block.Block(
+          selfClass = "sourceContainerBlock",
           ports = SeqMap(
-            "port" -> Port.Port(selfClass="sourcePort"),
+            "port" -> Port.Port(selfClass = "sourcePort"),
           ),
           blocks = SeqMap(
-            "inner" -> Block.Block(selfClass="sourceBlock",
+            "inner" -> Block.Block(
+              selfClass = "sourceBlock",
               ports = SeqMap(
-                "port" -> Port.Port(selfClass="sourcePort"),
+                "port" -> Port.Port(selfClass = "sourcePort"),
               )
             )
           ),
@@ -32,14 +34,16 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
             "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
           )
         ),
-        "sink" -> Block.Block(selfClass="sinkContainerBlock",
+        "sink" -> Block.Block(
+          selfClass = "sinkContainerBlock",
           ports = SeqMap(
-            "port" -> Port.Port(selfClass="sinkPort"),
+            "port" -> Port.Port(selfClass = "sinkPort"),
           ),
           blocks = SeqMap(
-            "inner" -> Block.Block(selfClass="sinkBlock",
+            "inner" -> Block.Block(
+              selfClass = "sinkBlock",
               ports = SeqMap(
-                "port" -> Port.Port(selfClass="sinkPort"),
+                "port" -> Port.Port(selfClass = "sinkPort"),
               )
             )
           ),
@@ -49,10 +53,11 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
         ),
       ),
       links = SeqMap(
-        "link" -> Link.Link(selfClass="link",
+        "link" -> Link.Link(
+          selfClass = "link",
           ports = SeqMap(
-            "source" -> Port.Port(selfClass="sourcePort"),
-            "sink" -> Port.Port(selfClass="sinkPort"),
+            "source" -> Port.Port(selfClass = "sourcePort"),
+            "sink" -> Port.Port(selfClass = "sinkPort"),
           )
         )
       ),
@@ -66,7 +71,8 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
 
   it should "return errors on block libraries" in {
     val dsv = new DesignStructuralValidate()
-    val dut = Design(Block.Block("topDesign",
+    val dut = Design(Block.Block(
+      "topDesign",
       blocks = SeqMap(
         "test" -> Block.Library("testBlock"),
       )
@@ -78,9 +84,11 @@ class DesignStructuralValidateTest extends AnyFlatSpec {
 
   it should "return errors on port and link libraries" in {
     val dsv = new DesignStructuralValidate()
-    val dut = Design(Block.Block("topDesign",
+    val dut = Design(Block.Block(
+      "topDesign",
       blocks = SeqMap(
-        "test" -> Block.Block(selfClass="testBlock",
+        "test" -> Block.Block(
+          selfClass = "testBlock",
           ports = SeqMap(
             "port" -> Port.Library("testPort"),
           ),

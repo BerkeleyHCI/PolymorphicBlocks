@@ -6,9 +6,8 @@ import matchers.should.Matchers._
 import edg.wir.{IndirectDesignPath, IndirectStep, DesignPath}
 import edg.ExprBuilder._
 
-
 class ConstPropTypeTest extends AnyFlatSpec {
-  behavior of "ConstProp with types and declarations"
+  behavior.of("ConstProp with types and declarations")
 
   import ConstPropImplicit._
 
@@ -23,24 +22,18 @@ class ConstPropTypeTest extends AnyFlatSpec {
       IndirectDesignPath() + "c",
     ))
 
-    constProp.addAssignExpr(IndirectDesignPath() + "a",
-      ValueExpr.Literal(1)
-    )
+    constProp.addAssignExpr(IndirectDesignPath() + "a", ValueExpr.Literal(1))
     constProp.getUnsolved should equal(Set(
       IndirectDesignPath() + "b",
       IndirectDesignPath() + "c",
     ))
 
-    constProp.addAssignExpr(IndirectDesignPath() + "b",
-      ValueExpr.Literal(1)
-    )
+    constProp.addAssignExpr(IndirectDesignPath() + "b", ValueExpr.Literal(1))
     constProp.getUnsolved should equal(Set(
       IndirectDesignPath() + "c",
     ))
 
-    constProp.addAssignExpr(IndirectDesignPath() + "c",
-      ValueExpr.Literal(1)
-    )
+    constProp.addAssignExpr(IndirectDesignPath() + "c", ValueExpr.Literal(1))
     constProp.getUnsolved should equal(Set())
   }
 
@@ -62,11 +55,11 @@ class ConstPropTypeTest extends AnyFlatSpec {
     val constProp2 = new ConstProp()
     constProp2.initFrom(constProp1)
     constProp1.getType(IndirectDesignPath() + "int") should equal(Some(classOf[IntValue]))
-    constProp2.getType(IndirectDesignPath() + "int") should equal(Some(classOf[IntValue]))  // track common types
+    constProp2.getType(IndirectDesignPath() + "int") should equal(Some(classOf[IntValue])) // track common types
 
-    constProp1.addDeclaration(DesignPath() + "float", ValInit.Floating)  // add different types
+    constProp1.addDeclaration(DesignPath() + "float", ValInit.Floating) // add different types
     constProp2.addDeclaration(DesignPath() + "boolean", ValInit.Boolean)
-    constProp1.getType(IndirectDesignPath() + "boolean") should equal(None)  // types should be independent
+    constProp1.getType(IndirectDesignPath() + "boolean") should equal(None) // types should be independent
     constProp2.getType(IndirectDesignPath() + "float") should equal(None)
 
     constProp1.getUnsolved should equal(Set(
@@ -78,7 +71,8 @@ class ConstPropTypeTest extends AnyFlatSpec {
       IndirectDesignPath() + "boolean",
     ))
 
-    constProp1.addAssignExpr(IndirectDesignPath() + "int",  // unsolved should be independent
+    constProp1.addAssignExpr(
+      IndirectDesignPath() + "int", // unsolved should be independent
       ValueExpr.Literal(1)
     )
     constProp1.getUnsolved should equal(Set(
