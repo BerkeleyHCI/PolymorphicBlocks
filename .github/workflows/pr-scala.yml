@@ -42,8 +42,6 @@ jobs:
 
   scalafmt-lint:
     runs-on: ubuntu-latest
-    steps:
-    - uses: jrouly/scalafmt-native-action@v2
-      with:
-        version: '3.5.8'
-        arguments: '--list'
+      steps:
+      - uses: actions/checkout@v2
+      - name: Checking the code with scalafmt
