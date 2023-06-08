@@ -4,9 +4,8 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 
-
 class MutableBiMapTest extends AnyFlatSpec {
-  behavior of "MutableBiMap"
+  behavior.of("MutableBiMap")
 
   it should "return None on nonexistent value" in {
     val biMap = MutableBiMap[Int]()

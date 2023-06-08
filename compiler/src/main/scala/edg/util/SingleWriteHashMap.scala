@@ -22,7 +22,7 @@ class SingleWriteHashMap[K, V] {
   }
 
   def addAll(that: SingleWriteHashMap[K, V]): Unit = {
-    that.map.keys foreach { key =>
+    that.map.keys.foreach { key =>
       require(!map.contains(key))
     }
     map.addAll(that.map)

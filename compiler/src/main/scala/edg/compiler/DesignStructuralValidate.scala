@@ -6,17 +6,19 @@ import edg.wir.DesignPath
 
 import scala.collection.SeqMap
 
-
 /** Performs structural design validation on a protobuf design, checking for:
-  * - unelaborated generators
-  * - unelaborated library elements
+  *   - unelaborated generators
+  *   - unelaborated library elements
   */
 class DesignStructuralValidate extends DesignMap[Seq[CompilerError], Seq[CompilerError], Seq[CompilerError]] {
   override def mapPort(path: DesignPath, port: elem.Port): Seq[CompilerError] = {
     Seq()
   }
-  override def mapPortArray(path: DesignPath, port: elem.PortArray,
-                   ports: SeqMap[String, Seq[CompilerError]]): Seq[CompilerError] = {
+  override def mapPortArray(
+      path: DesignPath,
+      port: elem.PortArray,
+      ports: SeqMap[String, Seq[CompilerError]]
+  ): Seq[CompilerError] = {
     val undefinedError = if (!port.contains.isPorts) {
       Seq(CompilerError.UndefinedPortArray(path, port.getSelfClass))
     } else {
@@ -24,17 +26,24 @@ class DesignStructuralValidate extends DesignMap[Seq[CompilerError], Seq[Compile
     }
     undefinedError ++ ports.values.flatten.toSeq
   }
-  override def mapBundle(path: DesignPath, port: elem.Bundle,
-                ports: SeqMap[String, Seq[CompilerError]]): Seq[CompilerError] = {
+  override def mapBundle(
+      path: DesignPath,
+      port: elem.Bundle,
+      ports: SeqMap[String, Seq[CompilerError]]
+  ): Seq[CompilerError] = {
     ports.values.flatten.toSeq
   }
   override def mapPortLibrary(path: DesignPath, port: ref.LibraryPath): Seq[CompilerError] = {
     Seq(CompilerError.LibraryElement(path, port))
   }
 
-  override def mapBlock(path: DesignPath, block: elem.HierarchyBlock,
-               ports: SeqMap[String, Seq[CompilerError]], blocks: SeqMap[String, Seq[CompilerError]],
-               links: SeqMap[String, Seq[CompilerError]]): Seq[CompilerError] = {
+  override def mapBlock(
+      path: DesignPath,
+      block: elem.HierarchyBlock,
+      ports: SeqMap[String, Seq[CompilerError]],
+      blocks: SeqMap[String, Seq[CompilerError]],
+      links: SeqMap[String, Seq[CompilerError]]
+  ): Seq[CompilerError] = {
     val abstractError = if (block.isAbstract) {
       Seq(CompilerError.AbstractBlock(path, block.getSelfClass))
     } else {
@@ -47,14 +56,20 @@ class DesignStructuralValidate extends DesignMap[Seq[CompilerError], Seq[Compile
     Seq(CompilerError.LibraryElement(path, block))
   }
 
-  override def mapLink(path: DesignPath, link: elem.Link,
-                       ports: SeqMap[String, Seq[CompilerError]], links: SeqMap[String, Seq[CompilerError]]):
-      Seq[CompilerError] = {
+  override def mapLink(
+      path: DesignPath,
+      link: elem.Link,
+      ports: SeqMap[String, Seq[CompilerError]],
+      links: SeqMap[String, Seq[CompilerError]]
+  ): Seq[CompilerError] = {
     (ports.values.flatten ++ links.values.flatten).toSeq
   }
-  override def mapLinkArray(path: DesignPath, link: elem.LinkArray,
-                            ports: SeqMap[String, Seq[CompilerError]], links: SeqMap[String, Seq[CompilerError]]):
-      Seq[CompilerError] = {
+  override def mapLinkArray(
+      path: DesignPath,
+      link: elem.LinkArray,
+      ports: SeqMap[String, Seq[CompilerError]],
+      links: SeqMap[String, Seq[CompilerError]]
+  ): Seq[CompilerError] = {
     val undefinedError = if (link.ports.isEmpty || link.links.isEmpty) {
       Seq(CompilerError.AbstractBlock(path, link.getSelfClass))
     } else {

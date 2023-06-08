@@ -9,13 +9,11 @@ import edg.util.{DependencyGraph, MutableBiMap}
 import edg.ExprBuilder
 import edgir.ref.ref.LocalPath
 
-
 case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: expr.ValueExpr)
 
 case class OverassignRecord(assigns: mutable.Set[(DesignPath, String, expr.ValueExpr)] = mutable.Set())
 
-
-sealed trait ConnectedLinkRecord  // a record in the connected link directed graph
+sealed trait ConnectedLinkRecord // a record in the connected link directed graph
 object ConnectedLinkRecord {
   // a connection that is directly to a link, with the graph value being the path to the link itself
   case class ConnectedLink(port: DesignPath) extends ConnectedLinkRecord
@@ -23,22 +21,18 @@ object ConnectedLinkRecord {
   case class Connected(port: DesignPath, nextPortToLink: DesignPath) extends ConnectedLinkRecord
 }
 
-
-sealed trait ConnectedLinkResult  // a result for resolving connected links
+sealed trait ConnectedLinkResult // a result for resolving connected links
 object ConnectedLinkResult {
   case class ResolvedPath(path: IndirectDesignPath) extends ConnectedLinkResult
   case class MissingConnectedLink(port: DesignPath) extends ConnectedLinkResult
 }
 
-
-/**
-  * Parameter propagation, evaluation, and resolution associated with a single design.
-  * General philosophy: this should not refer to any particular design instance, so the design can continue to be
-  * transformed (though those transformations must be strictly additive with regards to assignments and assertions)
+/** Parameter propagation, evaluation, and resolution associated with a single design. General philosophy: this should
+  * not refer to any particular design instance, so the design can continue to be transformed (though those
+  * transformations must be strictly additive with regards to assignments and assertions)
   *
-  * This class resolves CONNECTED_LINK references once the connections are known, though
-  * parameters on connected ports must be manually propagated via addEquality.
-  * addEquality is idempotent and may be repeated.
+  * This class resolves CONNECTED_LINK references once the connections are known, though parameters on connected ports
+  * must be manually propagated via addEquality. addEquality is idempotent and may be repeated.
   */
 class ConstProp() {
   // Assign statements logged here on addAssignment
@@ -54,7 +48,7 @@ class ConstProp() {
   // Undeclared parameters cannot have values set, but can be forced (though the value is not effective until declared)
   private val paramTypes = mutable.HashMap[IndirectDesignPath, Class[_ <: ExprValue]]()
 
-  private val connectedLink = DependencyGraph[ConnectedLinkRecord, DesignPath]()  // tracks the port -> link paths
+  private val connectedLink = DependencyGraph[ConnectedLinkRecord, DesignPath]() // tracks the port -> link paths
 
   // Params that have a forced/override value, so they arent over-assigned.
   private val forcedParams = mutable.Set[IndirectDesignPath]()
@@ -79,8 +73,7 @@ class ConstProp() {
   //
   // Callbacks, to be overridden at instantiation site
   //
-  def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = { }
-
+  def onParamSolved(param: IndirectDesignPath, value: ExprValue): Unit = {}
 
   // For some path, return the concrete path resolving CONNECTED_LINK as applicable
   protected def resolveConnectedLink(path: IndirectDesignPath): ConnectedLinkResult = {
@@ -105,9 +98,11 @@ class ConstProp() {
       val ready = connectedLink.getReady.head
       ready match {
         case ConnectedLinkRecord.Connected(port, nextPortToLink) => // propagate connected link
-          connectedLink.setValue(ConnectedLinkRecord.ConnectedLink(port),
-            connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(nextPortToLink)).get)
-          params.setValue(port.asIndirect + IndirectStep.ConnectedLink, BooleanValue(false))  // dummy value
+          connectedLink.setValue(
+            ConnectedLinkRecord.ConnectedLink(port),
+            connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(nextPortToLink)).get
+          )
+          params.setValue(port.asIndirect + IndirectStep.ConnectedLink, BooleanValue(false)) // dummy value
         case _ => throw new IllegalArgumentException()
       }
       connectedLink.setValue(ready, DesignPath())
@@ -133,7 +128,8 @@ class ConstProp() {
             val missingCorrected = missing.map { path =>
               resolveConnectedLink(path) match {
                 case ConnectedLinkResult.ResolvedPath(path) => path
-                case ConnectedLinkResult.MissingConnectedLink(portPath) => portPath.asIndirect + IndirectStep.ConnectedLink
+                case ConnectedLinkResult.MissingConnectedLink(portPath) =>
+                  portPath.asIndirect + IndirectStep.ConnectedLink
               }
             }
             params.addNode(constrTarget, missingCorrected.toSeq, overwrite = true)
@@ -155,13 +151,13 @@ class ConstProp() {
       case init.ValInit.Val.Text(_) => classOf[TextValue]
       case init.ValInit.Val.Range(_) => classOf[RangeType]
       case init.ValInit.Val.Array(arrayType) => arrayType.`val` match {
-        case init.ValInit.Val.Floating(_) => classOf[ArrayValue[FloatValue]]
-        case init.ValInit.Val.Integer(_) => classOf[ArrayValue[IntValue]]
-        case init.ValInit.Val.Boolean(_) => classOf[ArrayValue[BooleanValue]]
-        case init.ValInit.Val.Text(_) => classOf[ArrayValue[TextValue]]
-        case init.ValInit.Val.Range(_) => classOf[ArrayValue[RangeType]]
-        case _ => throw new NotImplementedError(s"Unknown init array-type $decl")
-      }
+          case init.ValInit.Val.Floating(_) => classOf[ArrayValue[FloatValue]]
+          case init.ValInit.Val.Integer(_) => classOf[ArrayValue[IntValue]]
+          case init.ValInit.Val.Boolean(_) => classOf[ArrayValue[BooleanValue]]
+          case init.ValInit.Val.Text(_) => classOf[ArrayValue[TextValue]]
+          case init.ValInit.Val.Range(_) => classOf[ArrayValue[RangeType]]
+          case _ => throw new NotImplementedError(s"Unknown init array-type $decl")
+        }
       case _ => throw new NotImplementedError(s"Unknown param declaration / init $decl")
     }
     paramTypes.put(target.asIndirect, paramType)
@@ -170,30 +166,39 @@ class ConstProp() {
 
   def setConnectedLink(linkPath: DesignPath, portPath: DesignPath): Unit = {
     connectedLink.setValue(ConnectedLinkRecord.ConnectedLink(portPath), linkPath)
-    params.setValue(portPath.asIndirect + IndirectStep.ConnectedLink, BooleanValue(false))  // dummy value
+    params.setValue(portPath.asIndirect + IndirectStep.ConnectedLink, BooleanValue(false)) // dummy value
 
     update()
   }
 
   def setConnection(toLinkPortPath: DesignPath, toBlockPortPath: DesignPath): Unit = {
-    connectedLink.addNode(ConnectedLinkRecord.Connected(toBlockPortPath, toLinkPortPath),
-      Seq(ConnectedLinkRecord.ConnectedLink(toLinkPortPath)))
+    connectedLink.addNode(
+      ConnectedLinkRecord.Connected(toBlockPortPath, toLinkPortPath),
+      Seq(ConnectedLinkRecord.ConnectedLink(toLinkPortPath))
+    )
 
     update()
   }
 
-  /**
-    * Adds a directed assignment (param <- expr) and propagates as needed
+  /** Adds a directed assignment (param <- expr) and propagates as needed
     */
-  def addAssignExpr(target: IndirectDesignPath, targetExpr: expr.ValueExpr,
-                    root: DesignPath, constrName: String, forced: Boolean = false): Unit = {
+  def addAssignExpr(
+      target: IndirectDesignPath,
+      targetExpr: expr.ValueExpr,
+      root: DesignPath,
+      constrName: String,
+      forced: Boolean = false
+  ): Unit = {
     require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
     val paramSourceRecord = (root, constrName, targetExpr)
 
     if (forced) {
       require(!forcedParams.contains(target), s"attempt to re-force $target")
       forcedParams.add(target)
-      require(!params.valueDefinedAt(target), s"forced value must be set before value is resolved, prior ${paramSource(target)}")
+      require(
+        !params.valueDefinedAt(target),
+        s"forced value must be set before value is resolved, prior ${paramSource(target)}"
+      )
       params.addNode(target, Seq(), overwrite = true) // forced can overwrite other records
     } else {
       if (!forcedParams.contains(target)) {
@@ -204,7 +209,7 @@ class ConstProp() {
         }
         params.addNode(target, Seq())
       } else {
-        return  // ignored - param was forced, discard the new assign
+        return // ignored - param was forced, discard the new assign
       }
     }
 
@@ -217,25 +222,39 @@ class ConstProp() {
 
   /** Sets a value directly (without the expr), convenience wrapper around addAssignment
     */
-  def addAssignValue(target: IndirectDesignPath, value: ExprValue,
-                     root: DesignPath, constrName: String, forced: Boolean = false): Unit = {
+  def addAssignValue(
+      target: IndirectDesignPath,
+      value: ExprValue,
+      root: DesignPath,
+      constrName: String,
+      forced: Boolean = false
+  ): Unit = {
     addAssignExpr(target, ExprBuilder.ValueExpr.Literal(value.toLit), root, constrName, forced)
   }
 
   /** Adds a directed assignment (param1 <- param2), checking for root reachability
     */
-  def addAssignEqual(target: IndirectDesignPath, source: IndirectDesignPath,
-                     root: DesignPath, constrName: String, forced: Boolean = false): Unit = {
+  def addAssignEqual(
+      target: IndirectDesignPath,
+      source: IndirectDesignPath,
+      root: DesignPath,
+      constrName: String,
+      forced: Boolean = false
+  ): Unit = {
     val pathPrefix = root.asIndirect.toLocalPath.steps
     val (sourcePrefix, sourcePostfix) = source.toLocalPath.steps.splitAt(pathPrefix.length)
     require(sourcePrefix == pathPrefix)
-    addAssignExpr(target, ExprBuilder.ValueExpr.Ref(LocalPath(steps = sourcePostfix)),
-      root, constrName=constrName, forced)
+    addAssignExpr(
+      target,
+      ExprBuilder.ValueExpr.Ref(LocalPath(steps = sourcePostfix)),
+      root,
+      constrName = constrName,
+      forced
+    )
   }
 
-  /**
-    * Returns the value of a parameter, or None if it does not have a value (yet?).
-    * Can be used to check if parameters are resolved yet by testing against None.
+  /** Returns the value of a parameter, or None if it does not have a value (yet?). Can be used to check if parameters
+    * are resolved yet by testing against None.
     */
   def getValue(param: IndirectDesignPath): Option[ExprValue] = {
     resolveConnectedLink(param) match {
@@ -253,16 +272,14 @@ class ConstProp() {
     connectedLink.getValue(ConnectedLinkRecord.ConnectedLink(port))
   }
 
-  /**
-    * Returns the type (as a class of ExprValue) of a parameter.
+  /** Returns the type (as a class of ExprValue) of a parameter.
     */
   def getType(param: IndirectDesignPath): Option[Class[_ <: ExprValue]] = {
     paramTypes.get(param)
   }
 
-  /**
-    * Returns all parameters with a definition (eg, ValInit) but missing a concrete assignment.
-    * Ignores indirect references.
+  /** Returns all parameters with a definition (eg, ValInit) but missing a concrete assignment. Ignores indirect
+    * references.
     */
   def getUnsolved: Set[IndirectDesignPath] = {
     paramTypes.keySet.toSet -- params.knownValueKeys

@@ -4,7 +4,6 @@ import edgir.ref.ref
 
 import collection.mutable
 
-
 sealed trait PortConnections
 
 object PortConnections {
@@ -14,15 +13,14 @@ object PortConnections {
   // array direct connection (including exports), without allocate
   case class ArrayConnect(constrName: String, constr: expr.ValueExpr) extends PortConnections
   // all allocated connections, including single and array, as (allocated, constrName, constr)
-  case class AllocatedConnect(singleConnects: Seq[(Option[String], String, expr.ValueExpr)],
-                              arrayConnects: Seq[(Option[String], String, expr.ValueExpr)]
-                             ) extends PortConnections
+  case class AllocatedConnect(
+      singleConnects: Seq[(Option[String], String, expr.ValueExpr)],
+      arrayConnects: Seq[(Option[String], String, expr.ValueExpr)]
+  ) extends PortConnections
   // single tunnel export, fully resolved
   case class TunnelExport(constrName: String, constr: expr.ValueExpr) extends PortConnections
   // single tunnel export, with allocation on inner side, similarly structured as (allocated, constrName, constr)
-  case class AllocatedTunnelExport(connects: Seq[(Option[String], String, expr.ExportedExpr)]
-                                  ) extends PortConnections
-
+  case class AllocatedTunnelExport(connects: Seq[(Option[String], String, expr.ExportedExpr)]) extends PortConnections
 
   // Returns the PortConnections from the output of ConnectedConstraintManager.getBy(Block|Link)Port
   def apply(portPath: Seq[String], constrs: Seq[(String, expr.ValueExpr, expr.ValueExpr)]): PortConnections = {
@@ -42,16 +40,19 @@ object PortConnections {
         ArrayConnect(constrName, constr)
       case Seq((constrName, PortRef, constr, expr.ValueExpr.Expr.ExportedArray(_))) =>
         ArrayConnect(constrName, constr)
-      case seq if seq.forall(elt =>
+      case seq
+        if seq.forall(elt =>
           !elt._4.isExportedTunnel &&
-          elt._2.expr.isRef && elt._2.getRef.steps.init == PortRef.getRef.steps &&
-          elt._2.getRef.steps.last.step.isAllocate) =>
+            elt._2.expr.isRef && elt._2.getRef.steps.init == PortRef.getRef.steps &&
+            elt._2.getRef.steps.last.step.isAllocate
+        ) =>
         // NOTE: in theory, this can also handle the tunnel export allocated case, but as of now
         // mixing tunnel exports and regular connects are mutually exclusive
         val singleConnects = mutable.ListBuffer[(Option[String], String, expr.ValueExpr)]()
         val arrayConnects = mutable.ListBuffer[(Option[String], String, expr.ValueExpr)]()
-        seq foreach { case (constrName, ref, constr, constrExpr) =>
-          val allocateOption = if (ref.getRef.steps.last.getAllocate.isEmpty) None else Some(ref.getRef.steps.last.getAllocate)
+        seq.foreach { case (constrName, ref, constr, constrExpr) =>
+          val allocateOption =
+            if (ref.getRef.steps.last.getAllocate.isEmpty) None else Some(ref.getRef.steps.last.getAllocate)
           constrExpr match {
             case expr.ValueExpr.Expr.Connected(_) =>
               singleConnects.addOne((allocateOption, constrName, constr))
@@ -69,12 +70,15 @@ object PortConnections {
 
       case Seq((constrName, PortRef, constr, expr.ValueExpr.Expr.ExportedTunnel(_))) =>
         TunnelExport(constrName, constr)
-      case seq if seq.forall(elt =>
-        elt._4.isExportedTunnel &&
+      case seq
+        if seq.forall(elt =>
+          elt._4.isExportedTunnel &&
             elt._2.expr.isRef && elt._2.getRef.steps.init == PortRef.getRef.steps &&
-            elt._2.getRef.steps.last.step.isAllocate) =>
+            elt._2.getRef.steps.last.step.isAllocate
+        ) =>
         val connects = seq.map { case (constrName, ref, constr, constrExpr) =>
-          val allocateOption = if (ref.getRef.steps.last.getAllocate.isEmpty) None else Some(ref.getRef.steps.last.getAllocate)
+          val allocateOption =
+            if (ref.getRef.steps.last.getAllocate.isEmpty) None else Some(ref.getRef.steps.last.getAllocate)
           (allocateOption, constrName, constr.getExportedTunnel)
         }
         AllocatedTunnelExport(connects)
@@ -84,11 +88,10 @@ object PortConnections {
   }
 }
 
-
-/** Manager for connected constraints, that provides an efficient way of getting constraints by block prefixes.
-  * Contains references to and mutates the underlying block / link, which remains the single source of truth.
-  * All mutation ops to these connected constraints must go through this object, since this maintains a sorted
-  * reference to the underlying constraints.
+/** Manager for connected constraints, that provides an efficient way of getting constraints by block prefixes. Contains
+  * references to and mutates the underlying block / link, which remains the single source of truth. All mutation ops to
+  * these connected constraints must go through this object, since this maintains a sorted reference to the underlying
+  * constraints.
   */
 class ConnectedConstraintManager(container: HasMutableConstraints) {
   // Returns true if the ref is considered a prefix of the path
@@ -108,42 +111,46 @@ class ConnectedConstraintManager(container: HasMutableConstraints) {
   // TODO this can be optimized by pre-building an index of references involved in constraints
   // though by empirical testing, this has a negligible performance impact, and isn't implemented for simplicity
   def getByBlockPort(path: Seq[String]): Seq[(String, expr.ValueExpr, expr.ValueExpr)] = {
-    container.getConstraints.map {  // extract expr
+    container.getConstraints.map { // extract expr
       case (constrName, constr) => (constrName, constr, constr.expr)
-    }.flatMap { case (constrName, constr, constrExpr) => constrExpr match {
-      case expr.ValueExpr.Expr.ExportedArray(exported) if refPrefixMatches(path, exported.getInternalBlockPort) =>
-        Some((constrName, exported.getInternalBlockPort, constr))
-      case expr.ValueExpr.Expr.ConnectedArray(connected) if refPrefixMatches(path, connected.getBlockPort) =>
-        Some((constrName, connected.getBlockPort, constr))
-      case expr.ValueExpr.Expr.Exported(exported) if refPrefixMatches(path, exported.getInternalBlockPort) =>
-        Some((constrName, exported.getInternalBlockPort, constr))
-      case expr.ValueExpr.Expr.Connected(connected) if refPrefixMatches(path, connected.getBlockPort) =>
-        Some((constrName, connected.getBlockPort, constr))
-      case expr.ValueExpr.Expr.ExportedTunnel(exported) if refPrefixMatches(path, exported.getInternalBlockPort) =>
-        Some((constrName, exported.getInternalBlockPort, constr))
-      case _ => None
-    } }.toSeq
+    }.flatMap { case (constrName, constr, constrExpr) =>
+      constrExpr match {
+        case expr.ValueExpr.Expr.ExportedArray(exported) if refPrefixMatches(path, exported.getInternalBlockPort) =>
+          Some((constrName, exported.getInternalBlockPort, constr))
+        case expr.ValueExpr.Expr.ConnectedArray(connected) if refPrefixMatches(path, connected.getBlockPort) =>
+          Some((constrName, connected.getBlockPort, constr))
+        case expr.ValueExpr.Expr.Exported(exported) if refPrefixMatches(path, exported.getInternalBlockPort) =>
+          Some((constrName, exported.getInternalBlockPort, constr))
+        case expr.ValueExpr.Expr.Connected(connected) if refPrefixMatches(path, connected.getBlockPort) =>
+          Some((constrName, connected.getBlockPort, constr))
+        case expr.ValueExpr.Expr.ExportedTunnel(exported) if refPrefixMatches(path, exported.getInternalBlockPort) =>
+          Some((constrName, exported.getInternalBlockPort, constr))
+        case _ => None
+      }
+    }.toSeq
   }
   // Gets all the constraints that involve the specified link-side path (direct reference or allocated) as a prefix,
   // returning the same format as getByBlockPort.
   // If includeExports=true, this also includes exported constraints matched by the internal port
   // (useful within a link context)
-  def getByLinkPort(path: Seq[String], includeExports: Boolean):  Seq[(String, expr.ValueExpr, expr.ValueExpr)] = {
-    container.getConstraints.map {  // extract expr
+  def getByLinkPort(path: Seq[String], includeExports: Boolean): Seq[(String, expr.ValueExpr, expr.ValueExpr)] = {
+    container.getConstraints.map { // extract expr
       case (constrName, constr) => (constrName, constr, constr.expr)
-    }.flatMap { case (constrName, constr, constrExpr) => constrExpr match {
-      case expr.ValueExpr.Expr.ExportedArray(exported)
+    }.flatMap { case (constrName, constr, constrExpr) =>
+      constrExpr match {
+        case expr.ValueExpr.Expr.ExportedArray(exported)
           if includeExports && refPrefixMatches(path, exported.getInternalBlockPort) =>
-        Some((constrName, exported.getInternalBlockPort, constr))
-      case expr.ValueExpr.Expr.ConnectedArray(connected) if refPrefixMatches(path, connected.getLinkPort) =>
-        Some((constrName, connected.getLinkPort, constr))
-      case expr.ValueExpr.Expr.Exported(exported)
+          Some((constrName, exported.getInternalBlockPort, constr))
+        case expr.ValueExpr.Expr.ConnectedArray(connected) if refPrefixMatches(path, connected.getLinkPort) =>
+          Some((constrName, connected.getLinkPort, constr))
+        case expr.ValueExpr.Expr.Exported(exported)
           if includeExports && refPrefixMatches(path, exported.getInternalBlockPort) =>
-        Some((constrName, exported.getInternalBlockPort, constr))
-      case expr.ValueExpr.Expr.Connected(connected) if refPrefixMatches(path, connected.getLinkPort) =>
-        Some((constrName, connected.getLinkPort, constr))
-      case _ => None
-    } }.toSeq
+          Some((constrName, exported.getInternalBlockPort, constr))
+        case expr.ValueExpr.Expr.Connected(connected) if refPrefixMatches(path, connected.getLinkPort) =>
+          Some((constrName, connected.getLinkPort, constr))
+        case _ => None
+      }
+    }.toSeq
   }
 
   def connectionsByBlockPort(path: Seq[String]): PortConnections =

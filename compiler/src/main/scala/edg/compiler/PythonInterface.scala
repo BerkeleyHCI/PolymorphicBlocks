@@ -12,39 +12,39 @@ import edgrpc.hdl.{hdl => edgrpc}
 import java.io.{File, InputStream}
 import scala.collection.mutable
 
-
 class ProtobufSubprocessException(msg: String) extends Exception(msg)
-
 
 object ProtobufStdioSubprocess {
   val kHeaderMagicByte = 0xfe
 }
 
-
 class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
     responseType: scalapb.GeneratedMessageCompanion[ResponseType],
-    pythonPaths: Seq[String], args: Seq[String]) {
-  protected val process: Either[Process, Throwable] = try {
-    val processBuilder = new ProcessBuilder(args: _*)
-    if (pythonPaths.nonEmpty) {
-      val env = processBuilder.environment()
-      val pythonPathString = pythonPaths.mkString(";")
-      Option(env.get("PYTHONPATH")) match {  // merge existing PYTHONPATH if exists
-        case None => env.put("PYTHONPATH", pythonPathString)
-        case Some(envPythonPath) => env.put("PYTHONPATH", envPythonPath + ";" + pythonPathString)
+    pythonPaths: Seq[String],
+    args: Seq[String]
+) {
+  protected val process: Either[Process, Throwable] =
+    try {
+      val processBuilder = new ProcessBuilder(args: _*)
+      if (pythonPaths.nonEmpty) {
+        val env = processBuilder.environment()
+        val pythonPathString = pythonPaths.mkString(";")
+        Option(env.get("PYTHONPATH")) match { // merge existing PYTHONPATH if exists
+          case None => env.put("PYTHONPATH", pythonPathString)
+          case Some(envPythonPath) => env.put("PYTHONPATH", envPythonPath + ";" + pythonPathString)
+        }
       }
+      Left(processBuilder.start())
+    } catch {
+      case e: Throwable => Right(e) // if it fails store the exception to be thrown when we can
     }
-    Left(processBuilder.start())
-  } catch {
-    case e: Throwable => Right(e)  // if it fails store the exception to be thrown when we can 
-  }
 
   // this provides a consistent Stream interface for both stdout and stderr
   // don't use PipedInputStream since it has a non-expanding buffer and is not single-thread safe
   val outputStream = new QueueStream()
-  val errorStream: InputStream = process match {  // the raw error stream from the process
+  val errorStream: InputStream = process match { // the raw error stream from the process
     case Left(process) => process.getErrorStream
-    case Right(_) => new QueueStream()  // empty queue if the process never started
+    case Right(_) => new QueueStream() // empty queue if the process never started
   }
 
   protected def readStreamAvailable(stream: InputStream): String = {
@@ -65,7 +65,7 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
         throw err
       case Left(process) if !process.isAlive =>
         throw new ProtobufSubprocessException("process died, " +
-            s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
+          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
       case Left(process) =>
         process.getOutputStream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
         message.writeDelimitedTo(process.getOutputStream)
@@ -79,7 +79,7 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
         throw err
       case Left(process) if !process.isAlive =>
         throw new ProtobufSubprocessException("process died, " +
-            s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
+          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
       case Left(process) =>
         var doneReadingStdout: Boolean = false
         while (!doneReadingStdout) {
@@ -88,7 +88,7 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
             doneReadingStdout = true
           } else if (nextByte < 0) {
             throw new ProtobufSubprocessException(s"unexpected end of stream, got $nextByte, " +
-                s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
+              s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
           } else {
             outputStream.write(nextByte)
           }
@@ -100,7 +100,7 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
   // Shuts down the stream and returns the exit value
   def shutdown(): Int = {
     process match {
-      case Right(_) => -1  // give a generic failed value, otherwise doesn't need to do anything
+      case Right(_) => -1 // give a generic failed value, otherwise doesn't need to do anything
       case Left(process) =>
         process.getOutputStream.close()
         var doneReadingStdout: Boolean = false
@@ -120,7 +120,6 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
   }
 }
 
-
 object PythonInterface {
   private val kHdlServerFilePath = "edg_hdl_server/__main__.py"
   // returns the HDL server Python script if it exists locally, otherwise returns None.
@@ -137,20 +136,21 @@ object PythonInterface {
   }
 }
 
-
-/** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles
-  * them down to IR.
+/** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles them down to IR.
   * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
   *
   * If the serverFile is specified, run that; otherwise use "python -m edg_hdl_server" for the global package.
   */
 class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], pythonInterpreter: String = "python") {
-  val command = serverFile match {  // -u for unbuffered mode
+  val command = serverFile match { // -u for unbuffered mode
     case Some(serverFile) => Seq(pythonInterpreter, "-u", serverFile.getAbsolutePath)
     case None => Seq(pythonInterpreter, "-u", "-m", "edg_hdl_server")
   }
   protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
-    edgrpc.HdlResponse, pythonPaths, command)
+    edgrpc.HdlResponse,
+    pythonPaths,
+    command
+  )
   val processOutputStream: InputStream = process.outputStream
   val processErrorStream: InputStream = process.errorStream
 
@@ -158,21 +158,25 @@ class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], python
     process.shutdown()
   }
 
-
   // Hooks to implement when certain actions happen
   def onLibraryRequest(element: ref.LibraryPath): Unit = {}
-  def onLibraryRequestComplete(element: ref.LibraryPath,
-                               result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]): Unit = {}
+  def onLibraryRequestComplete(
+      element: ref.LibraryPath,
+      result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
+  ): Unit = {}
   def onElaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Unit = {}
-  def onElaborateGeneratorRequestComplete(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue],
-                                          result: Errorable[elem.HierarchyBlock]): Unit = {}
-
+  def onElaborateGeneratorRequestComplete(
+      element: ref.LibraryPath,
+      values: Map[ref.LocalPath, ExprValue],
+      result: Errorable[elem.HierarchyBlock]
+  ): Unit = {}
 
   def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = {
     val request = edgrpc.ModuleName(module)
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
-        request=edgrpc.HdlRequest.Request.IndexModule(value=request)))
+        request = edgrpc.HdlRequest.Request.IndexModule(value = request)
+      ))
       process.read()
     }
     reply.response match {
@@ -185,16 +189,16 @@ class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], python
     }
   }
 
-  def libraryRequest(element: ref.LibraryPath):
-      Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = {
+  def libraryRequest(element: ref.LibraryPath): Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = {
     onLibraryRequest(element)
 
     val request = edgrpc.LibraryRequest(
-      element=Some(element)
+      element = Some(element)
     )
-    val (reply, reqTime) = timeExec {  // TODO plumb refinements through
+    val (reply, reqTime) = timeExec { // TODO plumb refinements through
       process.write(edgrpc.HdlRequest(
-        request=edgrpc.HdlRequest.Request.GetLibraryElement(value=request)))
+        request = edgrpc.HdlRequest.Request.GetLibraryElement(value = request)
+      ))
       process.read()
     }
     val result = reply.response match {
@@ -209,22 +213,25 @@ class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], python
     result
   }
 
-  def elaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]):
-      Errorable[elem.HierarchyBlock] = {
+  def elaborateGeneratorRequest(
+      element: ref.LibraryPath,
+      values: Map[ref.LocalPath, ExprValue]
+  ): Errorable[elem.HierarchyBlock] = {
     onElaborateGeneratorRequest(element, values)
 
     val request = edgrpc.GeneratorRequest(
-      element=Some(element),
-      values=values.map { case (valuePath, valueValue) =>
+      element = Some(element),
+      values = values.map { case (valuePath, valueValue) =>
         edgrpc.ExprValue(
-          path=Some(valuePath),
-          value=Some(valueValue.toLit)
+          path = Some(valuePath),
+          value = Some(valueValue.toLit)
         )
       }.toSeq
     )
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
-        request=edgrpc.HdlRequest.Request.ElaborateGenerator(value=request)))
+        request = edgrpc.HdlRequest.Request.ElaborateGenerator(value = request)
+      ))
       process.read()
     }
     val result = reply.response match {
@@ -239,30 +246,35 @@ class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], python
     result
   }
 
-
   def onRunRefinementPass(refinementPass: ref.LibraryPath): Unit = {}
 
   def onRunBackend(backend: ref.LibraryPath): Unit = {}
 
-  def onRunRefinementPassComplete(refinementPass: ref.LibraryPath,
-                                  result: Errorable[Map[DesignPath, ExprValue]]): Unit = {}
+  def onRunRefinementPassComplete(
+      refinementPass: ref.LibraryPath,
+      result: Errorable[Map[DesignPath, ExprValue]]
+  ): Unit = {}
 
-  def onRunBackendComplete(backend: ref.LibraryPath,
-                           result: Errorable[Map[DesignPath, String]]): Unit = {}
+  def onRunBackendComplete(backend: ref.LibraryPath, result: Errorable[Map[DesignPath, String]]): Unit = {}
 
-  def runRefinementPass(refinementPass: ref.LibraryPath, design: schema.Design,
-                        solvedValues: Map[IndirectDesignPath, ExprValue]): Errorable[Map[DesignPath, ExprValue]] = {
+  def runRefinementPass(
+      refinementPass: ref.LibraryPath,
+      design: schema.Design,
+      solvedValues: Map[IndirectDesignPath, ExprValue]
+  ): Errorable[Map[DesignPath, ExprValue]] = {
     onRunRefinementPass(refinementPass)
 
     val request = edgrpc.RefinementRequest(
-      refinementPass = Some(refinementPass), design = Some(design),
+      refinementPass = Some(refinementPass),
+      design = Some(design),
       solvedValues = solvedValues.map { case (path, value) =>
         edgrpc.ExprValue(path = Some(path.toLocalPath), value = Some(value.toLit))
       }.toSeq
     )
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
-        request = edgrpc.HdlRequest.Request.RunRefinement(value = request)))
+        request = edgrpc.HdlRequest.Request.RunRefinement(value = request)
+      ))
       process.read()
     }
     val result = reply.response match {
@@ -279,20 +291,26 @@ class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], python
     result
   }
 
-  def runBackend(backend: ref.LibraryPath, design: schema.Design, solvedValues: Map[IndirectDesignPath, ExprValue], arguments: Map[String, String]):
-      Errorable[Map[DesignPath, String]] = {
+  def runBackend(
+      backend: ref.LibraryPath,
+      design: schema.Design,
+      solvedValues: Map[IndirectDesignPath, ExprValue],
+      arguments: Map[String, String]
+  ): Errorable[Map[DesignPath, String]] = {
     onRunBackend(backend)
 
     val request = edgrpc.BackendRequest(
-      backend=Some(backend), design=Some(design),
-      solvedValues=solvedValues.map { case (path, value) =>
-        edgrpc.ExprValue(path=Some(path.toLocalPath), value=Some(value.toLit))
+      backend = Some(backend),
+      design = Some(design),
+      solvedValues = solvedValues.map { case (path, value) =>
+        edgrpc.ExprValue(path = Some(path.toLocalPath), value = Some(value.toLit))
       }.toSeq,
       arguments = arguments
     )
     val (reply, reqTime) = timeExec {
       process.write(edgrpc.HdlRequest(
-        request = edgrpc.HdlRequest.Request.RunBackend(value=request)))
+        request = edgrpc.HdlRequest.Request.RunBackend(value = request)
+      ))
       process.read()
     }
     val result = reply.response match {
@@ -310,12 +328,10 @@ class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], python
   }
 }
 
-
 class PythonInterfaceLibrary() extends Library {
   private val elts = mutable.HashMap[ref.LibraryPath, schema.Library.NS.Val.Type]()
   private val eltsRefinements = mutable.HashMap[ref.LibraryPath, edgrpc.Refinements]()
-  private val generatorCache = mutable.HashMap[(ref.LibraryPath, Map[ref.LocalPath, ExprValue]),
-      elem.HierarchyBlock]()
+  private val generatorCache = mutable.HashMap[(ref.LibraryPath, Map[ref.LocalPath, ExprValue]), elem.HierarchyBlock]()
 
   protected var py: Option[PythonInterface] = None
 
@@ -363,19 +379,21 @@ class PythonInterfaceLibrary() extends Library {
     elts.get(path) match {
       case Some(value) => Errorable.Success(value)
       case None => py.get.libraryRequest(path) match { // not in cache, fetch from Python
-        case Errorable.Success((elem, refinementsOpt)) =>
-          elts.put(path, elem.`type`)
-          refinementsOpt.foreach {
-            eltsRefinements.put(path, _)
-          }
-          Errorable.Success(elem.`type`)
-        case err @ Errorable.Error(_) => err
-      }
+          case Errorable.Success((elem, refinementsOpt)) =>
+            elts.put(path, elem.`type`)
+            refinementsOpt.foreach {
+              eltsRefinements.put(path, _)
+            }
+            Errorable.Success(elem.`type`)
+          case err @ Errorable.Error(_) => err
+        }
     }
   }
 
-  private def getLibraryPartialMapped[T](path: ref.LibraryPath, expectedType: String)
-                                        (mapping: PartialFunction[schema.Library.NS.Val.Type, T]): Errorable[T] = {
+  private def getLibraryPartialMapped[T](
+      path: ref.LibraryPath,
+      expectedType: String
+  )(mapping: PartialFunction[schema.Library.NS.Val.Type, T]): Errorable[T] = {
     getLibrary(path).flatMap(s"Library element at $path expected type $expectedType") { value =>
       mapping.lift.apply(value)
     }
@@ -399,8 +417,10 @@ class PythonInterfaceLibrary() extends Library {
   override protected def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean): Errorable[elem.HierarchyBlock] = {
     getLibraryPartialMapped(path, "block") {
       case schema.Library.NS.Val.Type.HierarchyBlock(member) =>
-        require(ignoreRefinements || !eltsRefinements.isDefinedAt(path),
-          s"non-design-top ${path.toSimpleString} may not have refinements")
+        require(
+          ignoreRefinements || !eltsRefinements.isDefinedAt(path),
+          s"non-design-top ${path.toSimpleString} may not have refinements"
+        )
         member
     }
   }
@@ -427,8 +447,10 @@ class PythonInterfaceLibrary() extends Library {
     }
   }
 
-  override def runGenerator(path: ref.LibraryPath,
-                            values: Map[ref.LocalPath, ExprValue]): Errorable[elem.HierarchyBlock] = {
+  override def runGenerator(
+      path: ref.LibraryPath,
+      values: Map[ref.LocalPath, ExprValue]
+  ): Errorable[elem.HierarchyBlock] = {
     generatorCache.get((path, values)) match {
       case Some(generated) => Errorable.Success(generated)
       case None =>
@@ -439,18 +461,21 @@ class PythonInterfaceLibrary() extends Library {
   }
 
   def toLibraryPb: schema.Library = {
-    schema.Library(root=Some(schema.Library.NS(
-      members=elts.toMap.collect { case (path, elt) if !eltsRefinements.contains(path) =>
-        // TODO: in future, refinements should be saved; right now the entire element is ignored
-        // to prevent the block from loading without the refinements
-        path.getTarget.getName -> schema.Library.NS.Val(elt)
-      }
-    )))
+    schema.Library(root =
+      Some(schema.Library.NS(
+        members = elts.toMap.collect {
+          case (path, elt) if !eltsRefinements.contains(path) =>
+            // TODO: in future, refinements should be saved; right now the entire element is ignored
+            // to prevent the block from loading without the refinements
+            path.getTarget.getName -> schema.Library.NS.Val(elt)
+        }
+      ))
+    )
   }
 
   def loadFromLibraryPb(library: schema.Library): Unit = {
-    library.root.getOrElse(schema.Library.NS()).members foreach { case (name, elt) =>
-      val path = ref.LibraryPath(target=Some(ref.LocalStep(step=ref.LocalStep.Step.Name(name))))
+    library.root.getOrElse(schema.Library.NS()).members.foreach { case (name, elt) =>
+      val path = ref.LibraryPath(target = Some(ref.LocalStep(step = ref.LocalStep.Step.Name(name))))
       require(!elts.isDefinedAt(path), s"overwriting $name in loadFromLibraryPb")
       elts.put(path, elt.`type`)
     }

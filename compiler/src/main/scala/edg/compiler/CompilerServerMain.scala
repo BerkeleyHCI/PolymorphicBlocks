@@ -11,7 +11,6 @@ import edgir.schema.schema
 
 import java.io.{File, PrintWriter, StringWriter}
 
-
 // a PythonInterface that uses the on-event hooks to forward stderr and stdout
 // without this, the compiler can freeze on large stdout/stderr data, possibly because of queue sizing
 class ForwardingPythonInterface(serverFile: Option[File], pythonPaths: Seq[String])
@@ -27,34 +26,38 @@ class ForwardingPythonInterface(serverFile: Option[File], pythonPaths: Seq[Strin
     }
   }
 
-  override def onLibraryRequestComplete(element: ref.LibraryPath,
-                                        result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]): Unit = {
+  override def onLibraryRequestComplete(
+      element: ref.LibraryPath,
+      result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
+  ): Unit = {
     forwardProcessOutput()
   }
 
-  override def onElaborateGeneratorRequestComplete(element: ref.LibraryPath,
-                                                   values: Map[ref.LocalPath, ExprValue],
-                                                   result: Errorable[elem.HierarchyBlock]): Unit = {
+  override def onElaborateGeneratorRequestComplete(
+      element: ref.LibraryPath,
+      values: Map[ref.LocalPath, ExprValue],
+      result: Errorable[elem.HierarchyBlock]
+  ): Unit = {
     forwardProcessOutput()
   }
 
-  override def onRunBackendComplete(backend: ref.LibraryPath,
-                                    result: Errorable[Map[DesignPath, String]]): Unit = {
+  override def onRunBackendComplete(backend: ref.LibraryPath, result: Errorable[Map[DesignPath, String]]): Unit = {
     forwardProcessOutput()
   }
 }
 
-
-/** A Scala-based EDG compiler interface as a server.
-  * Because this uses a persistent HdlInterfaceService, this should not be used where HDL changes are expected
-  * during its lifetime. This is suitable for unit tests, but not for long-term user interaction.
+/** A Scala-based EDG compiler interface as a server. Because this uses a persistent HdlInterfaceService, this should
+  * not be used where HDL changes are expected during its lifetime. This is suitable for unit tests, but not for
+  * long-term user interaction.
   */
 object CompilerServerMain {
   private def constPropToSolved(vals: Map[IndirectDesignPath, ExprValue]): Seq[edgcompiler.CompilerResult.Value] = {
-    vals.map { case (path, value) => edgcompiler.CompilerResult.Value(
-      path=Some(path.toLocalPath),
-      value=Some(value.toLit)
-    )}.toSeq
+    vals.map { case (path, value) =>
+      edgcompiler.CompilerResult.Value(
+        path = Some(path.toLocalPath),
+        value = Some(value.toLit)
+      )
+    }.toSeq
   }
 
   def compile(request: CompilerRequest, library: PythonInterfaceLibrary): CompilerResult = {
@@ -79,7 +82,7 @@ object CompilerServerMain {
   }
 
   def main(args: Array[String]): Unit = {
-    val hdlServerOption = PythonInterface.serverFileOption(None)  // local relative path
+    val hdlServerOption = PythonInterface.serverFileOption(None) // local relative path
     hdlServerOption.foreach { serverFile => println(s"Using local $serverFile") }
     val pyIf = new ForwardingPythonInterface(hdlServerOption, Seq(new File(".").getAbsolutePath))
     val pyLib = new PythonInterfaceLibrary()
@@ -94,10 +97,10 @@ object CompilerServerMain {
             compile(request, pyLib)
           case None => // end of stream
             System.exit(0)
-            throw new NotImplementedError()  // provides a return type, shouldn't ever happen
+            throw new NotImplementedError() // provides a return type, shouldn't ever happen
         }
 
-        pyIf.forwardProcessOutput()  // in case the hooks didn't catch everything
+        pyIf.forwardProcessOutput() // in case the hooks didn't catch everything
 
         System.out.write(ProtobufStdioSubprocess.kHeaderMagicByte)
         result.writeDelimitedTo(System.out)

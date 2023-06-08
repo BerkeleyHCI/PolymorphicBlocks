@@ -6,26 +6,34 @@ import matchers.should.Matchers._
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
 import edg.ExprBuilder._
 
-
 class ConstPropArrayTest extends AnyFlatSpec {
-  behavior of "ConstProp with array paths"
+  behavior.of("ConstProp with array paths")
 
   import edgir.expr.expr
   import ConstPropImplicit._
 
-  /** Adds array assigns to a ConstProp object.
-    * Note: all paths (including prefix and anything in the expr) are referenced from the argument root.
+  /** Adds array assigns to a ConstProp object. Note: all paths (including prefix and anything in the expr) are
+    * referenced from the argument root.
     */
-  def addArray(constProp: ConstProp, root: Seq[String], length: Int, exprFn: Int => expr.ValueExpr,
-               pathPrefix: Seq[String], pathSuffix: Seq[String]): Unit = {
+  def addArray(
+      constProp: ConstProp,
+      root: Seq[String],
+      length: Int,
+      exprFn: Int => expr.ValueExpr,
+      pathPrefix: Seq[String],
+      pathSuffix: Seq[String]
+  ): Unit = {
     for (i <- 0 until length) {
       constProp.addDeclaration(DesignPath() ++ root ++ pathPrefix + i.toString ++ pathSuffix, ValInit.Integer)
       constProp.addAssignExpr(
         IndirectDesignPath() ++ root ++ pathPrefix + i.toString ++ pathSuffix,
-        exprFn(i))
+        exprFn(i)
+      )
     }
-    constProp.addAssignValue(IndirectDesignPath() ++ root ++ pathPrefix + IndirectStep.Elements,
-      ArrayValue((0 until length).map(i => TextValue(i.toString))))
+    constProp.addAssignValue(
+      IndirectDesignPath() ++ root ++ pathPrefix + IndirectStep.Elements,
+      ArrayValue((0 until length).map(i => TextValue(i.toString)))
+    )
   }
 
   it should "read out elements" in {
@@ -40,13 +48,12 @@ class ConstPropArrayTest extends AnyFlatSpec {
   it should "read out sum" in {
     import edgir.expr.expr.UnarySetExpr.Op
     val constProp = new ConstProp()
-    addArray(constProp, Seq(), 5, {i => ValueExpr.Literal(i + 1)}, Seq("ports"), Seq("param"))
+    addArray(constProp, Seq(), 5, { i => ValueExpr.Literal(i + 1) }, Seq("ports"), Seq("param"))
 
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
-    constProp.addAssignExpr(IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.SUM,
-        ValueExpr.MapExtract(Ref("ports"), "param")
-      )
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "reduce",
+      ValueExpr.UnarySetOp(Op.SUM, ValueExpr.MapExtract(Ref("ports"), "param"))
     )
     constProp.getValue(IndirectDesignPath() + "reduce") should equal(Some(IntValue(1 + 2 + 3 + 4 + 5)))
   }
@@ -54,13 +61,12 @@ class ConstPropArrayTest extends AnyFlatSpec {
   it should "read out maximum" in {
     import edgir.expr.expr.UnarySetExpr.Op
     val constProp = new ConstProp()
-    addArray(constProp, Seq(), 4, {i => ValueExpr.Literal(i + 2)}, Seq("ports"), Seq("param"))
+    addArray(constProp, Seq(), 4, { i => ValueExpr.Literal(i + 2) }, Seq("ports"), Seq("param"))
 
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
-    constProp.addAssignExpr(IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.MAXIMUM,
-        ValueExpr.MapExtract(Ref("ports"), "param")
-      )
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "reduce",
+      ValueExpr.UnarySetOp(Op.MAXIMUM, ValueExpr.MapExtract(Ref("ports"), "param"))
     )
     constProp.getValue(IndirectDesignPath() + "reduce") should equal(Some(IntValue(5)))
   }
@@ -68,13 +74,12 @@ class ConstPropArrayTest extends AnyFlatSpec {
   it should "read out intersection" in {
     import edgir.expr.expr.UnarySetExpr.Op
     val constProp = new ConstProp()
-    addArray(constProp, Seq(), 4, {i => ValueExpr.Literal(i.toFloat, (i + 4).toFloat)}, Seq("ports"), Seq("param"))
+    addArray(constProp, Seq(), 4, { i => ValueExpr.Literal(i.toFloat, (i + 4).toFloat) }, Seq("ports"), Seq("param"))
 
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
-    constProp.addAssignExpr(IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.INTERSECTION,
-        ValueExpr.MapExtract(Ref("ports"), "param")
-      )
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "reduce",
+      ValueExpr.UnarySetOp(Op.INTERSECTION, ValueExpr.MapExtract(Ref("ports"), "param"))
     )
     constProp.getValue(IndirectDesignPath() + "reduce") should equal(Some(RangeValue(3.0, 4.0)))
   }
@@ -82,13 +87,12 @@ class ConstPropArrayTest extends AnyFlatSpec {
   it should "fail to SetExtract for different values" in {
     import edgir.expr.expr.UnarySetExpr.Op
     val constProp = new ConstProp()
-    addArray(constProp, Seq(), 4, {i => ValueExpr.Literal(i + 2)}, Seq("ports"), Seq("param"))
+    addArray(constProp, Seq(), 4, { i => ValueExpr.Literal(i + 2) }, Seq("ports"), Seq("param"))
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
-    an [ExprEvaluateException] should be thrownBy {
-      constProp.addAssignExpr(IndirectDesignPath() + "reduce",
-        ValueExpr.UnarySetOp(Op.SET_EXTRACT,
-          ValueExpr.MapExtract(Ref("ports"), "param")
-        )
+    an[ExprEvaluateException] should be thrownBy {
+      constProp.addAssignExpr(
+        IndirectDesignPath() + "reduce",
+        ValueExpr.UnarySetOp(Op.SET_EXTRACT, ValueExpr.MapExtract(Ref("ports"), "param"))
       )
     }
   }
@@ -96,13 +100,12 @@ class ConstPropArrayTest extends AnyFlatSpec {
   it should "SetExtract for same values" in {
     import edgir.expr.expr.UnarySetExpr.Op
     val constProp = new ConstProp()
-    addArray(constProp, Seq(), 4, {i => ValueExpr.Literal(2)}, Seq("ports"), Seq("param"))
+    addArray(constProp, Seq(), 4, { i => ValueExpr.Literal(2) }, Seq("ports"), Seq("param"))
 
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
-    constProp.addAssignExpr(IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.SET_EXTRACT,
-        ValueExpr.MapExtract(Ref("ports"), "param")
-      )
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "reduce",
+      ValueExpr.UnarySetOp(Op.SET_EXTRACT, ValueExpr.MapExtract(Ref("ports"), "param"))
     )
     constProp.getValue(IndirectDesignPath() + "reduce") should equal(Some(IntValue(2)))
   }
@@ -113,10 +116,9 @@ class ConstPropArrayTest extends AnyFlatSpec {
     val constProp = new ConstProp()
 
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
-    constProp.addAssignExpr(IndirectDesignPath() + "reduce",
-      ValueExpr.UnarySetOp(Op.SUM,
-        ValueExpr.MapExtract(Ref("ports"), "param")
-      )
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "reduce",
+      ValueExpr.UnarySetOp(Op.SUM, ValueExpr.MapExtract(Ref("ports"), "param"))
     )
 
     addArray(constProp, Seq(), 5, { i => ValueExpr.Literal(i + 1) }, Seq("ports"), Seq("param"))
