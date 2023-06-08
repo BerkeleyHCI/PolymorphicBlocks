@@ -42,6 +42,7 @@ jobs:
 
   scalafmt-lint:
     runs-on: ubuntu-latest
-      steps:
-      - uses: actions/checkout@v2
-      - name: Checking the code with scalafmt
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checking the code with scalafmt
+      uses: AvaPL/scalafmt-native-formatter@v0
