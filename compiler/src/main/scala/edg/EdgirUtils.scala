@@ -16,8 +16,6 @@ object EdgirUtils {
     }
 
     def toSimpleString: String = {
-      
-      
       toFullString.split('.').last
     }
   }
