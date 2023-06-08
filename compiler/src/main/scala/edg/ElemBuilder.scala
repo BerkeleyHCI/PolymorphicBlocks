@@ -21,10 +21,12 @@ object ElemBuilder {
   // For other ValueExprs, see ExprBuilder
   object Constraint {
     def Connected(block: ref.LocalPath, link: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
-      expr = expr.ValueExpr.Expr.Connected(expr.ConnectedExpr(
-        blockPort = Some(ValueExpr.Ref(block)),
-        linkPort = Some(ValueExpr.Ref(link))
-      ))
+      expr = expr.ValueExpr.Expr.Connected(
+        expr.ConnectedExpr(
+          blockPort = Some(ValueExpr.Ref(block)),
+          linkPort = Some(ValueExpr.Ref(link))
+        )
+      )
     )
     def ConnectedArray(block: ref.LocalPath, link: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.ConnectedArray(expr.ConnectedExpr(
