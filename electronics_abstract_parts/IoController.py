@@ -242,17 +242,24 @@ class IdealIoController(IoController, IdealModel, GeneratorBlock):
                          self.i2c.requested(), self.uart.requested(), self.usb.requested(), self.can.requested())
 
   def generate(self) -> None:
-    self.pwr.init_from(VoltageSink())
+    self.pwr.init_from(VoltageSink(
+      current_draw=RangeExpr()
+    ))
     self.gnd.init_from(Ground())
+
+    io_current_draw_builder = RangeExpr._to_expr_type(RangeExpr.ZERO)
 
     self.adc.defined()
     for elt in self.get(self.adc.requested()):
       self.adc.append_elt(AnalogSink(), elt)
     self.dac.defined()
     for elt in self.get(self.dac.requested()):
-      self.dac.append_elt(AnalogSource(
+      aout = self.dac.append_elt(AnalogSource(
         voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage)
       ), elt)
+      io_current_draw_builder = io_current_draw_builder + (
+        aout.link().current_drawn.lower().min(0), aout.link().current_drawn.upper().max(0)
+      )
 
     dio_model = DigitalBidir(
       voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage),
@@ -261,7 +268,10 @@ class IdealIoController(IoController, IdealModel, GeneratorBlock):
 
     self.gpio.defined()
     for elt in self.get(self.gpio.requested()):
-      self.gpio.append_elt(dio_model, elt)
+      dio = self.gpio.append_elt(dio_model, elt)
+      io_current_draw_builder = io_current_draw_builder + (
+        dio.link().current_drawn.lower().min(0), dio.link().current_drawn.upper().max(0)
+      )
 
     self.spi.defined()
     for elt in self.get(self.spi.requested()):
@@ -278,3 +288,5 @@ class IdealIoController(IoController, IdealModel, GeneratorBlock):
     self.can.defined()
     for elt in self.get(self.can.requested()):
       self.can.append_elt(CanControllerPort(dio_model), elt)
+
+    self.assign(self.pwr.current_draw, io_current_draw_builder)
