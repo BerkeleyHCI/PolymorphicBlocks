@@ -1,3 +1,5 @@
+from typing import Dict
+
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprintSelector
@@ -6,7 +8,11 @@ from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
-class Inductor(PassiveComponent):
+class Inductor(PassiveComponent, KiCadImportableBlock):
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:L', 'Device:L_Small')
+    return {'1': self.a, '2': self.b}
+
   @init_in_parent
   def __init__(self, inductance: RangeLike,
                current: RangeLike = Default(RangeExpr.ZERO),

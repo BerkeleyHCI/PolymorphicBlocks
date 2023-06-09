@@ -2,7 +2,7 @@ from typing import *
 
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
-from .PassiveConnector import PinHeader127DualShrouded
+from .PassiveConnector_Header import PinHeader127DualShrouded
 
 
 class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):

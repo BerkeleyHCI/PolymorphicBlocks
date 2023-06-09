@@ -1,5 +1,6 @@
 from electronics_abstract_parts import *
-from .PassiveConnector import PinHeader127DualShrouded, TagConnect, PinHeader254DualShroudedInline
+from .PassiveConnector_Header import PinHeader127DualShrouded
+from .PassiveConnector_TagConnect import TagConnect
 
 
 class SwdCortexTargetHeader(SwdCortexTargetWithSwoTdiConnector):
@@ -18,7 +19,8 @@ class SwdCortexTargetHeader(SwdCortexTargetWithSwoTdiConnector):
 
 
 class SwdCortexTargetTagConnect(SwdCortexTargetWithSwoTdiConnector, Block):
-  """OFFICIAL tag connect SWD header using the TC2030 series cables."""
+  """OFFICIAL tag connect SWD header using the TC2030 series cables.
+  https://www.tag-connect.com/wp-content/uploads/bsk-pdf-manager/TC2030-CTX_1.pdf"""
   def contents(self):
     super().contents()
     self.conn = self.Block(TagConnect(6))

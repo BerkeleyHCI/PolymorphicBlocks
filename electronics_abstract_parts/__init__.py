@@ -14,7 +14,7 @@ from .Categories import Interface, AnalogToDigital, DigitalToAnalog
 from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver
 from .Categories import PowerSource, Connector, ProgrammingConnector
 from .Categories import HumanInterface, Display, Lcd, Oled, EInk, Light
-from .Categories import Sensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor
+from .Categories import Sensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor, EnvironmentalSensor, LightSensor
 from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, Mechanical
 
 from .ESeriesUtil import ESeriesUtil
@@ -40,6 +40,7 @@ from .AbstractLed import Led, LedStandardFootprint, RgbLedCommonAnode, LedColor,
 from .AbstractLed import IndicatorLed, IndicatorSinkLed, IndicatorSinkLedResistor, VoltageIndicatorLed, IndicatorSinkRgbLed
 from .AbstractLed import IndicatorSinkPackedRgbLed
 from .AbstractLed import IndicatorLedArray, IndicatorSinkLedArray
+from .AbstractBjt import Bjt, BjtStandardFootprint, TableBjt
 from .AbstractFets import Fet, FetStandardFootprint, BaseTableFet, TableFet
 from .AbstractFets import SwitchFet, TableSwitchFet
 
@@ -62,7 +63,7 @@ from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetWithS
 from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, AnalogTestPoint
 from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint
 from .AbstractJumper import Jumper, DigitalJumper
-from .PassiveConnector import PassiveConnector
+from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
 
 from .UsbConnectors import UsbConnector, UsbHostConnector, UsbDeviceConnector, UsbEsdDiode
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver, CanEsdDiode

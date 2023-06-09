@@ -344,7 +344,7 @@ class DigitalBidirBridge(CircuitPortBridge):
     # self.assign(self.outer_port.pulldown_capable, self.inner_link.link().pulldown_capable)
 
 
-class DigitalBidirNotConnected(Block):
+class DigitalBidirNotConnected(InternalBlock, Block):
   """Not-connected dummy block for Digital bidir ports"""
   def __init__(self) -> None:
     super().__init__()
@@ -507,13 +507,15 @@ class DigitalBidirAdapterOpenDrain(CircuitPortAdapter[DigitalSingleSource]):
   @init_in_parent
   def __init__(self):
     super().__init__()
-    self.src = self.Port(DigitalSink(  # otherwise ideal
+    self.src = self.Port(DigitalBidir(  # otherwise ideal
+      voltage_out=RangeExpr(),
       current_draw=RangeExpr()
     ))
     self.dst = self.Port(DigitalSingleSource(
-      voltage_out=self.src.link().voltage,
+      voltage_out=(0, 0)*Volt,  # TODO should propagate from src voltage lower, but creates a circular dependency
       output_thresholds=(self.src.link().output_thresholds.lower(), float('inf')),
       pulldown_capable=False,
       low_signal_driver=True
     ))
+    self.assign(self.src.voltage_out, self.dst.link().voltage)
     self.assign(self.src.current_draw, self.dst.link().current_drawn)

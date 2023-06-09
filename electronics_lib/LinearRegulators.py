@@ -57,7 +57,7 @@ class Ld1117(LinearRegulator):
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, FootprintBlock):
+class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -74,18 +74,18 @@ class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     super().generate()
     TOLERANCE = 0.03  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [  # output voltage
-      (1.185, 'LDL1117S12R'),
-      (1.5, 'LDL1117S15R'),
-      (1.8, 'LDL1117S18R'),
-      (2.5, 'LDL1117S25R'),
-      (3.0, 'LDL1117S30R'),
-      (3.3, 'LDL1117S33R'),
-      (5.0, 'LDL1117S50R'),
+      (1.185, 'LDL1117S12R', 'C2926949'),
+      # (1.5, 'LDL1117S15R'),  # not listed at JLC
+      (1.8, 'LDL1117S18R', 'C2926947'),
+      (2.5, 'LDL1117S25R', 'C2926456'),
+      (3.0, 'LDL1117S30R', 'C2798214'),
+      (3.3, 'LDL1117S33R', 'C435835'),
+      (5.0, 'LDL1117S50R', 'C970558'),
     ]
-    suitable_parts = [(part_out_nominal, part_number) for part_out_nominal, part_number in parts
-                      if Range.from_tolerance(part_out_nominal, TOLERANCE) in self.get(self.output_voltage)]
+    suitable_parts = [part for part in parts
+                      if Range.from_tolerance(part[0], TOLERANCE) in self.get(self.output_voltage)]
     assert suitable_parts, "no regulator with compatible output"
-    part_output_voltage_nominal, part_number = suitable_parts[0]
+    part_output_voltage_nominal, part_number, jlc_number = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage_nominal * Volt(tol=TOLERANCE))
     self.footprint(
@@ -98,6 +98,8 @@ class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
       mfr='STMicroelectronics', part=part_number,
       datasheet='https://www.st.com/content/ccc/resource/technical/document/datasheet/group3/0e/5a/00/ca/10/1a/4f/a5/DM00366442/files/DM00366442.pdf/jcr:content/translations/en.DM00366442.pdf',
     )
+    self.assign(self.lcsc_part, jlc_number)
+    self.assign(self.actual_basic_part, False)
 
 
 class Ldl1117(LinearRegulator):
@@ -105,7 +107,7 @@ class Ldl1117(LinearRegulator):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.ic = imp.Block(Ld1117_Device(self.output_voltage))
+      self.ic = imp.Block(Ldl1117_Device(self.output_voltage))
       self.in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
       self.out_cap = imp.Block(DecouplingCapacitor(capacitance=4.7 * uFarad(tol=0.2)))
 
@@ -195,6 +197,76 @@ class Ap2204k(LinearRegulator, GeneratorBlock):
       self.connect(self.en, self.ic.en)
     else:  # by default tie high to enable regulator
       self.connect(self.pwr_in.as_digital_source(), self.ic.en)
+
+
+class Xc6206p_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
+  @init_in_parent
+  def __init__(self, output_voltage: RangeLike):
+    super().__init__()
+
+    self.assign(self.pwr_in.voltage_limits, (1.8, 6.0) * Volt)
+    self.assign(self.actual_quiescent_current, (1, 3) * uAmp)  # supply current
+
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.generator_param(self.output_voltage)
+
+  def generate(self):
+    super().generate()
+    parts = [  # output range, part number, (dropout typ @10mA, max @100mA), max current, lcsc, basic part
+      # +/-0.03v tolerance for Vout < 1.5v
+      (Range.from_abs_tolerance(1.2, 0.03), 'XC6206P122MR-G', (0.46, 0.96), 0.06, 'C424699', False),
+      (Range.from_abs_tolerance(1.2, 0.03), 'XC6206P132MR', (0.46, 0.96), 0.06, 'C424700', False),
+      (Range.from_tolerance(1.5, 0.02), 'XC6206P152MR', (0.30, 0.86), 0.06, 'C424701', False),
+      (Range.from_tolerance(1.8, 0.02), 'XC6206P182MR-G', (0.15, 0.78), 0.08, 'C2831490', False),
+      (Range.from_tolerance(1.8, 0.02), 'XC6206P182MR', (0.15, 0.78), 0.08, 'C21659', False),  # non -G version, higher stock
+
+      (Range.from_tolerance(2.0, 0.02), 'XC6206P202MR-G', (0.10, 0.78), 0.12, 'C2891260', False),
+      (Range.from_tolerance(2.5, 0.02), 'XC6206P252MR', (0.10, 0.71), 0.15, 'C15906', False),
+      (Range.from_tolerance(2.8, 0.02), 'XC6206P282MR', (0.10, 0.71), 0.15, 'C14255', False),
+
+      (Range.from_tolerance(3.0, 0.02), 'XC6206P302MR-G', (0.075, 0.68), 0.20, 'C9972', False),
+      (Range.from_tolerance(3.3, 0.02), 'XC6206P332MR', (0.075, 0.68), 0.20, 'C5446', True),  # basic part preferred
+      (Range.from_tolerance(3.3, 0.02), 'XC6206P332MR-G', (0.075, 0.68), 0.20, 'C2891264', False),
+      (Range.from_tolerance(3.6, 0.02), 'XC6206P362MR-G', (0.075, 0.68), 0.20, 'C34705', False),
+
+      (Range.from_tolerance(4.0, 0.02), 'XC6206P402MR', (0.06, 0.63), 0.25, 'C484266', False),
+
+      (Range.from_tolerance(5.0, 0.02), 'XC6206P502MR', (0.05, 0.60), 0.25, 'C16767', False),
+    ]
+    suitable_parts = [part for part in parts
+                      if part[0] in self.get(self.output_voltage)]
+    assert suitable_parts, "no regulator with compatible output"
+    part_output_voltage, part_number, part_dropout, part_max_current, lcsc_part, basic_part = suitable_parts[0]
+
+    self.assign(self.actual_target_voltage, part_output_voltage * Volt)
+    self.assign(self.actual_dropout, part_dropout * Volt)
+    self.assign(self.pwr_out.current_limits, (0, part_max_current) * Amp)
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-23',
+      {
+        '1': self.gnd,
+        '2': self.pwr_out,
+        '3': self.pwr_in,
+      },
+      mfr='Torex Semiconductor Ltd', part=part_number,
+      datasheet='https://product.torexsemi.com/system/files/series/xc6206.pdf',
+    )
+    self.assign(self.lcsc_part, lcsc_part)
+    self.assign(self.actual_basic_part, basic_part)
+
+
+class Xc6206p(LinearRegulator):
+  """XC6206P LDOs in SOT-23 which seem popular in some open-source designs and some are JLC basic parts."""
+  def contents(self) -> None:
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.ic = imp.Block(Xc6206p_Device(output_voltage=self.output_voltage))
+      self.in_cap = imp.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
+      self.out_cap = imp.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))
+
+      self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
+      self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
 class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):

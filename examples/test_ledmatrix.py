@@ -76,9 +76,6 @@ class LedMatrix(JlcBoardTop):
           'sw1=18',
         ]),
       ],
-      class_refinements=[
-        (PassiveConnector, PinHeader254),
-      ],
     )
 
 

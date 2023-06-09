@@ -420,8 +420,8 @@ class Fcml(JlcBoardTop):
         (['conv', 'sw[2]', 'cap', 'footprint_spec'], ParamValue(['conv', 'sw[1]', 'cap', 'footprint_spec'])),
 
         # JLC does not have frequency specs, must be checked TODO
-        (['conv', 'power_path', 'inductor', 'ignore_frequency'], True),
-        (['reg_vgate', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['conv', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
+        (['reg_vgate', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
