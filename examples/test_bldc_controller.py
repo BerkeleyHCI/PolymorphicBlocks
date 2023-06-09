@@ -201,6 +201,7 @@ class BldcController(JlcBoardTop):
         (['curr[3]', 'res', 'res', 'footprint_spec'], ParamValue(['curr[1]', 'res', 'res', 'footprint_spec'])),
 
         (["bldc_drv", "vm_cap_bulk", "cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap
+        (["bldc_drv", "cp_cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
