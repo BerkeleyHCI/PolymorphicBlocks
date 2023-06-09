@@ -420,7 +420,7 @@ class Feather_Nrf52840(Nrf52840Base_Io):
     # note onboard VBAT sense divider at P0.29
   }
 
-  PACKAGE = '...'
+  PACKAGE = 'bldc:FEATHERWING_NODIM'
   MANUFACTURER = 'Adafruit'
   PART = 'Feather nRF52840 Express'
   DATASHEET = 'https://learn.adafruit.com/assets/68545'
