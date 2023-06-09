@@ -6,9 +6,8 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
-
 class ExprToStringTest extends AnyFlatSpec {
-  behavior of "ExprToString"
+  behavior.of("ExprToString")
 
   it should "handle literals" in {
     ExprToString(ValueExpr.Literal(Literal.Floating(2.0))) should equal("2.0")
@@ -30,12 +29,14 @@ class ExprToStringTest extends AnyFlatSpec {
 
   it should "handle chained ops" in {
     import edgir.expr.expr.BinaryExpr.Op
-    ExprToString(ValueExpr.BinOp(Op.ADD,
+    ExprToString(ValueExpr.BinOp(
+      Op.ADD,
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(2.0), ValueExpr.Literal(-1)),
       ValueExpr.Literal(3.0)
     )) should equal("((2.0 + -1) + 3.0)")
 
-    ExprToString(ValueExpr.BinOp(Op.AND,
+    ExprToString(ValueExpr.BinOp(
+      Op.AND,
       ValueExpr.BinOp(Op.OR, ValueExpr.Literal(true), ValueExpr.Literal(false)),
       ValueExpr.Literal(true)
     )) should equal("((true || false) && true)")
@@ -48,8 +49,11 @@ class ExprToStringTest extends AnyFlatSpec {
 
     import edgir.expr.expr.BinaryExpr.Op
     ExprToString(
-      ValueExpr.IfThenElse(ValueExpr.BinOp(Op.AND, ValueExpr.Literal(true), ValueExpr.Literal(true)),
-      ValueExpr.Literal(4), ValueExpr.Literal(3))
+      ValueExpr.IfThenElse(
+        ValueExpr.BinOp(Op.AND, ValueExpr.Literal(true), ValueExpr.Literal(true)),
+        ValueExpr.Literal(4),
+        ValueExpr.Literal(3)
+      )
     ) should equal("((true && true)? 4 : 3)")
   }
 }

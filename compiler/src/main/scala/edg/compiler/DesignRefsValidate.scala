@@ -10,7 +10,6 @@ import edgir.schema.schema
 
 import scala.collection.{SeqMap, mutable}
 
-
 // Given an input ValueExpr, returns all the Refs as LocalPaths.
 // This includes both port-valued Refs (eg, in connects) and parameter-valued Refs.
 // May be indirect, eg .CONNECTED_LINK.
@@ -18,12 +17,18 @@ object CollectExprRefs extends ValueExprMap[Seq[ref.LocalPath]] {
   override def mapLiteral(literal: lit.ValueLit): Seq[ref.LocalPath] = {
     Seq()
   }
-  override def mapBinary(binary: expr.BinaryExpr, lhs: Seq[ref.LocalPath],
-                         rhs: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+  override def mapBinary(
+      binary: expr.BinaryExpr,
+      lhs: Seq[ref.LocalPath],
+      rhs: Seq[ref.LocalPath]
+  ): Seq[ref.LocalPath] = {
     lhs ++ rhs
   }
-  override def mapBinarySet(binarySet: expr.BinarySetExpr, lhsset: Seq[ref.LocalPath],
-                            rhs: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+  override def mapBinarySet(
+      binarySet: expr.BinarySetExpr,
+      lhsset: Seq[ref.LocalPath],
+      rhs: Seq[ref.LocalPath]
+  ): Seq[ref.LocalPath] = {
     lhsset ++ rhs
   }
   override def mapUnary(unary: expr.UnaryExpr, `val`: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
@@ -32,47 +37,70 @@ object CollectExprRefs extends ValueExprMap[Seq[ref.LocalPath]] {
   override def mapUnarySet(unarySet: expr.UnarySetExpr, vals: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
     vals
   }
-  override def mapArray(array: expr.ArrayExpr,
-                        vals: Seq[Seq[ref.LocalPath]]): Seq[ref.LocalPath] = {
+  override def mapArray(array: expr.ArrayExpr, vals: Seq[Seq[ref.LocalPath]]): Seq[ref.LocalPath] = {
     vals.flatten
   }
-  override def mapStruct(struct: expr.StructExpr,
-                         vals: Map[String, Seq[ref.LocalPath]]): Seq[ref.LocalPath] = {
+  override def mapStruct(struct: expr.StructExpr, vals: Map[String, Seq[ref.LocalPath]]): Seq[ref.LocalPath] = {
     vals.values.foldLeft(Seq[ref.LocalPath]()) { _ ++ _ }
   }
-  override def mapRange(range: expr.RangeExpr, minimum: Seq[ref.LocalPath],
-                        maximum: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+  override def mapRange(
+      range: expr.RangeExpr,
+      minimum: Seq[ref.LocalPath],
+      maximum: Seq[ref.LocalPath]
+  ): Seq[ref.LocalPath] = {
     minimum ++ maximum
   }
-  override def mapIfThenElse(ite: expr.IfThenElseExpr, cond: Seq[ref.LocalPath], tru: Seq[ref.LocalPath],
-                             fal: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+  override def mapIfThenElse(
+      ite: expr.IfThenElseExpr,
+      cond: Seq[ref.LocalPath],
+      tru: Seq[ref.LocalPath],
+      fal: Seq[ref.LocalPath]
+  ): Seq[ref.LocalPath] = {
     cond ++ tru ++ fal
   }
-  override def mapExtract(extract: expr.ExtractExpr, container: Seq[ref.LocalPath],
-                          index: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+  override def mapExtract(
+      extract: expr.ExtractExpr,
+      container: Seq[ref.LocalPath],
+      index: Seq[ref.LocalPath]
+  ): Seq[ref.LocalPath] = {
     container ++ index
   }
   override def mapMapExtract(mapExtract: expr.MapExtractExpr): Seq[ref.LocalPath] = {
-    Seq()  // TODO depends on knowledge of array sizes
+    Seq() // TODO depends on knowledge of array sizes
   }
-  override def mapConnected(connected: expr.ConnectedExpr, blockPort: Seq[ref.LocalPath],
-                            linkPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+  override def mapConnected(
+      connected: expr.ConnectedExpr,
+      blockPort: Seq[ref.LocalPath],
+      linkPort: Seq[ref.LocalPath]
+  ): Seq[ref.LocalPath] = {
     blockPort ++ linkPort
   }
-  override def mapExported(exported: expr.ExportedExpr, exteriorPort: Seq[ref.LocalPath],
-                           internalBlockPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+  override def mapExported(
+      exported: expr.ExportedExpr,
+      exteriorPort: Seq[ref.LocalPath],
+      internalBlockPort: Seq[ref.LocalPath]
+  ): Seq[ref.LocalPath] = {
     exteriorPort ++ internalBlockPort
   }
-  override def mapConnectedArray(connected: expr.ConnectedExpr, blockPort: Seq[ref.LocalPath],
-                                 linkPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+  override def mapConnectedArray(
+      connected: expr.ConnectedExpr,
+      blockPort: Seq[ref.LocalPath],
+      linkPort: Seq[ref.LocalPath]
+  ): Seq[ref.LocalPath] = {
     blockPort ++ linkPort
   }
-  override def mapExportedArray(exported: expr.ExportedExpr, exteriorPort: Seq[ref.LocalPath],
-                                internalBlockPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+  override def mapExportedArray(
+      exported: expr.ExportedExpr,
+      exteriorPort: Seq[ref.LocalPath],
+      internalBlockPort: Seq[ref.LocalPath]
+  ): Seq[ref.LocalPath] = {
     exteriorPort ++ internalBlockPort
   }
-  override def mapExportedTunnel(exported: expr.ExportedExpr, exteriorPort: Seq[ref.LocalPath],
-                                 internalBlockPort: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
+  override def mapExportedTunnel(
+      exported: expr.ExportedExpr,
+      exteriorPort: Seq[ref.LocalPath],
+      internalBlockPort: Seq[ref.LocalPath]
+  ): Seq[ref.LocalPath] = {
     exteriorPort ++ internalBlockPort
   }
   override def mapAssign(assign: expr.AssignExpr, src: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
@@ -85,9 +113,7 @@ object CollectExprRefs extends ValueExprMap[Seq[ref.LocalPath]] {
     Seq(path)
 }
 
-
-/** Checks that refs in the design are valid.
-  * TODO: check parameter references - but these needs CONNECTED_LINK values
+/** Checks that refs in the design are valid. TODO: check parameter references - but these needs CONNECTED_LINK values
   * TODO: also needs to handle MapExtract properly, which needs array sizes
   */
 class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
@@ -104,7 +130,7 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
     }
     (constr.expr: @unchecked) match {
       case _: expr.ValueExpr.Expr.Connected => connectRefs.appendAll(refs)
-      case _ => paramRefs.appendAll(refs)  // assume everything else is a ref, TODO clarify with top-level Statements
+      case _ => paramRefs.appendAll(refs) // assume everything else is a ref, TODO clarify with top-level Statements
     }
   }
 
@@ -112,12 +138,10 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
     port.params.asPairs.foreach { case (name, _) => paramDefs.add(path + name) }
     portDefs.add(path)
   }
-  override def mapPortArray(path: DesignPath, port: elem.PortArray,
-                   ports: SeqMap[String, Unit]): Unit = {
+  override def mapPortArray(path: DesignPath, port: elem.PortArray, ports: SeqMap[String, Unit]): Unit = {
     // do nothing
   }
-  override def mapBundle(path: DesignPath, port: elem.Bundle,
-                ports: SeqMap[String, Unit]): Unit = {
+  override def mapBundle(path: DesignPath, port: elem.Bundle, ports: SeqMap[String, Unit]): Unit = {
     port.params.asPairs.foreach { case (name, _) => paramDefs.add(path + name) }
     portDefs.add(path)
   }
@@ -125,9 +149,13 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
     Seq(CompilerError.LibraryElement(path, port))
   }
 
-  override def mapBlock(path: DesignPath, block: elem.HierarchyBlock,
-               ports: SeqMap[String, Unit], blocks: SeqMap[String, Unit],
-               links: SeqMap[String, Unit]): Unit = {
+  override def mapBlock(
+      path: DesignPath,
+      block: elem.HierarchyBlock,
+      ports: SeqMap[String, Unit],
+      blocks: SeqMap[String, Unit],
+      links: SeqMap[String, Unit]
+  ): Unit = {
     block.params.asPairs.foreach { case (name, _) => paramDefs.add(path + name) }
     block.constraints.asPairs.foreach { case (name, constr) => mapConstraint(path, name, constr) }
   }
@@ -135,13 +163,21 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
     // do nothing
   }
 
-  override def mapLink(path: DesignPath, link: elem.Link,
-                       ports: SeqMap[String, Unit], links: SeqMap[String, Unit]): Unit = {
+  override def mapLink(
+      path: DesignPath,
+      link: elem.Link,
+      ports: SeqMap[String, Unit],
+      links: SeqMap[String, Unit]
+  ): Unit = {
     link.params.asPairs.foreach { case (name, _) => paramDefs.add(path + name) }
     link.constraints.asPairs.foreach { case (name, constr) => mapConstraint(path, name, constr) }
   }
-  override def mapLinkArray(path: DesignPath, link: elem.LinkArray,
-                            ports: SeqMap[String, Unit], links: SeqMap[String, Unit]): Unit = {
+  override def mapLinkArray(
+      path: DesignPath,
+      link: elem.LinkArray,
+      ports: SeqMap[String, Unit],
+      links: SeqMap[String, Unit]
+  ): Unit = {
     link.constraints.asPairs.foreach { case (name, constr) => mapConstraint(path, name, constr) }
   }
   override def mapLinkLibrary(path: DesignPath, link: ref.LibraryPath): Unit = {

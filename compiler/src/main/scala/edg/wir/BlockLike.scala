@@ -10,17 +10,15 @@ import edgir.ref.ref.LibraryPath
 
 import scala.collection.{SeqMap, mutable}
 
-
 sealed trait BlockLike extends Pathable {
-  def cloned: BlockLike  // using clone directly causes an access error to Object.clone
+  def cloned: BlockLike // using clone directly causes an access error to Object.clone
   def toPb: elem.BlockLike
 }
 
-/**
-  * "Wrapper" around a HierarchyBlock. Sub-trees of blocks and links are contained as a mutable map in this object
-  * (instead of the proto), while everything else is kept in the proto.
-  * BlockLike / LinkLike lib_elem are kept in the proto, unmodified.
-  * This is to allow efficient transformation at any point in the design tree without re-writing the root.
+/** "Wrapper" around a HierarchyBlock. Sub-trees of blocks and links are contained as a mutable map in this object
+  * (instead of the proto), while everything else is kept in the proto. BlockLike / LinkLike lib_elem are kept in the
+  * proto, unmodified. This is to allow efficient transformation at any point in the design tree without re-writing the
+  * root.
   */
 class Block(pb: elem.HierarchyBlock, val unrefinedType: Option[ref.LibraryPath]) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
@@ -51,7 +49,7 @@ class Block(pb: elem.HierarchyBlock, val unrefinedType: Option[ref.LibraryPath])
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
-    case Seq(subname, tail@_*) =>
+    case Seq(subname, tail @ _*) =>
       if (ports.contains(subname)) {
         ports(subname).resolve(tail)
       } else if (blocks.contains(subname)) {
@@ -65,19 +63,19 @@ class Block(pb: elem.HierarchyBlock, val unrefinedType: Option[ref.LibraryPath])
 
   def toEltPb: elem.HierarchyBlock = {
     pb.copy(
-      prerefineClass=unrefinedType match {
+      prerefineClass = unrefinedType match {
         case None => pb.prerefineClass
         case Some(prerefineClass) => Some(prerefineClass)
       },
-      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
-      blocks=blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
-      links=links.view.mapValues(_.toPb).to(SeqMap).toPb,
-      constraints=constraints.toPb,
+      ports = ports.view.mapValues(_.toPb).to(SeqMap).toPb,
+      blocks = blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
+      links = links.view.mapValues(_.toPb).to(SeqMap).toPb,
+      constraints = constraints.toPb,
     )
   }
 
   override def toPb: elem.BlockLike = {
-    elem.BlockLike(`type`=elem.BlockLike.Type.Hierarchy(toEltPb))
+    elem.BlockLike(`type` = elem.BlockLike.Type.Hierarchy(toEltPb))
   }
 }
 
@@ -93,7 +91,7 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
   links.clear()
   constraints.clear()
 
-  override def cloned: Generator = {  // TODO dedup w/ super (Block)? but Block.cloned returns a Block
+  override def cloned: Generator = { // TODO dedup w/ super (Block)? but Block.cloned returns a Block
     val cloned = new Generator(basePb, unrefinedType)
     cloned.ports.clear()
     cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
@@ -120,14 +118,17 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
     val basePbPorts = basePb.ports.toSeqMap
     val pbPorts = pb.ports.toSeqMap
     require(pbPorts.keySet == basePbPorts.keySet)
-    val expandedPorts = pbPorts.flatMap { case (portName, portPb) => portPb.is match {
-      case elem.PortLike.Is.Array(port) if port.contains.isPorts && !basePbPorts(portName).getArray.contains.isPorts =>
-        val port = ports(portName).asInstanceOf[PortArray]
-        require(!port.isElaborated)
-        ports.put(portName, PortLike.fromLibraryPb(portPb))
-        Some(portName)
-      case _ => None
-    } }
+    val expandedPorts = pbPorts.flatMap { case (portName, portPb) =>
+      portPb.is match {
+        case elem.PortLike.Is.Array(port)
+          if port.contains.isPorts && !basePbPorts(portName).getArray.contains.isPorts =>
+          val port = ports(portName).asInstanceOf[PortArray]
+          require(!port.isElaborated)
+          ports.put(portName, PortLike.fromLibraryPb(portPb))
+          Some(portName)
+        case _ => None
+      }
+    }
 
     require(blocks.isEmpty)
     require(links.isEmpty)
@@ -147,21 +148,21 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
   }
 
   override def toEltPb: elem.HierarchyBlock = {
-    generatedPb.getOrElse(basePb).copy(  // if the block did not generate, return the base w/ the generator field
-      prerefineClass=unrefinedType match {
+    generatedPb.getOrElse(basePb).copy( // if the block did not generate, return the base w/ the generator field
+      prerefineClass = unrefinedType match {
         case None => generatedPb.getOrElse(basePb).prerefineClass
         case Some(prerefineClass) => Some(prerefineClass)
       },
-      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
-      blocks=blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
-      links=links.view.mapValues(_.toPb).to(SeqMap).toPb,
-      constraints=constraints.to(SeqMap).toPb,
+      ports = ports.view.mapValues(_.toPb).to(SeqMap).toPb,
+      blocks = blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
+      links = links.view.mapValues(_.toPb).to(SeqMap).toPb,
+      constraints = constraints.to(SeqMap).toPb,
     )
   }
 }
 
 case class BlockLibrary(target: ref.LibraryPath) extends BlockLike {
-  override def cloned: BlockLibrary = this  // immutable
+  override def cloned: BlockLibrary = this // immutable
 
   def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this

@@ -10,7 +10,6 @@ scalacOptions += "-deprecation"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.0" % "test",
-
   "com.thesamet.scalapb" %% "scalapb-runtime" % scalapbVersion % "protobuf",
 )
 

@@ -8,7 +8,6 @@ import edgir.schema.schema
 
 import scala.collection.SeqMap
 
-
 trait DesignMap[PortType, BlockType, LinkType] {
   // Top-level entry point
   def map(design: schema.Design): BlockType = {
@@ -20,33 +19,43 @@ trait DesignMap[PortType, BlockType, LinkType] {
   def mapPort(path: DesignPath, port: elem.Port): PortType = {
     throw new NotImplementedError(s"Undefined mapPort at $path")
   }
-  def mapPortArray(path: DesignPath, port: elem.PortArray,
-                   ports: SeqMap[String, PortType]): PortType = {
+  def mapPortArray(path: DesignPath, port: elem.PortArray, ports: SeqMap[String, PortType]): PortType = {
     throw new NotImplementedError(s"Undefined mapPortArray at $path")
   }
-  def mapBundle(path: DesignPath, port: elem.Bundle,
-                ports: SeqMap[String, PortType]): PortType = {
+  def mapBundle(path: DesignPath, port: elem.Bundle, ports: SeqMap[String, PortType]): PortType = {
     throw new NotImplementedError(s"Undefined mapBundle at $path")
   }
   def mapPortLibrary(path: DesignPath, port: ref.LibraryPath): PortType = {
     throw new NotImplementedError(s"Undefined mapPortLibrary at $path")
   }
 
-  def mapBlock(path: DesignPath, block: elem.HierarchyBlock,
-               ports: SeqMap[String, PortType], blocks: SeqMap[String, BlockType],
-               links: SeqMap[String, LinkType]): BlockType = {
+  def mapBlock(
+      path: DesignPath,
+      block: elem.HierarchyBlock,
+      ports: SeqMap[String, PortType],
+      blocks: SeqMap[String, BlockType],
+      links: SeqMap[String, LinkType]
+  ): BlockType = {
     throw new NotImplementedError(s"Undefined mapBlock at $path")
   }
   def mapBlockLibrary(path: DesignPath, block: ref.LibraryPath): BlockType = {
     throw new NotImplementedError(s"Undefined mapBlockLibrary at $path")
   }
 
-  def mapLink(path: DesignPath, link: elem.Link,
-              ports: SeqMap[String, PortType], links: SeqMap[String, LinkType]): LinkType = {
+  def mapLink(
+      path: DesignPath,
+      link: elem.Link,
+      ports: SeqMap[String, PortType],
+      links: SeqMap[String, LinkType]
+  ): LinkType = {
     throw new NotImplementedError(s"Undefined mapLink at $path")
   }
-  def mapLinkArray(path: DesignPath, link: elem.LinkArray,
-                   ports: SeqMap[String, PortType], links: SeqMap[String, LinkType]): LinkType = {
+  def mapLinkArray(
+      path: DesignPath,
+      link: elem.LinkArray,
+      ports: SeqMap[String, PortType],
+      links: SeqMap[String, LinkType]
+  ): LinkType = {
     throw new NotImplementedError(s"Undefined mapLinkArray at $path")
   }
   def mapLinkLibrary(path: DesignPath, link: ref.LibraryPath): LinkType = {
@@ -130,11 +139,9 @@ trait DesignMap[PortType, BlockType, LinkType] {
   }
 }
 
-
 trait DesignBlockMap[BlockType] extends DesignMap[Unit, BlockType, Unit] {
   // These methods should be overridden by the user
-  def mapBlock(path: DesignPath, block: elem.HierarchyBlock,
-               blocks: SeqMap[String, BlockType]): BlockType = {
+  def mapBlock(path: DesignPath, block: elem.HierarchyBlock, blocks: SeqMap[String, BlockType]): BlockType = {
     throw new NotImplementedError(s"Undefined mapBlock at $path")
   }
   override def mapBlockLibrary(path: DesignPath, block: ref.LibraryPath): BlockType = {
@@ -143,29 +150,32 @@ trait DesignBlockMap[BlockType] extends DesignMap[Unit, BlockType, Unit] {
 
   // These methods handle how nodes are processed must be overridden by the user where appropriate
   // (left default, they will exception out, which may be desired behavior on unexpected node types)
-  final override def mapPort(path: DesignPath, port: elem.Port): Unit = {
-  }
-  final override def mapPortArray(path: DesignPath, port: elem.PortArray,
-                   ports: SeqMap[String, Unit]): Unit = {
-  }
-  final override def mapBundle(path: DesignPath, port: elem.Bundle,
-                ports: SeqMap[String, Unit]): Unit = {
-  }
-  final override def mapPortLibrary(path: DesignPath, port: ref.LibraryPath): Unit = {
-  }
+  final override def mapPort(path: DesignPath, port: elem.Port): Unit = {}
+  final override def mapPortArray(path: DesignPath, port: elem.PortArray, ports: SeqMap[String, Unit]): Unit = {}
+  final override def mapBundle(path: DesignPath, port: elem.Bundle, ports: SeqMap[String, Unit]): Unit = {}
+  final override def mapPortLibrary(path: DesignPath, port: ref.LibraryPath): Unit = {}
 
-  final override def mapBlock(path: DesignPath, block: elem.HierarchyBlock,
-               ports: SeqMap[String, Unit], blocks: SeqMap[String, BlockType],
-               links: SeqMap[String, Unit]): BlockType = {
+  final override def mapBlock(
+      path: DesignPath,
+      block: elem.HierarchyBlock,
+      ports: SeqMap[String, Unit],
+      blocks: SeqMap[String, BlockType],
+      links: SeqMap[String, Unit]
+  ): BlockType = {
     mapBlock(path, block, blocks)
   }
 
-  final override def mapLink(path: DesignPath, block: elem.Link,
-              ports: SeqMap[String, Unit], links: SeqMap[String, Unit]): Unit = {
-  }
-  final override def mapLinkArray(path: DesignPath, block: elem.LinkArray,
-                                  ports: SeqMap[String, Unit], links: SeqMap[String, Unit]): Unit = {
-  }
-  final override def mapLinkLibrary(path: DesignPath, link: ref.LibraryPath): Unit = {
-  }
+  final override def mapLink(
+      path: DesignPath,
+      block: elem.Link,
+      ports: SeqMap[String, Unit],
+      links: SeqMap[String, Unit]
+  ): Unit = {}
+  final override def mapLinkArray(
+      path: DesignPath,
+      block: elem.LinkArray,
+      ports: SeqMap[String, Unit],
+      links: SeqMap[String, Unit]
+  ): Unit = {}
+  final override def mapLinkLibrary(path: DesignPath, link: ref.LibraryPath): Unit = {}
 }

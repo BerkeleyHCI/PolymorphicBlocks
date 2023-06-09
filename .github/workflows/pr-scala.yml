@@ -39,3 +39,10 @@ jobs:
 
     - name: sbt test
       run: cd compiler && sbt -v +test
+
+  scalafmt-lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Checking the code with scalafmt
+      uses: AvaPL/scalafmt-native-formatter@v0

@@ -3,8 +3,8 @@ package edg.util
 import scala.collection.SeqMap
 
 object MapUtils {
-  /**
-    * Merges the argument maps, erroring out if there are duplicate names
+
+  /** Merges the argument maps, erroring out if there are duplicate names
     */
   def mergeSeqMapSafe[K, V](maps: SeqMap[K, V]*): SeqMap[K, V] = {
     val allKeys = maps.flatMap(_.keys)

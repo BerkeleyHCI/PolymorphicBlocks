@@ -239,25 +239,21 @@ class Holyiot_18010_Device(Nrf52840Base_Device):
   DATASHEET = 'http://www.holyiot.com/tp/2019042516322180424.pdf'
 
 
-class Holyiot_18010(Microcontroller, Radiofrequency, IoController):
+class Holyiot_18010(Microcontroller, Radiofrequency, IoControllerWithSwdTargetConnector, IoController,
+                    BaseIoControllerExportable):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.ic = self.Block(Holyiot_18010_Device(pin_assigns=self.pin_assigns))
+    self.ic: Holyiot_18010_Device
+    self.ic = self.Block(Holyiot_18010_Device(pin_assigns=ArrayStringExpr()))
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
 
   def contents(self):
     super().contents()
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
-    self._export_ios_from(self.ic, excludes=[self.ic.swd])
 
-    with self.implicit_connect(
-        ImplicitConnect(self.pwr, [Power]),
-        ImplicitConnect(self.gnd, [Common])
-    ) as imp:
-      (self.swd, ), _ = self.chain(imp.Block(SwdCortexTargetWithSwoTdiConnector()),
-                                   self.ic.swd)
+    self.connect(self.swd_node, self.ic.swd)
 
 
 class Mdbt50q_1mv2_Device(Nrf52840Base_Device, JlcPart):

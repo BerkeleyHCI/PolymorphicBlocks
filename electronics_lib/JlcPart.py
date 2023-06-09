@@ -87,6 +87,7 @@ class JlcTableBase(PartsTableBase):
     return None  # exhausted all options
 
 
+@non_library
 class JlcTableSelector(PartsTableSelector, JlcPart, JlcTableBase, PartsTableFootprint):
   @classmethod
   def _row_sort_by(cls, row: PartsTableRow) -> Any:

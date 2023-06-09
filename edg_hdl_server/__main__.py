@@ -53,6 +53,9 @@ class LibraryElementIndexer:
 LibraryElementType = TypeVar('LibraryElementType', bound=LibraryElement)
 def elaborate_class(elt_cls: Type[LibraryElementType]) -> Tuple[LibraryElementType, edgir.Library.NS.Val]:
   obj = elt_cls()
+  assert (elt_cls, NonLibraryProperty) not in elt_cls._elt_properties.keys(), \
+    f"tried to elaborate non-library {elt_cls.__name__}"
+
   if isinstance(obj, Block):
     block_proto = builder.elaborate_toplevel(obj)
     return obj, edgir.Library.NS.Val(hierarchy_block=block_proto)  # type: ignore

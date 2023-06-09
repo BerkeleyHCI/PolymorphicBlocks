@@ -3,12 +3,11 @@ package edg.util
 import java.io.InputStream
 import collection.mutable
 
-
 /** Why the heck are we writing another QueueStream when we have things like Apache QueueInputStream?
   *
-  * Well it turns out that they never bothered to implement available(), which is needed for functional
-  * compatibility with how subprocess implements their streams.
-  * And PipedInputStream doesn't support single-threaded access, it has a limited buffer size and deadlocks.
+  * Well it turns out that they never bothered to implement available(), which is needed for functional compatibility
+  * with how subprocess implements their streams. And PipedInputStream doesn't support single-threaded access, it has a
+  * limited buffer size and deadlocks.
   *
   * So here, yet another variation of Stream. Yay.
   */

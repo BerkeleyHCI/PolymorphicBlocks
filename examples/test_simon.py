@@ -111,7 +111,7 @@ class Simon(BoardTop):
           'btn_sw3=12',
         ]),
         # JLC does not have frequency specs, must be checked TODO
-        (['pwr', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['pwr', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
 
         # keep netlist footprints as libraries change
         (['btn_drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),

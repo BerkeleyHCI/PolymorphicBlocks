@@ -3,9 +3,8 @@ package edg.util
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-
 class NameCreatorTest extends AnyFlatSpec with Matchers {
-  behavior of "NameCreator"
+  behavior.of("NameCreator")
 
   it should "return a new name" in {
     val nameCreator = new NameCreator(Set())

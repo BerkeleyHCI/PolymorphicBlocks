@@ -7,9 +7,7 @@ import edg.wir.{DesignPath, IndirectDesignPath}
 
 import scala.collection.Set
 
-
-/**
-  * Convenience wrapper around ExprToString without needing to construct a new object each time.
+/** Convenience wrapper around ExprToString without needing to construct a new object each time.
   */
 object ExprToString {
   private val instance = new ExprToString()
@@ -19,9 +17,7 @@ object ExprToString {
   def apply(item: lit.ValueLit): String = instance.mapLiteral(item)
 }
 
-
-/**
-  * Converts an Expr to a human-readable string
+/** Converts an Expr to a human-readable string
   */
 class ExprToString() extends ValueExprMap[String] {
   override def mapLiteral(literal: lit.ValueLit): String = literal.`type` match {
@@ -42,7 +38,7 @@ class ExprToString() extends ValueExprMap[String] {
     object InfixOp {
       def unapply(op: Op): Option[String] = op match {
         case Op.ADD => Some("+")
-       case Op.MULT => Some("×")
+        case Op.MULT => Some("×")
         case Op.AND => Some("&&")
         case Op.OR => Some("||")
         case Op.XOR => Some("^")
@@ -75,8 +71,7 @@ class ExprToString() extends ValueExprMap[String] {
     }
   }
 
-  override def mapBinary(binary: expr.BinaryExpr,
-                         lhs: String, rhs: String): String = binary.op match {
+  override def mapBinary(binary: expr.BinaryExpr, lhs: String, rhs: String): String = binary.op match {
     case BinaryExprOp.InfixOp(op) => s"($lhs $op $rhs)"
     case BinaryExprOp.PrefixOp(op) => s"$op($lhs, $rhs)"
     case op => s"unknown[$op]($lhs, $rhs)"
@@ -101,8 +96,7 @@ class ExprToString() extends ValueExprMap[String] {
     }
   }
 
-  override def mapBinarySet(binarySet: expr.BinarySetExpr,
-                            lhsset: String, rhs: String): String = binarySet.op match {
+  override def mapBinarySet(binarySet: expr.BinarySetExpr, lhsset: String, rhs: String): String = binarySet.op match {
     case BinarySetExprOp.InfixOp(op) => s"($lhsset $op $rhs)"
     case BinarySetExprOp.PrefixOp(op) => s"$op($lhsset, $rhs)"
     case op => s"unknown[$op]($lhsset, $rhs)"
@@ -161,18 +155,15 @@ class ExprToString() extends ValueExprMap[String] {
     s"struct(${valsStr.mkString(", ")})"
   }
 
-  override def mapRange(range: expr.RangeExpr,
-                        minimum: String, maximum: String): String = {
+  override def mapRange(range: expr.RangeExpr, minimum: String, maximum: String): String = {
     s"range($minimum, $maximum)"
   }
 
-  override def mapIfThenElse(ite: expr.IfThenElseExpr, cond: String,
-                             tru: String, fal: String): String = {
+  override def mapIfThenElse(ite: expr.IfThenElseExpr, cond: String, tru: String, fal: String): String = {
     s"($cond? $tru : $fal)"
   }
 
-  override def mapExtract(extract: expr.ExtractExpr,
-                          container: String, index: String): String = {
+  override def mapExtract(extract: expr.ExtractExpr, container: String, index: String): String = {
     s"$container[$index]"
   }
 
@@ -188,7 +179,11 @@ class ExprToString() extends ValueExprMap[String] {
     s"exported($exteriorPort, $internalBlockPort)"
   }
 
-  override def mapExportedTunnel(exported: expr.ExportedExpr, exteriorPort: String, internalBlockPort: String): String = {
+  override def mapExportedTunnel(
+      exported: expr.ExportedExpr,
+      exteriorPort: String,
+      internalBlockPort: String
+  ): String = {
     s"exportedTunnel($exteriorPort, $internalBlockPort)"
   }
 
@@ -199,19 +194,21 @@ class ExprToString() extends ValueExprMap[String] {
     s"${mapRef(assign.getDst)} ⇐() $src"
 
   override def mapRef(path: ref.LocalPath): String = {
-    path.steps.map { _.step match {
-      case ref.LocalStep.Step.Name(name) => name
-      case ref.LocalStep.Step.Allocate("") => "(allocate)"
-      case ref.LocalStep.Step.Allocate(suggestedName) => s"(allocate: $suggestedName)"
-      case ref.LocalStep.Step.Empty => "(empty)"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.UNDEFINED) => "(undefined)"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => "(connectedLink)"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => "(isConnected)"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => "(length)"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS) => "(elements)"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATED) => "(allocated)"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME) => "(name)"
-      case ref.LocalStep.Step.ReservedParam(ref.Reserved.Unrecognized(op)) => s"(unrecognized[$op])"
-    } }.mkString(".")
+    path.steps.map {
+      _.step match {
+        case ref.LocalStep.Step.Name(name) => name
+        case ref.LocalStep.Step.Allocate("") => "(allocate)"
+        case ref.LocalStep.Step.Allocate(suggestedName) => s"(allocate: $suggestedName)"
+        case ref.LocalStep.Step.Empty => "(empty)"
+        case ref.LocalStep.Step.ReservedParam(ref.Reserved.UNDEFINED) => "(undefined)"
+        case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => "(connectedLink)"
+        case ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED) => "(isConnected)"
+        case ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH) => "(length)"
+        case ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS) => "(elements)"
+        case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATED) => "(allocated)"
+        case ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME) => "(name)"
+        case ref.LocalStep.Step.ReservedParam(ref.Reserved.Unrecognized(op)) => s"(unrecognized[$op])"
+      }
+    }.mkString(".")
   }
 }

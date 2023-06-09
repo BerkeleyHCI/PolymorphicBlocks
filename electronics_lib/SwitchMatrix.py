@@ -53,8 +53,8 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
           output_thresholds=(highest_output, float('inf')),
           low_signal_driver=True
         )), row_port)
-        self.connect(d.cathode, sw.a)
-        self.connect(sw.b.adapt_to(col_port_model), col_port)
+        self.connect(d.cathode, sw.sw)
+        self.connect(sw.com.adapt_to(col_port_model), col_port)
 
     self.rows.defined()
     self.cols.defined()

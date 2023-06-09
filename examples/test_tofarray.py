@@ -159,7 +159,6 @@ class TofArray(JlcBoardTop):
       ],
       class_refinements=[
         (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050),
-        (PassiveConnector, PinHeader254),
         (Speaker, ConnectorSpeaker),
       ],
     )

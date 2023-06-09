@@ -481,13 +481,14 @@ class Multimeter(JlcBoardTop):
         (['prot_analog', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
 
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['reg_5v', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
       ],
       class_values=[
         (AnalogSwitchTree, ['switch_size'], 2),
       ],
       class_refinements=[
-        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050Nl),
+        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050),
+        (TagConnect, TagConnectNonLegged),
         (Opamp, Tlv9061),  # higher precision opamps
         (BananaSafetyJack, Fcr7350),
         (AnalogSwitch, Nlas4157),
