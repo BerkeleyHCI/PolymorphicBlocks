@@ -114,11 +114,13 @@ class BldcController(JlcBoardTop):
 
       (self.i2c, ), _ = self.chain(imp.Block(I2cConnector()), i2c_bus)
 
-      (self.ref_div, self.ref_buf), _ = self.chain(
+      (self.ref_div, self.ref_buf, self.ref_tp), _ = self.chain(
         self.v3v3,
         imp.Block(VoltageDivider(output_voltage=1.5*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
-        imp.Block(OpampFollower())
+        imp.Block(OpampFollower()),
+        self.Block(AnalogTestPoint())
       )
+      self.vref = self.ref_buf.output
 
     # HALL SENSOR
     with self.implicit_connect(
@@ -127,11 +129,13 @@ class BldcController(JlcBoardTop):
       self.hall = imp.Block(BldcHallSensor())
       self.connect(self.vusb, self.hall.pwr)
       self.hall_pull = ElementDict[PullupResistor]()
+      self.hall_tp = ElementDict[DigitalTestPoint]()
       for (num, hall_pin) in enumerate([self.hall.u, self.hall.v, self.hall.w]):
         hall_id = str(num + 1)
-        (self.hall_pull[hall_id], ), _ = self.chain(
+        (self.hall_pull[hall_id], self.hall_tp[hall_id]), _ = self.chain(
           hall_pin,
           imp.Block(PullupResistor(4.7*kOhm(tol=0.05))),
+          self.Block(DigitalTestPoint()),
           self.mcu.gpio.request(f'hall_{hall_id}')
         )
         self.connect(self.v3v3, self.hall_pull[hall_id].pwr)
@@ -143,7 +147,7 @@ class BldcController(JlcBoardTop):
       self.vsense = imp.Block(VoltageSenseDivider(full_scale_voltage=(3.0, 3.3)*Volt,
                                                   impedance=10*kOhm(tol=0.2)))
       self.connect(self.motor_pwr.pwr, self.vsense.input)
-      self.connect(self.vsense.output, self.mcu.adc.request('vsense'))
+      (self.vsense_tp, ), _ = self.chain(self.vsense.output, self.Block(AnalogTestPoint()), self.mcu.adc.request('vsense'))
 
       self.isense = imp.Block(OpampCurrentSensor(
         resistance=0.05*Ohm(tol=0.01),
@@ -151,8 +155,8 @@ class BldcController(JlcBoardTop):
       ))
       self.connect(self.motor_pwr.pwr, self.isense.pwr_in)
       self.connect(self.isense.pwr, self.v3v3)
-      self.connect(self.isense.ref, self.ref_buf.output)
-      self.connect(self.isense.out, self.mcu.adc.request('isense'))
+      self.connect(self.isense.ref, self.vref)
+      (self.isense_tp, ), _ = self.chain(self.isense.out, self.Block(AnalogTestPoint()), self.mcu.adc.request('isense'))
 
       self.bldc_drv = imp.Block(Drv8313())
       self.connect(self.isense.pwr_out, self.bldc_drv.pwr)
@@ -190,7 +194,28 @@ class BldcController(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-
+          'ledb=3',
+          'isense=5',
+          'vsense=6',
+          'ledg=7',
+          'curr_3=8',
+          'curr_2=9',
+          'curr_1=10',
+          'bldc_in_1=11',
+          'bldc_en_1=12',
+          'bldc_in_2=13',
+          'bldc_en_2=14',
+          'bldc_in_3=15',
+          'ledr=16',
+          'bldc_en_3=17',
+          'bldc_reset=18',
+          'bldc_fault=19',
+          'sw1=20',
+          'i2c.sda=21',
+          'i2c.scl=22',
+          'hall_1=23',
+          'hall_2=24',
+          'hall_3=25',
         ]),
         (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'require_basic_part'], False),
