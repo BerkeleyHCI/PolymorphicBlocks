@@ -178,6 +178,44 @@ class PulldownResistor(DiscreteApplication):
     return self
 
 
+class PullupResistorArray(TypedTestPoint, GeneratorBlock):
+  """Array of PullupResistors, sized from the port array's connections."""
+  @init_in_parent
+  def __init__(self, resistance: RangeLike):
+    super().__init__()
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.io = self.Port(Vector(DigitalSingleSource().empty()), [InOut])
+    self.generator_param(self.io.requested())
+    self.resistance = self.ArgParameter(resistance)
+
+  def generate(self):
+    super().generate()
+    self.res = ElementDict[PullupResistor]()
+    for requested in self.get(self.io.requested()):
+      res = self.res[requested] = self.Block(PullupResistor(self.resistance))
+      self.connect(self.pwr, res.pwr)
+      self.connect(self.io.append_elt(DigitalSingleSource.empty(), requested), res.io)
+
+
+class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
+  """Array of PulldownResistors, sized from the port array's connections."""
+  @init_in_parent
+  def __init__(self, resistance: RangeLike):
+    super().__init__()
+    self.gnd = self.Port(VoltageSink.empty(), [Common])
+    self.io = self.Port(Vector(DigitalSingleSource().empty()), [InOut])
+    self.generator_param(self.io.requested())
+    self.resistance = self.ArgParameter(resistance)
+
+  def generate(self):
+    super().generate()
+    self.res = ElementDict[PulldownResistor]()
+    for requested in self.get(self.io.requested()):
+      res = self.res[requested] = self.Block(PulldownResistor(self.resistance))
+      self.connect(self.gnd, res.gnd)
+      self.connect(self.io.append_elt(DigitalSingleSource.empty(), requested), res.io)
+
+
 class SeriesPowerResistor(DiscreteApplication):
   """Series resistor for power applications"""
   @init_in_parent

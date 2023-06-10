@@ -23,7 +23,8 @@ from .SmdStandardPackage import SmdStandardPackage, SmdStandardPackageSelector
 from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack
 from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor
-from .AbstractResistor import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor
+from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
+from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor
 from .AbstractResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
 from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CapacitorStandardFootprint, TableDeratingCapacitor
 from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor

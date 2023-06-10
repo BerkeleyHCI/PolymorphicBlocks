@@ -65,10 +65,13 @@ class BldcHallSensor(Connector, Block):
     )), [Power])
     self.gnd = self.Export(self.conn.pins.request('5').adapt_to(Ground()),
                            [Common])
-    # TODO: are these open-drain or push-pull?
-    self.u = self.Export(self.conn.pins.request('2').adapt_to(DigitalSingleSource.low_from_supply(self.gnd)))
-    self.v = self.Export(self.conn.pins.request('3').adapt_to(DigitalSingleSource.low_from_supply(self.gnd)))
-    self.w = self.Export(self.conn.pins.request('4').adapt_to(DigitalSingleSource.low_from_supply(self.gnd)))
+
+    self.phases = self.Port(Vector(DigitalSingleSource.empty()))
+    phase_model = DigitalSingleSource.low_from_supply(self.gnd)
+    for (pin, name) in [('2', 'u'), ('3', 'v'), ('4', 'w')]:
+      phase = self.phases.append_elt(DigitalSingleSource.empty(), name)
+      self.require(phase.is_connected(), f"all phases {name} must be connected")
+      self.connect(phase, self.conn.pins.request(pin).adapt_to(phase_model))
 
 
 class PowerOutConnector(Connector, Block):
@@ -128,17 +131,12 @@ class BldcController(JlcBoardTop):
     ) as imp:
       self.hall = imp.Block(BldcHallSensor())
       self.connect(self.vusb, self.hall.pwr)
-      self.hall_pull = ElementDict[PullupResistor]()
-      self.hall_tp = ElementDict[DigitalTestPoint]()
-      for (num, hall_pin) in enumerate([self.hall.u, self.hall.v, self.hall.w]):
-        hall_id = str(num + 1)
-        (self.hall_pull[hall_id], self.hall_tp[hall_id]), _ = self.chain(
-          hall_pin,
-          imp.Block(PullupResistor(4.7*kOhm(tol=0.05))),
-          self.Block(DigitalTestPoint()),
-          self.mcu.gpio.request(f'hall_{hall_id}')
-        )
-        self.connect(self.v3v3, self.hall_pull[hall_id].pwr)
+
+      (self.hall_pull, self.hall_tp), _ = self.chain(self.hall.phases,
+                                                self.Block(PullupResistorArray(4.7*kOhm(tol=0.05))),
+                                                self.Block(DigitalArrayTestPoint()),
+                                                self.mcu.gpio.request_vector('hall'))
+      self.connect(self.hall_pull.pwr, self.v3v3)
 
     # BLDC CONTROLLER
     with self.implicit_connect(
@@ -213,9 +211,9 @@ class BldcController(JlcBoardTop):
           'sw1=20',
           'i2c.sda=21',
           'i2c.scl=22',
-          'hall_1=23',
-          'hall_2=24',
-          'hall_3=25',
+          'hall_u=23',
+          'hall_v=24',
+          'hall_w=25',
         ]),
         (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'require_basic_part'], False),
