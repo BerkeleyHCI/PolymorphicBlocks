@@ -5,9 +5,8 @@ import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.mutable
 
-
 class SeqMapUtilsTest extends AnyFlatSpec {
-  behavior of "SeqMapUtils"
+  behavior.of("SeqMapUtils")
 
   it should "replaceInPlace with None to delete, in reverse order" in {
     SeqMapUtils.replaceInPlace(mutable.SeqMap(2 -> 2, 1 -> 1, 0 -> 0), 1, Seq()) should equal(

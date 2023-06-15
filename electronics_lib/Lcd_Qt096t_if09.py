@@ -1,13 +1,12 @@
-from typing import *
 from electronics_abstract_parts import *
-from electronics_lib import Fpc050
+from electronics_lib import Fpc050Bottom
 
 
-class Qt096t_if09_Device(DiscreteChip):
+class Qt096t_if09_Device(InternalSubcircuit, Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.conn = self.Block(Fpc050(length=8))
+    self.conn = self.Block(Fpc050Bottom(length=8))
 
     # both Vdd and VddI
     self.vdd = self.Export(self.conn.pins.request('7').adapt_to(VoltageSink(
@@ -30,7 +29,9 @@ class Qt096t_if09_Device(DiscreteChip):
     self.spi = self.Port(SpiSlave.empty())
     self.connect(self.spi.sck, self.conn.pins.request('6').adapt_to(io_model))  # scl
     self.connect(self.spi.mosi, self.conn.pins.request('5').adapt_to(io_model))  # sda
-    self.spi.miso.not_connected()
+
+    self.miso_nc = self.Block(DigitalBidirNotConnected())
+    self.connect(self.spi.miso, self.miso_nc.port)
 
     self.leda = self.Export(self.conn.pins.request('1'))  # TODO maybe something else?
 

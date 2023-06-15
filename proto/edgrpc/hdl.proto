@@ -28,7 +28,10 @@ message Refinements {
       edgir.ref.LocalPath path = 1;
       ClassParamPath cls_param = 2;
     }
-    edgir.lit.ValueLit value = 3;
+    oneof value {
+      edgir.lit.ValueLit expr = 3;  // set to a specific value
+      edgir.ref.LocalPath param = 4;  // set to a value of another parameter - invalid for classes for now
+    }
   }
   repeated Subclass subclasses = 1;
   repeated Value values = 2;
@@ -117,6 +120,8 @@ message HdlRequest {
     GeneratorRequest elaborate_generator = 3;  // returns the elaborated IR
     RefinementRequest run_refinement = 5;
     BackendRequest run_backend = 4;
+
+    uint32 get_proto_version = 90;  // no data
   }
 }
 
@@ -127,6 +132,8 @@ message HdlResponse {
     GeneratorResponse elaborate_generator = 3;
     RefinementResponse run_refinement = 5;
     BackendResponse run_backend = 4;
+
+    uint32 get_proto_version = 90;
 
     ErrorResponse error = 99;
   }

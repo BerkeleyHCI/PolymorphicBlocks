@@ -5,9 +5,9 @@ import math
 
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
-from .PartsTablePart import PartsTableFootprint
+from .PartsTablePart import PartsTableFootprintSelector
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -15,7 +15,8 @@ class UnpolarizedCapacitor(PassiveComponent):
   """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
   @init_in_parent
   def __init__(self, capacitance: RangeLike, voltage: RangeLike, *,
-               voltage_rating_derating: FloatLike = 0.5) -> None:
+               voltage_rating_derating: FloatLike = 0.5,
+               exact_capacitance: BoolLike = False) -> None:
     super().__init__()
 
     self.capacitance = self.ArgParameter(capacitance)
@@ -27,8 +28,15 @@ class UnpolarizedCapacitor(PassiveComponent):
     # this does not apply to capacitance derating, which is handled separately
     self.voltage_rating_derating = self.ArgParameter(voltage_rating_derating)
 
+    # indicates whether the capacitance is exact (True) or nominal (False - typical case)
+    # in particular, nominal capacitance does not capacitance derate
+    self.exact_capacitance = self.ArgParameter(exact_capacitance)
+
     self.actual_capacitance = self.Parameter(RangeExpr())
     self.actual_voltage_rating = self.Parameter(RangeExpr())
+
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(
       "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.actual_capacitance, "F"),
@@ -46,7 +54,7 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
   CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
 
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
-    assert symbol_name in ('Device:C', 'Device:C_Polarized')
+    assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
     return {'1': self.pos, '2': self.neg}
 
   @classmethod
@@ -73,8 +81,10 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
     self.neg = self.Port(Passive.empty())
 
 
-@abstract_block
-class CapacitorStandardPinning(Capacitor, StandardPinningFootprint[Capacitor]):
+@non_library
+class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
+  REFDES_PREFIX = 'C'
+
   # IMPORTANT! DummyFootprint doesn't use this, it will break on anything that isn't this pinning
   FOOTPRINT_PINNING_MAP = {
     (
@@ -92,8 +102,22 @@ class CapacitorStandardPinning(Capacitor, StandardPinningFootprint[Capacitor]):
     },
   }
 
+  SMD_FOOTPRINT_MAP = {
+    '01005': None,
+    '0201': 'Capacitor_SMD:C_0201_0603Metric',
+    '0402': 'Capacitor_SMD:C_0402_1005Metric',
+    '0603': 'Capacitor_SMD:C_0603_1608Metric',
+    '0805': 'Capacitor_SMD:C_0805_2012Metric',
+    '1206': 'Capacitor_SMD:C_1206_3216Metric',
+    '1210': 'Capacitor_SMD:C_1210_3225Metric',
+    '1806': None,
+    '1812': 'Capacitor_SMD:C_1812_4532Metric',
+    '2010': None,
+    '2512': 'Capacitor_SMD:C_2512_6332Metric',
+  }
 
-@abstract_block
+
+@non_library
 class TableCapacitor(Capacitor):
   """Abstract table-based capacitor, providing some interface column definitions.
   DO NOT USE DIRECTLY - this provides no selection logic implementation."""
@@ -102,8 +126,8 @@ class TableCapacitor(Capacitor):
   VOLTAGE_RATING = PartsTableColumn(Range)
 
 
-@abstract_block
-class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTableFootprint, GeneratorBlock):
+@non_library
+class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTableFootprintSelector):
   """Abstract table-based capacitor with derating based on a part-part voltage coefficient."""
   VOLTCO = PartsTableColumn(float)
   DERATED_CAPACITANCE = PartsTableColumn(Range)
@@ -121,106 +145,61 @@ class TableDeratingCapacitor(CapacitorStandardPinning, TableCapacitor, PartsTabl
   @init_in_parent
   def __init__(self, *args, single_nominal_capacitance: RangeLike = Default((0, 22)*uFarad), **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.capacitance, self.voltage,
-                   single_nominal_capacitance, self.voltage_rating_derating,
-                   self.part, self.footprint_spec)
+    self.single_nominal_capacitance = self.ArgParameter(single_nominal_capacitance)
+    self.generator_param(self.capacitance, self.voltage, self.single_nominal_capacitance,
+                         self.voltage_rating_derating, self.exact_capacitance)
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
 
-    # TODO there should be a way to add the part number here without duplicating
-    # the description string in the main superclass
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
+    return super()._row_filter(row) and \
+      derated_voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and \
+      Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(self.get(self.single_nominal_capacitance))
 
-  def select_part(self, capacitance: Range, voltage: Range, single_nominal_capacitance: Range,
-                  voltage_rating_derating: float, part_spec: str, footprint_spec: str) -> None:
-    derated_voltage = voltage / voltage_rating_derating
-    # Pre-filter out by the static parameters
-    # Note that we can't filter out capacitance before derating
-    prefiltererd_parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        derated_voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and
-        Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(single_nominal_capacitance)
-    ))
-
+  def _table_postprocess(self, table: PartsTable) -> PartsTable:
     def add_derated_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if voltage.upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages
+      if not self.get(self.exact_capacitance):
+        derated = row[self.CAPACITANCE]
+      elif self.get(self.voltage).upper < self.DERATE_MIN_VOLTAGE:  # zero derating at low voltages
         derated = row[self.CAPACITANCE]
       elif row[self.NOMINAL_CAPACITANCE] <= self.DERATE_MIN_CAPACITANCE:  # don't derate below 1uF
         derated = row[self.CAPACITANCE]
       else:  # actually derate
-        factor = 1 - row[self.VOLTCO] * (voltage.upper - 3.6)
+        factor = 1 - row[self.VOLTCO] * (self.get(self.voltage).upper - 3.6)
         if factor < self.DERATE_LOWEST:
           factor = self.DERATE_LOWEST
         derated = row[self.CAPACITANCE] * Range(factor, 1)
 
-      return {self.DERATED_CAPACITANCE: derated}
-
-    derated_parts = prefiltererd_parts.map_new_columns(add_derated_row)
-
-    # If the min required capacitance is above the highest post-derating minimum capacitance, use the parts table.
-    # An empty parts table handles the case where it's below the minimum or does not match within a series.
-    derated_max_min_capacitance = max(derated_parts.map(lambda row: row[self.DERATED_CAPACITANCE].lower))
-
-    if capacitance.lower <= derated_max_min_capacitance:
-      self._make_single_capacitor(derated_parts, capacitance, voltage)
-    else:  # Otherwise, generate multiple capacitors
-      self._make_parallel_capacitors(derated_parts, capacitance, voltage)
-
-  def _make_single_capacitor(self, derated_parts: PartsTable, capacitance: Range, voltage: Range):
-    parts = derated_parts.filter(lambda row: (
-        row[self.DERATED_CAPACITANCE] in capacitance
-    ))
-    part = parts.first(f"no single capacitor in {capacitance} F, {voltage} V")
-
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-    self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
-    self.assign(self.actual_capacitance, part[self.CAPACITANCE])
-    self.assign(self.actual_derated_capacitance, part[self.DERATED_CAPACITANCE])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'C', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
-
-  def _make_parallel_capacitors(self, derated_parts: PartsTable, capacitance: Range, voltage: Range):
-    def add_parallel_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      count = math.ceil(capacitance.lower / row[self.DERATED_CAPACITANCE].lower)
-      derated_parallel_capacitance = row[self.DERATED_CAPACITANCE] * count
-      if not derated_parallel_capacitance.fuzzy_in(capacitance):  # not satisfying spec - filter here
+      count = math.ceil(self.get(self.capacitance).lower / derated.lower)
+      derated_parallel_capacitance = derated * count
+      if not derated_parallel_capacitance.fuzzy_in(self.get(self.capacitance)):  # not satisfying spec, remove row
         return None
 
-      new_cols: Dict[PartsTableColumn, Any] = {}
-      new_cols[self.PARALLEL_COUNT] = count
-      new_cols[self.PARALLEL_DERATED_CAPACITANCE] = derated_parallel_capacitance
-      new_cols[self.PARALLEL_CAPACITANCE] = row[self.CAPACITANCE] * count
-      return new_cols
+      return {self.DERATED_CAPACITANCE: derated,
+              self.PARALLEL_COUNT: count,
+              self.PARALLEL_DERATED_CAPACITANCE: derated_parallel_capacitance,
+              self.PARALLEL_CAPACITANCE: row[self.CAPACITANCE] * count}
 
-    parts = derated_parts.map_new_columns(
-      add_parallel_row
-    ).sort_by(self._parallel_sort_criteria)
-    part = parts.first(f"no parallel capacitor in {capacitance} F, {voltage} V")
+    return table.map_new_columns(add_derated_row).filter(lambda row: (
+        row[self.PARALLEL_DERATED_CAPACITANCE] in self.get(self.capacitance)
+    ))
 
-    self.assign(self.actual_part, f"{part[self.PARALLEL_COUNT]}x {part[self.PART_NUMBER_COL]}")
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-    self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
-    self.assign(self.actual_capacitance, part[self.PARALLEL_CAPACITANCE])
-    self.assign(self.actual_derated_capacitance, part[self.PARALLEL_DERATED_CAPACITANCE])
-
-    self._make_parallel_footprints(part)
-
-  def _parallel_sort_criteria(self, row: PartsTableRow) -> List:
-    """Provides a hook to allow re-sorting of parallel caps."""
-    return [row[self.PARALLEL_COUNT]]
+  def _row_generate(self, row: PartsTableRow) -> None:
+    if row[self.PARALLEL_COUNT] == 1:
+      super()._row_generate(row)  # creates the footprint
+      self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
+      self.assign(self.actual_capacitance, row[self.CAPACITANCE])
+      self.assign(self.actual_derated_capacitance, row[self.DERATED_CAPACITANCE])
+    else:
+      self.assign(self.actual_part, f"{row[self.PARALLEL_COUNT]}x {row[self.PART_NUMBER_COL]}")
+      self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
+      self.assign(self.actual_capacitance, row[self.PARALLEL_CAPACITANCE])
+      self.assign(self.actual_derated_capacitance, row[self.PARALLEL_DERATED_CAPACITANCE])
+      self._make_parallel_footprints(row)
 
   @abstractmethod
-  def _make_parallel_footprints(self, part: PartsTableRow) -> None:
+  def _make_parallel_footprints(self, row: PartsTableRow) -> None:
     """Given a selected part (row), creates the parallel internal capacitors. Implement me."""
     ...
 
@@ -231,7 +210,6 @@ class DummyCapacitorFootprint(DummyDevice, Capacitor, FootprintBlock):
 
   TODO: use footprint table?
   """
-
   @init_in_parent
   def __init__(self, footprint: StringLike = "", manufacturer: StringLike = "", part_number: StringLike = "",
                value: StringLike = "",
@@ -249,15 +227,19 @@ class DummyCapacitorFootprint(DummyDevice, Capacitor, FootprintBlock):
     )
 
 
-class DecouplingCapacitor(DiscreteApplication):
+class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
   """Optionally polarized capacitor used for DC decoupling, with VoltageSink connections with voltage inference.
   Implemented as a shim block."""
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
+    return {'1': self.pwr, '2': self.gnd}
+
   @init_in_parent
-  def __init__(self, capacitance: RangeLike) -> None:
+  def __init__(self, capacitance: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
     super().__init__()
 
-    self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr()))
-    self.gnd = self.Export(self.cap.neg.adapt_to(Ground()), [Common])
+    self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
+    self.gnd = self.Export(self.cap.neg.adapt_to(VoltageSink()), [Common])
     self.pwr = self.Export(self.cap.pos.adapt_to(VoltageSink(
       voltage_limits=(self.cap.actual_voltage_rating + self.gnd.link().voltage).hull(self.gnd.link().voltage),
       current_draw=0*Amp(tol=0)

@@ -1,13 +1,22 @@
 from typing import Optional, Dict, Any
 
 from electronics_abstract_parts import *
-from electronics_lib.JlcPart import JlcTablePart
+from .JlcPart import JlcTableSelector
 
 
-class JlcLed(Led, GeneratorBlock, JlcTablePart, FootprintBlock):
+class JlcLed(LedStandardFootprint, JlcTableSelector, SmdStandardPackageSelector, PartsTableFootprintSelector):
   PACKAGE_FOOTPRINT_MAP = {
+    # 0201 not in parts table, LED_0201_0603Metric
+
+    '0402': 'LED_SMD:LED_0402_1005Metric',
+    '0603': 'LED_SMD:LED_0603_1608Metric',
+    '0805': 'LED_SMD:LED_0805_2012Metric',
+    '1206': 'LED_SMD:LED_1206_3216Metric',
+
+    'LED_0402': 'LED_SMD:LED_0402_1005Metric',
     'LED_0603': 'LED_SMD:LED_0603_1608Metric',
     'LED_0805': 'LED_SMD:LED_0805_2012Metric',
+    'LED_1206': 'LED_SMD:LED_1206_3216Metric',
   }
 
   # because the description formatting is so inconsistent, the table is just hardcoded here
@@ -48,34 +57,17 @@ class JlcLed(Led, GeneratorBlock, JlcTablePart, FootprintBlock):
       new_cols.update(cls._parse_jlcpcb_common(row))
       return new_cols
 
-    return cls._jlc_table().map_new_columns(parse_row).sort_by(
-      lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
-    )
+    return cls._jlc_table().map_new_columns(parse_row)
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.actual_color = self.Parameter(StringExpr())
-    self.generator(self.select_part, self.color, self.footprint_spec)
+    self.generator_param(self.color)
 
-  def select_part(self, color: str, footprint_spec: str):
-    parts = self._get_table().filter(lambda row: (
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        (not color or row[self.COLOR] == color)
-    ))
-    part = parts.first(f"no LEDs in color={color}")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      (not self.get(self.color) or row[self.COLOR] == self.get(self.color))
 
-    self.assign(self.actual_color, part[self.COLOR])
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
-
-    self.footprint(
-      'D', part[self.KICAD_FOOTPRINT],
-      {
-        '2': self.a,
-        '1': self.k,
-      },
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_color, row[self.COLOR])

@@ -4,7 +4,7 @@ from typing import List, Dict
 from edg import *
 
 
-class ResistorMux(KiCadImportableBlock, GeneratorBlock):
+class ResistorMux(Interface, KiCadImportableBlock, GeneratorBlock):
   """Generates an array of resistors with one side muxed and the other end an array. Passive-typed.
   Specify an infinite resistance for an open circuit."""
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
@@ -27,11 +27,13 @@ class ResistorMux(KiCadImportableBlock, GeneratorBlock):
     self.input = self.Port(Passive.empty())  # resistor side
     self.com = self.Export(self.switch.com)  # switch side
 
-    self.generator(self.generate, resistances)
+    self.resistances = self.ArgParameter(resistances)
+    self.generator_param(self.resistances)
 
-  def generate(self, resistances: List[Range]):
+  def generate(self):
+    super().generate()
     self.res = ElementDict[Resistor]()
-    for i, resistance in enumerate(resistances):
+    for i, resistance in enumerate(self.get(self.resistances)):
       if resistance.upper == float('inf'):  # open circuit for this step
         self.dummy = self.Block(DummyPassive())
         self.connect(self.dummy.io, self.switch.inputs.request(str(i)))
@@ -65,7 +67,7 @@ class MultimeterAnalog(KiCadSchematicBlock, Block):
   def contents(self):
     super().contents()
 
-    self.res = self.Block(Resistor(1*MOhm(tol=0.01)))
+    self.res = self.Block(Resistor(1*MOhm(tol=0.01), voltage=self.input_positive.link().voltage))
     self.range = self.Block(ResistorMux([
       1*kOhm(tol=0.01),  # 1:1000 step (+/- 1 kV range)
       10*kOhm(tol=0.01),  # 1:100 step (+/- 100 V range)
@@ -149,7 +151,7 @@ class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
       })
 
 
-class FetPowerGate(KiCadSchematicBlock, Block):
+class FetPowerGate(PowerSwitch, KiCadSchematicBlock, Block):
   """A high-side PFET power gate that has a button to power on, can be latched
   on by an external signal, and provides the button output as a signal.
   """
@@ -169,7 +171,7 @@ class FetPowerGate(KiCadSchematicBlock, Block):
     max_current = self.pwr_out.link().current_drawn.upper()
 
     self.pull_res = self.Block(Resistor(
-      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrrary
+      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrary
     ))
     self.pwr_fet = self.Block(Fet.PFet(
       drain_voltage=(0, max_voltage),
@@ -224,7 +226,7 @@ class FetPowerGate(KiCadSchematicBlock, Block):
       })
 
 
-class MultimeterTest(JlcBoardTop):
+class Multimeter(JlcBoardTop):
   """A BLE multimeter with volts/ohms/diode mode - everything but the curent mode.
   Basically an ADC and programmable constant current driver with ranging circuits.
   Good up to the specified VOLTAGE_RATING, in any measurement mode.
@@ -346,14 +348,8 @@ class MultimeterTest(JlcBoardTop):
       # 'virtual ground' can be switched between GND (low impedance for the current driver)
       # and Vdd/2 (high impedance, but can measure negative voltages)
       self.inn = self.Block(BananaSafetyJack())
-
-      # # TODO remove this with proper bridging adapters
-      from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource
-      self.gnd_src = self.Block(VoltageSinkAdapterAnalogSource())
-      self.connect(self.gnd_src.src, self.gnd)
-
       self.inn_mux = imp.Block(AnalogMuxer()).mux_to(
-        inputs=[self.gnd_src.dst, self.ref_buf.output]
+        inputs=[self.gnd_merge.pwr_out.as_analog_source(), self.ref_buf.output]
       )
       self.inn_merge = self.Block(MergedAnalogSource()).connected_from(
         self.inn_mux.out, self.inn.port.adapt_to(AnalogSource()))
@@ -476,22 +472,23 @@ class MultimeterTest(JlcBoardTop):
         (['driver', 'diode', 'manufacturer_spec'], 'Micro Commercial Co'),
         (['driver', 'diode', 'part_spec'], 'GS1G-LTP'),
         (['gate', 'amp_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q2
+        (['gate', 'pwr_fet', 'footprint_spec'], ParamValue(['gate', 'amp_fet', 'footprint_spec'])),  # Q1
         (['gate', 'ctl_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D1
-        (['gate', 'btn_diode', 'footprint_spec'], 'Diode_SMD:D_SOD-323'),  # D2
-        (['gate', 'pwr_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-23'),  # Q1
+        (['gate', 'btn_diode', 'footprint_spec'], ParamValue(['gate', 'ctl_diode', 'footprint_spec'])),  # D2
         # (['reg_5v', 'power_path', 'inductor', 'footprint_spec'], 'Inductor_SMD:L_0805_2012Metric'),  # L1
 
         (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (['prot_analog', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
 
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['reg_5v', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
       ],
       class_values=[
         (AnalogSwitchTree, ['switch_size'], 2),
       ],
       class_refinements=[
-        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050Nl),
+        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050),
+        (TagConnect, TagConnectNonLegged),
         (Opamp, Tlv9061),  # higher precision opamps
         (BananaSafetyJack, Fcr7350),
         (AnalogSwitch, Nlas4157),
@@ -503,4 +500,4 @@ class MultimeterTest(JlcBoardTop):
 
 class MultimeterTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(MultimeterTest)
+    compile_board_inplace(Multimeter)

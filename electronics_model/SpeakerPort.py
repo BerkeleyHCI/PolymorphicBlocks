@@ -18,9 +18,10 @@ class SpeakerLink(Link):
 
 
 class SpeakerDriverPort(Bundle[SpeakerLink]):
+  link_type = SpeakerLink
+
   def __init__(self, model: Optional[AnalogSource] = None) -> None:
     super().__init__()
-    self.link_type = SpeakerLink
 
     if model is None:
       model = AnalogSource()  # ideal by default
@@ -29,10 +30,10 @@ class SpeakerDriverPort(Bundle[SpeakerLink]):
 
 
 class SpeakerPort(Bundle[SpeakerLink]):
+  link_type = SpeakerLink
+
   def __init__(self, model: Optional[AnalogSink] = None) -> None:
     super().__init__()
-    self.link_type = SpeakerLink
-
     if model is None:
       model = AnalogSink()  # ideal by default
     self.a = self.Port(model)  # TODO how to model max power?

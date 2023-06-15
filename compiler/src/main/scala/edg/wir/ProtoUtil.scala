@@ -8,8 +8,10 @@ import scala.collection.{SeqMap, mutable}
 
 object ProtoUtil {
   // Implicit allowing toPb from the SeqMap that creates the Named* pair protos
-  class BaseSeqMapToProto[ProtoType, ValueType](items: SeqMap[String, ValueType],
-                                                ctor: (String, Option[ValueType]) => ProtoType) {
+  class BaseSeqMapToProto[ProtoType, ValueType](
+      items: SeqMap[String, ValueType],
+      ctor: (String, Option[ValueType]) => ProtoType
+  ) {
     def toPb: Seq[ProtoType] = {
       items.map { case (name, value) =>
         ctor(name, Some(value))
@@ -32,15 +34,15 @@ object ProtoUtil {
   implicit class ConstraintSeqMapToProto(items: SeqMap[String, expr.ValueExpr])
       extends BaseSeqMapToProto[elem.NamedValueExpr, expr.ValueExpr](items, elem.NamedValueExpr(_, _))
 
-
   // Implicit allowing toPb from a (name, value) pair that creates the wrapping Named* pair proto
-  class BaseTupleToProto[ProtoType, ValueType](item: (String, ValueType),
-                                               ctor: (String, Option[ValueType]) => ProtoType) {
+  class BaseTupleToProto[ProtoType, ValueType](
+      item: (String, ValueType),
+      ctor: (String, Option[ValueType]) => ProtoType
+  ) {
     def toPb: ProtoType = {
       ctor(item._1, Some(item._2))
     }
   }
-
 
   implicit class ParamTupleToProto(item: (String, init.ValInit))
       extends BaseTupleToProto[elem.NamedValInit, init.ValInit](item, elem.NamedValInit(_, _))
@@ -57,10 +59,12 @@ object ProtoUtil {
   implicit class ConstraintTupleToProto(item: (String, expr.ValueExpr))
       extends BaseTupleToProto[elem.NamedValueExpr, expr.ValueExpr](item, elem.NamedValueExpr(_, _))
 
-  class BaseProtoToSeqMap[ProtoType, ValueType](items: Seq[ProtoType],
-                                                nameExtractor: ProtoType => String,
-                                                valueExtractor: ProtoType => Option[ValueType],
-                                                ctor: (String, Option[ValueType]) => ProtoType) {
+  class BaseProtoToSeqMap[ProtoType, ValueType](
+      items: Seq[ProtoType],
+      nameExtractor: ProtoType => String,
+      valueExtractor: ProtoType => Option[ValueType],
+      ctor: (String, Option[ValueType]) => ProtoType
+  ) {
     def asPairs: Iterable[(String, ValueType)] = {
       items.map { item =>
         nameExtractor(item) -> valueExtractor(item).get

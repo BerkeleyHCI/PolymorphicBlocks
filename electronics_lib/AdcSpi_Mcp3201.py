@@ -3,7 +3,7 @@ from typing import *
 from electronics_abstract_parts import *
 
 
-class Mcp3201_Device(DiscreteChip, FootprintBlock):
+class Mcp3201_Device(InternalSubcircuit, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     self.vdd = self.Port(VoltageSink(
@@ -50,7 +50,7 @@ class Mcp3201_Device(DiscreteChip, FootprintBlock):
     )
 
 
-class Mcp3201(Block):
+class Mcp3201(AnalogToDigital, Block):
   """MCP3201 12-bit 100kSPS ADC configured in single-ended mode, since the IN- pin can't do much anyways.
 
   Some drop-in electrically compatible chips:

@@ -167,17 +167,22 @@ class Refable():
     return IdentityDict([(self, prefix)])
 
 
-NonLibraryFlag = object()
+class EltPropertiesBase:
+  """"Base type for properties associated with a particular block, that do not apply to subtypes"""
+  pass
+
+
+NonLibraryProperty = EltPropertiesBase()
 NonLibraryType = TypeVar('NonLibraryType', bound=Type['LibraryElement'])
 def non_library(decorated: NonLibraryType) -> NonLibraryType:
-  decorated._elt_properties[(decorated, 'non_library')] = None
+  decorated._elt_properties[(decorated, NonLibraryProperty)] = None
   return decorated
 
 
 @non_library
 class LibraryElement(Refable, metaclass=ElementMeta):
   """Defines a library element, which optionally contains other library elements."""
-  _elt_properties: Dict[Any, Any] = {}  # TODO can this be restricted further?
+  _elt_properties: Dict[Tuple[Type[LibraryElement], EltPropertiesBase], Any] = {}
 
   def __repr__(self) -> str:
     return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xff)
@@ -222,7 +227,16 @@ class LibraryElement(Refable, metaclass=ElementMeta):
   def _static_def_name(cls) -> str:
     """If this library element is defined by class (all instances have an equivalent library definition),
     returns the definition name. Otherwise, should crash."""
-    return cls.__module__ + "." + cls.__name__
+    if cls.__module__ == "__main__":
+      # when the top-level design is run as main, the module name is __main__ which is meaningless
+      # and breaks when the HDL server tries to resolve the __main__ reference (to itself),
+      # so this needs to resolve the correct name
+      import inspect
+      import os
+      module = os.path.splitext(os.path.basename(inspect.getfile(cls)))[0]
+    else:
+      module = cls.__module__
+    return module + "." + cls.__name__
 
   def _get_def_name(self) -> str:
     """Returns the definition name"""
@@ -257,8 +271,20 @@ class HasMetadata(LibraryElement):
   BaseType = TypeVar('BaseType', bound='HasMetadata')
   @classmethod
   def _get_bases_of(cls, base_type: Type[BaseType]) -> List[Type[BaseType]]:
-    return [bcls for bcls in cls.__bases__
-            if issubclass(bcls, base_type) and (bcls, 'non_library') not in bcls._elt_properties]
+    bases: List[Type] = []
+    def process_base(bcls: Type[HasMetadata.BaseType]):
+      if not issubclass(bcls, base_type):
+        return  # ignore above base_type
+      if (bcls, NonLibraryProperty) in bcls._elt_properties:  # non-library, recurse into parents
+        for bcls_base in bcls.__bases__:
+          process_base(bcls_base)
+      else:  # anything else, directly append if not existing
+        if bcls not in bases:
+          bases.append(bcls)
+    for bcls in cls.__bases__:
+      process_base(bcls)
+
+    return bases
 
   def _populate_metadata(self, pb: edgir.Metadata, src: Any,
                          ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.Metadata:

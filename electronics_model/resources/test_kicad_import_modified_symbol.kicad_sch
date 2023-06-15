@@ -183,7 +183,7 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 836fde0b-300e-46a9-ac27-5f3fb762315d)
   )
-  (label "Test_Net_1" (at 111.76 85.09 0)
+  (label "GND" (at 111.76 85.09 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid f8594364-7085-4d63-b6db-0503245aaae3)
   )

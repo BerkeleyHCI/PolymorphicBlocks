@@ -3,9 +3,8 @@ package edg.util
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-
 class ErrorableTest extends AnyFlatSpec with Matchers {
-  behavior of "Errorable"
+  behavior.of("Errorable")
 
   it should "chain successes" in {
     val original = Errorable(BigInt(1), "failure1")

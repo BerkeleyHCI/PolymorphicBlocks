@@ -1,11 +1,10 @@
 from typing import List, Tuple
 
-from edg_core.Blocks import DescriptionString
 from electronics_abstract_parts import *
 
 
-@abstract_block
-class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
+@non_library
+class ESeriesResistor(ResistorStandardFootprint, SmdStandardPackage, GeneratorBlock):
   """Default generator that automatically picks resistors from the E-series specified.
   Preferentially picks lower E-series (E1 before E3 before E6 ...) value meeting the needs
   at the specified tolerance.
@@ -13,37 +12,49 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
 
   A series of 0 means exact, but tolerance is still checked.
   """
-
   PACKAGE_POWER: List[Tuple[float, str]]
 
   @init_in_parent
   def __init__(self, *args, series: IntLike = Default(24), tolerance: FloatLike = Default(0.01),
                footprint_spec: StringLike = Default(""), **kwargs):
     super().__init__(*args, **kwargs)
+    self.series = self.ArgParameter(series)
+    self.tolerance = self.ArgParameter(tolerance)
+    self.footprint_spec = self.ArgParameter(footprint_spec)
 
-    self.generator(self.select_resistor, self.resistance, self.power, series, tolerance, footprint_spec)
+    self.generator_param(self.resistance, self.power, self.series, self.tolerance, self.footprint_spec,
+                         self.smd_min_package)
 
-  def select_resistor(self, resistance: Range, power: Range, series: int, tolerance: float,
-                      footprint_spec: str) -> None:
+  def generate(self) -> None:
+    super().generate()
+
+    resistance = self.get(self.resistance)
+    tolerance = self.get(self.tolerance)
+    series = self.get(self.series)
+
     if series == 0:  # exact, not matched to E-series
       selected_center = resistance.center()
     else:
       selected_series = ESeriesUtil.choose_preferred_number(resistance, ESeriesUtil.SERIES[series], tolerance)
       if selected_series is None:
-        raise ValueError(f"no resistor within {resistance} in series {series} and tolerance {tolerance}")
+        raise ValueError("no matching resistor")
       selected_center = selected_series
 
     selected_range = Range.from_tolerance(selected_center, tolerance)
     if not selected_range.fuzzy_in(resistance):
       raise ValueError(f"chosen resistances tolerance {tolerance} not within {resistance}")
 
+    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(
+      self.get(self.smd_min_package), TableResistor.SMD_FOOTPRINT_MAP)
     suitable_packages = [(package_power, package) for package_power, package in self.PACKAGE_POWER
-                         if package_power >= power.upper and (not footprint_spec or package == footprint_spec)]
+                         if package_power >= self.get(self.power).upper and
+                         (not self.get(self.footprint_spec) or package == self.get(self.footprint_spec)) and
+                         (package not in minimum_invalid_footprints)]
     if not suitable_packages:
-      raise ValueError(f"no resistor package for {power.upper} W power")
+      raise ValueError("no suitable resistor packages")
 
     self.assign(self.actual_resistance, selected_range)
-    self.assign(self.actual_power_rating, suitable_packages[0][0])
+    self.assign(self.actual_power_rating, Range.zero_to_upper(suitable_packages[0][0]))
 
     self.footprint(
       'R', suitable_packages[0][1],
@@ -51,12 +62,13 @@ class ESeriesResistor(ResistorStandardPinning, GeneratorBlock):
       value=f'{UnitUtils.num_to_prefix(selected_center, 3)}, {tolerance * 100:0.3g}%, {suitable_packages[0][0]} W',
     )
 
+
 class GenericChipResistor(ESeriesResistor):
   PACKAGE_POWER = [  # sorted by order of preference (lowest power to highest power)
     # picked based on the most common power rating for a size at 100ohm on Digikey
     # (1.0/32, '01005'),  # KiCad doesn't seem to have a default footprint this small
-    # (1.0/20, 'Resistor_SMD:R_0201_0603Metric'),
-    # (1.0/16, 'Resistor_SMD:R_0402_1005Metric'),
+    (1.0/20, 'Resistor_SMD:R_0201_0603Metric'),
+    (1.0/16, 'Resistor_SMD:R_0402_1005Metric'),
     (1.0/10, 'Resistor_SMD:R_0603_1608Metric'),
     (1.0/8, 'Resistor_SMD:R_0805_2012Metric'),
     (1.0/4, 'Resistor_SMD:R_1206_3216Metric'),

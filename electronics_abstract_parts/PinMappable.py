@@ -1,11 +1,11 @@
 import itertools
-from abc import ABCMeta, abstractmethod
-from typing import List, Type, Tuple, Optional, Union, Any, NamedTuple, Callable, Dict, Set
+from abc import ABCMeta
+from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dict, Set
 
 from electronics_model import *
 
 
-@abstract_block
+@non_library
 class PinMappable(Block):
   """Abstract base class for pin-mappable devices. Provides a named initializer argument for user-defined explicit
   pin mapping refinements. Actual pin mapping functionality must be implemented by the subclass.

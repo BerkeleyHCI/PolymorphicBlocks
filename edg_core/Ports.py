@@ -107,6 +107,9 @@ class Port(BasePort, Generic[PortLinkType]):
 
   SelfType = TypeVar('SelfType', bound='Port')
 
+  link_type: Type[PortLinkType]
+  bridge_type: Optional[Type[PortBridge]] = None
+
   @classmethod
   def empty(cls: Type[SelfType]) -> SelfType:
     """Automatically generated empty constructor, that creates a port with all parameters None."""
@@ -122,11 +125,9 @@ class Port(BasePort, Generic[PortLinkType]):
     TODO: is this a reasonable restriction?"""
     super().__init__()
 
-    self.link_type: Type[PortLinkType]
     # This needs to be lazy-initialized to avoid building ports with links with ports, and so on
     # TODO: maybe a cleaner solution is to mark port constructors in a Block context or Link context?
     self._link_instance: Optional[PortLinkType] = None
-    self.bridge_type: Optional[Type[PortBridge]] = None
     self._bridge_instance: Optional[PortBridge] = None  # internal only
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
@@ -171,13 +172,13 @@ class Port(BasePort, Generic[PortLinkType]):
     from .HierarchyBlock import Block
 
     block_parent = self._block_parent()
-    if block_parent is None or block_parent._parent is None:
+    if block_parent is None:
       raise UnconnectableError(f"{self} must be bound to instantiate an adapter")
 
-    enclosing_block = block_parent._parent
-    if enclosing_block is not builder.get_enclosing_block():
-      raise UnconnectableError(f"can only create adapters on ports of subblocks")
+    enclosing_block = builder.get_enclosing_block()
     assert isinstance(enclosing_block, Block)
+    if (block_parent is not enclosing_block) and (block_parent._parent is not enclosing_block):
+      raise UnconnectableError(f"can only create adapters on own ports or subblock ports")
 
     adapter_inst = enclosing_block.Block(adapter)
     enclosing_block.manager.add_element(

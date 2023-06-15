@@ -1,10 +1,10 @@
 import unittest
 
 from edg import *
-from electronics_lib.CalSolBlocks import CanFuse
+from .test_high_switch import CalSolPowerConnector, CalSolCanBlock, CanFuse
 
 
-class TestDatalogger(BoardTop):
+class Datalogger(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -32,7 +32,7 @@ class TestDatalogger(BoardTop):
 
       (self.buffer, self.pwr_3v3), _ = self.chain(
         self.pwr_5v_merge.pwr_out,
-        imp.Block(BufferedSupply(charging_current=(0.4, 0.5)*Amp, sense_resistance=0.47*Ohm(tol=0.01),
+        imp.Block(BufferedSupply(charging_current=(0.3, 0.4)*Amp, sense_resistance=0.47*Ohm(tol=0.01),
                                  voltage_drop=(0, 0.4)*Volt)),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05)))
       )
@@ -56,9 +56,9 @@ class TestDatalogger(BoardTop):
       (self.can, ), _ = self.chain(self.mcu.can.request('can'), imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
-      self.can_gnd_load = self.Block(VoltageLoad())
+      self.can_gnd_load = self.Block(DummyVoltageSink())
       self.connect(self.can.can_gnd, self.can_gnd_load.pwr)
-      self.can_pwr_load = self.Block(VoltageLoad())
+      self.can_pwr_load = self.Block(DummyVoltageSink())
       self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
       # mcu_i2c = self.mcu.i2c.request()  # no devices, ignored for now
@@ -183,8 +183,8 @@ class TestDatalogger(BoardTop):
         # the hold current wasn't modeled at the time of manufacture and turns out to be out of limits
         (['can', 'can_fuse', 'fuse', 'actual_hold_current'], Range(0.1, 0.1)),
         # JLC does not have frequency specs, must be checked TODO
-        (['pwr_5v', 'power_path', 'inductor', 'ignore_frequency'], True),
-        (['eink', 'boost_ind', 'ignore_frequency'], True),
+        (['pwr_5v', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
+        (['eink', 'boost_ind', 'actual_frequency_rating'], Range.all()),
         # JLC does not have gate voltage tolerance specs, and the inferred one is low
         (['eink', 'boost_sw', 'gate_voltage'], Range(3, 10)),
 
@@ -199,4 +199,4 @@ class TestDatalogger(BoardTop):
 
 class DataloggerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(TestDatalogger)
+    compile_board_inplace(Datalogger)

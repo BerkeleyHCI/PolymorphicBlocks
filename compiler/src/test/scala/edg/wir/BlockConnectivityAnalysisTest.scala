@@ -11,7 +11,6 @@ import edg.{CompilerTestUtil, wir}
 
 import scala.collection.SeqMap
 
-
 class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
   private val library = Library(
     ports = Seq(
@@ -19,7 +18,8 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
       Port.Port("sinkPort"),
     ),
     links = Seq(
-      Link.Link("link",
+      Link.Link(
+        "link",
         ports = SeqMap(
           "source" -> Port.Library("sourcePort"),
           "sinks" -> Port.Array("sinkPort")
@@ -28,32 +28,36 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
       ),
     ),
     blocks = Seq(
-      Block.Block("sourceBlock",
+      Block.Block(
+        "sourceBlock",
         ports = SeqMap(
           "port" -> Port.Library("sourcePort"),
         )
       ),
-      Block.Block("sinkBlock",
+      Block.Block(
+        "sinkBlock",
         ports = SeqMap(
           "port" -> Port.Library("sinkPort"),
         )
       ),
-      Block.Block("sourceFromExtSinkBridge",
+      Block.Block(
+        "sourceFromExtSinkBridge",
         superclasses = Seq(LibraryConnectivityAnalysis.portBridge.getTarget.getName),
         ports = SeqMap(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sourcePort"),
           LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sinkPort"),
         )
       ),
-      Block.Block("sinkFromExtSourceBridge",
+      Block.Block(
+        "sinkFromExtSourceBridge",
         superclasses = Seq(LibraryConnectivityAnalysis.portBridge.getTarget.getName),
         ports = SeqMap(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sinkPort"),
           LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sourcePort"),
         )
       ),
-
-      Block.Block("exportSinkBlock",
+      Block.Block(
+        "exportSinkBlock",
         ports = SeqMap(
           "port" -> Port.Library("sinkPort"),
         ),
@@ -64,7 +68,8 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
         )
       ),
-      Block.Block("bridgedSinkBlock",
+      Block.Block(
+        "bridgedSinkBlock",
         ports = SeqMap(
           "port" -> Port.Library("sinkPort"),
         ),
@@ -78,7 +83,10 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
         ),
         constraints = SeqMap(
           "export" -> Constraint.Exported(Ref("port"), Ref("bridge", LibraryConnectivityAnalysis.portBridgeOuterPort)),
-          "sourceConnect" -> Constraint.Connected(Ref("bridge", LibraryConnectivityAnalysis.portBridgeLinkPort), Ref("link", "source")),
+          "sourceConnect" -> Constraint.Connected(
+            Ref("bridge", LibraryConnectivityAnalysis.portBridgeLinkPort),
+            Ref("link", "source")
+          ),
           "sink1Connect" -> Constraint.Connected(Ref("sink1Block", "port"), Ref.Allocate(Ref("link", "sinks"))),
           "sink2Connect" -> Constraint.Connected(Ref("sink2Block", "port"), Ref.Allocate(Ref("link", "sinks"))),
         )
@@ -87,7 +95,8 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
   )
 
   it should "get connected for direct exports" in {
-    val inputDesign = Design(Block.Block("topDesign",
+    val inputDesign = Design(Block.Block(
+      "topDesign",
       blocks = SeqMap(
         "dut" -> Block.Library("exportSinkBlock")
       )
@@ -108,7 +117,8 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
   }
 
   it should "get connected for links only" in {
-    val inputDesign = Design(Block.Block("topDesign",
+    val inputDesign = Design(Block.Block(
+      "topDesign",
       blocks = SeqMap(
         "sourceBlock" -> Block.Library("sourceBlock"),
         "sink1Block" -> Block.Library("sinkBlock"),
@@ -146,7 +156,8 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
   }
 
   it should "get connected for mixed link and exports" in {
-    val inputDesign = Design(Block.Block("topDesign",
+    val inputDesign = Design(Block.Block(
+      "topDesign",
       blocks = SeqMap(
         "dut" -> Block.Library("bridgedSinkBlock")
       )
@@ -173,9 +184,12 @@ class BlockConnectivityAnalysisTest extends AnyFlatSpec with CompilerTestUtil {
     analysis.getConnected(Ref("bridge", LibraryConnectivityAnalysis.portBridgeOuterPort)) should equal(expectedConnects)
 
     analysis.getAllConnectedInternalPorts.toSet should equal(
-      Set(Ref("bridge", LibraryConnectivityAnalysis.portBridgeLinkPort),
+      Set(
+        Ref("bridge", LibraryConnectivityAnalysis.portBridgeLinkPort),
         Ref("bridge", LibraryConnectivityAnalysis.portBridgeOuterPort),
-        Ref("sink1Block", "port"), Ref("sink2Block", "port"))
+        Ref("sink1Block", "port"),
+        Ref("sink2Block", "port")
+      )
     )
     analysis.getAllConnectedExternalPorts should equal(
       Seq(Ref("port"))

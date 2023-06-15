@@ -1,14 +1,18 @@
-from typing import Optional, cast
+from typing import Optional, cast, Dict
 
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprint
+from .PartsTablePart import PartsTableFootprintSelector
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
-class FerriteBead(PassiveComponent):
+class FerriteBead(PassiveComponent, KiCadImportableBlock):
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:L_Ferrite', 'Device:L_Ferrite_Small')
+    return {'1': self.a, '2': self.b}
+
   @init_in_parent
   def __init__(self, *, current: RangeLike = Default(RangeExpr.ZERO),
                hf_impedance: RangeLike = Default(RangeExpr.ALL),
@@ -25,6 +29,9 @@ class FerriteBead(PassiveComponent):
     self.actual_hf_impedance = self.Parameter(RangeExpr())
     self.actual_dc_resistance = self.Parameter(RangeExpr())
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>current rating:</b> ", DescriptionString.FormatUnits(self.actual_current_rating, "A"),
       " <b>of operating</b> ", DescriptionString.FormatUnits(self.current, "A"), "\n",
@@ -35,8 +42,10 @@ class FerriteBead(PassiveComponent):
     )
 
 
-@abstract_block
-class FerriteBeadStandardPinning(FerriteBead, StandardPinningFootprint[FerriteBead]):
+@non_library
+class FerriteBeadStandardFootprint(FerriteBead, StandardFootprint[FerriteBead]):
+  REFDES_PREFIX = 'FB'
+
   FOOTPRINT_PINNING_MAP = {
     (
       'Inductor_SMD:L_0201_0603Metric',
@@ -54,9 +63,23 @@ class FerriteBeadStandardPinning(FerriteBead, StandardPinningFootprint[FerriteBe
     },
   }
 
+  SMD_FOOTPRINT_MAP = {
+    '01005': None,
+    '0201': 'Inductor_SMD:L_0201_0603Metric',
+    '0402': 'Inductor_SMD:L_0402_1005Metric',
+    '0603': 'Inductor_SMD:L_0603_1608Metric',
+    '0805': 'Inductor_SMD:L_0805_2012Metric',
+    '1206': 'Inductor_SMD:L_1206_3216Metric',
+    '1210': 'Inductor_SMD:L_1210_3225Metric',
+    '1806': None,
+    '1812': 'Inductor_SMD:L_1812_4532Metric',
+    '2010': 'Inductor_SMD:L_2010_5025Metric',
+    '2512': 'Inductor_SMD:L_2512_6332Metric',
+  }
 
-@abstract_block
-class TableFerriteBead(FerriteBeadStandardPinning, PartsTableFootprint, GeneratorBlock):
+
+@non_library
+class TableFerriteBead(FerriteBeadStandardFootprint, PartsTableFootprintSelector):
   CURRENT_RATING = PartsTableColumn(Range)
   HF_IMPEDANCE = PartsTableColumn(Range)
   DC_RESISTANCE = PartsTableColumn(Range)
@@ -64,39 +87,27 @@ class TableFerriteBead(FerriteBeadStandardPinning, PartsTableFootprint, Generato
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.current, self.hf_impedance, self.dc_resistance, self.part, self.footprint_spec)
+    self.generator_param(self.current, self.hf_impedance, self.dc_resistance)
 
-  def select_part(self, current: Range, hf_impedance: Range, dc_resistance: Range,
-                  part_spec: str, footprint_spec: str) -> None:
-    parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        current.fuzzy_in(row[self.CURRENT_RATING]) and
-        row[self.HF_IMPEDANCE].fuzzy_in(hf_impedance) and
-        row[self.DC_RESISTANCE].fuzzy_in(dc_resistance)
-    ))
-    part = parts.first(f"no matching ferrite bead")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      self.get(self.current).fuzzy_in(row[self.CURRENT_RATING]) and \
+      row[self.HF_IMPEDANCE].fuzzy_in(self.get(self.hf_impedance)) and \
+      row[self.DC_RESISTANCE].fuzzy_in(self.get(self.dc_resistance))
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-    self.assign(self.actual_current_rating, part[self.CURRENT_RATING])
-    self.assign(self.actual_hf_impedance, part[self.HF_IMPEDANCE])
-    self.assign(self.actual_dc_resistance, part[self.DC_RESISTANCE])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'FB', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_current_rating, row[self.CURRENT_RATING])
+    self.assign(self.actual_hf_impedance, row[self.HF_IMPEDANCE])
+    self.assign(self.actual_dc_resistance, row[self.DC_RESISTANCE])
 
 
-class SeriesPowerFerriteBead(DiscreteApplication):
+class SeriesPowerFerriteBead(DiscreteApplication, KiCadImportableBlock):
   """Series ferrite bead for power applications"""
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:L_Ferrite', 'Device:L_Ferrite_Small')
+    return {'1': self.pwr_in, '2': self.pwr_out}
+
   @init_in_parent
   def __init__(self, hf_impedance: RangeLike = Default(RangeExpr.ALL),
                dc_resistance: RangeLike = Default(RangeExpr.ALL)) -> None:

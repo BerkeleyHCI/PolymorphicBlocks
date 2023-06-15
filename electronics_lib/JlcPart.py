@@ -4,7 +4,7 @@ import re
 from electronics_abstract_parts import *
 
 
-@abstract_block
+@non_library
 class JlcPart(Block):
   """Provides additional data fields for JLCPCB parts for their SMT service.
   By default, this does not check for basic parts, but that can be changed in refinements.
@@ -21,9 +21,7 @@ class JlcPart(Block):
 
 DescriptionParser = Tuple[re.Pattern,
                           Callable[[re.Match], Dict[PartsTableColumn, Any]]]
-
-@abstract_block
-class JlcTablePart(JlcPart, PartsTableFootprint):
+class JlcTableBase(PartsTableBase):
   """Defines common table headers, columns, and functionality for parsing JLCPCB parts tables."""
   PART_NUMBER_COL = 'MFR.Part'  # used only for translation to the PartsTableFootprint col
   MANUFACTURER_COL = 'Manufacturer'
@@ -39,16 +37,16 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
   COST_HEADER = 'Price'
   COST = PartsTableColumn(float)
 
-  _JLC_TABLE: Optional[PartsTable] = None
+  __JLC_TABLE: Optional[PartsTable] = None
 
   @classmethod
   def _jlc_table(cls) -> PartsTable:
     """Returns the full JLC parts table, saving the result for future use."""
-    if JlcTablePart._JLC_TABLE is None:  # specifically this class, so results are visible to subclasses
-      JlcTablePart._JLC_TABLE = PartsTable.from_csv_files(PartsTable.with_source_dir([
+    if JlcTableBase.__JLC_TABLE is None:  # specifically this class, so results are visible to subclasses
+      JlcTableBase.__JLC_TABLE = PartsTable.from_csv_files(PartsTable.with_source_dir([
         'Pruned_JLCPCB SMT Parts Library(20220419).csv'
       ], 'resources'), encoding='gb2312')
-    return JlcTablePart._JLC_TABLE
+    return JlcTableBase.__JLC_TABLE
 
   @classmethod
   def _parse_jlcpcb_common(cls, row: PartsTableRow) -> Dict[PartsTableColumn, Any]:
@@ -87,3 +85,15 @@ class JlcTablePart(JlcPart, PartsTableFootprint):
         return match_fn(parsed_values)
 
     return None  # exhausted all options
+
+
+@non_library
+class JlcTableSelector(PartsTableSelector, JlcPart, JlcTableBase, PartsTableFootprint):
+  @classmethod
+  def _row_sort_by(cls, row: PartsTableRow) -> Any:
+    return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
+
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.lcsc_part, row[self.LCSC_PART_HEADER])
+    self.assign(self.actual_basic_part, row[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)

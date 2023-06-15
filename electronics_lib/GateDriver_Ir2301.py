@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Ir2301_Device(JlcPart, FootprintBlock):
+class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.com = self.Port(Ground(), [Common])

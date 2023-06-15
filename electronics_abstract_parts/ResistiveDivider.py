@@ -4,7 +4,8 @@ from math import log10, ceil
 from typing import List, Tuple
 
 from electronics_model import *
-from . import AnalogFilter, DiscreteApplication, Resistor, Filter
+from . import Analog, Resistor
+from .Categories import InternalSubcircuit
 from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, ESeriesRatioValue
 
 
@@ -54,7 +55,7 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
            self.parallel_impedance.intersects(spec.parallel_impedance)
 
 
-class ResistiveDivider(DiscreteApplication, GeneratorBlock):
+class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
   """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
 
   @init_in_parent
@@ -64,6 +65,9 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
 
     self.ratio = self.ArgParameter(ratio)
     self.impedance = self.ArgParameter(impedance)
+    self.series = self.ArgParameter(series)
+    self.tolerance = self.ArgParameter(tolerance)
+    self.generator_param(self.ratio, self.impedance, self.series, self.tolerance)
 
     self.actual_ratio = self.Parameter(RangeExpr())
     self.actual_impedance = self.Parameter(RangeExpr())
@@ -73,7 +77,8 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
     self.center = self.Port(Passive.empty())
     self.bottom = self.Port(Passive.empty())
 
-    self.generator(self.generate_divider, self.ratio, self.impedance, series, tolerance)
+  def contents(self) -> None:
+    super().contents()
 
     self.description = DescriptionString(
       "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
@@ -82,20 +87,21 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.impedance, "Ω"))
 
 
-  def generate_divider(self, ratio: Range, impedance: Range, series: int, tolerance: float) -> None:
+  def generate(self) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
     """
+    super().generate()
 
     # TODO: not fully optimal in that the ratio doesn't need to be recalculated if we're shifting both decades
     # (to achieve some impedance spec), but it uses shared infrastructure that doesn't assume this ratio optimization
-    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DividerValues)
-    top_resistance, bottom_resistance = calculator.find(DividerValues(ratio, impedance))
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.get(self.series)], self.get(self.tolerance), DividerValues)
+    top_resistance, bottom_resistance = calculator.find(DividerValues(self.get(self.ratio), self.get(self.impedance)))
 
     self.top_res = self.Block(Resistor(
-      resistance=Range.from_tolerance(top_resistance, tolerance)
+      resistance=Range.from_tolerance(top_resistance, self.get(self.tolerance))
     ))
     self.bottom_res = self.Block(Resistor(
-      resistance=Range.from_tolerance(bottom_resistance, tolerance)
+      resistance=Range.from_tolerance(bottom_resistance, self.get(self.tolerance))
     ))
 
     self.connect(self.top_res.a, self.top)
@@ -110,8 +116,8 @@ class ResistiveDivider(DiscreteApplication, GeneratorBlock):
                 1 / (self.top_res.actual_resistance / self.bottom_res.actual_resistance + 1))
 
 
-@abstract_block
-class BaseVoltageDivider(Filter, Block):
+@non_library
+class BaseVoltageDivider(Block):
   """Base class that defines a resistive divider that takes in a voltage source and ground, and outputs
   an analog constant-voltage signal.
   The actual output voltage is defined as a ratio of the input voltage, and the divider is specified by
@@ -143,7 +149,7 @@ class BaseVoltageDivider(Filter, Block):
     self.actual_series_impedance = self.Parameter(RangeExpr(self.div.actual_series_impedance))
 
 
-class VoltageDivider(BaseVoltageDivider):
+class VoltageDivider(Analog, BaseVoltageDivider):
   """Voltage divider that takes in an output voltage and parallel impedance spec, and produces an output analog signal
   of the appropriate magnitude (as a fraction of the input voltage)"""
   @init_in_parent
@@ -159,7 +165,7 @@ class VoltageDivider(BaseVoltageDivider):
     self.assign(self.ratio, (ratio_lower, ratio_upper))
 
 
-class VoltageSenseDivider(BaseVoltageDivider):
+class VoltageSenseDivider(Analog, BaseVoltageDivider):
   """Voltage divider that takes in an output voltage and parallel impedance spec, and produces an output analog signal
   of the appropriate magnitude (as a fraction of the input voltage).
   Unlike the normal VoltageDivider, the output is defined in terms of full scale voltage - that is, the voltage
@@ -180,7 +186,7 @@ class VoltageSenseDivider(BaseVoltageDivider):
     self.assign(self.ratio, (ratio_lower, ratio_upper))
 
 
-class FeedbackVoltageDivider(BaseVoltageDivider):
+class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
   """Voltage divider that takes in a ratio and parallel impedance spec, and produces an output analog signal
   of the appropriate magnitude (as a fraction of the input voltage)"""
   @init_in_parent
@@ -195,11 +201,8 @@ class FeedbackVoltageDivider(BaseVoltageDivider):
        self.output_voltage.upper() / self.actual_ratio.lower())
     ))
 
-    ratio_lower = self.output_voltage.upper() / self.assumed_input_voltage.upper()
-    ratio_upper = self.output_voltage.lower() / self.assumed_input_voltage.lower()
-    self.require(ratio_lower <= ratio_upper,
-                   "can't generate feedback divider with input voltage of tighter tolerance than output voltage")
-    self.assign(self.ratio, (ratio_lower, ratio_upper))
+  def contents(self) -> None:
+    super().contents()
 
     self.description = DescriptionString(  # TODO forward from internal?
       "<b>ratio:</b> ", DescriptionString.FormatUnits(self.actual_ratio, ""),
@@ -207,8 +210,14 @@ class FeedbackVoltageDivider(BaseVoltageDivider):
       "\n<b>impedance:</b> ", DescriptionString.FormatUnits(self.actual_impedance, "Ω"),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.impedance, "Ω"))
 
+    ratio_lower = self.output_voltage.upper() / self.assumed_input_voltage.upper()
+    ratio_upper = self.output_voltage.lower() / self.assumed_input_voltage.lower()
+    self.require(ratio_lower <= ratio_upper,
+                 "can't generate feedback divider with input voltage of tighter tolerance than output voltage")
+    self.assign(self.ratio, (ratio_lower, ratio_upper))
 
-class SignalDivider(AnalogFilter, Block):
+
+class SignalDivider(Analog, Block):
   """Specialization of ResistiveDivider for Analog signals"""
   @init_in_parent
   def __init__(self, ratio: RangeLike, impedance: RangeLike) -> None:

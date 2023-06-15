@@ -7,7 +7,7 @@ from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, Arr
   ArrayFloatLike, ArrayRangeLike, ArrayStringLike
 from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
-from .Blocks import BaseBlock, Connection, BlockElaborationState
+from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
@@ -500,5 +500,18 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
 AbstractBlockType = TypeVar('AbstractBlockType', bound=Type[Block])
 def abstract_block(decorated: AbstractBlockType) -> AbstractBlockType:
-  decorated._elt_properties[(decorated, 'abstract')] = None
+  """Defines the decorated block as abstract, a supertype block missing an implementation and
+  should be refined by a subclass in a final design.
+  If this block is present (unrefined) in a final design, causes an error."""
+  decorated._elt_properties[(decorated, AbstractBlockProperty)] = None
   return decorated
+
+
+def abstract_block_default(target: Callable[[], Type[Block]]) -> Callable[[AbstractBlockType], AbstractBlockType]:
+  """Similar to the abstract_block decorator, but specifies a default refinement.
+  The argument is a lambda since the default refinement is going to be a subclass of the class being defined,
+  it will not be defined yet when the base class is being evaluated, so evaluation needs to be delayed."""
+  def inner(decorated: AbstractBlockType) -> AbstractBlockType:
+    decorated._elt_properties[(decorated, AbstractBlockProperty)] = target
+    return decorated
+  return inner

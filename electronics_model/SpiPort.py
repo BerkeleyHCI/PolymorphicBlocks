@@ -21,11 +21,11 @@ class SpiLink(Link):
 
 
 class SpiMaster(Bundle[SpiLink]):
-  def __init__(self, model: Optional[DigitalBidir] = None,
-               frequency: RangeLike = Default(RangeExpr.EMPTY_ZERO)) -> None:
-    super().__init__()
-    self.link_type = SpiLink
+  link_type = SpiLink
 
+  def __init__(self, model: Optional[DigitalBidir] = None,
+               frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
+    super().__init__()
     if model is None:
       model = DigitalBidir()  # ideal by default
     self.sck = self.Port(DigitalSource.from_bidir(model))
@@ -37,17 +37,17 @@ class SpiMaster(Bundle[SpiLink]):
 
 
 class SpiSlave(Bundle[SpiLink]):
-  # TODO: for now, CS is defined separately
+  link_type = SpiLink
+
   def __init__(self, model: Optional[DigitalBidir] = None,
                frequency_limit: RangeLike = Default(RangeExpr.ALL)) -> None:
     super().__init__()
-    self.link_type = SpiLink
-
     if model is None:
       model = DigitalBidir()  # ideal by default
     self.sck = self.Port(DigitalSink.from_bidir(model))
     self.mosi = self.Port(DigitalSink.from_bidir(model))
     self.miso = self.Port(model)
+    # TODO: (?) CS is defined separately
 
     self.frequency_limit = self.Parameter(RangeExpr(frequency_limit))  # range of acceptable frequencies
     self.mode_limit = self.Parameter(RangeExpr())  # range of acceptable modes, in [0, 3]

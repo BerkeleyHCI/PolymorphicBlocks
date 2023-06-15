@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Mcp6001_Device(DiscreteChip, FootprintBlock):
+class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.vcc = self.Port(VoltageSink(
@@ -36,6 +37,8 @@ class Mcp6001_Device(DiscreteChip, FootprintBlock):
       mfr='Microchip Technology', part='MCP6001T-I/OT',
       datasheet='https://ww1.microchip.com/downloads/en/DeviceDoc/21733j.pdf'
     )
+    self.assign(self.lcsc_part, 'C116490')
+    self.assign(self.actual_basic_part, False)
 
 
 class Mcp6001(Opamp):

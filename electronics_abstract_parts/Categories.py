@@ -1,34 +1,5 @@
-from electronics_model import Block, abstract_block
-
-
-@abstract_block
-class DummyDevice(Block):
-  """Non-physical "device" used to affect parameters."""
-  pass
-
-
-@abstract_block
-class DiscreteComponent(Block):
-  """Discrete component that typically provides untyped ports (not to be be used directly), as a component to be used in an application circuit."""
-  pass
-
-
-@abstract_block
-class DiscreteChip(DiscreteComponent):
-  """Chip, typically used as the main device in an application circuit."""
-  pass
-
-
-@abstract_block
-class DiscreteSemiconductor(DiscreteComponent):
-  """Discrete semiconductor product, eg diodes and FETs, typically used as part of an application circuit."""
-  pass
-
-
-@abstract_block
-class PassiveComponent(DiscreteComponent):
-  """Passives components, typically used as part of an application circuit."""
-  pass
+from edg_core import BoolLike, init_in_parent
+from electronics_model import Block, abstract_block, InternalBlock
 
 
 @abstract_block
@@ -38,8 +9,14 @@ class DiscreteApplication(Block):
 
 
 @abstract_block
-class TvsDiode(DiscreteApplication):
-  """Any kind of TVS diode, including multiple channel configurations."""
+class Analog(Block):
+  """Analog blocks that don't fit into one of the other categories"""
+  pass
+
+
+@abstract_block
+class OpampApplication(Analog):
+  """Opamp-based circuits, typically one that perform some function on signals"""
   pass
 
 
@@ -62,66 +39,107 @@ class DigitalFilter(Filter):
 
 
 @abstract_block
-class IntegratedCircuit(Block):
-  """Application circuit around an integrated circuit (chip)."""
+class ProgrammableController(Block):
+  """General programmable controller."""
   pass
 
 
 @abstract_block
-class Microcontroller(IntegratedCircuit):
+class Microcontroller(ProgrammableController):
   """Microcontroller (with embedded-class processor) with its surrounding application circuit."""
   pass
 
 
 @abstract_block
-class Fpga(IntegratedCircuit):
+class Fpga(ProgrammableController):
   """FPGA with its surrounding application circuit."""
   pass
 
 
 @abstract_block
-class Memory(IntegratedCircuit):
+class Memory(Block):
   """Memory device (including sockets and card sockets) with its surrounding application circuit."""
   pass
 
 
 @abstract_block
-class RealtimeClock(IntegratedCircuit):
+class RealtimeClock(Block):
   """Realtime clock device."""
   pass
 
 
 @abstract_block
-class PowerConditioner(IntegratedCircuit):
+class Interface(Block):
+  """Interface devices, eg CAN transceiver (CAN <-> SPI / I2C interface),
+  and including analog interfaces (ADCs, DACs)."""
+  pass
+
+
+@abstract_block
+class AnalogToDigital(Interface):
+  pass
+
+
+@abstract_block
+class DigitalToAnalog(Interface):
+  pass
+
+
+@abstract_block
+class Radiofrequency(Block):
+  """Radiofrequency devices."""
+  pass
+
+
+@abstract_block
+class PowerConditioner(Block):
+  """Power conditioning circuits that provide a stable and/or safe power supply, eg voltage regulators"""
+  pass
+
+
+@abstract_block
+class PowerSwitch(Block):
+  """Power switching circuits, eg FET switches and motor drivers"""
+  pass
+
+
+@abstract_block
+class MotorDriver(PowerSwitch):
+  pass
+
+
+@abstract_block
+class BrushedMotorDriver(MotorDriver):
+  """A brushed motor driver, or at least the power stage for one."""
+  pass
+
+
+@abstract_block
+class BldcDriver(MotorDriver):
+  """A brushless motor driver, or at least the power stage for one - may be as simple a 3 half-bridges."""
   pass
 
 
 @abstract_block
 class Connector(Block):
-  """Connecctors, including card sockets."""
+  """Connectors, including card sockets."""
   pass
 
 
 @abstract_block
-class BarrelJack(Connector):
-  """Barrel jack input (socket - pin side)."""
+class PowerSource(Block):
+  """Power sources, including connectors that also supply power."""
   pass
 
 
 @abstract_block
-class ProgrammingConnector(Connector):
-  """Programming / debug / JTAG connectors."""
+class HumanInterface(Block):
+  """Devices for human interface, eg switches, displays, LEDs"""
   pass
 
 
 @abstract_block
-class Optoelectronic(Block):
-  """Optoelectronic components."""
-  pass
-
-
-@abstract_block
-class Display(Optoelectronic):
+class Display(HumanInterface):
   """Pixel displays."""
   pass
 
@@ -145,14 +163,44 @@ class EInk(Display):
 
 
 @abstract_block
-class Light(Optoelectronic):
+class Light(HumanInterface):
   """Discrete lights."""
   pass
 
 
 @abstract_block
-class SpecificApplicationSubcircuit(Block):
-  """Subcircuit with a specific application, likely not generally applicable."""
+class Sensor(Block):
+  """Any kind of sensor with any interface. Multi-packed sensors may inherit from multiple categories"""
+  pass
+
+
+@abstract_block
+class Accelerometer(Sensor):
+  pass
+
+
+@abstract_block
+class Gyroscope(Sensor):
+  pass
+
+
+@abstract_block
+class EnvironmentalSensor(Sensor):
+  pass
+
+
+@abstract_block
+class LightSensor(Sensor):
+  pass
+
+
+@abstract_block
+class Magnetometer(Sensor):
+  pass
+
+
+@abstract_block
+class DistanceSensor(Sensor):
   pass
 
 
@@ -160,6 +208,86 @@ class SpecificApplicationSubcircuit(Block):
 class Mechanical(Block):
   """Nonelectrical footprint, including plated and NPTH mounting holes."""
   pass
+
+
+@abstract_block
+class Protection(Block):
+  """Circuit protection elements, eg TVS diodes, fuses"""
+  pass
+
+
+@abstract_block
+class TvsDiode(Protection):
+  """Any kind of TVS diode, including multiple channel configurations."""
+  pass
+
+
+@abstract_block
+class Testing(Block):
+  """Blocks for testing (eg, test points) and programming (eg, programming headers)."""
+  pass
+
+
+@abstract_block
+class ProgrammingConnector(Connector, Testing):
+  """Programming / debug / JTAG connectors."""
+  pass
+
+
+@abstract_block
+class TypedTestPoint(Testing):
+  """Test point with a typed port (eg, VoltageSink, instead of Passive)."""
+  pass
+
+
+@abstract_block
+class TypedJumper(Testing):
+  """Jumper with typed ports (eg, VoltageSource-VoltageSink, instead of Passive)."""
+  pass
+
+
+@abstract_block
+class InternalSubcircuit(InternalBlock):
+  """Internal blocks that are primarily an implementation detail or not re-usable"""
+  pass
+
+
+@abstract_block
+class DiscreteComponent(InternalSubcircuit, Block):
+  """Discrete component that typically provides untyped ports (not to be be used directly), as a component to be used in an application circuit."""
+  pass
+
+
+@abstract_block
+class DiscreteSemiconductor(DiscreteComponent):
+  """Discrete semiconductor product, eg diodes and FETs, typically used as part of an application circuit."""
+  pass
+
+
+@abstract_block
+class PassiveComponent(DiscreteComponent):
+  """Passives components, typically used as part of an application circuit."""
+  pass
+
+
+@abstract_block
+class DummyDevice(InternalBlock):
+  """Non-physical "device" used to affect parameters."""
+  pass
+
+
+@abstract_block
+class IdealModel(InternalBlock):
+  """Ideal model device that can be used as a placeholder to get a design compiling
+  but has no physical implementation."""
+  @init_in_parent
+  def __init__(self, *args, allow_ideal: BoolLike = False, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.allow_ideal = self.ArgParameter(allow_ideal)
+
+  def contents(self):
+    super().contents()
+    self.require(self.allow_ideal, "ideal model")
 
 
 @abstract_block

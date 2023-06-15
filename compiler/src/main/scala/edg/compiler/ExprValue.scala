@@ -1,11 +1,9 @@
 package edg.compiler
 
+import edg.ExprBuilder.Literal
 import edgir.lit.lit
 
 import scala.collection.mutable
-import edg.ExprBuilder.Literal
-import edg.compiler.CompilerError.EmptyRange
-
 
 // Base trait for expression values in edgir, should be consistent with init.proto and lit.proto
 sealed trait ExprValue {
@@ -20,10 +18,16 @@ object ExprValue {
     case lit.ValueLit.Type.Boolean(literal) => BooleanValue(literal.`val`)
     case lit.ValueLit.Type.Text(literal) => TextValue(literal.`val`)
     case lit.ValueLit.Type.Range(literal) => (literal.getMinimum.`type`, literal.getMaximum.`type`) match {
-      case (lit.ValueLit.Type.Floating(literalMin), lit.ValueLit.Type.Floating(literalMax)) =>
-        RangeValue(literalMin.`val`.toFloat, literalMax.`val`.toFloat)
-      case _ => throw new IllegalArgumentException(s"Malformed range literal $literal")
-    }
+        case (lit.ValueLit.Type.Floating(literalMin), lit.ValueLit.Type.Floating(literalMax)) =>
+          val minFloat = literalMin.`val`.toFloat
+          val maxFloat = literalMax.`val`.toFloat
+          if (minFloat.isNaN && maxFloat.isNaN) { // special form for empty range
+            RangeEmpty
+          } else {
+            RangeValue(minFloat, maxFloat)
+          }
+        case _ => throw new IllegalArgumentException(s"Malformed range literal $literal")
+      }
     case lit.ValueLit.Type.Array(arrayLiteral) =>
       ArrayValue(arrayLiteral.elts.map { lit => fromValueLit(lit) })
     case _ => throw new IllegalArgumentException(s"Unknown literal $literal")
@@ -42,7 +46,7 @@ sealed trait FloatPromotable extends ExprValue {
 }
 
 object FloatValue {
-  def apply(value: Double): FloatValue = FloatValue(value.toFloat)  // convenience method
+  def apply(value: Double): FloatValue = FloatValue(value.toFloat) // convenience method
 }
 case class FloatValue(value: Float) extends FloatPromotable {
   override def toFloat: Float = value
@@ -51,7 +55,7 @@ case class FloatValue(value: Float) extends FloatPromotable {
 }
 
 case class IntValue(value: BigInt) extends FloatPromotable {
-  override def toFloat: Float = value.toFloat  // note: potential loss of precision
+  override def toFloat: Float = value.toFloat // note: potential loss of precision
   override def toLit: lit.ValueLit = Literal.Integer(value)
   override def toStringValue: String = value.toString
 }
@@ -60,7 +64,7 @@ sealed trait RangeType extends ExprValue
 
 object RangeValue {
   def apply(lower: Double, upper: Double): RangeType =
-    RangeValue(lower.toFloat, upper.toFloat)  // convenience method
+    RangeValue(lower.toFloat, upper.toFloat) // convenience method
 }
 
 case class RangeValue(lower: Float, upper: Float) extends RangeType {
@@ -70,7 +74,7 @@ case class RangeValue(lower: Float, upper: Float) extends RangeType {
   override def toStringValue: String = s"($lower, $upper)"
 }
 
-case object RangeEmpty extends RangeType {  // an empty range, analogous to an empty set
+case object RangeEmpty extends RangeType { // an empty range, analogous to an empty set
   override def toLit: lit.ValueLit = Literal.Range(Float.NaN, Float.NaN)
   override def toStringValue: String = s"(${Float.NaN}, ${Float.NaN})"
 }
@@ -86,11 +90,12 @@ case class TextValue(value: String) extends ExprValue {
 }
 
 object ArrayValue {
+
   /** Maps a Seq using a PartialFunction. Returns the output map if all elements were mapped, otherwise returns None.
     * May short circuit evaluate on the first PartialFunction failure.
     */
-  protected def seqMapOption[InType, OutType](seq: Seq[InType])(mapPartialFunc: PartialFunction[InType, OutType]):
-  Option[Seq[OutType]] = {
+  protected def seqMapOption[InType, OutType](seq: Seq[InType])(mapPartialFunc: PartialFunction[InType, OutType])
+      : Option[Seq[OutType]] = {
     // TODO is this actually more performant than doing a collect, even assuming that most of the time this will fail?
     val builder = mutable.Buffer[OutType]()
     val mapLifted = mapPartialFunc.lift
@@ -185,7 +190,7 @@ object ArrayValue {
 case class ArrayValue[T <: ExprValue](values: Seq[T]) extends ExprValue {
   override def toLit: lit.ValueLit = Literal.Array(values.map(_.toLit))
   override def toStringValue: String = {
-    val valuesString = values.map{_.toStringValue}.mkString(", ")
+    val valuesString = values.map { _.toStringValue }.mkString(", ")
     s"[$valuesString]"
   }
 }

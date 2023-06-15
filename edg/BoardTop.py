@@ -17,8 +17,10 @@ class BaseBoardTop(DesignTop):
         (Capacitor, GenericMlcc),
         (Inductor, JlcInductor),  # TODO: replace with generic inductor
         (Switch, SmtSwitch),
+        (RotaryEncoderWithSwitch, Ec11j15WithSwitch),
         (Diode, JlcDiode),  # TODO: replace with non-distributor parts list
         (ZenerDiode, JlcZenerDiode),  # TODO: replace with non-distributor parts list
+        (Bjt, JlcBjt),  # TODO: replace with non-distributor parts list
         (Fet, JlcFet),  # TODO: replace with non-distributor parts list
         (SwitchFet, JlcSwitchFet),  # TODO: replace with non-distributor parts list
         (Led, SmtLed),
@@ -29,14 +31,19 @@ class BaseBoardTop(DesignTop):
         (Jumper, SolderJumperTriangular),
         (IndicatorSinkLed, IndicatorSinkLedResistor),
 
-        (Fpc050, HiroseFh12sh),
+        (Fpc050Bottom, HiroseFh12sh),
         (UsbEsdDiode, Tpd2e009),
+        (CanEsdDiode, Pesd1can),
         (TestPoint, TeRc),
 
         (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetHeader),
 
-        (Vl53l0x, Vl53l0xApplication)
-      ],
+        (SpiMemory, W25q),
+
+        (Speaker, ConnectorSpeaker),
+      ], class_values=[
+        (SmdStandardPackage, ['smd_min_package'], '0603'),
+      ]
     )
 
 
@@ -52,12 +59,12 @@ class SimpleBoardTop(BaseBoardTop):
         (PassiveConnector, PinHeader254),
       ],
       class_values=[
-        (JlcInductor, ['ignore_frequency'], True),
+        (JlcInductor, ['actual_frequency_rating'], Range.all()),
       ],
     )
     
     
-class JlcToolingHoles(Block):
+class JlcToolingHoles(Mechanical, Block):
   def contents(self):
     super().contents()
     self.th1 = self.Block(JlcToolingHole())
@@ -87,8 +94,11 @@ class JlcBoardTop(BaseBoardTop):
         (Led, JlcLed),
         (ZenerDiode, JlcZenerDiode),
         (Diode, JlcDiode),
+        (Bjt, JlcBjt),
         (Fet, JlcFet),
 
+        (Fpc050Bottom, Afc01),
+        (Fpc050Top, Afc07Top),
         (UsbEsdDiode, Pesd5v0x1bt),
         (Opamp, Lmv321),
         (SpiMemory, W25q),  # 128M version is a basic part

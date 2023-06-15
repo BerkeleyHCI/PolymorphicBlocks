@@ -1,11 +1,10 @@
 from typing import NamedTuple, Dict, Optional
 import math
 
-from edg_core.Blocks import DescriptionString
 from electronics_abstract_parts import *
 
 
-class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
+class GenericMlcc(Capacitor, FootprintBlock, SmdStandardPackage, GeneratorBlock):
   """
   Generic SMT ceramic capacitor (MLCC) picker that chooses a common value (E-series) based on rules
   specifying what capacitances / voltage ratings are available in what packages.
@@ -41,9 +40,9 @@ class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
     derating_coeff specifies an optional derating coefficient (1.0 = no derating), that does not scale with package.
     """
     super().__init__(*args, **kwargs)
-
-    self.generator(self.select_capacitor_no_prod_table, self.capacitance, self.voltage,
-                   footprint_spec, derating_coeff)
+    self.footprint_spec = self.ArgParameter(footprint_spec)
+    self.derating_coeff = self.ArgParameter(derating_coeff)
+    self.generator_param(self.capacitance, self.voltage, self.footprint_spec, self.smd_min_package, self.derating_coeff)
 
     # Output values
     self.selected_nominal_capacitance = self.Parameter(RangeExpr())
@@ -98,8 +97,7 @@ class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
     ),
   ]
 
-  def select_capacitor_no_prod_table(self, capacitance: Range, voltage: Range,
-                                     footprint: str, derating_coeff: float) -> None:
+  def generate(self) -> None:
     """
     Selects a generic capacitor without using product tables
 
@@ -110,13 +108,15 @@ class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
     :param footprint_spec: user-specified package footprint
     :param derating_coeff: user-specified derating coefficient, if used then footprint_spec must be specified
     """
+    super().generate()
+    footprint = self.get(self.footprint_spec)
 
     def select_package(nominal_capacitance: float, voltage: Range) -> Optional[str]:
-
-      if footprint == "":
-        package_options = self.PACKAGE_SPECS
-      else:
-        package_options = [spec for spec in self.PACKAGE_SPECS if spec.name == footprint]
+      minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(
+        self.get(self.smd_min_package), TableDeratingCapacitor.SMD_FOOTPRINT_MAP)
+      package_options = [spec for spec in self.PACKAGE_SPECS
+                         if (not footprint or spec.name == footprint) and
+                         (spec.name not in minimum_invalid_footprints)]
 
       for package in package_options:
         if package.max >= nominal_capacitance:
@@ -125,7 +125,7 @@ class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
               return package.name
       return None
 
-    nominal_capacitance = capacitance / derating_coeff
+    nominal_capacitance = self.get(self.capacitance) / self.get(self.derating_coeff)
 
     num_caps = math.ceil(nominal_capacitance.lower / self.SINGLE_CAP_MAX)
     if num_caps > 1:
@@ -139,7 +139,7 @@ class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
         split_package = footprint
 
       cap_model = DummyCapacitorFootprint(
-        capacitance=Range.exact(self.SINGLE_CAP_MAX), voltage=voltage,
+        capacitance=Range.exact(self.SINGLE_CAP_MAX), voltage=self.voltage,
         footprint=split_package,
         value=f'{UnitUtils.num_to_prefix(self.SINGLE_CAP_MAX, 3)}F')
       self.c = ElementDict[DummyCapacitorFootprint]()
@@ -150,7 +150,7 @@ class GenericMlcc(Capacitor, FootprintBlock, GeneratorBlock):
     else:
       value = ESeriesUtil.choose_preferred_number(nominal_capacitance, ESeriesUtil.SERIES[24], 0)
       assert value is not None, "cannot select a preferred number"
-      valid_footprint = select_package(value, voltage)
+      valid_footprint = select_package(value, self.get(self.voltage))
       assert valid_footprint is not None, "cannot select a valid footprint"
       self.assign(self.selected_nominal_capacitance, value)
 

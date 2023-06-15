@@ -14,6 +14,7 @@ import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.message
 import sys
+import typing
 
 if sys.version_info >= (3, 8):
     import typing as typing_extensions
@@ -75,23 +76,32 @@ class Refinements(google.protobuf.message.Message):
 
         PATH_FIELD_NUMBER: builtins.int
         CLS_PARAM_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
+        EXPR_FIELD_NUMBER: builtins.int
+        PARAM_FIELD_NUMBER: builtins.int
         @property
         def path(self) -> edgir.ref_pb2.LocalPath: ...
         @property
         def cls_param(self) -> global___Refinements.Value.ClassParamPath: ...
         @property
-        def value(self) -> edgir.lit_pb2.ValueLit: ...
+        def expr(self) -> edgir.lit_pb2.ValueLit:
+            """set to a specific value"""
+        @property
+        def param(self) -> edgir.ref_pb2.LocalPath:
+            """set to a value of another parameter - invalid for classes for now"""
         def __init__(
             self,
             *,
             path: edgir.ref_pb2.LocalPath | None = ...,
             cls_param: global___Refinements.Value.ClassParamPath | None = ...,
-            value: edgir.lit_pb2.ValueLit | None = ...,
+            expr: edgir.lit_pb2.ValueLit | None = ...,
+            param: edgir.ref_pb2.LocalPath | None = ...,
         ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["cls_param", b"cls_param", "path", b"path", "source", b"source", "value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["cls_param", b"cls_param", "path", b"path", "source", b"source", "value", b"value"]) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["cls_param", b"cls_param", "expr", b"expr", "param", b"param", "path", b"path", "source", b"source", "value", b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["cls_param", b"cls_param", "expr", b"expr", "param", b"param", "path", b"path", "source", b"source", "value", b"value"]) -> None: ...
+        @typing.overload
         def WhichOneof(self, oneof_group: typing_extensions.Literal["source", b"source"]) -> typing_extensions.Literal["path", "cls_param"] | None: ...
+        @typing.overload
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["value", b"value"]) -> typing_extensions.Literal["expr", "param"] | None: ...
 
     SUBCLASSES_FIELD_NUMBER: builtins.int
     VALUES_FIELD_NUMBER: builtins.int
@@ -400,6 +410,7 @@ class HdlRequest(google.protobuf.message.Message):
     ELABORATE_GENERATOR_FIELD_NUMBER: builtins.int
     RUN_REFINEMENT_FIELD_NUMBER: builtins.int
     RUN_BACKEND_FIELD_NUMBER: builtins.int
+    GET_PROTO_VERSION_FIELD_NUMBER: builtins.int
     @property
     def index_module(self) -> global___ModuleName:
         """returns an index of IR elements in a Python module"""
@@ -413,6 +424,8 @@ class HdlRequest(google.protobuf.message.Message):
     def run_refinement(self) -> global___RefinementRequest: ...
     @property
     def run_backend(self) -> global___BackendRequest: ...
+    get_proto_version: builtins.int
+    """no data"""
     def __init__(
         self,
         *,
@@ -421,10 +434,11 @@ class HdlRequest(google.protobuf.message.Message):
         elaborate_generator: global___GeneratorRequest | None = ...,
         run_refinement: global___RefinementRequest | None = ...,
         run_backend: global___BackendRequest | None = ...,
+        get_proto_version: builtins.int = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["request", b"request"]) -> typing_extensions.Literal["index_module", "get_library_element", "elaborate_generator", "run_refinement", "run_backend"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "get_proto_version", b"get_proto_version", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "get_library_element", b"get_library_element", "get_proto_version", b"get_proto_version", "index_module", b"index_module", "request", b"request", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["request", b"request"]) -> typing_extensions.Literal["index_module", "get_library_element", "elaborate_generator", "run_refinement", "run_backend", "get_proto_version"] | None: ...
 
 global___HdlRequest = HdlRequest
 
@@ -437,6 +451,7 @@ class HdlResponse(google.protobuf.message.Message):
     ELABORATE_GENERATOR_FIELD_NUMBER: builtins.int
     RUN_REFINEMENT_FIELD_NUMBER: builtins.int
     RUN_BACKEND_FIELD_NUMBER: builtins.int
+    GET_PROTO_VERSION_FIELD_NUMBER: builtins.int
     ERROR_FIELD_NUMBER: builtins.int
     @property
     def index_module(self) -> global___IndexResponse:
@@ -449,6 +464,7 @@ class HdlResponse(google.protobuf.message.Message):
     def run_refinement(self) -> global___RefinementResponse: ...
     @property
     def run_backend(self) -> global___BackendResponse: ...
+    get_proto_version: builtins.int
     @property
     def error(self) -> global___ErrorResponse: ...
     def __init__(
@@ -459,10 +475,11 @@ class HdlResponse(google.protobuf.message.Message):
         elaborate_generator: global___GeneratorResponse | None = ...,
         run_refinement: global___RefinementResponse | None = ...,
         run_backend: global___BackendResponse | None = ...,
+        get_proto_version: builtins.int = ...,
         error: global___ErrorResponse | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "error", b"error", "get_library_element", b"get_library_element", "index_module", b"index_module", "response", b"response", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "error", b"error", "get_library_element", b"get_library_element", "index_module", b"index_module", "response", b"response", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["response", b"response"]) -> typing_extensions.Literal["index_module", "get_library_element", "elaborate_generator", "run_refinement", "run_backend", "error"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "error", b"error", "get_library_element", b"get_library_element", "get_proto_version", b"get_proto_version", "index_module", b"index_module", "response", b"response", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["elaborate_generator", b"elaborate_generator", "error", b"error", "get_library_element", b"get_library_element", "get_proto_version", b"get_proto_version", "index_module", b"index_module", "response", b"response", "run_backend", b"run_backend", "run_refinement", b"run_refinement"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["response", b"response"]) -> typing_extensions.Literal["index_module", "get_library_element", "elaborate_generator", "run_refinement", "run_backend", "get_proto_version", "error"] | None: ...
 
 global___HdlResponse = HdlResponse

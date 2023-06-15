@@ -1,6 +1,7 @@
 import unittest
 
 from edg import *
+from .test_high_switch import CalSolCanConnectorRa
 
 
 class CanAdapter(BoardTop):
@@ -50,7 +51,6 @@ class CanAdapter(BoardTop):
     self.connect(self.mcu.gpio.request_vector('rgb_can'), self.rgb_can.signals)
 
     # Isolated CAN Domain
-    # self.can = self.Block(M12CanConnector())  # probably not a great idea for this particular application
     self.can = self.Block(CalSolCanConnectorRa())
     self.can_vcan = self.connect(self.can.pwr)
     self.can_gnd = self.connect(self.can.gnd)
@@ -75,7 +75,8 @@ class CanAdapter(BoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Lpc1549_48),
-        (['mcu', 'swd'], SwdCortexTargetTc2050Nl),
+        (['mcu', 'swd'], SwdCortexTargetTc2050),
+        (['mcu', 'swd', 'conn'], TagConnectNonLegged),
         (['sw_usb', 'package'], SmtSwitchRa),
         (['sw_can', 'package'], SmtSwitchRa),
         (['usb_reg'], Ap2204k),

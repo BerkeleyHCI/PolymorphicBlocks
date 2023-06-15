@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Fusb302b_Device(DiscreteChip, FootprintBlock, JlcPart):
+class Fusb302b_Device(InternalSubcircuit, FootprintBlock, JlcPart):
   def __init__(self) -> None:
     super().__init__()
     self.vbus = self.Port(VoltageSink(voltage_limits=(4, 21)))
@@ -51,7 +51,7 @@ class Fusb302b_Device(DiscreteChip, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, False)
 
 
-class Fusb302b(Block):
+class Fusb302b(Interface, Block):
   def __init__(self) -> None:
     super().__init__()
     self.ic = self.Block(Fusb302b_Device())

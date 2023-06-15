@@ -1,5 +1,4 @@
 from electronics_abstract_parts import *
-from .PassiveConnector import PassiveConnector
 from .JlcPart import JlcPart
 
 
@@ -31,7 +30,7 @@ class Vl53l0x_DeviceBase():
     )
 
 
-class Vl53l0x_Device(Vl53l0x_DeviceBase, DiscreteChip, JlcPart, FootprintBlock):
+class Vl53l0x_Device(Vl53l0x_DeviceBase, InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -69,8 +68,8 @@ class Vl53l0x_Device(Vl53l0x_DeviceBase, DiscreteChip, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-@abstract_block
-class Vl53l0x(Block):
+@abstract_block_default(lambda: Vl53l0xApplication)
+class Vl53l0x(DistanceSensor, Block):
   """Abstract base class for VL53L0x application circuits"""
   def __init__(self) -> None:
     super().__init__()
@@ -121,7 +120,7 @@ class Vl53l0xApplication(Vl53l0x):
     self.vdd_cap[1] = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
 
-class Vl53l0xArray(GeneratorBlock):
+class Vl53l0xArray(DistanceSensor, GeneratorBlock):
   """Array of Vl53l0x with common I2C but individually exposed XSHUT pins and optionally GPIO1 (interrupt)."""
   @init_in_parent
   def __init__(self, count: IntLike, *, first_xshut_fixed: BoolLike = False):
@@ -131,16 +130,20 @@ class Vl53l0xArray(GeneratorBlock):
     self.i2c = self.Port(I2cSlave.empty())
     self.xshut = self.Port(Vector(DigitalSink.empty()))
     self.gpio1 = self.Port(Vector(DigitalBidir.empty()), optional=True)
-    self.generator(self.generate, count, first_xshut_fixed)
 
-  def generate(self, count: int, first_xshut_fixed: bool):
+    self.count = self.ArgParameter(count)
+    self.first_xshut_fixed = self.ArgParameter(first_xshut_fixed)
+    self.generator_param(self.count, self.first_xshut_fixed)
+
+  def generate(self):
+    super().generate()
     self.elt = ElementDict[Vl53l0x]()
-    for elt_i in range(count):
+    for elt_i in range(self.get(self.count)):
       elt = self.elt[str(elt_i)] = self.Block(Vl53l0x())
       self.connect(self.pwr, elt.pwr)
       self.connect(self.gnd, elt.gnd)
       self.connect(self.i2c, elt.i2c)
-      if first_xshut_fixed and elt_i == 0:
+      if self.get(self.first_xshut_fixed) and elt_i == 0:
         self.connect(elt.pwr.as_digital_source(), elt.xshut)
       else:
         self.connect(self.xshut.append_elt(DigitalSink.empty(), str(elt_i)), elt.xshut)

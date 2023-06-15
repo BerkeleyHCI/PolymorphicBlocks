@@ -15,9 +15,8 @@ class GeneratorAssign(GeneratorBlock):
     super().__init__()
     # Because this doesn't have dependency parameters, this is the top-level design
     self.float_param = self.Parameter(FloatExpr())
-    self.generator(self.float_gen)
 
-  def float_gen(self) -> None:
+  def generate(self) -> None:
     self.assign(self.float_param, 2.0)
 
 
@@ -32,10 +31,11 @@ class GeneratorDependency(GeneratorBlock):
   def __init__(self, float_preset: FloatLike) -> None:
     super().__init__()
     self.float_param = self.Parameter(FloatExpr())
-    self.generator(self.float_gen, float_preset)
+    self.float_preset = self.ArgParameter(float_preset)
+    self.generator_param(self.float_preset)
 
-  def float_gen(self, float_preset: float) -> None:
-    self.assign(self.float_param, float_preset * 2)
+  def generate(self) -> None:
+    self.assign(self.float_param, self.get(self.float_preset) * 2)
 
 
 class TestGeneratorMultiParameter(Block):
@@ -50,11 +50,13 @@ class GeneratorMultiParameter(GeneratorBlock):
     super().__init__()
     self.float_param1 = self.Parameter(FloatExpr())
     self.float_param2 = self.Parameter(FloatExpr())
-    self.generator(self.float_gen, float_preset1, float_preset2)
+    self.float_preset1 = self.ArgParameter(float_preset1)
+    self.float_preset2 = self.ArgParameter(float_preset2)
+    self.generator_param(self.float_preset1, self.float_preset2)
 
-  def float_gen(self, float_preset1: float, float_preset2: float) -> None:
-    self.assign1 = self.assign(self.float_param1, float_preset1 * 3)
-    self.assign2 = self.assign(self.float_param2, float_preset2 + 7)
+  def generate(self) -> None:
+    self.assign1 = self.assign(self.float_param1, self.get(self.float_preset1) * 3)
+    self.assign2 = self.assign(self.float_param2, self.get(self.float_preset2) + 7)
 
 
 class TestGenerator(unittest.TestCase):
@@ -85,16 +87,18 @@ class TestLink(Link):
 
 
 class TestPortSource(Port[TestLink]):
+  link_type = TestLink
+
   def __init__(self, float_value: FloatLike = FloatExpr()) -> None:
     super().__init__()
-    self.link_type = TestLink
     self.float_param = self.Parameter(FloatExpr(float_value))
 
 
 class TestPortSink(Port[TestLink]):
+  link_type = TestLink
+
   def __init__(self, range_value: RangeLike = RangeExpr()) -> None:
     super().__init__()
-    self.link_type = TestLink
     self.range_param = self.Parameter(RangeExpr(range_value))
 
 
@@ -116,11 +120,12 @@ class GeneratorIsConnected(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(TestPortSource(2.0), optional=True)
-    self.generator(self.generate_assign, self.port.is_connected())
+
+    self.generator_param(self.port.is_connected())
     self.connected = self.Parameter(BoolExpr())
 
-  def generate_assign(self, connected: bool) -> None:
-    if connected:
+  def generate(self) -> None:
+    if self.get(self.port.is_connected()):
       self.assign(self.connected, True)
     else:
       self.assign(self.connected, False)
@@ -144,7 +149,6 @@ class GeneratorInnerConnect(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(TestPortSource(), optional=True)
-    self.generator(self.generate)
 
   def generate(self) -> None:
     self.inner = self.Block(TestBlockSource(4.5))
@@ -192,9 +196,8 @@ class TestGeneratorFailure(Block):
 class GeneratorFailure(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
-    self.generator(self.errorfn)
 
-  def errorfn(self) -> None:
+  def generate(self) -> None:
     def helperfn() -> None:
       raise TestGeneratorException("test text")
     helperfn()

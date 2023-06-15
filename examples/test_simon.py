@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class DomeButtonConnector(FootprintBlock):
+class DomeButtonConnector(Connector, FootprintBlock):
   @init_in_parent
   def __init__(self) -> None:
     super().__init__()
@@ -31,7 +31,7 @@ class DomeButtonConnector(FootprintBlock):
     )
 
 
-class TestSimon(BoardTop):
+class Simon(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -111,13 +111,13 @@ class TestSimon(BoardTop):
           'btn_sw3=12',
         ]),
         # JLC does not have frequency specs, must be checked TODO
-        (['pwr', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['pwr', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
 
         # keep netlist footprints as libraries change
         (['btn_drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['btn_drv[1]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['btn_drv[2]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['btn_drv[3]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['btn_drv[1]', 'drv', 'footprint_spec'], ParamValue(['btn_drv[0]', 'drv', 'footprint_spec'])),
+        (['btn_drv[2]', 'drv', 'footprint_spec'], ParamValue(['btn_drv[0]', 'drv', 'footprint_spec'])),
+        (['btn_drv[3]', 'drv', 'footprint_spec'], ParamValue(['btn_drv[0]', 'drv', 'footprint_spec'])),
       ],
       instance_refinements=[
         (['spk', 'conn'], JstPhKVertical),
@@ -130,4 +130,4 @@ class TestSimon(BoardTop):
 
 class SimonTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(TestSimon)
+    compile_board_inplace(Simon)

@@ -4,9 +4,8 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 
-
 class DependencyGraphTest extends AnyFlatSpec {
-  behavior of "DependencyGraph"
+  behavior.of("DependencyGraph")
 
   it should "return empty ready on init" in {
     val dep = DependencyGraph[Int, Int]()
@@ -153,22 +152,22 @@ class DependencyGraphTest extends AnyFlatSpec {
   it should "allow update with explicit update" in {
     val dep = DependencyGraph[Int, Int]()
     dep.addNode(10, Seq(0))
-    dep.addNode(10, Seq(0, 1), update=true)
+    dep.addNode(10, Seq(0, 1), overwrite = true)
     dep.setValue(0, 0)
-    dep.getReady should equal(Set())  // should still be blocked on 1
+    dep.getReady should equal(Set()) // should still be blocked on 1
 
-    dep.addNode(10, Seq(1, 2), update=true)  // 0 should no longer be required
+    dep.addNode(10, Seq(1, 2), overwrite = true) // 0 should no longer be required
 
     dep.setValue(1, 1)
     dep.getReady should equal(Set())
     dep.setValue(2, 2)
     dep.getReady should equal(Set(10))
 
-    dep.addNode(10, Seq(1, 2), update=true)  // should be a nop
+    dep.addNode(10, Seq(1, 2), overwrite = true) // should be a nop
     dep.getReady should equal(Set(10))
 
-    dep.addNode(10, Seq(3), update=true)
-    dep.getReady should equal(Set())  // should no longer be ready
+    dep.addNode(10, Seq(3), overwrite = true)
+    dep.getReady should equal(Set()) // should no longer be ready
   }
 
   it should "return nodeDefinedAt and valueDefinedAt for dependencies" in {

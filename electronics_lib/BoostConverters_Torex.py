@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class Xc9142_Device(DiscreteChip, FootprintBlock, GeneratorBlock):
+class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
   parts_output_voltage_current = [  # from Table 2, Vout and Ilim
     ('18', Range(1.764, 1.836), Range(0.96, 2.30)),
     ('25', Range(2.450, 2.550), Range(1.19, 2.30)),
@@ -29,25 +29,31 @@ class Xc9142_Device(DiscreteChip, FootprintBlock, GeneratorBlock):
     self.ce = self.Port(DigitalSink.from_supply(self.gnd, self.vin,
                                                 voltage_limit_tolerance=(0, 5)*Volt,
                                                 input_threshold_abs=(0.2, 0.6)*Volt))
-    self.sw = self.Port(VoltageSource())
+    self.sw = self.Port(VoltageSink())
     self.vout = self.Port(VoltageSource().empty())
 
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.frequency = self.ArgParameter(frequency)
+    self.generator_param(self.output_voltage, self.frequency)
+
+    self.actual_current_limit = self.Parameter(RangeExpr())  # set by part number
     self.actual_frequency = self.Parameter(RangeExpr())  # set by part number
 
-    self.generator(self.select_part, output_voltage, frequency)
+  def generate(self) -> None:
+    super().generate()
 
-  def select_part(self, output_voltage: Range, frequency: Range) -> None:
     part_number_voltage, part_voltage, part_current = [
       (part, part_voltage, part_current) for (part, part_voltage, part_current) in self.parts_output_voltage_current
-      if part_voltage in output_voltage][0]
+      if part_voltage in self.get(self.output_voltage)][0]
     part_number_frequency, part_frequency = [
       (part, part_frequency) for (part, part_frequency) in self.parts_frequency
-      if part_frequency in frequency][0]  # lower frequency one picked by default, 'safer' option for compatibility
+      if part_frequency in self.get(self.frequency)][0]  # lower frequency preferred, 'safer' option for compatibility
     part_number_package, part_package = self.parts_package[0]  # SOT-23-5 hardcoded for now
 
     self.assign(self.actual_frequency, part_frequency)
+    self.assign(self.actual_current_limit, (0, part_current.lower))
     self.vout.init_from(VoltageSource(
-      voltage_out=part_voltage, current_limits=(0, part_current.lower)
+      voltage_out=part_voltage, current_limits=self.sw.link().current_limits
     ))
 
     self.footprint(
@@ -81,10 +87,10 @@ class Xc9142(DiscreteBoostConverter):
 
       self.power_path = imp.Block(BoostConverterPowerPath(
         self.pwr_in.link().voltage, self.ic.vout.voltage_out, self.frequency,
-        self.pwr_out.link().current_drawn, self.ic.vout.current_limits,
+        self.pwr_out.link().current_drawn, self.ic.actual_current_limit,
         inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                        self.ripple_current_factor,
-                                                       rated_current=self.ic.vout.current_limits.lower())
+                                                       rated_current=self.ic.actual_current_limit.lower())
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)

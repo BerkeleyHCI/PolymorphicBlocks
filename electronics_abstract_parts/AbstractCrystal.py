@@ -1,7 +1,7 @@
 from electronics_model import *
-from . import PartsTableFootprint, PartsTableColumn, Capacitor, PartsTableRow
+from . import PartsTableFootprintSelector, PartsTableColumn, Capacitor, PartsTableRow
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -18,14 +18,20 @@ class Crystal(DiscreteComponent):
     self.crystal = self.Port(CrystalPort(self.actual_frequency), [InOut])  # set by subclass
     self.gnd = self.Port(Ground(), [Common])
 
+  def contents(self):
+    super().contents()
+
     self.description = DescriptionString(
       "<b>frequency:</b> ", DescriptionString.FormatUnits(self.actual_frequency, "Hz"),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"), "\n",
       "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.actual_capacitance, "F")
     )
 
-@abstract_block
-class CrystalStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
+
+@non_library
+class CrystalStandardFootprint(Crystal, StandardFootprint[Crystal]):
+  REFDES_PREFIX = 'X'
+
   FOOTPRINT_PINNING_MAP = {
     'Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm': lambda block: {
       '1': block.crystal.a,
@@ -42,8 +48,8 @@ class CrystalStandardPinning(Crystal, StandardPinningFootprint[Crystal]):
   }
 
 
-@abstract_block
-class TableCrystal(CrystalStandardPinning, PartsTableFootprint, GeneratorBlock):
+@non_library
+class TableCrystal(CrystalStandardFootprint, PartsTableFootprintSelector):
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)
 
@@ -51,31 +57,16 @@ class TableCrystal(CrystalStandardPinning, PartsTableFootprint, GeneratorBlock):
   def __init__(self, *args, **kwargs) -> None:
     """Discrete crystal component."""
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.frequency, self.part, self.footprint_spec)
+    self.generator_param(self.frequency)
 
-  def select_part(self, frequency: Range, part_spec: str, footprint_spec: str) -> None:
-    parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        row[self.FREQUENCY] in frequency
-    ))
-    part = parts.first(f"no crystal matching f={frequency} Hz")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      (row[self.FREQUENCY] in self.get(self.frequency))
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-    self.assign(self.actual_frequency, part[self.FREQUENCY])
-    self.assign(self.actual_capacitance, part[self.CAPACITANCE])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'X', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_frequency, row[self.FREQUENCY])
+    self.assign(self.actual_capacitance, row[self.CAPACITANCE])
 
 
 class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate from part?

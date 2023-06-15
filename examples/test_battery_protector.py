@@ -6,7 +6,7 @@ from edg import *
 class BatteryProtectorCircuit(BoardTop):
   def contents(self) -> None:
     super().contents()
-    self.battery_protector = self.Block(BatteryProtector_S8200A())
+    self.battery_protector = self.Block(BatteryProtector_S8261A())
     self.li_ion_bat = self.Block(Li18650(voltage=(2.5, 4.2) * Volt))
     self.led = self.Block(VoltageIndicatorLed())
 
@@ -19,4 +19,4 @@ class BatteryProtectorCircuit(BoardTop):
 
 class BatteryProtectorCircuitTestCase(unittest.TestCase):
   def test_design_battery_protector(self) -> None:
-    compile_board_inplace(BatteryProtectorCircuit)
+    compile_board_inplace(BatteryProtectorCircuit, False)

@@ -2,9 +2,7 @@ package edg.wir
 
 import edgir.ref.ref
 
-
-/**
-  * Absolute path (from the design root) to some element, including indirect elements like CONNECTED_LINK and link-side
+/** Absolute path (from the design root) to some element, including indirect elements like CONNECTED_LINK and link-side
   * ports. Should be a path only, and independent of any particular design (so designs can be transformed while the
   * paths remain valid).
   *
@@ -14,26 +12,26 @@ sealed trait IndirectStep {
   def asLocalStep: ref.LocalStep
 }
 
-object IndirectStep {  // namespace
+object IndirectStep { // namespace
   case class Element(name: String) extends IndirectStep {
     override def toString: String = name
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.Name(name))
     }
   }
-  object IsConnected extends IndirectStep {
+  case object IsConnected extends IndirectStep {
     override def toString: String = "IS_CONNECTED"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED))
     }
   }
-  object Length extends IndirectStep {
+  case object Length extends IndirectStep {
     override def toString: String = "LENGTH"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.LENGTH))
     }
   }
-  object Elements extends IndirectStep {
+  case object Elements extends IndirectStep {
     override def toString: String = "ELEMENTS"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.ELEMENTS))
@@ -45,19 +43,19 @@ object IndirectStep {  // namespace
       ref.LocalStep(step = ref.LocalStep.Step.Allocate(suggestedName.getOrElse("")))
     }
   }
-  object Allocated extends IndirectStep {
+  case object Allocated extends IndirectStep {
     override def toString: String = "ALLOCATED"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATED))
     }
   }
-  object Name extends IndirectStep {
+  case object Name extends IndirectStep {
     override def toString: String = "NAME"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME))
     }
   }
-  object ConnectedLink extends IndirectStep {  // block-side port -> link
+  case object ConnectedLink extends IndirectStep { // block-side port -> link
     override def toString: String = "CONNECTED_LINK"
     override def asLocalStep: ref.LocalStep = {
       ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK))
@@ -74,9 +72,7 @@ object IndirectStep {  // namespace
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.ALLOCATED) => IndirectStep.Allocated
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.NAME) => IndirectStep.Name
     case ref.LocalStep.Step.ReservedParam(ref.Reserved.CONNECTED_LINK) => IndirectStep.ConnectedLink
-    case ref.LocalStep.Step.ReservedParam(step @
-        (ref.Reserved.UNDEFINED | ref.Reserved.Unrecognized(_))
-    ) =>
+    case ref.LocalStep.Step.ReservedParam(step @ (ref.Reserved.UNDEFINED | ref.Reserved.Unrecognized(_))) =>
       throw new NotImplementedError(s"Unknown step $step to resolve into IndirectStep")
     case ref.LocalStep.Step.Empty =>
       throw new NotImplementedError(s"Can't resolve Empty into IndirectStep")
@@ -86,7 +82,7 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
   def +(suffix: String): IndirectDesignPath = {
     IndirectDesignPath(steps :+ IndirectStep.Element(suffix))
   }
-  def +(suffix: IndirectStep): IndirectDesignPath = {  // TODO: kinda abstraction breaking?
+  def +(suffix: IndirectStep): IndirectDesignPath = { // TODO: kinda abstraction breaking?
     IndirectDesignPath(steps :+ suffix)
   }
 
@@ -103,7 +99,7 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
   }
 
   def toLocalPath: ref.LocalPath = {
-    ref.LocalPath(steps=steps.map(_.asLocalStep))
+    ref.LocalPath(steps = steps.map(_.asLocalStep))
   }
 
   // if this starts with CONNECTED_LINK, returns the split as the CONNECTED_LINK portion (including
@@ -113,7 +109,7 @@ case class IndirectDesignPath(steps: Seq[IndirectStep]) {
       case index if index >= 0 =>
         val (connectedLinkSteps, postfixSteps) = steps.splitAt(index + 1)
         val portSteps = connectedLinkSteps.init.map { _.asInstanceOf[IndirectStep.Element].name }
-        Some((DesignPath(portSteps), ref.LocalPath(steps=postfixSteps.map(_.asLocalStep))))
+        Some((DesignPath(portSteps), ref.LocalPath(steps = postfixSteps.map(_.asLocalStep))))
       case _ => None
     }
   }
@@ -127,9 +123,7 @@ object IndirectDesignPath {
   def apply(): IndirectDesignPath = IndirectDesignPath(Seq())
 }
 
-
-/**
-  * Absolute path (from the design root) to some element.
+/** Absolute path (from the design root) to some element.
   */
 case class DesignPath(steps: Seq[String]) {
   // Separates into (prefix, last) where last is the last element, and prefix is a DesignPath of all but the last
@@ -148,11 +142,14 @@ case class DesignPath(steps: Seq[String]) {
   }
 
   def ++(suffix: ref.LocalPath): DesignPath = {
-    DesignPath(steps ++ suffix.steps.map { step => step.step match {
-      case ref.LocalStep.Step.Name(name) => name
-      case step => throw new DesignPath.IndirectPathException(
-        s"Found non-direct step $step when appending LocalPath $suffix")
-    } } )
+    DesignPath(steps ++ suffix.steps.map { step =>
+      step.step match {
+        case ref.LocalStep.Step.Name(name) => name
+        case step => throw new DesignPath.IndirectPathException(
+            s"Found non-direct step $step when appending LocalPath $suffix"
+          )
+      }
+    })
   }
 
   override def toString = steps match {
@@ -171,7 +168,7 @@ case class DesignPath(steps: Seq[String]) {
       return None
     }
     val postfixSteps = steps.drop(prefix.steps.size)
-    Some(ref.LocalPath(steps=postfixSteps.map { step =>
+    Some(ref.LocalPath(steps = postfixSteps.map { step =>
       ref.LocalStep().update(_.name := step)
     }))
   }
@@ -182,8 +179,7 @@ case class DesignPath(steps: Seq[String]) {
 object DesignPath {
   class IndirectPathException(message: String) extends Exception(message)
 
-  /**
-    * Converts an indirect path to a (direct) design path, throwing an exception if there are indirect references
+  /** Converts an indirect path to a (direct) design path, throwing an exception if there are indirect references
     */
   def fromIndirectOption(indirect: IndirectDesignPath): Option[DesignPath] = {
     val stepsOpt = indirect.steps.map {
@@ -197,18 +193,10 @@ object DesignPath {
     }
   }
 
-  def fromIndirect(indirect: IndirectDesignPath): DesignPath = {
-    DesignPath(indirect.steps.map {
-      case IndirectStep.Element(name) => name
-      case step => throw new IndirectPathException(s"Found non-direct $step when converting indirect $indirect")
-    })
-  }
-
   def apply(): DesignPath = DesignPath(Seq())
 
   def unapply(path: DesignPath): Option[Seq[String]] = Some(path.steps)
 }
-
 
 case class PathSuffix(steps: Seq[IndirectStep] = Seq()) {
   def +(elem: String): PathSuffix = {

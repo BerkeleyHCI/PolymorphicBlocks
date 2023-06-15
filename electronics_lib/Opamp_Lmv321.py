@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Lmv321_Device(DiscreteChip, FootprintBlock, JlcPart):
+class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
   def __init__(self):
     super().__init__()
     self.vcc = self.Port(VoltageSink(

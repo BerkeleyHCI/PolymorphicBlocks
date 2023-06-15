@@ -3,22 +3,7 @@ import unittest
 from edg import *
 
 
-class LipoConnector(Battery):
-  @init_in_parent
-  def __init__(self, voltage: RangeLike = Default((2.5, 4.2)*Volt), *args,
-               actual_voltage: RangeLike = Default((2.5, 4.2)*Volt), **kwargs):
-    super().__init__(voltage, *args, **kwargs)
-    self.conn = self.Block(PassiveConnector())
-
-    self.connect(self.gnd, self.conn.pins.request('1').adapt_to(GroundSource()))
-    self.connect(self.pwr, self.conn.pins.request('2').adapt_to(VoltageSource(
-      voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
-      current_limits=(0, 5.5)*Amp,  # arbitrary assuming low capacity, 10 C discharge
-    )))
-    self.assign(self.actual_capacity, (500, 600)*mAmp)  # arbitrary
-
-
-class MotorConnector(Block):
+class MotorConnector(Connector, Block):
   @init_in_parent
   def __init__(self, current_draw: RangeLike):
     super().__init__()
@@ -32,7 +17,7 @@ class MotorConnector(Block):
     )))
 
 
-class PwmConnector(Block):
+class PwmConnector(Connector, Block):
   @init_in_parent
   def __init__(self, current_draw: RangeLike):
     super().__init__()
@@ -47,7 +32,7 @@ class PwmConnector(Block):
                            [Common])
 
 
-class LedConnector(Block):
+class LedConnector(Connector, Block):
   """Connector for external WS2812s."""
   # TODO Change num_leds to the number of external WS2812s to update the current draw.
   def __init__(self):
@@ -209,8 +194,6 @@ class RobotDriver(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32_Wroom_32),
         (['reg_3v3'], Ap3418),
-
-        (['mcu', 'uart0', 'conn'], PinHeader254),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -256,7 +239,6 @@ class RobotDriver(JlcBoardTop):
         # JLC does not have frequency specs, must be checked TODO
         (['reg_3v3', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
         (['reg_3v3', 'power_path', 'efficiency'], Range(1.0, 1.0)),  # waive this check
-        (['lcd', 'device', 'vbat_min'], 3.0),  # datasheet seems to be overly pessimistic
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
@@ -264,6 +246,10 @@ class RobotDriver(JlcBoardTop):
         (TestPoint, TeRc),
         (Speaker, ConnectorSpeaker),
         (Neopixel, Ws2812b),
+      ],
+      class_values=[
+        (Er_Oled_091_3, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
+        (Er_Oled_091_3, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
       ],
     )
 

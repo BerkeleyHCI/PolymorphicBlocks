@@ -5,6 +5,6 @@ object timeExec {
     val startTime = System.nanoTime()
     val result = fn
     val endTime = System.nanoTime()
-    (result, (endTime - startTime)/1000/1000)
+    (result, (endTime - startTime) / 1000 / 1000)
   }
 }

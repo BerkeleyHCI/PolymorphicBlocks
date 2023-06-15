@@ -1,12 +1,13 @@
 from typing import Dict
 
 from electronics_model import *
-from .DummyDevices import MergedAnalogSource
+from .MergedBlocks import MergedAnalogSource
 from .AbstractResistor import Resistor
+from .Categories import Interface
 
 
 @abstract_block
-class SolidStateRelay(Block):
+class SolidStateRelay(Interface, Block):
   """Base class for solid state relays.
   LED pins are passive (like the abstract LED) and the enclosing class should provide
   the circuitry to make it a DigitalSink port.
@@ -30,7 +31,7 @@ class SolidStateRelay(Block):
     self.load_resistance = self.Parameter(RangeExpr())
 
 
-class AnalogIsolatedSwitch(KiCadImportableBlock, Block):
+class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
   """Digitally controlled solid state relay that switches an analog signal.
   Includes a ballasting resistor.
 

@@ -3,9 +3,9 @@ from typing import Optional, cast, Mapping
 
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprint
+from .PartsTablePart import PartsTableFootprintSelector
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -15,7 +15,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
   RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
 
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
-    assert symbol_name == 'Device:R'
+    assert symbol_name in ('Device:R', 'Device:R_Small')
     return {'1': self.a, '2': self.b}
 
   @classmethod
@@ -34,7 +34,8 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
     return Resistor(resistance=cls.parse_resistor(properties['Value']))
 
   @init_in_parent
-  def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO),
+               voltage: RangeLike = Default(RangeExpr.ZERO)) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())
@@ -42,19 +43,28 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
 
     self.resistance = self.ArgParameter(resistance)
     self.power = self.ArgParameter(power)  # operating power range
+    self.voltage = self.ArgParameter(voltage)  # operating voltage range
     self.actual_resistance = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())
+    self.actual_voltage_rating = self.Parameter(RangeExpr())
+
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(
       "<b>resistance:</b> ", DescriptionString.FormatUnits(self.actual_resistance, "Ω"),
       " <b>of spec</b> ", DescriptionString.FormatUnits(self.resistance, "Ω"), "\n",
-      "<b>power:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
-      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.power, "W")
+      "<b>power rating:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.power, "W"), "\n",
+      "<b>voltage rating:</b> ", DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.voltage, "V")
     )
 
 
-@abstract_block
-class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
+@non_library
+class ResistorStandardFootprint(Resistor, StandardFootprint[Resistor]):
+  REFDES_PREFIX = 'R'
+
   FOOTPRINT_PINNING_MAP = {
     (
       'Resistor_SMD:R_0201_0603Metric',
@@ -83,41 +93,43 @@ class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
     },
   }
 
+  SMD_FOOTPRINT_MAP = {
+    '01005': None,
+    '0201': 'Resistor_SMD:R_0201_0603Metric',
+    '0402': 'Resistor_SMD:R_0402_1005Metric',
+    '0603': 'Resistor_SMD:R_0603_1608Metric',
+    '0805': 'Resistor_SMD:R_0805_2012Metric',
+    '1206': 'Resistor_SMD:R_1206_3216Metric',
+    '1210': 'Resistor_SMD:R_1210_3225Metric',
+    '1806': None,
+    '1812': None,
+    '2010': 'Resistor_SMD:R_2010_5025Metric',
+    '2512': 'Resistor_SMD:R_2512_6332Metric',
+  }
 
-@abstract_block
-class TableResistor(ResistorStandardPinning, PartsTableFootprint, GeneratorBlock):
+
+@non_library
+class TableResistor(ResistorStandardFootprint, PartsTableFootprintSelector):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
+  VOLTAGE_RATING = PartsTableColumn(Range)
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.resistance, self.power, self.part, self.footprint_spec)
+    self.generator_param(self.resistance, self.power, self.voltage)
 
-  def select_part(self, resistance: Range, power_dissipation: Range, part_spec: str, footprint_spec: str) -> None:
-    parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        row[self.RESISTANCE].fuzzy_in(resistance) and
-        power_dissipation.fuzzy_in(row[self.POWER_RATING])
-    ))
-    part = parts.first(f"no resistors in {resistance} Ohm, {power_dissipation} W")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      row[self.RESISTANCE].fuzzy_in(self.get(self.resistance)) and \
+      self.get(self.power).fuzzy_in(row[self.POWER_RATING]) and \
+      self.get(self.voltage).fuzzy_in(row[self.VOLTAGE_RATING])
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-    self.assign(self.actual_resistance, part[self.RESISTANCE])
-    self.assign(self.actual_power_rating, part[self.POWER_RATING])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'R', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_resistance, row[self.RESISTANCE])
+    self.assign(self.actual_power_rating, row[self.POWER_RATING])
+    self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
 
 
 class PullupResistor(DiscreteApplication):
@@ -180,8 +192,7 @@ class SeriesPowerResistor(DiscreteApplication):
 
     self.res = self.Block(Resistor(
       resistance=self.resistance,
-      power=(current_draw.lower() * current_draw.lower() * self.resistance.lower(),
-             current_draw.upper() * current_draw.upper() * self.resistance.upper())
+      power=current_draw * current_draw * self.resistance
     ))
 
     self.connect(self.pwr_in, self.res.a.adapt_to(VoltageSink(
@@ -193,6 +204,9 @@ class SeriesPowerResistor(DiscreteApplication):
       current_limits=Range.all()
     )))
 
+    self.actual_power = self.Parameter(RangeExpr(current_draw * current_draw * self.res.actual_resistance))
+    self.require(self.actual_power.within(self.res.actual_power_rating))
+
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
       'SeriesPowerResistor':
     """Convenience function to connect both ports, returning this object so it can still be given a name."""
@@ -203,7 +217,6 @@ class SeriesPowerResistor(DiscreteApplication):
     return self
 
 
-from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # TODO dehack with better adapters
 class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
   @init_in_parent
@@ -221,16 +234,14 @@ class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
     # but this must be an explicit opt-in
     sense_in_reqd_param = self.ArgParameter(sense_in_reqd)
     self.require(sense_in_reqd_param.implies(self.sense_in.is_connected()))
-    self.generator(self.generate, self.sense_in.is_connected())
 
-  def generate(self, sense_in_connected: bool):
-    super().contents()
+    self.generator_param(self.sense_in.is_connected())
 
-    # TODO dehack with better adapters that also handle bridging
-    if sense_in_connected:
-      self.pwr_adapter = self.Block(VoltageSinkAdapterAnalogSource())
-      self.connect(self.pwr_in, self.pwr_adapter.src)
-      self.connect(self.pwr_adapter.dst, self.sense_in)
+  def generate(self):
+    super().generate()
+
+    if self.get(self.sense_in.is_connected()):
+      self.connect(self.pwr_in.as_analog_source(), self.sense_in)
     self.connect(self.res.pwr_out.as_analog_source(), self.sense_out)
 
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \

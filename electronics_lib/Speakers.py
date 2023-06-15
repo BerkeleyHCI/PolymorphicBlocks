@@ -1,11 +1,8 @@
-from typing import *
-
 from electronics_abstract_parts import *
-from .PassiveConnector import PassiveConnector
 from .JlcPart import JlcPart
 
 
-class Lm4871_Device(DiscreteChip, FootprintBlock):
+class Lm4871_Device(InternalSubcircuit, FootprintBlock):
   def __init__(self):
     super().__init__()
 
@@ -44,7 +41,7 @@ class Lm4871_Device(DiscreteChip, FootprintBlock):
     )
 
 
-class Lm4871(IntegratedCircuit):
+class Lm4871(Interface, Block):
   def __init__(self):
     super().__init__()
     # TODO should be a SpeakerDriver abstract part
@@ -89,7 +86,7 @@ class Lm4871(IntegratedCircuit):
     self.connect(self.byp_cap.pos, self.ic.inp, self.ic.byp)
 
 
-class Tpa2005d1_Device(DiscreteChip, JlcPart, FootprintBlock):
+class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
 
@@ -132,7 +129,7 @@ class Tpa2005d1_Device(DiscreteChip, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
+class Tpa2005d1(Interface, GeneratorBlock):
   """TPA2005D1 configured in single-ended input mode.
   Possible semi-pin-compatible with PAM8302AASCR (C113367), but which has internal resistor."""
   @init_in_parent
@@ -147,11 +144,12 @@ class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
     self.sig = self.Port(AnalogSink.empty(), [Input])
     self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
-    self.generator(self.generate, gain)
+    self.gain = self.ArgParameter(gain)
+    self.generator_param(self.gain)
 
-  def generate(self, gain: Range):
+  def generate(self):
     import math
-    super().contents()
+    super().generate()
 
     self.pwr_cap = self.Block(DecouplingCapacitor(
       capacitance=0.1*uFarad(tol=0.2),  # recommended Vcc cap per 11.1
@@ -161,7 +159,7 @@ class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
     )).connected(self.gnd, self.pwr)  # "charge reservoir" recommended cap per 11.1, 2.2-10uF (+20% tolerance)
 
     # Note, gain = 2 * (142k to 158k)/Ri, recommended gain < 20V/V
-    res_value = Range.cancel_multiply(2 * Range(142e3, 158e3), 1 / gain)
+    res_value = Range.cancel_multiply(2 * Range(142e3, 158e3), 1 / self.get(self.gain))
     in_res_model = Resistor(
       resistance=res_value
     )
@@ -194,7 +192,7 @@ class Tpa2005d1(IntegratedCircuit, GeneratorBlock):
 
 
 @abstract_block
-class Speaker(DiscreteApplication):
+class Speaker(HumanInterface):
   """Abstract speaker part with speaker input port."""
   def __init__(self):
     super().__init__()

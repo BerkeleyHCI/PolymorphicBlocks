@@ -1,0 +1,9 @@
+include edg/edg-compiler-precompiled.jar
+include edg_core/py.typed
+include edg_hdl_server/py.typed
+include edgir/py.typed
+include edg/py.typed
+include edgrpc/py.typed
+include electronics_abstract_parts/py.typed
+include electronics_lib/py.typed
+include electronics_model/py.typed

@@ -1,6 +1,6 @@
 import unittest
-from .test_passive_common import *
 from .JlcCapacitor import *
+
 
 class JlcCapacitorTestTop(Block):
   def __init__(self):
@@ -9,8 +9,8 @@ class JlcCapacitorTestTop(Block):
         capacitance=10 * nFarad(tol=0.1),
         voltage=(0, 3.3) * Volt
     ))
-    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
-    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
 
 
 class JlcBigCapacitorTestTop(Block):
@@ -20,16 +20,16 @@ class JlcBigCapacitorTestTop(Block):
         capacitance=(50, 1000) * uFarad,
         voltage=(0, 3.3) * Volt
     ))
-    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(PassiveDummy()))
-    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(PassiveDummy()))
+    (self.dummya, ), _ = self.chain(self.dut.pos, self.Block(DummyPassive()))
+    (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
 
 
 class CapacitorTestCase(unittest.TestCase):
   def test_capacitor(self) -> None:
     compiled = ScalaCompiler.compile(JlcCapacitorTestTop)
-    self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Capacitor_SMD:C_0603_1608Metric')
-    self.assertEqual(compiled.get_value(['dut', 'fp_part']), '0603B103K500NT')
-    self.assertEqual(compiled.get_value(['dut', 'lcsc_part']), 'C57112')
+    self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Capacitor_SMD:C_0402_1005Metric')
+    self.assertEqual(compiled.get_value(['dut', 'fp_part']), 'CL05B103KB5NNNC')
+    self.assertEqual(compiled.get_value(['dut', 'lcsc_part']), 'C15195')
 
   def test_capacitor_part(self) -> None:
     compiled = ScalaCompiler.compile(JlcCapacitorTestTop, Refinements(
@@ -37,6 +37,14 @@ class CapacitorTestCase(unittest.TestCase):
     ))
     self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Capacitor_SMD:C_0805_2012Metric')
     self.assertEqual(compiled.get_value(['dut', 'fp_part']), 'CL21B103KBANNNC')
+
+  def test_capacitor_min_package(self) -> None:
+    compiled = ScalaCompiler.compile(JlcCapacitorTestTop, Refinements(
+      instance_values=[(['dut', 'smd_min_package'], '0603')]
+    ))
+    self.assertEqual(compiled.get_value(['dut', 'fp_footprint']), 'Capacitor_SMD:C_0603_1608Metric')
+    self.assertEqual(compiled.get_value(['dut', 'fp_part']), '0603B103K500NT')
+    self.assertEqual(compiled.get_value(['dut', 'lcsc_part']), 'C57112')
 
   def test_capacitor_footprint(self) -> None:
     compiled = ScalaCompiler.compile(JlcCapacitorTestTop, Refinements(

@@ -19,7 +19,7 @@ class PassiveLink(CircuitLink):
 class PassiveAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
   # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
   @init_in_parent
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL)):
     super().__init__()
     self.src = self.Port(Passive())
@@ -39,7 +39,7 @@ class PassiveAdapterVoltageSink(CircuitPortAdapter[VoltageSink]):
 class PassiveAdapterDigitalSource(CircuitPortAdapter[DigitalSource]):
   # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
   @init_in_parent
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL),
                output_thresholds: RangeLike = Default(RangeExpr.ALL),
                pullup_capable: BoolLike = Default(False),
@@ -56,7 +56,7 @@ class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
   @init_in_parent
   def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO),
-               input_thresholds: RangeLike = Default(RangeExpr.EMPTY_DIT)):
+               input_thresholds: RangeLike = Default(RangeExpr.EMPTY)):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(DigitalSink(voltage_limits=voltage_limits, current_draw=current_draw,
@@ -68,9 +68,9 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
   @init_in_parent
   def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
                current_draw: RangeLike = Default(RangeExpr.ZERO),
-               voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+               voltage_out: RangeLike = Default(RangeExpr.ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL),
-               input_thresholds: RangeLike = Default(RangeExpr.EMPTY_DIT),
+               input_thresholds: RangeLike = Default(RangeExpr.EMPTY),
                output_thresholds: RangeLike = Default(RangeExpr.ALL),
                *,
                pullup_capable: BoolLike = Default(False),
@@ -86,7 +86,7 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
 class PassiveAdapterDigitalSingleSource(CircuitPortAdapter[DigitalSingleSource]):
   # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
   @init_in_parent
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
                output_thresholds: RangeLike = Default(RangeExpr.ALL), *,
                pullup_capable: BoolLike = Default(False),
                pulldown_capable: BoolLike = Default(False),
@@ -102,7 +102,7 @@ class PassiveAdapterDigitalSingleSource(CircuitPortAdapter[DigitalSingleSource])
 class PassiveAdapterAnalogSource(CircuitPortAdapter[AnalogSource]):
   # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
   @init_in_parent
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL),
                impedance: RangeLike = Default(RangeExpr.ZERO)):
     super().__init__()
@@ -131,6 +131,7 @@ class PassiveBridge(CircuitPortBridge):
 
 
 class Passive(CircuitPort[PassiveLink]):
+  """Basic copper-only port, which can be adapted to a more strongly typed Voltage/Digital/Analog* port"""
   adapter_type_map: Dict[Type[Port], Type[CircuitPortAdapter]] = {
     VoltageSource: PassiveAdapterVoltageSource,
     VoltageSink: PassiveAdapterVoltageSink,
@@ -141,13 +142,8 @@ class Passive(CircuitPort[PassiveLink]):
     AnalogSink: PassiveAdapterAnalogSink,
     AnalogSource: PassiveAdapterAnalogSource
   }
-
-  """Basic copper-only port, which can be adapted to a more strongly typed Voltage/Digital/Analog* port"""
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.link_type = PassiveLink
-    self.bridge_type = PassiveBridge
+  link_type = PassiveLink
+  bridge_type = PassiveBridge
 
   AdaptTargetType = TypeVar('AdaptTargetType', bound=CircuitPort)
   def adapt_to(self, that: AdaptTargetType) -> AdaptTargetType:

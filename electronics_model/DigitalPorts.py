@@ -49,8 +49,18 @@ class DigitalLink(CircuitLink):
 
     self.pullup_capable = self.Parameter(BoolExpr())
     self.pulldown_capable = self.Parameter(BoolExpr())
-    self.has_low_signal_driver = self.Parameter(BoolExpr())
-    self.has_high_signal_driver = self.Parameter(BoolExpr())
+
+    # these are only used for internal checks
+    self._has_low_signal_driver = self.Parameter(BoolExpr())
+    self._has_high_signal_driver = self.Parameter(BoolExpr())
+
+    # these are only used for defining bridges
+    # TODO can these be moved into the bridge only so they're not evaluated everywhere?
+    self._only_low_single_source_driver = self.Parameter(BoolExpr())
+    self._only_high_single_source_driver = self.Parameter(BoolExpr())
+
+  def contents(self):
+    super().contents()
 
     self.description = DescriptionString(
       "<b>voltage</b>: ", DescriptionString.FormatUnits(self.voltage, "V"),
@@ -59,9 +69,6 @@ class DigitalLink(CircuitLink):
       " <b>of limits</b>: ", DescriptionString.FormatUnits(self.current_limits, "A"),
       "\n<b>output thresholds</b>: ", DescriptionString.FormatUnits(self.output_thresholds, "V"),
       ", <b>input thresholds</b>: ", DescriptionString.FormatUnits(self.input_thresholds, "V"))
-
-  def contents(self):
-    super().contents()
 
     self.require(self.source.is_connected() | (self.single_sources.length() > 0) | (self.bidirs.length() > 0),
                  "DigitalLink must have some kind of source")
@@ -125,92 +132,33 @@ class DigitalLink(CircuitLink):
                 self.source.is_connected().then_else(self.source.pulldown_capable,
                                                      BoolExpr._to_expr_type(False)) |
                 self.single_sources.any(lambda x: x.pulldown_capable))
-    self.assign(self.has_low_signal_driver,
+    self.assign(self._has_low_signal_driver,
                 self.single_sources.any_connected().then_else(
                   self.single_sources.any(lambda x: x.low_signal_driver),
                   BoolExpr._to_expr_type(False)
                 ))
-    self.assign(self.has_high_signal_driver,
+    self.assign(self._has_high_signal_driver,
                 self.single_sources.any_connected().then_else(
                   self.single_sources.any(lambda x: x.high_signal_driver),
                   BoolExpr._to_expr_type(False)
                 ))
-    self.require(self.has_low_signal_driver.implies(self.pullup_capable), "requires pullup capable connection")
-    self.require(self.has_high_signal_driver.implies(self.pulldown_capable), "requires pulldown capable connection")
+    self.require(self._has_low_signal_driver.implies(self.pullup_capable), "requires pullup capable connection")
+    self.require(self._has_high_signal_driver.implies(self.pulldown_capable), "requires pulldown capable connection")
+
+    only_single_source_driver = ~self.source.is_connected() & (self.bidirs.length() == 1) & \
+                                (self.single_sources.length() > 0)
+    self.assign(self._only_high_single_source_driver,
+                only_single_source_driver &
+                self.single_sources.all(lambda x: x.high_signal_driver) &
+                ~self.single_sources.all(lambda x: x.low_signal_driver))
+    self.assign(self._only_low_single_source_driver,
+                only_single_source_driver &
+                ~self.single_sources.all(lambda x: x.high_signal_driver) &
+                self.single_sources.all(lambda x: x.low_signal_driver))
 
 
 class DigitalBase(CircuitPort[DigitalLink]):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.link_type = DigitalLink
-
-
-class DigitalSink(DigitalBase):
-  @staticmethod
-  def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
-                  voltage_limit_tolerance: RangeLike = Default((-0.3, 0.3)),
-                  current_draw: RangeLike = Default(RangeExpr.ZERO),
-                  input_threshold_factor: Optional[RangeLike] = None,
-                  input_threshold_abs: Optional[RangeLike] = None) -> DigitalSink:
-    input_threshold: RangeLike
-    if input_threshold_factor is not None:
-      assert input_threshold_abs is None, "can only specify one input threshold type"
-      input_threshold_factor = RangeExpr._to_expr_type(input_threshold_factor)  # TODO avoid internal functions?
-      input_threshold = (input_threshold_factor.lower() * pos.link().voltage.lower(),
-                         input_threshold_factor.upper() * pos.link().voltage.upper())
-    elif input_threshold_abs is not None:
-      assert input_threshold_factor is None, "can only specify one input threshold type"
-      input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
-    else:
-      raise ValueError("no input threshold specified")
-
-    return DigitalSink(  # TODO get rid of to_expr_type w/ dedicated Range conversion
-      voltage_limits=(neg.link().voltage.upper(), pos.link().voltage.lower()) +
-                      RangeExpr._to_expr_type(voltage_limit_tolerance),
-      current_draw=current_draw,
-      input_thresholds=input_threshold
-    )
-
-  @staticmethod
-  def from_bidir(model: DigitalBidir) -> DigitalSink:
-    return DigitalSink(model.voltage_limits, model.current_draw, input_thresholds=model.input_thresholds)
-
-  def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
-               current_draw: RangeLike = Default(RangeExpr.ZERO), *,
-               input_thresholds: RangeLike = Default(RangeExpr.EMPTY_DIT)) -> None:
-    super().__init__()
-    self.bridge_type = DigitalSinkBridge
-
-    self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
-    self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
-    self.input_thresholds: RangeExpr = self.Parameter(RangeExpr(input_thresholds))
-
-
-class DigitalSourceBridge(CircuitPortBridge):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.outer_port = self.Port(DigitalSource(voltage_out=RangeExpr(),
-                                              current_limits=RangeExpr(),
-                                              output_thresholds=RangeExpr()))
-
-    # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
-    # The outer port's current_limits is untouched and should be defined in tte port def.
-    # TODO: it's a slightly optimization to handle them here. Should it be done?
-    # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-    self.inner_link = self.Port(DigitalSink(voltage_limits=RangeExpr.ALL,
-                                            current_draw=RangeExpr(),
-                                            input_thresholds=RangeExpr.EMPTY_DIT))
-
-  def contents(self) -> None:
-    super().contents()
-
-    self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
-    self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO subtract internal current drawn
-    self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
-
-    self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
+  link_type = DigitalLink
 
 
 class DigitalSinkBridge(CircuitPortBridge):
@@ -237,6 +185,72 @@ class DigitalSinkBridge(CircuitPortBridge):
     self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
 
 
+class DigitalSink(DigitalBase):
+  bridge_type = DigitalSinkBridge
+
+  @staticmethod
+  def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
+                  voltage_limit_tolerance: RangeLike = Default((-0.3, 0.3)),
+                  current_draw: RangeLike = Default(RangeExpr.ZERO),
+                  input_threshold_factor: Optional[RangeLike] = None,
+                  input_threshold_abs: Optional[RangeLike] = None) -> DigitalSink:
+    input_threshold: RangeLike
+    if input_threshold_factor is not None:
+      assert input_threshold_abs is None, "can only specify one input threshold type"
+      input_threshold_factor = RangeExpr._to_expr_type(input_threshold_factor)  # TODO avoid internal functions?
+      input_threshold = pos.link().voltage * input_threshold_factor
+    elif input_threshold_abs is not None:
+      assert input_threshold_factor is None, "can only specify one input threshold type"
+      input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
+    else:
+      raise ValueError("no input threshold specified")
+
+    return DigitalSink(  # TODO get rid of to_expr_type w/ dedicated Range conversion
+      voltage_limits=neg.link().voltage.hull(pos.link().voltage) + \
+                     RangeExpr._to_expr_type(voltage_limit_tolerance),
+      current_draw=current_draw,
+      input_thresholds=input_threshold
+    )
+
+  @staticmethod
+  def from_bidir(model: DigitalBidir) -> DigitalSink:
+    return DigitalSink(model.voltage_limits, model.current_draw, input_thresholds=model.input_thresholds)
+
+  def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
+               current_draw: RangeLike = Default(RangeExpr.ZERO), *,
+               input_thresholds: RangeLike = Default(RangeExpr.EMPTY)) -> None:
+    super().__init__()
+    self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
+    self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
+    self.input_thresholds: RangeExpr = self.Parameter(RangeExpr(input_thresholds))
+
+
+class DigitalSourceBridge(CircuitPortBridge):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.outer_port = self.Port(DigitalSource(voltage_out=RangeExpr(),
+                                              current_limits=RangeExpr(),
+                                              output_thresholds=RangeExpr()))
+
+    # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
+    # The outer port's current_limits is untouched and should be defined in tte port def.
+    # TODO: it's a slightly optimization to handle them here. Should it be done?
+    # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
+    self.inner_link = self.Port(DigitalSink(voltage_limits=RangeExpr.ALL,
+                                            current_draw=RangeExpr(),
+                                            input_thresholds=RangeExpr.EMPTY))
+
+  def contents(self) -> None:
+    super().contents()
+
+    self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+    self.assign(self.outer_port.current_limits, self.inner_link.link().current_limits)  # TODO subtract internal current drawn
+    self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
+
+    self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
+
+
 class DigitalSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
   @init_in_parent
   def __init__(self):
@@ -251,6 +265,8 @@ class DigitalSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
 
 
 class DigitalSource(DigitalBase):
+  bridge_type = DigitalSourceBridge
+
   @staticmethod
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink],
                   current_limits: RangeLike = Default(RangeExpr.ALL), *,
@@ -274,14 +290,12 @@ class DigitalSource(DigitalBase):
     return DigitalSource(model.voltage_out, model.current_limits, output_thresholds=model.output_thresholds,
                          pullup_capable=model.pullup_capable, pulldown_capable=model.pulldown_capable)
 
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
                current_limits: RangeLike = Default(RangeExpr.ALL), *,
                output_thresholds: RangeLike = Default(RangeExpr.ALL),
                pullup_capable: BoolLike = Default(False),
                pulldown_capable: BoolLike = Default(False)) -> None:
     super().__init__()
-    self.bridge_type = DigitalSourceBridge
-
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
     self.output_thresholds: RangeExpr = self.Parameter(RangeExpr(output_thresholds))
@@ -291,92 +305,6 @@ class DigitalSource(DigitalBase):
 
   def as_voltage_source(self) -> VoltageSource:
     return self._convert(DigitalSourceAdapterVoltageSource())
-
-
-class DigitalBidirNotConnected(NotConnectableBlock['DigitalBidir']):
-  """Not-connected dummy block for Digital bidir ports"""
-  def __init__(self) -> None:
-    super().__init__()
-    self.port = self.Port(DigitalBidir())
-
-
-class DigitalBidir(DigitalBase, NotConnectablePort):
-  @staticmethod
-  def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink],
-                  voltage_limit_abs: Optional[RangeLike] = None,
-                  voltage_limit_tolerance: Optional[RangeLike] = None,
-                  current_draw: RangeLike = Default(RangeExpr.ZERO),
-                  current_limits: RangeLike = Default(RangeExpr.ALL), *,
-                  input_threshold_factor: Optional[RangeLike] = None,
-                  input_threshold_abs: Optional[RangeLike] = None,
-                  output_threshold_factor: Optional[RangeLike] = None,
-                  pullup_capable: BoolLike = False, pulldown_capable: BoolLike = False) -> DigitalBidir:
-    voltage_limit: RangeLike
-    if voltage_limit_abs is not None:
-      assert voltage_limit_tolerance is None
-      voltage_limit = voltage_limit_abs
-    elif voltage_limit_tolerance is not None:
-      voltage_limit = (neg.link().voltage.upper(), pos.link().voltage.lower()) + \
-                      RangeExpr._to_expr_type(voltage_limit_tolerance)
-    else:  # generic default
-      voltage_limit = (neg.link().voltage.upper(), pos.link().voltage.lower()) + \
-                      RangeExpr._to_expr_type((-0.3, 0.3))
-
-    input_threshold: RangeLike
-    if input_threshold_factor is not None:
-      assert input_threshold_abs is None, "can only specify one input threshold type"
-      input_threshold_factor = RangeExpr._to_expr_type(input_threshold_factor)  # TODO avoid internal functions?
-      input_threshold = (input_threshold_factor.lower() * pos.link().voltage.lower(),
-                         input_threshold_factor.upper() * pos.link().voltage.upper())
-    elif input_threshold_abs is not None:
-      assert input_threshold_factor is None, "can only specify one input threshold type"
-      input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
-    else:
-      raise ValueError("no input threshold specified")
-
-    if output_threshold_factor is not None:
-      output_threshold_factor = RangeExpr._to_expr_type(output_threshold_factor)
-      output_threshold = (output_threshold_factor.lower() * pos.link().voltage.upper(),
-                          output_threshold_factor.upper() * pos.link().voltage.lower())
-    else:  # assumed ideal
-      output_threshold = (neg.link().voltage.upper(), pos.link().voltage.lower())
-
-    return DigitalBidir(  # TODO get rid of to_expr_type w/ dedicated Range conversion
-      voltage_limits=voltage_limit,
-      current_draw=current_draw,
-      voltage_out=(neg.link().voltage.upper(), pos.link().voltage.lower()),
-      current_limits=current_limits,
-      input_thresholds=input_threshold,
-      output_thresholds=output_threshold,
-      pullup_capable=pullup_capable, pulldown_capable=pulldown_capable
-    )
-
-  def __init__(self, *, voltage_limits: RangeLike = Default(RangeExpr.ALL),
-               current_draw: RangeLike = Default(RangeExpr.ZERO),
-               voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
-               current_limits: RangeLike = Default(RangeExpr.ALL),
-               input_thresholds: RangeLike = Default(RangeExpr.EMPTY_DIT),
-               output_thresholds: RangeLike = Default(RangeExpr.ALL),
-               pullup_capable: BoolLike = Default(False),
-               pulldown_capable: BoolLike = Default(False)) -> None:
-    super().__init__()
-    self.bridge_type = DigitalBidirBridge
-    self.not_connected_type = DigitalBidirNotConnected
-
-    self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
-    self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
-    self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
-    self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
-    self.input_thresholds: RangeExpr = self.Parameter(RangeExpr(input_thresholds))
-    self.output_thresholds: RangeExpr = self.Parameter(RangeExpr(output_thresholds))
-
-    self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
-    self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
-
-  def as_open_drain(self) -> DigitalSingleSource:
-    """Adapts this DigitalBidir to a DigitalSingleSource open-drain (low-side-only) driver.
-    Not that not all digital ports can be driven in open-drain mode, check your particular IO's capabilities."""
-    return self._convert(DigitalBidirAdapterOpenDrain())
 
 
 class DigitalBidirBridge(CircuitPortBridge):
@@ -416,7 +344,128 @@ class DigitalBidirBridge(CircuitPortBridge):
     # self.assign(self.outer_port.pulldown_capable, self.inner_link.link().pulldown_capable)
 
 
+class DigitalBidirNotConnected(InternalBlock, Block):
+  """Not-connected dummy block for Digital bidir ports"""
+  def __init__(self) -> None:
+    super().__init__()
+    self.port = self.Port(DigitalBidir(), [InOut])
+
+
+class DigitalBidir(DigitalBase):
+  bridge_type = DigitalBidirBridge
+  not_connected_type = DigitalBidirNotConnected
+
+  @staticmethod
+  def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink],
+                  voltage_limit_abs: Optional[RangeLike] = None,
+                  voltage_limit_tolerance: Optional[RangeLike] = None,
+                  current_draw: RangeLike = Default(RangeExpr.ZERO),
+                  current_limits: RangeLike = Default(RangeExpr.ALL), *,
+                  input_threshold_factor: Optional[RangeLike] = None,
+                  input_threshold_abs: Optional[RangeLike] = None,
+                  output_threshold_factor: Optional[RangeLike] = None,
+                  pullup_capable: BoolLike = False, pulldown_capable: BoolLike = False) -> DigitalBidir:
+    voltage_limit: RangeLike
+    if voltage_limit_abs is not None:
+      assert voltage_limit_tolerance is None
+      voltage_limit = voltage_limit_abs
+    elif voltage_limit_tolerance is not None:
+      voltage_limit = neg.link().voltage.hull(pos.link().voltage) + \
+                      RangeExpr._to_expr_type(voltage_limit_tolerance)
+    else:  # generic default
+      voltage_limit = neg.link().voltage.hull(pos.link().voltage) + \
+                      RangeExpr._to_expr_type((-0.3, 0.3))
+
+    input_threshold: RangeLike
+    if input_threshold_factor is not None:
+      assert input_threshold_abs is None, "can only specify one input threshold type"
+      input_threshold_factor = RangeExpr._to_expr_type(input_threshold_factor)  # TODO avoid internal functions?
+      input_threshold = pos.link().voltage * input_threshold_factor
+    elif input_threshold_abs is not None:
+      assert input_threshold_factor is None, "can only specify one input threshold type"
+      input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
+    else:
+      raise ValueError("no input threshold specified")
+
+    if output_threshold_factor is not None:
+      output_threshold_factor = RangeExpr._to_expr_type(output_threshold_factor)
+      output_threshold = (output_threshold_factor.lower() * pos.link().voltage.upper(),
+                          output_threshold_factor.upper() * pos.link().voltage.lower())
+    else:  # assumed ideal
+      output_threshold = (neg.link().voltage.upper(), pos.link().voltage.lower())
+
+    return DigitalBidir(  # TODO get rid of to_expr_type w/ dedicated Range conversion
+      voltage_limits=voltage_limit,
+      current_draw=current_draw,
+      voltage_out=(neg.link().voltage.upper(), pos.link().voltage.lower()),
+      current_limits=current_limits,
+      input_thresholds=input_threshold,
+      output_thresholds=output_threshold,
+      pullup_capable=pullup_capable, pulldown_capable=pulldown_capable
+    )
+
+  def __init__(self, *, voltage_limits: RangeLike = Default(RangeExpr.ALL),
+               current_draw: RangeLike = Default(RangeExpr.ZERO),
+               voltage_out: RangeLike = Default(RangeExpr.ZERO),
+               current_limits: RangeLike = Default(RangeExpr.ALL),
+               input_thresholds: RangeLike = Default(RangeExpr.EMPTY),
+               output_thresholds: RangeLike = Default(RangeExpr.ALL),
+               pullup_capable: BoolLike = Default(False),
+               pulldown_capable: BoolLike = Default(False)) -> None:
+    super().__init__()
+    self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
+    self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
+    self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
+    self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
+    self.input_thresholds: RangeExpr = self.Parameter(RangeExpr(input_thresholds))
+    self.output_thresholds: RangeExpr = self.Parameter(RangeExpr(output_thresholds))
+
+    self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
+    self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
+
+  def as_open_drain(self) -> DigitalSingleSource:
+    """Adapts this DigitalBidir to a DigitalSingleSource open-drain (low-side-only) driver.
+    Not that not all digital ports can be driven in open-drain mode, check your particular IO's capabilities."""
+    return self._convert(DigitalBidirAdapterOpenDrain())
+
+
+class DigitalSingleSourceBridge(CircuitPortBridge):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.outer_port = self.Port(DigitalSingleSource(
+      voltage_out=RangeExpr(),
+      output_thresholds=RangeExpr(),
+      pulldown_capable=False,
+      pullup_capable=False,
+      low_signal_driver=BoolExpr(),
+      high_signal_driver=BoolExpr(),
+    ))
+
+    self.inner_link = self.Port(DigitalBidir(
+      voltage_out=RangeExpr.EMPTY,  # don't contribute to the link voltage
+      voltage_limits=RangeExpr.ALL,
+      current_draw=RangeExpr.ZERO,  # single source does not draw any current
+      input_thresholds=RangeExpr.EMPTY,
+      output_thresholds=RangeExpr.ALL,  # don't contribute to the link thresholds
+      pulldown_capable=True, pullup_capable=True  # ideal port, checked at upper link
+    ))
+
+  def contents(self) -> None:
+    super().contents()
+
+    self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
+    self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
+    self.assign(self.outer_port.low_signal_driver, self.inner_link.link()._only_low_single_source_driver)
+    self.assign(self.outer_port.high_signal_driver, self.inner_link.link()._only_high_single_source_driver)
+    self.require(self.outer_port.low_signal_driver | self.outer_port.high_signal_driver &
+                 ~(self.outer_port.low_signal_driver & self.outer_port.high_signal_driver),
+                 "must have either (exclusive or) high or low signal drivers internally")
+
+
 class DigitalSingleSource(DigitalBase):
+  bridge_type = DigitalSingleSourceBridge
+
   @staticmethod
   def low_from_supply(neg: Port[VoltageLink], is_pulldown: bool = False) -> DigitalSingleSource:
     return DigitalSingleSource(
@@ -435,7 +484,7 @@ class DigitalSingleSource(DigitalBase):
       high_signal_driver=not is_pullup
     )
 
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.EMPTY_ZERO),
+  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
                output_thresholds: RangeLike = Default(RangeExpr.ALL), *,
                pullup_capable: BoolLike = Default(False),
                pulldown_capable: BoolLike = Default(False),
@@ -458,13 +507,15 @@ class DigitalBidirAdapterOpenDrain(CircuitPortAdapter[DigitalSingleSource]):
   @init_in_parent
   def __init__(self):
     super().__init__()
-    self.src = self.Port(DigitalSink(  # otherwise ideal
+    self.src = self.Port(DigitalBidir(  # otherwise ideal
+      voltage_out=RangeExpr(),
       current_draw=RangeExpr()
     ))
     self.dst = self.Port(DigitalSingleSource(
-      voltage_out=self.src.link().voltage,
+      voltage_out=(0, 0)*Volt,  # TODO should propagate from src voltage lower, but creates a circular dependency
       output_thresholds=(self.src.link().output_thresholds.lower(), float('inf')),
       pulldown_capable=False,
       low_signal_driver=True
     ))
+    self.assign(self.src.voltage_out, self.dst.link().voltage)
     self.assign(self.src.current_draw, self.dst.link().current_drawn)

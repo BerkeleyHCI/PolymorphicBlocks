@@ -3,23 +3,20 @@ package edg.wir
 import edgir.ref.ref
 import edgir.common.common
 
-
 class InvalidPathException(message: String) extends Exception(message)
 
-/**
-  * Base trait for any element that can be resolved from a path, a wrapper around types in elem.proto and parameters.
+/** Base trait for any element that can be resolved from a path, a wrapper around types in elem.proto and parameters.
   * Non-mutable, changes should be copy the object and return a new one.
   */
 trait Pathable {
-  /**
-    * Resolves a LocalPath from here, returning the absolute path and the target element.
-    * The target element must exist as an elaborated element (and not lib_elem).
+
+  /** Resolves a LocalPath from here, returning the absolute path and the target element. The target element must exist
+    * as an elaborated element (and not lib_elem).
     */
   def resolve(suffix: Seq[String]): Pathable
 
-  /** Returns whether this object is elaborated, or a library.
-    * For containers, returns whether its contained element is elaborarted.
-    * Only returns the status of this object, but it may contain unelaborated subtree(s).
+  /** Returns whether this object is elaborated, or a library. For containers, returns whether its contained element is
+    * elaborarted. Only returns the status of this object, but it may contain unelaborated subtree(s).
     */
   def isElaborated: Boolean
 

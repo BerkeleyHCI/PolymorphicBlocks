@@ -4,16 +4,13 @@ import edgir.lit.lit
 import edgir.ref.ref
 import edgir.expr.expr
 
-
-/**
-  * Generic map/reduce utility for ValueExpr, with user-defined methods to map each type.
-  * By default, types raise an exception, and must be overridden to do something useful.
-  * May be called multiple times.
+/** Generic map/reduce utility for ValueExpr, with user-defined methods to map each type. By default, types raise an
+  * exception, and must be overridden to do something useful. May be called multiple times.
   */
 trait ValueExprMap[OutputType] {
   def map(valueExpr: expr.ValueExpr): OutputType = {
     valueExpr.expr match {
-      case expr.ValueExpr.Expr.Literal(valueExpr) => mapLiteral(valueExpr)  // no recursion, so direct map call
+      case expr.ValueExpr.Expr.Literal(valueExpr) => mapLiteral(valueExpr) // no recursion, so direct map call
       case expr.ValueExpr.Expr.Binary(valueExpr) => wrapBinary(valueExpr)
       case expr.ValueExpr.Expr.BinarySet(valueExpr) => wrapBinarySet(valueExpr)
       case expr.ValueExpr.Expr.Unary(valueExpr) => wrapUnary(valueExpr)
@@ -66,9 +63,17 @@ trait ValueExprMap[OutputType] {
     throw new NotImplementedError(s"Undefined mapExported for $exported")
   def mapConnectedArray(connected: expr.ConnectedExpr, blockPort: OutputType, linkPort: OutputType): OutputType =
     throw new NotImplementedError(s"Undefined mapConnectedArray for $connected")
-  def mapExportedArray(exported: expr.ExportedExpr, exteriorPort: OutputType, internalBlockPort: OutputType): OutputType =
+  def mapExportedArray(
+      exported: expr.ExportedExpr,
+      exteriorPort: OutputType,
+      internalBlockPort: OutputType
+  ): OutputType =
     throw new NotImplementedError(s"Undefined mapExportedArray for $exported")
-  def mapExportedTunnel(exported: expr.ExportedExpr, exteriorPort: OutputType, internalBlockPort: OutputType): OutputType =
+  def mapExportedTunnel(
+      exported: expr.ExportedExpr,
+      exteriorPort: OutputType,
+      internalBlockPort: OutputType
+  ): OutputType =
     throw new NotImplementedError(s"Undefined mapExportedTunnel for $exported")
   def mapAssign(assign: expr.AssignExpr, src: OutputType): OutputType =
     throw new NotImplementedError(s"Undefined mapAssign for $assign")

@@ -1,10 +1,11 @@
 from typing import List, cast, Optional, Dict
 
 from electronics_model import *
+from .Categories import Interface
 
 
 @abstract_block
-class AnalogSwitch(KiCadImportableBlock, Block):
+class AnalogSwitch(Interface, KiCadImportableBlock, Block):
   """Base class for a n-ported analog switch with passive-typed ports."""
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name.startswith('edg_importable:Mux')  # can be any Mux
@@ -39,11 +40,15 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
   @init_in_parent
   def __init__(self, switch_size: IntLike = 0):
     super().__init__()
-    self.generator(self.generate, self.inputs.requested(), switch_size)
+    self.switch_size = self.ArgParameter(switch_size)
+    self.generator_param(self.switch_size, self.inputs.requested())
 
-  def generate(self, elts: List[str], switch_size: int):
+  def generate(self):
     import math
+    super().generate()
 
+    switch_size = self.get(self.switch_size)
+    elts = self.get(self.inputs.requested())
     assert switch_size > 1, f"switch size {switch_size} must be greater than 1"
     assert len(elts) > 1, "passthrough AnalogSwitchTree not (yet?) supported"
     self.sw = ElementDict[AnalogSwitch]()
@@ -94,7 +99,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
     self.assign(self.analog_on_resistance, all_switches[0].analog_on_resistance * switch_stage)
 
 
-class AnalogMuxer(KiCadImportableBlock, GeneratorBlock):
+class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
   """Wrapper around AnalogSwitch that provides muxing functionality - multiple sink ports, one source port.
   """
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
@@ -120,11 +125,12 @@ class AnalogMuxer(KiCadImportableBlock, GeneratorBlock):
       impedance=self.device.analog_on_resistance + self.inputs.hull(lambda x: x.link().source_impedance)
     )))
 
-    self.generator(self.generate, self.inputs.requested())
+    self.generator_param(self.inputs.requested())
 
-  def generate(self, elts: List[str]):
+  def generate(self):
+    super().generate()
     self.inputs.defined()
-    for elt in elts:
+    for elt in self.get(self.inputs.requested()):
       self.connect(
         self.inputs.append_elt(AnalogSink().empty(), elt),
         self.device.inputs.request(elt).adapt_to(AnalogSink(
@@ -143,7 +149,7 @@ class AnalogMuxer(KiCadImportableBlock, GeneratorBlock):
     return self
 
 
-class AnalogDemuxer(GeneratorBlock):
+class AnalogDemuxer(Interface, GeneratorBlock):
   """Wrapper around AnalogSwitch that provides demuxing functionality - multiple source ports, one sink port.
   """
   def __init__(self) -> None:
@@ -160,11 +166,12 @@ class AnalogDemuxer(GeneratorBlock):
       impedance=self.device.analog_on_resistance + self.outputs.hull(lambda x: x.link().sink_impedance)
     )))
 
-    self.generator(self.generate, self.outputs.requested())
+    self.generator_param(self.outputs.requested())
 
-  def generate(self, elts: List[str]):
+  def generate(self):
+    super().generate()
     self.outputs.defined()
-    for elt in elts:
+    for elt in self.get(self.outputs.requested()):
       self.connect(
         self.outputs.append_elt(AnalogSource().empty(), elt),
         self.device.inputs.request(elt).adapt_to(AnalogSource(

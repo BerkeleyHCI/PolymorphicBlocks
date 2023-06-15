@@ -5,9 +5,7 @@ import edg.wir.{DesignPath, IndirectDesignPath}
 import edgir.expr.expr
 import edgir.ref.ref
 
-
 class ElaboratingException(msg: String, wrapped: Exception) extends Exception(f"$msg:\n$wrapped")
-
 
 sealed trait CompilerError
 
@@ -15,7 +13,7 @@ object CompilerError {
   case class Unelaborated(elaborateRecord: ElaborateRecord, missing: Set[ElaborateRecord]) extends CompilerError {
     // These errors may be redundant with below, but provides dependency data
     override def toString: String = s"Unelaborated missing dependencies $elaborateRecord:\n" +
-        s"${missing.map(x => s"- $x").mkString("\n")}"
+      s"${missing.map(x => s"- $x").mkString("\n")}"
   }
   case class LibraryElement(path: DesignPath, target: ref.LibraryPath) extends CompilerError {
     override def toString: String = s"Unelaborated library element ${target.toSimpleString} @ $path"
@@ -36,10 +34,9 @@ object CompilerError {
       s"Invalid refinement ${refinedLibrary.toSimpleString} <- ${designLibrary.toSimpleString} @ $path"
   }
 
-  case class OverAssign(target: IndirectDesignPath,
-                        causes: Seq[OverAssignCause]) extends CompilerError {
+  case class OverAssign(target: IndirectDesignPath, causes: Seq[OverAssignCause]) extends CompilerError {
     override def toString: String = s"Overassign to $target:\n" +
-        s"${causes.map(x => s"- $x").mkString("\n")}"
+      s"${causes.map(x => s"- $x").mkString("\n")}"
   }
 
   case class BadRef(path: DesignPath, ref: IndirectDesignPath) extends CompilerError
@@ -49,28 +46,36 @@ object CompilerError {
   }
 
   sealed trait AssertionError extends CompilerError
-  case class FailedAssertion(root: DesignPath, constrName: String,
-                             value: expr.ValueExpr, result: ExprValue, compiler: Compiler) extends AssertionError {
+  case class FailedAssertion(
+      root: DesignPath,
+      constrName: String,
+      value: expr.ValueExpr,
+      result: ExprValue,
+      compiler: Compiler
+  ) extends AssertionError {
     override def toString: String =
       s"Failed assertion: $root.$constrName, ${ExprToString.apply(value)} => $result"
   }
-  case class MissingAssertion(root: DesignPath, constrName: String,
-                              value: expr.ValueExpr, missing: Set[IndirectDesignPath]) extends AssertionError {
+  case class MissingAssertion(
+      root: DesignPath,
+      constrName: String,
+      value: expr.ValueExpr,
+      missing: Set[IndirectDesignPath]
+  ) extends AssertionError {
     override def toString: String =
       s"Unevaluated assertion: $root.$constrName (${ExprToString.apply(value)}), missing ${missing.mkString(", ")}"
   }
 
-  case class InconsistentLinkArrayElements(root: DesignPath,
-                                           linkPath: IndirectDesignPath, linkElements: ArrayValue[TextValue],
-                                           blockPortPath: IndirectDesignPath, blockPortElements: ArrayValue[TextValue]
-                                          ) extends CompilerError {
+  case class InconsistentLinkArrayElements(
+      root: DesignPath,
+      linkPath: IndirectDesignPath,
+      linkElements: ArrayValue[TextValue],
+      blockPortPath: IndirectDesignPath,
+      blockPortElements: ArrayValue[TextValue]
+  ) extends CompilerError {
     override def toString: String =
       s"Inconsistent link array elements: $linkPath ($linkElements), $blockPortPath ($blockPortElements)"
   }
-
-  // TODO should this be an error? Currently a debugging tool
-  case class EmptyRange(param: IndirectDesignPath, root: DesignPath, constrName: String,
-                        value: expr.ValueExpr) extends CompilerError
 
   sealed trait OverAssignCause
   object OverAssignCause {
@@ -78,7 +83,7 @@ object CompilerError {
         extends OverAssignCause {
       override def toString = s"Assign $target <- ${ExprToString(value)} @ $root.$constrName"
     }
-    case class Equal(target: IndirectDesignPath, source: IndirectDesignPath)  // TODO constraint info once we track that?
+    case class Equal(target: IndirectDesignPath, source: IndirectDesignPath) // TODO constraint info once we track that?
         extends OverAssignCause {
       override def toString = s"Equals $target = $source"
     }

@@ -1,6 +1,6 @@
 package edg
 
-sealed trait IrPort  // to box Port-like types because of lack of union types in SScala
+sealed trait IrPort // to box Port-like types because of lack of union types in SScala
 object IrPort {
   import edgir.elem.elem
 

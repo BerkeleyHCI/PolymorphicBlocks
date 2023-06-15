@@ -7,13 +7,12 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
-
-/** This test set is mostly a delta from ExprEvaluateTest, focusing on missing references (array and param)
-  * as well as the more complicated if-then-else logic.
-  * Otherwise, both classes share much underlying code which does not need to be re-tested.
+/** This test set is mostly a delta from ExprEvaluateTest, focusing on missing references (array and param) as well as
+  * the more complicated if-then-else logic. Otherwise, both classes share much underlying code which does not need to
+  * be re-tested.
   */
 class ExprEvaluatePartialTest extends AnyFlatSpec {
-  behavior of "ExprEvaluatePartial"
+  behavior.of("ExprEvaluatePartial")
 
   import ConstPropImplicit._
 
@@ -28,8 +27,10 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     evalTest.map(
       ValueExpr.BinOp(expr.BinaryExpr.Op.ADD, ValueExpr.Literal(2.0), ValueExpr.Literal(3.0))
     ) should equal(ExprResult.Result(FloatValue(5.0)))
-    evalTest.map(ValueExpr.BinOp(expr.BinaryExpr.Op.INTERSECTION,
-      ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(4.0, 6.0)
+    evalTest.map(ValueExpr.BinOp(
+      expr.BinaryExpr.Op.INTERSECTION,
+      ValueExpr.Literal(5.0, 7.0),
+      ValueExpr.Literal(4.0, 6.0)
     )) should equal(ExprResult.Result(RangeValue(5.0, 6.0)))
     evalTest.map(
       ValueExpr.IfThenElse(ValueExpr.Literal(true), ValueExpr.Literal(4), ValueExpr.Literal(3))
@@ -94,7 +95,9 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     val iteExpr = ValueExpr.IfThenElse(ValueExpr.Ref("cond"), ValueExpr.Ref("ref1"), ValueExpr.Ref("ref2"))
     val negIteExpr = ValueExpr.IfThenElse(
       ValueExpr.BinOp(expr.BinaryExpr.Op.XOR, ValueExpr.Literal(true), ValueExpr.Ref("cond")),
-      ValueExpr.Ref("ref1"), ValueExpr.Ref("ref2"))
+      ValueExpr.Ref("ref1"),
+      ValueExpr.Ref("ref2")
+    )
 
     evalTest.map(iteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "cond")))
     evalTest.map(negIteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "cond")))
@@ -133,8 +136,10 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "container" + "1" + "inner", ValInit.Integer)
     constProp.addDeclaration(DesignPath() + "container" + "2" + "inner", ValInit.Integer)
 
-    constProp.addAssignValue(IndirectDesignPath() + "container" + IndirectStep.Elements,
-      ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))))
+    constProp.addAssignValue(
+      IndirectDesignPath() + "container" + IndirectStep.Elements,
+      ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))
+    )
     evalTest.map(
       mapExtractExpr
     ) should equal(ExprResult.Missing(Set(
@@ -160,8 +165,10 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "container" + "1" + "inner", ValInit.Integer)
     constProp.addDeclaration(DesignPath() + "container" + "2" + "inner", ValInit.Integer)
 
-    constProp.addAssignValue(IndirectDesignPath() + "container" + IndirectStep.Elements,
-      ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))))
+    constProp.addAssignValue(
+      IndirectDesignPath() + "container" + IndirectStep.Elements,
+      ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))
+    )
     constProp.addAssignValue(IndirectDesignPath() + "container" + "0" + "inner", IntValue(1))
     constProp.addAssignValue(IndirectDesignPath() + "container" + "1" + "inner", IntValue(2))
     constProp.addAssignValue(IndirectDesignPath() + "container" + "2" + "inner", IntValue(3))

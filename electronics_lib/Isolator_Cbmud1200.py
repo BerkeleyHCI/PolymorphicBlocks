@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Cbmud1200l_Device(JlcPart, FootprintBlock):
+class Cbmud1200l_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.gnd1 = self.Port(VoltageSink())  # can be any voltage
@@ -57,20 +57,17 @@ class Cbmud1200l_Device(JlcPart, FootprintBlock):
 class Cbmud1200l(DigitalIsolator, GeneratorBlock):
   def __init__(self):
     super().__init__()
-    self.generator(self.generate, self.in_a.requested(), self.out_b.requested(),
-                   self.in_b.requested(), self.out_a.requested())
 
-  def contents(self):
-    super().contents()
+  def generate(self):
+    super().generate()
+    assert not self.get(self.in_b.requested()) and not self.get(self.out_a.requested()), f"device has no b->a channels"
+
     self.ic = self.Block(Cbmud1200l_Device())
     self.connect(self.pwr_a, self.ic.vdd1)
     self.connect(self.gnd_a, self.ic.gnd1)
     self.connect(self.pwr_b, self.ic.vdd2)
     self.connect(self.gnd_b, self.ic.gnd2)
 
-  def generate(self, in_a_elts: List[str], out_b_elts: List[str], in_b_elts: List[str], out_a_elts: List[str]):
-    assert in_a_elts == out_b_elts, f"in_a={in_a_elts} and out_b={out_b_elts} must be equal"
-    assert not in_b_elts and not out_a_elts, f"in_b={in_b_elts} and out_a={out_a_elts} must be empty, device has no b->a channels"
     channel_pairs = [
       (self.ic.via, self.ic.voa),
       (self.ic.vib, self.ic.vob),
@@ -79,7 +76,7 @@ class Cbmud1200l(DigitalIsolator, GeneratorBlock):
     self.cap_a = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd_a, self.pwr_a)
     self.cap_b = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd_b, self.pwr_b)
 
-    for elt_name, (in_a_port, out_b_port) in zip(in_a_elts, channel_pairs):
+    for elt_name, (in_a_port, out_b_port) in zip(self.get(self.in_a.requested()), channel_pairs):
       self.connect(self.in_a.append_elt(DigitalSink.empty(), elt_name), in_a_port)
       self.connect(self.out_b.append_elt(DigitalSource.empty(), elt_name), out_b_port)
 

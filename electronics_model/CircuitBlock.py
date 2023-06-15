@@ -26,7 +26,7 @@ class NetBaseBlock(BaseBlock):
     self.nets = self.Metadata({'_': '_'})  # TODO should be empty
 
 
-@abstract_block
+@non_library
 class FootprintBlock(Block):
   """Block that represents a component that has part(s) and trace(s) on the PCB.
   Provides interfaces that define footprints and copper connections and generates to appropriate metadata.
@@ -89,7 +89,7 @@ class FootprintBlock(Block):
 
 
 @abstract_block
-class NetBlock(NetBaseBlock, Block):
+class NetBlock(InternalBlock, NetBaseBlock, Block):
   def contents(self):
     super().contents()
     self.net()

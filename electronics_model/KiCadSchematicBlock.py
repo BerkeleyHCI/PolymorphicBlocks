@@ -1,19 +1,49 @@
 import inspect
 import os
-from typing import Type, Any, Optional, Mapping, Dict, List
+from abc import abstractmethod
+from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, TypeVar
 
-from edg_core import Block, GeneratorBlock, BasePort, Vector, init_in_parent, ArrayStringLike, StringLike
+from edg_core import Block, GeneratorBlock, BasePort, Vector, init_in_parent, ArrayStringLike, StringLike, non_library, \
+    Bundle, InternalBlock
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
 from .PassivePort import Passive
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
-from .KiCadSchematicParser import KiCadSchematic, KiCadPin, KiCadLabel, KiCadGlobalLabel, KiCadHierarchicalLabel
+from .KiCadSchematicParser import KiCadSchematic, KiCadPin, KiCadLabel, KiCadGlobalLabel, KiCadHierarchicalLabel, \
+    KiCadPowerLabel, KiCadSymbol, KiCadLibSymbol
 
 
-class KiCadBlackboxComponent(FootprintBlock, GeneratorBlock):
+@non_library
+class KiCadBlackboxBase(InternalBlock):
+    """Abstract class for black box handlers, which parses a KiCad symbol and creates the corresponding Block."""
+    BlackboxSelfType = TypeVar('BlackboxSelfType', bound='KiCadBlackboxBase')
+
+    @classmethod
+    @abstractmethod
+    def block_from_symbol(cls: Type[BlackboxSelfType], symbol: KiCadSymbol, lib: KiCadLibSymbol) -> \
+            Tuple[BlackboxSelfType, Callable[[BlackboxSelfType], Mapping[str, BasePort]]]:
+        """Creates a blackbox block from a schematic symbol. Returns the block template and a function that given
+        the block, returns mapping from the schematic pin name to the associated port."""
+        ...
+
+
+class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalBlock):
     """A footprint block that is fully defined (both value fields and structural pins) by its argument parameters
     and has all passive ports.
     """
+    @classmethod
+    def block_from_symbol(cls, symbol: KiCadSymbol, lib: KiCadLibSymbol) -> \
+            Tuple['KiCadBlackbox', Callable[['KiCadBlackbox'], Mapping[str, BasePort]]]:
+        pin_numbers = [pin.number for pin in lib.pins]
+        refdes_prefix = symbol.refdes.rstrip('0123456789?')
+        block_model = KiCadBlackbox(
+            pin_numbers, refdes_prefix, symbol.properties['Footprint'],
+            kicad_part=symbol.lib, kicad_value=symbol.properties.get('Value', ''),
+            kicad_datasheet=symbol.properties.get('Datasheet', ''))
+        def block_pinning(block: KiCadBlackbox) -> Mapping[str, BasePort]:
+            return {pin: block.ports.request(pin) for pin in pin_numbers}
+        return block_model, block_pinning
+
     @init_in_parent
     def __init__(self, kicad_pins: ArrayStringLike, kicad_refdes_prefix: StringLike, kicad_footprint: StringLike,
                  kicad_part: StringLike, kicad_value: StringLike, kicad_datasheet: StringLike):
@@ -25,16 +55,19 @@ class KiCadBlackboxComponent(FootprintBlock, GeneratorBlock):
         self.kicad_value = self.ArgParameter(kicad_value)
         self.kicad_datasheet = self.ArgParameter(kicad_datasheet)
 
-        self.generator(self.generate, kicad_pins)
+        self.kicad_pins = self.ArgParameter(kicad_pins)
+        self.generator_param(self.kicad_pins)
 
-    def generate(self, kicad_pins: List[str]):
+    def generate(self):
+        super().generate()
         mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)
-                   for pin_name in kicad_pins}
+                   for pin_name in self.get(self.kicad_pins)}
         self.ports.defined()
         self.footprint(self.kicad_refdes_prefix, self.kicad_footprint, mapping,
                        part=self.kicad_part, value=self.kicad_value, datasheet=self.kicad_datasheet)
 
 
+@non_library
 class KiCadSchematicBlock(Block):
     """A schematic block that can instantiate and connect components based on an imported Kicad schematic.
     Symbols on those schematics can either be inline Python that instantiates a KiCadImportableBlock
@@ -91,6 +124,20 @@ class KiCadSchematicBlock(Block):
 
         return port
 
+    def _port_from_path(self, path: str) -> Optional[BasePort]:
+        """Returns the corresponding Port given a path string, recursing into bundles as needed"""
+        def inner(root: Any, components: List[str]) -> Optional[BasePort]:
+            if not components:
+                if isinstance(root, BasePort):
+                    return root
+                else:
+                    return None  # invalid type
+            elif hasattr(root, components[0]) and isinstance(root, (Bundle, Block)):
+                return inner(getattr(root, components[0]), components[1:])
+            else:
+                return None
+        return inner(self, path.split('.'))
+
     def import_kicad(self, filepath: str, locals: Mapping[str, Any] = {},
                      *, nodes: Mapping[str, Optional[BasePort]] = {}, conversions: Mapping[str, CircuitPort] = {}):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
@@ -98,13 +145,16 @@ class KiCadSchematicBlock(Block):
         from electronics_abstract_parts import Resistor, Capacitor, Opamp
         SYMBOL_MAP: Mapping[str, Type[KiCadInstantiableBlock]] = {
             'Device:R': Resistor,
+            'Device:R_Small': Resistor,
             'Device:C': Capacitor,
+            'Device:C_Small': Capacitor,
             'Device:C_Polarized': Capacitor,
+            'Device:C_Polarized_Small': Capacitor,
             'Simulation_SPICE:OPAMP': Opamp,
             'edg_importable:Opamp': Opamp,
         }
 
-        with open(filepath, "r") as file:
+        with open(filepath, "r", encoding='utf-8') as file:
             file_data = file.read()
         sch = KiCadSchematic(file_data)
 
@@ -112,14 +162,20 @@ class KiCadSchematicBlock(Block):
 
         for symbol in sch.symbols:
             if 'Footprint' in symbol.properties and symbol.properties['Footprint']:  # footprints are blackboxed
-                pins = sch.lib_symbols[symbol.lib_ref].pins
-                pin_numbers = [pin.number for pin in pins]
-                refdes_prefix = symbol.refdes.rstrip('0123456789?')
-                blackbox_block = self.Block(KiCadBlackboxComponent(
-                    pin_numbers, refdes_prefix, symbol.properties['Footprint'],
-                    kicad_part=symbol.lib, kicad_value=symbol.properties.get('Value', ''),
-                    kicad_datasheet=symbol.properties.get('Datasheet', '')))
-                block_pinning = {pin: blackbox_block.ports.request(pin) for pin in pin_numbers}
+                handler: Type[KiCadBlackboxBase] = KiCadBlackbox  # default
+                if 'edg_blackbox' in symbol.properties:
+                    handler_name = symbol.properties['edg_blackbox']
+                    container_globals = inspect.stack()[1][0].f_globals
+                    assert handler_name in container_globals, \
+                        f"edg_blackbox handler {handler_name} must be imported into current global scope"
+                    handler = container_globals[handler_name]
+                    assert issubclass(handler, KiCadBlackboxBase), \
+                        f"edg_blackbox handler {handler_name} must subclass KiCadBlackboxBase"
+
+                block_model, block_pinning_creator = handler.block_from_symbol(
+                    symbol, sch.lib_symbols[symbol.lib_ref])
+                blackbox_block = self.Block(block_model)
+                block_pinning = block_pinning_creator(blackbox_block)
                 setattr(self, symbol.refdes, blackbox_block)
             elif hasattr(self, symbol.refdes):  # sub-block defined in the Python Block, schematic only for connections
                 assert not symbol.properties['Value'] or symbol.properties['Value'] == '~',\
@@ -152,7 +208,7 @@ class KiCadSchematicBlock(Block):
             net_label_names = set()
             port_label_names = set()
             for net_label in net.labels:
-                if isinstance(net_label, KiCadLabel):  # only these are used for naming the net
+                if isinstance(net_label, (KiCadLabel, KiCadPowerLabel)):  # only these are used for naming the net
                     net_label_names.add(net_label.name)
                 elif isinstance(net_label, (KiCadGlobalLabel, KiCadHierarchicalLabel)):  # must connect to port or node
                     port_label_names.add(net_label.name)  # add to set to deduplicate
@@ -160,17 +216,18 @@ class KiCadSchematicBlock(Block):
                     raise ValueError(f"unknown label type {net_label.__class__}")
 
             for global_label_name in port_label_names:
+                global_label_port = self._port_from_path(global_label_name)
                 if global_label_name in nodes:  # nodes if needed
                     assert not hasattr(self, global_label_name), \
                         f"global label {global_label_name} has both node and boundary port"
                     node = nodes[global_label_name]
                     if node is not None:
                         net_ports.insert(0, node)
-                elif hasattr(self, global_label_name) and isinstance(getattr(self, global_label_name), BasePort):
+                elif global_label_port is not None:
                     # connect to boundary port, but not links
-                    net_ports.insert(0, getattr(self, global_label_name))
-                assert global_label_name in nodes or hasattr(self, global_label_name), \
-                    f"global label {global_label_name} must connect to boundary port or node"
+                    net_ports.insert(0, global_label_port)
+                else:
+                    raise ValueError(f"global label {global_label_name} must connect to boundary port or node")
 
             connection = self.connect(*net_ports)
 
@@ -179,7 +236,8 @@ class KiCadSchematicBlock(Block):
                 net_name = net_label_names.pop()
             else:
                 net_name = None
-            if net_name is not None:
+            if net_name is not None and net_name not in port_label_names:
+                # allow port names to overlap with net names, in which case port name takes priority
                 assert not hasattr(self, net_name), f"net name {net_name} already exists in Block"
                 setattr(self, net_name, connection)
 

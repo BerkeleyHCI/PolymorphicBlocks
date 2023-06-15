@@ -134,6 +134,7 @@ message HierarchyBlock {
   Generator                       generator = 22;  // optional, and removed upon invocation
 
   bool is_abstract = 30;  // true if self_class is abstract, and should error if used in a design
+  edgir.ref.LibraryPath default_refinement = 31;  // optional default refinement subclass, only valid for library blocks
 
   edgir.common.Metadata meta = 127;
 

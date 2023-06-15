@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Cp2102_Device(DiscreteChip, FootprintBlock, JlcPart):
+class Cp2102_Device(InternalSubcircuit, FootprintBlock, JlcPart):
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground())
@@ -76,7 +76,7 @@ class Cp2102_Device(DiscreteChip, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, True)
 
 
-class Cp2102(PinMappable):
+class Cp2102(Interface, PinMappable):
   """USB-UART converter"""
   def __init__(self) -> None:
     super().__init__()

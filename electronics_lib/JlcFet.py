@@ -2,10 +2,10 @@ from typing import *
 import re
 from electronics_abstract_parts import *
 
-from .JlcPart import JlcTablePart, DescriptionParser
+from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcBaseFet(BaseTableFet, JlcTablePart):
+class JlcBaseFet(BaseTableFet, JlcTableSelector, PartsTableFootprint):
   PACKAGE_FOOTPRINT_MAP = {
     'SOT23-3': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
@@ -24,7 +24,7 @@ class JlcBaseFet(BaseTableFet, JlcTablePart):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(\S+V) (\S+A) (\S+W) (\S+Ω)@(\S+V),\S+A (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
      lambda match: {
-       JlcBaseFet.CHANNEL: match.group(7),
+       TableFet.CHANNEL: match.group(7),
        TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
        TableFet.IDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'A')),
        # Vgs isn't specified, so the Ron@Vgs is used as a lower bound; assumed symmetric
@@ -39,7 +39,7 @@ class JlcBaseFet(BaseTableFet, JlcTablePart):
     # Some of them have the power entry later, for whatever reason
     (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
      lambda match: {
-       JlcBaseFet.CHANNEL: match.group(7),
+       TableFet.CHANNEL: match.group(7),
        TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
        TableFet.IDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'A')),
        # Vgs isn't specified, so the Ron@Vgs is used as a lower bound; assumed symmetric
@@ -76,14 +76,8 @@ class JlcBaseFet(BaseTableFet, JlcTablePart):
 
 
 class JlcFet(JlcBaseFet, TableFet):
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
+  pass
 
 
 class JlcSwitchFet(JlcBaseFet, TableSwitchFet):
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
+  pass

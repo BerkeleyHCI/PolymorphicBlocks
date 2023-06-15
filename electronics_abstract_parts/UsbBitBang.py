@@ -5,7 +5,7 @@ from .Categories import *
 from .AbstractResistor import Resistor
 
 
-class UsbBitBang(DiscreteApplication):
+class UsbBitBang(Interface, Block):
   """Bit-bang circuit for USB, from the UPduino3.0 circuit and for 3.3v.
   Presumably generalizes to any digital pin that can be driven fast enough.
 

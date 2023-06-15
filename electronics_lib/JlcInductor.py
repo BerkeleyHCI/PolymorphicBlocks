@@ -2,20 +2,23 @@ from typing import *
 import re
 from electronics_abstract_parts import *
 
-from .JlcPart import JlcTablePart, DescriptionParser
+from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcInductor(TableInductor, JlcTablePart, FootprintBlock):
+class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
-    'L0603': 'Inductor_SMD:L_0603_1608Metric',
+    '0402': 'Inductor_SMD:L_0402_1005Metric',
     '0603': 'Inductor_SMD:L_0603_1608Metric',
-    'L0805': 'Inductor_SMD:L_0805_2012Metric',
     '0805': 'Inductor_SMD:L_0805_2012Metric',
-    'L1206': 'Inductor_SMD:L_1206_3216Metric',
     '1206': 'Inductor_SMD:L_1206_3216Metric',
     '1210': 'Inductor_SMD:L_1210_3225Metric',
-    'L1210': 'Inductor_SMD:L_1210_3225Metric',
     '1812': 'Inductor_SMD:L_1812_4532Metric',
+
+    'L0402': 'Inductor_SMD:L_0402_1005Metric',
+    'L0603': 'Inductor_SMD:L_0603_1608Metric',
+    'L0805': 'Inductor_SMD:L_0805_2012Metric',
+    'L1206': 'Inductor_SMD:L_1206_3216Metric',
+    'L1210': 'Inductor_SMD:L_1210_3225Metric',
     'L1812': 'Inductor_SMD:L_1812_4532Metric',
   }
 
@@ -59,11 +62,13 @@ class JlcInductor(TableInductor, JlcTablePart, FootprintBlock):
      }),
   ]
 
-  @init_in_parent
-  def __init__(self, *args, ignore_frequency: BoolLike = False, **kwargs):
-    super().__init__(*args, **kwargs)
-    self.require(ignore_frequency | (self.frequency == Range.zero_to_upper(0)),
-                 "JLC inductors do not have frequency data, frequency spec must be ignored")
+  def _row_generate(self, row: PartsTableRow) -> None:
+    # because the table does not have frequency specs, it is infinite for filtering, but needs to be zero actual
+    row.value[self.FREQUENCY_RATING] = Range.exact(0)
+    super()._row_generate(row)
+    # because the table does not have frequency specs, the table filter doesn't enforce frequency ratings
+    # so the user must add the actual frequency rating in refinements
+    self.require(self.frequency.within(self.actual_frequency_rating))
 
   @classmethod
   def _make_table(cls) -> PartsTable:
@@ -92,11 +97,4 @@ class JlcInductor(TableInductor, JlcTablePart, FootprintBlock):
       new_cols.update(cls._parse_jlcpcb_common(row))
       return new_cols
 
-    return cls._jlc_table().map_new_columns(parse_row).sort_by(
-      lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
-    )
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
+    return cls._jlc_table().map_new_columns(parse_row)

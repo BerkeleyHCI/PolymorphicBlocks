@@ -3,9 +3,10 @@ import unittest
 from edg import *
 
 
-class UartConnector(Block):
+class UartConnector(Connector, Block):
   """UART connector, follows the TXD, RXD, GND, +5 pinning of cheap CP2102 dongles."""
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, *, pwr_current_draw: RangeLike = (0, 0)*mAmp):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
 
@@ -15,11 +16,12 @@ class UartConnector(Block):
     self.connect(self.uart.tx, self.conn.pins.request('2').adapt_to(DigitalSource()))
     self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()),
                            [Common])
-    self.pwr = self.Export(self.conn.pins.request('4').adapt_to(VoltageSink()),
-                           [Power])
+    self.pwr = self.Export(self.conn.pins.request('4').adapt_to(VoltageSink(
+      current_draw=pwr_current_draw
+    )), [Power])
 
 
-class UsbUartTest(JlcBoardTop):
+class UsbUart(JlcBoardTop):
   """USB UART converter board"""
   def contents(self) -> None:
     super().contents()
@@ -79,4 +81,4 @@ class UsbUartTest(JlcBoardTop):
 
 class UsbUartTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(UsbUartTest)
+    compile_board_inplace(UsbUart)

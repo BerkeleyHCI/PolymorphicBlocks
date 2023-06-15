@@ -1,20 +1,25 @@
-from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from electronics_lib import OscillatorCrystal
+from .JlcPart import JlcPart
 
 
 @abstract_block
-class Lpc1549Base_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorBlock, FootprintBlock):
+class Lpc1549Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+  PACKAGE: str  # package name for footprint(...)
+  PART: str  # part name for footprint(...)
+  LCSC_PART: str
+
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
+  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
     # Ports with shared references
     self.pwr = self.Port(VoltageSink(
       voltage_limits=(2.4, 3.6) * Volt,
-      current_draw=(0, 19)*mAmp,  # rough guesstimate from Figure 11.1 for supply Idd (active mode)
-      # TODO propagate current consumption from IO ports
+      current_draw=(0, 19)*mAmp + self.io_current_draw.upper(),  # rough guesstimate from Figure 11.1 for supply Idd (active mode)
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
@@ -28,15 +33,26 @@ class Lpc1549Base_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorB
                               optional=True)
 
     self.swd = self.Port(SwdTargetPort().empty())
+    self._io_ports.insert(0, self.swd)
 
-    self.generator(self.generate, self.pin_assigns,
-                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
-                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
-                   self.usb.requested(), self.can.requested(), self.swd.is_connected())
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return VariantPinRemapper({
+      'VddA': self.pwr,
+      'VssA': self.gnd,
+      'VrefP_ADC': self.pwr,
+      'VrefP_DAC': self.pwr,
+      'VrefN': self.gnd,
+      'Vbat': self.pwr,
+      'Vss': self.gnd,
+      'Vdd': self.pwr,
 
-  def contents(self) -> None:
-    super().contents()
+      'XTALIN': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
+      'XTALOUT': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
+      'RTCXIN': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
+      'RTCXOUT': self.xtal_rtc.xtal_out,
+    }).remap(self.SYSTEM_PIN_REMAP)
 
+  def _io_pinmap(self) -> PinMapUtil:
     # Port models
     dio_5v_model = DigitalBidir.from_supply(
       self.gnd, self.pwr,
@@ -77,24 +93,7 @@ class Lpc1549Base_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorB
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiMaster(DigitalBidir.empty())
 
-    # Pin/peripheral resource definitions (table 3)
-    self.system_pinmaps = VariantPinRemapper({
-      'VddA': self.pwr,
-      'VssA': self.gnd,
-      'VrefP_ADC': self.pwr,
-      'VrefP_DAC': self.pwr,
-      'VrefN': self.gnd,
-      'Vbat': self.pwr,
-      'Vss': self.gnd,
-      'Vdd': self.pwr,
-
-      'XTALIN': self.xtal.xtal_in,  # TODO Table 3, note 11, float/gnd (gnd preferred) if not used
-      'XTALOUT': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
-      'RTCXIN': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
-      'RTCXOUT': self.xtal_rtc.xtal_out,
-    })
-
-    self.abstract_pinmaps = PinMapUtil([  # partial table for 48- and 64-pin only
+    return PinMapUtil([  # partial table for 48- and 64-pin only
       PinResource('PIO0_0', {'PIO0_0': dio_5v_model, 'ADC0_10': adc_model}),
       PinResource('PIO0_1', {'PIO0_1': dio_5v_model, 'ADC0_7': adc_model}),
       PinResource('PIO0_2', {'PIO0_2': dio_5v_model, 'ADC0_6': adc_model}),
@@ -164,38 +163,26 @@ class Lpc1549Base_Device(PinMappable, BaseIoController, DiscreteChip, GeneratorB
       PeripheralFixedResource('SWD', SwdTargetPort(DigitalBidir.empty()), {
         'swclk': ['PIO0_19'], 'swdio': ['PIO0_20'], 'reset': ['PIO0_21'],
       }),
-    ])
+    ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
-  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
-  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
-  PACKAGE: str  # package name for footprint(...)
-  PART: str  # part name for footprint(...)
-
-  def generate(self, assignments: List[str],
-               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
-               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
-               usb_requests: List[str], can_requests: List[str], swd_connected: bool) -> None:
-    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
-
-    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
-      (SwdTargetPort, ['swd'] if swd_connected else []),
-      (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
-      (UartPort, uart_requests), (CanControllerPort, can_requests),
-      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
-    ], assignments)
-    self.generator_set_allocation(allocated)
-
-    io_pins = self._instantiate_from(self._get_io_ports() + [self.swd], allocated)
+  def generate(self) -> None:
+    super().generate()
 
     self.footprint(
       'U', self.PACKAGE,
-      dict(chain(system_pins.items(), io_pins.items())),
+      self._make_pinning(),
       mfr='NXP', part=self.PART,
       datasheet='https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf'
     )
+    self.assign(self.lcsc_part, self.LCSC_PART)
+    self.assign(self.actual_basic_part, False)
 
 
 class Lpc1549_48_Device(Lpc1549Base_Device):
+  PACKAGE = 'Package_QFP:LQFP-48_7x7mm_P0.5mm'
+  PART = 'LPC1549JBD48'
+  LCSC_PART = 'C71906'
+
   SYSTEM_PIN_REMAP = {
     'VddA': '16',
     'VssA': '17',
@@ -248,11 +235,13 @@ class Lpc1549_48_Device(Lpc1549Base_Device):
     'USB_DP': '35',
     'USB_DM': '36',
   }
-  PACKAGE = 'Package_QFP:LQFP-48_7x7mm_P0.5mm'
-  PART = 'LPC1549JBD48'
 
 
 class Lpc1549_64_Device(Lpc1549Base_Device):
+  PACKAGE = 'Package_QFP:LQFP-64_10x10mm_P0.5mm'
+  PART = 'LPC1549JBD64'
+  LCSC_PART = 'C74507'
+
   SYSTEM_PIN_REMAP = {
     'VddA': '20',
     'VssA': '21',
@@ -319,11 +308,9 @@ class Lpc1549_64_Device(Lpc1549Base_Device):
     'USB_DP': '47',
     'USB_DM': '48',
   }
-  PACKAGE = 'Package_QFP:LQFP-64_10x10mm_P0.5mm'
-  PART = 'LPC1549JBD64'
 
 
-class Lpc1549SwdPull(Block):
+class Lpc1549SwdPull(InternalSubcircuit, Block):
   def __init__(self):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -338,13 +325,14 @@ class Lpc1549SwdPull(Block):
 
 
 @abstract_block
-class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnector, IoController, GeneratorBlock):
+class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoController,
+                  BaseIoControllerExportable):
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
+  DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    self.generator(self.generate, self.can.requested(), self.usb.requested(),
-                   self.pin_assigns, self.gpio.requested(), self.swd_swo_pin, self.swd_tdi_pin)
+    self.ic: Lpc1549Base_Device
 
   def contents(self):
     super().contents()
@@ -354,8 +342,10 @@ class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnect
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))  # defined in generator to mix in SWO/TDI
-      self._export_ios_from(self.ic, excludes=[self.gpio])  # SWO/TDI must be mixed into GPIOs
-      self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+      self.connect(self.xtal_node, self.ic.xtal)
+      (self.swd_pull, ), _ = self.chain(self.swd_node,
+                                        imp.Block(Lpc1549SwdPull()),
+                                        self.ic.swd)
 
       # one set of 0.1, 0.01uF caps for each Vdd, Vss pin, per reference schematic
       self.pwr_cap = ElementDict[DecouplingCapacitor]()
@@ -374,29 +364,9 @@ class Lpc1549Base(PinMappable, Microcontroller, IoControllerWithSwdTargetConnect
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-      (self.swd_pull, ), _ = self.chain(self.swd.swd,
-                                        imp.Block(Lpc1549SwdPull()),
-                                        self.ic.swd)
-
-  def generate(self, can_requested: List[str], usb_requested: List[str],
-               pin_assigns: List[str], gpio_requested: List[str], swd_swo_pin: str, swd_tdi_pin: str) -> None:
-    if can_requested or usb_requested:  # tighter frequency tolerances from CAN and USB usage require a crystal
-      self.crystal = self.Block(OscillatorCrystal(frequency=12 * MHertz(tol=0.005)))
-      self.connect(self.crystal.gnd, self.gnd)
-      self.connect(self.crystal.crystal, self.ic.xtal)
-
-    if swd_swo_pin != 'NC':
-      self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
-      pin_assigns.append(f'swd_swo={swd_swo_pin}')
-    if swd_tdi_pin != 'NC':
-      self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
-      pin_assigns.append(f'swd_tdi={swd_tdi_pin}')
-    self.assign(self.ic.pin_assigns, pin_assigns)
-
-    gpio_model = DigitalBidir.empty()
-    for gpio_name in gpio_requested:
-      self.connect(self.gpio.append_elt(gpio_model, gpio_name), self.ic.gpio.request(gpio_name))
-    self.gpio.defined()
+  def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
+    return len(self.get(self.can.requested())) > 0 or len(self.get(self.usb.requested())) > 0 \
+        or super()._crystal_required()
 
 
 class Lpc1549_48(Lpc1549Base):

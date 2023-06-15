@@ -7,7 +7,6 @@ import edgir.init.init
 
 import scala.collection.{SeqMap, mutable}
 
-
 trait HasMutablePorts {
   protected val ports: mutable.SeqMap[String, PortLike]
 
@@ -34,10 +33,12 @@ trait HasMutableBlocks {
   }
 
   protected def parseBlocks(pb: Seq[elem.NamedBlockLike]): mutable.SeqMap[String, BlockLike] = {
-    pb.toSeqMap.view.mapValues { _.`type` match {
-      case elem.BlockLike.Type.LibElem(like) => BlockLibrary(like)
-      case like => throw new NotImplementedError(s"Non-library sub-block $like")
-    }}.to(mutable.SeqMap)
+    pb.toSeqMap.view.mapValues {
+      _.`type` match {
+        case elem.BlockLike.Type.LibElem(like) => BlockLibrary(like)
+        case like => throw new NotImplementedError(s"Non-library sub-block $like")
+      }
+    }.to(mutable.SeqMap)
   }
 }
 
@@ -52,11 +53,13 @@ trait HasMutableLinks {
   }
 
   protected def parseLinks(pb: Seq[elem.NamedLinkLike]): mutable.SeqMap[String, LinkLike] = {
-    pb.toSeqMap.view.mapValues { _.`type` match {
-      case elem.LinkLike.Type.LibElem(like) => LinkLibrary(like)
-      case elem.LinkLike.Type.Array(like) => new LinkArray(like)
-      case like => throw new NotImplementedError(s"Non-library sub-link $like")
-    }}.to(mutable.SeqMap)
+    pb.toSeqMap.view.mapValues {
+      _.`type` match {
+        case elem.LinkLike.Type.LibElem(like) => LinkLibrary(like)
+        case elem.LinkLike.Type.Array(like) => new LinkArray(like)
+        case like => throw new NotImplementedError(s"Non-library sub-link $like")
+      }
+    }.to(mutable.SeqMap)
   }
 }
 
@@ -73,8 +76,8 @@ trait HasMutableConstraints {
 
   // Replaces the constraint by name with the results of the map. Can be replaced with none, one, or several
   // new constraints. Returns a SeqMap of the new constraints.
-  def mapMultiConstraint(name: String)(fn: expr.ValueExpr => Seq[(String, expr.ValueExpr)]):
-      SeqMap[String, expr.ValueExpr] = {
+  def mapMultiConstraint(name: String)(fn: expr.ValueExpr => Seq[(String, expr.ValueExpr)])
+      : SeqMap[String, expr.ValueExpr] = {
     val newValues = fn(constraints(name))
     SeqMapUtils.replaceInPlace(constraints, name, newValues)
     newValues.to(SeqMap)

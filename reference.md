@@ -62,14 +62,12 @@ These can be called inside `contents()`:
   - `(self.subblock_name1, self.subblock_name2, ...), self.chain_name = self.chain(...)`
 
 ### Generators
-Generators provide a define-able `generate()` method (instead of `contents()`) that is run after its parent (enclosing) hierarchy blocks have been solved, and can get the Python value (eg, float) of parameters of itself, its ports, and links.
+Generators allow some Python code to run that has access to the solved values of some parameters.
+TODO - write this section pending generator refactoring, in the meantime see the port array section of the getting started tutorial.
 
-In addition to the primitives that can be called inside `Block`'s `contents()`, these can be called inside `generate()`: 
-- `self.get(self.parameter)`: returns the Python value (eg, `bool`, `float`, `Tuple[float, float]`, `str`) of a parameter.
-  - Optional argument: `default=default_value`: returns a default value (instead of raising an exception) if the parameter has no value 
 
-### CircuitBlock
-CircuitBlocks are a block that is associated with one PCB footprint.
+### Footprint
+FootprintBlock is a block that is associated with a PCB footprint.
 
 All primitives that can be called inside `Block`'s  `__init__(...)` can be called inside `__init__(...)`
 
@@ -128,48 +126,8 @@ These can be called inside `contents()`:
 
 
 ## Block Libraries
-The libraries listed here are primarily abstract parts, which are recommended so designs can be generic and leaves the selection of concrete parts to later.
-Some of these will have a default refinement (eg, passives) widely applicable for an intermediate level design (eg, 0603 SMD parts), while more specialized parts (eg, boost converters) will not. 
-
-### Discrete (as application wrapper)
-- `PullupResistor(resistance)`, `PulldownResistor(resistance)`: one port connected to a voltage rail or ground, the other port connected to the digital signal line
-- `DecouplingCapacitor(capacitance)` (voltage is inferred from connected ports): one port connected to a voltage rail, the other connected to ground
-- `VoltageDivider(output_voltage, ratio, impedance)` (either `output_voltage` or `ratio`, input voltage inferred from connected ports): power and ground connected to voltage rails, with the divided output as an AnalogSource with the appropriate parallel impedance
-  - `SignalDivider(ratio, impedance)`: similar to VoltageDivider, but with an input AnalogSink instead of a voltage rail
-- `DigitalLowPassRc(impedance, cutoff_freq)`: low-pass RC filter with a DigitalSink input and DigitalSource output 
-- `DigitalSwitch()`: one port connected to ground, the other to the digital line, and pressing the button shorts the digital line low
-- `I2cPullup()`: one port connected to a voltage rail, the other port connected to the I2C bus
-- `OscillatorCrystal(frequency)`: one port connected to ground, the other to a crystal driver
-- TVS diodes: `UsbEsdDiode()`, `CanEsdDiode()`: one port connected to ground, the other to the signal line(s)
-- `IndicatorLed()`: LED-resistor circuit, one port connected to ground, the other to a digital signal
-- `IndicatorSinkRgbLed()`: RGB LED with resistors, on port connected to ground, and a digital signal for each of R, G, B 
-
-### Power Converters
-- `DcDcConverter(output_voltage)` (output current inferred from connected ports): abstract DC-DC converter with common ground that provides the target voltage
-- `LinearRegulator(output_voltage)` (output current inferred from connected ports): linear regulator that provides the target voltage
-- `DcDcSwitchingConverter(output_voltage, ripple_current_factor, input_ripple_limit, output_ripple_limit)` (all ripple arguments have sensible defaults): switching (high efficiency) DC-DC converters with common ground
-  - `BuckConverter(output_voltage, ...)`, `BoostConverter(output_voltage, ...)` (shares full argument list with DcDcSwitching converter)
- 
-### Connectors
-- `SdSocket()`, `MicroSdSocket()`: SD card socket
-- `SwdCortexTargetConnector()`: 10-pin SWD target connector, with power modeled as going into the port from the DUT (but actually bidirectional - it's a direct copper connection)
-- `PowerBarrelJack(voltage_out, current_limits)`: barrel jack that provides the specified voltage
-- `UsbDeviceConnector()`: USB device-side connector, providing power (Vbus) and data (USB D+/D-) lines, including any adapter circuitry as necessary (eg, CC pull resistors for a type-C receptacle) 
-
-### Microcontrollers
-Microcontrollers are modeled as a grab-bag of IOs.
-Call `.new_io(RequestedPortType)` to return a fresh (new) IO of a given type, optionally also passing in a `pin=...` argument to specify the pin(s) to assign.
-
-- `Lpc1549_48()`, `Lpc1549_64()`: LPC1549 Cortex-M3 microcontroller in QFP-48 or -64 package with switch matrix for peripheral pin mapping
-- `Stm32f103_48()`: STM32F103Cxxx microcontroller in QFP-48 package
-- `Nucleo_F303k8()`: Nucleo-32 (pinned, breadboardable module) F303K8 that also sources power from USB 
-
-### Other Components
-- `Qt096t_if09()`: 0.96" 160x80 color LCD module with FPC socket
-- `E2154f2091()`: tri-color (red / black / white) E-ink display with FPC socket
-- `Lm4871()`: speaker driver with AnalogSink input
-- `BlueSmirf()`, `Xbee_S3b()`: various RF modules
-- `CanTransceiver()`: abstract CAN transceiver 
+The IDE's library tab provides a categorized list of available library blocks.
+Many blocks also have a short descriptive docstring.
 
 
 ## Advanced Core Primitives
@@ -181,11 +139,11 @@ Ports can have parameters and may be connected to each other via a Link.
 Skeleton structure:
 ```python
 class MyPort(Port[MyPortLinkType]):
+  link_type = MyPortLinkType  # required
+  bridge_type = MyPortBridgeType  # optional, if a bridge is needed
+  
   def __init__(self) -> None:
     super().__init__()  # essential to call the superclass method beforehand to initialize state
-    self.link_type = MyPortLinkType  # required
-    self.bridge_type = MyPortBridgeType  # optional, if a bridge is needed
-    self.adapter_types = [MyPortToOtherAdapter]  # optional, for any adapters
     # declare elements like parameters here
 ```
 
@@ -202,10 +160,11 @@ Bundles are a special type of Port that is made up of constituent sub-Ports.
 Skeleton structure:
 ```python
 class MyBundle(Bundle):
+  link_type = MyBundleLinkType
+  bridge_type = MyBundleBridgeType  # optional, if a bridge is needed
+  
   def __init__(self) -> None:
     super().__init__()  # essential to call the superclass method beforehand to initialize state
-    self.link_type = MyBundleLinkType
-    self.bridge_type = MyBundleBridgeType  # optional, if a bridge is needed
     # declare elements like parameters here
 ```
 

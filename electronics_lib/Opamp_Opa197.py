@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Opa197_Device(DiscreteChip, FootprintBlock):
+class Opa197_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
     self.vcc = self.Port(VoltageSink(
@@ -39,6 +40,8 @@ class Opa197_Device(DiscreteChip, FootprintBlock):
       mfr='Texas Instruments', part='OPA197IDR',
       datasheet='https://www.ti.com/lit/ds/symlink/opa197.pdf'
     )
+    self.assign(self.lcsc_part, 'C79274')
+    self.assign(self.actual_basic_part, False)
 
 
 class Opa197(Opamp):
