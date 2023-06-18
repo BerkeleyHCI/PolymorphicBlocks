@@ -29,6 +29,7 @@ from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
 from .Opamp_Lmv321 import Lmv321
+from .CeramicResonator_Cstne import Cstne
 
 from .PassiveConnector_Header import PinHeader254, PinSocket254, PinHeader254DualShroudedInline, PinHeader127DualShrouded
 from .PassiveConnector_Header import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl

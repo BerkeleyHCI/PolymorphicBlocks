@@ -58,7 +58,7 @@ from .AbstractPowerConverters import VoltageRegulator, LinearRegulator, VoltageR
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
 from .AbstractFuse import Fuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
-from .AbstractCrystal import Crystal, TableCrystal, OscillatorCrystal
+from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
 from .AbstractOscillator import Oscillator, TableOscillator
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetWithSwoTdiConnector
 from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, AnalogTestPoint

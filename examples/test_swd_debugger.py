@@ -151,6 +151,7 @@ class SwdDebugger(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Stm32f103_48),
+        (['mcu', 'crystal'], Cstne),
         (['usb_reg'], Ap2204k),
       ],
       instance_values=[
