@@ -11,6 +11,11 @@ class Nrf52840Base_Io(BaseIoControllerPinmapGenerator, InternalSubcircuit, Gener
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
+  PACKAGE: str
+  MANUFACTURER: str
+  PART: str
+  DATASHEET: str
+
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
     self._gnd: CircuitPort[VoltageLink]
