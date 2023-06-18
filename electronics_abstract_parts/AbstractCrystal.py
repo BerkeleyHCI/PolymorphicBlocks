@@ -34,15 +34,15 @@ class CrystalStandardFootprint(Crystal, StandardFootprint[Crystal]):
 
   FOOTPRINT_PINNING_MAP = {
     'Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm': lambda block: {
-      '1': block.crystal.a,
+      '1': block.crystal.xtal_in,
       '2': block.gnd,
-      '3': block.crystal.b,
+      '3': block.crystal.xtal_out,
       '4': block.gnd,
     },
     'Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm': lambda block: {
-      '1': block.crystal.a,
+      '1': block.crystal.xtal_in,
       '2': block.gnd,
-      '3': block.crystal.b,
+      '3': block.crystal.xtal_out,
       '4': block.gnd,
     },
   }
@@ -111,8 +111,8 @@ class OscillatorCrystal(OscillatorReference):  # TODO rename to disambiguate fro
     self.cap_a = self.Block(cap_model)
     self.cap_b = self.Block(cap_model)
     self.connect(self.crystal, self.package.crystal)
-    self.connect(self.crystal.a, self.cap_a.pos)
-    self.connect(self.crystal.b, self.cap_b.pos)
+    self.connect(self.crystal.xtal_in, self.cap_a.pos)
+    self.connect(self.crystal.xtal_out, self.cap_b.pos)
     self.connect(self.gnd, self.cap_a.neg.adapt_to(Ground()), self.cap_b.neg.adapt_to(Ground()), self.package.gnd)
 
 

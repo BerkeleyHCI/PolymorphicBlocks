@@ -24,9 +24,9 @@ class Cstne(CeramicResonator, GeneratorBlock, JlcPart, FootprintBlock):
         self.footprint(
             'U', 'Crystal:Resonator_SMD_Murata_CSTxExxV-3Pin_3.0x1.1mm',
             {
-                '1': self.crystal.a,
+                '1': self.crystal.xtal_in,
                 '2': self.gnd,
-                '3': self.crystal.b,
+                '3': self.crystal.xtal_out,
             },
             mfr='Murata Electronics', part=part_number,
             datasheet=part_datasheet,
