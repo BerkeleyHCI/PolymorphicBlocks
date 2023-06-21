@@ -218,7 +218,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, IoContr
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
 
 
-class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
+class Freenove_Esp32_Wrover_Device(Esp32_Device, FootprintBlock):
   """ESP32-WROVER-DEV breakout with camera.
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf
@@ -286,7 +286,7 @@ class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
     )
 
 
-class Esp32_Wrover_Dev(Microcontroller, Radiofrequency, IoController, BaseIoControllerExportable, Block):
+class Freenove_Esp32_Wrover(Microcontroller, Radiofrequency, IoController, BaseIoControllerExportable, Block):
   """Wrapper around Esp32_Wover_Dev fitting the IoController interface
   """
   def __init__(self):
@@ -300,6 +300,6 @@ class Esp32_Wrover_Dev(Microcontroller, Radiofrequency, IoController, BaseIoCont
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.ic = imp.Block(Esp32_Wrover_Dev_Device(pin_assigns=ArrayStringExpr()))
+      self.ic = imp.Block(Freenove_Esp32_Wrover_Device(pin_assigns=ArrayStringExpr()))
 
       self.connect(self.io2, self.ic.io2)

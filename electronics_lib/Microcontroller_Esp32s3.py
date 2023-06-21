@@ -214,3 +214,90 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, IoCont
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
+
+
+class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
+  """Freenove ESP32S3 WROOM breakout breakout with camera.
+
+  Board pinning: https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board/blob/main/ESP32S3_Pinout.png
+
+  Top left is pin 1, going down the left side then up the right side.
+  Up is defined from the text orientation (antenna is on top).
+  """
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    'Vdd': '1',  # 3v3, output of internal AMS1117-3.3V LDO
+    # 20: Vcc 5vUSB
+    'Vss': '21',
+    'CHIP_PU': '2',  # aka EN, switch w/ pullup on board
+
+    'GPIO2': '39',  # fixed strapping pin, drives LED on PCB
+    'GPIO0': '28',  # fixed strapping pin
+
+    'U0RXD': '39',  # fixed programming pin, board connected to USB UART w/ jumper
+    'U0TXD': '40',  # fixed programming pin, board connected to USB UART w/ jumper
+  }
+  RESOURCE_PIN_REMAP = {
+    # 'GPIO4': '3',  # CAM_SIOD
+    # 'GPIO5': '4',  # CAM_SIOC
+    # 'GPIO6': '5',  # CAM_VYSNC
+    # 'GPIO7': '6',  # CAM_HREF
+    # 'GPIO15': '7',  # CAM_XCLK
+    # 'GPIO16': '8',  # CAM_Y9
+    # 'GPIO17': '9',  # CAM_Y8
+    # 'GPIO18': '10',  # CAM_Y7
+    # 'GPIO8': '11',  # CAM_Y4
+    'GPIO3': '12',
+    # 'GPIO46': '13',  # strapping pin, boot mode
+    # 'GPIO9': '14',  # CAM_Y3
+    # 'GPIO10': '15',  # CAM_Y5
+    # 'GPIO11': '16',  # CAM_Y2
+    # 'GPIO12': '17',  # CAM_Y6
+    # 'GPIO13': '18',  # CAM_PCLK
+    'GPIO14': '19',
+
+    # 'GPIO19': '22',  # USB_D+
+    # 'GPIO20': '23',  # USB_D-
+    'GPIO21': '24',
+    'GPIO47': '25',
+    'GPIO48': '26',  # internal WS2812
+    # 'GPIO45': '27',  # strapping pin, VDD_SPI
+    # 'GPIO35': '29',  # PSRAM
+    # 'GPIO36': '30',  # PSRAM
+    # 'GPIO37': '31',  # PSRAM
+    # 'GPIO38': '32',  # SD_CMD
+    # 'GPIO39': '33',  # SD_CLK
+    # 'GPIO40': '34',  # SD_DATA
+    'GPIO41': '35',
+    'GPIO42': '36',
+    'GPIO2': '37',  # internal LED
+    'GPIO1': '38',
+  }
+
+  def generate(self) -> None:
+    super().generate()
+    self.assign(self.has_chip_pu, False)
+
+    self.footprint(
+      'U', 'edg:Freenove_ESP32S3-WROOM',
+      self._make_pinning(),
+      mfr='', part='Freenove_ESP32S3-WROOM',
+    )
+
+
+class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoController, BaseIoControllerExportable, Block):
+  """Wrapper around Esp32_Wover_Dev fitting the IoController interface
+  """
+  def __init__(self):
+    super().__init__()
+    self.io2 = self.Port(DigitalBidir.empty(), optional=True)  # allow this to be connected
+
+  def contents(self) -> None:
+    super().contents()
+
+    with self.implicit_connect(
+            ImplicitConnect(self.pwr, [Power]),
+            ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      self.ic = imp.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
+
+      self.connect(self.io2, self.ic.io2)
