@@ -280,9 +280,9 @@ class Freenove_Esp32_Wrover_Device(Esp32_Device, FootprintBlock):
     self.assign(self.has_chip_pu, False)
 
     self.footprint(
-      'U', 'edg:ESP32-WROVER-DEV',
+      'U', 'edg:Freenove_ESP32-WROVER',
       self._make_pinning(),
-      mfr='', part='ESP32-WROVER-DEV',
+      mfr='', part='Freenove ESP32-WROVER',
     )
 
 

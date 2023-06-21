@@ -278,9 +278,9 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     self.assign(self.has_chip_pu, False)
 
     self.footprint(
-      'U', 'edg:Freenove_ESP32S3-WROOM',
+      'U', 'edg:Freenove_ESP32-WROVER',
       self._make_pinning(),
-      mfr='', part='Freenove_ESP32S3-WROOM',
+      mfr='', part='Freenove ESP32S3-WROOM',
     )
 
 
