@@ -72,6 +72,7 @@ class Esp32_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Generato
     spi_model = SpiMaster(DigitalBidir.empty(), (0, 80)*MHertz)  # section 4.1.17
     i2c_model = I2cMaster(DigitalBidir.empty())  # section 4.1.11, 100/400kHz and up to 5MHz
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI
+    i2s_model = I2sController(DigitalBidir.empty())
 
     return PinMapUtil([  # section 2.2, table 1
       # VDD3P3_RTC
@@ -132,6 +133,9 @@ class Esp32_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Generato
       PeripheralAnyResource('VSPI', spi_model),
 
       PeripheralAnyResource('TWAI', can_model),
+
+      PeripheralAnyResource('I2S0', i2s_model),  # while CLK is restricted pinning, SCK = BCK here
+      PeripheralAnyResource('I2S1', i2s_model),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
 

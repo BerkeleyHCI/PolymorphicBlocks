@@ -88,6 +88,7 @@ class Esp32c3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
       PeripheralAnyResource('U1', uart_model),
       PeripheralAnyResource('I2C', i2c_model),
       PeripheralAnyResource('SPI2', spi_model),
+      PeripheralAnyResource('I2S', I2sController.empty()),
       PeripheralFixedResource('USB', UsbDevicePort.empty(), {
         'dp': ['GPIO19'], 'dm': ['GPIO18']
       }),

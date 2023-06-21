@@ -73,6 +73,7 @@ class Nrf52840Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, G
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiMaster(DigitalBidir.empty(), (125, 32000)*kHertz)
     i2c_model = I2cMaster(DigitalBidir.empty())
+    i2s_model = I2sController(DigitalBidir.empty())
 
     hf_io_pins = [
       'P0.00', 'P0.01', 'P0.26', 'P0.27', 'P0.04',
@@ -163,6 +164,9 @@ class Nrf52840Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, G
       }),
       PeripheralFixedResource('UART1', uart_model, {
         'tx': hf_io_pins, 'rx': hf_io_pins,
+      }),
+      PeripheralFixedResource('I2S', i2s_model, {
+        'sck': hf_io_pins, 'ws': hf_io_pins, 'sd': hf_io_pins,
       }),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 

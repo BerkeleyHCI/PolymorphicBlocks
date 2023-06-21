@@ -54,6 +54,7 @@ class Esp32s3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
     spi_model = SpiMaster(DigitalBidir.empty(), (0, 80)*MHertz)  # section 3.5.2, 80MHz in master, 60MHz in slave
     i2c_model = I2cMaster(DigitalBidir.empty())  # section 3.5.6, 100/400kHz and up to 800kbit/s
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI, up to 1Mbit/s
+    i2s_model = I2sController(DigitalBidir.empty())
 
     return PinMapUtil([  # table 2-1 for overview, table 3-3 for remapping, table 2-4 for ADC
       # VDD3P3_RTC domain
@@ -128,6 +129,9 @@ class Esp32s3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
       PeripheralAnyResource('SPI2', spi_model),
       PeripheralAnyResource('SPI3', spi_model),
       PeripheralAnyResource('TWAI', can_model),
+      PeripheralAnyResource('I2S0', i2s_model),
+      PeripheralAnyResource('I2S1', i2s_model),
+
       PeripheralFixedResource('USB', UsbDevicePort.empty(), {
         'dp': ['GPIO20'], 'dm': ['GPIO19']
       }),
@@ -273,13 +277,27 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     'GPIO1': '38',
   }
 
+  def __init__(self):
+    super().__init__()
+    self.out_usb = self.Port(VoltageSource(
+      voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
+      current_limits=UsbConnector.USB2_CURRENT_LIMITS
+    ), optional=True)
+    self.out_3v3 = self.Port(VoltageSource(
+      voltage_out=3.3*Volt(tol=0.05)  # TODO: arbitrary tolerance, schematics aren't open-source
+    ), optional=True)
+    self.out_gnd = self.Port(GroundSource(), optional=True)
+
   def generate(self) -> None:
     super().generate()
     self.assign(self.has_chip_pu, False)
-
+    pinning = self._make_pinning()  # add optional output pins
+    pinning['1'] = self.out_3v3
+    pinning['20'] = self.out_5v
+    pinning['21'] = self.out_gnd
     self.footprint(
       'U', 'edg:Freenove_ESP32-WROVER',
-      self._make_pinning(),
+      pinning,
       mfr='', part='Freenove ESP32S3-WROOM',
     )
 
