@@ -7,6 +7,14 @@ from .test_robotdriver import PwmConnector
 
 class RobotOwl(JlcBoardTop):
   """Controller for a robot owl with a ESP32S3 dev board w/ camera, audio, and peripherals.
+
+  Note, 9 free IOs available
+  3 I2S out
+  2 I2S in (digital PDM)
+  2 PWM
+  2 I2C - optionally multiplexed onto camera pins
+  1 NPX
+  1 analog
   """
   def contents(self) -> None:
     super().contents()
@@ -67,11 +75,6 @@ class RobotOwl(JlcBoardTop):
     self.m = ElementDict[MountingHole]()
     for i in range(2):
       self.m[i] = self.Block(MountingHole())
-
-    # Misc board
-    self.lemur = self.Block(LemurLogo())
-    self.duck = self.Block(DuckLogo())
-    self.id = self.Block(IdDots4())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
