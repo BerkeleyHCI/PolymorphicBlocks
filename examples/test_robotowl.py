@@ -5,6 +5,30 @@ from edg import *
 from .test_robotdriver import PwmConnector
 
 
+class PhotodiodeSensor(LightSensor, KiCadSchematicBlock, Block):
+  """Simple photodiode-based light sensor"""
+  @init_in_parent
+  def __init__(self) -> None:
+    super().__init__()
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.out = self.Port(AnalogSource.empty(), [Output])
+
+  def contents(self):
+    super().contents()
+    self.import_kicad(
+      self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'r.1': VoltageSink(),
+        'r.2': AnalogSink(),  # arbitrary to make the connection legal
+        'pd.A': Ground(),
+        'pd.K': AnalogSource(
+          voltage_out=self.pwr.link().voltage.hull(self.gnd.link().voltage)
+          # TODO: what is the impedance?
+        ),
+      })
+
+
 class RobotOwl(JlcBoardTop):
   """Controller for a robot owl with a ESP32S3 dev board w/ camera, audio, and peripherals.
 
