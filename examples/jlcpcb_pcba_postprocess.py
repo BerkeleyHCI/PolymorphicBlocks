@@ -38,6 +38,7 @@ PART_ROTATIONS = {
   'C113367': -90,  # PAM8302
   'C2890035': -90,  # SK6805-EC15
   'C125972': 90,  # BME680
+  'C2682619': 180,  # MAX98357 BGA
 
   'C262645': 180,  # AFC07 FPC 30
   'C262669': 180  # AFC01 FPC 24
@@ -53,6 +54,8 @@ _FOOTPRINT_ROTATIONS = {
   'Package_TO_SOT_SMD:SOT-223-3_TabPin2': 180,
   'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': -90,
   'Package_SO:SOIC-8_5.23x5.23mm_P1.27mm': -90,
+
+  'OptoDevice:Osram_BPW34S-SMD': 180,
 
   'Connector_Coaxial:BNC_Amphenol_B6252HB-NPP3G-50_Horizontal': 180,
 }
