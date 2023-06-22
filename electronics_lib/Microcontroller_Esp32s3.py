@@ -32,7 +32,9 @@ class Esp32s3_Device(HasI2s, BaseIoControllerPinmapGenerator, InternalSubcircuit
       pullup_capable=True, pulldown_capable=True,
     )
 
-    self.chip_pu = self.Port(dio_model)  # table 2-5, power up/down control, do NOT leave floating
+    self.chip_pu = self.Port(dio_model, optional=True)  # table 2-5, power up/down control, do NOT leave floating
+    self.has_chip_pu = self.Parameter(BoolExpr())  # but some modules connect it internally
+    self.require(self.has_chip_pu == self.chip_pu.is_connected(), "EN not connected")
     self.io0 = self.Port(dio_model, optional=True)  # table 2-11, default pullup (SPI boot), set low to download boot
     self.uart0 = self.Port(UartPort(dio_model), optional=True)  # programming
 
@@ -189,6 +191,8 @@ class Esp32s3_Wroom_1_Device(Esp32s3_Device, FootprintBlock, JlcPart):
   def generate(self) -> None:
     super().generate()
 
+    self.assign(self.has_chip_pu, True)
+
     self.assign(self.lcsc_part, 'C2913202')  # note standard only assembly
     self.assign(self.actual_basic_part, False)
     self.footprint(
@@ -230,9 +234,9 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
   Up is defined from the text orientation (antenna is on top).
   """
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
-    'Vdd': '1',  # 3v3, output of internal AMS1117-3.3V LDO
+    'VDD': '1',  # 3v3, output of internal AMS1117-3.3V LDO
     # 20: Vcc 5vUSB
-    'Vss': '21',
+    'GND': '21',
     'CHIP_PU': '2',  # aka EN, switch w/ pullup on board
 
     'GPIO2': '39',  # fixed strapping pin, drives LED on PCB
@@ -263,8 +267,8 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     # 'GPIO19': '22',  # USB_D+
     # 'GPIO20': '23',  # USB_D-
     'GPIO21': '24',
-    'GPIO47': '25',
-    'GPIO48': '26',  # internal WS2812
+    'SPICLK_P': '25',  # GPIO47
+    'SPICLK_N': '26',  # GPIO48, internal WS2812
     # 'GPIO45': '27',  # strapping pin, VDD_SPI
     # 'GPIO35': '29',  # PSRAM
     # 'GPIO36': '30',  # PSRAM
@@ -272,14 +276,16 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     # 'GPIO38': '32',  # SD_CMD
     # 'GPIO39': '33',  # SD_CLK
     # 'GPIO40': '34',  # SD_DATA
-    'GPIO41': '35',
-    'GPIO42': '36',
+    'MTDI': '35',  # GPIO41
+    'MTMS': '36',  # GPIO42
     'GPIO2': '37',  # internal LED
     'GPIO1': '38',
   }
 
   def generate(self) -> None:
     super().generate()
+    self.assign(self.has_chip_pu, False)
+
     pinning = self._make_pinning()  # add optional output pins
     self.footprint(
       'U', 'edg:Freenove_ESP32-WROVER',
@@ -297,14 +303,9 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, HasI2s,
   def __init__(self):
     super().__init__()
 
-    self.vusb_out = self.Port(VoltageSource(
-      voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
-      current_limits=UsbConnector.USB2_CURRENT_LIMITS
-    ), optional=True)
-    self.pwr_out = self.Port(VoltageSource(
-      voltage_out=3.3*Volt(tol=0.05)  # TODO: arbitrary tolerance, schematics aren't open-source
-    ), optional=True)
-    self.gnd_out = self.Port(GroundSource(), optional=True)
+    self.vusb_out = self.Port(VoltageSource.empty(), optional=True)
+    self.pwr_out = self.Port(VoltageSource.empty(), optional=True)
+    self.gnd_out = self.Port(GroundSource.empty(), optional=True)
 
     self.generator_param(self.gnd.is_connected())
     self.generator_param(self.gnd_out.is_connected())
@@ -313,17 +314,22 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, HasI2s,
     self.generator_param(self.pwr_out.is_connected())
     self.generator_param(self.vusb_out.is_connected())
 
-  def generate(self) -> None:
+  def contents(self) -> None:
     super().contents()
 
+    # ic is required pre-generate
     self.ic = self.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
-    if not self.get(self.gnd.is_connected()):  # board sinks power
+
+  def generate(self) -> None:
+    super().generate()
+
+    if not self.get(self.gnd_out.is_connected()):  # board sinks power
       self.connect(self.gnd, self.ic.gnd)
       self.connect(self.pwr, self.ic.pwr)
 
-      self.require(~self.vusb_out.is_connected(), "can't source power if source gnd connected")
-      self.require(~self.pwr_out.is_connected(), "can't source power if source gnd connected")
-      self.require(~self.gnd_out.is_connected(), "can't source power if source gnd connected")
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
+      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
     else:  # board sources power
       self.gnd_source = self.Block(DummyVoltageSource(
         voltage_out=0*Volt(tol=0),
@@ -344,4 +350,4 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, HasI2s,
       self.connect(self.pwr_source.pwr, self.ic.pwr, self.pwr_out)
 
       self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
-      self.require(~self.gnd.is_connected(), "can't sink power if source gnd connected")
+      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")

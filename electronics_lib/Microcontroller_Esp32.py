@@ -42,7 +42,7 @@ class Esp32_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Generato
 
     self.chip_pu = self.Port(dio_model, optional=True)  # power control, must NOT be left floating, table 1
     self.has_chip_pu = self.Parameter(BoolExpr())  # but some modules connect it internally
-    self.require(self.has_chip_pu.implies(self.chip_pu.is_connected()), "EN not connected")
+    self.require(self.has_chip_pu == self.chip_pu.is_connected(), "EN not connected")
 
     # section 2.4, table 5: strapping IOs that need a fixed value to boot, TODO currently not allocatable post-boot
     self.io0 = self.Port(dio_model, optional=True)  # default pullup (SPI boot), set low to download boot

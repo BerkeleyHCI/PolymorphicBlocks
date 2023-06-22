@@ -44,7 +44,7 @@ class Sd18ob261_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Sd18ob261(Interface, Block):
+class Sd18ob261(Interface, GeneratorBlock):
     """SD18OB261-060 PDM microphone, probably footprint-compatible with similar Knowles devices.
     Application circuit is not specified in the datasheet, this uses the one from SPH0655LM4H
     (single 1uF decap)."""
@@ -57,10 +57,17 @@ class Sd18ob261(Interface, Block):
         self.gnd = self.Export(self.ic.gnd, [Common])
 
         self.clk = self.Export(self.ic.clk)
-        self.lr = self.Export(self.ic.lr)
+        self.lr = self.Port(DigitalSink.empty(), optional=True)
         self.data = self.Export(self.ic.data)
 
-    def contents(self):
-        super().contents()
+        self.generator_param(self.lr.is_connected())
+
+    def generate(self):
+        super().generate()
 
         self.pwr_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+
+        if self.get(self.lr.is_connected()):
+            self.connect(self.lr, self.ic.lr)
+        else:  # default to GND = data valid on CLK low
+            self.connect(self.gnd.as_digital_source(), self.ic.lr)

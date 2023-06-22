@@ -231,13 +231,17 @@ class IoController(ProgrammableController, BaseIoController):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink.empty(), [Power], optional=not self.POWER_REQUIRED)
-    self.gnd = self.Port(Ground.empty(), [Common], optional=not self.POWER_REQUIRED)
+    if self.POWER_REQUIRED:
+      self.pwr = self.Port(VoltageSink.empty(), [Power])
+      self.gnd = self.Port(Ground.empty(), [Common])
+    else:
+      self.pwr = self.Port(VoltageSink.empty(), optional=True)
+      self.gnd = self.Port(Ground.empty(), optional=True)
 
 
 class HasI2s(BaseIoController):
-  def __init__(self) -> None:
-    super().__init__()
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
 
     self.i2s = self.Port(Vector(I2sController.empty()), optional=True)
     self._io_ports.insert(0, self.i2s)

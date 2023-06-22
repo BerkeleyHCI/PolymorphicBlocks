@@ -8,7 +8,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
         self.vdd = self.Port(VoltageSink(
             voltage_limits=(2.5, 5.5) * Volt,
-            current_draw=(0.0006, 3.35 + (3.2/5/0.92)) * mAmp,  # shutdown to maximum (3.2W out @ 5V, 92% efficient)
+            current_draw=(0.0006, 3.35 + (3.2/5/0.92)*1000) * mAmp,  # shutdown to maximum (3.2W out @ 5V, 92% efficient)
         ), [Power])
         self.gnd = self.Port(Ground(), [Common])
 

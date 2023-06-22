@@ -69,13 +69,18 @@ class RobotOwl(JlcBoardTop):
         ImplicitConnect(self.vusb, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.spk = imp.Block(Max98357a())
-      self.connect(self.mcu.i2s.request('speaker'), self.spk.i2s)
+      (self.spk_drv, self.spk), self.spk_chain = self.chain(
+        self.mcu.i2s.request('speaker'),
+        imp.Block(Max98357a()),
+        self.Block(Speaker())
+      )
 
       self.servo = ElementDict[PwmConnector]()
       for i in range(2):
-        servo = self.servo[i] = imp.Block(PwmConnector((0, 200)*mAmp))
-        self.connect(self.mcu.gpio.request(f'servo{i}'), servo.pwm)
+        (self.servo[i], ), _ = self.chain(
+          self.mcu.gpio.request(f'servo{i}'),
+          imp.Block(PwmConnector((0, 200)*mAmp))
+        )
 
       self.ws2812bArray = imp.Block(NeopixelArray(6))
       self.connect(self.mcu.gpio.request('neopixel'), self.ws2812bArray.din)
@@ -88,15 +93,12 @@ class RobotOwl(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Freenove_Esp32_Wrover),
-        (['reg_3v3'], Ap3418),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
         ]),
-        (['expander', 'pin_assigns'], [
-        ]),
         (['mcu', 'ic', 'fp_footprint'], 'edg:Freenove_ESP32S3-WROOM_Expansion'),
+        (['mcu', 'vusb_out', 'current_limits'], Range(0, 3)),
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
