@@ -268,7 +268,7 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     # 'GPIO20': '23',  # USB_D-
     'GPIO21': '24',
     'SPICLK_P': '25',  # GPIO47
-    'SPICLK_N': '26',  # GPIO48, internal WS2812
+    # 'SPICLK_N': '26',  # GPIO48, internal WS2812
     # 'GPIO45': '27',  # strapping pin, VDD_SPI
     # 'GPIO35': '29',  # PSRAM
     # 'GPIO36': '30',  # PSRAM
@@ -282,11 +282,21 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     'GPIO1': '38',
   }
 
+  def __init__(self, **kawrgs) -> None:
+    super().__init__(**kawrgs)
+
+    self.cam_i2c = self.Port(I2cMaster(self._dio_model, has_pullup=True), optional=True)
+    self.ws2812 = self.Port(self._dio_model, optional=True)
+
   def generate(self) -> None:
     super().generate()
     self.assign(self.has_chip_pu, False)
 
     pinning = self._make_pinning()  # add optional output pins
+    pinning['4'] = self.cam_i2c.scl
+    pinning['3'] = self.cam_i2c.sda
+    pinning['26'] = self.ws2812
+
     self.footprint(
       'U', 'edg:Freenove_ESP32-WROVER',
       pinning,
@@ -303,9 +313,15 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, HasI2s,
   def __init__(self):
     super().__init__()
 
+    self.ic = self.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
+
+    # empty because connectivity is determined by sinking or sourcing power
     self.vusb_out = self.Port(VoltageSource.empty(), optional=True)
     self.pwr_out = self.Port(VoltageSource.empty(), optional=True)
     self.gnd_out = self.Port(GroundSource.empty(), optional=True)
+
+    self.cam_i2c = self.Export(self.ic.cam_i2c, optional=True)
+    self.ws2812 = self.Export(self.ic.ws2812, optional=True)
 
     self.generator_param(self.gnd.is_connected())
     self.generator_param(self.gnd_out.is_connected())
@@ -313,12 +329,6 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, HasI2s,
     self.generator_param(self.pwr.is_connected())
     self.generator_param(self.pwr_out.is_connected())
     self.generator_param(self.vusb_out.is_connected())
-
-  def contents(self) -> None:
-    super().contents()
-
-    # ic is required pre-generate
-    self.ic = self.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
 
   def generate(self) -> None:
     super().generate()

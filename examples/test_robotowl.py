@@ -2,7 +2,7 @@ import unittest
 
 from edg import *
 
-from .test_robotdriver import PwmConnector
+from .test_robotdriver import PwmConnector, LedConnector
 
 
 class PhotodiodeSensor(LightSensor, KiCadSchematicBlock, Block):
@@ -74,7 +74,10 @@ class RobotOwl(JlcBoardTop):
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.i2c = self.mcu.i2c.request('i2c')
+      (self.oled, ), _ = self.chain(
+        self.mcu.cam_i2c,
+        imp.Block(OledConnector())
+      )
 
       self.mic = imp.Block(Sd18ob261())
       self.connect(self.mic.clk, self.mcu.gpio.request('mic_clk'))
@@ -104,7 +107,9 @@ class RobotOwl(JlcBoardTop):
         )
 
       self.ws2812bArray = imp.Block(NeopixelArray(6))
-      self.connect(self.mcu.gpio.request('neopixel'), self.ws2812bArray.din)
+      self.extNeopixels = imp.Block(LedConnector())
+      self.connect(self.mcu.ws2812, self.ws2812bArray.din)
+      self.connect(self.ws2812bArray.dout, self.extNeopixels.din)
 
     # Mounting holes
     self.m = ElementDict[MountingHole]()
