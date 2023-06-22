@@ -29,6 +29,22 @@ class PhotodiodeSensor(LightSensor, KiCadSchematicBlock, Block):
       })
 
 
+class OledConnector(Connector, Block):
+  """Connector for an I2C OLED"""
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(PinHeader254())
+
+    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()),
+                           [Common])
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink()),
+                           [Power])
+
+    self.i2c = self.Port(I2cSlave(DigitalBidir.empty()), [InOut])
+    self.connect(self.i2c.scl, self.conn.pins.request('3').adapt_to(DigitalBidir()))
+    self.connect(self.i2c.sda, self.conn.pins.request('4').adapt_to(DigitalBidir()))
+
+
 class RobotOwl(JlcBoardTop):
   """Controller for a robot owl with a ESP32S3 dev board w/ camera, audio, and peripherals.
 
@@ -64,12 +80,17 @@ class RobotOwl(JlcBoardTop):
       self.connect(self.mic.clk, self.mcu.gpio.request('mic_clk'))
       self.connect(self.mic.data, self.mcu.gpio.request('mic_data'))
 
+      (self.photodiode, ), _ = self.chain(
+        imp.Block(PhotodiodeSensor()),
+        self.mcu.adc.request('photodiode')
+      )
+
     # VBATT DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.vusb, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.spk_drv, self.spk), self.spk_chain = self.chain(
+      (self.spk_drv, self.spk), _ = self.chain(
         self.mcu.i2s.request('speaker'),
         imp.Block(Max98357a()),
         self.Block(Speaker())
@@ -96,6 +117,7 @@ class RobotOwl(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
+          'photodiode=GPIO1'
         ]),
         (['mcu', 'ic', 'fp_footprint'], 'edg:Freenove_ESP32S3-WROOM_Expansion'),
         (['mcu', 'vusb_out', 'current_limits'], Range(0, 3)),
@@ -103,9 +125,7 @@ class RobotOwl(JlcBoardTop):
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
-        (Vl53l0x, Vl53l0xConnector),
         (Speaker, ConnectorSpeaker),
-        (Neopixel, Ws2812b),
         (MountingHole, MountingHole_M3),
       ],
       class_values=[
