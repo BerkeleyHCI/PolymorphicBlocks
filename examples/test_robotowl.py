@@ -106,7 +106,7 @@ class RobotOwl(JlcBoardTop):
           imp.Block(PwmConnector((0, 200)*mAmp))
         )
 
-      self.ws2812bArray = imp.Block(NeopixelArray(6))
+      self.ws2812bArray = imp.Block(NeopixelArray(12))
       self.extNeopixels = imp.Block(LedConnector())
       self.connect(self.mcu.ws2812, self.ws2812bArray.din)
       self.connect(self.ws2812bArray.dout, self.extNeopixels.din)
@@ -122,7 +122,14 @@ class RobotOwl(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          'photodiode=GPIO1'
+          'photodiode=GPIO1',
+          'servo0=24',
+          'servo1=25',
+          'mic_data=19',
+          'mic_clk=12',
+          'speaker.sd=37',
+          'speaker.sck=36',
+          'speaker.ws=35'
         ]),
         (['mcu', 'ic', 'fp_footprint'], 'edg:Freenove_ESP32S3-WROOM_Expansion'),
         (['mcu', 'vusb_out', 'current_limits'], Range(0, 3)),

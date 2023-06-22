@@ -287,6 +287,10 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
 
     self.cam_i2c = self.Port(I2cMaster(self._dio_model, has_pullup=True), optional=True)
     self.ws2812 = self.Port(self._dio_model, optional=True)
+    self.vusb = self.Port(VoltageSource(
+      voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
+      current_limits=UsbConnector.USB2_CURRENT_LIMITS
+    ), optional=True)
 
   def generate(self) -> None:
     super().generate()
@@ -296,6 +300,7 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     pinning['4'] = self.cam_i2c.scl
     pinning['3'] = self.cam_i2c.sda
     pinning['26'] = self.ws2812
+    pinning['20'] = self.vusb
 
     self.footprint(
       'U', 'edg:Freenove_ESP32-WROVER',
@@ -315,8 +320,8 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, HasI2s,
 
     self.ic = self.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
 
-    # empty because connectivity is determined by sinking or sourcing power
-    self.vusb_out = self.Port(VoltageSource.empty(), optional=True)
+    self.vusb_out = self.Export(self.ic.vusb, optional=True)
+    # since 3v3 and gnd can source or sink, these are connected in the generator
     self.pwr_out = self.Port(VoltageSource.empty(), optional=True)
     self.gnd_out = self.Port(GroundSource.empty(), optional=True)
 
@@ -346,12 +351,6 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, HasI2s,
         current_limits=Range.all()
       ))
       self.connect(self.gnd_source.pwr, self.ic.gnd, self.gnd_out)
-
-      self.usb_source = self.Block(DummyVoltageSource(
-        voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
-        current_limits=UsbConnector.USB2_CURRENT_LIMITS
-      ))
-      self.connect(self.usb_source.pwr, self.vusb_out)
 
       self.pwr_source = self.Block(DummyVoltageSource(
         voltage_out=3.3*Volt(tol=0.05),  # tolerance is a guess

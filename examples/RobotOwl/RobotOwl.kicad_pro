@@ -216,7 +216,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "RobotCrawler.kicad_pro",
+    "filename": "RobotOwl.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -297,7 +297,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "RobotCrawler.net",
+      "netlist": "RobotOwl.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""
