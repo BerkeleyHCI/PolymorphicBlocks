@@ -235,6 +235,14 @@ class IoController(ProgrammableController, BaseIoController):
     self.gnd = self.Port(Ground.empty(), [Common], optional=not self.POWER_REQUIRED)
 
 
+class HasI2s(BaseIoController):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.i2s = self.Port(Vector(I2sController.empty()), optional=True)
+    self._io_ports.insert(0, self.i2s)
+
+
 class IdealIoController(IoController, IdealModel, GeneratorBlock):
   """An ideal IO controller, with as many IOs as requested.
   Output have voltages at pwr/gnd, all other parameters are ideal."""

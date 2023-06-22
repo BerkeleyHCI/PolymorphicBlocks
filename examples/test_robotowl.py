@@ -43,57 +43,42 @@ class RobotOwl(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
+    self.mcu = self.Block(Freenove_Esp32s3_Wroom())
 
-    self.gnd = self.connect(self.batt.gnd)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.batt.gnd)
-    self.tp_gnd2 = self.Block(VoltageTestPoint()).connected(self.batt.gnd)
+    self.gnd = self.connect(self.mcu.gnd_out)
+    self.vusb = self.connect(self.mcu.vusb_out)
+    self.v3v3 = self.connect(self.mcu.pwr_out)
 
-    # POWER
-    with self.implicit_connect(
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      (self.fuse, self.prot_in, self.tp_in, self.tp_in2,
-       self.reg_3v3, self.prot_3v3, self.tp_3v3, self.tp_3v32), _ = self.chain(
-        self.batt.pwr,
-        imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
-        imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
-        self.Block(VoltageTestPoint()),
-        self.Block(VoltageTestPoint()),
-
-        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
-        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt)),
-        self.Block(VoltageTestPoint()),
-      self.Block(VoltageTestPoint()),
-      )
-      self.vbatt = self.connect(self.fuse.pwr_out)
-      self.v3v3 = self.connect(self.reg_3v3.pwr_out)
+    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.mcu.gnd_out)
+    self.tp_usb = self.Block(VoltageTestPoint()).connected(self.mcu.vusb_out)
+    self.tp_3v3 = self.Block(VoltageTestPoint()).connected(self.mcu.pwr_out)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Freenove_Esp32_Wrover())  # allows us to use IO2
       self.i2c = self.mcu.i2c.request('i2c')
 
-      # IMU
-      self.imu = imp.Block(Imu_Lsm6ds3trc())
-      self.mag = imp.Block(Mag_Qmc5883l())
-      self.connect(self.i2c, self.imu.i2c, self.mag.i2c)
+      self.mic = imp.Block(Sd18ob261())
+      self.connect(self.mic.clk, self.mcu.gpio.request('mic_clk'))
+      self.connect(self.mic.data, self.mcu.gpio.request('mic_data'))
 
     # VBATT DOMAIN
     with self.implicit_connect(
-        ImplicitConnect(self.vbatt, [Power]),
+        ImplicitConnect(self.vusb, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      self.spk = imp.Block(Max98357a())
+      self.connect(self.mcu.i2s.request('speaker'), self.spk.i2s)
+
       self.servo = ElementDict[PwmConnector]()
-      for i in range(4):
+      for i in range(2):
         servo = self.servo[i] = imp.Block(PwmConnector((0, 200)*mAmp))
         self.connect(self.mcu.gpio.request(f'servo{i}'), servo.pwm)
 
       self.ws2812bArray = imp.Block(NeopixelArray(6))
-      self.connect(self.mcu.io2, self.ws2812bArray.din)
+      self.connect(self.mcu.gpio.request('neopixel'), self.ws2812bArray.din)
 
     # Mounting holes
     self.m = ElementDict[MountingHole]()

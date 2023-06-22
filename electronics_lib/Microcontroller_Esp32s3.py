@@ -6,7 +6,7 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @abstract_block
-class Esp32s3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Esp32s3_Device(HasI2s, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """Base class for ESP32-S3 series microcontrollers with WiFi and Bluetooth (classic and LE)
   and AI acceleration
 
@@ -199,7 +199,8 @@ class Esp32s3_Wroom_1_Device(Esp32s3_Device, FootprintBlock, JlcPart):
     )
 
 
-class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, IoController, BaseIoControllerExportable):
+class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasI2s, HasEspProgramming,
+                      IoController, BaseIoControllerExportable):
   """ESP32-S3-WROOM-1 module
   """
   def contents(self) -> None:
@@ -287,7 +288,8 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     )
 
 
-class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoController, BaseIoControllerExportable, GeneratorBlock):
+class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, HasI2s,
+                             IoController, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around Esp32_Wover_Dev fitting the IoController interface
   """
   POWER_REQUIRED = False
@@ -295,21 +297,21 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoController, Base
   def __init__(self):
     super().__init__()
 
-    self.out_usb = self.Port(VoltageSource(
+    self.vusb_out = self.Port(VoltageSource(
       voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
       current_limits=UsbConnector.USB2_CURRENT_LIMITS
     ), optional=True)
-    self.out_pwr = self.Port(VoltageSource(
+    self.pwr_out = self.Port(VoltageSource(
       voltage_out=3.3*Volt(tol=0.05)  # TODO: arbitrary tolerance, schematics aren't open-source
     ), optional=True)
-    self.out_gnd = self.Port(GroundSource(), optional=True)
+    self.gnd_out = self.Port(GroundSource(), optional=True)
 
     self.generator_param(self.gnd.is_connected())
-    self.generator_param(self.out_gnd.is_connected())
+    self.generator_param(self.gnd_out.is_connected())
 
     self.generator_param(self.pwr.is_connected())
-    self.generator_param(self.out_pwr.is_connected())
-    self.generator_param(self.out_usb.is_connected())
+    self.generator_param(self.pwr_out.is_connected())
+    self.generator_param(self.vusb_out.is_connected())
 
   def generate(self) -> None:
     super().contents()
@@ -319,27 +321,27 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoController, Base
       self.connect(self.gnd, self.ic.gnd)
       self.connect(self.pwr, self.ic.pwr)
 
-      self.require(~self.out_usb.is_connected(), "can't source power if source gnd connected")
-      self.require(~self.out_pwr.is_connected(), "can't source power if source gnd connected")
-      self.require(~self.out_gnd.is_connected(), "can't source power if source gnd connected")
+      self.require(~self.vusb_out.is_connected(), "can't source power if source gnd connected")
+      self.require(~self.pwr_out.is_connected(), "can't source power if source gnd connected")
+      self.require(~self.gnd_out.is_connected(), "can't source power if source gnd connected")
     else:  # board sources power
       self.gnd_source = self.Block(DummyVoltageSource(
         voltage_out=0*Volt(tol=0),
         current_limits=Range.all()
       ))
-      self.connect(self.gnd_source.pwr, self.ic.gnd, self.out_gnd)
+      self.connect(self.gnd_source.pwr, self.ic.gnd, self.gnd_out)
 
       self.usb_source = self.Block(DummyVoltageSource(
         voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
         current_limits=UsbConnector.USB2_CURRENT_LIMITS
       ))
-      self.connect(self.usb_source.pwr, self.out_usb)
+      self.connect(self.usb_source.pwr, self.vusb_out)
 
       self.pwr_source = self.Block(DummyVoltageSource(
         voltage_out=3.3*Volt(tol=0.05),  # tolerance is a guess
         current_limits=UsbConnector.USB2_CURRENT_LIMITS
       ))
-      self.connect(self.pwr_source.pwr, self.ic.pwr, self.out_pwr)
+      self.connect(self.pwr_source.pwr, self.ic.pwr, self.pwr_out)
 
       self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
       self.require(~self.gnd.is_connected(), "can't sink power if source gnd connected")
