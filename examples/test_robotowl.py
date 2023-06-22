@@ -128,7 +128,7 @@ class RobotOwl(JlcBoardTop):
         (['mcu', 'vusb_out', 'current_limits'], Range(0, 3)),
       ],
       class_refinements=[
-        (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
+        (PassiveConnector, PinHeader254),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
         (Speaker, ConnectorSpeaker),
         (MountingHole, MountingHole_M3),
