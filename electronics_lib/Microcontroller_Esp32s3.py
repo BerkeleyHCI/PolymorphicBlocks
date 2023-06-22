@@ -277,24 +277,9 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     'GPIO1': '38',
   }
 
-  def __init__(self):
-    super().__init__()
-    self.out_usb = self.Port(VoltageSource(
-      voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
-      current_limits=UsbConnector.USB2_CURRENT_LIMITS
-    ), optional=True)
-    self.out_3v3 = self.Port(VoltageSource(
-      voltage_out=3.3*Volt(tol=0.05)  # TODO: arbitrary tolerance, schematics aren't open-source
-    ), optional=True)
-    self.out_gnd = self.Port(GroundSource(), optional=True)
-
   def generate(self) -> None:
     super().generate()
-    self.assign(self.has_chip_pu, False)
     pinning = self._make_pinning()  # add optional output pins
-    pinning['1'] = self.out_3v3
-    pinning['20'] = self.out_5v
-    pinning['21'] = self.out_gnd
     self.footprint(
       'U', 'edg:Freenove_ESP32-WROVER',
       pinning,
@@ -302,20 +287,59 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     )
 
 
-class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoController, BaseIoControllerExportable, Block):
+class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoController, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around Esp32_Wover_Dev fitting the IoController interface
   """
+  POWER_REQUIRED = False
+
   def __init__(self):
     super().__init__()
-    self.io2 = self.Port(DigitalBidir.empty(), optional=True)  # allow this to be connected
 
-  def contents(self) -> None:
+    self.out_usb = self.Port(VoltageSource(
+      voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
+      current_limits=UsbConnector.USB2_CURRENT_LIMITS
+    ), optional=True)
+    self.out_pwr = self.Port(VoltageSource(
+      voltage_out=3.3*Volt(tol=0.05)  # TODO: arbitrary tolerance, schematics aren't open-source
+    ), optional=True)
+    self.out_gnd = self.Port(GroundSource(), optional=True)
+
+    self.generator_param(self.gnd.is_connected())
+    self.generator_param(self.out_gnd.is_connected())
+
+    self.generator_param(self.pwr.is_connected())
+    self.generator_param(self.out_pwr.is_connected())
+    self.generator_param(self.out_usb.is_connected())
+
+  def generate(self) -> None:
     super().contents()
 
-    with self.implicit_connect(
-            ImplicitConnect(self.pwr, [Power]),
-            ImplicitConnect(self.gnd, [Common])
-    ) as imp:
-      self.ic = imp.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
+    self.ic = self.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
+    if not self.get(self.gnd.is_connected()):  # board sinks power
+      self.connect(self.gnd, self.ic.gnd)
+      self.connect(self.pwr, self.ic.pwr)
 
-      self.connect(self.io2, self.ic.io2)
+      self.require(~self.out_usb.is_connected(), "can't source power if source gnd connected")
+      self.require(~self.out_pwr.is_connected(), "can't source power if source gnd connected")
+      self.require(~self.out_gnd.is_connected(), "can't source power if source gnd connected")
+    else:  # board sources power
+      self.gnd_source = self.Block(DummyVoltageSource(
+        voltage_out=0*Volt(tol=0),
+        current_limits=Range.all()
+      ))
+      self.connect(self.gnd_source.pwr, self.ic.gnd, self.out_gnd)
+
+      self.usb_source = self.Block(DummyVoltageSource(
+        voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
+        current_limits=UsbConnector.USB2_CURRENT_LIMITS
+      ))
+      self.connect(self.usb_source.pwr, self.out_usb)
+
+      self.pwr_source = self.Block(DummyVoltageSource(
+        voltage_out=3.3*Volt(tol=0.05),  # tolerance is a guess
+        current_limits=UsbConnector.USB2_CURRENT_LIMITS
+      ))
+      self.connect(self.pwr_source.pwr, self.ic.pwr, self.out_pwr)
+
+      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
+      self.require(~self.gnd.is_connected(), "can't sink power if source gnd connected")
