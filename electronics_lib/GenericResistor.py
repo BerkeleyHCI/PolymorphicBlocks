@@ -15,8 +15,8 @@ class ESeriesResistor(ResistorStandardFootprint, SmdStandardPackage, GeneratorBl
   PACKAGE_POWER: List[Tuple[float, str]]
 
   @init_in_parent
-  def __init__(self, *args, series: IntLike = Default(24), tolerance: FloatLike = Default(0.01),
-               footprint_spec: StringLike = Default(""), **kwargs):
+  def __init__(self, *args, series: IntLike = 24, tolerance: FloatLike = 0.01,
+               footprint_spec: StringLike = "", **kwargs):
     super().__init__(*args, **kwargs)
     self.series = self.ArgParameter(series)
     self.tolerance = self.ArgParameter(tolerance)

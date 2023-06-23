@@ -38,7 +38,7 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
   @init_in_parent
   def __init__(self, voltage_out: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
                current_limits: RangeLike = UsbConnector.USB2_CURRENT_LIMITS,
-               cc_pullup_capable: BoolLike = Default(False)) -> None:
+               cc_pullup_capable: BoolLike = False) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits), optional=True)
     self.gnd = self.Port(GroundSource())

@@ -190,8 +190,8 @@ class DigitalSink(DigitalBase):
 
   @staticmethod
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
-                  voltage_limit_tolerance: RangeLike = Default((-0.3, 0.3)),
-                  current_draw: RangeLike = Default(RangeExpr.ZERO),
+                  voltage_limit_tolerance: RangeLike = (-0.3, 0.3),
+                  current_draw: RangeLike = RangeExpr.ZERO,
                   input_threshold_factor: Optional[RangeLike] = None,
                   input_threshold_abs: Optional[RangeLike] = None) -> DigitalSink:
     input_threshold: RangeLike
@@ -216,9 +216,9 @@ class DigitalSink(DigitalBase):
   def from_bidir(model: DigitalBidir) -> DigitalSink:
     return DigitalSink(model.voltage_limits, model.current_draw, input_thresholds=model.input_thresholds)
 
-  def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
-               current_draw: RangeLike = Default(RangeExpr.ZERO), *,
-               input_thresholds: RangeLike = Default(RangeExpr.EMPTY)) -> None:
+  def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
+               current_draw: RangeLike = RangeExpr.ZERO, *,
+               input_thresholds: RangeLike = RangeExpr.EMPTY) -> None:
     super().__init__()
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
@@ -269,7 +269,7 @@ class DigitalSource(DigitalBase):
 
   @staticmethod
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink],
-                  current_limits: RangeLike = Default(RangeExpr.ALL), *,
+                  current_limits: RangeLike = RangeExpr.ALL, *,
                   output_threshold_offset: Optional[Tuple[FloatLike, FloatLike]] = None) -> DigitalSource:
     if output_threshold_offset is not None:
       output_offset_low = FloatExpr._to_expr_type(output_threshold_offset[0])
@@ -290,11 +290,11 @@ class DigitalSource(DigitalBase):
     return DigitalSource(model.voltage_out, model.current_limits, output_thresholds=model.output_thresholds,
                          pullup_capable=model.pullup_capable, pulldown_capable=model.pulldown_capable)
 
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
-               current_limits: RangeLike = Default(RangeExpr.ALL), *,
-               output_thresholds: RangeLike = Default(RangeExpr.ALL),
-               pullup_capable: BoolLike = Default(False),
-               pulldown_capable: BoolLike = Default(False)) -> None:
+  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
+               current_limits: RangeLike = RangeExpr.ALL, *,
+               output_thresholds: RangeLike = RangeExpr.ALL,
+               pullup_capable: BoolLike = False,
+               pulldown_capable: BoolLike = False) -> None:
     super().__init__()
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
@@ -359,8 +359,8 @@ class DigitalBidir(DigitalBase):
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink],
                   voltage_limit_abs: Optional[RangeLike] = None,
                   voltage_limit_tolerance: Optional[RangeLike] = None,
-                  current_draw: RangeLike = Default(RangeExpr.ZERO),
-                  current_limits: RangeLike = Default(RangeExpr.ALL), *,
+                  current_draw: RangeLike = RangeExpr.ZERO,
+                  current_limits: RangeLike = RangeExpr.ALL, *,
                   input_threshold_factor: Optional[RangeLike] = None,
                   input_threshold_abs: Optional[RangeLike] = None,
                   output_threshold_factor: Optional[RangeLike] = None,
@@ -404,14 +404,14 @@ class DigitalBidir(DigitalBase):
       pullup_capable=pullup_capable, pulldown_capable=pulldown_capable
     )
 
-  def __init__(self, *, voltage_limits: RangeLike = Default(RangeExpr.ALL),
-               current_draw: RangeLike = Default(RangeExpr.ZERO),
-               voltage_out: RangeLike = Default(RangeExpr.ZERO),
-               current_limits: RangeLike = Default(RangeExpr.ALL),
-               input_thresholds: RangeLike = Default(RangeExpr.EMPTY),
-               output_thresholds: RangeLike = Default(RangeExpr.ALL),
-               pullup_capable: BoolLike = Default(False),
-               pulldown_capable: BoolLike = Default(False)) -> None:
+  def __init__(self, *, voltage_limits: RangeLike = RangeExpr.ALL,
+               current_draw: RangeLike = RangeExpr.ZERO,
+               voltage_out: RangeLike = RangeExpr.ZERO,
+               current_limits: RangeLike = RangeExpr.ALL,
+               input_thresholds: RangeLike = RangeExpr.EMPTY,
+               output_thresholds: RangeLike = RangeExpr.ALL,
+               pullup_capable: BoolLike = False,
+               pulldown_capable: BoolLike = False) -> None:
     super().__init__()
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
@@ -484,12 +484,12 @@ class DigitalSingleSource(DigitalBase):
       high_signal_driver=not is_pullup
     )
 
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
-               output_thresholds: RangeLike = Default(RangeExpr.ALL), *,
-               pullup_capable: BoolLike = Default(False),
-               pulldown_capable: BoolLike = Default(False),
-               low_signal_driver: BoolLike = Default(False),
-               high_signal_driver: BoolLike = Default(False)) -> None:
+  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
+               output_thresholds: RangeLike = RangeExpr.ALL, *,
+               pullup_capable: BoolLike = False,
+               pulldown_capable: BoolLike = False,
+               low_signal_driver: BoolLike = False,
+               high_signal_driver: BoolLike = False) -> None:
     super().__init__()
 
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))

@@ -6,8 +6,8 @@ from .Categories import *
 class Battery(PowerSource):
   @init_in_parent
   def __init__(self, voltage: RangeLike,
-               current: RangeLike = Default(RangeExpr.ZERO), *,
-               capacity: FloatLike = Default(0.0)):
+               current: RangeLike = RangeExpr.ZERO, *,
+               capacity: FloatLike = 0.0):
     super().__init__()
 
     self.pwr = self.Port(VoltageSource.empty())  # set by subclasses

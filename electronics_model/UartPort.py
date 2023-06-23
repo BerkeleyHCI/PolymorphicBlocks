@@ -27,5 +27,5 @@ class UartPort(Bundle[UartLink]):
     self.tx = self.Port(DigitalSource.from_bidir(model))
     self.rx = self.Port(DigitalSink.from_bidir(model))
 
-    self.baud = self.Parameter(RangeExpr(Default(RangeExpr.ZERO)))
-    self.baud_limit = self.Parameter(RangeExpr(Default(RangeExpr.INF)))
+    self.baud = self.Parameter(RangeExpr(RangeExpr.ZERO))
+    self.baud_limit = self.Parameter(RangeExpr(RangeExpr.INF))

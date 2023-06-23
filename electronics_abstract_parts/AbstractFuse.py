@@ -10,8 +10,8 @@ from .StandardFootprint import StandardFootprint
 @abstract_block
 class Fuse(InternalSubcircuit, Block):
   @init_in_parent
-  def __init__(self, trip_current: RangeLike, *, hold_current: RangeLike = Default(RangeExpr.ALL),
-               voltage: RangeLike = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, trip_current: RangeLike, *, hold_current: RangeLike = RangeExpr.ALL,
+               voltage: RangeLike = RangeExpr.ZERO) -> None:
     """Model-wise, equivalent to a VoltageSource|Sink passthrough, with a trip rating."""
     super().__init__()
 
