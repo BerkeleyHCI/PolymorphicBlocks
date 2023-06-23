@@ -117,13 +117,13 @@ class RobotOwl(JlcBoardTop):
       instance_values=[
         (['mcu', 'pin_assigns'], [
           'photodiode=GPIO1',
-          'servo0=24',
-          'servo1=25',
+          'servo0=25',
+          'servo1=24',
           'mic_data=19',
           'mic_clk=12',
-          'speaker.sd=37',
-          'speaker.sck=36',
-          'speaker.ws=35'
+          'speaker.sd=36',
+          'speaker.sck=35',
+          'speaker.ws=37'
         ]),
         (['mcu', 'ic', 'fp_footprint'], 'edg:Freenove_ESP32S3-WROOM_Expansion'),
         (['mcu', 'vusb_out', 'current_limits'], Range(0, 3)),
