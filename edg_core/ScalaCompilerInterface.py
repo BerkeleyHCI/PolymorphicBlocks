@@ -22,17 +22,18 @@ class CompiledDesign:
   def from_compiler_result(result: edgrpc.CompilerResult) -> 'CompiledDesign':
     values = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
               for value in result.solvedValues}
-    return CompiledDesign(result.design, values)
+    return CompiledDesign(result.design, values, result.error)
 
   @staticmethod
   def from_request(design: edgir.Design, values: Iterable[edgrpc.ExprValue]) -> 'CompiledDesign':
     values_dict = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
                    for value in values}
-    return CompiledDesign(design, values_dict)
+    return CompiledDesign(design, values_dict, "")
 
-  def __init__(self, design: edgir.Design, values: Dict[bytes, edgir.LitTypes]):
+  def __init__(self, design: edgir.Design, values: Dict[bytes, edgir.LitTypes], error: str):
     self.design = design
     self.contents = design.contents  # convenience accessor
+    self.error = error
     self._values = values
 
   # Reserved.V is a string because it doesn't load properly at runtime
@@ -83,7 +84,8 @@ class ScalaCompilerInstance:
       assert self.process.stdout is not None
       self.response_deserializer = BufferDeserializer(edgrpc.CompilerResult, self.process.stdout)
 
-  def compile(self, block: Type[Block], refinements: Refinements = Refinements()) -> CompiledDesign:
+  def compile(self, block: Type[Block], refinements: Refinements = Refinements(), *,
+              ignore_errors: bool = False) -> CompiledDesign:
     self.check_started()
     assert self.request_serializer is not None
     assert self.response_deserializer is not None
@@ -105,9 +107,8 @@ class ScalaCompilerInstance:
     sys.stdout.buffer.flush()
 
     assert result is not None
-    if not result.HasField('design'):
-      raise CompilerCheckError(f"no compiled result, with error {result.error}")
-    if result.error:
+    assert result.HasField('design')
+    if result.error and not ignore_errors:
       raise CompilerCheckError(f"error during compilation: \n{result.error}")
     return CompiledDesign.from_compiler_result(result)
 
