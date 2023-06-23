@@ -311,7 +311,7 @@
     (tags "resistor")
     (property "Sheetfile" "electronics_abstract_parts.ResistiveDivider.FeedbackVoltageDivider")
     (property "Sheetname" "fb")
-    (property "edg_part" "0603WAF9102T5E (UNI-ROYAL(Uniroyal Elec))")
+    (property "edg_part" "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec))")
     (property "edg_path" "reg_12v.fb.div.top_res")
     (property "edg_refdes" "R1")
     (property "edg_short_path" "reg_12v.fb.top_res")

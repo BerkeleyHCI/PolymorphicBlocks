@@ -55,7 +55,7 @@ class RobotOwl(JlcBoardTop):
 
     (self.reg_12v, self.tp_12v), _ = self.chain(
       self.vusb,
-      self.Block(BoostConverter(output_voltage=(11, 14)*Volt)),
+      self.Block(BoostConverter(output_voltage=(12, 15)*Volt)),
       self.Block(VoltageTestPoint())
     )
     self.connect(self.reg_12v.gnd, self.gnd)
@@ -140,7 +140,7 @@ class RobotOwl(JlcBoardTop):
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
         (Er_Oled022_1, ["iref_res", "resistance"], Range.from_tolerance(820e3, 0.1)),  # use a basic part
-        (Er_Oled022_1, ["device", "vcc", "voltage_limits"], Range(11, 14)),  # allow it to be a bit lower
+        (Er_Oled022_1, ["device", "vcc", "voltage_limits"], Range(12, 15)),  # allow it to be a bit lower
       ],
     )
 

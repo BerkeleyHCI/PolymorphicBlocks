@@ -318,7 +318,7 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, HasI2s,
   def __init__(self):
     super().__init__()
 
-    self.ic = self.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
+    self.ic: Freenove_Esp32s3_Wroom_Device = self.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
 
     self.vusb_out = self.Export(self.ic.vusb, optional=True)
     # since 3v3 and gnd can source or sink, these are connected in the generator

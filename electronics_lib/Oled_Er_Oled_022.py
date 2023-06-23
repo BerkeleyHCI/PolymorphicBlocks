@@ -81,7 +81,7 @@ class Er_Oled022_1(Oled, GeneratorBlock):
         self.spi = self.Port(SpiSlave.empty(), optional=True)
         self.cs = self.Port(DigitalSink.empty(), optional=True)
         self.dc = self.Port(DigitalSink.empty(), optional=True)
-        self.i2c = self.Port(I2cSlave.empty())
+        self.i2c = self.Port(I2cSlave.empty(), optional=True)
         self.generator_param(self.spi.is_connected(), self.i2c.is_connected(), self.reset.is_connected())
 
     def contents(self):
@@ -106,9 +106,11 @@ class Er_Oled022_1(Oled, GeneratorBlock):
         super().generate()
 
         self.gnd_digital = self.gnd.as_digital_source()
-        self.pwr_digital = self.pwr.as_digital_source()
+        self.pwr_digital = None  # workaround for issue #259: if this is never used it creates a broken empty adapter
 
         if self.get(self.i2c.is_connected()):
+            if self.pwr_digital is None:
+                self.pwr_digital = self.pwr.as_digital_source()
             self.connect(self.device.bs1, self.pwr_digital)
             self.connect(self.device.bs2, self.gnd_digital)
 
@@ -124,9 +126,11 @@ class Er_Oled022_1(Oled, GeneratorBlock):
 
             self.connect(self.spi.sck, self.device.d0)
             self.connect(self.spi.mosi, self.device.d1)
+            self.miso_nc = self.Block(DigitalBidirNotConnected())
+            self.connect(self.spi.miso, self.miso_nc.port)
             self.connect(self.cs, self.device.cs)
             self.connect(self.dc, self.device.dc)
-            self.require(~self.dc.is_connected())
+            self.require(self.dc.is_connected())
             self.require(~self.i2c.is_connected())
 
         self.require(self.spi.is_connected() | self.i2c.is_connected())
@@ -134,4 +138,6 @@ class Er_Oled022_1(Oled, GeneratorBlock):
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.device.res)
         else:
+            if self.pwr_digital is None:
+                self.pwr_digital = self.pwr.as_digital_source()
             self.connect(self.device.res, self.pwr_digital)
