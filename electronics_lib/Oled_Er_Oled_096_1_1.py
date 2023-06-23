@@ -84,7 +84,7 @@ class Er_Oled_096_1_1(Oled, GeneratorBlock):
         self.device = self.Block(Er_Oled_096_1_1_Device())
         self.gnd = self.Export(self.device.vss, [Common])
         self.pwr = self.Export(self.device.vdd, [Power])
-        self.reset = self.Export(self.device.res)
+        self.reset = self.Port(DigitalSink.empty(), optional=True)
         self.spi = self.Port(SpiSlave.empty(), optional=True)
         self.cs = self.Port(DigitalSink.empty(), optional=True)
         self.dc = self.Port(DigitalSink.empty(), optional=True)
@@ -145,3 +145,8 @@ class Er_Oled_096_1_1(Oled, GeneratorBlock):
             self.require(~self.i2c.is_connected())
 
         self.require(self.spi.is_connected() | self.i2c.is_connected())
+
+        if self.get(self.reset.is_connected()):
+            self.connect(self.reset, self.device.res)
+        else:
+            self.connect(self.device.res, self.pwr_digital)

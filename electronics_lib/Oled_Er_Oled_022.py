@@ -48,15 +48,12 @@ class Er_Oled022_1_Device(InternalSubcircuit, Block):
             input_threshold_factor=(0.2, 0.8)
         )
 
-        self.connect(self.conn.pins.request('6').adapt_to(Ground()), self.vss)  # BS1, 0 for serial
-        self.connect(self.conn.pins.request('7').adapt_to(Ground()), self.vss)  # BS2, 0 for serial
+        self.bs1 = self.Export(self.conn.pins.request('6').adapt_to(din_model))
+        self.bs2 = self.Export(self.conn.pins.request('7').adapt_to(din_model))
 
-        self.spi = self.Port(SpiSlave.empty())
-        self.connect(self.spi.sck, self.conn.pins.request('13').adapt_to(din_model))  # DB0
-        self.connect(self.spi.mosi, self.conn.pins.request('14').adapt_to(din_model))  # DB1
-
-        self.miso_nc = self.Block(DigitalBidirNotConnected())
-        self.connect(self.spi.miso, self.miso_nc.port)
+        self.d0 = self.Export(self.conn.pins.request('13').adapt_to(din_model))
+        self.d1 = self.Export(self.conn.pins.request('14').adapt_to(din_model))
+        self.d2 = self.Export(self.conn.pins.request('15').adapt_to(din_model), optional=True)
 
         self.res = self.Export(self.conn.pins.request('9').adapt_to(din_model))
         self.cs = self.Export(self.conn.pins.request('8').adapt_to(din_model))
@@ -72,18 +69,20 @@ class Er_Oled022_1_Device(InternalSubcircuit, Block):
                      self.conn.pins.request('20').adapt_to(Ground()))  # DB7
 
 
-class Er_Oled022_1(Oled, Block):
-    """SSD1305-based 2.2" 128x32 monochrome OLED."""
+class Er_Oled022_1(Oled, GeneratorBlock):
+    """SSD1305-based 2.2" 128x32 monochrome OLED in SPI or I2C mode."""
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Er_Oled022_1_Device())
         self.gnd = self.Export(self.device.vss, [Common])
         self.vcc = self.Export(self.device.vcc)  # device power
         self.pwr = self.Export(self.device.vdd)  # logic power
-        self.reset = self.Export(self.device.res)
-        self.spi = self.Export(self.device.spi)
-        self.cs = self.Export(self.device.cs)
-        self.dc = self.Export(self.device.dc)
+        self.reset = self.Port(DigitalSink.empty(), optional=True)
+        self.spi = self.Port(SpiSlave.empty(), optional=True)
+        self.cs = self.Port(DigitalSink.empty(), optional=True)
+        self.dc = self.Port(DigitalSink.empty(), optional=True)
+        self.i2c = self.Port(I2cSlave.empty())
+        self.generator_param(self.spi.is_connected(), self.i2c.is_connected(), self.reset.is_connected())
 
     def contents(self):
         super().contents()
@@ -102,3 +101,37 @@ class Er_Oled022_1(Oled, Block):
             .connected(self.gnd, self.device.vcc)
         self.vcc_cap2 = self.Block(DecouplingCapacitor(capacitance=10*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vcc)
+
+    def generate(self):
+        super().generate()
+
+        self.gnd_digital = self.gnd.as_digital_source()
+        self.pwr_digital = self.pwr.as_digital_source()
+
+        if self.get(self.i2c.is_connected()):
+            self.connect(self.device.bs1, self.pwr_digital)
+            self.connect(self.device.bs2, self.gnd_digital)
+
+            self.connect(self.i2c.scl, self.device.d0)
+            self.connect(self.i2c.sda, self.device.d1, self.device.d2)
+            self.connect(self.device.dc, self.gnd_digital)  # addr, TODO support I2C addr
+            self.connect(self.device.cs, self.gnd_digital)
+            self.require(~self.spi.is_connected() & ~self.cs.is_connected() & ~self.dc.is_connected())
+            self.assign(self.i2c.addresses, [0x3c])
+        elif self.get(self.spi.is_connected()):
+            self.connect(self.device.bs1, self.gnd_digital)
+            self.connect(self.device.bs2, self.gnd_digital)
+
+            self.connect(self.spi.sck, self.device.d0)
+            self.connect(self.spi.mosi, self.device.d1)
+            self.connect(self.cs, self.device.cs)
+            self.connect(self.dc, self.device.dc)
+            self.require(~self.dc.is_connected())
+            self.require(~self.i2c.is_connected())
+
+        self.require(self.spi.is_connected() | self.i2c.is_connected())
+
+        if self.get(self.reset.is_connected()):
+            self.connect(self.reset, self.device.res)
+        else:
+            self.connect(self.device.res, self.pwr_digital)

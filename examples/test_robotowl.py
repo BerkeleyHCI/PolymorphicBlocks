@@ -29,22 +29,6 @@ class PhotodiodeSensor(LightSensor, KiCadSchematicBlock, Block):
       })
 
 
-class OledConnector(Connector, Block):
-  """Connector for an I2C OLED"""
-  def __init__(self):
-    super().__init__()
-    self.conn = self.Block(PinHeader254())
-
-    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()),
-                           [Common])
-    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink()),
-                           [Power])
-
-    self.i2c = self.Port(I2cSlave(DigitalBidir.empty()), [InOut])
-    self.connect(self.i2c.scl, self.conn.pins.request('3').adapt_to(DigitalBidir()))
-    self.connect(self.i2c.sda, self.conn.pins.request('4').adapt_to(DigitalBidir()))
-
-
 class RobotOwl(JlcBoardTop):
   """Controller for a robot owl with a ESP32S3 dev board w/ camera, audio, and peripherals.
 
@@ -69,16 +53,19 @@ class RobotOwl(JlcBoardTop):
     self.tp_usb = self.Block(VoltageTestPoint()).connected(self.mcu.vusb_out)
     self.tp_3v3 = self.Block(VoltageTestPoint()).connected(self.mcu.pwr_out)
 
+    (self.reg_12v, self.tp_12v), _ = self.chain(
+      self.vusb,
+      self.Block(BoostConverter(output_voltage=(11, 14)*Volt)),
+      self.Block(VoltageTestPoint())
+    )
+    self.connect(self.reg_12v.gnd, self.gnd)
+    self.v12 = self.connect(self.reg_12v.pwr_out)
+
     # 3V3 DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.oled, ), _ = self.chain(
-        self.mcu.cam_i2c,
-        imp.Block(OledConnector())
-      )
-
       self.mic = imp.Block(Sd18ob261())
       self.connect(self.mic.clk, self.mcu.gpio.request('mic_clk'))
       self.connect(self.mic.data, self.mcu.gpio.request('mic_data'))
@@ -87,6 +74,11 @@ class RobotOwl(JlcBoardTop):
         imp.Block(PhotodiodeSensor()),
         self.mcu.adc.request('photodiode')
       )
+
+      self.oled22 = imp.Block(Er_Oled022_1())
+      self.connect(self.v3v3, self.oled22.pwr)
+      self.connect(self.v12, self.oled22.vcc)
+      self.connect(self.oled22.i2c, self.mcu.cam_i2c)
 
     # VBATT DOMAIN
     with self.implicit_connect(
@@ -111,6 +103,7 @@ class RobotOwl(JlcBoardTop):
       self.connect(self.mcu.ws2812, self.ws2812bArray.din)
       self.connect(self.ws2812bArray.dout, self.extNeopixels.din)
 
+
     # Mounting holes
     self.m = ElementDict[MountingHole]()
     for i in range(4):
@@ -119,6 +112,7 @@ class RobotOwl(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['reg_12v'], Ap3012),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -133,6 +127,9 @@ class RobotOwl(JlcBoardTop):
         ]),
         (['mcu', 'ic', 'fp_footprint'], 'edg:Freenove_ESP32S3-WROOM_Expansion'),
         (['mcu', 'vusb_out', 'current_limits'], Range(0, 3)),
+
+        (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
+        (['reg_12v', 'power_path', 'inductor', 'actual_frequency_rating'], Range(0, 7e6)),
       ],
       class_refinements=[
         (PassiveConnector, PinHeader254),  # default connector series unless otherwise specified
@@ -142,6 +139,8 @@ class RobotOwl(JlcBoardTop):
       ],
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
+        (Er_Oled022_1, ["iref_res", "resistance"], Range.from_tolerance(820e3, 0.1)),  # use a basic part
+        (Er_Oled022_1, ["device", "vcc", "voltage_limits"], Range(11, 14)),  # allow it to be a bit lower
       ],
     )
 
