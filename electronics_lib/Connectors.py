@@ -7,7 +7,7 @@ class PowerBarrelJack(Connector, PowerSource, Block):
   @init_in_parent
   def __init__(self,
                voltage_out: RangeLike = RangeExpr(),
-               current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
+               current_limits: RangeLike = RangeExpr.ALL) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits))
@@ -39,8 +39,8 @@ class LipoConnector(Connector, Battery):
 
   Connector type not specified, up to the user through a refinement."""
   @init_in_parent
-  def __init__(self, voltage: RangeLike = Default((2.5, 4.2)*Volt), *args,
-               actual_voltage: RangeLike = Default((2.5, 4.2)*Volt), **kwargs):
+  def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args,
+               actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs):
     from electronics_model.PassivePort import PassiveAdapterVoltageSink
     super().__init__(voltage, *args, **kwargs)
     self.chg = self.Port(VoltageSink.empty(), optional=True)  # ideal port for charging

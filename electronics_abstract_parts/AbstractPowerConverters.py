@@ -115,8 +115,8 @@ class SwitchingVoltageRegulator(VoltageRegulator):
 
   @init_in_parent
   def __init__(self, *args, ripple_current_factor: RangeLike,
-               input_ripple_limit: FloatLike = Default(75 * mVolt),
-               output_ripple_limit: FloatLike = Default(25 * mVolt),
+               input_ripple_limit: FloatLike = 75 * mVolt,
+               output_ripple_limit: FloatLike = 25 * mVolt,
                **kwargs) -> None:
     """https://www.ti.com/lit/an/slta055/slta055.pdf: recommends 75mV for maximum peak-peak ripple voltage
     """
@@ -173,11 +173,11 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
                output_current: RangeLike, current_limits: RangeLike, inductor_current_ripple: RangeLike, *,
-               efficiency: RangeLike = Default((0.9, 1.0)),  # from TI reference
-               input_voltage_ripple: FloatLike = Default(75*mVolt),
-               output_voltage_ripple: FloatLike = Default(25*mVolt),
-               dutycycle_limit: RangeLike = Default((0.1, 0.9)),
-               inductor_scale: FloatLike = Default(1.0)):  # arbitrary
+               efficiency: RangeLike = (0.9, 1.0),  # from TI reference
+               input_voltage_ripple: FloatLike = 75*mVolt,
+               output_voltage_ripple: FloatLike = 25*mVolt,
+               dutycycle_limit: RangeLike = (0.1, 0.9),
+               inductor_scale: FloatLike = 1.0):  # arbitrary
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models the input cap only
@@ -292,7 +292,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 @abstract_block_default(lambda: IdealBoostConverter)
 class BoostConverter(SwitchingVoltageRegulator):
   """Step-up switching converter"""
-  def __init__(self, *args, ripple_current_factor: RangeLike = Default((0.2, 0.5)), **kwargs) -> None:
+  def __init__(self, *args, ripple_current_factor: RangeLike = (0.2, 0.5), **kwargs) -> None:
     # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
     super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
     self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
@@ -333,10 +333,10 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
                output_current: RangeLike, current_limits: RangeLike, inductor_current_ripple: RangeLike, *,
-               efficiency: RangeLike = Default((0.8, 1.0)),  # from TI reference
-               input_voltage_ripple: FloatLike = Default(75*mVolt),
-               output_voltage_ripple: FloatLike = Default(25*mVolt),
-               dutycycle_limit: RangeLike = Default((0.2, 0.85))):  # arbitrary
+               efficiency: RangeLike = (0.8, 1.0),  # from TI reference
+               input_voltage_ripple: FloatLike = 75*mVolt,
+               output_voltage_ripple: FloatLike = 25*mVolt,
+               dutycycle_limit: RangeLike = (0.2, 0.85)):  # arbitrary
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models input cap and inductor power draw
@@ -443,7 +443,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 @abstract_block_default(lambda: IdealVoltageRegulator)
 class BuckBoostConverter(SwitchingVoltageRegulator):
   """Step-up or switch-down switching converter"""
-  def __init__(self, *args, ripple_current_factor: RangeLike = Default((0.2, 0.5)), **kwargs) -> None:
+  def __init__(self, *args, ripple_current_factor: RangeLike = (0.2, 0.5), **kwargs) -> None:
     # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
     super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
 
@@ -479,9 +479,9 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
                output_current: RangeLike, current_limits: RangeLike, inductor_current_ripple: RangeLike, *,
-               efficiency: RangeLike = Default((0.8, 1.0)),  # from TI reference
-               input_voltage_ripple: FloatLike = Default(75*mVolt),
-               output_voltage_ripple: FloatLike = Default(25*mVolt)):  # arbitrary
+               efficiency: RangeLike = (0.8, 1.0),  # from TI reference
+               input_voltage_ripple: FloatLike = 75*mVolt,
+               output_voltage_ripple: FloatLike = 25*mVolt):  # arbitrary
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # connected to the input cap, models input current

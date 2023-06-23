@@ -52,7 +52,7 @@ class BatteryProtector_S8261A(PowerConditioner, Block):
       power=RangeExpr.ZERO,
       gate_voltage=self.pwr_in.link().voltage,
       gate_charge=RangeExpr.ALL,
-      rds_on=Default((0, 0.1)),
+      rds_on=(0, 0.1)*Ohm,
       drain_voltage=self.pwr_in.link().voltage
     ))
     self.co_fet = self.Block(Fet.NFet(
@@ -60,7 +60,7 @@ class BatteryProtector_S8261A(PowerConditioner, Block):
       power=RangeExpr.ZERO,
       gate_voltage=self.pwr_in.link().voltage,
       gate_charge=RangeExpr.ALL,
-      rds_on=Default((0, 0.1)),
+      rds_on=(0, 0.1)*Ohm,
       drain_voltage=self.pwr_in.link().voltage
     ))
 

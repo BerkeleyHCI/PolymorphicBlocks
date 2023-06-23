@@ -73,8 +73,8 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
     return mapping[symbol_name]
 
   @init_in_parent
-  def __init__(self, amplification: RangeLike, impedance: RangeLike = Default((10, 100)*kOhm), *,
-               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):  # to be overridden by refinements
+  def __init__(self, amplification: RangeLike, impedance: RangeLike = (10, 100)*kOhm, *,
+               series: IntLike = 24, tolerance: FloatLike = 0.01):  # to be overridden by refinements
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -199,7 +199,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
 
   @init_in_parent
   def __init__(self, ratio: RangeLike, input_impedance: RangeLike, *,
-               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
+               series: IntLike = 24, tolerance: FloatLike = 0.01):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -323,7 +323,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
 
   @init_in_parent
   def __init__(self, factor: RangeLike, capacitance: RangeLike, *,
-               series: IntLike = Default(6), tolerance: FloatLike = Default(0.05)):
+               series: IntLike = 6, tolerance: FloatLike = 0.05):
     super().__init__()
 
     self.amp = self.Block(Opamp())

@@ -60,7 +60,7 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
 
   @init_in_parent
   def __init__(self, ratio: RangeLike, impedance: RangeLike, *,
-               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)) -> None:
+               series: IntLike = 24, tolerance: FloatLike = 0.01) -> None:
     super().__init__()
 
     self.ratio = self.ArgParameter(ratio)

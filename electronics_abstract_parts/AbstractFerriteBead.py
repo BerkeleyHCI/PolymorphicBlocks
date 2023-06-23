@@ -14,9 +14,9 @@ class FerriteBead(PassiveComponent, KiCadImportableBlock):
     return {'1': self.a, '2': self.b}
 
   @init_in_parent
-  def __init__(self, *, current: RangeLike = Default(RangeExpr.ZERO),
-               hf_impedance: RangeLike = Default(RangeExpr.ALL),
-               dc_resistance: RangeLike = Default(RangeExpr.ALL)) -> None:
+  def __init__(self, *, current: RangeLike = RangeExpr.ZERO,
+               hf_impedance: RangeLike = RangeExpr.ALL,
+               dc_resistance: RangeLike = RangeExpr.ALL) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())
@@ -109,8 +109,8 @@ class SeriesPowerFerriteBead(DiscreteApplication, KiCadImportableBlock):
     return {'1': self.pwr_in, '2': self.pwr_out}
 
   @init_in_parent
-  def __init__(self, hf_impedance: RangeLike = Default(RangeExpr.ALL),
-               dc_resistance: RangeLike = Default(RangeExpr.ALL)) -> None:
+  def __init__(self, hf_impedance: RangeLike = RangeExpr.ALL,
+               dc_resistance: RangeLike = RangeExpr.ALL) -> None:
     super().__init__()
 
     self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration

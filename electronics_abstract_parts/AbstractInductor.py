@@ -15,8 +15,8 @@ class Inductor(PassiveComponent, KiCadImportableBlock):
 
   @init_in_parent
   def __init__(self, inductance: RangeLike,
-               current: RangeLike = Default(RangeExpr.ZERO),
-               frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
+               current: RangeLike = RangeExpr.ZERO,
+               frequency: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())

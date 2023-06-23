@@ -143,7 +143,7 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
   # LOOSELY approximated from https://www.maximintegrated.com/en/design/technical-documents/tutorials/5/5527.html
 
   @init_in_parent
-  def __init__(self, *args, single_nominal_capacitance: RangeLike = Default((0, 22)*uFarad), **kwargs):
+  def __init__(self, *args, single_nominal_capacitance: RangeLike = (0, 22)*uFarad, **kwargs):
     super().__init__(*args, **kwargs)
     self.single_nominal_capacitance = self.ArgParameter(single_nominal_capacitance)
     self.generator_param(self.capacitance, self.voltage, self.single_nominal_capacitance,

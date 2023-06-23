@@ -6,8 +6,8 @@ from .Categories import PowerSwitch
 
 class HighSideSwitch(PowerSwitch, Block):
   @init_in_parent
-  def __init__(self, pull_resistance: RangeLike = Default(10000*Ohm(tol=0.01)), max_rds: FloatLike = Default(1 * Ohm),
-               frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, pull_resistance: RangeLike = 10000*Ohm(tol=0.01), max_rds: FloatLike = 1*Ohm,
+               frequency: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])  # amplifier voltage
@@ -79,7 +79,7 @@ class HighSideSwitch(PowerSwitch, Block):
 
 class HalfBridgeNFet(PowerSwitch, Block):
   @init_in_parent
-  def __init__(self, max_rds: FloatLike = Default(1*Ohm), frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, max_rds: FloatLike = 1*Ohm, frequency: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()  # TODO MODEL ALL THESE
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
