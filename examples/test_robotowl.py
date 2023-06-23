@@ -138,7 +138,7 @@ class RobotOwl(JlcBoardTop):
         (PassiveConnector, PinHeader254),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
         (Speaker, ConnectorSpeaker),
-        (MountingHole, MountingHole_M3),
+        (MountingHole, MountingHole_M2_5),
       ],
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
