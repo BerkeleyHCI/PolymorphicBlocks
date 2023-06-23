@@ -38,7 +38,7 @@ class PartsTablePart(Block):
   """An interface mixin for a part that is selected from a table, defining parameters to allow manual part selection
   as well as matching parts."""
   @init_in_parent
-  def __init__(self, *args, part: StringLike = Default(""), **kwargs):
+  def __init__(self, *args, part: StringLike = "", **kwargs):
     super().__init__(*args, **kwargs)
     self.part = self.ArgParameter(part)
     self.actual_part = self.Parameter(StringExpr())
@@ -95,7 +95,7 @@ class PartsTableFootprint(PartsTablePart, Block):
   KICAD_FOOTPRINT = PartsTableColumn(str)
 
   @init_in_parent
-  def __init__(self, *args, footprint_spec: StringLike = Default(""), **kwargs):
+  def __init__(self, *args, footprint_spec: StringLike = "", **kwargs):
     super().__init__(*args, **kwargs)
     self.footprint_spec = self.ArgParameter(footprint_spec)  # actual_footprint left to the actual footprint
 

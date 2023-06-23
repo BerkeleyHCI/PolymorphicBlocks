@@ -34,8 +34,8 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
     return Resistor(resistance=cls.parse_resistor(properties['Value']))
 
   @init_in_parent
-  def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO),
-               voltage: RangeLike = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, resistance: RangeLike, power: RangeLike = RangeExpr.ZERO,
+               voltage: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())

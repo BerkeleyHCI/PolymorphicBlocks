@@ -2,8 +2,8 @@ from electronics_abstract_parts import *
 
 
 class Cr2032(Battery, FootprintBlock):
-  def __init__(self, voltage: RangeLike = Default((2.0, 3.0)*Volt), *args,
-               actual_voltage: RangeLike = Default((2.0, 3.0)*Volt), **kwargs):
+  def __init__(self, voltage: RangeLike = (2.0, 3.0)*Volt, *args,
+               actual_voltage: RangeLike = (2.0, 3.0)*Volt, **kwargs):
     super().__init__(voltage, *args, **kwargs)
     self.pwr.init_from(VoltageSource(
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
@@ -28,8 +28,8 @@ class Cr2032(Battery, FootprintBlock):
 
 class Li18650(Battery, FootprintBlock):
   @init_in_parent
-  def __init__(self, voltage: RangeLike = Default((2.5, 4.2)*Volt), *args,
-               actual_voltage: RangeLike = Default((2.5, 4.2)*Volt), **kwargs):
+  def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args,
+               actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs):
     super().__init__(voltage, *args, **kwargs)
     self.pwr.init_from(VoltageSource(
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
@@ -54,8 +54,8 @@ class Li18650(Battery, FootprintBlock):
 class AABattery(Battery, FootprintBlock):
   """AA Alkaline battery"""
   @init_in_parent
-  def __init__(self, voltage: RangeLike = Default((1.3, 1.7)*Volt), *args,
-               actual_voltage: RangeLike = Default((1.3, 1.7)*Volt), **kwargs):
+  def __init__(self, voltage: RangeLike = (1.3, 1.7)*Volt, *args,
+               actual_voltage: RangeLike = (1.3, 1.7)*Volt, **kwargs):
     super().__init__(voltage, *args, **kwargs)
     self.pwr.init_from(VoltageSource(
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf

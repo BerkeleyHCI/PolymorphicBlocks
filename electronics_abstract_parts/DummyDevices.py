@@ -10,8 +10,8 @@ class DummyPassive(DummyDevice):
 
 class DummyVoltageSource(DummyDevice):
   @init_in_parent
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
-               current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
+  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
+               current_limits: RangeLike = RangeExpr.ALL) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSource(
@@ -25,8 +25,8 @@ class DummyVoltageSource(DummyDevice):
 
 class DummyVoltageSink(DummyDevice):
   @init_in_parent
-  def __init__(self, voltage_limit: RangeLike = Default(RangeExpr.ALL),
-               current_draw: RangeLike = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL,
+               current_draw: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSink(
@@ -39,8 +39,8 @@ class DummyVoltageSink(DummyDevice):
 
 class DummyDigitalSink(DummyDevice):
   @init_in_parent
-  def __init__(self, voltage_limit: RangeLike = Default(RangeExpr.ALL),
-               current_draw: RangeLike = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL,
+               current_draw: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
 
     self.io = self.Port(DigitalSink(
@@ -51,9 +51,9 @@ class DummyDigitalSink(DummyDevice):
 
 class DummyAnalogSink(DummyDevice):
   @init_in_parent
-  def __init__(self, voltage_limit: RangeLike = Default(RangeExpr.ALL),
-               current_draw: RangeLike = Default(RangeExpr.ZERO),
-               impedance: RangeLike = Default(RangeExpr.INF)) -> None:
+  def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL,
+               current_draw: RangeLike = RangeExpr.ZERO,
+               impedance: RangeLike = RangeExpr.INF) -> None:
     super().__init__()
 
     self.io = self.Port(AnalogSink(

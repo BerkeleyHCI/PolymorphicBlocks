@@ -86,7 +86,7 @@ class Lpc1549Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Ge
     )
     dac_model = AnalogSource(
       voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper() - 0.3),
-      current_limits=Default(RangeExpr.ALL),  # not given by spec
+      current_limits=RangeExpr.ALL,  # not given by spec
       impedance=(300, 300) * Ohm  # Table 25, "typical" rating
     )
 

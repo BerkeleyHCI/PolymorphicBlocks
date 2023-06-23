@@ -102,7 +102,7 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
 
   @init_in_parent
   def __init__(self, diode_spec: StringLike, output_resistance: RangeLike, input_resistance: RangeLike, *,
-               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
+               series: IntLike = 24, tolerance: FloatLike = 0.01):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
