@@ -113,7 +113,7 @@ class RobotOwl(JlcBoardTop):
 
     # Mounting holes
     self.m = ElementDict[MountingHole]()
-    for i in range(2):
+    for i in range(4):
       self.m[i] = self.Block(MountingHole())
 
   def refinements(self) -> Refinements:

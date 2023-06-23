@@ -16,15 +16,16 @@ const mmToUnits = 1 / 25.4  // multiply by mm to get svgpcb units
 
 // GEOMETRY PARAMETERS
 const ledCount = 12
-const radius = 45  // mm
-const ledStartAngle = 90
+const radius = 46  // mm
+const ledStartAngle = 90 - 15
 const ledEndAngle = ledStartAngle + -360 * (ledCount - 1) / (ledCount)  // end angle is the placement of the last LED
 const ledRot = 90  // rotation of each unit
 
 // ROUTING PARAMETERS
 const powerWidth = 0.5  // mm, trace
 const powerVia = via(0.5 / 25.4, 0.9/ 25.4)
-const powerOffset = 2  // mm, distance from pad to via or power ring
+const gndOffset = 2  // mm, distance from pad to via
+const powerOffset = 1  // mm, distance from pad to power ring
 
 const traceWidth = 0.2  // mm, trace
 
@@ -81,6 +82,8 @@ function smoothPath(pt1, pt2, pt1Angle, pt2Angle=null) {  // return the path(...
 
 
 // PARTS
+board.add(powerVia, {translate: [0, 0]})  // origin for positioning handle
+
 const ledIncrAngle = (ledEndAngle - ledStartAngle) / (ledCount - 1)
 
 var prevPower = null
@@ -92,7 +95,7 @@ for (i=0; i<ledCount; i++) {
                                                Math.sin(ledAngle * degToRad) * radius * mmToUnits],
                                   rotate: ledAngle + ledRot, label: "led[" + i + "]" })
 
-  const gndViaPos = pAdd(led.pad("3"), vRotate([-powerOffset * mmToUnits, 0], ledAngle - 90))
+  const gndViaPos = pAdd(led.pad("3"), vRotate([-gndOffset * mmToUnits, 0], ledAngle - 90))
   const gndVia = board.add(powerVia, {translate: gndViaPos})
   board.wire([  // gnd trace + via
     led.pad("3"),
