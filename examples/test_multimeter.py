@@ -481,7 +481,7 @@ class Multimeter(JlcBoardTop):
         (['prot_analog', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
 
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
+        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
       ],
       class_values=[
         (AnalogSwitchTree, ['switch_size'], 2),

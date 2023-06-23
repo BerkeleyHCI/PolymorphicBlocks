@@ -129,7 +129,7 @@ class RobotOwl(JlcBoardTop):
         (['mcu', 'vusb_out', 'current_limits'], Range(0, 3)),
 
         (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
-        (['reg_12v', 'power_path', 'inductor', 'actual_frequency_rating'], Range(0, 7e6)),
+        (['reg_12v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 7e6)),
       ],
       class_refinements=[
         (PassiveConnector, PinHeader254),  # default connector series unless otherwise specified

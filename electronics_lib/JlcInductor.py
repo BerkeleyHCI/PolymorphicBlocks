@@ -62,13 +62,12 @@ class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
      }),
   ]
 
-  def _row_generate(self, row: PartsTableRow) -> None:
-    # because the table does not have frequency specs, it is infinite for filtering, but needs to be zero actual
-    row.value[self.FREQUENCY_RATING] = Range.exact(0)
-    super()._row_generate(row)
-    # because the table does not have frequency specs, the table filter doesn't enforce frequency ratings
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    # because the table does not have frequency specs, the table filter can't enforce frequency ratings
     # so the user must add the actual frequency rating in refinements
-    self.require(self.frequency.within(self.actual_frequency_rating))
+    self.manual_frequency_rating = self.Parameter(RangeExpr(Range.exact(0)))
+    self.require(self.frequency.within(self.manual_frequency_rating))
 
   @classmethod
   def _make_table(cls) -> PartsTable:
