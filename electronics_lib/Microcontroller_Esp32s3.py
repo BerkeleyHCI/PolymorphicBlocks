@@ -338,14 +338,14 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, HasI2s,
   def generate(self) -> None:
     super().generate()
 
-    if not self.get(self.gnd_out.is_connected()):  # board sinks power
+    if self.get(self.gnd.is_connected()):  # board sinks power
       self.connect(self.gnd, self.ic.gnd)
       self.connect(self.pwr, self.ic.pwr)
 
       self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
       self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
       self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
-    else:  # board sources power
+    else:  # board sources power (default)
       self.gnd_source = self.Block(DummyVoltageSource(
         voltage_out=0*Volt(tol=0),
         current_limits=Range.all()

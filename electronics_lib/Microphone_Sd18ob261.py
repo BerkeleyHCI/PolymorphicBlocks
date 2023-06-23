@@ -47,7 +47,7 @@ class Sd18ob261_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Sd18ob261(Interface, GeneratorBlock):
     """SD18OB261-060 PDM microphone, probably footprint-compatible with similar Knowles devices.
     Application circuit is not specified in the datasheet, this uses the one from SPH0655LM4H
-    (single 1uF decap)."""
+    (single 0.1uF decap)."""
     @init_in_parent
     def __init__(self):
         super().__init__()
