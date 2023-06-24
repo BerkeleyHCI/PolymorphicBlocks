@@ -42,7 +42,7 @@ class Esp32_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Generato
 
     self.chip_pu = self.Port(dio_model, optional=True)  # power control, must NOT be left floating, table 1
     self.has_chip_pu = self.Parameter(BoolExpr())  # but some modules connect it internally
-    self.require(self.has_chip_pu.implies(self.chip_pu.is_connected()), "EN not connected")
+    self.require(self.has_chip_pu == self.chip_pu.is_connected(), "EN not connected")
 
     # section 2.4, table 5: strapping IOs that need a fixed value to boot, TODO currently not allocatable post-boot
     self.io0 = self.Port(dio_model, optional=True)  # default pullup (SPI boot), set low to download boot
@@ -72,6 +72,7 @@ class Esp32_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Generato
     spi_model = SpiMaster(DigitalBidir.empty(), (0, 80)*MHertz)  # section 4.1.17
     i2c_model = I2cMaster(DigitalBidir.empty())  # section 4.1.11, 100/400kHz and up to 5MHz
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI
+    i2s_model = I2sController(DigitalBidir.empty())
 
     return PinMapUtil([  # section 2.2, table 1
       # VDD3P3_RTC
@@ -132,6 +133,9 @@ class Esp32_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Generato
       PeripheralAnyResource('VSPI', spi_model),
 
       PeripheralAnyResource('TWAI', can_model),
+
+      PeripheralAnyResource('I2S0', i2s_model),  # while CLK is restricted pinning, SCK = BCK here
+      PeripheralAnyResource('I2S1', i2s_model),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
 
@@ -218,7 +222,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, IoContr
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
 
 
-class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
+class Freenove_Esp32_Wrover_Device(Esp32_Device, FootprintBlock):
   """ESP32-WROVER-DEV breakout with camera.
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wrover-e_esp32-wrover-ie_datasheet_en.pdf
@@ -280,13 +284,13 @@ class Esp32_Wrover_Dev_Device(Esp32_Device, FootprintBlock):
     self.assign(self.has_chip_pu, False)
 
     self.footprint(
-      'U', 'edg:ESP32-WROVER-DEV',
+      'U', 'edg:Freenove_ESP32-WROVER',
       self._make_pinning(),
-      mfr='', part='ESP32-WROVER-DEV',
+      mfr='', part='Freenove ESP32-WROVER',
     )
 
 
-class Esp32_Wrover_Dev(Microcontroller, Radiofrequency, IoController, BaseIoControllerExportable, Block):
+class Freenove_Esp32_Wrover(Microcontroller, Radiofrequency, IoController, BaseIoControllerExportable, Block):
   """Wrapper around Esp32_Wover_Dev fitting the IoController interface
   """
   def __init__(self):
@@ -300,6 +304,6 @@ class Esp32_Wrover_Dev(Microcontroller, Radiofrequency, IoController, BaseIoCont
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.ic = imp.Block(Esp32_Wrover_Dev_Device(pin_assigns=ArrayStringExpr()))
+      self.ic = imp.Block(Freenove_Esp32_Wrover_Device(pin_assigns=ArrayStringExpr()))
 
       self.connect(self.io2, self.ic.io2)

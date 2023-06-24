@@ -59,7 +59,7 @@ class SimpleBoardTop(BaseBoardTop):
         (PassiveConnector, PinHeader254),
       ],
       class_values=[
-        (JlcInductor, ['actual_frequency_rating'], Range.all()),
+        (JlcInductor, ['manual_frequency_rating'], Range.all()),
       ],
     )
     

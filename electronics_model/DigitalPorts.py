@@ -190,10 +190,22 @@ class DigitalSink(DigitalBase):
 
   @staticmethod
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
-                  voltage_limit_tolerance: RangeLike = (-0.3, 0.3),
+                  voltage_limit_abs: Optional[RangeLike] = None,
+                  voltage_limit_tolerance: Optional[RangeLike] = None,
                   current_draw: RangeLike = RangeExpr.ZERO,
                   input_threshold_factor: Optional[RangeLike] = None,
                   input_threshold_abs: Optional[RangeLike] = None) -> DigitalSink:
+    voltage_limit: RangeLike
+    if voltage_limit_abs is not None:
+      assert voltage_limit_tolerance is None
+      voltage_limit = voltage_limit_abs
+    elif voltage_limit_tolerance is not None:
+      voltage_limit = neg.link().voltage.hull(pos.link().voltage) + \
+                      RangeExpr._to_expr_type(voltage_limit_tolerance)
+    else:  # generic default
+      voltage_limit = neg.link().voltage.hull(pos.link().voltage) + \
+                      RangeExpr._to_expr_type((-0.3, 0.3))
+
     input_threshold: RangeLike
     if input_threshold_factor is not None:
       assert input_threshold_abs is None, "can only specify one input threshold type"
@@ -207,7 +219,7 @@ class DigitalSink(DigitalBase):
 
     return DigitalSink(  # TODO get rid of to_expr_type w/ dedicated Range conversion
       voltage_limits=neg.link().voltage.hull(pos.link().voltage) + \
-                     RangeExpr._to_expr_type(voltage_limit_tolerance),
+                     RangeExpr._to_expr_type(voltage_limit),
       current_draw=current_draw,
       input_thresholds=input_threshold
     )

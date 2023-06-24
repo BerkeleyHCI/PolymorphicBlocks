@@ -6,7 +6,7 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @abstract_block
-class Esp32s3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Esp32s3_Device(HasI2s, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """Base class for ESP32-S3 series microcontrollers with WiFi and Bluetooth (classic and LE)
   and AI acceleration
 
@@ -32,7 +32,9 @@ class Esp32s3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
       pullup_capable=True, pulldown_capable=True,
     )
 
-    self.chip_pu = self.Port(dio_model)  # table 2-5, power up/down control, do NOT leave floating
+    self.chip_pu = self.Port(dio_model, optional=True)  # table 2-5, power up/down control, do NOT leave floating
+    self.has_chip_pu = self.Parameter(BoolExpr())  # but some modules connect it internally
+    self.require(self.has_chip_pu == self.chip_pu.is_connected(), "EN not connected")
     self.io0 = self.Port(dio_model, optional=True)  # table 2-11, default pullup (SPI boot), set low to download boot
     self.uart0 = self.Port(UartPort(dio_model), optional=True)  # programming
 
@@ -54,6 +56,7 @@ class Esp32s3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
     spi_model = SpiMaster(DigitalBidir.empty(), (0, 80)*MHertz)  # section 3.5.2, 80MHz in master, 60MHz in slave
     i2c_model = I2cMaster(DigitalBidir.empty())  # section 3.5.6, 100/400kHz and up to 800kbit/s
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI, up to 1Mbit/s
+    i2s_model = I2sController(DigitalBidir.empty())
 
     return PinMapUtil([  # table 2-1 for overview, table 3-3 for remapping, table 2-4 for ADC
       # VDD3P3_RTC domain
@@ -128,6 +131,9 @@ class Esp32s3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
       PeripheralAnyResource('SPI2', spi_model),
       PeripheralAnyResource('SPI3', spi_model),
       PeripheralAnyResource('TWAI', can_model),
+      PeripheralAnyResource('I2S0', i2s_model),
+      PeripheralAnyResource('I2S1', i2s_model),
+
       PeripheralFixedResource('USB', UsbDevicePort.empty(), {
         'dp': ['GPIO20'], 'dm': ['GPIO19']
       }),
@@ -185,6 +191,8 @@ class Esp32s3_Wroom_1_Device(Esp32s3_Device, FootprintBlock, JlcPart):
   def generate(self) -> None:
     super().generate()
 
+    self.assign(self.has_chip_pu, True)
+
     self.assign(self.lcsc_part, 'C2913202')  # note standard only assembly
     self.assign(self.actual_basic_part, False)
     self.footprint(
@@ -195,7 +203,8 @@ class Esp32s3_Wroom_1_Device(Esp32s3_Device, FootprintBlock, JlcPart):
     )
 
 
-class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, IoController, BaseIoControllerExportable):
+class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasI2s, HasEspProgramming,
+                      IoController, BaseIoControllerExportable):
   """ESP32-S3-WROOM-1 module
   """
   def contents(self) -> None:
@@ -214,3 +223,140 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, IoCont
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
+
+
+class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
+  """Freenove ESP32S3 WROOM breakout breakout with camera.
+
+  Board pinning: https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board/blob/main/ESP32S3_Pinout.png
+
+  Top left is pin 1, going down the left side then up the right side.
+  Up is defined from the text orientation (antenna is on top).
+  """
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    'VDD': '1',  # 3v3, output of internal AMS1117-3.3V LDO
+    # 20: Vcc 5vUSB
+    'GND': '21',
+    'CHIP_PU': '2',  # aka EN, switch w/ pullup on board
+
+    'GPIO2': '39',  # fixed strapping pin, drives LED on PCB
+    'GPIO0': '28',  # fixed strapping pin
+
+    'U0RXD': '39',  # fixed programming pin, board connected to USB UART w/ jumper
+    'U0TXD': '40',  # fixed programming pin, board connected to USB UART w/ jumper
+  }
+  RESOURCE_PIN_REMAP = {
+    # 'GPIO4': '3',  # CAM_SIOD
+    # 'GPIO5': '4',  # CAM_SIOC
+    # 'GPIO6': '5',  # CAM_VYSNC
+    # 'GPIO7': '6',  # CAM_HREF
+    # 'GPIO15': '7',  # CAM_XCLK
+    # 'GPIO16': '8',  # CAM_Y9
+    # 'GPIO17': '9',  # CAM_Y8
+    # 'GPIO18': '10',  # CAM_Y7
+    # 'GPIO8': '11',  # CAM_Y4
+    'GPIO3': '12',
+    # 'GPIO46': '13',  # strapping pin, boot mode
+    # 'GPIO9': '14',  # CAM_Y3
+    # 'GPIO10': '15',  # CAM_Y5
+    # 'GPIO11': '16',  # CAM_Y2
+    # 'GPIO12': '17',  # CAM_Y6
+    # 'GPIO13': '18',  # CAM_PCLK
+    'GPIO14': '19',
+
+    # 'GPIO19': '22',  # USB_D+
+    # 'GPIO20': '23',  # USB_D-
+    'GPIO21': '24',
+    'SPICLK_P': '25',  # GPIO47
+    # 'SPICLK_N': '26',  # GPIO48, internal WS2812
+    # 'GPIO45': '27',  # strapping pin, VDD_SPI
+    # 'GPIO35': '29',  # PSRAM
+    # 'GPIO36': '30',  # PSRAM
+    # 'GPIO37': '31',  # PSRAM
+    # 'GPIO38': '32',  # SD_CMD
+    # 'GPIO39': '33',  # SD_CLK
+    # 'GPIO40': '34',  # SD_DATA
+    'MTDI': '35',  # GPIO41
+    'MTMS': '36',  # GPIO42
+    'GPIO2': '37',  # internal LED
+    'GPIO1': '38',
+  }
+
+  def __init__(self, **kawrgs) -> None:
+    super().__init__(**kawrgs)
+
+    self.cam_i2c = self.Port(I2cMaster(self._dio_model, has_pullup=True), optional=True)
+    self.ws2812 = self.Port(self._dio_model, optional=True)
+    self.vusb = self.Port(VoltageSource(
+      voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
+      current_limits=UsbConnector.USB2_CURRENT_LIMITS
+    ), optional=True)
+
+  def generate(self) -> None:
+    super().generate()
+    self.assign(self.has_chip_pu, False)
+
+    pinning = self._make_pinning()  # add optional output pins
+    pinning['4'] = self.cam_i2c.scl
+    pinning['3'] = self.cam_i2c.sda
+    pinning['26'] = self.ws2812
+    pinning['20'] = self.vusb
+
+    self.footprint(
+      'U', 'edg:Freenove_ESP32-WROVER',
+      pinning,
+      mfr='', part='Freenove ESP32S3-WROOM',
+    )
+
+
+class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, HasI2s,
+                             IoController, BaseIoControllerExportable, GeneratorBlock):
+  """Wrapper around Esp32_Wover_Dev fitting the IoController interface
+  """
+  POWER_REQUIRED = False
+
+  def __init__(self):
+    super().__init__()
+
+    self.ic: Freenove_Esp32s3_Wroom_Device = self.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
+
+    self.vusb_out = self.Export(self.ic.vusb, optional=True)
+    # since 3v3 and gnd can source or sink, these are connected in the generator
+    self.pwr_out = self.Port(VoltageSource.empty(), optional=True)
+    self.gnd_out = self.Port(GroundSource.empty(), optional=True)
+
+    self.cam_i2c = self.Export(self.ic.cam_i2c, optional=True)
+    self.ws2812 = self.Export(self.ic.ws2812, optional=True)
+
+    self.generator_param(self.gnd.is_connected())
+    self.generator_param(self.gnd_out.is_connected())
+
+    self.generator_param(self.pwr.is_connected())
+    self.generator_param(self.pwr_out.is_connected())
+    self.generator_param(self.vusb_out.is_connected())
+
+  def generate(self) -> None:
+    super().generate()
+
+    if self.get(self.gnd.is_connected()):  # board sinks power
+      self.connect(self.gnd, self.ic.gnd)
+      self.connect(self.pwr, self.ic.pwr)
+
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
+      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
+    else:  # board sources power (default)
+      self.gnd_source = self.Block(DummyVoltageSource(
+        voltage_out=0*Volt(tol=0),
+        current_limits=Range.all()
+      ))
+      self.connect(self.gnd_source.pwr, self.ic.gnd, self.gnd_out)
+
+      self.pwr_source = self.Block(DummyVoltageSource(
+        voltage_out=3.3*Volt(tol=0.05),  # tolerance is a guess
+        current_limits=UsbConnector.USB2_CURRENT_LIMITS
+      ))
+      self.connect(self.pwr_source.pwr, self.ic.pwr, self.pwr_out)
+
+      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
+      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")

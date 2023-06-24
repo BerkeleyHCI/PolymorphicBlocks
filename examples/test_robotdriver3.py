@@ -42,7 +42,7 @@ class RobotDriver3(JlcBoardTop):
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Esp32_Wrover_Dev())  # allows us to use IO2
+      self.mcu = imp.Block(Freenove_Esp32_Wrover())  # allows us to use IO2
       self.i2c = self.mcu.i2c.request('i2c')
 
       self.tof = imp.Block(Vl53l0xArray(4, first_xshut_fixed=True))
@@ -91,7 +91,7 @@ class RobotDriver3(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32_Wrover_Dev),
+        (['mcu'], Freenove_Esp32_Wrover),
         (['reg_3v3'], Ap3418),
         (['tof', 'elt[0]', 'conn'], PinSocket254),
         (['tof', 'elt[1]', 'conn'], PinSocket254),

@@ -84,12 +84,13 @@ class Er_Oled_096_1_1(Oled, GeneratorBlock):
         self.device = self.Block(Er_Oled_096_1_1_Device())
         self.gnd = self.Export(self.device.vss, [Common])
         self.pwr = self.Export(self.device.vdd, [Power])
-        self.reset = self.Export(self.device.res)
+        self.reset = self.Port(DigitalSink.empty(), optional=True)
         self.spi = self.Port(SpiSlave.empty(), optional=True)
         self.cs = self.Port(DigitalSink.empty(), optional=True)
         self.dc = self.Port(DigitalSink.empty(), optional=True)
         self.i2c = self.Port(I2cSlave.empty(), optional=True)
-        self.generator_param(self.spi.is_connected(), self.dc.is_connected(), self.i2c.is_connected())
+        self.generator_param(self.spi.is_connected(), self.dc.is_connected(), self.i2c.is_connected(),
+                             self.reset.is_connected())
 
     def contents(self):
         super().contents()
@@ -118,9 +119,11 @@ class Er_Oled_096_1_1(Oled, GeneratorBlock):
         super().generate()
 
         self.gnd_digital = self.gnd.as_digital_source()
-        self.pwr_digital = self.pwr.as_digital_source()
+        self.pwr_digital = None  # workaround for issue #259: if this is never used it creates a broken empty adapter
 
         if self.get(self.i2c.is_connected()):
+            if self.pwr_digital is None:
+                self.pwr_digital = self.pwr.as_digital_source()
             self.connect(self.device.bs0, self.gnd_digital)
             self.connect(self.device.bs1, self.pwr_digital)
 
@@ -140,8 +143,17 @@ class Er_Oled_096_1_1(Oled, GeneratorBlock):
                 self.connect(self.device.bs0, self.gnd_digital)
                 self.connect(self.dc, self.device.dc)
             else:  # 3-line SPI
+                if self.pwr_digital is None:
+                    self.pwr_digital = self.pwr.as_digital_source()
                 self.connect(self.device.bs0, self.pwr_digital)
                 self.connect(self.device.dc, self.gnd_digital)
             self.require(~self.i2c.is_connected())
 
         self.require(self.spi.is_connected() | self.i2c.is_connected())
+
+        if self.get(self.reset.is_connected()):
+            self.connect(self.reset, self.device.res)
+        else:
+            if self.pwr_digital is None:
+                self.pwr_digital = self.pwr.as_digital_source()
+            self.connect(self.device.res, self.pwr_digital)

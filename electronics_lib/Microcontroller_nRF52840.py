@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Nrf52840Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Nrf52840Base_Device(HasI2s, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """nRF52840 base device and IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
   PACKAGE: str  # package name for footprint(...)
@@ -73,6 +73,7 @@ class Nrf52840Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, G
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiMaster(DigitalBidir.empty(), (125, 32000)*kHertz)
     i2c_model = I2cMaster(DigitalBidir.empty())
+    i2s_model = I2sController(DigitalBidir.empty())
 
     hf_io_pins = [
       'P0.00', 'P0.01', 'P0.26', 'P0.27', 'P0.04',
@@ -164,6 +165,9 @@ class Nrf52840Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, G
       PeripheralFixedResource('UART1', uart_model, {
         'tx': hf_io_pins, 'rx': hf_io_pins,
       }),
+      PeripheralFixedResource('I2S', i2s_model, {
+        'sck': hf_io_pins, 'ws': hf_io_pins, 'sd': hf_io_pins,
+      }),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
   def generate(self) -> None:
@@ -226,7 +230,7 @@ class Holyiot_18010_Device(Nrf52840Base_Device):
   DATASHEET = 'http://www.holyiot.com/tp/2019042516322180424.pdf'
 
 
-class Holyiot_18010(Microcontroller, Radiofrequency, IoControllerWithSwdTargetConnector, IoController,
+class Holyiot_18010(Microcontroller, Radiofrequency, HasI2s, IoControllerWithSwdTargetConnector, IoController,
                     BaseIoControllerExportable):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
   def __init__(self, **kwargs):
@@ -330,7 +334,7 @@ class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
     self.connect(self.usb_outer.dm, self.res_dm.b.adapt_to(DigitalBidir()))
 
 
-class Mdbt50q_1mv2(Microcontroller, Radiofrequency, IoControllerWithSwdTargetConnector, IoController,
+class Mdbt50q_1mv2(Microcontroller, Radiofrequency, HasI2s, IoControllerWithSwdTargetConnector, IoController,
                    BaseIoControllerExportable):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
   def __init__(self, **kwargs):

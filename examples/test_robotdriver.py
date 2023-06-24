@@ -34,19 +34,16 @@ class PwmConnector(Connector, Block):
 
 class LedConnector(Connector, Block):
   """Connector for external WS2812s."""
-  # TODO Change num_leds to the number of external WS2812s to update the current draw.
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, num_leds: FloatLike = 0):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
     led_current = 36.6
-    num_leds = 0
 
     self.vdd = self.Export(self.conn.pins.request('1').adapt_to(VoltageSink(
-      current_draw=(-led_current*num_leds, led_current*num_leds)*mAmp)),
+      current_draw=(0*mAmp, led_current*num_leds))),
       [Power])
-    self.din = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink(
-      current_draw=(-led_current*num_leds, led_current*num_leds)*mAmp
-    )))
+    self.din = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink()))
     self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()), [Common])
 
 

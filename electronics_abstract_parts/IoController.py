@@ -226,11 +226,25 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
 @abstract_block_default(lambda: IdealIoController)
 class IoController(ProgrammableController, BaseIoController):
   """An abstract, generic IO controller with common IOs and power ports."""
+  POWER_REQUIRED: bool = True  # can optionally be redefined by subclasses to make the power ports non-required
+
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.gnd = self.Port(Ground.empty(), [Common])
+    if self.POWER_REQUIRED:
+      self.pwr = self.Port(VoltageSink.empty(), [Power])
+      self.gnd = self.Port(Ground.empty(), [Common])
+    else:
+      self.pwr = self.Port(VoltageSink.empty(), optional=True)
+      self.gnd = self.Port(Ground.empty(), optional=True)
+
+
+class HasI2s(BaseIoController):
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
+
+    self.i2s = self.Port(Vector(I2sController.empty()), optional=True)
+    self._io_ports.insert(0, self.i2s)
 
 
 class IdealIoController(IoController, IdealModel, GeneratorBlock):
