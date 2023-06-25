@@ -7,6 +7,7 @@ from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, Arr
   ArrayFloatLike, ArrayRangeLike, ArrayStringLike
 from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
+from .BlockInterfaceMixin import BlockInterfaceMixin
 from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
@@ -193,6 +194,8 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       self._parameters.register(param)
       self.manager.add_element(param_name, param)
 
+    self._mixins: List[BlockInterfaceMixin] = []
+
     self._blocks = self.manager.new_dict(Block)  # type: ignore
     self._chains = self.manager.new_dict(ChainConnect, anon_prefix='anon_chain')
     self._port_tags = IdentityDict[BasePort, Set[PortTag[Any]]]()
@@ -345,6 +348,17 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     pb = self._populate_def_proto_description(pb)
 
     return pb
+
+  MixinType = TypeVar('MixinType', bound=BlockInterfaceMixin)
+  def with_mixin(self, tpe: MixinType) -> MixinType:
+    """Adds an interface mixin for this Block. Mainly useful for abstract blocks, e.g. IoController with HasI2s."""
+    if not isinstance(tpe, BlockInterfaceMixin):
+      raise NotImplementedError("param to with_mixin must be a BlockInterfaceMixin")
+
+    elt = tpe._bind(self)
+    self._mixins.append(elt)
+
+    return elt
 
   def chain(self, *elts: Union[Connection, BasePort, Block]) -> ChainConnect:
     if not elts:

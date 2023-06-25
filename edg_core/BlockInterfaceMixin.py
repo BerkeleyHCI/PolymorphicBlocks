@@ -3,7 +3,7 @@ from typing import TypeVar, Generic
 import edgir
 from .HierarchyBlock import BaseBlock, Block
 
-MixinBaseType = TypeVar('MixinBaseType', bound=Block)
+MixinBaseType = TypeVar('MixinBaseType', bound='Block')
 
 
 class BlockInterfaceMixin(BaseBlock[edgir.HierarchyBlock], Generic[MixinBaseType]):
@@ -33,5 +33,3 @@ class BlockInterfaceMixin(BaseBlock[edgir.HierarchyBlock], Generic[MixinBaseType
     def contents(self) -> None:
         # TODO implement me
         pass
-
-
