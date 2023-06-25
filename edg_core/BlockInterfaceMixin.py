@@ -1,12 +1,12 @@
 from typing import TypeVar, Generic
 
-import edgir
-from .HierarchyBlock import BaseBlock, Block
+from .Blocks import AbstractBlockProperty
+from .HierarchyBlock import Block
 
 MixinBaseType = TypeVar('MixinBaseType', bound='Block')
 
 
-class BlockInterfaceMixin(BaseBlock[edgir.HierarchyBlock], Generic[MixinBaseType]):
+class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     """An interface mixin, allowing additional interface elements (parameters, ports) to be added to
     a block interface - e.g., IoController with HasI2s.
 
@@ -27,6 +27,8 @@ class BlockInterfaceMixin(BaseBlock[edgir.HierarchyBlock], Generic[MixinBaseType
     """
     def __init__(self):
         super().__init__()
+        if BlockInterfaceMixin in self.__class__.__bases__:
+            self._elt_properties[(self.__class__, AbstractBlockProperty)] = None
         # TODO implement me
         pass
 
