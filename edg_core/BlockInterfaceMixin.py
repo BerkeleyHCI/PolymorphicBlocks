@@ -20,8 +20,7 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     parameter propagation in super().__init__ calls in implementing classes.
 
     This should only be used for defining interface mixins. Implementation mixins should be defined
-    using the Block class hierarchy. This class does not inherit Block to avoid inheriting the
-    ports of the mixin base class which reduces autocomplete clutter.
+    using the standard Block class hierarchy, however this acts like any Block just with mixin capabilities.
     TODO: is this a good decision?
     TODO: what about cases where it's a bit mixed, e.g. HasI2s also needs to register the self.i2s port?
     """
@@ -33,7 +32,7 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
         super().__init__()
         if self._is_mixin():
             self._elt_properties[(self.__class__, AbstractBlockProperty)] = None
-            
+
         # TODO implement me
 
         pass
