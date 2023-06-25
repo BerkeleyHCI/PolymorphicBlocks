@@ -25,13 +25,15 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     TODO: is this a good decision?
     TODO: what about cases where it's a bit mixed, e.g. HasI2s also needs to register the self.i2s port?
     """
+    @classmethod
+    def _is_mixin(cls) -> bool:
+        return BlockInterfaceMixin in cls.__bases__
+
     def __init__(self):
         super().__init__()
-        if BlockInterfaceMixin in self.__class__.__bases__:
+        if self._is_mixin():
             self._elt_properties[(self.__class__, AbstractBlockProperty)] = None
+            
         # TODO implement me
-        pass
 
-    def contents(self) -> None:
-        # TODO implement me
         pass
