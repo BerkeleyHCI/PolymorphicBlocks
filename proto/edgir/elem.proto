@@ -147,10 +147,15 @@ message Generator {
   repeated edgir.ref.LocalPath required_params = 2;
 }
 
+message BlockLibrary {
+  edgir.ref.LibraryPath base = 2;
+  repeated edgir.ref.LibraryPath mixins = 3;
+}
+
 message BlockLike {
   oneof type {
     edgir.common.Empty undefined = 1;
-    edgir.ref.LibraryPath lib_elem = 2;
+    BlockLibrary lib_elem = 5;
     /** not allowed w/in the library */
     HierarchyBlock hierarchy = 4;
   }

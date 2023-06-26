@@ -454,6 +454,27 @@ class Generator(google.protobuf.message.Message):
 global___Generator = Generator
 
 @typing_extensions.final
+class BlockLibrary(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    BASE_FIELD_NUMBER: builtins.int
+    MIXINS_FIELD_NUMBER: builtins.int
+    @property
+    def base(self) -> edgir.ref_pb2.LibraryPath: ...
+    @property
+    def mixins(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]: ...
+    def __init__(
+        self,
+        *,
+        base: edgir.ref_pb2.LibraryPath | None = ...,
+        mixins: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["base", b"base"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["base", b"base", "mixins", b"mixins"]) -> None: ...
+
+global___BlockLibrary = BlockLibrary
+
+@typing_extensions.final
 class BlockLike(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -463,7 +484,7 @@ class BlockLike(google.protobuf.message.Message):
     @property
     def undefined(self) -> edgir.common_pb2.Empty: ...
     @property
-    def lib_elem(self) -> edgir.ref_pb2.LibraryPath: ...
+    def lib_elem(self) -> global___BlockLibrary: ...
     @property
     def hierarchy(self) -> global___HierarchyBlock:
         """* not allowed w/in the library"""
@@ -471,7 +492,7 @@ class BlockLike(google.protobuf.message.Message):
         self,
         *,
         undefined: edgir.common_pb2.Empty | None = ...,
-        lib_elem: edgir.ref_pb2.LibraryPath | None = ...,
+        lib_elem: global___BlockLibrary | None = ...,
         hierarchy: global___HierarchyBlock | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["hierarchy", b"hierarchy", "lib_elem", b"lib_elem", "type", b"type", "undefined", b"undefined"]) -> builtins.bool: ...
