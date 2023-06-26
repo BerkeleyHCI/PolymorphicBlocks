@@ -54,7 +54,7 @@ class MixinProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.constraints[0].value, expected_constr)
 
 
-class TestMixinSubclass(TestMixin, BlockInterfaceMixin[TestMixinBase]):
+class TestMixinSubclass(TestMixin):
   pass
 
 

@@ -46,7 +46,8 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
 
     @classmethod
     def _is_mixin(cls) -> bool:
-        return BlockInterfaceMixin in cls.__bases__
+        return BlockInterfaceMixin in cls.__bases__ or\
+            all(map(lambda bcls: issubclass(bcls, BlockInterfaceMixin) and bcls._is_mixin(), cls.__bases__))
 
     def __init__(self):
         super().__init__()
