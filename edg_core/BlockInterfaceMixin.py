@@ -1,11 +1,14 @@
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Type, List, Optional, get_args, get_origin
 
+from .Core import non_library
 from .Blocks import AbstractBlockProperty
+from .HdlUserExceptions import BlockDefinitionError
 from .HierarchyBlock import Block
 
 MixinBaseType = TypeVar('MixinBaseType', bound='Block')
 
 
+@non_library
 class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     """An interface mixin, allowing additional interface elements (parameters, ports) to be added to
     a block interface - e.g., IoController with HasI2s.
@@ -24,6 +27,23 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     TODO: is this a good decision?
     TODO: what about cases where it's a bit mixed, e.g. HasI2s also needs to register the self.i2s port?
     """
+    BaseType = TypeVar('BaseType', bound='HasMetadata')
+    @classmethod
+    def _get_bases_of(cls, base_type: Type[BaseType]) -> List[Type[BaseType]]:
+        # adds the mixin base defined in MixinBaseType to the list of bases
+        normal_bases = super()._get_bases_of(base_type)  # still handle the mixin hierarchy
+        mixin_base: Optional[BlockInterfaceMixin] = None
+        for bcls in cls.__orig_bases__:
+            if get_origin(bcls) == BlockInterfaceMixin:
+                bcls_args = get_args(bcls)
+                if mixin_base is not None or len(bcls_args) != 1:
+                    raise BlockDefinitionError("multiple mixin bases defined")
+                mixin_base = bcls_args[0]
+        if mixin_base is None:
+            raise BlockDefinitionError("no mixin base defined")
+        normal_bases.insert(0, mixin_base)
+        return normal_bases
+
     @classmethod
     def _is_mixin(cls) -> bool:
         return BlockInterfaceMixin in cls.__bases__
