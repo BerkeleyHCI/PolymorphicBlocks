@@ -77,12 +77,12 @@ object ElemBuilder {
   object Block {
     def Library(path: ref.LibraryPath): elem.BlockLike = elem.BlockLike(`type` =
       elem.BlockLike.Type.LibElem(
-        value = path
+        value = elem.BlockLibrary(base = Some(path))
       )
     )
     def Library(name: String): elem.BlockLike = elem.BlockLike(`type` =
       elem.BlockLike.Type.LibElem(
-        value = LibraryPath(name)
+        value = elem.BlockLibrary(base = Some(LibraryPath(name)))
       )
     )
 

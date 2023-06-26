@@ -104,7 +104,7 @@ trait DesignMap[PortType, BlockType, LinkType] {
   def wrapBlocklike(path: DesignPath, blockLike: elem.BlockLike): BlockType = {
     blockLike.`type` match {
       case elem.BlockLike.Type.Hierarchy(block) => wrapBlock(path, block)
-      case elem.BlockLike.Type.LibElem(block) => mapBlockLibrary(path, block)
+      case elem.BlockLike.Type.LibElem(blockLibrary) => mapBlockLibrary(path, blockLibrary.getBase)
       case block => throw new NotImplementedError(s"Unknown BlockLike type at $path: $block")
     }
   }

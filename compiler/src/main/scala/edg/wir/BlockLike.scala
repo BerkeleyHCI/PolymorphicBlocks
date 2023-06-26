@@ -168,6 +168,6 @@ case class BlockLibrary(target: ref.LibraryPath) extends BlockLike {
     case Seq() => this
     case _ => throw new InvalidPathException(s"Can't resolve $suffix into library ${target.toSimpleString}")
   }
-  def toPb: elem.BlockLike = elem.BlockLike(elem.BlockLike.Type.LibElem(target))
+  def toPb: elem.BlockLike = elem.BlockLike(elem.BlockLike.Type.LibElem(elem.BlockLibrary(base = Some(target))))
   override def isElaborated: Boolean = false
 }

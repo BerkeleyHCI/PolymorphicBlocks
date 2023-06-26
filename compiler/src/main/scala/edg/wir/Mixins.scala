@@ -35,7 +35,7 @@ trait HasMutableBlocks {
   protected def parseBlocks(pb: Seq[elem.NamedBlockLike]): mutable.SeqMap[String, BlockLike] = {
     pb.toSeqMap.view.mapValues {
       _.`type` match {
-        case elem.BlockLike.Type.LibElem(like) => BlockLibrary(like)
+        case elem.BlockLike.Type.LibElem(like) => BlockLibrary(like.getBase)
         case like => throw new NotImplementedError(s"Non-library sub-block $like")
       }
     }.to(mutable.SeqMap)
