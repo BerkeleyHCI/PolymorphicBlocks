@@ -32,6 +32,11 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     def _get_bases_of(cls, base_type: Type[BaseType]) -> List[Type[BaseType]]:
         # adds the mixin base defined in MixinBaseType to the list of bases
         normal_bases = super()._get_bases_of(base_type)  # still handle the mixin hierarchy
+        normal_bases.insert(0, cls._get_mixin_base())
+        return normal_bases
+
+    @classmethod
+    def _get_mixin_base(cls) -> 'BlockInterfaceMixin':
         mixin_base: Optional[BlockInterfaceMixin] = None
         for bcls in cls.__orig_bases__:
             if get_origin(bcls) == BlockInterfaceMixin:
@@ -40,9 +45,10 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
                     raise BlockDefinitionError("multiple mixin bases defined")
                 mixin_base = bcls_args[0]
         if mixin_base is None:
-            raise BlockDefinitionError("no mixin base defined")
-        normal_bases.insert(0, mixin_base)
-        return normal_bases
+            raise BlockDefinitionError(cls, "no mixin base defined")
+        if (mixin_base, AbstractBlockProperty) not in mixin_base._elt_properties:
+            raise BlockDefinitionError(cls, "mixin base must be abstract")
+        return mixin_base
 
     @classmethod
     def _is_mixin(cls) -> bool:
