@@ -92,3 +92,51 @@ class MixinSubclassProtoTestCase(unittest.TestCase):
     expected_constr.ref.steps.add().reserved_param = edgir.IS_CONNECTED
     self.assertEqual(self.pb.constraints[0].name, "(reqd)mixin_port")
     self.assertEqual(self.pb.constraints[0].value, expected_constr)
+
+
+class TestMixinConcreteBlock(TestMixin, TestMixinBase):
+  pass  # doesn't define anything
+
+
+class MixinConcreteBlockProtoTestCase(unittest.TestCase):
+  def setUp(self) -> None:
+    cls = TestMixinConcreteBlock()
+    self.assertEqual(cls._is_mixin(), False)
+    self.pb = cls._elaborated_def_to_proto()
+
+  def test_abstract(self) -> None:
+    self.assertEqual(self.pb.is_abstract, False)
+    self.assertEqual(self.pb.HasField('default_refinement'), False)
+
+  def test_superclass(self) -> None:
+    self.assertEqual(self.pb.self_class.target.name, "edg_core.test_mixin.TestMixinConcreteBlock")
+    self.assertEqual(self.pb.prerefine_class.target.name, "edg_core.test_mixin.TestMixinConcreteBlock")
+    self.assertEqual(len(self.pb.superclasses), 2)
+    self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_mixin.TestMixin")
+    self.assertEqual(self.pb.superclasses[1].target.name, "edg_core.test_mixin.TestMixinBase")
+
+  # the rest of this tests that it has inherited the mixin's base port and param
+  def test_param_def(self) -> None:
+    self.assertEqual(len(self.pb.params), 1)
+    self.assertEqual(self.pb.params[0].name, 'mixin_float')
+    self.assertTrue(self.pb.params[0].value.HasField('floating'))
+
+  def test_port_def(self) -> None:
+    self.assertEqual(len(self.pb.ports), 2)
+    self.assertEqual(self.pb.ports[0].name, 'base_port')
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[1].name, 'mixin_port')
+    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+
+  def test_connected_constraint(self) -> None:
+    expected_constr = edgir.ValueExpr()
+    expected_constr.ref.steps.add().name = 'base_port'
+    expected_constr.ref.steps.add().reserved_param = edgir.IS_CONNECTED
+    self.assertEqual(self.pb.constraints[0].name, "(reqd)base_port")
+    self.assertEqual(self.pb.constraints[0].value, expected_constr)
+
+    expected_constr = edgir.ValueExpr()
+    expected_constr.ref.steps.add().name = 'mixin_port'
+    expected_constr.ref.steps.add().reserved_param = edgir.IS_CONNECTED
+    self.assertEqual(self.pb.constraints[1].name, "(reqd)mixin_port")
+    self.assertEqual(self.pb.constraints[1].value, expected_constr)
