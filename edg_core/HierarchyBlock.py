@@ -251,7 +251,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     ref_map = self._get_ref_map(edgir.LocalPath())
 
     for name, block in self._blocks.items():
-      edgir.add_pair(pb.blocks, name).lib_elem.target.name = block._get_def_name()
+      edgir.add_pair(pb.blocks, name).lib_elem.base.target.name = block._get_def_name()
 
     # actually generate the links and connects
     link_chain_names = IdentityDict[Connection, List[str]]()  # prefer chain name where applicable
@@ -303,7 +303,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           assert self_port.bridge_type is not None
 
           port_name = self_port._name_from(self)
-          edgir.add_pair(pb.blocks, f"(bridge){port_name}").lib_elem.target.name = self_port.bridge_type._static_def_name()
+          edgir.add_pair(pb.blocks, f"(bridge){port_name}").lib_elem.base.target.name = self_port.bridge_type._static_def_name()
           bridge_path = edgir.localpath_concat(edgir.LocalPath(), f"(bridge){port_name}")
 
           bridge_constraint_pb = edgir.add_pair(pb.constraints, f"(bridge){name}_b{idx}")

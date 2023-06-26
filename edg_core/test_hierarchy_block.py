@@ -21,11 +21,11 @@ class TopHierarchyBlockProtoTestCase(unittest.TestCase):
 
   def test_subblock_def(self) -> None:
     self.assertEqual(self.pb.blocks[0].name, 'source')
-    self.assertEqual(self.pb.blocks[0].value.lib_elem.target.name, "edg_core.test_common.TestBlockSource")
+    self.assertEqual(self.pb.blocks[0].value.lib_elem.base.target.name, "edg_core.test_common.TestBlockSource")
     self.assertEqual(self.pb.blocks[1].name, 'sink1')
-    self.assertEqual(self.pb.blocks[1].value.lib_elem.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertEqual(self.pb.blocks[1].value.lib_elem.base.target.name, "edg_core.test_common.TestBlockSink")
     self.assertEqual(self.pb.blocks[2].name, 'sink2')
-    self.assertEqual(self.pb.blocks[2].value.lib_elem.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertEqual(self.pb.blocks[2].value.lib_elem.base.target.name, "edg_core.test_common.TestBlockSink")
 
   def test_link_inference(self) -> None:
     self.assertEqual(len(self.pb.links), 1)
