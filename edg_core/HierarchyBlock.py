@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import reduce
 from typing import *
 
 import edgir
@@ -212,15 +213,30 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     return out
 
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    return super()._get_ref_map(prefix) + IdentityDict(
+    ref_map = super()._get_ref_map(prefix) + IdentityDict(
       *[block._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, block) in self._blocks.items()]
     )
+    mixin_ref_maps = list(map(lambda mixin: mixin._get_ref_map(prefix), self._mixins))
+    if mixin_ref_maps:
+      mixin_ref_map = reduce(lambda a, b: a+b, mixin_ref_maps)
+      ref_map += mixin_ref_map
+
+    return ref_map
+
+  def _get_init_params_values(self) -> Dict[str, Tuple[ConstraintExpr, Optional[ConstraintExpr]]]:
+    if self._mixins:
+      combined_dict = self._init_params_value.copy()
+      for mixin in self._mixins:
+        combined_dict.update(mixin._get_init_params_values())
+      return combined_dict
+    else:
+      return self._init_params_value
 
   def _populate_def_proto_block_base(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     pb = super()._populate_def_proto_block_base(pb)
 
     # generate param defaults
-    for param_name, (param, param_value) in self._init_params_value.items():
+    for param_name, (param, param_value) in self._get_init_params_values().items():
       if param_value is not None:
         # default values can't depend on anything so the ref_map is empty
         pb.param_defaults[param_name].CopyFrom(param_value._expr_to_proto(IdentityDict()))
@@ -311,7 +327,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     # generate block initializers
     for (block_name, block) in self._blocks.items():
-      for (block_param_name, (block_param, block_param_value)) in block._init_params_value.items():
+      for (block_param_name, (block_param, block_param_value)) in block._get_init_params_values().items():
         if block_param_value is not None:
           edgir.add_pair(pb.constraints, f'(init){block_name}.{block_param_name}').CopyFrom(  # TODO better name
             AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param_value), ref_map)
@@ -330,6 +346,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
       assert issubclass(cls, Block)  # HierarchyBlock can extend (refine) blocks that don't have an implementation
+    assert not self._mixins  # blocks with mixins can only be instantiated anonymously
 
     pb = edgir.HierarchyBlock()
     pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
@@ -341,7 +358,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
         assert not initializers, f"connected boundary port {port._name_from(self)} has unexpected initializers {initializers}"
     pb = self._populate_def_proto_port_init(pb)
 
-    for (name, (param, param_value)) in self._init_params_value.items():
+    for (name, (param, param_value)) in self._get_init_params_values().items():
       assert param.initializer is None, f"__init__ argument param {name} has unexpected initializer"
     pb = self._populate_def_proto_param_init(pb)
 
@@ -355,10 +372,12 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   def with_mixin(self, tpe: MixinType) -> MixinType:
     """Adds an interface mixin for this Block. Mainly useful for abstract blocks, e.g. IoController with HasI2s."""
     from .BlockInterfaceMixin import BlockInterfaceMixin
+    if isinstance(self, BlockInterfaceMixin) and self._is_mixin():
+      raise BlockDefinitionError("mixins can not have with_mixin")
     if not (isinstance(tpe, BlockInterfaceMixin) and tpe._is_mixin()):
-      raise NotImplementedError("param to with_mixin must be a BlockInterfaceMixin")
+      raise TypeError("param to with_mixin must be a BlockInterfaceMixin")
 
-    elt = tpe._bind(self)
+    elt = tpe._bind(self._parent)
     self._mixins.append(elt)
 
     return elt

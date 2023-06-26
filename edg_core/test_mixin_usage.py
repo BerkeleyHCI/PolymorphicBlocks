@@ -29,7 +29,7 @@ class BadMixinUsageTestCase(unittest.TestCase):
     self.assertEqual(self.pb.blocks[0].value.lib_elem.target.name, "edg_core.test_mixin.TestMixin")
 
   def test_connectivity(self) -> None:
-    self.assertEqual(len(self.pb.constraints), 4)  # TODO: maybe filter by connection types in future for robustness
+    self.assertEqual(len(self.pb.constraints), 5)  # 4 connections + 1 initializer
     constraints = list(map(lambda pair: pair.value, self.pb.constraints))
 
     expected_conn = edgir.ValueExpr()
@@ -61,6 +61,9 @@ class BadMixinUsageTestCase(unittest.TestCase):
     expected_conn.connected.block_port.ref.steps.add().name = 'block'
     expected_conn.connected.block_port.ref.steps.add().name = 'mixin_port'
     self.assertIn(expected_conn, constraints)
+
+  def test_initializer(self) -> None:
+    constraints = list(map(lambda pair: pair.value, self.pb.constraints))
 
     # default assignment
     self.assertIn(edgir.AssignLit(['block', 'mixin_float'], 1.0), constraints)
