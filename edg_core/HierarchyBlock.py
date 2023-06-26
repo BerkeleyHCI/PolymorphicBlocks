@@ -500,9 +500,12 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
   BlockType = TypeVar('BlockType', bound='Block')
   def Block(self, tpe: BlockType) -> BlockType:
+    from .BlockInterfaceMixin import BlockInterfaceMixin
     from .DesignTop import DesignTop
     if not isinstance(tpe, Block):
       raise TypeError(f"param to Block(...) must be Block, got {tpe} of type {type(tpe)}")
+    if isinstance(tpe, BlockInterfaceMixin) and tpe._is_mixin():
+      raise TypeError("param to with_mixin must not be BlockInterfaceMixin")
     if isinstance(tpe, DesignTop):
       raise TypeError(f"param to Block(...) may not be DesignTop")
     if self._elaboration_state not in \
@@ -520,6 +523,9 @@ def abstract_block(decorated: AbstractBlockType) -> AbstractBlockType:
   """Defines the decorated block as abstract, a supertype block missing an implementation and
   should be refined by a subclass in a final design.
   If this block is present (unrefined) in a final design, causes an error."""
+  from .BlockInterfaceMixin import BlockInterfaceMixin
+  if isinstance(decorated, BlockInterfaceMixin) and decorated._is_mixin():
+    raise BlockDefinitionError(decorated, "BlockInterfaceMixin @abstract_block definition is redundant")
   decorated._elt_properties[(decorated, AbstractBlockProperty)] = None
   return decorated
 
@@ -529,6 +535,9 @@ def abstract_block_default(target: Callable[[], Type[Block]]) -> Callable[[Abstr
   The argument is a lambda since the default refinement is going to be a subclass of the class being defined,
   it will not be defined yet when the base class is being evaluated, so evaluation needs to be delayed."""
   def inner(decorated: AbstractBlockType) -> AbstractBlockType:
+    from .BlockInterfaceMixin import BlockInterfaceMixin
+    if isinstance(decorated, BlockInterfaceMixin) and decorated._is_mixin():
+      raise BlockDefinitionError(decorated, "BlockInterfaceMixin @abstract_block definition is redundant")
     decorated._elt_properties[(decorated, AbstractBlockProperty)] = target
     return decorated
   return inner

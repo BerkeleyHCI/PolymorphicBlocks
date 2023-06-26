@@ -7,7 +7,7 @@ from .test_elaboration_common import TestPortBase
 
 class TestMixin(BlockInterfaceMixin):
   @init_in_parent
-  def __init__(self, *args, mixin_float: FloatExpr = 1.0, **kwargs) -> None:
+  def __init__(self, *args, mixin_float: FloatLike = 1.0, **kwargs) -> None:
     super().__init__(*args, **kwargs)
     self.mixin_port = self.Port(TestPortBase())
     self.mixin_float = self.ArgParameter(mixin_float)
