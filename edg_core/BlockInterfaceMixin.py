@@ -33,7 +33,7 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
         # adds the mixin base defined in MixinBaseType to the list of bases
         normal_bases = super()._get_bases_of(base_type)  # still handle the mixin hierarchy
         if cls._is_mixin():
-            normal_bases.insert(0, cls._get_mixin_base())
+            normal_bases.append(cls._get_mixin_base())
         return normal_bases
 
     @classmethod

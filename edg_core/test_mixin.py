@@ -72,8 +72,8 @@ class MixinSubclassProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.self_class.target.name, "edg_core.test_mixin.TestMixinSubclass")
     self.assertEqual(self.pb.prerefine_class.target.name, "edg_core.test_mixin.TestMixinSubclass")
     self.assertEqual(len(self.pb.superclasses), 2)
-    self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_mixin.TestMixinBase")
-    self.assertEqual(self.pb.superclasses[1].target.name, "edg_core.test_mixin.TestMixin")
+    self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_mixin.TestMixin")
+    self.assertEqual(self.pb.superclasses[1].target.name, "edg_core.test_mixin.TestMixinBase")
 
   # the rest of this tests that it has inherited the mixin's base port and param
   def test_param_def(self) -> None:
@@ -98,7 +98,7 @@ class TestMixinConcreteBlock(TestMixin, TestMixinBase):
   pass  # doesn't define anything
 
 
-class MixinConcreteBlockProtoTestCase(unittest.TestCase):
+class MixinConcreteBlockProtoTestCase(unittest.TestCase):  # pretty straightforward test of Python inheritance
   def setUp(self) -> None:
     cls = TestMixinConcreteBlock()
     self.assertEqual(cls._is_mixin(), False)
