@@ -2,21 +2,21 @@ import unittest
 
 import edgir
 from . import *
-from .test_elaboration_common import TestPortBase
+from .test_common import TestPortSink
 
 
 @abstract_block
 class TestMixinBase(Block):
   def __init__(self) -> None:
     super().__init__()
-    self.base_port = self.Port(TestPortBase())
+    self.base_port = self.Port(TestPortSink())
 
 
 class TestMixin(BlockInterfaceMixin[TestMixinBase]):
   @init_in_parent
   def __init__(self, *args, mixin_float: FloatLike = 1.0, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-    self.mixin_port = self.Port(TestPortBase())
+    self.mixin_port = self.Port(TestPortSink())
     self.mixin_float = self.ArgParameter(mixin_float)
 
 
@@ -44,7 +44,7 @@ class MixinProtoTestCase(unittest.TestCase):
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
     self.assertEqual(self.pb.ports[0].name, 'mixin_port')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
 
   def test_connected_constraint(self) -> None:
     expected_constr = edgir.ValueExpr()
@@ -84,7 +84,7 @@ class MixinSubclassProtoTestCase(unittest.TestCase):
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
     self.assertEqual(self.pb.ports[0].name, 'mixin_port')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
 
   def test_connected_constraint(self) -> None:
     expected_constr = edgir.ValueExpr()
@@ -124,9 +124,9 @@ class MixinConcreteBlockProtoTestCase(unittest.TestCase):  # pretty straightforw
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 2)
     self.assertEqual(self.pb.ports[0].name, 'base_port')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
     self.assertEqual(self.pb.ports[1].name, 'mixin_port')
-    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
 
   def test_connected_constraint(self) -> None:
     expected_constr = edgir.ValueExpr()
