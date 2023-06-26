@@ -251,7 +251,10 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     ref_map = self._get_ref_map(edgir.LocalPath())
 
     for name, block in self._blocks.items():
-      edgir.add_pair(pb.blocks, name).lib_elem.base.target.name = block._get_def_name()
+      new_block_lib = edgir.add_pair(pb.blocks, name).lib_elem
+      new_block_lib.base.target.name = block._get_def_name()
+      for mixin in block._mixins:
+        new_block_lib.mixins.add().target.name = mixin._get_def_name()
 
     # actually generate the links and connects
     link_chain_names = IdentityDict[Connection, List[str]]()  # prefer chain name where applicable
