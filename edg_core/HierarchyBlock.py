@@ -372,10 +372,15 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   def with_mixin(self, tpe: MixinType) -> MixinType:
     """Adds an interface mixin for this Block. Mainly useful for abstract blocks, e.g. IoController with HasI2s."""
     from .BlockInterfaceMixin import BlockInterfaceMixin
-    if isinstance(self, BlockInterfaceMixin) and self._is_mixin():
-      raise BlockDefinitionError("mixins can not have with_mixin")
     if not (isinstance(tpe, BlockInterfaceMixin) and tpe._is_mixin()):
       raise TypeError("param to with_mixin must be a BlockInterfaceMixin")
+    if isinstance(self, BlockInterfaceMixin) and self._is_mixin():
+      raise BlockDefinitionError(self, "mixins can not have with_mixin")
+    if (self.__class__, AbstractBlockProperty) not in self._elt_properties:
+      raise BlockDefinitionError(self, "mixins can only be added to abstract classes")
+    if not isinstance(self, tpe._get_mixin_base()):
+      raise TypeError(f"block {self.__class__.__name__} not an instance of mixin base {tpe._get_mixin_base().__name__}")
+    assert self._parent is not None
 
     elt = tpe._bind(self._parent)
     self._mixins.append(elt)

@@ -1,6 +1,6 @@
 from typing import TypeVar, Generic, Type, List, Optional, get_args, get_origin
 
-from .Core import non_library
+from .Core import non_library, HasMetadata
 from .Blocks import AbstractBlockProperty
 from .HdlUserExceptions import BlockDefinitionError
 from .HierarchyBlock import Block
@@ -27,23 +27,23 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     TODO: is this a good decision?
     TODO: what about cases where it's a bit mixed, e.g. HasI2s also needs to register the self.i2s port?
     """
-    BaseType = TypeVar('BaseType', bound='HasMetadata')
+    BaseType = TypeVar('BaseType', bound=HasMetadata)
     @classmethod
     def _get_bases_of(cls, base_type: Type[BaseType]) -> List[Type[BaseType]]:
         # adds the mixin base defined in MixinBaseType to the list of bases
         normal_bases = super()._get_bases_of(base_type)  # still handle the mixin hierarchy
         if cls._is_mixin():
-            normal_bases.append(cls._get_mixin_base())
+            normal_bases.append(cls._get_mixin_base())  # type: ignore
         return normal_bases
 
     @classmethod
-    def _get_mixin_base(cls) -> 'BlockInterfaceMixin':
-        mixin_base: Optional[BlockInterfaceMixin] = None
-        for bcls in cls.__orig_bases__:
+    def _get_mixin_base(cls) -> Type['BlockInterfaceMixin']:
+        mixin_base: Optional[Type[BlockInterfaceMixin]] = None
+        for bcls in cls.__orig_bases__:  # type: ignore
             if get_origin(bcls) == BlockInterfaceMixin:
                 bcls_args = get_args(bcls)
                 if mixin_base is not None or len(bcls_args) != 1:
-                    raise BlockDefinitionError("multiple mixin bases defined")
+                    raise BlockDefinitionError(cls, "multiple mixin bases defined")
                 mixin_base = bcls_args[0]
         if mixin_base is None:
             raise BlockDefinitionError(cls, "no mixin base defined")
