@@ -238,10 +238,12 @@ object ElemBuilder {
   def Library(
       blocks: Seq[elem.BlockLike] = Seq(),
       links: Seq[elem.LinkLike] = Seq(),
-      ports: Seq[elem.PortLike] = Seq()
+      ports: Seq[elem.PortLike] = Seq(),
+      base: schema.Library = schema.Library()
   ): schema.Library = {
     schema.Library(root =
       Some(schema.Library.NS(members =
+        base.getRoot.members ++
         blocks.map {
           _.`type` match {
             case elem.BlockLike.Type.Hierarchy(block) =>

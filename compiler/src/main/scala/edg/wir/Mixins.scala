@@ -86,7 +86,6 @@ trait HasMutableConstraints {
   protected def parseConstraints(pb: Seq[elem.NamedValueExpr]): mutable.SeqMap[String, expr.ValueExpr] = {
     pb.toSeqMap.to(mutable.SeqMap)
   }
-
 }
 
 trait HasParams {
