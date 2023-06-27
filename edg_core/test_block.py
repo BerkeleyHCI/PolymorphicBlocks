@@ -19,12 +19,15 @@ class TestBlockSecondBase(Block):
   pass
 
 
+class TestBlockSecondSub(TestBlockSecondBase):  # test indirect classes
+  pass
+
 @non_library
-class TestBlockSecondNonLibrary(Block):
+class TestBlockSecondNonLibrary(TestBlockSecondSub):  # test that it can skip the non_library superclass
   pass
 
 
-class TestBlock(TestBlockBase, TestBlockSecondBase):
+class TestBlock(TestBlockBase, TestBlockSecondNonLibrary):
   def __init__(self) -> None:
     super().__init__()
     self.range_init = self.Parameter(RangeExpr((-4.2, -1.3)))
@@ -89,8 +92,9 @@ class BlockProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.prerefine_class.target.name, "edg_core.test_block.TestBlock")
     self.assertEqual(len(self.pb.superclasses), 2)
     self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_block.TestBlockBase")
+    self.assertEqual(self.pb.superclasses[1].target.name, "edg_core.test_block.TestBlockSecondSub")
+    self.assertEqual(len(self.pb.super_superclasses), 1)
     self.assertEqual(self.pb.superclasses[1].target.name, "edg_core.test_block.TestBlockSecondBase")
-    self.assertEqual(len(self.pb.super_superclasses), 2)
 
     self.assertEqual(self.pb.params[0].name, "base_float")
     self.assertTrue(self.pb.params[0].value.HasField('floating'))
