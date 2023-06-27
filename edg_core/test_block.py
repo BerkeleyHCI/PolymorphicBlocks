@@ -94,7 +94,7 @@ class BlockProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_block.TestBlockBase")
     self.assertEqual(self.pb.superclasses[1].target.name, "edg_core.test_block.TestBlockSecondSub")
     self.assertEqual(len(self.pb.super_superclasses), 1)
-    self.assertEqual(self.pb.superclasses[1].target.name, "edg_core.test_block.TestBlockSecondBase")
+    self.assertEqual(self.pb.super_superclasses[0].target.name, "edg_core.test_block.TestBlockSecondBase")
 
     self.assertEqual(self.pb.params[0].name, "base_float")
     self.assertTrue(self.pb.params[0].value.HasField('floating'))
