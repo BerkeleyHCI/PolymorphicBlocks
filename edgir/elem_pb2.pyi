@@ -144,6 +144,7 @@ class Port(google.protobuf.message.Message):
     CONSTRAINTS_FIELD_NUMBER: builtins.int
     SELF_CLASS_FIELD_NUMBER: builtins.int
     SUPERCLASSES_FIELD_NUMBER: builtins.int
+    SUPER_SUPERCLASSES_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
     @property
     def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]: ...
@@ -155,6 +156,9 @@ class Port(google.protobuf.message.Message):
     def superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """superclasses, may be empty"""
     @property
+    def super_superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+        """all (recursive) superclasses above superclasses"""
+    @property
     def meta(self) -> edgir.common_pb2.Metadata:
         """TODO: this provides type hierarchy data only, inheritance semantics are currently undefined"""
     def __init__(
@@ -164,10 +168,11 @@ class Port(google.protobuf.message.Message):
         constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
         self_class: edgir.ref_pb2.LibraryPath | None = ...,
         superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
         meta: edgir.common_pb2.Metadata | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta", b"meta", "self_class", b"self_class"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["constraints", b"constraints", "meta", b"meta", "params", b"params", "self_class", b"self_class", "superclasses", b"superclasses"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["constraints", b"constraints", "meta", b"meta", "params", b"params", "self_class", b"self_class", "super_superclasses", b"super_superclasses", "superclasses", b"superclasses"]) -> None: ...
 
 global___Port = Port
 
@@ -180,6 +185,7 @@ class Bundle(google.protobuf.message.Message):
     CONSTRAINTS_FIELD_NUMBER: builtins.int
     SELF_CLASS_FIELD_NUMBER: builtins.int
     SUPERCLASSES_FIELD_NUMBER: builtins.int
+    SUPER_SUPERCLASSES_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
     @property
     def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]: ...
@@ -193,6 +199,9 @@ class Bundle(google.protobuf.message.Message):
     def superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """superclasses, may be empty"""
     @property
+    def super_superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+        """all (recursive) superclasses above superclasses"""
+    @property
     def meta(self) -> edgir.common_pb2.Metadata: ...
     def __init__(
         self,
@@ -202,10 +211,11 @@ class Bundle(google.protobuf.message.Message):
         constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
         self_class: edgir.ref_pb2.LibraryPath | None = ...,
         superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
         meta: edgir.common_pb2.Metadata | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta", b"meta", "self_class", b"self_class"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["constraints", b"constraints", "meta", b"meta", "params", b"params", "ports", b"ports", "self_class", b"self_class", "superclasses", b"superclasses"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["constraints", b"constraints", "meta", b"meta", "params", b"params", "ports", b"ports", "self_class", b"self_class", "super_superclasses", b"super_superclasses", "superclasses", b"superclasses"]) -> None: ...
 
 global___Bundle = Bundle
 
@@ -361,6 +371,7 @@ class HierarchyBlock(google.protobuf.message.Message):
     CONSTRAINTS_FIELD_NUMBER: builtins.int
     SELF_CLASS_FIELD_NUMBER: builtins.int
     SUPERCLASSES_FIELD_NUMBER: builtins.int
+    SUPER_SUPERCLASSES_FIELD_NUMBER: builtins.int
     PREREFINE_CLASS_FIELD_NUMBER: builtins.int
     GENERATOR_FIELD_NUMBER: builtins.int
     IS_ABSTRACT_FIELD_NUMBER: builtins.int
@@ -395,7 +406,10 @@ class HierarchyBlock(google.protobuf.message.Message):
         """self class, equivalent to the library name"""
     @property
     def superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
-        """superclasses, may be empty"""
+        """immediate superclasses, may be empty"""
+    @property
+    def super_superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+        """all (recursive) superclasses above superclasses"""
     @property
     def prerefine_class(self) -> edgir.ref_pb2.LibraryPath:
         """if refined: the class pre-refinement; otherwise equal to class"""
@@ -422,6 +436,7 @@ class HierarchyBlock(google.protobuf.message.Message):
         constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
         self_class: edgir.ref_pb2.LibraryPath | None = ...,
         superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
         prerefine_class: edgir.ref_pb2.LibraryPath | None = ...,
         generator: global___Generator | None = ...,
         is_abstract: builtins.bool = ...,
@@ -430,7 +445,7 @@ class HierarchyBlock(google.protobuf.message.Message):
         description: collections.abc.Iterable[global___StringDescriptionElement] | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["default_refinement", b"default_refinement", "generator", b"generator", "meta", b"meta", "prerefine_class", b"prerefine_class", "self_class", b"self_class"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["blocks", b"blocks", "constraints", b"constraints", "default_refinement", b"default_refinement", "description", b"description", "generator", b"generator", "is_abstract", b"is_abstract", "links", b"links", "meta", b"meta", "param_defaults", b"param_defaults", "params", b"params", "ports", b"ports", "prerefine_class", b"prerefine_class", "self_class", b"self_class", "superclasses", b"superclasses"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["blocks", b"blocks", "constraints", b"constraints", "default_refinement", b"default_refinement", "description", b"description", "generator", b"generator", "is_abstract", b"is_abstract", "links", b"links", "meta", b"meta", "param_defaults", b"param_defaults", "params", b"params", "ports", b"ports", "prerefine_class", b"prerefine_class", "self_class", b"self_class", "super_superclasses", b"super_superclasses", "superclasses", b"superclasses"]) -> None: ...
 
 global___HierarchyBlock = HierarchyBlock
 
@@ -511,6 +526,7 @@ class Link(google.protobuf.message.Message):
     CONSTRAINTS_FIELD_NUMBER: builtins.int
     SELF_CLASS_FIELD_NUMBER: builtins.int
     SUPERCLASSES_FIELD_NUMBER: builtins.int
+    SUPER_SUPERCLASSES_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
     DESCRIPTION_FIELD_NUMBER: builtins.int
     @property
@@ -527,6 +543,9 @@ class Link(google.protobuf.message.Message):
     def superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """superclasses, may be empty"""
     @property
+    def super_superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+        """all (recursive) superclasses above superclasses"""
+    @property
     def meta(self) -> edgir.common_pb2.Metadata:
         """TODO: this provides type hierarchy data only, inheritance semantics are currently undefined"""
     @property
@@ -540,11 +559,12 @@ class Link(google.protobuf.message.Message):
         constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
         self_class: edgir.ref_pb2.LibraryPath | None = ...,
         superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
         meta: edgir.common_pb2.Metadata | None = ...,
         description: collections.abc.Iterable[global___StringDescriptionElement] | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["meta", b"meta", "self_class", b"self_class"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["constraints", b"constraints", "description", b"description", "links", b"links", "meta", b"meta", "params", b"params", "ports", b"ports", "self_class", b"self_class", "superclasses", b"superclasses"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["constraints", b"constraints", "description", b"description", "links", b"links", "meta", b"meta", "params", b"params", "ports", b"ports", "self_class", b"self_class", "super_superclasses", b"super_superclasses", "superclasses", b"superclasses"]) -> None: ...
 
 global___Link = Link
 

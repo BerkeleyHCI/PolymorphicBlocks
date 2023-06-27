@@ -54,6 +54,7 @@ message Port {
 
   edgir.ref.LibraryPath self_class = 20;
   repeated edgir.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+  repeated edgir.ref.LibraryPath super_superclasses = 24;  // all (recursive) superclasses above superclasses
   // TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
   edgir.common.Metadata meta = 127;
@@ -66,6 +67,7 @@ message Bundle {
 
   edgir.ref.LibraryPath self_class = 20;
   repeated edgir.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+  repeated edgir.ref.LibraryPath super_superclasses = 24;  // all (recursive) superclasses above superclasses
 
   edgir.common.Metadata meta = 127;
 }
@@ -129,7 +131,8 @@ message HierarchyBlock {
   repeated NamedValueExpr constraints = 44;
 
   edgir.ref.LibraryPath self_class = 23;  // self class, equivalent to the library name
-  repeated edgir.ref.LibraryPath superclasses = 20;  // superclasses, may be empty
+  repeated edgir.ref.LibraryPath superclasses = 20;  // immediate superclasses, may be empty
+  repeated edgir.ref.LibraryPath super_superclasses = 24;  // all (recursive) superclasses above superclasses
   edgir.ref.LibraryPath prerefine_class = 21;  // if refined: the class pre-refinement; otherwise equal to class
   Generator                       generator = 22;  // optional, and removed upon invocation
 
@@ -169,6 +172,7 @@ message Link {
 
   edgir.ref.LibraryPath self_class = 20;
   repeated edgir.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+  repeated edgir.ref.LibraryPath super_superclasses = 24;  // all (recursive) superclasses above superclasses
   // TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
   edgir.common.Metadata meta = 127;
