@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Type, List, Optional, get_args, get_origin
+from typing import TypeVar, Generic, Type, List, Optional, get_args, get_origin, Tuple
 
 from .Core import non_library, HasMetadata
 from .Blocks import AbstractBlockProperty
@@ -29,12 +29,21 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     """
     BaseType = TypeVar('BaseType', bound=HasMetadata)
     @classmethod
-    def _get_bases_of(cls, base_type: Type[BaseType]) -> List[Type[BaseType]]:
-        # adds the mixin base defined in MixinBaseType to the list of bases
-        normal_bases = super()._get_bases_of(base_type)  # still handle the mixin hierarchy
-        if cls._is_mixin():
-            normal_bases.append(cls._get_mixin_base())  # type: ignore
-        return normal_bases
+    def _get_bases_of(cls, base_type: Type[BaseType]) -> Tuple[List[Type[BaseType]], List[Type[BaseType]]]:
+        ordered_direct_bases, ordered_indirect_bases = super()._get_bases_of(base_type)
+        if cls._is_mixin():  # adds the mixin base defined in MixinBaseType to the list of bases
+            mixin_base = cls._get_mixin_base()
+            all_bases = ordered_direct_bases + ordered_indirect_bases
+            all_bases_has_mixin_base = map(lambda bcls: issubclass(bcls, BlockInterfaceMixin) and
+                                                        bcls._get_mixin_base() == mixin_base,
+                                           all_bases)
+
+            if any(all_bases_has_mixin_base):  # mixin has been inherited, add mixin base to the end
+                ordered_indirect_bases.append(mixin_base)  # type: ignore
+            else:  # mixin has not been inherited, add to the end of direct bases
+                ordered_direct_bases.append(mixin_base)  # type: ignore
+
+        return ordered_direct_bases, ordered_indirect_bases
 
     @classmethod
     def _get_mixin_base(cls) -> Type['BlockInterfaceMixin']:

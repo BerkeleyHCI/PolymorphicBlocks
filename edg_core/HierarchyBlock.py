@@ -347,8 +347,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
   # TODO make this non-overriding?
   def _def_to_proto(self) -> edgir.HierarchyBlock:
-    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
-      assert issubclass(cls, Block)  # HierarchyBlock can extend (refine) blocks that don't have an implementation
     assert not self._mixins  # blocks with mixins can only be instantiated anonymously
 
     pb = edgir.HierarchyBlock()

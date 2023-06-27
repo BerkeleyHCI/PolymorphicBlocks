@@ -35,6 +35,7 @@ class MixinProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.prerefine_class.target.name, "edg_core.test_mixin.TestMixin")
     self.assertEqual(len(self.pb.superclasses), 1)
     self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_mixin.TestMixinBase")
+    self.assertEqual(len(self.pb.super_superclasses), 0)
 
   def test_param_def(self) -> None:
     self.assertEqual(len(self.pb.params), 1)
@@ -71,9 +72,10 @@ class MixinSubclassProtoTestCase(unittest.TestCase):
   def test_superclass(self) -> None:
     self.assertEqual(self.pb.self_class.target.name, "edg_core.test_mixin.TestMixinSubclass")
     self.assertEqual(self.pb.prerefine_class.target.name, "edg_core.test_mixin.TestMixinSubclass")
-    self.assertEqual(len(self.pb.superclasses), 2)
+    self.assertEqual(len(self.pb.superclasses), 1)
     self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_mixin.TestMixin")
-    self.assertEqual(self.pb.superclasses[1].target.name, "edg_core.test_mixin.TestMixinBase")
+    self.assertEqual(len(self.pb.super_superclasses), 1)
+    self.assertEqual(self.pb.super_superclasses[0].target.name, "edg_core.test_mixin.TestMixinBase")
 
   # the rest of this tests that it has inherited the mixin's base port and param
   def test_param_def(self) -> None:
