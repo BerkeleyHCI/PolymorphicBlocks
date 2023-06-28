@@ -199,9 +199,11 @@ class Port(BasePort, Generic[PortLinkType]):
 
     pb.self_class.target.name = self._get_def_name()
 
-    for cls in self._get_bases_of(Port):
-      super_pb = pb.superclasses.add()
-      super_pb.target.name = cls._static_def_name()
+    direct_bases, indirect_bases = self._get_bases_of(Port)  # type: ignore
+    for cls in direct_bases:
+      pb.superclasses.add().target.name = cls._static_def_name()
+    for cls in indirect_bases:
+      pb.super_superclasses.add().target.name = cls._static_def_name()
 
     for (name, param) in self._parameters.items():
       edgir.add_pair(pb.params, name).CopyFrom(param._decl_to_proto())
@@ -297,9 +299,11 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     pb.self_class.target.name = self._get_def_name()
 
-    for cls in self._get_bases_of(Bundle):
-      super_pb = pb.superclasses.add()
-      super_pb.target.name = cls._static_def_name()
+    direct_bases, indirect_bases = self._get_bases_of(Bundle)  # type: ignore
+    for cls in direct_bases:
+      pb.superclasses.add().target.name = cls._static_def_name()
+    for cls in indirect_bases:
+      pb.super_superclasses.add().target.name = cls._static_def_name()
 
     for (name, param) in self._parameters.items():
       edgir.add_pair(pb.params, name).CopyFrom(param._decl_to_proto())

@@ -27,7 +27,7 @@ object ElaborateRecord {
   // Defines the type of a parameter, may be held back by partial compilation rules
   case class Parameter(
       containerPath: DesignPath,
-      blockClass: Option[ref.LibraryPath],
+      container: HasParams,
       postfix: ref.LocalPath,
       param: init.ValInit
   ) extends ElaborateTask
@@ -142,7 +142,7 @@ class Compiler private (
   }
 
   // Working design tree data structure
-  private var root = new wir.Block(inputDesignPb.getContents, None) // TODO refactor to unify root / non-root cases
+  private var root = new wir.Block(inputDesignPb.getContents, None, Seq()) // TODO unify root / non-root cases
   require(root.getPorts.isEmpty, "design top may not have ports") // also don't need to elaborate top ports
 
   def resolve(path: DesignPath): wir.Pathable = root.resolve(path.steps)
@@ -172,7 +172,7 @@ class Compiler private (
 
     // this is done inside expandBlock which isn't called for the root
     constProp.addAssignValue(IndirectDesignPath() + IndirectStep.Name, TextValue(""), DesignPath(), "name")
-    processParamDeclarations(DesignPath(), Some(root.getBlockClass), root)
+    processParamDeclarations(DesignPath(), root)
   }
 
   // Some pre-processed data structures to make refinement processing more efficient
@@ -180,11 +180,11 @@ class Compiler private (
   private val refinementInstanceValuePaths = (refinements.instanceValues.keys ++ refinements.instanceAssigns.keys).toSet
 
   def filterRefinementClassValues(
-      blockClass: ref.LibraryPath,
+      blockAllClasses: Seq[ref.LibraryPath],
       classValuesByClass: Map[ref.LibraryPath, Map[(ref.LibraryPath, ref.LocalPath), ExprValue]],
   ): Seq[((ref.LibraryPath, ref.LocalPath), ExprValue)] = {
     classValuesByClass.collect {
-      case (refinementClass, refinementClassValues) if library.blockIsSubclassOf(blockClass, refinementClass) =>
+      case (refinementClass, refinementClassValues) if blockAllClasses.contains(refinementClass) =>
         refinementClassValues
     }.flatten.toSeq
   }
@@ -212,7 +212,7 @@ class Compiler private (
         require(!block.unrefinedType.contains(refinementClass), f"added class refinement changes class at $path")
       }
 
-      filterRefinementClassValues(block.getBlockClass, additionalRefinementClassValuesByClass).foreach {
+      filterRefinementClassValues(block.getAllClasses, additionalRefinementClassValuesByClass).foreach {
         case ((refinementClass, postfix), value) =>
           val paramPath = path ++ postfix
           if (!cloned.refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
@@ -367,31 +367,26 @@ class Compiler private (
 
   protected def paramMatchesPartial(
       containerPath: DesignPath,
-      blockClass: Option[ref.LibraryPath],
+      container: wir.HasParams,
       postfix: ref.LocalPath
   ): Boolean = {
     if (partial.params.contains(containerPath ++ postfix)) {
       return true
     }
-    blockClass match {
-      case Some(blockClass) =>
-        partial.classParams.exists { case (partialClass, partialPostfix) =>
-          library.blockIsSubclassOf(blockClass, partialClass) && partialPostfix == postfix
-        }
-      case None => false
+    partial.classParams.exists { case (partialClass, partialPostfix) =>
+      container.getAllClasses.contains(partialClass) && partialPostfix == postfix
     }
   }
 
   // Called for each param declaration, currently just registers the declaration and type signature.
   protected def processParamDeclarations(
       root: DesignPath,
-      blockClass: Option[ref.LibraryPath],
       hasParams: wir.HasParams
   ): Unit = {
     for ((paramName, param) <- hasParams.getParams) {
       val postfix = ExprBuilder.Ref(paramName)
-      if (paramMatchesPartial(root, blockClass, postfix)) {
-        elaboratePending.addNode(ElaborateRecord.Parameter(root, blockClass, postfix, param), Seq())
+      if (paramMatchesPartial(root, hasParams, postfix)) {
+        elaboratePending.addNode(ElaborateRecord.Parameter(root, hasParams, postfix, param), Seq())
       } else {
         // uniformly using ElaborateRecord craters performance, so this fast path is added here
         constProp.addDeclaration(root ++ postfix, param)
@@ -431,10 +426,10 @@ class Compiler private (
     instantiated match {
       case port: wir.Port =>
         constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), containerPath, "name")
-        processParamDeclarations(path, None, port)
+        processParamDeclarations(path, port)
       case port: wir.Bundle =>
         constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), containerPath, "name")
-        processParamDeclarations(path, None, port)
+        processParamDeclarations(path, port)
         for ((childPortName, childPort) <- port.getPorts) {
           elaboratePort(path + childPortName, containerPath, port, childPort)
         }
@@ -572,7 +567,8 @@ class Compiler private (
 
     // add class-based refinements - must be set before refinement params
     // note that this operates on the post-refinement class
-    filterRefinementClassValues(blockLibraryPath, refinementClassValuesByClass).foreach {
+    val blockAllClasses = Seq(blockPb.selfClass, blockPb.superclasses, blockPb.superSuperclasses).flatten
+    filterRefinementClassValues(blockAllClasses, refinementClassValuesByClass).foreach {
       case ((refinementClass, postfix), value) =>
         val paramPath = path ++ postfix
         if (!refinementInstanceValuePaths.contains(paramPath)) { // instance values supersede class values
@@ -588,10 +584,6 @@ class Compiler private (
 
     // additional processing needed for the refinement case
     if (unrefinedType.isDefined) {
-      if (!library.blockIsSubclassOf(blockLibraryPath, libraryPath)) { // check refinement validity
-        errors += CompilerError.RefinementSubclassError(path, blockLibraryPath, libraryPath)
-      }
-
       val unrefinedPb = library.getBlock(libraryPath) match { // add subclass (refinement) default params
         case Errorable.Success(unrefinedPb) =>
           unrefinedPb
@@ -633,10 +625,34 @@ class Compiler private (
       }
     }
 
-    val newBlock = if (blockPb.generator.isEmpty) {
-      new wir.Block(blockPb, unrefinedType)
+    // if an unrefined mixin, tack in the mixin contents
+    // (in the refined case, the refined block is used directly, subclass validation happens separately)
+    val mixedPb = if (unrefinedType.isEmpty && block.mixins.nonEmpty) {
+      val mixinPbs = block.mixins.flatMap { mixinLibraryPath =>
+        library.getBlock(mixinLibraryPath) match {
+          case Errorable.Success(blockPb) =>
+            Some(blockPb)
+          case Errorable.Error(err) =>
+            errors += CompilerError.LibraryError(path, mixinLibraryPath, err)
+            None
+        }
+      }
+      // TODO the below doesn't deduplicate properly, but this is only to provide a handle for visualization
+      // unrefined blocks with mixins should NOT appear in the final design, they must be refined to one concrete class
+      blockPb
+        .withPorts(blockPb.ports ++ mixinPbs.map(_.ports).fold(Seq())(_ ++ _))
+        .withParams(blockPb.params ++ mixinPbs.map(_.params).fold(Seq())(_ ++ _))
+        .withBlocks(blockPb.blocks ++ mixinPbs.map(_.blocks).fold(Seq())(_ ++ _))
+        .withLinks(blockPb.links ++ mixinPbs.map(_.links).fold(Seq())(_ ++ _))
+        .withConstraints(blockPb.constraints ++ mixinPbs.map(_.constraints).fold(Seq())(_ ++ _))
     } else {
-      new wir.Generator(blockPb, unrefinedType)
+      blockPb
+    }
+
+    val newBlock = if (mixedPb.generator.isEmpty) {
+      new wir.Block(mixedPb, unrefinedType, block.mixins)
+    } else {
+      new wir.Generator(mixedPb, unrefinedType, block.mixins)
     }
 
     val (parentPath, blockName) = path.split
@@ -644,7 +660,7 @@ class Compiler private (
     parent.elaborate(blockName, newBlock)
 
     constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), path, "name")
-    processParamDeclarations(path, Some(newBlock.getBlockClass), newBlock)
+    processParamDeclarations(path, newBlock)
 
     newBlock.getPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, path, newBlock, port)
@@ -678,7 +694,7 @@ class Compiler private (
 
     // Elaborate ports and parameters
     constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), path, "name")
-    processParamDeclarations(path, None, newLink)
+    processParamDeclarations(path, newLink)
 
     newLink.getPorts.foreach { case (portName, port) =>
       elaboratePort(path + portName, path, newLink, port)
@@ -745,7 +761,7 @@ class Compiler private (
     }
 
     // Run generator and plug in
-    library.runGenerator(generator.getBlockClass, reqParamValues.toMap) match {
+    library.runGenerator(generator.getSelfClass, reqParamValues.toMap) match {
       case Errorable.Success(generatedPb) =>
         val generatedPorts = generator.applyGenerated(generatedPb)
         generatedPorts.foreach { portName =>
@@ -759,7 +775,7 @@ class Compiler private (
         // the rest was already handled when elaboratePorts on the generator stub
         }
       case Errorable.Error(err) =>
-        errors += CompilerError.GeneratorError(path, generator.getBlockClass, err)
+        errors += CompilerError.GeneratorError(path, generator.getSelfClass, err)
     }
   }
 
@@ -1644,8 +1660,8 @@ class Compiler private (
             case elaborateRecord @ ElaborateRecord.LinkArray(linkPath) =>
               elaborateLinkArray(linkPath)
               elaboratePending.setValue(elaborateRecord, None)
-            case elaborateRecord @ ElaborateRecord.Parameter(root, blockClass, postfix, param) =>
-              if (paramMatchesPartial(root, blockClass, postfix)) {
+            case elaborateRecord @ ElaborateRecord.Parameter(root, container, postfix, param) =>
+              if (paramMatchesPartial(root, container, postfix)) {
                 partialCompileIgnoredRecords.add(elaborateRecord)
               } else {
                 constProp.addDeclaration(root ++ postfix, param)

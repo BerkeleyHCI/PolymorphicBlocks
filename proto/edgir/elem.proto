@@ -54,6 +54,7 @@ message Port {
 
   edgir.ref.LibraryPath self_class = 20;
   repeated edgir.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+  repeated edgir.ref.LibraryPath super_superclasses = 24;  // all (recursive) superclasses above superclasses
   // TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
   edgir.common.Metadata meta = 127;
@@ -66,6 +67,7 @@ message Bundle {
 
   edgir.ref.LibraryPath self_class = 20;
   repeated edgir.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+  repeated edgir.ref.LibraryPath super_superclasses = 24;  // all (recursive) superclasses above superclasses
 
   edgir.common.Metadata meta = 127;
 }
@@ -129,8 +131,10 @@ message HierarchyBlock {
   repeated NamedValueExpr constraints = 44;
 
   edgir.ref.LibraryPath self_class = 23;  // self class, equivalent to the library name
-  repeated edgir.ref.LibraryPath superclasses = 20;  // superclasses, may be empty
-  edgir.ref.LibraryPath prerefine_class = 21;  // if refined: the class pre-refinement; otherwise equal to class
+  repeated edgir.ref.LibraryPath superclasses = 20;  // immediate superclasses, may be empty
+  repeated edgir.ref.LibraryPath super_superclasses = 24;  // all (recursive) superclasses above superclasses
+  edgir.ref.LibraryPath prerefine_class = 21;  // class pre-refinement, only defined if refined
+  repeated edgir.ref.LibraryPath prerefine_mixins = 25;  // mixins pre-refinement, from library elem
   Generator                       generator = 22;  // optional, and removed upon invocation
 
   bool is_abstract = 30;  // true if self_class is abstract, and should error if used in a design
@@ -147,10 +151,15 @@ message Generator {
   repeated edgir.ref.LocalPath required_params = 2;
 }
 
+message BlockLibrary {
+  edgir.ref.LibraryPath base = 2;
+  repeated edgir.ref.LibraryPath mixins = 3;
+}
+
 message BlockLike {
   oneof type {
     edgir.common.Empty undefined = 1;
-    edgir.ref.LibraryPath lib_elem = 2;
+    BlockLibrary lib_elem = 5;
     /** not allowed w/in the library */
     HierarchyBlock hierarchy = 4;
   }
@@ -164,6 +173,7 @@ message Link {
 
   edgir.ref.LibraryPath self_class = 20;
   repeated edgir.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
+  repeated edgir.ref.LibraryPath super_superclasses = 24;  // all (recursive) superclasses above superclasses
   // TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
 
   edgir.common.Metadata meta = 127;

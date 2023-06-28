@@ -414,7 +414,7 @@ class PythonInterfaceLibrary() extends Library {
     case (path, schema.Library.NS.Val.Type.Link(link)) => (path, link)
   }.toMap
 
-  override protected def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean): Errorable[elem.HierarchyBlock] = {
+  override def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean = false): Errorable[elem.HierarchyBlock] = {
     getLibraryPartialMapped(path, "block") {
       case schema.Library.NS.Val.Type.HierarchyBlock(member) =>
         require(

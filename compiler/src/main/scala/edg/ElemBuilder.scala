@@ -75,14 +75,19 @@ object ElemBuilder {
   }
 
   object Block {
-    def Library(path: ref.LibraryPath): elem.BlockLike = elem.BlockLike(`type` =
+    def Library(path: ref.LibraryPath, mixins: Seq[ref.LibraryPath] = Seq()): elem.BlockLike = elem.BlockLike(`type` =
       elem.BlockLike.Type.LibElem(
-        value = path
+        value = elem.BlockLibrary(base = Some(path), mixins = mixins)
       )
     )
     def Library(name: String): elem.BlockLike = elem.BlockLike(`type` =
       elem.BlockLike.Type.LibElem(
-        value = LibraryPath(name)
+        value = elem.BlockLibrary(base = Some(LibraryPath(name)))
+      )
+    )
+    def Library(name: String, mixins: Seq[String]): elem.BlockLike = elem.BlockLike(`type` =
+      elem.BlockLike.Type.LibElem(
+        value = elem.BlockLibrary(base = Some(LibraryPath(name)), mixins = mixins.map(LibraryPath(_)))
       )
     )
 
@@ -90,6 +95,7 @@ object ElemBuilder {
         selfClass: String,
         superclasses: Seq[String] = Seq(),
         defaultRefinement: Option[String] = None,
+        isAbstract: Boolean = false,
         params: SeqMap[String, init.ValInit] = SeqMap(),
         paramDefaults: Map[String, expr.ValueExpr] = Map(),
         ports: SeqMap[String, elem.PortLike] = SeqMap(),
@@ -97,6 +103,7 @@ object ElemBuilder {
         links: SeqMap[String, elem.LinkLike] = SeqMap(),
         constraints: SeqMap[String, expr.ValueExpr] = SeqMap(),
         prerefine: String = "",
+        prerefineMixins: Seq[String] = Seq(),
     ): elem.BlockLike = elem.BlockLike(`type` =
       elem.BlockLike.Type.Hierarchy(elem.HierarchyBlock(
         params = params.toPb,
@@ -107,11 +114,13 @@ object ElemBuilder {
         constraints = constraints.toPb,
         selfClass = Some(LibraryPath(selfClass)),
         superclasses = superclasses.map(LibraryPath(_)),
+        isAbstract = isAbstract,
         defaultRefinement = defaultRefinement.map(LibraryPath(_)),
         prerefineClass = prerefine match {
           case "" => None
           case prerefine => Some(LibraryPath(prerefine))
-        }
+        },
+        prerefineMixins = prerefineMixins.map(LibraryPath(_))
       ))
     )
   }
@@ -238,19 +247,21 @@ object ElemBuilder {
   def Library(
       blocks: Seq[elem.BlockLike] = Seq(),
       links: Seq[elem.LinkLike] = Seq(),
-      ports: Seq[elem.PortLike] = Seq()
+      ports: Seq[elem.PortLike] = Seq(),
+      base: schema.Library = schema.Library()
   ): schema.Library = {
     schema.Library(root =
       Some(schema.Library.NS(members =
-        blocks.map {
-          _.`type` match {
-            case elem.BlockLike.Type.Hierarchy(block) =>
-              block.getSelfClass.toFullString -> schema.Library.NS.Val(`type` =
-                schema.Library.NS.Val.Type.HierarchyBlock(block)
-              )
-            case block => throw new NotImplementedError(s"Unknown BlockLike in library $block")
-          }
-        }.toMap ++
+        base.getRoot.members ++
+          blocks.map {
+            _.`type` match {
+              case elem.BlockLike.Type.Hierarchy(block) =>
+                block.getSelfClass.toFullString -> schema.Library.NS.Val(`type` =
+                  schema.Library.NS.Val.Type.HierarchyBlock(block)
+                )
+              case block => throw new NotImplementedError(s"Unknown BlockLike in library $block")
+            }
+          }.toMap ++
           links.map {
             _.`type` match {
               case elem.LinkLike.Type.Link(link) =>

@@ -6,6 +6,7 @@ import edgir.init.init
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.ref.ref
+import edgir.ref.ref.LibraryPath
 
 import scala.collection.{SeqMap, mutable}
 
@@ -34,6 +35,10 @@ class Link(pb: elem.Link) extends LinkLike
   }
 
   override def isElaborated: Boolean = true
+
+  override def getSelfClass: LibraryPath = pb.getSelfClass
+  override def getDirectSuperclasses: Seq[LibraryPath] = pb.superclasses
+  override def getAllClasses: Seq[LibraryPath] = Seq(pb.selfClass, pb.superclasses, pb.superSuperclasses).flatten
 
   override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
