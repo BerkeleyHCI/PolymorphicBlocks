@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Nrf52840Base_Device(HasI2s, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Nrf52840Base_Device(IoControllerHasI2s, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """nRF52840 base device and IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
   PACKAGE: str  # package name for footprint(...)
@@ -230,7 +230,7 @@ class Holyiot_18010_Device(Nrf52840Base_Device):
   DATASHEET = 'http://www.holyiot.com/tp/2019042516322180424.pdf'
 
 
-class Holyiot_18010(Microcontroller, Radiofrequency, HasI2s, IoControllerWithSwdTargetConnector, IoController,
+class Holyiot_18010(Microcontroller, Radiofrequency, IoControllerHasI2s, IoControllerWithSwdTargetConnector, IoController,
                     BaseIoControllerExportable):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
   def __init__(self, **kwargs):
@@ -334,7 +334,7 @@ class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
     self.connect(self.usb_outer.dm, self.res_dm.b.adapt_to(DigitalBidir()))
 
 
-class Mdbt50q_1mv2(Microcontroller, Radiofrequency, HasI2s, IoControllerWithSwdTargetConnector, IoController,
+class Mdbt50q_1mv2(Microcontroller, Radiofrequency, IoControllerHasI2s, IoControllerWithSwdTargetConnector, IoController,
                    BaseIoControllerExportable):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
   def __init__(self, **kwargs):

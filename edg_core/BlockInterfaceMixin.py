@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Type, List, Optional, get_args, get_origin, Tuple
+from typing import TypeVar, Generic, Type, List, Optional, get_args, get_origin, Tuple, Callable
 
 from .Core import non_library, HasMetadata
 from .Blocks import AbstractBlockProperty
@@ -69,3 +69,10 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
         super().__init__()
         if self._is_mixin():  # all mixins must be abstract
             self._elt_properties[(self.__class__, AbstractBlockProperty)] = None
+
+    def implementation(self, fn: Callable[[MixinBaseType], None]) -> None:
+        """Wrap implementation definitions (where MixinBaseType is required) in this. This is only called
+        in a concrete class, and ignored when the standalone mixin is instantiated."""
+        if not self._is_mixin():
+            assert isinstance(self, self._get_mixin_base())
+            fn(self)  # type: ignore

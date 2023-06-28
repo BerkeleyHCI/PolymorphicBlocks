@@ -239,12 +239,13 @@ class IoController(ProgrammableController, BaseIoController):
       self.gnd = self.Port(Ground.empty(), optional=True)
 
 
-class HasI2s(BaseIoController):
+class IoControllerHasI2s(BlockInterfaceMixin[BaseIoController]):
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
 
     self.i2s = self.Port(Vector(I2sController.empty()), optional=True)
-    self._io_ports.insert(0, self.i2s)
+    self.implementation(lambda base: base._io_ports.insert(0, self.i2s))
+
 
 
 class IdealIoController(IoController, IdealModel, GeneratorBlock):
