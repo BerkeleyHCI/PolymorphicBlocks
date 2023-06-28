@@ -87,6 +87,7 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
         ),
         "block" -> Block.Block(
           selfClass = "baseBlock",
+          prerefineMixins = Seq("mixin"),
           isAbstract = true,
           ports = SeqMap(
             "port" -> Port.Port(selfClass = "sinkPort"),
@@ -121,9 +122,9 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
     val compiled = compiler.compile()
     compiler.getErrors() shouldBe empty
     new DesignStructuralValidate().map(compiled) should equal(Seq(
-      CompilerError.AbstractBlock(new DesignPath(Seq("block")), LibraryPath("baseBlock"))
+      CompilerError.AbstractBlock(DesignPath() + "block", LibraryPath("baseBlock"))
     ))
-    compiled should equal(referenceElaborated)
+    compiled.toProtoString should equal(referenceElaborated.toProtoString)
   }
 
   "Compiler on design with invalid mixin refinement" should "error" in {
@@ -132,13 +133,13 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
       inputDesign,
       new EdgirLibrary(library),
       refinements = Refinements(
-        instanceRefinements = Map(new DesignPath(Seq("block")) -> LibraryPath("concreteBaseBlock")),
+        instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("concreteBaseBlock")),
       )
     )
     val compiled = compiler.compile()
     compiler.getErrors() should equal(Seq(
       CompilerError.RefinementSubclassError(
-        new DesignPath(Seq("block")),
+        DesignPath() + "block",
         LibraryPath("concreteBaseBlock"),
         LibraryPath("baseBlock")
       )
@@ -167,6 +168,7 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
         "block" -> Block.Block(
           superclasses = Seq("baseBlock", "mixin"),
           prerefine = "baseBlock",
+          prerefineMixins = Seq("mixin"),
           selfClass = "concreteMixinBlock",
           ports = SeqMap(
             "port" -> Port.Port(selfClass = "sinkPort"),
@@ -198,22 +200,11 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
 
-    // TODO DELETEME TESTING ONLY
-    val compiler = new Compiler(
-      inputDesign,
-      new EdgirLibrary(library),
-      refinements = Refinements(
-        instanceRefinements = Map(new DesignPath(Seq("block")) -> LibraryPath("concreteMixinBlock")),
-      )
-    )
-    val compiled = compiler.compile()
-    compiled.getContents.blocks.get("block") should equal(referenceElaborated.getContents.blocks.get("block"))
-
     testCompile(
       inputDesign,
       library,
       refinements = Refinements(
-        instanceRefinements = Map(new DesignPath(Seq("block")) -> LibraryPath("concreteMixinBlock")),
+        instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("concreteMixinBlock")),
       ),
       expectedDesign = Some(referenceElaborated)
     )

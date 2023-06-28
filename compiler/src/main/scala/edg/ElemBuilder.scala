@@ -103,6 +103,7 @@ object ElemBuilder {
         links: SeqMap[String, elem.LinkLike] = SeqMap(),
         constraints: SeqMap[String, expr.ValueExpr] = SeqMap(),
         prerefine: String = "",
+        prerefineMixins: Seq[String] = Seq(),
     ): elem.BlockLike = elem.BlockLike(`type` =
       elem.BlockLike.Type.Hierarchy(elem.HierarchyBlock(
         params = params.toPb,
@@ -118,7 +119,8 @@ object ElemBuilder {
         prerefineClass = prerefine match {
           case "" => None
           case prerefine => Some(LibraryPath(prerefine))
-        }
+        },
+        prerefineMixins = prerefineMixins.map(LibraryPath(_))
       ))
     )
   }
