@@ -26,6 +26,29 @@ trait Library {
   def allLinks: Map[ref.LibraryPath, elem.Link]
 
   def runGenerator(path: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Errorable[elem.HierarchyBlock]
+
+  // wrapper around getBlock that handles mixins
+  // if mixins is empty, this reduces down to getBlock
+  def getBlock(path: ref.LibraryPath, mixins: Seq[ref.LibraryPath]): Errorable[elem.HierarchyBlock] = {
+    getBlock(path) match {
+      case baseBlock: Errorable.Error => baseBlock
+      case Errorable.Success(baseBlock) =>
+        val mixinBlockRaw = mixins.map(getBlock(_))
+        val mixinBlockErrs = mixinBlockRaw.filter(_.isInstanceOf[Errorable.Error])
+        if (mixinBlockErrs.nonEmpty) {
+          mixinBlockErrs.head
+        } else {
+          val mixinBlocks = mixinBlockRaw.map(_.get)
+          val mixedBlock = baseBlock
+            .withPorts(baseBlock.ports ++ mixinBlocks.map(_.ports).fold(Seq())(_ ++ _))
+            .withParams(baseBlock.params ++ mixinBlocks.map(_.params).fold(Seq())(_ ++ _))
+            .withBlocks(baseBlock.blocks ++ mixinBlocks.map(_.blocks).fold(Seq())(_ ++ _))
+            .withLinks(baseBlock.links ++ mixinBlocks.map(_.links).fold(Seq())(_ ++ _))
+            .withConstraints(baseBlock.constraints ++ mixinBlocks.map(_.constraints).fold(Seq())(_ ++ _))
+          Errorable.Success(mixedBlock)
+        }
+    }
+  }
 }
 
 /** Non-mutable library based off the proto IR

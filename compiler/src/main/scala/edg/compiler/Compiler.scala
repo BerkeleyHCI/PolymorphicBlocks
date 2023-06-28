@@ -556,8 +556,9 @@ class Compiler private (
     )
     val unrefinedType = if (refinementLibraryPath.isDefined) Some(libraryPath) else None
     val blockLibraryPath = refinementLibraryPath.getOrElse(libraryPath)
+    val blockMixins = if (refinementLibraryPath.isDefined) Seq() else block.mixins // discard mixins if refined
 
-    val blockPb = library.getBlock(blockLibraryPath) match {
+    val blockPb = library.getBlock(blockLibraryPath, blockMixins) match {
       case Errorable.Success(blockPb) =>
         blockPb
       case Errorable.Error(err) =>
@@ -625,34 +626,10 @@ class Compiler private (
       }
     }
 
-    // if an unrefined mixin, tack in the mixin contents
-    // (in the refined case, the refined block is used directly, subclass validation happens separately)
-    val mixedPb = if (unrefinedType.isEmpty && block.mixins.nonEmpty) {
-      val mixinPbs = block.mixins.flatMap { mixinLibraryPath =>
-        library.getBlock(mixinLibraryPath) match {
-          case Errorable.Success(blockPb) =>
-            Some(blockPb)
-          case Errorable.Error(err) =>
-            errors += CompilerError.LibraryError(path, mixinLibraryPath, err)
-            None
-        }
-      }
-      // TODO the below doesn't deduplicate properly, but this is only to provide a handle for visualization
-      // unrefined blocks with mixins should NOT appear in the final design, they must be refined to one concrete class
-      blockPb
-        .withPorts(blockPb.ports ++ mixinPbs.map(_.ports).fold(Seq())(_ ++ _))
-        .withParams(blockPb.params ++ mixinPbs.map(_.params).fold(Seq())(_ ++ _))
-        .withBlocks(blockPb.blocks ++ mixinPbs.map(_.blocks).fold(Seq())(_ ++ _))
-        .withLinks(blockPb.links ++ mixinPbs.map(_.links).fold(Seq())(_ ++ _))
-        .withConstraints(blockPb.constraints ++ mixinPbs.map(_.constraints).fold(Seq())(_ ++ _))
+    val newBlock = if (blockPb.generator.isEmpty) {
+      new wir.Block(blockPb, unrefinedType, block.mixins)
     } else {
-      blockPb
-    }
-
-    val newBlock = if (mixedPb.generator.isEmpty) {
-      new wir.Block(mixedPb, unrefinedType, block.mixins)
-    } else {
-      new wir.Generator(mixedPb, unrefinedType, block.mixins)
+      new wir.Generator(blockPb, unrefinedType, block.mixins)
     }
 
     val (parentPath, blockName) = path.split
