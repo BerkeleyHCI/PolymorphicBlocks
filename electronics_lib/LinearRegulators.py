@@ -171,14 +171,13 @@ class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     self.assign(self.actual_basic_part, False)
 
 
-class Ap2204k(LinearRegulator, GeneratorBlock):
+class Ap2204k(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
   """AP2204K block providing the LinearRegulator interface and optional enable (tied high if not connected).
   """
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-    self.en = self.Port(DigitalSink.empty(), optional=True)
-    self.generator_param(self.en.is_connected())
+    self.generator_param(self.enable.is_connected())
 
   def contents(self):
     super().contents()
@@ -193,8 +192,8 @@ class Ap2204k(LinearRegulator, GeneratorBlock):
 
   def generate(self):
     super().generate()
-    if self.get(self.en.is_connected()):
-      self.connect(self.en, self.ic.en)
+    if self.get(self.enable.is_connected()):
+      self.connect(self.enable, self.ic.en)
     else:  # by default tie high to enable regulator
       self.connect(self.pwr_in.as_digital_source(), self.ic.en)
 
