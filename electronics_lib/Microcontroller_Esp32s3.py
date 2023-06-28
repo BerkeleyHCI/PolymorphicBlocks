@@ -6,7 +6,7 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @abstract_block
-class Esp32s3_Device(IoControllerHasI2s, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Esp32s3_Device(IoControllerI2s, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """Base class for ESP32-S3 series microcontrollers with WiFi and Bluetooth (classic and LE)
   and AI acceleration
 
@@ -203,7 +203,7 @@ class Esp32s3_Wroom_1_Device(Esp32s3_Device, FootprintBlock, JlcPart):
     )
 
 
-class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, IoControllerHasI2s, HasEspProgramming,
+class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, IoControllerI2s, HasEspProgramming,
                       IoController, BaseIoControllerExportable):
   """ESP32-S3-WROOM-1 module
   """
@@ -309,7 +309,7 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     )
 
 
-class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoControllerHasI2s,
+class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoControllerI2s,
                              IoController, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around Esp32_Wover_Dev fitting the IoController interface
   """
