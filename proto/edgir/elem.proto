@@ -133,7 +133,8 @@ message HierarchyBlock {
   edgir.ref.LibraryPath self_class = 23;  // self class, equivalent to the library name
   repeated edgir.ref.LibraryPath superclasses = 20;  // immediate superclasses, may be empty
   repeated edgir.ref.LibraryPath super_superclasses = 24;  // all (recursive) superclasses above superclasses
-  edgir.ref.LibraryPath prerefine_class = 21;  // if refined: the class pre-refinement; otherwise equal to class
+  edgir.ref.LibraryPath prerefine_class = 21;  // class pre-refinement, only defined if refined
+  repeated edgir.ref.LibraryPath prerefine_mixins = 25;  // mixins pre-refinement, from library elem
   Generator                       generator = 22;  // optional, and removed upon invocation
 
   bool is_abstract = 30;  // true if self_class is abstract, and should error if used in a design

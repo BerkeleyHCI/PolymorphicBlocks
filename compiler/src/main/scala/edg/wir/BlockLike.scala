@@ -20,7 +20,8 @@ sealed trait BlockLike extends Pathable {
   * proto, unmodified. This is to allow efficient transformation at any point in the design tree without re-writing the
   * root.
   */
-class Block(pb: elem.HierarchyBlock, val unrefinedType: Option[ref.LibraryPath]) extends BlockLike
+class Block(pb: elem.HierarchyBlock, val unrefinedType: Option[ref.LibraryPath], val unrefinedMixins: Seq[ref.LibraryPath])
+    extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
   override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks)
@@ -29,7 +30,7 @@ class Block(pb: elem.HierarchyBlock, val unrefinedType: Option[ref.LibraryPath])
 
   // creates a copy of this object
   override def cloned: Block = {
-    val cloned = new Block(pb, unrefinedType)
+    val cloned = new Block(pb, unrefinedType, unrefinedMixins)
     cloned.ports.clear()
     cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
     cloned.blocks.clear()
@@ -43,7 +44,9 @@ class Block(pb: elem.HierarchyBlock, val unrefinedType: Option[ref.LibraryPath])
 
   override def isElaborated: Boolean = true
 
-  def getBlockClass: LibraryPath = pb.getSelfClass
+  override def getSelfClass: LibraryPath = pb.getSelfClass
+  override def getDirectSuperclasses: Seq[LibraryPath] = pb.superclasses
+  override def getAllClasses: Seq[LibraryPath] = Seq(pb.selfClass, pb.superclasses, pb.superSuperclasses).flatten
 
   override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
@@ -63,10 +66,8 @@ class Block(pb: elem.HierarchyBlock, val unrefinedType: Option[ref.LibraryPath])
 
   def toEltPb: elem.HierarchyBlock = {
     pb.copy(
-      prerefineClass = unrefinedType match {
-        case None => pb.prerefineClass
-        case Some(prerefineClass) => Some(prerefineClass)
-      },
+      prerefineClass = unrefinedType,
+      prerefineMixins = unrefinedMixins,
       ports = ports.view.mapValues(_.toPb).to(SeqMap).toPb,
       blocks = blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
       links = links.view.mapValues(_.toPb).to(SeqMap).toPb,
@@ -81,8 +82,11 @@ class Block(pb: elem.HierarchyBlock, val unrefinedType: Option[ref.LibraryPath])
 
 // A generator version of the base block that can expand the block internals from a generator, subject to
 // some constraints
-class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPath])
-    extends Block(basePb, unrefinedType) {
+class Generator(
+    basePb: elem.HierarchyBlock,
+    unrefinedType: Option[ref.LibraryPath],
+    unrefinedMixins: Seq[ref.LibraryPath]
+) extends Block(basePb, unrefinedType, unrefinedMixins) {
   require(basePb.generator.isDefined)
 
   var generatedPb: Option[elem.HierarchyBlock] = None
@@ -92,7 +96,7 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
   constraints.clear()
 
   override def cloned: Generator = { // TODO dedup w/ super (Block)? but Block.cloned returns a Block
-    val cloned = new Generator(basePb, unrefinedType)
+    val cloned = new Generator(basePb, unrefinedType, unrefinedMixins)
     cloned.ports.clear()
     cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
     cloned.blocks.clear()
@@ -149,10 +153,8 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
 
   override def toEltPb: elem.HierarchyBlock = {
     generatedPb.getOrElse(basePb).copy( // if the block did not generate, return the base w/ the generator field
-      prerefineClass = unrefinedType match {
-        case None => generatedPb.getOrElse(basePb).prerefineClass
-        case Some(prerefineClass) => Some(prerefineClass)
-      },
+      prerefineClass = unrefinedType,
+      prerefineMixins = unrefinedMixins,
       ports = ports.view.mapValues(_.toPb).to(SeqMap).toPb,
       blocks = blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
       links = links.view.mapValues(_.toPb).to(SeqMap).toPb,
@@ -161,7 +163,7 @@ class Generator(basePb: elem.HierarchyBlock, unrefinedType: Option[ref.LibraryPa
   }
 }
 
-case class BlockLibrary(target: ref.LibraryPath) extends BlockLike {
+case class BlockLibrary(target: ref.LibraryPath, mixins: Seq[ref.LibraryPath]) extends BlockLike {
   override def cloned: BlockLibrary = this // immutable
 
   def resolve(suffix: Seq[String]): Pathable = suffix match {

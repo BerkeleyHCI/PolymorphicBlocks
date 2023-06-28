@@ -19,8 +19,8 @@ trait CompilerTestUtil extends AnyFlatSpec {
     new DesignStructuralValidate().map(compiled) shouldBe empty
     new DesignRefsValidate().validate(compiled) shouldBe empty
     new DesignAssertionCheck(compiler).map(compiled) shouldBe empty
-    expectedDesign match {
-      case Some(expectedDesign) => compiled should equal(expectedDesign)
+    expectedDesign match { // toProtoString is a more readable and diff-able
+      case Some(expectedDesign) => compiled.toProtoString should equal(expectedDesign.toProtoString)
       case _ =>
     }
     (compiler, compiled)

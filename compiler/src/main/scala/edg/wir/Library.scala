@@ -12,38 +12,6 @@ import edgir.schema.schema
 /** API definition for a library
   */
 trait Library {
-  // returns whether subclass is a subclass of (or equivalent to) superclass, traversing up the library
-  // returns false if either subclass is missing
-  def blockIsSubclassOf(subclass: ref.LibraryPath, superclass: ref.LibraryPath): Boolean = {
-    if (subclass == superclass) {
-      true
-    } else {
-      getBlock(subclass, true).toOption.map { elt =>
-        elt.superclasses.exists {
-          blockIsSubclassOf(_, superclass)
-        }
-      }.getOrElse(false)
-    }
-  }
-
-  // returns the top-most superclass that defines some parameter name
-  // returns None if thisClass does not define the parameter, and errors out if there are multiple top-most superclasses
-  def blockParamGetDefiningSuperclass(thisClass: ref.LibraryPath, paramName: String): Option[ref.LibraryPath] = {
-    val thisBlock = getBlock(thisClass, true).get
-    if (thisBlock.params.get(paramName).isEmpty) {
-      return None
-    }
-    val definingSuperclasses = thisBlock.superclasses.flatMap { superclass =>
-      blockParamGetDefiningSuperclass(superclass, paramName)
-    }.distinct
-    definingSuperclasses match {
-      case Seq() => Some(thisClass)
-      case Seq(baseClass) => Some(baseClass)
-      case _ =>
-        throw new IllegalArgumentException(s"multiple superclasses of ${thisClass.toSimpleString} defines $paramName")
-    }
-  }
-
   def getBlock(path: ref.LibraryPath): Errorable[elem.HierarchyBlock] = getBlock(path, false)
   // getBlock can't be used on blocks that have refinements, since that's data that would be discarded
   // this internal method allows that check to be ignored for cases where the block's definition isn't relevant,

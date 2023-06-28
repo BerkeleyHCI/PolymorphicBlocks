@@ -7,6 +7,7 @@ import scala.collection.{SeqMap, mutable}
 import edgir.init.init
 import edgir.elem.elem
 import edgir.ref.ref
+import edgir.ref.ref.LibraryPath
 
 sealed trait PortLike extends Pathable {
   def cloned: PortLike // using clone directly causes an access error to Object.clone
@@ -33,6 +34,10 @@ class Port(pb: elem.Port) extends PortLike
   override def cloned: Port = this // immutable
 
   override def isElaborated: Boolean = true
+
+  override def getSelfClass: LibraryPath = pb.getSelfClass
+  override def getDirectSuperclasses: Seq[LibraryPath] = pb.superclasses
+  override def getAllClasses: Seq[LibraryPath] = Seq(pb.selfClass, pb.superclasses, pb.superSuperclasses).flatten
 
   override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
@@ -62,6 +67,10 @@ class Bundle(pb: elem.Bundle) extends PortLike
   }
 
   override def isElaborated: Boolean = true
+
+  override def getSelfClass: LibraryPath = pb.getSelfClass
+  override def getDirectSuperclasses: Seq[LibraryPath] = pb.superclasses
+  override def getAllClasses: Seq[LibraryPath] = Seq(pb.selfClass, pb.superclasses, pb.superSuperclasses).flatten
 
   override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 

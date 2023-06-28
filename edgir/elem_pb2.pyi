@@ -373,6 +373,7 @@ class HierarchyBlock(google.protobuf.message.Message):
     SUPERCLASSES_FIELD_NUMBER: builtins.int
     SUPER_SUPERCLASSES_FIELD_NUMBER: builtins.int
     PREREFINE_CLASS_FIELD_NUMBER: builtins.int
+    PREREFINE_MIXINS_FIELD_NUMBER: builtins.int
     GENERATOR_FIELD_NUMBER: builtins.int
     IS_ABSTRACT_FIELD_NUMBER: builtins.int
     DEFAULT_REFINEMENT_FIELD_NUMBER: builtins.int
@@ -412,7 +413,10 @@ class HierarchyBlock(google.protobuf.message.Message):
         """all (recursive) superclasses above superclasses"""
     @property
     def prerefine_class(self) -> edgir.ref_pb2.LibraryPath:
-        """if refined: the class pre-refinement; otherwise equal to class"""
+        """class pre-refinement, from library elem"""
+    @property
+    def prerefine_mixins(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+        """mixins pre-refinement, from library elem"""
     @property
     def generator(self) -> global___Generator:
         """optional, and removed upon invocation"""
@@ -438,6 +442,7 @@ class HierarchyBlock(google.protobuf.message.Message):
         superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
         super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
         prerefine_class: edgir.ref_pb2.LibraryPath | None = ...,
+        prerefine_mixins: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
         generator: global___Generator | None = ...,
         is_abstract: builtins.bool = ...,
         default_refinement: edgir.ref_pb2.LibraryPath | None = ...,
@@ -445,7 +450,7 @@ class HierarchyBlock(google.protobuf.message.Message):
         description: collections.abc.Iterable[global___StringDescriptionElement] | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["default_refinement", b"default_refinement", "generator", b"generator", "meta", b"meta", "prerefine_class", b"prerefine_class", "self_class", b"self_class"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["blocks", b"blocks", "constraints", b"constraints", "default_refinement", b"default_refinement", "description", b"description", "generator", b"generator", "is_abstract", b"is_abstract", "links", b"links", "meta", b"meta", "param_defaults", b"param_defaults", "params", b"params", "ports", b"ports", "prerefine_class", b"prerefine_class", "self_class", b"self_class", "super_superclasses", b"super_superclasses", "superclasses", b"superclasses"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["blocks", b"blocks", "constraints", b"constraints", "default_refinement", b"default_refinement", "description", b"description", "generator", b"generator", "is_abstract", b"is_abstract", "links", b"links", "meta", b"meta", "param_defaults", b"param_defaults", "params", b"params", "ports", b"ports", "prerefine_class", b"prerefine_class", "prerefine_mixins", b"prerefine_mixins", "self_class", b"self_class", "super_superclasses", b"super_superclasses", "superclasses", b"superclasses"]) -> None: ...
 
 global___HierarchyBlock = HierarchyBlock
 
