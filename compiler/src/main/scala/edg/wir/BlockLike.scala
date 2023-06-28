@@ -20,8 +20,11 @@ sealed trait BlockLike extends Pathable {
   * proto, unmodified. This is to allow efficient transformation at any point in the design tree without re-writing the
   * root.
   */
-class Block(pb: elem.HierarchyBlock, val unrefinedType: Option[ref.LibraryPath], val unrefinedMixins: Seq[ref.LibraryPath])
-    extends BlockLike
+class Block(
+    pb: elem.HierarchyBlock,
+    val unrefinedType: Option[ref.LibraryPath],
+    val unrefinedMixins: Seq[ref.LibraryPath]
+) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
   override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks)
