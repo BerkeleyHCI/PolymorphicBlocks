@@ -541,21 +541,23 @@ class Compiler private (
     import edgir.elem.elem
 
     val block = resolveBlock(path).asInstanceOf[wir.BlockLibrary]
-    val libraryPath = block.target
-    val libraryBlockPb = library.getBlock(libraryPath) match {
+
+    // check for and apply block-side default refinement, if defined
+    val libraryBlockPb = library.getBlock(block.target, block.mixins) match {
       case Errorable.Success(blockPb) => blockPb
       case Errorable.Error(err) =>
-        errors += CompilerError.LibraryError(path, libraryPath, err)
+        errors += CompilerError.LibraryError(path, block.target, err)
         elem.HierarchyBlock()
     }
-
     val refinementLibraryPath = refinements.instanceRefinements.get(path).orElse(
-      refinements.classRefinements.get(libraryPath).orElse(
+      refinements.classRefinements.get(block.target).orElse(
         libraryBlockPb.defaultRefinement
       )
     )
-    val unrefinedType = if (refinementLibraryPath.isDefined) Some(libraryPath) else None
-    val blockLibraryPath = refinementLibraryPath.getOrElse(libraryPath)
+
+    // actually instantiate the block
+    val unrefinedType = if (refinementLibraryPath.isDefined) Some(block.target) else None
+    val blockLibraryPath = refinementLibraryPath.getOrElse(block.target)
     val blockMixins = if (refinementLibraryPath.isDefined) Seq() else block.mixins // discard mixins if refined
 
     val blockPb = library.getBlock(blockLibraryPath, blockMixins) match {
@@ -585,16 +587,8 @@ class Compiler private (
 
     // additional processing needed for the refinement case
     if (unrefinedType.isDefined) {
-      val unrefinedPb = library.getBlock(libraryPath) match { // add subclass (refinement) default params
-        case Errorable.Success(unrefinedPb) =>
-          unrefinedPb
-        case Errorable.Error(err) => // this doesn't stop elaboration, but does raise an error
-          import edgir.elem.elem
-          errors += CompilerError.LibraryError(path, libraryPath, err)
-          elem.HierarchyBlock()
-      }
-      val refinedNewParams = blockPb.params.toSeqMap.keys.toSet -- unrefinedPb.params.toSeqMap.keys
-      refinedNewParams.foreach { refinedNewParam =>
+      val refinedNewParams = blockPb.params.toSeqMap.keys.toSet -- libraryBlockPb.params.toSeqMap.keys
+      refinedNewParams.foreach { refinedNewParam => // add subclass (refinement) default params
         blockPb.paramDefaults.get(refinedNewParam).foreach { refinedDefault =>
           constProp.addAssignExpr(
             path.asIndirect + refinedNewParam,
@@ -604,8 +598,8 @@ class Compiler private (
           )
         }
       }
-      val refinedNewPorts = blockPb.ports.toSeqMap.keys.toSet -- unrefinedPb.ports.toSeqMap.keys
-      refinedNewPorts.foreach { refinedNewPort =>
+      val refinedNewPorts = blockPb.ports.toSeqMap.keys.toSet -- libraryBlockPb.ports.toSeqMap.keys
+      refinedNewPorts.foreach { refinedNewPort => // add subclass (refinement) non-connected
         blockPb.ports(refinedNewPort).is match {
           case _: elem.PortLike.Is.LibElem =>
             constProp.addAssignValue(
@@ -788,7 +782,7 @@ class Compiler private (
     import edg.ExprBuilder.ValueExpr
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
       val innerBlockLibrary = innerBlock.asInstanceOf[wir.BlockLibrary]
-      val innerBlockTemplate = library.getBlock(innerBlockLibrary.target)
+      val innerBlockTemplate = library.getBlock(innerBlockLibrary.target, innerBlockLibrary.mixins)
 
       innerBlockTemplate.map { innerBlockTemplate =>
         innerBlockTemplate.ports.asPairs.foreach { case (portName, port) =>

@@ -4,7 +4,7 @@ import edg.CompilerTestUtil
 import edg.ElemBuilder._
 import edg.ExprBuilder.Ref
 import edg.wir.ProtoUtil.BlockProtoToSeqMap
-import edg.wir.{DesignPath, EdgirLibrary, Refinements}
+import edg.wir.{DesignPath, EdgirLibrary, IndirectDesignPath, IndirectStep, Refinements}
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
@@ -205,7 +205,7 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
 
-    testCompile(
+    val (compiler, compiled) = testCompile(
       inputDesign,
       library,
       refinements = Refinements(
@@ -213,5 +213,73 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
       ),
       expectedDesign = Some(referenceElaborated)
     )
+    compiler.getValue(IndirectDesignPath() + "block" + "port" + IndirectStep.IsConnected) should
+      equal(Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "block" + "mixinPort" + IndirectStep.IsConnected) should
+      equal(Some(BooleanValue(true)))
+  }
+
+  "Compiler on design without mixin in base" should "expand blocks" in {
+    val inputDesign = Design(Block.Block(
+      "topDesign",
+      blocks = SeqMap(
+        "source" -> Block.Library("sourceBlock"),
+        "block" -> Block.Library("baseBlock"), // no mixin, mixinPort is disconnected
+      ),
+      links = SeqMap(
+        "link" -> Link.Library("link"),
+      ),
+      constraints = SeqMap(
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sinkConnect" -> Constraint.Connected(Ref("block", "port"), Ref("link", "sink")),
+      )
+    ))
+
+    val referenceElaborated = Design(Block.Block(
+      "topDesign",
+      blocks = SeqMap(
+        "source" -> Block.Block(
+          selfClass = "sourceBlock",
+          ports = SeqMap(
+            "port" -> Port.Port(selfClass = "sourcePort"),
+          )
+        ),
+        "block" -> Block.Block(
+          superclasses = Seq("baseBlock", "mixin"),
+          prerefine = "baseBlock",
+          selfClass = "concreteMixinBlock",
+          ports = SeqMap(
+            "port" -> Port.Port(selfClass = "sinkPort"),
+            "mixinPort" -> Port.Port(selfClass = "sinkPort"),
+          )
+        ),
+      ),
+      links = SeqMap(
+        "link" -> Link.Link(
+          selfClass = "link",
+          ports = SeqMap(
+            "source" -> Port.Port(selfClass = "sourcePort"),
+            "sink" -> Port.Port(selfClass = "sinkPort"),
+          )
+        ),
+      ),
+      constraints = SeqMap(
+        "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
+        "sinkConnect" -> Constraint.Connected(Ref("block", "port"), Ref("link", "sink")),
+      )
+    ))
+
+    val (compiler, compiled) = testCompile(
+      inputDesign,
+      library,
+      refinements = Refinements(
+        instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("concreteMixinBlock")),
+      ),
+      expectedDesign = Some(referenceElaborated)
+    )
+    compiler.getValue(IndirectDesignPath() + "block" + "port" + IndirectStep.IsConnected) should
+      equal(Some(BooleanValue(true)))
+    compiler.getValue(IndirectDesignPath() + "block" + "mixinPort" + IndirectStep.IsConnected) should
+      equal(Some(BooleanValue(false)))
   }
 }
