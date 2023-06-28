@@ -67,9 +67,5 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
 
     def __init__(self):
         super().__init__()
-        if self._is_mixin():
+        if self._is_mixin():  # all mixins must be abstract
             self._elt_properties[(self.__class__, AbstractBlockProperty)] = None
-
-        # TODO implement me
-
-        pass
