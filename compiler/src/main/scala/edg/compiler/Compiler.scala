@@ -209,7 +209,7 @@ class Compiler private (
     val additionalRefinementClassValuesByClass = additionalRefinements.classValues.groupBy(_._1._1)
     def processBlockAdditionalRefinements(path: DesignPath, block: Block): Unit = {
       additionalRefinements.classRefinements.foreach { case (refinementClass, _) =>
-        require(block.unrefinedType != refinementClass, f"added class refinement changes class at $path")
+        require(!block.unrefinedType.contains(refinementClass), f"added class refinement changes class at $path")
       }
 
       filterRefinementClassValues(block.getAllClasses, additionalRefinementClassValuesByClass).foreach {
