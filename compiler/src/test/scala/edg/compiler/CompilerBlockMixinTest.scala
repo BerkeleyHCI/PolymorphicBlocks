@@ -122,9 +122,14 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
     val compiled = compiler.compile()
     compiler.getErrors() shouldBe empty
     new DesignStructuralValidate().map(compiled) should equal(Seq(
-      CompilerError.AbstractBlock(DesignPath() + "block", LibraryPath("baseBlock"))
+      CompilerError.AbstractBlock(DesignPath() + "block", LibraryPath("baseBlock")),
+      CompilerError.RefinementSubclassError( // technically not a refinement error, but still a subclass error
+        DesignPath() + "block",
+        LibraryPath("baseBlock"),
+        LibraryPath("mixin")
+      )
     ))
-    compiled should equal(referenceElaborated)
+    compiled.toProtoString should equal(referenceElaborated.toProtoString)
   }
 
   "Compiler on design with invalid mixin refinement" should "error" in {
@@ -138,7 +143,7 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
     )
     val compiled = compiler.compile()
     compiler.getErrors() shouldBe empty
-    new DesignStructuralValidate().map(compiled) should equal (Seq(
+    new DesignStructuralValidate().map(compiled) should equal(Seq(
       CompilerError.RefinementSubclassError(
         DesignPath() + "block",
         LibraryPath("concreteBaseBlock"),
