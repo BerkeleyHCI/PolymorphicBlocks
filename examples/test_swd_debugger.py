@@ -106,10 +106,11 @@ class SwdDebugger(JlcBoardTop):
     ) as imp:
       self.vusb_protect = imp.Block(ProtectionZenerDiode(voltage=(5.25, 6)*Volt))
 
-      self.usb_reg = imp.Block(LinearRegulator(3.3*Volt(tol=0.05)))
+      self.usb_reg = imp.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
       self.v3v3 = self.connect(self.usb_reg.pwr_out)
 
-      self.target_reg = imp.Block(Ap2204k(3.3*Volt(tol=0.05)))
+      self.target_reg = imp.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+      target_reg_en = self.target_reg.with_mixin(VoltageRegulatorEnable())
       self.vtarget = self.connect(self.target_reg.pwr_out)
 
     with self.implicit_connect(
@@ -127,7 +128,7 @@ class SwdDebugger(JlcBoardTop):
 
       (self.en_pull, ), _ = self.chain(self.mcu.gpio.request('target_reg_en'),
                                       imp.Block(PullupResistor(4.7*kOhm(tol=0.1))),
-                                      self.target_reg.en)
+                                       target_reg_en.enable)
 
       self.target_drv = imp.Block(SwdSourceBitBang())
       self.connect(self.mcu.gpio.request('target_swclk'), self.target_drv.swclk_in)  # TODO BMP uses pin 15
@@ -158,6 +159,7 @@ class SwdDebugger(JlcBoardTop):
         (['mcu', 'swd'], SwdCortexTargetTagConnect),
         (['mcu', 'swd', 'conn'], TagConnectNonLegged),
         (['usb_reg'], Ap2204k),
+        (['target_reg'], Ap2204k),
       ],
       instance_values=[
         (['refdes_prefix'], 'S'),  # unique refdes for panelization

@@ -32,6 +32,13 @@ class VoltageRegulator(PowerConditioner):
                  "Output voltage must be within spec")
 
 
+class VoltageRegulatorEnable(BlockInterfaceMixin[VoltageRegulator]):
+  """Mixin for VoltageRegulator with an active-high enable pin (or active-low disable pin)."""
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.enable = self.Port(DigitalSink.empty(), optional=True)
+
+
 @abstract_block_default(lambda: IdealLinearRegulator)
 class LinearRegulator(VoltageRegulator):
   """Linear regulator, including supporting components in application circuit like capacitors if needed"""
@@ -42,16 +49,17 @@ class VoltageReference(LinearRegulator):
   """Voltage reference, generally provides high accuracy but limited current"""
 
 
-class IdealLinearRegulator(LinearRegulator, IdealModel):
+class IdealLinearRegulator(VoltageRegulatorEnable, LinearRegulator, IdealModel):
   """Ideal linear regulator, draws the output current and produces spec output voltage limited by input voltage"""
   def contents(self):
     super().contents()
     effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.upper()))
+    self.gnd.init_from(Ground())
     self.pwr_in.init_from(VoltageSink(
       current_draw=self.pwr_out.link().current_drawn))
     self.pwr_out.init_from(VoltageSource(
       voltage_out=effective_output_voltage))
-    self.gnd.init_from(Ground())
+    self.enable.init_from(DigitalSink())
 
 
 @non_library
@@ -143,17 +151,18 @@ class DiscreteBuckConverter(BuckConverter):
   """Category for discrete buck converter subcircuits (as opposed to integrated components)"""
 
 
-class IdealBuckConverter(DiscreteBuckConverter, IdealModel):
+class IdealBuckConverter(VoltageRegulatorEnable, DiscreteBuckConverter, IdealModel):
   """Ideal buck converter producing the spec output voltage (buck-boost) limited by input voltage
   and drawing input current from conversation of power"""
   def contents(self):
     super().contents()
     effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.upper()))
+    self.gnd.init_from(Ground())
     self.pwr_in.init_from(VoltageSink(
       current_draw=effective_output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn))
     self.pwr_out.init_from(VoltageSource(
       voltage_out=effective_output_voltage))
-    self.gnd.init_from(Ground())
+    self.enable.init_from(DigitalSink())
 
 
 class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
@@ -303,17 +312,18 @@ class DiscreteBoostConverter(BoostConverter):
   """Category for discrete boost converter subcircuits (as opposed to integrated components)"""
 
 
-class IdealBoostConverter(DiscreteBoostConverter, IdealModel):
+class IdealBoostConverter(VoltageRegulatorEnable, DiscreteBoostConverter, IdealModel):
   """Ideal boost converter producing the spec output voltage (buck-boost) limited by input voltage
   and drawing input current from conversation of power"""
   def contents(self):
     super().contents()
     effective_output_voltage = self.output_voltage.intersect((self.pwr_in.link().voltage.lower(), float('inf')))
+    self.gnd.init_from(Ground())
     self.pwr_in.init_from(VoltageSink(
       current_draw=effective_output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn))
     self.pwr_out.init_from(VoltageSource(
       voltage_out=effective_output_voltage))
-    self.gnd.init_from(Ground())
+    self.enable.init_from(DigitalSink())
 
 
 class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
@@ -453,16 +463,17 @@ class DiscreteBuckBoostConverter(BuckBoostConverter):
   """Category for discrete buck-boost converter subcircuits (as opposed to integrated components)"""
 
 
-class IdealVoltageRegulator(DiscreteBuckBoostConverter, IdealModel):
+class IdealVoltageRegulator(VoltageRegulatorEnable, DiscreteBuckBoostConverter, IdealModel):
   """Ideal buck-boost / general DC-DC converter producing the spec output voltage
   and drawing input current from conversation of power"""
   def contents(self):
     super().contents()
+    self.gnd.init_from(Ground())
     self.pwr_in.init_from(VoltageSink(
       current_draw=self.output_voltage / self.pwr_in.link().voltage * self.pwr_out.link().current_drawn))
     self.pwr_out.init_from(VoltageSource(
       voltage_out=self.output_voltage))
-    self.gnd.init_from(Ground())
+    self.enable.init_from(DigitalSink())
 
 
 class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
