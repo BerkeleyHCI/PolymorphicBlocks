@@ -20,7 +20,7 @@ trait CompilerTestUtil extends AnyFlatSpec {
     new DesignRefsValidate().validate(compiled) shouldBe empty
     new DesignAssertionCheck(compiler).map(compiled) shouldBe empty
     expectedDesign match { // toProtoString is a more readable and diff-able
-      case Some(expectedDesign) => compiled.toProtoString should equal(expectedDesign.toProtoString)
+      case Some(expectedDesign) => compiled should equal(expectedDesign)
       case _ =>
     }
     (compiler, compiled)
