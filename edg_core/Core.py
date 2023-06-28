@@ -276,7 +276,6 @@ class HasMetadata(LibraryElement):
     superclasses order is not defined (but MRO in current practice).
 
     mypy currently does not allow passing in abstract types, so generally calls to this need type: ignore."""
-
     direct_bases: Set[Type] = set()
     def process_direct_base(bcls: Type[HasMetadata.BaseType]):
       if not issubclass(bcls, base_type):

@@ -530,7 +530,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     if not isinstance(tpe, Block):
       raise TypeError(f"param to Block(...) must be Block, got {tpe} of type {type(tpe)}")
     if isinstance(tpe, BlockInterfaceMixin) and tpe._is_mixin():
-      raise TypeError("param to with_mixin must not be BlockInterfaceMixin")
+      raise TypeError("param to Block(...) must not be BlockInterfaceMixin")
     if isinstance(tpe, DesignTop):
       raise TypeError(f"param to Block(...) may not be DesignTop")
     if self._elaboration_state not in \
