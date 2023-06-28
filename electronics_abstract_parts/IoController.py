@@ -8,7 +8,7 @@ from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
 from .Categories import ProgrammableController, IdealModel
 
 
-@non_library
+@abstract_block
 class BaseIoController(PinMappable, Block):
   """An abstract IO controller block, that takes power input and provides a grab-bag of common IOs.
   A base interface for microcontrollers and microcontroller-like devices (eg, FPGAs).
@@ -239,7 +239,7 @@ class IoController(ProgrammableController, BaseIoController):
       self.gnd = self.Port(Ground.empty(), optional=True)
 
 
-class IoControllerI2s(BlockInterfaceMixin[IoController]):
+class IoControllerI2s(BlockInterfaceMixin[BaseIoController]):
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
 
