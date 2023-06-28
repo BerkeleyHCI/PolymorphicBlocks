@@ -12,11 +12,10 @@ import edgir.schema.schema
 /** API definition for a library
   */
 trait Library {
-  def getBlock(path: ref.LibraryPath): Errorable[elem.HierarchyBlock] = getBlock(path, false)
   // getBlock can't be used on blocks that have refinements, since that's data that would be discarded
-  // this internal method allows that check to be ignored for cases where the block's definition isn't relevant,
-  // for example for checking subclass relationships
-  protected def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean): Errorable[elem.HierarchyBlock]
+  // ignoreRefinements should only be used where the block's contents aren't relevant, for example for checking
+  // subclass relations
+  def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean = false): Errorable[elem.HierarchyBlock]
   def getLink(path: ref.LibraryPath): Errorable[elem.Link]
   def getPort(path: ref.LibraryPath): Errorable[IrPort]
 
@@ -59,7 +58,7 @@ class EdgirLibrary(pb: schema.Library) extends Library {
     case (path, schema.Library.NS.Val.Type.Link(link)) => (path, link)
   }
 
-  override protected def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean): Errorable[elem.HierarchyBlock] = {
+  override def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean = false): Errorable[elem.HierarchyBlock] = {
     elts.get(path) match {
       case Some(schema.Library.NS.Val.Type.HierarchyBlock(member)) => Errorable.Success(member)
       case Some(member) => Errorable.Error(s"Library element at $path not a block, got ${member.getClass}")
