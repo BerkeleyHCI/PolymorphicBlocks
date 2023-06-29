@@ -244,8 +244,8 @@ class IoController(ProgrammableController, BaseIoController):
 @non_library
 class IoControllerPowerRequired(IoController):
   """IO controller with required power pins."""
-  def __init__(self) -> None:
-    super().__init__()
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
     self.require(self.pwr.is_connected())
     self.require(self.gnd.is_connected())
 
