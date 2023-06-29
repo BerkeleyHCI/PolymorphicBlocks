@@ -32,6 +32,15 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
           "mixinPort" -> Port.Library("sinkPort"),
         )
       ),
+      Block.Block( // subclass mixin that adds a new port
+        "mixinSub",
+        superclasses = Seq("mixin"),
+        isAbstract = true,
+        ports = SeqMap(
+          "mixinPort" -> Port.Library("sinkPort"),
+          "mixinSubPort" -> Port.Library("sinkPort"),
+        )
+      ),
       Block.Block(
         "concreteBaseBlock",
         superclasses = Seq("baseBlock"),
@@ -45,6 +54,16 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
         ports = SeqMap(
           "port" -> Port.Library("sinkPort"),
           "mixinPort" -> Port.Library("sinkPort"),
+        )
+      ),
+      Block.Block(
+        "concreteMixinSubBlock",
+        superclasses = Seq("baseBlock", "mixinSub"),
+        superSuperclasses = Seq("mixin"),
+        ports = SeqMap(
+          "port" -> Port.Library("sinkPort"),
+          "mixinPort" -> Port.Library("sinkPort"),
+          "mixinSubPort" -> Port.Library("sinkPort"),
         )
       ),
     ),
@@ -280,6 +299,33 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
     compiler.getValue(IndirectDesignPath() + "block" + "port" + IndirectStep.IsConnected) should
       equal(Some(BooleanValue(true)))
     compiler.getValue(IndirectDesignPath() + "block" + "mixinPort" + IndirectStep.IsConnected) should
+      equal(Some(BooleanValue(false)))
+  }
+
+  "Compiler on design with multiple overlapping mixin and refined" should "expand blocks" in {
+    // the abstract block has both mixin and mixinSub which have overlapping port names
+    // this checks that IsConnected is properly defined and there are no errors
+    val inputDesign = Design(Block.Block(
+      "topDesign",
+      blocks = SeqMap(
+        "source" -> Block.Library("sourceBlock"),
+        "mixinSource" -> Block.Library("sourceBlock"),
+        "block" -> Block.Library("baseBlock", mixins = Seq("mixin", "mixinSub")),
+      ),
+    ))
+
+    val (compiler, compiled) = testCompile(
+      inputDesign,
+      library,
+      refinements = Refinements(
+        instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("concreteMixinSubBlock")),
+      ),
+    )
+    compiler.getValue(IndirectDesignPath() + "block" + "port" + IndirectStep.IsConnected) should
+      equal(Some(BooleanValue(false)))
+    compiler.getValue(IndirectDesignPath() + "block" + "mixinPort" + IndirectStep.IsConnected) should
+      equal(Some(BooleanValue(false)))
+    compiler.getValue(IndirectDesignPath() + "block" + "mixinSubPort" + IndirectStep.IsConnected) should
       equal(Some(BooleanValue(false)))
   }
 }

@@ -4,10 +4,23 @@ import edg.EdgirUtils.SimpleLibraryPath
 import edg.IrPort
 import edg.compiler.ExprValue
 import edg.util.Errorable
-import edg.wir.ProtoUtil.ParamProtoToSeqMap
+import edg.wir.ProtoUtil.{
+  BlockProtoToSeqMap,
+  BlockSeqMapToProto,
+  ConstraintProtoToSeqMap,
+  ConstraintSeqMapToProto,
+  LinkProtoToSeqMap,
+  LinkSeqMapToProto,
+  ParamProtoToSeqMap,
+  ParamSeqMapToProto,
+  PortProtoToSeqMap,
+  PortSeqMapToProto
+}
 import edgir.elem.elem
 import edgir.ref.ref
 import edgir.schema.schema
+
+import scala.collection.SeqMap
 
 /** API definition for a library
   */
@@ -39,12 +52,17 @@ trait Library {
           mixinBlockErrs.head
         } else {
           val mixinBlocks = mixinBlockRaw.map(_.get)
+          require(mixinBlocks.isEmpty || baseBlock.isAbstract, s"non-abstract block cannot have mixins")
+          // TODO this is not the most accurate algorithm, but this doesn't matter since mixins are only created
+          // for abstract parts or port indexing, and never in the final design (where a single concrete block is used)
           val mixedBlock = baseBlock
-            .withPorts(baseBlock.ports ++ mixinBlocks.map(_.ports).fold(Seq())(_ ++ _))
-            .withParams(baseBlock.params ++ mixinBlocks.map(_.params).fold(Seq())(_ ++ _))
-            .withBlocks(baseBlock.blocks ++ mixinBlocks.map(_.blocks).fold(Seq())(_ ++ _))
-            .withLinks(baseBlock.links ++ mixinBlocks.map(_.links).fold(Seq())(_ ++ _))
-            .withConstraints(baseBlock.constraints ++ mixinBlocks.map(_.constraints).fold(Seq())(_ ++ _))
+            .withPorts((baseBlock.ports.toSeqMap ++ mixinBlocks.map(_.ports.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withParams((baseBlock.params.toSeqMap ++ mixinBlocks.map(_.params.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withBlocks((baseBlock.blocks.toSeqMap ++ mixinBlocks.map(_.blocks.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withLinks((baseBlock.links.toSeqMap ++ mixinBlocks.map(_.links.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withConstraints((baseBlock.constraints.toSeqMap ++ mixinBlocks.map(_.constraints.toSeqMap).fold(SeqMap())(
+              _ ++ _
+            )).toPb)
           Errorable.Success(mixedBlock)
         }
     }

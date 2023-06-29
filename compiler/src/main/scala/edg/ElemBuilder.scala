@@ -94,6 +94,7 @@ object ElemBuilder {
     def Block(
         selfClass: String,
         superclasses: Seq[String] = Seq(),
+        superSuperclasses: Seq[String] = Seq(),
         defaultRefinement: Option[String] = None,
         isAbstract: Boolean = false,
         params: SeqMap[String, init.ValInit] = SeqMap(),
@@ -114,6 +115,7 @@ object ElemBuilder {
         constraints = constraints.toPb,
         selfClass = Some(LibraryPath(selfClass)),
         superclasses = superclasses.map(LibraryPath(_)),
+        superSuperclasses = superSuperclasses.map(LibraryPath(_)),
         isAbstract = isAbstract,
         defaultRefinement = defaultRefinement.map(LibraryPath(_)),
         prerefineClass = prerefine match {
