@@ -74,7 +74,7 @@ from .I2cPullup import I2cPullup
 from .UsbBitBang import UsbBitBang
 
 from .IoController import BaseIoController, IoController, BaseIoControllerPinmapGenerator, BaseIoControllerExportable
-from .IoController import IoControllerI2s
+from .IoController import IoControllerI2s, IoControllerPowerOut, IoControllerUsbOut
 from .PinMappable import PinMappable, PinMapUtil
 from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 from .VariantPinRemapper import VariantPinRemapper

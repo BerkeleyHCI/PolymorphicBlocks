@@ -309,7 +309,7 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     )
 
 
-class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoControllerI2s,
+class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoControllerUsbOut, IoControllerPowerOut, IoControllerI2s,
                              IoController, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around Esp32_Wover_Dev fitting the IoController interface
   """
@@ -319,11 +319,6 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoControllerI2s,
     super().__init__()
 
     self.ic: Freenove_Esp32s3_Wroom_Device = self.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
-
-    self.vusb_out = self.Export(self.ic.vusb, optional=True)
-    # since 3v3 and gnd can source or sink, these are connected in the generator
-    self.pwr_out = self.Port(VoltageSource.empty(), optional=True)
-    self.gnd_out = self.Port(GroundSource.empty(), optional=True)
 
     self.cam_i2c = self.Export(self.ic.cam_i2c, optional=True)
     self.ws2812 = self.Export(self.ic.ws2812, optional=True)
