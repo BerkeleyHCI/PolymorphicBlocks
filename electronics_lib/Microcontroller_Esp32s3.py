@@ -322,9 +322,6 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoControllerUsbOut
 
     self.ic: Freenove_Esp32s3_Wroom_Device = self.Block(Freenove_Esp32s3_Wroom_Device(pin_assigns=ArrayStringExpr()))
 
-    self.cam_i2c = self.Export(self.ic.cam_i2c, optional=True)
-    self.ws2812 = self.Export(self.ic.ws2812, optional=True)
-
     self.generator_param(self.gnd.is_connected())
     self.generator_param(self.gnd_out.is_connected())
 
@@ -354,6 +351,8 @@ class Freenove_Esp32s3_Wroom(Microcontroller, Radiofrequency, IoControllerUsbOut
         current_limits=UsbConnector.USB2_CURRENT_LIMITS
       ))
       self.connect(self.pwr_source.pwr, self.ic.pwr, self.pwr_out)
+
+      self.connect(self.vusb_out, self.ic.vusb)
 
       self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
       self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")
