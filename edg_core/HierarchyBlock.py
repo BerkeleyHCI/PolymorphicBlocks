@@ -384,6 +384,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     assert self._parent is not None
 
     elt = tpe._bind(self._parent)
+    self._parent.manager.add_alias(elt, self)
     self._mixins.append(elt)
 
     return elt

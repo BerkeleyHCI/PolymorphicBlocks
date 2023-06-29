@@ -268,7 +268,7 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     # 'GPIO20': '23',  # USB_D-
     'GPIO21': '24',
     'SPICLK_P': '25',  # GPIO47
-    # 'SPICLK_N': '26',  # GPIO48, internal WS2812
+    'SPICLK_N': '26',  # GPIO48, internal WS2812
     # 'GPIO45': '27',  # strapping pin, VDD_SPI
     # 'GPIO35': '29',  # PSRAM
     # 'GPIO36': '30',  # PSRAM
@@ -282,11 +282,16 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     'GPIO1': '38',
   }
 
+  def _io_pinmap(self) -> PinMapUtil:  # allow the camera I2C pins to be used externally
+    return super()._io_pinmap().add([
+      PeripheralFixedPin('CAM_SCCB', I2cMaster(self._dio_model, has_pullup=True), {
+        'scl': '4', 'sda': '3'
+      })
+    ])
+
   def __init__(self, **kawrgs) -> None:
     super().__init__(**kawrgs)
 
-    self.cam_i2c = self.Port(I2cMaster(self._dio_model, has_pullup=True), optional=True)
-    self.ws2812 = self.Port(self._dio_model, optional=True)
     self.vusb = self.Port(VoltageSource(
       voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
       current_limits=UsbConnector.USB2_CURRENT_LIMITS
@@ -297,9 +302,6 @@ class Freenove_Esp32s3_Wroom_Device(Esp32s3_Device, FootprintBlock):
     self.assign(self.has_chip_pu, False)
 
     pinning = self._make_pinning()  # add optional output pins
-    pinning['4'] = self.cam_i2c.scl
-    pinning['3'] = self.cam_i2c.sda
-    pinning['26'] = self.ws2812
     pinning['20'] = self.vusb
 
     self.footprint(

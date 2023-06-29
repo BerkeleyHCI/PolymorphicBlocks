@@ -229,6 +229,10 @@ class PinMapUtil:
     self.resources = resources
     self.transforms = DefaultPortTransforms if transforms is None else transforms
 
+  def add(self, additional_resources: List[BasePinMapResource]) -> 'PinMapUtil':
+    """Returns a new PinMapUtil with additional resources."""
+    return PinMapUtil(self.resources + additional_resources, self.transforms)
+
   def remap_pins(self, pinmap: Dict[str, str]) -> 'PinMapUtil':
     """Returns a new PinMapUtil with pin names remapped according to the argument dict. Useful for a chip series
     to define a generic pin mapping using pin names, and then remap those to pin numbers for specific packages.

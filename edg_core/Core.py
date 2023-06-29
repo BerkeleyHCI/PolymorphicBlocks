@@ -81,12 +81,16 @@ class SubElementDict(Generic[ElementType]):
 class SubElementManager:
   def __init__(self) -> None:
     self.dicts: List[Tuple[Union[Type, Tuple[Type, ...]], SubElementDict]] = []
+    self.aliases = IdentityDict()
 
   def new_dict(self, filter_type: Union[Type[ElementType], Tuple[Type[ElementType], ...]],
                anon_prefix: Optional[str] = None) -> SubElementDict[ElementType]:
     sub_dict = SubElementDict[ElementType](anon_prefix)
     self.dicts.append((filter_type, sub_dict))
     return sub_dict
+
+  def add_alias(self, src: Any, target: Any):
+    self.aliases[src] = target
 
   def add_element(self, name: str, item: Any) -> None:
     if isinstance(item, ElementDict):
@@ -100,6 +104,8 @@ class SubElementManager:
       assert len(assigned) <= 1, f"assigned {item} to multiple SubElementDict {assigned}"
 
   def name_of(self, item: Any) -> Optional[str]:
+    if item in self.aliases:
+      item = self.aliases[item]
     name_candidates = [sub_dict.name_of(item) for sub_dict_type, sub_dict in self.dicts]
     name_candidates_filtered = [name_candidate for name_candidate in name_candidates if name_candidate is not None]
     assert len(name_candidates_filtered) <= 1, f"more than 1 name candidates {name_candidates} for {item}"
