@@ -81,7 +81,7 @@ class SubElementDict(Generic[ElementType]):
 class SubElementManager:
   def __init__(self) -> None:
     self.dicts: List[Tuple[Union[Type, Tuple[Type, ...]], SubElementDict]] = []
-    self.aliases = IdentityDict()
+    self.aliases = IdentityDict[Any, Any]()
 
   def new_dict(self, filter_type: Union[Type[ElementType], Tuple[Type[ElementType], ...]],
                anon_prefix: Optional[str] = None) -> SubElementDict[ElementType]:
