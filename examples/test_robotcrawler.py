@@ -25,6 +25,7 @@ class ServoFeedbackConnector(Connector, Block):
     )), [Common])
 
 
+@abstract_block
 class RobotCrawlerSpec(BoardTop):
   """Example spec for a robot crawler, that defines the needed interface blocks but no connections
   or infrastructure parts"""

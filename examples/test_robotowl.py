@@ -131,7 +131,7 @@ class RobotOwl(JlcBoardTop):
           'ws2812=26',  # WS2812
           'oled=CAM_SCCB',
         ]),
-        (['mcu', 'ic', 'fp_footprint'], 'edg:Freenove_ESP32S3-WROOM_Expansion'),
+        (['mcu', 'fp_footprint'], 'edg:Freenove_ESP32S3-WROOM_Expansion'),
         (['mcu', 'vusb_out', 'current_limits'], Range(0, 3)),
 
         (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),

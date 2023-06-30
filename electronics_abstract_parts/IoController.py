@@ -234,8 +234,8 @@ class IoControllerI2s(BlockInterfaceMixin[BaseIoController]):
 @abstract_block_default(lambda: IdealIoController)
 class IoController(ProgrammableController, BaseIoController):
   """An abstract, generic IO controller with optional common IOs and power ports."""
-  def __init__(self) -> None:
-    super().__init__()
+  def __init__(self, *awgs, **kwargs) -> None:
+    super().__init__(*awgs, **kwargs)
 
     self.pwr = self.Port(VoltageSink.empty(), [Power], optional=True)
     self.gnd = self.Port(Ground.empty(), [Common], optional=True)
