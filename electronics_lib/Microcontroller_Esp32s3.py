@@ -12,10 +12,15 @@ class Esp32s3_Ios(IoControllerI2s, BaseIoControllerPinmapGenerator):
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
   @abstractmethod
-  def _generator_gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    """Returns GND and VDDIO (either can be VoltageSink or VoltageSource). Only called within a generator.
-    No side effects, idempotent."""
+  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+    """Returns GND and VDDIO (either can be VoltageSink or VoltageSource)."""
     ...
+
+  def _vdd_model(self) -> VoltageSink:
+    return VoltageSink(  # assumes single-rail module
+      voltage_limits=(3.0, 3.6)*Volt,  # table 4-2
+      current_draw=(0.001, 355)*mAmp + self.io_current_draw.upper()  # from power off (table 4-8) to RF working (table 12 on WROOM datasheet)
+    )
 
   def _dio_model(self, gnd: Port[VoltageLink], pwr: Port[VoltageLink]) -> DigitalBidir:
     """Returns a digital IO model. Only called within a generator."""
@@ -27,14 +32,8 @@ class Esp32s3_Ios(IoControllerI2s, BaseIoControllerPinmapGenerator):
       pullup_capable=True, pulldown_capable=True,
     )
 
-  def _vdd_model(self) -> VoltageSink:
-    return VoltageSink(  # assumes single-rail module
-      voltage_limits=(3.0, 3.6)*Volt,  # table 4-2
-      current_draw=(0.001, 355)*mAmp + self.io_current_draw.upper()  # from power off (table 4-8) to RF working (table 12 on WROOM datasheet)
-    )
-
   def _io_pinmap(self) -> PinMapUtil:
-    gnd, pwr = self._generator_gnd_vddio()
+    gnd, pwr = self._gnd_vddio()
     dio_model = self._dio_model(gnd, pwr)
 
     adc_model = AnalogSink.from_supply(gnd, pwr)  # table 4-5, no other specs given
@@ -128,7 +127,7 @@ class Esp32s3_Ios(IoControllerI2s, BaseIoControllerPinmapGenerator):
 
 
 @abstract_block
-class Esp32s3_Device(Esp32s3_Ios, IoController, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Esp32s3_Device(Esp32s3_Ios, IoController, InternalSubcircuit, GeneratorBlock):
   """Base class for ESP32-S3 series microcontrollers with WiFi and Bluetooth (classic and LE)
   and AI acceleration
 
@@ -136,7 +135,7 @@ class Esp32s3_Device(Esp32s3_Ios, IoController, InternalSubcircuit, GeneratorBlo
   """
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
 
-  def _generator_gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
     return self.gnd, self.pwr
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
@@ -246,7 +245,8 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, IoControllerI2s, HasEspPr
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
 
 
-class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, IoController, Esp32s3_Ios, FootprintBlock):
+class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, IoController, Esp32s3_Ios, GeneratorBlock,
+                             FootprintBlock):
   """Freenove ESP32S3 WROOM breakout breakout with camera.
 
   Board pinning: https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board/blob/main/ESP32S3_Pinout.png
@@ -296,7 +296,7 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, IoControl
     'GPIO1': '38',
   }
 
-  def _generator_gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
     if self.get(self.gnd.is_connected()):  # board sinks power
       return self.gnd, self.pwr
     else:
@@ -321,7 +321,7 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, IoControl
       }).remap(self.SYSTEM_PIN_REMAP)
 
   def _io_pinmap(self) -> PinMapUtil:  # allow the camera I2C pins to be used externally
-    gnd, pwr = self._generator_gnd_vddio()
+    gnd, pwr = self._gnd_vddio()
     return super()._io_pinmap().add([
       PeripheralFixedPin('CAM_SCCB', I2cMaster(self._dio_model(gnd, pwr), has_pullup=True), {
         'scl': '4', 'sda': '3'

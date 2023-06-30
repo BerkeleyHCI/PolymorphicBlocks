@@ -1,72 +1,65 @@
+from abc import abstractmethod
 from typing import *
 
 from electronics_abstract_parts import *
 
 
 @abstract_block
-class Stm32f303Base_Device(Microcontroller, BaseIoControllerPinmapGenerator):
+class Stm32f303_Ios(BaseIoControllerPinmapGenerator):
   """Base class for STM32F303 devices.
   Unlike other microcontrollers, this one also supports dev boards (Nucleo-32) which can be
   a power source, so there's a bit more complexity here."""
-  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]
   RESOURCE_PIN_REMAP: Dict[str, str]
 
-  def __init__(self):
-    super().__init__()
+  @abstractmethod
+  def _gnd_vddio_vdda(self) -> Tuple[Port[VoltageLink], Port[VoltageLink], Port[VoltageLink]]:
+    """Returns GND, VDDIO, VDDA (either can be VoltageSink or VoltageSource)."""
+    ...
 
-    # this provides a layer of indirection to allow power to be either a sink or source,
-    # based on whether this is a chip or dev board
-    self._gnd: CircuitPort[VoltageLink]
-    self._vdd: CircuitPort[VoltageLink]
-    self._vdda: CircuitPort[VoltageLink]
-
-  def _system_pinmap(self) -> Dict[str, CircuitPort]:
-    return VariantPinRemapper({
-      # TODO remapping currently doesn't work for these which are chip-only (not on dev board) pins
-      # 'Vbat': self._vdd,
-      # 'VddA': self._vdda,
-      # 'VssA': self._gnd,
-      'Vss': self._gnd,
-      'Vdd': self._vdd,
-      # 'BOOT0': self._gnd,
-    }).remap(self.SYSTEM_PIN_REMAP)
+  def _vdd_model(self) -> VoltageSink:
+    return VoltageSink(  # assumes single-rail module
+      voltage_limits=(2, 3.6)*Volt,  # table 19
+      current_draw=(0.00055, 80)*mAmp + self.io_current_draw.upper()  # table 25 Idd standby to max
+    )
 
   def _io_pinmap(self) -> PinMapUtil:
     """Returns the mappable for a STM32F303 device with the input power and ground references.
     This allows a shared definition between discrete chips and microcontroller boards"""
     # these are common to all IO blocks
+    gnd, vdd, vdda = self._gnd_vddio_vdda()
+
     input_threshold_factor = (0.3, 0.7)  # TODO relaxed (but more complex) bounds available for different IO blocks
     current_limits = (-20, 20)*mAmp  # Section 6.3.14, TODO loose with relaxed VOL/VOH
     dio_tc_model = DigitalBidir.from_supply(
-      self._gnd, self._vdd,
+      gnd, vdd,
       voltage_limit_abs=(-0.3, 0.3) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tc_switch_model = DigitalBidir.from_supply(
-      self._gnd, self._vdd,
+      gnd, vdd,
       voltage_limit_abs=(-0.3, 0.3) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=(-3, 0),  # Table 13, note 1, can sink 3 mA and should not source current
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tt_model = DigitalBidir.from_supply(
-      self._gnd, self._vdd,
+      gnd, vdd,
       voltage_limit_abs=(-0.3, 3.6) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tta_model = DigitalBidir.from_supply(
-      self._gnd, self._vdd,
-      voltage_limit_abs=(-0.3 * Volt, self._vdda.link().voltage.lower() + 0.3 * Volt),  # Table 19
+      gnd, vdd,
+      voltage_limit_abs=(-0.3 * Volt, vdda.link().voltage.lower() + 0.3 * Volt),  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_ft_model = DigitalBidir.from_supply(
-      self._gnd, self._vdd,
+      gnd, vdd,
       voltage_limit_abs=(-0.3, 5.5) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
@@ -74,7 +67,7 @@ class Stm32f303Base_Device(Microcontroller, BaseIoControllerPinmapGenerator):
     )
     dio_ftf_model = dio_ft_model
     dio_boot0_model = DigitalBidir.from_supply(
-      self._gnd, self._vdd,
+      gnd, vdd,
       voltage_limit_abs=(-0.3, 5.5) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
@@ -165,11 +158,31 @@ class Stm32f303Base_Device(Microcontroller, BaseIoControllerPinmapGenerator):
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
 
-class Nucleo_F303k8(Stm32f303Base_Device, GeneratorBlock, FootprintBlock):
+@abstract_block
+class Stm32f303_Device(Stm32f303_Ios, IoController, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+  """STM32F303 chip.
+  TODO IMPLEMENT ME"""
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]
+
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return VariantPinRemapper({
+      # 'Vbat': self.vdd,
+      # 'VddA': self.vdda,
+      # 'VssA': self.gnd,
+      'Vss': self.gnd,
+      'Vdd': self.pwr
+      # 'BOOT0': self.gnd,
+    }).remap(self.SYSTEM_PIN_REMAP)
+
+
+class Nucleo_F303k8(IoControllerUsbOut, IoControllerPowerOut, IoController, Stm32f303_Ios, GeneratorBlock,
+                    FootprintBlock):
   """Nucleo32 F303K8 configured as power source from USB."""
-  SYSTEM_PIN_REMAP = {
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vss': ['4', '17'],
     'Vdd': '29',
+    'Vusb': '19',
+    'Vin': '16',
   }
   RESOURCE_PIN_REMAP = {
     'PA9': '1',  # CN3.1, D1
@@ -199,39 +212,54 @@ class Nucleo_F303k8(Stm32f303Base_Device, GeneratorBlock, FootprintBlock):
     'PB3': '30',  # CN4.15, D13
   }
 
+  def _gnd_vddio_vdda(self) -> Tuple[Port[VoltageLink], Port[VoltageLink], Port[VoltageLink]]:
+    if self.get(self.gnd.is_connected()):  # board sinks power
+      return self.gnd, self.pwr, self.pwr
+    else:
+      return self.gnd_out, self.pwr_out, self.pwr_out
+
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    if self.get(self.gnd.is_connected()):  # board sinks power
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
+      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
+      return VariantPinRemapper({
+        'Vdd': self.pwr,
+        'Vss': self.gnd,
+      }).remap(self.SYSTEM_PIN_REMAP)
+    else:  # board sources power (default)
+      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
+      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")
+      return VariantPinRemapper({
+        'Vdd': self.pwr_out,
+        'Vss': self.gnd_out,
+        'Vusb': self.vusb_out,
+      }).remap(self.SYSTEM_PIN_REMAP)
+
   def __init__(self):
     super().__init__()
 
-    self.pwr_5v = self.Port(VoltageSource(
+    self.gnd.init_from(Ground())
+    self.pwr.init_from(self._vdd_model())
+
+    self.gnd_out.init_from(GroundSource())
+    self.vusb_out.init_from(VoltageSource(
       voltage_out=(4.75 - 0.58, 5.1) * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
       current_limits=(0, 0.5) * Amp  # max USB draw  # TODO higher from external power
-    ), optional=True)
-    self.pwr_in = self.Port(VoltageSink(
-      voltage_limits=(5.1 + 1.2 + 0.58, 15) * Volt,  # lower from 5v out + LD1117S50TR dropout + BAT60JFILM diode
-      # TODO can be lower if don't need 5.0v out
-      current_draw=(0, 0) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
-    ), optional=True)
-    self.pwr_3v3 = self.Port(VoltageSource(
+    ))
+    self.pwr_out.init_from(VoltageSource(
       voltage_out=3.3 * Volt(tol=0.03),  # LD39050PU33R worst-case Vout accuracy
       current_limits=(0, 0.5) * Amp  # max USB current draw, LDO also guarantees 500mA output current
-    ), optional=True)
-    self.gnd = self.Port(GroundSource(), optional=True)
+    ))
 
-    self._vdd = self.pwr_3v3
-    self._vdda = self.pwr_3v3
-    self._gnd = self.gnd
+    self.generator_param(self.gnd.is_connected())
 
   def generate(self) -> None:
     super().generate()
 
-    footprint_pinning = self._make_pinning()
-    footprint_pinning.update({  # the 5v+ input and Vbus out are Nucleo-32 specific
-      '16': self.pwr_in,
-      '19': self.pwr_5v,
-    })
     self.footprint(
       'U', 'edg:Nucleo32',
-      footprint_pinning,
+      self._make_pinning(),
       mfr='STMicroelectronics', part='NUCLEO-F303K8',
       datasheet='https://www.st.com/resource/en/user_manual/dm00231744.pdf',
     )

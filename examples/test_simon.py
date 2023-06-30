@@ -35,10 +35,13 @@ class Simon(BoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.mcu = self.Block(Nucleo_F303k8())
-    self.v5v = self.connect(self.mcu.pwr_5v)
-    self.v3v3 = self.connect(self.mcu.pwr_3v3)
-    self.gnd = self.connect(self.mcu.gnd)
+    self.mcu = self.Block(IoController())
+    mcu_pwr = self.mcu.with_mixin(IoControllerPowerOut())
+    mcu_usb = self.mcu.with_mixin(IoControllerUsbOut())
+
+    self.v5v = self.connect(mcu_usb.vusb_out)
+    self.v3v3 = self.connect(mcu_pwr.pwr_out)
+    self.gnd = self.connect(mcu_pwr.gnd_out)
 
     with self.implicit_connect(
         ImplicitConnect(self.v5v, [Power]),
@@ -120,6 +123,7 @@ class Simon(BoardTop):
         (['btn_drv[3]', 'drv', 'footprint_spec'], ParamValue(['btn_drv[0]', 'drv', 'footprint_spec'])),
       ],
       instance_refinements=[
+        (['mcu'], Nucleo_F303k8),
         (['spk', 'conn'], JstPhKVertical),
       ],
       class_refinements=[
