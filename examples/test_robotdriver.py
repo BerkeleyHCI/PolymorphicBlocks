@@ -43,7 +43,7 @@ class LedConnector(Connector, Block):
     self.vdd = self.Export(self.conn.pins.request('1').adapt_to(VoltageSink(
       current_draw=(0*mAmp, led_current*num_leds))),
       [Power])
-    self.din = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink()))
+    self.din = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink()), [Input])
     self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()), [Common])
 
 

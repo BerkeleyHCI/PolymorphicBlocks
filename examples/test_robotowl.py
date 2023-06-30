@@ -101,11 +101,11 @@ class RobotOwl(JlcBoardTop):
           imp.Block(PwmConnector((0, 200)*mAmp))
         )
 
-      self.ws2812bArray = imp.Block(NeopixelArray(12))
-      self.extNeopixels = imp.Block(LedConnector())
-      self.connect(self.mcu.gpio.request('ws2812'), self.ws2812bArray.din)
-      self.connect(self.ws2812bArray.dout, self.extNeopixels.din)
-
+      (self.ws2812bArray, self.extNeopixels), _ = self.chain(
+        self.mcu.gpio.request('ws2812'),
+        imp.Block(NeopixelArray(12)),
+        imp.Block(LedConnector())
+      )
 
     # Mounting holes
     self.m = ElementDict[MountingHole]()
