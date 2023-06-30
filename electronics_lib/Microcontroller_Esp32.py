@@ -119,7 +119,7 @@ class Esp32_Ios(IoControllerI2s, BaseIoControllerPinmapGenerator):
 
 
 @abstract_block
-class Esp32_Device(Esp32_Ios, IoController, InternalSubcircuit, GeneratorBlock):
+class Esp32_Base(Esp32_Ios, IoController, InternalSubcircuit, GeneratorBlock):
   """Base class for ESP32 series microcontrollers with WiFi and Bluetooth (classic and LE)
 
   Chip datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
@@ -162,7 +162,7 @@ class Esp32_Device(Esp32_Ios, IoController, InternalSubcircuit, GeneratorBlock):
     }).remap(self.SYSTEM_PIN_REMAP)
 
 
-class Esp32_Wroom_32_Device(IoControllerPowerRequired, Esp32_Device, FootprintBlock, JlcPart):
+class Esp32_Wroom_32_Device(IoControllerPowerRequired, Esp32_Base, FootprintBlock, JlcPart):
   """ESP32-WROOM-32 module
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf
