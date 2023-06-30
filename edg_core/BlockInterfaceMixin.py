@@ -74,5 +74,6 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
         """Wrap implementation definitions (where MixinBaseType is required) in this. This is only called
         in a concrete class, and ignored when the standalone mixin is instantiated."""
         if not self._is_mixin():
-            assert isinstance(self, self._get_mixin_base())
+            assert isinstance(self, self._get_mixin_base()),\
+                f"self {self.__class__} not instance of base {self._get_mixin_base()}"
             fn(self)  # type: ignore

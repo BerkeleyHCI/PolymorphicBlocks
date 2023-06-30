@@ -246,7 +246,7 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, IoControllerI2s, HasEspPr
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
 
 
-class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_Ios, FootprintBlock):
+class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, IoController, Esp32s3_Ios, FootprintBlock):
   """Freenove ESP32S3 WROOM breakout breakout with camera.
 
   Board pinning: https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board/blob/main/ESP32S3_Pinout.png
@@ -255,6 +255,9 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_I
   Up is defined from the text orientation (antenna is on top).
   """
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    'VDD': '1',
+    'GND': '21',
+    'VUSB': '20',
   }
   RESOURCE_PIN_REMAP = {
     # 'GPIO4': '3',  # CAM_SIOD
@@ -299,7 +302,23 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_I
     else:
       return self.gnd_out, self.pwr_out
 
-
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    if self.get(self.gnd.is_connected()):  # board sinks power
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
+      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
+      return VariantPinRemapper({
+        'VDD': self.pwr,
+        'GND': self.gnd,
+      }).remap(self.SYSTEM_PIN_REMAP)
+    else:  # board sources power (default)
+      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
+      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")
+      return VariantPinRemapper({
+        'VDD': self.pwr_out,
+        'GND': self.gnd_out,
+        'VUSB': self.vusb_out,
+      }).remap(self.SYSTEM_PIN_REMAP)
 
   def _io_pinmap(self) -> PinMapUtil:  # allow the camera I2C pins to be used externally
     gnd, pwr = self._generator_gnd_vddio()
@@ -330,23 +349,8 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_I
   def generate(self) -> None:
     super().generate()
 
-    pinning = self._make_pinning()  # add optional output pins
-    pinning['20'] = self.vusb_out
-
-    if self.get(self.gnd.is_connected()):  # board sinks power
-      pinning['1'] = self.pwr
-      pinning['21'] = self.gnd
-      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
-      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
-      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
-    else:  # board sources power (default)
-      pinning['1'] = self.pwr_out
-      pinning['21'] = self.gnd_out
-      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
-      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")
-
     self.footprint(
       'U', 'edg:Freenove_ESP32-WROVER',
-      pinning,
+      self._make_pinning(),
       mfr='', part='Freenove ESP32S3-WROOM',
     )
