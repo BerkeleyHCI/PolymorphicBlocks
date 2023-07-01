@@ -960,7 +960,6 @@
 (nets
 (net (code 1) (name "vbatt")
   (node (ref tp_vbatt) (pin 1))
-  (node (ref reg_3v3.ic) (pin 1))
   (node (ref reg_3v3.ic) (pin 4))
   (node (ref spk_drv.ic) (pin 1))
   (node (ref spk_drv.ic) (pin 6))
@@ -976,6 +975,7 @@
   (node (ref motor_driver2.ic) (pin 1))
   (node (ref servo) (pin 2))
   (node (ref isense.sense) (pin 2))
+  (node (ref reg_3v3.ic) (pin 1))
   (node (ref motor_driver1.vcp_cap) (pin 2))
   (node (ref motor_driver2.vcp_cap) (pin 2))
   (node (ref spk_drv.pwr_cap) (pin 1))
