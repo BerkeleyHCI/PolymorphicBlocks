@@ -7,7 +7,12 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @non_library
-class Esp32_Ios(IoControllerI2s, BaseIoControllerPinmapGenerator):
+class Esp32_Interfaces(IoControllerI2s, IoControllerWifi, IoControllerBle, IoControllerBluetooth, BaseIoController):
+  """Defines base interfaces for ESP32 microcontrollers"""
+
+
+@non_library
+class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
   @abstractmethod
@@ -218,7 +223,7 @@ class Esp32_Wroom_32_Device(IoControllerPowerRequired, Esp32_Base, FootprintBloc
     )
 
 
-class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, IoControllerPowerRequired,
+class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Esp32_Interfaces, IoControllerPowerRequired,
                      BaseIoControllerExportable):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
   NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.

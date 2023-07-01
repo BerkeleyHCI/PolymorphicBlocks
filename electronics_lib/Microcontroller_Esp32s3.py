@@ -7,7 +7,12 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @non_library
-class Esp32s3_Ios(IoControllerI2s, BaseIoControllerPinmapGenerator):
+class Esp32s3_Interfaces(IoControllerI2s, IoControllerWifi, IoControllerBle, BaseIoController):
+  """Defines base interfaces for ESP32S3 microcontrollers"""
+
+
+@non_library
+class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
   """IOs definitions independent of infrastructural (e.g. power) pins."""
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
@@ -126,7 +131,7 @@ class Esp32s3_Ios(IoControllerI2s, BaseIoControllerPinmapGenerator):
 
 
 @abstract_block
-class Esp32s3_Base(Esp32s3_Ios, IoController, InternalSubcircuit, GeneratorBlock):
+class Esp32s3_Base(Esp32s3_Ios, IoControllerPowerRequired, InternalSubcircuit, GeneratorBlock):
   """Base class for ESP32-S3 series microcontrollers with WiFi and Bluetooth (classic and LE)
   and AI acceleration
 
@@ -161,7 +166,7 @@ class Esp32s3_Base(Esp32s3_Ios, IoController, InternalSubcircuit, GeneratorBlock
     self.uart0 = self.Port(UartPort(dio_model), optional=True)  # programming
 
 
-class Esp32s3_Wroom_1_Device(IoControllerPowerRequired, Esp32s3_Base, FootprintBlock, JlcPart):
+class Esp32s3_Wroom_1_Device(Esp32s3_Base, IoControllerPowerRequired, FootprintBlock, JlcPart):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'VDD': '2',
     'GND': ['1', '40', '41'],  # 41 is EP
@@ -222,8 +227,8 @@ class Esp32s3_Wroom_1_Device(IoControllerPowerRequired, Esp32s3_Base, FootprintB
     )
 
 
-class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, IoControllerI2s, HasEspProgramming,
-                      IoControllerPowerRequired, BaseIoControllerExportable):
+class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Esp32s3_Interfaces, IoControllerPowerRequired,
+                      BaseIoControllerExportable):
   """ESP32-S3-WROOM-1 module
   """
   def contents(self) -> None:
@@ -244,7 +249,7 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, IoControllerI2s, HasEspPr
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
 
 
-class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, IoController, Esp32s3_Ios, GeneratorBlock,
+class Freenove_Esp32s3_Wroom(IoControllerUsbOut, Esp32s3_Ios, IoControllerPowerOut, IoController, GeneratorBlock,
                              FootprintBlock):
   """Freenove ESP32S3 WROOM breakout breakout with camera.
 
