@@ -7,7 +7,7 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @non_library
-class Esp32_Interfaces(IoControllerI2s, IoControllerWifi, IoControllerBle, IoControllerBluetooth, BaseIoController):
+class Esp32_Interfaces(IoControllerDvp8, IoControllerI2s, IoControllerWifi, IoControllerBle, IoControllerBluetooth, BaseIoController):
   """Defines base interfaces for ESP32 microcontrollers"""
 
 
@@ -56,6 +56,7 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
     i2c_model = I2cMaster(DigitalBidir.empty())  # section 4.1.11, 100/400kHz and up to 5MHz
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI
     i2s_model = I2sController(DigitalBidir.empty())
+    dvp8_model = Dvp8Host(DigitalBidir.empty())
 
     return PinMapUtil([  # section 2.2, table 1
       # VDD3P3_RTC
@@ -119,6 +120,8 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
 
       PeripheralAnyResource('I2S0', i2s_model),  # while CLK is restricted pinning, SCK = BCK here
       PeripheralAnyResource('I2S1', i2s_model),
+
+      PeripheralAnyResource('DVP', dvp8_model),  # TODO this also eats an I2S port, also available as 16-bit
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
 

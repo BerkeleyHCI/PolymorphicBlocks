@@ -29,7 +29,7 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Block):
                                              )
         do_model = DigitalSource.from_bidir(dio_model)
         di_model = DigitalSink.from_bidir(dio_model)
-        # TODO this should be a DVP interface, but needs support for nested port arrays
+
         self.y = self.Port(Vector(DigitalSource.empty()))
         self.connect(self.y.append_elt(DigitalSource.empty(), '0'), self.conn.pins.request('1').adapt_to(do_model))
         self.connect(self.y.append_elt(DigitalSource.empty(), '1'), self.conn.pins.request('2').adapt_to(do_model))
@@ -72,11 +72,7 @@ class Ov2640_Fpc24(Sensor, GeneratorBlock):
         self.pwr_analog = self.Export(self.device.avdd)
         self.pwr_digital = self.Export(self.device.dvdd)
 
-        self.y = self.Export(self.device.y)
-        self.pclk = self.Export(self.device.pclk)
-        self.xclk = self.Export(self.device.xclk)
-        self.href = self.Export(self.device.href)
-        self.vsync = self.Export(self.device.vsync)
+        self.dvp8 = self.Port(Dvp8Camera())
 
         self.sio = self.Export(self.device.sio)
 
@@ -88,14 +84,27 @@ class Ov2640_Fpc24(Sensor, GeneratorBlock):
         super().contents()
         self.dovdd_cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))\
             .connected(self.device.dgnd, self.device.dovdd)
-        self.pclk_cap = self.Block(Capacitor(capacitance=15*pFarad(tol=0.2), voltage=self.pclk.link().voltage))
-        self.connect(self.pclk_cap.neg.adapt_to(Ground()), self.gnd)
-        self.connect(self.pclk_cap.pos.adapt_to(DigitalSink()), self.pclk)
 
         self.reset_pull = self.Block(PullupResistor(10*kOhm(tol=0.05))).connected(self.pwr, self.device.reset)
         self.reset_cap = self.Block(Capacitor(capacitance=0.1*uFarad(tol=0.2), voltage=self.pwr.link().voltage))
         self.connect(self.reset_cap.neg.adapt_to(Ground()), self.gnd)
         self.connect(self.reset_cap.pos.adapt_to(DigitalSink()), self.device.reset)
+
+        self.connect(self.dvp8.xclk, self.device.xclk)
+        self.pclk_cap = self.Block(Capacitor(capacitance=15*pFarad(tol=0.2), voltage=self.device.pclk.link().voltage))
+        self.connect(self.pclk_cap.neg.adapt_to(Ground()), self.gnd)
+        self.connect(self.dvp8.pclk, self.pclk_cap.pos.adapt_to(DigitalSink()), self.device.pclk)
+        self.connect(self.dvp8.href, self.device.href)
+        self.connect(self.dvp8.vsync, self.device.vsync)
+        self.connect(self.dvp8.y0, self.device.y.request('2'))
+        self.connect(self.dvp8.y1, self.device.y.request('3'))
+        self.connect(self.dvp8.y2, self.device.y.request('4'))
+        self.connect(self.dvp8.y3, self.device.y.request('5'))
+        self.connect(self.dvp8.y4, self.device.y.request('6'))
+        self.connect(self.dvp8.y5, self.device.y.request('7'))
+        self.connect(self.dvp8.y6, self.device.y.request('8'))
+        self.connect(self.dvp8.y7, self.device.y.request('9'))
+
 
     def generate(self):
         super().generate()

@@ -105,17 +105,15 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      mcu_dvp = self.mcu.with_mixin(IoControllerDvp8())
+
       self.cam = imp.Block(Ov2640_Fpc24())
       self.connect(self.cam.pwr, self.v3v3)
       self.connect(self.cam.pwr_analog, self.v2v5)
       self.connect(self.cam.pwr_digital, self.v1v2)
 
-      for i in range(2, 10):  # TODO need a request_vector(elts)
-        self.connect(self.cam.y.request(str(i)), self.mcu.gpio.request(f"y[{i}]"))
-      self.connect(self.cam.pclk, self.mcu.gpio.request('pclk'))
-      self.connect(self.cam.xclk, self.mcu.gpio.request('xclk'))
-      self.connect(self.cam.href, self.mcu.gpio.request('href'))
-      self.connect(self.cam.vsync, self.mcu.gpio.request('vsync'))
+      self.connect(mcu_dvp.dvp8.request('cam'), self.cam.dvp8)
+
       self.connect(self.cam.sio, self.i2c)
 
     # VBATT DOMAIN
@@ -170,18 +168,18 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
           'ledg=34',
           'ledb=35',
 
-          'y[4]=25',
-          'y[3]=24',
-          'y[5]=23',
-          'y[2]=22',
-          'y[6]=21',
-          'pclk=20',
-          'y[7]=19',
-          'y[8]=18',
-          'xclk=17',
-          'y[9]=15',
-          'href=14',
-          'vsync=13',
+          'cam.y2=25',
+          'cam.y1=24',
+          'cam.y3=23',
+          'cam.y0=22',
+          'cam.y4=21',
+          'cam.pclk=20',
+          'cam.y5=19',
+          'cam.y6=18',
+          'cam.xclk=17',
+          'cam.y7=15',
+          'cam.href=14',
+          'cam.vsync=13',
 
           'oled_reset=8',
         ]),

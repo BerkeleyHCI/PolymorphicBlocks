@@ -47,6 +47,7 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
     i2c_model = I2cMaster(DigitalBidir.empty())  # section 3.5.6, 100/400kHz and up to 800kbit/s
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI, up to 1Mbit/s
     i2s_model = I2sController(DigitalBidir.empty())
+    dvp8_model = Dvp8Host(DigitalBidir.empty())
 
     return PinMapUtil([  # table 2-1 for overview, table 3-3 for remapping, table 2-4 for ADC
       # VDD3P3_RTC domain
@@ -123,6 +124,7 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
       PeripheralAnyResource('TWAI', can_model),
       PeripheralAnyResource('I2S0', i2s_model),
       PeripheralAnyResource('I2S1', i2s_model),
+      PeripheralAnyResource('DVP', dvp8_model),  # TODO this also eats an I2S port, also available as 16-bit
 
       PeripheralFixedResource('USB', UsbDevicePort.empty(), {
         'dp': ['GPIO20'], 'dm': ['GPIO19']

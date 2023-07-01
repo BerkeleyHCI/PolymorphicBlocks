@@ -10,6 +10,14 @@ class IoControllerI2s(BlockInterfaceMixin[BaseIoController]):
         self.implementation(lambda base: base._io_ports.insert(0, self.i2s))
 
 
+class IoControllerDvp8(BlockInterfaceMixin[BaseIoController]):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.dvp8 = self.Port(Vector(Dvp8Host.empty()), optional=True)
+        self.implementation(lambda base: base._io_ports.insert(0, self.dvp8))
+
+
 class IoControllerWifi(BlockInterfaceMixin[BaseIoController]):
     """Mixin indicating this IoController has programmable WiFi. Does not expose any ports."""
 
