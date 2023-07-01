@@ -23,7 +23,6 @@ class Esp32s3_Ios(IoControllerI2s, BaseIoControllerPinmapGenerator):
     )
 
   def _dio_model(self, gnd: Port[VoltageLink], pwr: Port[VoltageLink]) -> DigitalBidir:
-    """Returns a digital IO model. Only called within a generator."""
     return DigitalBidir.from_supply(  # table 4-4
       gnd, pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,

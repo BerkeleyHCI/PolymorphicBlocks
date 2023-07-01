@@ -22,7 +22,6 @@ class Esp32_Ios(IoControllerI2s, BaseIoControllerPinmapGenerator):
     )
 
   def _dio_model(self, gnd: Port[VoltageLink], pwr: Port[VoltageLink]) -> DigitalBidir:
-    """Returns a digital IO model. Only called within a generator."""
     return DigitalBidir.from_supply(  # section 5.2, table 15
       gnd, pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
@@ -144,8 +143,6 @@ class Esp32_Base(Esp32_Ios, IoController, InternalSubcircuit, GeneratorBlock):
     self.uart0 = self.Port(UartPort(dio_model), optional=True)
 
   def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    """Returns GND and VDDIO (either can be VoltageSink or VoltageSource). Only called within a generator.
-    No side effects, idempotent."""
     return self.gnd, self.pwr
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
