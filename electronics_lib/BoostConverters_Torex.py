@@ -70,12 +70,13 @@ class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
     )
 
 
-class Xc9142(DiscreteBoostConverter):
+class Xc9142(VoltageRegulatorEnable, DiscreteBoostConverter, GeneratorBlock):
   """Low-input-voltage boost converter (starts as low as 0.9V) with fixed output.
   XC9142 has PWM/PFM functionality, compared to PWM only for XC9141.
   Semi pin compatible with XC9140, LTC3525, MAX1724."""
   def contents(self):
     super().contents()
+    self.generator_param(self.enable.is_connected())
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_in, [Power]),
@@ -95,5 +96,9 @@ class Xc9142(DiscreteBoostConverter):
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
 
-      # CE resistor: recommended through a <1M resistor; must not be left open
-      self.ce_res = imp.Block(PullupResistor(100*kOhm(tol=0.2))).connected(io=self.ic.ce)
+  def generate(self):
+    super().generate()
+    if self.get(self.enable.is_connected()):
+      self.connect(self.enable, self.ic.ce)
+    else:  # CE resistor: recommended through a <1M resistor; must not be left open
+      self.ce_res = self.Block(PullupResistor(100*kOhm(tol=0.2))).connected(pwr=self.pwr_in, io=self.ic.ce)

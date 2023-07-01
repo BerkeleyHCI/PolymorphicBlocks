@@ -14,6 +14,10 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.gnd = self.Port(Ground(), [Common])
     self.fb = self.Port(AnalogSink(impedance=(8000, float('inf')) * kOhm))  # based on input current spec
     self.vbst = self.Port(VoltageSource())
+    self.en = self.Port(DigitalSink(
+      voltage_limits=(-0.1, 17)*Volt,
+      input_thresholds=(0.8, 1.6)*Volt
+    ))
 
   def contents(self) -> None:
     super().contents()
@@ -24,7 +28,7 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         '2': self.sw,
         '3': self.pwr_in,
         '4': self.fb,
-        '5': self.pwr_in,  # en
+        '5': self.en,
         '6': self.vbst,
       },
       mfr='Texas Instruments', part='TPS561201',
@@ -34,8 +38,11 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Tps561201(DiscreteBuckConverter):
+class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch"""
+  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+    return self.ic.en
+
   def contents(self):
     super().contents()
 
@@ -115,13 +122,15 @@ class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Tps54202h(DiscreteBuckConverter):
+class Tps54202h(VoltageRegulatorEnable, DiscreteBuckConverter, GeneratorBlock):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch, 4.5-24v capable
   Note: TPS54202 has frequency spread-spectrum operation and internal pull-up on EN
   TPS54202H has no internal EN pull-up but a Zener diode clamp to limit voltage.
   """
+
   def contents(self):
     super().contents()
+    self.generator_param(self.enable.is_connected())
 
     self.assign(self.frequency, (390, 590)*kHertz)
 
@@ -145,12 +154,6 @@ class Tps54202h(DiscreteBuckConverter):
       self.connect(self.boot_cap.neg.adapt_to(VoltageSink()), self.ic.sw)
       self.connect(self.boot_cap.pos.adapt_to(VoltageSink()), self.ic.boot)
 
-      # an internal 6.9v Zener clamps the enable voltage, datasheet recommends at 510k resistor
-      # a pull-up resistor isn't used because
-      self.en_res = self.Block(Resistor(resistance=510*kOhm(tol=0.05), power=0*Amp(tol=0)))
-      self.connect(self.pwr_in, self.en_res.a.adapt_to(VoltageSink()))
-      self.connect(self.en_res.b.adapt_to(DigitalSource()), self.ic.en)
-
       self.power_path = imp.Block(BuckConverterPowerPath(
         self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
         self.pwr_out.link().current_drawn, (0, 2)*Amp,
@@ -164,3 +167,14 @@ class Tps54202h(DiscreteBuckConverter):
                                           self.Block(ForcedVoltage(self.fb.actual_input_voltage)),
                                           self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
+
+  def generate(self):
+    super().generate()
+    if self.get(self.enable.is_connected()):
+      self.connect(self.enable, self.ic.en)
+    else:  # by default tie high to enable regulator
+      # an internal 6.9v Zener clamps the enable voltage, datasheet recommends at 510k resistor
+      # a pull-up resistor isn't used because
+      self.en_res = self.Block(Resistor(resistance=510*kOhm(tol=0.05), power=0*Amp(tol=0)))
+      self.connect(self.pwr_in, self.en_res.a.adapt_to(VoltageSink()))
+      self.connect(self.en_res.b.adapt_to(DigitalSource()), self.ic.en)
