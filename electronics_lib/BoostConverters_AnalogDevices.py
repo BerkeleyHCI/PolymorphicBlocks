@@ -17,6 +17,11 @@ class Ltc3429_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       voltage_out=output_voltage,
       current_limits=self.sw.link().current_limits
     ))
+    self.nshdn = self.Port(DigitalSink(
+      voltage_limits=(-0.3, 6) * Volt,
+      current_draw=(0.01, 1)*uAmp,
+      input_thresholds=(0.35, 1)*Volt
+    ))
 
   def contents(self) -> None:
     super().contents()
@@ -26,7 +31,7 @@ class Ltc3429_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         '1': self.sw,
         '2': self.gnd,
         '3': self.fb,
-        '4': self.vin,  # /SHDN
+        '4': self.nshdn,
         '5': self.vout,
         '6': self.vin,
       },
@@ -37,10 +42,12 @@ class Ltc3429_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Ltc3429(DiscreteBoostConverter):
+class Ltc3429(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   """Low-input-voltage boost converter (starts as low as 0.85V).
   Pin-compatible with the less-expensive UM3429S"""
   NMOS_CURRENT_LIMIT = 0.6
+  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+    return self.ic.nshdn
 
   def contents(self):
     super().contents()

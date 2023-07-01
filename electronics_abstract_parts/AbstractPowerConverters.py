@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Optional
 from electronics_model import *
 from .Categories import *
@@ -37,6 +38,27 @@ class VoltageRegulatorEnable(BlockInterfaceMixin[VoltageRegulator]):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.enable = self.Port(DigitalSink.empty(), optional=True)
+
+
+class VoltageRegulatorEnableWrapper(VoltageRegulatorEnable, VoltageRegulator, GeneratorBlock):
+  """Implementation mixin for a voltage regulator wrapper block where the inner device has an enable pin
+  (active-high enable / active-low shutdown) that is automatically tied high if not externally connected.
+  Mix this into a VoltageRegulator to automatically handle the enable pin."""
+  @abstractmethod
+  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+    """Returns the inner device's enable pin, to be connected in the generator.
+    Only called within a generator."""
+
+  def contents(self):
+    super().contents()
+    self.generator_param(self.enable.is_connected())
+
+  def generate(self):
+    super().generate()
+    if self.get(self.enable.is_connected()):
+      self.connect(self.enable, self._generator_inner_enable_pin())
+    else:  # by default tie high to enable regulator
+      self.connect(self.pwr_in.as_digital_source(), self._generator_inner_enable_pin())
 
 
 @abstract_block_default(lambda: IdealLinearRegulator)

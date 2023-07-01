@@ -53,7 +53,7 @@ from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, Inte
 from .AbstractSpiMemory import SpiMemory
 from .OpampCurrentSensor import OpampCurrentSensor
 from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet
-from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnable
+from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnable, VoltageRegulatorEnableWrapper
 from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath

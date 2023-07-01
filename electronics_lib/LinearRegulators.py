@@ -171,13 +171,11 @@ class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     self.assign(self.actual_basic_part, False)
 
 
-class Ap2204k(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
+class Ap2204k(VoltageRegulatorEnableWrapper, LinearRegulator):
   """AP2204K block providing the LinearRegulator interface and optional enable (tied high if not connected).
   """
-  @init_in_parent
-  def __init__(self, *args, **kwargs) -> None:
-    super().__init__(*args, **kwargs)
-    self.generator_param(self.enable.is_connected())
+  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+    return self.ic.en
 
   def contents(self):
     super().contents()
@@ -189,13 +187,6 @@ class Ap2204k(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
       .connected(self.gnd, self.pwr_in)
     self.out_cap = self.Block(DecouplingCapacitor(capacitance=2.2 * uFarad(tol=0.2)))\
       .connected(self.gnd, self.pwr_out)
-
-  def generate(self):
-    super().generate()
-    if self.get(self.enable.is_connected()):
-      self.connect(self.enable, self.ic.en)
-    else:  # by default tie high to enable regulator
-      self.connect(self.pwr_in.as_digital_source(), self.ic.en)
 
 
 class Xc6206p_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
@@ -319,13 +310,14 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.actual_basic_part, False)
 
 
-class Xc6209(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
+class Xc6209(VoltageRegulatorEnableWrapper, LinearRegulator):
   """XC6209F (F: 300mA version, no pull-down resistor; 2: +/-2% accuracy)
   Low-ESR ceramic cap compatible"""
+  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+    return self.ic.ce
+
   def contents(self) -> None:
     super().contents()
-
-    self.generator_param(self.enable.is_connected())
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
@@ -336,13 +328,6 @@ class Xc6209(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
 
       self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
-
-  def generate(self):
-    super().generate()
-    if self.get(self.enable.is_connected()):
-      self.connect(self.enable, self.ic.ce)
-    else:  # by default tie high to enable regulator
-      self.connect(self.pwr_in.as_digital_source(), self.ic.ce)
 
 
 class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
@@ -396,13 +381,14 @@ class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.actual_basic_part, False)
 
 
-class Ap2210(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
+class Ap2210(VoltageRegulatorEnableWrapper, LinearRegulator):
   """AP2210 RF ULDO in SOT-23-5 with high PSRR and high(er) voltage tolerant.
   """
+  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+    return self.ic.en
+
   def contents(self) -> None:
     super().contents()
-
-    self.generator_param(self.enable.is_connected())
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
@@ -413,13 +399,6 @@ class Ap2210(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
 
       self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
-
-  def generate(self):
-    super().generate()
-    if self.get(self.enable.is_connected()):
-      self.connect(self.enable, self.ic.en)
-    else:  # by default tie high to enable regulator
-      self.connect(self.pwr_in.as_digital_source(), self.ic.en)
 
 
 class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
@@ -480,17 +459,18 @@ class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.actual_basic_part, False)
 
 
-class Lp5907(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
+class Lp5907(VoltageRegulatorEnableWrapper, LinearRegulator):
   """High-PSRR LDO in SOT-23-5.
   Other pin-compatible high-PSRR LDOs:
   - LP5907
   - AP139
   - TCR2EF
   """
+  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+    return self.ic.en
+
   def contents(self) -> None:
     super().contents()
-
-    self.generator_param(self.enable.is_connected())
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
@@ -501,10 +481,3 @@ class Lp5907(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
 
       self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
-
-  def generate(self):
-    super().generate()
-    if self.get(self.enable.is_connected()):
-      self.connect(self.enable, self.ic.en)
-    else:  # by default tie high to enable regulator
-      self.connect(self.pwr_in.as_digital_source(), self.ic.en)
