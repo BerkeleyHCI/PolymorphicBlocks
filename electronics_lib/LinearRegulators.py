@@ -160,7 +160,7 @@ class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
       {
         '1': self.pwr_in,
         '2': self.gnd,
-        '3': self.en,  # EN
+        '3': self.en,
         # pin 4 is ADJ/NC
         '5': self.pwr_out,
       },
@@ -278,6 +278,13 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.pwr_out.current_limits, (0, 300) * mAmp)
     self.assign(self.actual_quiescent_current, (0.01, 50) * uAmp)  # typ is 250uA
 
+    self.ce = self.Port(DigitalSink.from_supply(
+      self.gnd, self.pwr_in,
+      voltage_limit_tolerance=(-0.3, 0.3)*Volt,
+      current_draw=(0.1, 5.0)*uAmp,
+      input_threshold_abs=(0.25, 1.6)*Volt
+    ))
+
     self.output_voltage = self.ArgParameter(output_voltage)
     self.generator_param(self.output_voltage)
 
@@ -301,7 +308,7 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
       {
         '1': self.pwr_in,
         '2': self.gnd,
-        '3': self.pwr_in,  # EN
+        '3': self.ce,
         # pin 4 is NC
         '5': self.pwr_out,
       },
@@ -312,10 +319,14 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.actual_basic_part, False)
 
 
-class Xc6209(LinearRegulator):
+class Xc6209(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
   """XC6209F (F: 300mA version, no pull-down resistor; 2: +/-2% accuracy)
   Low-ESR ceramic cap compatible"""
   def contents(self) -> None:
+    super().contents()
+
+    self.generator_param(self.enable.is_connected())
+
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
@@ -325,6 +336,13 @@ class Xc6209(LinearRegulator):
 
       self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
+
+  def generate(self):
+    super().generate()
+    if self.get(self.enable.is_connected()):
+      self.connect(self.enable, self.ic.ce)
+    else:  # by default tie high to enable regulator
+      self.connect(self.pwr_in.as_digital_source(), self.ic.ce)
 
 
 class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
@@ -336,6 +354,12 @@ class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.pwr_out.current_limits, (0, 300) * mAmp)
     self.assign(self.actual_quiescent_current, (0.01, 15000) * uAmp)  # GND pin current
     self.assign(self.actual_dropout, (15, 500) * mVolt)
+
+    self.en = self.Port(DigitalSink(
+      voltage_limits=(0, 15) * Volt,
+      current_draw=(0.01, 25)*uAmp,
+      input_thresholds=(0.4, 2.0)*Volt
+    ))
 
     self.output_voltage = self.ArgParameter(output_voltage)
     self.generator_param(self.output_voltage)
@@ -360,7 +384,7 @@ class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
       {
         '1': self.pwr_in,
         '2': self.gnd,
-        '3': self.pwr_in,  # EN
+        '3': self.en,
         # pin 4 is BYP, optional
         '5': self.pwr_out,
       },
@@ -372,11 +396,13 @@ class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.actual_basic_part, False)
 
 
-class Ap2210(LinearRegulator):
+class Ap2210(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
   """AP2210 RF ULDO in SOT-23-5 with high PSRR and high(er) voltage tolerant.
   """
   def contents(self) -> None:
     super().contents()
+
+    self.generator_param(self.enable.is_connected())
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
@@ -387,6 +413,13 @@ class Ap2210(LinearRegulator):
 
       self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
+
+  def generate(self):
+    super().generate()
+    if self.get(self.enable.is_connected()):
+      self.connect(self.enable, self.ic.en)
+    else:  # by default tie high to enable regulator
+      self.connect(self.pwr_in.as_digital_source(), self.ic.en)
 
 
 class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
@@ -401,6 +434,12 @@ class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
 
     self.output_voltage = self.ArgParameter(output_voltage)
     self.generator_param(self.output_voltage)
+
+    self.en = self.Port(DigitalSink(
+      voltage_limits=(0, 5.5) * Volt,
+      current_draw=(0.001, 5.5)*uAmp,
+      input_thresholds=(0.4, 1.2)*Volt
+    ))
 
   def generate(self):
     super().generate()
@@ -430,7 +469,7 @@ class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
       {
         '1': self.pwr_in,
         '2': self.gnd,
-        '3': self.pwr_in,  # EN
+        '3': self.en,
         # pin 4 is NC
         '5': self.pwr_out,
       },
@@ -441,7 +480,7 @@ class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.actual_basic_part, False)
 
 
-class Lp5907(LinearRegulator):
+class Lp5907(VoltageRegulatorEnable, LinearRegulator, GeneratorBlock):
   """High-PSRR LDO in SOT-23-5.
   Other pin-compatible high-PSRR LDOs:
   - LP5907
@@ -450,6 +489,8 @@ class Lp5907(LinearRegulator):
   """
   def contents(self) -> None:
     super().contents()
+
+    self.generator_param(self.enable.is_connected())
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
@@ -460,3 +501,10 @@ class Lp5907(LinearRegulator):
 
       self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
+
+  def generate(self):
+    super().generate()
+    if self.get(self.enable.is_connected()):
+      self.connect(self.enable, self.ic.en)
+    else:  # by default tie high to enable regulator
+      self.connect(self.pwr_in.as_digital_source(), self.ic.en)
