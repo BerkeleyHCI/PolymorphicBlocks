@@ -328,8 +328,8 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
         'GPIO2': self.io2,
       }).remap(self.SYSTEM_PIN_REMAP)
 
-  def contents(self) -> None:
-    super().contents()
+  def __init__(self, **kawrgs) -> None:
+    super().__init__(**kawrgs)
 
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._vdd_model())
