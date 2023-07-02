@@ -43,15 +43,18 @@ class RobotOwl(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.mcu = self.Block(Freenove_Esp32s3_Wroom())
+    self.mcu = self.Block(IoController())
+    mcu_pwr = self.mcu.with_mixin(IoControllerPowerOut())
+    mcu_usb = self.mcu.with_mixin(IoControllerUsbOut())
+    mcu_i2s = self.mcu.with_mixin(IoControllerI2s())
 
-    self.gnd = self.connect(self.mcu.gnd_out)
-    self.vusb = self.connect(self.mcu.vusb_out)
-    self.v3v3 = self.connect(self.mcu.pwr_out)
+    self.gnd = self.connect(mcu_pwr.gnd_out)
+    self.vusb = self.connect(mcu_usb.vusb_out)
+    self.v3v3 = self.connect(mcu_pwr.pwr_out)
 
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.mcu.gnd_out)
-    self.tp_usb = self.Block(VoltageTestPoint()).connected(self.mcu.vusb_out)
-    self.tp_3v3 = self.Block(VoltageTestPoint()).connected(self.mcu.pwr_out)
+    self.tp_gnd = self.Block(VoltageTestPoint()).connected(mcu_pwr.gnd_out)
+    self.tp_usb = self.Block(VoltageTestPoint()).connected(mcu_usb.vusb_out)
+    self.tp_3v3 = self.Block(VoltageTestPoint()).connected(mcu_pwr.pwr_out)
 
     (self.reg_12v, self.tp_12v), _ = self.chain(
       self.vusb,
@@ -78,7 +81,7 @@ class RobotOwl(JlcBoardTop):
       self.oled22 = imp.Block(Er_Oled022_1())
       self.connect(self.v3v3, self.oled22.pwr)
       self.connect(self.v12, self.oled22.vcc)
-      self.connect(self.oled22.i2c, self.mcu.cam_i2c)
+      self.connect(self.oled22.i2c, self.mcu.i2c.request('oled'))
 
     # VBATT DOMAIN
     with self.implicit_connect(
@@ -86,7 +89,7 @@ class RobotOwl(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.spk_drv, self.spk), _ = self.chain(
-        self.mcu.i2s.request('speaker'),
+        mcu_i2s.i2s.request('speaker'),
         imp.Block(Max98357a()),
         self.Block(Speaker())
       )
@@ -98,11 +101,11 @@ class RobotOwl(JlcBoardTop):
           imp.Block(PwmConnector((0, 200)*mAmp))
         )
 
-      self.ws2812bArray = imp.Block(NeopixelArray(12))
-      self.extNeopixels = imp.Block(LedConnector())
-      self.connect(self.mcu.ws2812, self.ws2812bArray.din)
-      self.connect(self.ws2812bArray.dout, self.extNeopixels.din)
-
+      (self.ws2812bArray, self.extNeopixels), _ = self.chain(
+        self.mcu.gpio.request('ws2812'),
+        imp.Block(NeopixelArray(12)),
+        imp.Block(LedConnector())
+      )
 
     # Mounting holes
     self.m = ElementDict[MountingHole]()
@@ -112,6 +115,7 @@ class RobotOwl(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Freenove_Esp32s3_Wroom),
         (['reg_12v'], Ap3012),
       ],
       instance_values=[
@@ -123,9 +127,11 @@ class RobotOwl(JlcBoardTop):
           'mic_clk=12',
           'speaker.sd=36',
           'speaker.sck=35',
-          'speaker.ws=37'
+          'speaker.ws=37',
+          'ws2812=26',  # WS2812
+          'oled=CAM_SCCB',
         ]),
-        (['mcu', 'ic', 'fp_footprint'], 'edg:Freenove_ESP32S3-WROOM_Expansion'),
+        (['mcu', 'fp_footprint'], 'edg:Freenove_ESP32S3-WROOM_Expansion'),
         (['mcu', 'vusb_out', 'current_limits'], Range(0, 3)),
 
         (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),

@@ -5,8 +5,13 @@ from .JlcPart import JlcPart
 from .Microcontroller_Esp import HasEspProgramming
 
 
+@non_library
+class Esp32c3_Interfaces(IoControllerI2s, IoControllerWifi, IoControllerBle, BaseIoController):
+  """Defines base interfaces for ESP32C3 microcontrollers"""
+
+
 @abstract_block
-class Esp32c3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock):
+class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, IoControllerPowerRequired, BaseIoControllerPinmapGenerator):
   """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5, and USB.
   PlatformIO: use board ID esp32-c3-devkitm-1
 
@@ -15,11 +20,11 @@ class Esp32c3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    self.pwr = self.Port(VoltageSink(
+    self.pwr.init_from(VoltageSink(
       voltage_limits=(3.0, 3.6)*Volt,  # section 4.2
       current_draw=(0.001, 335)*mAmp + self.io_current_draw.upper()  # section 4.6, from power off to RF active
-    ), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    ))
+    self.gnd.init_from(Ground())
 
     self._dio_model = DigitalBidir.from_supply(  # table 4.4
       self.gnd, self.pwr,
@@ -95,7 +100,7 @@ class Esp32c3_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
     ])
 
 
-class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
+class Esp32c3_Wroom02_Device(Esp32c3_Base, FootprintBlock, JlcPart):
   """ESP32C module
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf
@@ -139,7 +144,8 @@ class Esp32c3_Wroom02_Device(Esp32c3_Device, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, False)
 
 
-class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, IoController, BaseIoControllerExportable):
+class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Esp32c3_Interfaces, IoControllerPowerRequired,
+                      BaseIoControllerExportable):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header."""
   def contents(self) -> None:
     super().contents()

@@ -541,23 +541,26 @@ class Compiler private (
     import edgir.elem.elem
 
     val block = resolveBlock(path).asInstanceOf[wir.BlockLibrary]
-    val libraryPath = block.target
-    val libraryBlockPb = library.getBlock(libraryPath) match {
+
+    // check for and apply block-side default refinement, if defined
+    val libraryBlockPb = library.getBlock(block.target, block.mixins) match {
       case Errorable.Success(blockPb) => blockPb
       case Errorable.Error(err) =>
-        errors += CompilerError.LibraryError(path, libraryPath, err)
+        errors += CompilerError.LibraryError(path, block.target, err)
         elem.HierarchyBlock()
     }
-
     val refinementLibraryPath = refinements.instanceRefinements.get(path).orElse(
-      refinements.classRefinements.get(libraryPath).orElse(
+      refinements.classRefinements.get(block.target).orElse(
         libraryBlockPb.defaultRefinement
       )
     )
-    val unrefinedType = if (refinementLibraryPath.isDefined) Some(libraryPath) else None
-    val blockLibraryPath = refinementLibraryPath.getOrElse(libraryPath)
 
-    val blockPb = library.getBlock(blockLibraryPath) match {
+    // actually instantiate the block
+    val unrefinedType = if (refinementLibraryPath.isDefined) Some(block.target) else None
+    val blockLibraryPath = refinementLibraryPath.getOrElse(block.target)
+    val blockMixins = if (refinementLibraryPath.isDefined) Seq() else block.mixins // discard mixins if refined
+
+    val blockPb = library.getBlock(blockLibraryPath, blockMixins) match {
       case Errorable.Success(blockPb) =>
         blockPb
       case Errorable.Error(err) =>
@@ -584,16 +587,8 @@ class Compiler private (
 
     // additional processing needed for the refinement case
     if (unrefinedType.isDefined) {
-      val unrefinedPb = library.getBlock(libraryPath) match { // add subclass (refinement) default params
-        case Errorable.Success(unrefinedPb) =>
-          unrefinedPb
-        case Errorable.Error(err) => // this doesn't stop elaboration, but does raise an error
-          import edgir.elem.elem
-          errors += CompilerError.LibraryError(path, libraryPath, err)
-          elem.HierarchyBlock()
-      }
-      val refinedNewParams = blockPb.params.toSeqMap.keys.toSet -- unrefinedPb.params.toSeqMap.keys
-      refinedNewParams.foreach { refinedNewParam =>
+      val refinedNewParams = blockPb.params.toSeqMap.keys.toSet -- libraryBlockPb.params.toSeqMap.keys
+      refinedNewParams.foreach { refinedNewParam => // add subclass (refinement) default params
         blockPb.paramDefaults.get(refinedNewParam).foreach { refinedDefault =>
           constProp.addAssignExpr(
             path.asIndirect + refinedNewParam,
@@ -603,8 +598,8 @@ class Compiler private (
           )
         }
       }
-      val refinedNewPorts = blockPb.ports.toSeqMap.keys.toSet -- unrefinedPb.ports.toSeqMap.keys
-      refinedNewPorts.foreach { refinedNewPort =>
+      val refinedNewPorts = blockPb.ports.toSeqMap.keys.toSet -- libraryBlockPb.ports.toSeqMap.keys
+      refinedNewPorts.foreach { refinedNewPort => // add subclass (refinement) non-connected
         blockPb.ports(refinedNewPort).is match {
           case _: elem.PortLike.Is.LibElem =>
             constProp.addAssignValue(
@@ -625,34 +620,10 @@ class Compiler private (
       }
     }
 
-    // if an unrefined mixin, tack in the mixin contents
-    // (in the refined case, the refined block is used directly, subclass validation happens separately)
-    val mixedPb = if (unrefinedType.isEmpty && block.mixins.nonEmpty) {
-      val mixinPbs = block.mixins.flatMap { mixinLibraryPath =>
-        library.getBlock(mixinLibraryPath) match {
-          case Errorable.Success(blockPb) =>
-            Some(blockPb)
-          case Errorable.Error(err) =>
-            errors += CompilerError.LibraryError(path, mixinLibraryPath, err)
-            None
-        }
-      }
-      // TODO the below doesn't deduplicate properly, but this is only to provide a handle for visualization
-      // unrefined blocks with mixins should NOT appear in the final design, they must be refined to one concrete class
-      blockPb
-        .withPorts(blockPb.ports ++ mixinPbs.map(_.ports).fold(Seq())(_ ++ _))
-        .withParams(blockPb.params ++ mixinPbs.map(_.params).fold(Seq())(_ ++ _))
-        .withBlocks(blockPb.blocks ++ mixinPbs.map(_.blocks).fold(Seq())(_ ++ _))
-        .withLinks(blockPb.links ++ mixinPbs.map(_.links).fold(Seq())(_ ++ _))
-        .withConstraints(blockPb.constraints ++ mixinPbs.map(_.constraints).fold(Seq())(_ ++ _))
+    val newBlock = if (blockPb.generator.isEmpty) {
+      new wir.Block(blockPb, unrefinedType, block.mixins)
     } else {
-      blockPb
-    }
-
-    val newBlock = if (mixedPb.generator.isEmpty) {
-      new wir.Block(mixedPb, unrefinedType, block.mixins)
-    } else {
-      new wir.Generator(mixedPb, unrefinedType, block.mixins)
+      new wir.Generator(blockPb, unrefinedType, block.mixins)
     }
 
     val (parentPath, blockName) = path.split
@@ -811,7 +782,7 @@ class Compiler private (
     import edg.ExprBuilder.ValueExpr
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
       val innerBlockLibrary = innerBlock.asInstanceOf[wir.BlockLibrary]
-      val innerBlockTemplate = library.getBlock(innerBlockLibrary.target)
+      val innerBlockTemplate = library.getBlock(innerBlockLibrary.target, innerBlockLibrary.mixins)
 
       innerBlockTemplate.map { innerBlockTemplate =>
         innerBlockTemplate.ports.asPairs.foreach { case (portName, port) =>

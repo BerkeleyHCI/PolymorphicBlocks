@@ -4,10 +4,23 @@ import edg.EdgirUtils.SimpleLibraryPath
 import edg.IrPort
 import edg.compiler.ExprValue
 import edg.util.Errorable
-import edg.wir.ProtoUtil.ParamProtoToSeqMap
+import edg.wir.ProtoUtil.{
+  BlockProtoToSeqMap,
+  BlockSeqMapToProto,
+  ConstraintProtoToSeqMap,
+  ConstraintSeqMapToProto,
+  LinkProtoToSeqMap,
+  LinkSeqMapToProto,
+  ParamProtoToSeqMap,
+  ParamSeqMapToProto,
+  PortProtoToSeqMap,
+  PortSeqMapToProto
+}
 import edgir.elem.elem
 import edgir.ref.ref
 import edgir.schema.schema
+
+import scala.collection.SeqMap
 
 /** API definition for a library
   */
@@ -26,6 +39,34 @@ trait Library {
   def allLinks: Map[ref.LibraryPath, elem.Link]
 
   def runGenerator(path: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Errorable[elem.HierarchyBlock]
+
+  // wrapper around getBlock that handles mixins
+  // if mixins is empty, this reduces down to getBlock
+  def getBlock(path: ref.LibraryPath, mixins: Seq[ref.LibraryPath]): Errorable[elem.HierarchyBlock] = {
+    getBlock(path) match {
+      case baseBlock: Errorable.Error => baseBlock
+      case Errorable.Success(baseBlock) =>
+        val mixinBlockRaw = mixins.map(getBlock(_))
+        val mixinBlockErrs = mixinBlockRaw.filter(_.isInstanceOf[Errorable.Error])
+        if (mixinBlockErrs.nonEmpty) {
+          mixinBlockErrs.head
+        } else {
+          val mixinBlocks = mixinBlockRaw.map(_.get)
+          require(mixinBlocks.isEmpty || baseBlock.isAbstract, s"non-abstract block cannot have mixins")
+          // TODO this is not the most accurate algorithm, but this doesn't matter since mixins are only created
+          // for abstract parts or port indexing, and never in the final design (where a single concrete block is used)
+          val mixedBlock = baseBlock
+            .withPorts((baseBlock.ports.toSeqMap ++ mixinBlocks.map(_.ports.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withParams((baseBlock.params.toSeqMap ++ mixinBlocks.map(_.params.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withBlocks((baseBlock.blocks.toSeqMap ++ mixinBlocks.map(_.blocks.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withLinks((baseBlock.links.toSeqMap ++ mixinBlocks.map(_.links.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withConstraints((baseBlock.constraints.toSeqMap ++ mixinBlocks.map(_.constraints.toSeqMap).fold(SeqMap())(
+              _ ++ _
+            )).toPb)
+          Errorable.Success(mixedBlock)
+        }
+    }
+  }
 }
 
 /** Non-mutable library based off the proto IR

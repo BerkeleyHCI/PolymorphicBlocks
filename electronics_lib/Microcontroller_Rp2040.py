@@ -218,8 +218,8 @@ class Rp2040Usb(InternalSubcircuit, Block):
       UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
 
 
-class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoController,
-             BaseIoControllerExportable,):
+class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoControllerPowerRequired,
+             BaseIoControllerExportable):
   DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
 
   def __init__(self, **kwargs):

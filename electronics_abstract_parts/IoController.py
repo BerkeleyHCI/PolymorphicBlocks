@@ -8,7 +8,7 @@ from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
 from .Categories import ProgrammableController, IdealModel
 
 
-@non_library
+@abstract_block
 class BaseIoController(PinMappable, Block):
   """An abstract IO controller block, that takes power input and provides a grab-bag of common IOs.
   A base interface for microcontrollers and microcontroller-like devices (eg, FPGAs).
@@ -225,26 +225,21 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
 
 @abstract_block_default(lambda: IdealIoController)
 class IoController(ProgrammableController, BaseIoController):
-  """An abstract, generic IO controller with common IOs and power ports."""
-  POWER_REQUIRED: bool = True  # can optionally be redefined by subclasses to make the power ports non-required
+  """An abstract, generic IO controller with optional common IOs and power ports."""
+  def __init__(self, *awgs, **kwargs) -> None:
+    super().__init__(*awgs, **kwargs)
 
-  def __init__(self) -> None:
-    super().__init__()
-
-    if self.POWER_REQUIRED:
-      self.pwr = self.Port(VoltageSink.empty(), [Power])
-      self.gnd = self.Port(Ground.empty(), [Common])
-    else:
-      self.pwr = self.Port(VoltageSink.empty(), optional=True)
-      self.gnd = self.Port(Ground.empty(), optional=True)
+    self.pwr = self.Port(VoltageSink.empty(), [Power], optional=True)
+    self.gnd = self.Port(Ground.empty(), [Common], optional=True)
 
 
-class HasI2s(BaseIoController):
+@non_library
+class IoControllerPowerRequired(IoController):
+  """IO controller with required power pins."""
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-
-    self.i2s = self.Port(Vector(I2sController.empty()), optional=True)
-    self._io_ports.insert(0, self.i2s)
+    self.require(self.pwr.is_connected())
+    self.require(self.gnd.is_connected())
 
 
 class IdealIoController(IoController, IdealModel, GeneratorBlock):

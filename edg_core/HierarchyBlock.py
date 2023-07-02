@@ -384,6 +384,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     assert self._parent is not None
 
     elt = tpe._bind(self._parent)
+    self._parent.manager.add_alias(elt, self)
     self._mixins.append(elt)
 
     return elt
@@ -491,11 +492,8 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     """Registers a port for this Block"""
     if not isinstance(tpe, (Port, Vector)):
       raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")
-    if optional and tags:
-      raise BlockDefinitionError(self, "optional ports cannot have implicit connection tags",
-                                 "port can either be optional or have implicit connection tags")
     for tag in tags:
-      tag = assert_cast(tag, PortTag, "tag for Port(...)")
+      assert_cast(tag, PortTag, "tag for Port(...)")
 
     port = super().Port(tpe, optional=optional)
 

@@ -59,6 +59,8 @@ class IotDisplay(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
+      self.mcu.with_mixin(IoControllerWifi())
+
       # need to name the USB chain so the USB net has the _N and _P postfix for differential traces
       (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 

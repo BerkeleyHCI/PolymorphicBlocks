@@ -287,7 +287,8 @@ class Multimeter(JlcBoardTop):
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Mdbt50q_1mv2())
+      self.mcu = imp.Block(Mdbt50q_1mv2())  # needed to define required Vusb
+      # TODO ideally this would have a Ble mixin, but mixins can't be applied to the concrete microcontroller
 
       (self.vbatsense, ), _ = self.chain(self.gate.pwr_out,  # TODO update to use VoltageSenseDivider
                                          imp.Block(VoltageDivider(output_voltage=(0.6, 3)*Volt, impedance=(100, 1000)*Ohm)),

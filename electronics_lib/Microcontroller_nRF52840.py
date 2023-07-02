@@ -4,8 +4,13 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
+@non_library
+class Nrf52840_Interfaces(IoControllerI2s, IoControllerBle, BaseIoController):
+  """Defines base interfaces for nRF52840 microcontrollers"""
+
+
 @abstract_block
-class Nrf52840Base_Device(HasI2s, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Nrf52840_Base(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """nRF52840 base device and IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
   PACKAGE: str  # package name for footprint(...)
@@ -181,7 +186,7 @@ class Nrf52840Base_Device(HasI2s, BaseIoControllerPinmapGenerator, InternalSubci
     )
 
 
-class Holyiot_18010_Device(Nrf52840Base_Device):
+class Holyiot_18010_Device(Nrf52840_Base):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': '14',
     'Vss': ['1', '25', '37'],
@@ -230,8 +235,8 @@ class Holyiot_18010_Device(Nrf52840Base_Device):
   DATASHEET = 'http://www.holyiot.com/tp/2019042516322180424.pdf'
 
 
-class Holyiot_18010(Microcontroller, Radiofrequency, HasI2s, IoControllerWithSwdTargetConnector, IoController,
-                    BaseIoControllerExportable):
+class Holyiot_18010(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
+                    IoControllerPowerRequired, BaseIoControllerExportable):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
@@ -247,7 +252,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, HasI2s, IoControllerWithSwd
     self.connect(self.swd_node, self.ic.swd)
 
 
-class Mdbt50q_1mv2_Device(Nrf52840Base_Device, JlcPart):
+class Mdbt50q_1mv2_Device(Nrf52840_Base, JlcPart):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': ['28', '30'],  # 28=Vdd, 30=VddH; 31=DccH is disconnected - from section 8.3 for input voltage <3.6v
     'Vss': ['1', '2', '15', '33', '55'],
@@ -334,8 +339,8 @@ class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
     self.connect(self.usb_outer.dm, self.res_dm.b.adapt_to(DigitalBidir()))
 
 
-class Mdbt50q_1mv2(Microcontroller, Radiofrequency, HasI2s, IoControllerWithSwdTargetConnector, IoController,
-                   BaseIoControllerExportable):
+class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
+                   IoControllerPowerRequired, BaseIoControllerExportable):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
