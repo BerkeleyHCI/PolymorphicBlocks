@@ -127,7 +127,6 @@ class Tps54202h(VoltageRegulatorEnable, DiscreteBuckConverter, GeneratorBlock):
   Note: TPS54202 has frequency spread-spectrum operation and internal pull-up on EN
   TPS54202H has no internal EN pull-up but a Zener diode clamp to limit voltage.
   """
-
   def contents(self):
     super().contents()
     self.generator_param(self.enable.is_connected())
