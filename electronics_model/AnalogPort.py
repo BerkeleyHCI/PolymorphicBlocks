@@ -104,9 +104,9 @@ class AnalogSink(AnalogBase):
 
   @staticmethod
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
-                  voltage_limit_tolerance: RangeLike = Default((-0.3, 0.3)),
-                  current_draw: RangeLike = Default(RangeExpr.ZERO),
-                  impedance: RangeLike = Default(RangeExpr.INF)):
+                  voltage_limit_tolerance: RangeLike = (-0.3, 0.3),
+                  current_draw: RangeLike = RangeExpr.ZERO,
+                  impedance: RangeLike = RangeExpr.INF):
     return AnalogSink(
       voltage_limits=(neg.link().voltage.upper(), pos.link().voltage.lower()) +
                      RangeExpr._to_expr_type(voltage_limit_tolerance),
@@ -114,9 +114,9 @@ class AnalogSink(AnalogBase):
       impedance=impedance
     )
 
-  def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
-               current_draw: RangeLike = Default(RangeExpr.ZERO),
-               impedance: RangeLike = Default(RangeExpr.INF)) -> None:
+  def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
+               current_draw: RangeLike = RangeExpr.ZERO,
+               impedance: RangeLike = RangeExpr.INF) -> None:
     super().__init__()
     # TODO maybe separate absolute maximum limits from sensing limits?
     self.voltage_limits = self.Parameter(RangeExpr(voltage_limits))
@@ -129,17 +129,17 @@ class AnalogSource(AnalogBase):
 
   @staticmethod
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
-                  current_limits: RangeLike = Default(RangeExpr.ALL),
-                  impedance: RangeLike = Default(RangeExpr.ZERO)):
+                  current_limits: RangeLike = RangeExpr.ALL,
+                  impedance: RangeLike = RangeExpr.ZERO):
     return AnalogSource(
       voltage_out=(neg.link().voltage.lower(), pos.link().voltage.upper()),
       current_limits=current_limits,
       impedance=impedance
     )
 
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
-               current_limits: RangeLike = Default(RangeExpr.ALL),
-               impedance: RangeLike = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
+               current_limits: RangeLike = RangeExpr.ALL,
+               impedance: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
     self.voltage_out = self.Parameter(RangeExpr(voltage_out))
     self.current_limits = self.Parameter(RangeExpr(current_limits))

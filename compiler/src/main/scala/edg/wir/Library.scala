@@ -4,51 +4,31 @@ import edg.EdgirUtils.SimpleLibraryPath
 import edg.IrPort
 import edg.compiler.ExprValue
 import edg.util.Errorable
-import edg.wir.ProtoUtil.ParamProtoToSeqMap
+import edg.wir.ProtoUtil.{
+  BlockProtoToSeqMap,
+  BlockSeqMapToProto,
+  ConstraintProtoToSeqMap,
+  ConstraintSeqMapToProto,
+  LinkProtoToSeqMap,
+  LinkSeqMapToProto,
+  ParamProtoToSeqMap,
+  ParamSeqMapToProto,
+  PortProtoToSeqMap,
+  PortSeqMapToProto
+}
 import edgir.elem.elem
 import edgir.ref.ref
 import edgir.schema.schema
 
+import scala.collection.SeqMap
+
 /** API definition for a library
   */
 trait Library {
-  // returns whether subclass is a subclass of (or equivalent to) superclass, traversing up the library
-  // returns false if either subclass is missing
-  def blockIsSubclassOf(subclass: ref.LibraryPath, superclass: ref.LibraryPath): Boolean = {
-    if (subclass == superclass) {
-      true
-    } else {
-      getBlock(subclass, true).toOption.map { elt =>
-        elt.superclasses.exists {
-          blockIsSubclassOf(_, superclass)
-        }
-      }.getOrElse(false)
-    }
-  }
-
-  // returns the top-most superclass that defines some parameter name
-  // returns None if thisClass does not define the parameter, and errors out if there are multiple top-most superclasses
-  def blockParamGetDefiningSuperclass(thisClass: ref.LibraryPath, paramName: String): Option[ref.LibraryPath] = {
-    val thisBlock = getBlock(thisClass, true).get
-    if (thisBlock.params.get(paramName).isEmpty) {
-      return None
-    }
-    val definingSuperclasses = thisBlock.superclasses.flatMap { superclass =>
-      blockParamGetDefiningSuperclass(superclass, paramName)
-    }.distinct
-    definingSuperclasses match {
-      case Seq() => Some(thisClass)
-      case Seq(baseClass) => Some(baseClass)
-      case _ =>
-        throw new IllegalArgumentException(s"multiple superclasses of ${thisClass.toSimpleString} defines $paramName")
-    }
-  }
-
-  def getBlock(path: ref.LibraryPath): Errorable[elem.HierarchyBlock] = getBlock(path, false)
   // getBlock can't be used on blocks that have refinements, since that's data that would be discarded
-  // this internal method allows that check to be ignored for cases where the block's definition isn't relevant,
-  // for example for checking subclass relationships
-  protected def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean): Errorable[elem.HierarchyBlock]
+  // ignoreRefinements should only be used where the block's contents aren't relevant, for example for checking
+  // subclass relations
+  def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean = false): Errorable[elem.HierarchyBlock]
   def getLink(path: ref.LibraryPath): Errorable[elem.Link]
   def getPort(path: ref.LibraryPath): Errorable[IrPort]
 
@@ -59,6 +39,34 @@ trait Library {
   def allLinks: Map[ref.LibraryPath, elem.Link]
 
   def runGenerator(path: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Errorable[elem.HierarchyBlock]
+
+  // wrapper around getBlock that handles mixins
+  // if mixins is empty, this reduces down to getBlock
+  def getBlock(path: ref.LibraryPath, mixins: Seq[ref.LibraryPath]): Errorable[elem.HierarchyBlock] = {
+    getBlock(path) match {
+      case baseBlock: Errorable.Error => baseBlock
+      case Errorable.Success(baseBlock) =>
+        val mixinBlockRaw = mixins.map(getBlock(_))
+        val mixinBlockErrs = mixinBlockRaw.filter(_.isInstanceOf[Errorable.Error])
+        if (mixinBlockErrs.nonEmpty) {
+          mixinBlockErrs.head
+        } else {
+          val mixinBlocks = mixinBlockRaw.map(_.get)
+          require(mixinBlocks.isEmpty || baseBlock.isAbstract, s"non-abstract block cannot have mixins")
+          // TODO this is not the most accurate algorithm, but this doesn't matter since mixins are only created
+          // for abstract parts or port indexing, and never in the final design (where a single concrete block is used)
+          val mixedBlock = baseBlock
+            .withPorts((baseBlock.ports.toSeqMap ++ mixinBlocks.map(_.ports.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withParams((baseBlock.params.toSeqMap ++ mixinBlocks.map(_.params.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withBlocks((baseBlock.blocks.toSeqMap ++ mixinBlocks.map(_.blocks.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withLinks((baseBlock.links.toSeqMap ++ mixinBlocks.map(_.links.toSeqMap).fold(SeqMap())(_ ++ _)).toPb)
+            .withConstraints((baseBlock.constraints.toSeqMap ++ mixinBlocks.map(_.constraints.toSeqMap).fold(SeqMap())(
+              _ ++ _
+            )).toPb)
+          Errorable.Success(mixedBlock)
+        }
+    }
+  }
 }
 
 /** Non-mutable library based off the proto IR
@@ -91,7 +99,7 @@ class EdgirLibrary(pb: schema.Library) extends Library {
     case (path, schema.Library.NS.Val.Type.Link(link)) => (path, link)
   }
 
-  override protected def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean): Errorable[elem.HierarchyBlock] = {
+  override def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean = false): Errorable[elem.HierarchyBlock] = {
     elts.get(path) match {
       case Some(schema.Library.NS.Val.Type.HierarchyBlock(member)) => Errorable.Success(member)
       case Some(member) => Errorable.Error(s"Library element at $path not a block, got ${member.getClass}")

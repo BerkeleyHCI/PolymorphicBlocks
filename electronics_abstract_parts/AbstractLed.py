@@ -18,7 +18,7 @@ class Led(DiscreteSemiconductor):
   Any: LedColor = ""
 
   @init_in_parent
-  def __init__(self, color: LedColorLike = Default(Any)):
+  def __init__(self, color: LedColorLike = Any):
     super().__init__()
 
     self.color = self.ArgParameter(color)
@@ -74,7 +74,7 @@ class RgbLedCommonAnode(DiscreteSemiconductor):
 class IndicatorLed(Light):
   """High-side-driven (default, "common cathode") indicator LED"""
   @init_in_parent
-  def __init__(self, color: LedColorLike = Default(Led.Any), *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
+  def __init__(self, color: LedColorLike = Led.Any, *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """Controlled LEDs, with provisions for both current source and sink configurations.
     signal_in is a constant-voltage digital source, so this must contain some ballast.
     This should not contain amplifiers.
@@ -106,7 +106,7 @@ class IndicatorLed(Light):
 class IndicatorLedArray(Light, GeneratorBlock):
   """An array of IndicatorLed, just a convenience wrapper."""
   @init_in_parent
-  def __init__(self, count: IntLike, color: LedColorLike = Default(Led.Any), *,
+  def __init__(self, count: IntLike, color: LedColorLike = Led.Any, *,
                current_draw: RangeLike = (1, 10) * mAmp):
     super().__init__()
     self.signals = self.Port(Vector(DigitalSink.empty()), [InOut])
@@ -130,7 +130,7 @@ class IndicatorLedArray(Light, GeneratorBlock):
 class IndicatorSinkLed(Light, Block):
   """Abstract part for an low-side-driven ("common anode") indicator LED"""
   @init_in_parent
-  def __init__(self, color: LedColorLike = Default(Led.Any), *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
+  def __init__(self, color: LedColorLike = Led.Any, *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """Controlled LEDs, with provisions for both current source and sink configurations.
     signal_in is a constant-voltage digital source, so this must contain some ballast.
     This should not contain amplifiers."""
@@ -169,7 +169,7 @@ class IndicatorSinkLedResistor(IndicatorSinkLed):
 class IndicatorSinkLedArray(Light, GeneratorBlock):
   """An array of IndicatorSinkLed, just a convenience wrapper."""
   @init_in_parent
-  def __init__(self, count: IntLike, color: LedColorLike = Default(Led.Any), *,
+  def __init__(self, count: IntLike, color: LedColorLike = Led.Any, *,
                current_draw: RangeLike = (1, 10) * mAmp):
     super().__init__()
     self.signals = self.Port(Vector(DigitalSink.empty()), [InOut])
@@ -192,7 +192,7 @@ class IndicatorSinkLedArray(Light, GeneratorBlock):
 class VoltageIndicatorLed(Light):
   """LED connected to a voltage rail as an indicator that there is voltage present"""
   @init_in_parent
-  def __init__(self, color: LedColorLike = Default(Led.Any), *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
+  def __init__(self, color: LedColorLike = Led.Any, *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """
     TODO: support non single color wavelength (eg, color temperature?)
     TODO: support brightness

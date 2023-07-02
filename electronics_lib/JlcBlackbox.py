@@ -12,7 +12,7 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
   def block_from_symbol(cls, symbol: KiCadSymbol, lib: KiCadLibSymbol) -> \
       Tuple['KiCadJlcBlackbox', Callable[['KiCadJlcBlackbox'], Mapping[str, BasePort]]]:
     pin_numbers = [pin.number for pin in lib.pins]
-    refdes_prefix = symbol.refdes.rstrip('0123456789?')
+    refdes_prefix = symbol.properties.get('Refdes Prefix', symbol.refdes.rstrip('0123456789?'))
     block_model = KiCadJlcBlackbox(
       pin_numbers, refdes_prefix, symbol.properties['Footprint'],
       kicad_part=symbol.lib, kicad_value=symbol.properties.get('Value', ''),

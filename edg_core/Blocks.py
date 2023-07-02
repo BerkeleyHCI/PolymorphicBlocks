@@ -258,9 +258,11 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     pb.self_class.target.name = self._get_def_name()
 
-    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
-      super_pb = pb.superclasses.add()
-      super_pb.target.name = cls._static_def_name()
+    direct_bases, indirect_bases = self._get_bases_of(BaseBlock)  # type: ignore
+    for cls in direct_bases:
+      pb.superclasses.add().target.name = cls._static_def_name()
+    for cls in indirect_bases:
+      pb.super_superclasses.add().target.name = cls._static_def_name()
 
     for (name, param) in self._parameters.items():
       assert isinstance(param.binding, ParamBinding)

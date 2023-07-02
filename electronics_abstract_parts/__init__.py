@@ -54,7 +54,8 @@ from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, Inte
 from .AbstractSpiMemory import SpiMemory
 from .OpampCurrentSensor import OpampCurrentSensor
 from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet
-from .AbstractPowerConverters import VoltageRegulator, LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
+from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnable, VoltageRegulatorEnableWrapper
+from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
 from .AbstractFuse import Fuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
@@ -73,12 +74,15 @@ from .DigitalIsolator import DigitalIsolator
 from .I2cPullup import I2cPullup
 from .UsbBitBang import UsbBitBang
 
-from .IoController import BaseIoController, IoController, BaseIoControllerPinmapGenerator, BaseIoControllerExportable
+from .IoController import BaseIoController, IoController, IoControllerPowerRequired
+from .IoController import BaseIoControllerPinmapGenerator, BaseIoControllerExportable
+from .IoControllerInterfaceMixins import IoControllerI2s, IoControllerDvp8, IoControllerPowerOut, IoControllerUsbOut
+from .IoControllerInterfaceMixins import IoControllerWifi, IoControllerBluetooth, IoControllerBle
+from .IoControllerProgramming import IoControllerWithSwdTargetConnector
+from .IoControllerMixins import WithCrystalGenerator
 from .PinMappable import PinMappable, PinMapUtil
 from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 from .VariantPinRemapper import VariantPinRemapper
-from .IoControllerProgramming import IoControllerWithSwdTargetConnector
-from .IoControllerMixins import WithCrystalGenerator
 
 from .DummyDevices import DummyPassive, DummyVoltageSource, DummyVoltageSink, DummyDigitalSink, DummyAnalogSink
 from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltage, ForcedDigitalSinkCurrentDraw

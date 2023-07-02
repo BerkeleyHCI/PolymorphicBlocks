@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 @abstract_block
-class Stm32f103Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Stm32f103Base_Device(InternalSubcircuit, BaseIoControllerPinmapGenerator, GeneratorBlock, JlcPart, FootprintBlock):
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
   LCSC_PART: str
@@ -252,8 +252,8 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoController,
-                    BaseIoControllerExportable):
+class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator,
+                    IoControllerPowerRequired, BaseIoControllerExportable):
   DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
 

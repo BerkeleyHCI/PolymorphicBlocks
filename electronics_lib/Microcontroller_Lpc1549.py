@@ -86,7 +86,7 @@ class Lpc1549Base_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Ge
     )
     dac_model = AnalogSource(
       voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper() - 0.3),
-      current_limits=Default(RangeExpr.ALL),  # not given by spec
+      current_limits=RangeExpr.ALL,  # not given by spec
       impedance=(300, 300) * Ohm  # Table 25, "typical" rating
     )
 
@@ -325,7 +325,7 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoController,
+class Lpc1549Base(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoControllerPowerRequired,
                   BaseIoControllerExportable):
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)

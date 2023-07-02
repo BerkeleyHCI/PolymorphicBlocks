@@ -127,7 +127,7 @@ class NeopixelArray(Light, GeneratorBlock):
     def __init__(self, count: IntLike):
         super().__init__()
         self.din = self.Port(DigitalSink.empty(), [Input])
-        self.dout = self.Port(DigitalSource.empty(), optional=True)
+        self.dout = self.Port(DigitalSource.empty(), [Output], optional=True)
         self.vdd = self.Port(VoltageSink.empty(), [Power])
         self.gnd = self.Port(Ground.empty(), [Common])
 

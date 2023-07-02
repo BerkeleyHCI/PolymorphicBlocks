@@ -1,5 +1,6 @@
 package edg.compiler
 
+import edg.EdgirUtils.SimpleLibraryPath
 import edgir.elem.elem
 import edgir.ref.ref
 import edg.wir.DesignPath
@@ -49,8 +50,16 @@ class DesignStructuralValidate extends DesignMap[Seq[CompilerError], Seq[Compile
     } else {
       Seq()
     }
+
+    val allBlockClasses = (block.selfClass ++ block.superclasses ++ block.superSuperclasses).toSeq
+    val allPrerefineClasses = block.prerefineClass ++ block.prerefineMixins
+    val refinementErrors = allPrerefineClasses.collect {
+      case prerefineClass if !allBlockClasses.contains(prerefineClass) =>
+        CompilerError.RefinementSubclassError(path, block.getSelfClass, prerefineClass)
+    }
+
     val errors = ports.values.flatten ++ blocks.values.flatten ++ links.values.flatten
-    errors.toSeq ++ abstractError
+    errors.toSeq ++ abstractError ++ refinementErrors
   }
   override def mapBlockLibrary(path: DesignPath, block: ref.LibraryPath): Seq[CompilerError] = {
     Seq(CompilerError.LibraryElement(path, block))

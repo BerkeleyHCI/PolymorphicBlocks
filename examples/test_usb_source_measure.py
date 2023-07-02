@@ -102,7 +102,7 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
 
   @init_in_parent
   def __init__(self, diode_spec: StringLike, output_resistance: RangeLike, input_resistance: RangeLike, *,
-               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
+               series: IntLike = 24, tolerance: FloatLike = 0.01):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -433,7 +433,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
+        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
 
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),

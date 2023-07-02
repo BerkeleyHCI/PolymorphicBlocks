@@ -32,9 +32,6 @@ class Link(BaseBlock[edgir.Link]):
                          for port, path in self._get_ref_map(prefix).items()])
 
   def _def_to_proto(self) -> edgir.Link:
-    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
-      assert issubclass(cls, Link)
-
     pb = self._populate_def_proto_block_base(edgir.Link())
     pb = self._populate_def_proto_param_init(pb)
     pb = self._populate_def_proto_block_contents(pb)

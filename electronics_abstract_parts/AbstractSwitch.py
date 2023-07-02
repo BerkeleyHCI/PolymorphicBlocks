@@ -12,7 +12,7 @@ class Switch(KiCadImportableBlock, DiscreteComponent):
     return {'1': self.sw, '2': self.com}
 
   @init_in_parent
-  def __init__(self, voltage: RangeLike, current: RangeLike = Default(0*Amp(tol=0))) -> None:
+  def __init__(self, voltage: RangeLike, current: RangeLike = 0*Amp(tol=0)) -> None:
     super().__init__()
 
     self.sw = self.Port(Passive.empty())
@@ -37,7 +37,7 @@ class RotaryEncoder(DiscreteComponent):
   """Rotary encoder with discrete clicks and a quadrature signal (A/B/Common).
   Includes shaft-type encoders as well as thumbwheels."""
   @init_in_parent
-  def __init__(self, voltage: RangeLike, current: RangeLike = Default(0*Amp(tol=0))) -> None:
+  def __init__(self, voltage: RangeLike, current: RangeLike = 0*Amp(tol=0)) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())

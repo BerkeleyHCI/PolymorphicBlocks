@@ -25,6 +25,8 @@ from .JlcOscillator import JlcOscillator
 from .JlcSwitches import JlcSwitch, Skrtlae010
 from .JlcPptcFuse import JlcPptcFuse
 from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1
+from .SpeakerDriver_Max98357a import Max98357a
+from .Microphone_Sd18ob261 import Sd18ob261
 from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
@@ -58,8 +60,8 @@ from .Microcontroller_Stm32f303 import Nucleo_F303k8
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2, Feather_Nrf52840
 from .Microcontroller_Esp import EspAutoProgrammingHeader, EspProgrammingPins, EspProgrammingTc2030, HasEspProgramming
 from .Microcontroller_Esp import EspAutoProgram
-from .Microcontroller_Esp32 import Esp32_Wroom_32, Esp32_Wrover_Dev
-from .Microcontroller_Esp32s3 import Esp32s3_Wroom_1
+from .Microcontroller_Esp32 import Esp32_Wroom_32, Freenove_Esp32_Wrover
+from .Microcontroller_Esp32s3 import Esp32s3_Wroom_1, Freenove_Esp32s3_Wroom
 from .Microcontroller_Esp32c3 import Esp32c3_Wroom02
 from .Microcontroller_Rp2040 import Rp2040
 from .Fpga_Ice40up import Ice40up5k_Sg48

@@ -287,7 +287,8 @@ class Multimeter(JlcBoardTop):
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Mdbt50q_1mv2())
+      self.mcu = imp.Block(Mdbt50q_1mv2())  # needed to define required Vusb
+      # TODO ideally this would have a Ble mixin, but mixins can't be applied to the concrete microcontroller
 
       (self.vbatsense, ), _ = self.chain(self.gate.pwr_out,  # TODO update to use VoltageSenseDivider
                                          imp.Block(VoltageDivider(output_voltage=(0.6, 3)*Volt, impedance=(100, 1000)*Ohm)),
@@ -481,7 +482,7 @@ class Multimeter(JlcBoardTop):
         (['prot_analog', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
 
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'actual_frequency_rating'], Range.all()),
+        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
       ],
       class_values=[
         (AnalogSwitchTree, ['switch_size'], 2),

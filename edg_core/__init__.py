@@ -1,11 +1,11 @@
 from .ConstraintExpr import BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike, LiteralConstructor
-from .ConstraintExpr import Default
 from .ArrayExpr import ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr, ArrayRangeExpr, ArrayStringExpr
 from .ArrayExpr import ArrayBoolLike, ArrayFloatLike, ArrayIntLike, ArrayRangeLike, ArrayStringLike
 from .Ports import Port, Bundle
 from .Link import Link
 from .DesignTop import DesignTop
+from .BlockInterfaceMixin import BlockInterfaceMixin
 from .HierarchyBlock import Block, ImplicitConnect, init_in_parent, abstract_block, abstract_block_default
 from .Generator import GeneratorBlock
 from .MultipackBlock import PackedBlockArray, MultipackBlock

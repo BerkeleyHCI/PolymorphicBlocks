@@ -35,7 +35,7 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
     def block_from_symbol(cls, symbol: KiCadSymbol, lib: KiCadLibSymbol) -> \
             Tuple['KiCadBlackbox', Callable[['KiCadBlackbox'], Mapping[str, BasePort]]]:
         pin_numbers = [pin.number for pin in lib.pins]
-        refdes_prefix = symbol.refdes.rstrip('0123456789?')
+        refdes_prefix = symbol.properties.get('Refdes Prefix', symbol.refdes.rstrip('0123456789?'))
         block_model = KiCadBlackbox(
             pin_numbers, refdes_prefix, symbol.properties['Footprint'],
             kicad_part=symbol.lib, kicad_value=symbol.properties.get('Value', ''),

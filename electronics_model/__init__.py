@@ -24,6 +24,8 @@ from .DebugPorts import SwdHostPort, SwdTargetPort, SwdPullPort, SwdLink
 from .SpeakerPort import SpeakerDriverPort, SpeakerPort, SpeakerLink
 from .CrystalPort import CrystalPort, CrystalDriver, CrystalLink
 from .UsbPort import UsbHostPort, UsbDevicePort, UsbPassivePort, UsbCcPort, UsbLink
+from .DvpPort import Dvp8Host, Dvp8Camera, Dvp8Link
+from .I2sPort import I2sController, I2sTargetReceiver, I2sLink
 
 from .ConnectedGenerator import VoltageSourceConnected, DigitalSourceConnected
 

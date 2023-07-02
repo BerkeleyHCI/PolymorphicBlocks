@@ -4,8 +4,13 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
+@non_library
+class Nrf52840_Interfaces(IoControllerI2s, IoControllerBle, BaseIoController):
+  """Defines base interfaces for nRF52840 microcontrollers"""
+
+
 @abstract_block
-class Nrf52840Base_Io(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Nrf52840Base_Io(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """nRF52840 IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
@@ -52,6 +57,7 @@ class Nrf52840Base_Io(BaseIoControllerPinmapGenerator, InternalSubcircuit, Gener
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiMaster(DigitalBidir.empty(), (125, 32000)*kHertz)
     i2c_model = I2cMaster(DigitalBidir.empty())
+    i2s_model = I2sController(DigitalBidir.empty())
 
     hf_io_pins = [
       'P0.00', 'P0.01', 'P0.26', 'P0.27', 'P0.04',
@@ -142,6 +148,9 @@ class Nrf52840Base_Io(BaseIoControllerPinmapGenerator, InternalSubcircuit, Gener
       }),
       PeripheralFixedResource('UART1', uart_model, {
         'tx': hf_io_pins, 'rx': hf_io_pins,
+      }),
+      PeripheralFixedResource('I2S', i2s_model, {
+        'sck': hf_io_pins, 'ws': hf_io_pins, 'sd': hf_io_pins,
       }),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
@@ -244,8 +253,8 @@ class Holyiot_18010_Device(Nrf52840Base_Device):
   DATASHEET = 'http://www.holyiot.com/tp/2019042516322180424.pdf'
 
 
-class Holyiot_18010(Microcontroller, Radiofrequency, IoControllerWithSwdTargetConnector, IoController,
-                    BaseIoControllerExportable):
+class Holyiot_18010(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
+                    IoControllerPowerRequired, BaseIoControllerExportable):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
@@ -261,7 +270,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, IoControllerWithSwdTargetCo
     self.connect(self.swd_node, self.ic.swd)
 
 
-class Mdbt50q_1mv2_Device(Nrf52840Base_Device, JlcPart):
+class Mdbt50q_1mv2_Device(Nrf52840_Base, JlcPart):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': ['28', '30'],  # 28=Vdd, 30=VddH; 31=DccH is disconnected - from section 8.3 for input voltage <3.6v
     'Vss': ['1', '2', '15', '33', '55'],
@@ -348,8 +357,8 @@ class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
     self.connect(self.usb_outer.dm, self.res_dm.b.adapt_to(DigitalBidir()))
 
 
-class Mdbt50q_1mv2(Microcontroller, Radiofrequency, IoControllerWithSwdTargetConnector, IoController,
-                   BaseIoControllerExportable):
+class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
+                   IoControllerPowerRequired, BaseIoControllerExportable):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)

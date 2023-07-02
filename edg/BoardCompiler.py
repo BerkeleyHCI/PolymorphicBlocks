@@ -4,7 +4,7 @@ from contextlib import suppress
 from typing import Type, Optional, Tuple
 
 from edg_core import Block, ScalaCompiler, CompiledDesign
-from electronics_model import NetlistBackend, BomBackend
+from electronics_model import NetlistBackend
 from electronics_model.RefdesRefinementPass import RefdesRefinementPass
 from electronics_model.BomBackend import GenerateBom
 
@@ -27,16 +27,22 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
     with suppress(FileNotFoundError):
       os.remove(bom_filename)
 
-  compiled = ScalaCompiler.compile(design)
+  compiled = ScalaCompiler.compile(design, ignore_errors=True)
   compiled.append_values(RefdesRefinementPass().run(compiled))
+
+  if target_dir_name is not None:  # always dump the proto even if there is an error
+    with open(design_filename, 'wb') as raw_file:
+      raw_file.write(compiled.design.SerializeToString())
+
+  if compiled.error:
+    import edg_core
+    raise edg_core.ScalaCompilerInterface.CompilerCheckError(f"error during compilation: \n{compiled.error}")
+
   netlist_all = NetlistBackend().run(compiled)
   bom_all = GenerateBom().run(compiled)
   assert len(netlist_all) == 1
 
   if target_dir_name is not None:
-    with open(design_filename, 'wb') as raw_file:
-      raw_file.write(compiled.design.SerializeToString())
-
     with open(netlist_filename, 'w', encoding='utf-8') as net_file:
       net_file.write(netlist_all[0][1])
 

@@ -48,7 +48,7 @@ class ImplicitConnectTestCase(unittest.TestCase):
     pb = AdapterTestTop()._elaborated_def_to_proto()
     adapter_pb = edgir.pair_get(pb.blocks, '(adapter)adapter_src.port')
 
-    self.assertEqual(adapter_pb.lib_elem.target.name, "edg_core.test_port_adapter.AdapterPortAdapter")
+    self.assertEqual(adapter_pb.lib_elem.base.target.name, "edg_core.test_port_adapter.AdapterPortAdapter")
     # ignore the other blocks
 
     self.assertEqual(len(pb.constraints), 4)

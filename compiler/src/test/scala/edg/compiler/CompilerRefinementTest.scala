@@ -131,8 +131,14 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
         instanceRefinements = Map(DesignPath() + "block" -> LibraryPath("block"))
       )
     )
-    compiler.compile()
-    compiler.getErrors() should not be empty
+    val compiled = compiler.compile()
+    new DesignStructuralValidate().map(compiled) should equal(Seq(
+      CompilerError.RefinementSubclassError(
+        DesignPath() + "block",
+        LibraryPath("block"),
+        LibraryPath("superclassBlock")
+      )
+    ))
   }
 
   "Compiler on design with instance refinement" should "work" in {

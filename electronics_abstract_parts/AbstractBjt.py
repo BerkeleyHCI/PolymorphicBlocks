@@ -28,7 +28,7 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor):
 
   @init_in_parent
   def __init__(self, collector_voltage: RangeLike, collector_current: RangeLike, *,
-               gain: RangeLike = Default(Range.all()), power: RangeLike = Default(Range.exact(0)),
+               gain: RangeLike = Range.all(), power: RangeLike = Range.exact(0),
                channel: StringLike = StringExpr()) -> None:
     super().__init__()
 

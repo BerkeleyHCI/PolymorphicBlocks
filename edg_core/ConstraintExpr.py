@@ -559,12 +559,3 @@ class LiteralConstructor:
       return RangeExpr._to_expr_type(Range(other[0], other[1]) * self.scale)
     else:
       raise TypeError(f"expected Float or Range Literal, got {other} of type {type(other)}")
-
-
-# TODO this is a placeholder that just returns the constraint itself
-# In the future, it should annotate the value with default-ness
-DefaultType = TypeVar('DefaultType', bound=Union[BoolLike, IntLike, FloatLike, RangeLike, StringLike])
-def Default(constr: DefaultType) -> DefaultType:
-  if isinstance(constr, ConstraintExpr):
-    assert constr.binding is not None, f"default {constr} must have initializer"
-  return constr

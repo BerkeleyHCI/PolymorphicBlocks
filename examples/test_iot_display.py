@@ -59,6 +59,8 @@ class IotDisplay(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
+      self.mcu.with_mixin(IoControllerWifi())
+
       # need to name the USB chain so the USB net has the _N and _P postfix for differential traces
       (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
@@ -108,7 +110,7 @@ class IotDisplay(JlcBoardTop):
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
-        (['reg_12v', 'power_path', 'inductor', 'actual_frequency_rating'], Range(0, 7e6)),
+        (['reg_12v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 7e6)),
         (['pwr_or', 'diode', 'part'], 'B5819W SL'),  # autopicked one is OOS
       ],
       class_refinements=[

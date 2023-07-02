@@ -14,6 +14,12 @@ class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.sw = self.Port(VoltageSink())
     self.fb = self.Port(AnalogSink(impedance=(12500, float('inf')) * kOhm))  # based on input current spec
 
+    self.nshdn = self.Port(DigitalSink(
+      voltage_limits=(0, 16) * Volt,
+      current_draw=(0, 55)*uAmp,
+      input_thresholds=(0.4, 1.5)*Volt
+    ))
+
   def contents(self):
     super().contents()
     self.footprint(
@@ -22,7 +28,7 @@ class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         '1': self.sw,
         '2': self.gnd,
         '3': self.fb,
-        '4': self.pwr_in,  # /SHDN
+        '4': self.nshdn,
         '5': self.pwr_in,
       },
       mfr='Diodes Incorporated', part='AP3012K',
@@ -32,8 +38,11 @@ class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Ap3012(DiscreteBoostConverter):
+class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   """Adjustable boost converter in SOT-23-5 with integrated switch"""
+  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+    return self.ic.nshdn
+
   def contents(self):
     super().contents()
 

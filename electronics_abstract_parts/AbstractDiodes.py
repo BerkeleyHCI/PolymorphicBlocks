@@ -58,8 +58,8 @@ class Diode(KiCadImportableBlock, BaseDiode):
 
   @init_in_parent
   def __init__(self, reverse_voltage: RangeLike, current: RangeLike, *,
-               voltage_drop: RangeLike = Default(Range.all()),
-               reverse_recovery_time: RangeLike = Default(Range.all())) -> None:
+               voltage_drop: RangeLike = Range.all(),
+               reverse_recovery_time: RangeLike = Range.all()) -> None:
     super().__init__()
 
     self.reverse_voltage = self.ArgParameter(reverse_voltage)
