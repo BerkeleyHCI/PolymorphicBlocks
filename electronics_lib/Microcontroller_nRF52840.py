@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import *
 
 from electronics_abstract_parts import *
@@ -10,66 +11,40 @@ class Nrf52840_Interfaces(IoControllerI2s, IoControllerBle, BaseIoController):
 
 
 @abstract_block
-class Nrf52840_Base(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
-  """nRF52840 base device and IO mappings
+class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+  """nRF52840 IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
-  PACKAGE: str  # package name for footprint(...)
-  MANUFACTURER: str
-  PART: str  # part name for footprint(...)
-  DATASHEET: str
-
-  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-  def __init__(self, **kwargs) -> None:
-    super().__init__(**kwargs)
+  @abstractmethod
+  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+    ...
 
-    self.pwr = self.Port(VoltageSink(
+  def _vdd_model(self) -> VoltageSink:
+    return VoltageSink(
       voltage_limits=(1.75, 3.6)*Volt,  # 1.75 minimum for power-on reset
       current_draw=(0, 212 / 64 + 4.8)*mAmp + self.io_current_draw.upper()  # CPU @ max 212 Coremarks + 4.8mA in RF transmit
-    ), [Power])
-    self.gnd = self.Port(Ground(), [Common])
+    )
 
-    self.pwr_usb = self.Port(VoltageSink(
-      voltage_limits=(4.35, 5.5)*Volt,
-      current_draw=(0.262, 7.73) * mAmp  # CPU/USB sleeping to everything active
-    ), optional=True)
-    self.require((self.usb.length() > 0).implies(self.pwr_usb.is_connected()), "USB require Vbus connected")
-
-    # Additional ports (on top of IoController)
-    # Crystals from table 15, 32, 33
-    # TODO Table 32, model crystal load capacitance and series resistance ratings
-    self.xtal = self.Port(CrystalDriver(frequency_limits=(1, 25)*MHertz, voltage_out=self.pwr.link().voltage),
-                          optional=True)
-    # Assumed from "32kHz crystal" in 14.5
-    self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.pwr.link().voltage),
-                              optional=True)
-
-    self.swd = self.Port(SwdTargetPort().empty())
-    self._io_ports.insert(0, self.swd)
-
-  def _system_pinmap(self) -> Dict[str, CircuitPort]:
-    return VariantPinRemapper({
-      'Vdd': self.pwr,
-      'Vss': self.gnd,
-      'Vbus': self.pwr_usb,
-    }).remap(self.SYSTEM_PIN_REMAP)
-
-  def _io_pinmap(self) -> PinMapUtil:
-    """Returns the mappable for given the input power and ground references.
-    This separates the system pins definition from the IO pins definition."""
-    dio_model = DigitalBidir.from_supply(
-      self.gnd, self.pwr,
+  def _dio_model(self, gnd: Port[VoltageLink], pwr: Port[VoltageLink]) -> DigitalBidir:
+    return DigitalBidir.from_supply(
+      gnd, pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-6, 6)*mAmp,  # minimum current, high drive, Vdd>2.7
       current_draw=(0, 0)*Amp,
       input_threshold_factor=(0.3, 0.7),
       pullup_capable=True, pulldown_capable=True,
     )
+
+  def _io_pinmap(self) -> PinMapUtil:
+    """Returns the mappable for given the input power and ground references.
+    This separates the system pins definition from the IO pins definition."""
+    gnd, pwr = self._gnd_vddio()
+    dio_model = self._dio_model(gnd, pwr)
     dio_lf_model = dio_model  # "standard drive, low frequency IO only" (differences not modeled)
 
     adc_model = AnalogSink(
-      voltage_limits=(self.gnd.link().voltage.upper(), self.pwr.link().voltage.lower()) +
+      voltage_limits=(gnd.link().voltage.upper(), pwr.link().voltage.lower()) +
                      (-0.3, 0.3) * Volt,
       current_draw=(0, 0) * Amp,
       impedance=Range.from_lower(1)*MOhm
@@ -84,7 +59,7 @@ class Nrf52840_Base(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Intern
       'P0.00', 'P0.01', 'P0.26', 'P0.27', 'P0.04',
       'P0.05', 'P0.06', 'P0.07', 'P0.08', 'P1.08', 'P1.09', 'P0.11', 'P0.12',
       'P0.14', 'P0.16', 'P0.19', 'P0.21', 'P0.23', 'P0.25',  # 'P0.18'
-      'P0.13', 'P0.15', 'P0.17', 'P0.20', 'P0.22', 'P0.24',  # 'P1.00'
+      'P0.13', 'P0.15', 'P0.17', 'P0.20', 'P0.22', 'P0.24',  'P1.00',
     ]
 
     return PinMapUtil([  # Section 7.1.2 with QIAA aQFN73 & QFAA QFN48 pins only
@@ -175,15 +150,44 @@ class Nrf52840_Base(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Intern
       }),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
-  def generate(self) -> None:
-    super().generate()
 
-    self.footprint(
-      'U', self.PACKAGE,
-      self._make_pinning(),
-      mfr=self.MANUFACTURER, part=self.PART,
-      datasheet=self.DATASHEET
-    )
+@abstract_block
+class Nrf52840_Base(Nrf52840_Ios, IoControllerPowerRequired, InternalSubcircuit, GeneratorBlock):
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
+
+  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+    return self.gnd, self.pwr
+
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return VariantPinRemapper({
+      'Vdd': self.pwr,
+      'Vss': self.gnd,
+      'Vbus': self.pwr_usb,
+    }).remap(self.SYSTEM_PIN_REMAP)
+
+  def __init__(self, **kwargs) -> None:
+    super().__init__(**kwargs)
+
+    self.pwr.init_from(self._vdd_model())
+    self.gnd.init_from(Ground())
+
+    self.pwr_usb = self.Port(VoltageSink(
+      voltage_limits=(4.35, 5.5)*Volt,
+      current_draw=(0.262, 7.73) * mAmp  # CPU/USB sleeping to everything active
+    ), optional=True)
+    self.require((self.usb.length() > 0).implies(self.pwr_usb.is_connected()), "USB require Vbus connected")
+
+    # Additional ports (on top of IoController)
+    # Crystals from table 15, 32, 33
+    # TODO Table 32, model crystal load capacitance and series resistance ratings
+    self.xtal = self.Port(CrystalDriver(frequency_limits=(1, 25)*MHertz, voltage_out=self.pwr.link().voltage),
+                          optional=True)
+    # Assumed from "32kHz crystal" in 14.5
+    self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.pwr.link().voltage),
+                              optional=True)
+
+    self.swd = self.Port(SwdTargetPort().empty())
+    self._io_ports.insert(0, self.swd)
 
 
 class Holyiot_18010_Device(Nrf52840_Base):
@@ -229,10 +233,15 @@ class Holyiot_18010_Device(Nrf52840_Base):
     'P0.10': '36',
   }
 
-  PACKAGE = 'edg:Holyiot-18010-NRF52840'
-  MANUFACTURER = 'Holyiot'
-  PART = '18010'
-  DATASHEET = 'http://www.holyiot.com/tp/2019042516322180424.pdf'
+  def generate(self) -> None:
+    super().generate()
+
+    self.footprint(
+      'U', 'edg:Holyiot-18010-NRF52840',
+      self._make_pinning(),
+      mfr='Holyiot', part='18010',
+      datasheet='http://www.holyiot.com/tp/2019042516322180424.pdf'
+    )
 
 
 class Holyiot_18010(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
@@ -316,15 +325,18 @@ class Mdbt50q_1mv2_Device(Nrf52840_Base, JlcPart):
     'P1.01': '61',
   }
 
-  PACKAGE = 'RF_Module:Raytac_MDBT50Q'
-  MANUFACTURER = 'Raytac'
-  PART = 'MDBT50Q-1MV2'
-  DATASHEET = 'https://www.raytac.com/download/index.php?index_id=43'
+  def generate(self) -> None:
+    super().generate()
 
-  def contents(self):
-    super().contents()
     self.assign(self.lcsc_part, 'C5118826')
     self.assign(self.actual_basic_part, False)
+    self.footprint(
+      'U', 'RF_Module:Raytac_MDBT50Q',
+      self._make_pinning(),
+      mfr='Raytac', part='MDBT50Q-1MV2',
+      datasheet='https://www.raytac.com/download/index.php?index_id=43'
+    )
+
 
 class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
   def __init__(self):
@@ -367,3 +379,102 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoContr
       self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
     else:
       super()._make_export_io(self_io, inner_io)
+
+
+class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, IoController, GeneratorBlock,
+                       FootprintBlock):
+  """Feather nRF52840 socketed dev board as either power source or sink"""
+
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    'Vdd': '2',  # 3v3
+    'Vss': '4',
+
+    # 'reset': '1',
+    'Vbus': '26',
+    # 'EN': '27',  # controls the onboard 3.3 LDO, internally pulled up
+    # 'Vbat': '28',
+  }
+  RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
+    'P0.31': '3',  # AREF
+    'P0.04': '5',  # A0
+    'P0.05': '6',  # A1
+    'P0.30': '7',  # A2
+    'P0.28': '8',  # A3
+    'P0.02': '9',  # A4
+    'P0.03': '10',  # A5
+    'P0.14': '11',  # SCK
+    'P0.13': '12',  # MOSI
+    'P0.15': '13',  # MISO
+    'P0.24': '14',  # RXD
+    'P0.25': '15',  # TXD
+    'P0.10': '16',  # D2
+
+    'P0.12': '17',  # SDA
+    'P0.11': '18',  # SCL
+    'P1.08': '19',  # D5
+    'P0.07': '20',  # D6
+    'P0.26': '21',  # D9
+    'P0.27': '22',  # D10
+    'P0.06': '23',  # D11
+    'P0.08': '24',  # D12
+    'P1.09': '25',  # D13
+
+    # note onboard LED1 at P1.15, LED2 at P1.10
+    # note onboard switch at P1.02, reset switch at P0.18
+    # note onboard neopixel at P0.16 (data out not broken out)
+    # note onboard VBAT sense divider at P0.29
+  }
+
+  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+    if self.get(self.gnd.is_connected()):  # board sinks power
+      return self.gnd, self.pwr
+    else:
+      return self.gnd_out, self.pwr_out
+
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    if self.get(self.gnd.is_connected()):  # board sinks power
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
+      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
+      return VariantPinRemapper({
+        'Vdd': self.pwr,
+        'Vss': self.gnd,
+      }).remap(self.SYSTEM_PIN_REMAP)
+    else:  # board sources power (default)
+      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
+      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")
+      return VariantPinRemapper({
+        'Vdd': self.pwr_out,
+        'Vss': self.gnd_out,
+        'Vbus': self.vusb_out,
+      }).remap(self.SYSTEM_PIN_REMAP)
+
+  def contents(self):
+    super().contents()
+
+    self.gnd.init_from(Ground())
+    self.pwr.init_from(self._vdd_model())
+
+    mbr120_drop = (0, 0.340)*Volt
+    ap2112_3v3_out = 3.3*Volt(tol=0.015)  # note dropout voltage up to 400mV, current up to 600mA
+    self.gnd_out.init_from(GroundSource())
+    self.vusb_out.init_from(VoltageSource(
+      voltage_out=UsbConnector.USB2_VOLTAGE_RANGE - mbr120_drop,
+      current_limits=UsbConnector.USB2_CURRENT_LIMITS
+    ))
+    self.pwr_out.init_from(VoltageSource(
+      voltage_out=ap2112_3v3_out,
+      current_limits=UsbConnector.USB2_CURRENT_LIMITS
+    ))
+
+    self.generator_param(self.gnd.is_connected())
+
+  def generate(self) -> None:
+    super().generate()
+
+    self.footprint(
+      'U', 'bldc:FEATHERWING_NODIM',
+      self._make_pinning(),
+      mfr='Adafruit', part='Feather nRF52840 Express',
+      datasheet='https://learn.adafruit.com/assets/68545'
+    )

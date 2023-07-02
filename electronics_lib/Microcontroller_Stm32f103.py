@@ -255,7 +255,7 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 class Stm32f103Base(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator,
                     IoControllerPowerRequired, BaseIoControllerExportable):
   DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
-  DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
+  DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)

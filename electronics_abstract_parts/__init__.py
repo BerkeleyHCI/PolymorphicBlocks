@@ -23,7 +23,8 @@ from .SmdStandardPackage import SmdStandardPackage, SmdStandardPackageSelector
 from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack
 from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor
-from .AbstractResistor import PulldownResistor, PullupResistor, SeriesPowerResistor, CurrentSenseResistor
+from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
+from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor
 from .AbstractResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
 from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CapacitorStandardFootprint, TableDeratingCapacitor
 from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor
@@ -58,7 +59,7 @@ from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRe
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
 from .AbstractFuse import Fuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
-from .AbstractCrystal import Crystal, TableCrystal, OscillatorCrystal
+from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
 from .AbstractOscillator import Oscillator, TableOscillator
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetWithSwoTdiConnector
 from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, AnalogTestPoint

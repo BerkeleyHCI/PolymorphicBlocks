@@ -1,5 +1,5 @@
 from .IoController import IoController
-from .AbstractCrystal import OscillatorCrystal
+from .AbstractCrystal import OscillatorReference
 from electronics_model import *
 
 
@@ -21,6 +21,6 @@ class WithCrystalGenerator(IoController, GeneratorBlock):
   def generate(self):
     super().generate()
     if self._crystal_required():
-      self.crystal = self.Block(OscillatorCrystal(self.DEFAULT_CRYSTAL_FREQUENCY))
+      self.crystal = self.Block(OscillatorReference(self.DEFAULT_CRYSTAL_FREQUENCY))
       self.connect(self.crystal.gnd, self.gnd)
       self.connect(self.xtal_node, self.crystal.crystal)

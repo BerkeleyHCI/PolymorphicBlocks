@@ -162,7 +162,6 @@ class Esp32s3_Base(Esp32s3_Ios, IoControllerPowerRequired, InternalSubcircuit, G
     self.gnd.init_from(Ground())
 
     dio_model = self._dio_model(self.gnd, self.pwr)
-
     self.chip_pu = self.Port(dio_model)  # table 2-5, power up/down control, do NOT leave floating
     self.io0 = self.Port(dio_model, optional=True)  # table 2-11, default pullup (SPI boot), set low to download boot
     self.uart0 = self.Port(UartPort(dio_model), optional=True)  # programming
@@ -251,7 +250,7 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Esp32s
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
 
 
-class Freenove_Esp32s3_Wroom(IoControllerUsbOut, Esp32s3_Ios, IoControllerPowerOut, IoController, GeneratorBlock,
+class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_Ios, IoController, GeneratorBlock,
                              FootprintBlock):
   """Freenove ESP32S3 WROOM breakout breakout with camera.
 
@@ -334,8 +333,8 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, Esp32s3_Ios, IoControllerPowerO
       })
     ])
 
-  def __init__(self, **kawrgs) -> None:
-    super().__init__(**kawrgs)
+  def contents(self) -> None:
+    super().contents()
 
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._vdd_model())

@@ -141,9 +141,7 @@ class Esp32_Base(Esp32_Ios, IoController, InternalSubcircuit, GeneratorBlock):
     self.gnd.init_from(Ground())
 
     dio_model = self._dio_model(self.pwr, self.gnd)
-
     self.chip_pu = self.Port(dio_model)  # power control, must NOT be left floating, table 1
-
     # section 2.4, table 5: strapping IOs that need a fixed value to boot, TODO currently not allocatable post-boot
     self.io0 = self.Port(dio_model, optional=True)  # default pullup (SPI boot), set low to download boot
     self.io2 = self.Port(dio_model, optional=True)  # default pulldown (enable download boot), ignored during SPI boot
@@ -251,7 +249,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Esp32_I
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
 
 
-class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, IoController, Esp32_Ios, GeneratorBlock,
+class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios, IoController, GeneratorBlock,
                             FootprintBlock):
   """ESP32-WROVER-DEV breakout with camera.
 

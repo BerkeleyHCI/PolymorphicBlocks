@@ -207,7 +207,7 @@ class Ft232hl(Interface, GeneratorBlock):
 
     self.connect(self.ic.vccd.as_digital_source(), self.ic.nreset)  # in concept driven by VccIO
 
-    self.crystal = self.Block(OscillatorCrystal(frequency=12*MHertz(tol=30e-6)))
+    self.crystal = self.Block(OscillatorReference(frequency=12*MHertz(tol=30e-6)))
     self.connect(self.crystal.gnd, self.gnd)
     self.connect(self.crystal.crystal, self.ic.osc)
 

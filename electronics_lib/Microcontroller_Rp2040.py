@@ -220,7 +220,7 @@ class Rp2040Usb(InternalSubcircuit, Block):
 
 class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoControllerPowerRequired,
              BaseIoControllerExportable):
-  DEFAULT_CRYSTAL_FREQUENCY = 12 * MHertz(tol=0.005)
+  DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)

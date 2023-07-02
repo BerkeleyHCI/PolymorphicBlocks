@@ -31,6 +31,7 @@ from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061
 from .Opamp_Opa197 import Opa197
 from .Opamp_Lmv321 import Lmv321
+from .CeramicResonator_Cstne import Cstne
 
 from .PassiveConnector_Header import PinHeader254, PinSocket254, PinHeader254DualShroudedInline, PinHeader127DualShrouded
 from .PassiveConnector_Header import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl
@@ -56,7 +57,7 @@ from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Stm32f303 import Nucleo_F303k8
-from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2
+from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2, Feather_Nrf52840
 from .Microcontroller_Esp import EspAutoProgrammingHeader, EspProgrammingPins, EspProgrammingTc2030, HasEspProgramming
 from .Microcontroller_Esp import EspAutoProgram
 from .Microcontroller_Esp32 import Esp32_Wroom_32, Freenove_Esp32_Wrover

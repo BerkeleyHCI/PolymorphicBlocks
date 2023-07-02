@@ -54,16 +54,24 @@ class I2cConnector(Connector, Block):
     self.connect(self.i2c.scl, self.conn.pins.request('4').adapt_to(DigitalBidir()))
 
 
-class PowerOutConnector(Connector, Block):
-  """Parameterized current draw voltage output connector"""
-  @init_in_parent
-  def __init__(self, current: RangeLike):
+class BldcHallSensor(Connector, Block):
+  """Generic BLDC hall sensor, as +5v, U, V, W, GND"""
+  def __init__(self):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
-    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()), [Common])
-    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink(
-      current_draw=current
+
+    self.pwr = self.Export(self.conn.pins.request('1').adapt_to(VoltageSink(
+      voltage_limits=5*Volt(tol=0.1),
     )), [Power])
+    self.gnd = self.Export(self.conn.pins.request('5').adapt_to(Ground()),
+                           [Common])
+
+    self.phases = self.Port(Vector(DigitalSingleSource.empty()))
+    phase_model = DigitalSingleSource.low_from_supply(self.gnd)
+    for (pin, name) in [('2', 'u'), ('3', 'v'), ('4', 'w')]:
+      phase = self.phases.append_elt(DigitalSingleSource.empty(), name)
+      self.require(phase.is_connected(), f"all phases {name} must be connected")
+      self.connect(phase, self.conn.pins.request(pin).adapt_to(phase_model))
 
 
 class BldcController(JlcBoardTop):
@@ -72,74 +80,81 @@ class BldcController(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    # technically this needs to bootstrap w/ 5v before the MCU
-    # negotiates a higher voltage, but the BLDC driver needs
-    # at least 8v, so this "assumes" the USB will be at least 9v
-    self.usb = self.Block(UsbCReceptacle(
-      voltage_out=(9.0*0.9, 12*1.1)*Volt,
-      current_limits=(0, 5)*Amp))
+    self.mcu = self.Block(IoController())
+    mcu_pwr = self.mcu.with_mixin(IoControllerPowerOut())
+    mcu_usb = self.mcu.with_mixin(IoControllerUsbOut())
 
-    self.vusb = self.connect(self.usb.pwr)
-    self.gnd = self.connect(self.usb.gnd)
+    self.motor_pwr = self.Block(LipoConnector(voltage=(2.5, 4.2)*Volt*6, actual_voltage=(2.5, 4.2)*Volt*6))
 
-    self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
-
-    # POWER
-    with self.implicit_connect(
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      (self.prot_vusb, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-        self.vusb,
-        imp.Block(ProtectionZenerDiode(voltage=15*Volt(tol=0.1))),
-        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
-        self.Block(VoltageTestPoint()),
-        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
-      )
-      self.v3v3 = self.connect(self.reg_3v3.pwr_out)
-
-      (self.reg_5v, self.tp_5v), _ = self.chain(
-        self.vusb,
-        imp.Block(LinearRegulator(output_voltage=5.0*Volt(tol=0.05))),
-        self.Block(VoltageTestPoint()),
-      )
-      self.v5 = self.connect(self.reg_5v.pwr_out)
+    self.vusb = self.connect(mcu_usb.vusb_out)
+    self.v3v3 = self.connect(mcu_pwr.pwr_out)
+    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
+      mcu_pwr.gnd_out, self.motor_pwr.gnd)
+    self.gnd = self.connect(self.gnd_merge.pwr_out)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(IoController())
-
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
+      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
+      (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
+      (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
 
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
-
-      self.pd = imp.Block(Fusb302b())
-      self.connect(self.usb.pwr, self.pd.vbus)
-      self.connect(self.usb.cc, self.pd.cc)
       i2c_bus = self.mcu.i2c.request('i2c')
-      (self.i2c_pull, self.i2c_tp), _ = self.chain(
-        i2c_bus, imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
-        self.pd.i2c)
-      self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
+      (self.i2c_pull, self.i2c_tp, self.i2c), _ = self.chain(
+        i2c_bus, imp.Block(I2cPullup()), imp.Block(I2cTestPoint()), imp.Block(I2cConnector()))
 
-      (self.mag, ), _ = self.chain(imp.Block(MagneticEncoder()), self.mcu.adc.request('mag'))
-      (self.i2c, ), _ = self.chain(imp.Block(I2cConnector()), i2c_bus)
+      (self.ref_div, self.ref_buf, self.ref_tp), _ = self.chain(
+        self.v3v3,
+        imp.Block(VoltageDivider(output_voltage=1.5*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
+        imp.Block(OpampFollower()),
+        self.Block(AnalogTestPoint())
+      )
+      self.vref = self.ref_buf.output
+
+    # HALL SENSOR
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.hall = imp.Block(BldcHallSensor())
+      self.connect(self.vusb, self.hall.pwr)
+
+      (self.hall_pull, self.hall_tp), _ = self.chain(self.hall.phases,
+                                                self.Block(PullupResistorArray(4.7*kOhm(tol=0.05))),
+                                                self.Block(DigitalArrayTestPoint()),
+                                                self.mcu.gpio.request_vector('hall'))
+      self.connect(self.hall_pull.pwr, self.v3v3)
 
     # BLDC CONTROLLER
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      self.vsense = imp.Block(VoltageSenseDivider(full_scale_voltage=(3.0, 3.3)*Volt,
+                                                  impedance=10*kOhm(tol=0.2)))
+      self.connect(self.motor_pwr.pwr, self.vsense.input)
+      (self.vsense_tp, ), _ = self.chain(self.vsense.output, self.Block(AnalogTestPoint()), self.mcu.adc.request('vsense'))
+
+      self.isense = imp.Block(OpampCurrentSensor(
+        resistance=0.05*Ohm(tol=0.01),
+        ratio=Range.from_tolerance(20, 0.05), input_impedance=10*kOhm(tol=0.05)
+      ))
+      self.connect(self.motor_pwr.pwr, self.isense.pwr_in)
+      self.connect(self.isense.pwr, self.v3v3)
+      self.connect(self.isense.ref, self.vref)
+      (self.isense_tp, ), _ = self.chain(self.isense.out, self.Block(AnalogTestPoint()), self.mcu.adc.request('isense'))
+
       self.bldc_drv = imp.Block(Drv8313())
-      self.connect(self.vusb, self.bldc_drv.pwr)
+      self.connect(self.isense.pwr_out, self.bldc_drv.pwr)
 
       self.connect(self.mcu.gpio.request('bldc_reset'), self.bldc_drv.nreset)
       (self.bldc_fault_tp, ), _ = self.chain(self.mcu.gpio.request('bldc_fault'),
                                              self.Block(DigitalTestPoint()),
                                              self.bldc_drv.nfault)
-      self.connect(self.mcu.gpio.request_vector('bldc_en'), self.bldc_drv.ens)
+      (self.bldc_en_tp, ), _ = self.chain(self.mcu.gpio.request_vector('bldc_en'),
+                                          self.Block(DigitalArrayTestPoint()),
+                                          self.bldc_drv.ens)
       (self.bldc_in_tp, ), _ = self.chain(self.mcu.gpio.request_vector('bldc_in'),
                                           self.Block(DigitalArrayTestPoint()),
                                           self.bldc_drv.ins)
@@ -152,7 +167,7 @@ class BldcController(JlcBoardTop):
       self.curr_tp = ElementDict[AnalogTestPoint]()
       for i in ['1', '2', '3']:
         self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
-            .connected(self.usb.gnd, self.bldc_drv.pgnds.request(i))
+            .connected(self.gnd_merge.pwr_out, self.bldc_drv.pgnds.request(i))
 
         self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
         self.connect(self.curr_amp[i].pwr, self.v3v3)
@@ -160,85 +175,37 @@ class BldcController(JlcBoardTop):
                                             self.Block(AnalogTestPoint()),
                                             self.mcu.adc.request(f'curr_{i}'))
 
-    # 5V DOMAIN
-    with self.implicit_connect(
-        ImplicitConnect(self.v5, [Power]),
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      (self.rgb_pull, self.rgb_tp, self.rgb, ), _ = self.chain(
-        self.mcu.gpio.request('rgb').as_open_drain(),
-        imp.Block(PullupResistor(10*kOhm(tol=0.05))),
-        imp.Block(DigitalTestPoint()),
-        imp.Block(Sk6812Mini_E()))
-
-    # BUCK BOOST TEST CIRCUIT
-    with self.implicit_connect(
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.conv_foced_voltage = self.Block(ForcedVoltage(20*Volt(tol=0)))  # force tighter duty cycles
-      self.connect(self.vusb, self.conv_foced_voltage.pwr_in)
-      self.conv = imp.Block(CustomBuckBoostConverter((14, 28)*Volt,
-                                                     voltage_drop=(0, 0.75)*Volt,
-                                                     pwm_frequency=(1000, 1000)*kHertz,
-                                                     ripple_current_factor=(0.01, 1.0),
-                                                     rds_on=(0, 0.1)*Ohm))
-      self.connect(self.conv.pwr_in, self.conv_foced_voltage.pwr_out)
-      (self.buck_pull, self.buck_tp), _ = self.chain(self.mcu.gpio.request('buck_pwm'),
-                                                     imp.Block(PulldownResistor(1*kOhm(tol=0.05))),
-                                                     self.Block(DigitalTestPoint()),
-                                                     self.conv.buck_pwm)
-      (self.boost_pull, self.boost_tp), _ = self.chain(self.mcu.gpio.request('boost_pwm'),
-                                                       imp.Block(PulldownResistor(1*kOhm(tol=0.05))),
-                                                       self.Block(DigitalTestPoint()),
-                                                       self.conv.boost_pwm)
-      self.conv_out = imp.Block(PowerOutConnector((0, 0.50)*Amp))
-      self.connect(self.conv.pwr_out, self.conv_out.pwr)
-
-      # TODO update to use VoltageSenseDivider
-      div_model = VoltageDivider(output_voltage=(1.0, 3.3)*Volt, impedance=(100, 1000) * Ohm)
-      (self.conv_sense, ), _ = self.chain(self.conv.pwr_out, imp.Block(div_model), self.mcu.adc.request('conv_sense'))
-
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.lemur = self.Block(LemurLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
-    self.id = self.Block(IdDots4())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Stm32f103_48),
-        (['reg_3v3'], Ldl1117),
-        (['reg_5v'], Ldl1117),
-        (['sw1', 'package'], KailhSocket),
+        (['mcu'], Feather_Nrf52840),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          'bldc_reset=26',
-          'bldc_fault=25',
-          'bldc_en_3=22',
-          'bldc_in_3=21',
-          'bldc_en_2=20',
-          'bldc_in_2=19',
-          'bldc_en_1=18',
-          'bldc_in_1=17',
-          'curr_3=16',
-          'curr_2=14',
-          'curr_1=15',
-
-          'buck_pwm=11',
-          'boost_pwm=12',
-          'conv_sense=13',
-
-          'sw1=38',
-          'rgb=40',
-
-          'i2c=I2C1',  # TODO this should be inferred, see issue 169
-          'i2c.scl=42',
-          'i2c.sda=43',
-          'pd_int=45',
+          'ledb=3',
+          'isense=5',
+          'vsense=6',
+          'ledg=7',
+          'curr_3=8',
+          'curr_2=9',
+          'curr_1=10',
+          'bldc_in_1=11',
+          'bldc_en_1=12',
+          'bldc_in_2=13',
+          'bldc_en_2=14',
+          'bldc_in_3=15',
+          'ledr=16',
+          'bldc_en_3=17',
+          'bldc_reset=18',
+          'bldc_fault=19',
+          'sw1=20',
+          'i2c.sda=21',
+          'i2c.scl=22',
+          'hall_u=23',
+          'hall_v=24',
+          'hall_w=25',
         ]),
-        (['mcu', 'swd_swo_pin'], 'PB3'),  # TODO maybe use a UART capable pin
+        (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
         (['curr[2]', 'res', 'res', 'require_basic_part'], ParamValue(['curr[1]', 'res', 'res', 'require_basic_part'])),
@@ -246,25 +213,16 @@ class BldcController(JlcBoardTop):
         (['curr[3]', 'res', 'res', 'require_basic_part'], ParamValue(['curr[1]', 'res', 'res', 'require_basic_part'])),
         (['curr[3]', 'res', 'res', 'footprint_spec'], ParamValue(['curr[1]', 'res', 'res', 'footprint_spec'])),
 
-        # doesn't seem to be available at JLC
-        # (['conv', 'in_high_switch', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-223-3_TabPin2'),
-        (['conv', 'out_low_switch', 'footprint_spec'], 'Package_TO_SOT_SMD:SOT-223-3_TabPin2'),
+        (["bldc_drv", "vm_cap_bulk", "cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap
+        (["bldc_drv", "cp_cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap
 
-        # JLC does not have frequency specs, must be checked TODO
-        (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
-        (['conv', 'power_path', 'inductor', 'lcsc_part'], 'C497840'),  # selected part out of stock
-
-        # keep netlist footprints as libraries change
-        (['conv', 'in_high_switch', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (["hall", "pwr", "voltage_limits"], Range(4, 5.5)),  # allow with the Feather Vbus diode drop
       ],
       class_refinements=[
-        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050),
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
       ],
       class_values=[
-        # for compatibility, this board was manufactured before derating was supported and does not compile otherwise
-        (Capacitor, ["voltage_rating_derating"], 1.0),
       ],
     )
 

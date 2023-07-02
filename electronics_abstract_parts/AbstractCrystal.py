@@ -34,15 +34,15 @@ class CrystalStandardFootprint(Crystal, StandardFootprint[Crystal]):
 
   FOOTPRINT_PINNING_MAP = {
     'Oscillator:Oscillator_SMD_Abracon_ASE-4Pin_3.2x2.5mm': lambda block: {
-      '1': block.crystal.a,
+      '1': block.crystal.xtal_in,
       '2': block.gnd,
-      '3': block.crystal.b,
+      '3': block.crystal.xtal_out,
       '4': block.gnd,
     },
     'Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm': lambda block: {
-      '1': block.crystal.a,
+      '1': block.crystal.xtal_in,
       '2': block.gnd,
-      '3': block.crystal.b,
+      '3': block.crystal.xtal_out,
       '4': block.gnd,
     },
   }
@@ -69,7 +69,23 @@ class TableCrystal(CrystalStandardFootprint, PartsTableFootprintSelector):
     self.assign(self.actual_capacitance, row[self.CAPACITANCE])
 
 
-class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate from part?
+@abstract_block_default(lambda: OscillatorCrystal)
+class OscillatorReference(DiscreteApplication):
+  @init_in_parent
+  def __init__(self, frequency: RangeLike) -> None:
+    """Crystal and supporting circuitry to connect it to an oscillator driver.
+    Should include load capacitors."""
+    super().__init__()
+
+    self.crystal = self.Port(CrystalPort.empty(), [InOut])
+    self.gnd = self.Port(Ground.empty(), [Common])
+
+    self.frequency = self.ArgParameter(frequency)
+
+
+class OscillatorCrystal(OscillatorReference):  # TODO rename to disambiguate from part?
+  """Crystal and supporting circuitry to connect it to an oscillator driver.
+  Should include load capacitors."""
   PARASITIC_CAPACITANCE = 5e-12
 
   # Tolerance selected using table 32 in https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf, which gives suggested
@@ -81,15 +97,10 @@ class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate fro
   # TODO this should be formalized better.
   CAPACITOR_TOLERANCE = 0.38
 
-  @init_in_parent
-  def __init__(self, frequency: RangeLike) -> None:
-    """Crystal and supporting circuitry to connect it to an oscillator driver.
-    Should include load capacitors."""
-    super().__init__()
+  def contents(self) -> None:
+    super().contents()
 
-    self.package = self.Block(Crystal(frequency=frequency))
-    self.crystal = self.Export(self.package.crystal, [InOut])
-    self.gnd = self.Export(self.package.gnd, [Common])
+    self.package = self.Block(Crystal(self.frequency))
 
     cap_model = Capacitor(
       capacitance=(
@@ -99,7 +110,11 @@ class OscillatorCrystal(DiscreteApplication):  # TODO rename to disambiguate fro
     )
     self.cap_a = self.Block(cap_model)
     self.cap_b = self.Block(cap_model)
-    self.connect(self.cap_a.pos, self.crystal.a)
-    self.connect(self.cap_b.pos, self.crystal.b)
-    self.connect(self.gnd, self.cap_a.neg.adapt_to(Ground()),
-                 self.cap_b.neg.adapt_to(Ground()))
+    self.connect(self.crystal, self.package.crystal)
+    self.connect(self.crystal.xtal_in, self.cap_a.pos)
+    self.connect(self.crystal.xtal_out, self.cap_b.pos)
+    self.connect(self.gnd, self.cap_a.neg.adapt_to(Ground()), self.cap_b.neg.adapt_to(Ground()), self.package.gnd)
+
+
+class CeramicResonator(OscillatorReference):
+  """Category for ceramic resonators"""

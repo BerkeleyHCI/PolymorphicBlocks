@@ -15,8 +15,8 @@ class CrystalLink(Link):
     super().contents()
     self.require(self.driver.frequency_limits.contains(self.frequency))
 
-    self.xi = self.connect(self.driver.xtal_in, self.crystal.a)
-    self.xo = self.connect(self.driver.xtal_out, self.crystal.b)
+    self.xi = self.connect(self.driver.xtal_in, self.crystal.xtal_in)
+    self.xo = self.connect(self.driver.xtal_out, self.crystal.xtal_out)
 
 
 class CrystalPort(Bundle[CrystalLink]):
@@ -24,8 +24,8 @@ class CrystalPort(Bundle[CrystalLink]):
 
   def __init__(self, frequency: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
-    self.a = self.Port(Passive())  # TODO can this have voltages?
-    self.b = self.Port(Passive())
+    self.xtal_in = self.Port(Passive())
+    self.xtal_out = self.Port(Passive())
 
     self.frequency = self.Parameter(RangeExpr(frequency))
 
