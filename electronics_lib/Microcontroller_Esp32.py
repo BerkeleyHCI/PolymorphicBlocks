@@ -141,9 +141,7 @@ class Esp32_Base(Esp32_Ios, IoController, InternalSubcircuit, GeneratorBlock):
     self.gnd.init_from(Ground())
 
     dio_model = self._dio_model(self.pwr, self.gnd)
-
     self.chip_pu = self.Port(dio_model)  # power control, must NOT be left floating, table 1
-
     # section 2.4, table 5: strapping IOs that need a fixed value to boot, TODO currently not allocatable post-boot
     self.io0 = self.Port(dio_model, optional=True)  # default pullup (SPI boot), set low to download boot
     self.io2 = self.Port(dio_model, optional=True)  # default pulldown (enable download boot), ignored during SPI boot
@@ -330,8 +328,8 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, IoControll
         'GPIO2': self.io2,
       }).remap(self.SYSTEM_PIN_REMAP)
 
-  def __init__(self, **kawrgs) -> None:
-    super().__init__(**kawrgs)
+  def contents(self) -> None:
+    super().contents()
 
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._vdd_model())

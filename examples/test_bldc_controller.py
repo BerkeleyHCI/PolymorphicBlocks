@@ -92,13 +92,16 @@ class BldcController(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.mcu = self.Block(Feather_Nrf52840())
+    self.mcu = self.Block(IoController())
+    mcu_pwr = self.mcu.with_mixin(IoControllerPowerOut())
+    mcu_usb = self.mcu.with_mixin(IoControllerUsbOut())
+
     self.motor_pwr = self.Block(LipoConnector(voltage=(2.5, 4.2)*Volt*6, actual_voltage=(2.5, 4.2)*Volt*6))
 
-    self.vusb = self.connect(self.mcu.pwr_usb)
-    self.v3v3 = self.connect(self.mcu.pwr_3v3)
+    self.vusb = self.connect(mcu_usb.vusb_out)
+    self.v3v3 = self.connect(mcu_pwr.pwr_out)
     self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.mcu.gnd, self.motor_pwr.gnd)
+      mcu_pwr.gnd_out, self.motor_pwr.gnd)
     self.gnd = self.connect(self.gnd_merge.pwr_out)
 
     # 3V3 DOMAIN
@@ -189,6 +192,7 @@ class BldcController(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
+        (['mcu'], Feather_Nrf52840),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
