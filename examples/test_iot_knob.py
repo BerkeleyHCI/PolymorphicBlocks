@@ -9,6 +9,10 @@ class IotKnob(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
+    KNOB_LEDS = 3  # number of RGBs for the knob underglow
+    RING_LEDS = 18  # number of RGBs for the ring indicator
+    NUM_SECTIONS = 5  # number of buttons
+
     self.usb = self.Block(UsbCReceptacle(current_limits=(0, 3)*Amp))
 
     self.vusb = self.connect(self.usb.pwr)
@@ -55,7 +59,7 @@ class IotKnob(JlcBoardTop):
       self.connect(self.knob.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request('knob_sw'))
 
       self.sw = ElementDict[DigitalSwitch]()
-      for i in range(6):
+      for i in range(NUM_SECTIONS):
         (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
 
       self.oled = imp.Block(Er_Oled_096_1_1())
@@ -71,11 +75,16 @@ class IotKnob(JlcBoardTop):
         self.mcu.gpio.request('rgb'),
         imp.Block(L74Ahct1g125()),
         imp.Block(DigitalTestPoint()),
-        imp.Block(NeopixelArray(3)),
-        imp.Block(NeopixelArray(18)),
-        imp.Block(NeopixelArray(6)))
+        imp.Block(NeopixelArray(KNOB_LEDS)),
+        imp.Block(NeopixelArray(RING_LEDS)),
+        imp.Block(NeopixelArray(NUM_SECTIONS)))
 
-      # TODO ADD SPEAKER
+      (self.spk_drv, self.spk), _ = self.chain(
+        self.mcu.with_mixin(IoControllerI2s()).i2s.request('speaker'),
+        imp.Block(Max98357a()),
+        self.Block(Speaker())
+      )
+
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -96,6 +105,8 @@ class IotKnob(JlcBoardTop):
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
         (Neopixel, Sk6805_Ec15),
+        (Speaker, ConnectorSpeaker),
+        (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
       ],
       class_values=[
