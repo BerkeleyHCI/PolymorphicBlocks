@@ -250,7 +250,7 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Esp32s
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
 
 
-class Freenove_Esp32s3_Wroom(IoControllerUsbOut, Esp32s3_Ios, IoControllerPowerOut, IoController, GeneratorBlock,
+class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_Ios, IoController, GeneratorBlock,
                              FootprintBlock):
   """Freenove ESP32S3 WROOM breakout breakout with camera.
 

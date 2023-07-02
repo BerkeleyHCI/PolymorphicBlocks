@@ -168,7 +168,7 @@ class SwdDebugger(JlcBoardTop):
           'target_reset=PB0',
           'target_swo=PA10',
           'led_target=PA9',
-          'led_usb=PB6',  # CONNECTED_LED in DAPLing, LED_DAP_BLUE in F103 mbed HDK
+          'led_usb=PB6',  # CONNECTED_LED in DAPLink, LED_DAP_BLUE in F103 mbed HDK
           'target_reg_en=PB15',  # POWER_EN in DAPLink
         ]),
 

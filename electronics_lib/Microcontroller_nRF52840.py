@@ -381,9 +381,9 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoContr
       super()._make_export_io(self_io, inner_io)
 
 
-class Feather_Nrf52840(IoControllerUsbOut, Nrf52840_Ios, IoControllerPowerOut, IoController, GeneratorBlock,
+class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, IoController, GeneratorBlock,
                        FootprintBlock):
-  """Feather nRF52840 acting as a voltage source"""
+  """Feather nRF52840 socketed dev board as either power source or sink"""
 
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': '2',  # 3v3

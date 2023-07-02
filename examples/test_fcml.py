@@ -2,7 +2,18 @@ import unittest
 from typing import Optional, Dict
 
 from edg import *
-from .test_bldc_controller import PowerOutConnector
+
+
+class PowerOutConnector(Connector, Block):
+  """Parameterized current draw voltage output connector"""
+  @init_in_parent
+  def __init__(self, current: RangeLike):
+    super().__init__()
+    self.conn = self.Block(PassiveConnector())
+    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()), [Common])
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink(
+      current_draw=current
+    )), [Power])
 
 
 class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):

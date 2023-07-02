@@ -3,9 +3,8 @@ from electronics_lib.JlcPart import JlcPart
 
 
 class Cstne(CeramicResonator, GeneratorBlock, JlcPart, FootprintBlock):
-    @init_in_parent
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def contents(self):
+        super().contents()
         self.gnd.init_from(Ground())
         self.generator_param(self.frequency)
 

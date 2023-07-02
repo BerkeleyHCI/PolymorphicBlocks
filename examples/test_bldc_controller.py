@@ -74,18 +74,6 @@ class BldcHallSensor(Connector, Block):
       self.connect(phase, self.conn.pins.request(pin).adapt_to(phase_model))
 
 
-class PowerOutConnector(Connector, Block):
-  """Parameterized current draw voltage output connector"""
-  @init_in_parent
-  def __init__(self, current: RangeLike):
-    super().__init__()
-    self.conn = self.Block(PassiveConnector())
-    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()), [Common])
-    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink(
-      current_draw=current
-    )), [Power])
-
-
 class BldcController(JlcBoardTop):
   """Test BLDC (brushless DC motor) driver circuit with position feedback and USB PD
   """
@@ -115,10 +103,8 @@ class BldcController(JlcBoardTop):
       (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
 
       i2c_bus = self.mcu.i2c.request('i2c')
-      (self.i2c_pull, self.i2c_tp), _ = self.chain(
-        i2c_bus, imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
-
-      (self.i2c, ), _ = self.chain(imp.Block(I2cConnector()), i2c_bus)
+      (self.i2c_pull, self.i2c_tp, self.i2c), _ = self.chain(
+        i2c_bus, imp.Block(I2cPullup()), imp.Block(I2cTestPoint()), imp.Block(I2cConnector()))
 
       (self.ref_div, self.ref_buf, self.ref_tp), _ = self.chain(
         self.v3v3,

@@ -118,4 +118,3 @@ class OscillatorCrystal(OscillatorReference):  # TODO rename to disambiguate fro
 
 class CeramicResonator(OscillatorReference):
   """Category for ceramic resonators"""
-  pass
