@@ -72,8 +72,7 @@ class Ov2640_Fpc24(Sensor, GeneratorBlock):
         self.pwr_analog = self.Export(self.device.avdd)
         self.pwr_digital = self.Export(self.device.dvdd)
 
-        self.dvp8 = self.Port(Dvp8Camera())
-
+        self.dvp8 = self.Port(Dvp8Camera.empty())
         self.sio = self.Export(self.device.sio)
 
         self.pwdn = self.Port(DigitalSink.empty(), optional=True)
