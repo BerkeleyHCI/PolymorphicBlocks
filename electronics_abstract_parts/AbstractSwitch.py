@@ -54,7 +54,7 @@ class RotaryEncoderSwitch(BlockInterfaceMixin[RotaryEncoder]):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.sw = self.Port(Passive.empty())
+    self.sw = self.Port(Passive.empty(), optional=True)
 
 
 class DigitalSwitch(HumanInterface):
@@ -74,15 +74,19 @@ class DigitalSwitch(HumanInterface):
     self.connect(self.gnd, self.package.com.adapt_to(Ground()))
 
 
+@abstract_block_default(lambda: DigitalWrapperRotaryEncoder)
 class DigitalRotaryEncoder(HumanInterface):
   """Wrapper around RotaryEncoder that provides digital ports that are pulled low (to GND) when pressed."""
   def __init__(self) -> None:
     super().__init__()
 
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.a = self.Port(DigitalSingleSource.empty(), [Output])
-    self.b = self.Port(DigitalSingleSource.empty(), [Output])
+    self.a = self.Port(DigitalSingleSource.empty())
+    self.b = self.Port(DigitalSingleSource.empty())
 
+
+class DigitalWrapperRotaryEncoder(DigitalRotaryEncoder):
+  """Basic implementation for DigitalRotaryEncoder as a wrapper around a passive-typed RotaryEncoder."""
   def contents(self):
     super().contents()
     self.package = self.Block(RotaryEncoder(current=self.a.link().current_drawn.hull(self.b.link().current_drawn),
@@ -94,19 +98,23 @@ class DigitalRotaryEncoder(HumanInterface):
     self.connect(self.gnd, self.package.com.adapt_to(Ground()))
 
 
-@abstract_block_default(lambda: DigitalRotaryEncoderWithSwitch)
+@abstract_block_default(lambda: DigitalWrapperRotaryEncoderWithSwitch)
 class DigitalRotaryEncoderSwitch(BlockInterfaceMixin[DigitalRotaryEncoder]):
   """DigitalRotaryEncoder mixin adding a switch pin."""
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
 
-    self.sw = self.Port(DigitalSingleSource.empty(), [Output])
+    self.sw = self.Port(DigitalSingleSource.empty(), optional=True)
 
 
-class DigitalRotaryEncoderWithSwitch(DigitalRotaryEncoderSwitch, DigitalRotaryEncoder):
+class DigitalWrapperRotaryEncoderWithSwitch(DigitalRotaryEncoderSwitch, DigitalWrapperRotaryEncoder, GeneratorBlock):
   def contents(self):
     super().contents()
+    self.generator_param(self.sw.is_connected())
 
-    package_sw = self.package.with_mixin(RotaryEncoderSwitch())
-    dio_model = DigitalSingleSource.low_from_supply(self.gnd)
-    self.connect(self.sw, package_sw.sw.adapt_to(dio_model))
+  def generate(self):
+    super().generate()
+    if self.get(self.sw.is_connected()):
+      package_sw = self.package.with_mixin(RotaryEncoderSwitch())
+      dio_model = DigitalSingleSource.low_from_supply(self.gnd)
+      self.connect(self.sw, package_sw.sw.adapt_to(dio_model))

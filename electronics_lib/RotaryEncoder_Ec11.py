@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Ec11eWithSwitch(RotaryEncoderWithSwitch, JlcPart, FootprintBlock):
+class Ec11eWithSwitch(RotaryEncoderSwitch, RotaryEncoder, JlcPart, FootprintBlock):
   """Generic EC11E PTH rotary with pushbutton switch.
   Default part is EC11E18244A5, with 1.5mm pushbutton travel, 36 detents (finest),
   but footprint should be compatible with other parts in the EC11E w/ switch series"""
@@ -25,8 +25,8 @@ class Ec11eWithSwitch(RotaryEncoderWithSwitch, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Ec11j15WithSwitch(RotaryEncoderWithSwitch, JlcPart, FootprintBlock):
-  """Generic EC11J15 PTH rotary with pushbutton switch.
+class Ec11j15WithSwitch(RotaryEncoderSwitch, RotaryEncoder, JlcPart, FootprintBlock):
+  """Generic EC11J15 SMD rotary with pushbutton switch.
   Default part is EC11J1525402, with 1.5mm pushbutton travel, 30 detents (finest),
   but footprint should be compatible with other parts in the EC11J15 w/ switch series"""
   def contents(self) -> None:

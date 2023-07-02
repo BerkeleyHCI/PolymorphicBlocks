@@ -63,7 +63,15 @@ trait Library {
             .withConstraints((baseBlock.constraints.toSeqMap ++ mixinBlocks.map(_.constraints.toSeqMap).fold(SeqMap())(
               _ ++ _
             )).toPb)
-          Errorable.Success(mixedBlock)
+
+          // take the last valid default refinement, TODO: support default refinements conditioned on multiple mixins
+          val mixinsRefinements = mixinBlocks.flatMap(_.defaultRefinement)
+          val refinedBlock = mixinsRefinements.lastOption match {
+            case Some(mixinRefinement) => mixedBlock.withDefaultRefinement(mixinRefinement)
+            case None => mixedBlock
+          }
+
+          Errorable.Success(refinedBlock)
         }
     }
   }

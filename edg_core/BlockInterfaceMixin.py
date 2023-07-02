@@ -68,7 +68,9 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self._is_mixin():  # all mixins must be abstract
-            self._elt_properties[(self.__class__, AbstractBlockProperty)] = None
+            if (self.__class__, AbstractBlockProperty) not in self._elt_properties:
+                # don't overwrite if exists, it may define a default refinement
+                self._elt_properties[(self.__class__, AbstractBlockProperty)] = None
 
     def implementation(self, fn: Callable[[MixinBaseType], None]) -> None:
         """Wrap implementation definitions (where MixinBaseType is required) in this. This is only called
