@@ -48,12 +48,10 @@ class RotaryEncoder(DiscreteComponent):
     self.voltage = self.ArgParameter(voltage)
 
 
-@abstract_block
-class RotaryEncoderWithSwitch(RotaryEncoder):
-  """Rotary encoder that also adds a switch pin (sharing a common with the encoder),
+class RotaryEncoderSwitch(BlockInterfaceMixin[RotaryEncoder]):
+  """Rotary encoder mixin adding a switch pin (sharing a common with the encoder),
   with ratings assumed to be the same between the switch and encoder."""
-  @init_in_parent
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
     self.sw = self.Port(Passive.empty())
@@ -96,26 +94,19 @@ class DigitalRotaryEncoder(HumanInterface):
     self.connect(self.gnd, self.package.com.adapt_to(Ground()))
 
 
-class DigitalRotaryEncoderWithSwitch(HumanInterface):
-  """Wrapper around RotaryEncoderWithSwitch that provides a digital port which is pulled low (to GND) when pressed.
-  TODO: deduplicate with DigitalRotaryEncoder
-  """
-  def __init__(self) -> None:
-    super().__init__()
+@abstract_block_default(lambda: DigitalRotaryEncoderWithSwitch)
+class DigitalRotaryEncoderSwitch(BlockInterfaceMixin[DigitalRotaryEncoder]):
+  """DigitalRotaryEncoder mixin adding a switch pin."""
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
 
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.a = self.Port(DigitalSingleSource.empty(), [Output])
-    self.b = self.Port(DigitalSingleSource.empty(), [Output])
     self.sw = self.Port(DigitalSingleSource.empty(), [Output])
 
+
+class DigitalRotaryEncoderWithSwitch(DigitalRotaryEncoderSwitch, DigitalRotaryEncoder):
   def contents(self):
     super().contents()
-    self.package = self.Block(RotaryEncoderWithSwitch(
-      current=self.a.link().current_drawn.hull(self.b.link().current_drawn).hull(self.sw.link().current_drawn),
-      voltage=self.a.link().voltage.hull(self.b.link().voltage).hull(self.sw.link().voltage)))
 
+    package_sw = self.package.with_mixin(RotaryEncoderSwitch())
     dio_model = DigitalSingleSource.low_from_supply(self.gnd)
-    self.connect(self.a, self.package.a.adapt_to(dio_model))
-    self.connect(self.b, self.package.b.adapt_to(dio_model))
-    self.connect(self.sw, self.package.sw.adapt_to(dio_model))
-    self.connect(self.gnd, self.package.com.adapt_to(Ground()))
+    self.connect(self.sw, package_sw.sw.adapt_to(dio_model))
