@@ -87,11 +87,12 @@ class IotKnob(JlcBoardTop):
         imp.Block(NeopixelArray(RING_LEDS)),
         imp.Block(NeopixelArray(NUM_SECTIONS)))
 
-      (self.spk_drv, self.spk), _ = self.chain(
-        self.mcu.with_mixin(IoControllerI2s()).i2s.request('speaker'),
-        imp.Block(Max98357a()),
-        self.Block(Speaker())
-      )
+      (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), _ = self.chain(
+        self.mcu.gpio.request('spk'),
+        imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
+        self.Block(AnalogTestPoint()),
+        imp.Block(Pam8302a()),
+        self.Block(Speaker()))
 
       (self.v5v_sense, ), _ = self.chain(
         self.vusb,
@@ -130,10 +131,6 @@ class IotKnob(JlcBoardTop):
           'i2c.scl=34',
           'i2c.sda=33',
           'oled_reset=18',
-
-          'speaker.sd=8',
-          'speaker.sck=9',
-          'speaker.ws=10',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
       ],
