@@ -52,6 +52,7 @@ class IotKnob(JlcBoardTop):
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
       (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
       (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
+      (self.ledw, ), _ = self.chain(imp.Block(IndicatorLed(Led.White)), self.mcu.gpio.request('ledw'))
 
       self.knob = imp.Block(DigitalRotaryEncoder())
       self.connect(self.knob.a, self.mcu.gpio.request('knob_a'))
@@ -65,7 +66,7 @@ class IotKnob(JlcBoardTop):
       self.dist = imp.Block(Vl53l0x())
       self.connect(self.i2c, self.dist.i2c)
 
-      self.env = imp.Block(Bme680())  # TODO replace with cheaper BME280
+      self.env = imp.Block(Shtc3())
       self.connect(self.i2c, self.env.i2c)
 
       self.oled = imp.Block(Er_Oled_096_1_1())
