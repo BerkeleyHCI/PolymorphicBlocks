@@ -9,9 +9,9 @@ class IotKnob(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    KNOB_LEDS = 3  # number of RGBs for the knob underglow
-    RING_LEDS = 18  # number of RGBs for the ring indicator
-    NUM_SECTIONS = 5  # number of buttons
+    KNOB_LEDS = 4  # number of RGBs for knob underglow
+    RING_LEDS = 24  # number of RGBs for the ring indicator
+    NUM_SECTIONS = 6  # number of buttons
 
     self.usb = self.Block(UsbCReceptacle(current_limits=(0, 3)*Amp))
 
@@ -62,6 +62,12 @@ class IotKnob(JlcBoardTop):
       for i in range(NUM_SECTIONS):
         (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
 
+      self.dist = imp.Block(Vl53l0x())
+      self.connect(self.i2c, self.dist.i2c)
+
+      self.env = imp.Block(Bme680())  # TODO replace with cheaper BME280
+      self.connect(self.i2c, self.env.i2c)
+
       self.oled = imp.Block(Er_Oled_096_1_1())
       self.connect(self.i2c, self.oled.i2c)
       self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
@@ -71,7 +77,7 @@ class IotKnob(JlcBoardTop):
             ImplicitConnect(self.vusb, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.rgb_shift, self.rgb_tp, self.rgb_inner, self.rgb_ring, self.rgb_sw), _ = self.chain(
+      (self.rgb_shift, self.rgb_tp, self.rgb_knob, self.rgb_ring, self.rgb_sw), _ = self.chain(
         self.mcu.gpio.request('rgb'),
         imp.Block(L74Ahct1g125()),
         imp.Block(DigitalTestPoint()),
