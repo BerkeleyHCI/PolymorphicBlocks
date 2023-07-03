@@ -119,8 +119,8 @@ class IotKnob(JlcBoardTop):
           # bottom row doesn't exist
           'ledr=25',
           'ledg=24',
-          'ledb=8',
-          'ledw=9',
+          'ledb=15',
+          'ledw=17',
 
           'sw0=4',
           'sw1=5',
@@ -138,7 +138,8 @@ class IotKnob(JlcBoardTop):
 
           'i2c.scl=33',
           'i2c.sda=32',
-          'oled_reset=18',
+          'oled_reset=8',
+          'spk=9',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
       ],
