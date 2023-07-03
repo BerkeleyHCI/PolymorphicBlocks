@@ -87,6 +87,10 @@ class IotKnob(JlcBoardTop):
         imp.Block(NeopixelArray(RING_LEDS)),
         imp.Block(NeopixelArray(NUM_SECTIONS)))
 
+      self.io8_pur = self.Block(PullupResistor(4.7*kOhm(tol=0.05)))  # for ESP32C6 IO8 strapping compatibility
+      self.connect(self.io8_pur.pwr, self.v3v3)
+      self.connect(self.io8_pur.io, self.rgb_shift.input)
+
       (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), _ = self.chain(
         self.mcu.gpio.request('spk'),
         imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
@@ -109,10 +113,14 @@ class IotKnob(JlcBoardTop):
       instance_values=[
         (['refdes_prefix'], 'K'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
+          # also designed to be compatible w/ ESP32C6
+          # https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf
+          # note: pin 34 NC, GPIO8 (pin 10) is strapping and should be PUR
+          # bottom row doesn't exist
           'ledr=25',
           'ledg=24',
-          'ledb=15',
-          'ledw=17',
+          'ledb=8',
+          'ledw=9',
 
           'sw0=4',
           'sw1=5',
@@ -123,13 +131,13 @@ class IotKnob(JlcBoardTop):
 
           'v5v_sense=7',
 
-          'rgb=12',
-          'enc_a=32',
-          'enc_b=31',
-          'enc_sw=11',
+          'rgb=10',
+          'enc_a=12',
+          'enc_b=11',
+          'enc_sw=31',
 
-          'i2c.scl=34',
-          'i2c.sda=33',
+          'i2c.scl=33',
+          'i2c.sda=32',
           'oled_reset=18',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
