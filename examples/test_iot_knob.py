@@ -54,10 +54,10 @@ class IotKnob(JlcBoardTop):
       (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
       (self.ledw, ), _ = self.chain(imp.Block(IndicatorLed(Led.White)), self.mcu.gpio.request('ledw'))
 
-      self.knob = imp.Block(DigitalRotaryEncoder())
-      self.connect(self.knob.a, self.mcu.gpio.request('knob_a'))
-      self.connect(self.knob.b, self.mcu.gpio.request('knob_b'))
-      self.connect(self.knob.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request('knob_sw'))
+      self.enc = imp.Block(DigitalRotaryEncoder())
+      self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
+      self.connect(self.enc.b, self.mcu.gpio.request('enc_b'))
+      self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request('enc_sw'))
 
       self.sw = ElementDict[DigitalSwitch]()
       for i in range(NUM_SECTIONS):
@@ -71,6 +71,7 @@ class IotKnob(JlcBoardTop):
 
       self.oled = imp.Block(Er_Oled_096_1_1())
       self.connect(self.i2c, self.oled.i2c)
+      # TODO ADD POR GENERATPR
       self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
 
     # 5V DOMAIN
@@ -92,6 +93,11 @@ class IotKnob(JlcBoardTop):
         self.Block(Speaker())
       )
 
+      (self.v5v_sense, ), _ = self.chain(
+        self.vusb,
+        imp.Block(VoltageSenseDivider(full_scale_voltage=3.0*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+        self.mcu.adc.request('v5v_sense')
+      )
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -102,12 +108,34 @@ class IotKnob(JlcBoardTop):
       instance_values=[
         (['refdes_prefix'], 'K'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
+          'ledr=25',
+          'ledg=24',
+          'ledb=15',
+          'ledw=17',
 
+          'sw0=4',
+          'sw1=5',
+          'sw2=6',
+          'sw3=35',
+          'sw4=38',
+          'sw5=39',
+
+          'v5v_sense=7',
+
+          'rgb=12',
+          'enc_a=32',
+          'enc_b=31',
+          'enc_sw=11',
+
+          'i2c.scl=34',
+          'i2c.sda=33',
+          'oled_reset=18',
+
+          'speaker.sd=8',
+          'speaker.sck=9',
+          'speaker.ws=10',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
-        # (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
-        # (['reg_12v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 7e6)),
-        # (['pwr_or', 'diode', 'part'], 'B5819W SL'),  # autopicked one is OOS
       ],
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
