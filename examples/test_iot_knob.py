@@ -49,10 +49,9 @@ class IotKnob(JlcBoardTop):
       # need to name the USB chain so the USB net has the _N and _P postfix for differential traces
       (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
+      # debugging LEDs
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
-      (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
-      (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
-      (self.ledw, ), _ = self.chain(imp.Block(IndicatorLed(Led.White)), self.mcu.gpio.request('ledw'))
+      (self.ledy, ), _ = self.chain(imp.Block(IndicatorLed(Led.Yellow)), self.mcu.gpio.request('ledy'))
 
       self.enc = imp.Block(DigitalRotaryEncoder())
       self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
@@ -71,7 +70,7 @@ class IotKnob(JlcBoardTop):
 
       self.oled = imp.Block(Er_Oled_096_1_1())
       self.connect(self.i2c, self.oled.i2c)
-      # TODO ADD POR GENERATPR
+      # TODO ADD POR GENERATOR
       self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
 
     # 5V DOMAIN
@@ -118,9 +117,7 @@ class IotKnob(JlcBoardTop):
           # note: pin 34 NC, GPIO8 (pin 10) is strapping and should be PUR
           # bottom row doesn't exist
           'ledr=25',
-          'ledg=24',
-          'ledb=15',
-          'ledw=17',
+          'ledy=24',
 
           'sw0=4',
           'sw1=5',
