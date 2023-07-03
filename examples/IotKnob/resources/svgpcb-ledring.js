@@ -29,24 +29,25 @@ const ledEndAngle = ledStartAngle + -360 * (ledCount - 1) / (ledCount)  // end a
 const ledRot = 0  // rotation of each unit
 
 const swCount = 6
-const swRadius = 32
-const swStartAngle = 90
+const swRadius = 36
+const swStartAngle = 90 - 30
 const swEndAngle = swStartAngle + -360 * (swCount - 1) / (swCount)  // end angle is the placement of the last LED
 const swRot = 90  // rotation of each unit
 
 const swLedCount = swCount
-const swLedRadius = 38  // mm
-const swLedStartAngle = 90
+const swLedRadius = 32  // mm
+const swLedStartAngle = swStartAngle
 const swLedEndAngle = swLedStartAngle + -360 * (swLedCount - 1) / (swLedCount)  // end angle is the placement of the last LED
 const swLedRot = 0  // rotation of each unit
 
 // ROUTING PARAMETERS
 const powerWidth = 0.5  // mm, trace
-const powerVia = via(0.5 / 25.4, 0.9/ 25.4)
-const gndOffset = .75  // mm, distance from pad to via
-const powerOffset = gndOffset
+const powerHeightOffset = 1.25
+const powerEscapeOffset = 0.5  // distance from center
 
 const traceWidth = 0.2  // mm, trace
+const traceSpacing = 0.2  // mm, clearance
+const routingOffset = 2.0  // mm, distance from part center where we route everything
 
 
 // HELPER FUNCTIONS
@@ -103,57 +104,72 @@ function createRadialLeds(count, rot, radius, startAngle, endAngle, prefix) {
   const incrAngle = (endAngle - startAngle) / (count - 1)
 
   var prevPower = null
-  var prevGnd = null
   var prevData = null
 
   for (i=0; i<count; i++) {
     const angle = startAngle + incrAngle * i
-    const led = board.add(ledFootprint, { translate: [Math.cos(angle * degToRad) * radius * mmToUnits,
-                                                      Math.sin(angle * degToRad) * radius * mmToUnits],
+    const origin = [Math.cos(angle * degToRad) * radius * mmToUnits,
+                    Math.sin(angle * degToRad) * radius * mmToUnits]
+    const led = board.add(ledFootprint, { translate: origin,
                                          rotate: angle + rot,
                                          label: prefix + "[" + i + "]" })
 
-    const gndOffsetPos = pAdd(led.pad(ledGndPad), vRotate([0, gndOffset * mmToUnits], angle - 90))
-    board.wire([
-      led.pad(ledGndPad),
-      gndOffsetPos
-    ], powerWidth * mmToUnits)
-    if (prevGnd != null) {
-      board.wire(path(
-        ...smoothPath(prevGnd, gndOffsetPos,
-                      angle - incrAngle + 90,
-                      angle + 90)
-        ), powerWidth * mmToUnits)
-    }
-    prevGnd = gndOffsetPos
-
+    dataInPoint = pAdd(origin, vRotate([-routingOffset * mmToUnits, 0], angle - 90))
+    board.wire(path(
+      ...smoothPath(dataInPoint, led.pad(ledDinPad),
+                    angle + 90,
+                    angle + 90)
+      ), traceWidth * mmToUnits)
     if (prevData != null) {
       board.wire(path(
-        ...smoothPath(prevData, led.pad(ledDinPad),
+        ...smoothPath(prevData, dataInPoint,
                       angle - incrAngle + 90,
                       angle + 90)
         ), traceWidth * mmToUnits)
     }
-    prevData = led.pad(ledDoutPad)
 
-    const powerOffsetPos = pAdd(led.pad(ledVinPad), vRotate([0, -powerOffset * mmToUnits], angle - 90))
-    board.wire([
-      led.pad(ledVinPad),
-      powerOffsetPos
-    ], powerWidth * mmToUnits)
+    dataOutPoint = pAdd(origin, vRotate([routingOffset * mmToUnits, 0], angle - 90))
+    board.wire(path(
+      ...smoothPath(led.pad(ledDoutPad), dataOutPoint,
+                    angle + 90,
+                    angle + 90),
+      ), traceWidth * mmToUnits)
+    prevData = dataOutPoint
+
+    powerRoutingHeight = traceWidth / 2 + traceSpacing + powerWidth / 2
+
+    powerInPoint = pAdd(origin, vRotate([-routingOffset * mmToUnits, -powerRoutingHeight * mmToUnits], angle - 90))
     if (prevPower != null) {
       board.wire(path(
-        ...smoothPath(prevPower, powerOffsetPos,
+        ...smoothPath(prevPower, powerInPoint,
                       angle - incrAngle + 90,
-                      angle + 90)
+                      angle + 90),
         ), powerWidth * mmToUnits)
     }
-    prevPower = powerOffsetPos
+
+    powerInEscapePoint = pAdd(origin, vRotate([-powerEscapeOffset * mmToUnits, -powerHeightOffset * mmToUnits], angle - 90))
+    powerOutEscapePoint = pAdd(origin, vRotate([powerEscapeOffset * mmToUnits, -powerHeightOffset * mmToUnits], angle - 90))
+    powerOutPoint = pAdd(origin, vRotate([routingOffset * mmToUnits, -powerRoutingHeight * mmToUnits], angle - 90))
+    board.wire(path(
+        ...smoothPath(powerOutEscapePoint, led.pad(ledVinPad),
+                      angle + 90,
+                      angle),
+        ), powerWidth * mmToUnits)
+    board.wire(path(
+        ...smoothPath(powerInPoint, powerInEscapePoint,
+                      angle + 90,
+                      angle + 90),
+        powerOutEscapePoint,
+        ...smoothPath(powerOutEscapePoint, powerOutPoint,
+                    angle + 90,
+                    angle + 90),
+        ), powerWidth * mmToUnits)
+    prevPower = powerOutPoint
   }
 }
 
 // PARTS
-board.add(powerVia, {translate: [0, 0]})  // origin for positioning handle
+board.add(via(0.5 * mmToUnits, 0.9 * mmToUnits), {translate: [0, 0]})  // origin for positioning handle
 
 createRadialLeds(ledCount, ledRot, ledRadius, ledStartAngle, ledEndAngle, "led")
 

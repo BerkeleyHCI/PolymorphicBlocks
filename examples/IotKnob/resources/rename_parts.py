@@ -21,8 +21,8 @@ for led in range(24):
   remap_table['led'].append(f'rgb_ring.led[{led}]')
 for sw in range(6):
   remap_table['sw'].append(f'sw[{sw}]')
-for sw in range(6):
-  remap_table['led'].append(f'rgb_sw.led[{led}]')
+for sw in range(12):
+  remap_table['led'].append(f'rgb_sw.led[{sw}]')
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Rename refdeses in a PCB.')
