@@ -92,7 +92,7 @@ class IotFan(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
-        (['reg_5v'], Tps561201),
+        (['reg_5v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
       ],
       instance_values=[
