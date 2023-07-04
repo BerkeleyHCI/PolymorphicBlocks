@@ -49,9 +49,7 @@ class IotFan(JlcBoardTop):
 
       # debugging LEDs
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
-      (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
-      (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
-      (self.ledw, ), _ = self.chain(imp.Block(IndicatorLed(Led.White)), self.mcu.gpio.request('ledw'))
+      (self.ledy, ), _ = self.chain(imp.Block(IndicatorLed(Led.Yellow)), self.mcu.gpio.request('ledy'))
 
       self.enc = imp.Block(DigitalRotaryEncoder())
       self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
