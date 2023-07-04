@@ -14,10 +14,12 @@ class PowerBarrelJack(Connector, PowerSource, Block):
     self.gnd = self.Port(GroundSource())
 
 
-class Pj_102a(PowerBarrelJack, FootprintBlock):
-  """Barrel jack with 2.1mm ID and 5.5mm OD"""
+class Pj_102ah(PowerBarrelJack, FootprintBlock):
+  """Barrel jack for 2.1mm ID and 5.5mm OD"""
   def contents(self):
     super().contents()
+    self.require(self.pwr.voltage_out.within((0, 24)*Volt))  # datasheet ratings for connector
+    self.require(self.pwr.current_limits.within((0, 2.5)*Volt))
     self.footprint(
       'J', 'Connector_BarrelJack:BarrelJack_CUI_PJ-102AH_Horizontal',
       {
@@ -27,6 +29,25 @@ class Pj_102a(PowerBarrelJack, FootprintBlock):
       },
       mfr='CUI Devices', part='PJ-102AH',
       datasheet='https://www.cui.com/product/resource/digikeypdf/pj-102a.pdf'
+    )
+
+
+class Pj_036ah(PowerBarrelJack, FootprintBlock):
+  """SMT Barrel jack for 2.1mm ID and 5.5mm OD"""
+  def contents(self):
+    super().contents()
+    self.require(self.pwr.voltage_out.within((0, 24)*Volt))  # datasheet ratings for connector
+    self.require(self.pwr.current_limits.within((0, 5)*Volt))
+
+    self.footprint(
+      'J', 'Connector_BarrelJack:BarrelJack_CUI_PJ-036AH-SMT_Horizontal',
+      {
+        '1': self.pwr,
+        '2': self.gnd,
+        # '3': # TODO optional switch
+      },
+      mfr='CUI Devices', part='PJ-036AH-SMT',
+      datasheet='https://www.cuidevices.com/product/resource/pj-036ah-smt-tr.pdf'
     )
 
 

@@ -113,9 +113,10 @@ class IotFan(JlcBoardTop):
       ],
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
-        (PowerBarrelJack, Pj_102a),
+        (PowerBarrelJack, Pj_036ah),
         (Neopixel, Sk6805_Ec15),
         (TestPoint, CompactKeystone5015),
+        (TagConnect, TagConnectNonLegged),
       ],
       class_values=[
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
