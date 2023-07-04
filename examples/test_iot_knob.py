@@ -62,6 +62,9 @@ class IotKnob(JlcBoardTop):
       for i in range(NUM_SECTIONS):
         (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
 
+      self.als = imp.Block(Bh1750())
+      self.connect(self.i2c, self.als.i2c)
+
       self.dist = imp.Block(Vl53l0x())
       self.connect(self.i2c, self.dist.i2c)
 
@@ -120,13 +123,13 @@ class IotKnob(JlcBoardTop):
           'ledy=24',
 
           'sw0=4',
-          'sw1=5',
-          'sw2=6',
+          'sw1=6',
+          'sw2=7',
           'sw3=35',
           'sw4=38',
           'sw5=39',
 
-          'v5v_sense=7',
+          'v5v_sense=5',
 
           'rgb=10',
           'enc_a=12',

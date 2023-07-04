@@ -61,7 +61,16 @@
           "width": 0.16
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        "courtyards_overlap|107000001|104999999|cf12d23c-508b-4c77-881e-50c027bdf946|eb0b4e58-0db9-412a-9d19-ef688ce6db0d",
+        "courtyards_overlap|107000001|96999999|23d6eddc-e4da-43fd-a671-777fbb1389a6|eb0b4e58-0db9-412a-9d19-ef688ce6db0d",
+        "courtyards_overlap|91250001|103000001|eb0b4e58-0db9-412a-9d19-ef688ce6db0d|f2b4e9c6-d5cf-4c3c-9ea1-b806b375ac7d",
+        "courtyards_overlap|91250001|95000001|140c65f5-2ae0-4709-917c-57f3ded18eed|eb0b4e58-0db9-412a-9d19-ef688ce6db0d",
+        "hole_clearance|102700000|132905000|fdcad2c4-b0c8-495e-8faa-9126f9a720dd|6ac9fa48-e17b-4c73-8ba3-98a05c17faf5",
+        "hole_clearance|102900000|132905000|fdcad2c4-b0c8-495e-8faa-9126f9a720dd|b0acbc71-e4d1-4ed9-accb-24d47fe2f9c4",
+        "hole_clearance|97100000|132905000|c43afb39-9d6c-4b7e-9533-2e5885f09dc8|8372d105-4292-484a-b545-199e306afe1b",
+        "hole_clearance|97300000|132905000|c43afb39-9d6c-4b7e-9533-2e5885f09dc8|4a6e305d-5450-4150-9abe-90c708475955"
+      ],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
@@ -69,20 +78,26 @@
       "rule_severities": {
         "annular_width": "error",
         "clearance": "error",
+        "connection_width": "warning",
         "copper_edge_clearance": "error",
+        "copper_sliver": "warning",
         "courtyards_overlap": "error",
         "diff_pair_gap_out_of_range": "error",
         "diff_pair_uncoupled_length_too_long": "error",
         "drill_out_of_range": "error",
         "duplicate_footprints": "warning",
         "extra_footprint": "warning",
+        "footprint": "error",
         "footprint_type_mismatch": "error",
         "hole_clearance": "error",
         "hole_near_hole": "error",
         "invalid_outline": "error",
+        "isolated_copper": "warning",
         "item_on_disabled_layer": "error",
         "items_not_allowed": "error",
         "length_out_of_range": "error",
+        "lib_footprint_issues": "warning",
+        "lib_footprint_mismatch": "warning",
         "malformed_courtyard": "error",
         "microvia_drill_out_of_range": "error",
         "missing_courtyard": "ignore",
@@ -92,9 +107,14 @@
         "padstack": "error",
         "pth_inside_courtyard": "ignore",
         "shorting_items": "error",
+        "silk_edge_clearance": "warning",
         "silk_over_copper": "warning",
         "silk_overlap": "warning",
         "skew_out_of_range": "error",
+        "solder_mask_bridge": "warning",
+        "starved_thermal": "error",
+        "text_height": "warning",
+        "text_thickness": "warning",
         "through_hole_pad_without_hole": "error",
         "too_many_vias": "error",
         "track_dangling": "warning",
@@ -103,7 +123,6 @@
         "unconnected_items": "error",
         "unresolved_variable": "error",
         "via_dangling": "warning",
-        "zone_has_empty_net": "error",
         "zones_intersect": "error"
       },
       "rule_severitieslegacy_courtyards_overlap": true,
@@ -119,7 +138,7 @@
         "min_hole_to_hole": 0.5,
         "min_microvia_diameter": 0.19999999999999998,
         "min_microvia_drill": 0.09999999999999999,
-        "min_resolved_spokes": 2,
+        "min_resolved_spokes": 1,
         "min_silk_clearance": 0.0,
         "min_text_height": 0.7,
         "min_text_thickness": 0.08,
@@ -212,7 +231,7 @@
   "net_settings": {
     "classes": [
       {
-        "bus_width": 12.0,
+        "bus_width": 12,
         "clearance": 0.16,
         "diff_pair_gap": 0.15,
         "diff_pair_via_gap": 0.25,
@@ -226,11 +245,11 @@
         "track_width": 0.2,
         "via_diameter": 0.7,
         "via_drill": 0.3,
-        "wire_width": 6.0
+        "wire_width": 6
       }
     ],
     "meta": {
-      "version": 2
+      "version": 3
     },
     "net_colors": null,
     "netclass_assignments": null,
@@ -240,7 +259,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "IotDisplay.net",
+      "netlist": "IotKnob.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""
