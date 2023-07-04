@@ -61,16 +61,7 @@
           "width": 0.16
         }
       ],
-      "drc_exclusions": [
-        "courtyards_overlap|107000001|104999999|cf12d23c-508b-4c77-881e-50c027bdf946|eb0b4e58-0db9-412a-9d19-ef688ce6db0d",
-        "courtyards_overlap|107000001|96999999|23d6eddc-e4da-43fd-a671-777fbb1389a6|eb0b4e58-0db9-412a-9d19-ef688ce6db0d",
-        "courtyards_overlap|91250001|103000001|eb0b4e58-0db9-412a-9d19-ef688ce6db0d|f2b4e9c6-d5cf-4c3c-9ea1-b806b375ac7d",
-        "courtyards_overlap|91250001|95000001|140c65f5-2ae0-4709-917c-57f3ded18eed|eb0b4e58-0db9-412a-9d19-ef688ce6db0d",
-        "hole_clearance|102700000|132905000|fdcad2c4-b0c8-495e-8faa-9126f9a720dd|6ac9fa48-e17b-4c73-8ba3-98a05c17faf5",
-        "hole_clearance|102900000|132905000|fdcad2c4-b0c8-495e-8faa-9126f9a720dd|b0acbc71-e4d1-4ed9-accb-24d47fe2f9c4",
-        "hole_clearance|97100000|132905000|c43afb39-9d6c-4b7e-9533-2e5885f09dc8|8372d105-4292-484a-b545-199e306afe1b",
-        "hole_clearance|97300000|132905000|c43afb39-9d6c-4b7e-9533-2e5885f09dc8|4a6e305d-5450-4150-9abe-90c708475955"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
@@ -225,7 +216,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "IotKnob.kicad_pro",
+    "filename": "IotFan.kicad_pro",
     "version": 1
   },
   "net_settings": {

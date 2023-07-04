@@ -42,8 +42,28 @@ class Ec11j15WithSwitch(RotaryEncoderSwitch, RotaryEncoder, JlcPart, FootprintBl
         'S2': self.com,
       },
       mfr='Alps Alpine', part='EC11J1525402',
-      # datasheet / catalog doesn't appear to be available from the manufacturer like the PTH ersion
+      # datasheet / catalog doesn't appear to be available from the manufacturer like the PTH version
       datasheet='https://cdn-shop.adafruit.com/product-files/5454/5454_1837001.pdf'
     )
     self.assign(self.lcsc_part, 'C209762')
+    self.assign(self.actual_basic_part, False)
+
+
+class Ec05e(RotaryEncoder, JlcPart, FootprintBlock):
+  """Generic EC05E PTH rotary encoder with hollow shaft.
+  Default part is EC05E1220401, horizontal-mount part."""
+  def contents(self) -> None:
+    super().contents()
+
+    self.footprint(
+      'SW', 'edg:RotaryEncoder_Alps_EC05E',
+      {
+        'A': self.a,
+        'B': self.b,
+        'C': self.com,
+      },
+      mfr='Alps Alpine', part='EC05E1220401',
+      datasheet='https://tech.alpsalpine.com/e/products/detail/EC05E1220401/'
+    )
+    self.assign(self.lcsc_part, 'C116648')
     self.assign(self.actual_basic_part, False)
