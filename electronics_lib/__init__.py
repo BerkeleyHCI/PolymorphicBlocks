@@ -70,6 +70,7 @@ from .Fpga_Ice40up import Ice40up5k_Sg48
 from .IoExpander_Pcf8574 import Pcf8574
 
 from .Connectors import PowerBarrelJack, Pj_102a, LipoConnector
+from .FanConnector import CpuFanConnector, CpuFanPwmControl
 from .CanBlocks import Pesd1can
 from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbMicroBReceptacle
 from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
