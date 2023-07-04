@@ -25,7 +25,7 @@ class IotFan(JlcBoardTop):
     ) as imp:
       (self.reg_5v, self.tp_5v, self.prot_5v), _ = self.chain(
         self.v12,
-        imp.Block(LinearRegulator(output_voltage=5.0*Volt(tol=0.05))),
+        imp.Block(VoltageRegulator(output_voltage=4*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(5.5, 6.8)*Volt))
       )
@@ -33,7 +33,7 @@ class IotFan(JlcBoardTop):
 
       (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
         self.v5,
-        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
       )
@@ -66,10 +66,8 @@ class IotFan(JlcBoardTop):
             ImplicitConnect(self.v5, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.rgb_shift, self.rgb_tp, self.rgb_ring), _ = self.chain(
+      (self.rgb_ring, ), _ = self.chain(
         self.mcu.gpio.request('rgb'),
-        imp.Block(L74Ahct1g125()),
-        imp.Block(DigitalTestPoint()),
         imp.Block(NeopixelArray(RING_LEDS)))
 
     # 12V DOMAIN
@@ -94,7 +92,7 @@ class IotFan(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
-        (['reg_5v'], Ldl1117),
+        (['reg_5v'], Tps561201),
         (['reg_3v3'], Ldl1117),
       ],
       instance_values=[
@@ -107,6 +105,8 @@ class IotFan(JlcBoardTop):
 
         ]),
         (['mcu', 'programming'], 'uart-auto'),
+        (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
+        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
       ],
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
