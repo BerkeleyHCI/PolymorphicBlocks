@@ -87,7 +87,11 @@ class IotFan(JlcBoardTop):
       self.connect(self.mcu.gpio.request('fan_power'), self.fan_control.control)
 
       self.connect(self.fan.sense, self.mcu.gpio.request('fan_sense'))
-      self.connect(self.mcu.gpio.request('fan_control'), self.fan.with_mixin(CpuFanPwmControl()).control)
+      (self.control, ), _ = self.chain(
+        self.mcu.gpio.request('fan_control'),
+        imp.Block(OpenDrainDriver()),
+        self.fan.with_mixin(CpuFanPwmControl()).control
+      )
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
