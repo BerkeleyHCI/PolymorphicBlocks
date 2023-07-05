@@ -118,6 +118,10 @@ class IotFan(JlcBoardTop):
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
         (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+        (['fan_drv[0]', 'drv', 'footprint_spec'], "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"),
+        (['fan_drv[0]', 'drv', 'part'], "AO4407A"),  # default DMG4407 is out of stock
+        (['fan_drv[1]', 'drv', 'footprint_spec'], ParamValue(['fan_drv[0]', 'drv', 'footprint_spec'])),
+        (['fan_drv[1]', 'drv', 'part'], ParamValue(['fan_drv[0]', 'drv', 'part'])),
       ],
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
