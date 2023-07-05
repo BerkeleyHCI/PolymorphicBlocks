@@ -48,7 +48,8 @@ class IotFan(JlcBoardTop):
       self.mcu.with_mixin(IoControllerWifi())
 
       # debugging LEDs
-      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
+      rgb_pin = self.mcu.gpio.request('rgb')  # multiplex RGB LED onto single debugging LED
+      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), rgb_pin)
 
       self.enc = imp.Block(DigitalRotaryEncoder())
       self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
@@ -66,7 +67,7 @@ class IotFan(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.rgb_ring, ), _ = self.chain(
-        self.mcu.gpio.request('rgb'),
+        rgb_pin,
         imp.Block(NeopixelArray(RING_LEDS)))
 
     # 12V DOMAIN
@@ -96,28 +97,23 @@ class IotFan(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32s3_Wroom_1),
+        (['mcu'], Esp32c3_Wroom02),
         (['reg_5v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
       ],
       instance_values=[
         (['refdes_prefix'], 'F'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          # also designed to be compatible w/ ESP32C6
-          # https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf
-          # note: pin 34 NC, GPIO8 (pin 10) is strapping and should be PUR
-          # bottom row doesn't exist
-          'v12_sense=4',
-          'enc_a=8',
-          'enc_b=7',
-          'rgb=5',
-          'ledr=14',
-          'fan_drv_1=35',
-          'fan_sense_1=39',
-          'fan_ctl_1=38',
-          'fan_drv_0=31',
-          'fan_sense_0=33',
-          'fan_ctl_0=32',
+          'v12_sense=3',
+          'rgb=4',
+          'enc_b=5',
+          'enc_a=6',
+          'fan_sense_1=18',
+          'fan_ctl_1=17',
+          'fan_drv_1=15',
+          'fan_sense_0=14',
+          'fan_ctl_0=13',
+          'fan_drv_0=10',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
