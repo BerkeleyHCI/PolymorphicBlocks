@@ -179,6 +179,7 @@ class Datalogger(BoardTop):
         ]),
         (['mcu', 'swd_swo_pin'], 'PIO0_8'),
 
+        (['pwr_5v', 'power_path', 'inductor', 'part'], 'NR5040T220M'),  # peg to prior part selection
         (['pwr_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.6)),  # trade higher Imax for lower L
         # the hold current wasn't modeled at the time of manufacture and turns out to be out of limits
         (['can', 'can_fuse', 'fuse', 'actual_hold_current'], Range(0.1, 0.1)),

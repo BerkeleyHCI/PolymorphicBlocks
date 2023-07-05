@@ -431,6 +431,7 @@ class Fcml(JlcBoardTop):
         (['conv', 'sw[2]', 'cap', 'footprint_spec'], ParamValue(['conv', 'sw[1]', 'cap', 'footprint_spec'])),
 
         # JLC does not have frequency specs, must be checked TODO
+        (['conv', 'power_path', 'inductor', 'part'], 'NR8040T4R7N'),  # peg to prior part selection
         (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['reg_vgate', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
       ],
