@@ -44,7 +44,7 @@ class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
      lambda match: {
        PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Sunlord_SWPA{match.group(1)}S'
      }),
-    (re.compile("^SWRB(3010|3012|3015|4010|4012|4018|4020|4025|4030|5012|5020|5040|6020|6028|6040|6045|8040)S.*$"),
+    (re.compile("^SWRB(1204|1205|1207)S.*$"),
      lambda match: {
        PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Sunlord_SWRB{match.group(1)}S'
      }),
