@@ -87,13 +87,13 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0x, GeneratorBlock):
   """Connector to an external VL53L0X breakout board.
   Uses the pinout from the Adafruit product: https://www.adafruit.com/product/3317
   This has an onboard 2.8v regulator, but thankfully the IO tolerance is not referenced to Vdd"""
-  def contents(self) -> None:
-    super().contents()
+  def generate(self):
+    super().generate()
     self.conn = self.Block(PassiveConnector(length=6))
     self.connect(self.pwr, self.conn.pins.request('1').adapt_to(self._vdd_model()))
     self.connect(self.gnd, self.conn.pins.request('2').adapt_to(Ground()))
 
-    self._gpio_model = gpio_model = self._gpio_model(self.gnd, self.pwr)
+    gpio_model = self._gpio_model(self.gnd, self.pwr)
     self.generator_param(self.xshut.is_connected())
     self.connect(self.gpio1, self.conn.pins.request('5').adapt_to(gpio_model))
 
@@ -102,12 +102,11 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0x, GeneratorBlock):
     self.connect(self.i2c.sda, self.conn.pins.request('4').adapt_to(i2c_io_model))
     self.i2c.init_from(I2cSlave(DigitalBidir.empty(), []))
 
-  def generate(self):
-    super().generate()
+    gpio_model = self._gpio_model(self.gnd, self.pwr)
     if self.get(self.xshut.is_connected()):
-      self.connect(self.xshut, self.conn.pins.request('6').adapt_to(self._gpio_model))
+      self.connect(self.xshut, self.conn.pins.request('6').adapt_to(gpio_model))
     else:
-      self.connect(self.pwr.as_digital_source(), self.conn.pins.request('6').adapt_to(self._gpio_model))
+      self.connect(self.pwr.as_digital_source(), self.conn.pins.request('6').adapt_to(gpio_model))
 
 
 class Vl53l0xApplication(Vl53l0x, GeneratorBlock):
