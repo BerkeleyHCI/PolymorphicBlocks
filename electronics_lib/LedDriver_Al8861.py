@@ -9,7 +9,7 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
         self.vin = self.Port(VoltageSink(
             voltage_limits=(4.5, 40)*Volt,
-            current_draw=(0.055*mAmp, 0.55*mAmp + peak_output_current),  # shutdown typ to quiescent typ
+            current_draw=(0.055, 0.55)*mAmp,  # shutdown typ to quiescent typ
         ), [Power])
         self.gnd = self.Port(Ground(), [Common])
 

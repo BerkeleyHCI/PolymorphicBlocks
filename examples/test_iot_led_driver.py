@@ -76,7 +76,7 @@ class IotLedDriver(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       for i in range(5):
-        led_drv = self.led_drv[i] = imp.Block(Al8861(max_current=500*mAmp(tol=0.1), ripple_limit=250*mAmp))
+        led_drv = self.led_drv[i] = imp.Block(Al8861(max_current=750*mAmp(tol=0.1), ripple_limit=400*mAmp))
         self.connect(self.mcu.gpio.request(f'led_pwm_{i}'), led_drv.pwm)
 
     self.rgb_conn = self.Block(JstPhKVertical(6))
@@ -121,6 +121,18 @@ class IotLedDriver(JlcBoardTop):
         (['led_drv[3]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[4]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[5]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
+        (['led_drv[0]', 'ind', 'part'], "SWPA8040S680MT"),
+        (['led_drv[0]', 'ind', 'manual_frequency_rating'], Range(0, 4.9e6)),
+        (['led_drv[1]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
+        (['led_drv[1]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
+        (['led_drv[2]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
+        (['led_drv[2]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
+        (['led_drv[3]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
+        (['led_drv[3]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
+        (['led_drv[4]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
+        (['led_drv[4]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
+        (['led_drv[5]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
+        (['led_drv[5]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
       ],
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),

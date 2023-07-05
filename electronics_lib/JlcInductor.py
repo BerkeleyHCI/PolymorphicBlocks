@@ -40,6 +40,18 @@ class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
      lambda match: {
        PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns_SRR1260'
      }),
+    (re.compile("^SWPA(3010|3012|3015|4010|4012|4018|4020|4025|4030|5012|5020|5040|6020|6028|6040|6045|8040)S.*$"),
+     lambda match: {
+       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Sunlord_SWPA{match.group(1)}S'
+     }),
+    (re.compile("^SWRB(3010|3012|3015|4010|4012|4018|4020|4025|4030|5012|5020|5040|6020|6028|6040|6045|8040)S.*$"),
+     lambda match: {
+       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Sunlord_SWRB{match.group(1)}S'
+     }),
+    (re.compile("^SLF(6025|6028|6045|7032|7045|7055|10145|12555|12565|12575)T.*$"),
+     lambda match: {
+       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_TDK_SLF{match.group(1)}'
+     }),
     # Kicad does not have stock 1008 footprint
   ]
 
