@@ -62,6 +62,8 @@ _FOOTPRINT_ROTATIONS = {
   'OptoDevice:Osram_BPW34S-SMD': 180,
 
   'Connector_Coaxial:BNC_Amphenol_B6252HB-NPP3G-50_Horizontal': 180,
+
+  'Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal': 180,
 }
 
 # footprint position export doesn't include the footprint library name
@@ -82,6 +84,9 @@ _FOOTPRINT_OFFSETS = {
   'RF_Module:ESP32-WROOM-32': (0, 0.8),
 
   'Connector_Coaxial:BNC_Amphenol_B6252HB-NPP3G-50_Horizontal': (0, -2.5),
+
+  'Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal': (1, 0),
+  'Connector_JST:JST_PH_S6B-PH-K_1x06_P2.00mm_Horizontal': (5, 0),
 }
 PACKAGE_OFFSETS = {footprint.split(':')[-1]: offset for footprint, offset in _FOOTPRINT_OFFSETS.items()}
 
