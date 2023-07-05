@@ -12,7 +12,7 @@ class Esp32c3_Interfaces(IoControllerI2s, IoControllerWifi, IoControllerBle, Bas
 
 @abstract_block
 class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, IoControllerPowerRequired, BaseIoControllerPinmapGenerator):
-  """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5, and USB.
+  """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5.
   PlatformIO: use board ID esp32-c3-devkitm-1
 
   Chip datasheet: https://espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf
@@ -94,9 +94,6 @@ class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, IoControllerPowerRequ
       PeripheralAnyResource('I2C', i2c_model),
       PeripheralAnyResource('SPI2', spi_model),
       PeripheralAnyResource('I2S', I2sController.empty()),
-      PeripheralFixedResource('USB', UsbDevicePort.empty(), {
-        'dp': ['GPIO19'], 'dm': ['GPIO18']
-      }),
     ])
 
 
