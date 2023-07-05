@@ -23,7 +23,7 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.peak_output_current = self.ArgParameter(peak_output_current)
 
     def contents(self):
-        self.require(self.peak_output_current < 1.5*Amp)  # for MSOP and SOT89 packages
+        self.require(self.peak_output_current < 2*Amp)
         self.footprint(
             'U', 'Package_SO:MSOP-8-1EP_3x3mm_P0.65mm_EP1.68x1.88mm_ThermalVias',
             {
@@ -47,7 +47,7 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Al8861(PowerConditioner, Interface, GeneratorBlock):
     """AL8861 buck LED driver."""
     @init_in_parent
-    def __init__(self, max_current: RangeLike, ripple_limit: RangeLike):
+    def __init__(self, max_current: RangeLike, ripple_limit: FloatLike):
         super().__init__()
 
         self.ic = self.Block(Al8861_Device(FloatExpr()))
@@ -65,25 +65,34 @@ class Al8861(PowerConditioner, Interface, GeneratorBlock):
     def generate(self):
         super().contents()
 
+        self.require(self.max_current.within((0, 1.5)*Amp))  # for MSOP and SOT89 packages
+
         max_current = self.get(self.max_current)
-        isense_ref = Range(0.96, 0.104)
+        isense_ref = Range(0.096, 0.104)
         self.rsense = self.Block(CurrentSenseResistor(resistance=Range.cancel_multiply(isense_ref,
-                                                                                       1/max_current)))
+                                                                                       1/max_current),
+                                                      sense_in_reqd=False))
         self.connect(self.rsense.pwr_in, self.pwr)
         self.connect(self.rsense.sense_out, self.ic.isense)
         self.connect(self.rsense.pwr_out, self.leda.adapt_to(VoltageSink(current_draw=self.max_current)))
 
-        self.pwr_cap = self.Block(DecouplingCapacitor(...,
-                                                      exact_capacitance=True))\
-            .connected(self.gnd, self.pwr)
+        self.pwr_cap = self.Block(DecouplingCapacitor((4.7*0.8, 10*1.2)*uFarad))\
+            .connected(self.gnd, self.pwr)  # "commonly used values""
 
-        peak_current = Range(0.96, 0.104) / self.rsense.actual_resistance + self.ripple_limit
+        peak_current = isense_ref / self.rsense.actual_resistance + (0, self.ripple_limit)
         self.assign(self.ic.peak_output_current, peak_current.upper())
+
+        # minimum switch on time = 500ns, recommended maximum switch off time = 250kHz @ 75% = 30us
+        min_inductance = self.pwr.link().voltage.upper() * (1.5*uSecond) / self.ripple_limit
+
         self.ind = self.Block(Inductor(
-            inductance=...,
+            inductance=(min_inductance, float('inf')),
             current=peak_current,
             frequency=(0.25, 1)*MHertz
         ))
+        # recommended inductance between 33 and 100uH, accounting for ~20% tolerance
+        self.require(self.ind.actual_inductance.within((33*0.8, 100*1.2)*uHenry))
+
         self.diode = self.Block(Diode(
             reverse_voltage=self.pwr.link().voltage,
             current=peak_current,

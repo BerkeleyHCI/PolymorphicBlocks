@@ -70,28 +70,27 @@ class IotLedDriver(JlcBoardTop):
         imp.Block(NeopixelArray(RING_LEDS)))
 
     # 12V DOMAIN
-    self.fan = ElementDict[CpuFanConnector]()
-    self.fan_drv = ElementDict[HighSideSwitch]()
-    self.fan_sense = ElementDict[OpenDrainDriver]()
-    self.fan_ctl = ElementDict[OpenDrainDriver]()
-
+    self.led_drv = ElementDict[Al8861]()
     with self.implicit_connect(
             ImplicitConnect(self.v12, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      for i in range(2):
-        fan = self.fan[i] = self.Block(CpuFanConnector())
-        fan_drv = self.fan_drv[i] = imp.Block(HighSideSwitch(pull_resistance=4.7*kOhm(tol=0.05), max_rds=0.3*Ohm))
-        self.connect(fan.pwr, fan_drv.output.as_voltage_source())
-        self.connect(fan.gnd, self.gnd)
-        self.connect(self.mcu.gpio.request(f'fan_drv_{i}'), fan_drv.control)
+      for i in range(5):
+        led_drv = self.led_drv[i] = imp.Block(Al8861(max_current=500*mAmp(tol=0.1), ripple_limit=250*mAmp))
+        self.connect(self.mcu.gpio.request(f'led_pwm_{i}'), led_drv.pwm)
 
-        self.connect(fan.sense, self.mcu.gpio.request(f'fan_sense_{i}'))
-        (self.fan_ctl[i], ), _ = self.chain(
-          self.mcu.gpio.request(f'fan_ctl_{i}'),
-          imp.Block(OpenDrainDriver()),
-          fan.with_mixin(CpuFanPwmControl()).control
-        )
+    self.rgb_conn = self.Block(JstPhKVertical(6))
+    self.connect(self.led_drv[0].leda, self.rgb_conn.pins.request('1'))
+    self.connect(self.led_drv[0].ledk, self.rgb_conn.pins.request('2'))
+    self.connect(self.led_drv[1].leda, self.rgb_conn.pins.request('3'))
+    self.connect(self.led_drv[1].ledk, self.rgb_conn.pins.request('4'))
+    self.connect(self.led_drv[2].leda, self.rgb_conn.pins.request('5'))
+    self.connect(self.led_drv[2].ledk, self.rgb_conn.pins.request('6'))
+    self.cct_conn = self.Block(JstPhKVertical(4))
+    self.connect(self.led_drv[3].leda, self.cct_conn.pins.request('1'))
+    self.connect(self.led_drv[3].ledk, self.cct_conn.pins.request('2'))
+    self.connect(self.led_drv[4].leda, self.cct_conn.pins.request('3'))
+    self.connect(self.led_drv[4].ledk, self.cct_conn.pins.request('4'))
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -101,7 +100,7 @@ class IotLedDriver(JlcBoardTop):
         (['reg_3v3'], Ldl1117),
       ],
       instance_values=[
-        (['refdes_prefix'], 'F'),  # unique refdes for panelization
+        (['refdes_prefix'], 'L'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
           # also designed to be compatible w/ ESP32C6
           # https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf
@@ -111,17 +110,17 @@ class IotLedDriver(JlcBoardTop):
           'enc_a=8',
           'enc_b=7',
           'rgb=5',
-          'ledr=14',
-          'fan_drv_1=35',
-          'fan_sense_1=39',
-          'fan_ctl_1=38',
-          'fan_drv_0=31',
-          'fan_sense_0=33',
-          'fan_ctl_0=32',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
         (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+
+        (['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'], False),
+        (['led_drv[1]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
+        (['led_drv[2]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
+        (['led_drv[3]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
+        (['led_drv[4]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
+        (['led_drv[5]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
       ],
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
@@ -133,7 +132,7 @@ class IotLedDriver(JlcBoardTop):
       ],
       class_values=[
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        # (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
       ]
     )
