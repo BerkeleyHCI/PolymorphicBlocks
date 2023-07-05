@@ -35,7 +35,7 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                 '6': self.lx,
                 # '7': NC
                 '8': self.vin,
-                '9': self.isense,  # EP
+                # '9': EP, connectivity not specified
             },
             mfr='Diodes Incorporated', part='AL8861MP',
             datasheet='https://www.diodes.com/assets/Datasheets/AL8861.pdf'
@@ -47,7 +47,8 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Al8861(PowerConditioner, Interface, GeneratorBlock):
     """AL8861 buck LED driver."""
     @init_in_parent
-    def __init__(self, max_current: RangeLike, ripple_limit: FloatLike):
+    def __init__(self, max_current: RangeLike, ripple_limit: FloatLike,
+                 diode_voltage_drop: RangeLike = Range.all()):
         super().__init__()
 
         self.ic = self.Block(Al8861_Device(FloatExpr()))
@@ -61,6 +62,7 @@ class Al8861(PowerConditioner, Interface, GeneratorBlock):
         self.max_current = self.ArgParameter(max_current)
         self.generator_param(self.max_current)
         self.ripple_limit = self.ArgParameter(ripple_limit)
+        self.diode_voltage_drop = self.ArgParameter(diode_voltage_drop)
 
     def generate(self):
         super().contents()
@@ -96,6 +98,7 @@ class Al8861(PowerConditioner, Interface, GeneratorBlock):
         self.diode = self.Block(Diode(
             reverse_voltage=self.pwr.link().voltage,
             current=peak_current,
+            voltage_drop=self.diode_voltage_drop,
             reverse_recovery_time=(0, 500)*nSecond,  # arbitrary for 'fast'
         ))
         self.connect(self.ind.a, self.ledk)

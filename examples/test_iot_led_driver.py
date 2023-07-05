@@ -53,6 +53,7 @@ class IotLedDriver(JlcBoardTop):
       self.enc = imp.Block(DigitalRotaryEncoder())
       self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
       self.connect(self.enc.b, self.mcu.gpio.request('enc_b'))
+      self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request('enc_sw'))
 
       (self.v12_sense, ), _ = self.chain(
         self.v12,
@@ -75,22 +76,18 @@ class IotLedDriver(JlcBoardTop):
             ImplicitConnect(self.v12, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      for i in range(5):
-        led_drv = self.led_drv[i] = imp.Block(Al8861(max_current=750*mAmp(tol=0.1), ripple_limit=400*mAmp))
+      for i in range(3):
+        led_drv = self.led_drv[i] = imp.Block(Al8861(max_current=700*mAmp(tol=0.1), ripple_limit=400*mAmp,
+                                                     diode_voltage_drop=(0, 0.5)*Volt))
         self.connect(self.mcu.gpio.request(f'led_pwm_{i}'), led_drv.pwm)
 
-    self.rgb_conn = self.Block(JstPhKVertical(6))
-    self.connect(self.led_drv[0].leda, self.rgb_conn.pins.request('1'))
-    self.connect(self.led_drv[0].ledk, self.rgb_conn.pins.request('2'))
-    self.connect(self.led_drv[1].leda, self.rgb_conn.pins.request('3'))
-    self.connect(self.led_drv[1].ledk, self.rgb_conn.pins.request('4'))
-    self.connect(self.led_drv[2].leda, self.rgb_conn.pins.request('5'))
-    self.connect(self.led_drv[2].ledk, self.rgb_conn.pins.request('6'))
-    self.cct_conn = self.Block(JstPhKVertical(4))
-    self.connect(self.led_drv[3].leda, self.cct_conn.pins.request('1'))
-    self.connect(self.led_drv[3].ledk, self.cct_conn.pins.request('2'))
-    self.connect(self.led_drv[4].leda, self.cct_conn.pins.request('3'))
-    self.connect(self.led_drv[4].ledk, self.cct_conn.pins.request('4'))
+    self.led_conn = self.Block(JstPhKHorizontal(6))
+    self.connect(self.led_drv[0].leda, self.led_conn.pins.request('1'))
+    self.connect(self.led_drv[0].ledk, self.led_conn.pins.request('2'))
+    self.connect(self.led_drv[1].leda, self.led_conn.pins.request('3'))
+    self.connect(self.led_drv[1].ledk, self.led_conn.pins.request('4'))
+    self.connect(self.led_drv[2].leda, self.led_conn.pins.request('5'))
+    self.connect(self.led_drv[2].ledk, self.led_conn.pins.request('6'))
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -109,7 +106,12 @@ class IotLedDriver(JlcBoardTop):
           'v12_sense=4',
           'enc_a=8',
           'enc_b=7',
+          'enc_sw=6',
           'rgb=5',
+          'ledr=14',
+          'led_pwm_0=39',
+          'led_pwm_1=38',
+          'led_pwm_2=35',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
@@ -119,8 +121,6 @@ class IotLedDriver(JlcBoardTop):
         (['led_drv[1]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[2]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[3]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
-        (['led_drv[4]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
-        (['led_drv[5]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[0]', 'ind', 'part'], "SWPA8040S680MT"),
         (['led_drv[0]', 'ind', 'manual_frequency_rating'], Range(0, 4.9e6)),
         (['led_drv[1]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
@@ -129,10 +129,6 @@ class IotLedDriver(JlcBoardTop):
         (['led_drv[2]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
         (['led_drv[3]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
         (['led_drv[3]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
-        (['led_drv[4]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
-        (['led_drv[4]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
-        (['led_drv[5]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
-        (['led_drv[5]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
       ],
       class_refinements=[
         (EspAutoProgrammingHeader, EspProgrammingTc2030),
@@ -140,11 +136,10 @@ class IotLedDriver(JlcBoardTop):
         (Neopixel, Sk6805_Ec15),
         (TestPoint, CompactKeystone5015),
         (TagConnect, TagConnectNonLegged),
-        (RotaryEncoder, Ec05e),
       ],
       class_values=[
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
-        # (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
       ]
     )

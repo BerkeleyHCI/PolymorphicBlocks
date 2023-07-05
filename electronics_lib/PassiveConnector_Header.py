@@ -47,6 +47,14 @@ class JstPhKVertical(FootprintPassiveConnector):
             "JST", f"B{length}B-PH-K")
 
 
+"""JST S*B-PH-K series connector: 2.00mm shrouded and polarized, in horizontal (right-angle) through-hole."""
+class JstPhKHorizontal(FootprintPassiveConnector):
+  allowed_pins = range(2, 16+1)
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    return (f'Connector_JST:JST_PH_S{length}B-PH-K_1x{length:02d}_P2.00mm_Horizontal',
+            "JST", f"S{length}B-PH-K")
+
+
 class JstPhSmVertical(FootprintPassiveConnector):
   """JST B*B-PH-SM4 series connector: 2.00mm shrouded and polarized, in vertical surface-mount."""
   allowed_pins = range(2, 16+1)
