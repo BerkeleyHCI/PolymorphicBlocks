@@ -76,18 +76,22 @@ class IotLedDriver(JlcBoardTop):
             ImplicitConnect(self.v12, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      for i in range(3):
+      for i in range(4):
         led_drv = self.led_drv[i] = imp.Block(Al8861(max_current=700*mAmp(tol=0.1), ripple_limit=500*mAmp,
                                                      diode_voltage_drop=(0, 0.5)*Volt))
         self.connect(self.mcu.gpio.request(f'led_pwm_{i}'), led_drv.pwm)
 
-    self.led_conn = self.Block(JstPhKHorizontal(6))
+    self.led_conn = self.Block(JstPhKHorizontal(2))
     self.connect(self.led_drv[0].leda, self.led_conn.pins.request('1'))
     self.connect(self.led_drv[0].ledk, self.led_conn.pins.request('2'))
-    self.connect(self.led_drv[1].leda, self.led_conn.pins.request('3'))
-    self.connect(self.led_drv[1].ledk, self.led_conn.pins.request('4'))
-    self.connect(self.led_drv[2].leda, self.led_conn.pins.request('5'))
-    self.connect(self.led_drv[2].ledk, self.led_conn.pins.request('6'))
+
+    self.rgb_conn = self.Block(JstPhKHorizontal(6))
+    self.connect(self.led_drv[1].leda, self.rgb_conn.pins.request('1'))
+    self.connect(self.led_drv[1].ledk, self.rgb_conn.pins.request('2'))
+    self.connect(self.led_drv[2].leda, self.rgb_conn.pins.request('3'))
+    self.connect(self.led_drv[2].ledk, self.rgb_conn.pins.request('4'))
+    self.connect(self.led_drv[3].leda, self.rgb_conn.pins.request('5'))
+    self.connect(self.led_drv[3].ledk, self.rgb_conn.pins.request('6'))
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -112,6 +116,7 @@ class IotLedDriver(JlcBoardTop):
           'led_pwm_0=39',
           'led_pwm_1=38',
           'led_pwm_2=35',
+          'led_pwm_3=33',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
