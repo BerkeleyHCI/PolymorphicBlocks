@@ -61,7 +61,7 @@ class Al8861(PowerConditioner, Interface, GeneratorBlock):
 
         self.max_current = self.ArgParameter(max_current)
         self.generator_param(self.max_current)
-        self.ripple_limit = self.ArgParameter(ripple_limit)
+        self.ripple_limit = self.ArgParameter(ripple_limit)  # specified as peak-to-peak
         self.diode_voltage_drop = self.ArgParameter(diode_voltage_drop)
 
     def generate(self):
@@ -81,7 +81,7 @@ class Al8861(PowerConditioner, Interface, GeneratorBlock):
         self.pwr_cap = self.Block(DecouplingCapacitor((4.7*0.8, 10*1.2)*uFarad))\
             .connected(self.gnd, self.pwr)  # "commonly used values""
 
-        peak_current = isense_ref / self.rsense.actual_resistance + (0, self.ripple_limit)
+        peak_current = isense_ref / self.rsense.actual_resistance + (0, self.ripple_limit / 2)
         self.assign(self.ic.peak_output_current, peak_current.upper())
 
         # minimum switch on time = 500ns, recommended maximum switch off time = 250kHz @ 75% = 30us

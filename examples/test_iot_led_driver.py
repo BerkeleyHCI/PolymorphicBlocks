@@ -77,7 +77,7 @@ class IotLedDriver(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       for i in range(3):
-        led_drv = self.led_drv[i] = imp.Block(Al8861(max_current=700*mAmp(tol=0.1), ripple_limit=400*mAmp,
+        led_drv = self.led_drv[i] = imp.Block(Al8861(max_current=700*mAmp(tol=0.1), ripple_limit=500*mAmp,
                                                      diode_voltage_drop=(0, 0.5)*Volt))
         self.connect(self.mcu.gpio.request(f'led_pwm_{i}'), led_drv.pwm)
 
@@ -121,8 +121,8 @@ class IotLedDriver(JlcBoardTop):
         (['led_drv[1]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[2]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[3]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
-        (['led_drv[0]', 'ind', 'part'], "SWPA8040S680MT"),
-        (['led_drv[0]', 'ind', 'manual_frequency_rating'], Range(0, 4.9e6)),
+        (['led_drv[0]', 'ind', 'part'], "SWPA6045S680MT"),
+        (['led_drv[0]', 'ind', 'manual_frequency_rating'], Range(0, 6.4e6)),
         (['led_drv[1]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
         (['led_drv[1]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
         (['led_drv[2]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
