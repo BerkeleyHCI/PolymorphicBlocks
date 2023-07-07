@@ -82,6 +82,7 @@ class RobotOwl(JlcBoardTop):
       self.connect(self.v3v3, self.oled22.pwr)
       self.connect(self.v12, self.oled22.vcc)
       self.connect(self.oled22.i2c, self.mcu.i2c.request('oled'))
+      self.connect(self.oled22.reset, self.mcu.gpio.request('oled_reset'))
 
     # VBATT DOMAIN
     with self.implicit_connect(
@@ -129,7 +130,8 @@ class RobotOwl(JlcBoardTop):
           'speaker.sck=35',
           'speaker.ws=37',
           'ws2812=26',  # WS2812
-          'oled=CAM_SCCB',
+          'oled=I2C_cam_sccb*',
+          'oled_reset=GPIO46_strap_pd*'
         ]),
         (['mcu', 'fp_footprint'], 'edg:Freenove_ESP32S3-WROOM_Expansion'),
         (['mcu', 'vusb_out', 'current_limits'], Range(0, 3)),

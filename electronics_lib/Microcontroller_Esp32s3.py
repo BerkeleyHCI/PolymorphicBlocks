@@ -64,10 +64,10 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
       PinResource('GPIO9', {'GPIO9': dio_model, 'ADC1_CH8': adc_model}),
       PinResource('GPIO10', {'GPIO10': dio_model, 'ADC1_CH9': adc_model}),
       # ADC2 pins can't be used simultaneously with WiFi (section 2.3.3) and are not allocatable
-      PinResource('GPIO11', {'GPIO11': dio_model}),  # also ADC2_CH0
-      PinResource('GPIO12', {'GPIO12': dio_model}),  # also ADC2_CH1
-      PinResource('GPIO13', {'GPIO13': dio_model}),  # also ADC2_CH2
-      PinResource('GPIO14', {'GPIO14': dio_model}),  # also ADC2_CH3
+      PinResource('GPIO11', {'GPIO11': dio_model, 'ADC2_CH0_nowifi*': adc_model}),
+      PinResource('GPIO12', {'GPIO12': dio_model, 'ADC2_CH1_nowifi*': adc_model}),
+      PinResource('GPIO13', {'GPIO13': dio_model, 'ADC2_CH2_nowifi*': adc_model}),
+      PinResource('GPIO14', {'GPIO14': dio_model, 'ADC2_CH3_nowifi*': adc_model}),
 
       PinResource('XTAL_32K_P', {'GPIO15': dio_model}),  # also ADC2_CH4
       PinResource('XTAL_32K_N', {'GPIO16': dio_model}),  # also ADC2_CH5
@@ -111,8 +111,8 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
       #   'tx': ['GPIO43'], 'rx': ['GPIO44']
       # }),
 
-      # PinResource('GPIO45', {'GPIO45': dio_model}),  # strapping pin, VDD_SPI power source
-      # PinResource('GPIO46', {'GPIO46': dio_model}),  # strapping pin, boot mode, keep low
+      PinResource('GPIO45', {'GPIO45_strap_pd*': dio_model}),  # strapping pin, VDD_SPI power source
+      PinResource('GPIO46', {'GPIO46_strap_pd*': dio_model}),  # strapping pin, boot mode, keep low
 
       PeripheralAnyResource('U1', uart_model),
       PeripheralAnyResource('U2', uart_model),
@@ -192,7 +192,7 @@ class Esp32s3_Wroom_1_Device(Esp32s3_Base, IoControllerPowerRequired, FootprintB
     'GPIO19': '13',
     'GPIO20': '14',
     'GPIO3': '15',
-    # 'GPIO46': '16',  # strapping pin
+    'GPIO46': '16',  # strapping pin
     'GPIO9': '17',
     'GPIO10': '18',
     'GPIO11': '19',
@@ -202,7 +202,7 @@ class Esp32s3_Wroom_1_Device(Esp32s3_Base, IoControllerPowerRequired, FootprintB
     'GPIO21': '23',
     'SPICLK_P': '24',  # GPIO47
     'SPICLK_N': '25',  # GPIO48
-    # 'GPIO45': '26',  # strapping pin
+    'GPIO45': '26',  # strapping pin
     # 'GPIO35': '28',  # not available on PSRAM variants
     # 'GPIO36': '29',  # not available on PSRAM variants
     # 'GPIO37': '30',  # not available on PSRAM variants
@@ -275,7 +275,7 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_I
     # 'GPIO18': '10',  # CAM_Y7
     # 'GPIO8': '11',  # CAM_Y4
     'GPIO3': '12',
-    # 'GPIO46': '13',  # strapping pin, boot mode
+    'GPIO46': '13',  # strapping pin, boot mode
     # 'GPIO9': '14',  # CAM_Y3
     # 'GPIO10': '15',  # CAM_Y5
     # 'GPIO11': '16',  # CAM_Y2
@@ -288,7 +288,7 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_I
     'GPIO21': '24',
     'SPICLK_P': '25',  # GPIO47
     'SPICLK_N': '26',  # GPIO48, internal WS2812
-    # 'GPIO45': '27',  # strapping pin, VDD_SPI
+    'GPIO45': '27',  # strapping pin, VDD_SPI
     # 'GPIO35': '29',  # PSRAM
     # 'GPIO36': '30',  # PSRAM
     # 'GPIO37': '31',  # PSRAM
@@ -328,7 +328,7 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_I
   def _io_pinmap(self) -> PinMapUtil:  # allow the camera I2C pins to be used externally
     gnd, pwr = self._gnd_vddio()
     return super()._io_pinmap().add([
-      PeripheralFixedPin('CAM_SCCB', I2cMaster(self._dio_model(gnd, pwr), has_pullup=True), {
+      PeripheralFixedPin('I2C_cam_sccb*', I2cMaster(self._dio_model(gnd, pwr), has_pullup=True), {
         'scl': '4', 'sda': '3'
       })
     ])

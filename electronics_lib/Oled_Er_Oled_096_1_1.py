@@ -84,13 +84,12 @@ class Er_Oled_096_1_1(Oled, GeneratorBlock):
         self.device = self.Block(Er_Oled_096_1_1_Device())
         self.gnd = self.Export(self.device.vss, [Common])
         self.pwr = self.Export(self.device.vdd, [Power])
-        self.reset = self.Port(DigitalSink.empty(), optional=True)
+        self.reset = self.Port(DigitalSink.empty())
         self.spi = self.Port(SpiSlave.empty(), optional=True)
         self.cs = self.Port(DigitalSink.empty(), optional=True)
         self.dc = self.Port(DigitalSink.empty(), optional=True)
         self.i2c = self.Port(I2cSlave.empty(), optional=True)
-        self.generator_param(self.spi.is_connected(), self.dc.is_connected(), self.i2c.is_connected(),
-                             self.reset.is_connected())
+        self.generator_param(self.spi.is_connected(), self.dc.is_connected(), self.i2c.is_connected())
 
     def contents(self):
         super().contents()
@@ -118,42 +117,32 @@ class Er_Oled_096_1_1(Oled, GeneratorBlock):
     def generate(self):
         super().generate()
 
-        self.gnd_digital = self.gnd.as_digital_source()
-        self.pwr_digital = None  # workaround for issue #259: if this is never used it creates a broken empty adapter
+        gnd_digital = self.gnd.as_digital_source()
 
         if self.get(self.i2c.is_connected()):
-            if self.pwr_digital is None:
-                self.pwr_digital = self.pwr.as_digital_source()
-            self.connect(self.device.bs0, self.gnd_digital)
-            self.connect(self.device.bs1, self.pwr_digital)
+            pwr_digital = self.pwr.as_digital_source()
+            self.connect(self.device.bs0, gnd_digital)
+            self.connect(self.device.bs1, pwr_digital)
 
             self.connect(self.i2c.scl, self.device.d0)
             self.connect(self.i2c.sda, self.device.d1, self.device.d2)
-            self.connect(self.device.dc, self.gnd_digital)  # addr, TODO support I2C addr
-            self.connect(self.device.cs, self.gnd_digital)
+            self.connect(self.device.dc, gnd_digital)  # addr, TODO support I2C addr
+            self.connect(self.device.cs, gnd_digital)
             self.require(~self.spi.is_connected() & ~self.cs.is_connected() & ~self.dc.is_connected())
             self.assign(self.i2c.addresses, [0x3c])
         elif self.get(self.spi.is_connected()):
-            self.connect(self.device.bs1, self.gnd_digital)
+            self.connect(self.device.bs1, gnd_digital)
             self.connect(self.spi.sck, self.device.d0)
             self.connect(self.spi.mosi, self.device.d1)
             self.connect(self.cs, self.device.cs)
             # D2 not-connected
             if self.get(self.dc.is_connected()):  # 4-line SPI
-                self.connect(self.device.bs0, self.gnd_digital)
+                self.connect(self.device.bs0, gnd_digital)
                 self.connect(self.dc, self.device.dc)
             else:  # 3-line SPI
-                if self.pwr_digital is None:
-                    self.pwr_digital = self.pwr.as_digital_source()
-                self.connect(self.device.bs0, self.pwr_digital)
-                self.connect(self.device.dc, self.gnd_digital)
+                pwr_digital = self.pwr.as_digital_source()
+                self.connect(self.device.bs0, pwr_digital)
+                self.connect(self.device.dc, gnd_digital)
             self.require(~self.i2c.is_connected())
 
         self.require(self.spi.is_connected() | self.i2c.is_connected())
-
-        if self.get(self.reset.is_connected()):
-            self.connect(self.reset, self.device.res)
-        else:
-            if self.pwr_digital is None:
-                self.pwr_digital = self.pwr.as_digital_source()
-            self.connect(self.device.res, self.pwr_digital)
