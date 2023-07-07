@@ -143,7 +143,8 @@ class RobotOwl(JlcBoardTop):
         (['reg_12v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 7e6)),
       ],
       class_refinements=[
-        (PassiveConnector, PinHeader254),  # default connector series unless otherwise specified
+        (PassiveConnector, PinHeader254Horizontal),  # default connector series unless otherwise specified
+        (PinHeader254, PinHeader254Horizontal),
         (TestPoint, CompactKeystone5015),
         (Speaker, ConnectorSpeaker),
         (MountingHole, MountingHole_M2_5),
