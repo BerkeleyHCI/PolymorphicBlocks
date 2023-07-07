@@ -244,6 +244,7 @@ class SeriesPowerResistor(DiscreteApplication):
 
     self.actual_power = self.Parameter(RangeExpr(current_draw * current_draw * self.res.actual_resistance))
     self.require(self.actual_power.within(self.res.actual_power_rating))
+    self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
 
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
       'SeriesPowerResistor':
@@ -274,6 +275,8 @@ class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
     self.require(sense_in_reqd_param.implies(self.sense_in.is_connected()))
 
     self.generator_param(self.sense_in.is_connected())
+
+    self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
 
   def generate(self):
     super().generate()

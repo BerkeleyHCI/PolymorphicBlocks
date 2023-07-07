@@ -19,12 +19,13 @@ from .CustomDiode import CustomDiode
 from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
-from .RotaryEncoder_Ec11 import Ec11eWithSwitch, Ec11j15WithSwitch
+from .RotaryEncoder_Alps import Ec11eWithSwitch, Ec11j15WithSwitch, Ec05e
 from .JlcCrystal import JlcCrystal
 from .JlcOscillator import JlcOscillator
 from .JlcSwitches import JlcSwitch, Skrtlae010
 from .JlcPptcFuse import JlcPptcFuse
-from .Speakers import Speaker, ConnectorSpeaker, Lm4871, Tpa2005d1
+from .Speakers import Speaker, ConnectorSpeaker
+from .SpeakerDriver_Analog import Lm4871, Tpa2005d1, Pam8302a
 from .SpeakerDriver_Max98357a import Max98357a
 from .Microphone_Sd18ob261 import Sd18ob261
 from .Opamp_Mcp6001 import Mcp6001
@@ -34,7 +35,7 @@ from .Opamp_Lmv321 import Lmv321
 from .CeramicResonator_Cstne import Cstne
 
 from .PassiveConnector_Header import PinHeader254, PinSocket254, PinHeader254DualShroudedInline, PinHeader127DualShrouded
-from .PassiveConnector_Header import JstPhKVertical, JstPhSmVertical, JstPhSmVerticalJlc, MolexSl
+from .PassiveConnector_Header import JstPhKVertical, JstPhSmVertical, JstPhKHorizontal, JstPhSmVerticalJlc, MolexSl
 from .PassiveConnector_Fpc import Fpc050, Fpc050Top, Fpc050Bottom, Fpc050BottomFlip, HiroseFh12sh, Afc01, Afc07Top, Te1734839
 from .PassiveConnector_TagConnect import TagConnect, TagConnectLegged, TagConnectNonLegged
 
@@ -53,6 +54,7 @@ from .BoostConverters_DiodesInc import Ap3012
 from .BoostConverters_Torex import Xc9142
 from .BuckBoostConverter_Custom import CustomBuckBoostConverter
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr
+from .LedDriver_Al8861 import Al8861
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Microcontroller_Stm32f103 import Stm32f103_48
@@ -68,7 +70,8 @@ from .Fpga_Ice40up import Ice40up5k_Sg48
 
 from .IoExpander_Pcf8574 import Pcf8574
 
-from .Connectors import PowerBarrelJack, Pj_102a, LipoConnector
+from .Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector
+from .FanConnector import CpuFanConnector, CpuFanPwmControl
 from .CanBlocks import Pesd1can
 from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbMicroBReceptacle
 from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
@@ -121,6 +124,7 @@ from .Bldc_Drv8313 import Drv8313
 
 from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc
 from .Mag_Qmc5883l import Mag_Qmc5883l
+from .EnvironmentalSensor_Sensirion import Shtc3
 from .EnvironmentalSensor_Bme680 import Bme680
 from .LightSensor_Bh1750 import Bh1750
 

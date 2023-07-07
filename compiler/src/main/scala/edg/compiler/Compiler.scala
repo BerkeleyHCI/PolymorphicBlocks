@@ -27,7 +27,7 @@ object ElaborateRecord {
   // Defines the type of a parameter, may be held back by partial compilation rules
   case class Parameter(
       containerPath: DesignPath,
-      container: HasParams,
+      containerClases: Set[ref.LibraryPath],
       postfix: ref.LocalPath,
       param: init.ValInit
   ) extends ElaborateTask
@@ -367,29 +367,27 @@ class Compiler private (
 
   protected def paramMatchesPartial(
       containerPath: DesignPath,
-      container: wir.HasParams,
+      containerClasses: Set[ref.LibraryPath],
       postfix: ref.LocalPath
   ): Boolean = {
     if (partial.params.contains(containerPath ++ postfix)) {
       return true
     }
     partial.classParams.exists { case (partialClass, partialPostfix) =>
-      container.getAllClasses.contains(partialClass) && partialPostfix == postfix
+      containerClasses.contains(partialClass) && partialPostfix == postfix
     }
   }
 
   // Called for each param declaration, currently just registers the declaration and type signature.
-  protected def processParamDeclarations(
-      root: DesignPath,
-      hasParams: wir.HasParams
-  ): Unit = {
-    for ((paramName, param) <- hasParams.getParams) {
+  protected def processParamDeclarations(containerPath: DesignPath, container: wir.HasParams): Unit = {
+    val containerClasses = container.getAllClasses.toSet
+    for ((paramName, param) <- container.getParams) {
       val postfix = ExprBuilder.Ref(paramName)
-      if (paramMatchesPartial(root, hasParams, postfix)) {
-        elaboratePending.addNode(ElaborateRecord.Parameter(root, hasParams, postfix, param), Seq())
+      if (paramMatchesPartial(containerPath, containerClasses, postfix)) {
+        elaboratePending.addNode(ElaborateRecord.Parameter(containerPath, containerClasses, postfix, param), Seq())
       } else {
         // uniformly using ElaborateRecord craters performance, so this fast path is added here
-        constProp.addDeclaration(root ++ postfix, param)
+        constProp.addDeclaration(containerPath ++ postfix, param)
       }
     }
   }
@@ -1631,8 +1629,9 @@ class Compiler private (
             case elaborateRecord @ ElaborateRecord.LinkArray(linkPath) =>
               elaborateLinkArray(linkPath)
               elaboratePending.setValue(elaborateRecord, None)
-            case elaborateRecord @ ElaborateRecord.Parameter(root, container, postfix, param) =>
-              if (paramMatchesPartial(root, container, postfix)) {
+            case elaborateRecord @ ElaborateRecord.Parameter(root, rootClasses, postfix, param) =>
+              val container = resolveBlock(root).asInstanceOf[wir.HasParams]
+              if (paramMatchesPartial(root, rootClasses, postfix)) {
                 partialCompileIgnoredRecords.add(elaborateRecord)
               } else {
                 constProp.addDeclaration(root ++ postfix, param)

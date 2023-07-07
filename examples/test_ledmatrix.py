@@ -41,7 +41,6 @@ class LedMatrix(JlcBoardTop):
       # maximum current draw that is still within the column sink capability of the ESP32
       self.matrix = imp.Block(CharlieplexedLedMatrix(6, 5, current_draw=(3.5, 5)*mAmp, color=Led.Yellow))
       self.connect(self.mcu.gpio.request_vector('led'), self.matrix.ios)
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
     # Misc board
     self.duck = self.Block(DuckLogo())

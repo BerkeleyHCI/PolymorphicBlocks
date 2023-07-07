@@ -12,7 +12,7 @@ class Esp32c3_Interfaces(IoControllerI2s, IoControllerWifi, IoControllerBle, Bas
 
 @abstract_block
 class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, IoControllerPowerRequired, BaseIoControllerPinmapGenerator):
-  """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5, and USB.
+  """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5.
   PlatformIO: use board ID esp32-c3-devkitm-1
 
   Chip datasheet: https://espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf
@@ -94,9 +94,6 @@ class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, IoControllerPowerRequ
       PeripheralAnyResource('I2C', i2c_model),
       PeripheralAnyResource('SPI2', spi_model),
       PeripheralAnyResource('I2S', I2sController.empty()),
-      PeripheralFixedResource('USB', UsbDevicePort.empty(), {
-        'dp': ['GPIO19'], 'dm': ['GPIO18']
-      }),
     ])
 
 
@@ -165,6 +162,7 @@ class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Esp32c
       # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
       # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
       # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
-      self.io8_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io8)
-      self.io2_pull = imp.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(io=self.ic.io2)
       self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.en)
+      vdd_pull = self.pwr.as_digital_source()
+      self.connect(self.ic.io8, vdd_pull)
+      self.connect(self.ic.io2, vdd_pull)

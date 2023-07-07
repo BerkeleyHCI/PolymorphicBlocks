@@ -141,3 +141,34 @@ class HalfBridgeNFet(PowerSwitch, Block):
       current_draw=(0,  # from sink/source current to source only
                     self.output.link().current_drawn.upper().max(-1 * self.output.link().current_drawn.lower()))
     )))
+
+
+class OpenDrainDriver(Block):
+  """NFET configured as an open-drain driver. Potentially useful for voltage translation applications."""
+  @init_in_parent
+  def __init__(self, max_rds: FloatLike = 1*Ohm, frequency: RangeLike = RangeExpr.ZERO) -> None:
+    super().__init__()
+
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.control = self.Port(DigitalSink.empty(), [Input])
+    self.output = self.Port(DigitalSingleSource.empty(), [Output])
+
+    self.max_rds = self.ArgParameter(max_rds)
+    self.frequency = self.ArgParameter(frequency)
+
+  def contents(self):
+    super().contents()
+    
+    self.drv = self.Block(SwitchFet.NFet(
+      drain_voltage=self.output.link().voltage,
+      drain_current=self.output.link().current_drawn,
+      gate_voltage=self.control.link().voltage,
+      rds_on=(0, self.max_rds),
+      frequency=self.frequency,
+      drive_current=self.control.link().current_limits
+    ))
+    self.connect(self.drv.drain.adapt_to(DigitalSingleSource.low_from_supply(self.gnd
+    )), self.output)
+    self.connect(self.drv.source.adapt_to(Ground()), self.gnd)
+    self.connect(self.drv.gate.adapt_to(DigitalSink()),
+                 self.control)

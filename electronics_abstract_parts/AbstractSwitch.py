@@ -48,15 +48,13 @@ class RotaryEncoder(DiscreteComponent):
     self.voltage = self.ArgParameter(voltage)
 
 
-@abstract_block
-class RotaryEncoderWithSwitch(RotaryEncoder):
-  """Rotary encoder that also adds a switch pin (sharing a common with the encoder),
+class RotaryEncoderSwitch(BlockInterfaceMixin[RotaryEncoder]):
+  """Rotary encoder mixin adding a switch pin (sharing a common with the encoder),
   with ratings assumed to be the same between the switch and encoder."""
-  @init_in_parent
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.sw = self.Port(Passive.empty())
+    self.sw = self.Port(Passive.empty(), optional=True)
 
 
 class DigitalSwitch(HumanInterface):
@@ -76,15 +74,19 @@ class DigitalSwitch(HumanInterface):
     self.connect(self.gnd, self.package.com.adapt_to(Ground()))
 
 
+@abstract_block_default(lambda: DigitalWrapperRotaryEncoder)
 class DigitalRotaryEncoder(HumanInterface):
   """Wrapper around RotaryEncoder that provides digital ports that are pulled low (to GND) when pressed."""
   def __init__(self) -> None:
     super().__init__()
 
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.a = self.Port(DigitalSingleSource.empty(), [Output])
-    self.b = self.Port(DigitalSingleSource.empty(), [Output])
+    self.a = self.Port(DigitalSingleSource.empty())
+    self.b = self.Port(DigitalSingleSource.empty())
 
+
+class DigitalWrapperRotaryEncoder(DigitalRotaryEncoder):
+  """Basic implementation for DigitalRotaryEncoder as a wrapper around a passive-typed RotaryEncoder."""
   def contents(self):
     super().contents()
     self.package = self.Block(RotaryEncoder(current=self.a.link().current_drawn.hull(self.b.link().current_drawn),
@@ -96,26 +98,23 @@ class DigitalRotaryEncoder(HumanInterface):
     self.connect(self.gnd, self.package.com.adapt_to(Ground()))
 
 
-class DigitalRotaryEncoderWithSwitch(HumanInterface):
-  """Wrapper around RotaryEncoderWithSwitch that provides a digital port which is pulled low (to GND) when pressed.
-  TODO: deduplicate with DigitalRotaryEncoder
-  """
-  def __init__(self) -> None:
-    super().__init__()
+@abstract_block_default(lambda: DigitalWrapperRotaryEncoderWithSwitch)
+class DigitalRotaryEncoderSwitch(BlockInterfaceMixin[DigitalRotaryEncoder]):
+  """DigitalRotaryEncoder mixin adding a switch pin."""
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
 
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.a = self.Port(DigitalSingleSource.empty(), [Output])
-    self.b = self.Port(DigitalSingleSource.empty(), [Output])
-    self.sw = self.Port(DigitalSingleSource.empty(), [Output])
+    self.sw = self.Port(DigitalSingleSource.empty(), optional=True)
 
+
+class DigitalWrapperRotaryEncoderWithSwitch(DigitalRotaryEncoderSwitch, DigitalWrapperRotaryEncoder, GeneratorBlock):
   def contents(self):
     super().contents()
-    self.package = self.Block(RotaryEncoderWithSwitch(
-      current=self.a.link().current_drawn.hull(self.b.link().current_drawn).hull(self.sw.link().current_drawn),
-      voltage=self.a.link().voltage.hull(self.b.link().voltage).hull(self.sw.link().voltage)))
+    self.generator_param(self.sw.is_connected())
 
-    dio_model = DigitalSingleSource.low_from_supply(self.gnd)
-    self.connect(self.a, self.package.a.adapt_to(dio_model))
-    self.connect(self.b, self.package.b.adapt_to(dio_model))
-    self.connect(self.sw, self.package.sw.adapt_to(dio_model))
-    self.connect(self.gnd, self.package.com.adapt_to(Ground()))
+  def generate(self):
+    super().generate()
+    if self.get(self.sw.is_connected()):
+      package_sw = self.package.with_mixin(RotaryEncoderSwitch())
+      dio_model = DigitalSingleSource.low_from_supply(self.gnd)
+      self.connect(self.sw, package_sw.sw.adapt_to(dio_model))
