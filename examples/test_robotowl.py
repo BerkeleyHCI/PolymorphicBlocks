@@ -82,6 +82,11 @@ class RobotOwl(JlcBoardTop):
       self.connect(self.v3v3, self.oled22.pwr)
       self.connect(self.v12, self.oled22.vcc)
       self.connect(self.oled22.i2c, self.mcu.i2c.request('oled'))
+      (self.oled_rst, self.oled_pull), _ = self.chain(
+        imp.Block(Apx803s(reset_threshold=(2.88, 2.98)*Volt)),  # -29 variant used on Adafruit boards
+        imp.Block(PullupResistor(10*kOhm(tol=0.05))),
+        self.oled22.reset
+      )
 
     # VBATT DOMAIN
     with self.implicit_connect(
@@ -138,7 +143,8 @@ class RobotOwl(JlcBoardTop):
         (['reg_12v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 7e6)),
       ],
       class_refinements=[
-        (PassiveConnector, PinHeader254),  # default connector series unless otherwise specified
+        (PassiveConnector, PinHeader254Horizontal),  # default connector series unless otherwise specified
+        (PinHeader254, PinHeader254Horizontal),
         (TestPoint, CompactKeystone5015),
         (Speaker, ConnectorSpeaker),
         (MountingHole, MountingHole_M2_5),

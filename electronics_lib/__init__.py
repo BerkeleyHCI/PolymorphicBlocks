@@ -34,7 +34,9 @@ from .Opamp_Opa197 import Opa197
 from .Opamp_Lmv321 import Lmv321
 from .CeramicResonator_Cstne import Cstne
 
-from .PassiveConnector_Header import PinHeader254, PinSocket254, PinHeader254DualShroudedInline, PinHeader127DualShrouded
+from .PassiveConnector_Header import PinHeader254, PinHeader254Vertical, PinHeader254Horizontal, PinSocket254
+from .PassiveConnector_Header import PinHeader254DualShroudedInline
+from .PassiveConnector_Header import PinHeader127DualShrouded
 from .PassiveConnector_Header import JstPhKVertical, JstPhSmVertical, JstPhKHorizontal, JstPhSmVerticalJlc, MolexSl
 from .PassiveConnector_Fpc import Fpc050, Fpc050Top, Fpc050Bottom, Fpc050BottomFlip, HiroseFh12sh, Afc01, Afc07Top, Te1734839
 from .PassiveConnector_TagConnect import TagConnect, TagConnectLegged, TagConnectNonLegged
@@ -55,6 +57,7 @@ from .BoostConverters_Torex import Xc9142
 from .BuckBoostConverter_Custom import CustomBuckBoostConverter
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr
 from .LedDriver_Al8861 import Al8861
+from .ResetGenerator_Apx803s import Apx803s
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Microcontroller_Stm32f103 import Stm32f103_48

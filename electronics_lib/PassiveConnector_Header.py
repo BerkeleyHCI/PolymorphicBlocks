@@ -3,12 +3,25 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class PinHeader254(FootprintPassiveConnector):
+@abstract_block_default(lambda: PinHeader254Vertical)
+class PinHeader254(PassiveConnector):
+  """Abstract base class for all 2.54mm pin headers."""
+
+
+class PinHeader254Vertical(PinHeader254, FootprintPassiveConnector):
   """Generic 2.54mm pin header in vertical through-hole."""
   allowed_pins = range(1, 40+1)
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_PinHeader_2.54mm:PinHeader_1x{length:02d}_P2.54mm_Vertical',
             "Generic", f"PinHeader2.54 1x{length}")
+
+
+class PinHeader254Horizontal(PinHeader254, FootprintPassiveConnector):
+  """Generic 2.54mm pin header in horizontal (right-angle) through-hole."""
+  allowed_pins = range(1, 40+1)
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    return (f'Connector_PinHeader_2.54mm:PinHeader_1x{length:02d}_P2.54mm_Horizontal',
+            "Generic", f"PinHeader2.54 1x{length} Horizontal")
 
 
 class PinSocket254(FootprintPassiveConnector):
