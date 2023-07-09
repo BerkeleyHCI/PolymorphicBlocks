@@ -51,9 +51,10 @@ class Datalogger(BoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      self.connect(self.mcu.usb.request(), self.usb_conn.usb)
+      self.connect(self.mcu.with_mixin(IoControllerUsb()).usb.request(), self.usb_conn.usb)
 
-      (self.can, ), _ = self.chain(self.mcu.can.request('can'), imp.Block(CalSolCanBlock()))
+      (self.can, ), _ = self.chain(self.mcu.with_mixin(IoControllerCan()).can.request('can'),
+                                   imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
       self.can_gnd_load = self.Block(DummyVoltageSink())

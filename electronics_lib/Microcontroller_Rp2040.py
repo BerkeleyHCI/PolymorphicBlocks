@@ -4,7 +4,8 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Rp2040_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart,
+                    FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -218,8 +219,8 @@ class Rp2040Usb(InternalSubcircuit, Block):
       UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
 
 
-class Rp2040(Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoControllerPowerRequired,
-             BaseIoControllerExportable):
+class Rp2040(IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator,
+             IoControllerPowerRequired, BaseIoControllerExportable):
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
   def __init__(self, **kwargs):

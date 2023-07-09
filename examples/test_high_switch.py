@@ -265,7 +265,8 @@ class HighSwitch(BoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      (self.can, ), self.can_chain = self.chain(self.mcu.can.request('can'), imp.Block(CalSolCanBlock()))
+      (self.can, ), self.can_chain = self.chain(self.mcu.with_mixin(IoControllerCan()).can.request('can'),
+                                                imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
       self.can_gnd_load = self.Block(DummyVoltageSink())

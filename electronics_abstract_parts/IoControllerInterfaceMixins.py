@@ -2,12 +2,36 @@ from electronics_model import *
 from .IoController import BaseIoController, IoController
 
 
+class IoControllerDac(BlockInterfaceMixin[BaseIoController]):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.dac = self.Port(Vector(AnalogSource.empty()), optional=True)
+        self.implementation(lambda base: base._io_ports.insert(0, self.dac))  # allocate first
+
+
+class IoControllerCan(BlockInterfaceMixin[BaseIoController]):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.can = self.Port(Vector(CanControllerPort.empty()), optional=True)
+        self.implementation(lambda base: base._io_ports.append(self.can))
+
+
+class IoControllerUsb(BlockInterfaceMixin[BaseIoController]):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True)
+        self.implementation(lambda base: base._io_ports.append(self.usb))
+
+
 class IoControllerI2s(BlockInterfaceMixin[BaseIoController]):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self.i2s = self.Port(Vector(I2sController.empty()), optional=True)
-        self.implementation(lambda base: base._io_ports.insert(0, self.i2s))
+        self.implementation(lambda base: base._io_ports.append(self.i2s))
 
 
 class IoControllerDvp8(BlockInterfaceMixin[BaseIoController]):
@@ -15,7 +39,7 @@ class IoControllerDvp8(BlockInterfaceMixin[BaseIoController]):
         super().__init__(*args, **kwargs)
 
         self.dvp8 = self.Port(Vector(Dvp8Host.empty()), optional=True)
-        self.implementation(lambda base: base._io_ports.insert(0, self.dvp8))
+        self.implementation(lambda base: base._io_ports.append(self.dvp8))
 
 
 class IoControllerWifi(BlockInterfaceMixin[BaseIoController]):

@@ -48,7 +48,7 @@ class Simon(BoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.spk_drv, self.spk), _ = self.chain(
-        self.mcu.dac.request('spk'),
+        self.mcu.with_mixin(IoControllerDac()).dac.request('spk'),
         imp.Block(Lm4871()),
         self.Block(Speaker()))
 

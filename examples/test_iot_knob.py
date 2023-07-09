@@ -47,7 +47,8 @@ class IotKnob(JlcBoardTop):
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
 
       # need to name the USB chain so the USB net has the _N and _P postfix for differential traces
-      (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+      (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
+                                                    self.mcu.with_mixin(IoControllerUsb()).usb.request())
 
       # debugging LEDs
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
