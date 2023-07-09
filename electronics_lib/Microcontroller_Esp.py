@@ -5,7 +5,7 @@ from electronics_lib import PinHeader254, TagConnect
 # contains common blocks for ESP microcontrollers
 
 
-@abstract_block_default(lambda: EspProgrammingPins)
+@abstract_block_default(lambda: EspProgrammingPinHeader254)
 class EspProgrammingHeader(ProgrammingConnector):
   """Abstract programming header for ESP series micros, defining a UART connection.
   Circuitry to reset / enter programming mode must be external."""
@@ -18,16 +18,16 @@ class EspProgrammingHeader(ProgrammingConnector):
 
 
 @abstract_block
-class EspAutoProgrammingHeader(EspProgrammingHeader):
-  """Abstract programming header for ESP series micros, including reset and IO0 for auto-programming."""
-  def __init__(self) -> None:
-    super().__init__()
+class EspProgrammingAutoReset(BlockInterfaceMixin[EspProgrammingHeader]):
+  """Mixin for ESP programming header with auto-reset and auto-boot pins"""
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
 
-    self.en = self.Port(DigitalSource.empty())  # effectively a reset pin
-    self.boot = self.Port(DigitalSource.empty())  # IO0 on ESP32, IO9 on ESP32C3
+    self.en = self.Port(DigitalSource.empty(), optional=True)  # effectively a reset pin
+    self.boot = self.Port(DigitalSource.empty(), optional=True)  # IO0 on ESP32, IO9 on ESP32C3
 
 
-class EspProgrammingPins(EspProgrammingHeader):
+class EspProgrammingPinHeader254(EspProgrammingHeader):
   """Programming header for ESP series micros using 2.54mm headers, matching the pinning in the reference schematics."""
   def contents(self) -> None:
     super().contents()
@@ -40,7 +40,7 @@ class EspProgrammingPins(EspProgrammingHeader):
     self.connect(self.gnd, self.conn.pins.request('4').adapt_to(Ground()))
 
 
-class EspProgrammingTc2030(EspAutoProgrammingHeader):
+class EspProgrammingTc2030(EspProgrammingAutoReset, EspProgrammingHeader):
   """UNOFFICIAL tag connect header, based on a modification of the FT232 cable
   (https://www.tag-connect.com/product/tc2030-ftdi-ttl-232rg-vsw3v3)
   but adding the auto-programming pins (and using DTR instead of CTS into the cable).
@@ -83,16 +83,15 @@ class HasEspProgramming(IoController, GeneratorBlock):
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
+      self.prog = imp.Block(EspProgrammingHeader())
+      self.connect(self.program_uart_node, self.prog.uart)
       if programming == "uart-button":  # default, uart-only header with boot button
-        self.prog = imp.Block(EspProgrammingHeader())
-        self.connect(self.program_uart_node, self.prog.uart)  # reset and boot disconnected
         self.boot = imp.Block(DigitalSwitch())
         self.connect(self.boot.out, self.program_boot_node)
       elif programming == "uart-auto":  # UART with auto-programming
-        self.prog = imp.Block(EspAutoProgrammingHeader())
-        self.connect(self.program_uart_node, self.prog.uart)
-        self.connect(self.program_en_node, self.prog.en)
-        self.connect(self.program_boot_node, self.prog.boot)
+        auto_prog = self.prog.with_mixin(EspProgrammingAutoReset())
+        self.connect(self.program_en_node, auto_prog.en)
+        self.connect(self.program_boot_node, auto_prog.boot)
       else:
         self.require(False, "unknown programming connector mode")
 

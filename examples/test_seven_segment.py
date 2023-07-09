@@ -121,7 +121,7 @@ class SevenSegment(JlcBoardTop):
         (['mcu', 'programming'], 'uart-auto')
       ],
       class_refinements=[
-        (EspAutoProgrammingHeader, EspProgrammingTc2030),
+        (EspProgrammingHeader, EspProgrammingTc2030),
         (Neopixel, Sk6805_Ec15),
         (Switch, Skrtlae010),
         (Speaker, ConnectorSpeaker),

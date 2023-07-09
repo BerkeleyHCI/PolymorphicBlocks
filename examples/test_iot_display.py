@@ -62,7 +62,8 @@ class IotDisplay(JlcBoardTop):
       self.mcu.with_mixin(IoControllerWifi())
 
       # need to name the USB chain so the USB net has the _N and _P postfix for differential traces
-      (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+      (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
+                                                    self.mcu.with_mixin(IoControllerUsb()).usb.request())
 
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
       (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
@@ -114,7 +115,7 @@ class IotDisplay(JlcBoardTop):
         (['pwr_or', 'diode', 'part'], 'B5819W SL'),  # autopicked one is OOS
       ],
       class_refinements=[
-        (EspAutoProgrammingHeader, EspProgrammingTc2030),
+        (EspProgrammingHeader, EspProgrammingTc2030),
         (TestPoint, CompactKeystone5015),
         (Fpc050Bottom, Fpc050BottomFlip),
       ],

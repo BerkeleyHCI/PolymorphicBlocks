@@ -5,7 +5,7 @@ from deprecated import deprecated
 
 from electronics_model import *
 from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
-from .Categories import ProgrammableController, IdealModel
+from .Categories import ProgrammableController
 
 
 @abstract_block
@@ -20,18 +20,15 @@ class BaseIoController(PinMappable, Block):
 
     self.gpio = self.Port(Vector(DigitalBidir.empty()), optional=True)
     self.adc = self.Port(Vector(AnalogSink.empty()), optional=True)
-    self.dac = self.Port(Vector(AnalogSource.empty()), optional=True)
 
     self.spi = self.Port(Vector(SpiMaster.empty()), optional=True)
     self.i2c = self.Port(Vector(I2cMaster.empty()), optional=True)
     self.uart = self.Port(Vector(UartPort.empty()), optional=True)
-    self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True)
-    self.can = self.Port(Vector(CanControllerPort.empty()), optional=True)
 
     self.io_current_draw = self.Parameter(RangeExpr())  # total current draw for all leaf-level IO sinks
 
     self._io_ports: List[BasePort] = [  # ordered by assignment order, most restrictive should be first
-      self.dac, self.adc, self.spi, self.i2c, self.uart, self.usb, self.can, self.gpio]
+      self.adc, self.spi, self.i2c, self.uart, self.gpio]
 
   def _type_of_io(self, io_port: BasePort) -> Type[Port]:
     if isinstance(io_port, Vector):
@@ -223,7 +220,12 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
     self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
 
 
-@abstract_block_default(lambda: IdealIoController)
+def makeIdealIoController():  # needed to avoid circular import
+  from .IdealIoController import IdealIoController
+  return IdealIoController
+
+
+@abstract_block_default(makeIdealIoController)
 class IoController(ProgrammableController, BaseIoController):
   """An abstract, generic IO controller with optional common IOs and power ports."""
   def __init__(self, *awgs, **kwargs) -> None:
@@ -240,62 +242,3 @@ class IoControllerPowerRequired(IoController):
     super().__init__(*args, **kwargs)
     self.require(self.pwr.is_connected())
     self.require(self.gnd.is_connected())
-
-
-class IdealIoController(IoController, IdealModel, GeneratorBlock):
-  """An ideal IO controller, with as many IOs as requested.
-  Output have voltages at pwr/gnd, all other parameters are ideal."""
-  def __init__(self) -> None:
-    super().__init__()
-    self.generator_param(self.adc.requested(), self.dac.requested(), self.gpio.requested(), self.spi.requested(),
-                         self.i2c.requested(), self.uart.requested(), self.usb.requested(), self.can.requested())
-
-  def generate(self) -> None:
-    self.pwr.init_from(VoltageSink(
-      current_draw=RangeExpr()
-    ))
-    self.gnd.init_from(Ground())
-
-    io_current_draw_builder = RangeExpr._to_expr_type(RangeExpr.ZERO)
-
-    self.adc.defined()
-    for elt in self.get(self.adc.requested()):
-      self.adc.append_elt(AnalogSink(), elt)
-    self.dac.defined()
-    for elt in self.get(self.dac.requested()):
-      aout = self.dac.append_elt(AnalogSource(
-        voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage)
-      ), elt)
-      io_current_draw_builder = io_current_draw_builder + (
-        aout.link().current_drawn.lower().min(0), aout.link().current_drawn.upper().max(0)
-      )
-
-    dio_model = DigitalBidir(
-      voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage),
-      pullup_capable=True, pulldown_capable=True
-    )
-
-    self.gpio.defined()
-    for elt in self.get(self.gpio.requested()):
-      dio = self.gpio.append_elt(dio_model, elt)
-      io_current_draw_builder = io_current_draw_builder + (
-        dio.link().current_drawn.lower().min(0), dio.link().current_drawn.upper().max(0)
-      )
-
-    self.spi.defined()
-    for elt in self.get(self.spi.requested()):
-      self.spi.append_elt(SpiMaster(dio_model), elt)
-    self.i2c.defined()
-    for elt in self.get(self.i2c.requested()):
-      self.i2c.append_elt(I2cMaster(dio_model), elt)
-    self.uart.defined()
-    for elt in self.get(self.uart.requested()):
-      self.uart.append_elt(UartPort(dio_model), elt)
-    self.usb.defined()
-    for elt in self.get(self.usb.requested()):
-      self.usb.append_elt(UsbDevicePort(), elt)
-    self.can.defined()
-    for elt in self.get(self.can.requested()):
-      self.can.append_elt(CanControllerPort(dio_model), elt)
-
-    self.assign(self.pwr.current_draw, io_current_draw_builder)

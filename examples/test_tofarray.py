@@ -77,10 +77,11 @@ class TofArray(JlcBoardTop):
       self.connect(self.mcu.gpio.request_vector('tof_xshut'), self.tof.xshut)
 
       (self.usb_esd, ), self.usb_chain = self.chain(
-        self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+        self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.with_mixin(IoControllerUsb()).usb.request())
 
       (self.tp_can, self.xcvr, self.can_esd), self.can_chain = self.chain(
-        self.mcu.can.request('can'), imp.Block(CanControllerTestPoint()),
+        self.mcu.with_mixin(IoControllerCan()).can.request('can'),
+        imp.Block(CanControllerTestPoint()),
         imp.Block(Sn65hvd230()), imp.Block(CanEsdDiode()), self.can.differential
       )
 

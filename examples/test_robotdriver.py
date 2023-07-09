@@ -124,7 +124,7 @@ class RobotDriver(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
-        self.mcu.dac.request('spk'),
+        self.mcu.with_mixin(IoControllerDac()).dac.request('spk'),
         self.Block(AnalogTestPoint()),
         imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
         self.Block(Speaker()))

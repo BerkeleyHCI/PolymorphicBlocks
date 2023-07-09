@@ -6,7 +6,7 @@ from .JlcPart import JlcPart
 
 
 @non_library
-class Nrf52840_Interfaces(IoControllerI2s, IoControllerBle, BaseIoController):
+class Nrf52840_Interfaces(IoControllerUsb, IoControllerI2s, IoControllerBle, BaseIoController):
   """Defines base interfaces for nRF52840 microcontrollers"""
 
 
