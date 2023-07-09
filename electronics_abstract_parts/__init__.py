@@ -58,6 +58,7 @@ from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnable, V
 from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
+from .AbstractLedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
 from .AbstractFuse import Fuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
 from .AbstractOscillator import Oscillator, TableOscillator

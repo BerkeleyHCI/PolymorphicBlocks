@@ -115,7 +115,7 @@ class IotDisplay(JlcBoardTop):
         (['pwr_or', 'diode', 'part'], 'B5819W SL'),  # autopicked one is OOS
       ],
       class_refinements=[
-        (EspAutoProgrammingHeader, EspProgrammingTc2030),
+        (EspProgrammingHeader, EspProgrammingTc2030),
         (TestPoint, CompactKeystone5015),
         (Fpc050Bottom, Fpc050BottomFlip),
       ],

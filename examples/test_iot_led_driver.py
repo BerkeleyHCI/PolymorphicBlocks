@@ -71,15 +71,15 @@ class IotLedDriver(JlcBoardTop):
         imp.Block(NeopixelArray(RING_LEDS)))
 
     # 12V DOMAIN
-    self.led_drv = ElementDict[Al8861]()
+    self.led_drv = ElementDict[LedDriver]()
     with self.implicit_connect(
             ImplicitConnect(self.v12, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       for i in range(4):
-        led_drv = self.led_drv[i] = imp.Block(Al8861(max_current=700*mAmp(tol=0.1), ripple_limit=500*mAmp,
-                                                     diode_voltage_drop=(0, 0.5)*Volt))
-        self.connect(self.mcu.gpio.request(f'led_pwm_{i}'), led_drv.pwm)
+        led_drv = self.led_drv[i] = imp.Block(LedDriver(max_current=700*mAmp(tol=0.1)))
+        led_drv.with_mixin(LedDriverSwitchingConverter(ripple_limit=500*mAmp))
+        self.connect(self.mcu.gpio.request(f'led_pwm_{i}'), led_drv.with_mixin(LedDriverPwm()).pwm)
 
     self.led_conn = self.Block(JstPhKHorizontal(2))
     self.connect(self.led_drv[0].leda, self.led_conn.pins.request('1'))
@@ -99,6 +99,10 @@ class IotLedDriver(JlcBoardTop):
         (['mcu'], Esp32s3_Wroom_1),
         (['reg_5v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
+        (['led_drv[0]'], Al8861),
+        (['led_drv[1]'], Al8861),
+        (['led_drv[2]'], Al8861),
+        (['led_drv[3]'], Al8861),
       ],
       instance_values=[
         (['refdes_prefix'], 'L'),  # unique refdes for panelization
@@ -122,6 +126,11 @@ class IotLedDriver(JlcBoardTop):
         (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
         (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
 
+        (['led_drv[0]', 'diode_voltage_drop'], Range(0, 0.5)),
+        (['led_drv[1]', 'diode_voltage_drop'], ParamValue(['led_drv[0]', 'diode_voltage_drop'])),
+        (['led_drv[2]', 'diode_voltage_drop'], ParamValue(['led_drv[0]', 'diode_voltage_drop'])),
+        (['led_drv[3]', 'diode_voltage_drop'], ParamValue(['led_drv[0]', 'diode_voltage_drop'])),
+
         (['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'], False),
         (['led_drv[1]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[2]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
@@ -136,9 +145,10 @@ class IotLedDriver(JlcBoardTop):
         (['led_drv[3]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
       ],
       class_refinements=[
-        (EspAutoProgrammingHeader, EspProgrammingTc2030),
+        (EspProgrammingHeader, EspProgrammingTc2030),
         (PowerBarrelJack, Pj_036ah),
         (Neopixel, Sk6805_Ec15),
+        (LedDriver, Al8861),
         (TestPoint, CompactKeystone5015),
         (TagConnect, TagConnectNonLegged),
       ],

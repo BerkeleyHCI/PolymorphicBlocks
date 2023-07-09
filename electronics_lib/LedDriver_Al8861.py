@@ -44,25 +44,20 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Al8861(PowerConditioner, Interface, GeneratorBlock):
+class Al8861(LedDriverPwm, LedDriverSwitchingConverter, LedDriver, GeneratorBlock):
     """AL8861 buck LED driver."""
     @init_in_parent
-    def __init__(self, max_current: RangeLike, ripple_limit: FloatLike,
-                 diode_voltage_drop: RangeLike = Range.all()):
+    def __init__(self, diode_voltage_drop: RangeLike = Range.all()):
         super().__init__()
 
         self.ic = self.Block(Al8861_Device(FloatExpr()))
-        self.pwr = self.Export(self.ic.vin, [Power])
-        self.gnd = self.Export(self.ic.gnd, [Common])
+        self.connect(self.pwr, self.ic.vin)
+        self.connect(self.gnd, self.ic.gnd)
 
-        self.pwm = self.Export(self.ic.vset_pwm, optional=True)
-        self.leda = self.Port(Passive())
-        self.ledk = self.Port(Passive())
-
-        self.max_current = self.ArgParameter(max_current)
         self.generator_param(self.max_current)
-        self.ripple_limit = self.ArgParameter(ripple_limit)  # specified as peak-to-peak
         self.diode_voltage_drop = self.ArgParameter(diode_voltage_drop)
+
+        self.generator_param(self.pwm.is_connected())
 
     def generate(self):
         super().contents()
@@ -104,3 +99,6 @@ class Al8861(PowerConditioner, Interface, GeneratorBlock):
         self.connect(self.ind.a, self.ledk)
         self.connect(self.ind.b, self.ic.lx, self.diode.anode)
         self.connect(self.diode.cathode.adapt_to(VoltageSink()), self.pwr)
+
+        if self.get(self.pwm.is_connected()):
+            self.connect(self.pwm, self.ic.vset_pwm)

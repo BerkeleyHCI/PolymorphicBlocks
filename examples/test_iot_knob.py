@@ -145,7 +145,7 @@ class IotKnob(JlcBoardTop):
         (['mcu', 'programming'], 'uart-auto'),
       ],
       class_refinements=[
-        (EspAutoProgrammingHeader, EspProgrammingTc2030),
+        (EspProgrammingHeader, EspProgrammingTc2030),
         (Neopixel, Sk6805_Ec15),
         (Speaker, ConnectorSpeaker),
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified

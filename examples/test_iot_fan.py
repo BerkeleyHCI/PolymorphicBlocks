@@ -124,7 +124,7 @@ class IotFan(JlcBoardTop):
         (['fan_drv[1]', 'drv', 'part'], ParamValue(['fan_drv[0]', 'drv', 'part'])),
       ],
       class_refinements=[
-        (EspAutoProgrammingHeader, EspProgrammingTc2030),
+        (EspProgrammingHeader, EspProgrammingTc2030),
         (PowerBarrelJack, Pj_036ah),
         (Neopixel, Sk6805_Ec15),
         (TestPoint, CompactKeystone5015),
