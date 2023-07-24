@@ -59,6 +59,8 @@ class Al8861(LedDriverPwm, LedDriverSwitchingConverter, LedDriver, GeneratorBloc
 
         self.generator_param(self.pwm.is_connected())
 
+        self.actual_ripple = self.Parameter(RangeExpr())
+
     def generate(self):
         super().contents()
 
@@ -89,6 +91,7 @@ class Al8861(LedDriverPwm, LedDriverSwitchingConverter, LedDriver, GeneratorBloc
         ))
         # recommended inductance between 33 and 100uH, accounting for ~20% tolerance
         self.require(self.ind.actual_inductance.within((33*0.8, 100*1.2)*uHenry))
+        self.assign(self.actual_ripple, self.pwr.link().voltage * (1.5*uSecond) / self.ind.actual_inductance)
 
         self.diode = self.Block(Diode(
             reverse_voltage=self.pwr.link().voltage,
