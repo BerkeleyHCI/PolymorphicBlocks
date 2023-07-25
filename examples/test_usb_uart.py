@@ -64,7 +64,7 @@ class UsbUart(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['out', 'conn'], PinHeader254Vertical),
+        (['out', 'conn'], PinHeader254),
         (['reg_3v3'], Ap2204k),
       ],
       instance_values=[
