@@ -544,7 +544,10 @@ class Compiler private (
     // apply the user-specified refinement, then recurse with class-based and block-side default refinements
     var refinementLibraryPath = refinements.instanceRefinements.get(path) // None if no refinement
     var blockLibraryPath = refinementLibraryPath.getOrElse(block.target) // always contains a value
-    var libraryBlockPb = library.getBlock(block.target, block.mixins) match { // mixins only apply pre-refinement
+    var libraryBlockPb = (refinementLibraryPath match {
+      case None => library.getBlock(block.target, block.mixins) // mixins only apply pre-refinement
+      case Some(refinementLibraryPath) => library.getBlock(refinementLibraryPath)
+    }) match {
       case Errorable.Success(blockPb) => blockPb
       case Errorable.Error(err) =>
         errors += CompilerError.LibraryError(path, blockLibraryPath, err)
@@ -570,7 +573,7 @@ class Compiler private (
         } else {
           refinementLibraryPath = Some(nextPath)
           blockLibraryPath = nextPath
-          libraryBlockPb = library.getBlock(blockLibraryPath, block.mixins) match {
+          libraryBlockPb = library.getBlock(blockLibraryPath) match {
             case Errorable.Success(blockPb) => blockPb
             case Errorable.Error(err) =>
               errors += CompilerError.LibraryError(path, blockLibraryPath, err)
