@@ -531,9 +531,8 @@ class Compiler private (
     }
   }
 
-  // Recursively resolves the refined library, accounting for class refinements and default refinements.
+  // Recursively resolves the refined library, accounting for instance, class, and default refinements.
   // Returns none of no further refinement is specified.
-  // Instance refinements must be handled beforehand
   protected def resolveRefinementLibrary(
       path: DesignPath,
       blockLibrary: ref.LibraryPath,
