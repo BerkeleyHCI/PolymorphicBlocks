@@ -5,6 +5,7 @@ import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import edg.wir.ProtoUtil._
 import edg.wir._
 import edg.{ExprBuilder, wir}
+import edgir.elem.elem
 import edgir.expr.expr
 import edgir.ref.ref
 import edgir.init.init
@@ -530,45 +531,52 @@ class Compiler private (
     }
   }
 
+  // Recursively resolves the refined library, accounting for instance, class, and default refinements.
+  // Returns none of no further refinement is specified.
+  protected def resolveRefinementLibrary(
+      path: DesignPath,
+      blockLibrary: ref.LibraryPath,
+      blockPb: elem.HierarchyBlock,
+      applyInstanceRefinement: Boolean = true // should only be true at the beginning
+  ): Option[(ref.LibraryPath, elem.HierarchyBlock)] = {
+    val nextLibrary = Option.when(applyInstanceRefinement)(refinements.instanceRefinements.get(path)).flatten
+      .orElse(refinements.classRefinements.get(blockLibrary))
+      .orElse(blockPb.defaultRefinement)
+
+    nextLibrary.map { nextLibrary =>
+      val nextBlockPb = library.getBlock(nextLibrary) match {
+        case Errorable.Success(blockPb) => blockPb
+        case Errorable.Error(err) =>
+          errors += CompilerError.LibraryError(path, nextLibrary, err)
+          elem.HierarchyBlock()
+      }
+      resolveRefinementLibrary(path, nextLibrary, nextBlockPb, false).getOrElse((nextLibrary, nextBlockPb))
+    }
+  }
+
   // Given a block library at some path, expand it and link it in the parent.
   // Does not elaborate the internals (including connections / assertions / assignments), which is
   // a separate phase that (for generators) may be gated on additional parameters.
   // Handles class type refinements and adds default parameters and class-based value refinements
   // For the generator, this will be a skeleton block.
   protected def expandBlock(path: DesignPath): Unit = {
-    import edgir.elem.elem
-
     val block = resolveBlock(path).asInstanceOf[wir.BlockLibrary]
 
-    // check for and apply block-side default refinement, if defined
-    val libraryBlockPb = library.getBlock(block.target, block.mixins) match {
+    val prerefineBlockPb = library.getBlock(block.target, block.mixins) match {
       case Errorable.Success(blockPb) => blockPb
       case Errorable.Error(err) =>
         errors += CompilerError.LibraryError(path, block.target, err)
         elem.HierarchyBlock()
     }
-    val refinementLibraryPath = refinements.instanceRefinements.get(path).orElse(
-      refinements.classRefinements.get(block.target).orElse(
-        libraryBlockPb.defaultRefinement
-      )
-    )
-
-    // actually instantiate the block
-    val unrefinedType = if (refinementLibraryPath.isDefined) Some(block.target) else None
-    val blockLibraryPath = refinementLibraryPath.getOrElse(block.target)
-    val blockMixins = if (refinementLibraryPath.isDefined) Seq() else block.mixins // discard mixins if refined
-
-    val blockPb = library.getBlock(blockLibraryPath, blockMixins) match {
-      case Errorable.Success(blockPb) =>
-        blockPb
-      case Errorable.Error(err) =>
-        errors += CompilerError.LibraryError(path, blockLibraryPath, err)
-        elem.HierarchyBlock()
-    }
+    val (isRefined, refinedLibrary, refinedPb) =
+      resolveRefinementLibrary(path, block.target, prerefineBlockPb) match {
+        case Some((refinedPath, refinedPb)) => (true, refinedPath, refinedPb)
+        case None => (false, block.target, prerefineBlockPb)
+      }
 
     // add class-based refinements - must be set before refinement params
     // note that this operates on the post-refinement class
-    val blockAllClasses = Seq(blockPb.selfClass, blockPb.superclasses, blockPb.superSuperclasses).flatten
+    val blockAllClasses = Seq(refinedPb.selfClass, refinedPb.superclasses, refinedPb.superSuperclasses).flatten
     filterRefinementClassValues(blockAllClasses, refinementClassValuesByClass).foreach {
       case ((refinementClass, postfix), value) =>
         val paramPath = path ++ postfix
@@ -584,44 +592,45 @@ class Compiler private (
     }
 
     // additional processing needed for the refinement case
+    val unrefinedType = if (isRefined) Some(block.target) else None
     if (unrefinedType.isDefined) {
-      val refinedNewParams = blockPb.params.toSeqMap.keys.toSet -- libraryBlockPb.params.toSeqMap.keys
+      val refinedNewParams = refinedPb.params.toSeqMap.keys.toSet -- prerefineBlockPb.params.toSeqMap.keys
       refinedNewParams.foreach { refinedNewParam => // add subclass (refinement) default params
-        blockPb.paramDefaults.get(refinedNewParam).foreach { refinedDefault =>
+        refinedPb.paramDefaults.get(refinedNewParam).foreach { refinedDefault =>
           constProp.addAssignExpr(
             path.asIndirect + refinedNewParam,
             refinedDefault,
             path,
-            s"(default)${blockLibraryPath.toSimpleString}.$refinedNewParam"
+            s"(default)${refinedLibrary.toSimpleString}.$refinedNewParam"
           )
         }
       }
-      val refinedNewPorts = blockPb.ports.toSeqMap.keys.toSet -- libraryBlockPb.ports.toSeqMap.keys
+      val refinedNewPorts = refinedPb.ports.toSeqMap.keys.toSet -- prerefineBlockPb.ports.toSeqMap.keys
       refinedNewPorts.foreach { refinedNewPort => // add subclass (refinement) non-connected
-        blockPb.ports(refinedNewPort).is match {
+        refinedPb.ports(refinedNewPort).is match {
           case _: elem.PortLike.Is.LibElem =>
             constProp.addAssignValue(
               path.asIndirect + refinedNewPort + IndirectStep.IsConnected,
               BooleanValue(false),
               path,
-              s"(refined_not_connected)${blockLibraryPath.toSimpleString}.$refinedNewPort"
+              s"(refined_not_connected)${refinedLibrary.toSimpleString}.$refinedNewPort"
             )
           case _: elem.PortLike.Is.Array =>
             constProp.addAssignValue(
               path.asIndirect + refinedNewPort + IndirectStep.Allocated,
               ArrayValue(Seq()),
               path,
-              s"(refined_not_connected)${blockLibraryPath.toSimpleString}.$refinedNewPort"
+              s"(refined_not_connected)${refinedLibrary.toSimpleString}.$refinedNewPort"
             )
           case _ => throw new IllegalArgumentException(s"unknown port $refinedNewPort")
         }
       }
     }
 
-    val newBlock = if (blockPb.generator.isEmpty) {
-      new wir.Block(blockPb, unrefinedType, block.mixins)
+    val newBlock = if (refinedPb.generator.isEmpty) {
+      new wir.Block(refinedPb, unrefinedType, block.mixins)
     } else {
-      new wir.Generator(blockPb, unrefinedType, block.mixins)
+      new wir.Generator(refinedPb, unrefinedType, block.mixins)
     }
 
     val (parentPath, blockName) = path.split

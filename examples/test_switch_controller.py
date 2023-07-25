@@ -90,7 +90,7 @@ class SwitchController(JlcBoardTop):
         (['mcu'], Esp32_Wroom_32),
         (['reg_3v3'], Ld1117),
 
-        (['conn', 'conn'], PinHeader254Vertical),
+        (['conn', 'conn'], PinHeader254),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
