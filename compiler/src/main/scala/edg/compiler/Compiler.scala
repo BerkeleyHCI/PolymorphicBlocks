@@ -12,7 +12,6 @@ import edgir.init.init
 import edgir.schema.schema
 
 import scala.collection.{SeqMap, mutable}
-import scala.util.control.Breaks
 
 sealed trait ElaborateRecord
 object ElaborateRecord {
@@ -541,17 +540,9 @@ class Compiler private (
       blockPb: elem.HierarchyBlock,
       applyInstanceRefinement: Boolean = true // should only be true at the beginning
   ): Option[(ref.LibraryPath, elem.HierarchyBlock)] = {
-    val nextLibrary = (applyInstanceRefinement, refinements.instanceRefinements.get(path)) match {
-      case (true, Some(instanceRefinement)) => Some(instanceRefinement)
-      case (_, _) =>
-        refinements.classRefinements.get(blockLibrary) match {
-          case Some(classRefinement) => Some(classRefinement)
-          case None => blockPb.defaultRefinement match {
-              case Some(defaultRefinement) => Some(defaultRefinement)
-              case None => None
-            }
-        }
-    }
+    val nextLibrary = Option.when(applyInstanceRefinement)(refinements.instanceRefinements.get(path)).flatten
+      .orElse(refinements.classRefinements.get(blockLibrary))
+      .orElse(blockPb.defaultRefinement)
 
     nextLibrary.map { nextLibrary =>
       val nextBlockPb = library.getBlock(nextLibrary) match {
