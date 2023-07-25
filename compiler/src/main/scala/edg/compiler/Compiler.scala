@@ -11,6 +11,7 @@ import edgir.init.init
 import edgir.schema.schema
 
 import scala.collection.{SeqMap, mutable}
+import scala.util.control.Breaks
 
 sealed trait ElaborateRecord
 object ElaborateRecord {
@@ -540,22 +541,43 @@ class Compiler private (
 
     val block = resolveBlock(path).asInstanceOf[wir.BlockLibrary]
 
-    // check for and apply block-side default refinement, if defined
-    val libraryBlockPb = library.getBlock(block.target, block.mixins) match {
+    // apply the user-specified refinement, then recurse with class-based and block-side default refinements
+    var refinementLibraryPath = refinements.instanceRefinements.get(path)  // None if no refinement
+    var blockLibraryPath = refinementLibraryPath.getOrElse(block.target)  // always contains a value
+
+    val loop = new Breaks
+    loop.breakable { while (true) {
+      val currentPb = library.getBlock(blockLibraryPath, block.mixins) match {
+        case Errorable.Success(blockPb) => blockPb
+        case Errorable.Error(err) =>
+          errors += CompilerError.LibraryError(path, blockLibraryPath, err)
+          elem.HierarchyBlock()
+      }
+      val nextPath = refinements.classRefinements.get(blockLibraryPath) match {
+        case Some(classRefinement) => classRefinement  // class refinements take priority
+        case None =>
+          currentPb.defaultRefinement match {
+            case Some(defaultRefinement) => defaultRefinement
+            case None => blockLibraryPath
+          }
+      }
+      if (nextPath == blockLibraryPath) {  // no forward progress made, this also breaks self-loops
+        loop.break()
+      } else {
+        refinementLibraryPath = Some(nextPath)
+        blockLibraryPath = nextPath
+      }
+    } }
+
+    val libraryBlockPb = library.getBlock(blockLibraryPath, block.mixins) match {
       case Errorable.Success(blockPb) => blockPb
       case Errorable.Error(err) =>
-        errors += CompilerError.LibraryError(path, block.target, err)
+        errors += CompilerError.LibraryError(path, blockLibraryPath, err)
         elem.HierarchyBlock()
     }
-    val refinementLibraryPath = refinements.instanceRefinements.get(path).orElse(
-      refinements.classRefinements.get(block.target).orElse(
-        libraryBlockPb.defaultRefinement
-      )
-    )
 
     // actually instantiate the block
     val unrefinedType = if (refinementLibraryPath.isDefined) Some(block.target) else None
-    val blockLibraryPath = refinementLibraryPath.getOrElse(block.target)
     val blockMixins = if (refinementLibraryPath.isDefined) Seq() else block.mixins // discard mixins if refined
 
     val blockPb = library.getBlock(blockLibraryPath, blockMixins) match {
