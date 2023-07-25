@@ -340,6 +340,12 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
   }
 
   "Compiler on design with chained (default + class) refinement" should "work" in {
+    val blockDefaultInputDesign = Design(Block.Block(
+      "topDesign",
+      blocks = SeqMap(
+        "block" -> Block.Library("superclassDefaultBlock"),
+      )
+    ))
     val expected = Design(Block.Block(
       "topDesign",
       blocks = SeqMap(
@@ -359,7 +365,7 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
     testCompile(
-      inputDesign,
+      blockDefaultInputDesign,
       library,
       refinements = Refinements(
         classRefinements = Map(LibraryPath("subclassBlock") -> LibraryPath("subsubclassBlock"))

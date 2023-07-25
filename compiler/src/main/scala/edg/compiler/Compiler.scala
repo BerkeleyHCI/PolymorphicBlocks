@@ -542,38 +542,42 @@ class Compiler private (
     val block = resolveBlock(path).asInstanceOf[wir.BlockLibrary]
 
     // apply the user-specified refinement, then recurse with class-based and block-side default refinements
-    var refinementLibraryPath = refinements.instanceRefinements.get(path)  // None if no refinement
-    var blockLibraryPath = refinementLibraryPath.getOrElse(block.target)  // always contains a value
-
-    val loop = new Breaks
-    loop.breakable { while (true) {
-      val currentPb = library.getBlock(blockLibraryPath, block.mixins) match {
-        case Errorable.Success(blockPb) => blockPb
-        case Errorable.Error(err) =>
-          errors += CompilerError.LibraryError(path, blockLibraryPath, err)
-          elem.HierarchyBlock()
-      }
-      val nextPath = refinements.classRefinements.get(blockLibraryPath) match {
-        case Some(classRefinement) => classRefinement  // class refinements take priority
-        case None =>
-          currentPb.defaultRefinement match {
-            case Some(defaultRefinement) => defaultRefinement
-            case None => blockLibraryPath
-          }
-      }
-      if (nextPath == blockLibraryPath) {  // no forward progress made, this also breaks self-loops
-        loop.break()
-      } else {
-        refinementLibraryPath = Some(nextPath)
-        blockLibraryPath = nextPath
-      }
-    } }
-
-    val libraryBlockPb = library.getBlock(blockLibraryPath, block.mixins) match {
+    var refinementLibraryPath = refinements.instanceRefinements.get(path) // None if no refinement
+    var blockLibraryPath = refinementLibraryPath.getOrElse(block.target) // always contains a value
+    var libraryBlockPb = library.getBlock(block.target, block.mixins) match { // mixins only apply pre-refinement
       case Errorable.Success(blockPb) => blockPb
       case Errorable.Error(err) =>
         errors += CompilerError.LibraryError(path, blockLibraryPath, err)
         elem.HierarchyBlock()
+    }
+
+    val loop = new Breaks
+    loop.breakable {
+      while (true) {
+        val nextPath = refinements.classRefinements.get(blockLibraryPath) match {
+          case Some(classRefinement) =>
+            classRefinement // class refinements take priority
+          case None =>
+            libraryBlockPb.defaultRefinement match {
+              case Some(defaultRefinement) =>
+                defaultRefinement
+              case None =>
+                blockLibraryPath
+            }
+        }
+        if (nextPath == blockLibraryPath) { // no forward progress made, this also breaks self-loops
+          loop.break()
+        } else {
+          refinementLibraryPath = Some(nextPath)
+          blockLibraryPath = nextPath
+          libraryBlockPb = library.getBlock(blockLibraryPath, block.mixins) match {
+            case Errorable.Success(blockPb) => blockPb
+            case Errorable.Error(err) =>
+              errors += CompilerError.LibraryError(path, blockLibraryPath, err)
+              elem.HierarchyBlock()
+          }
+        }
+      }
     }
 
     // actually instantiate the block
