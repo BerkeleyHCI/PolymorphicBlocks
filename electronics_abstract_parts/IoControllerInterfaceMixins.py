@@ -23,7 +23,7 @@ class IoControllerUsb(BlockInterfaceMixin[BaseIoController]):
         super().__init__(*args, **kwargs)
 
         self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True)
-        self.implementation(lambda base: base._io_ports.append(self.usb))
+        self.implementation(lambda base: base._io_ports.insert(0, self.usb))
 
 
 class IoControllerI2s(BlockInterfaceMixin[BaseIoController]):

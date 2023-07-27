@@ -21,7 +21,7 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
     self.voltage_drop = self.ArgParameter(voltage_drop)
 
     self.nrows = self.ArgParameter(nrows)
-    self.ncols = self.ArgParameter(nrows)
+    self.ncols = self.ArgParameter(ncols)
     self.generator_param(self.nrows, self.ncols)
 
   def generate(self):
