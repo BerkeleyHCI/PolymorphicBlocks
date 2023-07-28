@@ -19,6 +19,62 @@ if TYPE_CHECKING:
   from .Link import Link
 
 
+class ConnectionBuilder():
+  """An incremental connection builder, that validates additional ports as they are added so
+  the stack trace can provide the problematic statement."""
+
+  @staticmethod
+  def _baseport_leaf_type(port: BasePort) -> Port:
+    if isinstance(port, Port):
+      return port
+    elif isinstance(port, BaseVector):
+      return Connection._baseport_leaf_type(port._get_elt_sample())
+    else:
+      raise ValueError(f"Unknown BasePort subtype {port}")
+
+  class ConnectedLink(NamedTuple):  # link-mediated connection (including bridged ports and inner links)
+    link_type: Type[Link]
+    is_link_array: bool
+    bridged_connects: List[Tuple[BasePort, edgir.LocalPath]]  # external / boundary port <> link port, invalid in links
+    link_connects: List[Tuple[BasePort, edgir.LocalPath]]  # internal block port <> link port
+
+  class Export(NamedTuple):  # direct export (1:1, single or vector)
+    is_array: bool
+    external_port: BasePort
+    internal_port: BasePort
+
+  def __init__(self, parent: BaseBlock, flatten: bool) -> None:
+    self.parent = parent
+    self.flatten = flatten  # vectors are treated as connected to the same link (instead of a link array)
+
+    self.ports: List[BasePort] = []  # all connected ports
+    self.link_instance: Optional[Link] = None  # link instance, if connects have built up to be a link
+
+  def add_ports(self, ports: Iterable[BasePort]):
+    for port in ports:
+      self._add_port(port)
+
+  def _add_port(self, port: BasePort):
+    self.ports.append(port)
+    port0 = self.ports[0]  # first port is special, eg to determine link type
+    if len(self.ports) == 1:
+      return  # only one port, not a connection yet
+    elif len(self.ports) == 2:  # two ports, check if it's an export
+      if port0._type_of() == port._type_of() and (
+          (port0._block_parent() is self.parent and not port._block_parent() is self.parent) or
+          (port._block_parent() is self.parent and not port0._block_parent() is self.parent)):
+        return  # is an export, not a connection
+
+    # otherwise, is a link-mediated connection
+    if self.link_instance is None:  # if link not yet defined, create using the first port as authoritative
+      link_type = self._baseport_leaf_type(port0).link_type
+      link = self.link_instance = link_type()
+    else:
+      link = self.link_instance
+
+    # add all ports to the link, including prior ports if this if this is a new link instance
+
+
 class Connection():
   class PortRecord(NamedTuple):  # internal structure for each connected port - TBD add debugging data
     port: BasePort
