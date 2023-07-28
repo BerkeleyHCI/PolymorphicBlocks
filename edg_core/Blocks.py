@@ -49,6 +49,7 @@ class ConnectionBuilder():
 
     self.ports: List[BasePort] = []  # all connected ports
     self.link_instance: Optional[Link] = None  # link instance, if connects have built up to be a link
+    self.link_ports: Optional[List[Tuple[BasePort, List[BasePort]]]] = None  # link port -> [connected ports]
 
   def add_ports(self, ports: Iterable[BasePort]):
     for port in ports:
@@ -69,10 +70,12 @@ class ConnectionBuilder():
     if self.link_instance is None:  # if link not yet defined, create using the first port as authoritative
       link_type = self._baseport_leaf_type(port0).link_type
       link = self.link_instance = link_type()
+      ports_to_connect = self.ports  # new link, need to allocate all ports
     else:
       link = self.link_instance
+      ports_to_connect = [port]  # other ports previously allocated, only allocate new port
 
-    # add all ports to the link, including prior ports if this if this is a new link instance
+
 
 
 class Connection():
