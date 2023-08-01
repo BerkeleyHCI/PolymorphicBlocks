@@ -75,8 +75,13 @@ class Connection():
     from .Link import Link
 
     self.ports.extend(ports)
-    if len(self.ports) < 2:
-      return  # only one port, not a connection yet
+    if len(self.ports) < 1:
+      return  # empty connection, doesn't exist
+
+    port0 = self.ports[0]  # first port is special, eg to determine link type
+    if len(self.ports) == 1:
+      if not (self.flatten and isinstance(port0, BaseVector)):  # flatten can result in multiple connections
+        return  # single element connection, can be a naming operation
     elif len(self.ports) == 2:
       is_export = self._is_export()
       if is_export:
@@ -87,7 +92,6 @@ class Connection():
 
     # otherwise, is a link-mediated connection
     if self.link_instance is None:  # if link not yet defined, create using the first port as authoritative
-      port0 = self.ports[0]  # first port is special, eg to determine link type
       ports_to_connect: Iterable[BasePort] = self.ports  # new link, need to allocate all ports
       # initialize mutable state
       link_type = self._baseport_leaf_type(port0).link_type
@@ -147,8 +151,13 @@ class Connection():
       self.link_connected_ports.setdefault(allocated_link_port, []).append(port)
 
   def make_connection(self) -> Optional[Union[ConnectedLink, Export]]:
-    if len(self.ports) < 2:
-      return None  # only one port, not a connection yet
+    if len(self.ports) < 1:
+      return None  # empty connection, doesn't exist
+
+    port0 = self.ports[0]
+    if len(self.ports) == 1:
+      if not (self.flatten and isinstance(port0, BaseVector)):
+        return None
 
     is_export = self._is_export()
     if is_export:
