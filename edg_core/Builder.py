@@ -46,6 +46,8 @@ class Builder:
         elaborated = block._elaborated_def_to_proto()
 
       return elaborated
+    except Exception as e:
+      raise Exception(f"While elaborating {block.__class__}") from e
     finally:
       self.pop_to(None)
 
