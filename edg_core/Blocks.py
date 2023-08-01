@@ -113,23 +113,24 @@ class Connection():
           bridge = port._bridge()
           if bridge is None:
             raise UnconnectableError(f"No bridge for {port._name_from(self.parent)}")
-          self.bridged_ports[port] = bridge.outer_port
+          link_facing_port = self.bridged_ports[port] = bridge.inner_link
         else:
-          pass  # no bridge needed
+          link_facing_port = port
       elif isinstance(self.parent, Link):  # links don't bridge, all ports are treated as internal
         if port._block_parent() is not self.parent:
           raise UnconnectableError(f"Port {port._name_from(self.parent)} not in containing link")
+        link_facing_port = port
       else:
         raise ValueError(f"unknown parent {self.parent}")
 
-      if isinstance(port, BaseVector):
+      if isinstance(link_facing_port, BaseVector):
         if not self.is_link_array and not self.flatten:
           raise UnconnectableError(f"Can't connect array and non-array ports without flattening")
 
       # allocate the connection
-      if self._baseport_leaf_type(port).link_type is not type(link):
+      if self._baseport_leaf_type(link_facing_port).link_type is not type(link):
         raise UnconnectableError(f"Can't connect {port._name_from(self.parent)} to link of type {type(link)}")
-      port_type = type(self._baseport_leaf_type(port))
+      port_type = type(self._baseport_leaf_type(link_facing_port))
       allocatable_link_ports = self.available_link_ports_by_type.get(port_type, None)
       if allocatable_link_ports is None:
         raise UnconnectableError(f"No link port for {port._name_from(self.parent)} of type {port_type}")
@@ -165,7 +166,7 @@ class Connection():
         if bridged_port is None:  # direct connection, no bridge
           link_connects.append((connected_port, link_ref))
         else:  # bridge
-          bridged_connects.append((bridged_port, link_ref))
+          bridged_connects.append((connected_port, link_ref))
 
     return Connection.ConnectedLink(type(self.link_instance), self.is_link_array, bridged_connects, link_connects)
 
