@@ -42,6 +42,9 @@ class Link(BaseBlock[edgir.Link]):
     ref_map = self._get_ref_map(edgir.LocalPath())
     self._connects.finalize()
     for name, connect in self._connects.items_ordered():
+      if connect in self._connects_delegated:
+        continue
+
       connect_elts = connect.make_connection()
       assert isinstance(connect_elts, Connection.ConnectedLink)
 

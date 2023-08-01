@@ -247,6 +247,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._required_ports = IdentitySet[BasePort]()
     self._connects = self.manager.new_dict(Connection, anon_prefix='anon_link')
     self._connects_by_port = IdentityDict[BasePort, Connection]()  # port -> connection
+    self._connects_delegated = IdentityDict[Connection, Connection]()  # for net joins, prior connect -> joined connect
     self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
 
     self._name = StringExpr()._bind(NameBinding(self))
@@ -508,15 +509,17 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     if not existing_connects:
       connect = Connection(self, flatten)
       self._connects.register(connect)
-    elif len(existing_connects) == 1:
-      connect = existing_connects[0]
-      assert connect.flatten == flatten, "flatten must be equivalent to existing connect"
-    else:  # more than 1 existing connect
-      raise ValueError("TODO: implement net joins. " +
-                       "Net joins (connections between connections) currently aren't supported. " +
-                       "Only the first argument to connect may be another connection or a port that is part of a prior connection. " +
-                       "Other arguments to connect must be ports not yet part of any connection. " +
-                       "You should be able to restructure your connect statements to avoid net joins.")
+    else:  # append to (potentially multiple) existing connect
+      connect = existing_connects[0]  # first one is authoritative
+      connect_flattens = set([connect.flatten for connect in existing_connects])
+      assert len(connect_flattens) == 1, "all existing connects must have same flatten"
+      assert connect_flattens.pop() == flatten, "flatten must be equivalent to existing connect"
+
+      for merge_connect in reversed(existing_connects[1:]):  # preserve order
+        connect.add_ports(merge_connect.ports)
+        for port in merge_connect.ports:
+          self._connects_by_port.update(port, connect)
+        self._connects_delegated[merge_connect] = connect
 
     for port in connects_ports_new:
       if port._block_parent() is not self:

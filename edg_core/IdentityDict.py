@@ -47,6 +47,12 @@ class IdentityDict(Generic[KeyType, ValueType]):  # TODO this should implement M
     self.dict[key_id] = item
     self.keys_dict[key_id] = key
 
+  def update(self, key: KeyType, item: ValueType):
+    key_id = id(key)
+    assert key_id in self.dict, f"attempted to update {key}={self.dict[key_id]} with no prior"
+    self.dict[key_id] = item
+    self.keys_dict[key_id] = key
+
   def extend(self, items: Iterable[Tuple[KeyType, ValueType]]) -> IdentityDict[KeyType, ValueType]:
     for (key, value) in items:
       self[key] = value
