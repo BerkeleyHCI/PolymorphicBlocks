@@ -72,6 +72,7 @@ class Connection():
 
   def add_ports(self, ports: Iterable[BasePort]):
     from .HierarchyBlock import Block
+    from .Link import Link
 
     self.ports.extend(ports)
     if len(self.ports) < 2:
@@ -106,11 +107,13 @@ class Connection():
         if port._block_parent() is self.parent:
           if port._get_initializers([]):
             raise UnconnectableError(f"Connected boundary port {port._name_from(self.parent)} may not have initializers")
+          if not isinstance(port, Port):
+            raise UnconnectableError(f"Can't generate bridge for non-Port {port._name_from(self.parent)}")
 
           bridge = port._bridge()
           if bridge is None:
             raise UnconnectableError(f"No bridge for {port._name_from(self.parent)}")
-          self.bridged_ports[port] = bridge
+          self.bridged_ports[port] = bridge.outer_port
         else:
           pass  # no bridge needed
       elif isinstance(self.parent, Link):  # links don't bridge, all ports are treated as internal
