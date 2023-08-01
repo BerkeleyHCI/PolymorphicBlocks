@@ -338,13 +338,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     return pb
 
-  def _connected_ports(self) -> IdentitySet[BasePort]:
-    """Returns an IdentitySet of all ports (boundary and interior) involved in a connect or export."""
-    rtn = IdentitySet[BasePort]()
-    for name, connect in self._connects.items_ordered():
-      rtn.update(connect.ports())
-    return rtn
-
   # TODO make this non-overriding?
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     assert not self._mixins  # blocks with mixins can only be instantiated anonymously
@@ -352,11 +345,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     pb = edgir.HierarchyBlock()
     pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
     pb = self._populate_def_proto_block_base(pb)
-
-    for (port) in self._connected_ports():
-      if port._block_parent() is self:
-        initializers = port._get_initializers([])
-        assert not initializers, f"connected boundary port {port._name_from(self)} has unexpected initializers {initializers}"
     pb = self._populate_def_proto_port_init(pb)
 
     for (name, (param, param_value)) in self._get_init_params_values().items():

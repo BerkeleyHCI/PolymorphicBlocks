@@ -76,8 +76,13 @@ class Connection():
     self.ports.extend(ports)
     if len(self.ports) < 2:
       return  # only one port, not a connection yet
-    elif len(self.ports) == 2 and self._is_export():
-      return  # is an export, not a connection
+    elif len(self.ports) == 2:
+      is_export = self._is_export()
+      if is_export:
+        (ext_port, int_port) = is_export
+        if ext_port._get_initializers([]):
+          raise UnconnectableError(f"Connected boundary port {ext_port._name_from(self.parent)} may not have initializers")
+        return  # is an export, not a connection
 
     # otherwise, is a link-mediated connection
     if self.link_instance is None:  # if link not yet defined, create using the first port as authoritative
@@ -99,6 +104,9 @@ class Connection():
     for port in ports_to_connect:
       if isinstance(self.parent, Block):  # check if bridge is needed
         if port._block_parent() is self.parent:
+          if port._get_initializers([]):
+            raise UnconnectableError(f"Connected boundary port {port._name_from(self.parent)} may not have initializers")
+
           bridge = port._bridge()
           if bridge is None:
             raise UnconnectableError(f"No bridge for {port._name_from(self.parent)}")
