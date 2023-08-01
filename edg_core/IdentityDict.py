@@ -62,3 +62,6 @@ class IdentityDict(Generic[KeyType, ValueType]):  # TODO this should implement M
 
   def __contains__(self, item: KeyType) -> bool:
     return id(item) in self.dict
+
+  def __bool__(self):
+    return bool(self.dict)

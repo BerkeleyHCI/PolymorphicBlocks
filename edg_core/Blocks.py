@@ -119,6 +119,10 @@ class Connection():
       else:
         raise ValueError(f"unknown parent {self.parent}")
 
+      if isinstance(port, BaseVector):
+        if not self.is_link_array and not self.flatten:
+          raise UnconnectableError(f"Can't connect array and non-array ports without flattening")
+
       # allocate the connection
       if port.link_type is not type(link):
         raise UnconnectableError(f"Can't connect {port._name_from(self.parent)} to link of type {type(link)}")
@@ -131,8 +135,7 @@ class Connection():
 
       allocated_link_port = allocatable_link_ports[0]
       if isinstance(allocated_link_port, BaseVector):  # array on link side, can connected multiple ports
-        if not self.is_link_array and not self.flatten:
-          raise UnconnectableError(f"Can't connect array and non-array ports without flattening")
+        pass
       else:  # single port on link side, consumed
         assert allocated_link_port not in self.link_connected_ports
         allocatable_link_ports.pop(0)
