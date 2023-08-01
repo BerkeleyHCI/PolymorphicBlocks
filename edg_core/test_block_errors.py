@@ -2,7 +2,7 @@ import unittest
 
 from . import *
 from .HdlUserExceptions import *
-from .test_common import TestPortSource, TestBlockSource, TestBlockSink, TestBlockImplicitSink
+from .test_common import TestPortSource, TestBlockSource, TestBlockSink
 
 
 class BadLinkTestCase(unittest.TestCase):
@@ -15,7 +15,9 @@ class BadLinkTestCase(unittest.TestCase):
       self.source1 = self.Block(TestBlockSource())
       self.source2 = self.Block(TestBlockSource())
       self.sink = self.Block(TestBlockSink())
-      self.test_net = self.connect(self.source1.source, self.source2.source, self.sink.sink)
+      self.test_net = self.connect(self.source1.source, self.sink.sink)
+      self.connect(self.source1.source, self.source2.source)
+      assert False  # the above connect should error (providing a useful traceback), should not reach this statement
 
   def test_overconnected_link(self) -> None:
     with self.assertRaises(UnconnectableError):
@@ -32,6 +34,7 @@ class BadLinkTestCase(unittest.TestCase):
       self.source = self.Block(TestBlockSource())
       self.sink = self.Block(TestBlockSink())
       self.test_net = self.connect(self.source_port, self.source.source, self.sink.sink)
+      assert False  # the above connect should error
 
   def test_no_bridge_link(self) -> None:
     with self.assertRaises(UnconnectableError):
@@ -43,6 +46,7 @@ class BadLinkTestCase(unittest.TestCase):
       super().__init__()
       unbound_port = TestPortSource()
       self.test_net = self.connect(unbound_port)
+      assert False  # the above connect should error
 
   def test_unbound_link(self) -> None:
     with self.assertRaises(UnconnectableError):
@@ -54,6 +58,7 @@ class BadLinkTestCase(unittest.TestCase):
       def __init__(self, above_port: TestPortSource) -> None:
         super().__init__()
         self.connect(above_port)
+        assert False  # the above connect should error
 
     def __init__(self) -> None:
       super().__init__()
