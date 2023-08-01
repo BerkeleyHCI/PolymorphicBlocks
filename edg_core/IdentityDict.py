@@ -32,6 +32,7 @@ class IdentityDict(Generic[KeyType, ValueType]):  # TODO this should implement M
     key_id = id(key)
     if key_id not in self.dict:
       self.dict[key_id] = default
+      self.keys_dict[key_id] = key
     return self.dict[key_id]
 
   def __repr__(self) -> str:

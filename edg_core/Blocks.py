@@ -124,7 +124,7 @@ class Connection():
           raise UnconnectableError(f"Can't connect array and non-array ports without flattening")
 
       # allocate the connection
-      if port.link_type is not type(link):
+      if self._baseport_leaf_type(port).link_type is not type(link):
         raise UnconnectableError(f"Can't connect {port._name_from(self.parent)} to link of type {type(link)}")
       port_type = type(self._baseport_leaf_type(port))
       allocatable_link_ports = self.available_link_ports_by_type.get(port_type, None)
