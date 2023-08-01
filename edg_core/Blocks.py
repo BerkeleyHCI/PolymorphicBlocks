@@ -230,6 +230,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)  # type: ignore
     self._required_ports = IdentitySet[BasePort]()
     self._connects = self.manager.new_dict(Connection, anon_prefix='anon_link')
+    self._connects_by_port = IdentityDict[BasePort, Connection]()  # port -> connection
     self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
 
     self._name = StringExpr()._bind(NameBinding(self))
@@ -481,19 +482,19 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     connects_ports_new = []
     connects_ports_connects = []
     for port in connects_ports:
-      port_connects = [connect for connect in self._connects.all_values_temp() if connect.contains(port)]
-      if not port_connects:
+      port_connect = self._connects_by_port.get(port, None)
+      if port_connect is None:
         connects_ports_new.append(port)
       else:
-        connects_ports_connects.extend(port_connects)
+        connects_ports_connects.append(port_connect)
 
     existing_connects = connects_connects + connects_ports_connects
-    if len(existing_connects) == 1:
-      connect = existing_connects[0]
-      assert connect.flatten == flatten, "flatten must be equivalent to existing connect"
-    elif not existing_connects:
+    if not existing_connects:
       connect = Connection(self, flatten)
       self._connects.register(connect)
+    elif len(existing_connects) == 1:
+      connect = existing_connects[0]
+      assert connect.flatten == flatten, "flatten must be equivalent to existing connect"
     else:  # more than 1 existing connect
       raise ValueError("TODO: implement net joins. " +
                        "Net joins (connections between connections) currently aren't supported. " +
@@ -507,6 +508,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
         assert enclosing_block is not None
         if enclosing_block._parent is not self:
           raise UnconnectableError("Inaccessible port for connection")
+      self._connects_by_port[port] = connect
     connect.add_ports(connects_ports_new)
 
     return connect
