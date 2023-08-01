@@ -264,7 +264,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
         link_chain_names.setdefault(connect, []).append(f"{name}_{i}")
 
     for name, connect in self._connects.items_ordered():
-      connect_elts = connect.make_connection(self)
+      connect_elts = connect.make_connection()
 
       if name.startswith('anon_'):  # infer a non-anon name if possible
         if connect in link_chain_names and not link_chain_names[connect][0].startswith('anon_'):

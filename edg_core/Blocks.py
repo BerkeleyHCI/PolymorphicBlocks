@@ -19,7 +19,7 @@ if TYPE_CHECKING:
   from .Link import Link
 
 
-class ConnectionBuilder():
+class Connection():
   """An incremental connection builder, that validates additional ports as they are added so
   the stack trace can provide the problematic statement."""
 
@@ -56,24 +56,33 @@ class ConnectionBuilder():
     self.bridged_ports: IdentityDict[BasePort, BasePort] = IdentityDict()  # external port -> internal port on bridge
     self.available_link_ports_by_type: Dict[Type[Port], List[BasePort]] = {}  # sorted by port order
 
+  def _is_export(self) -> Optional[Tuple[BasePort, BasePort]]:  # returns (external, internal) ports if export
+    if len(self.ports) != 2:  # two ports, check if it's an export
+      return None
+    port0 = self.ports[0]
+    port1 = self.ports[1]
+    if port0._type_of() != port1._type_of():
+      return None
+    if port0._block_parent() is self.parent and not port1._block_parent() is self.parent:
+      return (port0, port1)
+    elif port1._block_parent() is self.parent and not port0._block_parent() is self.parent:
+      return (port1, port0)
+    else:
+      return None
+
   def add_ports(self, ports: Iterable[BasePort]):
     from .HierarchyBlock import Block
 
     self.ports.extend(ports)
     if len(self.ports) < 2:
       return  # only one port, not a connection yet
-
-    port0 = self.ports[0]  # first port is special, eg to determine link type
-    if len(self.ports) == 2:  # two ports, check if it's an export
-      port1 = self.ports[1]
-      if port0._type_of() == port1._type_of() and (
-          (port0._block_parent() is self.parent and not port1._block_parent() is self.parent) or
-          (port1._block_parent() is self.parent and not port0._block_parent() is self.parent)):
-        return  # is an export, not a connection
+    elif len(self.ports) == 2 and self._is_export():
+      return  # is an export, not a connection
 
     # otherwise, is a link-mediated connection
     if self.link_instance is None:  # if link not yet defined, create using the first port as authoritative
-      ports_to_connect = self.ports  # new link, need to allocate all ports
+      port0 = self.ports[0]  # first port is special, eg to determine link type
+      ports_to_connect: Iterable[BasePort] = self.ports  # new link, need to allocate all ports
       # initialize mutable state
       link_type = self._baseport_leaf_type(port0).link_type
       link = self.link_instance = link_type()
@@ -88,11 +97,7 @@ class ConnectionBuilder():
       ports_to_connect = ports  # other ports previously allocated, only allocate new port
 
     for port in ports_to_connect:
-      # check if bridge is needed
-      if isinstance(self.parent, Link):  # links don't bridge, all ports are treated as internal
-        if port._block_parent() is not self.parent:
-          raise UnconnectableError(f"Port {port._name_from(self.parent)} not in containing link")
-      elif isinstance(self.parent, Block):
+      if isinstance(self.parent, Block):  # check if bridge is needed
         if port._block_parent() is self.parent:
           bridge = port._bridge()
           if bridge is None:
@@ -100,6 +105,9 @@ class ConnectionBuilder():
           self.bridged_ports[port] = bridge
         else:
           pass  # no bridge needed
+      elif isinstance(self.parent, Link):  # links don't bridge, all ports are treated as internal
+        if port._block_parent() is not self.parent:
+          raise UnconnectableError(f"Port {port._name_from(self.parent)} not in containing link")
       else:
         raise ValueError(f"unknown parent {self.parent}")
 
@@ -123,134 +131,29 @@ class ConnectionBuilder():
 
       self.link_connected_ports.setdefault(allocated_link_port, []).append(port)
 
-  def make_connection(self, parent: BaseBlock) -> Optional[Union[ConnectedLink, Export]]:
-    pass
+  def make_connection(self) -> Optional[Union[ConnectedLink, Export]]:
+    if len(self.ports) < 2:
+      return None  # only one port, not a connection yet
 
-class Connection():
-  class PortRecord(NamedTuple):  # internal structure for each connected port - TBD add debugging data
-    port: BasePort
+    is_export = self._is_export()
+    if is_export:
+      (ext_port, int_port) = is_export
+      return Connection.Export(isinstance(ext_port, BaseVector), ext_port, int_port)
 
-  class ConnectedLink(NamedTuple):  # link-mediated connection (including bridged ports and inner links)
-    link_type: Type[Link]
-    is_link_array: bool
-    bridged_connects: List[Tuple[BasePort, edgir.LocalPath]]  # external / boundary port <> link port, invalid in links
-    link_connects: List[Tuple[BasePort, edgir.LocalPath]]  # internal block port <> link port
+    bridged_connects: List[Tuple[BasePort, edgir.LocalPath]] = []
+    link_connects: List[Tuple[BasePort, edgir.LocalPath]] = []
+    assert self.link_instance is not None
+    link_ref_map = self.link_instance._get_ref_map_allocate(edgir.LocalPath())
+    for link_port, connected_ports in self.link_connected_ports.items():
+      link_ref = link_ref_map[link_port]
+      for connected_port in connected_ports:
+        bridged_port = self.bridged_ports.get(connected_port, None)
+        if bridged_port is None:  # direct connection, no bridge
+          link_connects.append((connected_port, link_ref))
+        else:  # bridge
+          bridged_connects.append((bridged_port, link_ref))
 
-  class Export(NamedTuple):  # direct export (1:1, single or vector)
-    is_array: bool
-    external_port: BasePort
-    internal_port: BasePort
-
-  """A data structure that tracks connected ports."""
-  def __init__(self, parent: BaseBlock, flatten: bool) -> None:
-    self.connected: List[Connection.PortRecord] = []
-    self.parent = parent
-    self.flatten = flatten  # vectors are treated as connected to a link
-
-  def add_ports(self, ports: Iterable[BasePort]):
-    for port in ports:
-      self.connected.append(Connection.PortRecord(port))
-
-  @staticmethod
-  def _baseport_leaf_type(port: BasePort) -> Port:
-    if isinstance(port, Port):
-      return port
-    elif isinstance(port, BaseVector):
-      return Connection._baseport_leaf_type(port._get_elt_sample())
-    else:
-      raise ValueError(f"Unknown BasePort subtype {port}")
-
-  def ports(self) -> Iterable[BasePort]:
-    return [port_record.port for port_record in self.connected]
-
-  def contains(self, port: BasePort) -> bool:
-    # TODO maybe we can maintain a parallel Set data structure to make this faster
-    return True in [port is port_record.port for port_record in self.connected]
-
-  def make_connection(self, parent: BaseBlock) -> Optional[Union[ConnectedLink, Export]]:
-    from .HierarchyBlock import Block
-    from .Link import Link
-    ports = [port_record.port for port_record in self.connected]
-
-    if len(ports) == 1 and not (self.flatten and isinstance(ports[0], BaseVector)):
-      return None  # not a real connection, eg could be a name assignment
-
-    elif len(ports) == 2 and ports[0]._type_of() == ports[1]._type_of() and (
-          (ports[0]._block_parent() is parent and not ports[1]._block_parent() is parent) or
-          (ports[1]._block_parent() is parent and not ports[0]._block_parent() is parent)):
-      is_vector = isinstance(ports[0], BaseVector)
-      if ports[0]._block_parent() is parent:
-        return Connection.Export(is_vector, ports[0], ports[1])
-      else:
-        return Connection.Export(is_vector, ports[1], ports[0])
-
-    else:  # link-mediated case
-      bridged_ports_tuples: List[Tuple[BasePort, BasePort]] = []  # from link-facing-port to boundary-port
-      if isinstance(parent, Link):  # links don't bridge, all ports are treated as internal
-        for port in ports:
-          assert port._block_parent() is parent
-        link_facing_ports = ports
-      elif isinstance(parent, Block):  # blocks need to create bridges
-        link_facing_ports = []
-        for port in ports:
-          if port._block_parent() is parent:  # is boundary port that needs bridge
-            assert isinstance(port, Port), "can only bridge Ports (bridged arrays not supported)"
-            bridge = port._bridge()
-            if bridge is None:
-              raise UnconnectableError(f"no bridge for {port}")
-            link_facing_ports.append(bridge.inner_link)
-            bridged_ports_tuples.append((bridge.inner_link, port))
-          else:  # no bridge needed
-            link_facing_ports.append(port)
-      else:
-        raise ValueError(f"unknown parent {parent}")
-      bridged_ports = IdentityDict(bridged_ports_tuples)
-
-      is_vectors = set([isinstance(port, BaseVector) for port in link_facing_ports])
-      link_types = set([self._baseport_leaf_type(port).link_type for port in link_facing_ports])
-
-      if len(link_types) == 1:
-        link_type = link_types.pop()
-        link = link_type()
-      else:
-        link_type_names = ', '.join([link_type.__name__ for link_type in link_types])
-        port_names = ', '.join([port._name_from(self.parent) for port in ports])
-        raise UnconnectableError(f"Ambiguous link types {link_type_names} for connection between {port_names}")
-      link_ports_by_type: Dict[Type[Port], List[BasePort]] = {}  # sorted by port order; mutable and consumed as allocated
-      for name, port in link._ports.items():
-        link_ports_by_type.setdefault(type(self._baseport_leaf_type(port)), []).append(port)
-      link_ref_map = link._get_ref_map_allocate(edgir.LocalPath())
-
-      if self.flatten or is_vectors == {False}:  # element connect case
-        is_link_array = False
-      elif is_vectors == {True}:  # vector connect case
-        is_link_array = True
-      else:
-        raise UnconnectableError(f"Can't connect array and non-array types without flattening")
-
-      # assign connections to link-facing ports, consuming link ports as needed
-      bridged_connects: List[Tuple[BasePort, edgir.LocalPath]] = []
-      link_connects: List[Tuple[BasePort, edgir.LocalPath]] = []
-      for link_facing_port in link_facing_ports:
-        allocatable_link_ports = link_ports_by_type[type(self._baseport_leaf_type(link_facing_port))]
-        if not allocatable_link_ports:
-          raise UnconnectableError(f"No remaining link ports to {link_facing_port._name_from(self.parent)}")
-        allocated_link_port = allocatable_link_ports[0]
-
-        if isinstance(allocated_link_port, BaseVector):  # array on link side, can connect as many as needed
-          link_ref = link_ref_map[allocated_link_port]
-        else:  # single port, can only connect one thing
-          if not is_link_array and isinstance(link_facing_port, BaseVector):
-            raise UnconnectableError("Can't connect array to link-side non-array port")
-          link_ref = link_ref_map[allocated_link_port]
-          allocatable_link_ports.pop(0)
-
-        if link_facing_port in bridged_ports:
-          bridged_connects.append((bridged_ports[link_facing_port], link_ref))
-        else:
-          link_connects.append((link_facing_port, link_ref))
-
-      return Connection.ConnectedLink(link_type, is_link_array, bridged_connects, link_connects)
+    return Connection.ConnectedLink(type(self.link_instance), self.is_link_array, bridged_connects, link_connects)
 
 
 class BlockElaborationState(Enum):
