@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from typing import *
+import itertools
 
 import edgir
 from .Array import BaseVector, DerivedVector
-from .Blocks import BaseBlock, Connection, DescriptionString
+from .Blocks import BaseBlock, Connection
 from .Core import Refable, non_library
-from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
-from .Ports import BasePort, Port
+from .IdentitySet import IdentitySet
+from .Ports import Port
 
 
 @non_library
@@ -41,8 +42,9 @@ class Link(BaseBlock[edgir.Link]):
     # actually generate the links and connects
     ref_map = self._get_ref_map(edgir.LocalPath())
     self._connects.finalize()
+    delegated_connects = IdentitySet(*itertools.chain(*self._connects_delegated.values()))
     for name, connect in self._connects.items_ordered():
-      if connect in self._connects_delegated:
+      if connect in delegated_connects:
         continue
 
       connect_elts = connect.make_connection()

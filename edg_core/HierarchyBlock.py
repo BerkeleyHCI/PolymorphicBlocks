@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from functools import reduce
 from typing import *
 
@@ -263,8 +264,9 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       for i, connect in enumerate(chain.links):
         link_chain_names.setdefault(connect, []).append(f"{name}_{i}")
 
+    delegated_connects = IdentitySet(*itertools.chain(*self._connects_delegated.values()))
     for name, connect in self._connects.items_ordered():
-      if connect in self._connects_delegated:
+      if connect in delegated_connects:
         continue
 
       connect_elts = connect.make_connection()

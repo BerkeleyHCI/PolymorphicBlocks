@@ -247,7 +247,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._required_ports = IdentitySet[BasePort]()
     self._connects = self.manager.new_dict(Connection, anon_prefix='anon_link')
     self._connects_by_port = IdentityDict[BasePort, Connection]()  # port -> connection
-    self._connects_delegated = IdentityDict[Connection, Connection]()  # for net joins, prior connect -> joined connect
+    self._connects_delegated = IdentityDict[Connection, List[Connection]]()  # for net joins, joined connect -> prior connects
     self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
 
     self._name = StringExpr()._bind(NameBinding(self))
@@ -519,7 +519,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
         connect.add_ports(merge_connect.ports)
         for port in merge_connect.ports:
           self._connects_by_port.update(port, connect)
-        self._connects_delegated[merge_connect] = connect
+        self._connects_delegated.setdefault(connect, []).append(merge_connect)
 
     for port in connects_ports_new:
       if port._block_parent() is not self:
