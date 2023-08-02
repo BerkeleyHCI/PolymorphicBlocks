@@ -260,14 +260,20 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     # actually generate the links and connects
     link_chain_names = IdentityDict[Connection, List[str]]()  # prefer chain name where applicable
     # TODO generate into primary data structures
-    for name, chain in self._chains.items_ordered():
+    for name, chain in self._chains.items_ordered():  # TODO work with net join
       for i, connect in enumerate(chain.links):
         link_chain_names.setdefault(connect, []).append(f"{name}_{i}")
 
-    delegated_connects = IdentitySet(*itertools.chain(*self._connects_delegated.values()))
+    delegated_connects = self._all_delegated_connects()
     for name, connect in self._connects.items_ordered():
       if connect in delegated_connects:
         continue
+      connect_names = [self._connects.name_of(c) for c in self._all_connects_of(connect)]
+      connect_names = [c for c in connect_names if c is not None and not c.startswith('anon_')]
+      if len(connect_names) > 1:
+        raise UnconnectableError(f"Multiple names {connect_names} for connect")
+      elif len(connect_names) == 1:
+        name = connect_names[0]
 
       connect_elts = connect.make_connection()
 
