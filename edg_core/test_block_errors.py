@@ -72,6 +72,21 @@ class BadLinkTestCase(unittest.TestCase):
     with self.assertRaises(UnconnectableError):
       self.AboveConnectBlock()._elaborated_def_to_proto()
 
+  class AmbiguousJoinBlock(Block):
+    """A block with a connect join that merges two names"""
+    def contents(self) -> None:
+      super().contents()
+      self.source = self.Block(TestBlockSource())
+      self.sink1 = self.Block(TestBlockSink())
+      self.sink2 = self.Block(TestBlockSink())
+      self.test_net1 = self.connect(self.source.source, self.sink1.sink)
+      self.test_net2 = self.connect(self.sink2.sink)
+      self.connect(self.test_net1, self.test_net2)
+
+  def test_ambiguous_join(self) -> None:
+    with self.assertRaises(UnconnectableError):
+      self.AmbiguousJoinBlock()._elaborated_def_to_proto()
+
 
 class InaccessibleParamTestCase(unittest.TestCase):
   class BadParamReferenceBlock(Block):
