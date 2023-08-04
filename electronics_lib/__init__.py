@@ -52,9 +52,9 @@ from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Xc6206p, Xc6209, Ap2210,
 from .VoltageReferences import Ref30xx
 from .BuckConverter_TexasInstruments import Tps561201, Tps54202h
 from .BuckConverter_Ap3418 import Ap3418
-from .BoostConverters_AnalogDevices import Ltc3429
-from .BoostConverters_DiodesInc import Ap3012
-from .BoostConverters_Torex import Xc9142
+from .BoostConverter_AnalogDevices import Ltc3429
+from .BoostConverter_DiodesInc import Ap3012
+from .BoostConverter_Torex import Xc9142
 from .BuckBoostConverter_Custom import CustomBuckBoostConverter
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr
 from .LedDriver_Al8861 import Al8861
