@@ -40,8 +40,8 @@ class Tps61040_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
-  """PFM (discontinuous mode) boost converter in SOT-23-5"""
+class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter, GeneratorBlock):
+  """PFM (DCM, discontinuous mode) boost converter in SOT-23-5"""
   def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
@@ -58,11 +58,16 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
 
       self.fb = imp.Block(FeedbackVoltageDivider(
         output_voltage=self.ic.vfb,
-        impedance=(100, 1000) * kOhm,
+        impedance=(10, 183) * kOhm,  # datasheet recommends typ R2 <= 200k, max R1 2.2M
         assumed_input_voltage=self.output_voltage
       ))
       self.connect(self.fb.input, self.pwr_out)
       self.connect(self.fb.output, self.ic.fb)
 
-      self.hf_in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))  # Datasheet 8.2.2.4
+  def generate(self):
+    super().generate()
+    # power path calculation here - we don't use BoostConverterPowerPath since this IC operates in DCM
+    # and has different component sizing guidelines
 
+    # peak current is IC current limit + 100ns (typ) internal propagation delay
+    ipeak = self.ic.ilim + self.pwr_in.link().voltage * 100*nSecond
