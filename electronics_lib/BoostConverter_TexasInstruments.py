@@ -77,5 +77,12 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter, GeneratorB
     # peak current is IC current limit + 100ns (typ) internal propagation delay
     ipeak = self.ic.ilim + self.pwr_in.link().voltage * 100*nSecond
 
+    # recommended inductance 2.2uH to 47uH
     # maximum inductance: peak current limit should be reached within 6uS limit
     # minimum inductance: probably should not hit current limit within 100ns propagation delay
+    """
+    Datasheet equation fs(max) = Vin(min)*(Vout-Vin) / (Ip*L*Vout)
+    Inductor equation: v = L di/dt, or i = 1/L int(v dt) + i0
+    In DCM, peak voltage for an on-cycle: ilim = 1/L (Vout-Vin) * t_on
+     
+    """
