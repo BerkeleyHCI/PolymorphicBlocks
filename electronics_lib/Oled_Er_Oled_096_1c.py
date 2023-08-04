@@ -39,7 +39,7 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
 
         self.iref = self.Export(self.conn.pins.request('6'))
         self.vcomh = self.Export(self.conn.pins.request('3').adapt_to(VoltageSource(
-            voltage_out=self.vcc.voltage_out,  # assumed
+            voltage_out=self.vcc.link().voltage * 0.86,  # selectable up to 0.86 Vcc by command BEh
             current_limits=0*mAmp(tol=0)  # external draw not allowed
         )))
         self.connect(self.vcomh, self.conn.pins.request('29').adapt_to(VoltageSink()))
@@ -47,8 +47,11 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
         self.vsl = self.Export(self.conn.pins.request('2'))
         self.connect(self.vsl, self.conn.pins.request('30'))
 
-        self.vp = self.Export(self.conn.pins.request('4'))
-        self.connect(self.vp, self.conn.pins.request('28'))
+        self.vp = self.Export(self.conn.pins.request('4').adapt_to(VoltageSource(
+            voltage_out=self.vcc.link().voltage * 0.5133,  # selectable up to 0.5133 Vcc by command BBh
+            current_limits=0*mAmp(tol=0)  # external draw not allowed
+        )))
+        self.connect(self.vp, self.conn.pins.request('28').adapt_to(VoltageSink()))
 
         din_model = DigitalSink.from_supply(
             self.vss, self.vdd,
@@ -96,17 +99,26 @@ class Er_Oled_096_1c(Oled, GeneratorBlock):
     def contents(self):
         super().contents()
 
-        self.iref_res = self.Block(Resistor(resistance=390*kOhm(tol=0.05)))  # TODO dynamic sizing
+        self.iref_res = self.Block(Resistor(resistance=1*MOhm(tol=0.05)))  # TODO dynamic sizing
         self.connect(self.iref_res.a, self.device.iref)
         self.connect(self.iref_res.b.adapt_to(Ground()), self.gnd)
         self.vcomh_cap = self.Block(DecouplingCapacitor(4.7*uFarad(tol=0.2))).connected(self.gnd, self.device.vcomh)
+        self.vp_cap = self.Block(DecouplingCapacitor(1*uFarad(tol=0.2))).connected(self.gnd, self.device.vp)
 
-        self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))\
+        self.vdd_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vdd)
-        self.vbat_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))\
-            .connected(self.gnd, self.device.vbat)
-        self.vcc_cap = self.Block(DecouplingCapacitor(capacitance=(2.2*0.8, 20)*uFarad))\
+        self.vcc_cap = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vcc)
+
+        self.vsl_res = self.Block(Resistor(resistance=50*kOhm(tol=0.05)))
+        diode_model = Diode(reverse_voltage=(0, 0)*Volt, current=(0, 0)*Amp,
+                            voltage_drop=0.7*Volt(tol=0.1))  # arbitrary tolerance
+        self.vsl_d1 = self.Block(diode_model)
+        self.vsl_d2 = self.Block(diode_model)
+        self.connect(self.device.vsl, self.vsl_res.a)
+        self.connect(self.vsl_res.b, self.vsl_d1.anode)
+        self.connect(self.vsl_d1.cathode, self.vsl_d2.anode)
+        self.connect(self.vsl_d2.cathode.adapt_to(Ground()), self.gnd)
 
     def generate(self):
         super().generate()
@@ -129,7 +141,7 @@ class Er_Oled_096_1c(Oled, GeneratorBlock):
             self.connect(self.spi.sck, self.device.d0)
             self.connect(self.spi.mosi, self.device.d1)
             self.connect(self.cs, self.device.cs)
-            # D2 not-connected
+            self.connect(self.device.d2, gnd_digital)
             if self.get(self.dc.is_connected()):  # 4-line SPI
                 self.connect(self.device.bs0, gnd_digital)
                 self.connect(self.dc, self.device.dc)
