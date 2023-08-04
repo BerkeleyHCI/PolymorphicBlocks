@@ -64,6 +64,11 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter, GeneratorB
       self.connect(self.fb.input, self.pwr_out)
       self.connect(self.fb.output, self.ic.fb)
 
+      # TODO 10pF is the datasheet-suggested starting, point, but equation also available
+      self.cff = self.Block(Capacitor(10*pFarad(tol=0.2), voltage=(0, self.pwr_in.link().voltage)))
+      self.connnect(self.cff.pos.adapt_to(VoltageSink()), self.pwr_out)
+      self.connnect(self.cff.neg.adapt_to(AnalogSink()), self.ic.fb)
+
   def generate(self):
     super().generate()
     # power path calculation here - we don't use BoostConverterPowerPath since this IC operates in DCM
@@ -71,3 +76,6 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter, GeneratorB
 
     # peak current is IC current limit + 100ns (typ) internal propagation delay
     ipeak = self.ic.ilim + self.pwr_in.link().voltage * 100*nSecond
+
+    # maximum inductance: peak current limit should be reached within 6uS limit
+    # minimum inductance: probably should not hit current limit within 100ns propagation delay
