@@ -110,7 +110,7 @@ class Er_Oled_096_1c(Oled, GeneratorBlock):
         self.vcc_cap = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vcc)
 
-        self.vsl_res = self.Block(Resistor(resistance=50*kOhm(tol=0.05)))
+        self.vsl_res = self.Block(Resistor(resistance=50*Ohm(tol=0.05)))
         diode_model = Diode(reverse_voltage=(0, 0)*Volt, current=(0, 0)*Amp,
                             voltage_drop=0.7*Volt(tol=0.1))  # arbitrary tolerance
         self.vsl_d1 = self.Block(diode_model)
