@@ -76,6 +76,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter, GeneratorB
     vout = self.get(self.pwr_out.link().voltage)
     vl = vout - vin  # voltage across inductor in steady-state
     iload = self.get(self.pwr_out.link().current_drawn)
+    efficiency_est = Range(0.7, 0.85)  # given by datasheet
 
     ilim = (350, 450)*mAmp  # current limit determined by chip
     off_prop_delay = 100*nSecond  # internal turn-off propagation delay, typ
@@ -88,27 +89,25 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter, GeneratorB
     # recommended inductance 2.2uH to 47uH, depending on application
     # calculate inductance limits to allow achieving peak current within 6ns max
     # inductor equation: v = L di/dt  =>  imax = 1/L int(v dt) + i0  = > L = v * t / imax for constant v
-    ramp_l_range = (2.2*uHenry*0.8,  # recommended min, plus allowing 20% inductors
-                    vin.lower() * max_on_time.lower() / ilim.upper())
+    ramp_l_max = vin.lower() * max_on_time.lower() / ilim.upper()
 
     # best achievable switching frequency, from inductor charging and discharging rates are:
     # ton = L * ip / Vin,  toff = L * ip / (Vout - Vin)
     # fs = 1/(ton + toff) = 1 / ( L*ip/Vin + L*ip/(Vout-Vin) )
     #   => 1 / ( L*ip*(Vout-Vin)/Vin*(Vout-Vin) + L*ip*Vin/((Vout-Vin)*Vin) )
     #   => 1 / ( L*ip*(Vout-Vin+Vin)/Vin*(Vout-Vin) )
-    #   => Vin*(Vout-Vin) / (L*ipVout)
-    # limited at 1MHz
+    #   => Vin*(Vout-Vin) / (L*ip*Vout)
+    # and fs <= 1MHz
+    # note, above equation has maxima at Vin = Vout/2, Vout maximum
+    ramp_l_min = vin.upper() * (vout - vin).upper() / (1*MHertz * ipeak.lower() * vout.lower())
+
     # max current delivered at this frequency is
     # charge per cycle is ip / 2 * toff = L * ip^2 / (2 * (Vout - Vin))
     # current is charge per cycle * switching frequency
-    # => L * ip^2 / (2 * (Vout - Vin)) * Vin*(Vout-Vin) / (L*ipVout)
-    # => L * ip^2 / (2 * Vin) * Vin*(Vout-Vin) / (L*ipVout)
-
+    # => L * ip^2 / (2 * (Vout - Vin)) * Vin*(Vout-Vin) / (L*ip*Vout)
+    # => ip / 2 * Vin / Vout
+    # => ip * Vin / (2 * Vout)
+    max_current = efficiency_est * ipeak * vin / (2 * vout)
+    self.require(self.pwr_out.link().current_drawn.within((0, max_current.lower())))
 
     # note boost converter duty cycle equation D = 1 - (Vin/Vout) * eff
-
-    # inductor choice must be within the maximum switching frequency
-    # from datasheet: fs_max = Vin_min * (Vout - Vin) / (i_p * L * Vout)
-
-    # self.ind = self.Block(Inductor(l_range, ipeak, self.frequency))
-
