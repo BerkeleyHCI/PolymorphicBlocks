@@ -6,7 +6,6 @@ class Tps61040_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self):
     super().__init__()
-    self.ilim = self.Parameter(RangeExpr((350, 450)*mAmp))  # current limit set by the chip, note 61041 is 250mA
     self.vfb = self.Parameter(RangeExpr((1.208, 1.258)*Volt))
 
     self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
@@ -73,16 +72,43 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter, GeneratorB
     super().generate()
     # power path calculation here - we don't use BoostConverterPowerPath since this IC operates in DCM
     # and has different component sizing guidelines
+    vin = self.get(self.pwr_in.link().voltage)
+    vout = self.get(self.pwr_out.link().voltage)
+    vl = vout - vin  # voltage across inductor in steady-state
+    iload = self.get(self.pwr_out.link().current_drawn)
+
+    ilim = (350, 450)*mAmp  # current limit determined by chip
+    off_prop_delay = 100*nSecond  # internal turn-off propagation delay, typ
+    max_on_time = (4, 7.5)*uSecond
+    min_off_time = (250, 550)*nSecond
 
     # peak current is IC current limit + 100ns (typ) internal propagation delay
-    ipeak = self.ic.ilim + self.pwr_in.link().voltage * 100*nSecond
+    ipeak = self.ic.ilim + vin * off_prop_delay
 
-    # recommended inductance 2.2uH to 47uH
-    # maximum inductance: peak current limit should be reached within 6uS limit
-    # minimum inductance: probably should not hit current limit within 100ns propagation delay
-    """
-    Datasheet equation fs(max) = Vin(min)*(Vout-Vin) / (Ip*L*Vout)
-    Inductor equation: v = L di/dt, or i = 1/L int(v dt) + i0
-    In DCM, peak voltage for an on-cycle: ilim = 1/L (Vout-Vin) * t_on
-     
-    """
+    # recommended inductance 2.2uH to 47uH, depending on application
+    # calculate inductance limits to allow achieving peak current within 6ns max
+    # inductor equation: v = L di/dt  =>  imax = 1/L int(v dt) + i0  = > L = v * t / imax for constant v
+    ramp_l_range = (2.2*uHenry*0.8,  # recommended min, plus allowing 20% inductors
+                    vin.lower() * max_on_time.lower() / ilim.upper())
+
+    # best achievable switching frequency, from inductor charging and discharging rates are:
+    # ton = L * ip / Vin,  toff = L * ip / (Vout - Vin)
+    # fs = 1/(ton + toff) = 1 / ( L*ip/Vin + L*ip/(Vout-Vin) )
+    #   => 1 / ( L*ip*(Vout-Vin)/Vin*(Vout-Vin) + L*ip*Vin/((Vout-Vin)*Vin) )
+    #   => 1 / ( L*ip*(Vout-Vin+Vin)/Vin*(Vout-Vin) )
+    #   => Vin*(Vout-Vin) / (L*ipVout)
+    # limited at 1MHz
+    # max current delivered at this frequency is
+    # charge per cycle is ip / 2 * toff = L * ip^2 / (2 * (Vout - Vin))
+    # current is charge per cycle * switching frequency
+    # => L * ip^2 / (2 * (Vout - Vin)) * Vin*(Vout-Vin) / (L*ipVout)
+    # => L * ip^2 / (2 * Vin) * Vin*(Vout-Vin) / (L*ipVout)
+
+
+    # note boost converter duty cycle equation D = 1 - (Vin/Vout) * eff
+
+    # inductor choice must be within the maximum switching frequency
+    # from datasheet: fs_max = Vin_min * (Vout - Vin) / (i_p * L * Vout)
+
+    # self.ind = self.Block(Inductor(l_range, ipeak, self.frequency))
+
