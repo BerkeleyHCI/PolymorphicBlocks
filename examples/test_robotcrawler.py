@@ -67,7 +67,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
 
       (self.reg_14v, self.tp_14v), _ = self.chain(
         self.vbatt,
-        imp.Block(VoltageRegulator(output_voltage=(14, 15.5)*Volt)),
+        imp.Block(VoltageRegulator(output_voltage=(13, 16)*Volt)),
         self.Block(VoltageTestPoint())
       )
       self.v14 = self.connect(self.reg_14v.pwr_out)
@@ -197,7 +197,9 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
 
           'oled_reset=8',
         ]),
-        (['mcu', 'programming'], 'uart-auto')
+        (['mcu', 'programming'], 'uart-auto'),
+        (['reg_14v', 'inductor', 'part'], "CBC3225T220KR"),
+        (['reg_14v', 'inductor', 'manual_frequency_rating'], Range(0, 17e6))  # 17MHz self-resonant
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),

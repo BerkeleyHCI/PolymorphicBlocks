@@ -11,7 +11,7 @@ class Tps61040_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
     self.sw = self.Port(VoltageSink())  # internal switch specs not defined
     self.gnd = self.Port(Ground(), [Common])
-    self.fb = self.Port(AnalogSink(impedance=(vfb.lower / 1*uAmp, float('inf'))))  # based on bias current
+    self.fb = self.Port(AnalogSink(impedance=(vfb.lower / (1*uAmp), float('inf'))))  # based on bias current
     self.vin = self.Port(VoltageSink(
       voltage_limits=(1.8, 6)*Volt,
       current_draw=(0.1, 50)*uAmp  # quiescent current
