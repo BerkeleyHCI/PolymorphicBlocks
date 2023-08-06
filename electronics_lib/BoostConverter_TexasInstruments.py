@@ -128,7 +128,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
     self.connect(self.ic.sw, self.rect.anode.adapt_to(VoltageSink()))
     self.connect(self.pwr_out, self.rect.cathode.adapt_to(VoltageSource(
       voltage_out=self.fb.actual_input_voltage,
-      current_limits=max_current
+      current_limits=(0, max_current.upper())
     )))
 
     self.in_cap = self.Block(DecouplingCapacitor(  # recommended by the datasheet

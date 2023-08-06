@@ -112,7 +112,7 @@ class Er_Oled_096_1c(Oled, GeneratorBlock):
 
         self.vsl_res = self.Block(Resistor(resistance=50*Ohm(tol=0.05)))
         diode_model = Diode(reverse_voltage=(0, 0)*Volt, current=(0, 0)*Amp,
-                            voltage_drop=0.7*Volt(tol=0.1))  # arbitrary tolerance
+                            voltage_drop=(0, 0.8)*Volt)  # arbitrary tolerance, reference is 0.7V
         self.vsl_d1 = self.Block(diode_model)
         self.vsl_d2 = self.Block(diode_model)
         self.connect(self.device.vsl, self.vsl_res.a)
