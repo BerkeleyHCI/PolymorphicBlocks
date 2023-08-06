@@ -99,7 +99,16 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter, GeneratorB
     #   => Vin*(Vout-Vin) / (L*ip*Vout)
     # and fs <= 1MHz
     # note, above equation has maxima at Vin = Vout/2, Vout maximum
-    ramp_l_min = vin.upper() * (vout - vin).upper() / (1*MHertz * ipeak.lower() * vout.lower())
+    vout_fs_max = vout.upper()
+    if vin.lower() <= vout_fs_max / 2 and vin.upper() >= vout_fs_max / 2:
+      vin_fs_max = vout_fs_max / 2
+    elif vin.lower() > vout_fs_max / 2:
+      vin_fs_max = vin.lower()
+    else:
+      vin_fs_max = vin.upper()
+    ramp_l_min = vin_fs_max * (vout_fs_max - vin_fs_max) / (1*MHertz * ipeak.lower() * vout_fs_max)
+
+    self.ind = self.Block(Inductor((ramp_l_min, ramp_l_max), ipeak, self.frequency))
 
     # max current delivered at this frequency is
     # charge per cycle is ip / 2 * toff = L * ip^2 / (2 * (Vout - Vin))
@@ -110,4 +119,28 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter, GeneratorB
     max_current = efficiency_est * ipeak * vin / (2 * vout)
     self.require(self.pwr_out.link().current_drawn.within((0, max_current.lower())))
 
-    # note boost converter duty cycle equation D = 1 - (Vin/Vout) * eff
+    self.in_cap = self.Block(DecouplingCapacitor(  # recommended by the datasheet
+      capacitance=4.7*uFarad(tol=0.2)
+    )).connected(self.gnd, self.pwr_in)
+
+    # capacitor i=C dv/dt => dv = i*dt / C = q / C
+    # using charge per cycle above: dv = L * ip^2 / (2 * (Vout - Vin)) / C
+    # C = 1/dv * L * ip^2 / (2 * (Vout - Vin))
+    # TODO: is this simplified model correct? the datasheet accounts for current draw during the ton period,
+    #   in addition to charge pumped during the toff cycle; but also qin must be balanced with qout
+    # TODO: could also reduce the capacitance by subtracting output draw during the t_off period
+    # C = 1/dv * [(L * ip^2 / (2 * (Vout - Vin)) - iout * toff]
+    #  => 1/dv * [(L * ip^2 / (2 * (Vout - Vin)) - iout * L * ip / (Vout - Vin)]
+    #  => (L * ip)/dv * [(ip / (2 * (Vout - Vin)) - iout / (Vout - Vin)
+    #  => (L * ip)/(dv*(Vout - Vin) * [ip/2 - iout]
+    # note, this ripple is on top of the reference voltage hysteresis / tolerances, reflected in the
+    # output voltage tolerance
+    # this is substantially equivalent to the Output Capacitor Selection datasheet equation, minus capcitor ESR
+    output_capacitance = Range.from_lower(
+      self.ind.actual_inductance.upper() * ipeak.upper() / (
+        self.output_ripple_limit * (vout.lower - vin.upper()))
+      * (ipeak.upper() / 2 - iload.lower())
+    )
+    self.in_cap = self.Block(DecouplingCapacitor(  # recommended by the datasheet
+      capacitance=output_capacitance * Farad
+    )).connected(self.gnd, self.pwr_in)

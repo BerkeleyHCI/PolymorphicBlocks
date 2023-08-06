@@ -65,6 +65,13 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
+      (self.reg_14v, self.tp_14v), _ = self.chain(
+        self.vbatt,
+        imp.Block(VoltageRegulator(output_voltage=14*Volt(tol=0.05))),
+        self.Block(VoltageTestPoint())
+      )
+      self.v14 = self.connect(self.reg_14v.pwr_out)
+
       (self.reg_2v5, ), _ = self.chain(
         self.vbatt,
         imp.Block(VoltageRegulator(output_voltage=2.5*Volt(tol=0.05)))
@@ -97,7 +104,13 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
       (self.ledg, ), _ = self.chain(self.mcu.gpio.request('ledg'), imp.Block(IndicatorLed(Led.Green)))
       (self.ledb, ), _ = self.chain(self.mcu.gpio.request('ledb'), imp.Block(IndicatorLed(Led.Blue)))
 
-      self.oled = imp.Block(Er_Oled_096_1_1())
+    # OLED MULTI DOMAIN
+    with self.implicit_connect(
+           ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.oled = imp.Block(Er_Oled_096_1c())
+      self.connect(self.oled.vcc, self.v14)
+      self.connect(self.oled.pwr, self.v14)
       self.connect(self.i2c, self.oled.i2c)
       self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
 
