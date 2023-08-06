@@ -67,7 +67,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
 
       (self.reg_14v, self.tp_14v), _ = self.chain(
         self.vbatt,
-        imp.Block(VoltageRegulator(output_voltage=14*Volt(tol=0.05))),
+        imp.Block(VoltageRegulator(output_voltage=(14, 15.5)*Volt)),
         self.Block(VoltageTestPoint())
       )
       self.v14 = self.connect(self.reg_14v.pwr_out)
@@ -158,6 +158,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         (['reg_3v3'], Ldl1117),
         (['reg_2v5'], Xc6206p),
         (['reg_1v2'], Xc6206p),
+        (['reg_14v'], Tps61040),
         (['batt', 'conn'], JstPhKVertical),
       ],
       instance_values=[
