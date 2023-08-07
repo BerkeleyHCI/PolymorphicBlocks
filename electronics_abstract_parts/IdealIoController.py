@@ -51,7 +51,7 @@ class IdealIoController(IoControllerDac, IoControllerCan, IoControllerUsb, IoCon
             self.spi.append_elt(SpiMaster(dio_model), elt)
         self.i2c.defined()
         for elt in self.get(self.i2c.requested()):
-            self.i2c.append_elt(I2cMaster(dio_model), elt)
+            self.i2c.append_elt(I2cController(dio_model), elt)
         self.uart.defined()
         for elt in self.get(self.uart.requested()):
             self.uart.append_elt(UartPort(dio_model), elt)

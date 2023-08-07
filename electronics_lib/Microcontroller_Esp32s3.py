@@ -45,7 +45,7 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
 
     uart_model = UartPort(DigitalBidir.empty())  # section 3.5.5, up to 5Mbps
     spi_model = SpiMaster(DigitalBidir.empty(), (0, 80)*MHertz)  # section 3.5.2, 80MHz in master, 60MHz in slave
-    i2c_model = I2cMaster(DigitalBidir.empty())  # section 3.5.6, 100/400kHz and up to 800kbit/s
+    i2c_model = I2cController(DigitalBidir.empty())  # section 3.5.6, 100/400kHz and up to 800kbit/s
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI, up to 1Mbit/s
     i2s_model = I2sController(DigitalBidir.empty())
     dvp8_model = Dvp8Host(DigitalBidir.empty())
@@ -329,7 +329,7 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_I
   def _io_pinmap(self) -> PinMapUtil:  # allow the camera I2C pins to be used externally
     gnd, pwr = self._gnd_vddio()
     return super()._io_pinmap().add([
-      PeripheralFixedPin('CAM_SCCB', I2cMaster(self._dio_model(gnd, pwr), has_pullup=True), {
+      PeripheralFixedPin('CAM_SCCB', I2cController(self._dio_model(gnd, pwr), has_pullup=True), {
         'scl': '4', 'sda': '3'
       })
     ])

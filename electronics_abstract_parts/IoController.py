@@ -22,7 +22,7 @@ class BaseIoController(PinMappable, Block):
     self.adc = self.Port(Vector(AnalogSink.empty()), optional=True)
 
     self.spi = self.Port(Vector(SpiMaster.empty()), optional=True)
-    self.i2c = self.Port(Vector(I2cMaster.empty()), optional=True)
+    self.i2c = self.Port(Vector(I2cController.empty()), optional=True)
     self.uart = self.Port(Vector(UartPort.empty()), optional=True)
 
     self.io_current_draw = self.Parameter(RangeExpr())  # total current draw for all leaf-level IO sinks

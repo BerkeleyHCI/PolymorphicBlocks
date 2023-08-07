@@ -88,7 +88,7 @@ class Er_Oled_096_1_1(Oled, GeneratorBlock):
         self.spi = self.Port(SpiSlave.empty(), optional=True)
         self.cs = self.Port(DigitalSink.empty(), optional=True)
         self.dc = self.Port(DigitalSink.empty(), optional=True)
-        self.i2c = self.Port(I2cSlave.empty(), optional=True)
+        self.i2c = self.Port(I2cTarget.empty(), optional=True)
         self.generator_param(self.spi.is_connected(), self.dc.is_connected(), self.i2c.is_connected())
 
     def contents(self):

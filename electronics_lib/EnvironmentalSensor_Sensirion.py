@@ -15,7 +15,7 @@ class Shtc3_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             self.vss, self.vdd,
             input_threshold_factor=(0.42, 0.7)
         )
-        self.i2c = self.Port(I2cSlave(dio_model, [0x70]))
+        self.i2c = self.Port(I2cTarget(dio_model, [0x70]))
 
     def contents(self) -> None:
         self.footprint(

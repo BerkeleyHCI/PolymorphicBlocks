@@ -54,7 +54,7 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
 
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiMaster(DigitalBidir.empty(), (0, 80)*MHertz)  # section 4.1.17
-    i2c_model = I2cMaster(DigitalBidir.empty())  # section 4.1.11, 100/400kHz and up to 5MHz
+    i2c_model = I2cController(DigitalBidir.empty())  # section 4.1.11, 100/400kHz and up to 5MHz
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI
     i2s_model = I2sController(DigitalBidir.empty())
     dvp8_model = Dvp8Host(DigitalBidir.empty())

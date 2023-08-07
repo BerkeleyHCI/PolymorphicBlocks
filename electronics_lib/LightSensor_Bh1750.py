@@ -16,7 +16,7 @@ class Bh1750_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             self.gnd, self.vcc,
             input_threshold_factor=(0.3, 0.7)
         )
-        self.i2c = self.Port(I2cSlave(dio_model, [0x23]))
+        self.i2c = self.Port(I2cTarget(dio_model, [0x23]))
 
     def contents(self) -> None:
         self.footprint(

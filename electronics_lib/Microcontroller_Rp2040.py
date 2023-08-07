@@ -109,7 +109,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
 
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiMaster(DigitalBidir.empty())
-    i2c_model = I2cMaster(DigitalBidir.empty())
+    i2c_model = I2cController(DigitalBidir.empty())
 
     return PinMapUtil([
       PinResource('2', {'GPIO0': self._dio_ft_model}),

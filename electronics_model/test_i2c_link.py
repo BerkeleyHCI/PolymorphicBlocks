@@ -3,10 +3,10 @@ import unittest
 from . import *
 
 
-class I2cMasterBlock(Block):
+class I2cControllerBlock(Block):
   def __init__(self):
     super().__init__()
-    self.port = self.Port(I2cMaster())
+    self.port = self.Port(I2cController())
 
 
 class I2cPullupBlock(Block):
@@ -15,40 +15,40 @@ class I2cPullupBlock(Block):
     self.port = self.Port(I2cPullupPort())
 
 
-class I2cDeviceBlock(Block):
+class I2cTargetBlock(Block):
   @init_in_parent
   def __init__(self, address: IntLike):
     super().__init__()
-    self.port = self.Port(I2cSlave(DigitalBidir(), [address]))
+    self.port = self.Port(I2cTarget(DigitalBidir(), [address]))
 
 
 class I2cTest(DesignTop):
   def __init__(self):
     super().__init__()
-    self.master = self.Block(I2cMasterBlock())
+    self.controller = self.Block(I2cControllerBlock())
     self.pull = self.Block(I2cPullupBlock())
-    self.device1 = self.Block(I2cDeviceBlock(1))
-    self.device2 = self.Block(I2cDeviceBlock(2))
-    self.link = self.connect(self.master.port, self.pull.port, self.device1.port, self.device2.port)
+    self.device1 = self.Block(I2cTargetBlock(1))
+    self.device2 = self.Block(I2cTargetBlock(2))
+    self.link = self.connect(self.controller.port, self.pull.port, self.device1.port, self.device2.port)
 
-    self.require(self.master.port.link().addresses == [1, 2], unchecked=True)
+    self.require(self.controller.port.link().addresses == [1, 2], unchecked=True)
 
 
 class I2cNoPullTest(DesignTop):
   def __init__(self):
     super().__init__()
-    self.master = self.Block(I2cMasterBlock())
-    self.device1 = self.Block(I2cDeviceBlock(1))
-    self.link = self.connect(self.master.port, self.device1.port)
+    self.controller = self.Block(I2cControllerBlock())
+    self.device1 = self.Block(I2cTargetBlock(1))
+    self.link = self.connect(self.controller.port, self.device1.port)
 
 
 class I2cConflictTest(DesignTop):
   def __init__(self):
     super().__init__()
-    self.master = self.Block(I2cMasterBlock())
+    self.master = self.Block(I2cControllerBlock())
     self.pull = self.Block(I2cPullupBlock())
-    self.device1 = self.Block(I2cDeviceBlock(1))
-    self.device2 = self.Block(I2cDeviceBlock(1))
+    self.device1 = self.Block(I2cTargetBlock(1))
+    self.device2 = self.Block(I2cTargetBlock(1))
     self.link = self.connect(self.master.port, self.pull.port, self.device1.port, self.device2.port)
 
 

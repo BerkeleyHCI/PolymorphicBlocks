@@ -18,6 +18,14 @@ class IoControllerCan(BlockInterfaceMixin[BaseIoController]):
         self.implementation(lambda base: base._io_ports.append(self.can))
 
 
+class IoControllerI2cTarget(BlockInterfaceMixin[BaseIoController]):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.i2c_target = self.Port(Vector(I2cTarget.empty()), optional=True)
+        self.implementation(lambda base: base._io_ports.append(self.i2c_target))
+
+
 class IoControllerUsb(BlockInterfaceMixin[BaseIoController]):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

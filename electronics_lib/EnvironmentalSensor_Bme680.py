@@ -19,7 +19,7 @@ class Bme680_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             voltage_limit_abs=(-0.3*Volt, self.vddio.voltage_limits.upper()+0.3),
             input_threshold_factor=(0.2, 0.8)
         )
-        self.i2c = self.Port(I2cSlave(dio_model, [0x76]))
+        self.i2c = self.Port(I2cTarget(dio_model, [0x76]))
 
     def contents(self) -> None:
         self.footprint(

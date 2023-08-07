@@ -152,7 +152,7 @@ class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, Base
       PeripheralAnyResource('SPI1', spi_model),
       PeripheralAnyResource('CAN0', CanControllerPort(DigitalBidir.empty())),
 
-      PeripheralFixedResource('I2C0', I2cMaster(DigitalBidir.empty()), {
+      PeripheralFixedResource('I2C0', I2cController(DigitalBidir.empty()), {
         'scl': ['PIO0_22'], 'sda': ['PIO0_23']
       }),
       PeripheralFixedPin('USB', UsbDevicePort(), {

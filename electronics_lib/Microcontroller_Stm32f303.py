@@ -87,7 +87,7 @@ class Stm32f303_Ios(IoControllerDac, IoControllerCan, BaseIoControllerPinmapGene
 
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiMaster(DigitalBidir.empty())
-    i2c_model = I2cMaster(DigitalBidir.empty())
+    i2c_model = I2cController(DigitalBidir.empty())
 
     return PinMapUtil([  # Table 13, partial table for 48-pin only
       PinResource('PC13', {'PC13': dio_tc_model}),
