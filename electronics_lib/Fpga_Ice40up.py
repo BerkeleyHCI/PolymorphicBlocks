@@ -11,7 +11,7 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])  # in practice this can power the target
     self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
-    self.spi = self.Port(SpiMaster.empty())
+    self.spi = self.Port(SpiController.empty())
     self.cs = self.Port(DigitalSource.empty())
     self.reset = self.Port(DigitalSource.empty())
 
@@ -87,7 +87,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
 
     # TODO requirements on SPI device frequency
     # TODO this is really bidirectional, so this could be either separate ports or split ports
-    self.spi_config = self.Port(SpiMaster(self._dpio1_model))
+    self.spi_config = self.Port(SpiController(self._dpio1_model))
     self.spi_config_cs = self.Port(self._dpio1_model)
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:    # names consistent with pinout spreadsheet
@@ -120,7 +120,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
 
   # hard macros, not tied to any particular pin
     i2c_model = I2cController(DigitalBidir.empty())  # user I2C, table 4.7
-    spi_model = SpiMaster(DigitalBidir.empty(), (0, 45)*MHertz)  # user SPI, table 4.10
+    spi_model = SpiController(DigitalBidir.empty(), (0, 45) * MHertz)  # user SPI, table 4.10
 
     return PinMapUtil([  # names consistent with pinout spreadsheet
       PinResource('IOB_0a', {'IOB_0a': pio2_model}),

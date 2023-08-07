@@ -78,7 +78,7 @@ class Er_Oled022_1(Oled, GeneratorBlock):
         self.vcc = self.Export(self.device.vcc)  # device power
         self.pwr = self.Export(self.device.vdd)  # logic power
         self.reset = self.Export(self.device.res)
-        self.spi = self.Port(SpiSlave.empty(), optional=True)
+        self.spi = self.Port(SpiPeripheral.empty(), optional=True)
         self.cs = self.Port(DigitalSink.empty(), optional=True)
         self.dc = self.Port(DigitalSink.empty(), optional=True)
         self.i2c = self.Port(I2cTarget.empty(), optional=True)

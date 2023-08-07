@@ -51,7 +51,7 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Interna
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty(), (125, 32000)*kHertz)
+    spi_model = SpiController(DigitalBidir.empty(), (125, 32000) * kHertz)
     i2c_model = I2cController(DigitalBidir.empty())
     i2s_model = I2sController(DigitalBidir.empty())
 

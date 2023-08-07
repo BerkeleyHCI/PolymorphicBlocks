@@ -21,7 +21,7 @@ class BaseIoController(PinMappable, Block):
     self.gpio = self.Port(Vector(DigitalBidir.empty()), optional=True)
     self.adc = self.Port(Vector(AnalogSink.empty()), optional=True)
 
-    self.spi = self.Port(Vector(SpiMaster.empty()), optional=True)
+    self.spi = self.Port(Vector(SpiController.empty()), optional=True)
     self.i2c = self.Port(Vector(I2cController.empty()), optional=True)
     self.uart = self.Port(Vector(UartPort.empty()), optional=True)
 

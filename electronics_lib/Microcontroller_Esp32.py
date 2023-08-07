@@ -53,7 +53,7 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
     dac_model = AnalogSource.from_supply(gnd, pwr)  # TODO: no specs in datasheet?!
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty(), (0, 80)*MHertz)  # section 4.1.17
+    spi_model = SpiController(DigitalBidir.empty(), (0, 80) * MHertz)  # section 4.1.17
     i2c_model = I2cController(DigitalBidir.empty())  # section 4.1.11, 100/400kHz and up to 5MHz
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI
     i2s_model = I2sController(DigitalBidir.empty())

@@ -9,7 +9,7 @@ class FpgaProgrammingHeader(Connector, Block):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), optional=True)
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.spi = self.Port(SpiSlave.empty())
+    self.spi = self.Port(SpiPeripheral.empty())
     self.cs = self.Port(DigitalSink.empty())
     self.reset = self.Port(DigitalSink.empty())
 

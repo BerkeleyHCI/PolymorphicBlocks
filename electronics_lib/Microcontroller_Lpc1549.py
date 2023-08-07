@@ -92,7 +92,7 @@ class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, Base
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty())
+    spi_model = SpiController(DigitalBidir.empty())
 
     return PinMapUtil([  # partial table for 48- and 64-pin only
       PinResource('PIO0_0', {'PIO0_0': dio_5v_model, 'ADC0_10': adc_model}),

@@ -38,7 +38,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
     ))
 
     # Additional ports (on top of IoController)
-    self.qspi = self.Port(SpiMaster.empty())  # TODO actually QSPI
+    self.qspi = self.Port(SpiController.empty())  # TODO actually QSPI
     self.qspi_cs = self.Port(DigitalBidir.empty())
 
     self.xosc = self.Port(CrystalDriver(frequency_limits=(1, 15)*MHertz,  # datasheet 2.15.2.2
@@ -61,7 +61,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
     )
     self._dio_std_model = self._dio_ft_model  # exactly the same characteristics
 
-    self.qspi.init_from(SpiMaster(self._dio_std_model))
+    self.qspi.init_from(SpiController(self._dio_std_model))
     self.qspi_cs.init_from(self._dio_std_model)
 
   # Pin/peripheral resource definitions (table 3)
@@ -108,7 +108,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty())
+    spi_model = SpiController(DigitalBidir.empty())
     i2c_model = I2cController(DigitalBidir.empty())
 
     return PinMapUtil([

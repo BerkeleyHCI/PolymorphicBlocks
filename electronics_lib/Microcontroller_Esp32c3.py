@@ -64,7 +64,7 @@ class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, IoControllerPowerRequ
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty(), (0, 60)*MHertz)  # section 3.4.2, max block in GP master mode
+    spi_model = SpiController(DigitalBidir.empty(), (0, 60) * MHertz)  # section 3.4.2, max block in GP master mode
     i2c_model = I2cController(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s
 
     return PinMapUtil([  # section 2.2

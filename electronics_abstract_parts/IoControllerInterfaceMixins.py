@@ -18,6 +18,14 @@ class IoControllerCan(BlockInterfaceMixin[BaseIoController]):
         self.implementation(lambda base: base._io_ports.append(self.can))
 
 
+class IoControllerSpiPeripheral(BlockInterfaceMixin[BaseIoController]):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.spi_peripheral = self.Port(Vector(SpiPeripheral.empty()), optional=True)
+        self.implementation(lambda base: base._io_ports.append(self.spi_peripheral))
+
+
 class IoControllerI2cTarget(BlockInterfaceMixin[BaseIoController]):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

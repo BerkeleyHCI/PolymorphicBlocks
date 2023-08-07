@@ -86,7 +86,7 @@ class Stm32f103Base_Device(IoControllerCan, IoControllerUsb, InternalSubcircuit,
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty())
+    spi_model = SpiController(DigitalBidir.empty())
     i2c_model = I2cController(DigitalBidir.empty())
 
     return PinMapUtil([  # Table 5, partial table for 48-pin only

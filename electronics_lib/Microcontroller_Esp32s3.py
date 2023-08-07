@@ -44,7 +44,7 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
     adc_model = AnalogSink.from_supply(gnd, pwr)  # table 4-5, no other specs given
 
     uart_model = UartPort(DigitalBidir.empty())  # section 3.5.5, up to 5Mbps
-    spi_model = SpiMaster(DigitalBidir.empty(), (0, 80)*MHertz)  # section 3.5.2, 80MHz in master, 60MHz in slave
+    spi_model = SpiController(DigitalBidir.empty(), (0, 80) * MHertz)  # section 3.5.2, 80MHz in master, 60MHz in slave
     i2c_model = I2cController(DigitalBidir.empty())  # section 3.5.6, 100/400kHz and up to 800kbit/s
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI, up to 1Mbit/s
     i2s_model = I2sController(DigitalBidir.empty())

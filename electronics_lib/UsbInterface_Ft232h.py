@@ -137,7 +137,7 @@ class Ft232EepromDriver(InternalSubcircuit, Block):
     self.pwr = self.Port(VoltageSink.empty())
     self.eeclk = self.Port(DigitalSink.empty())
     self.eedata = self.Port(DigitalBidir.empty())
-    self.spi = self.Port(SpiMaster.empty())
+    self.spi = self.Port(SpiController.empty())
 
   def contents(self):
     self.connect(self.eeclk, self.spi.sck)
@@ -164,7 +164,7 @@ class Ft232hl(Interface, GeneratorBlock):
 
     # connect one of UART, MPSSE, or ADBUS pins
     self.uart = self.Port(UartPort.empty(), optional=True)
-    self.mpsse = self.Port(SpiMaster.empty(), optional=True)
+    self.mpsse = self.Port(SpiController.empty(), optional=True)
     self.mpsse_cs = self.Port(DigitalSource.empty(), optional=True)
 
     self.adbus = self.Port(Vector(DigitalBidir.empty()))
