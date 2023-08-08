@@ -29,14 +29,14 @@ class ServoFeedbackConnector(Connector, Block):
 class RobotCrawlerSpec(BoardTop):
   """Example spec for a robot crawler, that defines the needed interface blocks but no connections
   or infrastructure parts"""
+  SERVO_COUNT = 12
   def __init__(self) -> None:
     super().__init__()
     self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
 
-    self.servo1 = self.Block(ServoFeedbackConnector())
-    self.servo2 = self.Block(ServoFeedbackConnector())
-    self.servo3 = self.Block(ServoFeedbackConnector())
-    self.servo4 = self.Block(ServoFeedbackConnector())
+    self.servos = ElementDict[ServoFeedbackConnector]()
+    for i in range(self.SERVO_COUNT):
+      self.servos[str(i)] = self.Block(ServoFeedbackConnector())
     self.imu = self.Block(Imu_Lsm6ds3trc())
     self.compass = self.Block(Mag_Qmc5883l())
 
@@ -90,19 +90,18 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
+      self.mcu_servo = imp.Block(IoController())
 
       self.i2c = self.mcu.i2c.request('i2c')
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
-      self.connect(self.i2c, self.imu.i2c, self.compass.i2c)
+      self.connect(self.i2c, self.imu.i2c, self.compass.i2c, self.mcu_servo.i2c_target.request())
 
       self.connect(self.v3v3, self.imu.vdd, self.imu.vddio, self.compass.vdd)
       self.connect(self.gnd, self.imu.gnd, self.compass.gnd)
 
-      (self.ledr, ), _ = self.chain(self.mcu.gpio.request('ledr'), imp.Block(IndicatorLed(Led.Red)))
-      (self.ledg, ), _ = self.chain(self.mcu.gpio.request('ledg'), imp.Block(IndicatorLed(Led.Green)))
-      (self.ledb, ), _ = self.chain(self.mcu.gpio.request('ledb'), imp.Block(IndicatorLed(Led.Blue)))
+      (self.led, ), _ = self.chain(self.mcu.gpio.request('led'), imp.Block(IndicatorLed(Led.Yellow)))
 
     # OLED MULTI DOMAIN
     with self.implicit_connect(
@@ -134,17 +133,15 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         ImplicitConnect(self.vbatt, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.connect(self.vbatt, self.servo1.pwr, self.servo2.pwr, self.servo3.pwr, self.servo4.pwr)
-      self.connect(self.gnd, self.servo1.gnd, self.servo2.gnd, self.servo3.gnd, self.servo4.gnd)
-      self.connect(self.mcu.gpio.request('servo1'), self.servo1.pwm)
-      self.connect(self.mcu.gpio.request('servo2'), self.servo2.pwm)
-      self.connect(self.mcu.gpio.request('servo3'), self.servo3.pwm)
-      self.connect(self.mcu.gpio.request('servo4'), self.servo4.pwm)
-
-      self.connect(self.mcu.adc.request('servo1_fb'), self.servo1.fb)
-      self.connect(self.mcu.adc.request('servo2_fb'), self.servo2.fb)
-      self.connect(self.mcu.adc.request('servo3_fb'), self.servo3.fb)
-      self.connect(self.mcu.adc.request('servo4_fb'), self.servo4.fb)
+      for (i, servo) in self.servos.items():
+        self.connect(self.vbatt, servo.pwr)
+        self.connect(self.gnd, servo.gnd)
+        if int(i) < 5:  # 0-4 connected to ESP directly
+          self.connect(self.mcu.gpio.request(f'servo{i}'), servo.pwm)
+          self.connect(self.mcu.adc.request(f'servo{i}_fb'), servo.fb)
+        else:  # rest connected to STM as IO expander
+          self.connect(self.mcu_servo.gpio.request(f'servo{i}'), servo.pwm)
+          self.connect(self.mcu_servo.adc.request(f'servo{i}_fb'), servo.fb)
 
       (self.rgbs, ), _ = self.chain(
         self.mcu.gpio.request('rgb'),
@@ -155,6 +152,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
+        (['mcu_servo'], Stm32f103_48),
         (['reg_3v3'], Ldl1117),
         (['reg_2v5'], Xc6206p),
         (['reg_1v2'], Xc6206p),
@@ -178,9 +176,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
 
           'rgb=38',
 
-          'ledr=33',
-          'ledg=34',
-          'ledb=35',
+          'led=33',
 
           'cam.y2=25',
           'cam.y1=24',
@@ -203,6 +199,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
+        (SwdCortexTargetHeader, SwdCortexTargetTagConnect),
         (Neopixel, Sk6805_Ec15),
         (TestPoint, CompactKeystone5015),
       ],
