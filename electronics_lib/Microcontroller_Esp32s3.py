@@ -45,7 +45,9 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
 
     uart_model = UartPort(DigitalBidir.empty())  # section 3.5.5, up to 5Mbps
     spi_model = SpiController(DigitalBidir.empty(), (0, 80) * MHertz)  # section 3.5.2, 80MHz in master, 60MHz in slave
+    spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 80) * MHertz)
     i2c_model = I2cController(DigitalBidir.empty())  # section 3.5.6, 100/400kHz and up to 800kbit/s
+    i2c_target_model = I2cController(DigitalBidir.empty())
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI, up to 1Mbit/s
     i2s_model = I2sController(DigitalBidir.empty())
     dvp8_model = Dvp8Host(DigitalBidir.empty())
@@ -119,9 +121,13 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
       PeripheralAnyResource('U2', uart_model),
       PeripheralAnyResource('I2CEXT0', i2c_model),
       PeripheralAnyResource('I2CEXT1', i2c_model),
+      PeripheralAnyResource('I2CEXT0_T', i2c_target_model),  # TODO shared resource w/ I2C controller
+      PeripheralAnyResource('I2CEXT1_T', i2c_target_model),  # TODO shared resource w/ I2C controller
       # SPI0/1 may be used for (possibly on-chip) flash / PSRAM
       PeripheralAnyResource('SPI2', spi_model),
       PeripheralAnyResource('SPI3', spi_model),
+      PeripheralAnyResource('SPI2_P', spi_peripheral_model),  # TODO shared resource w/ SPI controller
+      PeripheralAnyResource('SPI3_P', spi_peripheral_model),  # TODO shared resource w/ SPI controller
       PeripheralAnyResource('TWAI', can_model),
       PeripheralAnyResource('I2S0', i2s_model),
       PeripheralAnyResource('I2S1', i2s_model),

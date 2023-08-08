@@ -52,7 +52,9 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Interna
 
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiController(DigitalBidir.empty(), (125, 32000) * kHertz)
+    spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (125, 32000) * kHertz)  # tristated by CS pin
     i2c_model = I2cController(DigitalBidir.empty())
+    i2c_target_model = I2cTarget(DigitalBidir.empty())
     i2s_model = I2sController(DigitalBidir.empty())
 
     hf_io_pins = [
@@ -117,32 +119,47 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Interna
       PeripheralFixedPin('SWD', SwdTargetPort(dio_model), {
         'swclk': 'SWCLK', 'swdio': 'SWDIO', 'reset': 'P0.18'
       }),
-      PeripheralFixedPin('USB', UsbDevicePort(), {
+      PeripheralFixedPin('USBD', UsbDevicePort(), {
         'dp': 'D+', 'dm': 'D-'
       }),
 
-      PeripheralFixedResource('SPI0', spi_model, {
+      PeripheralFixedResource('SPIM0', spi_model, {
         'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
       }),
-      PeripheralFixedResource('SPI1', spi_model, {
+      PeripheralFixedResource('SPIM1', spi_model, {
         'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
       }),
-      PeripheralFixedResource('SPI2', spi_model, {
+      PeripheralFixedResource('SPIM2', spi_model, {
         'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
       }),
-      PeripheralFixedResource('SPI3', spi_model, {
+      PeripheralFixedResource('SPIM3', spi_model, {
         'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
       }),
-      PeripheralFixedResource('I2C0', i2c_model, {
+      PeripheralFixedResource('SPIS0', spi_peripheral_model, {  # TODO shared resource w/ SPI controller
+        'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
+      }),
+      PeripheralFixedResource('SPIS1', spi_peripheral_model, {  # TODO shared resource w/ SPI controller
+        'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
+      }),
+      PeripheralFixedResource('SPIS2', spi_peripheral_model, {  # TODO shared resource w/ SPI controller
+        'sck': hf_io_pins, 'miso': hf_io_pins, 'mosi': hf_io_pins,
+      }),
+      PeripheralFixedResource('TWIM0', i2c_model, {
         'scl': hf_io_pins, 'sda': hf_io_pins,
       }),
-      PeripheralFixedResource('I2C1', i2c_model, {
+      PeripheralFixedResource('TWIM1', i2c_model, {
         'scl': hf_io_pins, 'sda': hf_io_pins,
       }),
-      PeripheralFixedResource('UART0', uart_model, {
+      PeripheralFixedResource('TWIS0', i2c_target_model, {  # TODO shared resource w/ I2C controller
+        'scl': hf_io_pins, 'sda': hf_io_pins,
+      }),
+      PeripheralFixedResource('TWIS1', i2c_target_model, {  # TODO shared resource w/ I2C controller
+        'scl': hf_io_pins, 'sda': hf_io_pins,
+      }),
+      PeripheralFixedResource('UARTE0', uart_model, {
         'tx': hf_io_pins, 'rx': hf_io_pins,
       }),
-      PeripheralFixedResource('UART1', uart_model, {
+      PeripheralFixedResource('UARTE1', uart_model, {
         'tx': hf_io_pins, 'rx': hf_io_pins,
       }),
       PeripheralFixedResource('I2S', i2s_model, {
