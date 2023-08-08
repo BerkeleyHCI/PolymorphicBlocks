@@ -30,6 +30,7 @@ class RobotCrawlerSpec(BoardTop):
   """Example spec for a robot crawler, that defines the needed interface blocks but no connections
   or infrastructure parts"""
   SERVO_COUNT = 12
+  SERVO_CAM_COUNT = 2
   def __init__(self) -> None:
     super().__init__()
     self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
@@ -40,6 +41,9 @@ class RobotCrawlerSpec(BoardTop):
     self.imu = self.Block(Imu_Lsm6ds3trc())
     self.compass = self.Block(Mag_Qmc5883l())
 
+    self.servos_cam = ElementDict[ServoFeedbackConnector]()
+    for i in range(self.SERVO_CAM_COUNT):
+      self.servos_cam[str(i)] = self.Block(ServoFeedbackConnector())
 
 class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
   """Implementation of the crawler robot, that implements what is needed to connect the interface blocks
@@ -91,12 +95,14 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
       self.mcu_servo = imp.Block(IoController())
+      self.mcu_test = imp.Block(IoController())  # test revised subcircuit only
 
       self.i2c = self.mcu.i2c.request('i2c')
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
-      self.connect(self.i2c, self.imu.i2c, self.compass.i2c, self.mcu_servo.i2c_target.request())
+      self.connect(self.i2c, self.imu.i2c, self.compass.i2c,
+                   self.mcu_servo.i2c_target.request(), self.mcu_test.i2c_target.request())
 
       self.connect(self.v3v3, self.imu.vdd, self.imu.vddio, self.compass.vdd)
       self.connect(self.gnd, self.imu.gnd, self.compass.gnd)
@@ -143,6 +149,12 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
           self.connect(self.mcu_servo.gpio.request(f'servo{i}'), servo.pwm)
           self.connect(self.mcu_servo.adc.request(f'servo{i}_fb'), servo.fb)
 
+      for (i, servo) in self.servos_cam.items():
+        self.connect(self.vbatt, servo.pwr)
+        self.connect(self.gnd, servo.gnd)
+        self.connect(self.mcu_servo.gpio.request(f'servo_cam{i}'), servo.pwm)
+        self.connect(self.mcu_servo.adc.request(f'servo_cam{i}_fb'), servo.fb)
+
       (self.rgbs, ), _ = self.chain(
         self.mcu.gpio.request('rgb'),
         imp.Block(NeopixelArray(4)))
@@ -153,6 +165,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
         (['mcu_servo'], Stm32f103_48),
+        (['mcu_test'], Rp2040),
         (['reg_3v3'], Ldl1117),
         (['reg_2v5'], Xc6206p),
         (['reg_1v2'], Xc6206p),
@@ -210,6 +223,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         (Ov2640_Fpc24, ['device', 'dvdd', 'voltage_limits'], Range(1.1, 1.36)),  # allow 1v2
         (Ov2640_Fpc24, ['device', 'avdd', 'voltage_limits'], Range(2.3, 3.0)),  # allow 2v5
         (Er_Oled_096_1c, ['device', 'vcc', 'voltage_limits'], Range(8, 19)),  # abs maximum ratings
+        (ServoFeedbackConnector, ['pwr', 'current_draw'], Range(0.005, 0.005)),  # ignore non-static draw
       ]
     )
 

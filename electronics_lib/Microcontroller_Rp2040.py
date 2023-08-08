@@ -29,7 +29,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
       current_draw=self.vreg_vout.is_connected().then_else(self.vreg_vout.link().current_drawn, 0*Amp(tol=0)),
     ))
     self.usb_vdd = self.Port(VoltageSink(
-      voltage_limits=(3.135, 3.63)*Volt,  # Table 627, can be lower if USB not used (section 2.9.4)
+      voltage_limits=RangeExpr(),  # depends on if USB is needed
       current_draw=(0.2, 2.0)*mAmp,  # Table 628 typ BOOTSEL Idle to max BOOTSEL Active
     ))
     self.adc_avdd = self.Port(VoltageSink(
@@ -40,6 +40,8 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
     # Additional ports (on top of IoController)
     self.qspi = self.Port(SpiController.empty())  # TODO actually QSPI
     self.qspi_cs = self.Port(DigitalBidir.empty())
+    self.qspi_sd2 = self.Port(DigitalBidir.empty())
+    self.qspi_sd3 = self.Port(DigitalBidir.empty())
 
     self.xosc = self.Port(CrystalDriver(frequency_limits=(1, 15)*MHertz,  # datasheet 2.15.2.2
                                         voltage_out=self.pwr.link().voltage),
@@ -63,14 +65,16 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
 
     self.qspi.init_from(SpiController(self._dio_std_model))
     self.qspi_cs.init_from(self._dio_std_model)
+    self.qspi_sd2.init_from(self._dio_std_model)
+    self.qspi_sd3.init_from(self._dio_std_model)
 
   # Pin/peripheral resource definitions (table 3)
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return {
-      # '51': QSPI_SD3
+      '51': self.qspi_sd3,
       '52': self.qspi.sck,
       '53': self.qspi.mosi,  # IO0
-      # '54': QSPI_SD2
+      '54': self.qspi_sd2,
       '55': self.qspi.miso,  # IO1
       '56': self.qspi_cs,  # IO1
 
@@ -197,6 +201,11 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
   def generate(self) -> None:
     super().generate()
 
+    if not self.get(self.usb.requested()):  # Table 628, VDD_USB can be lower if USB not used (section 2.9.4)
+      self.assign(self.usb_vdd.voltage_limits, (1.62, 3.63)*Volt)
+    else:
+      self.assign(self.usb_vdd.voltage_limits, (3.135, 3.63)*Volt)
+
     self.footprint(
       'U', 'Package_DFN_QFN:QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm',
       self._make_pinning(),
@@ -259,6 +268,9 @@ class Rp2040(IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnecto
       self.mem = imp.Block(SpiMemory(Range.all()))
       self.connect(self.ic.qspi, self.mem.spi)
       self.connect(self.ic.qspi_cs, self.mem.cs)
+      mem_qspi = self.mem.with_mixin(SpiMemoryQspi())
+      self.connect(self.ic.qspi_sd2, mem_qspi.io2)
+      self.connect(self.ic.qspi_sd3, mem_qspi.io3)
 
     self.connect(self.pwr, self.ic.vreg_vin, self.ic.adc_avdd, self.ic.usb_vdd)
     self.connect(self.ic.vreg_vout, self.ic.dvdd)
