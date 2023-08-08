@@ -28,7 +28,7 @@ class Mcp3201_Device(InternalSubcircuit, FootprintBlock):
       input_threshold_factor=(0.3, 0.7)
     )
     # Datasheet section 6.2, minimum clock speed
-    self.spi = self.Port(SpiSlave(dio_model, frequency_limit=(10, 1600)*kHertz))
+    self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(10, 1600) * kHertz))
     self.cs = self.Port(dio_model)
 
   def contents(self) -> None:

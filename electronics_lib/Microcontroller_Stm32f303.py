@@ -6,7 +6,7 @@ from electronics_abstract_parts import *
 
 @abstract_block
 class Stm32f303_Ios(IoControllerDac, IoControllerCan, BaseIoControllerPinmapGenerator):
-  """Base class for STM32F303 devices.
+  """Base class for STM32F303x6/8 devices (separate from STM32F303xB/C).
   Unlike other microcontrollers, this one also supports dev boards (Nucleo-32) which can be
   a power source, so there's a bit more complexity here."""
   RESOURCE_PIN_REMAP: Dict[str, str]
@@ -86,8 +86,10 @@ class Stm32f303_Ios(IoControllerDac, IoControllerCan, BaseIoControllerPinmapGene
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty())
-    i2c_model = I2cMaster(DigitalBidir.empty())
+    spi_model = SpiController(DigitalBidir.empty())
+    # TODO SPI peripherals, which have fixed-pin CS lines
+    i2c_model = I2cController(DigitalBidir.empty())
+    i2c_target_model = I2cTarget(DigitalBidir.empty())
 
     return PinMapUtil([  # Table 13, partial table for 48-pin only
       PinResource('PC13', {'PC13': dio_tc_model}),
@@ -151,7 +153,9 @@ class Stm32f303_Ios(IoControllerDac, IoControllerCan, BaseIoControllerPinmapGene
       PeripheralFixedResource('I2C1', i2c_model, {
         'scl': ['PA15', 'PB6', 'PB8'], 'sda': ['PA14', 'PB7', 'PB9']
       }),
-
+      PeripheralFixedResource('I2C1_T', i2c_target_model, {
+        'scl': ['PA15', 'PB6', 'PB8'], 'sda': ['PA14', 'PB7', 'PB9']
+      }),
       PeripheralFixedPin('SWD', SwdTargetPort(dio_ft_model), {  # TODO some are FTf pins
         'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST'  # note: SWO is PB3
       }),

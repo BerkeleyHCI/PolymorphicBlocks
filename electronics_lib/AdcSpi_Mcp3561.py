@@ -33,7 +33,7 @@ class Mcp3561_Device(InternalSubcircuit, FootprintBlock):
       input_threshold_factor=(0.3, 0.7)
     )
     # Datasheet table 1.1
-    self.spi = self.Port(SpiSlave(dio_model, frequency_limit=(0, 10)*MHertz))  # note 20MHz for >2.7V DVdd
+    self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 10) * MHertz))  # note 20MHz for >2.7V DVdd
     self.cs = self.Port(dio_model)
 
   def contents(self) -> None:

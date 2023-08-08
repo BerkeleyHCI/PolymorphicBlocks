@@ -38,7 +38,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
     ))
 
     # Additional ports (on top of IoController)
-    self.qspi = self.Port(SpiMaster.empty())  # TODO actually QSPI
+    self.qspi = self.Port(SpiController.empty())  # TODO actually QSPI
     self.qspi_cs = self.Port(DigitalBidir.empty())
 
     self.xosc = self.Port(CrystalDriver(frequency_limits=(1, 15)*MHertz,  # datasheet 2.15.2.2
@@ -61,7 +61,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
     )
     self._dio_std_model = self._dio_ft_model  # exactly the same characteristics
 
-    self.qspi.init_from(SpiMaster(self._dio_std_model))
+    self.qspi.init_from(SpiController(self._dio_std_model))
     self.qspi_cs.init_from(self._dio_std_model)
 
   # Pin/peripheral resource definitions (table 3)
@@ -108,8 +108,9 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty())
-    i2c_model = I2cMaster(DigitalBidir.empty())
+    spi_model = SpiController(DigitalBidir.empty())
+    i2c_model = I2cController(DigitalBidir.empty())
+    i2c_target_model = I2cTarget(DigitalBidir.empty())
 
     return PinMapUtil([
       PinResource('2', {'GPIO0': self._dio_ft_model}),
@@ -160,21 +161,30 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
         'rx': ['GPIO5', 'GPIO9', 'GPIO21', 'GPIO25']
       }),
 
-      PeripheralFixedResource('SPI0', spi_model, {  # assumes master mode
+      PeripheralFixedResource('SPI0', spi_model, {
         'miso': ['GPIO0', 'GPIO4', 'GPIO16', 'GPIO20'],  # RX
         'sck': ['GPIO2', 'GPIO6', 'GPIO18', 'GPIO22'],
         'mosi': ['GPIO3', 'GPIO7', 'GPIO19', 'GPIO23']  # TX
       }),
-      PeripheralFixedResource('SPI1', spi_model, {  # assumes master mode
+      PeripheralFixedResource('SPI1', spi_model, {
         'miso': ['GPIO8', 'GPIO12', 'GPIO24', 'GPIO28'],  # RX
         'sck': ['GPIO10', 'GPIO14', 'GPIO26'],
         'mosi': ['GPIO11', 'GPIO15', 'GPIO27']  # TX
       }),
+      # SPI peripheral omitted, since TX tri-state is not tied to CS and must be controlled in software
       PeripheralFixedResource('I2C0', i2c_model, {
         'sda': ['GPIO0', 'GPIO4', 'GPIO8', 'GPIO12', 'GPIO16', 'GPIO20', 'GPIO24', 'GPIO28'],
         'scl': ['GPIO1', 'GPIO5', 'GPIO9', 'GPIO13', 'GPIO17', 'GPIO21', 'GPIO25', 'GPIO20']
       }),
       PeripheralFixedResource('I2C1', i2c_model, {
+        'sda': ['GPIO2', 'GPIO6', 'GPIO10', 'GPIO14', 'GPIO18', 'GPIO22', 'GPIO24', 'GPIO26'],
+        'scl': ['GPIO3', 'GPIO7', 'GPIO11', 'GPIO15', 'GPIO19', 'GPIO23', 'GPIO25', 'GPIO27']
+      }),
+      PeripheralFixedResource('I2C0_T', i2c_target_model, {  # TODO shared resource w/ I2C controller
+        'sda': ['GPIO0', 'GPIO4', 'GPIO8', 'GPIO12', 'GPIO16', 'GPIO20', 'GPIO24', 'GPIO28'],
+        'scl': ['GPIO1', 'GPIO5', 'GPIO9', 'GPIO13', 'GPIO17', 'GPIO21', 'GPIO25', 'GPIO20']
+      }),
+      PeripheralFixedResource('I2C1_T', i2c_target_model, {  # TODO shared resource w/ I2C controller
         'sda': ['GPIO2', 'GPIO6', 'GPIO10', 'GPIO14', 'GPIO18', 'GPIO22', 'GPIO24', 'GPIO26'],
         'scl': ['GPIO3', 'GPIO7', 'GPIO11', 'GPIO15', 'GPIO19', 'GPIO23', 'GPIO25', 'GPIO27']
       }),

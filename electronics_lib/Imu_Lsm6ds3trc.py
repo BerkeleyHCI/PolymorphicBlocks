@@ -21,7 +21,7 @@ class Imu_Lsm6ds3trc_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             current_limits=(-4, 4)*mAmp,
             input_threshold_factor=(0.3, 0.7)
         )
-        self.i2c = self.Port(I2cSlave(dio_model))
+        self.i2c = self.Port(I2cTarget(dio_model))
 
         dout_model = DigitalSingleSource.low_from_supply(self.gnd)
         self.int1 = self.Port(dout_model, optional=True)

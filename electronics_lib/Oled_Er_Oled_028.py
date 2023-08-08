@@ -60,7 +60,7 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
         self.bs0 = self.Export(self.conn.pins.request('16').adapt_to(din_model))  # 3-wire (1) / 4-wire (0) serial
         self.connect(self.conn.pins.request('17').adapt_to(Ground()), self.vss)  # BS1, 0 for any serial
 
-        self.spi = self.Port(SpiSlave.empty())
+        self.spi = self.Port(SpiPeripheral.empty())
         self.connect(self.spi.sck, self.conn.pins.request('13').adapt_to(din_model))  # DB0
         self.connect(self.spi.mosi, self.conn.pins.request('12').adapt_to(din_model))  # DB1
 

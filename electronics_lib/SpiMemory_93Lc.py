@@ -33,7 +33,7 @@ class E93Lc_B_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
       voltage_limit_tolerance=(-0.6, 1),
       input_threshold_abs=(0.8, 2.0)  # Table 1-1, for Vcc > 2.7
     )
-    self.spi = self.Port(SpiSlave(dio_model, (0, 2)*MHertz))  # for Vcc >= 2.5
+    self.spi = self.Port(SpiPeripheral(dio_model, (0, 2) * MHertz))  # for Vcc >= 2.5
     self.cs = self.Port(dio_model)
 
     self.actual_size = self.Parameter(IntExpr())

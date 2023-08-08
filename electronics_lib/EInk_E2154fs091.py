@@ -25,7 +25,7 @@ class E2154fs091_Device(InternalSubcircuit, FootprintBlock):
     self.reset = self.Port(DigitalSink.from_bidir(dio_model))
     self.dc = self.Port(DigitalSink.from_bidir(dio_model))
     self.cs = self.Port(DigitalSink.from_bidir(dio_model))
-    self.spi = self.Port(SpiSlave(model=dio_model))
+    self.spi = self.Port(SpiPeripheral(model=dio_model))
 
     # TODO model all these parts, then fix all the Passive connections
     self.gdr = self.Port(Passive())

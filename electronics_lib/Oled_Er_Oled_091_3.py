@@ -44,7 +44,7 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Block):
             input_threshold_factor=(0.2, 0.8)
         )
 
-        self.spi = self.Port(SpiSlave.empty())
+        self.spi = self.Port(SpiPeripheral.empty())
         self.connect(self.spi.sck, self.conn.pins.request('11').adapt_to(din_model))
         self.connect(self.spi.mosi, self.conn.pins.request('12').adapt_to(din_model))
 
