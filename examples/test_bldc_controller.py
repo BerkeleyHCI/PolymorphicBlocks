@@ -49,7 +49,7 @@ class I2cConnector(Connector, Block):
     self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink()),
                            [Power])
 
-    self.i2c = self.Port(I2cSlave(DigitalBidir.empty()), [InOut])
+    self.i2c = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
     self.connect(self.i2c.sda, self.conn.pins.request('3').adapt_to(DigitalBidir()))
     self.connect(self.i2c.scl, self.conn.pins.request('4').adapt_to(DigitalBidir()))
 

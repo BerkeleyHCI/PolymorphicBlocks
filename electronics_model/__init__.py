@@ -17,8 +17,10 @@ from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingl
 from .DigitalPorts import DigitalBidirAdapterOpenDrain, DigitalBidirNotConnected
 from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
 from .UartPort import UartPort, UartLink
-from .SpiPort import SpiMaster, SpiSlave, SpiLink
-from .I2cPort import I2cPullupPort, I2cMaster, I2cSlave, I2cLink
+from .SpiPort import SpiController, SpiPeripheral, SpiLink
+from .SpiPort import SpiMaster, SpiSlave  # legacy names
+from .I2cPort import I2cPullupPort, I2cController, I2cTarget, I2cLink
+from .I2cPort import I2cMaster, I2cSlave  # legacy names
 from .CanPort import CanControllerPort, CanTransceiverPort, CanLogicLink, CanPassivePort, CanDiffPort, CanDiffLink
 from .DebugPorts import SwdHostPort, SwdTargetPort, SwdPullPort, SwdLink
 from .SpeakerPort import SpeakerDriverPort, SpeakerPort, SpeakerLink

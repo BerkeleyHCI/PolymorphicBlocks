@@ -64,8 +64,10 @@ class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, IoControllerPowerRequ
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty(), (0, 60)*MHertz)  # section 3.4.2, max block in GP master mode
-    i2c_model = I2cMaster(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s
+    spi_model = SpiController(DigitalBidir.empty(), (0, 60) * MHertz)  # section 3.4.2, max block in GP controller mode
+    spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 60) * MHertz)
+    i2c_model = I2cController(DigitalBidir.empty())  # section 3.4.4, supporting 100/400 and up to 800 kbit/s
+    i2c_target_model = I2cTarget(DigitalBidir.empty())
 
     return PinMapUtil([  # section 2.2
       PinResource('GPIO0', {'GPIO0': self._dio_model, 'ADC1_CH0': adc_model}),  # also XTAL_32K_P
@@ -92,7 +94,9 @@ class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, IoControllerPowerRequ
       # }),
       PeripheralAnyResource('U1', uart_model),
       PeripheralAnyResource('I2C', i2c_model),
+      PeripheralAnyResource('I2C_T', i2c_target_model),  # TODO shared resource w/ I2C controller
       PeripheralAnyResource('SPI2', spi_model),
+      PeripheralAnyResource('SPI2_P', spi_peripheral_model),  # TODO shared resource w/ SPI controller
       PeripheralAnyResource('I2S', I2sController.empty()),
     ])
 

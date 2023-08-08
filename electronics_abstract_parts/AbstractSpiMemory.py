@@ -12,7 +12,7 @@ class SpiMemory(Memory, Block):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.spi = self.Port(SpiSlave.empty())
+    self.spi = self.Port(SpiPeripheral.empty())
     self.cs = self.Port(DigitalSink.empty())
 
     self.size = self.ArgParameter(size)

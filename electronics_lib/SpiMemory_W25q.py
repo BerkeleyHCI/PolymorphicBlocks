@@ -31,7 +31,7 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
       voltage_limit_tolerance=(-0.5, 0.4),
       input_threshold_factor=(0.3, 0.7)
     )
-    self.spi = self.Port(SpiSlave(dio_model, (0, 104)*MHertz))
+    self.spi = self.Port(SpiPeripheral(dio_model, (0, 104) * MHertz))
     self.cs = self.Port(dio_model)
 
     self.actual_size = self.Parameter(IntExpr())

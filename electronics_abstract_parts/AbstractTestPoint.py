@@ -75,7 +75,7 @@ class I2cTestPoint(TypedTestPoint, Block):
   """Two test points for I2C SDA and SCL"""
   def __init__(self):
     super().__init__()
-    self.io = self.Port(I2cSlave(DigitalBidir.empty()), [InOut])
+    self.io = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
     self.tp_scl = self.Block(DigitalTestPoint())
     self.connect(self.tp_scl.io, self.io.scl)
     self.tp_sda = self.Block(DigitalTestPoint())

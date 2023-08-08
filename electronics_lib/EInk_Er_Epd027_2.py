@@ -71,7 +71,7 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
         self.dc = self.Export(self.conn.pins.request('11').adapt_to(din_model), optional=True)
         self.csb = self.Export(self.conn.pins.request('12').adapt_to(din_model))
 
-        self.spi = self.Port(SpiSlave.empty())
+        self.spi = self.Port(SpiPeripheral.empty())
         self.connect(self.spi.sck, self.conn.pins.request('13').adapt_to(din_model))  # SCL
         self.connect(self.spi.mosi, self.conn.pins.request('14').adapt_to(din_model))  # SDA
         self.miso_nc = self.Block(DigitalBidirNotConnected())

@@ -11,8 +11,8 @@ class IdealIoController(IoControllerDac, IoControllerCan, IoControllerUsb, IoCon
     def __init__(self) -> None:
         super().__init__()
         self.generator_param(self.adc.requested(), self.dac.requested(), self.gpio.requested(), self.spi.requested(),
-                             self.i2c.requested(), self.uart.requested(), self.usb.requested(), self.can.requested(),
-                             self.i2s.requested())
+                             self.spi_peripheral.requested(), self.i2c.requested(), self.i2c_target.requested(),
+                             self.uart.requested(), self.usb.requested(), self.can.requested(), self.i2s.requested())
 
     def generate(self) -> None:
         self.pwr.init_from(VoltageSink(
@@ -48,10 +48,16 @@ class IdealIoController(IoControllerDac, IoControllerCan, IoControllerUsb, IoCon
 
         self.spi.defined()
         for elt in self.get(self.spi.requested()):
-            self.spi.append_elt(SpiMaster(dio_model), elt)
+            self.spi.append_elt(SpiController(dio_model), elt)
+        self.spi_peripheral.defined()
+        for elt in self.get(self.spi_peripheral.requested()):
+            self.spi_peripheral.append_elt(SpiPeripheral(dio_model), elt)
         self.i2c.defined()
         for elt in self.get(self.i2c.requested()):
-            self.i2c.append_elt(I2cMaster(dio_model), elt)
+            self.i2c.append_elt(I2cController(dio_model), elt)
+        self.i2c_target.defined()
+        for elt in self.get(self.i2c_target.requested()):
+            self.i2c_target.append_elt(I2cTarget(dio_model), elt)
         self.uart.defined()
         for elt in self.get(self.uart.requested()):
             self.uart.append_elt(UartPort(dio_model), elt)

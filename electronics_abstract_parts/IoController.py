@@ -21,14 +21,17 @@ class BaseIoController(PinMappable, Block):
     self.gpio = self.Port(Vector(DigitalBidir.empty()), optional=True)
     self.adc = self.Port(Vector(AnalogSink.empty()), optional=True)
 
-    self.spi = self.Port(Vector(SpiMaster.empty()), optional=True)
-    self.i2c = self.Port(Vector(I2cMaster.empty()), optional=True)
+    self.spi = self.Port(Vector(SpiController.empty()), optional=True)
+    self.i2c = self.Port(Vector(I2cController.empty()), optional=True)
     self.uart = self.Port(Vector(UartPort.empty()), optional=True)
+
+    self.spi_peripheral = self.Port(Vector(SpiPeripheral.empty()), optional=True)
+    self.i2c_target = self.Port(Vector(I2cTarget.empty()), optional=True)
 
     self.io_current_draw = self.Parameter(RangeExpr())  # total current draw for all leaf-level IO sinks
 
     self._io_ports: List[BasePort] = [  # ordered by assignment order, most restrictive should be first
-      self.adc, self.spi, self.i2c, self.uart, self.gpio]
+      self.adc, self.spi, self.i2c, self.uart, self.spi_peripheral, self.i2c_target, self.gpio]
 
   def _type_of_io(self, io_port: BasePort) -> Type[Port]:
     if isinstance(io_port, Vector):

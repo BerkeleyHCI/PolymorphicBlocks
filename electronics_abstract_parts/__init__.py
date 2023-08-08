@@ -89,4 +89,4 @@ from .VariantPinRemapper import VariantPinRemapper
 
 from .DummyDevices import DummyPassive, DummyVoltageSource, DummyVoltageSink, DummyDigitalSink, DummyAnalogSink
 from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltage, ForcedDigitalSinkCurrentDraw
-from .MergedBlocks import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource, MergedSpiMaster
+from .MergedBlocks import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource, MergedSpiController

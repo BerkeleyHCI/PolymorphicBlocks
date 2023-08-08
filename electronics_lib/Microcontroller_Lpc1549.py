@@ -92,7 +92,8 @@ class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, Base
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty())
+    spi_model = SpiController(DigitalBidir.empty())
+    spi_peripheral_model = SpiPeripheral(DigitalBidir.empty())  # MISO driven when CS asserted
 
     return PinMapUtil([  # partial table for 48- and 64-pin only
       PinResource('PIO0_0', {'PIO0_0': dio_5v_model, 'ADC0_10': adc_model}),
@@ -150,9 +151,14 @@ class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, Base
       PeripheralAnyResource('UART2', uart_model),
       PeripheralAnyResource('SPI0', spi_model),
       PeripheralAnyResource('SPI1', spi_model),
+      PeripheralAnyResource('SPI0_P', spi_peripheral_model),  # TODO shared resource w/ SPI controller
+      PeripheralAnyResource('SPI1_P', spi_peripheral_model),  # TODO shared resource w/ SPI controller
       PeripheralAnyResource('CAN0', CanControllerPort(DigitalBidir.empty())),
 
-      PeripheralFixedResource('I2C0', I2cMaster(DigitalBidir.empty()), {
+      PeripheralFixedResource('I2C0', I2cController(DigitalBidir.empty()), {
+        'scl': ['PIO0_22'], 'sda': ['PIO0_23']
+      }),
+      PeripheralFixedResource('I2C0_T', I2cTarget(DigitalBidir.empty()), {  # TODO shared resource w/ I2C controller
         'scl': ['PIO0_22'], 'sda': ['PIO0_23']
       }),
       PeripheralFixedPin('USB', UsbDevicePort(), {

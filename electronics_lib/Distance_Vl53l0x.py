@@ -42,7 +42,7 @@ class Vl53l0x_Device(Vl53l0x_DeviceBase, InternalSubcircuit, JlcPart, FootprintB
     self.gpio1 = self.Port(gpio_model, optional=True)
 
     # TODO: support addresses, the default is 0x29 though it's software remappable
-    self.i2c = self.Port(I2cSlave(self._i2c_io_model(self.vss, self.vdd)), [Output])
+    self.i2c = self.Port(I2cTarget(self._i2c_io_model(self.vss, self.vdd)), [Output])
 
   def contents(self):
     super().contents()
@@ -78,7 +78,7 @@ class Vl53l0x(DistanceSensor, Block):
     self.pwr = self.Port(VoltageSink().empty(), [Power])
     self.gnd = self.Port(Ground().empty(), [Common])
 
-    self.i2c = self.Port(I2cSlave.empty())
+    self.i2c = self.Port(I2cTarget.empty())
     self.xshut = self.Port(DigitalSink.empty(), optional=True)
     self.gpio1 = self.Port(DigitalBidir.empty(), optional=True)
 
@@ -103,7 +103,7 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0x, GeneratorBlock):
     i2c_io_model = self._i2c_io_model(self.gnd, self.pwr)
     self.connect(self.i2c.scl, self.conn.pins.request('3').adapt_to(i2c_io_model))
     self.connect(self.i2c.sda, self.conn.pins.request('4').adapt_to(i2c_io_model))
-    self.i2c.init_from(I2cSlave(DigitalBidir.empty(), []))
+    self.i2c.init_from(I2cTarget(DigitalBidir.empty(), []))
 
     gpio_model = self._gpio_model(self.gnd, self.pwr)
     if self.get(self.xshut.is_connected()):
@@ -144,7 +144,7 @@ class Vl53l0xArray(DistanceSensor, GeneratorBlock):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.i2c = self.Port(I2cSlave.empty())
+    self.i2c = self.Port(I2cTarget.empty())
     self.xshut = self.Port(Vector(DigitalSink.empty()))
     self.gpio1 = self.Port(Vector(DigitalBidir.empty()), optional=True)
 

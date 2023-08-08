@@ -71,7 +71,7 @@ class Nhd_312_25664uc(Oled, Block):
     self.reset = self.Export(self.device.nres)
     self.dc = self.Export(self.device.dc)
     self.cs = self.Export(self.device.ncs)
-    self.spi = self.Port(SpiSlave(DigitalBidir.empty()))
+    self.spi = self.Port(SpiPeripheral(DigitalBidir.empty()))
 
   def contents(self):
     super().contents()
