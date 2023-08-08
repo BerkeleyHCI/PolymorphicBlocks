@@ -27,5 +27,5 @@ class SpiMemoryQspi(BlockInterfaceMixin[SpiMemory]):
   May prevent the use of some chip functions that conflict with QSPI lines."""
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-    self.io2 = self.Port(DigitalBidir.empty())
-    self.io3 = self.Port(DigitalBidir.empty())
+    self.io2 = self.Port(DigitalBidir.empty(), optional=True)
+    self.io3 = self.Port(DigitalBidir.empty(), optional=True)
