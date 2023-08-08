@@ -38,7 +38,7 @@ class SpiController(Bundle[SpiLink]):
       model = DigitalBidir()  # ideal by default
     self.sck = self.Port(DigitalSource.from_bidir(model))
     self.mosi = self.Port(DigitalSource.from_bidir(model))
-    self.miso = self.Port(model)
+    self.miso = self.Port(DigitalSink.from_bidir(model))
 
     self.frequency = self.Parameter(RangeExpr(frequency))
     self.mode = self.Parameter(RangeExpr())  # modes supported, in [0, 3]  TODO: what about sparse modes?
