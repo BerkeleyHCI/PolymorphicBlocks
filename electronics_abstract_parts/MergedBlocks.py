@@ -108,7 +108,7 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorB
     return self
 
 
-class MergedSpiMaster(DummyDevice, GeneratorBlock):
+class MergedSpiController(DummyDevice, GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.ins = self.Port(Vector(SpiPeripheral.empty()))
@@ -130,7 +130,7 @@ class MergedSpiMaster(DummyDevice, GeneratorBlock):
       self.connect(self.sck_merge.ins.request(in_request), in_port.sck)
       self.connect(self.mosi_merge.ins.request(in_request), in_port.mosi)
 
-  def connected_from(self, *ins: Port[SpiLink]) -> 'MergedSpiMaster':
+  def connected_from(self, *ins: Port[SpiLink]) -> 'MergedSpiController':
     for in_port in ins:
       cast(Block, builder.get_enclosing_block()).connect(in_port, self.ins.request())
     return self

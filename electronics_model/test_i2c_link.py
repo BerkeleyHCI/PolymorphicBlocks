@@ -45,11 +45,11 @@ class I2cNoPullTest(DesignTop):
 class I2cConflictTest(DesignTop):
   def __init__(self):
     super().__init__()
-    self.master = self.Block(I2cControllerBlock())
+    self.controller = self.Block(I2cControllerBlock())
     self.pull = self.Block(I2cPullupBlock())
     self.device1 = self.Block(I2cTargetBlock(1))
     self.device2 = self.Block(I2cTargetBlock(1))
-    self.link = self.connect(self.master.port, self.pull.port, self.device1.port, self.device2.port)
+    self.link = self.connect(self.controller.port, self.pull.port, self.device1.port, self.device2.port)
 
 
 class I2cTestCase(unittest.TestCase):

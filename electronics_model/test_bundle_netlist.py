@@ -10,7 +10,7 @@ from .footprint import Pin, Block as FBlock  # TODO cleanup naming
 from .test_netlist import NetlistTestCase
 
 
-class TestFakeSpiMaster(FootprintBlock):
+class TestFakeSpiController(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -20,7 +20,7 @@ class TestFakeSpiMaster(FootprintBlock):
 
   def contents(self) -> None:
     super().contents()
-    self.footprint(  # it's anyone's guess why the resistor array is a SPI master
+    self.footprint(  # it's anyone's guess why the resistor array is a SPI controller
       'R', 'Resistor_SMD:R_Array_Concave_2x0603',
       {
         '0': self.cs_out_1,  # the mythical and elusive pin 0
@@ -29,11 +29,11 @@ class TestFakeSpiMaster(FootprintBlock):
         '3': self.spi.miso,
         '4': self.spi.mosi,
       },
-      value='WeirdSpiMaster'
+      value='WeirdSpiController'
     )
 
 
-class TestFakeSpiSlave(FootprintBlock):
+class TestFakeSpiPeripheral(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -42,7 +42,7 @@ class TestFakeSpiSlave(FootprintBlock):
 
   def contents(self) -> None:
     super().contents()
-    self.footprint(  # it's anyone's guess why this resistor array has a different pinning in slave mode
+    self.footprint(  # it's anyone's guess why this resistor array has a different pinning in peripheral mode
       'R', 'Resistor_SMD:R_Array_Concave_2x0603',
       {
         '1': self.spi.sck,
@@ -50,7 +50,7 @@ class TestFakeSpiSlave(FootprintBlock):
         '3': self.spi.miso,
         '4': self.cs_in,
       },
-      value='WeirdSpiSlave'
+      value='WeirdSpiPeripheral'
     )
 
 
@@ -58,9 +58,9 @@ class TestSpiCircuit(Block):
   def contents(self) -> None:
     super().contents()
 
-    self.controller = self.Block(TestFakeSpiMaster())
-    self.peripheral1 = self.Block(TestFakeSpiSlave())
-    self.peripheral2 = self.Block(TestFakeSpiSlave())
+    self.controller = self.Block(TestFakeSpiController())
+    self.peripheral1 = self.Block(TestFakeSpiPeripheral())
+    self.peripheral2 = self.Block(TestFakeSpiPeripheral())
 
     self.spi_link = self.connect(self.controller.spi, self.peripheral1.spi, self.peripheral2.spi)
     self.cs1_link = self.connect(self.controller.cs_out_1, self.peripheral1.cs_in)
@@ -152,15 +152,15 @@ class BundleNetlistTestCase(unittest.TestCase):
       Pin('peripheral2', '3'),
     ])
 
-    self.assertEqual(net.blocks['controller'], FBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R1', '', 'WeirdSpiMaster',
-                                                      ['controller'], ['controller'],
-                                                      ['electronics_model.test_bundle_netlist.TestFakeSpiMaster']))
-    self.assertEqual(net.blocks['peripheral1'], FBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R2', '', 'WeirdSpiSlave',
-                                                       ['peripheral1'], ['peripheral1'],
-                                                       ['electronics_model.test_bundle_netlist.TestFakeSpiSlave']))
-    self.assertEqual(net.blocks['peripheral2'], FBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R3', '', 'WeirdSpiSlave',
-                                                       ['peripheral2'], ['peripheral2'],
-                                                       ['electronics_model.test_bundle_netlist.TestFakeSpiSlave']))
+    self.assertEqual(net.blocks['controller'], FBlock(
+      'Resistor_SMD:R_Array_Concave_2x0603', 'R1', '', 'WeirdSpiController',
+      ['controller'], ['controller'], ['electronics_model.test_bundle_netlist.TestFakeSpiController']))
+    self.assertEqual(net.blocks['peripheral1'], FBlock(
+      'Resistor_SMD:R_Array_Concave_2x0603', 'R2', '', 'WeirdSpiPeripheral',
+      ['peripheral1'], ['peripheral1'], ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']))
+    self.assertEqual(net.blocks['peripheral2'], FBlock(
+      'Resistor_SMD:R_Array_Concave_2x0603', 'R3', '', 'WeirdSpiPeripheral',
+      ['peripheral2'], ['peripheral2'], ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']))
 
   def test_uart_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestUartCircuit)

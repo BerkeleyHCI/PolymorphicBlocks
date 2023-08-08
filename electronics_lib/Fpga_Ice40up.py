@@ -285,7 +285,7 @@ class Ice40up(Fpga, IoController):
 
       # this defaults to flash programming, but to use CRAM programming you can swap the
       # SDI/SDO pins on the debug probe and disconnect the CS line
-      self.spi_merge = self.Block(MergedSpiMaster()).connected_from(self.ic.spi_config, self.prog.spi)
+      self.spi_merge = self.Block(MergedSpiController()).connected_from(self.ic.spi_config, self.prog.spi)
       self.connect(self.spi_merge.out, self.mem.spi)
       self.connect(self.ic.spi_config_cs, self.prog.cs)
       (self.cs_jmp, ), _ = self.chain(self.ic.spi_config_cs, self.Block(DigitalJumper()), self.mem.cs)
