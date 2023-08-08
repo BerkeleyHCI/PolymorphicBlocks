@@ -123,15 +123,11 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      mcu_dvp = self.mcu.with_mixin(IoControllerDvp8())
-
       self.cam = imp.Block(Ov2640_Fpc24())
       self.connect(self.cam.pwr, self.v3v3)
       self.connect(self.cam.pwr_analog, self.v2v5)
       self.connect(self.cam.pwr_digital, self.v1v2)
-
-      self.connect(mcu_dvp.dvp8.request('cam'), self.cam.dvp8)
-
+      self.connect(self.mcu.with_mixin(IoControllerDvp8()).dvp8.request('cam'), self.cam.dvp8)
       self.connect(self.cam.sio, self.i2c)
 
     # VBATT DOMAIN
