@@ -7,7 +7,7 @@ from .test_robotdriver import LedConnector, PwmConnector
 
 class FoxProject(JlcBoardTop):
   """Codename: fox"""
-  SERVO_COUNT = 3
+  SERVO_COUNT = 5
   def contents(self) -> None:
     super().contents()
 
@@ -65,10 +65,7 @@ class FoxProject(JlcBoardTop):
         self.i2c, imp.Block(I2cPullup()))
 
       (self.led, ), _ = self.chain(imp.Block(IndicatorLed(Led.Yellow)), self.mcu.gpio.request('led'))
-
-      self.sw = ElementDict[DigitalSwitch]()
-      for i in range(3):
-        (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw'))
 
       self.epd = imp.Block(Er_Epd027_2(compatibility=True))
       self.connect(self.v3v3, self.epd.pwr)
