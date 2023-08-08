@@ -11,8 +11,8 @@ class IdealIoController(IoControllerDac, IoControllerCan, IoControllerUsb, IoCon
     def __init__(self) -> None:
         super().__init__()
         self.generator_param(self.adc.requested(), self.dac.requested(), self.gpio.requested(), self.spi.requested(),
-                             self.i2c.requested(), self.uart.requested(), self.usb.requested(), self.can.requested(),
-                             self.i2s.requested())
+                             self.spi_peripheral.requested(), self.i2c.requested(), self.i2c_target.requested(),
+                             self.uart.requested(), self.usb.requested(), self.can.requested(), self.i2s.requested())
 
     def generate(self) -> None:
         self.pwr.init_from(VoltageSink(
