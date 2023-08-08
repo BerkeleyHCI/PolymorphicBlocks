@@ -10,30 +10,30 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
     super().__init__(**kwargs)
 
     self.pwr = self.Port(VoltageSink(
-      voltage_limits=(1.62, 3.63)*Volt,  # Table 627
-      current_draw=(1.2, 4.3)*mAmp + self.io_current_draw.upper()  # Table 628
+      voltage_limits=(1.62, 3.63)*Volt,  # Table 628
+      current_draw=(1.2, 4.3)*mAmp + self.io_current_draw.upper()  # Table 629
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
     # note: IOVDD is self.pwr
     self.dvdd = self.Port(VoltageSink(  # Digital Core
-      voltage_limits=(0.99, 1.21)*Volt,  # Table 627
-      current_draw=(0.18, 40)*mAmp,  # Table 628 typ Dormant to Figure 171 approx max DVdd
+      voltage_limits=(0.99, 1.21)*Volt,  # Table 628
+      current_draw=(0.18, 40)*mAmp,  # Table 629 typ Dormant to Figure 171 approx max DVdd
     ))
     self.vreg_vout = self.Port(VoltageSource(  # actually adjustable, section 2.10.3
       voltage_out=1.1*Volt(tol=0.03),  # default is 1.1v nominal with 3% variation (Table 192)
       current_limits=(0, 100)*mAmp  # Table 1, max current
     ))
     self.vreg_vin = self.Port(VoltageSink(
-      voltage_limits=(1.62, 3.63)*Volt,  # Table 627
+      voltage_limits=(1.62, 3.63)*Volt,  # Table 628
       current_draw=self.vreg_vout.is_connected().then_else(self.vreg_vout.link().current_drawn, 0*Amp(tol=0)),
     ))
     self.usb_vdd = self.Port(VoltageSink(
       voltage_limits=RangeExpr(),  # depends on if USB is needed
-      current_draw=(0.2, 2.0)*mAmp,  # Table 628 typ BOOTSEL Idle to max BOOTSEL Active
+      current_draw=(0.2, 2.0)*mAmp,  # Table 629 typ BOOTSEL Idle to max BOOTSEL Active
     ))
     self.adc_avdd = self.Port(VoltageSink(
-      voltage_limits=(1.62, 3.63)*Volt,  # Table 627, performance compromised <2.97V
+      voltage_limits=(2.97, 3.63)*Volt,  # Table 628, performance compromised at <2.97V, lowest 1.62V
       # current draw not specified in datasheet
     ))
 
@@ -54,7 +54,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
     super().contents()
 
     # Port models
-    self._dio_ft_model = DigitalBidir.from_supply(  # Table 623
+    self._dio_ft_model = DigitalBidir.from_supply(  # Table 624
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-12, 12)*mAmp,  # by IOH / IOL modes
