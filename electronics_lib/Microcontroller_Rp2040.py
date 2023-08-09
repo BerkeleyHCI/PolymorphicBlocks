@@ -45,7 +45,8 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
                                         voltage_out=self.pwr.link().voltage),
                           optional=True)
 
-    self.swd = self.Port(SwdTargetPort().empty())
+    self.swd = self.Port(SwdTargetPort.empty())
+    self.run = self.Port(DigitalSink.empty())
     self._io_ports.insert(0, self.swd)
 
   def contents(self) -> None:
@@ -79,6 +80,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
 
       '24': self.swd.swclk,
       '25': self.swd.swdio,
+      '26': self.run,
 
       '19': self.gnd,  # TESTEN, connect to gnd
 
@@ -190,7 +192,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
       }),
 
       PeripheralFixedPin('SWD', SwdTargetPort(self._dio_std_model), {
-        'swdio': '25', 'swclk': '24', 'reset': '26',  # reset is 'run'
+        'swdio': '25', 'swclk': '24',
       }),
     ])
 
@@ -248,6 +250,7 @@ class Rp2040(IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnecto
       self.ic = imp.Block(Rp2040_Device(pin_assigns=ArrayStringExpr()))
       self.connect(self.xtal_node, self.ic.xosc)
       self.connect(self.swd_node, self.ic.swd)
+      self.connect(self.reset_node, self.ic.run)
 
       self.iovdd_cap = ElementDict[DecouplingCapacitor]()
       for i in range(6):  # one per IOVdd, combining USBVdd and IOVdd pin 49 per the example

@@ -204,7 +204,7 @@ class Nrf52840_Base(Nrf52840_Ios, IoControllerPowerRequired, InternalSubcircuit,
     self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.pwr.link().voltage),
                               optional=True)
 
-    self.swd = self.Port(SwdTargetPort().empty())
+    self.swd = self.Port(SwdTargetPort.empty())
     self.nreset = self.Port(DigitalSink.empty())
     self._io_ports.insert(0, self.swd)
 

@@ -33,7 +33,7 @@ class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, Base
     self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.pwr.link().voltage),
                               optional=True)
 
-    self.swd = self.Port(SwdTargetPort().empty())
+    self.swd = self.Port(SwdTargetPort.empty())
     self.reset = self.Port(DigitalSink.empty())  # internally pulled up, TODO disable-able and assignable as GPIO
     self._io_ports.insert(0, self.swd)
 

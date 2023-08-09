@@ -40,7 +40,8 @@ class Stm32f103Base_Device(IoControllerCan, IoControllerUsb, InternalSubcircuit,
                                        voltage_out=self.pwr.link().voltage),
                          optional=True)  # Table 22
 
-    self.swd = self.Port(SwdTargetPort().empty())
+    self.swd = self.Port(SwdTargetPort.empty())
+    self.nrst = self.Port(DigitalSink.empty())
     self._io_ports.insert(0, self.swd)
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
@@ -53,6 +54,7 @@ class Stm32f103Base_Device(IoControllerCan, IoControllerUsb, InternalSubcircuit,
       'BOOT0': self.gnd,
       'OSC_IN': self.osc.xtal_in,  # TODO remappable to PD0
       'OSC_OUT': self.osc.xtal_out,  # TODO remappable to PD1
+      'NRST': self.nrst,
     }).remap(self.SYSTEM_PIN_REMAP)
 
   def _io_pinmap(self) -> PinMapUtil:
@@ -163,7 +165,7 @@ class Stm32f103Base_Device(IoControllerCan, IoControllerUsb, InternalSubcircuit,
         'dm': ['PA11'], 'dp': ['PA12']
       }),
       PeripheralFixedPin('SWD', SwdTargetPort(dio_std_model), {  # TODO most are FT pins
-        'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST'  # note: SWO is PB3
+        'swdio': 'PA13', 'swclk': 'PA14',  # note: SWO is PB3
       }),
       PeripheralFixedResource('I2C1', i2c_model, {
         'scl': ['PB6', 'PB8'], 'sda': ['PB7', 'PB9']
@@ -196,12 +198,12 @@ class Stm32f103_48_Device(Stm32f103Base_Device):
     'BOOT0': '44',
     'OSC_IN': '5',
     'OSC_OUT': '6',
+    'NRST': '7',
   }
   RESOURCE_PIN_REMAP = {
     'PC13': '2',
     'PC14': '3',
     'PC15': '4',
-    'NRST': '7',
 
     'PA0': '10',
     'PA1': '11',
@@ -280,6 +282,7 @@ class Stm32f103Base(IoControllerCan, IoControllerUsb, Microcontroller, IoControl
       self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
       self.connect(self.xtal_node, self.ic.osc)
       self.connect(self.swd_node, self.ic.swd)
+      self.connect(self.reset_node, self.ic.nrst)
 
       self.pwr_cap = ElementDict[DecouplingCapacitor]()
       # one 0.1uF cap each for Vdd1-5 and one bulk 4.7uF cap
