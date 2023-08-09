@@ -34,6 +34,7 @@ from .ResistiveDivider import ResistiveDivider, VoltageDivider, VoltageSenseDivi
 from .ResistiveDivider import FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, DigitalLowPassRcArray, LowPassRcDac, PullupDelayRc
 from .I2cPullup import I2cPullup
+from .Resetable import Resetable
 
 from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardFootprint, TableDiode
 from .AbstractDiodes import ZenerDiode, TableZenerDiode, ProtectionZenerDiode
@@ -54,7 +55,7 @@ from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, Inte
 from .AbstractSpiMemory import SpiMemory
 from .OpampCurrentSensor import OpampCurrentSensor
 from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet, OpenDrainDriver
-from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnable, VoltageRegulatorEnableWrapper
+from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnableWrapper
 from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath

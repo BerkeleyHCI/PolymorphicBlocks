@@ -40,7 +40,7 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch"""
-  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+  def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
   def contents(self):
@@ -122,14 +122,14 @@ class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Tps54202h(VoltageRegulatorEnable, DiscreteBuckConverter, GeneratorBlock):
+class Tps54202h(Resetable, DiscreteBuckConverter, GeneratorBlock):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch, 4.5-24v capable
   Note: TPS54202 has frequency spread-spectrum operation and internal pull-up on EN
   TPS54202H has no internal EN pull-up but a Zener diode clamp to limit voltage.
   """
   def contents(self):
     super().contents()
-    self.generator_param(self.enable.is_connected())
+    self.generator_param(self.reset.is_connected())
 
     self.assign(self.frequency, (390, 590)*kHertz)
 
@@ -169,8 +169,8 @@ class Tps54202h(VoltageRegulatorEnable, DiscreteBuckConverter, GeneratorBlock):
 
   def generate(self):
     super().generate()
-    if self.get(self.enable.is_connected()):
-      self.connect(self.enable, self.ic.en)
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.en)
     else:  # by default tie high to enable regulator
       # an internal 6.9v Zener clamps the enable voltage, datasheet recommends at 510k resistor
       # a pull-up resistor isn't used because

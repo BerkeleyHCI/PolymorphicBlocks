@@ -174,7 +174,7 @@ class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
 class Ap2204k(VoltageRegulatorEnableWrapper, LinearRegulator):
   """AP2204K block providing the LinearRegulator interface and optional enable (tied high if not connected).
   """
-  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+  def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
   def contents(self):
@@ -313,7 +313,7 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
 class Xc6209(VoltageRegulatorEnableWrapper, LinearRegulator):
   """XC6209F (F: 300mA version, no pull-down resistor; 2: +/-2% accuracy)
   Low-ESR ceramic cap compatible"""
-  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+  def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.ce
 
   def contents(self) -> None:
@@ -384,7 +384,7 @@ class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
 class Ap2210(VoltageRegulatorEnableWrapper, LinearRegulator):
   """AP2210 RF ULDO in SOT-23-5 with high PSRR and high(er) voltage tolerant.
   """
-  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+  def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
   def contents(self) -> None:
@@ -466,7 +466,7 @@ class Lp5907(VoltageRegulatorEnableWrapper, LinearRegulator):
   - AP139
   - TCR2EF
   """
-  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+  def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
   def contents(self) -> None:
