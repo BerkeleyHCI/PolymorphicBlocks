@@ -41,7 +41,6 @@ class Stm32f103Base_Device(IoControllerCan, IoControllerUsb, InternalSubcircuit,
                          optional=True)  # Table 22
 
     self.swd = self.Port(SwdTargetPort.empty())
-    self.nrst = self.Port(DigitalSink.empty())
     self._io_ports.insert(0, self.swd)
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:

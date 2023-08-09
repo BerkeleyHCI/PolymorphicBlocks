@@ -144,6 +144,7 @@ class SwdDebugger(JlcBoardTop):
       self.target = imp.Block(SwdCortexSourceHeader())
       self.connect(self.target_drv.swd, self.target.swd)
       self.connect(self.target_drv.swo_in, self.target.swo)
+      self.connect(self.target_drv.reset_out, self.target.reset)
 
       self.led_target = imp.Block(VoltageIndicatorLed(Led.Green))
       (self.target_sense, ), _ = self.chain(

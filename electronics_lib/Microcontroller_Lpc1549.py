@@ -93,6 +93,7 @@ class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, Base
       impedance=(300, 300) * Ohm  # Table 25, "typical" rating
     )
 
+    self.reset.init_from(dio_5v_model)
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiController(DigitalBidir.empty())
     spi_peripheral_model = SpiPeripheral(DigitalBidir.empty())  # MISO driven when CS asserted

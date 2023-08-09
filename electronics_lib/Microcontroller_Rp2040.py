@@ -53,7 +53,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
     super().contents()
 
     # Port models
-    self._dio_ft_model = DigitalBidir.from_supply(  # Table 623
+    self._dio_ft_model = DigitalBidir.from_supply(  # Table 624
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-12, 12)*mAmp,  # by IOH / IOL modes
@@ -64,6 +64,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
 
     self.qspi.init_from(SpiController(self._dio_std_model))
     self.qspi_cs.init_from(self._dio_std_model)
+    self.run.init_from(self._dio_ft_model)
 
   # Pin/peripheral resource definitions (table 3)
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
