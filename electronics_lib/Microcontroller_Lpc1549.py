@@ -93,7 +93,7 @@ class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, Base
       impedance=(300, 300) * Ohm  # Table 25, "typical" rating
     )
 
-    self.reset.init_from(dio_5v_model)
+    self.reset.init_from(DigitalSink.from_bidir(dio_5v_model))
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiController(DigitalBidir.empty())
     spi_peripheral_model = SpiPeripheral(DigitalBidir.empty())  # MISO driven when CS asserted
@@ -335,15 +335,16 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Lpc1549Base(IoControllerDac, IoControllerCan, IoControllerUsb, Microcontroller,
+class Lpc1549Base(Resetable, IoControllerDac, IoControllerCan, IoControllerUsb, Microcontroller,
                   IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoControllerPowerRequired,
-                  BaseIoControllerExportable):
+                  BaseIoControllerExportable, GeneratorBlock):
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic: Lpc1549Base_Device
+    self.generator_param(self.reset.is_connected())
 
   def contents(self):
     super().contents()
@@ -375,6 +376,10 @@ class Lpc1549Base(IoControllerDac, IoControllerCan, IoControllerUsb, Microcontro
       self.vref_cap[0] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+
+  def generate(self):
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.reset)
 
   def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
     return len(self.get(self.can.requested())) > 0 or len(self.get(self.usb.requested())) > 0 \

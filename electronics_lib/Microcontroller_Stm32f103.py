@@ -262,14 +262,15 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Stm32f103Base(IoControllerCan, IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnector,
-                    WithCrystalGenerator, IoControllerPowerRequired, BaseIoControllerExportable):
+class Stm32f103Base(Resetable, IoControllerCan, IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnector,
+                    WithCrystalGenerator, IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic: Stm32f103Base_Device
+    self.generator_param(self.reset.is_connected())
 
   def contents(self):
     super().contents()
@@ -292,6 +293,10 @@ class Stm32f103Base(IoControllerCan, IoControllerUsb, Microcontroller, IoControl
       # one 10nF and 1uF cap for VddA TODO generate the same cap if a different Vref is used
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
+
+  def generate(self):
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.nrst)
 
   def _make_export_io(self, self_io: Port, inner_io: Port):
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates

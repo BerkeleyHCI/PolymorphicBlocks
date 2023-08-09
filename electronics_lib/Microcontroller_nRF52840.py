@@ -263,14 +263,15 @@ class Holyiot_18010_Device(Nrf52840_Base):
     )
 
 
-class Holyiot_18010(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
-                    IoControllerPowerRequired, BaseIoControllerExportable):
+class Holyiot_18010(Microcontroller, Radiofrequency, Resetable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
+                    IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic: Holyiot_18010_Device
     self.ic = self.Block(Holyiot_18010_Device(pin_assigns=ArrayStringExpr()))
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
+    self.generator_param(self.reset.is_connected())
 
   def contents(self):
     super().contents()
@@ -280,6 +281,9 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoCont
     self.connect(self.swd_node, self.ic.swd)
     self.connect(self.reset_node, self.ic.nreset)
 
+  def generate(self):
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.nreset)
 
 class Mdbt50q_1mv2_Device(Nrf52840_Base, JlcPart):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
@@ -371,14 +375,15 @@ class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
     self.connect(self.usb_outer.dm, self.res_dm.b.adapt_to(DigitalBidir()))
 
 
-class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
-                   IoControllerPowerRequired, BaseIoControllerExportable):
+class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resetable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
+                   IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic: Mdbt50q_1mv2_Device
     self.ic = self.Block(Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr()))  # defined in generator to mix in SWO/TDI
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
+    self.generator_param(self.reset.is_connected())
 
   def contents(self) -> None:
     super().contents()
@@ -393,6 +398,10 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoContr
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+
+  def generate(self):
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.nreset)
 
   def _make_export_io(self, self_io: Port, inner_io: Port):
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates

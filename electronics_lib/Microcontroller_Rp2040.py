@@ -64,7 +64,7 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
 
     self.qspi.init_from(SpiController(self._dio_std_model))
     self.qspi_cs.init_from(self._dio_std_model)
-    self.run.init_from(self._dio_ft_model)
+    self.run.init_from(DigitalSink.from_bidir(self._dio_ft_model))
 
   # Pin/peripheral resource definitions (table 3)
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
@@ -232,13 +232,14 @@ class Rp2040Usb(InternalSubcircuit, Block):
       UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
 
 
-class Rp2040(IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator,
-             IoControllerPowerRequired, BaseIoControllerExportable):
+class Rp2040(Resetable, IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator,
+             IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic: Rp2040_Device
+    self.generator_param(self.reset.is_connected())
 
   def contents(self) -> None:
     super().contents()
@@ -272,6 +273,10 @@ class Rp2040(IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnecto
       self.dvdd_cap[i] = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
 
     self.vreg_out_cap = self.Block(DecouplingCapacitor(1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
+
+  def generate(self):
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.run)
 
   def _make_export_io(self, self_io: Port, inner_io: Port):
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
