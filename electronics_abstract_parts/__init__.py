@@ -63,7 +63,8 @@ from .AbstractLedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConver
 from .AbstractFuse import Fuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
 from .AbstractOscillator import Oscillator, TableOscillator
-from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetWithSwoTdiConnector
+from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConnectorReset, \
+    SwdCortexTargetConnectorSwo, SwdCortexTargetConnectorTdi
 from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, AnalogTestPoint
 from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint
 from .AbstractJumper import Jumper, DigitalJumper

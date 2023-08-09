@@ -10,6 +10,7 @@ class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
     self.swd = self.Port(SwdTargetPort.empty(), [Input])
+    self.reset = self.Port(DigitalSink.empty(), optional=True)
     self.swo = self.Port(DigitalBidir.empty(), optional=True)
     self.tdi = self.Port(DigitalBidir.empty(), optional=True)
 
@@ -25,7 +26,7 @@ class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
     self.connect(self.swd.swclk, self.conn.pins.request('4').adapt_to(DigitalSink()))
     self.connect(self.swo, self.conn.pins.request('6').adapt_to(DigitalBidir()))
     self.connect(self.tdi, self.conn.pins.request('8').adapt_to(DigitalBidir()))
-    self.connect(self.swd.reset, self.conn.pins.request('10').adapt_to(DigitalSink()))
+    self.connect(self.reset, self.conn.pins.request('10').adapt_to(DigitalSink()))
 
 
 class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
@@ -35,6 +36,7 @@ class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
     self.swd = self.Port(SwdTargetPort.empty(), [Input])
+    self.reset = self.Port(DigitalSink.empty(), optional=True)
     self.swo = self.Port(DigitalBidir.empty(), optional=True)
 
   def contents(self):
@@ -43,7 +45,7 @@ class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
     self.conn = self.Block(PinHeader254DualShroudedInline(6))
     self.connect(self.pwr, self.conn.pins.request('1').adapt_to(VoltageSink()))
     self.connect(self.swd.swdio, self.conn.pins.request('2').adapt_to(DigitalBidir()))  # also TMS
-    self.connect(self.swd.reset, self.conn.pins.request('3').adapt_to(DigitalSink()))
+    self.connect(self.reset, self.conn.pins.request('3').adapt_to(DigitalSink()))
     self.connect(self.swd.swclk, self.conn.pins.request('4').adapt_to(DigitalSink()))
     self.connect(self.gnd, self.conn.pins.request('5').adapt_to(Ground()))
     self.connect(self.swo, self.conn.pins.request('6').adapt_to(DigitalBidir()))
@@ -56,6 +58,7 @@ class SwdSourceBitBang(InternalSubcircuit, Block):
     self.swclk_in = self.Port(DigitalSink.empty())
     self.swdio_in = self.Port(DigitalSink.empty())  # driving side
     self.swdio_out = self.Port(DigitalSource.empty())  # target side
+    self.reset_out = self.Port(DigitalSource.empty())
     self.swo_out = self.Port(DigitalSource.empty())
 
     self.swd = self.Port(SwdHostPort.empty(), [Output])
@@ -64,15 +67,13 @@ class SwdSourceBitBang(InternalSubcircuit, Block):
   def contents(self) -> None:
     super().contents()
 
-    self.reset_res = self.Block(Resistor(resistance=22*Ohm(tol=0.05)))
     self.swclk_res = self.Block(Resistor(resistance=22*Ohm(tol=0.05)))
     self.swdio_res = self.Block(Resistor(resistance=22*Ohm(tol=0.05)))
     self.swdio_drv_res = self.Block(Resistor(resistance=100*Ohm(tol=0.05)))
 
+    self.reset_res = self.Block(Resistor(resistance=22*Ohm(tol=0.05)))
     self.swo_res = self.Block(Resistor(resistance=22*Ohm(tol=0.05)))
 
-    self.connect(self.reset_res.a.adapt_to(DigitalSink()), self.reset_in)
-    self.connect(self.reset_res.b.adapt_to(DigitalSource()), self.swd.reset)
     self.connect(self.swclk_res.a.adapt_to(DigitalSink()), self.swclk_in)
     self.connect(self.swclk_res.b.adapt_to(DigitalSource()), self.swd.swclk)
     self.connect(self.swdio_drv_res.a.adapt_to(DigitalSink()), self.swdio_in)
@@ -80,6 +81,9 @@ class SwdSourceBitBang(InternalSubcircuit, Block):
                  self.swdio_drv_res.b.adapt_to(DigitalBidir()),
                  self.swdio_out)
     self.connect(self.swdio_res.b.adapt_to(DigitalSink()), self.swd.swdio)
+
+    self.connect(self.reset_res.a.adapt_to(DigitalSink()), self.reset_in)
+    self.connect(self.reset_res.b.adapt_to(DigitalSource()), self.reset_out)
     self.connect(self.swo_res.a.adapt_to(DigitalSource()), self.swo_out)
     self.connect(self.swo_res.b.adapt_to(DigitalSink()), self.swo_in)
 
