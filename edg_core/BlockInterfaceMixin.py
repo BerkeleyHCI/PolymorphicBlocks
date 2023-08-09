@@ -56,7 +56,7 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
                 mixin_base = bcls_args[0]
         if mixin_base is None:
             raise BlockDefinitionError(cls, "no mixin base defined")
-        if (mixin_base, AbstractBlockProperty) not in mixin_base._elt_properties:
+        if (mixin_base, AbstractBlockProperty) not in mixin_base._elt_properties and mixin_base is not Block:
             raise BlockDefinitionError(cls, "mixin base must be abstract")
         return mixin_base
 
