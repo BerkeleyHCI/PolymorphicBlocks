@@ -295,6 +295,8 @@ class Stm32f103Base(Resetable, IoControllerCan, IoControllerUsb, Microcontroller
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
   def generate(self):
+    super().generate()
+
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.nrst)
 

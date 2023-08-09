@@ -400,6 +400,8 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resetable, Nrf52840_Interfac
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
   def generate(self):
+    super().generate()
+
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.nreset)
 
