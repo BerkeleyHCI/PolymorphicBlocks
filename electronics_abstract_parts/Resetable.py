@@ -8,6 +8,8 @@ class Resetable(BlockInterfaceMixin[Block]):
     When disconnected (mixin not used or port not connected), reset circuitry is automatically generated if needed.
     When connected, no additional reset circuitry is generated and the system designer is responsible for providing
     appropriate reset signals.
+    Note that some chips have built-in pull-ups on their reset lines, these are not affected, but no external reset
+    circuitry will be generated.
 
     Devices may optionally require the reset pin where a power-on reset pulse is required and tying / pulling the
     pin high is insufficient.
