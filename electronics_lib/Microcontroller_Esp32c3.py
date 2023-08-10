@@ -145,9 +145,14 @@ class Esp32c3_Wroom02_Device(Esp32c3_Base, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, False)
 
 
-class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Esp32c3_Interfaces, IoControllerPowerRequired,
-                      BaseIoControllerExportable):
+class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resetable, Esp32c3_Interfaces,
+                      IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header."""
+  def __init__(self):
+    super().__init__()
+    self.ic: Esp32c3_Wroom02_Device
+    self.generator_param(self.reset.is_connected())
+
   def contents(self) -> None:
     super().contents()
 
@@ -166,7 +171,16 @@ class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Esp32c
       # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
       # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
       # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
-      self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.en)
       vdd_pull = self.pwr.as_digital_source()
       self.connect(self.ic.io8, vdd_pull)
       self.connect(self.ic.io2, vdd_pull)
+
+
+  def generate(self) -> None:
+    super().generate()
+
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.en)
+    else:
+      self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(
+        gnd=self.gnd, pwr=self.pwr, io=self.ic.en)

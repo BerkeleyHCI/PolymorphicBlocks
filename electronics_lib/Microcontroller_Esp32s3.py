@@ -235,10 +235,15 @@ class Esp32s3_Wroom_1_Device(Esp32s3_Base, IoControllerPowerRequired, FootprintB
     )
 
 
-class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Esp32s3_Interfaces, IoControllerPowerRequired,
-                      BaseIoControllerExportable):
+class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Resetable, Esp32s3_Interfaces,
+                      IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """ESP32-S3-WROOM-1 module
   """
+  def __init__(self):
+    super().__init__()
+    self.ic: Esp32s3_Wroom_1_Device
+    self.generator_param(self.reset.is_connected())
+
   def contents(self) -> None:
     super().contents()
 
@@ -254,7 +259,15 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Esp32s
       self.vcc_cap0 = imp.Block(DecouplingCapacitor(22 * uFarad(tol=0.2)))  # C1
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
-      self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
+
+  def generate(self) -> None:
+    super().generate()
+
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.chip_pu)
+    else:
+      self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(
+        gnd=self.gnd, pwr=self.pwr, io=self.ic.chip_pu)
 
 
 class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_Ios, IoController, GeneratorBlock,

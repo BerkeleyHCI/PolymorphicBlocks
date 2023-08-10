@@ -41,18 +41,23 @@ class PullupDelayRc(DigitalFilter, Block):
   @init_in_parent
   def __init__(self, impedance: RangeLike, time_constant: RangeLike):
     super().__init__()
-    self.input = self.Port(VoltageSink.empty(), [Power])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.time_constant = self.ArgParameter(time_constant)
 
     self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=1/(2 * pi * self.time_constant),
-                                   voltage=self.input.link().voltage))
+                                   voltage=self.pwr.link().voltage))
 
-    self.connect(self.input, self.rc.input.adapt_to(VoltageSink()))
-    self.io = self.Export(self.rc.output.adapt_to(DigitalSingleSource.high_from_supply(self.input)), [Output])
+    self.connect(self.pwr, self.rc.input.adapt_to(VoltageSink()))
+    self.io = self.Export(self.rc.output.adapt_to(DigitalSingleSource.high_from_supply(self.pwr)), [Output])
     self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
 
-  def connected(self, io: Optional[Port[DigitalLink]] = None) -> 'PullupDelayRc':
+  def connected(self, *, gnd: Optional[Port[VoltageLink]] = None, pwr: Optional[Port[VoltageLink]] = None,
+                io: Optional[Port[DigitalLink]] = None) -> 'PullupDelayRc':
     """Convenience function to connect both ports, returning this object so it can still be given a name."""
+    if gnd is not None:
+      cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+    if pwr is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr, self.pwr)
     if io is not None:
       cast(Block, builder.get_enclosing_block()).connect(io, self.io)
     return self

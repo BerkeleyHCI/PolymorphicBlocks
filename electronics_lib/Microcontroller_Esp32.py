@@ -231,11 +231,16 @@ class Esp32_Wroom_32_Device(IoControllerPowerRequired, Esp32_Base, FootprintBloc
     )
 
 
-class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Esp32_Interfaces, IoControllerPowerRequired,
-                     BaseIoControllerExportable):
+class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Resetable, Esp32_Interfaces,
+                     IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
   NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.
   """
+  def __init__(self):
+    super().__init__()
+    self.ic: Esp32_Wroom_32_Device
+    self.generator_param(self.reset.is_connected())
+
   def contents(self) -> None:
     super().contents()
 
@@ -247,12 +252,19 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Esp32_I
       self.connect(self.program_uart_node, self.ic.uart0)
       self.connect(self.program_en_node, self.ic.chip_pu)
       self.connect(self.program_boot_node, self.ic.io0)
+      # strapping pins are by default pulled to SPI boot, and can be reconfigured to download boot
 
       self.vcc_cap0 = imp.Block(DecouplingCapacitor(22 * uFarad(tol=0.2)))  # C1
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
-      # strapping pins are by default pulled to SPI boot, and can be reconfigured to download boot
-      self.en_pull = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.ic.chip_pu)
+  def generate(self) -> None:
+    super().generate()
+
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.chip_pu)
+    else:
+      self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(
+        gnd=self.gnd, pwr=self.pwr, io=self.ic.chip_pu)
 
 
 class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios, IoController, GeneratorBlock,
