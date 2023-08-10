@@ -39,7 +39,6 @@ class RobotCrawlerSpec(BoardTop):
     for i in range(self.SERVO_COUNT):
       self.servos[str(i)] = self.Block(ServoFeedbackConnector())
     self.imu = self.Block(Imu_Lsm6ds3trc())
-    self.compass = self.Block(Mag_Qmc5883l())
 
     self.servos_cam = ElementDict[ServoFeedbackConnector]()
     for i in range(self.SERVO_CAM_COUNT):
@@ -101,11 +100,11 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
-      self.connect(self.i2c, self.imu.i2c, self.compass.i2c,
+      self.connect(self.i2c, self.imu.i2c,
                    self.mcu_servo.i2c_target.request(), self.mcu_test.i2c_target.request())
 
-      self.connect(self.v3v3, self.imu.vdd, self.imu.vddio, self.compass.vdd)
-      self.connect(self.gnd, self.imu.gnd, self.compass.gnd)
+      self.connect(self.v3v3, self.imu.vdd, self.imu.vddio)
+      self.connect(self.gnd, self.imu.gnd)
 
       (self.led, ), _ = self.chain(self.mcu.gpio.request('led'), imp.Block(IndicatorLed(Led.Yellow)))
 
