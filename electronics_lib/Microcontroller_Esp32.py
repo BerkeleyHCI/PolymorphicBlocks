@@ -231,7 +231,7 @@ class Esp32_Wroom_32_Device(IoControllerPowerRequired, Esp32_Base, FootprintBloc
     )
 
 
-class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Resetable, Esp32_Interfaces,
+class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Esp32_Interfaces,
                      IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
   NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.

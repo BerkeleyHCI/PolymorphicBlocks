@@ -122,7 +122,7 @@ class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Tps54202h(Resetable, DiscreteBuckConverter, GeneratorBlock):
+class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch, 4.5-24v capable
   Note: TPS54202 has frequency spread-spectrum operation and internal pull-up on EN
   TPS54202H has no internal EN pull-up but a Zener diode clamp to limit voltage.

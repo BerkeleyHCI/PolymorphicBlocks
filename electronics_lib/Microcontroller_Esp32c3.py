@@ -145,7 +145,7 @@ class Esp32c3_Wroom02_Device(Esp32c3_Base, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, False)
 
 
-class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resetable, Esp32c3_Interfaces,
+class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Esp32c3_Interfaces,
                       IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header."""
   def __init__(self):

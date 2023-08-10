@@ -34,7 +34,7 @@ from .ResistiveDivider import ResistiveDivider, VoltageDivider, VoltageSenseDivi
 from .ResistiveDivider import FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, DigitalLowPassRcArray, LowPassRcDac, PullupDelayRc
 from .I2cPullup import I2cPullup
-from .Resetable import Resetable
+from .Resettable import Resettable
 
 from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardFootprint, TableDiode
 from .AbstractDiodes import ZenerDiode, TableZenerDiode, ProtectionZenerDiode

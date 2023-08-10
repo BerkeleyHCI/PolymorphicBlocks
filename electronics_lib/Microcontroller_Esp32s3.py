@@ -235,7 +235,7 @@ class Esp32s3_Wroom_1_Device(Esp32s3_Base, IoControllerPowerRequired, FootprintB
     )
 
 
-class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Resetable, Esp32s3_Interfaces,
+class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Esp32s3_Interfaces,
                       IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """ESP32-S3-WROOM-1 module
   """

@@ -4,7 +4,7 @@ from electronics_model import *
 from .Categories import *
 from .AbstractCapacitor import DecouplingCapacitor
 from .AbstractInductor import Inductor
-from .Resetable import Resetable
+from .Resettable import Resettable
 
 
 @abstract_block_default(lambda: IdealVoltageRegulator)
@@ -34,7 +34,7 @@ class VoltageRegulator(PowerConditioner):
                  "Output voltage must be within spec")
 
 
-class VoltageRegulatorEnableWrapper(Resetable, VoltageRegulator, GeneratorBlock):
+class VoltageRegulatorEnableWrapper(Resettable, VoltageRegulator, GeneratorBlock):
   """Implementation mixin for a voltage regulator wrapper block where the inner device has a reset/enable pin
   (active-high enable / active-low shutdown) that is automatically tied high if not externally connected.
   Mix this into a VoltageRegulator to automatically handle the reset pin."""
@@ -65,7 +65,7 @@ class VoltageReference(LinearRegulator):
   """Voltage reference, generally provides high accuracy but limited current"""
 
 
-class IdealLinearRegulator(Resetable, LinearRegulator, IdealModel):
+class IdealLinearRegulator(Resettable, LinearRegulator, IdealModel):
   """Ideal linear regulator, draws the output current and produces spec output voltage limited by input voltage"""
   def contents(self):
     super().contents()
@@ -167,7 +167,7 @@ class DiscreteBuckConverter(BuckConverter):
   """Category for discrete buck converter subcircuits (as opposed to integrated components)"""
 
 
-class IdealBuckConverter(Resetable, DiscreteBuckConverter, IdealModel):
+class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
   """Ideal buck converter producing the spec output voltage (buck-boost) limited by input voltage
   and drawing input current from conversation of power"""
   def contents(self):
@@ -328,7 +328,7 @@ class DiscreteBoostConverter(BoostConverter):
   """Category for discrete boost converter subcircuits (as opposed to integrated components)"""
 
 
-class IdealBoostConverter(Resetable, DiscreteBoostConverter, IdealModel):
+class IdealBoostConverter(Resettable, DiscreteBoostConverter, IdealModel):
   """Ideal boost converter producing the spec output voltage (buck-boost) limited by input voltage
   and drawing input current from conversation of power"""
   def contents(self):
@@ -479,7 +479,7 @@ class DiscreteBuckBoostConverter(BuckBoostConverter):
   """Category for discrete buck-boost converter subcircuits (as opposed to integrated components)"""
 
 
-class IdealVoltageRegulator(Resetable, DiscreteBuckBoostConverter, IdealModel):
+class IdealVoltageRegulator(Resettable, DiscreteBuckBoostConverter, IdealModel):
   """Ideal buck-boost / general DC-DC converter producing the spec output voltage
   and drawing input current from conversation of power"""
   def contents(self):

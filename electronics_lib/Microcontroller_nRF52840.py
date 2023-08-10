@@ -263,7 +263,7 @@ class Holyiot_18010_Device(Nrf52840_Base):
     )
 
 
-class Holyiot_18010(Microcontroller, Radiofrequency, Resetable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
+class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
                     IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
   def __init__(self, **kwargs):
@@ -375,7 +375,7 @@ class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
     self.connect(self.usb_outer.dm, self.res_dm.b.adapt_to(DigitalBidir()))
 
 
-class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resetable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
+class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
                    IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
   def __init__(self, **kwargs):

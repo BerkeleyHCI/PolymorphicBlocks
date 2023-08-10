@@ -335,7 +335,7 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Lpc1549Base(Resetable, IoControllerDac, IoControllerCan, IoControllerUsb, Microcontroller,
+class Lpc1549Base(Resettable, IoControllerDac, IoControllerCan, IoControllerUsb, Microcontroller,
                   IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoControllerPowerRequired,
                   BaseIoControllerExportable, GeneratorBlock):
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore

@@ -125,7 +125,7 @@ class SwdDebugger(JlcBoardTop):
 
       (self.en_pull, ), _ = self.chain(self.mcu.gpio.request('target_reg_en'),
                                        imp.Block(PullupResistor(4.7*kOhm(tol=0.1))),
-                                       self.target_reg.with_mixin(Resetable()).reset)
+                                       self.target_reg.with_mixin(Resettable()).reset)
 
       self.target_drv = imp.Block(SwdSourceBitBang())
       self.connect(self.mcu.gpio.request('target_swclk'), self.target_drv.swclk_in)  # TODO BMP uses pin 15

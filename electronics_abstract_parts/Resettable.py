@@ -1,7 +1,7 @@
 from electronics_model import *
 
 
-class Resetable(BlockInterfaceMixin[Block]):
+class Resettable(BlockInterfaceMixin[Block]):
     """Mixin for all devices that specifies a digital reset pin (active-low reset / active-high enable).
 
     THIS IS AN ADVANCED FEATURE - BE SURE TO UNDERSTAND THE RESET REQUIREMENTS OF DEVICES.
