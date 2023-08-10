@@ -46,7 +46,7 @@ class Ltc3429(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   """Low-input-voltage boost converter (starts as low as 0.85V).
   Pin-compatible with the less-expensive UM3429S"""
   NMOS_CURRENT_LIMIT = 0.6
-  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+  def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.nshdn
 
   def contents(self):

@@ -39,7 +39,7 @@ class Ap3418_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 class Ap3418(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
   """Adjustable synchronous buck converter in SOT-23-5 with integrated switch"""
-  def _generator_inner_enable_pin(self) -> Port[DigitalLink]:
+  def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
   def contents(self):
