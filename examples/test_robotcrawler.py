@@ -94,6 +94,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
       self.mcu_servo = imp.Block(IoController())
+      self.connect(self.mcu.gpio.request('srv_rst'), self.mcu_servo.with_mixin(Resettable()).reset)
       self.mcu_test = imp.Block(IoController())  # test revised subcircuit only
 
       self.i2c = self.mcu.i2c.request('i2c')
