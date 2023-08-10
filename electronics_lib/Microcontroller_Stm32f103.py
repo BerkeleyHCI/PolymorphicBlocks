@@ -40,7 +40,7 @@ class Stm32f103Base_Device(IoControllerCan, IoControllerUsb, InternalSubcircuit,
                                        voltage_out=self.pwr.link().voltage),
                          optional=True)  # Table 22
 
-    self.swd = self.Port(SwdTargetPort().empty())
+    self.swd = self.Port(SwdTargetPort.empty())
     self._io_ports.insert(0, self.swd)
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
@@ -53,6 +53,7 @@ class Stm32f103Base_Device(IoControllerCan, IoControllerUsb, InternalSubcircuit,
       'BOOT0': self.gnd,
       'OSC_IN': self.osc.xtal_in,  # TODO remappable to PD0
       'OSC_OUT': self.osc.xtal_out,  # TODO remappable to PD1
+      'NRST': self.nrst,
     }).remap(self.SYSTEM_PIN_REMAP)
 
   def _io_pinmap(self) -> PinMapUtil:
@@ -163,7 +164,7 @@ class Stm32f103Base_Device(IoControllerCan, IoControllerUsb, InternalSubcircuit,
         'dm': ['PA11'], 'dp': ['PA12']
       }),
       PeripheralFixedPin('SWD', SwdTargetPort(dio_std_model), {  # TODO most are FT pins
-        'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST'  # note: SWO is PB3
+        'swdio': 'PA13', 'swclk': 'PA14',  # note: SWO is PB3
       }),
       PeripheralFixedResource('I2C1', i2c_model, {
         'scl': ['PB6', 'PB8'], 'sda': ['PB7', 'PB9']
@@ -196,12 +197,12 @@ class Stm32f103_48_Device(Stm32f103Base_Device):
     'BOOT0': '44',
     'OSC_IN': '5',
     'OSC_OUT': '6',
+    'NRST': '7',
   }
   RESOURCE_PIN_REMAP = {
     'PC13': '2',
     'PC14': '3',
     'PC15': '4',
-    'NRST': '7',
 
     'PA0': '10',
     'PA1': '11',
@@ -261,14 +262,15 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Stm32f103Base(IoControllerCan, IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnector,
-                    WithCrystalGenerator, IoControllerPowerRequired, BaseIoControllerExportable):
+class Stm32f103Base(Resettable, IoControllerCan, IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnector,
+                    WithCrystalGenerator, IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic: Stm32f103Base_Device
+    self.generator_param(self.reset.is_connected())
 
   def contents(self):
     super().contents()
@@ -280,6 +282,7 @@ class Stm32f103Base(IoControllerCan, IoControllerUsb, Microcontroller, IoControl
       self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
       self.connect(self.xtal_node, self.ic.osc)
       self.connect(self.swd_node, self.ic.swd)
+      self.connect(self.reset_node, self.ic.nrst)
 
       self.pwr_cap = ElementDict[DecouplingCapacitor]()
       # one 0.1uF cap each for Vdd1-5 and one bulk 4.7uF cap
@@ -290,6 +293,12 @@ class Stm32f103Base(IoControllerCan, IoControllerUsb, Microcontroller, IoControl
       # one 10nF and 1uF cap for VddA TODO generate the same cap if a different Vref is used
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
+
+  def generate(self):
+    super().generate()
+
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.nrst)
 
   def _make_export_io(self, self_io: Port, inner_io: Port):
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates

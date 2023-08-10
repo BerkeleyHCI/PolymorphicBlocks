@@ -33,7 +33,8 @@ class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, Base
     self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.pwr.link().voltage),
                               optional=True)
 
-    self.swd = self.Port(SwdTargetPort().empty())
+    self.swd = self.Port(SwdTargetPort.empty())
+    self.reset = self.Port(DigitalSink.empty())  # internally pulled up, TODO disable-able and assignable as GPIO
     self._io_ports.insert(0, self.swd)
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
@@ -51,6 +52,7 @@ class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, Base
       'XTALOUT': self.xtal.xtal_out,  # TODO Table 3, note 11, float if not used
       'RTCXIN': self.xtal_rtc.xtal_in,  # 14.5 can be grounded if RTC not used
       'RTCXOUT': self.xtal_rtc.xtal_out,
+      'RESET': self.reset
     }).remap(self.SYSTEM_PIN_REMAP)
 
   def _io_pinmap(self) -> PinMapUtil:
@@ -91,6 +93,7 @@ class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, Base
       impedance=(300, 300) * Ohm  # Table 25, "typical" rating
     )
 
+    self.reset.init_from(DigitalSink.from_bidir(dio_5v_model))
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiController(DigitalBidir.empty())
     spi_peripheral_model = SpiPeripheral(DigitalBidir.empty())  # MISO driven when CS asserted
@@ -165,10 +168,9 @@ class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, Base
         'dp': 'USB_DP', 'dm': 'USB_DM'
       }),
 
-      # Figure 49: requires a pull-up on SWDIO and pull-down on SWCLK, but none on RESET.
-      # Reset has an internal pull-up (or can be configured as unused), except when deep power down is needed
+      # Figure 49: requires a pull-up on SWDIO and pull-down on SWCLK
       PeripheralFixedResource('SWD', SwdTargetPort(DigitalBidir.empty()), {
-        'swclk': ['PIO0_19'], 'swdio': ['PIO0_20'], 'reset': ['PIO0_21'],
+        'swclk': ['PIO0_19'], 'swdio': ['PIO0_20'],
       }),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
@@ -203,6 +205,7 @@ class Lpc1549_48_Device(Lpc1549Base_Device):
     'XTALOUT': '25',
     'RTCXIN': '31',
     'RTCXOUT': '32',
+    'RESET': '34',
   }
   RESOURCE_PIN_REMAP = {
     'PIO0_0': '1',
@@ -228,7 +231,7 @@ class Lpc1549_48_Device(Lpc1549Base_Device):
     'PIO0_18': '13',
     'PIO0_19': '29',
     'PIO0_20': '33',
-    'PIO0_21': '34',
+    # 'PIO0_21': '34',  # RESET
     'PIO0_22': '37',
     'PIO0_23': '38',
     'PIO0_24': '43',
@@ -262,6 +265,7 @@ class Lpc1549_64_Device(Lpc1549Base_Device):
     'XTALOUT': '35',
     'RTCXIN': '42',
     'RTCXOUT': '43',
+    'RESET': '45',
   }
   RESOURCE_PIN_REMAP = {
     'PIO0_0': '2',
@@ -287,7 +291,7 @@ class Lpc1549_64_Device(Lpc1549Base_Device):
     'PIO0_18': '17',
     'PIO0_19': '40',
     'PIO0_20': '44',
-    'PIO0_21': '45',
+    # 'PIO0_21': '45',
     'PIO0_22': '49',
     'PIO0_23': '50',
     'PIO0_24': '58',
@@ -326,21 +330,21 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 
   def contents(self):
     super().contents()
-    self.swd.reset.init_from(DigitalSingleSource())  # not connected, ideal model
     self.swdio = self.Block(PullupResistor((10, 100) * kOhm(tol=0.05))).connected(self.pwr, self.swd.swdio)
     self.swclk = self.Block(PulldownResistor((10, 100) * kOhm(tol=0.05))).connected(self.gnd, self.swd.swclk)
 
 
 @abstract_block
-class Lpc1549Base(IoControllerDac, IoControllerCan, IoControllerUsb, Microcontroller,
+class Lpc1549Base(Resettable, IoControllerDac, IoControllerCan, IoControllerUsb, Microcontroller,
                   IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoControllerPowerRequired,
-                  BaseIoControllerExportable):
+                  BaseIoControllerExportable, GeneratorBlock):
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic: Lpc1549Base_Device
+    self.generator_param(self.reset.is_connected())
 
   def contents(self):
     super().contents()
@@ -354,6 +358,7 @@ class Lpc1549Base(IoControllerDac, IoControllerCan, IoControllerUsb, Microcontro
       (self.swd_pull, ), _ = self.chain(self.swd_node,
                                         imp.Block(Lpc1549SwdPull()),
                                         self.ic.swd)
+      self.connect(self.reset_node, self.ic.reset)
 
       # one set of 0.1, 0.01uF caps for each Vdd, Vss pin, per reference schematic
       self.pwr_cap = ElementDict[DecouplingCapacitor]()
@@ -371,6 +376,12 @@ class Lpc1549Base(IoControllerDac, IoControllerCan, IoControllerUsb, Microcontro
       self.vref_cap[0] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+
+  def generate(self):
+    super().generate()
+
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.reset)
 
   def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
     return len(self.get(self.can.requested())) > 0 or len(self.get(self.usb.requested())) > 0 \

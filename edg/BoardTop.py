@@ -36,7 +36,7 @@ class BaseBoardTop(DesignTop):
         (CanEsdDiode, Pesd1can),
         (TestPoint, TeRc),
 
-        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetHeader),
+        (SwdCortexTargetConnector, SwdCortexTargetHeader),
 
         (SpiMemory, W25q),
 

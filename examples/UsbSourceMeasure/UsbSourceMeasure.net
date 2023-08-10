@@ -1891,7 +1891,7 @@
   (node (ref mcu.ic) (pin 29))
   (node (ref mcu.swd) (pin 9))
   (node (ref mcu.swd_pull.swclk) (pin 2)))
-(net (code 79) (name "mcu.swd_node.reset")
+(net (code 79) (name "mcu.reset_node")
   (node (ref mcu.ic) (pin 34))
   (node (ref mcu.swd) (pin 6)))
 (net (code 80) (name "mcu.swd.swo")

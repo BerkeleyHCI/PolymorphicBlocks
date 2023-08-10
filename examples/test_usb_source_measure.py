@@ -450,7 +450,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
       ],
       class_refinements=[
-        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050),
+        (SwdCortexTargetConnector, SwdCortexTargetTc2050),
         (Opamp, Tlv9061),  # higher precision opamps
         (SolidStateRelay, G3VM_61GR2),
         (BananaSafetyJack, Ct3151),

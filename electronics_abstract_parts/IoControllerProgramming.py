@@ -1,5 +1,6 @@
 from electronics_model import *
-from .AbstractDebugHeaders import SwdCortexTargetWithSwoTdiConnector
+from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConnectorReset, SwdCortexTargetConnectorSwo, \
+  SwdCortexTargetConnectorTdi
 from .IoController import BaseIoControllerExportable, IoController
 
 
@@ -18,13 +19,15 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
     self.swd_tdi_pin = self.ArgParameter(swd_tdi_pin)
     self.generator_param(self.swd_swo_pin, self.swd_tdi_pin)
     self.swd_node = self.connect()  # connect this internal node to the microcontroller
+    self.reset_node = self.connect()  # connect this internal node to the microcontroller
 
   def contents(self):
     super().contents()
-    self.swd = self.Block(SwdCortexTargetWithSwoTdiConnector())
-    self.connect(self.swd_node, self.swd.swd)
-    self.connect(self.swd.pwr, self.pwr)
+    self.swd = self.Block(SwdCortexTargetConnector())
     self.connect(self.swd.gnd, self.gnd)
+    self.connect(self.swd.pwr, self.pwr)
+    self.connect(self.swd_node, self.swd.swd)
+    self.connect(self.reset_node, self.swd.with_mixin(SwdCortexTargetConnectorReset()).reset)
 
   def _inner_pin_assigns(self) -> list[str]:
     pin_assigns = super()._inner_pin_assigns()
@@ -37,6 +40,6 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
   def generate(self):
     super().generate()
     if self.get(self.swd_swo_pin) != 'NC':
-      self.connect(self.ic.gpio.request('swd_swo'), self.swd.swo)
+      self.connect(self.ic.gpio.request('swd_swo'), self.swd.with_mixin(SwdCortexTargetConnectorSwo()).swo)
     if self.get(self.swd_tdi_pin) != 'NC':
-      self.connect(self.ic.gpio.request('swd_tdi'), self.swd.tdi)
+      self.connect(self.ic.gpio.request('swd_tdi'), self.swd.with_mixin(SwdCortexTargetConnectorTdi()).tdi)

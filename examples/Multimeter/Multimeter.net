@@ -1570,7 +1570,7 @@
 (net (code 54) (name "mcu.swd_node.swclk")
   (node (ref mcu.ic) (pin 53))
   (node (ref mcu.swd) (pin 9)))
-(net (code 55) (name "mcu.swd_node.reset")
+(net (code 55) (name "mcu.reset_node")
   (node (ref mcu.ic) (pin 40))
   (node (ref mcu.swd) (pin 6)))
 (net (code 56) (name "mcu.usb_chain_0.d_P")

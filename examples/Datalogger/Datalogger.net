@@ -1584,7 +1584,7 @@
   (node (ref mcu.ic) (pin 40))
   (node (ref mcu.swd) (pin 4))
   (node (ref mcu.swd_pull.swclk) (pin 2)))
-(net (code 59) (name "mcu.swd_node.reset")
+(net (code 59) (name "mcu.reset_node")
   (node (ref mcu.ic) (pin 45))
   (node (ref mcu.swd) (pin 10)))
 (net (code 60) (name "mcu.swd.swo")

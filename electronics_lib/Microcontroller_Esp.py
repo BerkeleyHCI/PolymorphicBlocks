@@ -17,7 +17,6 @@ class EspProgrammingHeader(ProgrammingConnector):
     self.uart = self.Port(UartPort.empty())
 
 
-@abstract_block
 class EspProgrammingAutoReset(BlockInterfaceMixin[EspProgrammingHeader]):
   """Mixin for ESP programming header with auto-reset and auto-boot pins"""
   def __init__(self, *args, **kwargs) -> None:

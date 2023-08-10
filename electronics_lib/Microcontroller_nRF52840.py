@@ -117,7 +117,7 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Interna
       PinResource('P1.00', {'P1.00': dio_model}),  # TRACEDATA[0] and SWO, if used as IO must clear TRACECONFIG reg
 
       PeripheralFixedPin('SWD', SwdTargetPort(dio_model), {
-        'swclk': 'SWCLK', 'swdio': 'SWDIO', 'reset': 'P0.18'
+        'swclk': 'SWCLK', 'swdio': 'SWDIO',
       }),
       PeripheralFixedPin('USBD', UsbDevicePort(), {
         'dp': 'D+', 'dm': 'D-'
@@ -180,6 +180,7 @@ class Nrf52840_Base(Nrf52840_Ios, IoControllerPowerRequired, InternalSubcircuit,
       'Vdd': self.pwr,
       'Vss': self.gnd,
       'Vbus': self.pwr_usb,
+      'nRESET': self.nreset,
     }).remap(self.SYSTEM_PIN_REMAP)
 
   def __init__(self, **kwargs) -> None:
@@ -203,7 +204,8 @@ class Nrf52840_Base(Nrf52840_Ios, IoControllerPowerRequired, InternalSubcircuit,
     self.xtal_rtc = self.Port(CrystalDriver(frequency_limits=(32, 33)*kHertz, voltage_out=self.pwr.link().voltage),
                               optional=True)
 
-    self.swd = self.Port(SwdTargetPort().empty())
+    self.swd = self.Port(SwdTargetPort.empty())
+    self.nreset = self.Port(DigitalSink.from_bidir(self._dio_model(self.gnd, self.pwr)))
     self._io_ports.insert(0, self.swd)
 
 
@@ -212,6 +214,7 @@ class Holyiot_18010_Device(Nrf52840_Base):
     'Vdd': '14',
     'Vss': ['1', '25', '37'],
     'Vbus': '22',
+    'nRESET': '21',
   }
   RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
     'P1.11': '2',
@@ -233,7 +236,6 @@ class Holyiot_18010_Device(Nrf52840_Base):
     'P0.23': '18',
     'P0.21': '19',
     'P0.19': '20',
-    'P0.18': '21',
     'D-': '23',
     'D+': '24',
 
@@ -261,14 +263,15 @@ class Holyiot_18010_Device(Nrf52840_Base):
     )
 
 
-class Holyiot_18010(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
-                    IoControllerPowerRequired, BaseIoControllerExportable):
+class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
+                    IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic: Holyiot_18010_Device
     self.ic = self.Block(Holyiot_18010_Device(pin_assigns=ArrayStringExpr()))
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
+    self.generator_param(self.reset.is_connected())
 
   def contents(self):
     super().contents()
@@ -276,13 +279,18 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoCont
     self.connect(self.gnd, self.ic.gnd)
 
     self.connect(self.swd_node, self.ic.swd)
+    self.connect(self.reset_node, self.ic.nreset)
 
+  def generate(self):
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.nreset)
 
 class Mdbt50q_1mv2_Device(Nrf52840_Base, JlcPart):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': ['28', '30'],  # 28=Vdd, 30=VddH; 31=DccH is disconnected - from section 8.3 for input voltage <3.6v
     'Vss': ['1', '2', '15', '33', '55'],
     'Vbus': '32',
+    'nRESET': '40',
   }
   RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
     'P1.10': '3',
@@ -318,7 +326,6 @@ class Mdbt50q_1mv2_Device(Nrf52840_Base, JlcPart):
     'P0.13': '37',
     'P0.16': '38',
     'P0.15': '39',
-    'P0.18': '40',
     'P0.17': '41',
     'P0.19': '42',
     'P0.21': '43',
@@ -368,14 +375,15 @@ class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
     self.connect(self.usb_outer.dm, self.res_dm.b.adapt_to(DigitalBidir()))
 
 
-class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
-                   IoControllerPowerRequired, BaseIoControllerExportable):
+class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
+                   IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.ic: Mdbt50q_1mv2_Device
     self.ic = self.Block(Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr()))  # defined in generator to mix in SWO/TDI
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
+    self.generator_param(self.reset.is_connected())
 
   def contents(self) -> None:
     super().contents()
@@ -383,12 +391,19 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Nrf52840_Interfaces, IoContr
     self.connect(self.gnd, self.ic.gnd)
 
     self.connect(self.swd_node, self.ic.swd)
+    self.connect(self.reset_node, self.ic.nreset)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
+
+  def generate(self):
+    super().generate()
+
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.nreset)
 
   def _make_export_io(self, self_io: Port, inner_io: Port):
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates

@@ -2561,7 +2561,7 @@
 (net (code 94) (name "mcu.swd_node.swclk")
   (node (ref mcu.ic) (pin 24))
   (node (ref mcu.swd) (pin 4)))
-(net (code 95) (name "mcu.swd_node.reset")
+(net (code 95) (name "mcu.reset_node")
   (node (ref mcu.ic) (pin 26))
   (node (ref mcu.swd) (pin 10)))
 (net (code 96) (name "mcu.ic.qspi.sck")
