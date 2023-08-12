@@ -162,7 +162,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         (['mcu'], Esp32s3_Wroom_1),
         (['mcu_servo'], Stm32f103_48),
         (['mcu_test'], Rp2040),
-        (['reg_3v3'], Ldl1117),
+        (['reg_3v3'], Ap7215),
         (['reg_2v5'], Xc6206p),
         (['reg_1v2'], Xc6206p),
         (['reg_14v'], Tps61040),

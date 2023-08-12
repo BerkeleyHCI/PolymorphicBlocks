@@ -106,7 +106,7 @@ class FoxProject(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
-        (['reg_3v3'], Ldl1117),
+        (['reg_3v3'], Ap7215),
         (['reg_2v5'], Xc6206p),
         (['reg_1v2'], Xc6206p),
         (['batt', 'conn'], JstPhKVertical),

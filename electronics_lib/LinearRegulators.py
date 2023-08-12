@@ -189,6 +189,46 @@ class Ap2204k(VoltageRegulatorEnableWrapper, LinearRegulator):
       .connected(self.gnd, self.pwr_out)
 
 
+class Ap7215_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, FootprintBlock):
+  @init_in_parent
+  def __init__(self, output_voltage: RangeLike):
+    super().__init__()
+
+    # Part datasheet, Recommended Operating Conditions
+    self.assign(self.pwr_in.voltage_limits, (3.3, 5.5) * Volt)
+    self.assign(self.pwr_out.current_limits, (0, 0.6) * Amp)
+    self.assign(self.actual_quiescent_current, (50, 80) * uAmp)
+    self.assign(self.actual_dropout, (0, 0.25) * Volt)  # worst-case @ 100mA Iout
+    self.assign(self.actual_target_voltage, (3.234, 3.366) * Volt)
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-89-3',
+      {
+        '1': self.gnd,
+        '2': self.pwr_in,
+        '3': self.pwr_out,
+      },
+      mfr='Diodes Incorporated', part='AP7215-33YG-13',
+      datasheet='https://www.diodes.com/assets/Datasheets/AP7215.pdf'
+    )
+    self.assign(self.lcsc_part, 'C460367')
+    self.assign(self.actual_basic_part, False)
+
+
+class Ap7215(LinearRegulator):
+  """AP7215 fixed 3.3v LDO in SOT-89 providing the LinearRegulator interface.
+  """
+  def contents(self):
+    super().contents()
+    self.ic = self.Block(Ap7215_Device(self.output_voltage))
+    self.connect(self.pwr_in, self.ic.pwr_in)
+    self.connect(self.pwr_out, self.ic.pwr_out)
+    self.connect(self.gnd, self.ic.gnd)
+    self.in_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
+      .connected(self.gnd, self.pwr_in)
+    self.out_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
+      .connected(self.gnd, self.pwr_out)
+
+
 class Xc6206p_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
