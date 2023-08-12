@@ -11,22 +11,13 @@ class FoxProject(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.usb = self.Block(UsbCReceptacle(current_limits=(0, 3)*Amp))
     self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
 
-    self.vusb = self.connect(self.usb.pwr)
-    self.vbatt = self.connect(self.batt.pwr)
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.usb.gnd, self.batt.gnd)
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
+    self.pwr = self.connect(self.batt.pwr)
+    self.gnd = self.connect(self.batt.gnd)
 
-    self.pwr_or = self.Block(PriorityPowerOr(
-      (0, 1)*Volt, (0, 0.1)*Ohm
-    )).connected_from(self.gnd_merge.pwr_out, self.usb.pwr, self.batt.pwr)
-    self.pwr = self.connect(self.pwr_or.pwr_out)
-
-    self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr_or.pwr_out)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
+    self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.batt.pwr)
+    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.batt.gnd)
 
     # POWER
     with self.implicit_connect(
@@ -41,13 +32,13 @@ class FoxProject(JlcBoardTop):
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       (self.reg_2v5, ), _ = self.chain(
-        self.vbatt,
+        self.pwr,
         imp.Block(VoltageRegulator(output_voltage=2.5*Volt(tol=0.05)))
       )
       self.v2v5 = self.connect(self.reg_2v5.pwr_out)
 
       (self.reg_1v2, ), _ = self.chain(
-        self.vbatt,
+        self.pwr,
         imp.Block(VoltageRegulator(output_voltage=1.2*Volt(tol=0.05)))
       )
       self.v1v2 = self.connect(self.reg_1v2.pwr_out)
@@ -80,7 +71,7 @@ class FoxProject(JlcBoardTop):
 
     # VBATT DOMAIN
     with self.implicit_connect(
-            ImplicitConnect(self.vbatt, [Power]),
+            ImplicitConnect(self.pwr, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.pixels = imp.Block(LedConnector())
