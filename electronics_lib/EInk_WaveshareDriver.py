@@ -36,7 +36,7 @@ class Waveshare_Epd_Device(InternalSubcircuit, Block):
             current_limits=0*mAmp(tol=0)  # only for external capacitor
         )))
         self.vgh = self.Export(self.conn.pins.request('5').adapt_to(VoltageSource(
-            voltage_out=(0, 11)*Volt,  # inferred from power selection register
+            voltage_out=(2.5, 15)*Volt,
             current_limits=0*mAmp(tol=0)  # only for external capacitor
         )))
         self.vsh = self.Export(self.conn.pins.request('20').adapt_to(VoltageSource(
