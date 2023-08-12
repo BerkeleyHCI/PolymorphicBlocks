@@ -70,7 +70,7 @@ class FoxProject(JlcBoardTop):
       (self.led, ), _ = self.chain(imp.Block(IndicatorLed(Led.Yellow)), self.mcu.gpio.request('led'))
       (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw'))
 
-      self.epd = imp.Block(Er_Epd027_2(compatibility=True))
+      self.epd = imp.Block(Waveshare_Epd())
       self.connect(self.v3v3, self.epd.pwr)
       self.connect(self.mcu.spi.request('spi'), self.epd.spi)
       self.connect(self.mcu.gpio.request('epd_rst'), self.epd.reset)
