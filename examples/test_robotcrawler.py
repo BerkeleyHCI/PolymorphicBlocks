@@ -209,7 +209,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
         (SwdCortexTargetHeader, SwdCortexTargetTagConnect),
-        (Neopixel, Sk6805_Ec15),
+        (Neopixel, Sk6812_Side_A),
         (TestPoint, CompactKeystone5015),
       ],
       class_values=[

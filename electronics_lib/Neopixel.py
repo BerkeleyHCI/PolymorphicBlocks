@@ -121,6 +121,40 @@ class Sk6805_Ec15(Neopixel, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
+class Sk6812_Side_A(Neopixel, FootprintBlock):
+    """SK6812-SIDE-A side-emitting Neopixel LED."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.vdd.init_from(VoltageSink(
+            voltage_limits=(3.5, 5.5) * Volt,
+            current_draw=(1, 1 + 12*3) * mAmp,  # 1 mA static type + up to 12mA/ch
+        ))
+        self.gnd.init_from(Ground())
+        self.din.init_from(DigitalSink.from_supply(
+            self.gnd, self.vdd,
+            voltage_limit_tolerance=(-0.5, 0.5),
+            input_threshold_factor=(0.3, 0.7),
+        ))
+        self.dout.init_from(DigitalSource.from_supply(
+            self.gnd, self.vdd,
+            current_limits=0*mAmp(tol=0),
+        ))
+
+    def contents(self) -> None:
+        self.footprint(
+            'D', 'edg:LED_SK6812-SIDE-A',
+            {
+                '1': self.din,
+                '2': self.vdd,
+                '3': self.dout,
+                '4': self.gnd,
+            },
+            mfr='Normand Electronic Co Ltd', part='SK6812 SIDE-A',
+            datasheet='http://www.normandled.com/upload/201810/SK6812%20SIDE-A%20LED%20Datasheet.pdf'
+        )
+        # potentially footprint-compatible with C2890037
+
+
 class NeopixelArray(Light, GeneratorBlock):
     """An array of Neopixels"""
     @init_in_parent
