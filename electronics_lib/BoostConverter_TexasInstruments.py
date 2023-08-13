@@ -154,4 +154,4 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
 
     self.out_cap = self.Block(DecouplingCapacitor(  # recommended by the datasheet
       capacitance=output_capacitance
-    )).connected(self.gnd, self.pwr_in)
+    )).connected(self.gnd, self.pwr_out)

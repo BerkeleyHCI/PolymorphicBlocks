@@ -32,7 +32,7 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
                      self.conn.pins.request('31').adapt_to(Ground()))  # VLSS
 
         vcc_pin5 = self.conn.pins.request('5')
-        self.vcc = self.Export(self.conn.pins.request('5').adapt_to(VoltageSink(
+        self.vcc = self.Export(vcc_pin5.adapt_to(VoltageSink(
           voltage_limits=(14.5, 15.5)*Volt,  # abs max is 8-19v
           current_draw=(0.010, 46)*mAmp  # sleep mode current to normal mode with all pixels on
         )))
