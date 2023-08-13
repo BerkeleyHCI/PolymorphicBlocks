@@ -238,9 +238,9 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         (['mcu_servo', 'swd_swo_pin'], 'PB6'),  # USART1_TX
         (['mcu_test', 'pin_assigns'], [
           'led_0=4',
-          'led_1=6',
-          'led_2=12',
-          'led_3=14',
+          'led_1=12',
+          'led_2=14',
+          'led_3=16',
 
           'i2c.scl=37',
           'i2c.sda=36',
