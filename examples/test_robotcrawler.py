@@ -153,7 +153,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
 
       (self.rgbs, ), _ = self.chain(
         self.mcu.gpio.request('rgb'),
-        imp.Block(NeopixelArray(4)))
+        imp.Block(NeopixelArray(10)))
 
 
   def refinements(self) -> Refinements:
