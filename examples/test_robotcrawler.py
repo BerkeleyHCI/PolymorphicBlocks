@@ -168,6 +168,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         (['reg_14v'], Tps61040),
         (['batt', 'conn'], JstPhKVertical),
         (['mcu_servo', 'swd', 'conn'], TagConnectNonLegged),
+        (['mcu_test', 'swd', 'conn'], TagConnectNonLegged),
       ],
       instance_values=[
         (['refdes_prefix'], 'R'),  # unique refdes for panelization
@@ -221,7 +222,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         (Ov2640_Fpc24, ['device', 'avdd', 'voltage_limits'], Range(2.3, 3.0)),  # allow 2v5
         (Er_Oled_096_1c, ['device', 'vcc', 'voltage_limits'], Range(8, 19)),  # abs maximum ratings
         (ServoFeedbackConnector, ['pwr', 'current_draw'], Range(0.005, 0.005)),  # ignore non-static draw
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
       ]
     )
 
