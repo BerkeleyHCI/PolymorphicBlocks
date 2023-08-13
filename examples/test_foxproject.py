@@ -104,7 +104,7 @@ class FoxProject(JlcBoardTop):
         (['pixels', 'conn'], JstPhKVertical),
       ],
       instance_values=[
-        (['refdes_prefix'], 'D'),  # unique refdes for panelization
+        (['refdes_prefix'], 'F'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
           'spi.mosi=39',
           'spi.miso=NC',
