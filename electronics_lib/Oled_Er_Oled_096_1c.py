@@ -6,7 +6,7 @@ class Er_Oled_096_1c_Outline(InternalSubcircuit, FootprintBlock):
     """Footprint for OLED panel outline"""
     def contents(self) -> None:
         super().contents()
-        self.footprint('U', 'edg:Lcd_Er_Oled0.96_1C_Outline', {},
+        self.footprint('U', 'edg:Lcd_Er_Oled0.96_1c_Outline', {},
                        'EastRising', 'ER-OLED0.96-1C',
                        datasheet='https://www.buydisplay.com/download/manual/ER-OLED0.96-1C_Datasheet.pdf')
 
