@@ -138,7 +138,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
       for (i, servo) in self.servos.items():
         self.connect(self.vbatt, servo.pwr)
         self.connect(self.gnd, servo.gnd)
-        if int(i) < 5:  # 0-4 connected to ESP directly
+        if int(i) < 4:  # 0-3 connected to ESP directly
           self.connect(self.mcu.gpio.request(f'servo{i}'), servo.pwm)
           self.connect(self.mcu.adc.request(f'servo{i}_fb'), servo.fb)
         else:  # rest connected to STM as IO expander
@@ -173,19 +173,19 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
       instance_values=[
         (['refdes_prefix'], 'R'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          'servo1=31',
-          'servo1_fb=4',
-          'servo2=32',
+          'servo0=34',
+          'servo0_fb=38',
+          'servo1=35',
+          'servo1_fb=39',
+          'servo2=4',
           'servo2_fb=5',
-          'servo3=12',
-          'servo3_fb=6',
-          'servo4=11',
-          'servo4_fb=7',
+          'servo3=6',
+          'servo3_fb=7',
 
           'i2c.scl=10',
           'i2c.sda=9',
 
-          'rgb=38',
+          'rgb=32',
 
           'led=33',
 
@@ -203,6 +203,29 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
           'cam.vsync=13',
 
           'oled_reset=8',
+        ]),
+        (['mcu_servo', 'pin_assigns'], [
+          'servo4=42',
+          'servo4_fb=10',
+          'servo5=43',
+          'servo5_fb=11',
+          'servo6=45',
+          'servo6_fb=12',
+          'servo_cam0=46',
+          'servo_cam0_fb=13',
+          'servo7=26',
+          'servo7_fb=14',
+
+          'servo8=32',
+          'servo8_fb=19',
+          'servo9=31',
+          'servo9_fb=18',
+          'servo10=30',
+          'servo10_fb=17',
+          'servo_cam1=29',
+          'servo_cam1_fb=16',
+          'servo11=28',
+          'servo11_fb=15',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_14v', 'inductor', 'part'], "CBC3225T220KR"),
