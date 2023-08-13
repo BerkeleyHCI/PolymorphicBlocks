@@ -167,6 +167,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         (['reg_1v2'], Xc6206p),
         (['reg_14v'], Tps61040),
         (['batt', 'conn'], JstPhKVertical),
+        (['mcu_servo', 'swd', 'conn'], TagConnectNonLegged),
       ],
       instance_values=[
         (['refdes_prefix'], 'R'),  # unique refdes for panelization
