@@ -98,3 +98,14 @@ trait HasMutableConstraints {
 trait HasParams extends HasClass {
   def getParams: SeqMap[String, init.ValInit]
 }
+
+trait HasMutableMetadata {
+  protected var metadata: Option[edgir.common.common.Metadata] = initMetadata()
+
+  protected def initMetadata(): Option[edgir.common.common.Metadata] // implement me
+
+  // replaces the metadata in-place, it is up to the upper layer to do this composably (eg, map-aware)
+  def mapMetadata(fn: Option[edgir.common.common.Metadata] => Option[edgir.common.common.Metadata]): Unit = {
+    metadata = fn(metadata)
+  }
+}

@@ -25,11 +25,14 @@ class Block(
     val unrefinedType: Option[ref.LibraryPath],
     val unrefinedMixins: Seq[ref.LibraryPath]
 ) extends BlockLike
-    with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
+    with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams
+    with HasMutableMetadata {
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
   override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks)
   override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
   override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints)
+
+  override protected def initMetadata() = pb.meta
 
   // creates a copy of this object
   override def cloned: Block = {
@@ -75,6 +78,7 @@ class Block(
       blocks = blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
       links = links.view.mapValues(_.toPb).to(SeqMap).toPb,
       constraints = constraints.toPb,
+      meta = metadata,
     )
   }
 
