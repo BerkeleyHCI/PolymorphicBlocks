@@ -1,6 +1,7 @@
 package edg.wir
 
 import edg.EdgirUtils.SimpleLibraryPath
+import edgir.common.common
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.init.init
@@ -27,12 +28,11 @@ class Block(
 ) extends BlockLike
     with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams
     with HasMutableMetadata {
-  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
-  override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks)
-  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
-  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints)
-
-  override protected def initMetadata() = pb.meta
+  override protected def initPorts: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
+  override protected def initBlocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks)
+  override protected def initLinks: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
+  override protected def initConstraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints)
+  override protected def initMetadata: Option[common.Metadata] = pb.meta
 
   // creates a copy of this object
   override def cloned: Block = {

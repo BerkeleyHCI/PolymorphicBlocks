@@ -5,6 +5,7 @@ import edg.wir.ProtoUtil._
 import edgir.init.init
 import edgir.elem.elem
 import edgir.expr.expr
+import edgir.expr.expr.ValueExpr
 import edgir.ref.ref
 import edgir.ref.ref.LibraryPath
 
@@ -19,9 +20,9 @@ sealed trait LinkLike extends Pathable {
   */
 class Link(pb: elem.Link) extends LinkLike
     with HasMutablePorts with HasMutableLinks with HasMutableConstraints with HasParams {
-  override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
-  override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
-  override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints)
+  override protected def initPorts: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
+  override protected def initLinks: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
+  override protected def initConstraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints)
 
   override def cloned: Link = {
     val cloned = new Link(pb)
@@ -70,9 +71,9 @@ class Link(pb: elem.Link) extends LinkLike
 class LinkArray(pb: elem.LinkArray) extends LinkLike
     with HasMutablePorts with HasMutableLinks with HasMutableConstraints {
   require(pb.ports.isEmpty && pb.links.isEmpty && pb.constraints.isEmpty, "link array may not start elaborated")
-  override protected val ports = mutable.SeqMap[String, PortLike]()
-  override protected val links = mutable.SeqMap[String, LinkLike]()
-  override protected val constraints = mutable.SeqMap[String, expr.ValueExpr]()
+  override protected def initPorts: mutable.SeqMap[String, PortLike] = mutable.SeqMap[String, PortLike]()
+  override protected def initLinks: mutable.SeqMap[String, LinkLike] = mutable.SeqMap[String, LinkLike]()
+  override protected def initConstraints: mutable.SeqMap[String, ValueExpr] = mutable.SeqMap[String, expr.ValueExpr]()
 
   var model: Option[Link] = None
 
