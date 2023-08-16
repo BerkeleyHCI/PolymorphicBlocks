@@ -1,5 +1,6 @@
 package edg
 
+import edgir.common.common
 import edgir.ref.ref
 import edgir.expr.expr
 
@@ -104,5 +105,15 @@ object EdgirUtils {
         connection.withExported(exported)
       case _ => throw new IllegalArgumentException
     }
+  }
+
+  // Converts a string-to-string Map to a Metadata structure, for serializing data within the compiler.
+  // Not meant to be a stable part of the public API, this format may change.
+  def strMapToMeta(strMap: Map[String, String]): common.Metadata = {
+    common.Metadata(meta =
+      common.Metadata.Meta.Members(common.Metadata.Members(
+        node = strMap.map { case (k, v) => k -> common.Metadata(meta = common.Metadata.Meta.TextLeaf(v)) }
+      ))
+    )
   }
 }
