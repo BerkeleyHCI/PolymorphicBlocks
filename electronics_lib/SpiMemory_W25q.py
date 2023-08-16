@@ -67,7 +67,7 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, part_lcsc_basic)
 
 
-class W25q(SpiMemory ,SpiMemoryQspi, GeneratorBlock):
+class W25q(SpiMemory, SpiMemoryQspi, GeneratorBlock):
   """Winbond W25Q series of SPI memory devices
   """
   def __init__(self, *args, **kwargs):

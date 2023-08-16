@@ -12,7 +12,7 @@ class Er_Oled_096_1c_Outline(InternalSubcircuit, FootprintBlock):
 
 
 class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
-    """31-pin FPC connector for the ER-OLED0.96-1C device, configured to run off internal DC/DC"""
+    """31-pin FPC connector for the ER-OLED0.96-1C device"""
     def __init__(self) -> None:
         super().__init__()
 
