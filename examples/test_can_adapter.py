@@ -30,10 +30,9 @@ class CanAdapter(BoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
-                                       self.mcu.with_mixin(IoControllerUsb()).usb.request())
-      (self.xcvr, ), self.can_chain = self.chain(self.mcu.with_mixin(IoControllerCan()).can.request('can'),
-                                                 imp.Block(Iso1050dub()))
+      # this uses the legacy / simple (non-mixin) USB and CAN IO style
+      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+      (self.xcvr, ), self.can_chain = self.chain(self.mcu.can.request('can'), imp.Block(Iso1050dub()))
 
       (self.sw_usb, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw_usb'))
       (self.sw_can, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw_can'))
