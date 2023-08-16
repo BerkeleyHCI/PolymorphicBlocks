@@ -326,6 +326,7 @@ class NetlistTransform(TransformUtil.Transform):
 
     board_refdes_prefix = self.design.get_value(('refdes_prefix',))
     if board_refdes_prefix is not None:
+      assert isinstance(board_refdes_prefix, str)
       net_prefix = board_refdes_prefix
     else:
       net_prefix = ''

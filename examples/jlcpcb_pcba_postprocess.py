@@ -1,7 +1,7 @@
 import argparse
 import csv
 import math
-from typing import Dict
+from typing import Dict, Tuple
 
 parser = argparse.ArgumentParser(description='Post-process KiCad BoM and position files to be compatible with JLC.')
 parser.add_argument('file_path_prefix', type=str,
@@ -75,7 +75,7 @@ PACKAGE_ROTATIONS = {footprint.split(':')[-1]: rot for footprint, rot in _FOOTPR
 
 # translational offsets using KiCad coordinate conventions, -y is up
 # offsets estimated visually
-PART_OFFSETS = {
+PART_OFFSETS: Dict[str, Tuple[float, float]] = {
   'C262669': (0, -0.5),  # AFC01 FPC 24
   'C262671': (0, -0.5),  # AFC01 FPC 30
   'C262643': (0, -1),  # AFC07 FPC 24
@@ -83,7 +83,7 @@ PART_OFFSETS = {
   'C110293': (0, 0.1),  # SKRTLAE010 R/A switch
   'C116648': (0, 2.1),  # EC05E1220401
 }
-_FOOTPRINT_OFFSETS = {
+_FOOTPRINT_OFFSETS: Dict[str, Tuple[float, float]] = {
   'Package_TO_SOT_SMD:SOT-89-3': (-0.6, 0),
 
   'Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11': (0, -1.25),
