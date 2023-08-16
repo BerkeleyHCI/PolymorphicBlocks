@@ -106,15 +106,15 @@ class FoxProject(JlcBoardTop):
       instance_values=[
         (['refdes_prefix'], 'F'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          'spi.mosi=39',
+          'spi.mosi=31',
           'spi.miso=NC',
-          'spi.sck=38',
-          'epd_cs=35',
+          'spi.sck=32',
+          'epd_cs=33',
           'epd_dc=34',
-          'epd_rst=33',
-          'epd_busy=32',
+          'epd_rst=35',
+          'epd_busy=38',
 
-          'pixels=31',
+          'pixels=39',
 
           'cam.y2=13',
           'cam.y1=14',
