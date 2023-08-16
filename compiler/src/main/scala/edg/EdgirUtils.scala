@@ -116,4 +116,10 @@ object EdgirUtils {
       ))
     )
   }
+
+  // Converts a Metadata object to a string-to-string Map structure, inverse of strMapToMeta.
+  // Checks are strict, this crashes on invalidly formatted data
+  def metaToStrMap(meta: common.Metadata): Map[String, String] = {
+    meta.getMembers.node.map { case (k, v) => k -> v.getTextLeaf }
+  }
 }
