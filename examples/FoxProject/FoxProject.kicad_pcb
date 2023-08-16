@@ -4693,7 +4693,7 @@
       (stroke (width 0.16) (type solid)) (layer "B.Cu") (tstamp a478d936-1803-4fe9-abe9-4f9000c1c6ea))
     (fp_arc (start 0.62074 1.407352) (mid 0.5 1.499999) (end 0.37926 1.407352)
       (stroke (width 0.16) (type solid)) (layer "B.Cu") (tstamp 773005cf-487d-46ed-a873-cb6974b6becd))
-    (fp_arc (start 0.763205 0.913443) (mid 0.969128 0.866757) (end 1.178844 0.891296)
+    (fp_arc (start 0.763205 0.913443) (mid 0.969127 0.866756) (end 1.178844 0.891296)
       (stroke (width 0.16) (type solid)) (layer "B.Cu") (tstamp c8632237-1188-4b4c-b20f-f09136ff38c4))
     (fp_arc (start 0.820058 -1.56145) (mid 0.75756 -1.62395) (end 0.820058 -1.68645)
       (stroke (width 0.16) (type solid)) (layer "B.Cu") (tstamp e3a93306-8e46-46cd-b0d3-b4152f0927c6))
@@ -4701,7 +4701,7 @@
       (stroke (width 0.16) (type solid)) (layer "B.Cu") (tstamp 2f140681-bdf2-4ce6-872e-ba26a71cbf59))
     (fp_arc (start 0.820058 -1.43645) (mid 0.75756 -1.49895) (end 0.820058 -1.56145)
       (stroke (width 0.16) (type solid)) (layer "B.Cu") (tstamp 11c4228e-c074-472a-927f-7fbe30a1a4fc))
-    (fp_arc (start 0.869178 1.169286) (mid 1.000175 1.003685) (end 1.178836 0.891151)
+    (fp_arc (start 0.869178 1.169286) (mid 1.000175 1.003686) (end 1.178836 0.891151)
       (stroke (width 0.16) (type solid)) (layer "B.Cu") (tstamp 3e5bf46d-d329-4db4-8fc7-8003b219eaf0))
     (fp_arc (start 1.093749 -1.89443) (mid 0.000001 2.187499) (end -1.09375 -1.894429)
       (stroke (width 0.2) (type solid)) (layer "B.Cu") (tstamp ae8b35e9-22fc-4682-82c2-135189cd1c22))
@@ -5376,6 +5376,9 @@
     (stroke (width 0.0381) (type default)) (layer "Edge.Cuts") (tstamp c5e84cb1-8508-4235-8dc9-f63d49c6ca82))
   (gr_arc (start 27 107) (mid 28.171573 104.171573) (end 31 103)
     (stroke (width 0.0381) (type default)) (layer "Edge.Cuts") (tstamp ccdac656-addf-4acc-bafb-6b107993611f))
+  (gr_text "Fox Project\nrv1 Aug '23" (at 40 134) (layer "F.SilkS") (tstamp 9deac68e-08f4-4447-9dfb-1b5738b775e5)
+    (effects (font (size 1 0.8) (thickness 0.15)))
+  )
 
   (segment (start 38.9715 104) (end 38 104.972) (width 1) (layer "F.Cu") (net 1) (tstamp 043b1db6-8f17-4976-b109-1ff628240c78))
   (segment (start 87.5 125) (end 88.5 126) (width 0.5) (layer "F.Cu") (net 1) (tstamp 0524342f-2ff5-4e2a-ada6-6beefe380e05))
@@ -13034,8 +13037,8 @@
       (pts
         (xy 102 138)
         (xy 26 138)
-        (xy 26 99)
-        (xy 102 99)
+        (xy 26 102)
+        (xy 102 102)
       )
     )
     (filled_polygon
