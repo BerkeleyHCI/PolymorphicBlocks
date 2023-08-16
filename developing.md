@@ -41,6 +41,12 @@ Or, to run tests for a specific package (eg, `edg_core` in this command):
 python -m unittest discover -s edg_core -t .
 ```
 
+Or, to run one specific test:
+```
+python -m unittest examples.test_blinky.BlinkyTestCase.test_design_complete
+```
+
+
 **PROTIP**: run both static type checking and unit testing by combining the commands with `&&`
 
 ### Compiling the Compiler

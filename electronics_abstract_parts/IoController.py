@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import List, Dict, Tuple, Type
+from typing import List, Dict, Tuple, Type, Optional
 
 from deprecated import deprecated
 
@@ -25,6 +25,14 @@ class BaseIoController(PinMappable, Block):
     self.i2c = self.Port(Vector(I2cController.empty()), optional=True)
     self.uart = self.Port(Vector(UartPort.empty()), optional=True)
 
+    # USB and CAN are now mixins, but automatically materialized for compatibility and simplicity
+    # In new code, explicit mixin syntax should be used.
+    self.usb: Vector[UsbDevicePort]
+    self.can: Vector[CanControllerPort]
+    from electronics_abstract_parts import IoControllerUsb, IoControllerCan
+    self._usb_mixin: Optional[IoControllerUsb] = None
+    self._can_mixin: Optional[IoControllerCan] = None
+
     self.spi_peripheral = self.Port(Vector(SpiPeripheral.empty()), optional=True)
     self.i2c_target = self.Port(Vector(I2cTarget.empty()), optional=True)
 
@@ -32,6 +40,22 @@ class BaseIoController(PinMappable, Block):
 
     self._io_ports: List[BasePort] = [  # ordered by assignment order, most restrictive should be first
       self.adc, self.spi, self.i2c, self.uart, self.spi_peripheral, self.i2c_target, self.gpio]
+
+  def __getattr__(self, item):
+    # automatically materialize USB and CAN mixins on abstract classes, only if this is IoController
+    # note, getattr ONLY called when the field does not exist, and hasattr is implemented via getattr
+    if self.__class__ is IoController and item == 'usb':
+      if self._usb_mixin is None:
+        from electronics_abstract_parts import IoControllerUsb
+        self._usb_mixin = self.with_mixin(IoControllerUsb())
+      return self._usb_mixin.usb
+    elif self.__class__ is IoController and item == 'can':
+      if self._can_mixin is None:
+        from electronics_abstract_parts import IoControllerCan
+        self._can_mixin = self.with_mixin(IoControllerCan())
+      return self._can_mixin.can
+    else:
+      raise AttributeError(item)  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
 
   def _type_of_io(self, io_port: BasePort) -> Type[Port]:
     if isinstance(io_port, Vector):
