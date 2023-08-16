@@ -27,6 +27,7 @@ PART_ROTATIONS = {
   'C508453': 180,  # FET
   'C527684': -90,  # TPS54202H SOT-23-6
   'C155534': -90,  # AL8861 MSOP-8
+  'C7722': -90,  # TPS61040 SOT-23-5
 
   'C2962219': -90,  # 2x5 1.27mm header shrouded
   'C126830': 90,  # "SOT-23" USB ESD protector
@@ -45,6 +46,8 @@ PART_ROTATIONS = {
   'C262645': 180,  # AFC07 FPC 30
   'C262669': 180,  # AFC01 FPC 24
 
+  'C424662': -90,  # FH35C 0.3mm FPC 31
+
   'C209762': -90,  # EC11J15
 }
 
@@ -54,6 +57,7 @@ _FOOTPRINT_ROTATIONS = {
   'Package_TO_SOT_SMD:SOT-23': 180,
   'Package_TO_SOT_SMD:SOT-23-5': 180,
   'Package_TO_SOT_SMD:SOT-23-6': 180,
+  'Package_TO_SOT_SMD:SOT-89-3': 180,
   'Package_TO_SOT_SMD:SOT-323_SC-70': 180,
   'Package_TO_SOT_SMD:SOT-223-3_TabPin2': 180,
   'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': -90,
@@ -80,6 +84,8 @@ PART_OFFSETS = {
   'C116648': (0, 2.1),  # EC05E1220401
 }
 _FOOTPRINT_OFFSETS = {
+  'Package_TO_SOT_SMD:SOT-89-3': (-0.6, 0),
+
   'Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11': (0, -1.25),
   'RF_Module:ESP32-WROOM-32': (0, 0.8),
 
