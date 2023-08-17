@@ -122,4 +122,24 @@ object EdgirUtils {
   def metaToStrMap(meta: common.Metadata): Map[String, String] = {
     meta.getMembers.node.map { case (k, v) => k -> v.getTextLeaf }
   }
+
+  def strSeqToMeta(strMap: Iterable[String]): common.Metadata = {
+    common.Metadata(meta =
+      common.Metadata.Meta.Members(common.Metadata.Members(
+        node = strMap.zipWithIndex.map { case (value, i) =>
+          i.toString -> common.Metadata(meta = common.Metadata.Meta.TextLeaf(value))
+        }.toMap
+      ))
+    )
+  }
+
+  def metaInsertItem(base: Option[common.Metadata], key: String, value: common.Metadata): Option[common.Metadata] = {
+    val baseMeta = base match {
+      case None => common.Metadata()
+      case Some(meta) => meta
+    }
+    require(baseMeta.meta.isMembers || baseMeta.meta.isEmpty) // must not be any other type that can be overwritten
+    require(!baseMeta.getMembers.node.contains(key))
+    Some(baseMeta.update(_.members.node :+= ((key, value))))
+  }
 }

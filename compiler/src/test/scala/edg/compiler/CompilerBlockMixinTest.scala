@@ -1,6 +1,6 @@
 package edg.compiler
 
-import edg.CompilerTestUtil
+import edg.{CompilerTestUtil, EdgirUtils}
 import edg.ElemBuilder._
 import edg.ExprBuilder.Ref
 import edg.wir.ProtoUtil.BlockProtoToSeqMap
@@ -197,7 +197,11 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
           ports = SeqMap(
             "port" -> Port.Port(selfClass = "sinkPort"),
             "mixinPort" -> Port.Port(selfClass = "sinkPort"),
-          )
+          ),
+          meta = Some(Map(
+            "refinedNewPorts" -> EdgirUtils.strSeqToMeta(Seq()),
+            "refinedNewParams" -> EdgirUtils.strSeqToMeta(Seq()),
+          ))
         ),
       ),
       links = SeqMap(
@@ -270,7 +274,11 @@ class CompilerBlockMixinTest extends AnyFlatSpec with CompilerTestUtil {
           ports = SeqMap(
             "port" -> Port.Port(selfClass = "sinkPort"),
             "mixinPort" -> Port.Port(selfClass = "sinkPort"),
-          )
+          ),
+          meta = Some(Map(
+            "refinedNewPorts" -> EdgirUtils.strSeqToMeta(Seq("mixinPort")),
+            "refinedNewParams" -> EdgirUtils.strSeqToMeta(Seq()),
+          ))
         ),
       ),
       links = SeqMap(
