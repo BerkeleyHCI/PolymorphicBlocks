@@ -10,36 +10,38 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
     super().__init__(**kwargs)
 
     self.pwr = self.Port(VoltageSink(
-      voltage_limits=(1.62, 3.63)*Volt,  # Table 627
-      current_draw=(1.2, 4.3)*mAmp + self.io_current_draw.upper()  # Table 628
+      voltage_limits=(1.62, 3.63)*Volt,  # Table 628
+      current_draw=(1.2, 4.3)*mAmp + self.io_current_draw.upper()  # Table 629
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
     # note: IOVDD is self.pwr
     self.dvdd = self.Port(VoltageSink(  # Digital Core
-      voltage_limits=(0.99, 1.21)*Volt,  # Table 627
-      current_draw=(0.18, 40)*mAmp,  # Table 628 typ Dormant to Figure 171 approx max DVdd
+      voltage_limits=(0.99, 1.21)*Volt,  # Table 628
+      current_draw=(0.18, 40)*mAmp,  # Table 629 typ Dormant to Figure 171 approx max DVdd
     ))
     self.vreg_vout = self.Port(VoltageSource(  # actually adjustable, section 2.10.3
       voltage_out=1.1*Volt(tol=0.03),  # default is 1.1v nominal with 3% variation (Table 192)
       current_limits=(0, 100)*mAmp  # Table 1, max current
     ))
     self.vreg_vin = self.Port(VoltageSink(
-      voltage_limits=(1.62, 3.63)*Volt,  # Table 627
+      voltage_limits=(1.62, 3.63)*Volt,  # Table 628
       current_draw=self.vreg_vout.is_connected().then_else(self.vreg_vout.link().current_drawn, 0*Amp(tol=0)),
     ))
     self.usb_vdd = self.Port(VoltageSink(
-      voltage_limits=(3.135, 3.63)*Volt,  # Table 627, can be lower if USB not used (section 2.9.4)
-      current_draw=(0.2, 2.0)*mAmp,  # Table 628 typ BOOTSEL Idle to max BOOTSEL Active
+      voltage_limits=RangeExpr(),  # depends on if USB is needed
+      current_draw=(0.2, 2.0)*mAmp,  # Table 629 typ BOOTSEL Idle to max BOOTSEL Active
     ))
     self.adc_avdd = self.Port(VoltageSink(
-      voltage_limits=(1.62, 3.63)*Volt,  # Table 627, performance compromised <2.97V
+      voltage_limits=(2.97, 3.63)*Volt,  # Table 628, performance compromised at <2.97V, lowest 1.62V
       # current draw not specified in datasheet
     ))
 
     # Additional ports (on top of IoController)
     self.qspi = self.Port(SpiController.empty())  # TODO actually QSPI
     self.qspi_cs = self.Port(DigitalBidir.empty())
+    self.qspi_sd2 = self.Port(DigitalBidir.empty())
+    self.qspi_sd3 = self.Port(DigitalBidir.empty())
 
     self.xosc = self.Port(CrystalDriver(frequency_limits=(1, 15)*MHertz,  # datasheet 2.15.2.2
                                         voltage_out=self.pwr.link().voltage),
@@ -64,15 +66,17 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
 
     self.qspi.init_from(SpiController(self._dio_std_model))
     self.qspi_cs.init_from(self._dio_std_model)
+    self.qspi_sd2.init_from(self._dio_std_model)
+    self.qspi_sd3.init_from(self._dio_std_model)
     self.run.init_from(DigitalSink.from_bidir(self._dio_ft_model))
 
   # Pin/peripheral resource definitions (table 3)
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return {
-      # '51': QSPI_SD3
+      '51': self.qspi_sd3,
       '52': self.qspi.sck,
       '53': self.qspi.mosi,  # IO0
-      # '54': QSPI_SD2
+      '54': self.qspi_sd2,
       '55': self.qspi.miso,  # IO1
       '56': self.qspi_cs,  # IO1
 
@@ -200,6 +204,11 @@ class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSu
   def generate(self) -> None:
     super().generate()
 
+    if not self.get(self.usb.requested()):  # Table 628, VDD_USB can be lower if USB not used (section 2.9.4)
+      self.assign(self.usb_vdd.voltage_limits, (1.62, 3.63)*Volt)
+    else:
+      self.assign(self.usb_vdd.voltage_limits, (3.135, 3.63)*Volt)
+
     self.footprint(
       'U', 'Package_DFN_QFN:QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm',
       self._make_pinning(),
@@ -264,6 +273,9 @@ class Rp2040(Resettable, IoControllerUsb, Microcontroller, IoControllerWithSwdTa
       self.mem = imp.Block(SpiMemory(Range.all()))
       self.connect(self.ic.qspi, self.mem.spi)
       self.connect(self.ic.qspi_cs, self.mem.cs)
+      mem_qspi = self.mem.with_mixin(SpiMemoryQspi())
+      self.connect(self.ic.qspi_sd2, mem_qspi.io2)
+      self.connect(self.ic.qspi_sd3, mem_qspi.io3)
 
     self.connect(self.pwr, self.ic.vreg_vin, self.ic.adc_avdd, self.ic.usb_vdd)
     self.connect(self.ic.vreg_vout, self.ic.dvdd)

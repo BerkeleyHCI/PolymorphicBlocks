@@ -75,7 +75,7 @@ class IotDisplay(JlcBoardTop):
 
       self.oled28 = imp.Block(Er_Oled028_1())
       self.oled22 = imp.Block(Er_Oled022_1())
-      self.epd = imp.Block(Er_Epd027_2(compatibility=True))
+      self.epd = imp.Block(Er_Epd027_2())
       self.connect(self.v3v3, self.oled28.pwr, self.oled22.pwr, self.epd.pwr)
       self.connect(self.v12, self.oled28.vcc, self.oled22.vcc)
       self.connect(self.mcu.spi.request('spi'), self.oled28.spi, self.oled22.spi, self.epd.spi)

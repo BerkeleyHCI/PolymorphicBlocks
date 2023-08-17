@@ -33,6 +33,8 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
     )
     self.spi = self.Port(SpiPeripheral(dio_model, (0, 104) * MHertz))
     self.cs = self.Port(dio_model)
+    self.wp = self.Port(dio_model)
+    self.hold = self.Port(dio_model)
 
     self.actual_size = self.Parameter(IntExpr())
 
@@ -51,11 +53,11 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
       {
         '1': self.cs,
         '2': self.spi.miso,
-        '3': self.vcc,  # /WP
+        '3': self.wp,
         '4': self.gnd,
         '5': self.spi.mosi,
         '6': self.spi.sck,
-        '7': self.vcc,  # /HOLD
+        '7': self.hold,
         '8': self.vcc,
       },
       mfr='Winbond Electronics', part=part_pn,
@@ -65,9 +67,13 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, part_lcsc_basic)
 
 
-class W25q(SpiMemory):
+class W25q(SpiMemory, SpiMemoryQspi, GeneratorBlock):
   """Winbond W25Q series of SPI memory devices
   """
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.generator_param(self.io2.is_connected(), self.io3.is_connected())
+
   def contents(self):
     super().contents()
 
@@ -81,3 +87,13 @@ class W25q(SpiMemory):
     self.vcc_cap = self.Block(DecouplingCapacitor(
       capacitance=0.1*uFarad(tol=0.2)
     )).connected(self.gnd, self.pwr)
+
+  def generate(self):
+    super().generate()
+
+    self.require(self.io2.is_connected() == self.io3.is_connected())
+    if self.get(self.io2.is_connected()):  # connect QSPI lines if used
+      self.connect(self.io2, self.ic.wp)
+      self.connect(self.io3, self.ic.hold)
+    else:  # otherwise tie high by default
+      self.connect(self.pwr.as_digital_source(), self.ic.wp, self.ic.hold)

@@ -3,21 +3,12 @@ from electronics_lib import Fpc050Bottom
 from .EInkBoostPowerPath import EInkBoostPowerPath
 
 
-class Er_Epd027_2_Outline(InternalSubcircuit, FootprintBlock):
-    def contents(self) -> None:
-        super().contents()
-        self.footprint('U', 'edg:Lcd_Er_Epd027_2_Outline', {},
-                       'EastRising', 'ER-EPD027-2',
-                       datasheet='https://www.buydisplay.com/download/manual/ER-EPD027-2_datasheet.pdf')
-
-
-class Er_Epd027_2_Device(InternalSubcircuit, Block):
-    """24-pin FPC connector for the ER-EPD-27-2 device"""
+class Waveshare_Epd_Device(InternalSubcircuit, Block):
+    """24-pin FPC connector compatible across multiple EPDs"""
     def __init__(self) -> None:
         super().__init__()
 
         self.conn = self.Block(Fpc050Bottom(length=24))
-        self.lcd = self.Block(Er_Epd027_2_Outline())  # for device outline
 
         self.vss = self.Export(self.conn.pins.request('17').adapt_to(Ground()), [Common])
         self.vdd = self.Export(self.conn.pins.request('16').adapt_to(VoltageSink(
@@ -39,9 +30,13 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
 
         self.gdr = self.Export(self.conn.pins.request('2'))
         self.rese = self.Export(self.conn.pins.request('3'))
-        # pin 4 is NC for this part
-        self.vshr = self.Export(self.conn.pins.request('5').adapt_to(VoltageSource(
-            voltage_out=(0, 11)*Volt,  # inferred from power selection register
+
+        self.vgl = self.Export(self.conn.pins.request('4').adapt_to(VoltageSource(
+            voltage_out=(-15, -2.5)*Volt,  # inferred from power selection register
+            current_limits=0*mAmp(tol=0)  # only for external capacitor
+        )))
+        self.vgh = self.Export(self.conn.pins.request('5').adapt_to(VoltageSource(
+            voltage_out=(2.5, 15)*Volt,
             current_limits=0*mAmp(tol=0)  # only for external capacitor
         )))
         self.vsh = self.Export(self.conn.pins.request('20').adapt_to(VoltageSource(
@@ -53,10 +48,10 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
             current_limits=0*mAmp(tol=0)  # only for external capacitor
         )))
 
-        self.vgh = self.Export(self.conn.pins.request('21').adapt_to(VoltageSink(
+        self.prevgh = self.Export(self.conn.pins.request('21').adapt_to(VoltageSink(
             voltage_limits=(13, 20)*Volt
         )))
-        self.vgl = self.Export(self.conn.pins.request('23').adapt_to(VoltageSink(
+        self.prevgl = self.Export(self.conn.pins.request('23').adapt_to(VoltageSink(
             voltage_limits=(-20, -13)*Volt
         )))
 
@@ -78,15 +73,15 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
         )))
 
 
-class Er_Epd027_2(EInk, GeneratorBlock):
-    """EK79651AB-based white/black/red 2.7" 176x264 e-paper display.
-    (Probably) compatible with https://www.waveshare.com/w/upload/b/ba/2.7inch_e-Paper_V2_Specification.pdf,
-    and https://www.waveshare.com/w/upload/7/7b/2.7inch-e-paper-b-v2-specification.pdf
+class Waveshare_Epd(EInk, GeneratorBlock):
+    """Multi-device-compatible driver circuitry based on the Waveshare E-Paper Driver HAT
+    https://www.waveshare.com/wiki/E-Paper_Driver_HAT
+    excluding the "clever" reset circuit
     """
     @init_in_parent
     def __init__(self) -> None:
         super().__init__()
-        self.device = self.Block(Er_Epd027_2_Device())
+        self.device = self.Block(Waveshare_Epd_Device())
         self.gnd = self.Export(self.device.vss, [Common])
         self.pwr = self.Export(self.device.vdd)
         self.reset = self.Export(self.device.rst)
@@ -107,24 +102,26 @@ class Er_Epd027_2(EInk, GeneratorBlock):
         self.vdd1v8_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
             .connected(self.gnd, self.device.vdd1v8)
 
-        self.vsh_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
+        self.vgl_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
+            .connected(self.device.vgl, self.gnd)
+        self.vgh_cap = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))) \
+            .connected(self.gnd, self.device.vgh)
+        self.vsh_cap = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))) \
             .connected(self.gnd, self.device.vsh)
-        self.vshr_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
-            .connected(self.gnd, self.device.vshr)
-        self.vsl_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
+        self.vsl_cap = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))) \
             .connected(self.device.vsl, self.gnd)
         self.vcom_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
             .connected(self.gnd, self.device.vcom)
 
         # current limit based on 200mA saturation current of reference inductor
-        self.boost = self.Block(EInkBoostPowerPath(20*Volt(tol=0), (0, 200)*mAmp, 47*uHenry(tol=0.2),
+        self.boost = self.Block(EInkBoostPowerPath(20*Volt(tol=0), (0, 200)*mAmp, 68*uHenry(tol=0.2),
                                                    1*uFarad(tol=0.2), 4.7*uFarad(tol=0.2), 2.2*Ohm(tol=0.01)))
         self.connect(self.gnd, self.boost.gnd)
         self.connect(self.pwr, self.boost.pwr_in)
         self.connect(self.device.gdr, self.boost.gate)
         self.connect(self.device.rese, self.boost.isense)
-        self.connect(self.boost.pos_out, self.device.vgh)
-        self.connect(self.boost.neg_out, self.device.vgl)
+        self.connect(self.boost.pos_out, self.device.prevgh)
+        self.connect(self.boost.neg_out, self.device.prevgl)
 
     def generate(self):
         super().generate()

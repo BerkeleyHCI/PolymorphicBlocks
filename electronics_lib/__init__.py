@@ -38,6 +38,7 @@ from .PassiveConnector_Header import PinHeader254, PinHeader254Vertical, PinHead
 from .PassiveConnector_Header import PinHeader254DualShroudedInline
 from .PassiveConnector_Header import PinHeader127DualShrouded
 from .PassiveConnector_Header import JstPhKVertical, JstPhSmVertical, JstPhKHorizontal, JstPhSmVerticalJlc, MolexSl
+from .PassiveConnector_Fpc import Fpc030, Fpc030Top, Fpc030Bottom, Fpc030TopBottom, HiroseFh35cshw
 from .PassiveConnector_Fpc import Fpc050, Fpc050Top, Fpc050Bottom, Fpc050BottomFlip, HiroseFh12sh, Afc01, Afc07Top, Te1734839
 from .PassiveConnector_TagConnect import TagConnect, TagConnectLegged, TagConnectNonLegged
 
@@ -47,13 +48,14 @@ from .DebugHeaders import SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTagConnect, SwdCortexTargetTc2050
 from .SdCards import SdCard, SdSocket, MicroSdSocket
 
-from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Xc6206p, Xc6209, Ap2210, Lp5907
+from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Ap7215, Xc6206p, Xc6209, Ap2210, Lp5907
 from .VoltageReferences import Ref30xx
 from .BuckConverter_TexasInstruments import Tps561201, Tps54202h
 from .BuckConverter_Ap3418 import Ap3418
-from .BoostConverters_AnalogDevices import Ltc3429
-from .BoostConverters_DiodesInc import Ap3012
-from .BoostConverters_Torex import Xc9142
+from .BoostConverter_AnalogDevices import Ltc3429
+from .BoostConverter_DiodesInc import Ap3012
+from .BoostConverter_Torex import Xc9142
+from .BoostConverter_TexasInstruments import Tps61040
 from .BuckBoostConverter_Custom import CustomBuckBoostConverter
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr
 from .LedDriver_Al8861 import Al8861
@@ -91,15 +93,17 @@ from .DacSpi_Mcp4901 import Mcp4921
 
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
-from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, NeopixelArray
+from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, Sk6812_Side_A, NeopixelArray
 from .Lcd_Qt096t_if09 import Qt096t_if09
 from .Oled_Er_Oled_091_3 import Er_Oled_091_3
 from .Oled_Er_Oled_096_1_1 import Er_Oled_096_1_1
+from .Oled_Er_Oled_096_1c import Er_Oled_096_1c
 from .Oled_Er_Oled_022 import Er_Oled022_1
 from .Oled_Er_Oled_028 import Er_Oled028_1
 from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
 from .EInk_E2154fs091 import E2154fs091
 from .EInk_Er_Epd027_2 import Er_Epd027_2
+from .EInk_WaveshareDriver import Waveshare_Epd
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .AnalogSwitch_Nlas4157 import Nlas4157
 from .CanTransceiver_Iso1050 import Iso1050dub

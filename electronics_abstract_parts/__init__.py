@@ -52,7 +52,7 @@ from .AbstractSwitch import Switch, TactileSwitch, MechanicalKeyswitch, DigitalS
 from .AbstractSwitch import RotaryEncoder, RotaryEncoderSwitch, DigitalRotaryEncoder, DigitalRotaryEncoderSwitch
 from .AbstractOpamp import Opamp
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
-from .AbstractSpiMemory import SpiMemory
+from .AbstractSpiMemory import SpiMemory, SpiMemoryQspi
 from .OpampCurrentSensor import OpampCurrentSensor
 from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet, OpenDrainDriver
 from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnableWrapper

@@ -102,7 +102,7 @@
         "silk_over_copper": "warning",
         "silk_overlap": "warning",
         "skew_out_of_range": "error",
-        "solder_mask_bridge": "ignore",
+        "solder_mask_bridge": "warning",
         "starved_thermal": "ignore",
         "text_height": "warning",
         "text_thickness": "warning",
@@ -216,14 +216,14 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "RobotCrawler.kicad_pro",
+    "filename": "FoxProject.kicad_pro",
     "version": 1
   },
   "net_settings": {
     "classes": [
       {
         "bus_width": 12,
-        "clearance": 0.15,
+        "clearance": 0.16,
         "diff_pair_gap": 0.15,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.15,
@@ -233,31 +233,14 @@
         "name": "Default",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.15,
+        "track_width": 0.2,
         "via_diameter": 0.7,
         "via_drill": 0.3,
         "wire_width": 6
       },
       {
         "bus_width": 12,
-        "clearance": 0.15,
-        "diff_pair_gap": 0.15,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.15,
-        "line_style": 0,
-        "microvia_diameter": 0.6858,
-        "microvia_drill": 0.3302,
-        "name": "Battery",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.5,
-        "via_diameter": 0.9,
-        "via_drill": 0.5,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.15,
+        "clearance": 0.16,
         "diff_pair_gap": 0.15,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.15,
@@ -267,7 +250,7 @@
         "name": "Power",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.25,
+        "track_width": 0.5,
         "via_diameter": 0.9,
         "via_drill": 0.5,
         "wire_width": 6
@@ -280,16 +263,8 @@
     "netclass_assignments": null,
     "netclass_patterns": [
       {
-        "netclass": "Battery",
-        "pattern": "vbatt"
-      },
-      {
         "netclass": "Power",
-        "pattern": "v3v3"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "gnd"
+        "pattern": "gnd|pwr|v3v3"
       }
     ]
   },
@@ -297,7 +272,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "RobotCrawler.net",
+      "netlist": "FoxProject.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""

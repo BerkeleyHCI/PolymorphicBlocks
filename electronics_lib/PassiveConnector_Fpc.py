@@ -94,3 +94,45 @@ class Te1734839(Fpc050Top, FootprintPassiveConnector):
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_FFC-FPC:TE_{length // 10}-1734839-{length % 10}_1x{length:02d}-1MP_P0.5mm_Horizontal',
             "TE Connectivity", f"{length // 10}-1734839-{length % 10}")
+
+
+@abstract_block
+class Fpc030(PassiveConnector):
+  """Abstract base class for 0.30mm pitch (dual row, staggered)) FPC connectors."""
+
+
+@abstract_block
+class Fpc030Top(Fpc030):
+  """Abstract base class for top-contact FPC connectors.
+  IMPORTANT: the pin numbering scheme differs for top- and bottom-contact connectors."""
+
+
+@abstract_block
+class Fpc030Bottom(Fpc030):
+  """Abstract base class for bottom-contact FPC connectors.
+  IMPORTANT: the pin numbering scheme differs for top- and bottom-contact connectors."""
+
+
+@abstract_block
+class Fpc030TopBottom(Fpc030Bottom):
+  """Abstract base class for top and bottom-contact FPC connectors. Bottom entry pin numbering is treated as canonical.
+  To use in place of a top-contact connector, a flip is needed.
+  IMPORTANT: the pin numbering scheme differs for top- and bottom-contact connectors."""
+
+
+class HiroseFh35cshw(Fpc030TopBottom, FootprintPassiveConnector, JlcPart):
+  """Hirose FH35C SHW FFC/FPC connector, 0.30mm pitch horizontal top/bottom contacts."""
+  # positions the FH35C exists in, per datasheet
+  _fh35c_pins = {9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 31, 33, 35, 37, 39, 41, 45, 49, 51, 55, 61}
+  # positions for which there are KiCad footprints
+  _kicad_pins = {31}
+  allowed_pins = _fh35c_pins.intersection(_kicad_pins)
+  PART_NUMBERS = {  # partial list of the ones currently used
+    31: 'C424662',
+  }
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    # TODO this isn't the intended hook and uses side effects, but it works for now
+    self.assign(self.lcsc_part, self.PART_NUMBERS[length])
+    self.assign(self.actual_basic_part, False)
+    return (f'edg:Hirose_FH35C-{length}S-0.3SHW_1x{length:02d}-1MP_P0.30mm_Horizontal',
+            "Hirose", f"FH35C-{length}S-0.3SHW")

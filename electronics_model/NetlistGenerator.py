@@ -248,7 +248,7 @@ class NetlistTransform(TransformUtil.Transform):
     self.process_blocklike(context.path, link)
 
   @staticmethod
-  def name_net(net: Iterable[TransformUtil.Path]) -> str:
+  def name_net(net: Iterable[TransformUtil.Path], net_prefix: str) -> str:
     """Names a net based on all the paths of ports and links that are part of the net."""
     def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:
       assert not pin1.params and not pin2.params
@@ -281,7 +281,8 @@ class NetlistTransform(TransformUtil.Transform):
       else:  # prefer shorter pin paths
         return len(pin1.ports) - len(pin2.ports)
     best_path = sorted(net, key=cmp_to_key(pin_name_goodness))[0]
-    return str(best_path)
+
+    return net_prefix + str(best_path)
 
   def run(self) -> Netlist:
     self.transform_design(self.design.design)
@@ -323,7 +324,13 @@ class NetlistTransform(TransformUtil.Transform):
       else:
         return pin
 
-    named_nets = {self.name_net([name_pin(pin) for pin in net]): net
+    board_refdes_prefix = self.design.get_value(('refdes_prefix',))
+    if board_refdes_prefix is not None:
+      assert isinstance(board_refdes_prefix, str)
+      net_prefix = board_refdes_prefix
+    else:
+      net_prefix = ''
+    named_nets = {self.name_net([name_pin(pin) for pin in net], net_prefix): net
                   for net in nets}
 
     netlist_blocks = {str(self.names[block_path]): block
