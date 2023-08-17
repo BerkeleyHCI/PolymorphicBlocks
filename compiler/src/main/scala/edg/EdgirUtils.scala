@@ -117,6 +117,10 @@ object EdgirUtils {
     )
   }
 
+  def metaToStrSeq(meta: common.Metadata): Seq[String] = {
+    ???
+  }
+
   // Converts a Metadata object to a string-to-string Map structure, inverse of strMapToMeta.
   // Checks are strict, this crashes on invalidly formatted data
   def metaToStrMap(meta: common.Metadata): Map[String, String] = {
