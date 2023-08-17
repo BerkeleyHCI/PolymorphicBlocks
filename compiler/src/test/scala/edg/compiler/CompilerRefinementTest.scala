@@ -5,7 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.ElemBuilder._
 import edg.ExprBuilder.{Ref, ValInit, ValueExpr}
-import edg.{CompilerTestUtil, wir}
+import edg.{CompilerTestUtil, EdgirUtils, wir}
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep, Refinements}
 
 import scala.collection.SeqMap
@@ -121,7 +121,11 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
           ),
           ports = SeqMap(
             "port" -> Port.Port(selfClass = "port"),
-          )
+          ),
+          meta = Some(Map(
+            "refinedNewPorts" -> EdgirUtils.strSeqToMeta(Seq()),
+            "refinedNewParams" -> EdgirUtils.strSeqToMeta(Seq("subParam")),
+          ))
         ),
       )
     ))
@@ -167,7 +171,11 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
           ),
           ports = SeqMap(
             "port" -> Port.Port(selfClass = "port"),
-          )
+          ),
+          meta = Some(Map(
+            "refinedNewPorts" -> EdgirUtils.strSeqToMeta(Seq()),
+            "refinedNewParams" -> EdgirUtils.strSeqToMeta(Seq("subParam")),
+          ))
         ),
       )
     ))
@@ -302,7 +310,11 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
           ),
           ports = SeqMap(
             "port" -> Port.Port(selfClass = "port"),
-          )
+          ),
+          meta = Some(Map(
+            "refinedNewPorts" -> EdgirUtils.strSeqToMeta(Seq()),
+            "refinedNewParams" -> EdgirUtils.strSeqToMeta(Seq("subParam")),
+          ))
         ),
       )
     ))
@@ -324,7 +336,11 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
           ),
           ports = SeqMap(
             "port" -> Port.Port(selfClass = "port"),
-          )
+          ),
+          meta = Some(Map(
+            "refinedNewPorts" -> EdgirUtils.strSeqToMeta(Seq()),
+            "refinedNewParams" -> EdgirUtils.strSeqToMeta(Seq("subParam")),
+          ))
         ),
       )
     ))
@@ -360,7 +376,11 @@ class CompilerRefinementTest extends AnyFlatSpec with CompilerTestUtil {
           ),
           ports = SeqMap(
             "port" -> Port.Port(selfClass = "port"),
-          )
+          ),
+          meta = Some(Map(
+            "refinedNewPorts" -> EdgirUtils.strSeqToMeta(Seq()),
+            "refinedNewParams" -> EdgirUtils.strSeqToMeta(Seq("subParam")),
+          ))
         ),
       )
     ))
