@@ -1,5 +1,6 @@
 package edg.wir
 
+import edg.EdgirUtils
 import edg.EdgirUtils.SimpleLibraryPath
 import edgir.common.common
 import edgir.elem.elem
@@ -45,6 +46,7 @@ class Block(
     cloned.links.addAll(links.map { case (name, link) => name -> link.cloned })
     cloned.constraints.clear()
     cloned.constraints.addAll(constraints)
+    cloned.metadata = metadata
     cloned
   }
 
@@ -113,6 +115,7 @@ class Generator(
     cloned.constraints.clear()
     cloned.constraints.addAll(constraints)
     cloned.generatedPb = generatedPb
+    cloned.metadata = metadata
     cloned
   }
 
@@ -147,6 +150,7 @@ class Generator(
     blocks.addAll(parseBlocks(pb.blocks))
     links.addAll(parseLinks(pb.links))
     constraints.addAll(parseConstraints(pb.constraints))
+    metadata = EdgirUtils.mergeMeta(metadata, pb.meta)
 
     generatedPb = Some(pb)
 
@@ -166,6 +170,7 @@ class Generator(
       blocks = blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
       links = links.view.mapValues(_.toPb).to(SeqMap).toPb,
       constraints = constraints.to(SeqMap).toPb,
+      meta = metadata,
     )
   }
 }

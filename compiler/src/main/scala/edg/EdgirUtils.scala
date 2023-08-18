@@ -152,10 +152,34 @@ object EdgirUtils {
   def metaGetItem(base: Option[common.Metadata], key: String): Option[common.Metadata] = {
     base match {
       case Some(meta) => meta.meta match {
-        case common.Metadata.Meta.Members(members) => members.node.get(key)
-        case _ => None
-      }
+          case common.Metadata.Meta.Members(members) => members.node.get(key)
+          case _ => None
+        }
       case None => None
+    }
+  }
+
+  def mergeMeta(meta1: Option[common.Metadata], meta2: Option[common.Metadata]): Option[common.Metadata] = {
+    (meta1, meta2) match {
+      case (None, None) => None
+      case (Some(meta1), None) => Some(meta1)
+      case (None, Some(meta2)) => Some(meta2)
+      case (Some(meta1), Some(meta2)) => (meta1.meta, meta2.meta) match {
+          case (common.Metadata.Meta.Members(members1), common.Metadata.Meta.Members(members2)) =>
+            val keys = members1.node.keys ++ members2.node.keys
+            Some(common.Metadata(meta =
+              common.Metadata.Meta.Members(common.Metadata.Members(
+                node = keys.map { key =>
+                  (members1.node.get(key), members2.node.get(key)) match {
+                    case (Some(value1), None) => key -> value1
+                    case (None, Some(value2)) => key -> value2
+                    case _ => throw new IllegalArgumentException("cannot merge metadata with conflicting keys ")
+                  }
+                }.toMap
+              ))
+            ))
+          case (members1, members2) => throw new IllegalArgumentException("cannot merge non-dict metadata")
+        }
     }
   }
 }
