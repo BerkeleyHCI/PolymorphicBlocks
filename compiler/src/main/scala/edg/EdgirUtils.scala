@@ -107,17 +107,8 @@ object EdgirUtils {
     }
   }
 
-  // Converts a string-to-string Map to a Metadata structure, for serializing data within the compiler.
+  // Converts a iterable of String (preserving order) to a Metadata structure, for serializing data internally.
   // Not meant to be a stable part of the public API, this format may change.
-  def strMapToMeta(strMap: Map[String, String]): common.Metadata = {
-    common.Metadata(meta =
-      common.Metadata.Meta.Members(common.Metadata.Members(
-        node = strMap.map { case (k, v) => k -> common.Metadata(meta = common.Metadata.Meta.TextLeaf(v)) }
-      ))
-    )
-  }
-
-  // Similar for strSeqToMeta, but for a sequence of strings, preserving order.
   def strSeqToMeta(strMap: Iterable[String]): common.Metadata = {
     common.Metadata(meta =
       common.Metadata.Meta.Members(common.Metadata.Members(
@@ -128,12 +119,7 @@ object EdgirUtils {
     )
   }
 
-  // Converts a Metadata object to a string-to-string Map structure, inverse of strMapToMeta.
-  // Checks are strict, this crashes on invalidly formatted data
-  def metaToStrMap(meta: common.Metadata): Map[String, String] = {
-    meta.getMembers.node.map { case (k, v) => k -> v.getTextLeaf }
-  }
-
+  // Inverse of strSeqToMeta, including strict checks (will crash on badly formatted data)
   def metaToStrSeq(meta: common.Metadata): Seq[String] = {
     meta.getMembers.node.map { case (k, v) => k.toInt -> v.getTextLeaf }.toSeq.sortBy(_._1).map(_._2)
   }
