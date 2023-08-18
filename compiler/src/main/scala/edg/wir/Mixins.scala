@@ -16,8 +16,7 @@ trait HasClass {
 }
 
 trait HasMutablePorts {
-  protected val ports: mutable.SeqMap[String, PortLike] = initPorts
-  protected def initPorts: mutable.SeqMap[String, PortLike]
+  protected val ports: mutable.SeqMap[String, PortLike]
 
   def getPorts: SeqMap[String, PortLike] = ports.to(SeqMap)
   def elaborate(name: String, port: PortLike): Unit = {
@@ -32,8 +31,7 @@ trait HasMutablePorts {
 }
 
 trait HasMutableBlocks extends HasClass {
-  protected val blocks: mutable.SeqMap[String, BlockLike] = initBlocks
-  protected def initBlocks: mutable.SeqMap[String, BlockLike]
+  protected val blocks: mutable.SeqMap[String, BlockLike]
 
   def getBlocks: SeqMap[String, BlockLike] = blocks.to(SeqMap)
   def elaborate(name: String, block: BlockLike): Unit = {
@@ -53,8 +51,7 @@ trait HasMutableBlocks extends HasClass {
 }
 
 trait HasMutableLinks {
-  protected val links: mutable.SeqMap[String, LinkLike] = initLinks
-  protected def initLinks: mutable.SeqMap[String, LinkLike]
+  protected val links: mutable.SeqMap[String, LinkLike]
 
   def getLinks: SeqMap[String, LinkLike] = links.to(SeqMap)
   def elaborate(name: String, link: LinkLike): Unit = {
@@ -77,8 +74,7 @@ trait HasMutableLinks {
 trait HasMutableConstraints {
   import edg.util.SeqMapUtils
 
-  protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = initConstraints
-  protected def initConstraints: mutable.SeqMap[String, expr.ValueExpr] // implement me
+  protected val constraints: mutable.SeqMap[String, expr.ValueExpr]
 
   def getConstraints: SeqMap[String, expr.ValueExpr] = constraints.to(SeqMap)
 
@@ -105,9 +101,7 @@ trait HasParams extends HasClass {
 }
 
 trait HasMutableMetadata {
-  protected var metadata: Option[common.Metadata] = initMetadata
-
-  protected def initMetadata: Option[common.Metadata] // implement me
+  protected var metadata: Option[common.Metadata]
 
   // replaces the metadata in-place, it is up to the upper layer to do this composably (eg, map-aware)
   def mapMetadata(fn: Option[common.Metadata] => Option[edgir.common.common.Metadata]): Unit = {
