@@ -159,6 +159,7 @@ object EdgirUtils {
                   (members1.node.get(key), members2.node.get(key)) match {
                     case (Some(value1), None) => key -> value1
                     case (None, Some(value2)) => key -> value2
+                    case (Some(value1), Some(value2)) if value1 == value2 => key -> value1
                     case _ => throw new IllegalArgumentException("cannot merge metadata with conflicting keys ")
                   }
                 }.toMap
