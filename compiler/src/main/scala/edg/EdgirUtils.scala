@@ -117,16 +117,7 @@ object EdgirUtils {
     )
   }
 
-  def metaToStrSeq(meta: common.Metadata): Seq[String] = {
-    ???
-  }
-
-  // Converts a Metadata object to a string-to-string Map structure, inverse of strMapToMeta.
-  // Checks are strict, this crashes on invalidly formatted data
-  def metaToStrMap(meta: common.Metadata): Map[String, String] = {
-    meta.getMembers.node.map { case (k, v) => k -> v.getTextLeaf }
-  }
-
+  // Similar for strSeqToMeta, but for a sequence of strings, preserving order.
   def strSeqToMeta(strMap: Iterable[String]): common.Metadata = {
     common.Metadata(meta =
       common.Metadata.Meta.Members(common.Metadata.Members(
@@ -135,6 +126,16 @@ object EdgirUtils {
         }.toMap
       ))
     )
+  }
+
+  // Converts a Metadata object to a string-to-string Map structure, inverse of strMapToMeta.
+  // Checks are strict, this crashes on invalidly formatted data
+  def metaToStrMap(meta: common.Metadata): Map[String, String] = {
+    meta.getMembers.node.map { case (k, v) => k -> v.getTextLeaf }
+  }
+
+  def metaToStrSeq(meta: common.Metadata): Seq[String] = {
+    meta.getMembers.node.map { case (k, v) => k.toInt -> v.getTextLeaf }.toSeq.sortBy(_._1).map(_._2)
   }
 
   def metaInsertItem(base: Option[common.Metadata], key: String, value: common.Metadata): Option[common.Metadata] = {

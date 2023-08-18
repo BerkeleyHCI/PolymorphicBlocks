@@ -12,7 +12,7 @@ class EdgirUtilsTest extends AnyFlatSpec {
   }
 
   it should "roundtrip Seq" in {
-    val testdata = Seq("a", "b", "c", "d")
-//    EdgirUtils.metaToStrSeq(EdgirUtils.strSeqToMeta(testdata)) should equal(testdata)
+    val testdata = Seq("a", "1", "b", "c", "3", "d")
+    EdgirUtils.metaToStrSeq(EdgirUtils.strSeqToMeta(testdata)) should equal(testdata)
   }
 }
