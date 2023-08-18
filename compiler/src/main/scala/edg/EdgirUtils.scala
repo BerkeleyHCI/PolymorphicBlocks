@@ -147,4 +147,15 @@ object EdgirUtils {
     require(!baseMeta.getMembers.node.contains(key))
     Some(baseMeta.update(_.members.node :+= ((key, value))))
   }
+
+  // from the meta field, returns the key metadata (if the metadata exists and is a dict with the field), or None
+  def metaGetItem(base: Option[common.Metadata], key: String): Option[common.Metadata] = {
+    base match {
+      case Some(meta) => meta.meta match {
+        case common.Metadata.Meta.Members(members) => members.node.get(key)
+        case _ => None
+      }
+      case None => None
+    }
+  }
 }
