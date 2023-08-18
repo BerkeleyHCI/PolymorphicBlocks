@@ -1,6 +1,8 @@
 package edg.wir
 
+import edg.EdgirUtils
 import edg.EdgirUtils.SimpleLibraryPath
+import edgir.common.common
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.init.init
@@ -25,11 +27,13 @@ class Block(
     val unrefinedType: Option[ref.LibraryPath],
     val unrefinedMixins: Seq[ref.LibraryPath]
 ) extends BlockLike
-    with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams {
+    with HasMutablePorts with HasMutableBlocks with HasMutableLinks with HasMutableConstraints with HasParams
+    with HasMutableMetadata {
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
   override protected val blocks: mutable.SeqMap[String, BlockLike] = parseBlocks(pb.blocks)
   override protected val links: mutable.SeqMap[String, LinkLike] = parseLinks(pb.links)
   override protected val constraints: mutable.SeqMap[String, expr.ValueExpr] = parseConstraints(pb.constraints)
+  override protected var metadata: Option[common.Metadata] = pb.meta
 
   // creates a copy of this object
   override def cloned: Block = {
@@ -42,6 +46,7 @@ class Block(
     cloned.links.addAll(links.map { case (name, link) => name -> link.cloned })
     cloned.constraints.clear()
     cloned.constraints.addAll(constraints)
+    cloned.metadata = metadata
     cloned
   }
 
@@ -75,6 +80,7 @@ class Block(
       blocks = blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
       links = links.view.mapValues(_.toPb).to(SeqMap).toPb,
       constraints = constraints.toPb,
+      meta = metadata,
     )
   }
 
@@ -109,6 +115,7 @@ class Generator(
     cloned.constraints.clear()
     cloned.constraints.addAll(constraints)
     cloned.generatedPb = generatedPb
+    cloned.metadata = metadata
     cloned
   }
 
@@ -143,6 +150,7 @@ class Generator(
     blocks.addAll(parseBlocks(pb.blocks))
     links.addAll(parseLinks(pb.links))
     constraints.addAll(parseConstraints(pb.constraints))
+    metadata = EdgirUtils.mergeMeta(metadata, pb.meta)
 
     generatedPb = Some(pb)
 
@@ -162,6 +170,7 @@ class Generator(
       blocks = blocks.view.mapValues(_.toPb).to(SeqMap).toPb,
       links = links.view.mapValues(_.toPb).to(SeqMap).toPb,
       constraints = constraints.to(SeqMap).toPb,
+      meta = metadata,
     )
   }
 }

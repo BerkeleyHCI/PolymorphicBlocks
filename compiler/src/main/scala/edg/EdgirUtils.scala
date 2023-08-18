@@ -1,5 +1,6 @@
 package edg
 
+import edgir.common.common
 import edgir.ref.ref
 import edgir.expr.expr
 
@@ -103,6 +104,69 @@ object EdgirUtils {
       case expr.ValueExpr.Expr.ExportedArray(exported) =>
         connection.withExported(exported)
       case _ => throw new IllegalArgumentException
+    }
+  }
+
+  // Converts a iterable of String (preserving order) to a Metadata structure, for serializing data internally.
+  // Not meant to be a stable part of the public API, this format may change.
+  def strSeqToMeta(strMap: Iterable[String]): common.Metadata = {
+    common.Metadata(meta =
+      common.Metadata.Meta.Members(common.Metadata.Members(
+        node = strMap.zipWithIndex.map { case (value, i) =>
+          i.toString -> common.Metadata(meta = common.Metadata.Meta.TextLeaf(value))
+        }.toMap
+      ))
+    )
+  }
+
+  // Inverse of strSeqToMeta, including strict checks (will crash on badly formatted data)
+  def metaToStrSeq(meta: common.Metadata): Seq[String] = {
+    meta.getMembers.node.map { case (k, v) => k.toInt -> v.getTextLeaf }.toSeq.sortBy(_._1).map(_._2)
+  }
+
+  def metaInsertItem(base: Option[common.Metadata], key: String, value: common.Metadata): Option[common.Metadata] = {
+    val baseMeta = base match {
+      case None => common.Metadata()
+      case Some(meta) => meta
+    }
+    require(baseMeta.meta.isMembers || baseMeta.meta.isEmpty) // must not be any other type that can be overwritten
+    require(!baseMeta.getMembers.node.contains(key))
+    Some(baseMeta.update(_.members.node :+= ((key, value))))
+  }
+
+  // from the meta field, returns the key metadata (if the metadata exists and is a dict with the field), or None
+  def metaGetItem(base: Option[common.Metadata], key: String): Option[common.Metadata] = {
+    base match {
+      case Some(meta) => meta.meta match {
+          case common.Metadata.Meta.Members(members) => members.node.get(key)
+          case _ => None
+        }
+      case None => None
+    }
+  }
+
+  def mergeMeta(meta1: Option[common.Metadata], meta2: Option[common.Metadata]): Option[common.Metadata] = {
+    (meta1, meta2) match {
+      case (None, None) => None
+      case (Some(meta1), None) => Some(meta1)
+      case (None, Some(meta2)) => Some(meta2)
+      case (Some(meta1), Some(meta2)) => (meta1.meta, meta2.meta) match {
+          case (common.Metadata.Meta.Members(members1), common.Metadata.Meta.Members(members2)) =>
+            val keys = members1.node.keys ++ members2.node.keys
+            Some(common.Metadata(meta =
+              common.Metadata.Meta.Members(common.Metadata.Members(
+                node = keys.map { key =>
+                  (members1.node.get(key), members2.node.get(key)) match {
+                    case (Some(value1), None) => key -> value1
+                    case (None, Some(value2)) => key -> value2
+                    case (Some(value1), Some(value2)) if value1 == value2 => key -> value1
+                    case _ => throw new IllegalArgumentException("cannot merge metadata with conflicting keys ")
+                  }
+                }.toMap
+              ))
+            ))
+          case (members1, members2) => throw new IllegalArgumentException("cannot merge non-dict metadata")
+        }
     }
   }
 }

@@ -105,6 +105,7 @@ object ElemBuilder {
         constraints: SeqMap[String, expr.ValueExpr] = SeqMap(),
         prerefine: String = "",
         prerefineMixins: Seq[String] = Seq(),
+        meta: Option[Map[String, common.Metadata]] = None,
     ): elem.BlockLike = elem.BlockLike(`type` =
       elem.BlockLike.Type.Hierarchy(elem.HierarchyBlock(
         params = params.toPb,
@@ -122,7 +123,10 @@ object ElemBuilder {
           case "" => None
           case prerefine => Some(LibraryPath(prerefine))
         },
-        prerefineMixins = prerefineMixins.map(LibraryPath(_))
+        prerefineMixins = prerefineMixins.map(LibraryPath(_)),
+        meta = meta.map(map =>
+          common.Metadata(meta = common.Metadata.Meta.Members(common.Metadata.Members(node = map.toMap)))
+        )
       ))
     )
   }

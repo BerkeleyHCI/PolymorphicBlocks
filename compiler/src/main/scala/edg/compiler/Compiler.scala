@@ -5,6 +5,7 @@ import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
 import edg.wir.ProtoUtil._
 import edg.wir._
 import edg.{ExprBuilder, wir}
+import edgir.common.common
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.ref.ref
@@ -591,8 +592,14 @@ class Compiler private (
         }
     }
 
-    // additional processing needed for the refinement case
     val unrefinedType = if (isRefined) Some(block.target) else None
+    val newBlock = if (refinedPb.generator.isEmpty) {
+      new wir.Block(refinedPb, unrefinedType, block.mixins)
+    } else {
+      new wir.Generator(refinedPb, unrefinedType, block.mixins)
+    }
+
+    // additional processing needed for the refinement case
     if (unrefinedType.isDefined) {
       val refinedNewParams = refinedPb.params.toSeqMap.keys.toSet -- prerefineBlockPb.params.toSeqMap.keys
       refinedNewParams.foreach { refinedNewParam => // add subclass (refinement) default params
@@ -625,12 +632,10 @@ class Compiler private (
           case _ => throw new IllegalArgumentException(s"unknown port $refinedNewPort")
         }
       }
-    }
 
-    val newBlock = if (refinedPb.generator.isEmpty) {
-      new wir.Block(refinedPb, unrefinedType, block.mixins)
-    } else {
-      new wir.Generator(refinedPb, unrefinedType, block.mixins)
+      // add metadata on refinement-only ports
+      newBlock.mapMetadata(metaInsertItem(_, "refinedNewPorts", strSeqToMeta(refinedNewPorts)))
+      newBlock.mapMetadata(metaInsertItem(_, "refinedNewParams", strSeqToMeta(refinedNewParams)))
     }
 
     val (parentPath, blockName) = path.split

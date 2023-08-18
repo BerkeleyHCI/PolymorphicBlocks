@@ -1,6 +1,7 @@
 package edg.wir
 
 import edg.wir.ProtoUtil._
+import edgir.common.common
 import edgir.ref.ref
 import edgir.elem.elem
 import edgir.expr.expr
@@ -97,4 +98,13 @@ trait HasMutableConstraints {
 
 trait HasParams extends HasClass {
   def getParams: SeqMap[String, init.ValInit]
+}
+
+trait HasMutableMetadata {
+  protected var metadata: Option[common.Metadata]
+
+  // replaces the metadata in-place, it is up to the upper layer to do this composably (eg, map-aware)
+  def mapMetadata(fn: Option[common.Metadata] => Option[edgir.common.common.Metadata]): Unit = {
+    metadata = fn(metadata)
+  }
 }
