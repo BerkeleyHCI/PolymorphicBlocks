@@ -191,10 +191,6 @@ class Compiler private (
     }.flatten.toSeq
   }
 
-  // Supplemental elaboration data structures
-  private val expandedArrayConnectConstraints =
-    SingleWriteHashMap[DesignPath, Seq[String]]() // constraint path -> new constraint names
-
   // TODO this should get moved into the design tree
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -234,8 +230,6 @@ class Compiler private (
       }
     }
     processBlockAdditionalRefinements(DesignPath(), cloned.root)
-    require(cloned.expandedArrayConnectConstraints.isEmpty)
-    cloned.expandedArrayConnectConstraints.addAll(expandedArrayConnectConstraints)
     require(cloned.errors.isEmpty)
     cloned.errors.addAll(errors)
     cloned
