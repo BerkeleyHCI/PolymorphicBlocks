@@ -337,6 +337,12 @@ message MapExtractExpr {
 message ConnectedExpr {
   ValueExpr block_port = 1;
   ValueExpr link_port  = 2;
+
+  // During compilation, ConnectedExpr may be expanded (allocate replaced with concrete path indices,
+  // and arrays replaced with individual element connects).
+  // The expanded forms are stored here (including multiple elements in the array case),
+  // while the original (parent) is not modified.
+  repeated ConnectedExpr expanded = 3;
 }
 
 
@@ -346,6 +352,8 @@ message ConnectedExpr {
 message ExportedExpr {
   ValueExpr exterior_port = 1;
   ValueExpr internal_block_port  = 2;
+
+  repeated ExportedExpr lowered = 3;  // see comment in ConnectedExpr
 }
 
 
