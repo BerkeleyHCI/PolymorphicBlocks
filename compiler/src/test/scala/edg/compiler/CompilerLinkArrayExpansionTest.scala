@@ -98,15 +98,33 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
     val referenceConstraints = SeqMap( // expected constraints in the top-level design
-      "sourceConnect.a" -> Constraint.Connected(Ref("source", "port", "a"), Ref("link", "source", "a")),
-      "sourceConnect.b" -> Constraint.Connected(Ref("source", "port", "b"), Ref("link", "source", "b")),
-      "sourceConnect.c" -> Constraint.Connected(Ref("source", "port", "c"), Ref("link", "source", "c")),
-      "sink0Connect.a" -> Constraint.Connected(Ref("sink0", "port", "a"), Ref("link", "sinks", "0", "a")),
-      "sink0Connect.b" -> Constraint.Connected(Ref("sink0", "port", "b"), Ref("link", "sinks", "0", "b")),
-      "sink0Connect.c" -> Constraint.Connected(Ref("sink0", "port", "c"), Ref("link", "sinks", "0", "c")),
-      "sink1Connect.a" -> Constraint.Connected(Ref("sink1", "port", "a"), Ref("link", "sinks", "1", "a")),
-      "sink1Connect.b" -> Constraint.Connected(Ref("sink1", "port", "b"), Ref("link", "sinks", "1", "b")),
-      "sink1Connect.c" -> Constraint.Connected(Ref("sink1", "port", "c"), Ref("link", "sinks", "1", "c")),
+      "sourceConnect" -> Constraint.ConnectedArray(
+        Ref("source", "port"),
+        Ref("link", "source"),
+        Seq(
+          Constraint.Connected(Ref("source", "port", "a"), Ref("link", "source", "a")),
+          Constraint.Connected(Ref("source", "port", "b"), Ref("link", "source", "b")),
+          Constraint.Connected(Ref("source", "port", "c"), Ref("link", "source", "c")),
+        )
+      ),
+      "sink0Connect" -> Constraint.ConnectedArray(
+        Ref("sink0", "port"),
+        Ref.Allocate(Ref("link", "sinks")),
+        Seq(
+          Constraint.Connected(Ref("sink0", "port", "a"), Ref("link", "sinks", "0", "a")),
+          Constraint.Connected(Ref("sink0", "port", "b"), Ref("link", "sinks", "0", "b")),
+          Constraint.Connected(Ref("sink0", "port", "c"), Ref("link", "sinks", "0", "c")),
+        )
+      ),
+      "sink1Connect" -> Constraint.ConnectedArray(
+        Ref("sink1", "port"),
+        Ref.Allocate(Ref("link", "sinks")),
+        Seq(
+          Constraint.Connected(Ref("sink1", "port", "a"), Ref("link", "sinks", "1", "a")),
+          Constraint.Connected(Ref("sink1", "port", "b"), Ref("link", "sinks", "1", "b")),
+          Constraint.Connected(Ref("sink1", "port", "c"), Ref("link", "sinks", "1", "c")),
+        )
+      ),
     )
     val referenceLinkArrayConstraints = SeqMap( // expected constraints in the link array
       "source.a" -> Constraint.Exported(Ref("source", "a"), Ref("a", "source")),
@@ -220,10 +238,15 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
     val referenceConstraints = SeqMap( // expected constraints in the top-level design
-      "sourceConnect.a" -> Constraint.Connected(Ref("source", "port", "a"), Ref("link", "source", "a")),
-      "sourceConnect.b" -> Constraint.Connected(Ref("source", "port", "b"), Ref("link", "source", "b")),
-      "sourceConnect.c" -> Constraint.Connected(Ref("source", "port", "c"), Ref("link", "source", "c")),
-    )
+      "sourceConnect" -> Constraint.ConnectedArray(
+        Ref("source", "port"),
+        Ref("link", "source"),
+        Seq(
+          Constraint.Connected(Ref("source", "port", "a"), Ref("link", "source", "a")),
+          Constraint.Connected(Ref("source", "port", "b"), Ref("link", "source", "b")),
+          Constraint.Connected(Ref("source", "port", "c"), Ref("link", "source", "c")),
+        )
+      ))
     val referenceLinkArrayConstraints = SeqMap( // expected constraints in the link array
       "source.a" -> Constraint.Exported(Ref("source", "a"), Ref("a", "source")),
       "source.b" -> Constraint.Exported(Ref("source", "b"), Ref("b", "source")),
@@ -295,10 +318,15 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
     val referenceConstraints = SeqMap( // expected constraints in the top-level design
-      "sinkConnect.a" -> Constraint.Connected(Ref("sink", "port", "a"), Ref("link", "sinks", "0", "a")),
-      "sinkConnect.b" -> Constraint.Connected(Ref("sink", "port", "b"), Ref("link", "sinks", "0", "b")),
-      "sinkConnect.c" -> Constraint.Connected(Ref("sink", "port", "c"), Ref("link", "sinks", "0", "c")),
-    )
+      "sinkConnect" -> Constraint.ConnectedArray(
+        Ref("sink", "port"),
+        Ref.Allocate(Ref("link", "sinks")),
+        Seq(
+          Constraint.Connected(Ref("sink", "port", "a"), Ref("link", "sinks", "0", "a")),
+          Constraint.Connected(Ref("sink", "port", "b"), Ref("link", "sinks", "0", "b")),
+          Constraint.Connected(Ref("sink", "port", "c"), Ref("link", "sinks", "0", "c")),
+        )
+      ))
     val referenceLinkArrayConstraints = SeqMap( // expected constraints in the link array
       "source.a" -> Constraint.Exported(Ref("source", "a"), Ref("a", "source")), // always generated, even if NC
       "source.b" -> Constraint.Exported(Ref("source", "b"), Ref("b", "source")),
@@ -399,18 +427,42 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
     val referenceConstraints = SeqMap( // expected constraints in the top-level design
-      "source0Connect.a" -> Constraint.Connected(Ref("source0", "port", "a"), Ref("link0", "source", "a")),
-      "source0Connect.b" -> Constraint.Connected(Ref("source0", "port", "b"), Ref("link0", "source", "b")),
-      "source0Connect.c" -> Constraint.Connected(Ref("source0", "port", "c"), Ref("link0", "source", "c")),
-      "source1Connect.a" -> Constraint.Connected(Ref("source1", "port", "a"), Ref("link1", "source", "a")),
-      "source1Connect.b" -> Constraint.Connected(Ref("source1", "port", "b"), Ref("link1", "source", "b")),
-      "source1Connect.c" -> Constraint.Connected(Ref("source1", "port", "c"), Ref("link1", "source", "c")),
-      "sinkConnect0.a" -> Constraint.Connected(Ref("sink", "port", "0_a"), Ref("link0", "sinks", "0", "a")),
-      "sinkConnect0.b" -> Constraint.Connected(Ref("sink", "port", "0_b"), Ref("link0", "sinks", "0", "b")),
-      "sinkConnect0.c" -> Constraint.Connected(Ref("sink", "port", "0_c"), Ref("link0", "sinks", "0", "c")),
-      "sinkConnect1.a" -> Constraint.Connected(Ref("sink", "port", "1_a"), Ref("link1", "sinks", "0", "a")),
-      "sinkConnect1.b" -> Constraint.Connected(Ref("sink", "port", "1_b"), Ref("link1", "sinks", "0", "b")),
-      "sinkConnect1.c" -> Constraint.Connected(Ref("sink", "port", "1_c"), Ref("link1", "sinks", "0", "c")),
+      "source0Connect" -> Constraint.ConnectedArray(
+        Ref("source0", "port"),
+        Ref("link0", "source"),
+        Seq(
+          Constraint.Connected(Ref("source0", "port", "a"), Ref("link0", "source", "a")),
+          Constraint.Connected(Ref("source0", "port", "b"), Ref("link0", "source", "b")),
+          Constraint.Connected(Ref("source0", "port", "c"), Ref("link0", "source", "c")),
+        )
+      ),
+      "source1Connect" -> Constraint.ConnectedArray(
+        Ref("source1", "port"),
+        Ref("link1", "source"),
+        Seq(
+          Constraint.Connected(Ref("source1", "port", "a"), Ref("link1", "source", "a")),
+          Constraint.Connected(Ref("source1", "port", "b"), Ref("link1", "source", "b")),
+          Constraint.Connected(Ref("source1", "port", "c"), Ref("link1", "source", "c")),
+        )
+      ),
+      "sinkConnect0" -> Constraint.ConnectedArray(
+        Ref.Allocate(Ref("sink", "port")),
+        Ref.Allocate(Ref("link0", "sinks")),
+        Seq(
+          Constraint.Connected(Ref("sink", "port", "0_a"), Ref("link0", "sinks", "0", "a")),
+          Constraint.Connected(Ref("sink", "port", "0_b"), Ref("link0", "sinks", "0", "b")),
+          Constraint.Connected(Ref("sink", "port", "0_c"), Ref("link0", "sinks", "0", "c")),
+        )
+      ),
+      "sinkConnect1" -> Constraint.ConnectedArray(
+        Ref.Allocate(Ref("sink", "port")),
+        Ref.Allocate(Ref("link1", "sinks")),
+        Seq(
+          Constraint.Connected(Ref("sink", "port", "1_a"), Ref("link1", "sinks", "0", "a")),
+          Constraint.Connected(Ref("sink", "port", "1_b"), Ref("link1", "sinks", "0", "b")),
+          Constraint.Connected(Ref("sink", "port", "1_c"), Ref("link1", "sinks", "0", "c")),
+        )
+      ),
     )
 
     val (compiler, compiled) = testCompile(inputDesign, library)
@@ -467,18 +519,42 @@ class CompilerLinkArrayExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       )
     ))
     val referenceConstraints = SeqMap( // expected constraints in the top-level design
-      "source0Connect.a" -> Constraint.Connected(Ref("source0", "port", "a"), Ref("link0", "source", "a")),
-      "source0Connect.b" -> Constraint.Connected(Ref("source0", "port", "b"), Ref("link0", "source", "b")),
-      "source0Connect.c" -> Constraint.Connected(Ref("source0", "port", "c"), Ref("link0", "source", "c")),
-      "source1Connect.a" -> Constraint.Connected(Ref("source1", "port", "a"), Ref("link1", "source", "a")),
-      "source1Connect.b" -> Constraint.Connected(Ref("source1", "port", "b"), Ref("link1", "source", "b")),
-      "source1Connect.c" -> Constraint.Connected(Ref("source1", "port", "c"), Ref("link1", "source", "c")),
-      "sinkConnect0.a" -> Constraint.Connected(Ref("sink", "port", "n0_a"), Ref("link0", "sinks", "0", "a")),
-      "sinkConnect0.b" -> Constraint.Connected(Ref("sink", "port", "n0_b"), Ref("link0", "sinks", "0", "b")),
-      "sinkConnect0.c" -> Constraint.Connected(Ref("sink", "port", "n0_c"), Ref("link0", "sinks", "0", "c")),
-      "sinkConnect1.a" -> Constraint.Connected(Ref("sink", "port", "n1_a"), Ref("link1", "sinks", "0", "a")),
-      "sinkConnect1.b" -> Constraint.Connected(Ref("sink", "port", "n1_b"), Ref("link1", "sinks", "0", "b")),
-      "sinkConnect1.c" -> Constraint.Connected(Ref("sink", "port", "n1_c"), Ref("link1", "sinks", "0", "c")),
+      "source0Connect" -> Constraint.ConnectedArray(
+        Ref("source0", "port"),
+        Ref("link0", "source"),
+        Seq(
+          Constraint.Connected(Ref("source0", "port", "a"), Ref("link0", "source", "a")),
+          Constraint.Connected(Ref("source0", "port", "b"), Ref("link0", "source", "b")),
+          Constraint.Connected(Ref("source0", "port", "c"), Ref("link0", "source", "c")),
+        )
+      ),
+      "source1Connect" -> Constraint.ConnectedArray(
+        Ref("source1", "port"),
+        Ref("link1", "source"),
+        Seq(
+          Constraint.Connected(Ref("source1", "port", "a"), Ref("link1", "source", "a")),
+          Constraint.Connected(Ref("source1", "port", "b"), Ref("link1", "source", "b")),
+          Constraint.Connected(Ref("source1", "port", "c"), Ref("link1", "source", "c")),
+        )
+      ),
+      "sinkConnect0" -> Constraint.ConnectedArray(
+        Ref.Allocate(Ref("sink", "port"), Some("n0")),
+        Ref.Allocate(Ref("link0", "sinks")),
+        Seq(
+          Constraint.Connected(Ref("sink", "port", "n0_a"), Ref("link0", "sinks", "0", "a")),
+          Constraint.Connected(Ref("sink", "port", "n0_b"), Ref("link0", "sinks", "0", "b")),
+          Constraint.Connected(Ref("sink", "port", "n0_c"), Ref("link0", "sinks", "0", "c")),
+        )
+      ),
+      "sinkConnect1" -> Constraint.ConnectedArray(
+        Ref.Allocate(Ref("sink", "port"), Some("n1")),
+        Ref.Allocate(Ref("link1", "sinks")),
+        Seq(
+          Constraint.Connected(Ref("sink", "port", "n1_a"), Ref("link1", "sinks", "0", "a")),
+          Constraint.Connected(Ref("sink", "port", "n1_b"), Ref("link1", "sinks", "0", "b")),
+          Constraint.Connected(Ref("sink", "port", "n1_c"), Ref("link1", "sinks", "0", "c")),
+        )
+      ),
     )
 
     val (compiler, compiled) = testCompile(inputDesign, library)
