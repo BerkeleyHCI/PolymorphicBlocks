@@ -353,7 +353,7 @@ message ExportedExpr {
   ValueExpr exterior_port = 1;
   ValueExpr internal_block_port  = 2;
 
-  repeated ExportedExpr lowered = 3;  // see comment in ConnectedExpr
+  repeated ExportedExpr expanded = 3;  // see comment in ConnectedExpr
 }
 
 

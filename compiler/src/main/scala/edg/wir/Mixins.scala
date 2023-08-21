@@ -78,6 +78,7 @@ trait HasMutableConstraints {
 
   def getConstraints: SeqMap[String, expr.ValueExpr] = constraints.to(SeqMap)
 
+  // Replaces the constraint by name, in-place, with the result of the function.
   def mapConstraint(name: String)(fn: expr.ValueExpr => expr.ValueExpr): Unit = {
     constraints.update(name, fn(constraints(name)))
   }

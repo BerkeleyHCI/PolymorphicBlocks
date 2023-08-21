@@ -1463,36 +1463,38 @@ class Compiler private (
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints] // can be block or link
 
     import edg.ExprBuilder.{Ref, ValueExpr}
-    val newConstrNames = parentBlock.getConstraints(record.constraintName).expr match {
+    parentBlock.getConstraints(record.constraintName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) =>
         (exported.getExteriorPort, exported.getInternalBlockPort) match {
           case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
             val intPortArrayElts = ArrayValue.ExtractText( // propagates inner to outer
               constProp.getValue(record.parent.asIndirect ++ intPortArray + IndirectStep.Elements).get)
-            parentBlock.mapMultiConstraint(record.constraintName) { constr =>
-              intPortArrayElts.map { index =>
-                val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
+            parentBlock.mapConstraint(record.constraintName) { constr =>
+              val expandedConstrs = intPortArrayElts.map { index =>
+                constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
                   case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*)
                 }.connectUpdateRef {
                   case ValueExpr.Ref(ref) if ref == intPortArray => ValueExpr.Ref((ref :+ index): _*)
-                }
-                s"${record.constraintName}.$index" -> newConstr
+                }.getExported
               }
-            }.keys
+              require(constr.getExportedArray.expanded.isEmpty)
+              constr.update(_.exportedArray.expanded := expandedConstrs)
+            }
 
           case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), _), ValueExpr.RefAllocate(_, _)) =>
             val extPortArrayElts = ArrayValue.ExtractText( // propagates outer to inner
               constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
-            parentBlock.mapMultiConstraint(record.constraintName) { constr =>
-              extPortArrayElts.map { index =>
-                val newConstr = constr.asSingleConnection.connectUpdateRef {
+            parentBlock.mapConstraint(record.constraintName) { constr =>
+              val expandedConstrs = extPortArrayElts.map { index =>
+                constr.asSingleConnection.connectUpdateRef {
                   case ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)) =>
                     ValueExpr.Ref((extPortArray ++ Seq(index) ++ extPortInner): _*)
                   // inner side remains an allocate
-                }
-                s"${record.constraintName}.$index" -> newConstr
+                }.getExported
               }
-            }.keys
+              require(constr.getExportedArray.expanded.isEmpty)
+              constr.update(_.exportedArray.expanded := expandedConstrs)
+            }
 
           case _ => throw new IllegalArgumentException("unsupported array export")
         }
@@ -1501,9 +1503,9 @@ class Compiler private (
         val linkArrayPostfix = Seq(connected.getLinkPort.getRef.steps.head.getName)
         val linkArrayElts = ArrayValue.ExtractText( // propagates inner to outer
           constProp.getValue(record.parent.asIndirect ++ linkArrayPostfix + IndirectStep.Elements).get)
-        parentBlock.mapMultiConstraint(record.constraintName) { constr =>
-          linkArrayElts.map { index =>
-            val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
+        parentBlock.mapConstraint(record.constraintName) { constr =>
+          val expandedConstrs = linkArrayElts.map { index =>
+            constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
               case ValueExpr.Ref(ref) if !ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
               case ValueExpr.RefAllocate(ref, None) if !ref.startsWith(linkArrayPostfix) =>
                 ValueExpr.RefAllocate(ref, None) // allocate stays intact
@@ -1511,24 +1513,22 @@ class Compiler private (
                 ValueExpr.RefAllocate(ref, Some(s"${suggestedName}_$index")) // index tacked onto suggested name
             }.connectUpdateRef {
               case ValueExpr.Ref(ref) if ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
-            }
-            s"${record.constraintName}.$index" -> newConstr
+            }.getConnected
           }
-        }.keys
+          require(constr.getConnectedArray.expanded.isEmpty)
+          constr.update(_.connectedArray.expanded := expandedConstrs)
+        }
 
       case _ => throw new IllegalArgumentException
     }
 
-    expandedArrayConnectConstraints.put(record.parent + record.constraintName, newConstrNames.toSeq)
-    newConstrNames.foreach { constrName =>
-      // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
-      processConnectedConstraint(
-        record.parent,
-        constrName,
-        parentBlock.getConstraints(constrName),
-        parentBlock.isInstanceOf[wir.Link]
-      )
-    }
+    // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
+    processConnectedConstraint(
+      record.parent,
+      record.constraintName,
+      parentBlock.getConstraints(record.constraintName),
+      parentBlock.isInstanceOf[wir.Link]
+    )
   }
 
   // Once a block-side port array has all its element widths available, this lowers the connect statements
