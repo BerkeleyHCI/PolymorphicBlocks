@@ -49,62 +49,169 @@ object EdgirUtils {
       case _ => throw new IllegalArgumentException
     }
 
-    // Returns a new connection with exactly one port reference replaced with the partial function
-    def connectUpdateRef(fn: PartialFunction[expr.ValueExpr, expr.ValueExpr]): expr.ValueExpr = connection.expr match {
-      case expr.ValueExpr.Expr.Connected(connected) =>
-        (fn.isDefinedAt(connected.getBlockPort), fn.isDefinedAt(connected.getLinkPort)) match {
-          case (true, false) => connection.update(_.connected.blockPort := fn(connected.getBlockPort))
-          case (false, true) => connection.update(_.connected.linkPort := fn(connected.getLinkPort))
-          case (true, true) => throw new IllegalArgumentException("block and link both matched")
-          case (false, false) => throw new IllegalArgumentException("neither block nor link matched")
+    // Return all the expanded constraints (or itself, if non-expanded) wrapped in a ValueExpr
+    def expandedConstraints: Seq[expr.ValueExpr] = connection.expr match {
+      case expr.ValueExpr.Expr.Connected(connectedContainer) =>
+        connectedContainer.expanded match {
+          case Seq() => Seq(connection)
+          case Seq(single) => Seq(expr.ValueExpr(expr = expr.ValueExpr.Expr.Connected(single)))
+          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in connected")
         }
-      case expr.ValueExpr.Expr.Exported(exported) =>
-        (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
-          case (true, false) => connection.update(_.exported.exteriorPort := fn(exported.getExteriorPort))
-          case (false, true) => connection.update(_.exported.internalBlockPort := fn(exported.getInternalBlockPort))
-          case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
-          case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
+      case expr.ValueExpr.Expr.Exported(exportedContainer) =>
+        exportedContainer.expanded match {
+          case Seq() => Seq(connection)
+          case Seq(single) => Seq(expr.ValueExpr(expr = expr.ValueExpr.Expr.Exported(single)))
+          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in exported")
         }
-      case expr.ValueExpr.Expr.ExportedTunnel(exported) =>
-        (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
-          case (true, false) => connection.update(_.exportedTunnel.exteriorPort := fn(exported.getExteriorPort))
-          case (false, true) =>
-            connection.update(_.exportedTunnel.internalBlockPort := fn(exported.getInternalBlockPort))
-          case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
-          case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
+      case expr.ValueExpr.Expr.ConnectedArray(connectedContainer) =>
+        require(connectedContainer.expanded.nonEmpty)
+        connectedContainer.expanded.map(expanded => expr.ValueExpr(expr = expr.ValueExpr.Expr.Connected(expanded)))
+      case expr.ValueExpr.Expr.ExportedArray(exportedContainer) =>
+        require(exportedContainer.expanded.nonEmpty)
+        exportedContainer.expanded.map(expanded => expr.ValueExpr(expr = expr.ValueExpr.Expr.Exported(expanded)))
+      case _ => throw new IllegalArgumentException(s"unexpected connect type ${connection.expr.getClass}")
+    }
+
+    // For an array type, expands the expanded with multiple instances of the connection into expanded.
+    // If there is a single expanded, uses that as the basis for expanded, otherwise uses the container constraint.
+    // Multiple transform functions on each instance allow multiple rewrite rules per-instance.
+    // TODO: this is very dynamic-typey with materializing the expanded if it doesn't exist, and this is a product
+    // of the prior compiler structure which mutated the connect-in-place without a clear delineation of original vs.
+    // expanded. This should be re-structured to be less dynamic-typey when the connect system is overhauled.
+    def arrayExpandMultiRefs(indices: Seq[String])(fn: String => Seq[PartialFunction[expr.ValueExpr, expr.ValueExpr]])
+        : expr.ValueExpr = connection.expr match {
+      case expr.ValueExpr.Expr.ConnectedArray(connectedContainer) =>
+        val baseInstance = connectedContainer.expanded match {
+          case Seq() => connectedContainer
+          case Seq(single) => single
+          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in connected array")
         }
+        val newExpanded = indices.map { index =>
+          fn(index).foldLeft(baseInstance) { case (prev, fn) =>
+            (fn.lift(prev.getBlockPort), fn.lift(prev.getLinkPort)) match {
+              case (Some(newBlockPort), None) => prev.update(_.blockPort := newBlockPort)
+              case (None, Some(newLinkPort)) => prev.update(_.linkPort := newLinkPort)
+              case (Some(_), Some(_)) => throw new IllegalArgumentException("block and link both matched")
+              case (None, None) => throw new IllegalArgumentException("neither block nor link matched")
+            }
+          }
+        }
+        connection.update(_.connectedArray.expanded := newExpanded)
+      case expr.ValueExpr.Expr.ExportedArray(exportedContainer) =>
+        val baseInstance = exportedContainer.expanded match {
+          case Seq() => exportedContainer
+          case Seq(single) => single
+          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in exported array")
+        }
+        val newExpanded = indices.map { index =>
+          fn(index).foldLeft(baseInstance) { case (prev, fn) =>
+            (fn.lift(prev.getExteriorPort), fn.lift(prev.getInternalBlockPort)) match {
+              case (Some(newExteriorPort), None) => prev.update(_.exteriorPort := newExteriorPort)
+              case (None, Some(newInternalPort)) => prev.update(_.internalBlockPort := newInternalPort)
+              case (Some(_), Some(_)) => throw new IllegalArgumentException("exterior and interior both matched")
+              case (None, None) => throw new IllegalArgumentException("neither exterior nor interior matched")
+            }
+          }
+        }
+        connection.update(_.exportedArray.expanded := newExpanded)
+      case _ => throw new IllegalArgumentException(s"unexpected array connect type ${connection.expr.getClass}")
+    }
+
+    // Returns a new connection with exactly one port reference replaced with the partial function.
+    // Does not modify the container connect, creates a new connect in expanded or updates expanded in place
+    // TODO: this is very dynamic-typey with materializing the expanded if it doesn't exist, and this is a product
+    // of the prior compiler structure which mutated the connect-in-place without a clear delineation of original vs.
+    // expanded. This should be re-structured to be less dynamic-typey when the connect system is overhauled.
+    def connectExpandRef(fn: PartialFunction[expr.ValueExpr, expr.ValueExpr]): expr.ValueExpr = connection.expr match {
+      case expr.ValueExpr.Expr.Connected(connectedContainer) =>
+        val connected = connectedContainer.expanded match {
+          case Seq() => connectedContainer
+          case Seq(single) => single
+          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in connected")
+        }
+        val newExpanded = (fn.lift(connected.getBlockPort), fn.lift(connected.getLinkPort)) match {
+          case (Some(newBlockPort), None) => connected.update(_.blockPort := newBlockPort)
+          case (None, Some(newLinkPort)) => connected.update(_.linkPort := newLinkPort)
+          case (Some(_), Some(_)) => throw new IllegalArgumentException("block and link both matched")
+          case (None, None) => throw new IllegalArgumentException("neither block nor link matched")
+        }
+        connection.update(_.connected.expanded := Seq(newExpanded))
+      case expr.ValueExpr.Expr.Exported(exportedContainer) =>
+        val exported = exportedContainer.expanded match {
+          case Seq() => exportedContainer
+          case Seq(single) => single
+          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in exported")
+        }
+        val newExpanded = (fn.lift(exported.getExteriorPort), fn.lift(exported.getInternalBlockPort)) match {
+          case (Some(newExteriorPort), None) => exported.update(_.exteriorPort := newExteriorPort)
+          case (None, Some(newInternalPort)) => exported.update(_.internalBlockPort := newInternalPort)
+          case (Some(_), Some(_)) => throw new IllegalArgumentException("exterior and interior both matched")
+          case (None, None) => throw new IllegalArgumentException("neither interior nor exterior matched")
+        }
+        connection.update(_.exported.expanded := Seq(newExpanded))
+      case expr.ValueExpr.Expr.ExportedTunnel(exportedContainer) =>
+        val exported = exportedContainer.expanded match {
+          case Seq() => exportedContainer
+          case Seq(single) => single
+          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in connected")
+        }
+        val newExpanded = (fn.lift(exported.getExteriorPort), fn.lift(exported.getInternalBlockPort)) match {
+          case (Some(newExteriorPort), None) => exported.update(_.exteriorPort := newExteriorPort)
+          case (None, Some(newInternalPort)) => exported.update(_.internalBlockPort := newInternalPort)
+          case (Some(_), Some(_)) => throw new IllegalArgumentException("exterior and interior both matched")
+          case (None, None) => throw new IllegalArgumentException("neither interior nor exterior matched")
+        }
+        connection.update(_.exportedTunnel.expanded := Seq(newExpanded))
+      case expr.ValueExpr.Expr.ConnectedArray(connectedContainer) =>
+        val bases = connectedContainer.expanded match {
+          case Seq() => Seq(connectedContainer)
+          case bases => bases
+        }
+        val newExpanded = bases.map { base =>
+          (fn.lift(base.getBlockPort), fn.lift(base.getLinkPort)) match {
+            case (Some(newBlockPort), None) => base.update(_.blockPort := newBlockPort)
+            case (None, Some(newLinkPort)) => base.update(_.linkPort := newLinkPort)
+            case (Some(_), Some(_)) => throw new IllegalArgumentException("block and link both matched")
+            case (None, None) => throw new IllegalArgumentException("neither block nor link matched")
+          }
+        }
+        connection.update(_.connectedArray.expanded := newExpanded)
+      case expr.ValueExpr.Expr.ExportedArray(exportedContainer) =>
+        val bases = exportedContainer.expanded match {
+          case Seq() => Seq(exportedContainer)
+          case bases => bases
+        }
+        val newExpanded = bases.map { base =>
+          (fn.lift(base.getExteriorPort), fn.lift(base.getInternalBlockPort)) match {
+            case (Some(newExteriorPort), None) => base.update(_.exteriorPort := newExteriorPort)
+            case (None, Some(newInternalPort)) => base.update(_.internalBlockPort := newInternalPort)
+            case (Some(_), Some(_)) => throw new IllegalArgumentException("exterior and interior both matched")
+            case (None, None) => throw new IllegalArgumentException("neither interior nor exterior matched")
+          }
+        }
+        connection.update(_.exportedArray.expanded := newExpanded)
       case _ => throw new IllegalArgumentException
     }
 
     // Returns a new connection with the find endpoint replaced with replace. For array connects only.
-    def arrayUpdateRef(fn: PartialFunction[expr.ValueExpr, expr.ValueExpr]): expr.ValueExpr = connection.expr match {
-      case expr.ValueExpr.Expr.ConnectedArray(connected) =>
-        (fn.isDefinedAt(connected.getBlockPort), fn.isDefinedAt(connected.getLinkPort)) match {
-          case (true, false) => connection.update(_.connectedArray.blockPort := fn(connected.getBlockPort))
-          case (false, true) => connection.update(_.connectedArray.linkPort := fn(connected.getLinkPort))
-          case (true, true) => throw new IllegalArgumentException("block and link both matched")
-          case (false, false) => throw new IllegalArgumentException("neither block nor link matched")
-        }
-      case expr.ValueExpr.Expr.ExportedArray(exported) =>
-        (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
-          case (true, false) => connection.update(_.exportedArray.exteriorPort := fn(exported.getExteriorPort))
-          case (false, true) =>
-            connection.update(_.exportedArray.internalBlockPort := fn(exported.getInternalBlockPort))
-          case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
-          case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
-        }
-      case _ => throw new IllegalArgumentException
-    }
-
-    // For an ArrayConnect or ArrayExport, returns the single connection version (Connect, Export),
-    // with endpoints unchanged.
-    def asSingleConnection: expr.ValueExpr = connection.expr match {
-      case expr.ValueExpr.Expr.ConnectedArray(connected) =>
-        connection.withConnected(connected)
-      case expr.ValueExpr.Expr.ExportedArray(exported) =>
-        connection.withExported(exported)
-      case _ => throw new IllegalArgumentException
-    }
+//    def arrayUpdateRef(fn: PartialFunction[expr.ValueExpr, expr.ValueExpr]): expr.ValueExpr = connection.expr match {
+//      case expr.ValueExpr.Expr.ConnectedArray(connected) =>
+//        (fn.isDefinedAt(connected.getBlockPort), fn.isDefinedAt(connected.getLinkPort)) match {
+//          case (true, false) => connection.update(_.connectedArray.blockPort := fn(connected.getBlockPort))
+//          case (false, true) => connection.update(_.connectedArray.linkPort := fn(connected.getLinkPort))
+//          case (true, true) => throw new IllegalArgumentException("block and link both matched")
+//          case (false, false) => throw new IllegalArgumentException("neither block nor link matched")
+//        }
+//      case expr.ValueExpr.Expr.ExportedArray(exported) =>
+//        (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
+//          case (true, false) => connection.update(_.exportedArray.exteriorPort := fn(exported.getExteriorPort))
+//          case (false, true) =>
+//            connection.update(_.exportedArray.internalBlockPort := fn(exported.getInternalBlockPort))
+//          case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
+//          case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
+//        }
+//      case _ => throw new IllegalArgumentException
+//    }
   }
 
   // Converts a iterable of String (preserving order) to a Metadata structure, for serializing data internally.
