@@ -192,26 +192,6 @@ object EdgirUtils {
         connection.update(_.exportedArray.expanded := newExpanded)
       case _ => throw new IllegalArgumentException
     }
-
-    // Returns a new connection with the find endpoint replaced with replace. For array connects only.
-//    def arrayUpdateRef(fn: PartialFunction[expr.ValueExpr, expr.ValueExpr]): expr.ValueExpr = connection.expr match {
-//      case expr.ValueExpr.Expr.ConnectedArray(connected) =>
-//        (fn.isDefinedAt(connected.getBlockPort), fn.isDefinedAt(connected.getLinkPort)) match {
-//          case (true, false) => connection.update(_.connectedArray.blockPort := fn(connected.getBlockPort))
-//          case (false, true) => connection.update(_.connectedArray.linkPort := fn(connected.getLinkPort))
-//          case (true, true) => throw new IllegalArgumentException("block and link both matched")
-//          case (false, false) => throw new IllegalArgumentException("neither block nor link matched")
-//        }
-//      case expr.ValueExpr.Expr.ExportedArray(exported) =>
-//        (fn.isDefinedAt(exported.getExteriorPort), fn.isDefinedAt(exported.getInternalBlockPort)) match {
-//          case (true, false) => connection.update(_.exportedArray.exteriorPort := fn(exported.getExteriorPort))
-//          case (false, true) =>
-//            connection.update(_.exportedArray.internalBlockPort := fn(exported.getInternalBlockPort))
-//          case (true, true) => throw new IllegalArgumentException("exterior and interior both matched")
-//          case (false, false) => throw new IllegalArgumentException("neither interior nor exterior matched")
-//        }
-//      case _ => throw new IllegalArgumentException
-//    }
   }
 
   // Converts a iterable of String (preserving order) to a Metadata structure, for serializing data internally.

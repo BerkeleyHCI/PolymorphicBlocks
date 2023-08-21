@@ -71,37 +71,47 @@ object CollectExprRefs extends ValueExprMap[Seq[ref.LocalPath]] {
   override def mapConnected(
       connected: expr.ConnectedExpr,
       blockPort: Seq[ref.LocalPath],
-      linkPort: Seq[ref.LocalPath]
+      linkPort: Seq[ref.LocalPath],
+      expandedBlockPort: Seq[ref.LocalPath],
+      expandedLinkPort: Seq[ref.LocalPath]
   ): Seq[ref.LocalPath] = {
-    blockPort ++ linkPort
+    expandedBlockPort ++ expandedLinkPort
   }
   override def mapExported(
       exported: expr.ExportedExpr,
       exteriorPort: Seq[ref.LocalPath],
-      internalBlockPort: Seq[ref.LocalPath]
+      internalBlockPort: Seq[ref.LocalPath],
+      expandedExteriorPort: Seq[ref.LocalPath],
+      expandedInternalBlockPort: Seq[ref.LocalPath]
   ): Seq[ref.LocalPath] = {
-    exteriorPort ++ internalBlockPort
+    expandedExteriorPort ++ expandedInternalBlockPort
   }
   override def mapConnectedArray(
       connected: expr.ConnectedExpr,
       blockPort: Seq[ref.LocalPath],
-      linkPort: Seq[ref.LocalPath]
+      linkPort: Seq[ref.LocalPath],
+      expandedBlockPort: Seq[Seq[ref.LocalPath]],
+      expandedLinkPort: Seq[Seq[ref.LocalPath]],
   ): Seq[ref.LocalPath] = {
-    blockPort ++ linkPort
+    (expandedBlockPort ++ expandedLinkPort).flatten
   }
   override def mapExportedArray(
       exported: expr.ExportedExpr,
       exteriorPort: Seq[ref.LocalPath],
-      internalBlockPort: Seq[ref.LocalPath]
+      internalBlockPort: Seq[ref.LocalPath],
+      expandedExteriorPort: Seq[Seq[ref.LocalPath]],
+      expandedInternalBlockPort: Seq[Seq[ref.LocalPath]]
   ): Seq[ref.LocalPath] = {
-    exteriorPort ++ internalBlockPort
+    (expandedExteriorPort ++ expandedInternalBlockPort).flatten
   }
   override def mapExportedTunnel(
       exported: expr.ExportedExpr,
       exteriorPort: Seq[ref.LocalPath],
-      internalBlockPort: Seq[ref.LocalPath]
+      internalBlockPort: Seq[ref.LocalPath],
+      expandedExteriorPort: Seq[ref.LocalPath],
+      expandedInternalBlockPort: Seq[ref.LocalPath]
   ): Seq[ref.LocalPath] = {
-    exteriorPort ++ internalBlockPort
+    expandedExteriorPort ++ expandedInternalBlockPort
   }
   override def mapAssign(assign: expr.AssignExpr, src: Seq[ref.LocalPath]): Seq[ref.LocalPath] = {
     assign.dst.toSeq ++ src

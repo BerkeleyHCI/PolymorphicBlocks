@@ -171,20 +171,54 @@ class ExprToString() extends ValueExprMap[String] {
     s"${map(mapExtract.getContainer)}[∀ ${mapRef(mapExtract.getPath)}]"
   }
 
-  override def mapConnected(connected: expr.ConnectedExpr, blockPort: String, linkPort: String): String = {
+  override def mapConnected(
+      connected: expr.ConnectedExpr,
+      blockPort: String,
+      linkPort: String,
+      expandedBlockPort: String,
+      expandedLinkPort: String
+  ): String = {
     s"connected($blockPort, $linkPort)"
   }
 
-  override def mapExported(exported: expr.ExportedExpr, exteriorPort: String, internalBlockPort: String): String = {
+  override def mapExported(
+      exported: expr.ExportedExpr,
+      exteriorPort: String,
+      internalBlockPort: String,
+      expandedExteriorPort: String,
+      expandedInterorPort: String
+  ): String = {
     s"exported($exteriorPort, $internalBlockPort)"
   }
 
   override def mapExportedTunnel(
       exported: expr.ExportedExpr,
       exteriorPort: String,
-      internalBlockPort: String
+      internalBlockPort: String,
+      expandedExteriorPort: String,
+      expandedInterorPort: String
   ): String = {
     s"exportedTunnel($exteriorPort, $internalBlockPort)"
+  }
+
+  override def mapConnectedArray(
+      connected: expr.ConnectedExpr,
+      blockPort: String,
+      linkPort: String,
+      expandedBlockPort: Seq[String],
+      expandedLinkPort: Seq[String]
+  ): String = {
+    s"connectedArray($blockPort, $linkPort)"
+  }
+
+  override def mapExportedArray(
+      exported: expr.ExportedExpr,
+      exteriorPort: String,
+      internalBlockPort: String,
+      expandedExteriorPort: Seq[String],
+      expandedInterorPort: Seq[String]
+  ): String = {
+    s"exportedArray($exteriorPort, $internalBlockPort)"
   }
 
   override def mapAssign(assign: expr.AssignExpr, src: String): String =

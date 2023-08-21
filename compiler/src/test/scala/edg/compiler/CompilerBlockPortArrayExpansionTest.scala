@@ -186,9 +186,17 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     ))
     val referenceConstraints = SeqMap(
       "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
-      "sink0Connect" -> Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")),
+      "sink0Connect" -> Constraint.Connected(
+        Ref.Allocate(Ref("sinks", "port")),
+        Ref.Allocate(Ref("link0", "sinks")),
+        Seq(Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")))
+      ),
       "source1Connect" -> Constraint.Connected(Ref("source1", "port"), Ref("link1", "source")),
-      "sink1Connect" -> Constraint.Connected(Ref("sinks", "port", "1"), Ref("link1", "sinks", "0")),
+      "sink1Connect" -> Constraint.Connected(
+        Ref.Allocate(Ref("sinks", "port")),
+        Ref.Allocate(Ref("link1", "sinks")),
+        Seq(Constraint.Connected(Ref("sinks", "port", "1"), Ref("link1", "sinks", "0")))
+      ),
     )
     val (compiler, compiled) = testCompile(inputDesign, library)
 
@@ -232,9 +240,17 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     ))
     val referenceConstraints = Map(
       "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
-      "sink0Connect" -> Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")),
+      "sink0Connect" -> Constraint.Connected(
+        Ref.Allocate(Ref("sinks", "port")),
+        Ref.Allocate(Ref("link0", "sinks")),
+        Seq(Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")))
+      ),
       "source1Connect" -> Constraint.Connected(Ref("source1", "port"), Ref("link1", "source")),
-      "sink1Connect" -> Constraint.Connected(Ref("sinks", "port", "1"), Ref("link1", "sinks", "0")),
+      "sink1Connect" -> Constraint.Connected(
+        Ref.Allocate(Ref("sinks", "port")),
+        Ref.Allocate(Ref("link1", "sinks")),
+        Seq(Constraint.Connected(Ref("sinks", "port", "1"), Ref("link1", "sinks", "0")))
+      ),
     )
     val (compiler, compiled) = testCompile(inputDesign, library)
 
@@ -284,7 +300,11 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     ))
     val referenceConstraints = SeqMap(
       "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
-      "sink0Connect" -> Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")),
+      "sink0Connect" -> Constraint.Connected(
+        Ref.Allocate(Ref("sinks", "port")),
+        Ref.Allocate(Ref("link0", "sinks")),
+        Seq(Constraint.Connected(Ref("sinks", "port", "0"), Ref("link0", "sinks", "0")))
+      ),
     )
     val (compiler, compiled) = testCompile(inputDesign, library)
 
