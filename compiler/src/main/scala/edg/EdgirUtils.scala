@@ -81,10 +81,10 @@ object EdgirUtils {
           case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in exported")
         }
       case expr.ValueExpr.Expr.ConnectedArray(connectedContainer) =>
-        require(connectedContainer.expanded.nonEmpty)
+        // note empty expanded could mean empty port array
         connectedContainer.expanded.map(expanded => expr.ValueExpr(expr = expr.ValueExpr.Expr.Connected(expanded)))
       case expr.ValueExpr.Expr.ExportedArray(exportedContainer) =>
-        require(exportedContainer.expanded.nonEmpty)
+        // note empty expanded could mean empty port array
         exportedContainer.expanded.map(expanded => expr.ValueExpr(expr = expr.ValueExpr.Expr.Exported(expanded)))
       case _ => throw new IllegalArgumentException(s"unexpected connect type ${connection.expr.getClass}")
     }
@@ -139,50 +139,57 @@ object EdgirUtils {
     // TODO: this is very dynamic-typey with materializing the expanded if it doesn't exist, and this is a product
     // of the prior compiler structure which mutated the connect-in-place without a clear delineation of original vs.
     // expanded. This should be re-structured to be less dynamic-typey when the connect system is overhauled.
-    def connectExpandRef(fn: PartialFunction[expr.ValueExpr, expr.ValueExpr]): expr.ValueExpr = connection.expr match {
+    // TODO: arrayInPlace is a nasty hack to disambiguate the case where expanded is empty
+    // and whether this is intentional or this is mutating the pre-expansion array construct
+    def connectExpandRef(
+        fn: PartialFunction[expr.ValueExpr, expr.ValueExpr],
+        arrayInPlace: Boolean = false
+    ): expr.ValueExpr = connection.expr match {
       case expr.ValueExpr.Expr.Connected(connectedContainer) =>
-        val connected = connectedContainer.expanded match {
+        val base = connectedContainer.expanded match {
           case Seq() => connectedContainer
           case Seq(single) => single
           case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in connected")
         }
-        val newExpanded = (fn.lift(connected.getBlockPort), fn.lift(connected.getLinkPort)) match {
-          case (Some(newBlockPort), None) => connected.update(_.blockPort := newBlockPort)
-          case (None, Some(newLinkPort)) => connected.update(_.linkPort := newLinkPort)
+        val newExpanded = (fn.lift(base.getBlockPort), fn.lift(base.getLinkPort)) match {
+          case (Some(newBlockPort), None) => base.update(_.blockPort := newBlockPort)
+          case (None, Some(newLinkPort)) => base.update(_.linkPort := newLinkPort)
           case (Some(_), Some(_)) => throw new IllegalArgumentException("block and link both matched")
           case (None, None) => throw new IllegalArgumentException("neither block nor link matched")
         }
         connection.update(_.connected.expanded := Seq(newExpanded))
       case expr.ValueExpr.Expr.Exported(exportedContainer) =>
-        val exported = exportedContainer.expanded match {
+        val base = exportedContainer.expanded match {
           case Seq() => exportedContainer
           case Seq(single) => single
           case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in exported")
         }
-        val newExpanded = (fn.lift(exported.getExteriorPort), fn.lift(exported.getInternalBlockPort)) match {
-          case (Some(newExteriorPort), None) => exported.update(_.exteriorPort := newExteriorPort)
-          case (None, Some(newInternalPort)) => exported.update(_.internalBlockPort := newInternalPort)
+        val newExpanded = (fn.lift(base.getExteriorPort), fn.lift(base.getInternalBlockPort)) match {
+          case (Some(newExteriorPort), None) => base.update(_.exteriorPort := newExteriorPort)
+          case (None, Some(newInternalPort)) => base.update(_.internalBlockPort := newInternalPort)
           case (Some(_), Some(_)) => throw new IllegalArgumentException("exterior and interior both matched")
           case (None, None) => throw new IllegalArgumentException("neither interior nor exterior matched")
         }
         connection.update(_.exported.expanded := Seq(newExpanded))
       case expr.ValueExpr.Expr.ExportedTunnel(exportedContainer) =>
-        val exported = exportedContainer.expanded match {
+        val base = exportedContainer.expanded match {
           case Seq() => exportedContainer
           case Seq(single) => single
           case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in connected")
         }
-        val newExpanded = (fn.lift(exported.getExteriorPort), fn.lift(exported.getInternalBlockPort)) match {
-          case (Some(newExteriorPort), None) => exported.update(_.exteriorPort := newExteriorPort)
-          case (None, Some(newInternalPort)) => exported.update(_.internalBlockPort := newInternalPort)
+        val newExpanded = (fn.lift(base.getExteriorPort), fn.lift(base.getInternalBlockPort)) match {
+          case (Some(newExteriorPort), None) => base.update(_.exteriorPort := newExteriorPort)
+          case (None, Some(newInternalPort)) => base.update(_.internalBlockPort := newInternalPort)
           case (Some(_), Some(_)) => throw new IllegalArgumentException("exterior and interior both matched")
           case (None, None) => throw new IllegalArgumentException("neither interior nor exterior matched")
         }
         connection.update(_.exportedTunnel.expanded := Seq(newExpanded))
       case expr.ValueExpr.Expr.ConnectedArray(connectedContainer) =>
-        val bases = connectedContainer.expanded match {
-          case Seq() => Seq(connectedContainer)
-          case bases => bases
+        val bases = if (arrayInPlace) {
+          require(connectedContainer.expanded.isEmpty)
+          Seq(connectedContainer)
+        } else {
+          connectedContainer.expanded
         }
         val newExpanded = bases.map { base =>
           (fn.lift(base.getBlockPort), fn.lift(base.getLinkPort)) match {
@@ -194,9 +201,11 @@ object EdgirUtils {
         }
         connection.update(_.connectedArray.expanded := newExpanded)
       case expr.ValueExpr.Expr.ExportedArray(exportedContainer) =>
-        val bases = exportedContainer.expanded match {
-          case Seq() => Seq(exportedContainer)
-          case bases => bases
+        val bases = if (arrayInPlace) {
+          require(exportedContainer.expanded.isEmpty)
+          Seq(exportedContainer)
+        } else {
+          exportedContainer.expanded
         }
         val newExpanded = bases.map { base =>
           (fn.lift(base.getExteriorPort), fn.lift(base.getInternalBlockPort)) match {

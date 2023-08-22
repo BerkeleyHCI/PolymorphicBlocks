@@ -238,7 +238,7 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
         "sink1Connect" -> Constraint.Connected(Ref.Allocate(Ref("sinks", "port")), Ref.Allocate(Ref("link1", "sinks"))),
       )
     ))
-    val referenceConstraints = Map(
+    val referenceConstraints = SeqMap(
       "source0Connect" -> Constraint.Connected(Ref("source0", "port"), Ref("link0", "source")),
       "sink0Connect" -> Constraint.Connected(
         Ref.Allocate(Ref("sinks", "port")),
@@ -252,6 +252,16 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
         Seq(Constraint.Connected(Ref("sinks", "port", "1"), Ref("link1", "sinks", "0")))
       ),
     )
+    val referenceSinksConstraints = SeqMap(
+      "export" -> Constraint.ExportedArray(
+        Ref("port"),
+        Ref("inner", "port"),
+        Seq(
+          Constraint.Exported(Ref("port", "0"), Ref("inner", "port", "0")),
+          Constraint.Exported(Ref("port", "1"), Ref("inner", "port", "1")),
+        )
+      ),
+    )
     val (compiler, compiled) = testCompile(inputDesign, library)
 
     val dsv = new DesignStructuralValidate()
@@ -261,6 +271,9 @@ class CompilerBlockPortArrayExpansionTest extends AnyFlatSpec with CompilerTestU
     drv.validate(Design(compiled.contents.get)) should equal(Seq())
 
     compiled.contents.get.constraints.toSeqMap should equal(referenceConstraints)
+    compiled.contents.get.blocks.toSeqMap("sinks").getHierarchy.constraints.toSeqMap should equal(
+      referenceSinksConstraints
+    )
 
     compiler.getValue(IndirectDesignPath() + "sinks" + "port" + IndirectStep.Length) should
       equal(Some(IntValue(2)))

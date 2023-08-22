@@ -1005,9 +1005,12 @@ class Compiler private (
                     // because link ports elements are always defined by incoming connects, no waiting for elements
                     // is needed and the allocate can be rewritten here
                     block.mapConstraint(constrName) { constr =>
-                      constr.connectExpandRef { case ValueExpr.RefAllocate(`portPostfix`, `suggestedName`) =>
-                        ValueExpr.Ref((portPostfix :+ allocatedName): _*)
-                      }
+                      constr.connectExpandRef(
+                        { case ValueExpr.RefAllocate(`portPostfix`, `suggestedName`) =>
+                          ValueExpr.Ref((portPostfix :+ allocatedName): _*)
+                        },
+                        true
+                      )
                     }
                     allocatedName
                   }
@@ -1065,9 +1068,12 @@ class Compiler private (
                     val allocatedName = namer.name(suggestedName)
                     block.mapConstraint(constrName) { constr =>
                       // similarly, to the regular link case, allocates can be rewritten here
-                      constr.connectExpandRef { case ValueExpr.RefAllocate(`portPostfix`, None) =>
-                        ValueExpr.Ref((portPostfix :+ allocatedName): _*)
-                      }
+                      constr.connectExpandRef(
+                        { case ValueExpr.RefAllocate(`portPostfix`, None) =>
+                          ValueExpr.Ref((portPostfix :+ allocatedName): _*)
+                        },
+                        true
+                      )
                     }
                     allocatedName
                   }
@@ -1512,7 +1518,7 @@ class Compiler private (
     }
 
     // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
-    parentBlock.getConstraints(record.constraintName).expandedConstraintsMaybe.foreach { expanded =>
+    parentBlock.getConstraints(record.constraintName).expandedConstraints.foreach { expanded =>
       processConnectedConstraint(record.parent, expanded, parentBlock.isInstanceOf[wir.Link])
     }
   }
@@ -1567,7 +1573,7 @@ class Compiler private (
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints] // can be block or link
 
     import edg.ExprBuilder.ValueExpr
-    val allocatedIndexToNameConstraint = record.constraintNames.flatMap { constrName =>
+    val allocatedIndexToNameConstraint = (record.constraintNames ++ record.arrayConstraintNames).flatMap { constrName =>
       parentBlock.getConstraints(constrName).expandedConstraints.flatMap { constr =>
         constr.connectMapRef {
           case ValueExpr.Ref(record.portPath :+ index) => Some((Seq(index), (s"$constrName.$index", constr)))
