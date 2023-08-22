@@ -83,7 +83,7 @@ object ElemBuilder {
       expr = expr.ValueExpr.Expr.ExportedTunnel(expr.ExportedExpr(
         exteriorPort = Some(ValueExpr.Ref(external)),
         internalBlockPort = Some(ValueExpr.Ref(internal)),
-        expanded = expanded.map(_.getExported)
+        expanded = expanded.map(_.getExportedTunnel)
       ))
     )
 

@@ -213,10 +213,20 @@ class TunnelExportTest extends AnyFlatSpec with CompilerTestUtil {
 
     // check that allocates were properly lowered
     compiled.contents.get.constraints("packed0Export") should equal(
-      Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "ports", "0"))
+      Constraint.ExportedTunnel(
+        Ref("container", "inner", "port"),
+        Ref.Allocate(Ref("packedBlock", "ports"), Some("0")),
+        Seq(Constraint.ExportedTunnel(Ref("container", "inner", "port"), Ref("packedBlock", "ports", "0")))
+      )
     )
     compiled.contents.get.constraints("packed1Export") should equal(
-      Constraint.ExportedTunnel(Ref("block", "port"), Ref("packedBlock", "ports", "1"))
+      Constraint.ExportedTunnel(
+        Ref("block", "port"),
+        Ref.Allocate(Ref("packedBlock", "ports"), Some("1")),
+        Seq(
+          Constraint.ExportedTunnel(Ref("block", "port"), Ref("packedBlock", "ports", "1")),
+        )
+      )
     )
 
     compiler.getValue(IndirectDesignPath() + "packedBlock" + "ports" + "0" + "floatVal") should equal(

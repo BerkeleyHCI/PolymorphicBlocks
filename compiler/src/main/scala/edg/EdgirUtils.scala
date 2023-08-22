@@ -63,6 +63,12 @@ object EdgirUtils {
           case Seq(single) => Seq(expr.ValueExpr(expr = expr.ValueExpr.Expr.Exported(single)))
           case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in exported")
         }
+      case expr.ValueExpr.Expr.ExportedTunnel(exportedContainer) =>
+        exportedContainer.expanded match {
+          case Seq() => Seq(connection)
+          case Seq(single) => Seq(expr.ValueExpr(expr = expr.ValueExpr.Expr.ExportedTunnel(single)))
+          case _ => throw new IllegalArgumentException(s"unexpected multiple expanded in exported")
+        }
       case expr.ValueExpr.Expr.ConnectedArray(connectedContainer) =>
         require(connectedContainer.expanded.nonEmpty)
         connectedContainer.expanded.map(expanded => expr.ValueExpr(expr = expr.ValueExpr.Expr.Connected(expanded)))

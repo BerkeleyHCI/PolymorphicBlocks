@@ -449,7 +449,6 @@ class Compiler private (
   def processAssignConstraint(
       blockPath: DesignPath,
       constrName: String,
-      constr: expr.ValueExpr,
       constrValue: expr.ValueExpr
   ): Boolean = constrValue.expr match {
     case expr.ValueExpr.Expr.Assign(assign) =>
@@ -473,12 +472,7 @@ class Compiler private (
   }
 
   // Attempts to process a connected constraint, returning true if it is a matching constraint
-  def processConnectedConstraint(
-      blockPath: DesignPath,
-      constrName: String,
-      constr: expr.ValueExpr,
-      isInLink: Boolean
-  ): Boolean = {
+  def processConnectedConstraint(blockPath: DesignPath, constr: expr.ValueExpr, isInLink: Boolean): Boolean = {
     import edg.ExprBuilder.ValueExpr
     constr.expr match {
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
@@ -1161,8 +1155,8 @@ class Compiler private (
 
     // Process all the process-able constraints: parameter constraints and non-allocate connected
     block.getConstraints.foreach { case (constrName, constr) =>
-      processAssignConstraint(path, constrName, constr, constr)
-      processConnectedConstraint(path, constrName, constr, false)
+      processAssignConstraint(path, constrName, constr)
+      processConnectedConstraint(path, constr, false)
     }
   }
 
@@ -1299,8 +1293,8 @@ class Compiler private (
 
     // Process constraints, as in the block case
     link.getConstraints.foreach { case (constrName, constr) =>
-      processAssignConstraint(path, constrName, constr, constr)
-      processConnectedConstraint(path, constrName, constr, true)
+      processAssignConstraint(path, constrName, constr)
+      processConnectedConstraint(path, constr, true)
     }
   }
 
@@ -1373,7 +1367,7 @@ class Compiler private (
     // Resolve connections
     import edg.ExprBuilder.ValueExpr
     link.getConstraints.foreach { case (constrName, constr) =>
-      processConnectedConstraint(path, constrName, constr, true)
+      processConnectedConstraint(path, constr, true)
     }
 
     // Resolve is-connected - need to sort by inner link's outermost port
@@ -1512,12 +1506,9 @@ class Compiler private (
     }
 
     // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
-    processConnectedConstraint(
-      record.parent,
-      record.constraintName,
-      parentBlock.getConstraints(record.constraintName),
-      parentBlock.isInstanceOf[wir.Link]
-    )
+    parentBlock.getConstraints(record.constraintName).expandedConstraints.foreach { expandedConstr =>
+      processConnectedConstraint(record.parent, expandedConstr, parentBlock.isInstanceOf[wir.Link])
+    }
   }
 
   // Once a block-side port array has all its element widths available, this lowers the connect statements
@@ -1559,9 +1550,9 @@ class Compiler private (
     }
 
     record.constraintNames.foreach { constrName =>
-      parentBlock.getConstraints(constrName).expandedConstraints.zipWithIndex.foreach { case (constr, index) =>
+      parentBlock.getConstraints(constrName).expandedConstraints.foreach { expandedConstr =>
         // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
-        processConnectedConstraint(record.parent, s"$constrName.$index", constr, record.portIsLink)
+        processConnectedConstraint(record.parent, expandedConstr, record.portIsLink)
       }
     }
   }
@@ -1571,7 +1562,7 @@ class Compiler private (
 
     import edg.ExprBuilder.ValueExpr
     val allocatedIndexToNameConstraint = record.constraintNames.flatMap { constrName =>
-      parentBlock.getConstraints(constrName).expandedConstraints.zipWithIndex.flatMap { case (constr, index) =>
+      parentBlock.getConstraints(constrName).expandedConstraints.flatMap { constr =>
         constr.connectMapRef {
           case ValueExpr.Ref(record.portPath :+ index) => Some((Seq(index), (s"$constrName.$index", constr)))
           case ValueExpr.Ref(record.portPath :+ index :+ interior) =>
