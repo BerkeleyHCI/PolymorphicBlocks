@@ -1578,17 +1578,14 @@ class Compiler private (
       case (index, innerPort: wir.PortArray) => // for link arrays
         require(innerPort.isElaborated)
         innerPort.getPorts.foreach { case (subIndex, subPort) =>
-          val constraintOption =
-            allocatedIndexToNameConstraint.get(Seq(index, subIndex)).map { case (constrName, constr) =>
-              (constrName, constr)
-            }
-          resolvePortConnectivity(record.parent, record.portPath :+ index :+ subIndex, constraintOption)
+          resolvePortConnectivity(
+            record.parent,
+            record.portPath :+ index :+ subIndex,
+            allocatedIndexToNameConstraint.get(Seq(index, subIndex))
+          )
         }
       case (index, innerPort) =>
-        val constraintOption = allocatedIndexToNameConstraint.get(Seq(index)).map { case (constrName, constr) =>
-          (constrName, constr)
-        }
-        resolvePortConnectivity(record.parent, record.portPath :+ index, constraintOption)
+        resolvePortConnectivity(record.parent, record.portPath :+ index, allocatedIndexToNameConstraint.get(Seq(index)))
     }
   }
 
