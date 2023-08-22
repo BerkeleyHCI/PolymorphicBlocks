@@ -51,12 +51,12 @@ object EdgirUtils {
 
     // Same as expandedConstraints, but returns empty is not a connected constraint.
     // TODO this is a hack, needs better typing structures
-    def expandedConstraintsMaybe: Seq[expr.ValueExpr] = connection.expr match {
+    // TODO this is only called in block / link elaboration, where arrays have not been able to expand
+    // this is to distinguish expanded from the case where the array (collective) is modified vs. actually expanded
+    def expandedSingleConstraintsMaybe: Seq[expr.ValueExpr] = connection.expr match {
       case expr.ValueExpr.Expr.Connected(_) => connection.expandedConstraints
       case expr.ValueExpr.Expr.Exported(_) => connection.expandedConstraints
       case expr.ValueExpr.Expr.ExportedTunnel(_) => connection.expandedConstraints
-      case expr.ValueExpr.Expr.ConnectedArray(array) if array.expanded.nonEmpty => connection.expandedConstraints
-      case expr.ValueExpr.Expr.ExportedArray(array) if array.expanded.nonEmpty => connection.expandedConstraints
       case _ => Seq()
     }
 

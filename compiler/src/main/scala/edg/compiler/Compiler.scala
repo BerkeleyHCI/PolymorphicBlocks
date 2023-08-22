@@ -1,11 +1,10 @@
 package edg.compiler
 
 import edg.EdgirUtils._
-import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
+import edg.util.{DependencyGraph, Errorable}
 import edg.wir.ProtoUtil._
 import edg.wir._
 import edg.{ExprBuilder, wir}
-import edgir.common.common
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.ref.ref
@@ -1158,7 +1157,7 @@ class Compiler private (
     // Process all the process-able constraints: parameter constraints and non-allocate connected
     block.getConstraints.foreach { case (constrName, constr) =>
       processAssignConstraint(path, constrName, constr)
-      constr.expandedConstraintsMaybe.foreach { expanded =>
+      constr.expandedSingleConstraintsMaybe.foreach { expanded =>
         processConnectedConstraint(path, expanded, false)
       }
     }
@@ -1296,7 +1295,7 @@ class Compiler private (
     // Process constraints, as in the block case
     link.getConstraints.foreach { case (constrName, constr) =>
       processAssignConstraint(path, constrName, constr)
-      constr.expandedConstraintsMaybe.foreach { expanded =>
+      constr.expandedSingleConstraintsMaybe.foreach { expanded =>
         processConnectedConstraint(path, expanded, true)
       }
     }
@@ -1371,7 +1370,7 @@ class Compiler private (
     // Resolve connections
     import edg.ExprBuilder.ValueExpr
     link.getConstraints.foreach { case (constrName, constr) =>
-      constr.expandedConstraintsMaybe.foreach { expanded =>
+      constr.expandedSingleConstraintsMaybe.foreach { expanded =>
         processConnectedConstraint(path, expanded, true)
       }
     }
