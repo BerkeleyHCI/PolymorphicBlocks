@@ -1156,7 +1156,9 @@ class Compiler private (
     // Process all the process-able constraints: parameter constraints and non-allocate connected
     block.getConstraints.foreach { case (constrName, constr) =>
       processAssignConstraint(path, constrName, constr)
-      processConnectedConstraint(path, constr, false)
+      constr.expandedConstraintsMaybe.foreach { expanded =>
+        processConnectedConstraint(path, expanded, false)
+      }
     }
   }
 
@@ -1294,7 +1296,9 @@ class Compiler private (
     // Process constraints, as in the block case
     link.getConstraints.foreach { case (constrName, constr) =>
       processAssignConstraint(path, constrName, constr)
-      processConnectedConstraint(path, constr, true)
+      constr.expandedConstraintsMaybe.foreach { expanded =>
+        processConnectedConstraint(path, expanded, true)
+      }
     }
   }
 
@@ -1367,7 +1371,9 @@ class Compiler private (
     // Resolve connections
     import edg.ExprBuilder.ValueExpr
     link.getConstraints.foreach { case (constrName, constr) =>
-      processConnectedConstraint(path, constr, true)
+      constr.expandedConstraintsMaybe.foreach { expanded =>
+        processConnectedConstraint(path, expanded, true)
+      }
     }
 
     // Resolve is-connected - need to sort by inner link's outermost port
@@ -1506,8 +1512,8 @@ class Compiler private (
     }
 
     // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
-    parentBlock.getConstraints(record.constraintName).expandedConstraints.foreach { expandedConstr =>
-      processConnectedConstraint(record.parent, expandedConstr, parentBlock.isInstanceOf[wir.Link])
+    parentBlock.getConstraints(record.constraintName).expandedConstraintsMaybe.foreach { expanded =>
+      processConnectedConstraint(record.parent, expanded, parentBlock.isInstanceOf[wir.Link])
     }
   }
 

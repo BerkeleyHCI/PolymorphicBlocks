@@ -49,6 +49,17 @@ object EdgirUtils {
       case _ => throw new IllegalArgumentException
     }
 
+    // Same as expandedConstraints, but returns empty is not a connected constraint.
+    // TODO this is a hack, needs better typing structures
+    def expandedConstraintsMaybe: Seq[expr.ValueExpr] = connection.expr match {
+      case expr.ValueExpr.Expr.Connected(_) => connection.expandedConstraints
+      case expr.ValueExpr.Expr.Exported(_) => connection.expandedConstraints
+      case expr.ValueExpr.Expr.ExportedTunnel(_) => connection.expandedConstraints
+      case expr.ValueExpr.Expr.ConnectedArray(array) if array.expanded.nonEmpty => connection.expandedConstraints
+      case expr.ValueExpr.Expr.ExportedArray(array) if array.expanded.nonEmpty => connection.expandedConstraints
+      case _ => Seq()
+    }
+
     // Return all the expanded constraints (or itself, if non-expanded) wrapped in a ValueExpr
     def expandedConstraints: Seq[expr.ValueExpr] = connection.expr match {
       case expr.ValueExpr.Expr.Connected(connectedContainer) =>
