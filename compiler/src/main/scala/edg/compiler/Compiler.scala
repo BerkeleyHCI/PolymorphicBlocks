@@ -81,7 +81,6 @@ object ElaborateRecord {
       parent: DesignPath,
       portPath: Seq[String],
       constraintNames: Seq[String],
-      arrayConstraintNames: Seq[String],
       portIsLink: Boolean
   ) extends ElaborateTask
 }
@@ -818,7 +817,7 @@ class Compiler private (
                       val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
                       // Note: actual expansion task set on the link side
                       val resolveConnectedTask =
-                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
+                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(constrName), false)
                       elaboratePending.addNode(
                         resolveConnectedTask,
                         Seq(
@@ -851,7 +850,7 @@ class Compiler private (
                         )
                       )
                       val resolveConnectedTask =
-                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
+                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(constrName), false)
                       elaboratePending.addNode(
                         resolveConnectedTask,
                         Seq(
@@ -926,8 +925,7 @@ class Compiler private (
                   val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(
                     path,
                     portPostfix,
-                    singleConnects.map(_._2),
-                    arrayConnects.map(_._2),
+                    singleConnects.map(_._2) ++ arrayConnects.map(_._2),
                     false
                   )
                   elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
@@ -949,7 +947,7 @@ class Compiler private (
                     Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix))
                   )
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, connects.map(_._2), Seq(), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, connects.map(_._2), false)
                   elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
                 case PortConnections.NotConnected =>
@@ -960,7 +958,7 @@ class Compiler private (
                     "not connected"
                   )
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), false)
                   elaboratePending.addNode(
                     resolveConnectedTask,
                     Seq(
@@ -1021,7 +1019,7 @@ class Compiler private (
                     ""
                   )
                   elaboratePending.addNode(
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), Seq(), false),
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), false),
                     Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix))
                   )
 
@@ -1033,7 +1031,7 @@ class Compiler private (
                     "not connected"
                   )
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), false)
                   elaboratePending.addNode(
                     resolveConnectedTask,
                     Seq(
@@ -1092,7 +1090,7 @@ class Compiler private (
                     expandArrayTask
                   }
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), arrayConnects.map(_._2), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, arrayConnects.map(_._2), false)
                   elaboratePending.addNode(
                     resolveConnectedTask,
                     Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) ++
@@ -1107,7 +1105,7 @@ class Compiler private (
                     "not connected"
                   )
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), false)
                   elaboratePending.addNode(
                     resolveConnectedTask,
                     Seq(
@@ -1130,7 +1128,7 @@ class Compiler private (
                       )
                       // Note: actual expansion task set on the link side
                       val resolveConnectedTask =
-                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
+                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(constrName), false)
                       elaboratePending.addNode(
                         resolveConnectedTask,
                         Seq(
@@ -1144,7 +1142,7 @@ class Compiler private (
 
                 case PortConnections.NotConnected =>
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), false)
                   elaboratePending.addNode(
                     resolveConnectedTask,
                     Seq(
@@ -1258,8 +1256,7 @@ class Compiler private (
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(
                   path,
                   portPostfix,
-                  singleConnects.map(_._2),
-                  arrayConnects.map(_._2),
+                  singleConnects.map(_._2) ++ arrayConnects.map(_._2),
                   false
                 )
                 elaboratePending.addNode(
@@ -1277,7 +1274,7 @@ class Compiler private (
                   "not connected"
                 )
                 val resolveConnectedTask =
-                  ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                  ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), false)
                 elaboratePending.addNode(
                   resolveConnectedTask,
                   Seq(
@@ -1397,7 +1394,7 @@ class Compiler private (
         case _: wir.PortArray =>
           val constrNames = constrNamesConstrs.map { case (constrName, constr) => constrName }
           val resolveConnectedTask =
-            ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, constrNames, Seq(), false)
+            ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, constrNames, false)
           elaboratePending.addNode(
             resolveConnectedTask,
             Seq(
@@ -1573,7 +1570,7 @@ class Compiler private (
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints] // can be block or link
 
     import edg.ExprBuilder.ValueExpr
-    val allocatedIndexToNameConstraint = (record.constraintNames ++ record.arrayConstraintNames).flatMap { constrName =>
+    val allocatedIndexToNameConstraint = record.constraintNames.flatMap { constrName =>
       parentBlock.getConstraints(constrName).expandedConstraints.flatMap { constr =>
         constr.connectMapRef {
           case ValueExpr.Ref(record.portPath :+ index) => Some((Seq(index), (s"$constrName.$index", constr)))
