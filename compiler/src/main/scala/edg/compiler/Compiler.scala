@@ -71,7 +71,6 @@ object ElaborateRecord {
       parent: DesignPath,
       portPath: Seq[String],
       constraintNames: Seq[String],
-      arrayConstraintNames: Seq[String],
       portIsLink: Boolean
   ) extends ElaborateTask with ElaborateDependency
 
@@ -914,8 +913,7 @@ class Compiler private (
                   val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(
                     path,
                     portPostfix,
-                    singleConnects.map(_._2),
-                    arrayConnects.map(_._2),
+                    singleConnects.map(_._2) ++ arrayConnects.map(_._2),
                     false
                   )
                   elaboratePending.addNode(
@@ -941,7 +939,7 @@ class Compiler private (
                     ""
                   )
                   val resolveAllocateTask =
-                    ElaborateRecord.RewriteConnectAllocate(path, portPostfix, connects.map(_._2), Seq(), false)
+                    ElaborateRecord.RewriteConnectAllocate(path, portPostfix, connects.map(_._2), false)
                   elaboratePending.addNode(
                     resolveAllocateTask,
                     Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix))
@@ -1244,8 +1242,7 @@ class Compiler private (
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(
                   path,
                   portPostfix,
-                  singleConnects.map(_._2),
-                  arrayConnects.map(_._2),
+                  singleConnects.map(_._2) ++ arrayConnects.map(_._2),
                   true
                 )
                 elaboratePending.addNode(
