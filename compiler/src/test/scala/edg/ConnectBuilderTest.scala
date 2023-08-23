@@ -9,6 +9,7 @@ class ConnectBuilderTest extends AnyFlatSpec {
   behavior.of("ConnectBuilder")
 
   it should "decode connections" in {
+    // basic connection forms
     ConnectTypes.fromConnect(Constraint.Connected(Ref("source", "port"), Ref("link", "source"))) should equal(Some(Seq(
       ConnectTypes.BlockPort("source", "port")
     )))
@@ -17,6 +18,11 @@ class ConnectBuilderTest extends AnyFlatSpec {
     ) should equal(Some(Seq(
       ConnectTypes.BlockPort("sink0", "port")
     )))
+    ConnectTypes.fromConnect(Constraint.Exported(Ref("source"), Ref("a", "source"))) should equal(Some(Seq(
+      ConnectTypes.BoundaryPort("source", Seq()),
+      ConnectTypes.BlockPort("a", "source")
+    )))
+    // export into bundle component / vector element
     ConnectTypes.fromConnect(Constraint.Exported(Ref("source", "a"), Ref("a", "source"))) should equal(Some(Seq(
       ConnectTypes.BoundaryPort("source", Seq("a")),
       ConnectTypes.BlockPort("a", "source")
