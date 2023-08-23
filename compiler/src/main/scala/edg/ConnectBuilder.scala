@@ -1,5 +1,6 @@
-package edg.wir
+package edg
 
+import edg.wir.LibraryConnectivityAnalysis
 import edgir.elem.elem
 
 import scala.collection.SeqMap
