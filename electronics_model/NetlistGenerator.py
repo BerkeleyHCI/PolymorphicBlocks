@@ -196,11 +196,11 @@ class NetlistTransform(TransformUtil.Transform):
       elif constraint_pair.value.HasField('exportedTunnel'):
         self.process_exported(path, block, constraint_pair.value.exportedTunnel)
       elif constraint_pair.value.HasField('connectedArray'):
-        for expanded in constraint_pair.value.connectedArray.expanded:
-          self.process_connected(path, block, expanded)
+        for expanded_connect in constraint_pair.value.connectedArray.expanded:
+          self.process_connected(path, block, expanded_connect)
       elif constraint_pair.value.HasField('exportedArray'):
-        for expanded in constraint_pair.value.exportedArray.expanded:
-          self.process_exported(path, block, expanded)
+        for expanded_export in constraint_pair.value.exportedArray.expanded:
+          self.process_exported(path, block, expanded_export)
 
   def process_connected(self, path: TransformUtil.Path, current: edgir.EltTypes, constraint: edgir.ConnectedExpr) -> None:
     if constraint.expanded:
