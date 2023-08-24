@@ -1,7 +1,8 @@
 package edg
 
-import edg.ElemBuilder.{Block, Constraint, Link, Port, LibraryPath}
+import edg.ElemBuilder.{Block, Constraint, LibraryPath, Link, Port}
 import edg.ExprBuilder.{Ref, ValInit}
+import edg.wir.ProtoUtil.ConstraintProtoToSeqMap
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
@@ -14,6 +15,12 @@ class ConnectBuilderTest extends AnyFlatSpec {
     "topDesign",
     ports = SeqMap(
       "port" -> Port.Port("sourcePort", params = SeqMap("param" -> ValInit.Integer)),
+      "bundle" -> Port.Bundle(
+        "sourceBundle",
+        ports = SeqMap(
+          "port" -> Port.Port("sourcePort", params = SeqMap("param" -> ValInit.Integer)),
+        )
+      ),
     ),
     blocks = SeqMap(
       "source" -> Block.Block(
@@ -34,6 +41,12 @@ class ConnectBuilderTest extends AnyFlatSpec {
           "port" -> Port.Port("sourcePort", params = SeqMap("param" -> ValInit.Integer)),
         ),
       ),
+      "exportBundleSource" -> Block.Block(
+        "sourceBlock",
+        ports = SeqMap(
+          "port" -> Port.Port("sourcePort", params = SeqMap("param" -> ValInit.Integer)),
+        ),
+      ),
     ),
     links = SeqMap(
       "link" -> Link.Array("link"),
@@ -41,26 +54,25 @@ class ConnectBuilderTest extends AnyFlatSpec {
     constraints = SeqMap(
       "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
       "sink0Connect" -> Constraint.Connected(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
-      "sourceExport" -> Constraint.Exported(Ref("port"), Ref("exportSource", "source")),
+      "sourceExport" -> Constraint.Exported(Ref("port"), Ref("exportSource", "port")),
+      "bundleSourceExport" -> Constraint.Exported(Ref("bundle", "port"), Ref("exportBundleSource", "port")),
     )
   ).getHierarchy
 
   it should "decode connections and get types" in {
 
     // basic connection forms
-    ConnectTypes.fromConnect(Constraint.Connected(Ref("source", "port"), Ref("link", "source"))) should equal(Some(Seq(
+    ConnectTypes.fromConnect(exampleBlock.constraints.toSeqMap("sourceConnect")) should equal(Some(Seq(
       ConnectTypes.BlockPort("source", "port")
     )))
     ConnectTypes.BlockPort("source", "port").getPortType(exampleBlock) should equal(Some(LibraryPath("sourcePort")))
 
-    ConnectTypes.fromConnect(
-      Constraint.Connected(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks")))
-    ) should equal(Some(Seq(
+    ConnectTypes.fromConnect(exampleBlock.constraints.toSeqMap("sink0Connect")) should equal(Some(Seq(
       ConnectTypes.BlockPort("sink0", "port")
     )))
     ConnectTypes.BlockPort("sink0", "port").getPortType(exampleBlock) should equal(Some(LibraryPath("sinkPort")))
 
-    ConnectTypes.fromConnect(Constraint.Exported(Ref("port"), Ref("exportSource", "port"))) should equal(Some(Seq(
+    ConnectTypes.fromConnect(exampleBlock.constraints.toSeqMap("sourceExport")) should equal(Some(Seq(
       ConnectTypes.BoundaryPort("port", Seq()),
       ConnectTypes.BlockPort("exportSource", "port")
     )))
@@ -70,9 +82,15 @@ class ConnectBuilderTest extends AnyFlatSpec {
     )
 
     // export into bundle component / vector element
-    ConnectTypes.fromConnect(Constraint.Exported(Ref("source", "a"), Ref("a", "source"))) should equal(Some(Seq(
-      ConnectTypes.BoundaryPort("source", Seq("a")),
-      ConnectTypes.BlockPort("a", "source")
+    ConnectTypes.fromConnect(exampleBlock.constraints.toSeqMap("bundleSourceExport")) should equal(Some(Seq(
+      ConnectTypes.BoundaryPort("bundle", Seq("port")),
+      ConnectTypes.BlockPort("exportBundleSource", "port")
     )))
+    ConnectTypes.BoundaryPort("bundle", Seq("port")).getPortType(exampleBlock) should equal(
+      Some(LibraryPath("sourcePort"))
+    )
+    ConnectTypes.BlockPort("exportBundleSource", "port").getPortType(exampleBlock) should equal(
+      Some(LibraryPath("sourcePort"))
+    )
   }
 }

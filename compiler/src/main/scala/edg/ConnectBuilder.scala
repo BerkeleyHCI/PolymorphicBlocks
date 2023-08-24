@@ -40,8 +40,12 @@ object ConnectTypes { // types of connections a port attached to a connection ca
   // single exported port only
   case class BoundaryPort(portName: String, innerNames: Seq[String]) extends Base {
     override def getPortType(container: HierarchyBlock): Option[ref.LibraryPath] = {
-      container.ports.get(portName)
-        .flatMap(typeOfSinglePort)
+      val initPort = container.ports.get(portName)
+      val finalPort = innerNames.foldLeft(initPort) { case (prev, innerName) =>
+        prev.flatMap(_.is.bundle)
+          .flatMap(_.ports.get(innerName))
+      }
+      finalPort.flatMap(typeOfSinglePort)
     }
   }
 
