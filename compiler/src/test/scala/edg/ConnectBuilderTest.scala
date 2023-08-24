@@ -35,6 +35,12 @@ class ConnectBuilderTest extends AnyFlatSpec {
           "port" -> Port.Port("sinkPort", params = SeqMap("param" -> ValInit.Integer)),
         ),
       ),
+      "sink1" -> Block.Block(
+        "sinkBlock",
+        ports = SeqMap(
+          "port" -> Port.Port("sinkPort", params = SeqMap("param" -> ValInit.Integer)),
+        ),
+      ),
       "exportSource" -> Block.Block(
         "sourceBlock",
         ports = SeqMap(
@@ -54,6 +60,7 @@ class ConnectBuilderTest extends AnyFlatSpec {
     constraints = SeqMap(
       "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
       "sink0Connect" -> Constraint.Connected(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
+      "sink1Connect" -> Constraint.Connected(Ref("sink1", "port"), Ref.Allocate(Ref("link", "sinks"))),
       "sourceExport" -> Constraint.Exported(Ref("port"), Ref("exportSource", "port")),
       "bundleSourceExport" -> Constraint.Exported(Ref("bundle", "port"), Ref("exportBundleSource", "port")),
     )
@@ -102,5 +109,20 @@ class ConnectBuilderTest extends AnyFlatSpec {
     ConnectTypes.BlockPort("exportBundleSource", "port").getPortType(exampleBlock) should equal(
       Some(LibraryPath("sourcePort"))
     )
+  }
+
+  it should "build valid connects" in {
+    val emptyConnect = ConnectBuilder(exampleBlock, exampleLink, Seq())
+    emptyConnect should not be empty
+
+    val sourceConnect = emptyConnect.get.append(Seq(exampleBlock.constraints.toSeqMap("sourceConnect")))
+    sourceConnect should not be empty
+
+    val sink0Connect = sourceConnect.get.append(Seq(exampleBlock.constraints.toSeqMap("sink0Connect")))
+    sink0Connect should not be empty
+
+    // ensure arrays can connect multiple ports
+    val sink1Connect = sourceConnect.get.append(Seq(exampleBlock.constraints.toSeqMap("sink1Connect")))
+    sink1Connect should not be empty
   }
 }

@@ -133,7 +133,6 @@ object ConnectMode { // state of a connect-in-progress
 object ConnectBuilder {
   // creates a ConnectBuilder given all the connects to a link (found externally) and context data
   def apply(
-      library: LibraryConnectivityAnalysis,
       container: elem.HierarchyBlock,
       link: elem.Link, // link is needed to determine available connects
       constrs: Seq[expr.ValueExpr]
@@ -146,7 +145,7 @@ object ConnectBuilder {
         case _ => None
       }
     IterableUtils.getAllDefined(availableOpt).flatMap { available =>
-      new ConnectBuilder(library, container, available.toSeq, Seq(), ConnectMode.VectorCapable).append(constrs)
+      new ConnectBuilder(container, available.toSeq, Seq(), ConnectMode.VectorCapable).append(constrs)
     }
   }
 }
@@ -158,7 +157,6 @@ object ConnectBuilder {
   * TODO: support link array (array-array connections)
   */
 class ConnectBuilder protected (
-    library: LibraryConnectivityAnalysis,
     container: elem.HierarchyBlock,
     val availablePorts: Seq[(String, Boolean, ref.LibraryPath)], // name, is array, port type
     val connected: Seq[(ConnectTypes.Base, ref.LibraryPath)], // connect type, used port type
@@ -218,13 +216,7 @@ class ConnectBuilder protected (
       if (failedToAllocate) {
         None
       } else {
-        Some(new ConnectBuilder(
-          library,
-          container,
-          availablePortsBuilder.toSeq,
-          connected ++ newConnects,
-          connectModeBuilder
-        ))
+        Some(new ConnectBuilder(container, availablePortsBuilder.toSeq, connected ++ newConnects, connectModeBuilder))
       }
     }
   }
