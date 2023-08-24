@@ -1,6 +1,7 @@
 package edg
 
 import edg.ExprBuilder.ValueExpr
+import edg.util.IterableUtils
 import edg.wir.LibraryConnectivityAnalysis
 import edg.wir.ProtoUtil.{BlockProtoToSeqMap, PortProtoToSeqMap}
 import edgir.elem.elem
@@ -8,7 +9,7 @@ import edgir.elem.elem.HierarchyBlock
 import edgir.expr.expr
 import edgir.ref.ref
 
-import scala.collection.SeqMap
+import scala.collection.{SeqMap, mutable}
 
 object ConnectTypes { // types of connections a port attached to a connection can be a part of
   // TODO structure this - materialize from constraint (using pre-lowered constraint?)
@@ -122,7 +123,7 @@ object ConnectTypes { // types of connections a port attached to a connection ca
   }
 }
 
-object ConnectState { // state of a connect-in-progress
+object ConnectMode { // state of a connect-in-progress
   trait Base
   case object Single extends Base // connection between single ports, generates into link
   case object VectorUnit extends Base // connection with at least one full vector, generates into link array
@@ -137,13 +138,16 @@ object ConnectBuilder {
       link: elem.Link, // link is needed to determine available connects
       constrs: Seq[expr.ValueExpr]
   ): Option[ConnectBuilder] = {
-    val available = link.ports.toSeqMap.map { case (name, portLike) => (name, portLike.is) }
-      .map {
-        case (name, elem.PortLike.Is.Port(port)) => (name, false, port.getSelfClass)
-        case (name, elem.PortLike.Is.Bundle(port)) => (name, false, port.getSelfClass)
-        case (name, elem.PortLike.Is.Array(array)) => (name, true, array.getSelfClass)
-      }.toSeq
-    new ConnectBuilder(library, container, available, Seq()).append(constrs)
+    val availableOpt = link.ports.toSeqMap.map { case (name, portLike) => (name, portLike.is) }
+      .flatMap {
+        case (name, elem.PortLike.Is.Port(port)) => Some(port.selfClass.map((name, false, _)))
+        case (name, elem.PortLike.Is.Bundle(port)) => Some(port.selfClass.map((name, false, _)))
+        case (name, elem.PortLike.Is.Array(array)) => Some(array.selfClass.map((name, true, _)))
+        case _ => None
+      }
+    IterableUtils.getAllDefined(availableOpt).flatMap { available =>
+      new ConnectBuilder(library, container, available.toSeq, Seq()).append(constrs)
+    }
   }
 }
 
@@ -156,15 +160,49 @@ object ConnectBuilder {
 class ConnectBuilder protected (
     library: LibraryConnectivityAnalysis,
     container: elem.HierarchyBlock,
-    available_ports: Seq[(String, Boolean, ref.LibraryPath)], // name, expandable (is array), type
-    connected: Seq[(ConnectTypes.Base, ref.LibraryPath)]
+    availablePorts: Seq[(String, Boolean, ref.LibraryPath)], // name, is array, port type
+    connected: Seq[(ConnectTypes.Base, ref.LibraryPath)] // connect type, used port type
 ) {
   // TODO link duplicate with available_ports?
-  // should connected encode bridges?
+  // TODO should connected encode bridges?
+
+  val currentMode: ConnectMode.Base = {
+    ???
+  }
 
   // Attempts to append the connected constraints to this connection, returning None if the result is invalid
   def append(constrs: Seq[expr.ValueExpr]): Option[ConnectBuilder] = {
-    // TODO ports need to encode bridges (exterior / interior status)
-    ???
+    // TODO this Iterable.getAllDefined nesting is ugly
+    val newConnectsSeqOpt = constrs.map(ConnectTypes.fromConnect).map { newConnectOpt =>
+      newConnectOpt.flatMap { newConnects =>
+        val newConnectsWithPortsOpt = newConnects.map { newConnect => // append port type to connects
+          newConnect.getPortType(container).map(portType => (newConnect, portType))
+        }
+        IterableUtils.getAllDefined(newConnectsWithPortsOpt)
+      }
+    }
+    val newConnectsOpt = IterableUtils.getAllDefined(newConnectsSeqOpt).map(_.flatten.toSeq)
+    newConnectsOpt.flatMap { newConnects =>
+      val availablePortsBuilder = availablePorts.to(mutable.ArrayBuffer)
+      var failedToAllocate: Boolean = false
+      newConnects.foreach { case (connect, portType) =>
+        availablePortsBuilder.indexWhere(_._3 == portType) match {
+          case -1 =>
+            failedToAllocate = true
+          case index =>
+            // TODO HANDLE LINK ARRAY CASE
+            val (portName, isArray, portType) = availablePortsBuilder(index)
+            if (!isArray) {
+              availablePortsBuilder.remove(index)
+            }
+        }
+      }
+
+      if (failedToAllocate) {
+        None
+      } else {
+        Some(new ConnectBuilder(library, container, availablePortsBuilder.toSeq, connected ++ newConnects))
+      }
+    }
   }
 }

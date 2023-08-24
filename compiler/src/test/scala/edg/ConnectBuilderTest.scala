@@ -59,6 +59,17 @@ class ConnectBuilderTest extends AnyFlatSpec {
     )
   ).getHierarchy
 
+  val exampleLink = Link.Link(
+    "link",
+    ports = SeqMap(
+      "source" -> Port.Library("sourcePort"),
+      "sinks" -> Port.Array("sinkPort"),
+    ),
+    params = SeqMap(
+      "param" -> ValInit.Integer
+    ),
+  ).getLink
+
   it should "decode connections and get types" in {
     // basic connection forms
     ConnectTypes.fromConnect(exampleBlock.constraints.toSeqMap("sourceConnect")) should equal(Some(Seq(
