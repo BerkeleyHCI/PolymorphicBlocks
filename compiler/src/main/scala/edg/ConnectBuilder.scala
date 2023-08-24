@@ -2,29 +2,74 @@ package edg
 
 import edg.ExprBuilder.ValueExpr
 import edg.wir.LibraryConnectivityAnalysis
+import edg.wir.ProtoUtil.{BlockProtoToSeqMap, PortProtoToSeqMap}
 import edgir.elem.elem
+import edgir.elem.elem.HierarchyBlock
 import edgir.expr.expr
+import edgir.ref.ref
 
 import scala.collection.SeqMap
 
 object ConnectTypes { // types of connections a port attached to a connection can be a part of
   // TODO structure this - materialize from constraint (using pre-lowered constraint?)
   // TODO materialize into constraints? - how to add tack this on to an existing IR graph
-  class Base() {}
+  trait Base {
+    def getPortType(container: elem.HierarchyBlock): Option[ref.LibraryPath] // retrieves the type from the container
+  }
 
-  case class BlockPort(blockName: String, portName: String) extends Base {}
+  protected def typeOfSinglePort(portLike: elem.PortLike): Option[ref.LibraryPath] = portLike.is match {
+    case elem.PortLike.Is.Port(port) => port.selfClass
+    case elem.PortLike.Is.Bundle(port) => port.selfClass
+    case _ => None
+  }
 
-  // single port, either direct or through a bridge; innerNames can either be a bundle element or vector index
-  case class BoundaryPort(portName: String, innerNames: Seq[String]) extends Base {}
+  protected def typeOfArrayPort(portLike: elem.PortLike): Option[ref.LibraryPath] = portLike.is match {
+    case elem.PortLike.Is.Array(array) => array.selfClass
+    case _ => None
+  }
+
+  // including bridges
+  case class BlockPort(blockName: String, portName: String) extends Base {
+    override def getPortType(container: HierarchyBlock): Option[ref.LibraryPath] = {
+      container.blocks.toSeqMap.get(blockName).flatMap(_.`type`.hierarchy)
+        .flatMap(_.ports.get(portName))
+        .flatMap(typeOfSinglePort)
+    }
+  }
+
+  // single exported port only
+  case class BoundaryPort(portName: String, innerNames: Seq[String]) extends Base {
+    override def getPortType(container: HierarchyBlock): Option[ref.LibraryPath] = {
+      container.ports.get(portName)
+        .flatMap(typeOfSinglePort)
+    }
+  }
 
   // port array, connected as a unit; port array cannot be part of any other connection
-  case class BlockVectorUnit(blockName: String, portName: String) extends Base {}
+  case class BlockVectorUnit(blockName: String, portName: String) extends Base {
+    override def getPortType(container: HierarchyBlock): Option[ref.LibraryPath] = {
+      container.blocks.toSeqMap.get(blockName).flatMap(_.`type`.hierarchy)
+        .flatMap(_.ports.get(portName))
+        .flatMap(typeOfArrayPort)
+    }
+  }
 
   // slice of a port array, connected using allocated / requested; other connections can involve the port array via slicing
-  case class BlockVectorSlice(blockName: String, portName: String, suggestedIndex: Option[String]) extends Base {}
+  case class BlockVectorSlice(blockName: String, portName: String, suggestedIndex: Option[String]) extends Base {
+    override def getPortType(container: HierarchyBlock): Option[ref.LibraryPath] = { // same as BlockVectorUnit case
+      container.blocks.toSeqMap.get(blockName).flatMap(_.`type`.hierarchy)
+        .flatMap(_.ports.get(portName))
+        .flatMap(typeOfArrayPort)
+    }
+  }
 
   // port array, connected as a unit; port array cannot be part of any other connection
-  case class BoundaryPortVectorUnit(portName: String) extends Base {}
+  case class BoundaryPortVectorUnit(portName: String) extends Base {
+    override def getPortType(container: HierarchyBlock): Option[ref.LibraryPath] = {
+      container.ports.get(portName)
+        .flatMap(typeOfArrayPort)
+    }
+  }
 
   // turns an unlowered (but optionally expanded) connect expression into a structured connect type, if the form matches
   // None means the expression failed to decode
@@ -74,9 +119,10 @@ object ConnectTypes { // types of connections a port attached to a connection ca
 }
 
 object ConnectState { // state of a connect-in-progress
-  class Single() // connection between single ports, generates into link
-  class VectorUnit() // connection with at least one full vector and only with slices, generates into link array
-  class VectorCapable() // connection which can be either - but is ambiguous and cannot be created
+  trait Base
+  case object Single extends Base // connection between single ports, generates into link
+  case object VectorUnit extends Base // connection with at least one full vector, generates into link array
+  case object VectorCapable extends Base // connection which can be either - but is ambiguous and cannot be created
 }
 
 /** Mildly analogous to the connect builder in the frontend HDL, this starts with a link, then ports can be added.
