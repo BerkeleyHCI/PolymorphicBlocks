@@ -129,18 +129,30 @@ object ConnectState { // state of a connect-in-progress
   case object VectorCapable extends Base // connection which can be either - but is ambiguous and cannot be created
 }
 
+object ConnectBuilder {
+  // creates a ConnectBuilder given all the connects to a link (found externally) and context data
+  def apply(
+      library: LibraryConnectivityAnalysis,
+      container: elem.HierarchyBlock,
+      link: Option[(String, elem.Link)],  // name of link, link object; may be empty for direct export
+      constrs: Seq[expr.ValueExpr]
+  ): Option[ConnectBuilder] = {
+
+  }
+}
+
 /** Mildly analogous to the connect builder in the frontend HDL, this starts with a link, then ports can be added.
   * Immutable, added ports return a new ConnectBuilder object (if the add was successful) or None (if the ports cannot
   * be added). Accounts for bridging and vectors.
   *
   * TODO: support link array (array-array connections)
   */
-class ConnectBuilder(
+class ConnectBuilder protected(
     library: LibraryConnectivityAnalysis,
-    link: elem.Link,
-    linkName: Option[String],
+    container: elem.HierarchyBlock,
+    link: Option[(String, elem.Link)],
+    connected: Seq[(ConnectTypes.Base, ref.LibraryPath)],
     available_ports: SeqMap[String, elem.PortLike],
-    connected: Map[String, Seq[String]]
 ) {
   // TODO link duplicate with available_ports?
   // should connected encode bridges?

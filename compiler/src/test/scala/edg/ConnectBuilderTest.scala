@@ -60,7 +60,6 @@ class ConnectBuilderTest extends AnyFlatSpec {
   ).getHierarchy
 
   it should "decode connections and get types" in {
-
     // basic connection forms
     ConnectTypes.fromConnect(exampleBlock.constraints.toSeqMap("sourceConnect")) should equal(Some(Seq(
       ConnectTypes.BlockPort("source", "port")
