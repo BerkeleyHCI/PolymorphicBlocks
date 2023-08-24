@@ -1,5 +1,6 @@
 package edg
 
+import edg.EdgirUtils.SimpleLibraryPath
 import edg.ExprBuilder.ValueExpr
 import edg.util.IterableUtils
 import edg.wir.LibraryConnectivityAnalysis
@@ -138,10 +139,10 @@ object ConnectBuilder {
       constrs: Seq[expr.ValueExpr]
   ): Option[ConnectBuilder] = {
     val availableOpt = link.ports.toSeqMap.map { case (name, portLike) => (name, portLike.is) }
-      .flatMap {
-        case (name, elem.PortLike.Is.Port(port)) => Some(port.selfClass.map((name, false, _)))
-        case (name, elem.PortLike.Is.Bundle(port)) => Some(port.selfClass.map((name, false, _)))
-        case (name, elem.PortLike.Is.Array(array)) => Some(array.selfClass.map((name, true, _)))
+      .map {
+        case (name, elem.PortLike.Is.Port(port)) => port.selfClass.map((name, false, _))
+        case (name, elem.PortLike.Is.Bundle(port)) => port.selfClass.map((name, false, _))
+        case (name, elem.PortLike.Is.Array(array)) => array.selfClass.map((name, true, _))
         case _ => None
       }
     IterableUtils.getAllDefined(availableOpt).flatMap { available =>
@@ -168,15 +169,15 @@ class ConnectBuilder protected (
   // Attempts to append the connected constraints to this connection, returning None if the result is invalid
   def append(constrs: Seq[expr.ValueExpr]): Option[ConnectBuilder] = {
     // TODO this Iterable.getAllDefined nesting is ugly
-    val newConnectsSeqOpt = constrs.map(ConnectTypes.fromConnect).map { newConnectOpt =>
+    val newConnectsOpt = IterableUtils.getAllDefined(constrs.map(ConnectTypes.fromConnect).map { newConnectOpt =>
       newConnectOpt.flatMap { newConnects =>
         val newConnectsWithPortsOpt = newConnects.map { newConnect => // append port type to connects
           newConnect.getPortType(container).map(portType => (newConnect, portType))
         }
         IterableUtils.getAllDefined(newConnectsWithPortsOpt)
       }
-    }
-    val newConnectsOpt = IterableUtils.getAllDefined(newConnectsSeqOpt).map(_.flatten.toSeq)
+    }).map(_.flatten.toSeq)
+
     newConnectsOpt.flatMap { newConnects =>
       val availablePortsBuilder = availablePorts.to(mutable.ArrayBuffer)
       var connectModeBuilder = connectMode
