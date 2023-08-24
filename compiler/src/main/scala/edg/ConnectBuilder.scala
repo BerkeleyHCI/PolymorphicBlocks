@@ -134,10 +134,16 @@ object ConnectBuilder {
   def apply(
       library: LibraryConnectivityAnalysis,
       container: elem.HierarchyBlock,
-      link: Option[(String, elem.Link)],  // name of link, link object; may be empty for direct export
+      link: elem.Link, // link is needed to determine available connects
       constrs: Seq[expr.ValueExpr]
   ): Option[ConnectBuilder] = {
-
+    val available = link.ports.toSeqMap.map { case (name, portLike) => (name, portLike.is) }
+      .map {
+        case (name, elem.PortLike.Is.Port(port)) => (name, false, port.getSelfClass)
+        case (name, elem.PortLike.Is.Bundle(port)) => (name, false, port.getSelfClass)
+        case (name, elem.PortLike.Is.Array(array)) => (name, true, array.getSelfClass)
+      }.toSeq
+    new ConnectBuilder(library, container, available, Seq()).append(constrs)
   }
 }
 
@@ -147,18 +153,17 @@ object ConnectBuilder {
   *
   * TODO: support link array (array-array connections)
   */
-class ConnectBuilder protected(
+class ConnectBuilder protected (
     library: LibraryConnectivityAnalysis,
     container: elem.HierarchyBlock,
-    link: Option[(String, elem.Link)],
-    connected: Seq[(ConnectTypes.Base, ref.LibraryPath)],
-    available_ports: SeqMap[String, elem.PortLike],
+    available_ports: Seq[(String, Boolean, ref.LibraryPath)], // name, expandable (is array), type
+    connected: Seq[(ConnectTypes.Base, ref.LibraryPath)]
 ) {
   // TODO link duplicate with available_ports?
   // should connected encode bridges?
 
-  // Attempts to append new connected ports to this ConnectBuilder, returning a new ConnectBuilder if successful.
-  def append(ports: (Seq[String], Seq[elem.PortLike])): Option[ConnectBuilder] = {
+  // Attempts to append the connected constraints to this connection, returning None if the result is invalid
+  def append(constrs: Seq[expr.ValueExpr]): Option[ConnectBuilder] = {
     // TODO ports need to encode bridges (exterior / interior status)
     ???
   }
