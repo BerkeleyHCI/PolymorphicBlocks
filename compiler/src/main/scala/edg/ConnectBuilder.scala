@@ -146,7 +146,7 @@ object ConnectBuilder {
         case _ => None
       }
     IterableUtils.getAllDefined(availableOpt).flatMap { available =>
-      new ConnectBuilder(library, container, available.toSeq, Seq()).append(constrs)
+      new ConnectBuilder(library, container, available.toSeq, Seq(), ConnectMode.VectorCapable).append(constrs)
     }
   }
 }
@@ -160,15 +160,12 @@ object ConnectBuilder {
 class ConnectBuilder protected (
     library: LibraryConnectivityAnalysis,
     container: elem.HierarchyBlock,
-    availablePorts: Seq[(String, Boolean, ref.LibraryPath)], // name, is array, port type
-    connected: Seq[(ConnectTypes.Base, ref.LibraryPath)] // connect type, used port type
+    val availablePorts: Seq[(String, Boolean, ref.LibraryPath)], // name, is array, port type
+    val connected: Seq[(ConnectTypes.Base, ref.LibraryPath)], // connect type, used port type
+    val connectMode: ConnectMode.Base
 ) {
   // TODO link duplicate with available_ports?
   // TODO should connected encode bridges?
-
-  val currentMode: ConnectMode.Base = {
-    ???
-  }
 
   // Attempts to append the connected constraints to this connection, returning None if the result is invalid
   def append(constrs: Seq[expr.ValueExpr]): Option[ConnectBuilder] = {
@@ -184,7 +181,9 @@ class ConnectBuilder protected (
     val newConnectsOpt = IterableUtils.getAllDefined(newConnectsSeqOpt).map(_.flatten.toSeq)
     newConnectsOpt.flatMap { newConnects =>
       val availablePortsBuilder = availablePorts.to(mutable.ArrayBuffer)
+      var connectModeBuilder = connectMode
       var failedToAllocate: Boolean = false
+
       newConnects.foreach { case (connect, portType) =>
         availablePortsBuilder.indexWhere(_._3 == portType) match {
           case -1 =>
@@ -192,6 +191,24 @@ class ConnectBuilder protected (
           case index =>
             // TODO HANDLE LINK ARRAY CASE
             val (portName, isArray, portType) = availablePortsBuilder(index)
+            connect match {
+              case ConnectTypes.BlockPort(_, _) | ConnectTypes.BoundaryPort(_, _) =>
+                if (connectModeBuilder == ConnectMode.VectorUnit) {
+                  failedToAllocate = true
+                } else {
+                  connectModeBuilder = ConnectMode.Single
+                }
+              case ConnectTypes.BlockVectorUnit(_, _) | ConnectTypes.BoundaryPortVectorUnit(_) =>
+                if (connectModeBuilder == ConnectMode.Single) {
+                  failedToAllocate = true
+                } else {
+                  connectModeBuilder = ConnectMode.VectorUnit
+                }
+              case ConnectTypes.BlockVectorSlice(_, _, _) =>
+                if (connectModeBuilder == ConnectMode.Single) {
+                  failedToAllocate = true
+                }
+            }
             if (!isArray) {
               availablePortsBuilder.remove(index)
             }
@@ -201,7 +218,13 @@ class ConnectBuilder protected (
       if (failedToAllocate) {
         None
       } else {
-        Some(new ConnectBuilder(library, container, availablePortsBuilder.toSeq, connected ++ newConnects))
+        Some(new ConnectBuilder(
+          library,
+          container,
+          availablePortsBuilder.toSeq,
+          connected ++ newConnects,
+          connectModeBuilder
+        ))
       }
     }
   }
