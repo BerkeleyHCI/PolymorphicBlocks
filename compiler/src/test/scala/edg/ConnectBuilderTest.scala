@@ -208,6 +208,10 @@ class ConnectBuilderTest extends AnyFlatSpec {
     ))
     sink0Connect should not be empty
     sink0Connect.get.connectMode should equal(ConnectMode.Port)
+    sink0Connect.get.connected should equal(Seq(
+      (ConnectTypes.BlockPort("source", "port"), LibraryPath("sourcePort"), "source"),
+      (ConnectTypes.BlockPort("sink0", "port"), LibraryPath("sinkPort"), "sinks")
+    ))
   }
 
   it should "build valid port connects from empty, starting with an ambiguous vector" in {
@@ -223,6 +227,10 @@ class ConnectBuilderTest extends AnyFlatSpec {
     ))
     sink0Connect should not be empty
     sink0Connect.get.connectMode should equal(ConnectMode.Port) // connection type resolved here
+    sink0Connect.get.connected should equal(Seq(
+      (ConnectTypes.BlockVectorSlice("sinkArray", "port", None), LibraryPath("sinkPort"), "sinks"),
+      (ConnectTypes.BlockPort("sink0", "port"), LibraryPath("sinkPort"), "sinks")
+    ))
   }
 
   it should "build valid array connects from empty, starting with an ambiguous vector" in {
@@ -236,6 +244,10 @@ class ConnectBuilderTest extends AnyFlatSpec {
     ))
     sinkArrayConnect should not be empty
     sinkArrayConnect.get.connectMode should equal(ConnectMode.Vector) // connection type resolved here
+    sinkArrayConnect.get.connected should equal(Seq(
+      (ConnectTypes.BlockVectorSlice("sinkArray", "port", None), LibraryPath("sinkPort"), "sinks"),
+      (ConnectTypes.BlockVectorUnit("sink0", "port"), LibraryPath("sinkPort"), "sinks")
+    ))
   }
 
   it should "build valid connects with multiple allocations to an array" in {
@@ -317,6 +329,12 @@ class ConnectBuilderTest extends AnyFlatSpec {
     ))
     sliceConnected should not be empty
     sliceConnected.get.connectMode should equal(ConnectMode.Port)
+    sliceConnected.get.connected should equal(Seq(
+      (ConnectTypes.BlockPort("source", "port"), LibraryPath("sourcePort"), "source"),
+      (ConnectTypes.BlockPort("sink0", "port"), LibraryPath("sinkPort"), "sinks"),
+      (ConnectTypes.BlockPort("sink1", "port"), LibraryPath("sinkPort"), "sinks"),
+      (ConnectTypes.BlockVectorSlice("sinkArray", "port", None), LibraryPath("sinkPort"), "sinks"),
+    ))
   }
 
   it should "allow appending vector slices in vector mode" in {
@@ -337,5 +355,11 @@ class ConnectBuilderTest extends AnyFlatSpec {
     ))
     sliceConnected should not be empty
     sliceConnected.get.connectMode should equal(ConnectMode.Vector)
+    sliceConnected.get.connected should equal(Seq(
+      (ConnectTypes.BlockVectorUnit("source", "port"), LibraryPath("sourcePort"), "source"),
+      (ConnectTypes.BlockVectorUnit("sink0", "port"), LibraryPath("sinkPort"), "sinks"),
+      (ConnectTypes.BlockVectorUnit("sink1", "port"), LibraryPath("sinkPort"), "sinks"),
+      (ConnectTypes.BlockVectorSlice("sinkArray", "port", None), LibraryPath("sinkPort"), "sinks"),
+    ))
   }
 }

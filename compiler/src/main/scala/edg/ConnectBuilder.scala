@@ -187,7 +187,7 @@ object ConnectBuilder {
 class ConnectBuilder protected (
     container: elem.HierarchyBlock,
     val availablePorts: Seq[(String, Boolean, ref.LibraryPath)], // name, is array, port type
-    val connected: Seq[(ConnectTypes.Base, ref.LibraryPath)], // connect type, used port type
+    val connected: Seq[(ConnectTypes.Base, ref.LibraryPath, String)], // connect type, used port type, port name
     val connectMode: ConnectMode.Base
 ) {
   // TODO should connected encode bridges?
@@ -199,10 +199,11 @@ class ConnectBuilder protected (
     var connectModeBuilder = connectMode
     var failedToAllocate: Boolean = false
 
-    newConnects.foreach { case (connect, portType) =>
-      availablePortsBuilder.indexWhere(_._3 == portType) match {
+    val newConnected = newConnects.map { case (connect, portType) =>
+      val portName = availablePortsBuilder.indexWhere(_._3 == portType) match {
         case -1 =>
           failedToAllocate = true
+          ""
         case index =>
           val (portName, isArray, portType) = availablePortsBuilder(index)
           connect match {
@@ -223,13 +224,15 @@ class ConnectBuilder protected (
           if (!isArray) {
             availablePortsBuilder.remove(index)
           }
+          portName
       }
+      (connect, portType, portName)
     }
 
     if (failedToAllocate) {
       None
     } else {
-      Some(new ConnectBuilder(container, availablePortsBuilder.toSeq, connected ++ newConnects, connectModeBuilder))
+      Some(new ConnectBuilder(container, availablePortsBuilder.toSeq, connected ++ newConnected, connectModeBuilder))
     }
   }
 }
