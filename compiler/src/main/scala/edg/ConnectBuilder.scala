@@ -207,25 +207,21 @@ class ConnectBuilder protected (
         case -1 =>
           failedToAllocate = true
         case index =>
-          // TODO HANDLE LINK ARRAY CASE
           val (portName, isArray, portType) = availablePortsBuilder(index)
           connect match {
-            case ConnectTypes.BlockPort(_, _) | ConnectTypes.BoundaryPort(_, _) =>
+            case _: ConnectTypes.PortBase =>
               if (connectModeBuilder == ConnectMode.VectorUnit) {
                 failedToAllocate = true
               } else {
                 connectModeBuilder = ConnectMode.Single
               }
-            case ConnectTypes.BlockVectorUnit(_, _) | ConnectTypes.BoundaryPortVectorUnit(_) =>
+            case _: ConnectTypes.VectorBase =>
               if (connectModeBuilder == ConnectMode.Single) {
                 failedToAllocate = true
               } else {
                 connectModeBuilder = ConnectMode.VectorUnit
               }
-            case ConnectTypes.BlockVectorSlice(_, _, _) =>
-              if (connectModeBuilder == ConnectMode.Single) {
-                failedToAllocate = true
-              }
+            case _: ConnectTypes.AmbiguousBase => // fine in either single or vector case
           }
           if (!isArray) {
             availablePortsBuilder.remove(index)

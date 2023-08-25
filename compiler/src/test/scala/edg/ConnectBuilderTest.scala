@@ -41,6 +41,16 @@ class ConnectBuilderTest extends AnyFlatSpec {
           "port" -> Port.Port("sinkPort", params = SeqMap("param" -> ValInit.Integer)),
         ),
       ),
+      "sinkArray" -> Block.Block(
+        "sinkArrayBlock",
+        ports = SeqMap(
+          "port" -> Port.Array(
+            "sinkPort",
+            Seq("0"),
+            Port.Port("sinkPort", params = SeqMap("param" -> ValInit.Integer))
+          ),
+        ),
+      ),
       "exportSource" -> Block.Block(
         "sourceBlock",
         ports = SeqMap(
@@ -61,6 +71,10 @@ class ConnectBuilderTest extends AnyFlatSpec {
       "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
       "sink0Connect" -> Constraint.Connected(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
       "sink1Connect" -> Constraint.Connected(Ref("sink1", "port"), Ref.Allocate(Ref("link", "sinks"))),
+      "sinkArrayConnect" -> Constraint.Connected(
+        Ref.Allocate(Ref("sinkArray", "port")),
+        Ref.Allocate(Ref("link", "sinks"))
+      ),
       "sourceExport" -> Constraint.Exported(Ref("port"), Ref("exportSource", "port")),
       "bundleSourceExport" -> Constraint.Exported(Ref("bundle", "port"), Ref("exportBundleSource", "port")),
     )
@@ -132,7 +146,8 @@ class ConnectBuilderTest extends AnyFlatSpec {
       exampleLink,
       Seq(
         exampleBlock.constraints.toSeqMap("sink0Connect"),
-        exampleBlock.constraints.toSeqMap("sink1Connect")
+        exampleBlock.constraints.toSeqMap("sink1Connect"),
+        exampleBlock.constraints.toSeqMap("sinkArrayConnect")
       )
     ) should not be empty
   }
@@ -146,5 +161,19 @@ class ConnectBuilderTest extends AnyFlatSpec {
     sourceConnect.append(Seq(
       (ConnectTypes.BlockPort("source", "port"), LibraryPath("sourcePort"))
     )) shouldBe empty
+  }
+
+  it should "allow appending vector slices in port mode" in {
+    val sourceConnect = ConnectBuilder(
+      exampleBlock,
+      exampleLink,
+      Seq(exampleBlock.constraints.toSeqMap("sourceConnect"), exampleBlock.constraints.toSeqMap("sink0Connect"))
+    ).get
+    sourceConnect.append(Seq(
+      (ConnectTypes.BlockPort("sink1", "port"), LibraryPath("sinkPort"))
+    )) should not be empty
+    sourceConnect.append(Seq(
+      (ConnectTypes.BlockVectorSlicePort("sink1", "port", None), LibraryPath("sinkPort"))
+    )) should not be empty
   }
 }
