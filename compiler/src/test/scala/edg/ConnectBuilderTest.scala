@@ -125,7 +125,7 @@ class ConnectBuilderTest extends AnyFlatSpec {
     )
   }
 
-  it should "build valid connects" in {
+  it should "build valid connects from empty, starting with a port" in {
     val emptyConnect = ConnectBuilder(exampleBlock, exampleLink, Seq())
     emptyConnect should not be empty
     emptyConnect.get.connectMode should equal(ConnectMode.Ambiguous)
@@ -141,6 +141,21 @@ class ConnectBuilderTest extends AnyFlatSpec {
     ))
     sink0Connect should not be empty
     sink0Connect.get.connectMode should equal(ConnectMode.Port)
+  }
+
+  it should "build valid connects from empty, starting with an ambiguous vector" in {
+    val emptyConnect = ConnectBuilder(exampleBlock, exampleLink, Seq())
+    val sliceConnect = emptyConnect.get.append(Seq(
+      (ConnectTypes.BlockVectorSlice("sinkArray", "port", None), LibraryPath("sinkPort"))
+    ))
+    sliceConnect should not be empty
+    sliceConnect.get.connectMode should equal(ConnectMode.Ambiguous) // stays ambiguous
+
+    val sink0Connect = sliceConnect.get.append(Seq(
+      (ConnectTypes.BlockPort("sink0", "port"), LibraryPath("sinkPort"))
+    ))
+    sink0Connect should not be empty
+    sink0Connect.get.connectMode should equal(ConnectMode.Port) // connection type resolved here
   }
 
   it should "build valid connects with multiple allocations to an array" in {
@@ -179,10 +194,9 @@ class ConnectBuilderTest extends AnyFlatSpec {
     ))
     sinkConnected should not be empty
     val sliceConnected = sinkConnected.get.append(Seq(
-      (ConnectTypes.BlockVectorSlicePort("sink1", "port", None), LibraryPath("sinkPort"))
+      (ConnectTypes.BlockVectorSlicePort("sinkArray", "port", None), LibraryPath("sinkPort"))
     ))
     sliceConnected should not be empty
     sliceConnected.get.connectMode should equal(ConnectMode.Port)
-
   }
 }
