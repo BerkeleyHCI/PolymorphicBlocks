@@ -120,10 +120,17 @@ class ConnectBuilderTest extends AnyFlatSpec {
 
     val sink0Connect = sourceConnect.get.append(Seq(exampleBlock.constraints.toSeqMap("sink0Connect")))
     sink0Connect should not be empty
+  }
 
-    // ensure arrays can connect multiple ports
-    val sink1Connect = sourceConnect.get.append(Seq(exampleBlock.constraints.toSeqMap("sink1Connect")))
-    sink1Connect should not be empty
+  it should "build valid connects with multiple allocations to an array" in {
+    ConnectBuilder(
+      exampleBlock,
+      exampleLink,
+      Seq(
+        exampleBlock.constraints.toSeqMap("sink0Connect"),
+        exampleBlock.constraints.toSeqMap("sink1Connect")
+      )
+    ) should not be empty
   }
 
   it should "not overallocate single connects" in {
