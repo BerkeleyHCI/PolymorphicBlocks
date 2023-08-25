@@ -226,13 +226,13 @@ class ConnectBuilderTest extends AnyFlatSpec {
   }
 
   it should "build valid array connects from empty, starting with an ambiguous vector" in {
-    val emptyConnect = ConnectBuilder(exampleBlock, exampleLink, Seq())
+    val emptyConnect = ConnectBuilder(exampleArrayBlock, exampleLink, Seq())
     val sliceConnect = emptyConnect.get.append(Seq(
       (ConnectTypes.BlockVectorSlice("sinkArray", "port", None), LibraryPath("sinkPort"))
     ))
 
     val sinkArrayConnect = sliceConnect.get.append(Seq(
-      (ConnectTypes.BlockVectorUnit("sinkArray2", "port"), LibraryPath("sinkPort"))
+      (ConnectTypes.BlockVectorUnit("sink0", "port"), LibraryPath("sinkPort"))
     ))
     sinkArrayConnect should not be empty
     sinkArrayConnect.get.connectMode should equal(ConnectMode.Vector) // connection type resolved here
@@ -252,6 +252,20 @@ class ConnectBuilderTest extends AnyFlatSpec {
     connect.get.connectMode should equal(ConnectMode.Port)
   }
 
+  it should "build valid array connects with multiple allocations to an array" in {
+    val connect = ConnectBuilder(
+      exampleArrayBlock,
+      exampleLink,
+      Seq(
+        exampleArrayBlock.constraints.toSeqMap("sink0Connect"),
+        exampleArrayBlock.constraints.toSeqMap("sink1Connect"),
+        exampleArrayBlock.constraints.toSeqMap("sinkArrayConnect")
+      )
+    )
+    connect should not be empty
+    connect.get.connectMode should equal(ConnectMode.Vector)
+  }
+
   it should "not overallocate single connects" in {
     val sourceConnect = ConnectBuilder(
       exampleBlock,
@@ -263,20 +277,65 @@ class ConnectBuilderTest extends AnyFlatSpec {
     )) shouldBe empty
   }
 
+  it should "not overallocate vector connects" in {
+    val sourceConnect = ConnectBuilder(
+      exampleArrayBlock,
+      exampleLink,
+      Seq(exampleArrayBlock.constraints.toSeqMap("sourceConnect"))
+    ).get
+    sourceConnect.append(Seq(
+      (ConnectTypes.BlockVectorSlice("source", "port", None), LibraryPath("sourcePort"))
+    )) shouldBe empty
+  }
+
+  it should "not mix port and vector connects" in {
+    val sourceConnect = ConnectBuilder(
+      exampleArrayBlock,
+      exampleLink,
+      Seq(exampleArrayBlock.constraints.toSeqMap("sourceConnect"))
+    ).get
+    sourceConnect.append(Seq(
+      (ConnectTypes.BlockPort("sink", "port"), LibraryPath("sinkPort"))
+    )) shouldBe empty
+  }
+
   it should "allow appending vector slices in port mode" in {
     val sourceConnect = ConnectBuilder(
       exampleBlock,
       exampleLink,
-      Seq(exampleBlock.constraints.toSeqMap("sourceConnect"), exampleBlock.constraints.toSeqMap("sink0Connect"))
+      Seq(
+        exampleBlock.constraints.toSeqMap("sourceConnect"),
+        exampleBlock.constraints.toSeqMap("sink0Connect")
+      )
     ).get
     val sinkConnected = sourceConnect.append(Seq(
       (ConnectTypes.BlockPort("sink1", "port"), LibraryPath("sinkPort"))
     ))
     sinkConnected should not be empty
     val sliceConnected = sinkConnected.get.append(Seq(
-      (ConnectTypes.BlockVectorSlicePort("sinkArray", "port", None), LibraryPath("sinkPort"))
+      (ConnectTypes.BlockVectorSlice("sinkArray", "port", None), LibraryPath("sinkPort"))
     ))
     sliceConnected should not be empty
     sliceConnected.get.connectMode should equal(ConnectMode.Port)
+  }
+
+  it should "allow appending vector slices in vector mode" in {
+    val sourceConnect = ConnectBuilder(
+      exampleArrayBlock,
+      exampleLink,
+      Seq(
+        exampleArrayBlock.constraints.toSeqMap("sourceConnect"),
+        exampleArrayBlock.constraints.toSeqMap("sink0Connect")
+      )
+    ).get
+    val sinkConnected = sourceConnect.append(Seq(
+      (ConnectTypes.BlockVectorUnit("sink1", "port"), LibraryPath("sinkPort"))
+    ))
+    sinkConnected should not be empty
+    val sliceConnected = sinkConnected.get.append(Seq(
+      (ConnectTypes.BlockVectorSlice("sinkArray", "port", None), LibraryPath("sinkPort"))
+    ))
+    sliceConnected should not be empty
+    sliceConnected.get.connectMode should equal(ConnectMode.Vector)
   }
 }
