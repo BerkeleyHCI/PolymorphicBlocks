@@ -143,9 +143,9 @@ object ConnectTypes { // types of connections a port attached to a connection ca
 
 object ConnectMode { // state of a connect-in-progress
   trait Base
-  case object Single extends Base // connection between single ports, generates into link
-  case object VectorUnit extends Base // connection with at least one full vector, generates into link array
-  case object VectorCapable extends Base // connection which can be either - but is ambiguous and cannot be created
+  case object Port extends Base // connection between single ports, generates into link
+  case object Vector extends Base // connection with at least one full vector, generates into link array
+  case object Ambiguous extends Base // connection which can be either - but is ambiguous and cannot be created
 }
 
 object ConnectBuilder {
@@ -174,7 +174,7 @@ object ConnectBuilder {
 
     (availableOpt, constrConnectPortsOpt) match {
       case (Some(available), Some(constrConnectPorts)) =>
-        new ConnectBuilder(container, available, Seq(), ConnectMode.VectorCapable).append(constrConnectPorts)
+        new ConnectBuilder(container, available, Seq(), ConnectMode.Ambiguous).append(constrConnectPorts)
       case _ => None
     }
   }
@@ -183,8 +183,6 @@ object ConnectBuilder {
 /** Mildly analogous to the connect builder in the frontend HDL, this starts with a link, then ports can be added.
   * Immutable, added ports return a new ConnectBuilder object (if the add was successful) or None (if the ports cannot
   * be added). Accounts for bridging and vectors.
-  *
-  * TODO: support link array (array-array connections)
   */
 class ConnectBuilder protected (
     container: elem.HierarchyBlock,
@@ -192,7 +190,6 @@ class ConnectBuilder protected (
     val connected: Seq[(ConnectTypes.Base, ref.LibraryPath)], // connect type, used port type
     val connectMode: ConnectMode.Base
 ) {
-  // TODO link duplicate with available_ports?
   // TODO should connected encode bridges?
 
   // Attempts to append the connections (with attached port types) to the builder, returning a new builder
@@ -210,16 +207,16 @@ class ConnectBuilder protected (
           val (portName, isArray, portType) = availablePortsBuilder(index)
           connect match {
             case _: ConnectTypes.PortBase =>
-              if (connectModeBuilder == ConnectMode.VectorUnit) {
+              if (connectModeBuilder == ConnectMode.Vector) {
                 failedToAllocate = true
               } else {
-                connectModeBuilder = ConnectMode.Single
+                connectModeBuilder = ConnectMode.Port
               }
             case _: ConnectTypes.VectorBase =>
-              if (connectModeBuilder == ConnectMode.Single) {
+              if (connectModeBuilder == ConnectMode.Port) {
                 failedToAllocate = true
               } else {
-                connectModeBuilder = ConnectMode.VectorUnit
+                connectModeBuilder = ConnectMode.Vector
               }
             case _: ConnectTypes.AmbiguousBase => // fine in either single or vector case
           }

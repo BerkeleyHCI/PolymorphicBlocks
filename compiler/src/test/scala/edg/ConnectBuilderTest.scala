@@ -128,20 +128,23 @@ class ConnectBuilderTest extends AnyFlatSpec {
   it should "build valid connects" in {
     val emptyConnect = ConnectBuilder(exampleBlock, exampleLink, Seq())
     emptyConnect should not be empty
+    emptyConnect.get.connectMode should equal(ConnectMode.Ambiguous)
 
     val sourceConnect = emptyConnect.get.append(Seq(
       (ConnectTypes.BlockPort("source", "port"), LibraryPath("sourcePort"))
     ))
     sourceConnect should not be empty
+    sourceConnect.get.connectMode should equal(ConnectMode.Port)
 
     val sink0Connect = sourceConnect.get.append(Seq(
       (ConnectTypes.BlockPort("sink0", "port"), LibraryPath("sinkPort"))
     ))
     sink0Connect should not be empty
+    sink0Connect.get.connectMode should equal(ConnectMode.Port)
   }
 
   it should "build valid connects with multiple allocations to an array" in {
-    ConnectBuilder(
+    val connect = ConnectBuilder(
       exampleBlock,
       exampleLink,
       Seq(
@@ -149,7 +152,9 @@ class ConnectBuilderTest extends AnyFlatSpec {
         exampleBlock.constraints.toSeqMap("sink1Connect"),
         exampleBlock.constraints.toSeqMap("sinkArrayConnect")
       )
-    ) should not be empty
+    )
+    connect should not be empty
+    connect.get.connectMode should equal(ConnectMode.Port)
   }
 
   it should "not overallocate single connects" in {
@@ -169,11 +174,15 @@ class ConnectBuilderTest extends AnyFlatSpec {
       exampleLink,
       Seq(exampleBlock.constraints.toSeqMap("sourceConnect"), exampleBlock.constraints.toSeqMap("sink0Connect"))
     ).get
-    sourceConnect.append(Seq(
+    val sinkConnected = sourceConnect.append(Seq(
       (ConnectTypes.BlockPort("sink1", "port"), LibraryPath("sinkPort"))
-    )) should not be empty
-    sourceConnect.append(Seq(
+    ))
+    sinkConnected should not be empty
+    val sliceConnected = sinkConnected.get.append(Seq(
       (ConnectTypes.BlockVectorSlicePort("sink1", "port", None), LibraryPath("sinkPort"))
-    )) should not be empty
+    ))
+    sliceConnected should not be empty
+    sliceConnected.get.connectMode should equal(ConnectMode.Port)
+
   }
 }
