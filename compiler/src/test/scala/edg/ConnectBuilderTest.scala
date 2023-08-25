@@ -65,7 +65,7 @@ class ConnectBuilderTest extends AnyFlatSpec {
       ),
     ),
     links = SeqMap(
-      "link" -> Link.Array("link"),
+      "link" -> Link.Link("link"),
     ),
     constraints = SeqMap(
       "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "source")),
@@ -77,6 +77,73 @@ class ConnectBuilderTest extends AnyFlatSpec {
       ),
       "sourceExport" -> Constraint.Exported(Ref("port"), Ref("exportSource", "port")),
       "bundleSourceExport" -> Constraint.Exported(Ref("bundle", "port"), Ref("exportBundleSource", "port")),
+    )
+  ).getHierarchy
+
+  val exampleArrayBlock = Block.Block( // basic example using link arrays
+    "topDesign",
+    ports = SeqMap(
+      "port" -> Port.Port("sourcePort", params = SeqMap("param" -> ValInit.Integer)),
+      "bundle" -> Port.Bundle(
+        "sourceBundle",
+        ports = SeqMap(
+          "port" -> Port.Port("sourcePort", params = SeqMap("param" -> ValInit.Integer)),
+        )
+      ),
+    ),
+    blocks = SeqMap(
+      "source" -> Block.Block(
+        "sourceArrayBlock",
+        ports = SeqMap(
+          "port" -> Port.Array(
+            "sourcePort",
+            Seq("0", "1"),
+            Port.Port("sourcePort", params = SeqMap("param" -> ValInit.Integer))
+          ),
+        ),
+      ),
+      "sink0" -> Block.Block(
+        "sinkArrayBlock",
+        ports = SeqMap(
+          "port" -> Port.Array(
+            "sinkPort",
+            Seq("0", "1"),
+            Port.Port("sinkPort", params = SeqMap("param" -> ValInit.Integer))
+          ),
+        ),
+      ),
+      "sink1" -> Block.Block(
+        "sinkArrayBlock",
+        ports = SeqMap(
+          "port" -> Port.Array(
+            "sinkPort",
+            Seq("0", "1"),
+            Port.Port("sinkPort", params = SeqMap("param" -> ValInit.Integer))
+          ),
+        ),
+      ),
+      "sinkArray" -> Block.Block(
+        "sinkArrayBlock",
+        ports = SeqMap(
+          "port" -> Port.Array(
+            "sinkPort",
+            Seq("0", "1"),
+            Port.Port("sinkPort", params = SeqMap("param" -> ValInit.Integer))
+          ),
+        ),
+      ),
+    ),
+    links = SeqMap(
+      "link" -> Link.Array("link"),
+    ),
+    constraints = SeqMap(
+      "sourceConnect" -> Constraint.ConnectedArray(Ref("source", "port"), Ref("link", "source")),
+      "sink0Connect" -> Constraint.ConnectedArray(Ref("sink0", "port"), Ref.Allocate(Ref("link", "sinks"))),
+      "sink1Connect" -> Constraint.ConnectedArray(Ref("sink1", "port"), Ref.Allocate(Ref("link", "sinks"))),
+      "sinkArrayConnect" -> Constraint.ConnectedArray(
+        Ref.Allocate(Ref("sinkArray", "port")),
+        Ref.Allocate(Ref("link", "sinks"))
+      ),
     )
   ).getHierarchy
 
@@ -143,7 +210,7 @@ class ConnectBuilderTest extends AnyFlatSpec {
     sink0Connect.get.connectMode should equal(ConnectMode.Port)
   }
 
-  it should "build valid connects from empty, starting with an ambiguous vector" in {
+  it should "build valid port connects from empty, starting with an ambiguous vector" in {
     val emptyConnect = ConnectBuilder(exampleBlock, exampleLink, Seq())
     val sliceConnect = emptyConnect.get.append(Seq(
       (ConnectTypes.BlockVectorSlice("sinkArray", "port", None), LibraryPath("sinkPort"))
@@ -156,6 +223,19 @@ class ConnectBuilderTest extends AnyFlatSpec {
     ))
     sink0Connect should not be empty
     sink0Connect.get.connectMode should equal(ConnectMode.Port) // connection type resolved here
+  }
+
+  it should "build valid array connects from empty, starting with an ambiguous vector" in {
+    val emptyConnect = ConnectBuilder(exampleBlock, exampleLink, Seq())
+    val sliceConnect = emptyConnect.get.append(Seq(
+      (ConnectTypes.BlockVectorSlice("sinkArray", "port", None), LibraryPath("sinkPort"))
+    ))
+
+    val sinkArrayConnect = sliceConnect.get.append(Seq(
+      (ConnectTypes.BlockVectorUnit("sinkArray2", "port"), LibraryPath("sinkPort"))
+    ))
+    sinkArrayConnect should not be empty
+    sinkArrayConnect.get.connectMode should equal(ConnectMode.Vector) // connection type resolved here
   }
 
   it should "build valid connects with multiple allocations to an array" in {
