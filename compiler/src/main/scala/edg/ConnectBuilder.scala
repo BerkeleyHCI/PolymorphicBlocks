@@ -15,9 +15,13 @@ import scala.collection.{SeqMap, mutable}
 object ConnectTypes { // types of connections a port attached to a connection can be a part of
   // TODO structure this - materialize from constraint (using pre-lowered constraint?)
   // TODO materialize into constraints? - how to add tack this on to an existing IR graph
-  trait Base {
+  sealed trait Base {
     def getPortType(container: elem.HierarchyBlock): Option[ref.LibraryPath] // retrieves the type from the container
   }
+
+  sealed trait PortBase extends Base // base type for any port-valued connection
+  sealed trait VectorBase extends Base // base type for any vector-valued connection
+  sealed trait AmbiguousBase extends Base // base type for any connection which can be port- or vector-valued
 
   protected def typeOfSinglePort(portLike: elem.PortLike): Option[ref.LibraryPath] = portLike.is match {
     case elem.PortLike.Is.Port(port) => port.selfClass
@@ -31,7 +35,7 @@ object ConnectTypes { // types of connections a port attached to a connection ca
   }
 
   // including bridges
-  case class BlockPort(blockName: String, portName: String) extends Base {
+  case class BlockPort(blockName: String, portName: String) extends PortBase {
     override def getPortType(container: HierarchyBlock): Option[ref.LibraryPath] = {
       container.blocks.toSeqMap.get(blockName).flatMap(_.`type`.hierarchy)
         .flatMap(_.ports.get(portName))
@@ -40,7 +44,7 @@ object ConnectTypes { // types of connections a port attached to a connection ca
   }
 
   // single exported port only
-  case class BoundaryPort(portName: String, innerNames: Seq[String]) extends Base {
+  case class BoundaryPort(portName: String, innerNames: Seq[String]) extends PortBase {
     override def getPortType(container: HierarchyBlock): Option[ref.LibraryPath] = {
       val initPort = container.ports.get(portName)
       val finalPort = innerNames.foldLeft(initPort) { case (prev, innerName) =>
@@ -52,7 +56,7 @@ object ConnectTypes { // types of connections a port attached to a connection ca
   }
 
   // port array, connected as a unit; port array cannot be part of any other connection
-  case class BlockVectorUnit(blockName: String, portName: String) extends Base {
+  case class BlockVectorUnit(blockName: String, portName: String) extends VectorBase {
     override def getPortType(container: HierarchyBlock): Option[ref.LibraryPath] = {
       container.blocks.toSeqMap.get(blockName).flatMap(_.`type`.hierarchy)
         .flatMap(_.ports.get(portName))
@@ -60,8 +64,9 @@ object ConnectTypes { // types of connections a port attached to a connection ca
     }
   }
 
-  // slice of a port array, connected using allocated / requested; other connections can involve the port array via slicing
-  case class BlockVectorSlice(blockName: String, portName: String, suggestedIndex: Option[String]) extends Base {
+  sealed trait BlockVectorSliceBase extends Base {
+    def blockName: String
+    def portName: String
     override def getPortType(container: HierarchyBlock): Option[ref.LibraryPath] = { // same as BlockVectorUnit case
       container.blocks.toSeqMap.get(blockName).flatMap(_.`type`.hierarchy)
         .flatMap(_.ports.get(portName))
@@ -69,8 +74,20 @@ object ConnectTypes { // types of connections a port attached to a connection ca
     }
   }
 
+  // port-typed slice of a port array
+  case class BlockVectorSlicePort(blockName: String, portName: String, suggestedIndex: Option[String])
+      extends PortBase with BlockVectorSliceBase {}
+
+  // vector-typed slice of a port array, connected using allocated / requested
+  case class BlockVectorSliceVector(blockName: String, portName: String, suggestedIndex: Option[String])
+      extends VectorBase with BlockVectorSliceBase {}
+
+  // ambiguous slice of a port array, with no corresponding IR construct but used intuitively for GUI connections
+  case class BlockVectorSlice(blockName: String, portName: String, suggestedIndex: Option[String])
+      extends AmbiguousBase with BlockVectorSliceBase {}
+
   // port array, connected as a unit; port array cannot be part of any other connection
-  case class BoundaryPortVectorUnit(portName: String) extends Base {
+  case class BoundaryPortVectorUnit(portName: String) extends VectorBase {
     override def getPortType(container: HierarchyBlock): Option[ref.LibraryPath] = {
       container.ports.get(portName)
         .flatMap(typeOfArrayPort)
@@ -112,14 +129,14 @@ object ConnectTypes { // types of connections a port attached to a connection ca
   protected def singleBlockPortFromRef(ref: expr.ValueExpr): Option[Base] = ref match {
     case ValueExpr.Ref(Seq(blockName, portName)) => Some(BlockPort(blockName, portName))
     case ValueExpr.RefAllocate(Seq(blockName, portName), suggestedName) =>
-      Some(BlockVectorSlice(blockName, portName, suggestedName))
+      Some(BlockVectorSlicePort(blockName, portName, suggestedName))
     case _ => None // invalid / unrecognized form
   }
 
   protected def vectorBlockPortFromRef(ref: expr.ValueExpr): Option[Base] = ref match {
     case ValueExpr.Ref(Seq(blockName, portName)) => Some(BlockVectorUnit(blockName, portName))
     case ValueExpr.RefAllocate(Seq(blockName, portName), suggestedName) =>
-      Some(BlockVectorSlice(blockName, portName, suggestedName))
+      Some(BlockVectorSliceVector(blockName, portName, suggestedName))
     case _ => None // invalid / unrecognized form
   }
 }
