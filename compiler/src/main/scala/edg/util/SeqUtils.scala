@@ -1,8 +1,8 @@
 package edg.util
 
-object IterableUtils {
+object SeqUtils {
   // if all elements defined, returns the seq of elements, else None
-  def getAllDefined[T](seq: Iterable[Option[T]]): Option[Iterable[T]] = {
+  def getAllDefined[T](seq: Seq[Option[T]]): Option[Seq[T]] = {
     val (some, none) = seq.partitionMap {
       case Some(value) => Left(value)
       case None => Right(None)

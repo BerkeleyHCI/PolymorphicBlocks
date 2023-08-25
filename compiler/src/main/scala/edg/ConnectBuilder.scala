@@ -2,7 +2,7 @@ package edg
 
 import edg.EdgirUtils.SimpleLibraryPath
 import edg.ExprBuilder.ValueExpr
-import edg.util.IterableUtils
+import edg.util.SeqUtils
 import edg.wir.LibraryConnectivityAnalysis
 import edg.wir.ProtoUtil.{BlockProtoToSeqMap, PortProtoToSeqMap}
 import edgir.elem.elem
@@ -155,15 +155,27 @@ object ConnectBuilder {
       link: elem.Link, // link is needed to determine available connects
       constrs: Seq[expr.ValueExpr]
   ): Option[ConnectBuilder] = {
-    val availableOpt = link.ports.toSeqMap.map { case (name, portLike) => (name, portLike.is) }
+    val availableOpt = SeqUtils.getAllDefined(link.ports.toSeqMap.map { case (name, portLike) =>
+      (name, portLike.is)
+    }
       .map {
         case (name, elem.PortLike.Is.Port(port)) => port.selfClass.map((name, false, _))
         case (name, elem.PortLike.Is.Bundle(port)) => port.selfClass.map((name, false, _))
         case (name, elem.PortLike.Is.Array(array)) => array.selfClass.map((name, true, _))
         case _ => None
-      }
-    IterableUtils.getAllDefined(availableOpt).flatMap { available =>
-      new ConnectBuilder(container, available.toSeq, Seq(), ConnectMode.VectorCapable).append(constrs)
+      }.toSeq)
+
+    val constrConnectsOpt = SeqUtils.getAllDefined(constrs.map(ConnectTypes.fromConnect)).map(_.flatten)
+    val constrConnectPortsOpt = constrConnectsOpt.flatMap { constrConnects =>
+      SeqUtils.getAllDefined(constrConnects.map { constrConnect =>
+        constrConnect.getPortType(container).map(portType => (constrConnect, portType))
+      })
+    }
+
+    (availableOpt, constrConnectPortsOpt) match {
+      case (Some(available), Some(constrConnectPorts)) =>
+        new ConnectBuilder(container, available, Seq(), ConnectMode.VectorCapable).append(constrConnectPorts)
+      case _ => None
     }
   }
 }
@@ -183,59 +195,48 @@ class ConnectBuilder protected (
   // TODO link duplicate with available_ports?
   // TODO should connected encode bridges?
 
-  // Attempts to append the connected constraints to this connection, returning None if the result is invalid
-  def append(constrs: Seq[expr.ValueExpr]): Option[ConnectBuilder] = {
-    // TODO this Iterable.getAllDefined nesting is ugly
-    val newConnectsOpt = IterableUtils.getAllDefined(constrs.map(ConnectTypes.fromConnect).map { newConnectOpt =>
-      newConnectOpt.flatMap { newConnects =>
-        val newConnectsWithPortsOpt = newConnects.map { newConnect => // append port type to connects
-          newConnect.getPortType(container).map(portType => (newConnect, portType))
-        }
-        IterableUtils.getAllDefined(newConnectsWithPortsOpt)
-      }
-    }).map(_.flatten.toSeq)
+  // Attempts to append the connections (with attached port types) to the builder, returning a new builder
+  // (if successful) or None (if not a legal connect).
+  def append(newConnects: Seq[(ConnectTypes.Base, ref.LibraryPath)]): Option[ConnectBuilder] = {
+    val availablePortsBuilder = availablePorts.to(mutable.ArrayBuffer)
+    var connectModeBuilder = connectMode
+    var failedToAllocate: Boolean = false
 
-    newConnectsOpt.flatMap { newConnects =>
-      val availablePortsBuilder = availablePorts.to(mutable.ArrayBuffer)
-      var connectModeBuilder = connectMode
-      var failedToAllocate: Boolean = false
-
-      newConnects.foreach { case (connect, portType) =>
-        availablePortsBuilder.indexWhere(_._3 == portType) match {
-          case -1 =>
-            failedToAllocate = true
-          case index =>
-            // TODO HANDLE LINK ARRAY CASE
-            val (portName, isArray, portType) = availablePortsBuilder(index)
-            connect match {
-              case ConnectTypes.BlockPort(_, _) | ConnectTypes.BoundaryPort(_, _) =>
-                if (connectModeBuilder == ConnectMode.VectorUnit) {
-                  failedToAllocate = true
-                } else {
-                  connectModeBuilder = ConnectMode.Single
-                }
-              case ConnectTypes.BlockVectorUnit(_, _) | ConnectTypes.BoundaryPortVectorUnit(_) =>
-                if (connectModeBuilder == ConnectMode.Single) {
-                  failedToAllocate = true
-                } else {
-                  connectModeBuilder = ConnectMode.VectorUnit
-                }
-              case ConnectTypes.BlockVectorSlice(_, _, _) =>
-                if (connectModeBuilder == ConnectMode.Single) {
-                  failedToAllocate = true
-                }
-            }
-            if (!isArray) {
-              availablePortsBuilder.remove(index)
-            }
-        }
+    newConnects.foreach { case (connect, portType) =>
+      availablePortsBuilder.indexWhere(_._3 == portType) match {
+        case -1 =>
+          failedToAllocate = true
+        case index =>
+          // TODO HANDLE LINK ARRAY CASE
+          val (portName, isArray, portType) = availablePortsBuilder(index)
+          connect match {
+            case ConnectTypes.BlockPort(_, _) | ConnectTypes.BoundaryPort(_, _) =>
+              if (connectModeBuilder == ConnectMode.VectorUnit) {
+                failedToAllocate = true
+              } else {
+                connectModeBuilder = ConnectMode.Single
+              }
+            case ConnectTypes.BlockVectorUnit(_, _) | ConnectTypes.BoundaryPortVectorUnit(_) =>
+              if (connectModeBuilder == ConnectMode.Single) {
+                failedToAllocate = true
+              } else {
+                connectModeBuilder = ConnectMode.VectorUnit
+              }
+            case ConnectTypes.BlockVectorSlice(_, _, _) =>
+              if (connectModeBuilder == ConnectMode.Single) {
+                failedToAllocate = true
+              }
+          }
+          if (!isArray) {
+            availablePortsBuilder.remove(index)
+          }
       }
+    }
 
-      if (failedToAllocate) {
-        None
-      } else {
-        Some(new ConnectBuilder(container, availablePortsBuilder.toSeq, connected ++ newConnects, connectModeBuilder))
-      }
+    if (failedToAllocate) {
+      None
+    } else {
+      Some(new ConnectBuilder(container, availablePortsBuilder.toSeq, connected ++ newConnects, connectModeBuilder))
     }
   }
 }

@@ -115,10 +115,14 @@ class ConnectBuilderTest extends AnyFlatSpec {
     val emptyConnect = ConnectBuilder(exampleBlock, exampleLink, Seq())
     emptyConnect should not be empty
 
-    val sourceConnect = emptyConnect.get.append(Seq(exampleBlock.constraints.toSeqMap("sourceConnect")))
+    val sourceConnect = emptyConnect.get.append(Seq(
+      (ConnectTypes.BlockPort("source", "port"), LibraryPath("sourcePort"))
+    ))
     sourceConnect should not be empty
 
-    val sink0Connect = sourceConnect.get.append(Seq(exampleBlock.constraints.toSeqMap("sink0Connect")))
+    val sink0Connect = sourceConnect.get.append(Seq(
+      (ConnectTypes.BlockPort("sink0", "port"), LibraryPath("sinkPort"))
+    ))
     sink0Connect should not be empty
   }
 
@@ -139,6 +143,8 @@ class ConnectBuilderTest extends AnyFlatSpec {
       exampleLink,
       Seq(exampleBlock.constraints.toSeqMap("sourceConnect"))
     ).get
-    sourceConnect.append(Seq(exampleBlock.constraints.toSeqMap("sourceConnect"))) shouldBe empty
+    sourceConnect.append(Seq(
+      (ConnectTypes.BlockPort("source", "port"), LibraryPath("sourcePort"))
+    )) shouldBe empty
   }
 }
