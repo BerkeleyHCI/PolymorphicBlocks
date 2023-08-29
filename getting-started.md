@@ -776,7 +776,6 @@ with self.implicit_connect(
   # and Common-tagged ports connected to self.reg.gnd
 ```
 
-
 > When blocks define ports, they can associate tags with them to specify implicit connectivity.
 > To prevent errors, all ports with tags are required to be connected, either implicitly (as in this section) or explicitly (through `connect` statements).
 >
