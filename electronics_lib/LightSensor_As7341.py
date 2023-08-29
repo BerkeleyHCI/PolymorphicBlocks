@@ -15,7 +15,7 @@ class As7341_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             self.gnd, self.vdd,
             voltage_limit_abs=(-0.3, 3.6)*Volt,
             input_threshold_abs=(0.54, 1.26)*Volt,
-            output_threshold_abs=(0, float('inf'))*Volt # reflects pulldown
+            output_threshold_abs=(0, float('inf'))*Volt  # reflects pulldown
         )
         self.i2c = self.Port(I2cTarget(dio_model, [0x39]))
 
