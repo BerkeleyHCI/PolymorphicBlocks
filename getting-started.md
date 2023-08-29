@@ -150,12 +150,12 @@ For this simple example, we connect an LED to a STM32F103 microcontroller, and h
 
 Let's start by instantiating the USB type-C receptacle through graphical operations in the IDE.
 1. In the Library Browser, search for the block (here, `UsbCReceptable`) using the Filter textbox:  
-   ![Library filtering by USB](FIGURETODO)
+   ![Library filtering by USB](docs/ide/ide_library_usbc.png)
 2. Double-click the library entry.
    This will insert the code to instantiate the block as a _live template_, code with template fields you can fill in:  
-   ![Live template example](FIGURETODO)  
+   ![Live template example](docs/ide/ide_livetemplate_usbc.png)  
    While the template is active, you can:
-   - Press [Tab] to move to the next template field.
+   - Press [Enter] or [Tab] to move to the next template field.
      Validation may prevent moving to the next field, for example if the name field is invalid.
    - Tabbing past the last field will commit the template.
    - Press [Shift+Tab] to move back to the previous template field.
@@ -163,7 +163,7 @@ Let's start by instantiating the USB type-C receptacle through graphical operati
      If the selected place isn't valid, the template will snap to a valid location.
    - Press [Esc] to cancel the template, ending the editing but leaving the code in place.
      Canceling a blank template deletes the inserted code.
-3. Name the block `usb`, then press [Tab] through the end of the template.
+3. Name the block `usb`, then press [Tab] through the end of the template (leaving the other fields empty, they're optional).
 4. Once you commit the live template, the block will appear in the block diagram visualizer.
    - The hatched pattern (diagonal lines) in the block diagram visualizer indicates that the block may be out-of-sync with the code until the next re-compile.
 
@@ -200,12 +200,12 @@ Blocks alone aren't very interesting, and they must be connected to be useful.
 First, we need to connect the power and ground between the devices, which we can also do with graphical operations in the IDE:
 1. Double click any of the ground ports (say, `usb.gnd`).
    This starts a connection operation, which dims out the ports that cannot be connected:  
-   ![Connection beginning](FIGURETODO)
+   ![Connection beginning](docs/ide/ide_connect_usbc_start.png)
 2. Select (single click) on all the other ground ports to be connected (here, `mcu.gnd` and `led.gnd`):  
-   ![Connection with ports](FIGURETODO)
+   ![Connection with ports](docs/ide/ide_connect_usbc_all.png)
    - The order in which you select additional ports determines the order of the ports in the generated code.
 3. Double-click anywhere (within a block) to insert the connections as a live template.
-   ![Connection live template](FIGURETODO)
+   ![Connection live template](docs/ide/ide_livetemplate_gnd_connect.png)
    - You can double-click on a port to simultaneously select that port and insert the connection. 
    - You can cancel a connect operation by pressing [Esc] while the block diagram visualizer is selected.
 4. The name template field is optional, you can leave it blank and [Tab] past it.
