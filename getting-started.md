@@ -375,7 +375,7 @@ Specific design points can be inspected by double-clicking the entry to bring it
 
 Instead of just choosing any regulator that works, let's compare the options and look at board area and current draw (power consumption) by adding objective functions.
 
-1. For board area, **right click on the design root, and select Add objective contained footprint area.**  
+1. For board area, **right click on the design root, and select Add objective area.**  
    ![Add objective footprint area](docs/ide_dse/addobjective_fpa_root.png)
 2. For current draw: 
    1. **Select the voltage regulator `reg`**, to bring up its contents in the Detail panel.
