@@ -2,9 +2,8 @@ package edg.util
 
 import scala.collection.mutable
 
-
-/** Mutable bidirectional map, abstractly a set of pairs of types (K1, K2) which can be indexed by either.
-  * Implemented internally with mutable HashMaps.
+/** Mutable bidirectional map, abstractly a set of pairs of types (K1, K2) which can be indexed by either. Implemented
+  * internally with mutable HashMaps.
   */
 class MutableBiMap[KeyType] {
   private val fwdMap = mutable.HashMap[KeyType, KeyType]()
@@ -34,7 +33,7 @@ class MutableBiMap[KeyType] {
     (fwdMap.get(key), bwdMap.get(key)) match {
       case (Some(fwdValue), Some(bwdValue)) =>
         require(fwdValue == bwdValue)
-        bwdMap.remove(key).get  // get as an assertion that the other value was removed
+        bwdMap.remove(key).get // get as an assertion that the other value was removed
         Some(fwdMap.remove(key).get)
       case (Some(fwdValue), _) =>
         bwdMap.remove(fwdValue).get

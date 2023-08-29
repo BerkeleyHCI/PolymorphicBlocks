@@ -90,7 +90,7 @@ class UsbCcLink(Link):
 class UsbCcPort(Bundle[UsbCcLink]):
   link_type = UsbCcLink
 
-  def __init__(self, pullup_capable: BoolLike = Default(False)) -> None:
+  def __init__(self, pullup_capable: BoolLike = False) -> None:
     super().__init__()
     self.cc1 = self.Port(DigitalBidir(pullup_capable=pullup_capable))
     self.cc2 = self.Port(DigitalBidir(pullup_capable=pullup_capable))

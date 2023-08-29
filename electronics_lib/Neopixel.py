@@ -2,6 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
+@abstract_block_default(lambda: Ws2812b)
 class Neopixel(Light, Block):
     """Abstract base class for Neopixel-type LEDs including the Vdd/Gnd/Din/Dout interface."""
     def __init__(self) -> None:
@@ -85,23 +86,94 @@ class Sk6812Mini_E(Neopixel, FootprintBlock):
         )
 
 
+class Sk6805_Ec15(Neopixel, JlcPart, FootprintBlock):
+    """SK6805-EC15 Neopixel RGB LED in 1.5x1.5 (0606)."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.vdd.init_from(VoltageSink(
+            voltage_limits=(3.7, 5.5) * Volt,
+            current_draw=(1, 1 + 5*3) * mAmp,  # 1 mA static type + up to 5mA/ch
+        ))
+        self.gnd.init_from(Ground())
+        self.din.init_from(DigitalSink.from_supply(
+            self.gnd, self.vdd,
+            voltage_limit_tolerance=(-0.5, 0.5),
+            input_threshold_factor=(0.3, 0.7),
+        ))
+        self.dout.init_from(DigitalSource.from_supply(
+            self.gnd, self.vdd,
+            current_limits=0*mAmp(tol=0),
+        ))
+
+    def contents(self) -> None:
+        self.footprint(
+            'D', 'LED_SMD:LED_SK6812_EC15_1.5x1.5mm',
+            {
+                '1': self.din,
+                '2': self.vdd,
+                '3': self.dout,
+                '4': self.gnd,
+            },
+            mfr='Opsco Optoelectronics', part='SK6805-EC15',
+            datasheet='https://cdn-shop.adafruit.com/product-files/4492/Datasheet.pdf'
+        )
+        self.assign(self.lcsc_part, 'C2890035')
+        self.assign(self.actual_basic_part, False)
+
+
+class Sk6812_Side_A(Neopixel, FootprintBlock):
+    """SK6812-SIDE-A side-emitting Neopixel LED."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.vdd.init_from(VoltageSink(
+            voltage_limits=(3.5, 5.5) * Volt,
+            current_draw=(1, 1 + 12*3) * mAmp,  # 1 mA static type + up to 12mA/ch
+        ))
+        self.gnd.init_from(Ground())
+        self.din.init_from(DigitalSink.from_supply(
+            self.gnd, self.vdd,
+            voltage_limit_tolerance=(-0.5, 0.5),
+            input_threshold_factor=(0.3, 0.7),
+        ))
+        self.dout.init_from(DigitalSource.from_supply(
+            self.gnd, self.vdd,
+            current_limits=0*mAmp(tol=0),
+        ))
+
+    def contents(self) -> None:
+        self.footprint(
+            'D', 'edg:LED_SK6812-SIDE-A',
+            {
+                '1': self.din,
+                '2': self.vdd,
+                '3': self.dout,
+                '4': self.gnd,
+            },
+            mfr='Normand Electronic Co Ltd', part='SK6812 SIDE-A',
+            datasheet='http://www.normandled.com/upload/201810/SK6812%20SIDE-A%20LED%20Datasheet.pdf'
+        )
+        # potentially footprint-compatible with C2890037
+
+
 class NeopixelArray(Light, GeneratorBlock):
     """An array of Neopixels"""
-
     @init_in_parent
     def __init__(self, count: IntLike):
         super().__init__()
         self.din = self.Port(DigitalSink.empty(), [Input])
-        self.dout = self.Port(DigitalSource.empty(), optional=True)
+        self.dout = self.Port(DigitalSource.empty(), [Output], optional=True)
         self.vdd = self.Port(VoltageSink.empty(), [Power])
         self.gnd = self.Port(Ground.empty(), [Common])
-        self.generator(self.generate, count)
 
-    def generate(self, count: int):
+        self.count = self.ArgParameter(count)
+        self.generator_param(self.count)
+
+    def generate(self):
+        super().generate()
         self.led = ElementDict[Neopixel]()
 
         last_signal_pin: Port[DigitalLink] = self.din
-        for led_i in range(count):
+        for led_i in range(self.get(self.count)):
             led = self.led[str(led_i)] = self.Block(Neopixel())
             self.connect(last_signal_pin, led.din)
             self.connect(self.vdd, led.vdd)

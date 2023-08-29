@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import itertools
+from functools import reduce
 from typing import *
 
 import edgir
@@ -16,6 +18,9 @@ from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 from .PortTag import PortTag, Input, Output, InOut
 from .Ports import BasePort, Port
+
+if TYPE_CHECKING:
+  from .BlockInterfaceMixin import BlockInterfaceMixin
 
 
 InitType = TypeVar('InitType', bound=Callable[..., None])
@@ -193,6 +198,8 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       self._parameters.register(param)
       self.manager.add_element(param_name, param)
 
+    self._mixins: List['BlockInterfaceMixin'] = []
+
     self._blocks = self.manager.new_dict(Block)  # type: ignore
     self._chains = self.manager.new_dict(ChainConnect, anon_prefix='anon_chain')
     self._port_tags = IdentityDict[BasePort, Set[PortTag[Any]]]()
@@ -207,15 +214,30 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     return out
 
   def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    return super()._get_ref_map(prefix) + IdentityDict(
+    ref_map = super()._get_ref_map(prefix) + IdentityDict(
       *[block._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, block) in self._blocks.items()]
     )
+    mixin_ref_maps = list(map(lambda mixin: mixin._get_ref_map(prefix), self._mixins))
+    if mixin_ref_maps:
+      mixin_ref_map = reduce(lambda a, b: a+b, mixin_ref_maps)
+      ref_map += mixin_ref_map
+
+    return ref_map
+
+  def _get_init_params_values(self) -> Dict[str, Tuple[ConstraintExpr, Optional[ConstraintExpr]]]:
+    if self._mixins:
+      combined_dict = self._init_params_value.copy()
+      for mixin in self._mixins:
+        combined_dict.update(mixin._get_init_params_values())
+      return combined_dict
+    else:
+      return self._init_params_value
 
   def _populate_def_proto_block_base(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     pb = super()._populate_def_proto_block_base(pb)
 
     # generate param defaults
-    for param_name, (param, param_value) in self._init_params_value.items():
+    for param_name, (param, param_value) in self._get_init_params_values().items():
       if param_value is not None:
         # default values can't depend on anything so the ref_map is empty
         pb.param_defaults[param_name].CopyFrom(param_value._expr_to_proto(IdentityDict()))
@@ -230,17 +252,30 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     ref_map = self._get_ref_map(edgir.LocalPath())
 
     for name, block in self._blocks.items():
-      edgir.add_pair(pb.blocks, name).lib_elem.target.name = block._get_def_name()
+      new_block_lib = edgir.add_pair(pb.blocks, name).lib_elem
+      new_block_lib.base.target.name = block._get_def_name()
+      for mixin in block._mixins:
+        new_block_lib.mixins.add().target.name = mixin._get_def_name()
 
     # actually generate the links and connects
     link_chain_names = IdentityDict[Connection, List[str]]()  # prefer chain name where applicable
     # TODO generate into primary data structures
-    for name, chain in self._chains.items_ordered():
+    for name, chain in self._chains.items_ordered():  # TODO work with net join
       for i, connect in enumerate(chain.links):
         link_chain_names.setdefault(connect, []).append(f"{name}_{i}")
 
+    delegated_connects = self._all_delegated_connects()
     for name, connect in self._connects.items_ordered():
-      connect_elts = connect.make_connection(self)
+      if connect in delegated_connects:
+        continue
+      connect_names_opt = [self._connects.name_of(c) for c in self._all_connects_of(connect)]
+      connect_names = [c for c in connect_names_opt if c is not None and not c.startswith('anon_')]
+      if len(connect_names) > 1:
+        raise UnconnectableError(f"Multiple names {connect_names} for connect")
+      elif len(connect_names) == 1:
+        name = connect_names[0]
+
+      connect_elts = connect.make_connection()
 
       if name.startswith('anon_'):  # infer a non-anon name if possible
         if connect in link_chain_names and not link_chain_names[connect][0].startswith('anon_'):
@@ -282,7 +317,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
           assert self_port.bridge_type is not None
 
           port_name = self_port._name_from(self)
-          edgir.add_pair(pb.blocks, f"(bridge){port_name}").lib_elem.target.name = self_port.bridge_type._static_def_name()
+          edgir.add_pair(pb.blocks, f"(bridge){port_name}").lib_elem.base.target.name = self_port.bridge_type._static_def_name()
           bridge_path = edgir.localpath_concat(edgir.LocalPath(), f"(bridge){port_name}")
 
           bridge_constraint_pb = edgir.add_pair(pb.constraints, f"(bridge){name}_b{idx}")
@@ -306,7 +341,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     # generate block initializers
     for (block_name, block) in self._blocks.items():
-      for (block_param_name, (block_param, block_param_value)) in block._init_params_value.items():
+      for (block_param_name, (block_param, block_param_value)) in block._get_init_params_values().items():
         if block_param_value is not None:
           edgir.add_pair(pb.constraints, f'(init){block_name}.{block_param_name}').CopyFrom(  # TODO better name
             AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param_value), ref_map)
@@ -314,29 +349,16 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     return pb
 
-  def _connected_ports(self) -> IdentitySet[BasePort]:
-    """Returns an IdentitySet of all ports (boundary and interior) involved in a connect or export."""
-    rtn = IdentitySet[BasePort]()
-    for name, connect in self._connects.items_ordered():
-      rtn.update(connect.ports())
-    return rtn
-
   # TODO make this non-overriding?
   def _def_to_proto(self) -> edgir.HierarchyBlock:
-    for cls in self._get_bases_of(BaseBlock):  # type: ignore  # TODO avoid 'only concrete class' error
-      assert issubclass(cls, Block)  # HierarchyBlock can extend (refine) blocks that don't have an implementation
+    assert not self._mixins  # blocks with mixins can only be instantiated anonymously
 
     pb = edgir.HierarchyBlock()
     pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
     pb = self._populate_def_proto_block_base(pb)
-
-    for (port) in self._connected_ports():
-      if port._block_parent() is self:
-        initializers = port._get_initializers([])
-        assert not initializers, f"connected boundary port {port._name_from(self)} has unexpected initializers {initializers}"
     pb = self._populate_def_proto_port_init(pb)
 
-    for (name, (param, param_value)) in self._init_params_value.items():
+    for (name, (param, param_value)) in self._get_init_params_values().items():
       assert param.initializer is None, f"__init__ argument param {name} has unexpected initializer"
     pb = self._populate_def_proto_param_init(pb)
 
@@ -345,6 +367,26 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     pb = self._populate_def_proto_description(pb)
 
     return pb
+
+  MixinType = TypeVar('MixinType', bound='BlockInterfaceMixin')
+  def with_mixin(self, tpe: MixinType) -> MixinType:
+    """Adds an interface mixin for this Block. Mainly useful for abstract blocks, e.g. IoController with HasI2s."""
+    from .BlockInterfaceMixin import BlockInterfaceMixin
+    if not (isinstance(tpe, BlockInterfaceMixin) and tpe._is_mixin()):
+      raise TypeError("param to with_mixin must be a BlockInterfaceMixin")
+    if isinstance(self, BlockInterfaceMixin) and self._is_mixin():
+      raise BlockDefinitionError(self, "mixins can not have with_mixin")
+    if (self.__class__, AbstractBlockProperty) not in self._elt_properties:
+      raise BlockDefinitionError(self, "mixins can only be added to abstract classes")
+    if not isinstance(self, tpe._get_mixin_base()):
+      raise TypeError(f"block {self.__class__.__name__} not an instance of mixin base {tpe._get_mixin_base().__name__}")
+    assert self._parent is not None
+
+    elt = tpe._bind(self._parent)
+    self._parent.manager.add_alias(elt, self)
+    self._mixins.append(elt)
+
+    return elt
 
   def chain(self, *elts: Union[Connection, BasePort, Block]) -> ChainConnect:
     if not elts:
@@ -449,11 +491,8 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     """Registers a port for this Block"""
     if not isinstance(tpe, (Port, Vector)):
       raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")
-    if optional and tags:
-      raise BlockDefinitionError(self, "optional ports cannot have implicit connection tags",
-                                 "port can either be optional or have implicit connection tags")
     for tag in tags:
-      tag = assert_cast(tag, PortTag, "tag for Port(...)")
+      assert_cast(tag, PortTag, "tag for Port(...)")
 
     port = super().Port(tpe, optional=optional)
 
@@ -483,9 +522,12 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
   BlockType = TypeVar('BlockType', bound='Block')
   def Block(self, tpe: BlockType) -> BlockType:
+    from .BlockInterfaceMixin import BlockInterfaceMixin
     from .DesignTop import DesignTop
     if not isinstance(tpe, Block):
       raise TypeError(f"param to Block(...) must be Block, got {tpe} of type {type(tpe)}")
+    if isinstance(tpe, BlockInterfaceMixin) and tpe._is_mixin():
+      raise TypeError("param to Block(...) must not be BlockInterfaceMixin")
     if isinstance(tpe, DesignTop):
       raise TypeError(f"param to Block(...) may not be DesignTop")
     if self._elaboration_state not in \
@@ -503,6 +545,9 @@ def abstract_block(decorated: AbstractBlockType) -> AbstractBlockType:
   """Defines the decorated block as abstract, a supertype block missing an implementation and
   should be refined by a subclass in a final design.
   If this block is present (unrefined) in a final design, causes an error."""
+  from .BlockInterfaceMixin import BlockInterfaceMixin
+  if isinstance(decorated, BlockInterfaceMixin) and decorated._is_mixin():
+    raise BlockDefinitionError(decorated, "BlockInterfaceMixin @abstract_block definition is redundant")
   decorated._elt_properties[(decorated, AbstractBlockProperty)] = None
   return decorated
 
@@ -512,6 +557,9 @@ def abstract_block_default(target: Callable[[], Type[Block]]) -> Callable[[Abstr
   The argument is a lambda since the default refinement is going to be a subclass of the class being defined,
   it will not be defined yet when the base class is being evaluated, so evaluation needs to be delayed."""
   def inner(decorated: AbstractBlockType) -> AbstractBlockType:
+    from .BlockInterfaceMixin import BlockInterfaceMixin
+    if isinstance(decorated, BlockInterfaceMixin) and decorated._is_mixin():
+      raise BlockDefinitionError(decorated, "BlockInterfaceMixin @abstract_block definition is redundant")
     decorated._elt_properties[(decorated, AbstractBlockProperty)] = target
     return decorated
   return inner

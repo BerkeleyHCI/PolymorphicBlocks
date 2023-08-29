@@ -10,7 +10,6 @@ import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.SeqMap
 
-
 /** Tests compiler Bundle expansion / elaboration, including nested links.
   */
 class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
@@ -81,7 +80,8 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
   )
 
   "Compiler on design with bundles" should "expand structurally" in {
-    val inputDesign = Design(Block.Block("topDesign",
+    val inputDesign = Design(Block.Block(
+      "topDesign",
       blocks = SeqMap(
         "source" -> Block.Library("sourceBlock"),
       ),
@@ -90,25 +90,28 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       ),
       constraints = SeqMap(
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "outerPort")),
-
         "outerParamVal" -> Constraint.Assign(Ref("source", "outerParam"), ValueExpr.Literal(42)),
         "innerParamVal" -> Constraint.Assign(Ref("source", "innerParam"), ValueExpr.Literal(7)),
       )
     ))
-    val referenceElaborated = Design(Block.Block("topDesign",
+    val referenceElaborated = Design(Block.Block(
+      "topDesign",
       blocks = SeqMap(
-        "source" -> Block.Block(selfClass="sourceBlock",
+        "source" -> Block.Block(
+          selfClass = "sourceBlock",
           params = SeqMap(
             "innerParam" -> ValInit.Integer,
             "outerParam" -> ValInit.Integer,
           ),
           ports = SeqMap(
-            "port" -> Port.Bundle(selfClass="outerPort",
+            "port" -> Port.Bundle(
+              selfClass = "outerPort",
               params = SeqMap(
                 "param" -> ValInit.Integer,
               ),
               ports = SeqMap(
-                "inner" -> Port.Port(selfClass="innerPort",
+                "inner" -> Port.Port(
+                  selfClass = "innerPort",
                   params = SeqMap(
                     "param" -> ValInit.Integer,
                   ),
@@ -123,17 +126,20 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
         ),
       ),
       links = SeqMap(
-        "link" -> Link.Link(selfClass="outerLink",
+        "link" -> Link.Link(
+          selfClass = "outerLink",
           params = SeqMap(
             "outerParam" -> ValInit.Integer,
           ),
           ports = SeqMap(
-            "outerPort" -> Port.Bundle(selfClass="outerPort",
+            "outerPort" -> Port.Bundle(
+              selfClass = "outerPort",
               params = SeqMap(
                 "param" -> ValInit.Integer,
               ),
               ports = SeqMap(
-                "inner" -> Port.Port(selfClass="innerPort",
+                "inner" -> Port.Port(
+                  selfClass = "innerPort",
                   params = SeqMap(
                     "param" -> ValInit.Integer,
                   ),
@@ -142,12 +148,14 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
             ),
           ),
           links = SeqMap(
-            "inner" -> Link.Link(selfClass="innerLink",
+            "inner" -> Link.Link(
+              selfClass = "innerLink",
               params = SeqMap(
                 "innerParam" -> ValInit.Integer,
               ),
               ports = SeqMap(
-                "innerPort" -> Port.Port(selfClass="innerPort",
+                "innerPort" -> Port.Port(
+                  selfClass = "innerPort",
                   params = SeqMap(
                     "param" -> ValInit.Integer,
                   ),
@@ -166,7 +174,6 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       ),
       constraints = SeqMap(
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "outerPort")),
-
         "outerParamVal" -> Constraint.Assign(Ref("source", "outerParam"), ValueExpr.Literal(42)),
         "innerParamVal" -> Constraint.Assign(Ref("source", "innerParam"), ValueExpr.Literal(7)),
       )
@@ -178,13 +185,13 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     val referenceBlock = referenceElaborated.contents.get
 
     compiledBlock.blocks("source").`type`.hierarchy.get.ports("port") should
-        equal(referenceBlock.blocks("source").`type`.hierarchy.get.ports("port"))
+      equal(referenceBlock.blocks("source").`type`.hierarchy.get.ports("port"))
     compiledBlock.blocks("source") should equal(referenceBlock.blocks("source"))
 
     compiledBlock.links("link").`type`.link.get.ports("outerPort") should
-        equal(referenceBlock.links("link").`type`.link.get.ports("outerPort"))
+      equal(referenceBlock.links("link").`type`.link.get.ports("outerPort"))
     compiledBlock.links("link").`type`.link.get.links("inner") should
-        equal(referenceBlock.links("link").`type`.link.get.links("inner"))
+      equal(referenceBlock.links("link").`type`.link.get.links("inner"))
     compiledBlock.links("link") should equal(referenceBlock.links("link"))
 
     compiledBlock.constraints should equal(referenceBlock.constraints)
@@ -194,7 +201,8 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
   }
 
   "Compiler on design with bundles" should "propagate and evaluate values" in {
-    val inputDesign = Design(Block.Block("topDesign",
+    val inputDesign = Design(Block.Block(
+      "topDesign",
       blocks = SeqMap(
         "source" -> Block.Library("sourceBlock"),
       ),
@@ -203,7 +211,6 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
       ),
       constraints = SeqMap(
         "sourceConnect" -> Constraint.Connected(Ref("source", "port"), Ref("link", "outerPort")),
-
         "outerParamVal" -> Constraint.Assign(Ref("source", "outerParam"), ValueExpr.Literal(42)),
         "innerParamVal" -> Constraint.Assign(Ref("source", "innerParam"), ValueExpr.Literal(7)),
       )
@@ -216,27 +223,32 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
 
     // Check IS_CONNECTED, including recursively
     compiler.getValue(IndirectDesignPath() + "link" + "outerPort" + IndirectStep.IsConnected) should
-        equal(Some(BooleanValue(true)))
+      equal(Some(BooleanValue(true)))
     compiler.getValue(IndirectDesignPath() + "link" + "inner" + "innerPort" + IndirectStep.IsConnected) should
-        equal(Some(BooleanValue(true)))
+      equal(Some(BooleanValue(true)))
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should
-        equal(Some(BooleanValue(true)))
+      equal(Some(BooleanValue(true)))
     compiler.getValue(IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.IsConnected) should
-      equal(None)  // inner ports should not have connected status
+      equal(None) // inner ports should not have connected status
 
     // Check the CONNECTED_LINK propagation
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.ConnectedLink + "outerParam") should
-        equal(Some(IntValue(42)))
+      equal(Some(IntValue(42)))
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.ConnectedLink + IndirectStep.Name) should
-        equal(Some(TextValue("link")))
-    compiler.getValue(IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.ConnectedLink + "innerParam") should
-        equal(Some(IntValue(7)))
-    compiler.getValue(IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.ConnectedLink + IndirectStep.Name) should
-        equal(Some(TextValue("link.inner")))
+      equal(Some(TextValue("link")))
+    compiler.getValue(
+      IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.ConnectedLink + "innerParam"
+    ) should
+      equal(Some(IntValue(7)))
+    compiler.getValue(
+      IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.ConnectedLink + IndirectStep.Name
+    ) should
+      equal(Some(TextValue("link.inner")))
   }
 
   "Compiler on design with disconnected inner links" should "propagate is-connected" in {
-    val inputDesign = Design(Block.Block("topDesign",
+    val inputDesign = Design(Block.Block(
+      "topDesign",
       blocks = SeqMap(
         "source" -> Block.Library("sourceBlock"),
       ),
@@ -247,12 +259,12 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
     val (compiler, compiled) = testCompile(inputDesign, library)
 
     compiler.getValue(IndirectDesignPath() + "link" + "outerPort" + IndirectStep.IsConnected) should
-        equal(Some(BooleanValue(false)))
+      equal(Some(BooleanValue(false)))
     compiler.getValue(IndirectDesignPath() + "link" + "inner" + "innerPort" + IndirectStep.IsConnected) should
-        equal(Some(BooleanValue(false)))
+      equal(Some(BooleanValue(false)))
     compiler.getValue(IndirectDesignPath() + "source" + "port" + IndirectStep.IsConnected) should
-        equal(Some(BooleanValue(false)))
+      equal(Some(BooleanValue(false)))
     compiler.getValue(IndirectDesignPath() + "source" + "port" + "inner" + IndirectStep.IsConnected) should
-      equal(None)  // inner ports should not have connected status
+      equal(None) // inner ports should not have connected status
   }
 }

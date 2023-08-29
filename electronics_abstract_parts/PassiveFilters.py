@@ -10,23 +10,24 @@ from .Categories import *
 class LowPassRc(AnalogFilter, GeneratorBlock):
   """Passive-typed low-pass RC specified by the resistor value (impedance) and -3dB (~70%) cutoff frequency."""
   @init_in_parent
-  def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike,
-               voltage: RangeLike):
+  def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike, voltage: RangeLike):
     super().__init__()
-    self.impedance = self.ArgParameter(impedance)
-    self.cutoff_freq = self.ArgParameter(cutoff_freq)
-    self.voltage = self.ArgParameter(voltage)
-
     self.input = self.Port(Passive.empty())
     self.output = self.Port(Passive.empty())
     self.gnd = self.Port(Passive.empty())
 
-    self.generator(self.generate_rc, self.cutoff_freq, self.impedance)
+    self.impedance = self.ArgParameter(impedance)
+    self.cutoff_freq = self.ArgParameter(cutoff_freq)
+    self.voltage = self.ArgParameter(voltage)
 
-  def generate_rc(self, cutoff_freq: Range, impedance: Range) -> None:
+    self.generator_param(self.impedance, self.cutoff_freq)
+
+  def generate(self) -> None:
+    super().generate()
+
     self.r = self.Block(Resistor(resistance=self.impedance))  # TODO maybe support power?
     # cutoff frequency is 1/(2 pi R C)
-    capacitance = Range.cancel_multiply(1 / (2 * pi * impedance), 1 / cutoff_freq)
+    capacitance = Range.cancel_multiply(1 / (2 * pi * self.get(self.impedance)), 1 / self.get(self.cutoff_freq))
 
     self.c = self.Block(Capacitor(capacitance=capacitance*Farad, voltage=self.voltage))
     self.connect(self.input, self.r.a)
@@ -40,18 +41,23 @@ class PullupDelayRc(DigitalFilter, Block):
   @init_in_parent
   def __init__(self, impedance: RangeLike, time_constant: RangeLike):
     super().__init__()
-    self.input = self.Port(VoltageSink.empty(), [Power])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.time_constant = self.ArgParameter(time_constant)
 
     self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=1/(2 * pi * self.time_constant),
-                                   voltage=self.input.link().voltage))
+                                   voltage=self.pwr.link().voltage))
 
-    self.connect(self.input, self.rc.input.adapt_to(VoltageSink()))
-    self.io = self.Export(self.rc.output.adapt_to(DigitalSingleSource.high_from_supply(self.input)), [Output])
+    self.connect(self.pwr, self.rc.input.adapt_to(VoltageSink()))
+    self.io = self.Export(self.rc.output.adapt_to(DigitalSingleSource.high_from_supply(self.pwr)), [Output])
     self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
 
-  def connected(self, io: Optional[Port[DigitalLink]] = None) -> 'PullupDelayRc':
+  def connected(self, *, gnd: Optional[Port[VoltageLink]] = None, pwr: Optional[Port[VoltageLink]] = None,
+                io: Optional[Port[DigitalLink]] = None) -> 'PullupDelayRc':
     """Convenience function to connect both ports, returning this object so it can still be given a name."""
+    if gnd is not None:
+      cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+    if pwr is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr, self.pwr)
     if io is not None:
       cast(Block, builder.get_enclosing_block()).connect(io, self.io)
     return self
@@ -95,12 +101,13 @@ class DigitalLowPassRcArray(DigitalFilter, GeneratorBlock):
     self.impedance = self.ArgParameter(impedance)
     self.cutoff_freq = self.ArgParameter(cutoff_freq)
 
-    self.generator(self.generate, self.output.requested())
+    self.generator_param(self.output.requested())
 
-  def generate(self, outputs: List[str]):
+  def generate(self):
+    super().generate()
     self.elts = ElementDict[DigitalLowPassRc]()
     model = DigitalLowPassRc(self.impedance, self.cutoff_freq)
-    for requested in outputs:
+    for requested in self.get(self.output.requested()):
       self.elts[requested] = elt = self.Block(model)
       self.connect(self.input.append_elt(DigitalSink.empty(), requested), elt.input)
       self.connect(self.output.append_elt(DigitalSource.empty(), requested), elt.output)

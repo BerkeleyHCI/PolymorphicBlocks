@@ -21,11 +21,14 @@ class TopHierarchyBlockProtoTestCase(unittest.TestCase):
 
   def test_subblock_def(self) -> None:
     self.assertEqual(self.pb.blocks[0].name, 'source')
-    self.assertEqual(self.pb.blocks[0].value.lib_elem.target.name, "edg_core.test_common.TestBlockSource")
+    self.assertEqual(self.pb.blocks[0].value.lib_elem.base.target.name, "edg_core.test_common.TestBlockSource")
+    self.assertFalse(self.pb.blocks[0].value.lib_elem.mixins)
     self.assertEqual(self.pb.blocks[1].name, 'sink1')
-    self.assertEqual(self.pb.blocks[1].value.lib_elem.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertEqual(self.pb.blocks[1].value.lib_elem.base.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertFalse(self.pb.blocks[1].value.lib_elem.mixins)
     self.assertEqual(self.pb.blocks[2].name, 'sink2')
-    self.assertEqual(self.pb.blocks[2].value.lib_elem.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertEqual(self.pb.blocks[2].value.lib_elem.base.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertFalse(self.pb.blocks[2].value.lib_elem.mixins)
 
   def test_link_inference(self) -> None:
     self.assertEqual(len(self.pb.links), 1)
@@ -110,6 +113,70 @@ class MultiConnectBlockProtoTestCase(unittest.TestCase):
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
     expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'sink3'
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    self.assertIn(expected_conn, constraints)
+
+
+class ConnectJoinBlock(Block):
+  def contents(self):
+    super().contents()
+
+    self.source = self.Block(TestBlockSource())
+    self.sink1 = self.Block(TestBlockSink())
+    self.sink2 = self.Block(TestBlockSink())
+    self.sink3 = self.Block(TestBlockSink())
+    self.sink4 = self.Block(TestBlockSink())
+
+    self.test_net = self.connect(self.source.source, self.sink1.sink)  # authoritative name
+    self.connect(self.sink2.sink, self.sink3.sink)  # not named, to not conflict with the first
+    self.connect(self.source.source, self.sink3.sink)
+    self.connect(self.sink3.sink, self.sink4.sink)  # connect to the overridden net
+
+
+class ConnectJoinBlockProtoTestCase(unittest.TestCase):
+  def setUp(self) -> None:
+    self.pb = ConnectJoinBlock()._elaborated_def_to_proto()
+
+  def test_connectivity(self) -> None:
+    self.assertEqual(len(self.pb.constraints), 5)
+    constraints = list(map(lambda pair: pair.value, self.pb.constraints))
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
+    expected_conn.connected.link_port.ref.steps.add().name = 'source'
+    expected_conn.connected.block_port.ref.steps.add().name = 'source'
+    expected_conn.connected.block_port.ref.steps.add().name = 'source'
+    self.assertIn(expected_conn, constraints)
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
+    expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink1'
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    self.assertIn(expected_conn, constraints)
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
+    expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink2'
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    self.assertIn(expected_conn, constraints)
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
+    expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink3'
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    self.assertIn(expected_conn, constraints)
+
+    expected_conn = edgir.ValueExpr()
+    expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
+    expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
+    expected_conn.connected.block_port.ref.steps.add().name = 'sink4'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, constraints)
 

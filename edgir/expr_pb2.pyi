@@ -705,18 +705,27 @@ class ConnectedExpr(google.protobuf.message.Message):
 
     BLOCK_PORT_FIELD_NUMBER: builtins.int
     LINK_PORT_FIELD_NUMBER: builtins.int
+    EXPANDED_FIELD_NUMBER: builtins.int
     @property
     def block_port(self) -> global___ValueExpr: ...
     @property
     def link_port(self) -> global___ValueExpr: ...
+    @property
+    def expanded(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ConnectedExpr]:
+        """During compilation, ConnectedExpr may be expanded (allocate replaced with concrete path indices,
+        and arrays replaced with individual element connects).
+        The expanded forms are stored here (including multiple elements in the array case),
+        while the original (parent) is not modified.
+        """
     def __init__(
         self,
         *,
         block_port: global___ValueExpr | None = ...,
         link_port: global___ValueExpr | None = ...,
+        expanded: collections.abc.Iterable[global___ConnectedExpr] | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["block_port", b"block_port", "link_port", b"link_port"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["block_port", b"block_port", "link_port", b"link_port"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["block_port", b"block_port", "expanded", b"expanded", "link_port", b"link_port"]) -> None: ...
 
 global___ConnectedExpr = ConnectedExpr
 
@@ -731,18 +740,23 @@ class ExportedExpr(google.protobuf.message.Message):
 
     EXTERIOR_PORT_FIELD_NUMBER: builtins.int
     INTERNAL_BLOCK_PORT_FIELD_NUMBER: builtins.int
+    EXPANDED_FIELD_NUMBER: builtins.int
     @property
     def exterior_port(self) -> global___ValueExpr: ...
     @property
     def internal_block_port(self) -> global___ValueExpr: ...
+    @property
+    def expanded(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ExportedExpr]:
+        """see comment in ConnectedExpr"""
     def __init__(
         self,
         *,
         exterior_port: global___ValueExpr | None = ...,
         internal_block_port: global___ValueExpr | None = ...,
+        expanded: collections.abc.Iterable[global___ExportedExpr] | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["exterior_port", b"exterior_port", "internal_block_port", b"internal_block_port"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["exterior_port", b"exterior_port", "internal_block_port", b"internal_block_port"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["expanded", b"expanded", "exterior_port", b"exterior_port", "internal_block_port", b"internal_block_port"]) -> None: ...
 
 global___ExportedExpr = ExportedExpr
 

@@ -27,15 +27,16 @@ class PackedVoltageSource(NetPackingBlock, GeneratorBlock):
       voltage_out=RangeExpr(),
       current_limits=RangeExpr.ALL
     ))
-    self.generator(self.generate, self.pwr_ins.requested())
+    self.generator_param(self.pwr_ins.requested())
     self.packed(self.pwr_ins, self.pwr_out)
 
-  def generate(self, in_requests: List[str]):
+  def generate(self):
+    super().generate()
     self.pwr_ins.defined()
-    for in_request in in_requests:
+    for in_request in self.get(self.pwr_ins.requested()):
       self.pwr_ins.append_elt(VoltageSink(
         voltage_limits=RangeExpr.ALL,
-        current_draw=self.pwr_out.link().current_drawn / len(in_requests)
+        current_draw=self.pwr_out.link().current_drawn / len(self.get(self.pwr_ins.requested()))
       ), in_request)
 
     self.assign(self.pwr_out.voltage_out,

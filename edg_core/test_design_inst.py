@@ -79,17 +79,29 @@ class DesignInstantiationTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().name = '0'
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'sink1'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    expanded = expected_conn.connected.expanded.add()
+    expanded.link_port.ref.steps.add().name = 'test_net'
+    expanded.link_port.ref.steps.add().name = 'sinks'
+    expanded.link_port.ref.steps.add().name = '0'
+    expanded.block_port.ref.steps.add().name = 'sink1'
+    expanded.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().name = '1'
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'sink2'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    expanded = expected_conn.connected.expanded.add()
+    expanded.link_port.ref.steps.add().name = 'test_net'
+    expanded.link_port.ref.steps.add().name = 'sinks'
+    expanded.link_port.ref.steps.add().name = '1'
+    expanded.block_port.ref.steps.add().name = 'sink2'
+    expanded.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, constraints)
 
   def test_exported_hierarchy(self):
@@ -191,15 +203,27 @@ class DesignInstantiationTestCase(unittest.TestCase):
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().name = '0'
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'sink1'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    expanded = expected_conn.connected.expanded.add()
+    expanded.link_port.ref.steps.add().name = 'test_net'
+    expanded.link_port.ref.steps.add().name = 'sinks'
+    expanded.link_port.ref.steps.add().name = '0'
+    expanded.block_port.ref.steps.add().name = 'sink1'
+    expanded.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, constraints)
 
     expected_conn = edgir.ValueExpr()
     expected_conn.connected.link_port.ref.steps.add().name = 'test_net'
     expected_conn.connected.link_port.ref.steps.add().name = 'sinks'
-    expected_conn.connected.link_port.ref.steps.add().name = '1'
+    expected_conn.connected.link_port.ref.steps.add().allocate = ''
     expected_conn.connected.block_port.ref.steps.add().name = 'sink2'
     expected_conn.connected.block_port.ref.steps.add().name = 'sink'
+    expanded = expected_conn.connected.expanded.add()
+    expanded.link_port.ref.steps.add().name = 'test_net'
+    expanded.link_port.ref.steps.add().name = 'sinks'
+    expanded.link_port.ref.steps.add().name = '1'
+    expanded.block_port.ref.steps.add().name = 'sink2'
+    expanded.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, constraints)

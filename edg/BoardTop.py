@@ -17,9 +17,10 @@ class BaseBoardTop(DesignTop):
         (Capacitor, GenericMlcc),
         (Inductor, JlcInductor),  # TODO: replace with generic inductor
         (Switch, SmtSwitch),
-        (RotaryEncoderWithSwitch, Ec11j15WithSwitch),
+        (RotaryEncoder, Ec11j15WithSwitch),
         (Diode, JlcDiode),  # TODO: replace with non-distributor parts list
         (ZenerDiode, JlcZenerDiode),  # TODO: replace with non-distributor parts list
+        (Bjt, JlcBjt),  # TODO: replace with non-distributor parts list
         (Fet, JlcFet),  # TODO: replace with non-distributor parts list
         (SwitchFet, JlcSwitchFet),  # TODO: replace with non-distributor parts list
         (Led, SmtLed),
@@ -35,9 +36,11 @@ class BaseBoardTop(DesignTop):
         (CanEsdDiode, Pesd1can),
         (TestPoint, TeRc),
 
-        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetHeader),
+        (SwdCortexTargetConnector, SwdCortexTargetHeader),
 
         (SpiMemory, W25q),
+
+        (Speaker, ConnectorSpeaker),
       ], class_values=[
         (SmdStandardPackage, ['smd_min_package'], '0603'),
       ]
@@ -47,7 +50,20 @@ class BaseBoardTop(DesignTop):
 class BoardTop(BaseBoardTop):
   pass
 
-    
+
+class SimpleBoardTop(BaseBoardTop):
+  """A BoardTop with refinements that make getting started easier but may not be desirable everywhere."""
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      class_refinements=[
+        (PassiveConnector, PinHeader254),
+      ],
+      class_values=[
+        (JlcInductor, ['manual_frequency_rating'], Range.all()),
+      ],
+    )
+
+
 class JlcToolingHoles(Mechanical, Block):
   def contents(self):
     super().contents()
@@ -78,9 +94,12 @@ class JlcBoardTop(BaseBoardTop):
         (Led, JlcLed),
         (ZenerDiode, JlcZenerDiode),
         (Diode, JlcDiode),
+        (Bjt, JlcBjt),
         (Fet, JlcFet),
 
         (Fpc050Bottom, Afc01),
+        (Fpc050Top, Afc07Top),
+        (Fpc030Bottom, HiroseFh35cshw),
         (UsbEsdDiode, Pesd5v0x1bt),
         (Opamp, Lmv321),
         (SpiMemory, W25q),  # 128M version is a basic part

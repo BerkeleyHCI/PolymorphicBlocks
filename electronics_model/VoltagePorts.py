@@ -110,15 +110,15 @@ class VoltageSink(VoltageBase):
   bridge_type = VoltageSinkBridge
 
   @staticmethod
-  def from_gnd(gnd: VoltageSink, voltage_limits: RangeLike = Default(RangeExpr.ALL),
-               current_draw: RangeLike = Default(RangeExpr.ZERO)) -> 'VoltageSink':
+  def from_gnd(gnd: VoltageSink, voltage_limits: RangeLike = RangeExpr.ALL,
+               current_draw: RangeLike = RangeExpr.ZERO) -> 'VoltageSink':
     return VoltageSink(
       voltage_limits=voltage_limits - gnd.link().voltage,
       current_draw = current_draw
     )
 
-  def __init__(self, voltage_limits: RangeLike = Default(RangeExpr.ALL),
-               current_draw: RangeLike = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
+               current_draw: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
@@ -135,8 +135,12 @@ class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
     ))
     self.dst = self.Port(DigitalSource(
       voltage_out=self.src.link().voltage,
-      # TODO propagation of current limits?
-      output_thresholds=(0, self.src.link().voltage.lower())
+      output_thresholds=(  # use infinity for the other rail
+        (self.src.link().voltage.lower() > 0).then_else(FloatExpr._to_expr_type(-float('inf')),
+                                                        self.src.link().voltage.upper()),
+        (self.src.link().voltage.lower() > 0).then_else(self.src.link().voltage.lower(),
+                                                        FloatExpr._to_expr_type(float('inf')))
+      )
     ))
     self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
 
@@ -165,8 +169,8 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
 class VoltageSource(VoltageBase):
   bridge_type = VoltageSourceBridge
 
-  def __init__(self, voltage_out: RangeLike = Default(RangeExpr.ZERO),
-               current_limits: RangeLike = Default(RangeExpr.ALL)) -> None:
+  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
+               current_limits: RangeLike = RangeExpr.ALL) -> None:
     super().__init__()
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))

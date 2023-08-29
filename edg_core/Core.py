@@ -81,12 +81,16 @@ class SubElementDict(Generic[ElementType]):
 class SubElementManager:
   def __init__(self) -> None:
     self.dicts: List[Tuple[Union[Type, Tuple[Type, ...]], SubElementDict]] = []
+    self.aliases = IdentityDict[Any, Any]()
 
   def new_dict(self, filter_type: Union[Type[ElementType], Tuple[Type[ElementType], ...]],
                anon_prefix: Optional[str] = None) -> SubElementDict[ElementType]:
     sub_dict = SubElementDict[ElementType](anon_prefix)
     self.dicts.append((filter_type, sub_dict))
     return sub_dict
+
+  def add_alias(self, src: Any, target: Any):
+    self.aliases[src] = target
 
   def add_element(self, name: str, item: Any) -> None:
     if isinstance(item, ElementDict):
@@ -100,6 +104,8 @@ class SubElementManager:
       assert len(assigned) <= 1, f"assigned {item} to multiple SubElementDict {assigned}"
 
   def name_of(self, item: Any) -> Optional[str]:
+    if item in self.aliases:
+      item = self.aliases[item]
     name_candidates = [sub_dict.name_of(item) for sub_dict_type, sub_dict in self.dicts]
     name_candidates_filtered = [name_candidate for name_candidate in name_candidates if name_candidate is not None]
     assert len(name_candidates_filtered) <= 1, f"more than 1 name candidates {name_candidates} for {item}"
@@ -227,7 +233,16 @@ class LibraryElement(Refable, metaclass=ElementMeta):
   def _static_def_name(cls) -> str:
     """If this library element is defined by class (all instances have an equivalent library definition),
     returns the definition name. Otherwise, should crash."""
-    return cls.__module__ + "." + cls.__name__
+    if cls.__module__ == "__main__":
+      # when the top-level design is run as main, the module name is __main__ which is meaningless
+      # and breaks when the HDL server tries to resolve the __main__ reference (to itself),
+      # so this needs to resolve the correct name
+      import inspect
+      import os
+      module = os.path.splitext(os.path.basename(inspect.getfile(cls)))[0]
+    else:
+      module = cls.__module__
+    return module + "." + cls.__name__
 
   def _get_def_name(self) -> str:
     """Returns the definition name"""
@@ -261,17 +276,33 @@ class HasMetadata(LibraryElement):
 
   BaseType = TypeVar('BaseType', bound='HasMetadata')
   @classmethod
-  def _get_bases_of(cls, base_type: Type[BaseType]) -> List[Type[BaseType]]:
-    bases: List[Type] = []
+  def _get_bases_of(cls, base_type: Type[BaseType]) -> Tuple[List[Type[BaseType]], List[Type[BaseType]]]:
+    """Returns all the base classes of this class, as a list of direct superclasses (including through non_library
+    elements) and a list of additional (indirect) superclasses. Direct superclasses are in MRO order, indirect
+    superclasses order is not defined (but MRO in current practice).
+
+    mypy currently does not allow passing in abstract types, so generally calls to this need type: ignore."""
+    direct_bases: Set[Type] = set()
+    def process_direct_base(bcls: Type[HasMetadata.BaseType]):
+      if not issubclass(bcls, base_type):
+        return  # ignore above base_type
+      if (bcls, NonLibraryProperty) in bcls._elt_properties:  # non-library, recurse into parents
+        for bcls_base in bcls.__bases__:
+          process_direct_base(bcls_base)
+      else:  # anything else, directly append if not existing
+        direct_bases.add(bcls)
     for bcls in cls.__bases__:
-      if bcls not in bases and issubclass(bcls, base_type):
-        if (bcls, NonLibraryProperty) in bcls._elt_properties:
-          for bcls_bases in bcls._get_bases_of(base_type):
-            if bcls_bases not in bases:
-              bases.append(bcls_bases)
-        else:
-          bases.append(bcls)
-    return bases
+      process_direct_base(bcls)
+
+    ordered_direct_bases: List[Type[HasMetadata.BaseType]] = []
+    ordered_indirect_bases: List[Type[HasMetadata.BaseType]] = []
+    for mro_base in cls.__mro__[1:]:  # ignore self
+      if mro_base in direct_bases:
+        ordered_direct_bases.append(mro_base)
+      elif issubclass(mro_base, base_type) and (mro_base, NonLibraryProperty) not in mro_base._elt_properties:
+        ordered_indirect_bases.append(mro_base)
+
+    return ordered_direct_bases, ordered_indirect_bases
 
   def _populate_metadata(self, pb: edgir.Metadata, src: Any,
                          ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.Metadata:

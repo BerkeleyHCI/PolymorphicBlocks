@@ -4,7 +4,7 @@ from edg import *
 from .test_usb_uart import UartConnector
 
 
-class SwitchControllerBoard(JlcBoardTop):
+class SwitchController(JlcBoardTop):
   """Test board for an energy harvesting development project, that can control power to and
   communicate with the DUT.
   """
@@ -90,7 +90,7 @@ class SwitchControllerBoard(JlcBoardTop):
         (['mcu'], Esp32_Wroom_32),
         (['reg_3v3'], Ld1117),
 
-        (['target', 'conn'], PinHeader254),
+        (['conn', 'conn'], PinHeader254),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -115,11 +115,9 @@ class SwitchControllerBoard(JlcBoardTop):
           'lcd_cs=29',
         ]),
       ],
-      class_refinements=[
-        (PassiveConnector, PinHeader254),
-      ],
       class_values=[
-        (Er_Oled_091_3, ['device', 'vbat_min'], 3.2),  # allow this to work off 3.3 with tolerance
+        (Er_Oled_091_3, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
+        (Er_Oled_091_3, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
         (Esp32_Wroom_32, ['ic', 'lcsc_part'], 'C701341'),  # -N4 version which is economic PCBA compatible
         (Keystone5015, ['lcsc_part'], 'C5199798'),  # compatible RH-5015
         (Ld1117, ['ic', 'lcsc_part'], 'C115288'),  # LD1117A which is still in stock
@@ -129,4 +127,4 @@ class SwitchControllerBoard(JlcBoardTop):
 
 class SwitchControllerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(SwitchControllerBoard)
+    compile_board_inplace(SwitchController)

@@ -20,16 +20,19 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
     self.cols = self.Port(Vector(DigitalSink.empty()))
     self.voltage_drop = self.ArgParameter(voltage_drop)
 
-    self.generator(self.generate, nrows, ncols)
+    self.nrows = self.ArgParameter(nrows)
+    self.ncols = self.ArgParameter(ncols)
+    self.generator_param(self.nrows, self.ncols)
 
-  def generate(self, rows: int, cols: int):
+  def generate(self):
+    super().generate()
     row_ports = {}
-    for row in range(rows):
+    for row in range(self.get(self.nrows)):
       row_ports[row] = self.rows.append_elt(DigitalSingleSource.empty(), str(row))
 
     self.sw = ElementDict[Switch]()
     self.d = ElementDict[Diode]()
-    for col in range(cols):
+    for col in range(self.get(self.ncols)):
       col_port = cast(DigitalSink, self.cols.append_elt(DigitalSink.empty(), str(col)))
       col_port_model = DigitalSink()  # ideal, negligible current draw (assumed) and thresholds checked at other side
       for (row, row_port) in row_ports.items():
@@ -50,8 +53,8 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
           output_thresholds=(highest_output, float('inf')),
           low_signal_driver=True
         )), row_port)
-        self.connect(d.cathode, sw.a)
-        self.connect(sw.b.adapt_to(col_port_model), col_port)
+        self.connect(d.cathode, sw.sw)
+        self.connect(sw.com.adapt_to(col_port_model), col_port)
 
     self.rows.defined()
     self.cols.defined()

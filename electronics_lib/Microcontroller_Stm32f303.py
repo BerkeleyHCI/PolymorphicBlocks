@@ -1,16 +1,33 @@
-from itertools import chain
+from abc import abstractmethod
 from typing import *
 
 from electronics_abstract_parts import *
 
 
-class Stm32f303Base_Device():
-  @staticmethod
-  def mappable_ios(gnd: Union[VoltageSource, VoltageSink], vdd: Union[VoltageSource, VoltageSink],
-                   vdda: Union[VoltageSource, VoltageSink]) -> PinMapUtil:
+@abstract_block
+class Stm32f303_Ios(IoControllerDac, IoControllerCan, BaseIoControllerPinmapGenerator):
+  """Base class for STM32F303x6/8 devices (separate from STM32F303xB/C).
+  Unlike other microcontrollers, this one also supports dev boards (Nucleo-32) which can be
+  a power source, so there's a bit more complexity here."""
+  RESOURCE_PIN_REMAP: Dict[str, str]
+
+  @abstractmethod
+  def _gnd_vddio_vdda(self) -> Tuple[Port[VoltageLink], Port[VoltageLink], Port[VoltageLink]]:
+    """Returns GND, VDDIO, VDDA (either can be VoltageSink or VoltageSource)."""
+    ...
+
+  def _vdd_model(self) -> VoltageSink:
+    return VoltageSink(  # assumes single-rail module
+      voltage_limits=(2, 3.6)*Volt,  # table 19
+      current_draw=(0.00055, 80)*mAmp + self.io_current_draw.upper()  # table 25 Idd standby to max
+    )
+
+  def _io_pinmap(self) -> PinMapUtil:
     """Returns the mappable for a STM32F303 device with the input power and ground references.
     This allows a shared definition between discrete chips and microcontroller boards"""
     # these are common to all IO blocks
+    gnd, vdd, vdda = self._gnd_vddio_vdda()
+
     input_threshold_factor = (0.3, 0.7)  # TODO relaxed (but more complex) bounds available for different IO blocks
     current_limits = (-20, 20)*mAmp  # Section 6.3.14, TODO loose with relaxed VOL/VOH
     dio_tc_model = DigitalBidir.from_supply(
@@ -69,8 +86,10 @@ class Stm32f303Base_Device():
     )
 
     uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiMaster(DigitalBidir.empty())
-    i2c_model = I2cMaster(DigitalBidir.empty())
+    spi_model = SpiController(DigitalBidir.empty())
+    # TODO SPI peripherals, which have fixed-pin CS lines
+    i2c_model = I2cController(DigitalBidir.empty())
+    i2c_target_model = I2cTarget(DigitalBidir.empty())
 
     return PinMapUtil([  # Table 13, partial table for 48-pin only
       PinResource('PC13', {'PC13': dio_tc_model}),
@@ -134,16 +153,41 @@ class Stm32f303Base_Device():
       PeripheralFixedResource('I2C1', i2c_model, {
         'scl': ['PA15', 'PB6', 'PB8'], 'sda': ['PA14', 'PB7', 'PB9']
       }),
-
+      PeripheralFixedResource('I2C1_T', i2c_target_model, {
+        'scl': ['PA15', 'PB6', 'PB8'], 'sda': ['PA14', 'PB7', 'PB9']
+      }),
       PeripheralFixedPin('SWD', SwdTargetPort(dio_ft_model), {  # TODO some are FTf pins
         'swdio': 'PA13', 'swclk': 'PA14', 'reset': 'NRST'  # note: SWO is PB3
       }),
-    ])
+    ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
 
-class Nucleo_F303k8(PinMappable, Microcontroller, BaseIoController, GeneratorBlock, FootprintBlock):
+@abstract_block
+class Stm32f303_Device(Stm32f303_Ios, IoController, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+  """STM32F303 chip.
+  TODO IMPLEMENT ME"""
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]
+
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return VariantPinRemapper({
+      # 'Vbat': self.vdd,
+      # 'VddA': self.vdda,
+      # 'VssA': self.gnd,
+      'Vss': self.gnd,
+      'Vdd': self.pwr
+      # 'BOOT0': self.gnd,
+    }).remap(self.SYSTEM_PIN_REMAP)
+
+
+class Nucleo_F303k8(IoControllerUsbOut, IoControllerPowerOut, IoController, Stm32f303_Ios, GeneratorBlock,
+                    FootprintBlock):
   """Nucleo32 F303K8 configured as power source from USB."""
-
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    'Vss': ['4', '17'],
+    'Vdd': '29',
+    'Vusb': '19',
+    'Vin': '16',
+  }
   RESOURCE_PIN_REMAP = {
     'PA9': '1',  # CN3.1, D1
     'PA10': '2',  # CN3.2, D0
@@ -172,55 +216,54 @@ class Nucleo_F303k8(PinMappable, Microcontroller, BaseIoController, GeneratorBlo
     'PB3': '30',  # CN4.15, D13
   }
 
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
+  def _gnd_vddio_vdda(self) -> Tuple[Port[VoltageLink], Port[VoltageLink], Port[VoltageLink]]:
+    if self.get(self.gnd.is_connected()):  # board sinks power
+      return self.gnd, self.pwr, self.pwr
+    else:
+      return self.gnd_out, self.pwr_out, self.pwr_out
 
-    self.pwr_5v = self.Port(VoltageSource(
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    if self.get(self.gnd.is_connected()):  # board sinks power
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
+      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
+      return VariantPinRemapper({
+        'Vdd': self.pwr,
+        'Vss': self.gnd,
+      }).remap(self.SYSTEM_PIN_REMAP)
+    else:  # board sources power (default)
+      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
+      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")
+      return VariantPinRemapper({
+        'Vdd': self.pwr_out,
+        'Vss': self.gnd_out,
+        'Vusb': self.vusb_out,
+      }).remap(self.SYSTEM_PIN_REMAP)
+
+  def __init__(self):
+    super().__init__()
+
+    self.gnd.init_from(Ground())
+    self.pwr.init_from(self._vdd_model())
+
+    self.gnd_out.init_from(GroundSource())
+    self.vusb_out.init_from(VoltageSource(
       voltage_out=(4.75 - 0.58, 5.1) * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
       current_limits=(0, 0.5) * Amp  # max USB draw  # TODO higher from external power
-    ), optional=True)
-    self.pwr_in = self.Port(VoltageSink(
-      voltage_limits=(5.1 + 1.2 + 0.58, 15) * Volt,  # lower from 5v out + LD1117S50TR dropout + BAT60JFILM diode
-      # TODO can be lower if don't need 5.0v out
-      current_draw=(0, 0) * Amp  # TODO current draw specs, the part doesn't really have a datasheet
-    ), optional=True)
-    self.pwr_3v3 = self.Port(VoltageSource(
+    ))
+    self.pwr_out.init_from(VoltageSource(
       voltage_out=3.3 * Volt(tol=0.03),  # LD39050PU33R worst-case Vout accuracy
       current_limits=(0, 0.5) * Amp  # max USB current draw, LDO also guarantees 500mA output current
-    ), optional=True)
-    self.gnd = self.Port(GroundSource(), optional=True)
+    ))
 
-    self.generator(self.generate, self.pin_assigns,
-                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
-                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
-                   self.can.requested())
+    self.generator_param(self.gnd.is_connected())
 
-  def generate(self, assignments: List[str],
-               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
-               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
-               can_requests: List[str]) -> None:
-    system_pins = {
-      '16': self.pwr_in,
-      '19': self.pwr_5v,
-      '29': self.pwr_3v3,
-      '4': self.gnd,
-      '17': self.gnd,
-    }
-
-    allocated = Stm32f303Base_Device.mappable_ios(self.gnd, self.pwr_3v3, self.pwr_3v3)\
-      .remap_pins(self.RESOURCE_PIN_REMAP).allocate([
-        (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
-        (UartPort, uart_requests), (CanControllerPort, can_requests),
-        (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
-    ], assignments)
-    self.generator_set_allocation(allocated)
-
-    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports(), allocated)
-    self.assign(self.io_current_draw, io_current_draw)
+  def generate(self) -> None:
+    super().generate()
 
     self.footprint(
       'U', 'edg:Nucleo32',
-      dict(chain(system_pins.items(), io_pins.items())),
+      self._make_pinning(),
       mfr='STMicroelectronics', part='NUCLEO-F303K8',
       datasheet='https://www.st.com/resource/en/user_manual/dm00231744.pdf',
     )

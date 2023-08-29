@@ -1,12 +1,12 @@
 import argparse
 import csv
 import math
-from typing import Dict
+from typing import Dict, Tuple
 
 parser = argparse.ArgumentParser(description='Post-process KiCad BoM and position files to be compatible with JLC.')
 parser.add_argument('file_path_prefix', type=str,
                     help='Path prefix to the part data, without the .csv or -top-post.csv postfix, ' +
-                         'for example test_ledmatrix/gerbers/LedMatrixTest')
+                         'for example LedMatrix/gerbers/LedMatrix')
 args = parser.parse_args()
 
 
@@ -22,28 +22,52 @@ PART_ROTATIONS = {
   'C86832': -90,  # PCF8574 IO expander
   'C500769': -90,  # AP3418 buck converter
   'C50506': -90,  # DRV8833 dual motor driver
-  'C7972': 180,  # SOT-23-5 LMV opamp
   'C92482': -90,  # DRV8313 BLDC driver
   'C132291': -90,  # FUSB302B
   'C508453': 180,  # FET
+  'C527684': -90,  # TPS54202H SOT-23-6
+  'C155534': -90,  # AL8861 MSOP-8
+  'C7722': -90,  # TPS61040 SOT-23-5
 
-  'C112032': 180,  # LDO
-  'C460356': 180,  # SOT-23-5 boost converter
   'C2962219': -90,  # 2x5 1.27mm header shrouded
   'C126830': 90,  # "SOT-23" USB ESD protector
   'C6568': -90,  # CP2102 USB UART
-  'C190271': 180,  # SOT-23-6 93LC56 EEPROM
-  'C73478': 180,  # SOT-23-5 LP5907 1.2v reg
   'C976032': -90,  # LGA-16 QMC5883L
+
+  'C650309': -90,  # AD5941
+
+  'C424093': -90,  # MCP73831T
+  'C842287': -90,  # 74AHCT1G125
+  'C113367': -90,  # PAM8302
+  'C2890035': -90,  # SK6805-EC15
+  'C125972': 90,  # BME680
+  'C2682619': 180,  # MAX98357 BGA
+
+  'C262645': 180,  # AFC07 FPC 30
+  'C262669': 180,  # AFC01 FPC 24
+
+  'C424662': -90,  # FH35C 0.3mm FPC 31
+
+  'C209762': -90,  # EC11J15
 }
 
 _FOOTPRINT_ROTATIONS = {
   'Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11': 0,
   'RF_Module:ESP32-WROOM-32': -90,
   'Package_TO_SOT_SMD:SOT-23': 180,
+  'Package_TO_SOT_SMD:SOT-23-5': 180,
+  'Package_TO_SOT_SMD:SOT-23-6': 180,
+  'Package_TO_SOT_SMD:SOT-89-3': 180,
+  'Package_TO_SOT_SMD:SOT-323_SC-70': 180,
   'Package_TO_SOT_SMD:SOT-223-3_TabPin2': 180,
   'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': -90,
   'Package_SO:SOIC-8_5.23x5.23mm_P1.27mm': -90,
+
+  'OptoDevice:Osram_BPW34S-SMD': 180,
+
+  'Connector_Coaxial:BNC_Amphenol_B6252HB-NPP3G-50_Horizontal': 180,
+
+  'Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal': 180,
 }
 
 # footprint position export doesn't include the footprint library name
@@ -51,9 +75,24 @@ PACKAGE_ROTATIONS = {footprint.split(':')[-1]: rot for footprint, rot in _FOOTPR
 
 # translational offsets using KiCad coordinate conventions, -y is up
 # offsets estimated visually
-_FOOTPRINT_OFFSETS = {
+PART_OFFSETS: Dict[str, Tuple[float, float]] = {
+  'C262669': (0, -0.5),  # AFC01 FPC 24
+  'C262671': (0, -0.5),  # AFC01 FPC 30
+  'C262643': (0, -1),  # AFC07 FPC 24
+  'C262645': (0, -1),  # AFC07 FPC 30
+  'C110293': (0, 0.1),  # SKRTLAE010 R/A switch
+  'C116648': (0, 2.1),  # EC05E1220401
+}
+_FOOTPRINT_OFFSETS: Dict[str, Tuple[float, float]] = {
+  'Package_TO_SOT_SMD:SOT-89-3': (-0.6, 0),
+
   'Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11': (0, -1.25),
   'RF_Module:ESP32-WROOM-32': (0, 0.8),
+
+  'Connector_Coaxial:BNC_Amphenol_B6252HB-NPP3G-50_Horizontal': (0, -2.5),
+
+  'Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal': (1, 0),
+  'Connector_JST:JST_PH_S6B-PH-K_1x06_P2.00mm_Horizontal': (5, 0),
 }
 PACKAGE_OFFSETS = {footprint.split(':')[-1]: offset for footprint, offset in _FOOTPRINT_OFFSETS.items()}
 
@@ -116,7 +155,13 @@ if __name__ == '__main__':
         lcsc_opt = refdes_lcsc_map.get(refdes, None)
 
         # correct offsets before applying rotation
-        if package in PACKAGE_OFFSETS:
+        if lcsc_opt is not None and lcsc_opt in PART_OFFSETS:
+          (xoff, yoff) = PART_OFFSETS[lcsc_opt]
+          rot = math.radians(float(row[rot_index]))
+          row[x_index] = str((float(row[x_index]) + xoff * math.cos(rot) + yoff * math.sin(rot)))
+          row[y_index] = str((float(row[y_index]) + xoff * math.sin(rot) - yoff * math.cos(rot)))
+          print(f"correct offset for row {i+1} ref {refdes}, {lcsc_opt}")
+        elif package in PACKAGE_OFFSETS:
           (xoff, yoff) = PACKAGE_OFFSETS[package]
           rot = math.radians(float(row[rot_index]))
           row[x_index] = str((float(row[x_index]) + xoff * math.cos(rot) + yoff * math.sin(rot)))

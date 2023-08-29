@@ -29,7 +29,7 @@ class Mcp4921_Device(InternalSubcircuit, FootprintBlock):
       input_threshold_factor=(0.2, 0.7)
     )
     self.ldac = self.Port(dio_model)
-    self.spi = self.Port(SpiSlave(dio_model, frequency_limit=(0, 20)*MHertz))
+    self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 20) * MHertz))
     self.cs = self.Port(dio_model)
 
   def contents(self) -> None:

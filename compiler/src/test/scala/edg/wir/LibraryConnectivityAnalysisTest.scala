@@ -8,7 +8,6 @@ import edg.ExprBuilder.Ref
 
 import scala.collection.SeqMap
 
-
 /** Tests compiler Bundle expansion / elaboration, including nested links.
   */
 class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
@@ -16,21 +15,24 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
     ports = Seq(
       Port.Port("innerSource"),
       Port.Port("innerSink"),
-      Port.Bundle("outerPort",
+      Port.Bundle(
+        "outerPort",
         ports = SeqMap(
           "inner" -> Port.Library("innerPort"),
         )
       ),
     ),
     links = Seq(
-      Link.Link("innerLink",
+      Link.Link(
+        "innerLink",
         ports = SeqMap(
           "innerSource" -> Port.Library("innerSource"),
           "innerSinks" -> Port.Array("innerSink")
         ),
         // practically invalid, missing connect constraints
       ),
-      Link.Link("outerLink",
+      Link.Link(
+        "outerLink",
         ports = SeqMap(
           "outerPort1" -> Port.Library("outerPort"),
           "outerPort2" -> Port.Library("outerPort"),
@@ -42,14 +44,16 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
       ),
     ),
     blocks = Seq(
-      Block.Block("sourceAdapter",
+      Block.Block(
+        "sourceAdapter",
         superclasses = Seq(LibraryConnectivityAnalysis.portBridge.getTarget.getName),
         ports = SeqMap(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sourcePort"),
           LibraryConnectivityAnalysis.portBridgeOuterPort -> Port.Library("sinkPort"),
         )
       ),
-      Block.Block("sinkAdapter",
+      Block.Block(
+        "sinkAdapter",
         superclasses = Seq(LibraryConnectivityAnalysis.portBridge.getTarget.getName),
         ports = SeqMap(
           LibraryConnectivityAnalysis.portBridgeLinkPort -> Port.Library("sinkPort"),
@@ -61,7 +65,7 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
 
   private val analysis = new LibraryConnectivityAnalysis(new EdgirLibrary(library))
 
-  behavior of "LibraryConnectivityAnalysis"
+  behavior.of("LibraryConnectivityAnalysis")
   it should "return links from ports" in {
     analysis.linkOfPort(LibraryPath("innerSource")) should equal(Some(LibraryPath("innerLink")))
     analysis.linkOfPort(LibraryPath("innerSink")) should equal(Some(LibraryPath("innerLink")))
@@ -71,9 +75,11 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
 
   it should "return connectable ports of links" in {
     analysis.connectablePorts(LibraryPath("innerLink")) should equal(
-      Map(LibraryPath("innerSource") -> 1, LibraryPath("innerSink") -> Integer.MAX_VALUE))
+      Map(LibraryPath("innerSource") -> 1, LibraryPath("innerSink") -> Integer.MAX_VALUE)
+    )
     analysis.connectablePorts(LibraryPath("outerLink")) should equal(
-      Map(LibraryPath("outerPort") -> 2))
+      Map(LibraryPath("outerPort") -> 2)
+    )
     analysis.connectablePorts(LibraryPath("lol")) should equal(Map())
   }
 

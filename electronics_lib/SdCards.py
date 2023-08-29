@@ -27,7 +27,7 @@ class SdCard(Memory):
                          0.75 * self.pwr.link().voltage.lower())
     )
 
-    self.spi = self.Port(SpiSlave(dio_model), [InOut])  # TODO does this port directionality make sense?
+    self.spi = self.Port(SpiPeripheral(dio_model), [InOut])  # TODO does this port directionality make sense?
     self.cs = self.Port(DigitalSink.from_bidir(dio_model))
 
 

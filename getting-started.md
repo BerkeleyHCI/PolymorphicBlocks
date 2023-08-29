@@ -79,10 +79,7 @@ However, you can't do both (since they would duplicate the same results), but yo
 ## A top-level design: Blinky
 _In this example, we will create a circuit consisting of a LED and switch connected to a microcontroller._
 
-For now, you will be working directly in the `PoylmorphicBlocks` repository folder directly.
-In the future, we will improve the flow to allow adding `PolymorphicBlocks` as a package dependency.
-
-Start by opening `blinky_skeleton.py`, which is pre-populated with this skeleton code:
+Start by creating a `blinky.py`, and filling it with this skeleton code:
 
 ```python
 from edg import *
@@ -97,6 +94,11 @@ class BlinkyExample(SimpleBoardTop):
 if __name__ == "__main__":
   compile_board_inplace(BlinkyExample)
 ```
+
+> If using the IDE, `blinky.py` must be within the project directory.
+> Make sure you've set up the project according to the [setup document](setup.md).
+> 
+> If using the command line, `blinky.py` can be created anywhere.
 
 - `from edg import *` brings in the base classes for circuit construction, like `SimpleBoardTop`.
 - `class BlinkyExample` contains the (top-level) circuit you're going to build, and it extends the top-level hierarchical block base class `SimpleBoardTop`.
@@ -123,7 +125,7 @@ Try building the example now:
      > - Changes to `__init__` do not re-compile instantiating classes, even if default values have been updated.
   3. The design should build, and you should get a run log that looks something like:
      ```
-     Starting compilation of blinky_skeleton.BlinkyExample
+     Starting compilation of blinky.BlinkyExample
      Using interpreter from configured SDK [...]
      [... lots of compilation output here ...]
      Completed: generate netlist: wrote [...]
@@ -132,8 +134,8 @@ Try building the example now:
      ![run menu](docs/ide/ide_run_config.png)
 - <details> <summary>If not using the IDE</summary>
   
-  Run `python blinkly_skeleton.py` from the command line.
-  If all worked, this should create a folder `PolymorphicBlocks/blinky_skeleton` with a netlist `BlinkyExample.net` inside.
+  Run `python blinky.py` from the command line.
+  If all worked, this should create a folder `BlinkyExample` with a netlist `BlinkyExample.net` inside.
   </details>
 - <details> <summary>Resolving common errors</summary>
   
@@ -145,7 +147,7 @@ Try building the example now:
 ### Creating the microcontroller and LED
 For this simple example, we connect an LED to a STM32F103 microcontroller, and have everything powered by a USB type-C receptacle.
 
-**In `blinky_skeleton.py`, `# your implementation here`, add this code** to instantiate the microcontroller and LED as follows:
+**In `blinky.py`, `# your implementation here`, add this code** to instantiate the microcontroller and LED as follows:
 ```diff
   super().contents()
 - # your implementation here
@@ -228,7 +230,7 @@ Then, we need to connect the LED to a GPIO on the microcontroller, by **adding t
 > Microcontroller GPIOs (and other IOs like SPI and UART) are _port arrays_, which are dynamically sized.
 > Here, we `request(...)` a new GPIO from the GPIO port array, then connect it to the LED.
 > `request(...)` takes an optional name parameter, the meaning of which depends on the block.
-> 
+
 > By default, these connections are arbitrarily assigned to microcontroller pins.
 > However pin assignments can also be manually specified (using this name parameter) to simplify board layout - this will be covered at the end of this tutorial.
 > 
@@ -278,7 +280,7 @@ Assertions are checks on the electronics model, in this case it's detecting a vo
 
 If you're in the IDE, errors will show up in the compilation log and in the errors tab:  
 ![Errors tab with errors](docs/ide/ide_blinky_errors.png)  
-You can also inspect the details of the power connection by mousing over it:  
+You can also inspect the details of the power connection by mousing over it:
 ![Inspection of the power lines with voltages and limits](docs/ide/ide_blinky_inspect.png)
 
 ### Adding a Voltage Regulator
@@ -708,7 +710,6 @@ While you certainly can copy-paste the above LED instantiation 4 times, that's n
   ...
 - self.connect(self.mcu.gpio.request('led'), self.led.signal)
   ...
-
 + self.led = ElementDict[IndicatorLed]()
 + for i in range(4):
 +   self.led[i] = self.Block(IndicatorLed())
@@ -784,11 +785,11 @@ with self.implicit_connect(
 
 > When blocks define ports, they can associate tags with them to specify implicit connectivity.
 > To prevent errors, all ports with tags are required to be connected, either implicitly (as in this section) or explicitly (through `connect` statements).
-> 
+>
 > The most common tags are `Power` (for a general positive voltage rail) and `Common` (for ground).
 
 In our example, we can get rid of the explicit power and ground connections.
-Start by **adding an implicit scope** to tie Power-tagged ports to `self.reg.pwr_out` and Common- (ground) tagged ports to `self.reg.gnd`, and **move the microcontroller, switch, and LED into the implicit scope**:
+Start by **adding an implicit scope** to tie Power-tagged ports to `self.reg.pwr_out` and Common- (ground) tagged ports to `self.reg.gnd`, and **move the microcontroller, switch, and LED into the implicit scope**
 
 ```diff
   ...
@@ -822,7 +823,6 @@ Inside an implicit connection block, only blocks instantiated with `imp.Block(..
   self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
 + self.connect(self.usb.gnd, self.reg.gnd)
 + self.connect(self.usb.pwr, self.reg.pwr_in)
-
   with self.implicit_connect(
       ImplicitConnect(self.reg.pwr_out, [Power]),
       ImplicitConnect(self.reg.gnd, [Common]),
@@ -882,7 +882,19 @@ Inside an implicit connection block, only blocks instantiated with `imp.Block(..
 > </details>
 
 ### Chain Connects
-Another shorthand is for chained connections of blocks, which allows declaring and connecting certain blocks in the same line.
+Another shorthand is for chained connections of blocks with inline declarations of blocks.
+We could, **inside the implicit scope, replace the LED and switch instantiations and connections, with**:  
+```diff
+  ...
+- self.sw = imp.Block(DigitalSwitch())
+- self.connect(self.mcu.gpio.request('sw'), self.sw.out)
++ (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+  ...
+  for i in range(4):
+-   self.led[i] = imp.Block(IndicatorLed())
+-   self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
++   (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
+```
 
 > <details>
 >   <summary>Optional: try it yourself...</summary>

@@ -3,7 +3,7 @@ from .Categories import Interface
 
 
 @abstract_block
-class DigitalIsolator(Interface, Block):
+class DigitalIsolator(Interface, GeneratorBlock):
   """Multichannel digital isolator, shifts logic signals between different logic voltages
   and isolation domains. Supports arbitrary channels in either direction, but it needs to
   map down to a single chip (or be multipacked).
@@ -20,3 +20,12 @@ class DigitalIsolator(Interface, Block):
       self.gnd_b = self.Port(Ground.empty())
       self.in_b = self.Port(Vector(DigitalSink.empty()), optional=True)
       self.out_b = self.Port(Vector(DigitalSource.empty()), optional=True)
+
+      self.generator_param(self.in_a.requested(), self.out_b.requested(), self.in_b.requested(), self.out_a.requested())
+
+  def generate(self):  # validity checks
+      super().generate()
+      assert self.get(self.in_a.requested()) == self.get(self.out_b.requested()), \
+          "in_a requested and out_b requested must be equal"
+      assert self.get(self.in_b.requested()) == self.get(self.out_a.requested()), \
+          "in_b requested and out_a requested must be equal"

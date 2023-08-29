@@ -4,7 +4,7 @@ from edg import *
 from .test_high_switch import CalSolPowerConnector, CalSolCanBlock, CanFuse
 
 
-class TestDatalogger(BoardTop):
+class Datalogger(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -51,6 +51,7 @@ class TestDatalogger(BoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
+      # this uses the legacy / simple (non-mixin) USB and CAN IO style
       self.connect(self.mcu.usb.request(), self.usb_conn.usb)
 
       (self.can, ), _ = self.chain(self.mcu.can.request('can'), imp.Block(CalSolCanBlock()))
@@ -179,12 +180,13 @@ class TestDatalogger(BoardTop):
         ]),
         (['mcu', 'swd_swo_pin'], 'PIO0_8'),
 
+        (['pwr_5v', 'power_path', 'inductor', 'part'], 'NR5040T220M'),  # peg to prior part selection
         (['pwr_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.6)),  # trade higher Imax for lower L
         # the hold current wasn't modeled at the time of manufacture and turns out to be out of limits
         (['can', 'can_fuse', 'fuse', 'actual_hold_current'], Range(0.1, 0.1)),
         # JLC does not have frequency specs, must be checked TODO
-        (['pwr_5v', 'power_path', 'inductor', 'ignore_frequency'], True),
-        (['eink', 'boost_ind', 'ignore_frequency'], True),
+        (['pwr_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+        (['eink', 'boost_ind', 'manual_frequency_rating'], Range.all()),
         # JLC does not have gate voltage tolerance specs, and the inferred one is low
         (['eink', 'boost_sw', 'gate_voltage'], Range(3, 10)),
 
@@ -199,4 +201,4 @@ class TestDatalogger(BoardTop):
 
 class DataloggerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(TestDatalogger)
+    compile_board_inplace(Datalogger)

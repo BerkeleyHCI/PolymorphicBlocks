@@ -32,6 +32,7 @@ class IdentityDict(Generic[KeyType, ValueType]):  # TODO this should implement M
     key_id = id(key)
     if key_id not in self.dict:
       self.dict[key_id] = default
+      self.keys_dict[key_id] = key
     return self.dict[key_id]
 
   def __repr__(self) -> str:
@@ -43,6 +44,12 @@ class IdentityDict(Generic[KeyType, ValueType]):  # TODO this should implement M
   def __setitem__(self, key: KeyType, item: ValueType):
     key_id = id(key)
     assert key_id not in self.dict, f"attempted to overwrite {key}={self.dict[key_id]} with new {item}"
+    self.dict[key_id] = item
+    self.keys_dict[key_id] = key
+
+  def update(self, key: KeyType, item: ValueType):
+    key_id = id(key)
+    assert key_id in self.dict, f"attempted to update {key}={self.dict[key_id]} with no prior"
     self.dict[key_id] = item
     self.keys_dict[key_id] = key
 
@@ -62,3 +69,6 @@ class IdentityDict(Generic[KeyType, ValueType]):  # TODO this should implement M
 
   def __contains__(self, item: KeyType) -> bool:
     return id(item) in self.dict
+
+  def __bool__(self):
+    return bool(self.dict)

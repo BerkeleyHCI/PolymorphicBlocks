@@ -5,18 +5,18 @@ import edg.wir.ProtoUtil._
 import edgir.init.init
 import edgir.elem.elem
 import edgir.expr.expr
+import edgir.expr.expr.ValueExpr
 import edgir.ref.ref
+import edgir.ref.ref.LibraryPath
 
 import scala.collection.{SeqMap, mutable}
 
-
 sealed trait LinkLike extends Pathable {
-  def cloned: LinkLike  // using clone directly causes an access error to Object.clone
+  def cloned: LinkLike // using clone directly causes an access error to Object.clone
   def toPb: elem.LinkLike
 }
 
-/**
-  * Similar to Block, see documentation there.
+/** Similar to Block, see documentation there.
   */
 class Link(pb: elem.Link) extends LinkLike
     with HasMutablePorts with HasMutableLinks with HasMutableConstraints with HasParams {
@@ -37,11 +37,15 @@ class Link(pb: elem.Link) extends LinkLike
 
   override def isElaborated: Boolean = true
 
+  override def getSelfClass: LibraryPath = pb.getSelfClass
+  override def getDirectSuperclasses: Seq[LibraryPath] = pb.superclasses
+  override def getAllClasses: Seq[LibraryPath] = Seq(pb.selfClass, pb.superclasses, pb.superSuperclasses).flatten
+
   override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
-    case Seq(subname, tail@_*) =>
+    case Seq(subname, tail @ _*) =>
       if (ports.contains(subname)) {
         ports(subname).resolve(tail)
       } else if (links.contains(subname)) {
@@ -53,23 +57,23 @@ class Link(pb: elem.Link) extends LinkLike
 
   def toEltPb: elem.Link = {
     pb.copy(
-      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
-      links=links.view.mapValues(_.toPb).to(SeqMap).toPb,
-      constraints=constraints.toPb
+      ports = ports.view.mapValues(_.toPb).to(SeqMap).toPb,
+      links = links.view.mapValues(_.toPb).to(SeqMap).toPb,
+      constraints = constraints.toPb
     )
   }
 
   override def toPb: elem.LinkLike = {
-    elem.LinkLike(`type`=elem.LinkLike.Type.Link(toEltPb))
+    elem.LinkLike(`type` = elem.LinkLike.Type.Link(toEltPb))
   }
 }
 
 class LinkArray(pb: elem.LinkArray) extends LinkLike
     with HasMutablePorts with HasMutableLinks with HasMutableConstraints {
   require(pb.ports.isEmpty && pb.links.isEmpty && pb.constraints.isEmpty, "link array may not start elaborated")
-  override protected val ports = mutable.SeqMap[String, PortLike]()
-  override protected val links = mutable.SeqMap[String, LinkLike]()
-  override protected val constraints = mutable.SeqMap[String, expr.ValueExpr]()
+  override protected val ports: mutable.SeqMap[String, PortLike] = mutable.SeqMap[String, PortLike]()
+  override protected val links: mutable.SeqMap[String, LinkLike] = mutable.SeqMap[String, LinkLike]()
+  override protected val constraints: mutable.SeqMap[String, ValueExpr] = mutable.SeqMap[String, expr.ValueExpr]()
 
   var model: Option[Link] = None
 
@@ -101,16 +105,16 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
     require(ports.isEmpty)
     model.get.getPorts.flatMap {
       case (portName, port: PortArray) =>
-        val outerCreated = new PortArray(elem.PortArray(selfClass=None))
+        val outerCreated = new PortArray(elem.PortArray(selfClass = None))
         ports.put(portName, outerCreated)
         val inner = arrayElements(portName).map { index =>
-          val created = new PortArray(elem.PortArray(selfClass=Some(port.getType)))
+          val created = new PortArray(elem.PortArray(selfClass = Some(port.getType)))
           (index, created)
         }
         outerCreated.setPorts(inner.to(SeqMap))
         inner.map { case (index, created) => (Seq(portName, index), created) }
       case (portName, port: PortLibrary) =>
-        val created = new PortArray(elem.PortArray(selfClass=Some(port.target)))
+        val created = new PortArray(elem.PortArray(selfClass = Some(port.target)))
         ports.put(portName, created)
         Seq((Seq(portName), created))
       case _ => throw new IllegalArgumentException
@@ -135,16 +139,24 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
       case (portName, port: PortArray) =>
         arrayElements(portName).foreach { arrayIndex =>
           linkElements.foreach { elementIndex =>
-            constraints.put(s"$portName.$arrayIndex.$elementIndex", Constraint.Exported(
-              Ref(portName, arrayIndex, elementIndex), Ref(elementIndex, portName, arrayIndex)
-            ))
+            constraints.put(
+              s"$portName.$arrayIndex.$elementIndex",
+              Constraint.Exported(
+                Ref(portName, arrayIndex, elementIndex),
+                Ref(elementIndex, portName, arrayIndex)
+              )
+            )
           }
         }
       case (portName, port: PortLibrary) =>
         linkElements.foreach { elementIndex =>
-          constraints.put(s"$portName.$elementIndex", Constraint.Exported(
-            Ref(portName, elementIndex), Ref(elementIndex, portName)
-          ))
+          constraints.put(
+            s"$portName.$elementIndex",
+            Constraint.Exported(
+              Ref(portName, elementIndex),
+              Ref(elementIndex, portName)
+            )
+          )
         }
       case _ => throw new IllegalArgumentException
     }
@@ -155,7 +167,7 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
-    case Seq(subname, tail@_*) =>
+    case Seq(subname, tail @ _*) =>
       if (ports.contains(subname)) {
         ports(subname).resolve(tail)
       } else if (links.contains(subname)) {
@@ -167,19 +179,19 @@ class LinkArray(pb: elem.LinkArray) extends LinkLike
 
   def toEltPb: elem.LinkArray = {
     pb.copy(
-      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
-      links=links.view.mapValues(_.toPb).to(SeqMap).toPb,
-      constraints=constraints.toPb
+      ports = ports.view.mapValues(_.toPb).to(SeqMap).toPb,
+      links = links.view.mapValues(_.toPb).to(SeqMap).toPb,
+      constraints = constraints.toPb
     )
   }
 
   override def toPb: elem.LinkLike = {
-    elem.LinkLike(`type`=elem.LinkLike.Type.Array(toEltPb))
+    elem.LinkLike(`type` = elem.LinkLike.Type.Array(toEltPb))
   }
 }
 
 case class LinkLibrary(target: ref.LibraryPath) extends LinkLike {
-  override def cloned: LinkLibrary = this  // immutable
+  override def cloned: LinkLibrary = this // immutable
 
   def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this

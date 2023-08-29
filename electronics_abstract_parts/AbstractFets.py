@@ -1,9 +1,10 @@
 from typing import Optional, Any, Dict
 
 from electronics_model import *
-from . import PartsTableFootprint, PartsTableColumn, PartsTableRow
+from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
+from .PartsTablePart import PartsTableFootprintSelector
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -37,8 +38,8 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor):
 
   @init_in_parent
   def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike, *,
-               gate_voltage: RangeLike = Default(Range.all()), rds_on: RangeLike = Default(Range.all()),
-               gate_charge: RangeLike = Default(Range.all()), power: RangeLike = Default(Range.exact(0)),
+               gate_voltage: RangeLike = Range.all(), rds_on: RangeLike = Range.all(),
+               gate_charge: RangeLike = Range.all(), power: RangeLike = Range.exact(0),
                channel: StringLike = StringExpr()) -> None:
     super().__init__()
 
@@ -81,7 +82,9 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor):
 
 
 @non_library
-class FetStandardPinning(Fet, StandardPinningFootprint[Fet]):
+class FetStandardFootprint(Fet, StandardFootprint[Fet]):
+  REFDES_PREFIX = 'Q'
+
   FOOTPRINT_PINNING_MAP = {
     'Package_TO_SOT_SMD:SOT-23': lambda block: {
       '1': block.gate,
@@ -130,51 +133,32 @@ class BaseTableFet(Fet):
 
 
 @non_library
-class TableFet(FetStandardPinning, BaseTableFet, PartsTableFootprint, GeneratorBlock):
+class TableFet(FetStandardFootprint, BaseTableFet, PartsTableFootprintSelector):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.drain_voltage, self.drain_current,
-                   self.gate_voltage, self.rds_on, self.gate_charge, self.power, self.channel,
-                   self.part, self.footprint_spec)
+    self.generator_param(self.drain_voltage, self.drain_current, self.gate_voltage, self.rds_on, self.gate_charge,
+                         self.power, self.channel)
 
-  def select_part(self, drain_voltage: Range, drain_current: Range,
-                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range, channel: str,
-                  part_spec: str, footprint_spec: str) -> None:
-    parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        row[self.CHANNEL] == channel and
-        drain_voltage.fuzzy_in(row[self.VDS_RATING]) and
-        drain_current.fuzzy_in(row[self.IDS_RATING]) and
-        gate_voltage.fuzzy_in(row[self.VGS_RATING]) and
-        row[self.RDS_ON].fuzzy_in(rds_on) and
-        row[self.GATE_CHARGE].fuzzy_in(gate_charge) and
-        power.fuzzy_in(row[self.POWER_RATING])
-    ))
-    part = parts.first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      row[self.CHANNEL] == self.get(self.channel) and \
+      self.get(self.drain_voltage).fuzzy_in(row[self.VDS_RATING]) and \
+      self.get(self.drain_current).fuzzy_in(row[self.IDS_RATING]) and \
+      self.get(self.gate_voltage).fuzzy_in(row[self.VGS_RATING]) and \
+      row[self.RDS_ON].fuzzy_in(self.get(self.rds_on)) and \
+      row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
+      self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-
-    self.assign(self.actual_drain_voltage_rating, part[self.VDS_RATING])
-    self.assign(self.actual_drain_current_rating, part[self.IDS_RATING])
-    self.assign(self.actual_gate_voltage_rating, part[self.VGS_RATING])
-    self.assign(self.actual_gate_drive, part[self.VGS_DRIVE])
-    self.assign(self.actual_rds_on, part[self.RDS_ON])
-    self.assign(self.actual_power_rating, part[self.POWER_RATING])
-    self.assign(self.actual_gate_charge, part[self.GATE_CHARGE])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'Q', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_drain_voltage_rating, row[self.VDS_RATING])
+    self.assign(self.actual_drain_current_rating, row[self.IDS_RATING])
+    self.assign(self.actual_gate_voltage_rating, row[self.VGS_RATING])
+    self.assign(self.actual_gate_drive, row[self.VGS_DRIVE])
+    self.assign(self.actual_rds_on, row[self.RDS_ON])
+    self.assign(self.actual_power_rating, row[self.POWER_RATING])
+    self.assign(self.actual_gate_charge, row[self.GATE_CHARGE])
 
 
 @abstract_block
@@ -203,7 +187,7 @@ class SwitchFet(Fet):
 
 
 @non_library
-class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFootprint, GeneratorBlock):
+class TableSwitchFet(SwitchFet, FetStandardFootprint, BaseTableFet, PartsTableFootprintSelector, GeneratorBlock):
   SWITCHING_POWER = PartsTableColumn(Range)
   STATIC_POWER = PartsTableColumn(Range)
   TOTAL_POWER = PartsTableColumn(Range)
@@ -211,36 +195,33 @@ class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFoot
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.frequency, self.drive_current,
-                   self.drain_voltage, self.drain_current,
-                   self.gate_voltage, self.rds_on, self.gate_charge, self.power, self.channel,
-                   self.part, self.footprint_spec)  # type: ignore
+    self.generator_param(self.frequency, self.drain_voltage, self.drain_current, self.gate_voltage, self.rds_on,
+                         self.gate_charge, self.power, self.channel, self.drive_current)
 
     self.actual_static_power = self.Parameter(RangeExpr())
     self.actual_switching_power = self.Parameter(RangeExpr())
     self.actual_total_power = self.Parameter(RangeExpr())
 
-  def select_part(self, frequency: Range, drive_current: Range,
-                  drain_voltage: Range, drain_current: Range,
-                  gate_voltage: Range, rds_on: Range, gate_charge: Range, power: Range, channel: str,
-                  part_spec: str, footprint_spec: str) -> None:
-    # Pre-filter out by the static parameters
-    prefiltered_parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        row[self.CHANNEL] == channel and
-        drain_voltage.fuzzy_in(row[self.VDS_RATING]) and
-        drain_current.fuzzy_in(row[self.IDS_RATING]) and
-        gate_voltage.fuzzy_in(row[self.VGS_DRIVE]) and
-        row[self.RDS_ON].fuzzy_in(rds_on) and
-        row[self.GATE_CHARGE].fuzzy_in(gate_charge) and
-        power.fuzzy_in(row[self.POWER_RATING])
-    ))
+  def _row_filter(self, row: PartsTableRow) -> bool:  # here this is just a pre-filter step
+    return super()._row_filter(row) and \
+      row[self.CHANNEL] == self.get(self.channel) and \
+      self.get(self.drain_voltage).fuzzy_in(row[self.VDS_RATING]) and \
+      self.get(self.drain_current).fuzzy_in(row[self.IDS_RATING]) and \
+      self.get(self.gate_voltage).fuzzy_in(row[self.VGS_RATING]) and \
+      row[self.RDS_ON].fuzzy_in(self.get(self.rds_on)) and \
+      row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
+      self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
-    # Then run the application-specific calculations and filter again by those
+  def _table_postprocess(self, table: PartsTable) -> PartsTable:
+    drive_current = self.get(self.drive_current)
     gate_drive_rise, gate_drive_fall = drive_current.upper, -drive_current.lower
     assert gate_drive_rise > 0 and gate_drive_fall > 0, \
       f"got nonpositive gate currents rise={gate_drive_rise} A and fall={gate_drive_fall} A"
+
+    drain_current = self.get(self.drain_current)
+    drain_voltage = self.get(self.drain_voltage)
+    frequency = self.get(self.frequency)
+
     def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       new_cols: Dict[PartsTableColumn, Any] = {}
       new_cols[self.STATIC_POWER] = drain_current * drain_current * row[self.RDS_ON]
@@ -256,31 +237,18 @@ class TableSwitchFet(SwitchFet, FetStandardPinning, BaseTableFet, PartsTableFoot
       else:
         return None
 
-    parts = prefiltered_parts.map_new_columns(process_row)
-    part = parts.first(f"no FETs in Vds={drain_voltage} V, Ids={drain_current} A, Vgs={gate_voltage} V")
+    return super()._table_postprocess(table).map_new_columns(process_row)
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_drain_voltage_rating, row[self.VDS_RATING])
+    self.assign(self.actual_drain_current_rating, row[self.IDS_RATING])
+    self.assign(self.actual_gate_voltage_rating, row[self.VGS_RATING])
+    self.assign(self.actual_gate_drive, row[self.VGS_DRIVE])
+    self.assign(self.actual_rds_on, row[self.RDS_ON])
+    self.assign(self.actual_power_rating, row[self.POWER_RATING])
+    self.assign(self.actual_gate_charge, row[self.GATE_CHARGE])
 
-    self.assign(self.actual_drain_voltage_rating, part[self.VDS_RATING])
-    self.assign(self.actual_drain_current_rating, part[self.IDS_RATING])
-    self.assign(self.actual_gate_voltage_rating, part[self.VGS_RATING])
-    self.assign(self.actual_gate_drive, part[self.VGS_DRIVE])
-    self.assign(self.actual_rds_on, part[self.RDS_ON])
-    self.assign(self.actual_power_rating, part[self.POWER_RATING])
-    self.assign(self.actual_gate_charge, part[self.GATE_CHARGE])
-
-    self.assign(self.actual_static_power, part[self.STATIC_POWER])
-    self.assign(self.actual_switching_power, part[self.SWITCHING_POWER])
-    self.assign(self.actual_total_power, part[self.TOTAL_POWER])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'Q', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+    self.assign(self.actual_static_power, row[self.STATIC_POWER])
+    self.assign(self.actual_switching_power, row[self.SWITCHING_POWER])
+    self.assign(self.actual_total_power, row[self.TOTAL_POWER])

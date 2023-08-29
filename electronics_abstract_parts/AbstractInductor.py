@@ -1,16 +1,22 @@
+from typing import Dict
+
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprint
+from .PartsTablePart import PartsTableFootprintSelector
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
-class Inductor(PassiveComponent):
+class Inductor(PassiveComponent, KiCadImportableBlock):
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:L', 'Device:L_Small')
+    return {'1': self.a, '2': self.b}
+
   @init_in_parent
   def __init__(self, inductance: RangeLike,
-               current: RangeLike = Default(RangeExpr.ZERO),
-               frequency: RangeLike = Default(RangeExpr.ZERO)) -> None:
+               current: RangeLike = RangeExpr.ZERO,
+               frequency: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())
@@ -40,7 +46,9 @@ class Inductor(PassiveComponent):
 
 
 @non_library
-class InductorStandardPinning(Inductor, StandardPinningFootprint[Inductor]):
+class InductorStandardFootprint(Inductor, StandardFootprint[Inductor]):
+  REFDES_PREFIX = 'L'
+
   FOOTPRINT_PINNING_MAP = {
     (
       'Inductor_SMD:L_0201_0603Metric',
@@ -57,6 +65,27 @@ class InductorStandardPinning(Inductor, StandardPinningFootprint[Inductor]):
       'Inductor_SMD:L_Bourns_SRR1210A',
       'Inductor_SMD:L_Bourns_SRR1260',
 
+      'Inductor_SMD:L_Sunlord_SWPA3010S',
+      'Inductor_SMD:L_Sunlord_SWPA3012S',
+      'Inductor_SMD:L_Sunlord_SWPA3015S',
+      'Inductor_SMD:L_Sunlord_SWPA4010S',
+      'Inductor_SMD:L_Sunlord_SWPA4012S',
+      'Inductor_SMD:L_Sunlord_SWPA4018S',
+      'Inductor_SMD:L_Sunlord_SWPA4020S',
+      'Inductor_SMD:L_Sunlord_SWPA4026S',
+      'Inductor_SMD:L_Sunlord_SWPA4030S',
+      'Inductor_SMD:L_Sunlord_SWPA5012S',
+      'Inductor_SMD:L_Sunlord_SWPA5020S',
+      'Inductor_SMD:L_Sunlord_SWPA5040S',
+      'Inductor_SMD:L_Sunlord_SWPA6020S',
+      'Inductor_SMD:L_Sunlord_SWPA6028S',
+      'Inductor_SMD:L_Sunlord_SWPA6040S',
+      'Inductor_SMD:L_Sunlord_SWPA6045S',
+      'Inductor_SMD:L_Sunlord_SWPA8040S',
+      'Inductor_SMD:L_Sunlord_SWRB1204S',
+      'Inductor_SMD:L_Sunlord_SWRB1205S',
+      'Inductor_SMD:L_Sunlord_SWRB1207S',
+
       'Inductor_SMD:L_Taiyo-Yuden_NR-20xx',
       'Inductor_SMD:L_Taiyo-Yuden_NR-24xx',
       'Inductor_SMD:L_Taiyo-Yuden_NR-30xx',
@@ -64,20 +93,23 @@ class InductorStandardPinning(Inductor, StandardPinningFootprint[Inductor]):
       'Inductor_SMD:L_Taiyo-Yuden_NR-50xx',
       'Inductor_SMD:L_Taiyo-Yuden_NR-60xx',
       'Inductor_SMD:L_Taiyo-Yuden_NR-80xx',
+
+      'Inductor_SMD:L_TDK_SLF6025',
+      'Inductor_SMD:L_TDK_SLF6028',
+      'Inductor_SMD:L_TDK_SLF6045',
+      'Inductor_SMD:L_TDK_SLF7032',
+      'Inductor_SMD:L_TDK_SLF7045',
+      'Inductor_SMD:L_TDK_SLF7055',
+      'Inductor_SMD:L_TDK_SLF10145',
+      'Inductor_SMD:L_TDK_SLF10165',
+      'Inductor_SMD:L_TDK_SLF12555',
+      'Inductor_SMD:L_TDK_SLF12565',
+      'Inductor_SMD:L_TDK_SLF12575',
     ): lambda block: {
       '1': block.a,
       '2': block.b,
     },
   }
-
-
-from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate leaf-class mixin
-@non_library
-class TableInductor(SmdStandardPackage, InductorStandardPinning, PartsTableFootprint, GeneratorBlock):
-  INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance
-  FREQUENCY_RATING = PartsTableColumn(Range)  # tolerable frequencies
-  CURRENT_RATING = PartsTableColumn(Range)  # tolerable current
-  DC_RESISTANCE = PartsTableColumn(Range)  # actual DCR
 
   SMD_FOOTPRINT_MAP = {
     '01005': None,
@@ -93,40 +125,29 @@ class TableInductor(SmdStandardPackage, InductorStandardPinning, PartsTableFootp
     '2512': 'Inductor_SMD:L_2512_6332Metric',
   }
 
+
+@non_library
+class TableInductor(InductorStandardFootprint, PartsTableFootprintSelector):
+  INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance
+  FREQUENCY_RATING = PartsTableColumn(Range)  # tolerable frequencies
+  CURRENT_RATING = PartsTableColumn(Range)  # tolerable current
+  DC_RESISTANCE = PartsTableColumn(Range)  # actual DCR
+
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.inductance, self.current, self.frequency,
-                   self.part, self.footprint_spec, self.smd_min_package)
+    self.generator_param(self.inductance, self.current, self.frequency)
 
-  def select_part(self, inductance: Range, current: Range, frequency: Range,
-                  part_spec: str, footprint_spec: str, smd_min_package: str) -> None:
-    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(smd_min_package, self.SMD_FOOTPRINT_MAP)
-    parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        (row[self.KICAD_FOOTPRINT] not in minimum_invalid_footprints) and
-        row[self.INDUCTANCE].fuzzy_in(inductance) and
-        current.fuzzy_in(row[self.CURRENT_RATING]) and
-        row[self.DC_RESISTANCE].fuzzy_in(Range.zero_to_upper(1.0)) and  # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
-        frequency.fuzzy_in(row[self.FREQUENCY_RATING])
-    )).sort_by(self._row_sort_by)
-    part = parts.first(f"no inductors in {inductance} H, {current} A, {frequency} Hz")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
+    return super()._row_filter(row) and \
+      row[self.INDUCTANCE].fuzzy_in(self.get(self.inductance)) and \
+      self.get(self.current).fuzzy_in(row[self.CURRENT_RATING]) and \
+      row[self.DC_RESISTANCE].fuzzy_in(Range.zero_to_upper(1.0)) and \
+      self.get(self.frequency).fuzzy_in(row[self.FREQUENCY_RATING])
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-
-    self.assign(self.actual_inductance, part[self.INDUCTANCE])
-    self.assign(self.actual_current_rating, part[self.CURRENT_RATING])
-    self.assign(self.actual_frequency_rating, part[self.FREQUENCY_RATING])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'L', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_inductance, row[self.INDUCTANCE])
+    self.assign(self.actual_current_rating, row[self.CURRENT_RATING])
+    self.assign(self.actual_frequency_rating, row[self.FREQUENCY_RATING])

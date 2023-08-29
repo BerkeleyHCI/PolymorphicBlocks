@@ -238,7 +238,7 @@ class LightsDriver(Block):
         self.connect(driver.output, self.conn.out[i])
 
 
-class TestHighSwitch(BoardTop):
+class HighSwitch(BoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -265,7 +265,8 @@ class TestHighSwitch(BoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      (self.can, ), self.can_chain = self.chain(self.mcu.can.request('can'), imp.Block(CalSolCanBlock()))
+      (self.can, ), self.can_chain = self.chain(self.mcu.with_mixin(IoControllerCan()).can.request('can'),
+                                                imp.Block(CalSolCanBlock()))
 
       # TODO need proper support for exported unconnected ports
       self.can_gnd_load = self.Block(DummyVoltageSink())
@@ -338,7 +339,7 @@ class TestHighSwitch(BoardTop):
         # the hold current wasn't modeled at the time of manufacture and turns out to be out of limits
         (['can', 'can_fuse', 'fuse', 'actual_hold_current'], Range(0.1, 0.1)),
         # JLC does not have frequency specs, must be checked TODO
-        (['pwr', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['pwr', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         # JLC does not have gate charge spec, so ignore the power calc TODO
         (['light[0]', 'drv[0]', 'drv', 'frequency'], Range(0, 0)),
         (['light[0]', 'drv[1]', 'drv', 'frequency'], Range(0, 0)),
@@ -375,4 +376,4 @@ class TestHighSwitch(BoardTop):
 
 class HighSwitchTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(TestHighSwitch)
+    compile_board_inplace(HighSwitch)

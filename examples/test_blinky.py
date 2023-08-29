@@ -316,11 +316,13 @@ class LedArray(GeneratorBlock):
     super().__init__()
     self.ios = self.Port(Vector(DigitalSink.empty()), [Input])
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.generator(self.generate, count)
+    self.count = self.ArgParameter(count)
+    self.generator_param(self.count)
 
-  def generate(self, count: int) -> None:
+  def generate(self) -> None:
+    super().generate()
     self.led = ElementDict[IndicatorLed]()
-    for i in range(count):
+    for i in range(self.get(self.count)):
       io = self.ios.append_elt(DigitalSink.empty())
       self.led[i] = self.Block(IndicatorLed())
       self.connect(io, self.led[i].signal)
@@ -408,39 +410,49 @@ class TestBlinkyPacked(SimpleBoardTop):
 
 class BlinkyTestCase(unittest.TestCase):
   def test_design_empty(self) -> None:
-    compile_board_inplace(TestBlinkyEmpty)
+    compile_board_inplace(TestBlinkyEmpty, False)
 
   def test_design_incomplete(self) -> None:
     with self.assertRaises(CompilerCheckError):
-      compile_board_inplace(TestBlinkyIncomplete)
+      compile_board_inplace(TestBlinkyIncomplete, False)
 
   def test_design_regulated(self) -> None:
     with self.assertRaises(CompilerCheckError):
-      compile_board_inplace(TestBlinkyRegulated)
+      compile_board_inplace(TestBlinkyRegulated, False)
 
   def test_design_complete(self) -> None:
-    compile_board_inplace(TestBlinkyComplete)
+    compile_board_inplace(TestBlinkyComplete, False)
 
   def test_design_expnaded(self) -> None:
-    compile_board_inplace(TestBlinkyExpanded)
+    compile_board_inplace(TestBlinkyExpanded, False)
 
   def test_design_implicit(self) -> None:
-    compile_board_inplace(TestBlinkyImplicit)
+    compile_board_inplace(TestBlinkyImplicit, False)
 
   def test_design_chain(self) -> None:
-    compile_board_inplace(TestBlinkyChain)
+    compile_board_inplace(TestBlinkyChain, False)
 
   def test_design_micro(self) -> None:
-    compile_board_inplace(TestBlinkyMicro)
+    compile_board_inplace(TestBlinkyMicro, False)
 
   def test_design_library(self) -> None:
-    compile_board_inplace(TestBlinkyWithLibrary)
+    compile_board_inplace(TestBlinkyWithLibrary, False)
 
   def test_design_export(self) -> None:
-    compile_board_inplace(TestBlinkyWithLibraryExport)
+    compile_board_inplace(TestBlinkyWithLibraryExport, False)
 
   def test_design_array(self) -> None:
-    compile_board_inplace(TestBlinkyArray)
+    compile_board_inplace(TestBlinkyArray, False)
 
   def test_design_packed(self) -> None:
-    compile_board_inplace(TestBlinkyPacked)
+    compile_board_inplace(TestBlinkyPacked, False)
+
+
+if __name__ == "__main__":
+  # this unit test can also be run as __main__ to test a non-unit-test environment
+  compile_board_inplace(TestBlinkyEmpty, False)
+  compile_board_inplace(TestBlinkyComplete, False)
+  compile_board_inplace(TestBlinkyWithLibrary, False)
+  compile_board_inplace(TestBlinkyWithLibraryExport, False)
+  compile_board_inplace(TestBlinkyArray, False)
+  compile_board_inplace(TestBlinkyPacked, False)

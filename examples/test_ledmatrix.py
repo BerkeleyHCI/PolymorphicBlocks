@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class LedMatrixTest(JlcBoardTop):
+class LedMatrix(JlcBoardTop):
   """A USB-connected WiFi-enabled LED matrix that demonstrates a charlieplexing LED matrix generator.
   """
   def contents(self) -> None:
@@ -41,7 +41,6 @@ class LedMatrixTest(JlcBoardTop):
       # maximum current draw that is still within the column sink capability of the ESP32
       self.matrix = imp.Block(CharlieplexedLedMatrix(6, 5, current_draw=(3.5, 5)*mAmp, color=Led.Yellow))
       self.connect(self.mcu.gpio.request_vector('led'), self.matrix.ios)
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -76,12 +75,9 @@ class LedMatrixTest(JlcBoardTop):
           'sw1=18',
         ]),
       ],
-      class_refinements=[
-        (PassiveConnector, PinHeader254),
-      ],
     )
 
 
 class LedMatrixTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(LedMatrixTest)
+    compile_board_inplace(LedMatrix)

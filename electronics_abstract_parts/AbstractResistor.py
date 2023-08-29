@@ -3,9 +3,9 @@ from typing import Optional, cast, Mapping
 
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprint
+from .PartsTablePart import PartsTableFootprintSelector
 from .Categories import *
-from .StandardPinningFootprint import StandardPinningFootprint
+from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
@@ -34,8 +34,8 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
     return Resistor(resistance=cls.parse_resistor(properties['Value']))
 
   @init_in_parent
-  def __init__(self, resistance: RangeLike, power: RangeLike = Default(RangeExpr.ZERO),
-               voltage: RangeLike = Default(RangeExpr.ZERO)) -> None:
+  def __init__(self, resistance: RangeLike, power: RangeLike = RangeExpr.ZERO,
+               voltage: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())
@@ -62,7 +62,9 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
 
 
 @non_library
-class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
+class ResistorStandardFootprint(Resistor, StandardFootprint[Resistor]):
+  REFDES_PREFIX = 'R'
+
   FOOTPRINT_PINNING_MAP = {
     (
       'Resistor_SMD:R_0201_0603Metric',
@@ -91,14 +93,6 @@ class ResistorStandardPinning(Resistor, StandardPinningFootprint[Resistor]):
     },
   }
 
-
-from .SmdStandardPackage import SmdStandardPackage  # TODO should be a separate leaf-class mixin
-@non_library
-class TableResistor(SmdStandardPackage, ResistorStandardPinning, PartsTableFootprint, GeneratorBlock):
-  RESISTANCE = PartsTableColumn(Range)
-  POWER_RATING = PartsTableColumn(Range)
-  VOLTAGE_RATING = PartsTableColumn(Range)
-
   SMD_FOOTPRINT_MAP = {
     '01005': None,
     '0201': 'Resistor_SMD:R_0201_0603Metric',
@@ -113,41 +107,29 @@ class TableResistor(SmdStandardPackage, ResistorStandardPinning, PartsTableFootp
     '2512': 'Resistor_SMD:R_2512_6332Metric',
   }
 
+
+@non_library
+class TableResistor(ResistorStandardFootprint, PartsTableFootprintSelector):
+  RESISTANCE = PartsTableColumn(Range)
+  POWER_RATING = PartsTableColumn(Range)
+  VOLTAGE_RATING = PartsTableColumn(Range)
+
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator(self.select_part, self.resistance, self.power, self.voltage,
-                   self.part, self.footprint_spec, self.smd_min_package)
+    self.generator_param(self.resistance, self.power, self.voltage)
 
-  def select_part(self, resistance: Range, power_dissipation: Range, voltage: Range,
-                  part_spec: str, footprint_spec: str, smd_min_package: str) -> None:
-    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(smd_min_package, self.SMD_FOOTPRINT_MAP)
-    parts = self._get_table().filter(lambda row: (
-        (not part_spec or part_spec == row[self.PART_NUMBER_COL]) and
-        (not footprint_spec or footprint_spec == row[self.KICAD_FOOTPRINT]) and
-        (row[self.KICAD_FOOTPRINT] not in minimum_invalid_footprints) and
-        row[self.RESISTANCE].fuzzy_in(resistance) and
-        power_dissipation.fuzzy_in(row[self.POWER_RATING]) and
-        voltage.fuzzy_in(row[self.VOLTAGE_RATING])
-    )).sort_by(self._row_sort_by)
-    part = parts.first(f"no resistors in {resistance} Ohm, {power_dissipation} W, {voltage} V")
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      row[self.RESISTANCE].fuzzy_in(self.get(self.resistance)) and \
+      self.get(self.power).fuzzy_in(row[self.POWER_RATING]) and \
+      self.get(self.voltage).fuzzy_in(row[self.VOLTAGE_RATING])
 
-    self.assign(self.actual_part, part[self.PART_NUMBER_COL])
-    self.assign(self.matching_parts, parts.map(lambda row: row[self.PART_NUMBER_COL]))
-    self.assign(self.actual_resistance, part[self.RESISTANCE])
-    self.assign(self.actual_power_rating, part[self.POWER_RATING])
-    self.assign(self.actual_voltage_rating, part[self.VOLTAGE_RATING])
-
-    self._make_footprint(part)
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    self.footprint(
-      'R', part[self.KICAD_FOOTPRINT],
-      self._make_pinning(part[self.KICAD_FOOTPRINT]),
-      mfr=part[self.MANUFACTURER_COL], part=part[self.PART_NUMBER_COL],
-      value=part[self.DESCRIPTION_COL],
-      datasheet=part[self.DATASHEET_COL]
-    )
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_resistance, row[self.RESISTANCE])
+    self.assign(self.actual_power_rating, row[self.POWER_RATING])
+    self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
 
 
 class PullupResistor(DiscreteApplication):
@@ -196,6 +178,44 @@ class PulldownResistor(DiscreteApplication):
     return self
 
 
+class PullupResistorArray(TypedTestPoint, GeneratorBlock):
+  """Array of PullupResistors, sized from the port array's connections."""
+  @init_in_parent
+  def __init__(self, resistance: RangeLike):
+    super().__init__()
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.io = self.Port(Vector(DigitalSingleSource().empty()), [InOut])
+    self.generator_param(self.io.requested())
+    self.resistance = self.ArgParameter(resistance)
+
+  def generate(self):
+    super().generate()
+    self.res = ElementDict[PullupResistor]()
+    for requested in self.get(self.io.requested()):
+      res = self.res[requested] = self.Block(PullupResistor(self.resistance))
+      self.connect(self.pwr, res.pwr)
+      self.connect(self.io.append_elt(DigitalSingleSource.empty(), requested), res.io)
+
+
+class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
+  """Array of PulldownResistors, sized from the port array's connections."""
+  @init_in_parent
+  def __init__(self, resistance: RangeLike):
+    super().__init__()
+    self.gnd = self.Port(VoltageSink.empty(), [Common])
+    self.io = self.Port(Vector(DigitalSingleSource().empty()), [InOut])
+    self.generator_param(self.io.requested())
+    self.resistance = self.ArgParameter(resistance)
+
+  def generate(self):
+    super().generate()
+    self.res = ElementDict[PulldownResistor]()
+    for requested in self.get(self.io.requested()):
+      res = self.res[requested] = self.Block(PulldownResistor(self.resistance))
+      self.connect(self.gnd, res.gnd)
+      self.connect(self.io.append_elt(DigitalSingleSource.empty(), requested), res.io)
+
+
 class SeriesPowerResistor(DiscreteApplication):
   """Series resistor for power applications"""
   @init_in_parent
@@ -224,6 +244,7 @@ class SeriesPowerResistor(DiscreteApplication):
 
     self.actual_power = self.Parameter(RangeExpr(current_draw * current_draw * self.res.actual_resistance))
     self.require(self.actual_power.within(self.res.actual_power_rating))
+    self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
 
   def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
       'SeriesPowerResistor':
@@ -252,12 +273,15 @@ class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
     # but this must be an explicit opt-in
     sense_in_reqd_param = self.ArgParameter(sense_in_reqd)
     self.require(sense_in_reqd_param.implies(self.sense_in.is_connected()))
-    self.generator(self.generate, self.sense_in.is_connected())
 
-  def generate(self, sense_in_connected: bool):
-    super().contents()
+    self.generator_param(self.sense_in.is_connected())
 
-    if sense_in_connected:
+    self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
+
+  def generate(self):
+    super().generate()
+
+    if self.get(self.sense_in.is_connected()):
       self.connect(self.pwr_in.as_analog_source(), self.sense_in)
     self.connect(self.res.pwr_out.as_analog_source(), self.sense_out)
 

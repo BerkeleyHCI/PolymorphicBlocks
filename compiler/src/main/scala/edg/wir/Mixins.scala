@@ -1,12 +1,19 @@
 package edg.wir
 
 import edg.wir.ProtoUtil._
+import edgir.common.common
+import edgir.ref.ref
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.init.init
 
 import scala.collection.{SeqMap, mutable}
 
+trait HasClass {
+  def getSelfClass: ref.LibraryPath
+  def getDirectSuperclasses: Seq[ref.LibraryPath]
+  def getAllClasses: Seq[ref.LibraryPath] // including self and indirect superclasses
+}
 
 trait HasMutablePorts {
   protected val ports: mutable.SeqMap[String, PortLike]
@@ -23,7 +30,7 @@ trait HasMutablePorts {
   }
 }
 
-trait HasMutableBlocks {
+trait HasMutableBlocks extends HasClass {
   protected val blocks: mutable.SeqMap[String, BlockLike]
 
   def getBlocks: SeqMap[String, BlockLike] = blocks.to(SeqMap)
@@ -34,10 +41,12 @@ trait HasMutableBlocks {
   }
 
   protected def parseBlocks(pb: Seq[elem.NamedBlockLike]): mutable.SeqMap[String, BlockLike] = {
-    pb.toSeqMap.view.mapValues { _.`type` match {
-      case elem.BlockLike.Type.LibElem(like) => BlockLibrary(like)
-      case like => throw new NotImplementedError(s"Non-library sub-block $like")
-    }}.to(mutable.SeqMap)
+    pb.toSeqMap.view.mapValues {
+      _.`type` match {
+        case elem.BlockLike.Type.LibElem(like) => BlockLibrary(like.getBase, like.mixins)
+        case like => throw new NotImplementedError(s"Non-library sub-block $like")
+      }
+    }.to(mutable.SeqMap)
   }
 }
 
@@ -52,11 +61,13 @@ trait HasMutableLinks {
   }
 
   protected def parseLinks(pb: Seq[elem.NamedLinkLike]): mutable.SeqMap[String, LinkLike] = {
-    pb.toSeqMap.view.mapValues { _.`type` match {
-      case elem.LinkLike.Type.LibElem(like) => LinkLibrary(like)
-      case elem.LinkLike.Type.Array(like) => new LinkArray(like)
-      case like => throw new NotImplementedError(s"Non-library sub-link $like")
-    }}.to(mutable.SeqMap)
+    pb.toSeqMap.view.mapValues {
+      _.`type` match {
+        case elem.LinkLike.Type.LibElem(like) => LinkLibrary(like)
+        case elem.LinkLike.Type.Array(like) => new LinkArray(like)
+        case like => throw new NotImplementedError(s"Non-library sub-link $like")
+      }
+    }.to(mutable.SeqMap)
   }
 }
 
@@ -67,25 +78,25 @@ trait HasMutableConstraints {
 
   def getConstraints: SeqMap[String, expr.ValueExpr] = constraints.to(SeqMap)
 
+  // Replaces the constraint by name, in-place, with the result of the function.
   def mapConstraint(name: String)(fn: expr.ValueExpr => expr.ValueExpr): Unit = {
     constraints.update(name, fn(constraints(name)))
-  }
-
-  // Replaces the constraint by name with the results of the map. Can be replaced with none, one, or several
-  // new constraints. Returns a SeqMap of the new constraints.
-  def mapMultiConstraint(name: String)(fn: expr.ValueExpr => Seq[(String, expr.ValueExpr)]):
-      SeqMap[String, expr.ValueExpr] = {
-    val newValues = fn(constraints(name))
-    SeqMapUtils.replaceInPlace(constraints, name, newValues)
-    newValues.to(SeqMap)
   }
 
   protected def parseConstraints(pb: Seq[elem.NamedValueExpr]): mutable.SeqMap[String, expr.ValueExpr] = {
     pb.toSeqMap.to(mutable.SeqMap)
   }
-
 }
 
-trait HasParams {
+trait HasParams extends HasClass {
   def getParams: SeqMap[String, init.ValInit]
+}
+
+trait HasMutableMetadata {
+  protected var metadata: Option[common.Metadata]
+
+  // replaces the metadata in-place, it is up to the upper layer to do this composably (eg, map-aware)
+  def mapMetadata(fn: Option[common.Metadata] => Option[edgir.common.common.Metadata]): Unit = {
+    metadata = fn(metadata)
+  }
 }

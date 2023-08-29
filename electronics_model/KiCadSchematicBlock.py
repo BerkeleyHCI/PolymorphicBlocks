@@ -35,7 +35,7 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
     def block_from_symbol(cls, symbol: KiCadSymbol, lib: KiCadLibSymbol) -> \
             Tuple['KiCadBlackbox', Callable[['KiCadBlackbox'], Mapping[str, BasePort]]]:
         pin_numbers = [pin.number for pin in lib.pins]
-        refdes_prefix = symbol.refdes.rstrip('0123456789?')
+        refdes_prefix = symbol.properties.get('Refdes Prefix', symbol.refdes.rstrip('0123456789?'))
         block_model = KiCadBlackbox(
             pin_numbers, refdes_prefix, symbol.properties['Footprint'],
             kicad_part=symbol.lib, kicad_value=symbol.properties.get('Value', ''),
@@ -55,11 +55,13 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
         self.kicad_value = self.ArgParameter(kicad_value)
         self.kicad_datasheet = self.ArgParameter(kicad_datasheet)
 
-        self.generator(self.generate, kicad_pins)
+        self.kicad_pins = self.ArgParameter(kicad_pins)
+        self.generator_param(self.kicad_pins)
 
-    def generate(self, kicad_pins: List[str]):
+    def generate(self):
+        super().generate()
         mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)
-                   for pin_name in kicad_pins}
+                   for pin_name in self.get(self.kicad_pins)}
         self.ports.defined()
         self.footprint(self.kicad_refdes_prefix, self.kicad_footprint, mapping,
                        part=self.kicad_part, value=self.kicad_value, datasheet=self.kicad_datasheet)

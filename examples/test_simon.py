@@ -31,21 +31,24 @@ class DomeButtonConnector(Connector, FootprintBlock):
     )
 
 
-class TestSimon(BoardTop):
+class Simon(BoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.mcu = self.Block(Nucleo_F303k8())
-    self.v5v = self.connect(self.mcu.pwr_5v)
-    self.v3v3 = self.connect(self.mcu.pwr_3v3)
-    self.gnd = self.connect(self.mcu.gnd)
+    self.mcu = self.Block(IoController())
+    mcu_pwr = self.mcu.with_mixin(IoControllerPowerOut())
+    mcu_usb = self.mcu.with_mixin(IoControllerUsbOut())
+
+    self.v5v = self.connect(mcu_usb.vusb_out)
+    self.v3v3 = self.connect(mcu_pwr.pwr_out)
+    self.gnd = self.connect(mcu_pwr.gnd_out)
 
     with self.implicit_connect(
         ImplicitConnect(self.v5v, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.spk_drv, self.spk), _ = self.chain(
-        self.mcu.dac.request('spk'),
+        self.mcu.with_mixin(IoControllerDac()).dac.request('spk'),
         imp.Block(Lm4871()),
         self.Block(Speaker()))
 
@@ -111,7 +114,7 @@ class TestSimon(BoardTop):
           'btn_sw3=12',
         ]),
         # JLC does not have frequency specs, must be checked TODO
-        (['pwr', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['pwr', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
 
         # keep netlist footprints as libraries change
         (['btn_drv[0]', 'drv', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
@@ -120,6 +123,7 @@ class TestSimon(BoardTop):
         (['btn_drv[3]', 'drv', 'footprint_spec'], ParamValue(['btn_drv[0]', 'drv', 'footprint_spec'])),
       ],
       instance_refinements=[
+        (['mcu'], Nucleo_F303k8),
         (['spk', 'conn'], JstPhKVertical),
       ],
       class_refinements=[
@@ -130,4 +134,4 @@ class TestSimon(BoardTop):
 
 class SimonTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(TestSimon)
+    compile_board_inplace(Simon)

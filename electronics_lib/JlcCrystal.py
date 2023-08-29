@@ -1,10 +1,10 @@
 import re
 from typing import Optional, Dict, Any, List
 from electronics_abstract_parts import *
-from .JlcPart import JlcTablePart, DescriptionParser
+from .JlcPart import JlcTableSelector, DescriptionParser
 
 
-class JlcCrystal(TableCrystal, JlcTablePart, FootprintBlock):
+class JlcCrystal(TableCrystal, JlcTableSelector):
   SERIES_PACKAGE_FOOTPRINT_MAP = {
     ('X3225', 'SMD-3225_4P'): 'Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm',
   }
@@ -43,8 +43,3 @@ class JlcCrystal(TableCrystal, JlcTablePart, FootprintBlock):
     return cls._jlc_table().map_new_columns(parse_row).sort_by(
       lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
     )
-
-  def _make_footprint(self, part: PartsTableRow) -> None:
-    super()._make_footprint(part)
-    self.assign(self.lcsc_part, part[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, part[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)

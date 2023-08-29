@@ -12,8 +12,20 @@ class SpiMemory(Memory, Block):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.spi = self.Port(SpiSlave.empty())
+    self.spi = self.Port(SpiPeripheral.empty())
     self.cs = self.Port(DigitalSink.empty())
 
     self.size = self.ArgParameter(size)
     self.actual_size = self.Parameter(IntExpr())
+
+
+@abstract_block
+class SpiMemoryQspi(BlockInterfaceMixin[SpiMemory]):
+  """SPI memory that also supports QSPI mode (4-line SPI).
+  Vanilla SPI SDI maps to IO0, and SDO maps to IO1.
+  EXPERIMENTAL - interface subject to change.
+  May prevent the use of some chip functions that conflict with QSPI lines."""
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
+    self.io2 = self.Port(DigitalBidir.empty(), optional=True)
+    self.io3 = self.Port(DigitalBidir.empty(), optional=True)

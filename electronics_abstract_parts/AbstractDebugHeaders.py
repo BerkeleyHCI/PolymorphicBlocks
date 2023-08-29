@@ -13,13 +13,22 @@ class SwdCortexTargetConnector(ProgrammingConnector):
     self.swd = self.Port(SwdHostPort.empty(), [Output])
 
 
-@abstract_block
-class SwdCortexTargetWithSwoTdiConnector(SwdCortexTargetConnector):
-  """SWD programming header (power + SWD) with additional optional and generic-digital
-  SWO (optional SWD pin) and TDI (if a JTAG header is used) pins which can be used as GPIOs
-  for side-channel data like a supplementary UART console."""
-  def __init__(self) -> None:
-    super().__init__()
+class SwdCortexTargetConnectorReset(BlockInterfaceMixin[SwdCortexTargetConnector]):
+  """Mixin for SWD connectors with adding the optional reset pin"""
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
+    self.reset = self.Port(DigitalBidir.empty())  # can tri-state when not asserted
 
+
+class SwdCortexTargetConnectorSwo(BlockInterfaceMixin[SwdCortexTargetConnector]):
+  """Mixin for SWD connectors with adding the optional SWO pin"""
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
     self.swo = self.Port(DigitalBidir.empty(), optional=True)
+
+
+class SwdCortexTargetConnectorTdi(BlockInterfaceMixin[SwdCortexTargetConnector]):
+  """Mixin for SWD connectors with adding the NONSTANDARD TDI pin (where pins are shared with JTAG)"""
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
     self.tdi = self.Port(DigitalBidir.empty(), optional=True)

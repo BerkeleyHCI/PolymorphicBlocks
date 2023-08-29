@@ -9,7 +9,7 @@ class FpgaProgrammingHeader(Connector, Block):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), optional=True)
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.spi = self.Port(SpiSlave.empty())
+    self.spi = self.Port(SpiPeripheral.empty())
     self.cs = self.Port(DigitalSink.empty())
     self.reset = self.Port(DigitalSink.empty())
 
@@ -27,7 +27,7 @@ class FpgaProgrammingHeader(Connector, Block):
     self.connect(self.reset, self.conn.pins.request('10').adapt_to(DigitalSink()))
 
 
-class UsbFpgaProgrammerTest(JlcBoardTop):
+class UsbFpgaProgrammer(JlcBoardTop):
   """USB UART converter board"""
   def contents(self) -> None:
     super().contents()
@@ -47,14 +47,14 @@ class UsbFpgaProgrammerTest(JlcBoardTop):
       self.ft232 = imp.Block(Ft232hl())
       (self.usb_esd, ), self.usb_chain = self.chain(
         self.usb.usb, imp.Block(UsbEsdDiode()), self.ft232.usb)
-      (self.led0, ), _ = self.chain(self.ft232.acbus0, imp.Block(IndicatorLed(Led.White)))  # TXDEN
-      (self.led1, ), _ = self.chain(self.ft232.acbus3, imp.Block(IndicatorLed(Led.Green)))  # RXLED
-      (self.led2, ), _ = self.chain(self.ft232.acbus4, imp.Block(IndicatorLed(Led.Yellow)))  # TXLED
+      (self.led0, ), _ = self.chain(self.ft232.acbus.request('0'), imp.Block(IndicatorLed(Led.White)))  # TXDEN
+      (self.led1, ), _ = self.chain(self.ft232.acbus.request('3'), imp.Block(IndicatorLed(Led.Green)))  # RXLED
+      (self.led2, ), _ = self.chain(self.ft232.acbus.request('4'), imp.Block(IndicatorLed(Led.Yellow)))  # TXLED
 
       self.out = imp.Block(FpgaProgrammingHeader())
       self.connect(self.ft232.mpsse, self.out.spi)
-      self.connect(self.ft232.adbus4, self.out.cs)
-      self.connect(self.ft232.adbus7, self.out.reset)
+      self.connect(self.ft232.adbus.request('4'), self.out.cs)
+      self.connect(self.ft232.adbus.request('7'), self.out.reset)
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -79,4 +79,4 @@ class UsbFpgaProgrammerTest(JlcBoardTop):
 
 class UsbFpgaProgrammerTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(UsbFpgaProgrammerTest)
+    compile_board_inplace(UsbFpgaProgrammer)

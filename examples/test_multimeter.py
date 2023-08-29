@@ -27,11 +27,13 @@ class ResistorMux(Interface, KiCadImportableBlock, GeneratorBlock):
     self.input = self.Port(Passive.empty())  # resistor side
     self.com = self.Export(self.switch.com)  # switch side
 
-    self.generator(self.generate, resistances)
+    self.resistances = self.ArgParameter(resistances)
+    self.generator_param(self.resistances)
 
-  def generate(self, resistances: List[Range]):
+  def generate(self):
+    super().generate()
     self.res = ElementDict[Resistor]()
-    for i, resistance in enumerate(resistances):
+    for i, resistance in enumerate(self.get(self.resistances)):
       if resistance.upper == float('inf'):  # open circuit for this step
         self.dummy = self.Block(DummyPassive())
         self.connect(self.dummy.io, self.switch.inputs.request(str(i)))
@@ -224,7 +226,7 @@ class FetPowerGate(PowerSwitch, KiCadSchematicBlock, Block):
       })
 
 
-class MultimeterTest(JlcBoardTop):
+class Multimeter(JlcBoardTop):
   """A BLE multimeter with volts/ohms/diode mode - everything but the curent mode.
   Basically an ADC and programmable constant current driver with ranging circuits.
   Good up to the specified VOLTAGE_RATING, in any measurement mode.
@@ -285,7 +287,8 @@ class MultimeterTest(JlcBoardTop):
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(Mdbt50q_1mv2())
+      self.mcu = imp.Block(Mdbt50q_1mv2())  # needed to define required Vusb
+      # TODO ideally this would have a Ble mixin, but mixins can't be applied to the concrete microcontroller
 
       (self.vbatsense, ), _ = self.chain(self.gate.pwr_out,  # TODO update to use VoltageSenseDivider
                                          imp.Block(VoltageDivider(output_voltage=(0.6, 3)*Volt, impedance=(100, 1000)*Ohm)),
@@ -479,13 +482,14 @@ class MultimeterTest(JlcBoardTop):
         (['prot_analog', 'diode', 'footprint_spec'], 'Diode_SMD:D_SOD-123'),
 
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
       ],
       class_values=[
         (AnalogSwitchTree, ['switch_size'], 2),
       ],
       class_refinements=[
-        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050Nl),
+        (SwdCortexTargetConnector, SwdCortexTargetTc2050),
+        (TagConnect, TagConnectNonLegged),
         (Opamp, Tlv9061),  # higher precision opamps
         (BananaSafetyJack, Fcr7350),
         (AnalogSwitch, Nlas4157),
@@ -497,4 +501,4 @@ class MultimeterTest(JlcBoardTop):
 
 class MultimeterTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(MultimeterTest)
+    compile_board_inplace(Multimeter)

@@ -26,7 +26,7 @@ class Pcf2129_Device(InternalSubcircuit, FootprintBlock):
       output_thresholds=(0, self.pwr.link().voltage.upper()),
     )
 
-    self.spi = self.Port(SpiSlave(dio_model), [Output])
+    self.spi = self.Port(SpiPeripheral(dio_model), [Output])
     self.cs = self.Port(DigitalSink.from_bidir(dio_model))
 
     opendrain_model = DigitalSingleSource.low_from_supply(self.gnd)  # TODO -1 - 1 mAmp current limit?

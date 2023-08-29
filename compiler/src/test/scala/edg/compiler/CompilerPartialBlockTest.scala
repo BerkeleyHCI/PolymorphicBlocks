@@ -10,11 +10,11 @@ import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.SeqMap
 
-
 /** Tests partial compilation and fork-from-partial compilation for frozen blocks.
   */
 class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
-  val inputDesign = Design(Block.Block("topDesign",
+  val inputDesign = Design(Block.Block(
+    "topDesign",
     blocks = SeqMap(
       "source" -> Block.Library("sourceContainerBlock"),
       "sink" -> Block.Library("sinkContainerBlock"),
@@ -28,9 +28,11 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
     )
   ))
 
-  val referencePartialElaborated = Design(Block.Block("topDesign",
+  val referencePartialElaborated = Design(Block.Block(
+    "topDesign",
     blocks = SeqMap(
-      "source" -> Block.Block(selfClass = "sourceContainerBlock",
+      "source" -> Block.Block(
+        selfClass = "sourceContainerBlock",
         ports = SeqMap(
           "port" -> Port.Port(selfClass = "sourcePort"),
         ),
@@ -41,12 +43,14 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
         )
       ),
-      "sink" -> Block.Block(selfClass = "sinkContainerBlock",
+      "sink" -> Block.Block(
+        selfClass = "sinkContainerBlock",
         ports = SeqMap(
           "port" -> Port.Port(selfClass = "sinkPort"),
         ),
         blocks = SeqMap(
-          "inner" -> Block.Block(selfClass = "sinkBlock",
+          "inner" -> Block.Block(
+            selfClass = "sinkBlock",
             ports = SeqMap(
               "port" -> Port.Port(selfClass = "sinkPort"),
             )
@@ -58,7 +62,8 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
       ),
     ),
     links = SeqMap(
-      "link" -> Link.Link(selfClass = "link",
+      "link" -> Link.Link(
+        selfClass = "link",
         ports = SeqMap(
           "source" -> Port.Port(selfClass = "sourcePort"),
           "sink" -> Port.Port(selfClass = "sinkPort"),
@@ -71,14 +76,17 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
     )
   ))
 
-  val referenceFullElaborated = Design(Block.Block("topDesign",
+  val referenceFullElaborated = Design(Block.Block(
+    "topDesign",
     blocks = SeqMap(
-      "source" -> Block.Block(selfClass = "sourceContainerBlock",
+      "source" -> Block.Block(
+        selfClass = "sourceContainerBlock",
         ports = SeqMap(
           "port" -> Port.Port(selfClass = "sourcePort"),
         ),
         blocks = SeqMap(
-          "inner" -> Block.Block(selfClass = "sourceBlock",
+          "inner" -> Block.Block(
+            selfClass = "sourceBlock",
             ports = SeqMap(
               "port" -> Port.Port(selfClass = "sourcePort"),
             )
@@ -88,12 +96,14 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
           "export" -> Constraint.Exported(Ref("port"), Ref("inner", "port"))
         )
       ),
-      "sink" -> Block.Block(selfClass = "sinkContainerBlock",
+      "sink" -> Block.Block(
+        selfClass = "sinkContainerBlock",
         ports = SeqMap(
           "port" -> Port.Port(selfClass = "sinkPort"),
         ),
         blocks = SeqMap(
-          "inner" -> Block.Block(selfClass = "sinkBlock",
+          "inner" -> Block.Block(
+            selfClass = "sinkBlock",
             ports = SeqMap(
               "port" -> Port.Port(selfClass = "sinkPort"),
             )
@@ -105,7 +115,8 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
       ),
     ),
     links = SeqMap(
-      "link" -> Link.Link(selfClass = "link",
+      "link" -> Link.Link(
+        selfClass = "link",
         ports = SeqMap(
           "source" -> Port.Port(selfClass = "sourcePort"),
           "sink" -> Port.Port(selfClass = "sinkPort"),
@@ -119,28 +130,49 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
   ))
 
   "Compiler on path-based partial design specification" should "not compile those blocks" in {
-    val compiler = new Compiler(inputDesign, new EdgirLibrary(CompilerExpansionTest.library),
-      partial=PartialCompile(blocks=Seq(DesignPath() + "source" + "inner")))
+    val compiler = new Compiler(
+      inputDesign,
+      new EdgirLibrary(CompilerExpansionTest.library),
+      partial = PartialCompile(blocks = Seq(DesignPath() + "source" + "inner"))
+    )
     val compiled = compiler.compile()
     compiled should equal(referencePartialElaborated)
     compiler.getErrors() should contain(
-      CompilerError.Unelaborated(ElaborateRecord.ExpandBlock(
-        DesignPath() + "source" + "inner", ElemBuilder.LibraryPath("sourceBlock")), Set()))
+      CompilerError.Unelaborated(
+        ElaborateRecord.ExpandBlock(
+          DesignPath() + "source" + "inner",
+          ElemBuilder.LibraryPath("sourceBlock")
+        ),
+        Set()
+      )
+    )
   }
 
   "Compiler on class-based partial design specification" should "not compile those blocks" in {
-    val compiler = new Compiler(inputDesign, new EdgirLibrary(CompilerExpansionTest.library),
-      partial = PartialCompile(classes = Seq(ElemBuilder.LibraryPath("sourceBlock"))))
+    val compiler = new Compiler(
+      inputDesign,
+      new EdgirLibrary(CompilerExpansionTest.library),
+      partial = PartialCompile(classes = Seq(ElemBuilder.LibraryPath("sourceBlock")))
+    )
     val compiled = compiler.compile()
     compiled should equal(referencePartialElaborated)
     compiler.getErrors() should contain(
-      CompilerError.Unelaborated(ElaborateRecord.ExpandBlock(
-        DesignPath() + "source" + "inner", ElemBuilder.LibraryPath("sourceBlock")), Set()))
+      CompilerError.Unelaborated(
+        ElaborateRecord.ExpandBlock(
+          DesignPath() + "source" + "inner",
+          ElemBuilder.LibraryPath("sourceBlock")
+        ),
+        Set()
+      )
+    )
   }
 
   "Compiler on partial design specification" should "fork independently" in {
-    val compiler = new Compiler(inputDesign, new EdgirLibrary(CompilerExpansionTest.library),
-      partial = PartialCompile(blocks = Seq(DesignPath() + "source" + "inner")))
+    val compiler = new Compiler(
+      inputDesign,
+      new EdgirLibrary(CompilerExpansionTest.library),
+      partial = PartialCompile(blocks = Seq(DesignPath() + "source" + "inner"))
+    )
     val compiled = compiler.compile()
 
     val forkedCompiler = compiler.fork(Refinements(), PartialCompile())
@@ -152,8 +184,14 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
     // check original was not changed
     compiled should equal(referencePartialElaborated)
     compiler.getErrors() should contain(
-      CompilerError.Unelaborated(ElaborateRecord.ExpandBlock(
-        DesignPath() + "source" + "inner", ElemBuilder.LibraryPath("sourceBlock")), Set()))
+      CompilerError.Unelaborated(
+        ElaborateRecord.ExpandBlock(
+          DesignPath() + "source" + "inner",
+          ElemBuilder.LibraryPath("sourceBlock")
+        ),
+        Set()
+      )
+    )
 
     // check that we can fork multiple times
     val forkedCompiler2 = compiler.fork(Refinements(), PartialCompile())

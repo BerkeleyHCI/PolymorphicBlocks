@@ -7,10 +7,10 @@ import scala.collection.{SeqMap, mutable}
 import edgir.init.init
 import edgir.elem.elem
 import edgir.ref.ref
-
+import edgir.ref.ref.LibraryPath
 
 sealed trait PortLike extends Pathable {
-  def cloned: PortLike  // using clone directly causes an access error to Object.clone
+  def cloned: PortLike // using clone directly causes an access error to Object.clone
   def toPb: elem.PortLike
 }
 
@@ -31,9 +31,13 @@ object PortLike {
 
 class Port(pb: elem.Port) extends PortLike
     with HasParams {
-  override def cloned: Port = this  // immutable
+  override def cloned: Port = this // immutable
 
   override def isElaborated: Boolean = true
+
+  override def getSelfClass: LibraryPath = pb.getSelfClass
+  override def getDirectSuperclasses: Seq[LibraryPath] = pb.superclasses
+  override def getAllClasses: Seq[LibraryPath] = Seq(pb.selfClass, pb.superclasses, pb.superSuperclasses).flatten
 
   override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
@@ -47,7 +51,7 @@ class Port(pb: elem.Port) extends PortLike
   }
 
   def toPb: elem.PortLike = {
-    elem.PortLike(`is`=elem.PortLike.Is.Port(toEltPb))
+    elem.PortLike(`is` = elem.PortLike.Is.Port(toEltPb))
   }
 }
 
@@ -64,11 +68,15 @@ class Bundle(pb: elem.Bundle) extends PortLike
 
   override def isElaborated: Boolean = true
 
+  override def getSelfClass: LibraryPath = pb.getSelfClass
+  override def getDirectSuperclasses: Seq[LibraryPath] = pb.superclasses
+  override def getAllClasses: Seq[LibraryPath] = Seq(pb.selfClass, pb.superclasses, pb.superSuperclasses).flatten
+
   override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
-    case Seq(subname, tail@_*) =>
+    case Seq(subname, tail @ _*) =>
       if (ports.contains(subname)) {
         ports(subname).resolve(tail)
       } else {
@@ -78,18 +86,18 @@ class Bundle(pb: elem.Bundle) extends PortLike
 
   def toEltPb: elem.Bundle = {
     pb.copy(
-      ports=ports.view.mapValues(_.toPb).to(SeqMap).toPb,
+      ports = ports.view.mapValues(_.toPb).to(SeqMap).toPb,
     )
   }
 
   def toPb: elem.PortLike = {
-    elem.PortLike(`is`=elem.PortLike.Is.Bundle(toEltPb))
+    elem.PortLike(`is` = elem.PortLike.Is.Bundle(toEltPb))
   }
 }
 
 class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
   override protected val ports: mutable.SeqMap[String, PortLike] = mutable.LinkedHashMap()
-  var portsSet = false  // allow empty port arrays
+  var portsSet = false // allow empty port arrays
 
   pb.contains match {
     case elem.PortArray.Contains.Ports(ports) => setPorts(parsePorts(ports.ports))
@@ -108,11 +116,13 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
 
   override def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this
-    case Seq(subname, tail@_*) =>
+    case Seq(subname, tail @ _*) =>
       if (ports.contains(subname)) {
         ports(subname).resolve(tail)
       } else {
-        throw new InvalidPathException(s"No element $subname (of $suffix) in PortArray ${pb.getSelfClass.toSimpleString}")
+        throw new InvalidPathException(
+          s"No element $subname (of $suffix) in PortArray ${pb.getSelfClass.toSimpleString}"
+        )
       }
   }
 
@@ -129,7 +139,7 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
       pb
     } else {
       pb.copy(
-        contains=elem.PortArray.Contains.Ports(elem.PortArray.Ports(
+        contains = elem.PortArray.Contains.Ports(elem.PortArray.Ports(
           ports.view.mapValues(_.toPb).to(SeqMap).toPb
         ))
       )
@@ -137,12 +147,12 @@ class PortArray(pb: elem.PortArray) extends PortLike with HasMutablePorts {
   }
 
   override def toPb: elem.PortLike = {
-    elem.PortLike(`is`=elem.PortLike.Is.Array(toEltPb))
+    elem.PortLike(`is` = elem.PortLike.Is.Array(toEltPb))
   }
 }
 
 case class PortLibrary(target: ref.LibraryPath) extends PortLike {
-  override def cloned: PortLibrary = this  // immutable
+  override def cloned: PortLibrary = this // immutable
 
   def resolve(suffix: Seq[String]): Pathable = suffix match {
     case Seq() => this

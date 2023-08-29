@@ -33,16 +33,18 @@ class E93Lc_B_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
       voltage_limit_tolerance=(-0.6, 1),
       input_threshold_abs=(0.8, 2.0)  # Table 1-1, for Vcc > 2.7
     )
-    self.spi = self.Port(SpiSlave(dio_model, (0, 2)*MHertz))  # for Vcc >= 2.5
+    self.spi = self.Port(SpiPeripheral(dio_model, (0, 2) * MHertz))  # for Vcc >= 2.5
     self.cs = self.Port(dio_model)
 
     self.actual_size = self.Parameter(IntExpr())
 
-    self.generator(self.generate, size)
+    self.size = self.ArgParameter(size)
+    self.generator_param(self.size)
 
-  def generate(self, size: Range):
-    suitable_parts = [part for part in self.PARTS if part[0] in size]
-    assert suitable_parts, f"no memory in requested size range {size}"
+  def generate(self):
+    super().generate()
+    suitable_parts = [part for part in self.PARTS if part[0] in self.get(self.size)]
+    assert suitable_parts, "no memory in requested size range"
     part_size, part_pn, part_datasheet, part_lcsc, part_lcsc_basic = suitable_parts[0]
 
     self.assign(self.actual_size, part_size)

@@ -102,7 +102,7 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
 
   @init_in_parent
   def __init__(self, diode_spec: StringLike, output_resistance: RangeLike, input_resistance: RangeLike, *,
-               series: IntLike = Default(24), tolerance: FloatLike = Default(0.01)):
+               series: IntLike = 24, tolerance: FloatLike = 0.01):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -112,22 +112,28 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
     self.actual = self.Port(AnalogSink.empty())
     self.output = self.Port(AnalogSource.empty())
 
-    self.generator(self.generate_amp, output_resistance, input_resistance, diode_spec,
-                   series, tolerance)
+    self.output_resistance = self.ArgParameter(output_resistance)
+    self.input_resistance = self.ArgParameter(input_resistance)
+    self.diode_spec = self.ArgParameter(diode_spec)
+    self.series = self.ArgParameter(series)
+    self.tolerance = self.ArgParameter(tolerance)
+    self.generator_param(self.input_resistance, self.diode_spec, self.series, self.tolerance)
 
-  def generate_amp(self, output_resistance: Range, input_resistance: Range, diode_spec: str,
-                   series: int, tolerance: float) -> None:
+  def generate(self) -> None:
+    super().generate()
+
     # The 1/4 factor is a way to specify the series resistance of the divider assuming both resistors are equal,
     # since the DividerValues util only takes the parallel resistance
-    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[series], tolerance, DividerValues)
-    top_resistance, bottom_resistance = calculator.find(DividerValues(Range.from_tolerance(0.5, tolerance),
-                                                                      input_resistance / 4))
+    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.get(self.series)], self.get(self.tolerance), DividerValues)
+    top_resistance, bottom_resistance = calculator.find(DividerValues(Range.from_tolerance(0.5, self.get(self.tolerance)),
+                                                                      self.get(self.input_resistance) / 4))
 
     self.amp = self.Block(Opamp())
-    self.rtop = self.Block(Resistor(resistance=Range.from_tolerance(top_resistance, tolerance)))
-    self.rbot = self.Block(Resistor(resistance=Range.from_tolerance(bottom_resistance, tolerance)))
-    self.rout = self.Block(Resistor(resistance=output_resistance))
+    self.rtop = self.Block(Resistor(resistance=Range.from_tolerance(top_resistance, self.get(self.tolerance))))
+    self.rbot = self.Block(Resistor(resistance=Range.from_tolerance(bottom_resistance, self.get(self.tolerance))))
+    self.rout = self.Block(Resistor(resistance=self.output_resistance))
 
+    diode_spec = self.get(self.diode_spec)
     if diode_spec:
       self.diode = self.Block(Diode(  # TODO should be encoded as a voltage difference?
         reverse_voltage=self.amp.out.voltage_out,
@@ -242,7 +248,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
       })
 
 
-class UsbSourceMeasureTest(JlcBoardTop):
+class UsbSourceMeasure(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -316,7 +322,8 @@ class UsbSourceMeasureTest(JlcBoardTop):
 
       self.mcu = imp.Block(IoController())
 
-      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()),
+                                       self.mcu.with_mixin(IoControllerUsb()).usb.request())
 
       (self.i2c_pull, ), _ = self.chain(self.mcu.i2c.request(), imp.Block(I2cPullup()), self.pd.i2c)
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
@@ -427,7 +434,7 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
 
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
@@ -443,7 +450,7 @@ class UsbSourceMeasureTest(JlcBoardTop):
         (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
       ],
       class_refinements=[
-        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050),
+        (SwdCortexTargetConnector, SwdCortexTargetTc2050),
         (Opamp, Tlv9061),  # higher precision opamps
         (SolidStateRelay, G3VM_61GR2),
         (BananaSafetyJack, Ct3151),
@@ -453,4 +460,4 @@ class UsbSourceMeasureTest(JlcBoardTop):
 
 class UsbSourceMeasureTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(UsbSourceMeasureTest)
+    compile_board_inplace(UsbSourceMeasure)

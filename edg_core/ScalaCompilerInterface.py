@@ -22,17 +22,18 @@ class CompiledDesign:
   def from_compiler_result(result: edgrpc.CompilerResult) -> 'CompiledDesign':
     values = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
               for value in result.solvedValues}
-    return CompiledDesign(result.design, values)
+    return CompiledDesign(result.design, values, result.error)
 
   @staticmethod
   def from_request(design: edgir.Design, values: Iterable[edgrpc.ExprValue]) -> 'CompiledDesign':
     values_dict = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
                    for value in values}
-    return CompiledDesign(design, values_dict)
+    return CompiledDesign(design, values_dict, "")
 
-  def __init__(self, design: edgir.Design, values: Dict[bytes, edgir.LitTypes]):
+  def __init__(self, design: edgir.Design, values: Dict[bytes, edgir.LitTypes], error: str):
     self.design = design
     self.contents = design.contents  # convenience accessor
+    self.error = error
     self._values = values
 
   # Reserved.V is a string because it doesn't load properly at runtime
@@ -50,8 +51,8 @@ class CompiledDesign:
 
 
 class ScalaCompilerInstance:
-  PRECOMPIED_RELPATH = "compiler/edg-compiler-precompiled.jar"
-  DEV_RELPATH = "compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
+  DEV_RELPATH = "../compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
+  PRECOMPIED_RELPATH = "resources/edg-compiler-precompiled.jar"
 
   def __init__(self, *, suppress_stderr: bool = False):
     self.process: Optional[Any] = None
@@ -61,13 +62,15 @@ class ScalaCompilerInstance:
 
   def check_started(self) -> None:
     if self.process is None:
-      if os.path.exists(self.DEV_RELPATH):
-        jar_path = self.DEV_RELPATH
+      dev_path = os.path.join(os.path.dirname(__file__), self.DEV_RELPATH)
+      precompiled_path = os.path.join(os.path.dirname(__file__), self.PRECOMPIED_RELPATH)
+      if os.path.exists(dev_path):
+        jar_path = dev_path
         print("Using development JAR")
-      elif os.path.exists(self.PRECOMPIED_RELPATH):
-        jar_path = self.PRECOMPIED_RELPATH
+      elif os.path.exists(precompiled_path):
+        jar_path = precompiled_path
       else:
-        raise ValueError("No EDG Compiler JAR found")
+        raise ValueError(f"No EDG Compiler JAR found")
 
       self.process = subprocess.Popen(
         ['java', '-jar', jar_path],
@@ -81,7 +84,8 @@ class ScalaCompilerInstance:
       assert self.process.stdout is not None
       self.response_deserializer = BufferDeserializer(edgrpc.CompilerResult, self.process.stdout)
 
-  def compile(self, block: Type[Block], refinements: Refinements = Refinements()) -> CompiledDesign:
+  def compile(self, block: Type[Block], refinements: Refinements = Refinements(), *,
+              ignore_errors: bool = False) -> CompiledDesign:
     self.check_started()
     assert self.request_serializer is not None
     assert self.response_deserializer is not None
@@ -103,9 +107,8 @@ class ScalaCompilerInstance:
     sys.stdout.buffer.flush()
 
     assert result is not None
-    if not result.HasField('design'):
-      raise CompilerCheckError(f"no compiled result, with error {result.error}")
-    if result.error:
+    assert result.HasField('design')
+    if result.error and not ignore_errors:
       raise CompilerCheckError(f"error during compilation: \n{result.error}")
     return CompiledDesign.from_compiler_result(result)
 

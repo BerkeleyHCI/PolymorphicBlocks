@@ -185,6 +185,16 @@ class Gyroscope(Sensor):
 
 
 @abstract_block
+class EnvironmentalSensor(Sensor):
+  pass
+
+
+@abstract_block
+class LightSensor(Sensor):
+  pass
+
+
+@abstract_block
 class Magnetometer(Sensor):
   pass
 

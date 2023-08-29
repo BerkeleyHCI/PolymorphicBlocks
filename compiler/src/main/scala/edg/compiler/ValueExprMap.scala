@@ -4,16 +4,13 @@ import edgir.lit.lit
 import edgir.ref.ref
 import edgir.expr.expr
 
-
-/**
-  * Generic map/reduce utility for ValueExpr, with user-defined methods to map each type.
-  * By default, types raise an exception, and must be overridden to do something useful.
-  * May be called multiple times.
+/** Generic map/reduce utility for ValueExpr, with user-defined methods to map each type. By default, types raise an
+  * exception, and must be overridden to do something useful. May be called multiple times.
   */
 trait ValueExprMap[OutputType] {
   def map(valueExpr: expr.ValueExpr): OutputType = {
     valueExpr.expr match {
-      case expr.ValueExpr.Expr.Literal(valueExpr) => mapLiteral(valueExpr)  // no recursion, so direct map call
+      case expr.ValueExpr.Expr.Literal(valueExpr) => mapLiteral(valueExpr) // no recursion, so direct map call
       case expr.ValueExpr.Expr.Binary(valueExpr) => wrapBinary(valueExpr)
       case expr.ValueExpr.Expr.BinarySet(valueExpr) => wrapBinarySet(valueExpr)
       case expr.ValueExpr.Expr.Unary(valueExpr) => wrapUnary(valueExpr)
@@ -60,15 +57,47 @@ trait ValueExprMap[OutputType] {
     throw new NotImplementedError(s"Undefined mapExtract for $extract")
   def mapMapExtract(mapExtract: expr.MapExtractExpr): OutputType =
     throw new NotImplementedError(s"Undefined mapMapExtract for $mapExtract")
-  def mapConnected(connected: expr.ConnectedExpr, blockPort: OutputType, linkPort: OutputType): OutputType =
+  // for non-array connect and export: expanded returns container if expanded is empty, recursively running once
+  def mapConnected(
+      connected: expr.ConnectedExpr,
+      blockPort: OutputType,
+      linkPort: OutputType,
+      expandedBlockPort: OutputType,
+      expandedLinkPort: OutputType
+  ): OutputType =
     throw new NotImplementedError(s"Undefined mapConnected for $connected")
-  def mapExported(exported: expr.ExportedExpr, exteriorPort: OutputType, internalBlockPort: OutputType): OutputType =
+  def mapExported(
+      exported: expr.ExportedExpr,
+      exteriorPort: OutputType,
+      internalBlockPort: OutputType,
+      expandedExteriorPort: OutputType,
+      expandedInternalBlockPort: OutputType
+  ): OutputType =
     throw new NotImplementedError(s"Undefined mapExported for $exported")
-  def mapConnectedArray(connected: expr.ConnectedExpr, blockPort: OutputType, linkPort: OutputType): OutputType =
+  // for array connect and export: expanded is empty is expanded is empty
+  def mapConnectedArray(
+      connected: expr.ConnectedExpr,
+      blockPort: OutputType,
+      linkPort: OutputType,
+      expandedBlockPort: Seq[OutputType],
+      expandedLinkPort: Seq[OutputType]
+  ): OutputType =
     throw new NotImplementedError(s"Undefined mapConnectedArray for $connected")
-  def mapExportedArray(exported: expr.ExportedExpr, exteriorPort: OutputType, internalBlockPort: OutputType): OutputType =
+  def mapExportedArray(
+      exported: expr.ExportedExpr,
+      exteriorPort: OutputType,
+      internalBlockPort: OutputType,
+      expandedExteriorPort: Seq[OutputType],
+      expandedInternalBlockPort: Seq[OutputType]
+  ): OutputType =
     throw new NotImplementedError(s"Undefined mapExportedArray for $exported")
-  def mapExportedTunnel(exported: expr.ExportedExpr, exteriorPort: OutputType, internalBlockPort: OutputType): OutputType =
+  def mapExportedTunnel(
+      exported: expr.ExportedExpr,
+      exteriorPort: OutputType,
+      internalBlockPort: OutputType,
+      expandedExteriorPort: OutputType,
+      expandedInternalBlockPort: OutputType
+  ): OutputType =
     throw new NotImplementedError(s"Undefined mapExportedTunnel for $exported")
   def mapAssign(assign: expr.AssignExpr, src: OutputType): OutputType =
     throw new NotImplementedError(s"Undefined mapAssign for $assign")
@@ -109,19 +138,73 @@ trait ValueExprMap[OutputType] {
     mapMapExtract(mapExtract)
   }
   def wrapConnected(connected: expr.ConnectedExpr): OutputType = {
-    mapConnected(connected, map(connected.blockPort.get), map(connected.linkPort.get))
+    val containerBlockValue = map(connected.blockPort.get)
+    val containerLinkValue = map(connected.linkPort.get)
+    val expandedBlockValue = connected.expanded match {
+      case Seq() => containerBlockValue
+      case Seq(expanded) => map(expanded.getBlockPort)
+      case _ => throw new IllegalArgumentException
+    }
+    val expandedLinkValue = connected.expanded match {
+      case Seq() => containerLinkValue
+      case Seq(expanded) => map(expanded.getLinkPort)
+      case _ => throw new IllegalArgumentException
+    }
+    mapConnected(connected, containerBlockValue, containerLinkValue, expandedBlockValue, expandedLinkValue)
   }
   def wrapExported(exported: expr.ExportedExpr): OutputType = {
-    mapExported(exported, map(exported.exteriorPort.get), map(exported.internalBlockPort.get))
+    val containerExteriorValue = map(exported.exteriorPort.get)
+    val containerInteriorValue = map(exported.internalBlockPort.get)
+    val expandedExteriorValue = exported.expanded match {
+      case Seq() => containerExteriorValue
+      case Seq(expanded) => map(expanded.getExteriorPort)
+      case _ => throw new IllegalArgumentException
+    }
+    val expandedInteriorValue = exported.expanded match {
+      case Seq() => containerInteriorValue
+      case Seq(expanded) => map(expanded.getInternalBlockPort)
+      case _ => throw new IllegalArgumentException
+    }
+    mapExported(exported, containerExteriorValue, containerInteriorValue, expandedExteriorValue, expandedInteriorValue)
   }
   def wrapConnectedArray(connected: expr.ConnectedExpr): OutputType = {
-    mapConnectedArray(connected, map(connected.blockPort.get), map(connected.linkPort.get))
+    mapConnectedArray(
+      connected,
+      map(connected.blockPort.get),
+      map(connected.linkPort.get),
+      connected.expanded.map(expanded => map(expanded.getBlockPort)),
+      connected.expanded.map(expanded => map(expanded.getLinkPort))
+    )
   }
   def wrapExportedArray(exported: expr.ExportedExpr): OutputType = {
-    mapExportedArray(exported, map(exported.exteriorPort.get), map(exported.internalBlockPort.get))
+    mapExportedArray(
+      exported,
+      map(exported.exteriorPort.get),
+      map(exported.internalBlockPort.get),
+      exported.expanded.map(expanded => map(expanded.getExteriorPort)),
+      exported.expanded.map(expanded => map(expanded.getInternalBlockPort))
+    )
   }
   def wrapExportedTunnel(exported: expr.ExportedExpr): OutputType = {
-    mapExportedTunnel(exported, map(exported.exteriorPort.get), map(exported.internalBlockPort.get))
+    val containerExteriorValue = map(exported.exteriorPort.get)
+    val containerInteriorValue = map(exported.internalBlockPort.get)
+    val expandedExteriorValue = exported.expanded match {
+      case Seq() => containerExteriorValue
+      case Seq(expanded) => map(expanded.getExteriorPort)
+      case _ => throw new IllegalArgumentException
+    }
+    val expandedInteriorValue = exported.expanded match {
+      case Seq() => containerInteriorValue
+      case Seq(expanded) => map(expanded.getInternalBlockPort)
+      case _ => throw new IllegalArgumentException
+    }
+    mapExportedTunnel(
+      exported,
+      containerExteriorValue,
+      containerInteriorValue,
+      expandedExteriorValue,
+      expandedInteriorValue
+    )
   }
   def wrapAssign(assign: expr.AssignExpr): OutputType = {
     mapAssign(assign, map(assign.src.get))

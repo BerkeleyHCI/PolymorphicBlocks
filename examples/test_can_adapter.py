@@ -30,6 +30,7 @@ class CanAdapter(BoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
+      # this uses the legacy / simple (non-mixin) USB and CAN IO style
       (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
       (self.xcvr, ), self.can_chain = self.chain(self.mcu.can.request('can'), imp.Block(Iso1050dub()))
 
@@ -75,7 +76,8 @@ class CanAdapter(BoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Lpc1549_48),
-        (['mcu', 'swd'], SwdCortexTargetTc2050Nl),
+        (['mcu', 'swd'], SwdCortexTargetTc2050),
+        (['mcu', 'swd', 'conn'], TagConnectNonLegged),
         (['sw_usb', 'package'], SmtSwitchRa),
         (['sw_can', 'package'], SmtSwitchRa),
         (['usb_reg'], Ap2204k),

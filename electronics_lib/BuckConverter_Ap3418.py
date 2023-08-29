@@ -13,27 +13,35 @@ class Ap3418_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
     self.fb = self.Port(AnalogSink(impedance=(10, float('inf')) * MOhm))  # based on input current spec
+    self.en = self.Port(DigitalSink.from_supply(
+      self.gnd, self.pwr_in,
+      voltage_limit_tolerance=(-0.3, 0.3)*Volt,
+      input_threshold_abs=(0.4, 1.5)*Volt
+    ))
 
   def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23-5',
       {
-        '1': self.pwr_in,  # en
+        '1': self.en,
         '2': self.gnd,
         '3': self.sw,
-        '4': self.pwr_in,  # supply input pin
+        '4': self.pwr_in,
         '5': self.fb,
       },
       mfr='Diodes Incorporated', part='AP3418',
-      datasheet='https://www.diodes.com/assets/Datasheets/AP3418.pdf'
+      datasheet='https://www.diodes.com/assets/Datasheets/products_inactive_data/AP3418.pdf'
     )
     self.assign(self.lcsc_part, 'C500769')
     self.assign(self.actual_basic_part, False)
 
 
-class Ap3418(DiscreteBuckConverter):
+class Ap3418(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
   """Adjustable synchronous buck converter in SOT-23-5 with integrated switch"""
+  def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
+    return self.ic.en
+
   def contents(self):
     super().contents()
 

@@ -21,7 +21,7 @@ class CanConnector(Connector):
     self.connect(self.differential.canl, self.conn.pins.request('5').adapt_to(DigitalSource()))
 
 
-class TofArrayTest(JlcBoardTop):
+class TofArray(JlcBoardTop):
   """A ToF LiDAR array with application as emulating a laser harp and demonstrating another array topology.
   """
   def __init__(self):
@@ -77,10 +77,11 @@ class TofArrayTest(JlcBoardTop):
       self.connect(self.mcu.gpio.request_vector('tof_xshut'), self.tof.xshut)
 
       (self.usb_esd, ), self.usb_chain = self.chain(
-        self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
+        self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.with_mixin(IoControllerUsb()).usb.request())
 
       (self.tp_can, self.xcvr, self.can_esd), self.can_chain = self.chain(
-        self.mcu.can.request('can'), imp.Block(CanControllerTestPoint()),
+        self.mcu.with_mixin(IoControllerCan()).can.request('can'),
+        imp.Block(CanControllerTestPoint()),
         imp.Block(Sn65hvd230()), imp.Block(CanEsdDiode()), self.can.differential
       )
 
@@ -158,8 +159,7 @@ class TofArrayTest(JlcBoardTop):
         (['mcu', 'swd_swo_pin'], 'PB3'),
       ],
       class_refinements=[
-        (SwdCortexTargetWithSwoTdiConnector, SwdCortexTargetTc2050),
-        (PassiveConnector, PinHeader254),
+        (SwdCortexTargetConnector, SwdCortexTargetTc2050),
         (Speaker, ConnectorSpeaker),
       ],
     )
@@ -167,4 +167,4 @@ class TofArrayTest(JlcBoardTop):
 
 class TofArrayTestTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(TofArrayTest)
+    compile_board_inplace(TofArray)

@@ -41,6 +41,12 @@ Or, to run tests for a specific package (eg, `edg_core` in this command):
 python -m unittest discover -s edg_core -t .
 ```
 
+Or, to run one specific test:
+```
+python -m unittest examples.test_blinky.BlinkyTestCase.test_design_complete
+```
+
+
 **PROTIP**: run both static type checking and unit testing by combining the commands with `&&`
 
 ### Compiling the Compiler
@@ -50,7 +56,19 @@ If you have not modified any of the .scala files, you do not need to recompile t
 1. [Download and install sbt](https://www.scala-sbt.org/download.html), a build tool or Scala.
 2. In the `compiler/` folder, run `sbt assembly` to compile the compiler JAR file.
    The system will automatically prefer the locally built JAR file over the pre-compiled JAR and indicate its use through the console.
-3. Optionally, to commit a new pre-compiled JAR, move the newly compiled JAR from `compiler/target/scala-*/edg-compiler-assembly-*-SNAPSHOT.jar` to `compiler/edg-compiler-precompiled.jar`.
+3. Optionally, to commit a new pre-compiled JAR, move the newly compiled JAR from `compiler/target/scala-*/edg-compiler-assembly-*-SNAPSHOT.jar` to `edg_core/resources/edg-compiler-precompiled.jar`.
+
+### Packaging
+Largely based on [this tutorial](https://realpython.com/pypi-publish-python-package/).
+
+Local:
+- Install in editable mode (package refers to this source directory, instead of making a copy): `python -m pip install -e .`
+
+Upload:
+- These dependencies are necessary: `python -m pip install build twine`
+- Build the package (creates a `dist` folder with a `.whl` (zipped) file): `python -m build`
+- Optionally, upload to TestPyPI: `python -m twine upload -r testpypi dist/*`
+- Upload to PyPI: `python -m twine upload dist/*`
 
 
 ## Frontend Architecture

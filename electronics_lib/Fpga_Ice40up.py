@@ -1,9 +1,8 @@
-from itertools import chain
 from typing import *
 
 from electronics_abstract_parts import *
-from .PassiveConnector import PinHeader127DualShrouded
 from .JlcPart import JlcPart
+from .PassiveConnector_Header import PinHeader127DualShrouded
 
 
 class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
@@ -12,7 +11,7 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])  # in practice this can power the target
     self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
-    self.spi = self.Port(SpiMaster.empty())
+    self.spi = self.Port(SpiController.empty())
     self.cs = self.Port(DigitalSource.empty())
     self.reset = self.Port(DigitalSource.empty())
 
@@ -31,8 +30,16 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
 
 
 @abstract_block
-class Ice40up_Device(PinMappable, BaseIoController, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   """Base class for iCE40 UltraPlus FPGAs, 2.8k-5.2k logic cells."""
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
+  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
+  PACKAGE: str  # package name for footprint(...)
+  PART: str  # part name for footprint(...)
+  JLC_PART: str  # part number for lcsc_part
+
+  BITSTREAM_BITS: int = 0
+
   @staticmethod
   def make_dio_model(gnd: VoltageSink, vccio: VoltageSink):
     return DigitalBidir.from_supply(
@@ -72,23 +79,19 @@ class Ice40up_Device(PinMappable, BaseIoController, InternalSubcircuit, Generato
     ))
     # note, section 4.5 recommended power sequence: Vcc, Vcc_pll -> Spi_VccIO1 -> Vpp_2v5
     # VccIO0/2 can be applied anytime after Vcc, Vcc_pll
+    self._pio1_model = self.make_dio_model(self.gnd, self.vccio_1)
+    self._dpio1_model = self._pio1_model
 
-    pio0_model = self.make_dio_model(self.gnd, self.vccio_0)
-    dpio0_model = pio0_model  # differential capability currently not modeled
-    pio1_model = self.make_dio_model(self.gnd, self.vccio_1)
-    dpio1_model = pio1_model
-    pio2_model = self.make_dio_model(self.gnd, self.vccio_2)
-    dpio2_model = pio2_model
-
-    self.creset_b = self.Port(DigitalSink.from_bidir(pio1_model))  # no internal PUR, must be driven (or 10k pulled up)
-    self.cdone = self.Port(DigitalSource.from_bidir(pio1_model), optional=True)  # dedicated on SG48, shared on UWG30
+    self.creset_b = self.Port(DigitalSink.from_bidir(self._pio1_model))  # no internal PUR, must be driven (or 10k pulled up)
+    self.cdone = self.Port(DigitalSource.from_bidir(self._pio1_model), optional=True)  # dedicated on SG48, shared on UWG30
 
     # TODO requirements on SPI device frequency
     # TODO this is really bidirectional, so this could be either separate ports or split ports
-    self.spi_config = self.Port(SpiMaster(dpio1_model))
-    self.spi_config_cs = self.Port(dpio1_model)
+    self.spi_config = self.Port(SpiController(self._dpio1_model))
+    self.spi_config_cs = self.Port(self._dpio1_model)
 
-    self.system_pinmaps = VariantPinRemapper({  # names consistent with pinout spreadsheet
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:    # names consistent with pinout spreadsheet
+    return VariantPinRemapper({
       'VCCPLL': self.vcc_pll,
       'VCC': self.vcc,
       'SPI_Vccio1': self.vccio_1,
@@ -104,13 +107,22 @@ class Ice40up_Device(PinMappable, BaseIoController, InternalSubcircuit, Generato
       'IOB_33b_SPI_SI': self.spi_config.miso,
       'IOB_34a_SPI_SCK': self.spi_config.sck,
       'IOB_35b_SPI_SS': self.spi_config_cs,
-    })
+    }).remap(self.SYSTEM_PIN_REMAP)
 
-    # hard macros, not tied to any particular pin
-    i2c_model = I2cMaster(DigitalBidir.empty())  # user I2C, table 4.7
-    spi_model = SpiMaster(DigitalBidir.empty(), (0, 45)*MHertz)  # user SPI, table 4.10
+  def _io_pinmap(self) -> PinMapUtil:
+    pio0_model = self.make_dio_model(self.gnd, self.vccio_0)
+    dpio0_model = pio0_model  # differential capability currently not modeled
+    pio1_model = self._pio1_model
+    dpio1_model = self._dpio1_model
+    pio2_model = self.make_dio_model(self.gnd, self.vccio_2)
+    dpio2_model = pio2_model
 
-    self.abstract_pinmaps = PinMapUtil([  # names consistent with pinout spreadsheet
+
+  # hard macros, not tied to any particular pin
+    i2c_model = I2cController(DigitalBidir.empty())  # user I2C, table 4.7
+    spi_model = SpiController(DigitalBidir.empty(), (0, 45) * MHertz)  # user SPI, table 4.10
+
+    return PinMapUtil([  # names consistent with pinout spreadsheet
       PinResource('IOB_0a', {'IOB_0a': pio2_model}),
       PinResource('IOB_2a', {'IOB_2a': dpio2_model}),
       PinResource('IOB_3b_G6', {'IOB_3b_G6': dpio2_model}),
@@ -157,46 +169,19 @@ class Ice40up_Device(PinMappable, BaseIoController, InternalSubcircuit, Generato
       PeripheralAnyResource('I2C1', i2c_model),
       PeripheralAnyResource('SPI1', spi_model),
       PeripheralAnyResource('SPI2', spi_model),
-    ])
+    ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
-    self.generator(self.generate, self.pin_assigns,
-                   self.gpio.requested(), self.adc.requested(), self.dac.requested(),
-                   self.spi.requested(), self.i2c.requested(), self.uart.requested(),
-                   self.usb.requested(), self.can.requested())
-
-  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
-  RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
-  PACKAGE: str  # package name for footprint(...)
-  PART: str  # part name for footprint(...)
-  JLC_PART: str  # part number for lcsc_part
-  JLC_BASIC_PART: bool
-
-  BITSTREAM_BITS: int = 0
-
-  def generate(self, assignments: List[str],
-               gpio_requests: List[str], adc_requests: List[str], dac_requests: List[str],
-               spi_requests: List[str], i2c_requests: List[str], uart_requests: List[str],
-               usb_requests: List[str], can_requests: List[str]) -> None:
-    system_pins: Dict[str, CircuitPort] = self.system_pinmaps.remap(self.SYSTEM_PIN_REMAP)
-
-    allocated = self.abstract_pinmaps.remap_pins(self.RESOURCE_PIN_REMAP).allocate([
-      (UsbDevicePort, usb_requests), (SpiMaster, spi_requests), (I2cMaster, i2c_requests),
-      (UartPort, uart_requests), (CanControllerPort, can_requests),
-      (AnalogSink, adc_requests), (AnalogSource, dac_requests), (DigitalBidir, gpio_requests),
-    ], assignments)
-    self.generator_set_allocation(allocated)
-
-    (io_pins, io_current_draw) = self._instantiate_from(self._get_io_ports(), allocated)
-    self.assign(self.io_current_draw, io_current_draw)
+  def generate(self) -> None:
+    super().generate()
 
     self.footprint(
       'U', self.PACKAGE,
-      dict(chain(system_pins.items(), io_pins.items())),
+      self._make_pinning(),
       mfr='Lattice Semiconductor Corporation', part=self.PART,
       datasheet='https://www.latticesemi.com/-/media/LatticeSemi/Documents/DataSheets/iCE/iCE40-UltraPlus-Family-Data-Sheet.ashx'
     )
     self.assign(self.lcsc_part, self.JLC_PART)
-    self.assign(self.actual_basic_part, self.JLC_BASIC_PART)
+    self.assign(self.actual_basic_part, False)
 
 
 class Ice40up5k_Sg48_Device(Ice40up_Device):
@@ -256,13 +241,12 @@ class Ice40up5k_Sg48_Device(Ice40up_Device):
   PACKAGE = 'Package_DFN_QFN:QFN-48-1EP_7x7mm_P0.5mm_EP5.3x5.3mm'
   PART = 'ICE40UP5K-SG48'
   JLC_PART = 'C2678152'
-  JLC_BASIC_PART = False
 
   BITSTREAM_BITS = 833288
 
 
 @abstract_block
-class Ice40up(PinMappable, Fpga, IoController):
+class Ice40up(Fpga, IoController):
   """Application circuit for the iCE40UP series FPGAs, pre-baked for 'common' applications
   (3.3v supply with 1.2v core not shared, external FLASH programming, no NVCM programming).
 
@@ -301,7 +285,7 @@ class Ice40up(PinMappable, Fpga, IoController):
 
       # this defaults to flash programming, but to use CRAM programming you can swap the
       # SDI/SDO pins on the debug probe and disconnect the CS line
-      self.spi_merge = self.Block(MergedSpiMaster()).connected_from(self.ic.spi_config, self.prog.spi)
+      self.spi_merge = self.Block(MergedSpiController()).connected_from(self.ic.spi_config, self.prog.spi)
       self.connect(self.spi_merge.out, self.mem.spi)
       self.connect(self.ic.spi_config_cs, self.prog.cs)
       (self.cs_jmp, ), _ = self.chain(self.ic.spi_config_cs, self.Block(DigitalJumper()), self.mem.cs)

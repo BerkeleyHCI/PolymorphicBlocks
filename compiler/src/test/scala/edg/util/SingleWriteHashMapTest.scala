@@ -4,9 +4,8 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
-
 class SingleWriteHashMapTest extends AnyFlatSpec {
-  behavior of "SingleWriteHashMap"
+  behavior.of("SingleWriteHashMap")
 
   it should "return None on nonexistent value" in {
     val map = SingleWriteHashMap[Int, Int]()

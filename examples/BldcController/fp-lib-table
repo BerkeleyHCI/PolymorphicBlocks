@@ -1,0 +1,5 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "edg")(type "KiCad")(uri "${KIPRJMOD}/../edg.pretty")(options "")(descr ""))
+  (lib (name "bldc")(type "KiCad")(uri "${KIPRJMOD}/bldc.pretty")(options "")(descr ""))
+)

@@ -2,7 +2,18 @@ import unittest
 from typing import Optional, Dict
 
 from edg import *
-from .test_bldc import PowerOutConnector
+
+
+class PowerOutConnector(Connector, Block):
+  """Parameterized current draw voltage output connector"""
+  @init_in_parent
+  def __init__(self, current: RangeLike):
+    super().__init__()
+    self.conn = self.Block(PassiveConnector())
+    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()), [Common])
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink(
+      current_draw=current
+    )), [Power])
 
 
 class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
@@ -72,11 +83,13 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     self.fet_rds = self.ArgParameter(fet_rds)
     self.gate_res = self.ArgParameter(gate_res)
 
-    self.generator(self.generate, is_first, self.high_boot_out.is_connected())
+    self.is_first = self.ArgParameter(is_first)
+    self.generator_param(self.is_first, self.high_boot_out.is_connected())
 
-  def generate(self, is_first: bool, high_boot_out_connected: bool):
+  def generate(self):
+    super().generate()
     # control path is still defined in HDL
-    if is_first:
+    if self.get(self.is_first):
       low_pwm: Port[DigitalLink] = self.low_pwm
       high_pwm: Port[DigitalLink] = self.high_pwm
       self.gnd_ctl.init_from(VoltageSink())  # ideal port, not connected
@@ -102,7 +115,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     self.connect(self.driver.low_in, low_pwm)
     self.connect(self.driver.high_gnd, self.high_out)
 
-    if high_boot_out_connected:  # leave port disconnected if not used, otherwise it presents an unsolved interface
+    if self.get(self.high_boot_out.is_connected()):  # leave port disconnected if not used, to avoid an unsolved interface
       self.connect(self.driver.high_pwr, self.high_boot_out)  # schematic connected to boot diode
 
     # size the flying cap for max voltage change at max current
@@ -111,7 +124,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     flying_cap_capacitance = self.high_out.link().current_drawn.upper() / self.frequency.lower() / (self.in_voltage.upper() * MAX_FLYING_CAP_DV_PERCENT)
 
     self.import_kicad(
-      self.file_path("resources", f"{self.__class__.__name__}_{is_first}.kicad_sch"),
+      self.file_path("resources", f"{self.__class__.__name__}_{self.get(self.is_first)}.kicad_sch"),
       locals={
         'fet_model': Fet.NFet(
           drain_voltage=self.in_voltage,
@@ -121,7 +134,8 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
         ),
         'flying_cap_model': Capacitor(  # flying cap
           capacitance=(flying_cap_capacitance, float('inf')*Farad),
-          voltage=self.in_voltage
+          voltage=self.in_voltage,
+          exact_capacitance=True
         ),
         'boot_diode_model': SeriesPowerDiode(
           reverse_voltage=self.in_voltage + self.low_boot_in.link().voltage,  # upper bound
@@ -197,12 +211,16 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
     self.fet_rds = self.ArgParameter(fet_rds)
 
-    self.generator(self.generate, levels, ratios)
+    self.levels = self.ArgParameter(levels)
+    self.ratios = self.ArgParameter(ratios)
+    self.generator_param(self.levels, self.ratios)
 
-  def generate(self, levels: int, ratios: Range):
+  def generate(self):
+    super().generate()
+    levels = self.get(self.levels)
     assert levels >= 2, "levels must be 2 or more"
     self.power_path = self.Block(BuckConverterPowerPath(
-      self.pwr_in.link().voltage, self.pwr_in.link().voltage * ratios, self.frequency,
+      self.pwr_in.link().voltage, self.pwr_in.link().voltage * self.get(self.ratios), self.frequency,
       self.pwr_out.link().current_drawn, Range.all(),  # TODO add current limits from FETs
       inductor_current_ripple=self.inductor_current_ripple,
       input_voltage_ripple=250*mVolt,
@@ -247,7 +265,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     self.connect(self.sw_merge.pwr_out, self.power_path.switch)
 
 
-class FcmlTest(JlcBoardTop):
+class Fcml(JlcBoardTop):
   """FPGA + FCML (flying cpacitor multilevel converter) test circuit,
   plus a bunch of other hardware blocks to test like RP2040"""
   def contents(self) -> None:
@@ -327,7 +345,7 @@ class FcmlTest(JlcBoardTop):
       (self.mcu_leds, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(IndicatorLedArray(4)))
 
       (self.usb_mcu_esd, ), self.usb_mcu_chain = self.chain(
-        self.mcu.usb.request('usb'), imp.Block(UsbEsdDiode()), self.usb_mcu.usb)
+        self.mcu.with_mixin(IoControllerUsb()).usb.request('usb'), imp.Block(UsbEsdDiode()), self.usb_mcu.usb)
 
       self.tp_fpga = ElementDict[DigitalTestPoint]()
       for i in range(4):
@@ -413,8 +431,9 @@ class FcmlTest(JlcBoardTop):
         (['conv', 'sw[2]', 'cap', 'footprint_spec'], ParamValue(['conv', 'sw[1]', 'cap', 'footprint_spec'])),
 
         # JLC does not have frequency specs, must be checked TODO
-        (['conv', 'power_path', 'inductor', 'ignore_frequency'], True),
-        (['reg_vgate', 'power_path', 'inductor', 'ignore_frequency'], True),
+        (['conv', 'power_path', 'inductor', 'part'], 'NR8040T4R7N'),  # peg to prior part selection
+        (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+        (['reg_vgate', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
@@ -436,4 +455,4 @@ class FcmlTest(JlcBoardTop):
 
 class FcmlTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(FcmlTest)
+    compile_board_inplace(Fcml)

@@ -9,8 +9,8 @@ class SmtSwitch(TactileSwitch, FootprintBlock):
       'SW', 'Button_Switch_SMD:SW_Push_SPST_NO_Alps_SKRK',  # 3.9mm x 2.9mm
       # 'Button_Switch_SMD:SW_SPST_CK_KXT3',  # 3.0mm x 2.0mm
       {
-        '1': self.a,
-        '2': self.b,
+        '1': self.sw,
+        '2': self.com,
       },
       part='3.9x2.9mm Switch'
     )
@@ -25,8 +25,8 @@ class SmtSwitchRa(TactileSwitch, FootprintBlock):
     self.footprint(
       'SW', 'Button_Switch_SMD:SW_SPST_EVQP7C',  # 3.5mm x 2.9/3.55mm w/ boss
       {
-        '1': self.a,
-        '2': self.b,
+        '1': self.sw,
+        '2': self.com,
       },
       part='EVQ-P7C01P'
     )
@@ -46,8 +46,8 @@ class KailhSocket(MechanicalKeyswitch, FootprintBlock):
     self.footprint(
       'SW', 'Switch_Keyboard_Hotswap_Kailh:SW_Hotswap_Kailh_MX',
       {
-        '1': self.a,
-        '2': self.b,
+        '1': self.sw,
+        '2': self.com,
       },
       mfr='Kailh', part='PG151101S11',
       datasheet='https://github.com/keyboardio/keyswitch_documentation/raw/master/datasheets/Kailh/PG151101S11-MX-Socket.pdf',

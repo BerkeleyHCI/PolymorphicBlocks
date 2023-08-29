@@ -1,6 +1,5 @@
 package edg
 
-
 /** Convenience functions for building edg ir expression trees with less proto boilerplate
   */
 object ExprBuilder {
@@ -56,7 +55,7 @@ object ExprBuilder {
     )
 
     def Array(elts: Seq[expr.ValueExpr]): expr.ValueExpr = expr.ValueExpr(
-      expr = expr.ValueExpr.Expr.Array(value=expr.ArrayExpr(elts))
+      expr = expr.ValueExpr.Expr.Array(value = expr.ArrayExpr(elts))
     )
 
     object MapExtract {
@@ -64,8 +63,10 @@ object ExprBuilder {
         expr = expr.ValueExpr.Expr.MapExtract(expr.MapExtractExpr(container = Some(Ref(container)), path = Some(path)))
       )
       def apply(container: ref.LocalPath, path: String*): expr.ValueExpr = expr.ValueExpr(
-        expr = expr.ValueExpr.Expr.MapExtract(expr.MapExtractExpr(container = Some(Ref(container)),
-          path = Some(ExprBuilder.Ref(path: _*))))
+        expr = expr.ValueExpr.Expr.MapExtract(expr.MapExtractExpr(
+          container = Some(Ref(container)),
+          path = Some(ExprBuilder.Ref(path: _*))
+        ))
       )
 
       def unapply(that: expr.ValueExpr): Option[(expr.ValueExpr, ref.LocalPath)] = that.expr match {
@@ -78,7 +79,8 @@ object ExprBuilder {
       def apply(path: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
         expr = expr.ValueExpr.Expr.Ref(path)
       )
-      def apply(path: String*): expr.ValueExpr = expr.ValueExpr( // convenience method
+      // convenience method
+      def apply(path: String*): expr.ValueExpr = expr.ValueExpr(
         expr = expr.ValueExpr.Expr.Ref(ExprBuilder.Ref(path: _*))
       )
 
@@ -91,10 +93,10 @@ object ExprBuilder {
     object RefAllocate {
       def unapply(that: expr.ValueExpr): Option[(Seq[String], Option[String])] = that.expr match {
         case expr.ValueExpr.Expr.Ref(that) => that.steps match {
-          case init :+ ExprBuilder.Ref.AllocateStep(suggestedName) =>
-            localPathStepsNameOption(init).map((_, suggestedName))
-          case _ => None
-        }
+            case init :+ ExprBuilder.Ref.AllocateStep(suggestedName) =>
+              localPathStepsNameOption(init).map((_, suggestedName))
+            case _ => None
+          }
         case _ => None
       }
       def apply(path: Seq[String], suggestedName: Option[String]) = expr.ValueExpr(
@@ -103,7 +105,7 @@ object ExprBuilder {
     }
 
     def Assign(dst: ref.LocalPath, src: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
-      expr = expr.ValueExpr.Expr.Assign(expr.AssignExpr(dst=Some(dst), src=Some(src)))
+      expr = expr.ValueExpr.Expr.Assign(expr.AssignExpr(dst = Some(dst), src = Some(src)))
     )
   }
 
@@ -111,7 +113,8 @@ object ExprBuilder {
     def Floating(value: Double): lit.ValueLit = Floating(value.toFloat)
     def Floating(value: Float): lit.ValueLit = lit.ValueLit(`type` = lit.ValueLit.Type.Floating(lit.FloatLit(value)))
 
-    def Integer(value: BigInt): lit.ValueLit = lit.ValueLit(`type` = lit.ValueLit.Type.Integer(lit.IntLit(value.toLong)))
+    def Integer(value: BigInt): lit.ValueLit =
+      lit.ValueLit(`type` = lit.ValueLit.Type.Integer(lit.IntLit(value.toLong)))
 
     def Boolean(value: Boolean): lit.ValueLit = lit.ValueLit(`type` = lit.ValueLit.Type.Boolean(lit.BoolLit(value)))
 
@@ -119,21 +122,29 @@ object ExprBuilder {
 
     def Range(valueMin: Float, valueMax: Float): lit.ValueLit = {
       require((valueMin <= valueMax) || (valueMin.isNaN || valueMax.isNaN), s"malformed range ($valueMin, $valueMax)")
-      lit.ValueLit(`type` = lit.ValueLit.Type.Range(lit.RangeLit(
-        minimum = Some(Floating(valueMin)), maximum = Some(Floating(valueMax)))))
+      lit.ValueLit(`type` =
+        lit.ValueLit.Type.Range(lit.RangeLit(
+          minimum = Some(Floating(valueMin)),
+          maximum = Some(Floating(valueMax))
+        ))
+      )
     }
 
     def Array(values: Seq[lit.ValueLit]): lit.ValueLit = {
-      lit.ValueLit(`type` = lit.ValueLit.Type.Array(lit.ArrayLit(
-        elts = values
-      )))
+      lit.ValueLit(`type` =
+        lit.ValueLit.Type.Array(lit.ArrayLit(
+          elts = values
+        ))
+      )
     }
   }
 
   private def localPathStepsNameOption(steps: Seq[ref.LocalStep]): Option[Seq[String]] = {
-    val names = steps.collect { step => step.step match {
-      case ref.LocalStep.Step.Name(name) => name
-    }}
+    val names = steps.collect { step =>
+      step.step match {
+        case ref.LocalStep.Step.Name(name) => name
+      }
+    }
     if (names.length == steps.length) {
       Some(names)
     } else {
@@ -144,18 +155,18 @@ object ExprBuilder {
   object Ref {
     object AllocateStep {
       def apply(suggestedName: Option[String] = None) =
-        ref.LocalStep(step=ref.LocalStep.Step.Allocate(suggestedName.getOrElse("")))
+        ref.LocalStep(step = ref.LocalStep.Step.Allocate(suggestedName.getOrElse("")))
       def unapply(that: ref.LocalStep): Option[Option[String]] = that.step match {
         case that: ref.LocalStep.Step.Allocate => that.allocate match {
-          case None => Some(None)  // shouldn't happen
-          case Some("") => Some(None)  // empty string treated as allocate without suggested name
-          case Some(suggestedName) => Some(Some(suggestedName))
-        }
+            case None => Some(None) // shouldn't happen
+            case Some("") => Some(None) // empty string treated as allocate without suggested name
+            case Some(suggestedName) => Some(Some(suggestedName))
+          }
         case _ => None
       }
     }
 
-    val IsConnectedStep = ref.LocalStep(step=ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED))
+    val IsConnectedStep = ref.LocalStep(step = ref.LocalStep.Step.ReservedParam(ref.Reserved.IS_CONNECTED))
 
     def apply(path: String*): ref.LocalPath = {
       ref.LocalPath(steps = path.map { step =>
@@ -172,7 +183,7 @@ object ExprBuilder {
         ref.LocalPath(steps = prefix.steps :+ AllocateStep(suggestedName))
       }
       def unapply(that: ref.LocalPath): Option[(ref.LocalPath, Option[String])] = that.steps match {
-        case init :+ AllocateStep(suggestedName) => Some(ref.LocalPath(steps=init), suggestedName)
+        case init :+ AllocateStep(suggestedName) => Some(ref.LocalPath(steps = init), suggestedName)
         case _ => None
       }
     }
@@ -182,7 +193,7 @@ object ExprBuilder {
         ref.LocalPath(steps = prefix.steps :+ IsConnectedStep)
       }
       def unapply(that: ref.LocalPath): Option[ref.LocalPath] = that.steps match {
-        case init :+ ExprBuilder.Ref.IsConnectedStep => Some(ref.LocalPath(steps=init))
+        case init :+ ExprBuilder.Ref.IsConnectedStep => Some(ref.LocalPath(steps = init))
         case _ => None
       }
     }

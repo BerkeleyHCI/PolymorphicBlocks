@@ -195,8 +195,18 @@ class NetlistTransform(TransformUtil.Transform):
         self.process_exported(path, block, constraint_pair.value.exported)
       elif constraint_pair.value.HasField('exportedTunnel'):
         self.process_exported(path, block, constraint_pair.value.exportedTunnel)
+      elif constraint_pair.value.HasField('connectedArray'):
+        for expanded_connect in constraint_pair.value.connectedArray.expanded:
+          self.process_connected(path, block, expanded_connect)
+      elif constraint_pair.value.HasField('exportedArray'):
+        for expanded_export in constraint_pair.value.exportedArray.expanded:
+          self.process_exported(path, block, expanded_export)
 
   def process_connected(self, path: TransformUtil.Path, current: edgir.EltTypes, constraint: edgir.ConnectedExpr) -> None:
+    if constraint.expanded:
+      assert len(constraint.expanded) == 1
+      self.process_connected(path, current, constraint.expanded[0])
+      return
     assert constraint.block_port.HasField('ref')
     assert constraint.link_port.HasField('ref')
     self.connect_ports(
@@ -204,6 +214,10 @@ class NetlistTransform(TransformUtil.Transform):
       path.follow(constraint.link_port.ref, current))
 
   def process_exported(self, path: TransformUtil.Path, current: edgir.EltTypes, constraint: edgir.ExportedExpr) -> None:
+    if constraint.expanded:
+      assert len(constraint.expanded) == 1
+      self.process_exported(path, current, constraint.expanded[0])
+      return
     assert constraint.internal_block_port.HasField('ref')
     assert constraint.exterior_port.HasField('ref')
     self.connect_ports(
@@ -248,7 +262,7 @@ class NetlistTransform(TransformUtil.Transform):
     self.process_blocklike(context.path, link)
 
   @staticmethod
-  def name_net(net: Iterable[TransformUtil.Path]) -> str:
+  def name_net(net: Iterable[TransformUtil.Path], net_prefix: str) -> str:
     """Names a net based on all the paths of ports and links that are part of the net."""
     def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:
       assert not pin1.params and not pin2.params
@@ -281,7 +295,8 @@ class NetlistTransform(TransformUtil.Transform):
       else:  # prefer shorter pin paths
         return len(pin1.ports) - len(pin2.ports)
     best_path = sorted(net, key=cmp_to_key(pin_name_goodness))[0]
-    return str(best_path)
+
+    return net_prefix + str(best_path)
 
   def run(self) -> Netlist:
     self.transform_design(self.design.design)
@@ -323,7 +338,13 @@ class NetlistTransform(TransformUtil.Transform):
       else:
         return pin
 
-    named_nets = {self.name_net([name_pin(pin) for pin in net]): net
+    board_refdes_prefix = self.design.get_value(('refdes_prefix',))
+    if board_refdes_prefix is not None:
+      assert isinstance(board_refdes_prefix, str)
+      net_prefix = board_refdes_prefix
+    else:
+      net_prefix = ''
+    named_nets = {self.name_net([name_pin(pin) for pin in net], net_prefix): net
                   for net in nets}
 
     netlist_blocks = {str(self.names[block_path]): block

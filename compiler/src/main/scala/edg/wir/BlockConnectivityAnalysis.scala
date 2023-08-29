@@ -6,7 +6,6 @@ import edgir.expr.expr
 import edgir.ref.ref
 import edgir.ref.ref.LocalPath
 
-
 /** A connection to a link, from the point of view of (and relative to) some block
   */
 sealed trait Connection {
@@ -18,21 +17,20 @@ case object Connection {
   }
 
   case class Link(
-    linkName: String,
-    linkConnects: Seq[(ref.LocalPath, String)],  // including bridge link-facing ports, as (port ref, constr name)
-    bridgedExports: Seq[(ref.LocalPath, String, String)]  // (exterior port ref, bridge block name, constr name)
+      linkName: String,
+      linkConnects: Seq[(ref.LocalPath, String)], // including bridge link-facing ports, as (port ref, constr name)
+      bridgedExports: Seq[(ref.LocalPath, String, String)] // (exterior port ref, bridge block name, constr name)
   ) extends Connection {
     override def getPorts: Seq[ref.LocalPath] = linkConnects.map(_._1) ++ bridgedExports.map(_._1)
   }
   case class Export(
-    constraintName: String,
-    exteriorPort: ref.LocalPath,
-    innerBlockPort: ref.LocalPath
+      constraintName: String,
+      exteriorPort: ref.LocalPath,
+      innerBlockPort: ref.LocalPath
   ) extends Connection {
     override def getPorts: Seq[LocalPath] = Seq(exteriorPort, innerBlockPort)
   }
 }
-
 
 object BlockConnectivityAnalysis {
   def typeOfPortLike(portLike: elem.PortLike): ref.LibraryPath = portLike.is match {
@@ -44,23 +42,22 @@ object BlockConnectivityAnalysis {
   }
 }
 
-
 /** Class that "wraps" a block to provide connectivity analysis for constraints and links inside the block.
   */
 class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
-  lazy val allExports: Seq[(ref.LocalPath, ref.LocalPath, String)] = {  // external ref, internal ref, constr name
+  lazy val allExports: Seq[(ref.LocalPath, ref.LocalPath, String)] = { // external ref, internal ref, constr name
     block.constraints.asPairs.map { case (name, constr) =>
       (name, constr.expr)
-    }.collect {  // filter for exported only, into (inner block port path, exterior port path) pairs
+    }.collect { // filter for exported only, into (inner block port path, exterior port path) pairs
       case (name, expr.ValueExpr.Expr.Exported(exported)) =>
         (exported.getExteriorPort.getRef, exported.getInternalBlockPort.getRef, name)
     }.toSeq
   }
 
-  lazy val allConnects: Seq[(ref.LocalPath, ref.LocalPath, String)] = {  // block ref, link ref, constr name
+  lazy val allConnects: Seq[(ref.LocalPath, ref.LocalPath, String)] = { // block ref, link ref, constr name
     block.constraints.asPairs.map { case (name, constr) =>
       (name, constr.expr)
-    }.collect {  // filter for exported only, into (inner block port path, exterior port path) pairs
+    }.collect { // filter for exported only, into (inner block port path, exterior port path) pairs
       case (name, expr.ValueExpr.Expr.Connected(connected)) =>
         (connected.getBlockPort.getRef, connected.getLinkPort.getRef, name)
     }.toSeq
@@ -69,28 +66,28 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
   // All exports, structured as exterior port ref -> (interior port ref, constr name)
   lazy val exportsByOuter: Map[ref.LocalPath, (ref.LocalPath, String)] = {
     allExports.groupBy(_._1)
-        .view.mapValues{
-          case Seq((exteriorRef, interiorRef, constrName)) => (interiorRef, constrName)
-          case other => throw new IllegalArgumentException(s"unexpected grouped exports $other")
-        }.toMap
+      .view.mapValues {
+        case Seq((exteriorRef, interiorRef, constrName)) => (interiorRef, constrName)
+        case other => throw new IllegalArgumentException(s"unexpected grouped exports $other")
+      }.toMap
   }
 
   // All exports, structured as inner port ref -> (exterior port ref, constr name)
   lazy val exportsByInner: Map[ref.LocalPath, (ref.LocalPath, String)] = {
     allExports.groupBy(_._2)
-        .view.mapValues {
-          case Seq((exteriorRef, interiorRef, constrName)) => (exteriorRef, constrName)
-          case other => throw new IllegalArgumentException(s"unexpected grouped exports $other")
-        }.toMap
+      .view.mapValues {
+        case Seq((exteriorRef, interiorRef, constrName)) => (exteriorRef, constrName)
+        case other => throw new IllegalArgumentException(s"unexpected grouped exports $other")
+      }.toMap
   }
 
   // All exports, structured as inner block port ref -> (link port ref, constr name)
   lazy val connectsByBlock: Map[ref.LocalPath, (ref.LocalPath, String)] = {
     allConnects.groupBy(_._1)
-        .view.mapValues {
-          case Seq((innerRef, linkRef, constrName)) => (linkRef, constrName)
-          case other => throw new IllegalArgumentException(s"unexpected grouped connects $other")
-        }.toMap
+      .view.mapValues {
+        case Seq((innerRef, linkRef, constrName)) => (linkRef, constrName)
+        case other => throw new IllegalArgumentException(s"unexpected grouped connects $other")
+      }.toMap
   }
 
   // Returns all internal connected ports
@@ -102,42 +99,44 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
     // TODO superclass check once the infrastructure is there
     block.ports.asPairs.map(_._1).toSet == Set(
       LibraryConnectivityAnalysis.portBridgeOuterPort,
-      LibraryConnectivityAnalysis.portBridgeLinkPort)
+      LibraryConnectivityAnalysis.portBridgeLinkPort
+    )
   }
 
-  /** If innerPortRef cconnects to a bridge block,
-    * returns the exterior port ref, bridge name, and export constraint
+  /** If innerPortRef cconnects to a bridge block, returns the exterior port ref, bridge name, and export constraint
     */
   private def bridgedToOuterOption(innerPortRef: ref.LocalPath): Option[(ref.LocalPath, String, String)] = {
-    val bridgeName = innerPortRef.steps.head.getName  // name for the block in question, which MAY be a bridge
-    block.blocks.get(bridgeName).map { blockLike =>  // filter by block exists
+    val bridgeName = innerPortRef.steps.head.getName // name for the block in question, which MAY be a bridge
+    block.blocks.get(bridgeName).map { blockLike => // filter by block exists
       blockLike.getHierarchy
-    }.collect { case block if blockIsBridge(block) => // filter by is-bridge, transform to path, exported
-      val bridgeOuterRef = ref.LocalPath().update(_.steps := Seq(
-        ref.LocalStep().update(_.name := bridgeName),
-        ref.LocalStep().update(_.name := LibraryConnectivityAnalysis.portBridgeOuterPort)
-      ))
-      exportsByInner.get(bridgeOuterRef)
+    }.collect {
+      case block if blockIsBridge(block) => // filter by is-bridge, transform to path, exported
+        val bridgeOuterRef = ref.LocalPath().update(_.steps := Seq(
+          ref.LocalStep().update(_.name := bridgeName),
+          ref.LocalStep().update(_.name := LibraryConnectivityAnalysis.portBridgeOuterPort)
+        ))
+        exportsByInner.get(bridgeOuterRef)
     }.flatten
-    .collect { case (exportedRef, exportConstrName) =>
-      (exportedRef, bridgeName, exportConstrName)
-    }
+      .collect { case (exportedRef, exportConstrName) =>
+        (exportedRef, bridgeName, exportConstrName)
+      }
   }
 
   private def bridgedToInnerOption(outerPortRef: ref.LocalPath): Option[ref.LocalPath] = {
-    val bridgeName = outerPortRef.steps.head.getName  // name for the block in question, which MAY be a bridge
-    block.blocks.get(bridgeName).map { blockLike =>  // filter by block exists
+    val bridgeName = outerPortRef.steps.head.getName // name for the block in question, which MAY be a bridge
+    block.blocks.get(bridgeName).map { blockLike => // filter by block exists
       blockLike.getHierarchy
-    }.collect { case block if blockIsBridge(block) => // filter by is-bridge, transform to path, exported
-      ref.LocalPath().update(_.steps := Seq(
-        ref.LocalStep().update(_.name := bridgeName),
-        ref.LocalStep().update(_.name := LibraryConnectivityAnalysis.portBridgeLinkPort)
-      ))
+    }.collect {
+      case block if blockIsBridge(block) => // filter by is-bridge, transform to path, exported
+        ref.LocalPath().update(_.steps := Seq(
+          ref.LocalStep().update(_.name := bridgeName),
+          ref.LocalStep().update(_.name := LibraryConnectivityAnalysis.portBridgeLinkPort)
+        ))
     }
   }
 
   def getConnectedToLink(linkName: String): Connection.Link = {
-    val allBlockRefConstrs = allConnects.collect {  // filter by link name, and map to (port ref, constr name)
+    val allBlockRefConstrs = allConnects.collect { // filter by link name, and map to (port ref, constr name)
       case (blockPortRef, linkPortRef, constrName)
         if linkPortRef.steps.nonEmpty && linkPortRef.steps.head.getName == linkName =>
         (blockPortRef, constrName)
@@ -164,30 +163,35 @@ class BlockConnectivityAnalysis(block: elem.HierarchyBlock) {
       val (linkPortRef, constrName) = connectsByBlock(portRef)
       require(linkPortRef.steps.nonEmpty)
       val linkName = linkPortRef.steps.head.getName
-      require(block.links.asPairs.map(_._1).toSet.contains(linkName),
-        s"reference to nonexistent link $linkName connected to $portRef")
+      require(
+        block.links.asPairs.map(_._1).toSet.contains(linkName),
+        s"reference to nonexistent link $linkName connected to $portRef"
+      )
 
       getConnectedToLink(linkName)
     } else if (exportsByInner.contains(portRef)) {
       require(!exportsByOuter.contains(portRef), s"overconnected port $portRef")
       val (exteriorRef, constrName) = exportsByInner(portRef)
       bridgedToInnerOption(portRef) match {
-          // TODO: possible edge case with bridge with disconnected inner that would ignore the export
+        // TODO: possible edge case with bridge with disconnected inner that would ignore the export
         case Some(bridgeInnerRef) => getConnected(bridgeInnerRef)
         case None => Connection.Export(constrName, exteriorRef, portRef)
       }
     } else if (exportsByOuter.contains(portRef)) {
       val (innerRef, constrName) = exportsByOuter(portRef)
-      getConnected(innerRef)  // delegate to handle both export and bridged case
+      getConnected(innerRef) // delegate to handle both export and bridged case
     } else {
       Connection.Disconnected()
     }
   }
 
-  case class ConnectablePorts(innerPortTypes: Set[(ref.LocalPath, ref.LibraryPath)],
-                              exteriorPortTypes: Set[(ref.LocalPath, ref.LibraryPath)])
-  /** Returns all the connectable ports and types of this block,
-    * including inner block ports (and their types) and exterior ports (and their non-bridged type)
+  case class ConnectablePorts(
+      innerPortTypes: Set[(ref.LocalPath, ref.LibraryPath)],
+      exteriorPortTypes: Set[(ref.LocalPath, ref.LibraryPath)]
+  )
+
+  /** Returns all the connectable ports and types of this block, including inner block ports (and their types) and
+    * exterior ports (and their non-bridged type)
     */
   def allConnectablePortTypes: ConnectablePorts = {
     val innerPortTypes = block.blocks.asPairs.flatMap { case (blockName, blockLike) =>
