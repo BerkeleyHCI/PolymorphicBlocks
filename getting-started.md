@@ -305,7 +305,6 @@ To run the STM32 within its rated voltage limits, we'll need a voltage regulator
 > See each block's definition or documentation for what those parameters mean.
 
 > If using the IDE, make sure to select an appropriate location for insertion.
-> The voltage regulator can be inserted through the library browser, but make sure to select an appropriate location for insertion.
 > This block logically goes between the USB input and the microcontroller, but it just needs to be declared before any connect statements involving it.
 > The IDE will create a block with empty parameters for you to fill.
 > 
