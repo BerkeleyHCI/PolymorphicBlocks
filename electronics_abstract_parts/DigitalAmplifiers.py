@@ -143,7 +143,7 @@ class HalfBridgeNFet(PowerSwitch, Block):
     )))
 
 
-class OpenDrainDriver(Block):
+class OpenDrainDriver(PowerSwitch, Block):
   """NFET configured as an open-drain driver. Potentially useful for voltage translation applications."""
   @init_in_parent
   def __init__(self, max_rds: FloatLike = 1*Ohm, frequency: RangeLike = RangeExpr.ZERO) -> None:
