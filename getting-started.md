@@ -117,7 +117,8 @@ Try building the example now:
      > **Tip**: Next time, you can rebuild the design by re-running the last selected run configuration with hotkey **Shift+F10** (Windows) or **Ctrl+R** (MacOS).
 
      > **Note on re-compiling behavior**: The IDE only re-compiles block classes when its source (or the source of superclasses) has changed, but this does not catch all functional changes.
-     > If changes aren't recompiling, you can clear all compiled blocks through main menu > Tools > Empty Block Cache.
+     > If changes aren't recompiling, try making a change to the class code.
+     > Alternatively, you can clear all compiled blocks through main menu > Tools > Empty Block Cache.
      > 
      > In particular, these changes may not trigger a recompile:
      > - Any changes outside the class, even if the code is called by the class.
@@ -202,9 +203,7 @@ First, we need to connect the power and ground between the devices, by **adding 
 > `self.connect(...)` connects all the argument ports together. 
 > Connections are strongly typed based on the port types: the system will try to infer a _link_ based on the argument port types and count.
 
-> <details>
->   <summary>You can also connect ports through graphical operations in the IDE. (not recommended - work-in-progress)</summary>
-> 
+> You can also connect ports through graphical operations in the IDE.
 > 1. Again, start by selecting the insert location in code, by setting the caret to the end of `super().contents()`.
 > 2. Double click any of the ports you want to connect.
 >    This starts a connection operation, which dims out the ports that cannot be connected.
@@ -214,7 +213,6 @@ First, we need to connect the power and ground between the devices, by **adding 
 >    - You can also cancel the connect operation by double-clicking anywhere (within a block) without additional ports selected, or through the right-click menu.
 > 5. Optionally, in the text prompt. give the connection a name.
 > 6. The connection should appear in the block diagram visualizer, and the corresponding line of code should be inserted.
-> </details>
 
 If you're using the IDE, once you recompile the block diagram should look like:  
 ![Block diagrams with power connections](docs/ide/ide_blinky_connectpower.png)
@@ -230,7 +228,7 @@ Then, we need to connect the LED to a GPIO on the microcontroller, by **adding t
 > Microcontroller GPIOs (and other IOs like SPI and UART) are _port arrays_, which are dynamically sized.
 > Here, we `request(...)` a new GPIO from the GPIO port array, then connect it to the LED.
 > `request(...)` takes an optional name parameter, the meaning of which depends on the block.
-
+>
 > By default, these connections are arbitrarily assigned to microcontroller pins.
 > However pin assignments can also be manually specified (using this name parameter) to simplify board layout - this will be covered at the end of this tutorial.
 > 
@@ -306,9 +304,7 @@ To run the STM32 within its rated voltage limits, we'll need a voltage regulator
 > Many blocks in the library are parameterized, allowing them to be used in a wide range of situations.
 > See each block's definition or documentation for what those parameters mean.
 
-> <details>
->   <summary>You can also do this through graphical operations in the IDE. (not recommended - work-in-progress)</summary>
->
+> If using the IDE, make sure to select an appropriate location for insertion.
 > The voltage regulator can be inserted through the library browser, but make sure to select an appropriate location for insertion.
 > This block logically goes between the USB input and the microcontroller, but it just needs to be declared before any connect statements involving it.
 > The IDE will create a block with empty parameters for you to fill.
@@ -322,7 +318,6 @@ To run the STM32 within its rated voltage limits, we'll need a voltage regulator
 > The IDE does not support disconnect operations, so you'll have to edit the HDL for code that.
 > However, the IDE can help you find where the code is:
 > 1. Right click on any port in the connection, then select "Goto Connect".
-> </details>
 
 If you try recompiling it, it will give you an error because `VoltageRegulator` is an _abstract block_ (it does not have an implementation) and was automatically substituted with an ideal model (which does not have a circuit implementation, but allows compilation to continue).
 Abstract blocks are useful for two reasons:
@@ -674,7 +669,7 @@ For example, we might want to see how much effect shrinking SMD components (for 
 If you have KiCad installed, you can import this full design into the layout editor. _KiCad 6.0+ is required, the netlist format is not compatible with 5.x or lower!_
 
 In the KiCad PCB Editor (layout tool), go to File > Import > Netlist..., and open the netlist file generated.
-KiCad will produce an initial placement that roughly clusters components according to their hierarchical grouping:  
+KiCad will produce an initial placement that roughly clusters components according to their hierarchical grouping:
 ![Blinky layout with default placement](docs/blinky_kicad.png)
 
 The block hierarchy will appear to KiCad as a sheet hierarchy.
