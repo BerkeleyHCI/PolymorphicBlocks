@@ -147,6 +147,6 @@ class SimpleBoardTop(BaseBoardTop):
         (PassiveConnector, PinHeader254),
       ],
       class_values=[
-        (JlcInductor, ['ignore_frequency'], True),
+        (JlcInductor, ['manual_frequency_rating'], Range.all()),
       ],
     )
