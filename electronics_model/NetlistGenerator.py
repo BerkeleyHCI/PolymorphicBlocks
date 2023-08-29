@@ -195,8 +195,18 @@ class NetlistTransform(TransformUtil.Transform):
         self.process_exported(path, block, constraint_pair.value.exported)
       elif constraint_pair.value.HasField('exportedTunnel'):
         self.process_exported(path, block, constraint_pair.value.exportedTunnel)
+      elif constraint_pair.value.HasField('connectedArray'):
+        for expanded_connect in constraint_pair.value.connectedArray.expanded:
+          self.process_connected(path, block, expanded_connect)
+      elif constraint_pair.value.HasField('exportedArray'):
+        for expanded_export in constraint_pair.value.exportedArray.expanded:
+          self.process_exported(path, block, expanded_export)
 
   def process_connected(self, path: TransformUtil.Path, current: edgir.EltTypes, constraint: edgir.ConnectedExpr) -> None:
+    if constraint.expanded:
+      assert len(constraint.expanded) == 1
+      self.process_connected(path, current, constraint.expanded[0])
+      return
     assert constraint.block_port.HasField('ref')
     assert constraint.link_port.HasField('ref')
     self.connect_ports(
@@ -204,6 +214,10 @@ class NetlistTransform(TransformUtil.Transform):
       path.follow(constraint.link_port.ref, current))
 
   def process_exported(self, path: TransformUtil.Path, current: edgir.EltTypes, constraint: edgir.ExportedExpr) -> None:
+    if constraint.expanded:
+      assert len(constraint.expanded) == 1
+      self.process_exported(path, current, constraint.expanded[0])
+      return
     assert constraint.internal_block_port.HasField('ref')
     assert constraint.exterior_port.HasField('ref')
     self.connect_ports(

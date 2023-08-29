@@ -1,11 +1,10 @@
 package edg.compiler
 
 import edg.EdgirUtils._
-import edg.util.{DependencyGraph, Errorable, SingleWriteHashMap}
+import edg.util.{DependencyGraph, Errorable}
 import edg.wir.ProtoUtil._
 import edg.wir._
 import edg.{ExprBuilder, wir}
-import edgir.common.common
 import edgir.elem.elem
 import edgir.expr.expr
 import edgir.ref.ref
@@ -71,7 +70,6 @@ object ElaborateRecord {
       parent: DesignPath,
       portPath: Seq[String],
       constraintNames: Seq[String],
-      arrayConstraintNames: Seq[String],
       portIsLink: Boolean
   ) extends ElaborateTask with ElaborateDependency
 
@@ -81,7 +79,6 @@ object ElaborateRecord {
       parent: DesignPath,
       portPath: Seq[String],
       constraintNames: Seq[String],
-      arrayConstraintNames: Seq[String],
       portIsLink: Boolean
   ) extends ElaborateTask
 }
@@ -191,10 +188,6 @@ class Compiler private (
     }.flatten.toSeq
   }
 
-  // Supplemental elaboration data structures
-  private val expandedArrayConnectConstraints =
-    SingleWriteHashMap[DesignPath, Seq[String]]() // constraint path -> new constraint names
-
   // TODO this should get moved into the design tree
   private val errors = mutable.ListBuffer[CompilerError]()
 
@@ -234,8 +227,6 @@ class Compiler private (
       }
     }
     processBlockAdditionalRefinements(DesignPath(), cloned.root)
-    require(cloned.expandedArrayConnectConstraints.isEmpty)
-    cloned.expandedArrayConnectConstraints.addAll(expandedArrayConnectConstraints)
     require(cloned.errors.isEmpty)
     cloned.errors.addAll(errors)
     cloned
@@ -455,7 +446,6 @@ class Compiler private (
   def processAssignConstraint(
       blockPath: DesignPath,
       constrName: String,
-      constr: expr.ValueExpr,
       constrValue: expr.ValueExpr
   ): Boolean = constrValue.expr match {
     case expr.ValueExpr.Expr.Assign(assign) =>
@@ -479,12 +469,7 @@ class Compiler private (
   }
 
   // Attempts to process a connected constraint, returning true if it is a matching constraint
-  def processConnectedConstraint(
-      blockPath: DesignPath,
-      constrName: String,
-      constr: expr.ValueExpr,
-      isInLink: Boolean
-  ): Boolean = {
+  def processConnectedConstraint(blockPath: DesignPath, constr: expr.ValueExpr, isInLink: Boolean): Boolean = {
     import edg.ExprBuilder.ValueExpr
     constr.expr match {
       case expr.ValueExpr.Expr.Connected(connected) => (connected.getBlockPort, connected.getLinkPort) match {
@@ -830,7 +815,7 @@ class Compiler private (
                       val expandArrayTask = ElaborateRecord.ExpandArrayConnections(path, constrName)
                       // Note: actual expansion task set on the link side
                       val resolveConnectedTask =
-                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
+                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(constrName), false)
                       elaboratePending.addNode(
                         resolveConnectedTask,
                         Seq(
@@ -863,7 +848,7 @@ class Compiler private (
                         )
                       )
                       val resolveConnectedTask =
-                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
+                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(constrName), false)
                       elaboratePending.addNode(
                         resolveConnectedTask,
                         Seq(
@@ -927,8 +912,7 @@ class Compiler private (
                   val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(
                     path,
                     portPostfix,
-                    singleConnects.map(_._2),
-                    arrayConnects.map(_._2),
+                    singleConnects.map(_._2) ++ arrayConnects.map(_._2),
                     false
                   )
                   elaboratePending.addNode(
@@ -938,8 +922,7 @@ class Compiler private (
                   val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(
                     path,
                     portPostfix,
-                    singleConnects.map(_._2),
-                    arrayConnects.map(_._2),
+                    singleConnects.map(_._2) ++ arrayConnects.map(_._2),
                     false
                   )
                   elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
@@ -955,13 +938,13 @@ class Compiler private (
                     ""
                   )
                   val resolveAllocateTask =
-                    ElaborateRecord.RewriteConnectAllocate(path, portPostfix, connects.map(_._2), Seq(), false)
+                    ElaborateRecord.RewriteConnectAllocate(path, portPostfix, connects.map(_._2), false)
                   elaboratePending.addNode(
                     resolveAllocateTask,
                     Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix))
                   )
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, connects.map(_._2), Seq(), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, connects.map(_._2), false)
                   elaboratePending.addNode(resolveConnectedTask, Seq(resolveAllocateTask))
 
                 case PortConnections.NotConnected =>
@@ -972,7 +955,7 @@ class Compiler private (
                     "not connected"
                   )
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), false)
                   elaboratePending.addNode(
                     resolveConnectedTask,
                     Seq(
@@ -1017,9 +1000,12 @@ class Compiler private (
                     // because link ports elements are always defined by incoming connects, no waiting for elements
                     // is needed and the allocate can be rewritten here
                     block.mapConstraint(constrName) { constr =>
-                      constr.connectUpdateRef { case ValueExpr.RefAllocate(`portPostfix`, `suggestedName`) =>
-                        ValueExpr.Ref((portPostfix :+ allocatedName): _*)
-                      }
+                      constr.connectExpandRef(
+                        { case ValueExpr.RefAllocate(`portPostfix`, `suggestedName`) =>
+                          ValueExpr.Ref((portPostfix :+ allocatedName): _*)
+                        },
+                        true
+                      )
                     }
                     allocatedName
                   }
@@ -1030,7 +1016,7 @@ class Compiler private (
                     ""
                   )
                   elaboratePending.addNode(
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), Seq(), false),
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, singleConnects.map(_._2), false),
                     Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix))
                   )
 
@@ -1042,7 +1028,7 @@ class Compiler private (
                     "not connected"
                   )
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), false)
                   elaboratePending.addNode(
                     resolveConnectedTask,
                     Seq(
@@ -1077,9 +1063,12 @@ class Compiler private (
                     val allocatedName = namer.name(suggestedName)
                     block.mapConstraint(constrName) { constr =>
                       // similarly, to the regular link case, allocates can be rewritten here
-                      constr.arrayUpdateRef { case ValueExpr.RefAllocate(`portPostfix`, None) =>
-                        ValueExpr.Ref((portPostfix :+ allocatedName): _*)
-                      }
+                      constr.connectExpandRef(
+                        { case ValueExpr.RefAllocate(`portPostfix`, None) =>
+                          ValueExpr.Ref((portPostfix :+ allocatedName): _*)
+                        },
+                        true
+                      )
                     }
                     allocatedName
                   }
@@ -1098,7 +1087,7 @@ class Compiler private (
                     expandArrayTask
                   }
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), arrayConnects.map(_._2), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, arrayConnects.map(_._2), false)
                   elaboratePending.addNode(
                     resolveConnectedTask,
                     Seq(ElaborateRecord.ElaboratePortArray(path ++ portPostfix)) ++
@@ -1113,7 +1102,7 @@ class Compiler private (
                     "not connected"
                   )
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), false)
                   elaboratePending.addNode(
                     resolveConnectedTask,
                     Seq(
@@ -1136,7 +1125,7 @@ class Compiler private (
                       )
                       // Note: actual expansion task set on the link side
                       val resolveConnectedTask =
-                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(constrName), false)
+                        ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(constrName), false)
                       elaboratePending.addNode(
                         resolveConnectedTask,
                         Seq(
@@ -1150,7 +1139,7 @@ class Compiler private (
 
                 case PortConnections.NotConnected =>
                   val resolveConnectedTask =
-                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                    ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), false)
                   elaboratePending.addNode(
                     resolveConnectedTask,
                     Seq(
@@ -1167,8 +1156,10 @@ class Compiler private (
 
     // Process all the process-able constraints: parameter constraints and non-allocate connected
     block.getConstraints.foreach { case (constrName, constr) =>
-      processAssignConstraint(path, constrName, constr, constr)
-      processConnectedConstraint(path, constrName, constr, false)
+      processAssignConstraint(path, constrName, constr)
+      constr.expandedSingleConstraintsMaybe.foreach { expanded =>
+        processConnectedConstraint(path, expanded, false)
+      }
     }
   }
 
@@ -1250,8 +1241,7 @@ class Compiler private (
                 val resolveAllocateTask = ElaborateRecord.RewriteConnectAllocate(
                   path,
                   portPostfix,
-                  singleConnects.map(_._2),
-                  arrayConnects.map(_._2),
+                  singleConnects.map(_._2) ++ arrayConnects.map(_._2),
                   true
                 )
                 elaboratePending.addNode(
@@ -1262,8 +1252,7 @@ class Compiler private (
                 val resolveConnectedTask = ElaborateRecord.ResolveArrayIsConnected(
                   path,
                   portPostfix,
-                  singleConnects.map(_._2),
-                  arrayConnects.map(_._2),
+                  singleConnects.map(_._2) ++ arrayConnects.map(_._2),
                   false
                 )
                 elaboratePending.addNode(
@@ -1281,7 +1270,7 @@ class Compiler private (
                   "not connected"
                 )
                 val resolveConnectedTask =
-                  ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), Seq(), false)
+                  ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, Seq(), false)
                 elaboratePending.addNode(
                   resolveConnectedTask,
                   Seq(
@@ -1305,8 +1294,10 @@ class Compiler private (
 
     // Process constraints, as in the block case
     link.getConstraints.foreach { case (constrName, constr) =>
-      processAssignConstraint(path, constrName, constr, constr)
-      processConnectedConstraint(path, constrName, constr, true)
+      processAssignConstraint(path, constrName, constr)
+      constr.expandedSingleConstraintsMaybe.foreach { expanded =>
+        processConnectedConstraint(path, expanded, true)
+      }
     }
   }
 
@@ -1379,7 +1370,9 @@ class Compiler private (
     // Resolve connections
     import edg.ExprBuilder.ValueExpr
     link.getConstraints.foreach { case (constrName, constr) =>
-      processConnectedConstraint(path, constrName, constr, true)
+      constr.expandedSingleConstraintsMaybe.foreach { expanded =>
+        processConnectedConstraint(path, expanded, true)
+      }
     }
 
     // Resolve is-connected - need to sort by inner link's outermost port
@@ -1397,7 +1390,7 @@ class Compiler private (
         case _: wir.PortArray =>
           val constrNames = constrNamesConstrs.map { case (constrName, constr) => constrName }
           val resolveConnectedTask =
-            ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, constrNames, Seq(), false)
+            ElaborateRecord.ResolveArrayIsConnected(path, portPostfix, constrNames, false)
           elaboratePending.addNode(
             resolveConnectedTask,
             Seq(
@@ -1463,36 +1456,32 @@ class Compiler private (
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints] // can be block or link
 
     import edg.ExprBuilder.{Ref, ValueExpr}
-    val newConstrNames = parentBlock.getConstraints(record.constraintName).expr match {
+    parentBlock.getConstraints(record.constraintName).expr match {
       case expr.ValueExpr.Expr.ExportedArray(exported) =>
         (exported.getExteriorPort, exported.getInternalBlockPort) match {
           case (ValueExpr.Ref(extPortArray), ValueExpr.Ref(intPortArray)) =>
             val intPortArrayElts = ArrayValue.ExtractText( // propagates inner to outer
               constProp.getValue(record.parent.asIndirect ++ intPortArray + IndirectStep.Elements).get)
-            parentBlock.mapMultiConstraint(record.constraintName) { constr =>
-              intPortArrayElts.map { index =>
-                val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
-                  case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*)
-                }.connectUpdateRef {
-                  case ValueExpr.Ref(ref) if ref == intPortArray => ValueExpr.Ref((ref :+ index): _*)
-                }
-                s"${record.constraintName}.$index" -> newConstr
+            parentBlock.mapConstraint(record.constraintName) { constr =>
+              constr.arrayExpandMultiRefs(intPortArrayElts) { index =>
+                Seq(
+                  { case ValueExpr.Ref(ref) if ref == extPortArray => ValueExpr.Ref((ref :+ index): _*) },
+                  { case ValueExpr.Ref(ref) if ref == intPortArray => ValueExpr.Ref((ref :+ index): _*) }
+                )
               }
-            }.keys
+            }
 
           case (ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), _), ValueExpr.RefAllocate(_, _)) =>
             val extPortArrayElts = ArrayValue.ExtractText( // propagates outer to inner
               constProp.getValue(record.parent.asIndirect ++ extPortArray + IndirectStep.Elements).get)
-            parentBlock.mapMultiConstraint(record.constraintName) { constr =>
-              extPortArrayElts.map { index =>
-                val newConstr = constr.asSingleConnection.connectUpdateRef {
-                  case ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)) =>
-                    ValueExpr.Ref((extPortArray ++ Seq(index) ++ extPortInner): _*)
-                  // inner side remains an allocate
+            parentBlock.mapConstraint(record.constraintName) { constr =>
+              constr.arrayExpandMultiRefs(extPortArrayElts) { index =>
+                Seq { case ValueExpr.MapExtract(ValueExpr.Ref(extPortArray), Ref(extPortInner)) =>
+                  ValueExpr.Ref((extPortArray ++ Seq(index) ++ extPortInner): _*)
                 }
-                s"${record.constraintName}.$index" -> newConstr
+              // inner side remains an allocate
               }
-            }.keys
+            }
 
           case _ => throw new IllegalArgumentException("unsupported array export")
         }
@@ -1501,33 +1490,29 @@ class Compiler private (
         val linkArrayPostfix = Seq(connected.getLinkPort.getRef.steps.head.getName)
         val linkArrayElts = ArrayValue.ExtractText( // propagates inner to outer
           constProp.getValue(record.parent.asIndirect ++ linkArrayPostfix + IndirectStep.Elements).get)
-        parentBlock.mapMultiConstraint(record.constraintName) { constr =>
-          linkArrayElts.map { index =>
-            val newConstr = constr.asSingleConnection.connectUpdateRef { // tack an index on both sides
-              case ValueExpr.Ref(ref) if !ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
-              case ValueExpr.RefAllocate(ref, None) if !ref.startsWith(linkArrayPostfix) =>
-                ValueExpr.RefAllocate(ref, None) // allocate stays intact
-              case ValueExpr.RefAllocate(ref, Some(suggestedName)) if !ref.startsWith(linkArrayPostfix) =>
-                ValueExpr.RefAllocate(ref, Some(s"${suggestedName}_$index")) // index tacked onto suggested name
-            }.connectUpdateRef {
-              case ValueExpr.Ref(ref) if ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
-            }
-            s"${record.constraintName}.$index" -> newConstr
+        parentBlock.mapConstraint(record.constraintName) { constr =>
+          constr.arrayExpandMultiRefs(linkArrayElts) { index =>
+            Seq(
+              {
+                case ValueExpr.Ref(ref) if !ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
+                case ValueExpr.RefAllocate(ref, None) if !ref.startsWith(linkArrayPostfix) =>
+                  ValueExpr.RefAllocate(ref, None) // allocate stays intact
+                case ValueExpr.RefAllocate(ref, Some(suggestedName)) if !ref.startsWith(linkArrayPostfix) =>
+                  ValueExpr.RefAllocate(ref, Some(s"${suggestedName}_$index")) // index tacked onto suggested name
+              },
+              {
+                case ValueExpr.Ref(ref) if ref.startsWith(linkArrayPostfix) => ValueExpr.Ref((ref :+ index): _*)
+              }
+            )
           }
-        }.keys
+        }
 
       case _ => throw new IllegalArgumentException
     }
 
-    expandedArrayConnectConstraints.put(record.parent + record.constraintName, newConstrNames.toSeq)
-    newConstrNames.foreach { constrName =>
-      // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
-      processConnectedConstraint(
-        record.parent,
-        constrName,
-        parentBlock.getConstraints(constrName),
-        parentBlock.isInstanceOf[wir.Link]
-      )
+    // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
+    parentBlock.getConstraints(record.constraintName).expandedConstraints.foreach { expanded =>
+      processConnectedConstraint(record.parent, expanded, parentBlock.isInstanceOf[wir.Link])
     }
   }
 
@@ -1540,20 +1525,19 @@ class Compiler private (
       constProp.getValue(record.parent.asIndirect ++ record.portPath + IndirectStep.Elements).get
     )
     // Update constraint names given expanded array constraints
-    val combinedConstrNames = record.constraintNames ++
-      record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
-
     import edg.ExprBuilder.ValueExpr
-    val suggestedNames = combinedConstrNames.flatMap { constrName =>
-      parentBlock.getConstraints(constrName).connectMapRef {
-        case ValueExpr.RefAllocate(record.portPath, index) => index
-      }
-    }.toSet
+    val loweredConstrs = record.constraintNames.flatMap { constrName =>
+      parentBlock.getConstraints(constrName).expandedConstraints
+    }
 
+    val suggestedNames = loweredConstrs.flatMap(_.connectMapRef {
+      case ValueExpr.RefAllocate(record.portPath, index) => index
+    }).toSet
     val freeNames = portElements.filter(!suggestedNames.contains(_)).iterator
-    combinedConstrNames.foreach { constrName =>
+
+    record.constraintNames.foreach { constrName =>
       parentBlock.mapConstraint(constrName) { constr =>
-        constr.connectUpdateRef {
+        constr.connectExpandRef {
           case ValueExpr.RefAllocate(record.portPath, Some(suggestedName)) =>
             if (portElements.contains(suggestedName)) {
               ValueExpr.Ref((record.portPath :+ suggestedName): _*)
@@ -1570,25 +1554,27 @@ class Compiler private (
       }
     }
 
-    combinedConstrNames.foreach { constrName =>
-      // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
-      processConnectedConstraint(record.parent, constrName, parentBlock.getConstraints(constrName), record.portIsLink)
+    record.constraintNames.foreach { constrName =>
+      parentBlock.getConstraints(constrName).expandedConstraints.foreach { expandedConstr =>
+        // note no guarantee these are fully lowered, since the other side may have un-lowered allocates
+        processConnectedConstraint(record.parent, expandedConstr, record.portIsLink)
+      }
     }
   }
 
   protected def resolveArrayIsConnected(record: ElaborateRecord.ResolveArrayIsConnected): Unit = {
     val parentBlock = resolve(record.parent).asInstanceOf[wir.HasMutableConstraints] // can be block or link
-    val combinedConstrNames = record.constraintNames ++
-      record.arrayConstraintNames.flatMap(constrName => expandedArrayConnectConstraints(record.parent + constrName))
 
     import edg.ExprBuilder.ValueExpr
-    val allocatedIndexToConstraint = combinedConstrNames.flatMap { constrName =>
-      parentBlock.getConstraints(constrName).connectMapRef {
-        case ValueExpr.Ref(record.portPath :+ index) => Some((Seq(index), constrName))
-        case ValueExpr.Ref(record.portPath :+ index :+ interior) =>
-          Some((Seq(index, interior), constrName)) // for link arrays
-        case ValueExpr.RefAllocate(record.portPath, _) =>
-          None // allocate should be resolved by here, except for bad designs
+    val allocatedIndexToNameConstraint = record.constraintNames.flatMap { constrName =>
+      parentBlock.getConstraints(constrName).expandedConstraints.flatMap { constr =>
+        constr.connectMapRef {
+          case ValueExpr.Ref(record.portPath :+ index) => Some((Seq(index), (s"$constrName.$index", constr)))
+          case ValueExpr.Ref(record.portPath :+ index :+ interior) =>
+            Some((Seq(index, interior), (s"$constrName.$index", constr))) // for link arrays
+          case ValueExpr.RefAllocate(record.portPath, _) =>
+            None // allocate should be resolved by here, except for bad designs
+        }
       }
     }.toMap
 
@@ -1597,16 +1583,14 @@ class Compiler private (
       case (index, innerPort: wir.PortArray) => // for link arrays
         require(innerPort.isElaborated)
         innerPort.getPorts.foreach { case (subIndex, subPort) =>
-          val constraintOption = allocatedIndexToConstraint.get(Seq(index, subIndex)).map { constrName =>
-            (constrName, parentBlock.getConstraints(constrName))
-          }
-          resolvePortConnectivity(record.parent, record.portPath :+ index :+ subIndex, constraintOption)
+          resolvePortConnectivity(
+            record.parent,
+            record.portPath :+ index :+ subIndex,
+            allocatedIndexToNameConstraint.get(Seq(index, subIndex))
+          )
         }
       case (index, innerPort) =>
-        val constraintOption = allocatedIndexToConstraint.get(Seq(index)).map { constrName =>
-          (constrName, parentBlock.getConstraints(constrName))
-        }
-        resolvePortConnectivity(record.parent, record.portPath :+ index, constraintOption)
+        resolvePortConnectivity(record.parent, record.portPath :+ index, allocatedIndexToNameConstraint.get(Seq(index)))
     }
   }
 

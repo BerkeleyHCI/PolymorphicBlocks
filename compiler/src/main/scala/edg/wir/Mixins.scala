@@ -78,17 +78,9 @@ trait HasMutableConstraints {
 
   def getConstraints: SeqMap[String, expr.ValueExpr] = constraints.to(SeqMap)
 
+  // Replaces the constraint by name, in-place, with the result of the function.
   def mapConstraint(name: String)(fn: expr.ValueExpr => expr.ValueExpr): Unit = {
     constraints.update(name, fn(constraints(name)))
-  }
-
-  // Replaces the constraint by name with the results of the map. Can be replaced with none, one, or several
-  // new constraints. Returns a SeqMap of the new constraints.
-  def mapMultiConstraint(name: String)(fn: expr.ValueExpr => Seq[(String, expr.ValueExpr)])
-      : SeqMap[String, expr.ValueExpr] = {
-    val newValues = fn(constraints(name))
-    SeqMapUtils.replaceInPlace(constraints, name, newValues)
-    newValues.to(SeqMap)
   }
 
   protected def parseConstraints(pb: Seq[elem.NamedValueExpr]): mutable.SeqMap[String, expr.ValueExpr] = {

@@ -413,7 +413,7 @@ class HierarchyBlock(google.protobuf.message.Message):
         """all (recursive) superclasses above superclasses"""
     @property
     def prerefine_class(self) -> edgir.ref_pb2.LibraryPath:
-        """class pre-refinement, from library elem"""
+        """class pre-refinement, only defined if refined"""
     @property
     def prerefine_mixins(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """mixins pre-refinement, from library elem"""

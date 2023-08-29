@@ -20,43 +20,70 @@ object ElemBuilder {
   // For constructing ValueExpr constraints typically used in top-level constraints
   // For other ValueExprs, see ExprBuilder
   object Constraint {
-    def Connected(block: ref.LocalPath, link: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
-      expr = expr.ValueExpr.Expr.Connected(
-        expr.ConnectedExpr(
-          blockPort = Some(ValueExpr.Ref(block)),
-          linkPort = Some(ValueExpr.Ref(link))
+    def Connected(block: ref.LocalPath, link: ref.LocalPath, expanded: Seq[expr.ValueExpr] = Seq()): expr.ValueExpr =
+      expr.ValueExpr(
+        expr = expr.ValueExpr.Expr.Connected(
+          expr.ConnectedExpr(
+            blockPort = Some(ValueExpr.Ref(block)),
+            linkPort = Some(ValueExpr.Ref(link)),
+            expanded = expanded.map(_.getConnected)
+          )
         )
       )
-    )
-    def ConnectedArray(block: ref.LocalPath, link: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
+    def ConnectedArray(
+        block: ref.LocalPath,
+        link: ref.LocalPath,
+        expanded: Seq[expr.ValueExpr] = Seq()
+    ): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.ConnectedArray(expr.ConnectedExpr(
         blockPort = Some(ValueExpr.Ref(block)),
-        linkPort = Some(ValueExpr.Ref(link))
+        linkPort = Some(ValueExpr.Ref(link)),
+        expanded = expanded.map(_.getConnected)
       ))
     )
-    def Exported(external: ref.LocalPath, internal: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
+    def Exported(
+        external: ref.LocalPath,
+        internal: ref.LocalPath,
+        expanded: Seq[expr.ValueExpr] = Seq()
+    ): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.Exported(expr.ExportedExpr(
         exteriorPort = Some(ValueExpr.Ref(external)),
-        internalBlockPort = Some(ValueExpr.Ref(internal))
+        internalBlockPort = Some(ValueExpr.Ref(internal)),
+        expanded = expanded.map(_.getExported)
       ))
     )
-    def ExportedArray(external: ref.LocalPath, internal: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
+    def ExportedArray(
+        external: ref.LocalPath,
+        internal: ref.LocalPath,
+        expanded: Seq[expr.ValueExpr] = Seq()
+    ): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.ExportedArray(expr.ExportedExpr(
         exteriorPort = Some(ValueExpr.Ref(external)),
-        internalBlockPort = Some(ValueExpr.Ref(internal))
+        internalBlockPort = Some(ValueExpr.Ref(internal)),
+        expanded = expanded.map(_.getExported)
       ))
     )
     // variation for map_extract
-    def ExportedArray(external: expr.ValueExpr, internal: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
+    def ExportedArrayMap(
+        external: expr.ValueExpr,
+        internal: ref.LocalPath,
+        expanded: Seq[expr.ValueExpr] = Seq()
+    ): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.ExportedArray(expr.ExportedExpr(
         exteriorPort = Some(external),
-        internalBlockPort = Some(ValueExpr.Ref(internal))
+        internalBlockPort = Some(ValueExpr.Ref(internal)),
+        expanded = expanded.map(_.getExported)
       ))
     )
-    def ExportedTunnel(external: ref.LocalPath, internal: ref.LocalPath): expr.ValueExpr = expr.ValueExpr(
+    def ExportedTunnel(
+        external: ref.LocalPath,
+        internal: ref.LocalPath,
+        expanded: Seq[expr.ValueExpr] = Seq()
+    ): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.ExportedTunnel(expr.ExportedExpr(
         exteriorPort = Some(ValueExpr.Ref(external)),
-        internalBlockPort = Some(ValueExpr.Ref(internal))
+        internalBlockPort = Some(ValueExpr.Ref(internal)),
+        expanded = expanded.map(_.getExportedTunnel)
       ))
     )
 
