@@ -376,6 +376,7 @@ class DigitalBidir(DigitalBase):
                   input_threshold_factor: Optional[RangeLike] = None,
                   input_threshold_abs: Optional[RangeLike] = None,
                   output_threshold_factor: Optional[RangeLike] = None,
+                  output_threshold_abs: Optional[RangeLike] = None,
                   pullup_capable: BoolLike = False, pulldown_capable: BoolLike = False) -> DigitalBidir:
     voltage_limit: RangeLike
     if voltage_limit_abs is not None:
@@ -399,10 +400,15 @@ class DigitalBidir(DigitalBase):
     else:
       raise ValueError("no input threshold specified")
 
+    output_threshold: RangeLike
     if output_threshold_factor is not None:
+      assert output_threshold_abs is None, "can only specify one output threshold type"
       output_threshold_factor = RangeExpr._to_expr_type(output_threshold_factor)
       output_threshold = (output_threshold_factor.lower() * pos.link().voltage.upper(),
                           output_threshold_factor.upper() * pos.link().voltage.lower())
+    elif output_threshold_abs is not None:
+      assert output_threshold_factor is None, "can only specify one outpt threshold type"
+      output_threshold = RangeExpr._to_expr_type(output_threshold_abs)  # TODO avoid internal functions?
     else:  # assumed ideal
       output_threshold = (neg.link().voltage.upper(), pos.link().voltage.lower())
 
