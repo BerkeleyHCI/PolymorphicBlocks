@@ -148,7 +148,37 @@ Try building the example now:
 ### Creating the microcontroller and LED
 For this simple example, we connect an LED to a STM32F103 microcontroller, and have everything powered by a USB type-C receptacle.
 
-**In `blinky.py`, `# your implementation here`, add this code** to instantiate the microcontroller and LED as follows:
+Let's start by instantiating the USB type-C receptacle through graphical operations in the IDE.
+1. In the Library Browser, search for the block (here, `UsbCReceptable`) using the Filter textbox:  
+   ![Library filtering by USB](FIGURETODO)
+2. Double-click the library entry.
+   This will insert the code to instantiate the block as a _live template_, code with template fields you can fill in:  
+   ![Live template example](FIGURETODO)  
+   While the template is active, you can:
+   - Press [Tab] to move to the next template field.
+     Validation may prevent moving to the next field, for example if the name field is invalid.
+   - Tabbing past the last field will commit the template.
+   - Press [Shift+Tab] to move back to the previous template field.
+   - Use [Alt+Click] to move the template to another place in the code.
+     If the selected place isn't valid, the template will snap to a valid location.
+   - Press [Esc] to cancel the template, ending the editing but leaving the code in place.
+     Canceling a blank template deletes the inserted code.
+3. Name the block `usb`, then press [Tab] through the end of the template.
+4. Once you commit the live template, the block will appear in the block diagram visualizer.
+   - The hatched pattern (diagonal lines) in the block diagram visualizer indicates that the block may be out-of-sync with the code until the next re-compile.
+
+> `self.Block(...)` creates a sub-block in `self` (the current hierarchy block being defined).
+> It must be assigned to an instance variable (in this case, `mcu`), which is used as the name sub-block.
+
+> The library icons have these meanings:
+> - ![Folder](docs/intellij_icons/AllIcons.Nodes.Folder.svg) (category): this "block" is actually a category organizer and should not be instantiated.
+> - ![Abstract Type](docs/intellij_icons/AllIcons.Hierarchy.Subtypes.dark.svg) (abstract type): this block is an abstract type.
+    >   Abstract blocks will be discussed more later.
+> - Most will not have an icon, which means that they're none of the above. These blocks can be instantiated.
+
+**Repeat for the microcontroller** (`Stm32f103_48`, named `mcu`) **and LED** (`IndicatorLed`, named `led`).
+
+If all was done correctly, your changes to the skeleton code might look like: 
 ```diff
   super().contents()
 - # your implementation here
@@ -156,29 +186,6 @@ For this simple example, we connect an LED to a STM32F103 microcontroller, and h
 + self.mcu = self.Block(Stm32f103_48())
 + self.led = self.Block(IndicatorLed())
 ```
-> `self.Block(...)` creates a sub-block in `self` (the current hierarchy block being defined).
-> It must be assigned to an instance variable (in this case, `mcu`), which is used as the name sub-block.
-
-> You can also insert blocks through graphical operations in the IDE.
->
-> 1. Start by selecting the insert location in code, by setting the caret to the end of `super().contents()`.
->    - The _caret_ refers to the text editor's current position, commonly shown as a blinking vertical line.
->    - **Precise caret positioning is important**, since it is where code will be inserted.
->      In particular, it must not be in the `super().contents()` call since code cannot be inserted in the middle of a function call, nor can it be be outside the class block.  
->      _**We know this interaction is a bit clunky, we're thinking about better ways to do this.**_
-> 2. Search for the relevant block in the Library Browser by using the Filter textbox:  
->    ![Libraries filtered by indicator](docs/ide/ide_insert_block.png)
-> 3. Double-click the library entry.
->    - Alternatively, you can also right-click to show other available actions. 
-> 4. In the text prompt, give the new block a name.
-> 5. The block should appear in the block diagram visualizer, and the corresponding line of code should be inserted.
->    - The hatched pattern (diagonal lines) in the block diagram visualizer indicates that the block may be out-of-sync with the code until the next re-compile. 
->
-> The library icons have these meanings:
-> - ![Folder](docs/intellij_icons/AllIcons.Nodes.Folder.svg) (category): this "block" is actually a category organizer and should not be instantiated.
-> - ![Abstract Type](docs/intellij_icons/AllIcons.Hierarchy.Subtypes.dark.svg) (abstract type): this block is an abstract type.
->   Abstract blocks will be discussed more later. 
-> - Most will not have an icon, which means that they're none of the above. These blocks can be instantiated.
 
 If you're using the IDE, once you recompile the block diagram should look like:  
 ![Blink diagram with blocks only](docs/ide/ide_blinky_blocks.png)  
@@ -190,8 +197,27 @@ We'll fix that next.
 
 ### Connecting blocks
 Blocks alone aren't very interesting, and they must be connected to be useful.
-First, we need to connect the power and ground between the devices, by **adding connect statements after your block instantiations**:
+First, we need to connect the power and ground between the devices, which we can also do with graphical operations in the IDE:
+1. Double click any of the ground ports (say, `usb.gnd`).
+   This starts a connection operation, which dims out the ports that cannot be connected:  
+   ![Connection beginning](FIGURETODO)
+2. Select (single click) on all the other ground ports to be connected (here, `mcu.gnd` and `led.gnd`):  
+   ![Connection with ports](FIGURETODO)
+   - The order in which you select additional ports determines the order of the ports in the generated code.
+3. Double-click anywhere (within a block) to insert the connections as a live template.
+   ![Connection live template](FIGURETODO)
+   - You can double-click on a port to simultaneously select that port and insert the connection. 
+   - You can cancel a connect operation by pressing [Esc] while the block diagram visualizer is selected.
+4. The name template field is optional, you can leave it blank and [Tab] past it.
+   - Like the block instantiation, you can move the live template with [Alt+Click]. 
+5. Once you commit the live template, the connection will appear in the block diagram visualizer.
 
+> `self.connect(...)` connects all the argument ports together.
+> Connections are strongly typed based on the port types: the system will try to infer a _link_ based on the argument port types and count.
+
+**Repeat for the power line** (connect `usb.pwr` to `mcu.pwr`).
+
+If all was done correctly, your changes to the skeleton code might look like:
 ```diff
   self.usb = self.Block(UsbCReceptacle())
   self.mcu = self.Block(Stm32f103_48())
@@ -200,30 +226,24 @@ First, we need to connect the power and ground between the devices, by **adding 
 + self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
 ```
 
-> `self.connect(...)` connects all the argument ports together. 
-> Connections are strongly typed based on the port types: the system will try to infer a _link_ based on the argument port types and count.
-
-> You can also connect ports through graphical operations in the IDE.
-> 1. Again, start by selecting the insert location in code, by setting the caret to the end of `super().contents()`.
-> 2. Double click any of the ports you want to connect.
->    This starts a connection operation, which dims out the ports that cannot be connected.
-> 3. Select (single click) on all the other ports you want to connect.
->    - The order in which you select additional ports determines the order of the ports in the generated code.
-> 4. Double-click anywhere (within a block) to make the connections.
->    - You can also cancel the connect operation by double-clicking anywhere (within a block) without additional ports selected, or through the right-click menu.
-> 5. Optionally, in the text prompt. give the connection a name.
-> 6. The connection should appear in the block diagram visualizer, and the corresponding line of code should be inserted.
-
 If you're using the IDE, once you recompile the block diagram should look like:  
 ![Block diagrams with power connections](docs/ide/ide_blinky_connectpower.png)
 
-Then, we need to connect the LED to a GPIO on the microcontroller, by **adding this connect statement:**.
+Then, we need to connect the LED to a GPIO on the microcontroller, so **repeat the connect process** (connect `mcu.gpio` to `led.signal`).
 
+If all was done correctly, your changes to the skeleton code might look like:
 ```diff
   self.connect(self.usb.pwr, self.mcu.pwr)
   self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
++ self.connect(self.mcu.gpio.request(), self.led.signal)
+```
+
+Give the GPIO pin an (optional) name `led` by modifying the generated code:
+```diff
+- self.connect(self.mcu.gpio.request(), self.led.signal)
 + self.connect(self.mcu.gpio.request('led'), self.led.signal)
 ```
+
 
 > Microcontroller GPIOs (and other IOs like SPI and UART) are _port arrays_, which are dynamically sized.
 > Here, we `request(...)` a new GPIO from the GPIO port array, then connect it to the LED.
@@ -234,9 +254,6 @@ Then, we need to connect the LED to a GPIO on the microcontroller, by **adding t
 > 
 > Port arrays behave differently when viewed externally (as we're doing here) and internally (for library builders).
 > Internal usage of port arrays will be covered later in the library building section.
-
-> Port arrays are a recent feature and are not supported yet with graphical operations in the IDE.
-> This can only be done by writing textual HDL... for now.
 
 Recompiling in the IDE yields this block diagram:  
 ![Fully connected block diagram](docs/ide/ide_blinky_connect.png)
@@ -278,13 +295,39 @@ Assertions are checks on the electronics model, in this case it's detecting a vo
 
 If you're in the IDE, errors will show up in the compilation log and in the errors tab:  
 ![Errors tab with errors](docs/ide/ide_blinky_errors.png)  
-You can also inspect the details of the power connection by mousing over it:
+You can also inspect the details of the power connection by mousing over it:  
 ![Inspection of the power lines with voltages and limits](docs/ide/ide_blinky_inspect.png)
 
 ### Adding a Voltage Regulator
 To run the STM32 within its rated voltage limits, we'll need a voltage regulator to lower the 5v from USB to the common 3.3v power expected by modern devices.
-**Repeat the add block flow** with a `VoltageRegulator` block, **then update the power (between the USB and the microcontroller) and ground connections**.
 
+**Repeat the add block flow** with a `VoltageRegulator` block.
+Unlike the prior blocks, we actually need to specify a target output voltage here, let's use `3.3*Volt(tol=0.05)` for 3.3V ± 5%.
+If using live templates, you can write it into the template field.
+
+> The `VoltageRegulator` block is parameterized - configured by additional data specified as constructor arguments.
+>
+> Many blocks in the library are parameterized, allowing them to be used in a wide range of situations.
+> See each block's definition or documentation for what those parameters mean.
+
+**Repeat the connect flow** to connect `reg.gnd` to the existing ground net.
+If using graphical operations, you can start by double-clicking on any port you want to connect.
+
+You'll also need to splice the regulator into the power connection between the USB and the microcontroller.
+Since graphical operations don't support connection delete, you'll have to **delete the power connection in the code, then recompile**:
+```diff
+  self.usb = self.Block(UsbCReceptacle())
+  self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+  self.mcu = self.Block(Stm32f103_48())
+  self.led = self.Block(IndicatorLed())
+- self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+  self.connect(self.usb.pwr, self.mcu.pwr)
+  self.connect(self.mcu.gpio.request('led'), self.led.signal)
+```
+
+From here, you can **repeat the connect flow** to connect the regulator input and outputs.
+
+When all is done, your changes to the skeleton code might look like:
 ```diff
   self.usb = self.Block(UsbCReceptacle())
 + self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
@@ -297,26 +340,6 @@ To run the STM32 within its rated voltage limits, we'll need a voltage regulator
 + self.connect(self.reg.pwr_out, self.mcu.pwr)
   self.connect(self.mcu.gpio.request('led'), self.led.signal)
 ```
-
-> The `VoltageRegulator` block is parameterized - configured by additional data specified as constructor arguments.
-> Here, we've specified a target output voltage of 3.3v.
-> 
-> Many blocks in the library are parameterized, allowing them to be used in a wide range of situations.
-> See each block's definition or documentation for what those parameters mean.
-
-> If using the IDE, make sure to select an appropriate location for insertion.
-> This block logically goes between the USB input and the microcontroller, but it just needs to be declared before any connect statements involving it.
-> The IDE will create a block with empty parameters for you to fill.
-> 
-> You can append the voltage regulator's ground pin to the existing ground connect statement:
-> 1. Select the existing connect statement in the code.
-> 2. Start a connect operation at any port that is part of the existing connection.
->    - It is not currently supported to add to an existing connection without starting the connect operation at that connection.
-> 3. Add the new port to the selection and finish the connect operation as typical.
-> 
-> The IDE does not support disconnect operations, so you'll have to edit the HDL for code that.
-> However, the IDE can help you find where the code is:
-> 1. Right click on any port in the connection, then select "Goto Connect".
 
 If you try recompiling it, it will give you an error because `VoltageRegulator` is an _abstract block_ (it does not have an implementation) and was automatically substituted with an ideal model (which does not have a circuit implementation, but allows compilation to continue).
 Abstract blocks are useful for two reasons:
