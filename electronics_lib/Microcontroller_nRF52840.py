@@ -10,7 +10,7 @@ class Nrf52840_Interfaces(IoControllerUsb, IoControllerI2s, IoControllerBle, Bas
   """Defines base interfaces for nRF52840 microcontrollers"""
 
 
-@abstract_block
+@non_library
 class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
   """nRF52840 IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""

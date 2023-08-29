@@ -34,6 +34,7 @@ class VoltageRegulator(PowerConditioner):
                  "Output voltage must be within spec")
 
 
+@non_library
 class VoltageRegulatorEnableWrapper(Resettable, VoltageRegulator, GeneratorBlock):
   """Implementation mixin for a voltage regulator wrapper block where the inner device has a reset/enable pin
   (active-high enable / active-low shutdown) that is automatically tied high if not externally connected.

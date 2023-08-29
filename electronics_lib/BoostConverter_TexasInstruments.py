@@ -48,6 +48,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   def contents(self):
     super().contents()
 
+    self.require(self.output_voltage >= self.pwr_in.link().voltage)  # it's a boost converter
     self.assign(self.frequency, 1*MHertz(tol=0))  # up to 1 MHz, can be lower
 
     with self.implicit_connect(

@@ -4,7 +4,7 @@ from electronics_abstract_parts import PartsTableFootprintSelector, PartsTableRo
 from electronics_model import *
 
 @abstract_block
-class SmdStandardPackage(Block):
+class SmdStandardPackage(InternalBlock, Block):
   """A base mixin for any device that can generate into a standard SMT package, the 0402/0603/0805/etc series.
   This provides a parameter that can be globally set to specify a minimum package size.
   Devices may generate into nonstandard packages, those are not affected.
@@ -51,7 +51,7 @@ class SmdStandardPackage(Block):
 
 
 @non_library
-class SmdStandardPackageSelector(PartsTableFootprintSelector, SmdStandardPackage):
+class SmdStandardPackageSelector(SmdStandardPackage, PartsTableFootprintSelector):
   SMD_FOOTPRINT_MAP: Dict[str, Optional[str]]  # subclass-defined, maps standard packages (e.g., 0402) to footprints
 
   def __init__(self, *args, **kwargs):

@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-@abstract_block
+@non_library
 class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, BaseIoControllerPinmapGenerator,
                          InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
   PACKAGE: str  # package name for footprint(...)
