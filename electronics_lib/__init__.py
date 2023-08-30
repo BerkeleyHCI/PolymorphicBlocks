@@ -135,6 +135,7 @@ from .Mag_Qmc5883l import Mag_Qmc5883l
 from .EnvironmentalSensor_Sensirion import Shtc3
 from .EnvironmentalSensor_Bme680 import Bme680
 from .LightSensor_Bh1750 import Bh1750
+from .LightSensor_As7341 import As7341
 
 from .LedMatrix import CharlieplexedLedMatrix
 from .SwitchMatrix import SwitchMatrix
