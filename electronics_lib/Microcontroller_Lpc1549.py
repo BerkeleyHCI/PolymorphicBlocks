@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 @non_library
-class Lpc1549Base_Device(IoControllerI2cTarget, IoControllerSpiPeripheral, IoControllerDac, IoControllerCan,
+class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, IoControllerCan,
                          IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart,
                          FootprintBlock):
   PACKAGE: str  # package name for footprint(...)
