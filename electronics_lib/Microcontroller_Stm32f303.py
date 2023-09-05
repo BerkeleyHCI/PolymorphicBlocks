@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 
 
 @non_library
-class Stm32f303_Ios(IoControllerDac, IoControllerCan, BaseIoControllerPinmapGenerator):
+class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, BaseIoControllerPinmapGenerator):
   """Base class for STM32F303x6/8 devices (separate from STM32F303xB/C).
   Unlike other microcontrollers, this one also supports dev boards (Nucleo-32) which can be
   a power source, so there's a bit more complexity here."""

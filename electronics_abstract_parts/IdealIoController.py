@@ -1,11 +1,13 @@
 from electronics_model import *
 from .Categories import IdealModel
 from .IoController import IoController
-from .IoControllerInterfaceMixins import IoControllerDac, IoControllerCan, IoControllerUsb, IoControllerI2s
+from .IoControllerInterfaceMixins import IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, \
+    IoControllerCan, IoControllerUsb, IoControllerI2s, IoControllerWifi, IoControllerBluetooth, IoControllerBle
 
 
-class IdealIoController(IoControllerDac, IoControllerCan, IoControllerUsb, IoControllerI2s, IoController, IdealModel,
-                        GeneratorBlock):
+class IdealIoController(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, IoControllerCan,
+                        IoControllerUsb, IoControllerI2s, IoControllerWifi, IoControllerBluetooth, IoControllerBle,
+                        IoController, IdealModel, GeneratorBlock):
     """An ideal IO controller, with as many IOs as requested.
     Output have voltages at pwr/gnd, all other parameters are ideal."""
     def __init__(self) -> None:

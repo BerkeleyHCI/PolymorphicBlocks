@@ -2,6 +2,22 @@ from electronics_model import *
 from .IoController import BaseIoController, IoController
 
 
+class IoControllerSpiPeripheral(BlockInterfaceMixin[BaseIoController]):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.spi_peripheral = self.Port(Vector(SpiPeripheral.empty()), optional=True)
+        self.implementation(lambda base: base._io_ports.append(self.spi_peripheral))
+
+
+class IoControllerI2cTarget(BlockInterfaceMixin[BaseIoController]):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.i2c_target = self.Port(Vector(I2cTarget.empty()), optional=True)
+        self.implementation(lambda base: base._io_ports.append(self.i2c_target))
+
+
 class IoControllerDac(BlockInterfaceMixin[BaseIoController]):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

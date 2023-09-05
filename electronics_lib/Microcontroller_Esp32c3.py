@@ -6,7 +6,8 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @non_library
-class Esp32c3_Interfaces(IoControllerI2s, IoControllerWifi, IoControllerBle, BaseIoController):
+class Esp32c3_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerI2s, IoControllerWifi,
+                         IoControllerBle, BaseIoController):
   """Defines base interfaces for ESP32C3 microcontrollers"""
 
 

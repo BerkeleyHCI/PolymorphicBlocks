@@ -4,8 +4,8 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Rp2040_Device(IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart,
-                    FootprintBlock):
+class Rp2040_Device(IoControllerI2cTarget, IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSubcircuit,
+                    GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
