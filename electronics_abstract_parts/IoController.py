@@ -9,7 +9,7 @@ from .Categories import ProgrammableController
 
 
 @abstract_block
-class BaseIoController(PinMappable, Block):
+class BaseIoController(PinMappable, InternalBlock, Block):
   """An abstract IO controller block, that takes power input and provides a grab-bag of common IOs.
   A base interface for microcontrollers and microcontroller-like devices (eg, FPGAs).
   Pin assignments are handled via refinements and can be assigned to pins' allocated names.
@@ -33,13 +33,10 @@ class BaseIoController(PinMappable, Block):
     self._usb_mixin: Optional[IoControllerUsb] = None
     self._can_mixin: Optional[IoControllerCan] = None
 
-    self.spi_peripheral = self.Port(Vector(SpiPeripheral.empty()), optional=True)
-    self.i2c_target = self.Port(Vector(I2cTarget.empty()), optional=True)
-
     self.io_current_draw = self.Parameter(RangeExpr())  # total current draw for all leaf-level IO sinks
 
     self._io_ports: List[BasePort] = [  # ordered by assignment order, most restrictive should be first
-      self.adc, self.spi, self.i2c, self.uart, self.spi_peripheral, self.i2c_target, self.gpio]
+      self.adc, self.spi, self.i2c, self.uart, self.gpio]
 
   def __getattr__(self, item):
     # automatically materialize USB and CAN mixins on abstract classes, only if this is IoController

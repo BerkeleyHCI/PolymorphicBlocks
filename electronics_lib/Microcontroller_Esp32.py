@@ -7,8 +7,9 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @non_library
-class Esp32_Interfaces(IoControllerDac, IoControllerCan, IoControllerDvp8, IoControllerI2s, IoControllerWifi,
-                       IoControllerBle, IoControllerBluetooth, BaseIoController):
+class Esp32_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, IoControllerCan,
+                       IoControllerDvp8, IoControllerI2s, IoControllerWifi, IoControllerBle, IoControllerBluetooth,
+                       BaseIoController):
   """Defines base interfaces for ESP32 microcontrollers"""
 
 
@@ -133,7 +134,7 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
 
 
 @abstract_block
-class Esp32_Base(Esp32_Ios, IoController, InternalSubcircuit, GeneratorBlock):
+class Esp32_Base(Esp32_Ios, InternalSubcircuit, GeneratorBlock):
   """Base class for ESP32 series microcontrollers with WiFi and Bluetooth (classic and LE)
 
   Chip datasheet: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
@@ -143,8 +144,8 @@ class Esp32_Base(Esp32_Ios, IoController, InternalSubcircuit, GeneratorBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    self.pwr.init_from(self._vdd_model())
-    self.gnd.init_from(Ground())
+    self.pwr = self.Port(self._vdd_model(), [Power])
+    self.gnd = self.Port(Ground(), [Common])
 
     dio_model = self._dio_model(self.pwr, self.gnd)
     self.chip_pu = self.Port(dio_model)  # power control, must NOT be left floating, table 1
@@ -172,7 +173,7 @@ class Esp32_Base(Esp32_Ios, IoController, InternalSubcircuit, GeneratorBlock):
     }).remap(self.SYSTEM_PIN_REMAP)
 
 
-class Esp32_Wroom_32_Device(IoControllerPowerRequired, Esp32_Base, FootprintBlock, JlcPart):
+class Esp32_Wroom_32_Device(Esp32_Base, FootprintBlock, JlcPart):
   """ESP32-WROOM-32 module
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf

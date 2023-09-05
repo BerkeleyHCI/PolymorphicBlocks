@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block_default(lambda: CpuFan3Pin)
-class CpuFanConnector(Block):
+class CpuFanConnector(Connector, Block):
     """Abstract block for a 3-pin CPU fan connector."""
     def __init__(self):
         super().__init__()

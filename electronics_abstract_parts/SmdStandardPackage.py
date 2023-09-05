@@ -51,7 +51,7 @@ class SmdStandardPackage(Block):
 
 
 @non_library
-class SmdStandardPackageSelector(PartsTableFootprintSelector, SmdStandardPackage):
+class SmdStandardPackageSelector(SmdStandardPackage, PartsTableFootprintSelector):
   SMD_FOOTPRINT_MAP: Dict[str, Optional[str]]  # subclass-defined, maps standard packages (e.g., 0402) to footprints
 
   def __init__(self, *args, **kwargs):

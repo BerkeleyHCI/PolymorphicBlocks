@@ -7,8 +7,8 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @non_library
-class Esp32s3_Interfaces(IoControllerCan, IoControllerUsb, IoControllerI2s, IoControllerDvp8, IoControllerWifi,
-                         IoControllerBle, BaseIoController):
+class Esp32s3_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerCan, IoControllerUsb,
+                         IoControllerI2s, IoControllerDvp8, IoControllerWifi, IoControllerBle, BaseIoController):
   """Defines base interfaces for ESP32S3 microcontrollers"""
 
 
@@ -140,7 +140,7 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
 
 
 @abstract_block
-class Esp32s3_Base(Esp32s3_Ios, IoControllerPowerRequired, InternalSubcircuit, GeneratorBlock):
+class Esp32s3_Base(Esp32s3_Ios, InternalSubcircuit, GeneratorBlock):
   """Base class for ESP32-S3 series microcontrollers with WiFi and Bluetooth (classic and LE)
   and AI acceleration
 
@@ -165,8 +165,8 @@ class Esp32s3_Base(Esp32s3_Ios, IoControllerPowerRequired, InternalSubcircuit, G
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    self.pwr.init_from(self._vdd_model())
-    self.gnd.init_from(Ground())
+    self.pwr = self.Port(self._vdd_model(), [Power])
+    self.gnd = self.Port(Ground(), [Common])
 
     dio_model = self._dio_model(self.gnd, self.pwr)
     self.chip_pu = self.Port(dio_model)  # table 2-5, power up/down control, do NOT leave floating
@@ -174,7 +174,7 @@ class Esp32s3_Base(Esp32s3_Ios, IoControllerPowerRequired, InternalSubcircuit, G
     self.uart0 = self.Port(UartPort(dio_model), optional=True)  # programming
 
 
-class Esp32s3_Wroom_1_Device(Esp32s3_Base, IoControllerPowerRequired, FootprintBlock, JlcPart):
+class Esp32s3_Wroom_1_Device(Esp32s3_Base, FootprintBlock, JlcPart):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'VDD': '2',
     'GND': ['1', '40', '41'],  # 41 is EP
