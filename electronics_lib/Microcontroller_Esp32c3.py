@@ -12,7 +12,7 @@ class Esp32c3_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
 
 
 @abstract_block
-class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, IoControllerPowerRequired, BaseIoControllerPinmapGenerator):
+class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, BaseIoControllerPinmapGenerator):
   """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5.
   PlatformIO: use board ID esp32-c3-devkitm-1
 
@@ -21,11 +21,11 @@ class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, IoControllerPowerRequ
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    self.pwr.init_from(VoltageSink(
+    self.pwr = self.Port(VoltageSink(
       voltage_limits=(3.0, 3.6)*Volt,  # section 4.2
       current_draw=(0.001, 335)*mAmp + self.io_current_draw.upper()  # section 4.6, from power off to RF active
-    ))
-    self.gnd.init_from(Ground())
+    ), [Power])
+    self.gnd = self.Port(Ground(), [Common])
 
     self._dio_model = DigitalBidir.from_supply(  # table 4.4
       self.gnd, self.pwr,

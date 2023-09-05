@@ -7,7 +7,7 @@ from .JlcPart import JlcPart
 
 @non_library
 class Nrf52840_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerUsb, IoControllerI2s,
-                          IoControllerBle, BaseIoController):
+                          IoControllerBle):
   """Defines base interfaces for nRF52840 microcontrollers"""
 
 
@@ -170,7 +170,7 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Interna
 
 
 @abstract_block
-class Nrf52840_Base(Nrf52840_Ios, IoControllerPowerRequired, InternalSubcircuit, GeneratorBlock):
+class Nrf52840_Base(Nrf52840_Ios, InternalSubcircuit, GeneratorBlock):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
 
   def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
@@ -187,8 +187,8 @@ class Nrf52840_Base(Nrf52840_Ios, IoControllerPowerRequired, InternalSubcircuit,
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    self.pwr.init_from(self._vdd_model())
-    self.gnd.init_from(Ground())
+    self.pwr = self.Port(self._vdd_model(), [Power])
+    self.gnd = self.Port(Ground(), [Common])
 
     self.pwr_usb = self.Port(VoltageSink(
       voltage_limits=(4.35, 5.5)*Volt,
@@ -283,6 +283,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interf
     self.connect(self.reset_node, self.ic.nreset)
 
   def generate(self):
+    super().generate()
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.nreset)
 
