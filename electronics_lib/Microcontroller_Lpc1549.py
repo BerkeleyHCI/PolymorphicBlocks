@@ -5,8 +5,9 @@ from .JlcPart import JlcPart
 
 
 @non_library
-class Lpc1549Base_Device(IoControllerDac, IoControllerCan, IoControllerUsb, BaseIoControllerPinmapGenerator,
-                         InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
+class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, IoControllerCan,
+                         IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, JlcPart,
+                         FootprintBlock):
   PACKAGE: str  # package name for footprint(...)
   PART: str  # part name for footprint(...)
   LCSC_PART: str
@@ -335,9 +336,9 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 
 
 @abstract_block
-class Lpc1549Base(Resettable, IoControllerDac, IoControllerCan, IoControllerUsb, Microcontroller,
-                  IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoControllerPowerRequired,
-                  BaseIoControllerExportable, GeneratorBlock):
+class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, IoControllerCan,
+                  IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator,
+                  IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
