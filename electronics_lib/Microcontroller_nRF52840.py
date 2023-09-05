@@ -283,6 +283,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interf
     self.connect(self.reset_node, self.ic.nreset)
 
   def generate(self):
+    super().generate()
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.nreset)
 
