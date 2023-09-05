@@ -304,6 +304,7 @@ To run the STM32 within its rated voltage limits, we'll need a voltage regulator
 **Repeat the add block flow** with a `VoltageRegulator` block.
 Unlike the prior blocks, we actually need to specify a target output voltage here, let's use `3.3*Volt(tol=0.05)` for 3.3V ± 5%.
 If using live templates, you can write it into the template field.
+**Place this between the USB connector and the microcontroller** (you can use Alt+click to move the template position, while it's active).
 
 > The `VoltageRegulator` block is parameterized - configured by additional data specified as constructor arguments.
 >
@@ -312,6 +313,8 @@ If using live templates, you can write it into the template field.
 
 **Repeat the connect flow** to connect `reg.gnd` to the existing ground net.
 If using graphical operations, you can start by double-clicking on any port you want to connect.
+**Try merging the new connect into the prior ground connect statement by re-positioning (Alt+click) the template into the prior ground connect**.  
+![Connection live template](docs/ide/ide_livetemplate_gnd_append.png)
 
 You'll also need to splice the regulator into the power connection between the USB and the microcontroller.
 Since graphical operations don't support connection delete, you'll have to **delete the power connection in the code, then recompile**:
@@ -320,12 +323,12 @@ Since graphical operations don't support connection delete, you'll have to **del
   self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
   self.mcu = self.Block(Stm32f103_48())
   self.led = self.Block(IndicatorLed())
-- self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
-  self.connect(self.usb.pwr, self.mcu.pwr)
+  self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
+- self.connect(self.usb.pwr, self.mcu.pwr)
   self.connect(self.mcu.gpio.request('led'), self.led.signal)
 ```
 
-From here, you can **repeat the connect flow** to connect the regulator input and outputs.
+From here, you can **repeat the connect flow** to connect the regulator input and output.
 
 When all is done, your changes to the skeleton code might look like:
 ```diff
@@ -335,7 +338,7 @@ When all is done, your changes to the skeleton code might look like:
   self.led = self.Block(IndicatorLed())
 - self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd)
 - self.connect(self.usb.pwr, self.mcu.pwr)
-+ self.connect(self.usb.gnd, self.reg.gnd, self.mcu.gnd, self.led.gnd)
++ self.connect(self.usb.gnd, self.mcu.gnd, self.led.gnd, self.reg.gnd)
 + self.connect(self.usb.pwr, self.reg.pwr_in)
 + self.connect(self.reg.pwr_out, self.mcu.pwr)
   self.connect(self.mcu.gpio.request('led'), self.led.signal)
