@@ -90,17 +90,15 @@ object CompilerServerMain {
     val hdlServerOption = PythonInterface.serverFileOption(None) // local relative path
     hdlServerOption.foreach { serverFile => println(s"Using local $serverFile") }
     val pyIf = new ForwardingPythonInterface(hdlServerOption, Seq(new File(".").getAbsolutePath))
-    pyIf.getProtoVersion() match {
-      case Errorable.Success(result) =>
-        if (result != Compiler.kExpectedProtoVersion) {
-          System.err.println(f"WARNING: Potential Python / compiler version mismatch, Python reported $result, " +
-            f"expected ${Compiler.kExpectedProtoVersion}")
-          Thread.sleep(kHdlVersionMismatchDelayMs)
-        }
-      case Errorable.Error(errMsg) =>
-        System.err.println(f"WARNING: Potential Python / compiler version mismatch, Python reported error $errMsg, " +
-          f"expected ${Compiler.kExpectedProtoVersion}")
-        Thread.sleep(kHdlVersionMismatchDelayMs)
+    (pyIf.getProtoVersion() match {
+      case Errorable.Success(pyVersion) if pyVersion == Compiler.kExpectedProtoVersion => None
+      case Errorable.Success(pyMismatchVersion) => Some(pyMismatchVersion.toString)
+      case Errorable.Error(errMsg) => Some(s"error $errMsg")
+    }).foreach { pyMismatchVersion =>
+      System.err.println(f"WARNING: Python / compiler version mismatch, Python reported $pyMismatchVersion, " +
+        f"expected ${Compiler.kExpectedProtoVersion}.")
+      System.err.println(f"If you get unexpected errors or results, consider updating the Python library or compiler.")
+      Thread.sleep(kHdlVersionMismatchDelayMs)
     }
 
     val pyLib = new PythonInterfaceLibrary()
