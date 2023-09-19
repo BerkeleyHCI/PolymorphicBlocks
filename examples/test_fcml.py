@@ -345,7 +345,7 @@ class Fcml(JlcBoardTop):
       (self.mcu_leds, ), _ = self.chain(self.mcu.gpio.request_vector('led'), imp.Block(IndicatorLedArray(4)))
 
       (self.usb_mcu_esd, ), self.usb_mcu_chain = self.chain(
-        self.mcu.with_mixin(IoControllerUsb()).usb.request('usb'), imp.Block(UsbEsdDiode()), self.usb_mcu.usb)
+        self.mcu.usb.request('usb'), imp.Block(UsbEsdDiode()), self.usb_mcu.usb)
 
       self.tp_fpga = ElementDict[DigitalTestPoint]()
       for i in range(4):

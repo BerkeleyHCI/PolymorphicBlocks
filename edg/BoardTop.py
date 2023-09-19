@@ -51,19 +51,6 @@ class BoardTop(BaseBoardTop):
   pass
 
 
-class SimpleBoardTop(BaseBoardTop):
-  """A BoardTop with refinements that make getting started easier but may not be desirable everywhere."""
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      class_refinements=[
-        (PassiveConnector, PinHeader254),
-      ],
-      class_values=[
-        (JlcInductor, ['manual_frequency_rating'], Range.all()),
-      ],
-    )
-    
-    
 class JlcToolingHoles(Mechanical, Block):
   def contents(self):
     super().contents()
@@ -108,5 +95,20 @@ class JlcBoardTop(BaseBoardTop):
       class_values=[  # realistically only RCs are going to likely be basic parts
         (JlcResistor, ['require_basic_part'], True),
         (JlcCapacitor, ['require_basic_part'], True),
+      ],
+    )
+
+
+class SimpleBoardTop(JlcBoardTop):
+  """A BoardTop with refinements that make getting started easier but may not be desirable everywhere."""
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      class_refinements=[
+        (PassiveConnector, PinHeader254),
+      ],
+      class_values=[
+        (Er_Oled_091_3, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
+        (Er_Oled_091_3, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
+        (JlcInductor, ['manual_frequency_rating'], Range.all()),
       ],
     )

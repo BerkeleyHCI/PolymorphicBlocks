@@ -35,11 +35,12 @@ class IoControllerCan(BlockInterfaceMixin[BaseIoController]):
 
 
 class IoControllerUsb(BlockInterfaceMixin[BaseIoController]):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    """Eventually, the USB device port will be an IoController mixin.
+    For now, it's part of base, since it's common enough and there isn't GUI support for mixins.
 
-        self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True)
-        self.implementation(lambda base: base._io_ports.insert(0, self.usb))
+    This class SHOULD BE mixed into IoController blocks, in preparation for the eventual move.
+    This WILL NOT WORK when used in .with_mixin, since this defines no fields."""
+    pass
 
 
 class IoControllerI2s(BlockInterfaceMixin[BaseIoController]):

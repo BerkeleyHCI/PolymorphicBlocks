@@ -323,7 +323,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.mcu = imp.Block(IoController())
 
       (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()),
-                                       self.mcu.with_mixin(IoControllerUsb()).usb.request())
+                                       self.mcu.usb.request())
 
       (self.i2c_pull, ), _ = self.chain(self.mcu.i2c.request(), imp.Block(I2cPullup()), self.pd.i2c)
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
