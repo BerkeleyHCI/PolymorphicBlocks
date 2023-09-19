@@ -115,6 +115,10 @@ class AssignNamer() {
   }
 }
 
+object Compiler {
+  final val kExpectedProtoVersion = 2
+}
+
 /** Compiler for a particular design, with an associated library to elaborate references from.
   *
   * During the compilation process, internal data structures are mutated.

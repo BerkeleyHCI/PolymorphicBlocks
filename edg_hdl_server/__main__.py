@@ -10,7 +10,7 @@ from edg_core import *
 from edg_core.Core import NonLibraryProperty
 
 
-EDG_PROTO_VERSION = 1
+EDG_PROTO_VERSION = 2
 
 
 class LibraryElementIndexer:
