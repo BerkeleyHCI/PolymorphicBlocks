@@ -115,41 +115,44 @@ if __name__ == "__main__":
 - `compile_board_inplace(...)` invokes the circuit generator given the top-level design (`BlinkyExample`).
   This is the starting point that allows the file to run as a Python script, and you can treat it as magic.
 
-Try building the example now:
-- **If using the IDE**: look for the run icon ![run icon](docs/ide/ide_run_button.png) in the gutter (with the line numbers) next to `class BlinkyExample`.
-  1. Click it.
-     _Make sure that you're using the run icon associated with `class BlinkyExample`, not the file, and not `if __name__ == "__main__"`._
-  2. Then from the menu, click the Run option.  
-     ![run menu](docs/ide/ide_run_blinky_menu.png)
-     > **Tip**: Next time, you can rebuild the design by re-running the last selected run configuration with hotkey **Shift+F10** (Windows) or **Ctrl+R** (MacOS).
+Try building the example now.
 
-     > **Note on re-compiling behavior**: The IDE only re-compiles block classes when its source (or the source of superclasses) has changed, but this does not catch all functional changes.
-     > If changes aren't recompiling, try making a change to the class code.
-     > Alternatively, you can clear all compiled blocks through main menu > Tools > Empty Block Cache.
-     > 
-     > In particular, these changes may not trigger a recompile:
-     > - Any changes outside the class, even if the code is called by the class.
-     > - Changes to supporting files (such as part tables and imported schematics), even if they are referenced in the class.
-     > - Changes to `__init__` do not re-compile instantiating classes, even if default values have been updated.
-  3. The design should build, and you should get a run log that looks something like:
-     ```
-     Starting compilation of blinky.BlinkyExample
-     Using interpreter from configured SDK [...]
-     [... lots of compilation output here ...]
-     Completed: generate netlist: wrote [...]
-     ```
-  4. Some options (like where the netlist is generated into) can be modified via the run options at the top right:  
-     ![run menu](docs/ide/ide_run_config.png)
-- <details> <summary>If not using the IDE</summary>
+**If using the IDE**: look for the run icon ![run icon](docs/ide/ide_run_button.png) in the gutter (with the line numbers) next to `class BlinkyExample`:
+![run in IDE](docs/ide/ide_gutter_run.png)  
+1. Click it.
+   _Make sure that you're using the run icon associated with `class BlinkyExample`, not the file, and not `if __name__ == "__main__"`._
+2. Then from the menu, click the Run option.  
+   ![run menu](docs/ide/ide_run_blinky_menu.png)
+   > **Tip**: Next time, you can rebuild the design by re-running the last selected run configuration with hotkey **Shift+F10** (Windows) or **Ctrl+R** (MacOS).
+
+   > **Note on re-compiling behavior**: The IDE only re-compiles block classes when its source (or the source of superclasses) has changed, but this does not catch all functional changes.
+   > If changes aren't recompiling, try making a change to the class code.
+   > Alternatively, you can clear all compiled blocks through main menu > Tools > Empty Block Cache.
+   > 
+   > In particular, these changes may not trigger a recompile:
+   > - Any changes outside the class, even if the code is called by the class.
+   > - Changes to supporting files (such as part tables and imported schematics), even if they are referenced in the class.
+   > - Changes to `__init__` do not re-compile instantiating classes, even if default values have been updated.
+3. The design should build, and you should get a run log that looks something like:
+   ```
+   Starting compilation of blinky.BlinkyExample
+   Using interpreter from configured SDK [...]
+   [... lots of compilation output here ...]
+   Completed: generate netlist: wrote [...]
+   ```
+4. Some options (like where the netlist is generated into) can be modified via the run options at the top right:  
+   ![run menu](docs/ide/ide_run_config.png)
+<details> <summary>If not using the IDE</summary>
   
-  Run `python blinky.py` from the command line.
-  If all worked, this should create a folder `BlinkyExample` with a netlist `BlinkyExample.net` inside.
-  </details>
-- <details> <summary>Resolving common errors</summary>
+Run `python blinky.py` from the command line.
+If all worked, this should create a folder `BlinkyExample` with a netlist `BlinkyExample.net` inside.
+</details>
+
+<details> <summary>Resolving common errors</summary>
   
-  - If you get an error along the lines of `ModuleNotFoundError: No module named 'deprecated'` or `ModuleNotFoundError: No module named 'google'`, this is because the Python dependencies haven't been installed.
-  See the [setup document](setup.md) for instructions on installing dependencies.
-  </details>
+- If you get an error along the lines of `ModuleNotFoundError: No module named 'deprecated'` or `ModuleNotFoundError: No module named 'google'`, this is because the Python dependencies haven't been installed.
+See the [setup document](setup.md) for instructions on installing dependencies.
+</details>
 
 
 ### Creating the microcontroller and LED
@@ -163,7 +166,8 @@ Let's start by instantiating the USB type-C receptacle through graphical operati
    ![Live template example](docs/ide/ide_livetemplate_usbc.png)  
    **Editing outside the currently active template field (boxed in blue) will break off and cancel the template.**
    **Moving the cursor outside the currently active template field, either using the mouse or keyboard arrows, is discouraged.**
-3. Name the block `usb`, by typing it into the first template field.
+3. Name the block `usb`, by typing it into the first template field.  
+   ![Live template example](docs/ide/ide_livetemplate_usbc_named.png)
 4. Then press [Tab] through the end of the template (leaving the other fields empty, they're optional).
 5. Once you commit the live template, the block will appear in the block diagram visualizer.
     - The hatched pattern (diagonal lines) in the block diagram visualizer indicates that the block may be out-of-sync with the code until the next re-compile.
@@ -217,8 +221,8 @@ First, we need to connect the power and ground between the devices, which we can
     - The order in which you select additional ports determines the order of the ports in the generated code.
 3. Double-click anywhere (within a block) to insert the connections as a live template.
    ![Connection live template](docs/ide/ide_livetemplate_gnd_connect.png)
-    - You can double-click on a port to simultaneously select that port and insert the connection.
-    - You can cancel a connect operation by pressing [Esc] while the block diagram visualizer is selected.
+   > - You can double-click on a port to simultaneously select that port and insert the connection.
+   > - You can cancel a connect operation by pressing [Esc] while the block diagram visualizer is selected.
 4. The name template field is optional, leave it blank and [Tab] past it.
     - Like the block instantiation, you can move the live template with [Alt+Click].
 5. Once you commit the live template, the connection will appear in the block diagram visualizer.
@@ -302,10 +306,11 @@ You can also inspect the details of the power connection by mousing over it:
 ### Adding a Voltage Regulator
 To run the STM32 within its rated voltage limits, we'll need a voltage regulator to lower the 5v from USB to the common 3.3v power expected by modern devices.
 
-**Repeat the add block flow** with a `VoltageRegulator` block.
+**Repeat the add block flow** with a `VoltageRegulator` block and name it `reg`.
 Unlike the prior blocks, we actually need to specify a target output voltage here: use `3.3*Volt(tol=0.05)` for 3.3V ± 5%.
 If using live templates, you can write it into the `output_voltage` template field.
-**Place this between the USB connector and the microcontroller** (you can use Alt+click to move the template position, while it's active).
+**Place this between the USB connector and the microcontroller** (you can use Alt+click to move the template position, while it's active).  
+![Regulator live template](docs/ide/ide_livetemplate_reg.png)
 
 > The `VoltageRegulator` block is parameterized - configured by additional data specified as constructor arguments.
 >
@@ -354,16 +359,16 @@ Abstract blocks are useful for two reasons:
 
 Unlike in software, we can instantiate abstract blocks here, but they won't actually place down a useful circuit.
 We can _refine_ those abstract blocks to give them a _concrete_ subclass by **adding a refinements block in the top-level design class**.
-```python
-class BlinkyExample(SimpleBoardTop):
-  def contents(self) -> None:
-    ...
+```diff
+  class BlinkyExample(SimpleBoardTop):
+    def contents(self) -> None:
+      ...
 
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-    instance_refinements=[
-      (['reg'], Tps561201),
-    ])
++   def refinements(self) -> Refinements:
++     return super().refinements() + Refinements(
++     instance_refinements=[
++       (['reg'], Tps561201),
++     ])
 ```
 
 > `BoardTop` defines default refinements for some common types, such has choosing surface-mount components for `Resistor` and `Capacitor`.
@@ -721,7 +726,7 @@ Like the `VoltageRegulator`, there is actually an abstract class for microcontro
       ])
 ```
 
-> `IoController` defines an interface of a power and ground pin, then an array of common IOs including GPIO, SPI, I2C, UART, USB, CAN, ADC, and DAC.
+> `IoController` defines an interface of a power and ground pin, then an array of common IOs including GPIO, ADC, SPI, I2C, and UART.
 > Not all devices that implement it have all those capabilities (or the number of IOs requested), in which case they will fail with a compilation error.
 > This interface generalizes beyond microcontrollers to anything that can control IOs, such as FPGAs.
 
