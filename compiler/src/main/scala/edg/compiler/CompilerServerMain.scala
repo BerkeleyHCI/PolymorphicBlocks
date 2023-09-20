@@ -26,14 +26,14 @@ class ForwardingPythonInterface(serverFile: Option[File], pythonPaths: Seq[Strin
     }
   }
 
-  override def onLibraryRequestComplete(
+  override protected def onLibraryRequestComplete(
       element: ref.LibraryPath,
       result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
   ): Unit = {
     forwardProcessOutput()
   }
 
-  override def onElaborateGeneratorRequestComplete(
+  override protected def onElaborateGeneratorRequestComplete(
       element: ref.LibraryPath,
       values: Map[ref.LocalPath, ExprValue],
       result: Errorable[elem.HierarchyBlock]
@@ -41,7 +41,10 @@ class ForwardingPythonInterface(serverFile: Option[File], pythonPaths: Seq[Strin
     forwardProcessOutput()
   }
 
-  override def onRunBackendComplete(backend: ref.LibraryPath, result: Errorable[Map[DesignPath, String]]): Unit = {
+  override protected def onRunBackendComplete(
+      backend: ref.LibraryPath,
+      result: Errorable[Map[DesignPath, String]]
+  ): Unit = {
     forwardProcessOutput()
   }
 }
@@ -51,6 +54,8 @@ class ForwardingPythonInterface(serverFile: Option[File], pythonPaths: Seq[Strin
   * long-term user interaction.
   */
 object CompilerServerMain {
+  final val kHdlVersionMismatchDelayMs = 2000
+
   private def constPropToSolved(vals: Map[IndirectDesignPath, ExprValue]): Seq[edgcompiler.CompilerResult.Value] = {
     vals.map { case (path, value) =>
       edgcompiler.CompilerResult.Value(
@@ -85,6 +90,17 @@ object CompilerServerMain {
     val hdlServerOption = PythonInterface.serverFileOption(None) // local relative path
     hdlServerOption.foreach { serverFile => println(s"Using local $serverFile") }
     val pyIf = new ForwardingPythonInterface(hdlServerOption, Seq(new File(".").getAbsolutePath))
+    (pyIf.getProtoVersion() match {
+      case Errorable.Success(pyVersion) if pyVersion == Compiler.kExpectedProtoVersion => None
+      case Errorable.Success(pyMismatchVersion) => Some(pyMismatchVersion.toString)
+      case Errorable.Error(errMsg) => Some(s"error $errMsg")
+    }).foreach { pyMismatchVersion =>
+      System.err.println(f"WARNING: Python / compiler version mismatch, Python reported $pyMismatchVersion, " +
+        f"expected ${Compiler.kExpectedProtoVersion}.")
+      System.err.println(f"If you get unexpected errors or results, consider updating the Python library or compiler.")
+      Thread.sleep(kHdlVersionMismatchDelayMs)
+    }
+
     val pyLib = new PythonInterfaceLibrary()
     pyLib.withPythonInterface(pyIf) {
       while (true) {

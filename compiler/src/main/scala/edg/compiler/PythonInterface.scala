@@ -159,17 +159,34 @@ class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], python
   }
 
   // Hooks to implement when certain actions happen
-  def onLibraryRequest(element: ref.LibraryPath): Unit = {}
-  def onLibraryRequestComplete(
+  protected def onLibraryRequest(element: ref.LibraryPath): Unit = {}
+  protected def onLibraryRequestComplete(
       element: ref.LibraryPath,
       result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
   ): Unit = {}
-  def onElaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Unit = {}
-  def onElaborateGeneratorRequestComplete(
+  protected def onElaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Unit = {}
+  protected def onElaborateGeneratorRequestComplete(
       element: ref.LibraryPath,
       values: Map[ref.LocalPath, ExprValue],
       result: Errorable[elem.HierarchyBlock]
   ): Unit = {}
+
+  def getProtoVersion(): Errorable[Int] = {
+    val (reply, reqTime) = timeExec {
+      process.write(edgrpc.HdlRequest(
+        request = edgrpc.HdlRequest.Request.GetProtoVersion(0) // dummy argument
+      ))
+      process.read()
+    }
+    reply.response match {
+      case edgrpc.HdlResponse.Response.GetProtoVersion(result) =>
+        Errorable.Success(result)
+      case edgrpc.HdlResponse.Response.Error(err) =>
+        Errorable.Error(s"while getting proto version: ${err.error}")
+      case _ =>
+        Errorable.Error(s"while getting proto version: invalid response")
+    }
+  }
 
   def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = {
     val request = edgrpc.ModuleName(module)
@@ -246,16 +263,16 @@ class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], python
     result
   }
 
-  def onRunRefinementPass(refinementPass: ref.LibraryPath): Unit = {}
+  protected def onRunRefinementPass(refinementPass: ref.LibraryPath): Unit = {}
 
-  def onRunBackend(backend: ref.LibraryPath): Unit = {}
+  protected def onRunBackend(backend: ref.LibraryPath): Unit = {}
 
-  def onRunRefinementPassComplete(
+  protected def onRunRefinementPassComplete(
       refinementPass: ref.LibraryPath,
       result: Errorable[Map[DesignPath, ExprValue]]
   ): Unit = {}
 
-  def onRunBackendComplete(backend: ref.LibraryPath, result: Errorable[Map[DesignPath, String]]): Unit = {}
+  protected def onRunBackendComplete(backend: ref.LibraryPath, result: Errorable[Map[DesignPath, String]]): Unit = {}
 
   def runRefinementPass(
       refinementPass: ref.LibraryPath,
