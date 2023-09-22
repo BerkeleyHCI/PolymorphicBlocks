@@ -59,12 +59,8 @@ class JlcToolingHoles(Mechanical, Block):
     self.th3 = self.Block(JlcToolingHole())
 
 
-class JlcBoardTop(BaseBoardTop):
-  """Design top with refinements to use parts from JLC's assembly service and including the tooling holes"""
-  def contents(self):
-    super().contents()
-    self.jlc_th = self.Block(JlcToolingHoles())
-
+class JlcTopRefinements(BaseBoardTop):
+  """Design top with refinements to use parts from JLC's assembly service"""
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[
@@ -99,7 +95,14 @@ class JlcBoardTop(BaseBoardTop):
     )
 
 
-class SimpleBoardTop(JlcBoardTop):
+class JlcBoardTop(JlcTopRefinements):
+  """Design top with refinements to use parts from JLC's assembly service and including the tooling holes"""
+  def contents(self):
+    super().contents()
+    self.jlc_th = self.Block(JlcToolingHoles())
+
+
+class SimpleBoardTop(JlcTopRefinements):
   """A BoardTop with refinements that make getting started easier but may not be desirable everywhere."""
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
