@@ -262,12 +262,14 @@ Give the GPIO pin an (optional) name `led` by modifying the generated code:
 + self.connect(self.mcu.gpio.request('led'), self.led.signal)
 ```
 
-> Microcontroller GPIOs (and other IOs like SPI and UART) are _port arrays_, which are dynamically sized.
-> Here, we `request(...)` a new GPIO from the GPIO port array, then connect it to the LED.
+> Microcontroller GPIOs (and other IOs like SPI and UART) are ![port array symbol](docs/ide/ide_portarray.png) _port arrays_, which are dynamically sized.
+> Here, we ![port array symbol](docs/ide/ide_portarray_slice_min.png) `request(...)` a new GPIO from the GPIO port array, then connect it to the LED.
 > `request(...)` takes an optional name parameter, the meaning of which depends on the block.
 >
 > By default, these connections are arbitrarily assigned to microcontroller pins.
 > However pin assignments can also be manually specified (using this name parameter) to simplify board layout - this will be covered at the end of this tutorial.
+> 
+> Port arrays can be connected as a unit, which also propagates the length, though this isn't yet supported with graphical operations.
 > 
 > Port arrays behave differently when viewed externally (as we're doing here) and internally (for library builders).
 > Internal usage of port arrays will be covered later in the library building section.
