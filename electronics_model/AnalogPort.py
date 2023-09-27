@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from edg_core import *
 from edg_core.Blocks import DescriptionString
 from .CircuitBlock import CircuitLink
@@ -41,7 +43,7 @@ class AnalogLink(CircuitLink):
     self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
 
     self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
-    # self.require(self.voltage_limits.contains(self.voltage), "incompatible voltage levels")
+    self.require(self.voltage_limits.contains(self.voltage), "incompatible voltage levels")
     self.assign(self.signal_limits, self.sinks.intersection(lambda x: x.signal_limits))
     self.require(self.signal_limits.contains(self.signal), "incompatible signal levels")
     self.assign(self.current_limits, self.source.current_limits)
@@ -116,14 +118,24 @@ class AnalogSink(AnalogBase):
   @staticmethod
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
                   voltage_limit_tolerance: RangeLike = (-0.3, 0.3),
-                  signal_limit_tolerance: RangeLike = (0, 0),
+                  signal_limit_tolerance: Optional[RangeLike] = None,
+                  signal_limit_abs: Optional[RangeLike] = None,
                   current_draw: RangeLike = RangeExpr.ZERO,
                   impedance: RangeLike = RangeExpr.INF):
+    signal_limit: RangeLike
+    if signal_limit_abs is not None:
+      assert signal_limit_tolerance is None
+      signal_limit = signal_limit_abs
+    elif signal_limit_tolerance is not None:
+      signal_limit = neg.link().voltage.hull(pos.link().voltage) + \
+                      RangeExpr._to_expr_type(signal_limit_tolerance)
+    else:  # generic default
+      signal_limit = neg.link().voltage.hull(pos.link().voltage)
+
     return AnalogSink(
-      voltage_limits=(neg.link().voltage.upper(), pos.link().voltage.lower()) +
+      voltage_limits=neg.link().voltage.hull(pos.link().voltage) +
                      RangeExpr._to_expr_type(voltage_limit_tolerance),
-      signal_limits=(neg.link().voltage.upper(), pos.link().voltage.lower()) +
-                     RangeExpr._to_expr_type(signal_limit_tolerance),
+      signal_limits=signal_limit,
       current_draw=current_draw,
       impedance=impedance
     )
@@ -148,8 +160,8 @@ class AnalogSource(AnalogBase):
                   current_limits: RangeLike = RangeExpr.ALL,
                   impedance: RangeLike = RangeExpr.ZERO):
     return AnalogSource(
-      voltage_out=(neg.link().voltage.lower(), pos.link().voltage.upper()),
-      signal_out=(neg.link().voltage.lower(), pos.link().voltage.upper()),
+      voltage_out=neg.link().voltage.hull(pos.link().voltage),
+      signal_out=neg.link().voltage.hull(pos.link().voltage),
       current_limits=current_limits,
       impedance=impedance
     )

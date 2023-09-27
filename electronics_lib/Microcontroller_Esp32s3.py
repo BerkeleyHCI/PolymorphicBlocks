@@ -41,7 +41,11 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
     gnd, pwr = self._gnd_vddio()
     dio_model = self._dio_model(gnd, pwr)
 
-    adc_model = AnalogSink.from_supply(gnd, pwr)  # table 4-5, no other specs given
+    adc_model = AnalogSink.from_supply(
+      gnd, pwr,
+      signal_limit_abs=(0, 2.9)*Volt,  # table 4-5, effective ADC range at max attenuation
+      # TODO: impedance / leakage - not specified by datasheet
+    )
 
     uart_model = UartPort(DigitalBidir.empty())  # section 3.5.5, up to 5Mbps
     spi_model = SpiController(DigitalBidir.empty(), (0, 80) * MHertz)  # section 3.5.2, 80MHz in controller, 60MHz in peripheral
