@@ -251,6 +251,6 @@ class RobotDriver(JlcBoardTop):
     )
 
 
-class RobotDriver2TestCase(unittest.TestCase):
+class RobotDriverTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(RobotDriver)

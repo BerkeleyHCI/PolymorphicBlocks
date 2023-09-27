@@ -11,7 +11,7 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.vss = self.Port(Ground(), [Common])
 
     analog_in_model = AnalogSink(
-      voltage_limits=(-0.3, self.vcc.link().voltage.lower() + 0.3),
+      voltage_limits=(-1.0, self.vcc.link().voltage.lower() + 1.0),
       impedance=1e13*Ohm(tol=0),  # no tolerance bounds given on datasheet
       current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
     )

@@ -10,15 +10,15 @@ class Opa197_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     ), [Power])
     self.vss = self.Port(Ground(), [Common])
 
-    analog_in_model = AnalogSink(
-      voltage_limits=(-0.1, self.vcc.link().voltage.lower() + 0.1),  # inferred, from common-mode voltage range
+    analog_in_model = AnalogSink.from_supply(
+      self.vss, self.vcc,
+      voltage_limit_tolerance=(-0.5, 0.5),  # input common mode absolute maximum ratings
       impedance=1e13*Ohm(tol=0),  # no tolerance bounds given on datasheet
-      current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)
-    self.vout = self.Port(AnalogSource(
-      (0.125, self.vcc.link().voltage.upper() - 0.125),  # assuming a 10k load
+    self.vout = self.Port(AnalogSource.from_supply(
+      self.vss, self.vcc,
       current_limits=(-65, 65)*mAmp,  # for +/-18V supply
       impedance=375*Ohm(tol=0)  # no tolerance bounds given on datasheet; open-loop impedance
     ))
