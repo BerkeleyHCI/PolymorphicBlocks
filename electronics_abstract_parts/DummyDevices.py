@@ -88,8 +88,7 @@ class ForcedVoltage(DummyDevice, NetBlock):
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink(
-      current_draw=RangeExpr(),
-      voltage_limits=RangeExpr()
+      current_draw=RangeExpr()
     ), [Input])
 
     self.pwr_out = self.Port(VoltageSource(
@@ -98,7 +97,42 @@ class ForcedVoltage(DummyDevice, NetBlock):
     ), [Output])
 
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
-    self.assign(self.pwr_in.voltage_limits, self.pwr_out.link().voltage_limits)
+
+
+class ForcedAnalogVoltage(DummyDevice, NetBlock):
+  @init_in_parent
+  def __init__(self, forced_voltage: RangeLike = RangeExpr()) -> None:
+    super().__init__()
+
+    self.signal_in = self.Port(AnalogSink(
+      current_draw=RangeExpr()
+    ), [Input])
+
+    self.signal_out = self.Port(AnalogSource(
+      voltage_out=forced_voltage,
+      signal_out = self.signal_in.link().signal,
+      current_limits=self.signal_in.link().current_limits
+    ), [Output])
+
+    self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+
+
+class ForcedAnalogSignal(DummyDevice, NetBlock):
+  @init_in_parent
+  def __init__(self, forced_signal: RangeLike = RangeExpr()) -> None:
+    super().__init__()
+
+    self.signal_in = self.Port(AnalogSink(
+      current_draw=RangeExpr()
+    ), [Input])
+
+    self.signal_out = self.Port(AnalogSource(
+      voltage_out=self.signal_in.link().voltage,
+      signal_out=forced_signal,
+      current_limits=self.signal_in.link().current_limits
+    ), [Output])
+
+    self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
 
 
 class ForcedDigitalSinkCurrentDraw(DummyDevice, NetBlock):

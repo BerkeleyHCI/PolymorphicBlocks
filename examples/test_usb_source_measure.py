@@ -245,6 +245,9 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
           'ratio': Range.from_tolerance(1/22, 0.05),
           'input_impedance': 220*kOhm(tol=0.05)
         },
+        'clamp': {
+          'voltage': (2.5, 3.0)*Volt
+        }
       })
 
 

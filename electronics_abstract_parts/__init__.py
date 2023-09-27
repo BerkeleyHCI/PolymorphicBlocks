@@ -37,7 +37,7 @@ from .I2cPullup import I2cPullup
 from .Resettable import Resettable
 
 from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardFootprint, TableDiode
-from .AbstractDiodes import ZenerDiode, TableZenerDiode, ProtectionZenerDiode
+from .AbstractDiodes import ZenerDiode, TableZenerDiode, ProtectionZenerDiode, AnalogClampZenerDiode
 from .AbstractLed import Led, LedStandardFootprint, RgbLedCommonAnode, LedColor, LedColorLike
 from .AbstractLed import IndicatorLed, IndicatorSinkLed, IndicatorSinkLedResistor, VoltageIndicatorLed, IndicatorSinkRgbLed
 from .AbstractLed import IndicatorSinkPackedRgbLed
@@ -90,5 +90,6 @@ from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource,
 from .VariantPinRemapper import VariantPinRemapper
 
 from .DummyDevices import DummyPassive, DummyVoltageSource, DummyVoltageSink, DummyDigitalSink, DummyAnalogSink
-from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltage, ForcedDigitalSinkCurrentDraw
+from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltage, ForcedAnalogVoltage, ForcedAnalogSignal,\
+    ForcedDigitalSinkCurrentDraw
 from .MergedBlocks import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource, MergedSpiController

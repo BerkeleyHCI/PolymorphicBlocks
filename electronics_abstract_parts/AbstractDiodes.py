@@ -1,6 +1,7 @@
 from typing import Dict
 
 from electronics_model import *
+from .DummyDevices import ForcedAnalogVoltage
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprintSelector
@@ -177,3 +178,32 @@ class ProtectionZenerDiode(Protection):
       current_draw=(0, 0)*Amp  # TODO should be leakage current
     )), self.pwr)
     self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
+
+
+class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
+  """Analog overvoltage protection diode to clamp the input voltage"""
+  @init_in_parent
+  def __init__(self, voltage: RangeLike):
+    super().__init__()
+
+    self.signal_in = self.Port(AnalogSink.empty(), [Input])
+    self.signal_out = self.Port(AnalogSource.empty(), [Output])
+    self.gnd = self.Port(Ground.empty(), [Common])
+
+    self.voltage = self.ArgParameter(voltage)
+
+  def contents(self):
+    super().contents()
+
+    self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
+
+    self.forced = self.Block(ForcedAnalogVoltage(
+      forced_voltage=self.signal_in.link().voltage.intersect((0, self.diode.actual_zener_voltage.upper()))
+    ))
+    self.connect(self.signal_in, self.forced.signal_in)
+    self.connect(self.signal_out, self.forced.signal_out, self.diode.cathode.adapt_to(AnalogSink()))
+    self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
+
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    assert symbol_name == 'edg_importable:AnalogClampZenerDiode'
+    return {'IN': self.signal_in, 'OUT': self.signal_out, 'GND': self.gnd}
