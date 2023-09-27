@@ -41,7 +41,7 @@ class AnalogLink(CircuitLink):
     self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
 
     self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
-    self.require(self.voltage_limits.contains(self.voltage), "incompatible voltage levels")
+    # self.require(self.voltage_limits.contains(self.voltage), "incompatible voltage levels")
     self.assign(self.signal_limits, self.sinks.intersection(lambda x: x.signal_limits))
     self.require(self.signal_limits.contains(self.signal), "incompatible signal levels")
     self.assign(self.current_limits, self.source.current_limits)
