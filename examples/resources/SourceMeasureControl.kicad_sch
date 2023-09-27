@@ -1095,7 +1095,7 @@
   (symbol (lib_id "edg_importable:AnalogClampZenerDiode") (at 248.92 127 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 292d27f1-39ad-4383-a400-6127ff3d672d)
-    (property "Reference" "D1" (at 248.92 120.65 0)
+    (property "Reference" "vmeas_clamp" (at 248.92 120.65 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "#AnalogClampZenerDiode(**clamp)" (at 265.43 130.81 0)
@@ -1113,7 +1113,7 @@
     (instances
       (project "SourceMeasureControl"
         (path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-          (reference "D1") (unit 1)
+          (reference "vmeas_clamp") (unit 1)
         )
       )
     )
@@ -1769,7 +1769,7 @@
   (symbol (lib_id "edg_importable:AnalogClampZenerDiode") (at 248.92 104.14 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid c53efc3c-daa2-4e7e-b9b2-ac697d7d794a)
-    (property "Reference" "D2" (at 248.92 97.79 0)
+    (property "Reference" "imeas_cleamp" (at 248.92 97.79 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "#AnalogClampZenerDiode(**clamp)" (at 265.43 107.95 0)
@@ -1787,7 +1787,7 @@
     (instances
       (project "SourceMeasureControl"
         (path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-          (reference "D2") (unit 1)
+          (reference "imeas_cleamp") (unit 1)
         )
       )
     )
