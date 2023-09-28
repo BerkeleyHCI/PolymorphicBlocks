@@ -19,6 +19,7 @@ class Tlv9061_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.vinn = self.Port(analog_in_model)
     self.vout = self.Port(AnalogSource.from_supply(
       self.vss, self.vcc,
+      signal_out_bound=(0, 0),  # output voltage range V- to V+
       current_limits=(-50, 50)*mAmp,  # for Vs=5V
       impedance=100*Ohm(tol=0)  # no tolerance bounds given on datasheet; open-loop impedance
     ))

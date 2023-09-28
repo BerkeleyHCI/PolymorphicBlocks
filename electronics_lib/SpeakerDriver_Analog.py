@@ -98,7 +98,7 @@ class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
         input_port = AnalogSink.from_supply(self.gnd, self.pwr,
                                             voltage_limit_tolerance=(-0.3, 0.3)*Volt,
-                                            signal_limit_bound=(0.5, 0.8)*Volt,
+                                            signal_limit_bound=(0.5*Volt, -0.8*Volt),
                                             impedance=(142, 158)*kOhm)
         self.inp = self.Port(input_port)
         self.inn = self.Port(input_port)

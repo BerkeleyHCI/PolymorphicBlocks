@@ -20,6 +20,7 @@ class Opa197_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.vinn = self.Port(analog_in_model)
     self.vout = self.Port(AnalogSource.from_supply(
       self.vss, self.vcc,
+      signal_out_bound=(0.125*Volt, -0.125*Volt),  # output swing from rail, assumed at 10k load
       current_limits=(-65, 65)*mAmp,  # for +/-18V supply
       impedance=375*Ohm(tol=0)  # no tolerance bounds given on datasheet; open-loop impedance
     ))

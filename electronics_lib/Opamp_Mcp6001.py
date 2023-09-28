@@ -13,7 +13,7 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     analog_in_model = AnalogSink.from_supply(
       self.vss, self.vcc,
       voltage_limit_tolerance=(-1.0, 1.0)*Volt,  # absolute maximum ratings
-      signal_limit_bound=(-0.3, 0.3)*Volt,  # common-mode input range
+      signal_limit_bound=(0.3*Volt, -0.3*Volt),  # common-mode input range
       impedance=1e13*Ohm(tol=0),  # no tolerance bounds given on datasheet
       current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
     )

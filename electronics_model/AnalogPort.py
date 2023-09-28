@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Tuple
 
 from edg_core import *
 from edg_core.Blocks import DescriptionString
@@ -121,7 +121,7 @@ class AnalogSink(AnalogBase):
                   voltage_limit_tolerance: Optional[RangeLike] = None,
                   voltage_limit_abs: Optional[RangeLike] = None,
                   signal_limit_tolerance: Optional[RangeLike] = None,
-                  signal_limit_bound: Optional[RangeLike] = None,
+                  signal_limit_bound: Optional[Tuple[FloatLike, FloatLike]] = None,
                   signal_limit_abs: Optional[RangeLike] = None,
                   current_draw: RangeLike = RangeExpr.ZERO,
                   impedance: RangeLike = RangeExpr.INF):
@@ -144,10 +144,10 @@ class AnalogSink(AnalogBase):
       assert signal_limit_bound is None
       signal_limit = supply_range + signal_limit_tolerance
     elif signal_limit_bound is not None:
-      # this parameter is weird: both are positive, but the second is treated as negative
-      # TODO this is to shoehorn a negative tolerance into the Range system
-      signal_limit = (supply_range.upper() - RangeExpr._to_expr_type(signal_limit_bound).upper(),
-                      supply_range.lower() + RangeExpr._to_expr_type(signal_limit_bound).upper())
+      # signal limit bounds specified as (lower bound added to limit, upper bound added to limit)
+      # typically (positive, negative)
+      signal_limit = (supply_range.upper() + signal_limit_bound[0],
+                      supply_range.lower() + signal_limit_bound[1])
     else:  # generic default
       signal_limit = supply_range
 
@@ -175,11 +175,23 @@ class AnalogSource(AnalogBase):
 
   @staticmethod
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
+                  signal_out_bound: Optional[Tuple[FloatLike, FloatLike]] = None,
                   current_limits: RangeLike = RangeExpr.ALL,
                   impedance: RangeLike = RangeExpr.ZERO):
+    supply_range = neg.link().voltage.hull(pos.link().voltage)
+
+    signal_out: RangeLike
+    if signal_out_bound is not None:
+      # signal limit bounds specified as (lower bound added to limit, upper bound added to limit)
+      # typically (positive, negative)
+      signal_out = (supply_range.upper() + signal_out_bound[0],
+                    supply_range.lower() + signal_out_bound[1])
+    else:  # generic default
+      signal_out = supply_range
+
     return AnalogSource(
-      voltage_out=neg.link().voltage.hull(pos.link().voltage),
-      signal_out=neg.link().voltage.hull(pos.link().voltage),
+      voltage_out=supply_range,
+      signal_out=signal_out,
       current_limits=current_limits,
       impedance=impedance
     )
