@@ -45,7 +45,7 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 
 class Mcp6001(Opamp):
-  """MCP6001 RRIO op-amp in SOT-23-5
+  """MCP6001 RRO op-amp in SOT-23-5
   """
   def contents(self):
     super().contents()

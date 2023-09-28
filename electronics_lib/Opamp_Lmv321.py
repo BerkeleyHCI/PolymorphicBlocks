@@ -43,7 +43,7 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class Lmv321(Opamp):
-  """RRIO op-amp in SOT-23-5.
+  """RRO op-amp in SOT-23-5.
   """
   def contents(self):
     super().contents()
