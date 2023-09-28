@@ -88,8 +88,9 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
       voltage_limit_tolerance=(0, 0),  # assumed, absolute maximum limits not specified
       impedance=(100, float('inf')) * kOhm
     )
-    dac_model = AnalogSource(
-      voltage_out=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper() - 0.3),
+    dac_model = AnalogSource.from_supply(
+      self.gnd, self.pwr,
+      signal_out_bound=(0, -0.3*Volt),
       current_limits=RangeExpr.ALL,  # not given by spec
       impedance=(300, 300) * Ohm  # Table 25, "typical" rating
     )

@@ -15,9 +15,7 @@ class Lm4871_Device(InternalSubcircuit, FootprintBlock):
         self.inp = self.Port(Passive())  # TODO these aren't actually documented w/ specs =(
         self.inm = self.Port(Passive())
 
-        speaker_port = AnalogSource(
-            impedance=RangeExpr.ZERO
-        )
+        speaker_port = AnalogSource()
         self.vo1 = self.Port(speaker_port)
         self.vo2 = self.Port(speaker_port)
 

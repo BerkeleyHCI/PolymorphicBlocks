@@ -15,8 +15,9 @@ class Mcp4921_Device(InternalSubcircuit, FootprintBlock):
       voltage_limits=(0.04*Volt, self.vdd.link().voltage.lower() - 0.04),
       current_draw=(0, 0)  # input current not specified
     ))
-    self.vout = self.Port(AnalogSource(
-      voltage_out=(0.01, self.vref.link().voltage.lower() - 0.04),
+    self.vout = self.Port(AnalogSource.from_supply(
+      self.vss, self.vref,
+      signal_out_bound=(0.01*Volt, -0.04*Volt),  # output swing
       current_limits=(-15, 15)*mAmp,  # short circuit current, typ
       impedance=(171, 273)*Ohm  # derived from assumed Vout=2Vref=4.096, Isc=24mA or 15mA
     ))

@@ -29,15 +29,15 @@ class IdealIoController(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCont
             self.adc.append_elt(AnalogSink(), elt)
         self.dac.defined()
         for elt in self.get(self.dac.requested()):
-            aout = self.dac.append_elt(AnalogSource(
-                voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage)
+            aout = self.dac.append_elt(AnalogSource.from_supply(
+                self.gnd, self.pwr
             ), elt)
             io_current_draw_builder = io_current_draw_builder + (
                 aout.link().current_drawn.lower().min(0), aout.link().current_drawn.upper().max(0)
             )
 
-        dio_model = DigitalBidir(
-            voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage),
+        dio_model = DigitalBidir.from_supply(
+            self.gnd, self.pwr,
             pullup_capable=True, pulldown_capable=True
         )
 

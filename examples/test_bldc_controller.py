@@ -31,11 +31,11 @@ class MagneticEncoder(Connector, Magnetometer, Block):
       voltage_limits=(3.0, 5.5),  # 3.0-3.6 for 3.3v mode, 4.5-5.5 for 5v mode
       current_draw=(1.5, 6.5)*mAmp,  # supply current LPM3-NOM, excluding burn-in
     )), [Power])
-    self.out = self.Export(self.conn.pins.request('2').adapt_to(AnalogSource(
-      voltage_out=(0, self.pwr.link().voltage.upper())
-    )), [Output])
     self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()),
                            [Common])
+    self.out = self.Export(self.conn.pins.request('2').adapt_to(AnalogSource.from_supply(
+      self.gnd, self.pwr
+    )), [Output])
 
 
 class I2cConnector(Connector, Block):

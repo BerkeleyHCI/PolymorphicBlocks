@@ -124,6 +124,7 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
         ),
         'r1.2': AnalogSource(  # this models the entire node
           voltage_out=self.amp.out.voltage_out,
+          signal_out=self.input.link().voltage*self.actual_amplification,
           impedance=1/(1 / self.r1.actual_resistance + 1 / self.r2.actual_resistance)
         ),
         'r2.1': AnalogSink(),  # ideal
@@ -374,6 +375,8 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
         'c.1': AnalogSink(),  # TODO impedance of the feedback circuit?
 
         'r.2': AnalogSource(
+          voltage_out=self.amp.out.voltage_out,
+          signal_out=self.amp.out.voltage_out,
           impedance=self.r.actual_resistance
         ),
         'c.2': AnalogSink(),

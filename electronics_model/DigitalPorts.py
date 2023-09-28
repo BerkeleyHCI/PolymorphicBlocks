@@ -397,8 +397,8 @@ class DigitalBidir(DigitalBase):
     elif input_threshold_abs is not None:
       assert input_threshold_factor is None, "can only specify one input threshold type"
       input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
-    else:
-      raise ValueError("no input threshold specified")
+    else:  # assumed ideal
+      input_threshold = RangeExpr.EMPTY
 
     output_threshold: RangeLike
     if output_threshold_factor is not None:

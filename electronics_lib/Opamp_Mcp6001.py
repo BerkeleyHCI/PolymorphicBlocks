@@ -19,8 +19,9 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)
-    self.vout = self.Port(AnalogSource(
-      (0.25, self.vcc.link().voltage.lower() - 0.25),
+    self.vout = self.Port(AnalogSource.from_supply(
+      self.vss, self.vcc,
+      signal_out_bound=(25*mVolt, -25*mVolt),  # maximum output swing
       current_limits=(-6, 6)*mAmp,  # for Vdd=1.8, 23mA for Vdd=5.5
       impedance=300*Ohm(tol=0)  # no tolerance bounds given on datasheet
     ))

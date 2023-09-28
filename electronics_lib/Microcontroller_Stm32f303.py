@@ -80,9 +80,9 @@ class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, Bas
       signal_limit_tolerance=(0, 0),  # Table 60 conversion voltage range
       impedance=100*kOhm(tol=0)  # TODO: actually spec'd as maximum external impedance; internal impedance not given
     )
-    dac_model = AnalogSource(
-      voltage_out=(0.2, 3.1) * Volt,  # TODO should derive from common rail
-      current_limits=(0, 0) * Amp,  # TODO not given by spec
+    dac_model = AnalogSource.from_supply(
+      gnd, vdd,
+      signal_out_bound=(0.2*Volt, -0.2*Volt),
       impedance=15*kOhm(tol=0)  # assumes buffer off
     )
 

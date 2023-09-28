@@ -18,8 +18,9 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)
-    self.vout = self.Port(AnalogSource(
-      (0.180, self.vcc.link().voltage.lower() - 0.1),  # assuming a 10k load at V=3.3, gets more complex
+    self.vout = self.Port(AnalogSource.from_supply(
+      self.vss, self.vcc,
+      signal_out_bound=(0.180*Volt, -0.100*Volt),  # assuming a 10k load, Vcc=2.7v
       current_limits=(-40, 40)*mAmp,  # output short circuit current
     ))
 

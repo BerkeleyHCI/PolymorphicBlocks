@@ -143,8 +143,10 @@ class BaseVoltageDivider(Block):
 
     self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])
     self.input = self.Port(VoltageSink().empty(), [Input])  # forward declaration only
+    output_voltage = ResistiveDivider.divider_output(self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio)
     self.output = self.Export(self.div.center.adapt_to(AnalogSource(
-      voltage_out=ResistiveDivider.divider_output(self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio),
+      voltage_out=output_voltage,
+      signal_out=output_voltage,
       current_limits=RangeExpr.ALL,
       impedance=self.div.actual_impedance
     )), [Output])
@@ -235,8 +237,10 @@ class SignalDivider(Analog, Block):
     self.div = self.Block(ResistiveDivider(ratio=ratio, impedance=impedance))
     self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])
     self.input = self.Port(AnalogSink.empty(), [Input])  # forward declaration
+    output_voltage = ResistiveDivider.divider_output(self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio)
     self.output = self.Export(self.div.center.adapt_to(AnalogSource(
-      voltage_out=ResistiveDivider.divider_output(self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio),
+      voltage_out=output_voltage,
+      signal_out=output_voltage,
       impedance=self.div.actual_impedance
     )), [Output])
     self.connect(self.input, self.div.top.adapt_to(AnalogSink(

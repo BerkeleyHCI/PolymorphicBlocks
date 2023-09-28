@@ -23,7 +23,8 @@ class PhotodiodeSensor(LightSensor, KiCadSchematicBlock, Block):
         'r.2': AnalogSink(),  # arbitrary to make the connection legal
         'pd.A': Ground(),
         'pd.K': AnalogSource(
-          voltage_out=self.pwr.link().voltage.hull(self.gnd.link().voltage)
+          voltage_out=self.pwr.link().voltage.hull(self.gnd.link().voltage),
+          signal_out=self.pwr.link().voltage.hull(self.gnd.link().voltage),
           # TODO: what is the impedance?
         ),
       })

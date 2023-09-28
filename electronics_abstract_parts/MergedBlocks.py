@@ -80,6 +80,7 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorB
     super().__init__()
     self.output = self.Port(AnalogSource(
       voltage_out=RangeExpr(),
+      signal_out=RangeExpr(),
       impedance=RangeExpr()
     ))
     self.inputs = self.Port(Vector(AnalogSink.empty()))
@@ -94,8 +95,8 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorB
         impedance=self.output.link().sink_impedance
       ), in_request)
 
-    self.assign(self.output.voltage_out,
-                self.inputs.hull(lambda x: x.link().voltage))
+    self.assign(self.output.voltage_out, self.inputs.hull(lambda x: x.link().voltage))
+    self.assign(self.output.signal_out, self.inputs.hull(lambda x: x.link().signal))
     self.assign(self.output.impedance,  # covering cases of any or all sources driving
                 self.inputs.hull(lambda x: x.link().source_impedance).hull(
                   1 / (1 / self.inputs.map_extract(lambda x: x.link().source_impedance)).sum()))

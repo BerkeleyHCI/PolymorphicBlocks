@@ -101,7 +101,7 @@ class BufferedSupply(PowerConditioner):
       self.connect(self.set.output, self.amp.inp)
       self.connect(self.amp.inn, self.sense.b.adapt_to(AnalogSource(
         voltage_out=(0, self.pwr.link().voltage.upper()),
-        impedance=0*Ohm(tol=0)
+        signal_out=(0, self.pwr.link().voltage.upper()),
       )))
       self.connect(self.amp.out, self.fet.gate.adapt_to(AnalogSink()))
 
