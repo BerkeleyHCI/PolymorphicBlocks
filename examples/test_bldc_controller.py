@@ -140,10 +140,13 @@ class BldcController(JlcBoardTop):
         resistance=0.05*Ohm(tol=0.01),
         ratio=Range.from_tolerance(20, 0.05), input_impedance=10*kOhm(tol=0.05)
       ))
-      self.connect(self.motor_pwr.pwr, self.isense.pwr_in)
-      self.connect(self.isense.pwr, self.v3v3)
+      self.connect(self.motor_pwr.pwr, self.isense.pwr_in, self.isense.pwr)
       self.connect(self.isense.ref, self.vref)
-      (self.isense_tp, ), _ = self.chain(self.isense.out, self.Block(AnalogTestPoint()), self.mcu.adc.request('isense'))
+      (self.isense_tp, self.isense_clamp), _ = self.chain(
+        self.isense.out,
+        self.Block(AnalogTestPoint()),
+        imp.Block(AnalogClampZenerDiode((2.7, 3.3)*Volt)),
+        self.mcu.adc.request('isense'))
 
       self.bldc_drv = imp.Block(Drv8313())
       self.connect(self.isense.pwr_out, self.bldc_drv.pwr)
@@ -179,6 +182,7 @@ class BldcController(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Feather_Nrf52840),
+        (['isense', 'amp', 'amp'], Opa197)
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
