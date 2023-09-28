@@ -21,8 +21,13 @@ class OpampFollower(OpampApplication, KiCadSchematicBlock):
     self.input = self.Port(AnalogSink.empty(), [Input])
     self.output = self.Port(AnalogSource.empty(), [Output])
 
-    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
-                      locals={'output_voltage': self.input.link().signal})
+  def contents(self):
+    super().contents()
+
+    self.amp = self.Block(Opamp())
+    self.forced = self.Block(ForcedAnalogSignal(self.input.link().signal))
+
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"))
 
 
 class AmplifierValues(ESeriesRatioValue):
@@ -112,6 +117,8 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
     self.r1 = self.Block(Resistor(Range.from_tolerance(top_resistance, self.get(self.tolerance))))
     self.r2 = self.Block(Resistor(Range.from_tolerance(bottom_resistance, self.get(self.tolerance))))
 
+    self.forced = self.Block(ForcedAnalogSignal(self.input.link().voltage*self.actual_amplification))
+
     if self.get(self.reference.is_connected()):
       reference_type: CircuitPort = AnalogSink(
         impedance=self.r1.actual_resistance + self.r2.actual_resistance
@@ -134,8 +141,6 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
         'r2.2': reference_type
       }, nodes={
         'ref': reference_node
-      }, locals={
-        'output_voltage': self.input.link().voltage*self.actual_amplification
       })
 
     self.assign(self.actual_amplification, 1 + (self.r1.actual_resistance / self.r2.actual_resistance))

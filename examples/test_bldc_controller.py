@@ -138,7 +138,7 @@ class BldcController(JlcBoardTop):
 
       self.isense = imp.Block(OpampCurrentSensor(
         resistance=0.05*Ohm(tol=0.01),
-        ratio=Range.from_tolerance(20, 0.05), input_impedance=10*kOhm(tol=0.05)
+        ratio=Range.from_tolerance(10, 0.05), input_impedance=10*kOhm(tol=0.05)
       ))
       self.connect(self.motor_pwr.pwr, self.isense.pwr_in, self.isense.pwr)
       self.connect(self.isense.ref, self.vref)
