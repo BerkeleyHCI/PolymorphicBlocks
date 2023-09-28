@@ -146,8 +146,8 @@ class AnalogSink(AnalogBase):
     elif signal_limit_bound is not None:
       # signal limit bounds specified as (lower bound added to limit, upper bound added to limit)
       # typically (positive, negative)
-      signal_limit = (supply_range.upper() + signal_limit_bound[0],
-                      supply_range.lower() + signal_limit_bound[1])
+      signal_limit = (supply_range.lower() + signal_limit_bound[0],
+                      supply_range.upper() + signal_limit_bound[1])
     else:  # generic default
       signal_limit = supply_range
 
@@ -184,8 +184,8 @@ class AnalogSource(AnalogBase):
     if signal_out_bound is not None:
       # signal limit bounds specified as (lower bound added to limit, upper bound added to limit)
       # typically (positive, negative)
-      signal_out = (supply_range.upper() + signal_out_bound[0],
-                    supply_range.lower() + signal_out_bound[1])
+      signal_out = (supply_range.lower() + signal_out_bound[0],
+                    supply_range.upper() + signal_out_bound[1])
     else:  # generic default
       signal_out = supply_range
 

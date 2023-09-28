@@ -139,6 +139,7 @@ class RobotOwl(JlcBoardTop):
         ]),
         (['mcu', 'fp_footprint'], 'edg:Freenove_ESP32S3-WROOM_Expansion'),
         (['mcu', 'vusb_out', 'current_limits'], Range(0, 3)),
+        (['photodiode', 'out', 'signal_out'], Range(0, 2.2)),  # discard the extra range to make it ESP compatible
 
         (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
         (['reg_12v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 7e6)),
