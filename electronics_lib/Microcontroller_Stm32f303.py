@@ -74,9 +74,10 @@ class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, Bas
       pullup_capable=True, pulldown_capable=True
     )
 
-    adc_model = AnalogSink(
-      voltage_limits=(-0.3, 3.6) * Volt,
-      current_draw=(0, 0) * Amp,
+    adc_model = AnalogSink.from_supply(
+      gnd, vdd,
+      voltage_limit_tolerance=(-0.3, 0.3) * Volt,
+      signal_limit_tolerance=(0, 0),  # Table 60 conversion voltage range
       impedance=100*kOhm(tol=0)  # TODO: actually spec'd as maximum external impedance; internal impedance not given
     )
     dac_model = AnalogSource(

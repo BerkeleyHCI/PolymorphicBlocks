@@ -237,11 +237,9 @@ class SignalDivider(Analog, Block):
     self.input = self.Port(AnalogSink.empty(), [Input])  # forward declaration
     self.output = self.Export(self.div.center.adapt_to(AnalogSource(
       voltage_out=ResistiveDivider.divider_output(self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio),
-      current_limits=RangeExpr.ALL,
       impedance=self.div.actual_impedance
     )), [Output])
     self.connect(self.input, self.div.top.adapt_to(AnalogSink(
       impedance=self.div.actual_series_impedance,
       current_draw=self.output.link().current_drawn,
-      voltage_limits=RangeExpr.ALL
     )))

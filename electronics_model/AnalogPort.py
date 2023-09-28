@@ -45,7 +45,8 @@ class AnalogLink(CircuitLink):
     self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
     self.require(self.voltage_limits.contains(self.voltage), "incompatible voltage levels")
     self.assign(self.signal_limits, self.sinks.intersection(lambda x: x.signal_limits))
-    # self.require(self.signal_limits.contains(self.signal), "incompatible signal levels")
+    self.require(self.voltage.contains(self.signal), "signal levels not contained within voltage")
+    self.require(self.signal_limits.contains(self.signal), "incompatible signal levels")
     self.assign(self.current_limits, self.source.current_limits)
     self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
 
@@ -117,24 +118,41 @@ class AnalogSink(AnalogBase):
 
   @staticmethod
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
-                  voltage_limit_tolerance: RangeLike = (-0.3, 0.3),
+                  voltage_limit_tolerance: Optional[RangeLike] = None,
+                  voltage_limit_abs: Optional[RangeLike] = None,
                   signal_limit_tolerance: Optional[RangeLike] = None,
+                  signal_limit_bound: Optional[RangeLike] = None,
                   signal_limit_abs: Optional[RangeLike] = None,
                   current_draw: RangeLike = RangeExpr.ZERO,
                   impedance: RangeLike = RangeExpr.INF):
+    supply_range = neg.link().voltage.hull(pos.link().voltage)
+
+    voltage_limit: RangeLike
+    if voltage_limit_tolerance is not None:
+      voltage_limit = supply_range + voltage_limit_tolerance
+    elif voltage_limit_abs is not None:
+      voltage_limit = voltage_limit_abs
+    else:
+      voltage_limit = supply_range + (-0.3, 0.3)
+
     signal_limit: RangeLike
     if signal_limit_abs is not None:
       assert signal_limit_tolerance is None
+      assert signal_limit_bound is None
       signal_limit = signal_limit_abs
     elif signal_limit_tolerance is not None:
-      signal_limit = neg.link().voltage.hull(pos.link().voltage) + \
-                      RangeExpr._to_expr_type(signal_limit_tolerance)
+      assert signal_limit_bound is None
+      signal_limit = supply_range + signal_limit_tolerance
+    elif signal_limit_bound is not None:
+      # this parameter is weird: both are positive, but the second is treated as negative
+      # TODO this is to shoehorn a negative tolerance into the Range system
+      signal_limit = (supply_range.upper() - RangeExpr._to_expr_type(signal_limit_bound).upper(),
+                      supply_range.lower() + RangeExpr._to_expr_type(signal_limit_bound).upper())
     else:  # generic default
-      signal_limit = neg.link().voltage.hull(pos.link().voltage)
+      signal_limit = supply_range
 
     return AnalogSink(
-      voltage_limits=neg.link().voltage.hull(pos.link().voltage) +
-                     RangeExpr._to_expr_type(voltage_limit_tolerance),
+      voltage_limits=voltage_limit,
       signal_limits=signal_limit,
       current_draw=current_draw,
       impedance=impedance
@@ -166,7 +184,7 @@ class AnalogSource(AnalogBase):
       impedance=impedance
     )
 
-  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO, signal_out: RangeLike = RangeExpr.ZERO,
+  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO, signal_out: RangeLike = RangeExpr.EMPTY,
                current_limits: RangeLike = RangeExpr.ALL,
                impedance: RangeLike = RangeExpr.ZERO) -> None:
     """voltage_out is the total voltage range the device can output (typically limited by power rails)

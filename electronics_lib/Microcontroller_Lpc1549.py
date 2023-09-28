@@ -83,9 +83,9 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
       pullup_capable=True, pulldown_capable=True
     )
 
-    adc_model = AnalogSink(
-      voltage_limits=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
-      current_draw=(0, 0) * Amp,
+    adc_model = AnalogSink.from_supply(
+      self.gnd, self.pwr,
+      voltage_limit_tolerance=(0, 0),  # assumed, absolute maximum limits not specified
       impedance=(100, float('inf')) * kOhm
     )
     dac_model = AnalogSource(

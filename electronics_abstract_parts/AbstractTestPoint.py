@@ -62,7 +62,7 @@ class AnalogTestPoint(TypedTestPoint, Block):
   """Test point with a AnalogSink port."""
   def __init__(self):
     super().__init__()
-    self.io = self.Port(AnalogSink().empty(), [InOut])
+    self.io = self.Port(AnalogSink.empty(), [InOut])
     self.tp = self.Block(TestPoint(name=self.io.link().name()))
     self.connect(self.io, self.tp.io.adapt_to(AnalogSink()))
 

@@ -12,7 +12,8 @@ class Tlv9061_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
     analog_in_model = AnalogSink.from_supply(
       self.vss, self.vcc,
-      voltage_limit_tolerance=(-0.5, 0.5),  # common mode maximum ratings
+      voltage_limit_tolerance=(-0.5, 0.5)*Volt,  # common mode maximum ratings
+      signal_limit_tolerance=(-0.1, 0.1)*Volt
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)

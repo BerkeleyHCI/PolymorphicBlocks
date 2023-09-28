@@ -10,8 +10,10 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     ), [Power])
     self.vss = self.Port(Ground(), [Common])
 
-    analog_in_model = AnalogSink(
-      voltage_limits=(-0.2, 5.7),
+    analog_in_model = AnalogSink.from_supply(
+      self.vss, self.vcc,
+      voltage_limit_abs=(-0.2, 5.7),
+      signal_limit_bound=(0, 1.0)*Volt,  # assumed, from Vcc = 2.7v and 5v tables
       current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
     )
     self.vinp = self.Port(analog_in_model)

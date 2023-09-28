@@ -80,9 +80,10 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
       pullup_capable=True, pulldown_capable=True,
     )
 
-    adc_model = AnalogSink(
-      voltage_limits=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
-      current_draw=(0, 0) * Amp,
+    adc_model = AnalogSink.from_supply(
+      self.gnd, self.pwr,
+      voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # general operating conditions, IO input voltage
+      signal_limit_tolerance=(0, 0),  # conversion voltage range, 0 to Vref+ (assumed VddA)
       impedance=(100, float('inf')) * kOhm
     )
 

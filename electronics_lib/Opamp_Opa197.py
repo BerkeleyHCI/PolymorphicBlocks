@@ -12,7 +12,8 @@ class Opa197_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
     analog_in_model = AnalogSink.from_supply(
       self.vss, self.vcc,
-      voltage_limit_tolerance=(-0.5, 0.5),  # input common mode absolute maximum ratings
+      voltage_limit_tolerance=(-0.5, 0.5)*Volt,  # input common mode absolute maximum ratings
+      signal_limit_tolerance=(-0.1, 0.1)*Volt,
       impedance=1e13*Ohm(tol=0),  # no tolerance bounds given on datasheet
     )
     self.vinp = self.Port(analog_in_model)

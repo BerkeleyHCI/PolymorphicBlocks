@@ -132,7 +132,7 @@ class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
     self.inputs.defined()
     for elt in self.get(self.inputs.requested()):
       self.connect(
-        self.inputs.append_elt(AnalogSink().empty(), elt),
+        self.inputs.append_elt(AnalogSink.empty(), elt),
         self.device.inputs.request(elt).adapt_to(AnalogSink(
           voltage_limits=self.device.analog_voltage_limits,  # this device only, voltages propagated
           current_draw=self.out.link().current_drawn,

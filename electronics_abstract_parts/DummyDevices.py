@@ -52,12 +52,14 @@ class DummyDigitalSink(DummyDevice):
 class DummyAnalogSink(DummyDevice):
   @init_in_parent
   def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL,
+               signal_limit: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO,
                impedance: RangeLike = RangeExpr.INF) -> None:
     super().__init__()
 
     self.io = self.Port(AnalogSink(
       voltage_limits=voltage_limit,
+      signal_limits=signal_limit,
       current_draw=current_draw,
       impedance=impedance
     ), [InOut])
