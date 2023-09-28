@@ -117,16 +117,19 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
     self.r1 = self.Block(Resistor(Range.from_tolerance(top_resistance, self.get(self.tolerance))))
     self.r2 = self.Block(Resistor(Range.from_tolerance(bottom_resistance, self.get(self.tolerance))))
 
-    self.forced = self.Block(ForcedAnalogSignal(self.input.link().voltage*self.actual_amplification))
-
     if self.get(self.reference.is_connected()):
       reference_type: CircuitPort = AnalogSink(
         impedance=self.r1.actual_resistance + self.r2.actual_resistance
       )
       reference_node: CircuitPort = self.reference
+      reference_range = self.reference.link().signal
     else:
       reference_type = Ground()
       reference_node = self.gnd
+      reference_range = self.gnd.link().voltage
+
+    input_signal_range = self.input.link().signal - reference_range
+    self.forced = self.Block(ForcedAnalogSignal(input_signal_range * self.actual_amplification + reference_range))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
@@ -247,6 +250,8 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     self.rf = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
     self.rg = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
 
+    input_signal_range = self.input.link().signal - reference_range
+    self.forced = self.Block(ForcedAnalogSignal(input_signal_range * self.actual_amplification + reference_range))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
