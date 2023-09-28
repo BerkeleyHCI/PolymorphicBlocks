@@ -250,8 +250,9 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     self.rf = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
     self.rg = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
 
-    input_signal_range = self.input.link().signal - reference_range
-    self.forced = self.Block(ForcedAnalogSignal(input_signal_range * self.actual_amplification + reference_range))
+    input_diff_range = self.input_positive.link().signal - self.input_negative.link().signal
+    self.forced = self.Block(ForcedAnalogSignal(input_diff_range * self.actual_ratio +
+                                                self.output_reference.link().signal))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
