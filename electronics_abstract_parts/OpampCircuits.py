@@ -128,7 +128,7 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
       reference_node = self.gnd
       reference_range = self.gnd.link().voltage
 
-    input_signal_range = self.input.link().signal - reference_range
+    input_signal_range = self.amp.out.voltage_out.intersect(self.input.link().signal - reference_range)
     self.forced = self.Block(ForcedAnalogSignal(input_signal_range * self.actual_amplification + reference_range))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
