@@ -1,7 +1,7 @@
 from math import ceil, log10
 from typing import List, Tuple, Dict
 
-from electronics_abstract_parts import Resistor, Capacitor
+from electronics_abstract_parts import Resistor, Capacitor, ResistiveDivider
 from electronics_model import *
 from .AbstractOpamp import Opamp
 from .Categories import OpampApplication
@@ -242,7 +242,10 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
           impedance=self.r1.actual_resistance + self.rf.actual_resistance
         ),
         'r1.2': AnalogSource(  # combined R1 and Rf resistance
-          voltage_out=self.input_negative.link().voltage.hull(self.output.link().voltage),
+          voltage_out=ResistiveDivider.divider_output(
+            self.input_negative.link().voltage, self.amp.out.voltage_out,
+            ResistiveDivider.divider_ratio(self.r1.actual_resistance, self.rf.actual_resistance)
+          ),
           impedance=1 / (1 / self.r1.actual_resistance + 1 / self.rf.actual_resistance)
         ),
         'rf.2': AnalogSink(),  # ideal
@@ -253,7 +256,10 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
           impedance=self.r2.actual_resistance + self.rg.actual_resistance
         ),
         'r2.2': AnalogSource(  # combined R2 and Rg resistance
-          voltage_out=self.input_positive.link().voltage.hull(self.output_reference.link().voltage),
+          voltage_out=ResistiveDivider.divider_output(
+            self.input_positive.link().voltage, self.output_reference.link().voltage,
+            ResistiveDivider.divider_ratio(self.r2.actual_resistance, self.rg.actual_resistance)
+          ),
           impedance=1 / (1 / self.r2.actual_resistance + 1 / self.rg.actual_resistance)
         ),
         'rg.2': AnalogSink(),  # ideal
