@@ -1,3 +1,5 @@
+from typing import Dict
+
 from electronics_model import *
 from .Categories import *
 
@@ -119,7 +121,7 @@ class ForcedAnalogVoltage(DummyDevice, NetBlock):
     self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
 
 
-class ForcedAnalogSignal(DummyDevice, NetBlock):
+class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice, NetBlock):
   @init_in_parent
   def __init__(self, forced_signal: RangeLike = RangeExpr()) -> None:
     super().__init__()
@@ -135,6 +137,10 @@ class ForcedAnalogSignal(DummyDevice, NetBlock):
     ), [Output])
 
     self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name == 'edg_importable:Adapter'
+    return {'1': self.signal_in, '2': self.signal_out}
 
 
 class ForcedDigitalSinkCurrentDraw(DummyDevice, NetBlock):

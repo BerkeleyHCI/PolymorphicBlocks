@@ -1,10 +1,13 @@
 from math import ceil, log10
 from typing import List, Tuple, Dict
 
-from electronics_abstract_parts import Resistor, Capacitor, ResistiveDivider
 from electronics_model import *
+from .AbstractResistor import Resistor
+from .AbstractCapacitor import Capacitor
+from .ResistiveDivider import ResistiveDivider
 from .AbstractOpamp import Opamp
 from .Categories import OpampApplication
+from .DummyDevices import ForcedAnalogSignal
 from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
 
@@ -18,7 +21,8 @@ class OpampFollower(OpampApplication, KiCadSchematicBlock):
     self.input = self.Port(AnalogSink.empty(), [Input])
     self.output = self.Port(AnalogSource.empty(), [Output])
 
-    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"))
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+                      locals={'output_voltage': self.input.link().signal})
 
 
 class AmplifierValues(ESeriesRatioValue):
@@ -124,13 +128,14 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
         ),
         'r1.2': AnalogSource(  # this models the entire node
           voltage_out=self.amp.out.voltage_out,
-          signal_out=self.input.link().voltage*self.actual_amplification,
           impedance=1/(1 / self.r1.actual_resistance + 1 / self.r2.actual_resistance)
         ),
         'r2.1': AnalogSink(),  # ideal
         'r2.2': reference_type
       }, nodes={
         'ref': reference_node
+      }, locals={
+        'output_voltage': self.input.link().voltage*self.actual_amplification
       })
 
     self.assign(self.actual_amplification, 1 + (self.r1.actual_resistance / self.r2.actual_resistance))
@@ -236,6 +241,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     self.r2 = self.Block(Resistor(Range.from_tolerance(r1_resistance, self.get(self.tolerance))))
     self.rf = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
     self.rg = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
+
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
@@ -376,7 +382,6 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
 
         'r.2': AnalogSource(
           voltage_out=self.amp.out.voltage_out,
-          signal_out=self.amp.out.voltage_out,
           impedance=self.r.actual_resistance
         ),
         'c.2': AnalogSink(),
