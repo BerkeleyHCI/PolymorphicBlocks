@@ -129,7 +129,9 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
       reference_range = self.gnd.link().voltage
 
     input_signal_range = self.amp.out.voltage_out.intersect(self.input.link().signal - reference_range)
-    self.forced = self.Block(ForcedAnalogSignal(input_signal_range * self.actual_amplification + reference_range))
+    output_range = input_signal_range * self.actual_amplification + reference_range
+    # TODO tolerances can cause the range to be much larger than actual, so bound it to avoid false-positives
+    self.forced = self.Block(ForcedAnalogSignal(self.amp.out.signal_out.intersect(output_range)))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
@@ -251,8 +253,9 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     self.rg = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
 
     input_diff_range = self.input_positive.link().signal - self.input_negative.link().signal
-    self.forced = self.Block(ForcedAnalogSignal(input_diff_range * self.actual_ratio +
-                                                self.output_reference.link().signal))
+    output_diff_range = input_diff_range * self.actual_ratio + self.output_reference.link().signal
+    # TODO tolerances can cause the range to be much larger than actual, so bound it to avoid false-positives
+    self.forced = self.Block(ForcedAnalogSignal(self.amp.out.signal_out.intersect(output_diff_range)))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={

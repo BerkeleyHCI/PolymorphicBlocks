@@ -21,6 +21,9 @@ object ExprEvaluate {
           case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
             val all = Seq(lhsMin + rhsMin, lhsMin + rhsMax, lhsMax + rhsMin, lhsMax + rhsMax)
             RangeValue(all.min, all.max)
+          case (RangeEmpty, RangeEmpty) => RangeEmpty
+          case (lhs: RangeValue, RangeEmpty) => lhs
+          case (RangeEmpty, rhs: RangeValue) => rhs
           case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
             RangeValue(lhsMin + rhs, lhsMax + rhs)
           case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>
@@ -35,6 +38,9 @@ object ExprEvaluate {
           case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
             val all = Seq(lhsMin * rhsMin, lhsMin * rhsMax, lhsMax * rhsMin, lhsMax * rhsMax)
             RangeValue(all.min, all.max)
+          case (RangeEmpty, RangeEmpty) => RangeEmpty
+          case (lhs: RangeValue, RangeEmpty) => RangeEmpty
+          case (RangeEmpty, rhs: RangeValue) => RangeEmpty
           case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) if rhs >= 0 =>
             RangeValue(lhsMin * rhs, lhsMax * rhs)
           case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) if rhs < 0 =>
@@ -235,6 +241,7 @@ object ExprEvaluate {
       case (Op.NEGATE, `val`) => `val` match {
           case RangeValue(valMin, valMax) =>
             RangeValue(-valMax, -valMin)
+          case RangeEmpty => RangeEmpty
           case FloatValue(opVal) => FloatValue(-opVal)
           case IntValue(opVal) => IntValue(-opVal)
           case _ => throw new ExprEvaluateException(s"Unknown unary operand type in ${unary.op} ${`val`} from $unary")
@@ -243,6 +250,7 @@ object ExprEvaluate {
       case (Op.INVERT, `val`) => `val` match {
           case RangeValue(valMin, valMax) =>
             RangeValue(1.0 / valMax, 1.0 / valMin)
+          case RangeEmpty => RangeEmpty
           case FloatValue(opVal) => FloatValue(1.0 / opVal)
           case IntValue(opVal) => IntValue(1 / opVal)
           case _ => throw new ExprEvaluateException(s"Unknown unary operand type in ${unary.op} ${`val`} from $unary")
