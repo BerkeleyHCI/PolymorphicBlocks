@@ -47,7 +47,6 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         return VariantPinRemapper({  # Pin/peripheral resource definitions (section 4)
             'Vdd': self.pwr,
             'Vss': self.gnd,
-            # 'BOOT0': self.gnd,
             'PF2-NRST': self.nrst,
         }).remap(self.SYSTEM_PIN_REMAP)
 
@@ -113,7 +112,7 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             PinResource('PA12', {'PA12': dio_ftfa_model, 'ADC_IN16': adc_model}),
             PinResource('PA13', {'PA13': dio_ftea_model, 'ADC_IN17': adc_model}),  # SWDIO
             # nBOOT_SEL flash bit can be programmed to ignore nBOOT0 bit
-            PinResource('PA14', {'PA14-BOOT0': dio_fta_model, 'ADC_IN18': adc_model}),  # BOOT0, SWCLK, ADC_IN18
+            PinResource('PA14', {'PA14': dio_fta_model, 'ADC_IN18': adc_model}),  # BOOT0, SWCLK, ADC_IN18
             PinResource('PA15', {'PA15': dio_ft_model}),
 
             PinResource('PB3', {'PB3': dio_ft_model}),
@@ -173,59 +172,42 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
 
 
 class Stm32g031_G_Device(Stm32g031Base_Device):
+    """"STM32G031 GxU in UFQFPN28 package."""
     SYSTEM_PIN_REMAP = {
-        # 'Vbat': '1',
-        # 'VddA': '9',
-        # 'VssA': '8',
-        # 'Vss': ['23', '35', '47'],
-        # 'Vdd': ['24', '36', '48'],
-        # 'BOOT0': '44',
-        # 'OSC_IN': '5',
-        # 'OSC_OUT': '6',
-        # 'NRST': '7',
+        'Vdd': '3',
+        'Vss': '4',
+        'PF2-NRST': '5',
     }
     RESOURCE_PIN_REMAP = {
-        # 'PC13': '2',
-        # 'PC14': '3',
-        # 'PC15': '4',
-        #
-        # 'PA0': '10',
-        # 'PA1': '11',
-        # 'PA2': '12',
-        # 'PA3': '13',
-        # 'PA4': '14',
-        # 'PA5': '15',
-        # 'PA6': '16',
-        # 'PA7': '17',
-        # 'PB0': '18',
-        # 'PB1': '19',
-        #
-        # 'PB2': '20',
-        # 'PB10': '21',
-        # 'PB11': '22',
-        # 'PB12': '25',
-        # 'PB13': '26',
-        # 'PB14': '27',
-        # 'PB15': '28',
-        #
-        # 'PA8': '29',
-        # 'PA9': '30',
-        # 'PA10': '31',
-        # 'PA11': '32',
-        # 'PA12': '33',
-        # 'PA13': '34',
-        #
-        # 'PA14': '37',
-        # 'PA15': '38',
-        # 'PB3': '39',
-        # 'PB4': '40',
-        # 'PB5': '41',
-        # 'PB6': '42',
-        # 'PB7': '43',
-        #
-        # 'PB8': '45',
-        # 'PB9': '46',
+        'PC14': '1',
+        'PC15': '2',
+        'PA0': '6',
+        'PA1': '7',
+
+        'PA2': '8',
+        'PA3': '9',
+        'PA4': '10',
+        'PA5': '11',
+        'PA6': '12',
+        'PA7': '13',
+        'PB0': '14',
+
+        'PB1': '15',
+        'PA8': '16',
+        'PC6': '17',
+        'PA11': '18',
+        'PA12': '19',
+        'PA13': '20',
+        'PA14': '21',
+
+        'PA15': '22',
+        'PB3': '23',
+        'PB4': '24',
+        'PB5': '25',
+        'PB6': '26',
+        'PB7': '27',
+        'PB8': '28',
     }
     PACKAGE = 'Package_DFN_QFN:QFN-28_4x4mm_P0.5mm'
     PART = 'STM32G031Gxxx'
-    LCSC_PART = 'C432211'  # G8U6 variantTrue
+    LCSC_PART = 'C432211'  # G8U6 variant
