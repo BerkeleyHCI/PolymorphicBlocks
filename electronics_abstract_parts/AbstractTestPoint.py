@@ -21,7 +21,7 @@ class VoltageTestPoint(TypedTestPoint, Block):
   """Test point with a VoltageSink port."""
   def __init__(self):
     super().__init__()
-    self.io = self.Port(VoltageSink().empty(), [InOut])
+    self.io = self.Port(VoltageSink.empty(), [InOut])
     self.tp = self.Block(TestPoint(name=self.io.link().name()))
     self.connect(self.io, self.tp.io.adapt_to(VoltageSink()))
 
@@ -34,7 +34,7 @@ class DigitalTestPoint(TypedTestPoint, Block):
   """Test point with a DigitalSink port."""
   def __init__(self):
     super().__init__()
-    self.io = self.Port(DigitalSink().empty(), [InOut])
+    self.io = self.Port(DigitalSink.empty(), [InOut])
     self.tp = self.Block(TestPoint(name=self.io.link().name()))
     self.connect(self.io, self.tp.io.adapt_to(DigitalSink()))
 
@@ -47,7 +47,7 @@ class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
   """Creates an array of Digital test points, sized from the port array's connections."""
   def __init__(self):
     super().__init__()
-    self.io = self.Port(Vector(DigitalSink().empty()), [InOut])
+    self.io = self.Port(Vector(DigitalSink.empty()), [InOut])
     self.generator_param(self.io.requested())
 
   def generate(self):

@@ -174,7 +174,7 @@ class AnalogDemuxer(Interface, GeneratorBlock):
     self.outputs.defined()
     for elt in self.get(self.outputs.requested()):
       self.connect(
-        self.outputs.append_elt(AnalogSource().empty(), elt),
+        self.outputs.append_elt(AnalogSource.empty(), elt),
         self.device.inputs.request(elt).adapt_to(AnalogSource(
           voltage_out=self.input.link().voltage,
           signal_out=self.input.link().signal,

@@ -23,7 +23,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
     )
     self.i2c = self.Port(I2cTarget(i2c_model))
 
-    self.io = self.Port(Vector(DigitalBidir().empty()), optional=True)
+    self.io = self.Port(Vector(DigitalBidir.empty()), optional=True)
 
     self.addr_lsb = self.ArgParameter(addr_lsb)
     self.generator_param(self.addr_lsb, self.pin_assigns, self.io.requested())

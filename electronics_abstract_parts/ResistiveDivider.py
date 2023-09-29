@@ -142,7 +142,7 @@ class BaseVoltageDivider(Block):
     self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=impedance))
 
     self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])
-    self.input = self.Port(VoltageSink().empty(), [Input])  # forward declaration only
+    self.input = self.Port(VoltageSink.empty(), [Input])  # forward declaration only
     output_voltage = ResistiveDivider.divider_output(self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio)
     self.output = self.Export(self.div.center.adapt_to(AnalogSource(
       voltage_out=output_voltage,

@@ -96,8 +96,7 @@ class ForcedVoltage(DummyDevice, NetBlock):
     ), [Input])
 
     self.pwr_out = self.Port(VoltageSource(
-      voltage_out=forced_voltage,
-      current_limits=self.pwr_in.link().current_limits
+      voltage_out=forced_voltage
     ), [Output])
 
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
@@ -114,8 +113,7 @@ class ForcedAnalogVoltage(DummyDevice, NetBlock):
 
     self.signal_out = self.Port(AnalogSource(
       voltage_out=forced_voltage,
-      signal_out = self.signal_in.link().signal,
-      current_limits=self.signal_in.link().current_limits
+      signal_out=self.signal_in.link().signal
     ), [Output])
 
     self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)

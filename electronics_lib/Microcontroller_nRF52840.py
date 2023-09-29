@@ -367,8 +367,8 @@ class Mdbt50q_1mv2_Device(Nrf52840_Base, JlcPart):
 class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
   def __init__(self):
     super().__init__()
-    self.usb_inner = self.Port(UsbHostPort().empty(), [Input])
-    self.usb_outer = self.Port(UsbDevicePort().empty(), [Output])
+    self.usb_inner = self.Port(UsbHostPort.empty(), [Input])
+    self.usb_outer = self.Port(UsbDevicePort.empty(), [Output])
     self.res_dp = self.Block(Resistor(27*Ohm(tol=0.01)))
     self.res_dm = self.Block(Resistor(27*Ohm(tol=0.01)))
     self.connect(self.usb_inner.dp, self.res_dp.a.adapt_to(DigitalBidir()))  # TODO propagate params - needs bridge mechanism

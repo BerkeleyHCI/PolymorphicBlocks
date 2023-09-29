@@ -129,6 +129,7 @@ class AnalogSink(AnalogBase):
 
     voltage_limit: RangeLike
     if voltage_limit_tolerance is not None:
+      assert voltage_limit_abs is None
       voltage_limit = supply_range + voltage_limit_tolerance
     elif voltage_limit_abs is not None:
       voltage_limit = voltage_limit_abs

@@ -24,7 +24,7 @@ class Mcp3561_Device(InternalSubcircuit, FootprintBlock):
       signal_limit_tolerance=(0, 0)*Volt,  # TODO support Vref
       impedance=(20, 510)*kOhm  # varies based on gain
     )
-    self.ch = self.Port(Vector(AnalogSink().empty()))
+    self.ch = self.Port(Vector(AnalogSink.empty()))
     for i in range(8):
       self.ch.append_elt(input_model, str(i))
 

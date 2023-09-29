@@ -140,7 +140,7 @@ class IndicatorSinkLed(Light, Block):
     self.current_draw = self.ArgParameter(current_draw)
 
     self.signal = self.Port(DigitalSink.empty(), [InOut])
-    self.pwr = self.Port(VoltageSink().empty(), [Power])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
 
 
 class IndicatorSinkLedResistor(IndicatorSinkLed):

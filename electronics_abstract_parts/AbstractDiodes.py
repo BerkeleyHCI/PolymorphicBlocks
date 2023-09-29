@@ -198,7 +198,8 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
     self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
 
     self.forced = self.Block(ForcedAnalogVoltage(
-      forced_voltage=self.signal_in.link().voltage.intersect((0, self.diode.actual_zener_voltage.upper()))
+      forced_voltage=self.signal_in.link().voltage.intersect(
+        self.gnd.link().voltage + (0, self.diode.actual_zener_voltage.upper()))
     ))
     self.connect(self.signal_in, self.forced.signal_in)
     self.connect(self.signal_out, self.forced.signal_out, self.diode.cathode.adapt_to(AnalogSink()))
