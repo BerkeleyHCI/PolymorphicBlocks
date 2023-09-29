@@ -76,9 +76,9 @@ class NetlistTransform(TransformUtil.Transform):
     other_internal_blocks: Dict[str, edgir.BlockLike] = {}
     if isinstance(block, edgir.HierarchyBlock):
       for block_pair in block.blocks:
-        subblock = block_pair.value.hierarchy
+        subblock = block_pair.value
         # ignore pseudoblocks like bridges and adapters that have no internals
-        if not subblock.blocks and 'fp_is_footprint' not in subblock.meta.members.node:
+        if not subblock.hierarchy.blocks and 'fp_is_footprint' not in subblock.hierarchy.meta.members.node:
           other_internal_blocks[block_pair.name] = block_pair.value
         else:
           main_internal_blocks[block_pair.name] = block_pair.value
