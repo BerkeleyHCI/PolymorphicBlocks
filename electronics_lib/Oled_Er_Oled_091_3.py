@@ -18,7 +18,6 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Block):
         super().__init__()
 
         self.conn = self.Block(Fpc050Bottom(length=15))
-        self.lcd = self.Block(Er_Oled_091_3_Outline())  # for device outline
 
         self.vcc = self.Export(self.conn.pins.request('15').adapt_to(VoltageSource(
             voltage_out=(6.4, 9)*Volt,
@@ -77,8 +76,9 @@ class Er_Oled_091_3(Oled, Block):
 
     def contents(self):
         super().contents()
-
         self.connect(self.pwr, self.device.vbat)
+
+        self.lcd = self.Block(Er_Oled_091_3_Outline())  # for device outline
 
         self.c1_cap = self.Block(Capacitor(0.1*uFarad(tol=0.2), (0, 6.3)*Volt))
         self.connect(self.c1_cap.pos, self.device.c1p)

@@ -17,7 +17,6 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
         super().__init__()
 
         self.conn = self.Block(Fpc050Bottom(length=30))
-        self.lcd = self.Block(Er_Oled028_1_Outline())  # for device outline
 
         vcc3_pin = self.conn.pins.request('3')
         self.connect(vcc3_pin, self.conn.pins.request('29'))
@@ -102,6 +101,8 @@ class Er_Oled028_1(Oled, GeneratorBlock):
     def contents(self):
         super().contents()
         self.connect(self.pwr, self.device.vci)
+
+        self.lcd = self.Block(Er_Oled028_1_Outline())  # for device outline
 
         self.iref_res = self.Block(Resistor(resistance=680*kOhm(tol=0.05)))  # TODO dynamic sizing
         self.connect(self.iref_res.a, self.device.iref)
