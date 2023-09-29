@@ -17,7 +17,6 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
         super().__init__()
 
         self.conn = self.Block(Fpc050Bottom(length=24))
-        self.lcd = self.Block(Er_Epd027_2_Outline())  # for device outline
 
         self.vss = self.Export(self.conn.pins.request('17').adapt_to(Ground()), [Common])
         self.vdd = self.Export(self.conn.pins.request('16').adapt_to(VoltageSink(
@@ -99,6 +98,8 @@ class Er_Epd027_2(EInk, GeneratorBlock):
 
     def contents(self):
         super().contents()
+
+        self.lcd = self.Block(Er_Epd027_2_Outline())  # for device outline
 
         self.vdd_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vdd)
