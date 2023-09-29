@@ -75,8 +75,8 @@ class Vl53l0x(DistanceSensor, Block):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink().empty(), [Power])
-    self.gnd = self.Port(Ground().empty(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.i2c = self.Port(I2cTarget.empty())
     self.xshut = self.Port(DigitalSink.empty(), optional=True)

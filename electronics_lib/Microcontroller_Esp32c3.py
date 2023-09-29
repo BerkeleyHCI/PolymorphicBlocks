@@ -58,9 +58,9 @@ class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, BaseIoControllerPinma
     }
 
   def _io_pinmap(self) -> PinMapUtil:
-    adc_model = AnalogSink(
-      voltage_limits=(0, 2.5) * Volt,  # table 15, effective ADC range
-      current_draw=(0, 0) * Amp,
+    adc_model = AnalogSink.from_supply(
+      self.gnd, self.pwr,
+      signal_limit_abs=(0, 2.5)*Volt,  # table 15, effective ADC range
       # TODO: impedance / leakage - not specified by datasheet
     )
 

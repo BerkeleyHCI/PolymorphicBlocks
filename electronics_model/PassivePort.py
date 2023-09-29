@@ -102,25 +102,24 @@ class PassiveAdapterDigitalSingleSource(CircuitPortAdapter[DigitalSingleSource])
 class PassiveAdapterAnalogSource(CircuitPortAdapter[AnalogSource]):
   # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
   @init_in_parent
-  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
-               current_limits: RangeLike = RangeExpr.ALL,
-               impedance: RangeLike = RangeExpr.ZERO):
+  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO, signal_out: RangeLike = RangeExpr.ZERO,
+               current_limits: RangeLike = RangeExpr.ALL, impedance: RangeLike = RangeExpr.ZERO):
     super().__init__()
     self.src = self.Port(Passive())
-    self.dst = self.Port(AnalogSource(voltage_out=voltage_out, current_limits=current_limits,
-                                      impedance=impedance))
+    self.dst = self.Port(AnalogSource(voltage_out=voltage_out, signal_out=signal_out,
+                                      current_limits=current_limits, impedance=impedance))
 
 
 class PassiveAdapterAnalogSink(CircuitPortAdapter[AnalogSink]):
   # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
   @init_in_parent
-  def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
+  def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL, signal_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO,
                impedance: RangeLike = RangeExpr.INF):
     super().__init__()
     self.src = self.Port(Passive())
-    self.dst = self.Port(AnalogSink(voltage_limits=voltage_limits, current_draw=current_draw,
-                                    impedance=impedance))
+    self.dst = self.Port(AnalogSink(voltage_limits=voltage_limits, signal_limits=signal_limits,
+                                    current_draw=current_draw, impedance=impedance))
 
 
 class PassiveBridge(CircuitPortBridge):

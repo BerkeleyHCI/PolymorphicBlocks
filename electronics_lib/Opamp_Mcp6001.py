@@ -10,15 +10,18 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     ), [Power])
     self.vss = self.Port(Ground(), [Common])
 
-    analog_in_model = AnalogSink(
-      voltage_limits=(-0.3, self.vcc.link().voltage.lower() + 0.3),
+    analog_in_model = AnalogSink.from_supply(
+      self.vss, self.vcc,
+      voltage_limit_tolerance=(-1.0, 1.0)*Volt,  # absolute maximum ratings
+      signal_limit_bound=(0.3*Volt, -0.3*Volt),  # common-mode input range
       impedance=1e13*Ohm(tol=0),  # no tolerance bounds given on datasheet
       current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)
-    self.vout = self.Port(AnalogSource(
-      (0.25, self.vcc.link().voltage.lower() - 0.25),
+    self.vout = self.Port(AnalogSource.from_supply(
+      self.vss, self.vcc,
+      signal_out_bound=(25*mVolt, -25*mVolt),  # maximum output swing
       current_limits=(-6, 6)*mAmp,  # for Vdd=1.8, 23mA for Vdd=5.5
       impedance=300*Ohm(tol=0)  # no tolerance bounds given on datasheet
     ))
@@ -42,7 +45,7 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 
 class Mcp6001(Opamp):
-  """MCP6001 op-amp in SOT-23-5
+  """MCP6001 RRO op-amp in SOT-23-5
   """
   def contents(self):
     super().contents()

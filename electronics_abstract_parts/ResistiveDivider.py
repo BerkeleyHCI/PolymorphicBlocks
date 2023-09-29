@@ -57,6 +57,16 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
 
 class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
   """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
+  @classmethod
+  def divider_ratio(cls, rtop: RangeExpr, rbot: RangeExpr) -> RangeExpr:
+    """Calculates the output voltage of a resistive divider given the input voltages and resistances."""
+    return 1 / (rtop / rbot + 1)
+
+  @classmethod
+  def divider_output(cls, vtop: RangeExpr, vbot: RangeExpr, ratio: RangeExpr) -> RangeExpr:
+    """Calculates the output voltage of a resistive divider given the input voltages and resistances."""
+    return RangeExpr._to_expr_type(((vtop.lower() - vbot.lower()) * ratio.lower() + vbot.lower(),
+            (vtop.upper() - vbot.upper()) * ratio.upper() + vbot.upper()))
 
   @init_in_parent
   def __init__(self, ratio: RangeLike, impedance: RangeLike, *,
@@ -113,7 +123,7 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
     self.assign(self.actual_series_impedance,
                 self.top_res.actual_resistance + self.bottom_res.actual_resistance)
     self.assign(self.actual_ratio,
-                1 / (self.top_res.actual_resistance / self.bottom_res.actual_resistance + 1))
+                self.divider_ratio(self.top_res.actual_resistance, self.bottom_res.actual_resistance))
 
 
 @non_library
@@ -131,10 +141,12 @@ class BaseVoltageDivider(Block):
     self.ratio = self.Parameter(RangeExpr())  # "internal" forward-declared parameter
     self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=impedance))
 
-    self.input = self.Port(VoltageSink().empty(), [Input])  # forward declaration only
+    self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])
+    self.input = self.Port(VoltageSink.empty(), [Input])  # forward declaration only
+    output_voltage = ResistiveDivider.divider_output(self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio)
     self.output = self.Export(self.div.center.adapt_to(AnalogSource(
-      voltage_out=(self.input.link().voltage.lower() * self.div.actual_ratio.lower(),
-                   self.input.link().voltage.upper() * self.div.actual_ratio.upper()),
+      voltage_out=output_voltage,
+      signal_out=output_voltage,
       current_limits=RangeExpr.ALL,
       impedance=self.div.actual_impedance
     )), [Output])
@@ -142,7 +154,6 @@ class BaseVoltageDivider(Block):
       current_draw=self.output.link().current_drawn,
       voltage_limits=RangeExpr.ALL
     )))
-    self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])
 
     self.actual_ratio = self.Parameter(RangeExpr(self.div.actual_ratio))
     self.actual_impedance = self.Parameter(RangeExpr(self.div.actual_impedance))
@@ -224,16 +235,15 @@ class SignalDivider(Analog, Block):
     super().__init__()
 
     self.div = self.Block(ResistiveDivider(ratio=ratio, impedance=impedance))
+    self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])
     self.input = self.Port(AnalogSink.empty(), [Input])  # forward declaration
+    output_voltage = ResistiveDivider.divider_output(self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio)
     self.output = self.Export(self.div.center.adapt_to(AnalogSource(
-      voltage_out=(self.input.link().voltage.lower() * self.div.actual_ratio.lower(),
-                   self.input.link().voltage.upper() * self.div.actual_ratio.upper()),
-      current_limits=RangeExpr.ALL,
+      voltage_out=output_voltage,
+      signal_out=output_voltage,
       impedance=self.div.actual_impedance
     )), [Output])
     self.connect(self.input, self.div.top.adapt_to(AnalogSink(
       impedance=self.div.actual_series_impedance,
       current_draw=self.output.link().current_drawn,
-      voltage_limits=RangeExpr.ALL
     )))
-    self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])

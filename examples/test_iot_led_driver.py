@@ -57,7 +57,7 @@ class IotLedDriver(JlcBoardTop):
 
       (self.v12_sense, ), _ = self.chain(
         self.v12,
-        imp.Block(VoltageSenseDivider(full_scale_voltage=3.0*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+        imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
         self.mcu.adc.request('v12_sense')
       )
 

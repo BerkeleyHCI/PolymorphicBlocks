@@ -7,7 +7,7 @@ class Speaker(HumanInterface):
   """Abstract speaker part with speaker input port."""
   def __init__(self):
     super().__init__()
-    self.input = self.Port(SpeakerPort().empty(), [Input])
+    self.input = self.Port(SpeakerPort.empty(), [Input])
 
 
 class ConnectorSpeaker(Speaker):

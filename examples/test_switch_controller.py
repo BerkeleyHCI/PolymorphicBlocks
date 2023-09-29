@@ -114,6 +114,7 @@ class SwitchController(JlcBoardTop):
           'lcd_reset=30',
           'lcd_cs=29',
         ]),
+        (['isense', 'out', 'signal_out'], Range(0.1, 2.45)),  # trade range for resolution
       ],
       class_values=[
         (Er_Oled_091_3, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec

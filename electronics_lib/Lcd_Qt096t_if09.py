@@ -48,7 +48,7 @@ class Qt096t_if09(Lcd, Block):
     self.rs = self.Export(self.device.rs)
     self.cs = self.Export(self.device.cs)
     self.spi = self.Export(self.device.spi)
-    self.led = self.Port(DigitalSink().empty())
+    self.led = self.Port(DigitalSink.empty())
 
   def contents(self):
     super().contents()

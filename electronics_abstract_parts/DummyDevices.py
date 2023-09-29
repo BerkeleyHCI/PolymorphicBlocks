@@ -1,3 +1,5 @@
+from typing import Dict
+
 from electronics_model import *
 from .Categories import *
 
@@ -52,12 +54,14 @@ class DummyDigitalSink(DummyDevice):
 class DummyAnalogSink(DummyDevice):
   @init_in_parent
   def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL,
+               signal_limit: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO,
                impedance: RangeLike = RangeExpr.INF) -> None:
     super().__init__()
 
     self.io = self.Port(AnalogSink(
       voltage_limits=voltage_limit,
+      signal_limits=signal_limit,
       current_draw=current_draw,
       impedance=impedance
     ), [InOut])
@@ -88,17 +92,53 @@ class ForcedVoltage(DummyDevice, NetBlock):
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink(
-      current_draw=RangeExpr(),
-      voltage_limits=RangeExpr()
+      current_draw=RangeExpr()
     ), [Input])
 
     self.pwr_out = self.Port(VoltageSource(
-      voltage_out=forced_voltage,
-      current_limits=self.pwr_in.link().current_limits
+      voltage_out=forced_voltage
     ), [Output])
 
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
-    self.assign(self.pwr_in.voltage_limits, self.pwr_out.link().voltage_limits)
+
+
+class ForcedAnalogVoltage(DummyDevice, NetBlock):
+  @init_in_parent
+  def __init__(self, forced_voltage: RangeLike = RangeExpr()) -> None:
+    super().__init__()
+
+    self.signal_in = self.Port(AnalogSink(
+      current_draw=RangeExpr()
+    ), [Input])
+
+    self.signal_out = self.Port(AnalogSource(
+      voltage_out=forced_voltage,
+      signal_out=self.signal_in.link().signal
+    ), [Output])
+
+    self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+
+
+class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice, NetBlock):
+  @init_in_parent
+  def __init__(self, forced_signal: RangeLike = RangeExpr()) -> None:
+    super().__init__()
+
+    self.signal_in = self.Port(AnalogSink(
+      current_draw=RangeExpr()
+    ), [Input])
+
+    self.signal_out = self.Port(AnalogSource(
+      voltage_out=self.signal_in.link().voltage,
+      signal_out=forced_signal,
+      current_limits=self.signal_in.link().current_limits
+    ), [Output])
+
+    self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name == 'edg_importable:Adapter'
+    return {'1': self.signal_in, '2': self.signal_out}
 
 
 class ForcedDigitalSinkCurrentDraw(DummyDevice, NetBlock):

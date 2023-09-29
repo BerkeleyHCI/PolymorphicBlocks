@@ -30,7 +30,7 @@ class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
                                                 voltage_limit_tolerance=(0, 5)*Volt,
                                                 input_threshold_abs=(0.2, 0.6)*Volt))
     self.sw = self.Port(VoltageSink())
-    self.vout = self.Port(VoltageSource().empty())
+    self.vout = self.Port(VoltageSource.empty())
 
     self.output_voltage = self.ArgParameter(output_voltage)
     self.frequency = self.ArgParameter(frequency)

@@ -15,9 +15,10 @@ class Mcp3201_Device(InternalSubcircuit, FootprintBlock):
       voltage_limits=(0.25*Volt, self.vdd.link().voltage.upper()),
       current_draw=(0.001, 150)*uAmp
     ))
-    self.inp = self.Port(AnalogSink(
-      voltage_limits=(0, self.vref.link().voltage.lower()),
-      current_draw=(0, 0),  # leakage current not modeled
+    self.inp = self.Port(AnalogSink.from_supply(
+      self.vss, self.vref,
+      voltage_limit_tolerance=(-0.6, 0.6)*Volt,
+      signal_limit_tolerance=(-0.1, 0.1)*Volt,  # kinda, actually from IN- to Vref+IN-, for IN- within 0.1V of Vss
       impedance=(5, 5000)*MOhm  # derived from assumption Vin=5 / 0.001 - 1uA leakage current
     ))
 

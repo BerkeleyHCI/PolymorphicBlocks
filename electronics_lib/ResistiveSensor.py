@@ -27,10 +27,10 @@ class ConnectorResistiveSensor(Analog, Block):
     self.connect(self.input, self.top.a.adapt_to(VoltageSink(
       current_draw=self.output.link().current_drawn
     )))
+    output_voltage = ResistiveDivider.divider_output(self.input.link().voltage, self.gnd.link().voltage, self.actual_ratio)
     self.connect(self.output, self.top.b.adapt_to(AnalogSource(
-      voltage_out=(self.input.link().voltage.lower() * self.actual_ratio.lower(),
-                   self.input.link().voltage.upper() * self.actual_ratio.upper()),
-      current_limits=RangeExpr.ALL,
+      voltage_out=output_voltage,
+      signal_out=output_voltage,
       impedance=self.actual_impedance
     )), self.bot.pins.request('1').adapt_to(AnalogSink()))
     self.connect(self.gnd, self.bot.pins.request('2').adapt_to(Ground()))

@@ -184,7 +184,7 @@ class PullupResistorArray(TypedTestPoint, GeneratorBlock):
   def __init__(self, resistance: RangeLike):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.io = self.Port(Vector(DigitalSingleSource().empty()), [InOut])
+    self.io = self.Port(Vector(DigitalSingleSource.empty()), [InOut])
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 
@@ -203,7 +203,7 @@ class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
   def __init__(self, resistance: RangeLike):
     super().__init__()
     self.gnd = self.Port(VoltageSink.empty(), [Common])
-    self.io = self.Port(Vector(DigitalSingleSource().empty()), [InOut])
+    self.io = self.Port(Vector(DigitalSingleSource.empty()), [InOut])
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 

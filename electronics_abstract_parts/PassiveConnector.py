@@ -16,7 +16,7 @@ class PassiveConnector(InternalSubcircuit, Block):
   @init_in_parent
   def __init__(self, length: IntLike = 0):
     super().__init__()
-    self.pins = self.Port(Vector(Passive().empty()))
+    self.pins = self.Port(Vector(Passive.empty()))
     self.actual_length = self.Parameter(IntExpr())
 
     self.length = self.ArgParameter(length)

@@ -20,10 +20,11 @@ class Mcp3561_Device(InternalSubcircuit, FootprintBlock):
 
     input_model = AnalogSink.from_supply(
       self.vss, self.avdd,
-      voltage_limit_tolerance=(-0.1, 0.1)*Volt,
+      voltage_limit_tolerance=(-0.3, 0.3)*Volt,
+      signal_limit_tolerance=(0, 0)*Volt,  # TODO support Vref
       impedance=(20, 510)*kOhm  # varies based on gain
     )
-    self.ch = self.Port(Vector(AnalogSink().empty()))
+    self.ch = self.Port(Vector(AnalogSink.empty()))
     for i in range(8):
       self.ch.append_elt(input_model, str(i))
 

@@ -9,7 +9,7 @@ class CanConnector(Connector):
 
     self.pwr = self.Port(VoltageSource.empty(), optional=True)
     self.gnd = self.Port(GroundSource.empty())
-    self.differential = self.Port(CanDiffPort().empty(), [Output])
+    self.differential = self.Port(CanDiffPort.empty(), [Output])
 
     self.conn = self.Block(PassiveConnector())
     self.connect(self.pwr, self.conn.pins.request('2').adapt_to(VoltageSource(

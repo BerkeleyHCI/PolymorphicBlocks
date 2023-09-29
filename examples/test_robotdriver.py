@@ -230,6 +230,7 @@ class RobotDriver(JlcBoardTop):
           'tof_xshut_1=11',
           'tof_xshut_2=12',
         ]),
+        (['isense', 'out', 'signal_out'], Range(0.1, 2.45)),  # trade range for resolution
         (['isense', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
         (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
 
@@ -251,6 +252,6 @@ class RobotDriver(JlcBoardTop):
     )
 
 
-class RobotDriver2TestCase(unittest.TestCase):
+class RobotDriverTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(RobotDriver)

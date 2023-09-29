@@ -50,7 +50,12 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
       pullup_capable=True, pulldown_capable=True,
     )
 
-    adc_model = AnalogSink.from_supply(gnd, pwr)  # TODO: no specs in datasheet?!
+    adc_model = AnalogSink.from_supply(
+      gnd, pwr,
+      signal_limit_abs=(0.1, 2.45)*Volt,  # table 3-4, effective ADC range
+      # TODO: impedance / leakage - not specified by datasheet
+    )
+
     dac_model = AnalogSource.from_supply(gnd, pwr)  # TODO: no specs in datasheet?!
 
     uart_model = UartPort(DigitalBidir.empty())

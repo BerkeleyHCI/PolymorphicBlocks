@@ -10,14 +10,17 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     ), [Power])
     self.vss = self.Port(Ground(), [Common])
 
-    analog_in_model = AnalogSink(
-      voltage_limits=(-0.2, 5.7),
+    analog_in_model = AnalogSink.from_supply(
+      self.vss, self.vcc,
+      voltage_limit_abs=(-0.2, 5.7),
+      signal_limit_bound=(0, -1.0*Volt),  # assumed, from Vcc = 2.7v and 5v tables
       current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)
-    self.vout = self.Port(AnalogSource(
-      (0.180, self.vcc.link().voltage.lower() - 0.1),  # assuming a 10k load at V=3.3, gets more complex
+    self.vout = self.Port(AnalogSource.from_supply(
+      self.vss, self.vcc,
+      signal_out_bound=(0.180*Volt, -0.100*Volt),  # assuming a 10k load, Vcc=2.7v
       current_limits=(-40, 40)*mAmp,  # output short circuit current
     ))
 
@@ -40,7 +43,7 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class Lmv321(Opamp):
-  """RRIO op-amp in SOT-23-5.
+  """RRO op-amp in SOT-23-5.
   """
   def contents(self):
     super().contents()

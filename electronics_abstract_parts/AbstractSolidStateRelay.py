@@ -75,6 +75,7 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
       self.apull,
       self.ic.fetb.adapt_to(AnalogSource(
         voltage_out=self.ain.link().voltage,
+        signal_out=self.ain.link().signal,
         current_limits=self.ic.load_current_limit,
         impedance=self.ain.link().source_impedance + self.ic.load_resistance
     )))

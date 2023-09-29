@@ -103,7 +103,7 @@ class IotKnob(JlcBoardTop):
 
       (self.v5v_sense, ), _ = self.chain(
         self.vusb,
-        imp.Block(VoltageSenseDivider(full_scale_voltage=3.0*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+        imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
         self.mcu.adc.request('v5v_sense')
       )
 

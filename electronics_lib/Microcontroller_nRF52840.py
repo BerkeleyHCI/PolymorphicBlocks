@@ -44,10 +44,10 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Interna
     dio_model = self._dio_model(gnd, pwr)
     dio_lf_model = dio_model  # "standard drive, low frequency IO only" (differences not modeled)
 
-    adc_model = AnalogSink(
-      voltage_limits=(gnd.link().voltage.upper(), pwr.link().voltage.lower()) +
-                     (-0.3, 0.3) * Volt,
-      current_draw=(0, 0) * Amp,
+    adc_model = AnalogSink.from_supply(
+      gnd, pwr,
+      voltage_limit_tolerance=(0, 0),  # datasheet 6.23.2, analog inputs cannot exceed Vdd or be lower than Vss
+      signal_limit_tolerance=(0, 0),
       impedance=Range.from_lower(1)*MOhm
     )
 
@@ -367,8 +367,8 @@ class Mdbt50q_1mv2_Device(Nrf52840_Base, JlcPart):
 class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
   def __init__(self):
     super().__init__()
-    self.usb_inner = self.Port(UsbHostPort().empty(), [Input])
-    self.usb_outer = self.Port(UsbDevicePort().empty(), [Output])
+    self.usb_inner = self.Port(UsbHostPort.empty(), [Input])
+    self.usb_outer = self.Port(UsbDevicePort.empty(), [Output])
     self.res_dp = self.Block(Resistor(27*Ohm(tol=0.01)))
     self.res_dm = self.Block(Resistor(27*Ohm(tol=0.01)))
     self.connect(self.usb_inner.dp, self.res_dp.a.adapt_to(DigitalBidir()))  # TODO propagate params - needs bridge mechanism

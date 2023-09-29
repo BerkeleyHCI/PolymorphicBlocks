@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Union, Tuple
+from typing import Optional, Tuple
 from edg_core import *
 from edg_core.Blocks import DescriptionString
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
@@ -397,8 +397,8 @@ class DigitalBidir(DigitalBase):
     elif input_threshold_abs is not None:
       assert input_threshold_factor is None, "can only specify one input threshold type"
       input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
-    else:
-      raise ValueError("no input threshold specified")
+    else:  # assumed ideal
+      input_threshold = RangeExpr.EMPTY
 
     output_threshold: RangeLike
     if output_threshold_factor is not None:

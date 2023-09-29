@@ -137,7 +137,7 @@ class Datalogger(BoardTop):
         (['mcu'], Lpc1549_64),
         (['pwr_5v'], Tps561201),
         (['pwr_3v3'], Ldl1117),
-        (['buffer', 'amp'], Mcp6001),
+        (['buffer', 'amp'], Tlv9061),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [

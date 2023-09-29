@@ -31,11 +31,11 @@ class MagneticEncoder(Connector, Magnetometer, Block):
       voltage_limits=(3.0, 5.5),  # 3.0-3.6 for 3.3v mode, 4.5-5.5 for 5v mode
       current_draw=(1.5, 6.5)*mAmp,  # supply current LPM3-NOM, excluding burn-in
     )), [Power])
-    self.out = self.Export(self.conn.pins.request('2').adapt_to(AnalogSource(
-      voltage_out=(0, self.pwr.link().voltage.upper())
-    )), [Output])
     self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()),
                            [Common])
+    self.out = self.Export(self.conn.pins.request('2').adapt_to(AnalogSource.from_supply(
+      self.gnd, self.pwr
+    )), [Output])
 
 
 class I2cConnector(Connector, Block):
@@ -138,12 +138,15 @@ class BldcController(JlcBoardTop):
 
       self.isense = imp.Block(OpampCurrentSensor(
         resistance=0.05*Ohm(tol=0.01),
-        ratio=Range.from_tolerance(20, 0.05), input_impedance=10*kOhm(tol=0.05)
+        ratio=Range.from_tolerance(10, 0.05), input_impedance=10*kOhm(tol=0.05)
       ))
-      self.connect(self.motor_pwr.pwr, self.isense.pwr_in)
-      self.connect(self.isense.pwr, self.v3v3)
+      self.connect(self.motor_pwr.pwr, self.isense.pwr_in, self.isense.pwr)
       self.connect(self.isense.ref, self.vref)
-      (self.isense_tp, ), _ = self.chain(self.isense.out, self.Block(AnalogTestPoint()), self.mcu.adc.request('isense'))
+      (self.isense_tp, self.isense_clamp), _ = self.chain(
+        self.isense.out,
+        self.Block(AnalogTestPoint()),
+        imp.Block(AnalogClampZenerDiode((2.7, 3.3)*Volt)),
+        self.mcu.adc.request('isense'))
 
       self.bldc_drv = imp.Block(Drv8313())
       self.connect(self.isense.pwr_out, self.bldc_drv.pwr)
@@ -179,6 +182,7 @@ class BldcController(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Feather_Nrf52840),
+        (['isense', 'amp', 'amp'], Opa197)
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [

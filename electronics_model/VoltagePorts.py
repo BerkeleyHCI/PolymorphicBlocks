@@ -157,6 +157,7 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
     ))
     self.dst = self.Port(AnalogSource(
       voltage_out=self.src.link().voltage,
+      signal_out=self.src.link().voltage,
       impedance=(0, 0)*Ohm,  # TODO not actually true, but pretty darn low?
     ))
 

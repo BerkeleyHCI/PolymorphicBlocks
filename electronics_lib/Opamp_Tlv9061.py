@@ -10,14 +10,16 @@ class Tlv9061_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     ), [Power])
     self.vss = self.Port(Ground(), [Common])
 
-    analog_in_model = AnalogSink(
-      voltage_limits=(-0.1, self.vcc.link().voltage.lower() + 0.1),
-      current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
+    analog_in_model = AnalogSink.from_supply(
+      self.vss, self.vcc,
+      voltage_limit_tolerance=(-0.5, 0.5)*Volt,  # common mode maximum ratings
+      signal_limit_tolerance=(-0.1, 0.1)*Volt
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)
-    self.vout = self.Port(AnalogSource(
-      (0.020, self.vcc.link().voltage.lower() - 0.02),  # assuming a 10k load
+    self.vout = self.Port(AnalogSource.from_supply(
+      self.vss, self.vcc,
+      signal_out_bound=(0, 0),  # output voltage range V- to V+
       current_limits=(-50, 50)*mAmp,  # for Vs=5V
       impedance=100*Ohm(tol=0)  # no tolerance bounds given on datasheet; open-loop impedance
     ))

@@ -176,12 +176,14 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
           ),
           'rtop.2': AnalogSource(
             voltage_out=self.target.link().voltage.hull(self.actual.link().voltage),
+            signal_out=self.target.link().voltage.hull(self.actual.link().voltage),
             impedance=1 / (1 / self.rtop.actual_resistance + 1 / self.rbot.actual_resistance)
           ),
           'rbot.2': AnalogSink(),  # ideal, rtop.2 contains the parameter model
           'rout.1': AnalogSink(),
           'rout.2': AnalogSource(
             voltage_out=self.amp.out.link().voltage,
+            signal_out=self.amp.out.link().voltage,
             impedance=self.rout.actual_resistance
           ),
         }, nodes=nodes)
@@ -245,6 +247,9 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
           'ratio': Range.from_tolerance(1/22, 0.05),
           'input_impedance': 220*kOhm(tol=0.05)
         },
+        'clamp': {
+          'voltage': (2.5, 3.0)*Volt
+        }
       })
 
 

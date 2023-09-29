@@ -109,8 +109,10 @@ class Rp2040_Device(IoControllerI2cTarget, IoControllerUsb, BaseIoControllerPinm
   def _io_pinmap(self) -> PinMapUtil:
     dio_usb_model = self._dio_ft_model  # similar enough, main difference seems to be PUR/PDR resistance
 
-    adc_model = AnalogSink(  # Table 625
-      voltage_limits=(self.gnd.link().voltage.lower(), self.pwr.link().voltage.upper()),
+    adc_model = AnalogSink.from_supply(  # Table 626
+      self.gnd, self.pwr,
+      voltage_limit_tolerance=(0, 0),  # ADC input voltage range
+      signal_limit_tolerance=(0, 0),  # ADC input voltage range
       impedance=(100, float('inf')) * kOhm
     )
 

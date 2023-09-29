@@ -1,10 +1,13 @@
 from math import ceil, log10
 from typing import List, Tuple, Dict
 
-from electronics_abstract_parts import Resistor, Capacitor
 from electronics_model import *
+from .AbstractResistor import Resistor
+from .AbstractCapacitor import Capacitor
+from .ResistiveDivider import ResistiveDivider
 from .AbstractOpamp import Opamp
 from .Categories import OpampApplication
+from .DummyDevices import ForcedAnalogSignal
 from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
 
@@ -17,6 +20,12 @@ class OpampFollower(OpampApplication, KiCadSchematicBlock):
 
     self.input = self.Port(AnalogSink.empty(), [Input])
     self.output = self.Port(AnalogSource.empty(), [Output])
+
+  def contents(self):
+    super().contents()
+
+    self.amp = self.Block(Opamp())
+    self.forced = self.Block(ForcedAnalogSignal(self.input.link().signal))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"))
 
@@ -113,9 +122,16 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
         impedance=self.r1.actual_resistance + self.r2.actual_resistance
       )
       reference_node: CircuitPort = self.reference
+      reference_range = self.reference.link().signal
     else:
       reference_type = Ground()
       reference_node = self.gnd
+      reference_range = self.gnd.link().voltage
+
+    input_signal_range = self.amp.out.voltage_out.intersect(self.input.link().signal - reference_range)
+    output_range = input_signal_range * self.actual_amplification + reference_range
+    # TODO tolerances can cause the range to be much larger than actual, so bound it to avoid false-positives
+    self.forced = self.Block(ForcedAnalogSignal(self.amp.out.signal_out.intersect(output_range)))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
@@ -236,13 +252,21 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     self.rf = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
     self.rg = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
 
+    input_diff_range = self.input_positive.link().signal - self.input_negative.link().signal
+    output_diff_range = input_diff_range * self.actual_ratio + self.output_reference.link().signal
+    # TODO tolerances can cause the range to be much larger than actual, so bound it to avoid false-positives
+    self.forced = self.Block(ForcedAnalogSignal(self.amp.out.signal_out.intersect(output_diff_range)))
+
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
         'r1.1': AnalogSink(  # TODO very simplified and probably very wrong
           impedance=self.r1.actual_resistance + self.rf.actual_resistance
         ),
         'r1.2': AnalogSource(  # combined R1 and Rf resistance
-          voltage_out=self.input_negative.link().voltage.hull(self.output.link().voltage),
+          voltage_out=ResistiveDivider.divider_output(
+            self.input_negative.link().voltage, self.amp.out.voltage_out,
+            ResistiveDivider.divider_ratio(self.r1.actual_resistance, self.rf.actual_resistance)
+          ),
           impedance=1 / (1 / self.r1.actual_resistance + 1 / self.rf.actual_resistance)
         ),
         'rf.2': AnalogSink(),  # ideal
@@ -253,7 +277,10 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
           impedance=self.r2.actual_resistance + self.rg.actual_resistance
         ),
         'r2.2': AnalogSource(  # combined R2 and Rg resistance
-          voltage_out=self.input_positive.link().voltage.hull(self.output_reference.link().voltage),
+          voltage_out=ResistiveDivider.divider_output(
+            self.input_positive.link().voltage, self.output_reference.link().voltage,
+            ResistiveDivider.divider_ratio(self.r2.actual_resistance, self.rg.actual_resistance)
+          ),
           impedance=1 / (1 / self.r2.actual_resistance + 1 / self.rg.actual_resistance)
         ),
         'rg.2': AnalogSink(),  # ideal
@@ -368,6 +395,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
         'c.1': AnalogSink(),  # TODO impedance of the feedback circuit?
 
         'r.2': AnalogSource(
+          voltage_out=self.amp.out.voltage_out,
           impedance=self.r.actual_resistance
         ),
         'c.2': AnalogSink(),
