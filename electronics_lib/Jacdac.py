@@ -80,7 +80,7 @@ class JacdacConnectorBare(FootprintBlock, GeneratorBlock):
             gnd_node = self.gnd_sink
 
         self.footprint(
-            'EC', 'Jacdac:JD-PEC-02_Prerouted.kicad_mod',
+            'EC', 'Jacdac:JD-PEC-02_Prerouted',
             {
                 '1': self.jd_data.jd_data,
                 '2': gnd_node,
@@ -173,3 +173,59 @@ class JacdacDataInterface(Block):
         self.connect(self.pwr, self.clamp_hi.cathode.adapt_to(VoltageSink()))
         # inner port is ideal to avoid circular parameter dependencies
         self.connect(self.signal, self.rc.input.adapt_to(DigitalBidir()))
+
+
+class JacdacMountingData1(FootprintBlock):
+    def __init__(self):
+        super().__init__()
+        self.jd_data = self.Port(JacdacDataPort())  # ideal
+
+    def contents(self):
+        self.footprint(
+            'MH', 'Jacdac:jacdac_hole_DATA_notched_MH1',
+            {
+                'MH1': self.jd_data.jd_data,
+            },
+        )
+
+
+class JacdacMountingGnd2(FootprintBlock):
+    def __init__(self):
+        super().__init__()
+        self.gnd = self.Port(Ground())
+
+    def contents(self):
+        self.footprint(
+            'MH', 'Jacdac:jacdac_hole_GND_MH2',
+            {
+                'MH2': self.gnd,
+            },
+        )
+
+
+class JacdacMountingGnd4(FootprintBlock):
+    def __init__(self):
+        super().__init__()
+        self.gnd = self.Port(Ground())
+
+    def contents(self):
+        self.footprint(
+            'MH', 'Jacdac:jacdac_hole_GND_MH4',
+            {
+                'MH4': self.gnd,
+            },
+        )
+
+
+class JacdacMountingPwr3(FootprintBlock):
+    def __init__(self):
+        super().__init__()
+        self.jd_pwr = self.Port(VoltageSink())
+
+    def contents(self):
+        self.footprint(
+            'MH', 'Jacdac:jacdac_hole_PWR_MH3',
+            {
+                'MH3': self.jd_pwr,
+            },
+        )
