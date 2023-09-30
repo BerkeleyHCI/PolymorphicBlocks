@@ -19,29 +19,14 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         super().__init__(**kwargs)
 
         # # Additional ports (on top of BaseIoController)
-        # self.pwr = self.Port(VoltageSink(
-        #     voltage_limits=(3.0, 3.6)*Volt,  # TODO relaxed range down to 2.0 if ADC not used, or 2.4 if USB not used
-        #     current_draw=(0, 50.3)*mAmp + self.io_current_draw.upper()  # Table 13
-        # ), [Power])
-        # self.gnd = self.Port(Ground(), [Common])
-        #
-        # self.nrst = self.Port(DigitalSink.from_supply(
-        #     self.gnd, self.pwr,
-        #     voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions  TODO: FT IO, BOOT0 IO
-        #     current_draw=(0, 0)*Amp,
-        #     input_threshold_abs=(0.8, 2)*Volt
-        # ), optional=True)  # note, internal pull-up resistor, 30-50 kOhm by Table 35
-        #
-        # # TODO need to pass through to pin mapper
-        # # self.osc32 = self.Port(CrystalDriver(frequency_limits=32.768*kHertz(tol=0),  # TODO actual tolerances
-        # #                                      voltage_out=self.pwr.link().voltage),
-        # #                        optional=True)  # TODO other specs from Table 23
-        # self.osc = self.Port(CrystalDriver(frequency_limits=(4, 16)*MHertz,
-        #                                    voltage_out=self.pwr.link().voltage),
-        #                      optional=True)  # Table 22
-        #
-        # self.swd = self.Port(SwdTargetPort.empty())
-        # self._io_ports.insert(0, self.swd)
+        self.pwr = self.Port(VoltageSink(
+            voltage_limits=(1.7, 3.6)*Volt,  # Table 5.3.1 "standard operating voltage", not including Vrefbuf
+            current_draw=(0.001, 7.6)*mAmp + self.io_current_draw.upper()  # Table 25 (run), 30 (standby)
+        ), [Power])
+        self.gnd = self.Port(Ground(), [Common])
+
+        self.swd = self.Port(SwdTargetPort.empty())
+        self._io_ports.insert(0, self.swd)
 
     def _system_pinmap(self) -> Dict[str, CircuitPort]:
         return VariantPinRemapper({  # Pin/peripheral resource definitions (section 4)
@@ -52,34 +37,23 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
 
     def _io_pinmap(self) -> PinMapUtil:
         # Port models
-        # dio_ft_model = DigitalBidir.from_supply(
-        #     self.gnd, self.pwr,
-        #     voltage_limit_abs=(-0.3, 5.2) * Volt,  # Table 5.3.1, general operating conditions, TODO relaxed for Vdd>2v
-        #     current_draw=(0, 0)*Amp, current_limits=(-20, 20)*mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
-        #     input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
-        #     pullup_capable=True, pulldown_capable=True
-        # )
-        # dio_std_model = DigitalBidir.from_supply(
-        #     self.gnd, self.pwr,
-        #     voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions
-        #     current_draw=(0, 0)*Amp, current_limits=(-20, 20)*mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
-        #     input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
-        #     pullup_capable=True, pulldown_capable=True,
-        # )
-        # dio_pc_13_14_15_model = DigitalBidir.from_supply(
-        #     self.gnd, self.pwr,
-        #     voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions
-        #     current_draw=(0, 0)*Amp, current_limits=(-3, 3)*mAmp,  # Section 5.3.13 Output driving current
-        #     input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
-        #     pullup_capable=True, pulldown_capable=True,
-        # )
-        #
-        # adc_model = AnalogSink.from_supply(
-        #     self.gnd, self.pwr,
-        #     voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # general operating conditions, IO input voltage
-        #     signal_limit_tolerance=(0, 0),  # conversion voltage range, 0 to Vref+ (assumed VddA)
-        #     impedance=(100, float('inf')) * kOhm
-        # )
+        input_range = self.gnd.link().voltage.hull(self.pwr.link().voltage)
+        io_voltage_limit = (input_range + (-0.3, 3.6)*Volt).intersect(self.gnd.link().voltage + (-0.3, 5.5)*Volt)
+        dio_ft_model = DigitalBidir.from_supply(
+            self.gnd, self.pwr,
+            voltage_limit_abs=io_voltage_limit,
+            current_limits=(-15, 15)*mAmp,  # Section 5.3.14, relaxed bounds for relaxed Vol/Voh
+            input_threshold_factor=(0.3, 0.7),  # Section 5.3.14
+            pullup_capable=True, pulldown_capable=True
+        )
+        dio_fta_model = dio_ftea_model = dio_ftf_model = dio_ftfa_model = dio_ft_model
+
+        adc_model = AnalogSink.from_supply(
+            self.gnd, self.pwr,
+            voltage_limit_abs=io_voltage_limit,
+            signal_limit_tolerance=(0, 0),  # conversion voltage range, VssA to Vref+ (assumed VddA)
+            impedance=(50, float('inf'))*kOhm  # max external impedance, at lowest listed sampling rate
+        )
 
         uart_model = UartPort(DigitalBidir.empty())
         spi_model = SpiController(DigitalBidir.empty())
@@ -211,3 +185,39 @@ class Stm32g031_G_Device(Stm32g031Base_Device):
     PACKAGE = 'Package_DFN_QFN:QFN-28_4x4mm_P0.5mm'
     PART = 'STM32G031Gxxx'
     LCSC_PART = 'C432211'  # G8U6 variant
+
+
+@abstract_block
+class Stm32g031Base(Resettable, IoControllerI2cTarget, Microcontroller, IoControllerWithSwdTargetConnector,
+                    IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
+    DEVICE: Type[Stm32f031Base_Device] = Stm32g031Base_Device  # type: ignore
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.ic: Stm32g031Base_Device
+        self.generator_param(self.reset.is_connected())
+
+    def contents(self):
+        super().contents()
+
+        with self.implicit_connect(
+                ImplicitConnect(self.pwr, [Power]),
+                ImplicitConnect(self.gnd, [Common])
+        ) as imp:
+            self.ic = imp.Block(self.DEVICE(pin_assigns=ArrayStringExpr()))
+            self.connect(self.swd_node, self.ic.swd)
+            self.connect(self.reset_node, self.ic.nrst)
+
+            # from https://www.st.com/resource/en/application_note/an5096-getting-started-with-stm32g0-series-hardware-development-stmicroelectronics.pdf
+            self.pwr_cap0 = imp.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2)))
+            self.pwr_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
+
+    def generate(self):
+        super().generate()
+
+        if self.get(self.reset.is_connected()):
+            self.connect(self.reset, self.ic.nrst)  # otherwise NRST has internal pull-up
+
+
+class Stm32g031_G(Stm32g031Base):
+    DEVICE = Stm32g031_G_Device
