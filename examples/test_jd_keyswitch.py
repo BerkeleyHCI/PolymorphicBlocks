@@ -9,11 +9,11 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    # self.edge2 = self.create_edge()
+    self.edge2 = self.create_edge()
 
     # TODO should connect to the nets, once .connected can take a Connection
-    # self.tp_jd_pwr = self.Block(VoltageTestPoint()).connected(self.edge2.jd_pwr_sink)
-    # self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.edge2.gnd_sink)
+    self.tp_jd_pwr = self.Block(VoltageTestPoint()).connected(self.edge2.jd_pwr_sink)
+    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.edge2.gnd_sink)
 
     # POWER
     with self.implicit_connect(
@@ -47,13 +47,14 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Stm32g031_G),
-        # (['reg_3v3'], Ldl1117),
+        (['reg_3v3'], Xc6209),  # up to 10V input, more robust in case of transients
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
 
         ]),
-        (['edge', 'status_led', 'color'], 'yellow'),
+        (['edge', 'status_led', 'color'], 'yellow'),  # NONSTANDARD, but uses a JLC basic part
+        (['edge2', 'status_led', 'color'], 'yellow'),
      ],
     )
 

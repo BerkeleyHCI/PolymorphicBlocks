@@ -60,7 +60,8 @@ class JacdacEdgeConnectorBare(FootprintBlock, GeneratorBlock):
 
         self.gnd_sink = self.Port(Ground(), optional=True)
         self.jd_pwr_sink = self.Port(VoltageSink(
-            voltage_limits=(4.3, 5.5)*Volt,
+            # if not a power provider, extend the voltage range to directly connect to a power source edge
+            voltage_limits=self.is_power_provider.then_else((4.3, 5.5)*Volt, (3.5, 5.5)*Amp),
             current_draw=self.is_power_provider.then_else((900, 1000)*mAmp, (0, 0)*Amp)
         ), optional=True)
 
@@ -170,7 +171,7 @@ class JacdacDataInterface(Block):
         signal_level = self.signal.link().voltage
         self.rc = self.Block(LowPassRc(impedance=220*Ohm(tol=0.05), cutoff_freq=22*MHertz(tol=0.12),
                                        voltage=signal_level))
-        clamp_diode_model = Diode(reverse_voltage=(signal_level.upper(), float('inf')),
+        clamp_diode_model = Diode(reverse_voltage=(0, signal_level.upper()),
                                   current=(0, 0))
         self.clamp_hi = self.Block(clamp_diode_model)
         self.clamp_lo = self.Block(clamp_diode_model)
