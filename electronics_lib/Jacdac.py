@@ -8,12 +8,14 @@ class JacdacDataLink(Link):
     def __init__(self) -> None:
         super().__init__()
         self.nodes = self.Port(Vector(JacdacDataPort(DigitalBidir.empty())))
+        self.passives = self.Port(Vector(JacdacPassivePort()))
 
     def contents(self) -> None:
         super().contents()
-
         self.jd_data = self.connect(self.nodes.map_extract(lambda node: node.jd_data),
+                                    self.passives.map_extract(lambda node: node.jd_data),
                                     flatten=True)
+        self.require(self.nodes.length() > 1, "jd_data connection required")
 
 
 class JacdacDataPort(Bundle[JacdacDataLink]):
@@ -25,9 +27,17 @@ class JacdacDataPort(Bundle[JacdacDataLink]):
         self.jd_data = self.Port(model)
 
 
-class JacdacConnectorBare(FootprintBlock, GeneratorBlock):
+class JacdacPassivePort(Bundle[JacdacDataLink]):
+    link_type = JacdacDataLink
+    def __init__(self) -> None:
+        super().__init__()
+        self.jd_data = self.Port(DigitalSink())  # needs to be typed but is as close to passive as possible
+
+
+class JacdacEdgeConnectorBare(FootprintBlock, GeneratorBlock):
     """Jacdac connector, in power sink or source mode (both available, but both may not be connected simultaneously).
     This is the bare connector, you should use the non-bare one with the recommended interface circuitry in most cases!
+    Uses the recessed connector, which is the default used by the device outline generator.
 
     Requires this KiCad footprint library to be available: https://github.com/mattoppenheim/jacdac
 
@@ -36,6 +46,7 @@ class JacdacConnectorBare(FootprintBlock, GeneratorBlock):
     If the power sink (power is sunk into the port and off-board) is connected, is_power_provider
     indicates whether this port should model the maximum downstream current draw
     """
+    @init_in_parent
     def __init__(self, is_power_provider: BoolLike = False) -> None:
         super().__init__()
         self.is_power_provider = self.ArgParameter(is_power_provider)
@@ -79,8 +90,8 @@ class JacdacConnectorBare(FootprintBlock, GeneratorBlock):
             pwr_node = self.jd_pwr_sink
             gnd_node = self.gnd_sink
 
-        self.footprint(
-            'EC', 'Jacdac:JD-PEC-02_Prerouted',
+        self.footprint(  # EC refdes for edge connector
+            'EC', 'Jacdac:JD-PEC-02_Prerouted_recessed',
             {
                 '1': self.jd_data.jd_data,
                 '2': gnd_node,
@@ -89,13 +100,14 @@ class JacdacConnectorBare(FootprintBlock, GeneratorBlock):
         )
 
 
-class JacdacConnector(Connector, GeneratorBlock):
-    """Jacdac connector, in power sink or source mode (both available, but both may not be connected simultaneously).
+class JacdacEdgeConnector(Connector, GeneratorBlock):
+    """Jacdac edge connector, in power sink or source mode (both available, but both may not be connected simultaneously).
     This includes the required per-port application circuitry, including status LEDs and ESD diodes.
     This does NOT include device-wide application circuitry like EMI filters.
 
     Requires this KiCad footprint library to be available: https://github.com/mattoppenheim/jacdac
     """
+    @init_in_parent
     def __init__(self, is_power_provider: BoolLike = False) -> None:
         super().__init__()
         self.is_power_provider = self.ArgParameter(is_power_provider)
@@ -116,7 +128,7 @@ class JacdacConnector(Connector, GeneratorBlock):
 
     def generate(self):
         super().contents()
-        self.conn = self.Block(JacdacConnectorBare(self.is_power_provider))
+        self.conn = self.Block(JacdacEdgeConnectorBare(self.is_power_provider))
 
         for ext_port, int_port in [
             (self.gnd_src, self.conn.gnd_src),
@@ -127,7 +139,9 @@ class JacdacConnector(Connector, GeneratorBlock):
             if self.get(ext_port.is_connected()):
                 self.connect(ext_port, int_port)
 
-        if self.gnd_src.is_connected():
+        self.connect(self.jd_data, self.conn.jd_data)
+
+        if self.get(self.gnd_src.is_connected()):
             gnd_node: CircuitPort = self.gnd_src
         else:
             gnd_node = self.gnd_sink
@@ -152,7 +166,7 @@ class JacdacDataInterface(Block):
 
     def contents(self):
         super().contents()
-        self.ferrite = self.Block(FerriteBead(hf_impedance=(1, float('int'))*kOhm))
+        self.ferrite = self.Block(FerriteBead(hf_impedance=(1, float('inf'))*kOhm))
         signal_level = self.signal.link().voltage
         self.rc = self.Block(LowPassRc(impedance=220*Ohm(tol=0.05), cutoff_freq=22*MHertz(tol=0.05),
                                        voltage=signal_level))
@@ -176,9 +190,11 @@ class JacdacDataInterface(Block):
 
 
 class JacdacMountingData1(FootprintBlock):
+    """Jacdac mounting hole for data, with a passive-typed port so it doesn't count as a connection
+    for validation purposes."""
     def __init__(self):
         super().__init__()
-        self.jd_data = self.Port(JacdacDataPort())  # ideal
+        self.jd_data = self.Port(JacdacPassivePort())
 
     def contents(self):
         self.footprint(
@@ -229,3 +245,21 @@ class JacdacMountingPwr3(FootprintBlock):
                 'MH3': self.jd_pwr,
             },
         )
+
+
+class JacdacDeviceTop(DesignTop):
+    """Template for a Jacdac device. Nets jd_data, jd_pwr, gnd, and jd_status are provided and must be
+    connected externally."""
+
+    def contents(self):
+        super().contents()
+        self.edge = self.Block(JacdacEdgeConnector())
+        self.jd_mh1 = self.Block(JacdacMountingData1())
+        self.jd_mh2 = self.Block(JacdacMountingGnd2())
+        self.jd_mh3 = self.Block(JacdacMountingPwr3())
+        self.jd_mh4 = self.Block(JacdacMountingGnd4())
+
+        self.jd_data = self.connect(self.edge.jd_data, self.jd_mh1.jd_data)
+        self.jd_pwr = self.connect(self.edge.jd_pwr_src, self.jd_mh3.jd_pwr)
+        self.gnd = self.connect(self.edge.gnd_src, self.jd_mh2.gnd, self.jd_mh4.gnd)
+        self.jd_status = self.connect(self.edge.jd_status)

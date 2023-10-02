@@ -28,6 +28,8 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         self.swd = self.Port(SwdTargetPort.empty())
         self._io_ports.insert(0, self.swd)
 
+        self.nrst = self.Port(DigitalBidir.empty())
+
     def _system_pinmap(self) -> Dict[str, CircuitPort]:
         return VariantPinRemapper({  # Pin/peripheral resource definitions (section 4)
             'Vdd': self.pwr,
@@ -47,6 +49,14 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             pullup_capable=True, pulldown_capable=True
         )
         dio_fta_model = dio_ftea_model = dio_ftf_model = dio_ftfa_model = dio_ft_model
+
+        self.nrst.init_from(DigitalBidir.from_supply(  # specified differently than other pins
+            self.gnd, self.pwr,
+            voltage_limit_abs=io_voltage_limit,  # assumed
+            current_limits=(-15, 15)*mAmp,  # Section 5.3.14, relaxed bounds for relaxed Vol/Voh
+            input_threshold_factor=(0.3, 0.7),
+            pullup_capable=True  # internal pullup
+        ))
 
         adc_model = AnalogSink.from_supply(
             self.gnd, self.pwr,
@@ -190,7 +200,7 @@ class Stm32g031_G_Device(Stm32g031Base_Device):
 @abstract_block
 class Stm32g031Base(Resettable, IoControllerI2cTarget, Microcontroller, IoControllerWithSwdTargetConnector,
                     IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
-    DEVICE: Type[Stm32f031Base_Device] = Stm32g031Base_Device  # type: ignore
+    DEVICE: Type[Stm32g031Base_Device] = Stm32g031Base_Device  # type: ignore
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

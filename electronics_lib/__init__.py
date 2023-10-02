@@ -64,6 +64,7 @@ from .ResetGenerator_Apx803s import Apx803s
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Stm32f303 import Nucleo_F303k8
+from .Microcontroller_Stm32g031 import Stm32g031_G
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2, Feather_Nrf52840
 from .Microcontroller_Esp import EspProgrammingHeader, EspProgrammingAutoReset, EspProgrammingPinHeader254, EspProgrammingTc2030
 from .Microcontroller_Esp import HasEspProgramming
@@ -140,3 +141,8 @@ from .LightSensor_As7341 import As7341
 from .LedMatrix import CharlieplexedLedMatrix
 from .SwitchMatrix import SwitchMatrix
 from .ResistiveSensor import ConnectorResistiveSensor
+
+from .Jacdac import JacdacDataPort, JacdacPassivePort
+from .Jacdac import JacdacEdgeConnector, JacdacDataInterface
+from .Jacdac import JacdacMountingData1, JacdacMountingGnd2, JacdacMountingGnd4, JacdacMountingPwr3
+from .Jacdac import JacdacDeviceTop
