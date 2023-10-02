@@ -161,14 +161,14 @@ class JacdacDataInterface(Block):
         self.gnd = self.Port(Ground.empty(), [Common])
         self.pwr = self.Port(VoltageSink.empty(), [Power])
 
-        self.jd_data = self.Port(JacdacDataPort.empty())
-        self.signal = self.Port(DigitalBidir.empty())
+        self.signal = self.Port(DigitalBidir.empty(), [Input])
+        self.jd_data = self.Port(JacdacDataPort.empty(), [Output])
 
     def contents(self):
         super().contents()
         self.ferrite = self.Block(FerriteBead(hf_impedance=(1, float('inf'))*kOhm))
         signal_level = self.signal.link().voltage
-        self.rc = self.Block(LowPassRc(impedance=220*Ohm(tol=0.05), cutoff_freq=22*MHertz(tol=0.05),
+        self.rc = self.Block(LowPassRc(impedance=220*Ohm(tol=0.05), cutoff_freq=22*MHertz(tol=0.12),
                                        voltage=signal_level))
         clamp_diode_model = Diode(reverse_voltage=(signal_level.upper(), float('inf')),
                                   current=(0, 0))
@@ -249,7 +249,9 @@ class JacdacMountingPwr3(FootprintBlock):
 
 class JacdacDeviceTop(DesignTop):
     """Template for a Jacdac device. Nets jd_data, jd_pwr, gnd, and jd_status are provided and must be
-    connected externally."""
+    connected externally.
+
+    Recommend connecting to the nets, instead of connecting directly to the created Blocks and their Ports."""
 
     def contents(self):
         super().contents()
@@ -263,3 +265,13 @@ class JacdacDeviceTop(DesignTop):
         self.jd_pwr = self.connect(self.edge.jd_pwr_src, self.jd_mh3.jd_pwr)
         self.gnd = self.connect(self.edge.gnd_src, self.jd_mh2.gnd, self.jd_mh4.gnd)
         self.jd_status = self.connect(self.edge.jd_status)
+
+    def create_edge(self) -> JacdacEdgeConnector:
+        """Utility function, creates a new edge connector (in power sink mode) and connects it to the net.
+        The edge connector Block is returned and must be assigned a name."""
+        new_edge = self.Block(JacdacEdgeConnector())
+        self.connect(self.jd_data, new_edge.jd_data)
+        self.connect(self.jd_status, new_edge.jd_status)
+        self.connect(self.jd_pwr, new_edge.jd_pwr_sink)
+        self.connect(self.gnd, new_edge.gnd_sink)
+        return new_edge

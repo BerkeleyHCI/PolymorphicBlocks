@@ -137,8 +137,8 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             PeripheralFixedResource('I2C2_T', i2c_target_model, {  # TODO shared resource w/ I2C controller
                 'scl': ['PA11'], 'sda': ['PA12']
             }),
-            PeripheralFixedPin('SWD', SwdTargetPort(DigitalBidir.empty()), {
-                'swdio': 'PA13', 'swclk': 'PA14',  # note: SWO is PB3
+            PeripheralFixedResource('SWD', SwdTargetPort(DigitalBidir.empty()), {
+                'swdio': ['PA13'], 'swclk': ['PA14'],
             }),
         ]).remap_pins(self.RESOURCE_PIN_REMAP)
 

@@ -9,6 +9,38 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
+    # self.edge2 = self.create_edge()
+
+    # TODO should connect to the nets, once .connected can take a Connection
+    # self.tp_jd_pwr = self.Block(VoltageTestPoint()).connected(self.edge2.jd_pwr_sink)
+    # self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.edge2.gnd_sink)
+
+    # POWER
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      (self.reg_3v3, self.tp_3v3), _ = self.chain(
+        self.jd_pwr,
+        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        self.Block(VoltageTestPoint()),
+      )
+      self.v3v3 = self.connect(self.reg_3v3.pwr_out)
+
+    # 3V3 DOMAIN
+    with self.implicit_connect(
+            ImplicitConnect(self.v3v3, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.mcu = imp.Block(IoController())
+
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
+      (self.rgb, ), _ = self.chain(imp.Block(IndicatorSinkRgbLed()), self.mcu.gpio.request_vector('rgb'))
+
+      (self.jd_if, ), _ = self.chain(self.mcu.gpio.request('jd_data'),
+                                     imp.Block(JacdacDataInterface()),
+                                     self.jd_data)
+
+      self.connect(self.mcu.gpio.request('jd_status'), self.jd_status)
 
 
   def refinements(self) -> Refinements:
@@ -19,8 +51,10 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
+
         ]),
-      ],
+        (['edge', 'status_led', 'color'], 'yellow'),
+     ],
     )
 
 
