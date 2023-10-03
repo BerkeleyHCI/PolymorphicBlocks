@@ -143,6 +143,6 @@ from .SwitchMatrix import SwitchMatrix
 from .ResistiveSensor import ConnectorResistiveSensor
 
 from .Jacdac import JacdacDataPort, JacdacPassivePort
-from .Jacdac import JacdacEdgeConnector, JacdacDataInterface
+from .Jacdac import JacdacEdgeConnector, JacdacDataInterface, Rclamp0521p
 from .Jacdac import JacdacMountingData1, JacdacMountingGnd2, JacdacMountingGnd4, JacdacMountingPwr3
 from .Jacdac import JacdacDeviceTop

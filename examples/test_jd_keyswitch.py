@@ -49,6 +49,9 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
         (['mcu'], Stm32g031_G),
         (['reg_3v3'], Xc6209),  # up to 10V input, more robust in case of transients
       ],
+      class_refinements=[
+        (TvsDiode, Rclamp0521p),
+      ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
           # pinning based on https://github.com/microsoft/jacdac-ddk/blob/main/electronics/altium/module-designs/JacdacDevRgbEc30%20117-1.0/PDF/JacdacDevRgbEc30%20117-1.0%20schematic.PDF
@@ -61,7 +64,10 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
         ]),
         (['edge', 'status_led', 'color'], 'yellow'),  # NONSTANDARD, but uses a JLC basic part
         (['edge2', 'status_led', 'color'], 'yellow'),
-     ],
+      ],
+      class_values=[
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
+      ]
     )
 
 

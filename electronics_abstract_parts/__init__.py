@@ -6,7 +6,7 @@ from .PartsTablePart import PartsTableBase, PartsTablePart, PartsTableFootprint,
 
 from .Categories import DummyDevice
 from .Categories import DiscreteComponent, DiscreteSemiconductor, PassiveComponent
-from .Categories import DiscreteApplication, TvsDiode
+from .Categories import DiscreteApplication
 from .Categories import Analog, OpampApplication
 from .Categories import Filter, AnalogFilter, DigitalFilter
 from .Categories import Microcontroller, Fpga, Memory, RealtimeClock, Radiofrequency
@@ -38,6 +38,7 @@ from .Resettable import Resettable
 
 from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardFootprint, TableDiode
 from .AbstractDiodes import ZenerDiode, TableZenerDiode, ProtectionZenerDiode, AnalogClampZenerDiode
+from .AbstractTvsDiode import TvsDiode, ProtectionTvsDiode, DigitalTvsDiode
 from .AbstractLed import Led, LedStandardFootprint, RgbLedCommonAnode, LedColor, LedColorLike
 from .AbstractLed import IndicatorLed, IndicatorSinkLed, IndicatorSinkLedResistor, VoltageIndicatorLed, IndicatorSinkRgbLed
 from .AbstractLed import IndicatorSinkPackedRgbLed

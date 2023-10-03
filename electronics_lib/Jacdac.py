@@ -1,6 +1,7 @@
 from typing import Optional
 
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
 class JacdacDataLink(Link):
@@ -65,12 +66,13 @@ class JacdacEdgeConnectorBare(FootprintBlock, GeneratorBlock):
             current_draw=self.is_power_provider.then_else((900, 1000)*mAmp, (0, 0)*Amp)
         ), optional=True)
 
-        self.jd_data = self.Port(JacdacDataPort(DigitalBidir(
+        # TODO this should be a JacdacDataPort, this is being lazy to avoid defining a bridge and diode adapter
+        self.jd_data = self.Port(DigitalBidir(
             voltage_limits=(0, 3.5)*Volt,
             voltage_out=(0, 3.5)*Volt,
             input_thresholds=(0.3, 3.0)*Volt,
             output_thresholds=(0.3, 3.0)*Volt
-        )))
+        ))
 
         self.generator_param(self.jd_pwr_src.is_connected(), self.gnd_src.is_connected())
 
@@ -94,11 +96,33 @@ class JacdacEdgeConnectorBare(FootprintBlock, GeneratorBlock):
         self.footprint(  # EC refdes for edge connector
             'EC', 'Jacdac:JD-PEC-02_Prerouted_recessed',
             {
-                '1': self.jd_data.jd_data,
+                '1': self.jd_data,
                 '2': gnd_node,
                 '3': pwr_node,
             },
         )
+
+
+class Rclamp0521p(TvsDiode, FootprintBlock, JlcPart):
+    """RCLAMP0521P-N TVS diode in 0402 package, recommended in the Jacdac DDK."""
+    def contents(self):
+        super().contents()
+        self.require(self.working_voltage.within(self.actual_working_voltage))
+        self.require(self.actual_capacitance.within(self.capacitance))
+
+        self.assign(self.actual_working_voltage, (-5, 5)*Volt)
+        self.assign(self.actual_breakdown_voltage, (-5.8, 5.8)*Volt)
+        self.assign(self.actual_capacitance, 0.3*pFarad(tol=0))  # only typ given
+
+        self.footprint(
+            'EC', 'Jacdac:JD-PEC-02_Prerouted_recessed',
+            {
+                '1': self.cathode,
+                '2': self.anode,
+            },
+        )
+        self.assign(self.lcsc_part, 'C2827711')
+        self.assign(self.actual_basic_part, False)
 
 
 class JacdacEdgeConnector(Connector, GeneratorBlock):
@@ -131,27 +155,28 @@ class JacdacEdgeConnector(Connector, GeneratorBlock):
         super().contents()
         self.conn = self.Block(JacdacEdgeConnectorBare(self.is_power_provider))
 
-        for ext_port, int_port in [
-            (self.gnd_src, self.conn.gnd_src),
-            (self.jd_pwr_src, self.conn.jd_pwr_src),
-            (self.gnd_sink, self.conn.gnd_sink),
-            (self.jd_pwr_sink, self.conn.jd_pwr_sink),
-        ]:
-            if self.get(ext_port.is_connected()):
-                self.connect(ext_port, int_port)
-
-        self.connect(self.jd_data, self.conn.jd_data)
+        self.connect(self.jd_data.jd_data, self.conn.jd_data)
 
         if self.get(self.gnd_src.is_connected()):
-            gnd_node: CircuitPort = self.gnd_src
+            gnd_node = self.connect(self.gnd_src, self.conn.gnd_src)
         else:
-            gnd_node = self.gnd_sink
+            gnd_node = self.connect(self.gnd_sink, self.conn.gnd_sink)
 
-        self.status_led = self.Block(IndicatorLed(Led.Orange))
-        self.connect(self.status_led.signal, self.jd_status)
-        self.connect(self.status_led.gnd, gnd_node)
+        if self.get(self.jd_pwr_src.is_connected()):
+            jd_pwr_node = self.connect(self.jd_pwr_src, self.conn.jd_pwr_src)
+        else:
+            jd_pwr_node = self.connect(self.jd_pwr_sink, self.conn.jd_pwr_sink)
 
-        # TODO add ESD diodes
+        with self.implicit_connect(
+            ImplicitConnect(gnd_node, [Common]),
+        ) as imp:
+            (self.status_led, ), _ = self.chain(self.jd_status, imp.Block(IndicatorLed(Led.Orange)))
+            (self.tvs_jd_pwr, ), _ = self.chain(jd_pwr_node,
+                                                imp.Block(ProtectionTvsDiode(working_voltage=(0, 5)*Volt)))
+            # "ideally less than 1pF but certainly no more than 4pF"
+            (self.tvs_jd_data, ), _ = self.chain(self.jd_data.jd_data,
+                                                 imp.Block(DigitalTvsDiode(working_voltage=(0, 3.3)*Volt,
+                                                                           capacitance=(0, 1)*pFarad)))
 
 
 class JacdacDataInterface(Block):
