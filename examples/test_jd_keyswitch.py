@@ -58,12 +58,13 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
       instance_values=[
         (['mcu', 'pin_assigns'], [
           # pinning based on https://github.com/microsoft/jacdac-ddk/blob/main/electronics/altium/module-designs/JacdacDevRgbEc30%20117-1.0/PDF/JacdacDevRgbEc30%20117-1.0%20schematic.PDF
-          'jd_data=PB3',  # or PB4/5/6
+          'jd_data=PB6',  # PB3/4/5/6 on reference design
           'jd_status=PC14',
 
-          'rgb_red=15',
-          'rgb_green=16',
-          'rgb_blue=17',
+          'rgb_blue=15',
+          'rgb_red=16',
+          'rgb_green=17',
+
           'sw=19',
         ]),
         (['edge', 'status_led', 'color'], 'yellow'),  # NONSTANDARD, but uses a JLC basic part
