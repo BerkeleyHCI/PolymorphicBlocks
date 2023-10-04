@@ -234,12 +234,10 @@ class SeriesPowerResistor(DiscreteApplication):
     ))
 
     self.connect(self.pwr_in, self.res.a.adapt_to(VoltageSink(
-      voltage_limits=(-float('inf'), float('inf')),
       current_draw=self.pwr_out.link().current_drawn
     )))
     self.connect(self.pwr_out, self.res.b.adapt_to(VoltageSource(
       voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
-      current_limits=Range.all()
     )))
 
     self.actual_power = self.Parameter(RangeExpr(current_draw * current_draw * self.res.actual_resistance))

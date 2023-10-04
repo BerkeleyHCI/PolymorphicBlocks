@@ -24,10 +24,12 @@ mOhm = LiteralConstructor(1e-3, 'Ω')
 Henry = LiteralConstructor(1, 'H')
 mHenry = LiteralConstructor(1e-3, 'H')
 uHenry = LiteralConstructor(1e-6, 'H')
+nHenry = LiteralConstructor(1e-9, 'H')
 
 Hertz = LiteralConstructor(1, 'Hz')
 kHertz = LiteralConstructor(1e3, 'Hz')
 MHertz = LiteralConstructor(1e6, 'Hz')
+GHertz = LiteralConstructor(1e9, 'Hz')
 
 Second = LiteralConstructor(1, 'S')
 mSecond = LiteralConstructor(1e-3, 'S')
