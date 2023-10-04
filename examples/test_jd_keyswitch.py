@@ -51,6 +51,9 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
       ],
       class_refinements=[
         (TvsDiode, Rclamp0521p),
+        (Switch, KailhSocket),
+        (SwdCortexTargetHeader, SwdCortexTargetTagConnect),
+        (TagConnect, TagConnectNonLegged),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [

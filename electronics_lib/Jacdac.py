@@ -115,7 +115,7 @@ class Rclamp0521p(TvsDiode, FootprintBlock, JlcPart):
         self.assign(self.actual_capacitance, 0.3*pFarad(tol=0))  # only typ given
 
         self.footprint(
-            'EC', 'Jacdac:JD-PEC-02_Prerouted_recessed',
+            'D', 'Diode_SMD:D_0402_1005Metric',
             {
                 '1': self.cathode,
                 '2': self.anode,
