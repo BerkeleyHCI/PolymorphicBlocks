@@ -265,16 +265,22 @@ class Esp32c3_Device(Esp32c3_Base, FootprintBlock, JlcPart):
 
 
 class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Esp32c3_Interfaces,
-              IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
+              WithCrystalGenerator, IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """ESP32-C3 application circuit, bare chip + RF circuits.
   NOT RECOMMENDED - you will need to do your own RF layout, instead consider using the WROOM module."""
+
+  DEFAULT_CRYSTAL_FREQUENCY = 40*MHertz(tol=10e-6)
+
   def __init__(self):
     super().__init__()
     self.ic: Esp32c3_Device
     self.generator_param(self.reset.is_connected())
 
+    self.not_recommended = self.Parameter(BoolExpr(False))
+
   def contents(self) -> None:
     super().contents()
+    self.require(self.not_recommended, "not recommended: requires RF design, consider using the module version instead")
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
@@ -283,6 +289,7 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
       self.ic = imp.Block(Esp32c3_Device(pin_assigns=ArrayStringExpr()))
       self.connect(self.pwr, self.ic.vdd3p3_rtc, self.ic.vdd3p3_cpu, self.ic.vdd_spi)
 
+      self.connect(self.xtal_node, self.ic.xtal)
       self.connect(self.program_uart_node, self.ic.uart0)
       self.connect(self.program_en_node, self.ic.en)
       self.connect(self.program_boot_node, self.ic.io9)
@@ -315,7 +322,6 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
         inductance=2*nHenry(tol=0.2),
       )).connected(self.pwr, self.ic.vdd3p3)
 
-
   def generate(self) -> None:
     super().generate()
 
@@ -324,3 +330,6 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
     else:
       self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(
         gnd=self.gnd, pwr=self.pwr, io=self.ic.en)
+
+  def _crystal_required(self) -> bool:
+    return True  # crystal oscillator always required

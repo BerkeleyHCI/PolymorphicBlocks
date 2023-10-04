@@ -97,23 +97,23 @@ class IotFan(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32c3_Wroom02),
+        (['mcu'], Esp32c3),
         (['reg_5v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
       ],
       instance_values=[
         (['refdes_prefix'], 'F'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          'v12_sense=3',
-          'rgb=4',
-          'enc_b=5',
-          'enc_a=6',
-          'fan_sense_1=18',
-          'fan_ctl_1=17',
-          'fan_drv_1=15',
-          'fan_sense_0=14',
-          'fan_ctl_0=13',
-          'fan_drv_0=10',
+          # 'v12_sense=3',
+          # 'rgb=4',
+          # 'enc_b=5',
+          # 'enc_a=6',
+          # 'fan_sense_1=18',
+          # 'fan_ctl_1=17',
+          # 'fan_drv_1=15',
+          # 'fan_sense_0=14',
+          # 'fan_ctl_0=13',
+          # 'fan_drv_0=10',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
@@ -132,6 +132,7 @@ class IotFan(JlcBoardTop):
         (RotaryEncoder, Ec05e),
       ],
       class_values=[
+        (Esp32c3, ['not_recommended'], True),
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
