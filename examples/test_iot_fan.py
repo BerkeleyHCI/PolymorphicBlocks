@@ -54,6 +54,7 @@ class IotFan(JlcBoardTop):
       self.enc = imp.Block(DigitalRotaryEncoder())
       self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
       self.connect(self.enc.b, self.mcu.gpio.request('enc_b'))
+      self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request('enc_sw'))
 
       (self.v12_sense, ), _ = self.chain(
         self.v12,

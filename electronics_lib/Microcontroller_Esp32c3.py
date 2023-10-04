@@ -39,7 +39,7 @@ class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, BaseIoControllerPinma
     # section 2.4: strapping IOs that need a fixed value to boot, and currently can't be allocated as GPIO
     self.en = self.Port(self._dio_model)  # needs external pullup
     self.io2 = self.Port(self._dio_model)  # needs external pullup
-    self.io8 = self.Port(self._dio_model)  # needs external pullup, may control prints
+    self.io8 = self.Port(self._dio_model)  # needs external pullup, required for download boot
     self.io9 = self.Port(self._dio_model, optional=True)  # internally pulled up for SPI boot, connect to GND for download
 
     # similarly, the programming UART is fixed and allocated separately
@@ -317,7 +317,7 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
       self.vdd3p3_l_cap = imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2)))\
         .connected(pwr=self.pwr)  # C6
       self.vdd3p3_cap = imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2)))\
-        .connected(pwr=self.ic.vdd3p3)# C7
+        .connected(pwr=self.ic.vdd3p3)  # C7
       self.vdd3p3_l = self.Block(SeriesPowerInductor(
         inductance=2*nHenry(tol=0.2),
       )).connected(self.pwr, self.ic.vdd3p3)
