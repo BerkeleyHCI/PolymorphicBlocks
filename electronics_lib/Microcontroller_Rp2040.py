@@ -301,8 +301,7 @@ class Rp2040(Resettable, IoControllerI2cTarget, IoControllerUsb, Microcontroller
       inner_io = inner_vector.request(name)
       (self.usb_res, ), self.usb_chain = self.chain(inner_io, self.Block(Rp2040Usb()), self_io)
       return assign
-    else:
-      return super()._make_export_vector(self_io, inner_vector, name, assign)
+    return super()._make_export_vector(self_io, inner_vector, name, assign)
 
   def _crystal_required(self) -> bool:  # crystal needed for USB b/c tighter freq tolerance
     return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()

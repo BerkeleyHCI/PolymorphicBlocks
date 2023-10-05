@@ -51,6 +51,11 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
     def generate(self):
         super().generate()
         inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in self.ic._io_ports}
+
+        # mutated in-place during _make_export_*
+        assigns: List[Optional[str]] = self.get(self.pin_assigns).copy()
+        assign_index_by_name = {assign.split('=')[0]: i for i, assign in enumerate(assigns)}
+
         for self_io in self._io_ports:
             self_io_type = self._type_of_io(self_io)
             assert self_io_type in inner_ios_by_type, f"inner missing IO of type {self_io_type}"
@@ -61,7 +66,16 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
                 assert isinstance(inner_io, Vector)
                 for io_requested in self.get(self_io.requested()):
                     self_io_elt = self_io.append_elt(self_io.elt_type().empty(), io_requested)
-                    self._make_export_vector(self_io_elt, inner_io, io_requested, ...)
+                    assign_index = assign_index_by_name.get(io_requested)
+                    if assign_index is not None:
+                        assign = assigns[assign_index]
+                    else:
+                        assign = None
+                    new_assign = self._make_export_vector(self_io_elt, inner_io, io_requested, assign)
+                    if assign_index is not None:
+                        assigns[assign_index] = new_assign
+                    elif new_assign is not None:
+                        assigns.append(new_assign)
             else:
                 assert isinstance(self_io, Port) and isinstance(inner_io, Port)
                 if self.get(self_io.is_connected()):
@@ -69,5 +83,6 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
 
         self.assign(self.io_current_draw, self.ic.io_current_draw)
 
-        self.assign(self.ic.pin_assigns, self._inner_pin_assigns(self.get(self.pin_assigns).copy()))
+        filtered_assigns = [assign for assign in assigns if assign is not None]
+        self.assign(self.ic.pin_assigns, self._inner_pin_assigns(filtered_assigns))
         self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)

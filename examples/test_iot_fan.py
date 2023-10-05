@@ -106,7 +106,7 @@ class IotFan(JlcBoardTop):
         (['refdes_prefix'], 'F'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
           # 'v12_sense=3',
-          # 'rgb=4',
+          'rgb=_GPIO2_STRAP',  # force using the strapping pin, since we're out of IOs
           # 'enc_b=5',
           # 'enc_a=6',
           # 'fan_sense_1=18',
@@ -130,7 +130,6 @@ class IotFan(JlcBoardTop):
         (Neopixel, Sk6805_Ec15),
         (TestPoint, CompactKeystone5015),
         (TagConnect, TagConnectNonLegged),
-        (RotaryEncoder, Ec05e),
       ],
       class_values=[
         (Esp32c3, ['not_recommended'], True),

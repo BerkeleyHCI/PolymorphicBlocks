@@ -331,5 +331,21 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
       self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(
         gnd=self.gnd, pwr=self.pwr, io=self.ic.en)
 
+  ExportType = TypeVar('ExportType', bound=Port)
+  def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
+                          assign: Optional[str]) -> Optional[str]:
+    """Add support for _GPIO2/8/9_STRAP and remap them to io2/8/9."""
+    if isinstance(self_io, DigitalBidir):
+      if assign == f'{name}=_GPIO2_STRAP':
+        self.connect(self_io, self.ic.io2)
+        return None
+      elif assign == f'{name}=_GPIO8_STRAP':
+        self.connect(self_io, self.ic.io8)
+        return None
+      elif assign == f'{name}=_GPIO9_STRAP':
+        self.connect(self_io, self.ic.io9)
+        return None
+    return super()._make_export_vector(self_io, inner_vector, name, assign)
+
   def _crystal_required(self) -> bool:
     return True  # crystal oscillator always required

@@ -311,8 +311,7 @@ class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoContro
       self.connect(self.usb_pull.pwr, self.pwr)
       self.connect(inner_io, self_io, self.usb_pull.usb)
       return assign
-    else:
-      return super()._make_export_vector(self_io, inner_vector, name, assign)
+    return super()._make_export_vector(self_io, inner_vector, name, assign)
 
   def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
     return len(self.get(self.can.requested())) > 0 or len(self.get(self.usb.requested())) > 0 \

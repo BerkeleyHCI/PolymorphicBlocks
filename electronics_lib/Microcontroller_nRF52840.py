@@ -415,8 +415,7 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfa
       (self.usb_res, ), self.usb_chain = self.chain(inner_io, self.Block(Mdbt50q_UsbSeriesResistor()), self_io)
       self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
       return assign
-    else:
-      return super()._make_export_vector(self_io, inner_vector, name, assign)
+    return super()._make_export_vector(self_io, inner_vector, name, assign)
 
 
 class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, IoController, GeneratorBlock,
