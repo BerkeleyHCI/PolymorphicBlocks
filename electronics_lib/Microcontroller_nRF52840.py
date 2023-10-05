@@ -407,12 +407,16 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfa
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.nreset)
 
-  def _make_export_io(self, self_io: Port, inner_io: Port):
+  ExportType = TypeVar('ExportType', bound=Port)
+  def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
+                          assign: Optional[str]) -> Optional[str]:
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
+      inner_io = inner_vector.request(name)
       (self.usb_res, ), self.usb_chain = self.chain(inner_io, self.Block(Mdbt50q_UsbSeriesResistor()), self_io)
       self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
+      return assign
     else:
-      super()._make_export_io(self_io, inner_io)
+      return super()._make_export_vector(self_io, inner_vector, name, assign)
 
 
 class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, IoController, GeneratorBlock,

@@ -1,7 +1,10 @@
+from typing import List
+
 from electronics_model import *
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConnectorReset, SwdCortexTargetConnectorSwo, \
   SwdCortexTargetConnectorTdi
-from .IoController import BaseIoControllerExportable, IoController
+from .IoController import IoController
+from .IoControllerExportable import BaseIoControllerExportable
 
 
 @non_library
@@ -29,13 +32,13 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
     self.connect(self.swd_node, self.swd.swd)
     self.connect(self.reset_node, self.swd.with_mixin(SwdCortexTargetConnectorReset()).reset)
 
-  def _inner_pin_assigns(self) -> list[str]:
-    pin_assigns = super()._inner_pin_assigns()
+  def _inner_pin_assigns(self, assigns: List[str]) -> List[str]:
+    assigns = super()._inner_pin_assigns(assigns)
     if self.get(self.swd_swo_pin) != 'NC':
-      pin_assigns.append(f'swd_swo={self.get(self.swd_swo_pin)}')
+      assigns.append(f'swd_swo={self.get(self.swd_swo_pin)}')
     if self.get(self.swd_tdi_pin) != 'NC':
-      pin_assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
-    return pin_assigns
+      assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
+    return assigns
 
   def generate(self):
     super().generate()

@@ -78,8 +78,8 @@ from .DigitalIsolator import DigitalIsolator
 from .I2cPullup import I2cPullup
 from .UsbBitBang import UsbBitBang
 
-from .IoController import BaseIoController, IoController, IoControllerPowerRequired
-from .IoController import BaseIoControllerPinmapGenerator, BaseIoControllerExportable
+from .IoController import BaseIoController, IoController, IoControllerPowerRequired, BaseIoControllerPinmapGenerator
+from .IoControllerExportable import BaseIoControllerExportable
 from .IoControllerInterfaceMixins import IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, \
     IoControllerCan, IoControllerUsb, IoControllerI2s, IoControllerDvp8
 from .IoControllerInterfaceMixins import IoControllerPowerOut, IoControllerUsbOut
