@@ -33,6 +33,7 @@ from .AbstractFerriteBead import FerriteBead, FerriteBeadStandardFootprint, Tabl
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, VoltageSenseDivider
 from .ResistiveDivider import FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, DigitalLowPassRc, DigitalLowPassRcArray, LowPassRcDac, PullupDelayRc
+from .RfNetworks import PiLowPassFilter
 from .I2cPullup import I2cPullup
 from .Resettable import Resettable
 

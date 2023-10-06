@@ -1,5 +1,5 @@
 from math import pi
-from typing import Optional, cast, List
+from typing import Optional, cast
 
 from electronics_model import *
 from .AbstractResistor import Resistor

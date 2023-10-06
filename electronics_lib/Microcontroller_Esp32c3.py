@@ -312,6 +312,10 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
       self.connect(self.ic.io2, vdd_pull)
 
       self.ant = self.Block(Antenna(frequency=(2402, 2484)*MHertz, impedance=50*Ohm(tol=0.1), power=(0, 0.126)*Watt))
+      (self.pi, ), _ = self.chain(self.ic.lna_in,
+                                  imp.Block(PiLowPassFilter((2402, 2484)*MHertz, 35*Ohm, 10*Ohm, 50*Ohm,
+                                                            self.pwr.link().voltage, (0, 0.1)*Amp)),  # TODO: arbitrary
+                                  self.ant.a)
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common])
