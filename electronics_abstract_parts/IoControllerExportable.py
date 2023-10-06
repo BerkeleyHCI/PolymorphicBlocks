@@ -1,4 +1,4 @@
-from typing import List, Optional, TypeVar
+from typing import List, Optional, TypeVar, cast
 
 from electronics_model import *
 from .IoController import BaseIoController
@@ -53,8 +53,9 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
         inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in self.ic._io_ports}
 
         # mutated in-place during _make_export_*
-        assigns: List[Optional[str]] = self.get(self.pin_assigns).copy()
-        assign_index_by_name = {assign.split('=')[0]: i for i, assign in enumerate(assigns)}
+        assigns_raw = self.get(self.pin_assigns).copy()  # type: ignore
+        assigns = cast(List[Optional[str]], assigns_raw)
+        assign_index_by_name = {assign.split('=')[0]: i for i, assign in enumerate(assigns_raw)}
 
         for self_io in self._io_ports:
             self_io_type = self._type_of_io(self_io)
