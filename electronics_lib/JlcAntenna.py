@@ -34,13 +34,11 @@ class JlcAntenna(TableAntenna, JlcTableSelector):
       if entry is None:
         return None
 
-      frequency, impedance, power, footprint = entry
-
-      new_cols = {}
-      new_cols[cls.FREQUENCY_RATING] = frequency
-      new_cols[cls.IMPEDANCE] = impedance
-      new_cols[cls.POWER_RATING] = power
-      new_cols[cls.KICAD_FOOTPRINT] = footprint
+      new_cols: Dict[PartsTableColumn, Any] = {}
+      new_cols[cls.FREQUENCY_RATING] = entry[0]
+      new_cols[cls.IMPEDANCE] = entry[1]
+      new_cols[cls.POWER_RATING] = entry[2]
+      new_cols[cls.KICAD_FOOTPRINT] = entry[3]
       new_cols.update(cls._parse_jlcpcb_common(row))
       return new_cols
 

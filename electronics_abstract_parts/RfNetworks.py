@@ -51,11 +51,14 @@ class PiLowPassFilter(AnalogFilter, GeneratorBlock):
         rh = max(z1.real, z2.real)
         rv = rh / (q*q + 1)
 
-        return 0, 0, 0, rv
+        l1, c1 = cls._calculate_l_values(freq, rv, z1)
+        l2, c2 = cls._calculate_l_values(freq, rv, z2)
+
+        return c1, c2, l1 + l2, rv
 
     @init_in_parent
     def __init__(self, frequency: RangeLike, src_resistance: FloatLike, src_reactance: FloatLike,
-                 load_resistance: FloatLike,
+                 load_resistance: FloatLike, tolerance: FloatLike,
                  voltage: RangeLike, current: RangeLike):
         super().__init__()
         self.input = self.Port(Passive.empty(), [Input])
@@ -68,25 +71,28 @@ class PiLowPassFilter(AnalogFilter, GeneratorBlock):
         self.load_resistance = self.ArgParameter(load_resistance)
         self.voltage = self.ArgParameter(voltage)
         self.current = self.ArgParameter(current)
+        self.tolerance = self.ArgParameter(tolerance)
 
-        self.generator_param(self.frequency, self.src_resistance, self.src_reactance, self.load_resistance)
+        self.generator_param(self.frequency, self.src_resistance, self.src_reactance, self.load_resistance,
+                             self.tolerance)
 
     def generate(self) -> None:
         super().generate()
 
         frequency = self.get(self.frequency)
-        bandwidth = frequency.upper() - frequency.lower()
+        bandwidth = frequency.upper - frequency.lower
         q = frequency.center() / bandwidth
 
         rg = complex(self.get(self.src_resistance), self.get(self.src_reactance))
         rl = self.get(self.load_resistance)
 
-        rh = max(rg.real, rl)  # TODO is this accurate for the complex case?
-        rv = rh / (q*q + 1)
+        c1, c2, l, rv = self._calculate_values(frequency.center(), q, rg, rl)
 
-        self.c1 = self.Block(Capacitor(capacitance=(0, 0)*Farad, voltage=self.voltage))
-        self.c2 = self.Block(Capacitor(capacitance=(0, 0)*Farad, voltage=self.voltage))
-        self.l = self.Block(Inductor(inductance=(0, 0)*Henry, current=self.current))
+        tolerance = self.get(self.tolerance)
+
+        self.c1 = self.Block(Capacitor(capacitance=c1*Farad(tol=tolerance), voltage=self.voltage))
+        self.c2 = self.Block(Capacitor(capacitance=c2*Farad(tol=tolerance), voltage=self.voltage))
+        self.l = self.Block(Inductor(inductance=l*Henry(tol=tolerance), current=self.current))
         self.connect(self.input, self.c1.pos, self.l.a)
         self.connect(self.l.b, self.c2.pos, self.output)
         self.connect(self.c1.neg, self.c2.neg)
