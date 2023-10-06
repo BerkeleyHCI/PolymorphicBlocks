@@ -24,6 +24,7 @@ from .JlcCrystal import JlcCrystal
 from .JlcOscillator import JlcOscillator
 from .JlcSwitches import JlcSwitch, Skrtlae010
 from .JlcPptcFuse import JlcPptcFuse
+from .JlcAntenna import JlcAntenna
 from .Speakers import Speaker, ConnectorSpeaker
 from .SpeakerDriver_Analog import Lm4871, Tpa2005d1, Pam8302a
 from .SpeakerDriver_Max98357a import Max98357a

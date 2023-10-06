@@ -79,6 +79,7 @@ class JlcTopRefinements(BaseBoardTop):
         (Diode, JlcDiode),
         (Bjt, JlcBjt),
         (Fet, JlcFet),
+        (Antenna, JlcAntenna),
 
         (Fpc050Bottom, Afc01),
         (Fpc050Top, Afc07Top),
