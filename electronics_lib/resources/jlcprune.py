@@ -38,6 +38,8 @@ KEEP_CATEGORIES = [
 
   'Bipolar Transistors - BJT',
   'MOSFETs',
+
+  "Antennas",
 ]
 
 MIN_STOCK = 100  # arbitrary cutoff to prune rare parts

@@ -47,6 +47,7 @@ from .AbstractBjt import Bjt, BjtStandardFootprint, TableBjt
 from .AbstractFets import Fet, FetStandardFootprint, BaseTableFet, TableFet
 from .AbstractFets import SwitchFet, TableSwitchFet
 
+from .AbstractAntenna import Antenna
 from .AbstractSolidStateRelay import SolidStateRelay, AnalogIsolatedSwitch
 from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer, AnalogMuxer
 from .AbstractSwitch import Switch, TactileSwitch, MechanicalKeyswitch, DigitalSwitch
