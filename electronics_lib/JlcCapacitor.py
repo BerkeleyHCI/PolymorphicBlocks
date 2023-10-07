@@ -32,9 +32,9 @@ class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableS
   @classmethod
   def _make_table(cls) -> PartsTable:
     CAPACITOR_MATCHES = {
-      'nominal_capacitance': re.compile("(^|\s)([\d.]+[GMkmunp]?F)($|\s)"),
-      'tolerance': re.compile("(^|\s)((±[\d.]+%)|(±[\d.]+[GMkmunp]?F))($|\s)"),
-      'voltage': re.compile("(^|\s)([\d.]+V)($|\s)"),
+      'nominal_capacitance': re.compile("(^|\s)([^±]\S+F)($|\s)"),
+      'tolerance': re.compile("(^|\s)(±\S*[%F])($|\s)"),
+      'voltage': re.compile("(^|\s)(\d\S*V)($|\s)"),  # make sure not to catch 'Y5V'
     }
 
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -62,9 +62,9 @@ class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableS
           return None
 
         new_cols[cls.KICAD_FOOTPRINT] = footprint
-        new_cols[cls.CAPACITANCE] = Range.from_tolerance(
+        new_cols[cls.CAPACITANCE] = Range.from_abs_tolerance(
           nominal_capacitance,
-          PartParserUtil.parse_tolerance(extracted_values['tolerance'][1])
+          PartParserUtil.parse_tolerance_absolute(extracted_values['tolerance'][1], nominal_capacitance, 'F')
         )
         new_cols[cls.NOMINAL_CAPACITANCE] = nominal_capacitance
         new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(

@@ -314,9 +314,10 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
       self.ant = self.Block(Antenna(frequency=(2402, 2484)*MHertz, impedance=50*Ohm(tol=0.1), power=(0, 0.126)*Watt))
       # expand the bandwidth to allow a lower Q and higher bandwidth
       # TODO: more principled calculation of Q / bandwidth, voltage, current and tolerance
+      # 10% tolerance is roughly to support 5% off-nominal tolerance plus 5% component tolerance
       (self.pi, ), _ = self.chain(self.ic.lna_in,
                                   imp.Block(PiLowPassFilter((2402-200, 2484+200)*MHertz, 35*Ohm, 10*Ohm, 50*Ohm,
-                                                            0.15, self.pwr.link().voltage, (0, 0.1)*Amp)),
+                                                            0.10, self.pwr.link().voltage, (0, 0.1)*Amp)),
                                   self.ant.a)
 
     with self.implicit_connect(

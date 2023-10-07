@@ -93,3 +93,26 @@ class PartParserUtil:
         raise cls.ParseError(f"Cannot determine tolerance type from '{value}'")
     else:
       raise cls.ParseError(f"Cannot parse tolerance from '{value}'")
+
+  @classmethod
+  def parse_tolerance_absolute(cls, value: str, center: float, units: str) -> Tuple[float, float]:
+    """Parses a tolerance value and returns the negative and positive tolerance as a tuple of absolute values.
+    String may not have leading or trailing whitespace, but may have whitespace between parts."""
+    if value.startswith('±'):
+      value = value.removeprefix('±')
+    else:
+      raise cls.ParseError(f"Unknown prefix for tolerance '{value}'")
+
+    if value.endswith('%'):
+      value = value.removesuffix('%').rstrip()
+      tol = float(value) / 100 * center
+      return (-tol, tol)
+    elif value.endswith('ppm'):
+      value = value.removesuffix('ppm').rstrip()
+      tol = float(value) * 1e-6 * center
+      return (-tol, tol)
+    elif value.endswith(units):
+      tol = cls.parse_value(value, units)
+      return (-tol, tol)
+    else:
+      raise cls.ParseError(f"Unknown tolerance '{value}'")

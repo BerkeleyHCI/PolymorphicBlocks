@@ -171,6 +171,8 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
           factor = self.DERATE_LOWEST
         derated = row[self.CAPACITANCE] * Range(factor, 1)
 
+      if derated.lower == 0:  # in case where tolerance is the nominal value
+        return None
       count = math.ceil(self.get(self.capacitance).lower / derated.lower)
       derated_parallel_capacitance = derated * count
       if not derated_parallel_capacitance.fuzzy_in(self.get(self.capacitance)):  # not satisfying spec, remove row
@@ -182,7 +184,7 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
               self.PARALLEL_CAPACITANCE: row[self.CAPACITANCE] * count}
 
     return table.map_new_columns(add_derated_row).filter(lambda row: (
-        row[self.PARALLEL_DERATED_CAPACITANCE] in self.get(self.capacitance)
+            row[self.PARALLEL_DERATED_CAPACITANCE] in self.get(self.capacitance)
     ))
 
   def _row_generate(self, row: PartsTableRow) -> None:

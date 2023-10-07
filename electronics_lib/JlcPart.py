@@ -70,7 +70,7 @@ class JlcTableBase(PartsTableBase):
     for key, pattern in regex_dictionary.items():
       matches = pattern.findall(description)
       if matches:  # discard if not matched
-        assert len(matches) == 1  # excess matches fail noisily
+        assert len(matches) == 1, f"multiple matches for {pattern} for {description}"  # excess matches fail noisily
         assert key not in extraction_table  # duplicate matches fail noisily
         extraction_table[key] = matches[0]
 
