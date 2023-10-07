@@ -100,7 +100,7 @@ class IotFan(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32c3),
         (['reg_5v'], Tps54202h),
-        (['reg_3v3'], Ldl1117),
+        (['reg_3v3'], Ap7215),
       ],
       instance_values=[
         (['refdes_prefix'], 'F'),  # unique refdes for panelization

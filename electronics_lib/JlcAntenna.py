@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcTableSelector
 
 
-class JlcAntenna(TableAntenna, JlcTableSelector):
+class JlcAntenna(TableAntenna, JlcTableSelector, PartsTableFootprintSelector):
   FOOTPRINT_PIN_MAP = {  # no antenna-specific footprints, re-use the diode footprints which have a polarity indicator
     'Diode_SMD:D_0402_1005Metric': '1',
     'Diode_SMD:D_0603_1608Metric': '1',
