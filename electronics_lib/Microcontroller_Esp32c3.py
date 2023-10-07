@@ -325,8 +325,8 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
     ) as imp:
       self.vdd3p3_l_cap = imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2)))\
         .connected(pwr=self.pwr)  # C6
-      self.vdd3p3_cap = imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2)))\
-        .connected(pwr=self.ic.vdd3p3)  # C7
+      self.vdd3p3_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))\
+        .connected(pwr=self.ic.vdd3p3)  # C7 - DNP on ESP32-C3-WROOM schematic but 0.1uF on hardware design guide
       self.vdd3p3_l = self.Block(SeriesPowerInductor(
         inductance=2*nHenry(tol=0.2),
       )).connected(self.pwr, self.ic.vdd3p3)
