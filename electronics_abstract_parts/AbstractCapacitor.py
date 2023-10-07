@@ -64,10 +64,13 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
     center = PartParserUtil.parse_value(match.group(1), '')
     voltage = PartParserUtil.parse_value(match.group(3), 'V')
     if match.group(2) is not None:
-      tolerance = PartParserUtil.parse_tolerance(match.group(2))
+      tol_str = match.group(2)
+      if not tol_str.startswith('±'):  # format conversion to more strict parser
+        tol_str = '±' + tol_str
+      capacitance = PartParserUtil.parse_abs_tolerance(tol_str, center, 'F')
     else:
-      tolerance = (-cls.CAPACITOR_DEFAULT_TOL, cls.CAPACITOR_DEFAULT_TOL)
-    return (Range.from_tolerance(center, tolerance), Range.zero_to_upper(voltage))
+      capacitance = Range.from_tolerance(center, (-cls.CAPACITOR_DEFAULT_TOL, cls.CAPACITOR_DEFAULT_TOL))
+    return (capacitance, Range.zero_to_upper(voltage))
 
   @classmethod
   def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Capacitor':

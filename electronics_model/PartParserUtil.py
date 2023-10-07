@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from typing import TypeVar, Type, overload, Union, Tuple, Optional
 
+from edg_core import Range
+
 
 class PartParserUtil:
   """Collection of utilities for parsing part values, eg for reading in schematics
@@ -73,30 +75,9 @@ class PartParserUtil:
     else:
       return numeric_value
 
-  TOLERANCE_REGEX = re.compile(f'^(±)?\s*([\d.]+)\s*(ppm|%)$')
   @classmethod
-  def parse_tolerance(cls, value: str) -> Tuple[float, float]:
-    """Parses a tolerance value and returns the negative and positive tolerance as a tuple of normalized values.
-    For example, ±10% would be returned as (-0.1, 0.1)"""
-    matches = cls.TOLERANCE_REGEX.match(value)
-    if matches is not None:
-      if matches.group(1) is None or matches.group(1) == '±':  # only support the ± case right now
-        if matches.group(3) == '%':
-          scale = 1.0/100
-        elif matches.group(3) == 'ppm':
-          scale = 1e-6
-        else:
-          raise cls.ParseError(f"Cannot determine tolerance scale from '{value}'")
-        parsed = float(matches.group(2))
-        return -parsed * scale, parsed * scale
-      else:
-        raise cls.ParseError(f"Cannot determine tolerance type from '{value}'")
-    else:
-      raise cls.ParseError(f"Cannot parse tolerance from '{value}'")
-
-  @classmethod
-  def parse_tolerance_absolute(cls, value: str, center: float, units: str) -> Tuple[float, float]:
-    """Parses a tolerance value and returns the negative and positive tolerance as a tuple of absolute values.
+  def parse_abs_tolerance(cls, value: str, center: float, units: str) -> Range:
+    """Parses a tolerance value and returns the tolerance value a range.
     String may not have leading or trailing whitespace, but may have whitespace between parts."""
     if value.startswith('±'):
       value = value.removeprefix('±')
@@ -105,14 +86,11 @@ class PartParserUtil:
 
     if value.endswith('%'):
       value = value.removesuffix('%').rstrip()
-      tol = float(value) / 100 * center
-      return (-tol, tol)
+      return Range.from_tolerance(center, float(value) / 100)
     elif value.endswith('ppm'):
       value = value.removesuffix('ppm').rstrip()
-      tol = float(value) * 1e-6 * center
-      return (-tol, tol)
+      return Range.from_tolerance(center, float(value) * 1e-6)
     elif value.endswith(units):
-      tol = cls.parse_value(value, units)
-      return (-tol, tol)
-    else:
-      raise cls.ParseError(f"Unknown tolerance '{value}'")
+      return Range.from_abs_tolerance(center, cls.parse_value(value, units))
+
+    raise cls.ParseError(f"Unknown tolerance '{value}'")

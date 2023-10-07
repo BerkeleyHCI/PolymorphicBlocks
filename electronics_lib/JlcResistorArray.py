@@ -15,8 +15,8 @@ class JlcResistorArray(TableResistorArray, JlcTableSelector):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(\S+) (±\S+%) \S+ (\S+Ω) (\S+W) ±\S+ \S+ Resistor Networks & Arrays.*"),
      lambda match: {
-       TableResistorArray.RESISTANCE: Range.from_tolerance(PartParserUtil.parse_value(match.group(3), 'Ω'),
-                                                           PartParserUtil.parse_tolerance(match.group(2))),
+       TableResistorArray.RESISTANCE: PartParserUtil.parse_abs_tolerance(
+         match.group(2), PartParserUtil.parse_value(match.group(3), 'Ω'), 'Ω'),
        TableResistorArray.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), 'W')),
        TableResistorArray.COUNT: int(match.group(1)),
      }),

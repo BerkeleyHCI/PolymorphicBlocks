@@ -79,8 +79,8 @@ class JlcZenerDiode(TableZenerDiode, JlcTableSelector, JlcBaseDiode):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("\S+A@\S+V (±\S+%) \S+Ω (?:Single )?(\S+W) (\S+V).* Zener Diodes.*"),
      lambda match: {
-       TableZenerDiode.ZENER_VOLTAGE: Range.from_tolerance(PartParserUtil.parse_value(match.group(3), 'V'),
-                                                           PartParserUtil.parse_tolerance(match.group(1))),
+       TableZenerDiode.ZENER_VOLTAGE: PartParserUtil.parse_abs_tolerance(
+         match.group(1), PartParserUtil.parse_value(match.group(3), 'V'), 'V'),
        TableZenerDiode.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'W')),
      }),
     (re.compile("\S+A@\S+V \S+Ω (?:Single )?(\S+V)~(\S+V) (\S+W) \S+V .* Zener Diodes.*"),

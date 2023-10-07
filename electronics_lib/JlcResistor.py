@@ -44,10 +44,9 @@ class JlcResistor(TableResistor, SmdStandardPackageSelector, JlcTableSelector):
 
         extracted_values = cls.parse(row[cls.DESCRIPTION_COL], cls.RESISTOR_MATCHES)
 
-        new_cols[cls.RESISTANCE] = Range.from_tolerance(
-          PartParserUtil.parse_value(extracted_values['resistance'][1], 'Ω'),
-          PartParserUtil.parse_tolerance(extracted_values['tolerance'][1])
-        )
+        new_cols[cls.RESISTANCE] = PartParserUtil.parse_abs_tolerance(
+          extracted_values['tolerance'][1],
+          PartParserUtil.parse_value(extracted_values['resistance'][1], 'Ω'), 'Ω')
 
         new_cols[cls.POWER_RATING] = Range.zero_to_upper(
           PartParserUtil.parse_value(extracted_values['power'][1], 'W'))

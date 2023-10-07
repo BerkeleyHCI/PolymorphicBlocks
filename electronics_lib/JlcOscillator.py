@@ -57,8 +57,8 @@ class JlcOscillator(TableOscillator, JlcTableBase, Block):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(±\S+ppm) .* (\S+MHz) .* Pre-programmed Oscillators .*"),
      lambda match: {
-       TableOscillator.FREQUENCY: Range.from_tolerance(PartParserUtil.parse_value(match.group(2), 'Hz'),
-                                                       PartParserUtil.parse_tolerance(match.group(1))),
+       TableOscillator.FREQUENCY: PartParserUtil.parse_abs_tolerance(
+         match.group(1), PartParserUtil.parse_value(match.group(2), 'Hz'), 'Hz'),
      }),
   ]
 

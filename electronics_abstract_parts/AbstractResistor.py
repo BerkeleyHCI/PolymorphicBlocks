@@ -19,15 +19,17 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
     return {'1': self.a, '2': self.b}
 
   @classmethod
-  def parse_resistor(cls, value: str):
+  def parse_resistor(cls, value: str) -> Range:
     match = cls.RESISTOR_REGEX.match(value)
     assert match is not None, f"could not parse resistor from value '{value}'"
     center = PartParserUtil.parse_value(match.group(1), '')
     if match.group(2) is not None:
-      tolerance = PartParserUtil.parse_tolerance(match.group(2))
+      tol_str = match.group(2)
+      if not tol_str.startswith('±'):  # format conversion to more strict parser
+        tol_str = '±' + tol_str
+      return PartParserUtil.parse_abs_tolerance(tol_str, center, 'Ω')
     else:
-      tolerance = (-cls.RESISTOR_DEFAULT_TOL, cls.RESISTOR_DEFAULT_TOL)
-    return Range.from_tolerance(center, tolerance)
+      return Range.from_tolerance(center, (-cls.RESISTOR_DEFAULT_TOL, cls.RESISTOR_DEFAULT_TOL))
 
   @classmethod
   def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Resistor':

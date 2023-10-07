@@ -62,10 +62,8 @@ class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableS
           return None
 
         new_cols[cls.KICAD_FOOTPRINT] = footprint
-        new_cols[cls.CAPACITANCE] = Range.from_abs_tolerance(
-          nominal_capacitance,
-          PartParserUtil.parse_tolerance_absolute(extracted_values['tolerance'][1], nominal_capacitance, 'F')
-        )
+        new_cols[cls.CAPACITANCE] = PartParserUtil.parse_abs_tolerance(extracted_values['tolerance'][1],
+                                                                       nominal_capacitance, 'F')
         new_cols[cls.NOMINAL_CAPACITANCE] = nominal_capacitance
         new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
           PartParserUtil.parse_value(extracted_values['voltage'][1], 'V')

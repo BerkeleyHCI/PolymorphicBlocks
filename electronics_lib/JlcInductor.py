@@ -58,8 +58,8 @@ class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(\S+A) (\S+H) (±\S+%) (\S+Ω) .* Inductors.*"),
      lambda match: {
-       TableInductor.INDUCTANCE: Range.from_tolerance(PartParserUtil.parse_value(match.group(2), 'H'),
-                                                      PartParserUtil.parse_tolerance(match.group(3))),
+       TableInductor.INDUCTANCE: PartParserUtil.parse_abs_tolerance(
+           match.group(3), PartParserUtil.parse_value(match.group(2), 'H'), 'H'),
        TableInductor.FREQUENCY_RATING: Range.all(),  # ignored, checked elsewhere
        TableInductor.CURRENT_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'A')),
        TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), 'Ω')),
