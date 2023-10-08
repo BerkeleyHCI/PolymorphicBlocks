@@ -278,6 +278,9 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
 
     self.not_recommended = self.Parameter(BoolExpr(False))
 
+    self.io2_ext_connected: bool = False
+    self.io8_ext_connected: bool = False
+
   def contents(self) -> None:
     super().contents()
     self.require(self.not_recommended, "not recommended: requires RF design, consider using the module version instead")
@@ -295,19 +298,11 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
       self.connect(self.program_boot_node, self.ic.io9)
 
       self.vdd_bulk_cap = imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2)))  # C5
-
       self.vdda_cap0 = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2)))  # C3
       self.vdda_cap1 = imp.Block(DecouplingCapacitor(10*nFarad(tol=0.2)))  # C3
       self.vddrtc_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))  # C3
       self.vddcpu_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))  # C10
       self.vddspi_cap = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2)))  # C11
-
-      # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
-      # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
-      # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
-      vdd_pull = self.pwr.as_digital_source()
-      self.connect(self.ic.io8, vdd_pull)
-      self.connect(self.ic.io2, vdd_pull)
 
       self.ant = self.Block(Antenna(frequency=(2402, 2484)*MHertz, impedance=50*Ohm(tol=0.1), power=(0, 0.126)*Watt))
       # expand the bandwidth to allow a lower Q and higher bandwidth
@@ -338,6 +333,17 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
       self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(
         gnd=self.gnd, pwr=self.pwr, io=self.ic.en)
 
+    # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
+    # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
+    # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
+    vdd_pull = self.pwr.as_digital_source()
+    if not self.io8_ext_connected:
+      self.connect(self.ic.io8, vdd_pull)
+      self.io8_ext_connected = True  # set to ensure this runs after external connections
+    if not self.io2_ext_connected:
+      self.connect(self.ic.io2, vdd_pull)
+      self.io2_ext_connected = True  # set to ensure this runs after external connections
+
   ExportType = TypeVar('ExportType', bound=Port)
   def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
                           assign: Optional[str]) -> Optional[str]:
@@ -345,9 +351,13 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
     if isinstance(self_io, DigitalBidir):
       if assign == f'{name}=_GPIO2_STRAP':
         self.connect(self_io, self.ic.io2)
+        assert not self.io2_ext_connected  # assert io2 not yet hard tied
+        self.io2_ext_connected = True
         return None
       elif assign == f'{name}=_GPIO8_STRAP':
         self.connect(self_io, self.ic.io8)
+        assert not self.io8_ext_connected  # assert io2 not yet hard tied
+        self.io8_ext_connected = True
         return None
       elif assign == f'{name}=_GPIO9_STRAP':
         self.connect(self_io, self.ic.io9)
