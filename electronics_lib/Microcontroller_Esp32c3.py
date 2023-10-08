@@ -351,12 +351,12 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
     if isinstance(self_io, DigitalBidir):
       if assign == f'{name}=_GPIO2_STRAP':
         self.connect(self_io, self.ic.io2)
-        assert not self.io2_ext_connected  # assert io2 not yet hard tied
+        assert not self.io2_ext_connected  # assert not yet hard tied
         self.io2_ext_connected = True
         return None
       elif assign == f'{name}=_GPIO8_STRAP':
         self.connect(self_io, self.ic.io8)
-        assert not self.io8_ext_connected  # assert io2 not yet hard tied
+        assert not self.io8_ext_connected  # assert not yet hard tied
         self.io8_ext_connected = True
         return None
       elif assign == f'{name}=_GPIO9_STRAP':
