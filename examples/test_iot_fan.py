@@ -48,8 +48,7 @@ class IotFan(JlcBoardTop):
       self.mcu.with_mixin(IoControllerWifi())
 
       # debugging LEDs
-      rgb_pin = self.mcu.gpio.request('rgb')  # multiplex RGB LED onto single debugging LED
-      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), rgb_pin)
+      (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))
 
       self.enc = imp.Block(DigitalRotaryEncoder())
       self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
@@ -68,7 +67,7 @@ class IotFan(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.rgb_ring, ), _ = self.chain(
-        rgb_pin,
+        self.mcu.gpio.request('rgb'),
         imp.Block(NeopixelArray(RING_LEDS)))
 
     # 12V DOMAIN
@@ -107,6 +106,7 @@ class IotFan(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
           'v12_sense=4',
           'rgb=_GPIO2_STRAP',  # force using the strapping pin, since we're out of IOs
+          'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
 
           'fan_drv_0=5',
           'fan_ctl_0=8',
