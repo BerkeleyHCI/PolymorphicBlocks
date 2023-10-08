@@ -105,16 +105,21 @@ class IotFan(JlcBoardTop):
       instance_values=[
         (['refdes_prefix'], 'F'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          # 'v12_sense=3',
+          # 12, 13, 4, 5, 8, 9, 10, 16, 26, 25
+          'v12_sense=4',
           'rgb=_GPIO2_STRAP',  # force using the strapping pin, since we're out of IOs
-          # 'enc_b=5',
-          # 'enc_a=6',
-          # 'fan_sense_1=18',
-          # 'fan_ctl_1=17',
-          # 'fan_drv_1=15',
-          # 'fan_sense_0=14',
-          # 'fan_ctl_0=13',
-          # 'fan_drv_0=10',
+
+          'fan_sense_1=12',
+          'fan_ctl_1=13',
+          'fan_drv_1=5',
+
+          'fan_sense_0=8',
+          'fan_ctl_0=9',
+          'fan_drv_0=10',
+
+          'enc_sw=26',
+          'enc_b=16',
+          'enc_a=25',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
