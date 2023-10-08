@@ -7,6 +7,7 @@ from .JlcPart import JlcTableSelector, DescriptionParser
 class JlcCrystal(TableCrystal, JlcTableSelector):
   SERIES_PACKAGE_FOOTPRINT_MAP = {
     ('X3225', 'SMD-3225_4P'): 'Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm',
+    ('TXM', 'SMD-2520_4P'): 'Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm',
   }
 
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
@@ -17,6 +18,10 @@ class JlcCrystal(TableCrystal, JlcTableSelector):
        TableCrystal.CAPACITANCE: PartParserUtil.parse_value(match.group(2), 'F'),
      }),
   ]
+
+  CUSTOM_PARTS = {
+    'C284176': (Range.from_tolerance(40e6, 10e-6), 15e-12)
+  }
 
   @classmethod
   def _make_table(cls) -> PartsTable:
@@ -32,7 +37,14 @@ class JlcCrystal(TableCrystal, JlcTableSelector):
       if footprint is None:
         return None
 
-      new_cols = cls.parse_full_description(row[cls.DESCRIPTION_COL], cls.DESCRIPTION_PARSERS)
+      if row[cls.LCSC_PART_HEADER] in cls.CUSTOM_PARTS:
+        custom_part = cls.CUSTOM_PARTS[row[cls.LCSC_PART_HEADER]]
+        new_cols: Dict[PartsTableColumn, Any] = {
+          TableCrystal.FREQUENCY: custom_part[0],
+          TableCrystal.CAPACITANCE: custom_part[1]
+        }
+      else:
+        new_cols = cls.parse_full_description(row[cls.DESCRIPTION_COL], cls.DESCRIPTION_PARSERS)
       if new_cols is None:
         return None
 

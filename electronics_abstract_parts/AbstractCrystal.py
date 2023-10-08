@@ -45,6 +45,12 @@ class CrystalStandardFootprint(Crystal, StandardFootprint[Crystal]):
       '3': block.crystal.xtal_out,
       '4': block.gnd,
     },
+    'Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm': lambda block: {
+      '1': block.crystal.xtal_in,
+      '2': block.gnd,
+      '3': block.crystal.xtal_out,
+      '4': block.gnd,
+    },
   }
 
 
