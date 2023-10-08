@@ -302,8 +302,6 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
       self.vddcpu_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))  # C10
       self.vddspi_cap = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2)))  # C11
 
-      self.vdd_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))  # C6
-
       # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
       # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
       # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
@@ -323,7 +321,7 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common])
     ) as imp:
-      self.vdd3p3_l_cap = imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2)))\
+      self.vdd3p3_l_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))\
         .connected(pwr=self.pwr)  # C6
       self.vdd3p3_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))\
         .connected(pwr=self.ic.vdd3p3)  # C7 - DNP on ESP32-C3-WROOM schematic but 0.1uF on hardware design guide

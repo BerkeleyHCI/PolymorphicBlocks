@@ -133,8 +133,7 @@ class IotFan(JlcBoardTop):
       ],
       class_values=[
         (Esp32c3, ['not_recommended'], True),
-        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
       ]
     )
