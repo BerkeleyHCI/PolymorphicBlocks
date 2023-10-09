@@ -216,7 +216,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "IotFan.kicad_pro",
+    "filename": "PicoProbe.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -250,7 +250,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "IotFan.net",
+      "netlist": "PicoProbe.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""
