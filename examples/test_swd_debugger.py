@@ -292,7 +292,7 @@ class PicoProbe(JlcBoardTop):
         (['usb_reg', 'out_cap', 'cap', 'capacitance'], Range.from_tolerance(4.7e-6, 0.2)),
         (['target_reg', 'out_cap', 'cap', 'capacitance'], Range.from_tolerance(4.7e-6, 0.2)),
 
-        (['mcu', 'swd_swo_pin'], 'GPIO20'),  # arbitrary closest UART TX
+        (['mcu', 'swd_swo_pin'], 'GPIO12'),  # arbitrary closest UART TX
       ],
       class_refinements=[
         (SwdCortexTargetHeader, SwdCortexTargetTagConnect),
