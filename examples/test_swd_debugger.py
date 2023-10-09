@@ -189,6 +189,119 @@ class SwdDebugger(JlcBoardTop):
     )
 
 
+class SwdSourceBitBangDirect(InternalSubcircuit, Block):
+  def __init__(self) -> None:
+    super().__init__()
+    self.swclk = self.Port(DigitalSink.empty())
+    self.swdio = self.Port(DigitalSink.empty())
+    self.swd = self.Port(SwdHostPort.empty(), [Output])
+
+  def contents(self) -> None:
+    super().contents()
+
+    self.connect(self.swclk, self.swd.swclk)
+    self.connect(self.swdio, self.swd.swdio)
+
+
+class PicoProbe(JlcBoardTop):
+  def contents(self) -> None:
+    super().contents()
+
+    self.usb = self.Block(UsbCReceptacle())
+
+    self.vusb = self.connect(self.usb.pwr)
+    self.gnd = self.connect(self.usb.gnd)
+
+    with self.implicit_connect(
+            ImplicitConnect(self.vusb, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.vusb_protect = imp.Block(ProtectionZenerDiode(voltage=(5.25, 6)*Volt))
+
+      self.usb_reg = imp.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+      self.v3v3 = self.connect(self.usb_reg.pwr_out)
+
+      self.target_reg = imp.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+      self.vtarget = self.connect(self.target_reg.pwr_out)
+
+    with self.implicit_connect(
+            ImplicitConnect(self.v3v3, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.mcu = imp.Block(IoController())
+
+      (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
+                                                    self.mcu.usb.request())
+
+      (self.led_tgt, ), _ = self.chain(self.mcu.gpio.request(f'led_target'),
+                                       imp.Block(IndicatorLed(Led.Yellow)))
+      (self.led_usb, ), _ = self.chain(self.mcu.gpio.request(f'led_usb'),
+                                       imp.Block(IndicatorLed(Led.White)))
+
+      (self.en_pull, ), _ = self.chain(self.mcu.gpio.request('target_reg_en'),
+                                       imp.Block(PullupResistor(4.7*kOhm(tol=0.1))),
+                                       self.target_reg.with_mixin(Resettable()).reset)
+
+      self.target_drv = imp.Block(SwdSourceBitBangDirect())
+      self.connect(self.mcu.gpio.request('target_swclk'), self.target_drv.swclk)
+      self.connect(self.mcu.gpio.request('target_swdio'), self.target_drv.swdio)
+
+    with self.implicit_connect(
+            ImplicitConnect(self.vtarget, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.target = imp.Block(SwdCortexSourceTagConnect())
+      self.connect(self.target_drv.swd, self.target.swd)
+      self.connect(self.mcu.gpio.request('target_reset'), self.target.swo)
+      self.connect(self.mcu.gpio.request('target_swo'), self.target.reset)
+
+      self.led_target = imp.Block(VoltageIndicatorLed(Led.Green))
+      (self.target_sense, ), _ = self.chain(
+        self.vtarget,
+        imp.Block(VoltageDivider(output_voltage=1.65*Volt(tol=0.05), impedance=4.7/2*kOhm(tol=0.05))),
+        self.mcu.adc.request('target_vsense')
+      )
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['mcu'], Rp2040),
+        (['mcu', 'crystal'], Cstne),
+        (['usb_reg'], Ap2204k),
+        (['target_reg'], Ap2204k),
+      ],
+      instance_values=[
+        (['refdes_prefix'], 'S'),  # unique refdes for panelization
+        (['mcu', 'pin_assigns'], [
+          # matches https://github.com/raspberrypi/picoprobe/blob/master/include/board_pico_config.h
+          'target_vsense=GPIO28',
+          'target_swclk=GPIO2',
+          'target_swdio=GPIO3',
+          'target_reset=GPIO1',  # disabled by default
+          'target_swo=GPIO5',  # UART RX
+
+          'led_usb=GPIO25',  # connected to pico internal LED
+          
+          'led_target=GPIO16',  # DAP_RUNNING_LED
+
+          # 'target_reg_en=PB15',  # TODO PLACEHOLDER
+
+        ]),
+
+        # 2.2uF generates a 1206, but 4.7uF allows a 0805
+        (['usb_reg', 'out_cap', 'cap', 'capacitance'], Range.from_tolerance(4.7e-6, 0.2)),
+        (['target_reg', 'out_cap', 'cap', 'capacitance'], Range.from_tolerance(4.7e-6, 0.2)),
+
+        (['mcu', 'swd_swo_pin'], 'GPIO26'),  # TODO PLACEHOLDER
+      ],
+      class_values=[
+        (SmdStandardPackage, ["smd_min_package"], "0402"),
+      ],
+    )
+
+
 class SwdDebuggerTestCase(unittest.TestCase):
   def test_design(self) -> None:
     compile_board_inplace(SwdDebugger)
+  def test_picoprobe(self) -> None:
+    compile_board_inplace(PicoProbe)
