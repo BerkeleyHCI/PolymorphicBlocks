@@ -39,7 +39,7 @@ class JlcCrystal(TableCrystal, JlcTableSelector):
 
       if row[cls.LCSC_PART_HEADER] in cls.CUSTOM_PARTS:
         custom_part = cls.CUSTOM_PARTS[row[cls.LCSC_PART_HEADER]]
-        new_cols: Dict[PartsTableColumn, Any] = {
+        new_cols: Optional[Dict[PartsTableColumn, Any]] = {
           TableCrystal.FREQUENCY: custom_part[0],
           TableCrystal.CAPACITANCE: custom_part[1]
         }
