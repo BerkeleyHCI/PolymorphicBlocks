@@ -273,19 +273,19 @@ class PicoProbe(JlcBoardTop):
       instance_values=[
         (['refdes_prefix'], 'S'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          # matches https://github.com/raspberrypi/picoprobe/blob/master/include/board_pico_config.h
-          'target_vsense=GPIO28',
+          # from https://github.com/raspberrypi/picoprobe/blob/master/include/board_pico_config.h
           'target_swclk=GPIO2',
           'target_swdio=GPIO3',
           'target_reset=GPIO1',  # disabled by default
           'target_swo=GPIO5',  # UART RX
+          'led_usb=GPIO25',  # aka Pico internal LED
 
-          'led_usb=GPIO25',  # connected to pico internal LED
-          
+          # from https://github.com/raspberrypi/picoprobe/blob/master/include/board_example_config.h
           'led_target=GPIO16',  # DAP_RUNNING_LED
 
+          # others
+          'target_vsense=GPIO28',
           # 'target_reg_en=PB15',  # TODO PLACEHOLDER
-
         ]),
 
         # 2.2uF generates a 1206, but 4.7uF allows a 0805
@@ -294,8 +294,13 @@ class PicoProbe(JlcBoardTop):
 
         (['mcu', 'swd_swo_pin'], 'GPIO26'),  # TODO PLACEHOLDER
       ],
+      class_refinements=[
+        (SwdCortexTargetHeader, SwdCortexTargetTagConnect),
+        (TagConnect, TagConnectNonLegged),
+      ],
       class_values=[
         (SmdStandardPackage, ["smd_min_package"], "0402"),
+        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
       ],
     )
 
