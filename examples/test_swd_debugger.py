@@ -285,7 +285,7 @@ class PicoProbe(JlcBoardTop):
 
           # others
           'target_vsense=GPIO28',
-          # 'target_reg_en=PB15',  # TODO PLACEHOLDER
+          'target_reg_en=17',
         ]),
 
         # 2.2uF generates a 1206, but 4.7uF allows a 0805
