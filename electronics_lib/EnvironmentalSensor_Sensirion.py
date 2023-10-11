@@ -40,7 +40,7 @@ class Shtc3(EnvironmentalSensor, Block):
         self.ic = self.Block(Shtc3_Device())
         self.vdd = self.Export(self.ic.vdd, [Power])
         self.gnd = self.Export(self.ic.vss, [Common])
-        self.i2c = self.Export(self.ic.i2c)
+        self.i2c = self.Export(self.ic.i2c, [InOut])
 
     def contents(self):
         super().contents()  # capacitors from datasheet

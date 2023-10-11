@@ -136,6 +136,7 @@ from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc
 from .Mag_Qmc5883l import Mag_Qmc5883l
 from .EnvironmentalSensor_Sensirion import Shtc3
 from .EnvironmentalSensor_Bme680 import Bme680
+from .EnvironmentalSensor_Ti import Hdc1080
 from .LightSensor_Bh1750 import Bh1750
 from .LightSensor_As7341 import As7341
 
