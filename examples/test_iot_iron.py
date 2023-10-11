@@ -107,16 +107,18 @@ class IotIron(JlcBoardTop):
     with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.conv_force, self.conv), _ = self.chain(
+      (self.conv_force, self.conv, self.tp_conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
         # want a high output ripple limit so the converter turns off fast to read the thermocouple
         imp.Block(CustomBuckConverter(output_voltage=(5, 5)*Volt, pwm_frequency=200*kHertz(tol=0),
                                       input_ripple_limit=0.25*Volt,
-                                      output_ripple_limit=1*Volt))
+                                      output_ripple_limit=1*Volt)),
+        self.Block(VoltageTestPoint())
       )
       self.conv_out = self.conv.pwr_out
       self.connect(self.conv.pwm, self.mcu.gpio.request('buck'))
+      self.tp_pwm = self.Block(DigitalTestPoint()).connected(self.conv.pwm)
 
     self.iron = self.Block(IronConnector())
     self.connect(self.conv.pwr_out, self.iron.pwr)
@@ -135,16 +137,18 @@ class IotIron(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       rc_filter_model = AnalogLowPassRc(impedance=1*kOhm(tol=0.1), cutoff_freq=(1, 10)*kHertz)
-      (self.vsense, self.vfilt), _ = self.chain(
+      (self.vsense, self.tp_v, self.vfilt), _ = self.chain(
         self.conv.pwr_out,
         imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+        self.Block(AnalogTestPoint()),
         imp.Block(rc_filter_model),
         self.mcu.adc.request('iron_vsense')
       )
-      (self.ifilt, self.iamp), _ = self.chain(
+      (self.ifilt, self.tp_i, self.iamp), _ = self.chain(
         self.isense.sense_out,
-        imp.Block(rc_filter_model),
         imp.Block(Amplifier((18, 25))),
+        imp.Block(rc_filter_model),
+        self.Block(AnalogTestPoint()),
         self.mcu.adc.request('iron_isense')
       )
 
@@ -155,7 +159,7 @@ class IotIron(JlcBoardTop):
       self.connect(self.tamp.input_negative, self.iron.gnd.as_analog_source())
       self.connect(self.tamp.input_positive, self.iron.thermocouple)
       self.connect(self.tamp.output, self.mcu.adc.request('thermocouple'))
-
+      self.tp_t = self.Block(AnalogTestPoint()).connected(self.iron.thermocouple)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
