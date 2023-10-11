@@ -80,7 +80,7 @@ class IotIron(JlcBoardTop):
         self.mcu.adc.request('vusb_sense')
       )
 
-      # sensing
+      # sensing - cold junction compensation
       (self.temp, ), _ = self.chain(self.i2c, imp.Block(Hdc1080()))
 
       # onboard user interface
@@ -116,7 +116,7 @@ class IotIron(JlcBoardTop):
                                       output_ripple_limit=1*Volt)),
         self.Block(VoltageTestPoint())
       )
-      self.conv_out = self.conv.pwr_out
+      self.conv_out = self.connect(self.conv.pwr_out)
       self.connect(self.conv.pwm, self.mcu.gpio.request('buck'))
       self.tp_pwm = self.Block(DigitalTestPoint()).connected(self.conv.pwm)
 

@@ -65,6 +65,8 @@ class Ir2301(HalfBridgeDriver):
   def contents(self):
     super().contents()
 
+    self.require(~self.has_boot_diode, 'TODO: boot diode generator')
+
     self.ic = self.Block(Ir2301_Device())
     self.connect(self.pwr, self.ic.vcc)
     self.connect(self.gnd, self.ic.com)

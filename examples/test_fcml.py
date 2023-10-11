@@ -108,7 +108,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
       high_pwm = self.iso.out_b.request(f'high')
       low_pwm = self.iso.out_b.request(f'low')
 
-    self.driver = self.Block(HalfBridgeDriver())
+    self.driver = self.Block(HalfBridgeDriver(False))
     self.connect(self.driver.gnd, self.low_in)
     self.connect(self.driver.pwr, self.low_boot_out)
     self.connect(self.driver.high_in, high_pwm)

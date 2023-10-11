@@ -260,7 +260,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     if self.get(self.output_reference.is_connected()):
       output_neg_signal = self.output_reference.link().signal
       output_neg_voltage = self.output_reference.link().voltage
-      output_neg_node = self.output_reference
+      output_neg_node: CircuitPort = self.output_reference
     else:
       output_neg_voltage = output_neg_signal = self.gnd.link().voltage
       output_neg_node = self.gnd.as_analog_source()
