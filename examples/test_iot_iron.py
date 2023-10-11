@@ -3,6 +3,25 @@ import unittest
 from edg import *
 
 
+class IronConnector(Connector, Block):
+  """
+  TODO REFERENCE LINK AND PINNING
+  """
+  @init_in_parent
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(PinHeader254(3))
+
+    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()),
+                           [Common])
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink(
+      current_draw=(0, 3.25)*Amp
+    )))
+    self.thermocouple = self.Export(self.conn.pins.request('3').adapt_to(AnalogSource(
+      # TODO SPECS
+    )), optional=True)
+
+
 class IotIron(JlcBoardTop):
   """IoT soldering iron controller (ceramic heater type, not RF heating type) with USB-PD in,
   buck converter for maximum compatibility and reduced EMI, and builtin UI components (in addition
@@ -80,7 +99,22 @@ class IotIron(JlcBoardTop):
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))
 
 
-    # TODO POWER DOMAIN
+    # IRON POWER SUPPLY
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      (self.conv_force, self.conv), _ = self.chain(
+        self.vusb,
+        imp.Block(ForcedVoltage(20*Volt(tol=0))),
+        imp.Block(CustomBuckConverter(output_voltage=(5, 5)*Volt, pwm_frequency=200*kHertz(tol=0),
+                                                input_ripple_limit=0.25*Volt,
+                                                output_ripple_limit=0.25*Volt))
+      )
+      self.conv_out = self.conv.pwr_out
+      self.connect(self.conv.pwm, self.mcu.gpio.request('buck'))
+
+      self.iron = imp.Block(IronConnector())
+      self.connect(self.conv.pwr_out, self.iron.pwr)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -108,6 +142,14 @@ class IotIron(JlcBoardTop):
           # 'enc_a=26',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
+
+        # these will be enforced by the firmware control mechanism
+        # (['conv', 'pwr_in', 'current_draw'], Range(0, 3)),  # max 3A input draw
+        # force JLC frequency spec
+        (['conv', 'power_path', 'inductor', 'part'], 'SLF12565T-150M4R2-PF'),
+        (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 1e6)),  # from charts, inductance constant up to 1MHz
+        (['reg_3v3', 'power_path', 'inductor', 'part'], 'SWPA5040S220MT'),
+        (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 11e6)),
       ],
       class_refinements=[
         (Speaker, ConnectorSpeaker),

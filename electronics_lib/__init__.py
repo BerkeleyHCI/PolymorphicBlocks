@@ -57,6 +57,7 @@ from .BoostConverter_AnalogDevices import Ltc3429
 from .BoostConverter_DiodesInc import Ap3012
 from .BoostConverter_Torex import Xc9142
 from .BoostConverter_TexasInstruments import Tps61040
+from .BuckConverter_Custom import CustomBuckConverter
 from .BuckBoostConverter_Custom import CustomBuckBoostConverter
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr
 from .LedDriver_Al8861 import Al8861
