@@ -58,7 +58,7 @@ class IotIron(JlcBoardTop):
       # set gate driver at 9v to allow power from USB-PD 9v
       (self.reg_gate, self.tp_gate), _ = self.chain(
         self.vusb,
-        imp.Block(VoltageRegulator(output_voltage=9*Volt(tol=0.05))),
+        imp.Block(VoltageRegulator(output_voltage=12*Volt(tol=0.06))),
         self.Block(VoltageTestPoint())
       )
       self.vgate = self.connect(self.reg_gate.pwr_out)
@@ -178,6 +178,7 @@ class IotIron(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
         (['reg_3v3'], Tps54202h),
+        (['reg_gate'], L78l),
       ],
       instance_values=[
         (['refdes_prefix'], 'I'),  # unique refdes for panelization
@@ -201,6 +202,8 @@ class IotIron(JlcBoardTop):
         (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 1e6)),  # from charts, inductance constant up to 1MHz
         (['reg_3v3', 'power_path', 'inductor', 'part'], 'SWPA5040S220MT'),
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 11e6)),
+
+        (['reg_gate', 'ic', 'actual_dropout'], Range.exact(0)),  # allow tracking
 
         (['conv', 'sw', 'high_fet', 'part'], ParamValue(['conv', 'sw', 'low_fet', 'part'])),
         (['conv', 'sw', 'low_fet', 'manual_gate_charge'], Range.exact(100e-9)),  # reasonable worst case estimate
