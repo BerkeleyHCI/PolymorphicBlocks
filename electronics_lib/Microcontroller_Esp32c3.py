@@ -260,7 +260,7 @@ class Esp32c3_Device(Esp32c3_Base, FootprintBlock, JlcPart):
       mfr='Espressif Systems', part='ESP32-C3FH4',
       datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf',
     )
-    self.assign(self.lcsc_part, 'C2858491')  # "discontinued"
+    self.assign(self.lcsc_part, 'C2858491')
     self.assign(self.actual_basic_part, False)
 
 
