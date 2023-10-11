@@ -21,7 +21,7 @@ class HalfBridgeDriver(PowerSwitch, Block):
   @init_in_parent
   def __init__(self, has_boot_diode: BoolLike):
     super().__init__()
-    self.has_boot_diode = self.Parameter(BoolExpr(has_boot_diode))
+    self.has_boot_diode = self.ArgParameter(has_boot_diode)
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])  # logic side and low FET
     self.gnd = self.Port(Ground.empty(), [Common])
@@ -31,6 +31,6 @@ class HalfBridgeDriver(PowerSwitch, Block):
 
     self.low_out = self.Port(DigitalSource.empty())  # referenced to main gnd
 
-    self.high_pwr = self.Port(VoltageSink.empty())
+    self.high_pwr = self.Port(VoltageSink.empty(), optional=True)  # not used with internal boot diode
     self.high_gnd = self.Port(VoltageSink.empty())  # this encodes the voltage limit from gnd
     self.high_out = self.Port(DigitalSource.empty())  # referenced to high_pwr and high_gnd

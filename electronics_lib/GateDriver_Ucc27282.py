@@ -29,14 +29,12 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       self.vss,
       voltage_limits=(-8, 100)  # looser negative rating possible with pulses
     ))
-    self.hb = self.Port(VoltageSink.from_gnd(
-      self.hs,
-      voltage_limits=(5.5, 16)*Volt,
-      current_draw=(0.2, 4)*mAmp
+    self.hb = self.Port(VoltageSource(
+      voltage_out=self.hs.link().voltage + self.vdd.link().voltage,
     ))
     self.ho = self.Port(DigitalSource.from_supply(
       self.hs, self.hb,
-      current_limits=(-3, 3)*mAmp  # peak pullup and pulldown current
+      current_limits=(-3, 3)*Amp  # peak pullup and pulldown current
     ))
 
   def contents(self):
@@ -66,6 +64,7 @@ class Ucc27282(HalfBridgeDriver):
     super().contents()
 
     self.require(self.has_boot_diode)
+    self.require(~self.high_pwr.is_connected())  # not supported
 
     self.ic = self.Block(Ucc27282_Device())
     self.connect(self.pwr, self.ic.vdd)
@@ -73,9 +72,8 @@ class Ucc27282(HalfBridgeDriver):
     self.connect(self.low_in, self.ic.li)
     self.connect(self.high_in, self.ic.hi)
     self.connect(self.low_out, self.ic.lo)
-    self.connect(self.high_pwr, self.ic.hb)
     self.connect(self.high_gnd, self.ic.hs)
     self.connect(self.high_out, self.ic.ho)
 
     self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
-    self.boot_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.high_gnd, self.high_pwr)
+    self.boot_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.ic.hs, self.ic.hb)

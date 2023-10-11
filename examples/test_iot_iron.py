@@ -54,6 +54,14 @@ class IotIron(JlcBoardTop):
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
+      # set gate driver at 9v to allow power from USB-PD 9v
+      (self.reg_gate, self.tp_gate), _ = self.chain(
+        self.vusb,
+        imp.Block(VoltageRegulator(output_voltage=9*Volt(tol=0.05))),
+        self.Block(VoltageTestPoint())
+      )
+      self.vgate = self.connect(self.reg_gate.pwr_out)
+
     # 3V3 DOMAIN
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
@@ -117,8 +125,11 @@ class IotIron(JlcBoardTop):
         self.Block(VoltageTestPoint())
       )
       self.conv_out = self.connect(self.conv.pwr_out)
-      self.connect(self.conv.pwm, self.mcu.gpio.request('buck'))
-      self.tp_pwm = self.Block(DigitalTestPoint()).connected(self.conv.pwm)
+      self.connect(self.conv.pwr_logic, self.vgate)
+      self.connect(self.conv.pwm_low, self.mcu.gpio.request('pwm_low'))
+      self.connect(self.conv.pwm_high, self.mcu.gpio.request('pwm_high'))
+      self.tp_pwm_l = self.Block(DigitalTestPoint()).connected(self.conv.pwm_low)
+      self.tp_pwm_h = self.Block(DigitalTestPoint()).connected(self.conv.pwm_high)
 
     self.iron = self.Block(IronConnector())
     self.connect(self.conv.pwr_out, self.iron.pwr)
@@ -192,6 +203,7 @@ class IotIron(JlcBoardTop):
       ],
       class_refinements=[
         (Opamp, Tlv9061),  # use higher end opamps
+        (HalfBridgeDriver, Ucc27282),
         (Speaker, ConnectorSpeaker),
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (EspProgrammingHeader, EspProgrammingTc2030),
