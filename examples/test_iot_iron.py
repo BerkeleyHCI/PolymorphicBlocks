@@ -6,8 +6,8 @@ from edg import *
 class IronConnector(Connector, Block):
   """See main design for details about pinning and compatibility.
   This assumes a common ground with heater+ and thermocouple+.
-  Where both are in series, the heater+ and thermocouple+ can be shorted and
-  device controlled to measure when not heating."""
+  TODO: support series heater and thermocouple, requires additional protection circuits on amps
+  """
   @init_in_parent
   def __init__(self):
     super().__init__()
@@ -19,7 +19,7 @@ class IronConnector(Connector, Block):
       current_draw=(0, 3.25)*Amp
     )))
     self.thermocouple = self.Export(self.conn.pins.request('3').adapt_to(AnalogSource(
-      voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage),
+      voltage_out=self.gnd.link().voltage + (0, 14.3)*mVolt,
       signal_out=self.gnd.link().voltage + (0, 14.3)*mVolt  # up to ~350 C
     )), optional=True)
 

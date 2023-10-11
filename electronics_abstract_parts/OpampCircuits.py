@@ -258,14 +258,15 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     self.rg = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
 
     if self.get(self.output_reference.is_connected()):
-      output_neg_level = self.output_reference.link().signal
+      output_neg_signal = self.output_reference.link().signal
+      output_neg_voltage = self.output_reference.link().voltage
       output_neg_node = self.output_reference
     else:
-      output_neg_level = self.gnd.link().voltage
+      output_neg_voltage = output_neg_signal = self.gnd.link().voltage
       output_neg_node = self.gnd.as_analog_source()
 
     input_diff_range = self.input_positive.link().signal - self.input_negative.link().signal
-    output_diff_range = input_diff_range * self.actual_ratio + output_neg_level
+    output_diff_range = input_diff_range * self.actual_ratio + output_neg_signal
     # TODO tolerances can cause the range to be much larger than actual, so bound it to avoid false-positives
     self.forced = self.Block(ForcedAnalogSignal(self.amp.out.signal_out.intersect(output_diff_range)))
 
@@ -290,7 +291,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
         ),
         'r2.2': AnalogSource(  # combined R2 and Rg resistance
           voltage_out=ResistiveDivider.divider_output(
-            self.input_positive.link().voltage, output_neg_level,
+            self.input_positive.link().voltage, output_neg_voltage,
             ResistiveDivider.divider_ratio(self.r2.actual_resistance, self.rg.actual_resistance)
           ),
           impedance=1 / (1 / self.r2.actual_resistance + 1 / self.rg.actual_resistance)
