@@ -173,6 +173,11 @@ class IotIron(JlcBoardTop):
       self.connect(self.tamp.output, self.mcu.adc.request('thermocouple'))
       self.tp_t = self.Block(AnalogTestPoint()).connected(self.iron.thermocouple)
 
+  def multipack(self) -> None:
+    self.packed_opamp = self.PackedBlock(Opa2333())
+    self.pack(self.packed_opamp.elements.request('0'), ['ifilt', 'amp'])
+    self.pack(self.packed_opamp.elements.request('1'), ['tamp', 'amp'])
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -210,7 +215,6 @@ class IotIron(JlcBoardTop):
         (['conv', 'sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'sw', 'low_fet', 'manual_gate_charge'])),
       ],
       class_refinements=[
-        (Opamp, Tlv9061),  # use higher end opamps
         (HalfBridgeDriver, Ucc27282),
         (Speaker, ConnectorSpeaker),
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
