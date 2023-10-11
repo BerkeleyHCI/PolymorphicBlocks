@@ -63,6 +63,29 @@ class PullupDelayRc(DigitalFilter, Block):
     return self
 
 
+class AnalogLowPassRc(DigitalFilter, Block):
+  """Low-pass RC filter attached to an analog line.
+  """
+  @init_in_parent
+  def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
+    super().__init__()
+    self.input = self.Port(AnalogSink.empty(), [Input])
+    self.output = self.Port(AnalogSource.empty(), [Output])
+
+    self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq,
+                                   voltage=self.input.link().voltage))
+    self.connect(self.input, self.rc.input.adapt_to(AnalogSink(
+      current_draw=self.output.link().current_drawn
+    )))
+    self.connect(self.output, self.rc.output.adapt_to(AnalogSource(
+      current_limits=RangeExpr.ALL,
+      voltage_out=self.input.link().voltage,
+      signal_out=self.input.link().signal
+    )))
+
+    self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
+
+
 class DigitalLowPassRc(DigitalFilter, Block):
   """Low-pass RC filter attached to a digital line.
   Does not change the signal, only performs filtering

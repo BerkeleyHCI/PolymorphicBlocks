@@ -4,9 +4,10 @@ from edg import *
 
 
 class IronConnector(Connector, Block):
-  """
-  TODO REFERENCE LINK AND PINNING
-  """
+  """See main design for details about pinning and compatibility.
+  This assumes a common ground with heater+ and thermocouple+.
+  Where both are in series, the heater+ and thermocouple+ can be shorted and
+  device controlled to measure when not heating."""
   @init_in_parent
   def __init__(self):
     super().__init__()
@@ -18,7 +19,8 @@ class IronConnector(Connector, Block):
       current_draw=(0, 3.25)*Amp
     )))
     self.thermocouple = self.Export(self.conn.pins.request('3').adapt_to(AnalogSource(
-      # TODO SPECS
+      voltage_out=self.gnd.link().voltage.hull(self.pwr.link().voltage),
+      signal_out=self.gnd.link().voltage + (0, 14.3)*mVolt  # up to ~350 C
     )), optional=True)
 
 
@@ -26,6 +28,8 @@ class IotIron(JlcBoardTop):
   """IoT soldering iron controller (ceramic heater type, not RF heating type) with USB-PD in,
   buck converter for maximum compatibility and reduced EMI, and builtin UI components (in addition
   to wireless connectivity).
+
+  Inspired by https://github.com/AxxAxx/AxxSolder/tree/main, see repo README for links on connector pinning.
   """
   def contents(self) -> None:
     super().contents()
@@ -106,15 +110,52 @@ class IotIron(JlcBoardTop):
       (self.conv_force, self.conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
+        # want a high output ripple limit so the converter turns off fast to read the thermocouple
         imp.Block(CustomBuckConverter(output_voltage=(5, 5)*Volt, pwm_frequency=200*kHertz(tol=0),
-                                                input_ripple_limit=0.25*Volt,
-                                                output_ripple_limit=0.25*Volt))
+                                      input_ripple_limit=0.25*Volt,
+                                      output_ripple_limit=1*Volt))
       )
       self.conv_out = self.conv.pwr_out
       self.connect(self.conv.pwm, self.mcu.gpio.request('buck'))
 
-      self.iron = imp.Block(IronConnector())
-      self.connect(self.conv.pwr_out, self.iron.pwr)
+    self.iron = self.Block(IronConnector())
+    self.connect(self.conv.pwr_out, self.iron.pwr)
+
+    self.isense = self.Block(CurrentSenseResistor(resistance=22*mOhm(tol=0.05), sense_in_reqd=False))
+    self.connect(self.isense.pwr_in, self.gnd)
+    (self.isense_force, ), _ = self.chain(
+      self.isense.pwr_out,  # gnd currents not modeled, this forces one for sense resistor power
+      self.Block(ForcedVoltageCurrentDraw(forced_current_draw=self.iron.pwr.link().current_drawn)),
+      self.iron.gnd
+    )
+
+    # IRON SENSE AMPS - 3v3 DOMAIN
+    with self.implicit_connect(
+            ImplicitConnect(self.v3v3, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      rc_filter_model = AnalogLowPassRc(impedance=1*kOhm(tol=0.1), cutoff_freq=(1, 10)*kHertz)
+      (self.vsense, self.vfilt), _ = self.chain(
+        self.conv.pwr_out,
+        imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+        imp.Block(rc_filter_model),
+        self.mcu.adc.request('iron_vsense')
+      )
+      (self.ifilt, self.iamp), _ = self.chain(
+        self.isense.sense_out,
+        imp.Block(rc_filter_model),
+        imp.Block(Amplifier((18, 25))),
+        self.mcu.adc.request('iron_isense')
+      )
+
+      self.tamp = imp.Block(DifferentialAmplifier(
+        ratio=(150, 165),
+        input_impedance=(0.9, 5)*kOhm
+      ))
+      self.connect(self.tamp.input_negative, self.iron.gnd.as_analog_source())
+      self.connect(self.tamp.input_positive, self.iron.thermocouple)
+      self.connect(self.tamp.output, self.mcu.adc.request('thermocouple'))
+
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -125,23 +166,17 @@ class IotIron(JlcBoardTop):
       instance_values=[
         (['refdes_prefix'], 'I'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          # 'v12_sense=4',
-          # 'rgb=_GPIO2_STRAP',  # force using the strapping pin, since we're out of IOs
-          # 'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
-          #
-          # 'fan_drv_0=5',
-          # 'fan_ctl_0=8',
-          # 'fan_sense_0=9',
-          #
-          # 'fan_drv_1=10',
-          # 'fan_ctl_1=13',
-          # 'fan_sense_1=12',
+          # 'vusb_sense=4',
+          # 'led=_GPIO9_STRAP',
           #
           # 'enc_sw=25',
           # 'enc_b=16',
           # 'enc_a=26',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
+
+        (['isense', 'res', 'res', 'smd_min_package'], '2512'),  # more power headroom
+        (['isense', 'res', 'res', 'require_basic_part'], False),
 
         # these will be enforced by the firmware control mechanism
         # (['conv', 'pwr_in', 'current_draw'], Range(0, 3)),  # max 3A input draw
@@ -152,6 +187,7 @@ class IotIron(JlcBoardTop):
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 11e6)),
       ],
       class_refinements=[
+        (Opamp, Tlv9061),  # use higher end opamps
         (Speaker, ConnectorSpeaker),
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (EspProgrammingHeader, EspProgrammingTc2030),
