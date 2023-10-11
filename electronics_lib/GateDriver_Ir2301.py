@@ -9,7 +9,7 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.vcc = self.Port(VoltageSink.from_gnd(
       self.com,
       voltage_limits=(5, 20)*Volt,  # recommended operating conditions
-      current_draw=(50, 190)*uAmp  # quiescent current only, TODO model gate current
+      current_draw=RangeExpr()
     ))
 
     input_model = DigitalSink.from_supply(
@@ -24,6 +24,7 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       self.com, self.vcc,
       current_limits=(-250, 120)*mAmp)  # static electrical characteristics: output short circuit pulsed current
     )
+    self.assign(self.vcc.current_draw, (50, 190)*uAmp + self.lo.link().current_drawn)
 
     self.vs = self.Port(VoltageSink.from_gnd(
       self.com,
@@ -32,12 +33,13 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.vb = self.Port(VoltageSink.from_gnd(
       self.vs,
       voltage_limits=(5, 20)*Volt,
-      current_draw=(50, 190)*uAmp  # quiescent current only, TODO model gate current
+      current_draw=RangeExpr()
     ))
     self.ho = self.Port(DigitalSource.from_supply(
       self.vs, self.vb,
       current_limits=(-250, 120)*mAmp  # static electrical characteristics: output short circuit pulsed current
     ))
+    self.assign(self.vb.current_draw, (50, 190)*uAmp + self.ho.link().current_drawn)
 
   def contents(self):
     self.footprint(

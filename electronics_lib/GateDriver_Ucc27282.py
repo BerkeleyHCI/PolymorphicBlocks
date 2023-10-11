@@ -9,7 +9,7 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.vdd = self.Port(VoltageSink.from_gnd(
       self.vss,
       voltage_limits=(5.5, 16)*Volt,  # recommended operating conditions
-      current_draw=(0.3, 4.5)*mAmp  # quiescent to operating
+      current_draw=RangeExpr()
     ))
 
     input_model = DigitalSink.from_supply(
@@ -36,6 +36,10 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       self.hs, self.hb,
       current_limits=(-3, 3)*Amp  # peak pullup and pulldown current
     ))
+
+    # quiescent to operating, vdd and hb, plus output draw
+    self.assign(self.vdd.current_draw,
+                (0.3, 4.5)*mAmp + (0.2, 4)*mAmp + self.lo.link().current_drawn + self.ho.link().current_drawn)
 
   def contents(self):
     self.footprint(

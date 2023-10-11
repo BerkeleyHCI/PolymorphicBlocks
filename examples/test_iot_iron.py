@@ -201,6 +201,10 @@ class IotIron(JlcBoardTop):
         (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 1e6)),  # from charts, inductance constant up to 1MHz
         (['reg_3v3', 'power_path', 'inductor', 'part'], 'SWPA5040S220MT'),
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 11e6)),
+
+        (['conv', 'sw', 'high_fet', 'part'], ParamValue(['conv', 'sw', 'low_fet', 'part'])),
+        (['conv', 'sw', 'low_fet', 'manual_gate_charge'], Range.exact(100e-9)),  # reasonable worst case estimate
+        (['conv', 'sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'sw', 'low_fet', 'manual_gate_charge'])),
       ],
       class_refinements=[
         (Opamp, Tlv9061),  # use higher end opamps

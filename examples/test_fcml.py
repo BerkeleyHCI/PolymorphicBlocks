@@ -172,8 +172,8 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
         'low_boot_cap.2': VoltageSink(),
         'high_boot_cap.1': VoltageSink(),
         'high_boot_cap.2': VoltageSink(),
-        'low_gate_res.1': DigitalSink(),
-        'high_gate_res.1': DigitalSink(),
+        'low_gate_res.1': DigitalSink(),  # TODO model gate current draw
+        'high_gate_res.1': DigitalSink(),  # TODO model gate current draw
       })
 
 

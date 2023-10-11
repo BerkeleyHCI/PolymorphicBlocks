@@ -103,7 +103,8 @@ class PartsTable:
                 if fn(row)]
     return PartsTable(new_rows)
 
-  def map_new_columns(self, fn: Callable[[PartsTableRow], Optional[Dict[PartsTableColumn[Any], Any]]]) -> PartsTable:
+  def map_new_columns(self, fn: Callable[[PartsTableRow], Optional[Dict[PartsTableColumn[Any], Any]]],
+                      overwrite: bool = False) -> PartsTable:
     """Creates a new table (deep copy) with additional rows."""
     new_rows: List[PartsTableRow] = []
     first_keys: Optional[KeysView] = None
@@ -114,8 +115,8 @@ class PartsTable:
 
       if first_keys is None:
         first_keys = new_columns.keys()
-        assert first_keys.isdisjoint(row.value.keys()), \
-          f"new columns {new_columns} not disjoint with existing row keys {row.value.keys()}"
+        assert first_keys.isdisjoint(row.value.keys()) or overwrite, \
+          f"new columns {new_columns} overwrites existing row keys {row.value.keys()} without overwrite=True"
       else:
         assert first_keys == new_columns.keys(), \
           f"new columns {new_columns} in row {row} has different keys than first row keys {first_keys}"

@@ -50,7 +50,9 @@ class FetHalfBridge(HalfBridge):
         ))
         self.connect(self.low_fet.source.adapt_to(Ground()), self.gnd)
         self.low_gate_res = self.Block(gate_res_model)
-        self.connect(self.low_gate_res.a.adapt_to(DigitalSink()), self.driver.low_out)
+        self.connect(self.low_gate_res.a.adapt_to(DigitalSink(
+            current_draw=self.low_fet.actual_gate_charge * self.frequency.hull((0, 0))
+        )), self.driver.low_out)
         self.connect(self.low_gate_res.b, self.low_fet.gate)
 
         self.high_fet = self.Block(SwitchFet.NFet(
@@ -66,7 +68,9 @@ class FetHalfBridge(HalfBridge):
             current_draw=self.out.link().current_drawn
         )), self.pwr)
         self.high_gate_res = self.Block(gate_res_model)
-        self.connect(self.high_gate_res.a.adapt_to(DigitalSink()), self.driver.high_out)
+        self.connect(self.high_gate_res.a.adapt_to(DigitalSink(
+            current_draw=self.high_fet.actual_gate_charge * self.frequency.hull((0, 0))
+        )), self.driver.high_out)
         self.connect(self.high_gate_res.b, self.high_fet.gate)
 
         # to avoid tolerance stackup, model the switch node as a static voltage
