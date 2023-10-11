@@ -1,9 +1,9 @@
 from electronics_abstract_parts import *
 
 
-class CustomBuckConverter(DiscreteBoostConverter):
-    """Custom buck with PWM inputs for the high side gate driver
-    and diodes for the complementary switches (non-synchronous)."""
+class CustomSyncBuckConverter(DiscreteBoostConverter):
+    """Custom synchronous buck with two PWM inputs for the high and low side gate drivers.
+    Because of the MOSFET body diode, will probably be fine-ish if the low side FET is not driven."""
     @init_in_parent
     def __init__(self, *args,
                  pwm_frequency: RangeLike = (100, 1000)*kHertz,
@@ -11,7 +11,9 @@ class CustomBuckConverter(DiscreteBoostConverter):
                  **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.pwm = self.Port(DigitalSink.empty())
+        self.pwr_logic = self.Port(VoltageSink.empty())
+        self.high_ctl = self.Port(DigitalSink.empty())
+        self.low_ctl = self.Port(DigitalSink.empty())
 
         self.assign(self.frequency, pwm_frequency)
         self.voltage_drop = self.ArgParameter(voltage_drop)
@@ -34,17 +36,11 @@ class CustomBuckConverter(DiscreteBoostConverter):
         self.connect(self.power_path.pwr_out, self.pwr_out)
         self.connect(self.power_path.gnd, self.gnd)
 
-        self.in_high_switch = self.Block(HighSideSwitch(max_rds=self.rds_on.upper()))
-        self.connect(self.in_high_switch.pwr, self.pwr_in)
-        self.connect(self.in_high_switch.gnd, self.gnd)
-        self.connect(self.in_high_switch.control, self.pwm)
-        self.in_low_diode = self.Block(Diode(
-            reverse_voltage=self.pwr_in.link().voltage,
-            current=self.power_path.switch.current_draw,
-            voltage_drop=self.voltage_drop
-        ))
-        # TODO in high (buck) switch
-        self.connect(self.gnd, self.in_low_diode.anode.adapt_to(Ground()))
+        self.sw = self.Block(HalfBridge())
+        self.connect(self.sw.gnd, self.gnd)
+        self.connect(self.sw.pwr, self.pwr_in)
+        self.connect(self.sw.pwr_logic, self.pwr_logic)
+        self.connect(self.sw.low_ctl, self.low_ctl)
+        self.connect(self.sw.high_ctl, self.high_ctl)
         self.connect(self.power_path.switch,  # internal node not modeled, assumed specs correct
-                     self.in_high_switch.output.as_voltage_source(),
-                     self.in_low_diode.cathode.adapt_to(VoltageSink()))
+                     self.sw.out)

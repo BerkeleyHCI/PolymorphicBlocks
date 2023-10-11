@@ -57,11 +57,12 @@ from .AbstractOpamp import Opamp
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
 from .AbstractSpiMemory import SpiMemory, SpiMemoryQspi
 from .OpampCurrentSensor import OpampCurrentSensor
-from .DigitalAmplifiers import HighSideSwitch, HalfBridgeNFet, OpenDrainDriver
+from .DigitalAmplifiers import HighSideSwitch, OpenDrainDriver
 from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnableWrapper
 from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
+from .PowerCircuits import HalfBridge, FetHalfBridge
 from .AbstractLedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
 from .AbstractFuse import Fuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
