@@ -34,7 +34,8 @@ class IotIron(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.usb = self.Block(UsbCReceptacle(voltage_out=(4.5, 20)*Volt, current_limits=(0, 5)*Amp))
+    # assume minimum power input of 12v from PD, you probably don't want a 5v USB 15W soldering iron
+    self.usb = self.Block(UsbCReceptacle(voltage_out=(12, 20)*Volt, current_limits=(0, 5)*Amp))
 
     self.vusb = self.connect(self.usb.pwr)
     self.gnd = self.connect(self.usb.gnd)

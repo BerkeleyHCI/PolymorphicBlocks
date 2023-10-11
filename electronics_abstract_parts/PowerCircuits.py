@@ -1,5 +1,6 @@
 from electronics_model import *
-from .AbstractFets import SwitchFet, Fet
+from .AbstractResistor import Resistor
+from .AbstractFets import SwitchFet
 from .GateDrivers import HalfBridgeDriver
 
 
@@ -22,10 +23,12 @@ class HalfBridge(Block):
 class FetHalfBridge(HalfBridge):
     """Implementation of a half-bridge with two NFETs and a gate driver."""
     @init_in_parent
-    def __init__(self, frequency: RangeLike, fet_rds: RangeLike = (0, 1)*Ohm):
+    def __init__(self, frequency: RangeLike, fet_rds: RangeLike = (0, 1)*Ohm,
+                 gate_res: RangeLike = 22*Ohm(tol=0.05)):
         super().__init__()
         self.frequency = self.ArgParameter(frequency)
         self.fet_rds = self.ArgParameter(fet_rds)
+        self.gate_res = self.ArgParameter(gate_res)
 
     def contents(self):
         super().contents()
@@ -34,6 +37,8 @@ class FetHalfBridge(HalfBridge):
         self.connect(self.driver.pwr, self.pwr_logic)
         self.connect(self.low_ctl, self.driver.low_in)
         self.connect(self.high_ctl, self.driver.high_in)
+
+        gate_res_model = Resistor(self.gate_res)
 
         self.low_fet = self.Block(SwitchFet.NFet(
             drain_voltage=self.pwr.link().voltage,
@@ -44,7 +49,9 @@ class FetHalfBridge(HalfBridge):
             drive_current=self.driver.low_out.link().current_limits
         ))
         self.connect(self.low_fet.source.adapt_to(Ground()), self.gnd)
-        self.connect(self.low_fet.gate.adapt_to(DigitalSink()), self.driver.low_out)
+        self.low_gate_res = self.Block(gate_res_model)
+        self.connect(self.low_gate_res.a.adapt_to(DigitalSink()), self.driver.low_out)
+        self.connect(self.low_gate_res.b, self.low_fet.gate)
 
         self.high_fet = self.Block(SwitchFet.NFet(
             drain_voltage=self.pwr.link().voltage,
@@ -58,7 +65,9 @@ class FetHalfBridge(HalfBridge):
             voltage_limits=self.high_fet.actual_drain_voltage_rating,
             current_draw=self.out.link().current_drawn
         )), self.pwr)
-        self.connect(self.high_fet.gate.adapt_to(DigitalSink()), self.driver.high_out)
+        self.high_gate_res = self.Block(gate_res_model)
+        self.connect(self.high_gate_res.a.adapt_to(DigitalSink()), self.driver.high_out)
+        self.connect(self.high_gate_res.b, self.high_fet.gate)
 
         # to avoid tolerance stackup, model the switch node as a static voltage
         self.connect(self.low_fet.drain.adapt_to(VoltageSource(
