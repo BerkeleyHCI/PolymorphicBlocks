@@ -69,6 +69,8 @@ class Ap3418(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
           self.pwr_out.link().current_drawn,
           self.ripple_current_factor,
           rated_current=1.5*Amp),
+        input_voltage_ripple=self.input_ripple_limit,
+        output_voltage_ripple=self.output_ripple_limit,
         dutycycle_limit=(0, 1)
       ))
       # ForcedVoltage needed to provide a voltage value so current downstream can be calculated

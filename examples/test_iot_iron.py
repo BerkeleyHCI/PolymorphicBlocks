@@ -49,7 +49,8 @@ class IotIron(JlcBoardTop):
     ) as imp:
       (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
         self.vusb,
-        imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05),
+                                input_ripple_limit=100*mVolt)),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
       )
@@ -121,7 +122,7 @@ class IotIron(JlcBoardTop):
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
         # want a high output ripple limit so the converter turns off fast to read the thermocouple
         imp.Block(CustomSyncBuckConverter(output_voltage=(5, 5) * Volt, pwm_frequency=200 * kHertz(tol=0),
-                                          input_ripple_limit=0.25*Volt,
+                                          input_ripple_limit=1*Volt,
                                           output_ripple_limit=1*Volt)),
         self.Block(VoltageTestPoint())
       )

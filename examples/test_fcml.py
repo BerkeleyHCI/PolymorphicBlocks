@@ -224,6 +224,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
       self.pwr_out.link().current_drawn, Range.all(),  # TODO add current limits from FETs
       inductor_current_ripple=self.inductor_current_ripple,
       input_voltage_ripple=250*mVolt,
+      output_voltage_ripple=25*mVolt,  # TODO plumb through to user config
       dutycycle_limit=(0, 1),
       inductor_scale=(levels - 1)**2
     ))
