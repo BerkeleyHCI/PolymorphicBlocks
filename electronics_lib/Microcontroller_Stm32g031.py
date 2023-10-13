@@ -18,7 +18,7 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-        # # Additional ports (on top of BaseIoController)
+        # Additional ports (on top of BaseIoController)
         self.pwr = self.Port(VoltageSink(
             voltage_limits=(1.7, 3.6)*Volt,  # Table 5.3.1 "standard operating voltage", not including Vrefbuf
             current_draw=(0.001, 7.6)*mAmp + self.io_current_draw.upper()  # Table 25 (run), 30 (standby)
