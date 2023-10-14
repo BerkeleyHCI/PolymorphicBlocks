@@ -104,13 +104,13 @@ class IotIron(JlcBoardTop):
       self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
 
       (self.spk_drv, self.spk), _ = self.chain(
-        self.mcu.with_mixin(IoControllerI2s()).i2s.request('speaker'),
+        self.mcu.with_mixin(IoControllerI2s()).i2s.request('spk'),
         imp.Block(Max98357a()),
         self.Block(Speaker())
       )
 
       # debugging LEDs
-      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('led'))
+      (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))
 
 
     # IRON POWER SUPPLY
@@ -189,16 +189,28 @@ class IotIron(JlcBoardTop):
       instance_values=[
         (['refdes_prefix'], 'I'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          'vusb_sense=38',
-          'led=39',
-          'i2c.sda=33',
-          'i2c.scl=34',
-          'pd_int=35',
-          # 'led=_GPIO9_STRAP',
-          #
-          # 'enc_sw=25',
-          # 'enc_b=16',
-          # 'enc_a=26',
+          'vusb_sense=39',
+          'i2c.sda=34',
+          'i2c.scl=35',
+          'pd_int=38',
+
+          'spk.sd=33',
+          'spk.sck=32',
+          'spk.ws=31',
+
+          'pwm_low=4',
+          'pwm_high=5',
+
+          'iron_vsense=6',
+          'iron_isense=7',
+          'thermocouple=12',
+
+          'enc_a=8',
+          'enc_b=9',
+          'enc_sw=10',
+          'oled_reset=11',
+
+          'led=_GPIO0_STRAP',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
