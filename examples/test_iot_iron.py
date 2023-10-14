@@ -71,7 +71,7 @@ class IotIron(JlcBoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
       self.mcu.with_mixin(IoControllerWifi())
-      self.i2c = self.mcu.i2c.request()
+      self.i2c = self.mcu.i2c.request('i2c')
       (self.i2c_pull, ), _ = self.chain(self.i2c, imp.Block(I2cPullup()))
 
       # power input
@@ -81,8 +81,8 @@ class IotIron(JlcBoardTop):
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
       self.connect(self.i2c, self.pd.i2c)
 
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
-                                       self.mcu.usb.request())
+      (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
+                                                    self.mcu.usb.request())
 
       (self.vusb_sense, ), _ = self.chain(
         self.vusb,
@@ -110,7 +110,7 @@ class IotIron(JlcBoardTop):
       )
 
       # debugging LEDs
-      (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))
+      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('led'))
 
 
     # IRON POWER SUPPLY
@@ -189,7 +189,11 @@ class IotIron(JlcBoardTop):
       instance_values=[
         (['refdes_prefix'], 'I'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          # 'vusb_sense=4',
+          'vusb_sense=38',
+          'led=39',
+          'i2c.sda=33',
+          'i2c.scl=34',
+          'pd_int=35',
           # 'led=_GPIO9_STRAP',
           #
           # 'enc_sw=25',
