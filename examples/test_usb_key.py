@@ -3,6 +3,34 @@ import unittest
 from edg import *
 
 
+class StTscSenseChannel(Block):
+  """Sense channel for STM micros' TSC peripheral."""
+  def __init__(self):
+    super().__init__()
+    self.io = self.Port(DigitalBidir.empty(), [Input])
+
+  def contents(self):
+    super().contents()
+    self.res = self.Block(Resistor(resistance=10*kOhm(tol=0.05)))  # recommended by ST
+    self.connect(self.io, self.res.a.adapt_to(DigitalBidir()))  # ideal
+    self.load = self.Block(DummyPassive())  # avoid ERC
+    self.connect(self.res.b, self.load.io)
+
+
+class StTscReference(Block):
+  """Reference capacitor for STM micros' TSC peripheral."""
+  def __init__(self):
+    super().__init__()
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.io = self.Port(DigitalBidir.empty(), [Input])
+
+  def contents(self):
+    super().contents()
+    self.cap = self.Block(Capacitor(10*nFarad(tol=0.2), voltage=self.io.link().voltage))
+    self.connect(self.cap.pos.adapt_to(DigitalBidir()), self.io)
+    self.connect(self.cap.neg.adapt_to(Ground()), self.gnd)
+
+
 class UsbKey(JlcBoardTop):
   """USB dongle with the PCB as the USB-A contact surface and a microcontroller on the opposite side.
   Similar circuitry and same pinning as the Solokeys Somu: https://github.com/solokeys/solo-hw/tree/master/solo
@@ -35,11 +63,19 @@ class UsbKey(JlcBoardTop):
 
       (self.rgb, ), _ = self.chain(imp.Block(IndicatorSinkRgbLed()), self.mcu.gpio.request_vector('rgb'))
 
+      (self.ts1, ), _ = self.chain(self.mcu.gpio.request('touch1'), imp.Block(StTscSenseChannel()))
+      (self.ts2, ), _ = self.chain(self.mcu.gpio.request('touch2'), imp.Block(StTscSenseChannel()))
+      (self.tss, ), _ = self.chain(self.mcu.gpio.request('ref'), imp.Block(StTscReference()))
+
   def multipack(self) -> None:
-    self.packed_cap = self.PackedBlock(CombinedCapacitor())
-    self.pack(self.packed_cap.elements.request('0'), ['mcu', 'vdda_cap0', 'cap'])
-    self.pack(self.packed_cap.elements.request('1'), ['mcu', 'vdda_cap1', 'cap'])
-    self.pack(self.packed_cap.elements.request('2'), ['mcu', 'vdd_cap[0]', 'cap'])
+    self.packed_mcu_vdda_cap = self.PackedBlock(CombinedCapacitor())
+    self.pack(self.packed_mcu_vdda_cap.elements.request('0'), ['mcu', 'vdda_cap0', 'cap'])
+    self.pack(self.packed_mcu_vdda_cap.elements.request('1'), ['mcu', 'vdda_cap1', 'cap'])
+    self.pack(self.packed_mcu_vdda_cap.elements.request('2'), ['mcu', 'vdd_cap[0]', 'cap'])
+
+    self.packed_mcu_vdd1_cap = self.PackedBlock(CombinedCapacitor())
+    self.pack(self.packed_mcu_vdd1_cap.elements.request('0'), ['reg_3v3', 'out_cap', 'cap'])
+    self.pack(self.packed_mcu_vdd1_cap.elements.request('1'), ['mcu', 'vdd_cap[1]', 'cap'])
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
