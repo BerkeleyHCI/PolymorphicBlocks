@@ -123,7 +123,7 @@ class IotIron(JlcBoardTop):
         # want a high output ripple limit so the converter turns off fast to read the thermocouple
         imp.Block(CustomSyncBuckConverter(output_voltage=(5, 5) * Volt, pwm_frequency=200 * kHertz(tol=0),
                                           input_ripple_limit=1*Volt,
-                                          output_ripple_limit=1*Volt)),
+                                          output_ripple_limit=0.25*Volt)),
         self.Block(VoltageTestPoint())
       )
       self.conv_out = self.connect(self.conv.pwr_out)
