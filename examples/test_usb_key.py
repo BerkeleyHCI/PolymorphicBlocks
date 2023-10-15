@@ -43,6 +43,7 @@ class UsbKey(JlcBoardTop):
         (['reg_3v3'], Lp5907),
       ],
       class_refinements=[
+        (RgbLedCommonAnode, Smt0404RgbLed),
         (SwdCortexTargetHeader, SwdCortexTargetTagConnect),
         (TagConnect, TagConnectNonLegged),
       ],

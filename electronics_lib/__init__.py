@@ -10,7 +10,7 @@ from .GenericCapacitor import GenericMlcc
 from .JlcCapacitor import JlcCapacitor
 from .JlcInductor import JlcInductor
 from .JlcFerriteBead import JlcFerriteBead
-from .Leds import SmtLed, ThtLed, SmtRgbLed, ThtRgbLed
+from .Leds import SmtLed, ThtLed, Smt0606RgbLed, Smt0404RgbLed, ThtRgbLed
 from .JlcLed import JlcLed
 from .JlcDiode import JlcDiode, JlcZenerDiode
 from .JlcBjt import JlcBjt

@@ -28,7 +28,7 @@ class ThtLed(Led, FootprintBlock):
     )
 
 
-class SmtRgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
+class Smt0606RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
   def contents(self):
     super().contents()
     self.footprint(
@@ -42,6 +42,23 @@ class SmtRgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
       mfr='Everlight Electronics Co Ltd', part='EAST1616RGBB2'
     )
     self.assign(self.lcsc_part, 'C264517')
+    self.assign(self.actual_basic_part, False)
+
+
+class Smt0404RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
+  def contents(self):
+    super().contents()
+    self.footprint(
+      'D', 'LED_SMD:LED_Lumex_SML-LX0404SIUPGUSB',
+      {
+        '1': self.a,
+        '2': self.k_red,
+        '3': self.k_green,
+        '4': self.k_blue,
+      },
+      mfr='Foshan NationStar Optoelectronics', part='FC-B1010RGBT-HG'
+    )
+    self.assign(self.lcsc_part, 'C158099')
     self.assign(self.actual_basic_part, False)
 
 
