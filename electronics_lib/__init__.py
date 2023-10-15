@@ -84,7 +84,7 @@ from .IoExpander_Pcf8574 import Pcf8574
 from .Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector
 from .FanConnector import CpuFanConnector, CpuFanPwmControl
 from .CanBlocks import Pesd1can
-from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbMicroBReceptacle
+from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbAPlugPads, UsbMicroBReceptacle
 from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
 from .Fusb302b import Fusb302b
 from .Connector_Banana import Ct3151, Fcr7350

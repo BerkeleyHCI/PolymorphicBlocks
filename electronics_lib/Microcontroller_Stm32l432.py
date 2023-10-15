@@ -142,7 +142,7 @@ class Stm32l432Base_Device(IoControllerI2cTarget, IoControllerDac, IoControllerC
             PeripheralFixedResource('CAN', CanControllerPort(DigitalBidir.empty()), {
                 'tx': ['PA12'], 'rx': ['PA11']
             }),
-            PeripheralFixedResource('USB', UsbDevicePort(), {
+            PeripheralFixedResource('USB', UsbDevicePort.empty(), {
                 'dp': ['PA12'], 'dm': ['PA11']
             }),
             PeripheralFixedResource('SPI3', spi_model, {
@@ -186,7 +186,7 @@ class Stm32l432k_Device(Stm32l432Base_Device):
         'PA2': '8',
         'PA3': '9',
         'PA4': '10',
-        'Pa5': '11',
+        'PA5': '11',
         'PA6': '12',
 
         'PA7': '13',
