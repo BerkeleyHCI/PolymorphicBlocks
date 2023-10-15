@@ -205,9 +205,9 @@ class IotIron(JlcBoardTop):
           'iron_isense=7',
           'thermocouple=12',
 
-          'enc_a=8',
+          'enc_a=10',
           'enc_b=9',
-          'enc_sw=10',
+          'enc_sw=8',
           'oled_reset=11',
 
           'led=_GPIO0_STRAP',
