@@ -61,12 +61,7 @@
           "width": 0.16
         }
       ],
-      "drc_exclusions": [
-        "hole_clearance|133095000|67100000|0cbe3c29-7018-4bb7-b046-a755a7fbe029|94b80913-9f8e-4b47-bd0a-48517a219d50",
-        "hole_clearance|133095000|67300000|0cbe3c29-7018-4bb7-b046-a755a7fbe029|74b2a5bb-d8a6-4303-93f3-e1b8529fe83f",
-        "hole_clearance|133095000|72700000|5a569a00-34a9-4ae3-99ee-20b669b164f7|9dd1be5f-4931-4f96-9d3a-99f0bd1413bb",
-        "hole_clearance|133095000|72900000|5a569a00-34a9-4ae3-99ee-20b669b164f7|747f459a-e80a-449b-aea6-e4605f08b434"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
@@ -221,7 +216,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "IotIron.kicad_pro",
+    "filename": "UsbKey.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -302,7 +297,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "IotIron.net",
+      "netlist": "UsbKey.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""

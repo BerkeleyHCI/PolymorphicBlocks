@@ -33,7 +33,6 @@ class UsbKey(JlcBoardTop):
 
       self.connect(self.mcu.usb.request('usb'), self.usb.usb)
 
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
       (self.rgb, ), _ = self.chain(imp.Block(IndicatorSinkRgbLed()), self.mcu.gpio.request_vector('rgb'))
 
 
