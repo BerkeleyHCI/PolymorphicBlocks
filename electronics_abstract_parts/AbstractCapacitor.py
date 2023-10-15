@@ -262,3 +262,50 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     if pwr is not None:
       cast(Block, builder.get_enclosing_block()).connect(pwr, self.pwr)
     return self
+
+
+class CombinedCapacitorElement(Capacitor):  # to avoid an abstract part error
+  def contents(self):
+    super().contents()
+    self.assign(self.actual_capacitance, self.capacitance)  # fake it, since a combined capacitance is handwavey
+
+
+class CombinedCapacitor(PassiveComponent, MultipackBlock, GeneratorBlock):
+  """A packed capacitor that combines multiple individual capacitors into a single component,
+  with the sum of or taking the max of the constituent capacitances."""
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.elements = self.PackedPart(PackedBlockArray(CombinedCapacitorElement()))
+    self.pos = self.PackedExport(self.elements.ports_array(lambda x: x.pos))
+    self.neg = self.PackedExport(self.elements.ports_array(lambda x: x.neg))
+    self.capacitances = self.PackedParameter(self.elements.params_array(lambda x: x.capacitance))
+    self.voltages = self.PackedParameter(self.elements.params_array(lambda x: x.voltage))
+    self.voltage_rating_deratings = self.PackedParameter(self.elements.params_array(lambda x: x.voltage_rating_derating))
+    self.exact_capacitances = self.PackedParameter(self.elements.params_array(lambda x: x.exact_capacitance))
+
+    self.actual_capacitance = self.Parameter(RangeExpr())
+    self.actual_voltage_rating = self.Parameter(RangeExpr())
+    self.unpacked_assign(self.elements.params(lambda x: x.actual_voltage_rating), self.actual_voltage_rating)
+
+    self.generator_param(self.pos.requested(), self.neg.requested())
+
+
+  def generate(self):
+    super().generate()
+    self.cap = self.Block(Capacitor(self.capacitances.sum(), voltage=self.voltages.hull(),
+                                    exact_capacitance=self.exact_capacitances.all(),
+                                    voltage_rating_derating=self.voltage_rating_deratings.min()))
+    self.assign(self.actual_voltage_rating, self.cap.actual_voltage_rating)
+    self.assign(self.actual_capacitance, self.cap.actual_capacitance)
+
+    self.pos_merge = self.Block(PackedPassive())
+    self.neg_merge = self.Block(PackedPassive())
+    self.connect(self.pos_merge.src, self.cap.pos)
+    self.connect(self.neg_merge.src, self.cap.neg)
+
+    requested = self.get(self.pos.requested())
+    assert requested == self.get(self.pos.requested()) == self.get(self.neg.requested())
+    for i in requested:
+      self.connect(self.pos.append_elt(Passive.empty(), i), self.pos_merge.elts.request(i))
+      self.connect(self.neg.append_elt(Passive.empty(), i), self.neg_merge.elts.request(i))

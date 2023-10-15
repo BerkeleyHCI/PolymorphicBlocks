@@ -35,6 +35,11 @@ class UsbKey(JlcBoardTop):
 
       (self.rgb, ), _ = self.chain(imp.Block(IndicatorSinkRgbLed()), self.mcu.gpio.request_vector('rgb'))
 
+  def multipack(self) -> None:
+    self.packed_cap = self.PackedBlock(CombinedCapacitor())
+    self.pack(self.packed_cap.elements.request('0'), ['mcu', 'vdda_cap0', 'cap'])
+    self.pack(self.packed_cap.elements.request('1'), ['mcu', 'vdda_cap1', 'cap'])
+    self.pack(self.packed_cap.elements.request('2'), ['mcu', 'vdd_cap[0]', 'cap'])
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(

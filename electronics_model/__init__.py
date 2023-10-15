@@ -31,7 +31,7 @@ from .I2sPort import I2sController, I2sTargetReceiver, I2sLink
 
 from .ConnectedGenerator import VoltageSourceConnected, DigitalSourceConnected
 
-from .CircuitPackingBlock import NetPackingBlock, PackedVoltageSource
+from .CircuitPackingBlock import NetPackingBlock, PackedPassive, PackedVoltageSource
 
 from .PartParserUtil import PartParserUtil
 

@@ -1,3 +1,5 @@
+from typing import Dict
+
 from electronics_abstract_parts import *
 from electronics_lib.JlcPart import JlcPart
 
@@ -493,7 +495,7 @@ class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, PartsTableFootpri
 
     self.assign(self.actual_target_voltage, part_output_voltage)
     if footprint == 'Package_TO_SOT_SMD:SOT-23-5':
-      pinning = {
+      pinning: Dict[str, CircuitPort] = {
         '1': self.pwr_in,
         '2': self.gnd,
         '3': self.en,

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import *
 from edg_core import *
 
+from .PassivePort import Passive
 from .VoltagePorts import VoltageSource, VoltageSink
 
 
@@ -14,6 +14,21 @@ class NetPackingBlock(InternalBlock, Block):
       'src': self._ports.name_of(source),
       'dst': self._ports.name_of(dst)
     })
+
+
+class PackedPassive(NetPackingBlock, GeneratorBlock):
+  def __init__(self):
+    super().__init__()
+    self.src = self.Port(Passive.empty())
+    self.elts = self.Port(Vector(Passive.empty()))
+    self.generator_param(self.elts.requested())
+    self.packed(self.src, self.elts)
+
+  def generate(self):
+    super().generate()
+    self.elts.defined()
+    for request in self.get(self.elts.requested()):
+      self.elts.append_elt(Passive(), request)
 
 
 class PackedVoltageSource(NetPackingBlock, GeneratorBlock):

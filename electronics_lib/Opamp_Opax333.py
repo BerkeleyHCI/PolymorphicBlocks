@@ -68,7 +68,6 @@ class Opa2333(MultipackBlock, GeneratorBlock):
 
   def generate(self):
     super().generate()
-
     self.ic = self.Block(Opa2333_Device())
 
     # Datasheet section 9: recommend 0.1uF bypass capacitors close to power supply pins
