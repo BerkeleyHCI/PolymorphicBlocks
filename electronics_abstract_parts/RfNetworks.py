@@ -95,5 +95,4 @@ class PiLowPassFilter(AnalogFilter, GeneratorBlock):
         self.l = self.Block(Inductor(inductance=l*Henry(tol=tolerance), current=self.current))
         self.connect(self.input, self.c1.pos, self.l.a)
         self.connect(self.l.b, self.c2.pos, self.output)
-        self.connect(self.c1.neg, self.c2.neg)
-        self.connect(self.c1.neg.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd, self.c1.neg.adapt_to(Ground()), self.c2.neg.adapt_to(Ground()))

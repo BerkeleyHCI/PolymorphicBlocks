@@ -295,15 +295,15 @@ class CombinedCapacitor(PassiveComponent, MultipackBlock, GeneratorBlock):
 
   def generate(self):
     super().generate()
+    capacitance: RangeLike = self.capacitances.sum()
     if self.get(self.extend_upper):
-      capacitance: RangeLike = (self.capacitances.sum().lower(), float('inf'))
-    else:
-      capacitance = self.capacitances.sum()
+      capacitance = (capacitance.lower(), float('inf'))
     self.cap = self.Block(Capacitor(capacitance, voltage=self.voltages.hull(),
                                     exact_capacitance=self.exact_capacitances.all(),
                                     voltage_rating_derating=self.voltage_rating_deratings.min()))
     self.assign(self.actual_voltage_rating, self.cap.actual_voltage_rating)
     self.assign(self.actual_capacitance, self.cap.actual_capacitance)
+    self.require(self.exact_capacitances.all_equal())
 
     self.pos_merge = self.Block(PackedPassive())
     self.neg_merge = self.Block(PackedPassive())

@@ -78,7 +78,6 @@ class AnalogLowPassRc(DigitalFilter, Block):
       current_draw=self.output.link().current_drawn
     )))
     self.connect(self.output, self.rc.output.adapt_to(AnalogSource(
-      current_limits=RangeExpr.ALL,
       voltage_out=self.input.link().voltage,
       signal_out=self.input.link().signal
     )))
