@@ -174,7 +174,7 @@ class Stm32l432k_Device(Stm32l432Base_Device):
     """"STM32L432Kx in UFQFPN32 package."""
     SYSTEM_PIN_REMAP = {
         'Vdd': ['17', '1'],
-        'Vss': ['16', '32'],
+        'Vss': ['16', '32', '33'],  # recommended to connect EP to PCB ground
         'VddA': '5',
         'NRST': '4',
     }

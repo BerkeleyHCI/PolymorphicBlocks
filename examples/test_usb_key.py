@@ -67,6 +67,8 @@ class UsbKey(JlcBoardTop):
       (self.ts2, ), _ = self.chain(self.mcu.gpio.request('touch2'), imp.Block(StTscSenseChannel()))
       (self.tss, ), _ = self.chain(self.mcu.gpio.request('ref'), imp.Block(StTscReference()))
 
+      self.connect(self.mcu.gpio.request('b1_gnd'), self.mcu.gpio.request('c15_gnd'), self.usb.gnd.as_digital_source())
+
   def multipack(self) -> None:
     self.packed_mcu_vdda_cap = self.PackedBlock(CombinedCapacitor())
     self.pack(self.packed_mcu_vdda_cap.elements.request('0'), ['mcu', 'vdda_cap0', 'cap'])
@@ -90,13 +92,17 @@ class UsbKey(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          # 'touch1=PB4',
-          # 'touch2=PB5',
-          'rgb_red=PA3',
-          'rgb_green=PA2',
-          'rgb_blue=PA1',
+          'touch1=PB4',
+          'touch2=PB5',
+          'ref=PB6',
 
-          # TODO: PB1 is tied low, PC15 is grounded, PH3 is tied high (boot select), PB6 has cap connected
+          'rgb_red=PA1',
+          'rgb_green=PA2',
+          'rgb_blue=PA3',
+
+          # these are hard-tied in the reference and used to help routing here
+          'b1_gnd=PB1',
+          'c15_gnd=PC15',
         ]),
       ],
       class_values=[
