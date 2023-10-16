@@ -6,7 +6,7 @@ class CustomSyncBuckConverter(DiscreteBoostConverter):
     Because of the MOSFET body diode, will probably be fine-ish if the low side FET is not driven."""
     @init_in_parent
     def __init__(self, *args,
-                 pwm_frequency: RangeLike = (100, 1000)*kHertz,
+                 frequency: RangeLike = (100, 1000)*kHertz,
                  voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 1.0)*Ohm,
                  **kwargs):
         super().__init__(*args, **kwargs)
@@ -15,15 +15,16 @@ class CustomSyncBuckConverter(DiscreteBoostConverter):
         self.pwm_low = self.Port(DigitalSink.empty())
         self.pwm_high = self.Port(DigitalSink.empty())
 
-        self.assign(self.frequency, pwm_frequency)
+        self.frequency = self.ArgParameter(frequency)
         self.voltage_drop = self.ArgParameter(voltage_drop)
         self.rds_on = self.ArgParameter(rds_on)
 
     def contents(self):
         super().contents()
 
+        self.assign(self.actual_frequency, self.frequency)
         self.power_path = self.Block(BuckConverterPowerPath(
-            self.pwr_in.link().voltage, self.output_voltage, self.frequency,
+            self.pwr_in.link().voltage, self.output_voltage, self.actual_frequency,
             self.pwr_out.link().current_drawn, Range.all(),  # TODO model current limits from FETs
             inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                            self.ripple_current_factor,

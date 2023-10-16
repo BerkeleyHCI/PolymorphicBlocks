@@ -151,7 +151,7 @@ class SwitchingVoltageRegulator(VoltageRegulator):
     self.input_ripple_limit = self.ArgParameter(input_ripple_limit)
     self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
 
-    self.frequency = self.Parameter(RangeExpr())
+    self.actual_frequency = self.Parameter(RangeExpr())
 
 
 @abstract_block_default(lambda: IdealBuckConverter)

@@ -84,10 +84,10 @@ class Xc9142(Resettable, DiscreteBoostConverter, GeneratorBlock):
     ) as imp:
       self.ic = imp.Block(Xc9142_Device(self.output_voltage))
       self.connect(self.ic.vout, self.pwr_out)
-      self.assign(self.frequency, self.ic.actual_frequency)
+      self.assign(self.actual_frequency, self.ic.actual_frequency)
 
       self.power_path = imp.Block(BoostConverterPowerPath(
-        self.pwr_in.link().voltage, self.ic.vout.voltage_out, self.frequency,
+        self.pwr_in.link().voltage, self.ic.vout.voltage_out, self.actual_frequency,
         self.pwr_out.link().current_drawn, self.ic.actual_current_limit,
         inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                        self.ripple_current_factor,

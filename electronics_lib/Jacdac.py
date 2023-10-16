@@ -8,8 +8,8 @@ class JacdacDataLink(Link):
     """Link for the JD_DATA line"""
     def __init__(self) -> None:
         super().__init__()
-        self.nodes = self.Port(Vector(JacdacDataPort(DigitalBidir.empty())))
-        self.passives = self.Port(Vector(JacdacPassivePort()))
+        self.nodes = self.Port(Vector(JacdacDataPort.empty()))
+        self.passives = self.Port(Vector(JacdacPassivePort.empty()))
 
     def contents(self) -> None:
         super().contents()
