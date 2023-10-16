@@ -273,7 +273,8 @@ class CombinedCapacitorElement(Capacitor):  # to avoid an abstract part error
 class CombinedCapacitor(PassiveComponent, MultipackBlock, GeneratorBlock):
   """A packed capacitor that combines multiple individual capacitors into a single component,
   with the sum of or taking the max of the constituent capacitances."""
-  def __init__(self) -> None:
+  @init_in_parent
+  def __init__(self, *, extend_upper: BoolLike = False) -> None:
     super().__init__()
 
     self.elements = self.PackedPart(PackedBlockArray(CombinedCapacitorElement()))
@@ -288,12 +289,17 @@ class CombinedCapacitor(PassiveComponent, MultipackBlock, GeneratorBlock):
     self.actual_voltage_rating = self.Parameter(RangeExpr())
     self.unpacked_assign(self.elements.params(lambda x: x.actual_voltage_rating), self.actual_voltage_rating)
 
-    self.generator_param(self.pos.requested(), self.neg.requested())
+    self.extend_upper = self.ArgParameter(extend_upper)
+    self.generator_param(self.pos.requested(), self.neg.requested(), self.extend_upper)
 
 
   def generate(self):
     super().generate()
-    self.cap = self.Block(Capacitor(self.capacitances.sum(), voltage=self.voltages.hull(),
+    if self.get(self.extend_upper):
+      capacitance: RangeLike = (self.capacitances.sum().lower(), float('inf'))
+    else:
+      capacitance = self.capacitances.sum()
+    self.cap = self.Block(Capacitor(capacitance, voltage=self.voltages.hull(),
                                     exact_capacitance=self.exact_capacitances.all(),
                                     voltage_rating_derating=self.voltage_rating_deratings.min()))
     self.assign(self.actual_voltage_rating, self.cap.actual_voltage_rating)

@@ -75,9 +75,10 @@ class UsbKey(JlcBoardTop):
     self.pack(self.packed_mcu_vdda_cap.elements.request('1'), ['mcu', 'vdda_cap1', 'cap'])
     self.pack(self.packed_mcu_vdda_cap.elements.request('2'), ['mcu', 'vdd_cap[0]', 'cap'])
 
-    self.packed_mcu_vdd1_cap = self.PackedBlock(CombinedCapacitor())
+    self.packed_mcu_vdd1_cap = self.PackedBlock(CombinedCapacitor(extend_upper=True))
     self.pack(self.packed_mcu_vdd1_cap.elements.request('0'), ['reg_3v3', 'out_cap', 'cap'])
-    self.pack(self.packed_mcu_vdd1_cap.elements.request('1'), ['mcu', 'vdd_cap[1]', 'cap'])
+    self.pack(self.packed_mcu_vdd1_cap.elements.request('1'), ['mcu', 'vdd_cap_bulk', 'cap'])
+    self.pack(self.packed_mcu_vdd1_cap.elements.request('2'), ['mcu', 'vdd_cap[1]', 'cap'])
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -105,10 +106,11 @@ class UsbKey(JlcBoardTop):
           'c15_gnd=PC15',
         ]),
         (['mcu', 'swd_connect_reset'], False),
+        (['packed_mcu_vdd1_cap', 'cap', 'capacitance_minimum_size'], False),
       ],
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
-        (SmdStandardPackage, ["smd_min_package"], "0402"),
+        (SmdStandardPackage, ["smd_min_package"], '0402'),
         (Lp5907, ['ic', 'footprint_spec'], 'Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm'),
       ]
     )

@@ -29,6 +29,12 @@ class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableS
     'Capacitor_SMD:C_1812_4532Metric': 0.04,  # arbitrary, copy from 1206
   }
 
+  @init_in_parent
+  def __init__(self, *args, capacitance_minimum_size: BoolLike = True, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.capacitance_minimum_size = self.ArgParameter(capacitance_minimum_size)
+    self.generator_param(self.capacitance_minimum_size)
+
   @classmethod
   def _make_table(cls) -> PartsTable:
     CAPACITOR_MATCHES = {
@@ -45,21 +51,8 @@ class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableS
       try:
         # handle the footprint first since this is the most likely to filter
         footprint = cls.PACKAGE_FOOTPRINT_MAP[row[cls._PACKAGE_HEADER]]
-
         extracted_values = cls.parse(row[cls.DESCRIPTION_COL], CAPACITOR_MATCHES)
-
         nominal_capacitance = PartParserUtil.parse_value(extracted_values['nominal_capacitance'][1], 'F')
-
-        # enforce minimum packages, note the cutoffs are exclusive
-        if nominal_capacitance > 10e-6 and footprint not in [
-          'Capacitor_SMD:C_1206_3216Metric',
-        ]:
-          return None
-        elif nominal_capacitance > 1e-6 and footprint not in [
-          'Capacitor_SMD:C_0805_2012Metric',
-          'Capacitor_SMD:C_1206_3216Metric',
-        ]:
-          return None
 
         new_cols[cls.KICAD_FOOTPRINT] = footprint
         new_cols[cls.CAPACITANCE] = PartParserUtil.parse_abs_tolerance(extracted_values['tolerance'][1],
@@ -77,6 +70,26 @@ class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableS
         return None
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+  def _table_postprocess(self, table: PartsTable) -> PartsTable:
+    def filter_minimum_size(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      # enforce minimum packages, note the cutoffs are exclusive
+      nominal_capacitance = row[self.NOMINAL_CAPACITANCE]
+      footprint = row[self.KICAD_FOOTPRINT]
+      if nominal_capacitance > 10e-6 and footprint not in [
+          'Capacitor_SMD:C_1206_3216Metric',
+        ]:
+        return None
+      elif nominal_capacitance > 1e-6 and footprint not in [
+        'Capacitor_SMD:C_0805_2012Metric',
+        'Capacitor_SMD:C_1206_3216Metric',
+      ]:
+        return None
+      return {}
+    table = super()._table_postprocess(table)
+    if self.get(self.capacitance_minimum_size):
+      table = table.map_new_columns(filter_minimum_size)
+    return table
 
   @classmethod
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
