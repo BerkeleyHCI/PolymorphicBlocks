@@ -48,7 +48,7 @@ class Rp2040_Device(IoControllerI2cTarget, IoControllerUsb, BaseIoControllerPinm
                           optional=True)
 
     self.swd = self.Port(SwdTargetPort.empty())
-    self.run = self.Port(DigitalSink.empty())
+    self.run = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
     self._io_ports.insert(0, self.swd)
 
   def contents(self) -> None:

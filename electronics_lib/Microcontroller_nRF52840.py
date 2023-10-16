@@ -206,7 +206,7 @@ class Nrf52840_Base(Nrf52840_Ios, InternalSubcircuit, GeneratorBlock):
                               optional=True)
 
     self.swd = self.Port(SwdTargetPort.empty())
-    self.nreset = self.Port(DigitalSink.from_bidir(self._dio_model(self.gnd, self.pwr)))
+    self.nreset = self.Port(DigitalSink.from_bidir(self._dio_model(self.gnd, self.pwr)), optional=True)
     self._io_ports.insert(0, self.swd)
 
 

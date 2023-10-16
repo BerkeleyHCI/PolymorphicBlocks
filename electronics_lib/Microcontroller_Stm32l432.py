@@ -29,7 +29,7 @@ class Stm32l432Base_Device(IoControllerI2cTarget, IoControllerDac, IoControllerC
         self.swd = self.Port(SwdTargetPort.empty())
         self._io_ports.insert(0, self.swd)
 
-        self.nrst = self.Port(DigitalBidir.empty())
+        self.nrst = self.Port(DigitalBidir.empty(), optional=True)  # internally pulled up
 
     def _system_pinmap(self) -> Dict[str, CircuitPort]:
         return VariantPinRemapper({  # Pin/peripheral resource definitions (section 4)

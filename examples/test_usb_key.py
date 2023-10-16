@@ -104,6 +104,7 @@ class UsbKey(JlcBoardTop):
           'b1_gnd=PB1',
           'c15_gnd=PC15',
         ]),
+        (['mcu', 'swd_connect_reset'], False),
       ],
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
