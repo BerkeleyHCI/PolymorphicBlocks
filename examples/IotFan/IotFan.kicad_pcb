@@ -5209,7 +5209,7 @@
       (stroke (width 0.16) (type solid)) (layer "B.Cu") (tstamp 3e817d14-0a1d-45c7-a7c3-11742347d592))
     (fp_arc (start 0.820058 -1.43645) (mid 0.75756 -1.49895) (end 0.820058 -1.56145)
       (stroke (width 0.16) (type solid)) (layer "B.Cu") (tstamp f3755c8d-6343-4c42-9430-a25e58656f7a))
-    (fp_arc (start 0.869178 1.169286) (mid 1.000175 1.003686) (end 1.178836 0.891151)
+    (fp_arc (start 0.869178 1.169286) (mid 1.000176 1.003686) (end 1.178836 0.891151)
       (stroke (width 0.16) (type solid)) (layer "B.Cu") (tstamp 6fe0ce59-95e2-44bf-9b9e-44b72a02c87d))
     (fp_arc (start 1.093749 -1.89443) (mid 0.000001 2.187499) (end -1.09375 -1.894429)
       (stroke (width 0.2) (type solid)) (layer "B.Cu") (tstamp 0a977bfb-3388-4ab8-8fa4-d4a8a8db8377))
@@ -5870,21 +5870,21 @@
 
   (gr_poly
     (pts
-      (xy 118 134)
+      (xy 116 134)
       (xy 111 134)
       (xy 107 138)
-      (xy 107 143)
-      (xy 118 143)
+      (xy 107 141)
+      (xy 116 141)
     )
 
     (stroke (width 0.254) (type solid)) (fill solid) (layer "B.Mask") (tstamp b33a5776-84e9-43f5-81c0-0ba8f57bea05))
   (gr_poly
     (pts
-      (xy 118 134)
+      (xy 116 134)
       (xy 111 134)
       (xy 107 138)
-      (xy 107 143)
-      (xy 118 143)
+      (xy 107 141)
+      (xy 116 141)
     )
 
     (stroke (width 0.254) (type solid)) (fill solid) (layer "F.Mask") (tstamp 4102360f-9794-4f4c-96d9-31e289cf33de))
@@ -41211,9 +41211,9 @@
       (pts
         (xy 107 138)
         (xy 111 134)
-        (xy 117 134)
-        (xy 117 142)
-        (xy 107 142)
+        (xy 116 134)
+        (xy 116 141)
+        (xy 107 141)
       )
     )
   )
