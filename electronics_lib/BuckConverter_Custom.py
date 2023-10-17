@@ -39,11 +39,14 @@ class CustomSyncBuckConverter(DiscreteBoostConverter):
 
         self.sw = self.Block(FetHalfBridge(frequency=self.frequency))
         self.connect(self.sw.gnd, self.gnd)
-        self.connect(self.sw.pwr, self.pwr_in)
+        (self.sw_in_force, ), _ = self.chain(  # use average current draw for boundary ports
+            self.pwr_in,
+            self.Block(ForcedVoltageCurrentDraw(self.power_path.switch.link().current_drawn)),
+            self.sw.pwr)
         self.connect(self.sw.pwr_logic, self.pwr_logic)
         self.connect(self.sw.low_ctl, self.pwm_low)
         self.connect(self.sw.high_ctl, self.pwm_high)
-        (self.iforce, ), _ = self.chain(
+        (self.sw_force, ), _ = self.chain(
             self.sw.out,  # current draw used to size FETs, size for peak current
             self.Block(ForcedVoltageCurrentDraw(self.power_path.output_current
                                                 + self.power_path.actual_inductor_current_ripple / 2)),
