@@ -307,11 +307,7 @@ class CombinedCapacitor(PassiveComponent, MultipackBlock, GeneratorBlock):
 
     self.pos_merge = self.Block(PackedPassive())
     self.neg_merge = self.Block(PackedPassive())
-    self.connect(self.pos_merge.src, self.cap.pos)
-    self.connect(self.neg_merge.src, self.cap.neg)
-
-    requested = self.get(self.pos.requested())
-    assert requested == self.get(self.pos.requested()) == self.get(self.neg.requested())
-    for i in requested:
-      self.connect(self.pos.append_elt(Passive.empty(), i), self.pos_merge.elts.request(i))
-      self.connect(self.neg.append_elt(Passive.empty(), i), self.neg_merge.elts.request(i))
+    self.connect(self.cap.pos, self.pos_merge.merged)
+    self.connect(self.cap.neg, self.neg_merge.merged)
+    self.connect(self.pos, self.pos_merge.elts)
+    self.connect(self.neg, self.neg_merge.elts)
