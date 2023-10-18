@@ -128,10 +128,20 @@ class IotIron(JlcBoardTop):
       )
       self.conv_out = self.connect(self.conv.pwr_out)
       self.connect(self.conv.pwr_logic, self.vgate)
-      self.connect(self.conv.pwm_low, self.mcu.gpio.request('pwm_low'))
-      self.connect(self.conv.pwm_high, self.mcu.gpio.request('pwm_high'))
+      pull_model = PulldownResistor(10*kOhm(tol=0.05))
+      rc_model = DigitalLowPassRc(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))
+      (self.low_pull, self.low_rc), _ = self.chain(self.mcu.gpio.request('pwm_low'),
+                                                   imp.Block(pull_model),
+                                                   imp.Block(rc_model),
+                                                   self.conv.pwm_low)
+      (self.high_pull, self.high_rc), _ = self.chain(self.mcu.gpio.request('pwm_high'),
+                                                    imp.Block(pull_model),
+                                                    imp.Block(rc_model),
+                                                    self.conv.pwm_high)
       self.tp_pwm_l = self.Block(DigitalTestPoint()).connected(self.conv.pwm_low)
       self.tp_pwm_h = self.Block(DigitalTestPoint()).connected(self.conv.pwm_high)
+
+      (self.touch_sink, ), self.touch = self.chain(self.mcu.gpio.request('touch'), imp.Block(DummyDigitalSink()))
 
     self.iron = self.Block(IronConnector())
     self.connect(self.conv.pwr_out, self.iron.pwr)
@@ -211,6 +221,7 @@ class IotIron(JlcBoardTop):
           'oled_reset=11',
 
           'led=_GPIO0_STRAP',
+          'touch=GPIO3',  # experimental
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
