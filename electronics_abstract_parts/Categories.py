@@ -217,12 +217,6 @@ class Protection(Block):
 
 
 @abstract_block
-class TvsDiode(Protection):
-  """Any kind of TVS diode, including multiple channel configurations."""
-  pass
-
-
-@abstract_block
 class Testing(Block):
   """Blocks for testing (eg, test points) and programming (eg, programming headers)."""
   pass

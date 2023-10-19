@@ -15,10 +15,12 @@ PART_ROTATIONS = {
   'C425057': -90,  # resistor array 750ohm 4x0603
   'C20197': -90,  # resistor array 1k 4x0603
   'C8734': -90,  # STM32F103C8T6
+  'C432211': 90,  # STM32G031GBU6
   'C91199': 180,  # VL53L0X
   'C27396': -90,  # TPA2005D1
   'C12084': -90,  # SN65HVD230DR
   'C264517': 90,  # 0606 RGB LED
+  'C158099': 90,  # 0404 RGB LED
   'C86832': -90,  # PCF8574 IO expander
   'C500769': -90,  # AP3418 buck converter
   'C50506': -90,  # DRV8833 dual motor driver
@@ -28,6 +30,9 @@ PART_ROTATIONS = {
   'C527684': -90,  # TPS54202H SOT-23-6
   'C155534': -90,  # AL8861 MSOP-8
   'C7722': -90,  # TPS61040 SOT-23-5
+  'C216623': 0,  # XC6209 1.5 SOT-23-5
+  'C216624': 0,  # XC6209 3.3 SOT-23-5
+  'C222571': 0,  # XC6209 5.0 SOT-23-5
 
   'C2962219': -90,  # 2x5 1.27mm header shrouded
   'C126830': 90,  # "SOT-23" USB ESD protector
@@ -42,6 +47,7 @@ PART_ROTATIONS = {
   'C2890035': -90,  # SK6805-EC15
   'C125972': 90,  # BME680
   'C2682619': 180,  # MAX98357 BGA
+  'C910544': -90,  # MAX98357 QFN
 
   'C262645': 180,  # AFC07 FPC 30
   'C262669': 180,  # AFC01 FPC 24
@@ -62,6 +68,7 @@ _FOOTPRINT_ROTATIONS = {
   'Package_TO_SOT_SMD:SOT-223-3_TabPin2': 180,
   'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': -90,
   'Package_SO:SOIC-8_5.23x5.23mm_P1.27mm': -90,
+  'Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm': -90,
 
   'OptoDevice:Osram_BPW34S-SMD': 180,
 

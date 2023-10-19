@@ -25,7 +25,7 @@ class IsolatedCanTransceiver(CanTransceiver):
 
 
 @abstract_block
-class CanEsdDiode(TvsDiode):
+class CanEsdDiode(Protection, Block):
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])

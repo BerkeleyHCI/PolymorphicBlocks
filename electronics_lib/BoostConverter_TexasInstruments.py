@@ -49,7 +49,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
     super().contents()
 
     self.require(self.output_voltage >= self.pwr_in.link().voltage)  # it's a boost converter
-    self.assign(self.frequency, 1*MHertz(tol=0))  # up to 1 MHz, can be lower
+    self.assign(self.actual_frequency, 1*MHertz(tol=0))  # up to 1 MHz, can be lower
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_in, [Power]),
@@ -106,7 +106,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
     )
     ramp_l_min = vin_fs_max * (vout_fs_max - vin_fs_max) / (1*MHertz * ipeak.lower() * vout_fs_max)
 
-    self.inductor = self.Block(Inductor((ramp_l_min, ramp_l_max), ipeak, self.frequency))
+    self.inductor = self.Block(Inductor((ramp_l_min, ramp_l_max), ipeak, self.actual_frequency))
     self.connect(self.pwr_in, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
       current_draw=self.pwr_out.link().current_drawn * self.pwr_out.link().voltage / self.pwr_in.link().voltage

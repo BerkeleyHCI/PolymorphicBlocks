@@ -1,3 +1,5 @@
+from typing import Dict
+
 from electronics_abstract_parts import *
 from electronics_lib.JlcPart import JlcPart
 
@@ -441,7 +443,8 @@ class Ap2210(VoltageRegulatorEnableWrapper, LinearRegulator):
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
+class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, PartsTableFootprint, PartsTablePart, GeneratorBlock,
+                    JlcPart, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
@@ -452,7 +455,7 @@ class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.assign(self.actual_dropout, (50, 250) * mVolt)
 
     self.output_voltage = self.ArgParameter(output_voltage)
-    self.generator_param(self.output_voltage)
+    self.generator_param(self.output_voltage, self.part, self.footprint_spec)
 
     self.en = self.Port(DigitalSink(
       voltage_limits=(0, 5.5) * Volt,
@@ -463,35 +466,56 @@ class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
   def generate(self):
     super().generate()
     parts = [  # output voltage, Table in 6.5 tolerance varies by output voltage
-      (Range.from_tolerance(1.2, 0.03), 'LP5907MFX-1.2/NOPB', 'C73478'),
-      (Range.from_tolerance(1.5, 0.03), 'LP5907MFX-1.5/NOPB', 'C133570'),
-      (Range.from_tolerance(1.8, 0.02), 'LP5907MFX-1.8/NOPB', 'C92498'),
-      (Range.from_tolerance(2.5, 0.02), 'LP5907MFX-2.5/NOPB', 'C165132'),
-      # (Range.from_tolerance(2.8, 0.02), 'LP5907MFX-2.8/NOPB', 'C186700'),
-      # (Range.from_tolerance(2.85, 0.02), 'LP5907MFX-2.85/NOPB', 'C2877840'),  # zero stock JLC
-      # (Range.from_tolerance(2.9, 0.02), 'LP5907MFX-2.9/NOPB', None),
-      (Range.from_tolerance(3.0, 0.02), 'LP5907MFX-3.0/NOPB', 'C475492'),
-      # (Range.from_tolerance(3.1, 0.02), 'LP5907MFX-3.1/NOPB', None),
-      # (Range.from_tolerance(3.2, 0.02), 'LP5907MFX-3.2/NOPB', None),
-      (Range.from_tolerance(3.3, 0.02), 'LP5907MFX-3.3/NOPB', 'C80670'),
-      (Range.from_tolerance(4.5, 0.02), 'LP5907MFX-4.5/NOPB', 'C529554'),
+      (Range.from_tolerance(1.2, 0.03), 'LP5907MFX-1.2/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', 'C73478'),
+      (Range.from_tolerance(1.5, 0.03), 'LP5907MFX-1.5/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', 'C133570'),
+      (Range.from_tolerance(1.8, 0.02), 'LP5907MFX-1.8/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', 'C92498'),
+      (Range.from_tolerance(2.5, 0.02), 'LP5907MFX-2.5/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', 'C165132'),
+      # (Range.from_tolerance(2.8, 0.02), 'LP5907MFX-2.8/NOPB' 'Package_TO_SOT_SMD:SOT-23-5',, 'C186700'),
+      # (Range.from_tolerance(2.85, 0.02), 'LP5907MFX-2.85/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', 'C2877840'),  # zero stock JLC
+      # (Range.from_tolerance(2.9, 0.02), 'LP5907MFX-2.9/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', None),
+      (Range.from_tolerance(3.0, 0.02), 'LP5907MFX-3.0/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', 'C475492'),
+      # (Range.from_tolerance(3.1, 0.02), 'LP5907MFX-3.1/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', None),
+      # (Range.from_tolerance(3.2, 0.02), 'LP5907MFX-3.2/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', None),
+      (Range.from_tolerance(3.3, 0.02), 'LP5907MFX-3.3/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', 'C80670'),
+      (Range.from_tolerance(4.5, 0.02), 'LP5907MFX-4.5/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', 'C529554'),
+
+      (Range.from_tolerance(1.8, 0.02), 'LP5907SNX-1.8/NOPB', 'Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm', 'C139378'),
+      (Range.from_tolerance(2.5, 0.02), 'LP5907SNX-2.5/NOPB', 'Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm', 'C133571'),
+      (Range.from_tolerance(2.9, 0.02), 'LP5907SNX-2.9/NOPB', 'Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm', 'C2870726'),
+      (Range.from_tolerance(3.3, 0.02), 'LP5907SNX-3.3/NOPB', 'Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm', 'C133572'),
     ]
     # TODO should prefer parts by closeness to nominal (center) specified voltage
+    output_voltage_spec = self.get(self.output_voltage)
+    footprint_spec = self.get(self.footprint_spec)
     suitable_parts = [part for part in parts
-                      if part[0] in self.get(self.output_voltage)]
+                      if part[0] in output_voltage_spec
+                      and (not footprint_spec or footprint_spec == part[2])]
     assert suitable_parts, "no regulator with compatible output"
-    part_output_voltage, part_number, jlc_number = suitable_parts[0]
+    part_output_voltage, part_number, footprint, jlc_number = suitable_parts[0]
 
     self.assign(self.actual_target_voltage, part_output_voltage)
-    self.footprint(
-      'U', 'Package_TO_SOT_SMD:SOT-23-5',
-      {
+    if footprint == 'Package_TO_SOT_SMD:SOT-23-5':
+      pinning: Dict[str, CircuitPort] = {
         '1': self.pwr_in,
         '2': self.gnd,
         '3': self.en,
         # pin 4 is NC
         '5': self.pwr_out,
-      },
+      }
+    elif footprint == 'Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm':
+      pinning = {
+        '4': self.pwr_in,
+        '2': self.gnd,
+        '3': self.en,
+        '1': self.pwr_out,
+        '5': self.gnd,  # optionally grounded for better thermal performance
+      }
+    else:
+      raise ValueError
+
+    self.footprint(
+      'U', footprint,
+      pinning,
       mfr='Texas Instruments', part=part_number,
       datasheet='https://www.ti.com/lit/ds/symlink/lp5907.pdf',
     )
@@ -521,3 +545,65 @@ class Lp5907(VoltageRegulatorEnableWrapper, LinearRegulator):
 
       self.connect(self.pwr_in, self.ic.pwr_in, self.in_cap.pwr)
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
+
+
+class L78l_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, GeneratorBlock, FootprintBlock):
+  @init_in_parent
+  def __init__(self, output_voltage: RangeLike):
+    super().__init__()
+
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.generator_param(self.output_voltage)
+
+  def generate(self):
+    super().generate()
+
+    parts = [  # output voltage, input max voltage, quiescent current, dropout
+      (Range(3.135, 3.465), (0, 30)*Volt, (5.5, 6)*mAmp, (0, 2)*Volt, 'L78L33AC', 'C43116'),
+      (Range(4.75, 5.25), (0, 30)*Volt, (5.5, 6)*mAmp, (0, 2)*Volt, 'L78L05AC', 'C43116'),
+      (Range(5.7, 6.3), (0, 30)*Volt, (5.5, 6)*mAmp, (0, 1.7)*Volt, 'L78L06AC', 'C81357'),
+      (Range(7.6, 8.4), (0, 30)*Volt, (5.5, 6)*mAmp, (0, 1.7)*Volt, 'L78L08AC', 'C39490'),  # low stock
+      (Range(8.55, 9.45), (0, 30)*Volt, (5.5, 6)*mAmp, (0, 1.7)*Volt, 'L78L09AC', 'C377943'),  # out of stock
+      (Range(9.5, 10.5), (0, 30)*Volt, (5.5, 6)*mAmp, (0, 1.7)*Volt, 'L78L10AC', 'C222250'),
+      (Range(11.5, 12.5), (0, 35)*Volt, (6, 6.5)*mAmp, (0, 1.7)*Volt, 'L78L12AC', 'C69601'),
+      (Range(14.4, 15.6), (0, 35)*Volt, (6, 6.5)*mAmp, (0, 1.7)*Volt, 'L78L15AC', 'C115285'),
+      (Range(17.1, 18.9), (0, 40)*Volt, (6, 6.5)*mAmp, (0, 1.7)*Volt, 'L78L18AC', 'C2802523'),  # out of stock
+      (Range(22.8, 25.2), (0, 40)*Volt, (6, 6.5)*mAmp, (0, 1.7)*Volt, 'L78L24AC', 'C130141'),  # low stock
+    ]
+    suitable_parts = [part for part in parts
+                      if part[0] in self.get(self.output_voltage)]
+    assert suitable_parts, "no regulator with compatible output"
+
+    self.assign(self.actual_target_voltage, suitable_parts[0][0])
+    self.assign(self.pwr_in.voltage_limits, suitable_parts[0][1])
+    self.assign(self.pwr_out.current_limits, (0, 100)*mAmp)
+    self.assign(self.actual_quiescent_current, suitable_parts[0][2])
+    self.assign(self.actual_dropout, suitable_parts[0][3])
+
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-89-3',
+      {
+        '1': self.pwr_out,
+        '2': self.gnd,
+        '3': self.pwr_in,
+      },
+      mfr='STMicroelectronics', part=suitable_parts[0][4],
+      datasheet='https://www.st.com/resource/en/datasheet/l78l.pdf'
+    )
+    self.assign(self.lcsc_part, suitable_parts[0][5])
+    self.assign(self.actual_basic_part, False)
+
+
+class L78l(LinearRegulator):
+  """L78Lxx high(er) input voltage linear regulator in SOT-89.
+  """
+  def contents(self):
+    super().contents()
+    self.ic = self.Block(L78l_Device(self.output_voltage))
+    self.connect(self.pwr_in, self.ic.pwr_in)
+    self.connect(self.pwr_out, self.ic.pwr_out)
+    self.connect(self.gnd, self.ic.gnd)
+    self.in_cap = self.Block(DecouplingCapacitor(capacitance=0.33*uFarad(tol=0.2))) \
+      .connected(self.gnd, self.pwr_in)
+    self.out_cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2))) \
+      .connected(self.gnd, self.pwr_out)

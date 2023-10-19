@@ -65,9 +65,9 @@ class TestInvalidPackedDevices(DesignTop):
     self.gnd2 = self.connect(self.source2.neg, self.sink2.neg)
 
   def multipack(self) -> None:
-      self.sink = self.PackedBlock(TestPackedSink())
-      self.pack(self.sink.elements.request('1'), ['sink1'])
-      self.pack(self.sink.elements.request('2'), ['sink2'])
+    self.sink = self.PackedBlock(TestPackedSink())
+    self.pack(self.sink.elements.request('1'), ['sink1'])
+    self.pack(self.sink.elements.request('2'), ['sink2'])
 
 
 class MultipackNetlistTestCase(unittest.TestCase):

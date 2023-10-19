@@ -48,12 +48,12 @@ class IotFan(JlcBoardTop):
       self.mcu.with_mixin(IoControllerWifi())
 
       # debugging LEDs
-      rgb_pin = self.mcu.gpio.request('rgb')  # multiplex RGB LED onto single debugging LED
-      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), rgb_pin)
+      (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))
 
       self.enc = imp.Block(DigitalRotaryEncoder())
       self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
       self.connect(self.enc.b, self.mcu.gpio.request('enc_b'))
+      self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request('enc_sw'))
 
       (self.v12_sense, ), _ = self.chain(
         self.v12,
@@ -67,7 +67,7 @@ class IotFan(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.rgb_ring, ), _ = self.chain(
-        rgb_pin,
+        self.mcu.gpio.request('rgb'),
         imp.Block(NeopixelArray(RING_LEDS)))
 
     # 12V DOMAIN
@@ -97,23 +97,28 @@ class IotFan(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32c3_Wroom02),
+        (['mcu'], Esp32c3),
         (['reg_5v'], Tps54202h),
-        (['reg_3v3'], Ldl1117),
+        (['reg_3v3'], Ap7215),
       ],
       instance_values=[
         (['refdes_prefix'], 'F'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          'v12_sense=3',
-          'rgb=4',
-          'enc_b=5',
-          'enc_a=6',
-          'fan_sense_1=18',
-          'fan_ctl_1=17',
-          'fan_drv_1=15',
-          'fan_sense_0=14',
-          'fan_ctl_0=13',
-          'fan_drv_0=10',
+          'v12_sense=4',
+          'rgb=_GPIO2_STRAP',  # force using the strapping pin, since we're out of IOs
+          'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
+
+          'fan_drv_0=5',
+          'fan_ctl_0=8',
+          'fan_sense_0=9',
+
+          'fan_drv_1=10',
+          'fan_ctl_1=13',
+          'fan_sense_1=12',
+
+          'enc_sw=25',
+          'enc_b=16',
+          'enc_a=26',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
@@ -129,11 +134,10 @@ class IotFan(JlcBoardTop):
         (Neopixel, Sk6805_Ec15),
         (TestPoint, CompactKeystone5015),
         (TagConnect, TagConnectNonLegged),
-        (RotaryEncoder, Ec05e),
       ],
       class_values=[
-        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (Esp32c3, ['not_recommended'], True),
+        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
       ]
     )

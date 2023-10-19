@@ -108,7 +108,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
       high_pwm = self.iso.out_b.request(f'high')
       low_pwm = self.iso.out_b.request(f'low')
 
-    self.driver = self.Block(HalfBridgeDriver())
+    self.driver = self.Block(HalfBridgeDriver(False))
     self.connect(self.driver.gnd, self.low_in)
     self.connect(self.driver.pwr, self.low_boot_out)
     self.connect(self.driver.high_in, high_pwm)
@@ -172,8 +172,8 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
         'low_boot_cap.2': VoltageSink(),
         'high_boot_cap.1': VoltageSink(),
         'high_boot_cap.2': VoltageSink(),
-        'low_gate_res.1': DigitalSink(),
-        'high_gate_res.1': DigitalSink(),
+        'low_gate_res.1': DigitalSink(),  # TODO model gate current draw
+        'high_gate_res.1': DigitalSink(),  # TODO model gate current draw
       })
 
 
@@ -224,6 +224,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
       self.pwr_out.link().current_drawn, Range.all(),  # TODO add current limits from FETs
       inductor_current_ripple=self.inductor_current_ripple,
       input_voltage_ripple=250*mVolt,
+      output_voltage_ripple=25*mVolt,  # TODO plumb through to user config
       dutycycle_limit=(0, 1),
       inductor_scale=(levels - 1)**2
     ))

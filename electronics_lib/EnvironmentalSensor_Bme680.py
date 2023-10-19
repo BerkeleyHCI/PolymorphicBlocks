@@ -48,7 +48,7 @@ class Bme680(EnvironmentalSensor, Block):
         self.vdd = self.Export(self.ic.vdd, [Power])
         self.vddio = self.Export(self.ic.vddio, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
-        self.i2c = self.Export(self.ic.i2c)
+        self.i2c = self.Export(self.ic.i2c, [InOut])
 
     def contents(self):
         super().contents()  # capacitors from shuttle board example

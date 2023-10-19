@@ -46,7 +46,7 @@ class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   def contents(self):
     super().contents()
 
-    self.assign(self.frequency, (1.1, 1.9)*MHertz)
+    self.assign(self.actual_frequency, (1.1, 1.9)*MHertz)
     self.require(self.pwr_out.voltage_out.within((1.33, 29)*Volt))
 
     with self.implicit_connect(
@@ -64,7 +64,7 @@ class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
       self.connect(self.fb.output, self.ic.fb)
 
       self.power_path = imp.Block(BoostConverterPowerPath(
-        self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
+        self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.actual_frequency,
         self.pwr_out.link().current_drawn, (0, 0.5)*Amp,
         inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                        self.ripple_current_factor,

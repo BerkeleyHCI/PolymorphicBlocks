@@ -79,8 +79,8 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
   def generate(self):
     matching_table = self._get_table().filter(lambda row: self._row_filter(row))
     postprocessed_table = self._table_postprocess(matching_table)
-    self.assign(self.matching_parts, postprocessed_table.map(lambda row: row[self.PART_NUMBER_COL]))
     postprocessed_table = postprocessed_table.sort_by(self._row_sort_by)
+    self.assign(self.matching_parts, postprocessed_table.map(lambda row: row[self.PART_NUMBER_COL]))
     if len(postprocessed_table) > 0:
       selected_row = postprocessed_table.first()
       self._row_generate(selected_row)

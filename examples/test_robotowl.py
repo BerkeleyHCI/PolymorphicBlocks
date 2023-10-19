@@ -143,6 +143,8 @@ class RobotOwl(JlcBoardTop):
 
         (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
         (['reg_12v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 7e6)),
+        # compatibility with what was manufactured
+        (['spk_drv', 'ic', 'footprint_spec'], 'Package_BGA:Maxim_WLP-9_1.595x1.415_Layout3x3_P0.4mm_Ball0.27mm_Pad0.25mm_NSMD')
       ],
       class_refinements=[
         (PassiveConnector, PinHeader254),  # default connector series unless otherwise specified

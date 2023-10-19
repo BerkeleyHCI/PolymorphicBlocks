@@ -24,7 +24,7 @@ class BaseBoardTop(DesignTop):
         (Fet, JlcFet),  # TODO: replace with non-distributor parts list
         (SwitchFet, JlcSwitchFet),  # TODO: replace with non-distributor parts list
         (Led, SmtLed),
-        (RgbLedCommonAnode, SmtRgbLed),
+        (RgbLedCommonAnode, Smt0606RgbLed),
         (Crystal, JlcCrystal),  # TODO: replace with non-distributor parts list
         (Oscillator, JlcOscillator),  # TODO: replace with non-distributor parts list
 
@@ -79,6 +79,7 @@ class JlcTopRefinements(BaseBoardTop):
         (Diode, JlcDiode),
         (Bjt, JlcBjt),
         (Fet, JlcFet),
+        (Antenna, JlcAntenna),
 
         (Fpc050Bottom, Afc01),
         (Fpc050Top, Afc07Top),

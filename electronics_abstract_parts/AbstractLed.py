@@ -15,6 +15,7 @@ class Led(DiscreteSemiconductor):
   Blue: LedColor = "blue"
   Yellow: LedColor = "yellow"
   White: LedColor = "white"
+  Orange: LedColor = "orange"
   Any: LedColor = ""
 
   @init_in_parent

@@ -1,5 +1,5 @@
 from electronics_model import *
-from .Categories import Connector, TvsDiode, PowerSource
+from .Categories import Connector, PowerSource, Protection
 
 
 @abstract_block
@@ -33,7 +33,7 @@ class UsbDeviceConnector(UsbConnector, PowerSource):
 
 
 @abstract_block
-class UsbEsdDiode(TvsDiode):
+class UsbEsdDiode(Protection):
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])

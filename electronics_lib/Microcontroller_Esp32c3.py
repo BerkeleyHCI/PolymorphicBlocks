@@ -39,7 +39,7 @@ class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, BaseIoControllerPinma
     # section 2.4: strapping IOs that need a fixed value to boot, and currently can't be allocated as GPIO
     self.en = self.Port(self._dio_model)  # needs external pullup
     self.io2 = self.Port(self._dio_model)  # needs external pullup
-    self.io8 = self.Port(self._dio_model)  # needs external pullup, may control prints
+    self.io8 = self.Port(self._dio_model)  # needs external pullup, required for download boot
     self.io9 = self.Port(self._dio_model, optional=True)  # internally pulled up for SPI boot, connect to GND for download
 
     # similarly, the programming UART is fixed and allocated separately
@@ -185,3 +185,184 @@ class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resett
     else:
       self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(
         gnd=self.gnd, pwr=self.pwr, io=self.ic.en)
+
+
+class Esp32c3_Device(Esp32c3_Base, FootprintBlock, JlcPart):
+  """ESP32C3 with 4MB integrated flash
+  TODO: support other part numbers, including without integrated flash
+  """
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.lna_in = self.Port(Passive())
+
+    # chip power draw is modeled in self.pwr
+    self.vdd3p3 = self.Port(VoltageSink(  # needs to be downstream of a filter
+      voltage_limits=(3.0, 3.6)*Volt,  # section 4.2
+    ))
+    self.vdd3p3_rtc = self.Port(VoltageSink(
+      voltage_limits=(3.0, 3.6)*Volt,  # section 4.2
+    ))
+    self.vdd3p3_cpu = self.Port(VoltageSink(
+      voltage_limits=(3.0, 3.6)*Volt,  # section 4.2
+    ))
+    self.vdd_spi = self.Port(VoltageSink(
+      voltage_limits=(3.0, 3.6)*Volt,  # section 4.2
+    ))
+
+    # 10ppm requirement from ESP32-C3-WROOM schematic, and in ESP32 hardware design guidelines
+    self.xtal = self.Port(CrystalDriver(frequency_limits=40*MHertz(tol=10e-6),
+                                        voltage_out=self.pwr.link().voltage))
+
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return VariantPinRemapper(super()._system_pinmap()).remap({
+      'Vdd': ['31', '32'],  # VDDA
+      'Vss': ['33'],  # 33 is EP
+      'GPIO2': '6',
+      'EN': '7',
+      'GPIO8': '14',
+      'GPIO9': '15',
+      'RXD': '27',  # U0RXD, GPIO20
+      'TXD': '28',  # U0TXD, GPIO21
+    })
+
+  def _io_pinmap(self) -> PinMapUtil:
+    return super()._io_pinmap().remap_pins({
+      'GPIO0': '4',
+      'GPIO1': '5',
+      'GPIO3': '8',
+      'MTMS': '9',  # GPIO4
+      'MTDI': '10',  # GPIO5
+      'MTCK': '12',  # GPIO6
+      'MTDO': '13',  # GPIO7
+      'GPIO10': '16',
+      'GPIO18': '25',
+      'GPIO19': '26',
+    })
+
+  def generate(self) -> None:
+    super().generate()
+
+    pinning = self._make_pinning()
+    pinning.update({
+      '1': self.lna_in,
+      '11': self.vdd3p3_rtc,
+      '17': self.vdd3p3_cpu,
+      '18': self.vdd_spi,
+      '2': self.vdd3p3,
+      '3': self.vdd3p3,
+      '30': self.xtal.xtal_in,
+      '29': self.xtal.xtal_out,
+    })
+
+    self.footprint(
+      'U', 'Package_DFN_QFN:QFN-32-1EP_5x5mm_P0.5mm_EP3.65x3.65mm',
+      pinning,
+      mfr='Espressif Systems', part='ESP32-C3FH4',
+      datasheet='https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf',
+    )
+    self.assign(self.lcsc_part, 'C2858491')
+    self.assign(self.actual_basic_part, False)
+
+
+class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Esp32c3_Interfaces,
+              WithCrystalGenerator, IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
+  """ESP32-C3 application circuit, bare chip + RF circuits.
+  NOT RECOMMENDED - you will need to do your own RF layout, instead consider using the WROOM module."""
+
+  DEFAULT_CRYSTAL_FREQUENCY = 40*MHertz(tol=10e-6)
+
+  def __init__(self):
+    super().__init__()
+    self.ic: Esp32c3_Device
+    self.generator_param(self.reset.is_connected())
+
+    self.not_recommended = self.Parameter(BoolExpr(False))
+
+    self.io2_ext_connected: bool = False
+    self.io8_ext_connected: bool = False
+
+  def contents(self) -> None:
+    super().contents()
+    self.require(self.not_recommended, "not recommended: requires RF design, consider using the module version instead")
+
+    with self.implicit_connect(
+        ImplicitConnect(self.pwr, [Power]),
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      self.ic = imp.Block(Esp32c3_Device(pin_assigns=ArrayStringExpr()))
+      self.connect(self.pwr, self.ic.vdd3p3_rtc, self.ic.vdd3p3_cpu, self.ic.vdd_spi)
+
+      self.connect(self.xtal_node, self.ic.xtal)
+      self.connect(self.program_uart_node, self.ic.uart0)
+      self.connect(self.program_en_node, self.ic.en)
+      self.connect(self.program_boot_node, self.ic.io9)
+
+      self.vdd_bulk_cap = imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2)))  # C5
+      self.vdda_cap0 = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2)))  # C3
+      self.vdda_cap1 = imp.Block(DecouplingCapacitor(10*nFarad(tol=0.2)))  # C3
+      self.vddrtc_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))  # C3
+      self.vddcpu_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))  # C10
+      self.vddspi_cap = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2)))  # C11
+
+      self.ant = self.Block(Antenna(frequency=(2402, 2484)*MHertz, impedance=50*Ohm(tol=0.1), power=(0, 0.126)*Watt))
+      # expand the bandwidth to allow a lower Q and higher bandwidth
+      # TODO: more principled calculation of Q / bandwidth, voltage, current and tolerance
+      # 10% tolerance is roughly to support 5% off-nominal tolerance plus 5% component tolerance
+      (self.pi, ), _ = self.chain(self.ic.lna_in,
+                                  imp.Block(PiLowPassFilter((2402-200, 2484+200)*MHertz, 35*Ohm, 10*Ohm, 50*Ohm,
+                                                            0.10, self.pwr.link().voltage, (0, 0.1)*Amp)),
+                                  self.ant.a)
+
+    with self.implicit_connect(
+        ImplicitConnect(self.gnd, [Common])
+    ) as imp:
+      self.vdd3p3_l_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))\
+        .connected(pwr=self.pwr)  # C6
+      self.vdd3p3_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))\
+        .connected(pwr=self.ic.vdd3p3)  # C7 - DNP on ESP32-C3-WROOM schematic but 0.1uF on hardware design guide
+      self.vdd3p3_l = self.Block(SeriesPowerInductor(
+        inductance=2*nHenry(tol=0.2),
+      )).connected(self.pwr, self.ic.vdd3p3)
+
+  def generate(self) -> None:
+    super().generate()
+
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.en)
+    else:
+      self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(
+        gnd=self.gnd, pwr=self.pwr, io=self.ic.en)
+
+    # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
+    # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
+    # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
+    vdd_pull = self.pwr.as_digital_source()
+    if not self.io8_ext_connected:
+      self.connect(self.ic.io8, vdd_pull)
+      self.io8_ext_connected = True  # set to ensure this runs after external connections
+    if not self.io2_ext_connected:
+      self.connect(self.ic.io2, vdd_pull)
+      self.io2_ext_connected = True  # set to ensure this runs after external connections
+
+  ExportType = TypeVar('ExportType', bound=Port)
+  def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
+                          assign: Optional[str]) -> Optional[str]:
+    """Add support for _GPIO2/8/9_STRAP and remap them to io2/8/9."""
+    if isinstance(self_io, DigitalBidir):
+      if assign == f'{name}=_GPIO2_STRAP':
+        self.connect(self_io, self.ic.io2)
+        assert not self.io2_ext_connected  # assert not yet hard tied
+        self.io2_ext_connected = True
+        return None
+      elif assign == f'{name}=_GPIO8_STRAP':
+        self.connect(self_io, self.ic.io8)
+        assert not self.io8_ext_connected  # assert not yet hard tied
+        self.io8_ext_connected = True
+        return None
+      elif assign == f'{name}=_GPIO9_STRAP':
+        self.connect(self_io, self.ic.io9)
+        return None
+    return super()._make_export_vector(self_io, inner_vector, name, assign)
+
+  def _crystal_required(self) -> bool:
+    return True  # crystal oscillator always required

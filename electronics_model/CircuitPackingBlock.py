@@ -1,19 +1,34 @@
 from __future__ import annotations
 
-from typing import *
 from edg_core import *
 
+from .PassivePort import Passive
 from .VoltagePorts import VoltageSource, VoltageSink
 
 
 @abstract_block
 class NetPackingBlock(InternalBlock, Block):
-  def packed(self, source: BasePort, dst: BasePort) -> None:
-    """Asserts that sources are all connected to the same net, and connects all of dsts to that net."""
+  def packed(self, elts: BasePort, merged: BasePort) -> None:
+    """Asserts that elts are all connected to the same net, and connects them to merged."""
     self.nets_packed = self.Metadata({
-      'src': self._ports.name_of(source),
-      'dst': self._ports.name_of(dst)
+      'src': self._ports.name_of(elts),
+      'dst': self._ports.name_of(merged)
     })
+
+
+class PackedPassive(NetPackingBlock, GeneratorBlock):
+  def __init__(self):
+    super().__init__()
+    self.elts = self.Port(Vector(Passive.empty()))
+    self.merged = self.Port(Passive.empty())
+    self.generator_param(self.elts.requested())
+    self.packed(self.elts, self.merged)
+
+  def generate(self):
+    super().generate()
+    self.elts.defined()
+    for request in self.get(self.elts.requested()):
+      self.elts.append_elt(Passive(), request)
 
 
 class PackedVoltageSource(NetPackingBlock, GeneratorBlock):

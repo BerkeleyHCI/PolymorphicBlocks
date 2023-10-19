@@ -3,9 +3,9 @@ from edg_core import *
 from .CircuitBlock import FootprintBlock, CircuitPortBridge, CircuitPortAdapter, NetBlock
 from .VoltagePorts import CircuitPort
 
-from .Units import Farad, uFarad, nFarad, pFarad, MOhm, kOhm, Ohm, mOhm, Henry, uHenry
+from .Units import Farad, uFarad, nFarad, pFarad, MOhm, kOhm, Ohm, mOhm, Henry, uHenry, nHenry
 from .Units import Volt, mVolt, Watt, Amp, mAmp, uAmp, nAmp, pAmp
-from .Units import Second, mSecond, uSecond, nSecond, Hertz, kHertz, MHertz
+from .Units import Second, mSecond, uSecond, nSecond, Hertz, kHertz, MHertz, GHertz
 from .Units import Bit, kiBit, MiBit
 from .Units import UnitUtils
 
@@ -31,7 +31,7 @@ from .I2sPort import I2sController, I2sTargetReceiver, I2sLink
 
 from .ConnectedGenerator import VoltageSourceConnected, DigitalSourceConnected
 
-from .CircuitPackingBlock import NetPackingBlock, PackedVoltageSource
+from .CircuitPackingBlock import NetPackingBlock, PackedPassive, PackedVoltageSource
 
 from .PartParserUtil import PartParserUtil
 

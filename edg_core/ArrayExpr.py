@@ -86,6 +86,9 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
   def all_unique(self) -> BoolExpr:
     return BoolExpr()._new_bind(UnarySetOpBinding(self, EqOp.all_unique))
 
+  def all_equal(self) -> BoolExpr:
+    return BoolExpr()._new_bind(UnarySetOpBinding(self, EqOp.all_equal))
+
   def sum(self) -> ArrayEltType:
     return self._create_unary_set_op(NumericOp.sum)
 

@@ -52,7 +52,7 @@ class Ltc3429(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   def contents(self):
     super().contents()
 
-    self.assign(self.frequency, (380, 630)*kHertz)
+    self.assign(self.actual_frequency, (380, 630)*kHertz)
     self.require(self.pwr_out.voltage_out.within((2.2, 4.3)*Volt))  # >4.3v requires external diode
 
     with self.implicit_connect(
@@ -72,7 +72,7 @@ class Ltc3429(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
 
       # TODO add constraint on effective inductance and capacitance range
       self.power_path = imp.Block(BoostConverterPowerPath(
-        self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
+        self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.actual_frequency,
         self.pwr_out.link().current_drawn, (0, self.NMOS_CURRENT_LIMIT)*Amp,
         inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                        self.ripple_current_factor,

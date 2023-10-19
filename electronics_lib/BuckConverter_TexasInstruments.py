@@ -46,7 +46,7 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
   def contents(self):
     super().contents()
 
-    self.assign(self.frequency, 580*kHertz(tol=0))
+    self.assign(self.actual_frequency, 580*kHertz(tol=0))
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_in, [Power]),
@@ -70,11 +70,13 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
 
       # TODO: the control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3
       self.power_path = imp.Block(BuckConverterPowerPath(
-        self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
+        self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.actual_frequency,
         self.pwr_out.link().current_drawn, (0, 1.2)*Amp,
         inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                        self.ripple_current_factor,
-                                                       rated_current=1.2*Amp)
+                                                       rated_current=1.2*Amp),
+        input_voltage_ripple=self.input_ripple_limit,
+        output_voltage_ripple=self.output_ripple_limit,
       ))
       # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
       # and then the power path can generate
@@ -131,7 +133,7 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
     super().contents()
     self.generator_param(self.reset.is_connected())
 
-    self.assign(self.frequency, (390, 590)*kHertz)
+    self.assign(self.actual_frequency, (390, 590)*kHertz)
 
     with self.implicit_connect(
         ImplicitConnect(self.pwr_in, [Power]),
@@ -154,11 +156,13 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
       self.connect(self.boot_cap.pos.adapt_to(VoltageSink()), self.ic.boot)
 
       self.power_path = imp.Block(BuckConverterPowerPath(
-        self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.frequency,
+        self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.actual_frequency,
         self.pwr_out.link().current_drawn, (0, 2)*Amp,
         inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                        self.ripple_current_factor,
-                                                       rated_current=2*Amp)
+                                                       rated_current=2*Amp),
+        input_voltage_ripple=self.input_ripple_limit,
+        output_voltage_ripple=self.output_ripple_limit,
       ))
       # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
       # and then the power path can generate

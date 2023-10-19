@@ -110,6 +110,8 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
     )
 
   def generate(self) -> None:
+    super().generate()
+
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.get(self.series)], self.get(self.tolerance), AmplifierValues)
     top_resistance, bottom_resistance = calculator.find(AmplifierValues(self.get(self.amplification), self.get(self.impedance)))
 
@@ -223,14 +225,15 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
 
     self.input_positive = self.Port(AnalogSink.empty())
     self.input_negative = self.Port(AnalogSink.empty())
-    self.output_reference = self.Port(AnalogSink.empty())
+    self.output_reference = self.Port(AnalogSink.empty(), optional=True)  # gnd by default
     self.output = self.Port(AnalogSource.empty())
 
     self.ratio = self.ArgParameter(ratio)
     self.input_impedance = self.ArgParameter(input_impedance)
     self.series = self.ArgParameter(series)
     self.tolerance = self.ArgParameter(tolerance)
-    self.generator_param(self.ratio, self.input_impedance, self.series, self.tolerance)
+    self.generator_param(self.ratio, self.input_impedance, self.series, self.tolerance,
+                         self.output_reference.is_connected())
 
     self.actual_ratio = self.Parameter(RangeExpr())
 
@@ -243,6 +246,8 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     )
 
   def generate(self) -> None:
+    super().generate()
+
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.get(self.series)], self.get(self.tolerance), DifferentialValues)
     r1_resistance, rf_resistance = calculator.find(DifferentialValues(self.get(self.ratio), self.get(self.input_impedance)))
 
@@ -252,8 +257,16 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     self.rf = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
     self.rg = self.Block(Resistor(Range.from_tolerance(rf_resistance, self.get(self.tolerance))))
 
+    if self.get(self.output_reference.is_connected()):
+      output_neg_signal = self.output_reference.link().signal
+      output_neg_voltage = self.output_reference.link().voltage
+      output_neg_node: CircuitPort = self.output_reference
+    else:
+      output_neg_voltage = output_neg_signal = self.gnd.link().voltage
+      output_neg_node = self.gnd.as_analog_source()
+
     input_diff_range = self.input_positive.link().signal - self.input_negative.link().signal
-    output_diff_range = input_diff_range * self.actual_ratio + self.output_reference.link().signal
+    output_diff_range = input_diff_range * self.actual_ratio + output_neg_signal
     # TODO tolerances can cause the range to be much larger than actual, so bound it to avoid false-positives
     self.forced = self.Block(ForcedAnalogSignal(self.amp.out.signal_out.intersect(output_diff_range)))
 
@@ -278,7 +291,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
         ),
         'r2.2': AnalogSource(  # combined R2 and Rg resistance
           voltage_out=ResistiveDivider.divider_output(
-            self.input_positive.link().voltage, self.output_reference.link().voltage,
+            self.input_positive.link().voltage, output_neg_voltage,
             ResistiveDivider.divider_ratio(self.r2.actual_resistance, self.rg.actual_resistance)
           ),
           impedance=1 / (1 / self.r2.actual_resistance + 1 / self.rg.actual_resistance)
@@ -287,6 +300,8 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
         'rg.1': AnalogSink(
           impedance=self.r2.actual_resistance + self.rg.actual_resistance
         )
+      }, nodes={
+        'output_neg': output_neg_node
       })
 
     self.assign(self.actual_ratio, self.rf.actual_resistance / self.r1.actual_resistance)
@@ -378,6 +393,8 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
     )
 
   def generate(self) -> None:
+    super().generate()
+
     calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.get(self.series)], self.get(self.tolerance), IntegratorValues)
     sel_resistance, sel_capacitance = calculator.find(IntegratorValues(self.get(self.factor), self.get(self.capacitance)))
 

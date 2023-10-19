@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional, cast
 
 from electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -151,3 +151,34 @@ class TableInductor(InductorStandardFootprint, PartsTableFootprintSelector):
     self.assign(self.actual_inductance, row[self.INDUCTANCE])
     self.assign(self.actual_current_rating, row[self.CURRENT_RATING])
     self.assign(self.actual_frequency_rating, row[self.FREQUENCY_RATING])
+
+
+class SeriesPowerInductor(DiscreteApplication):
+  """VoltageSource/Sink-typed series inductor for power filtering"""
+  @init_in_parent
+  def __init__(self, inductance: RangeLike, current: RangeLike = RangeExpr.ZERO,
+               frequency: RangeLike = RangeExpr.ZERO) -> None:
+    super().__init__()
+
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
+
+    self.ind = self.Block(Inductor(
+      inductance=inductance, current=current, frequency=frequency
+    ))
+
+    self.connect(self.pwr_in, self.ind.a.adapt_to(VoltageSink(
+      current_draw=self.pwr_out.link().current_drawn
+    )))
+    self.connect(self.pwr_out, self.ind.b.adapt_to(VoltageSource(
+      voltage_out=self.pwr_in.link().voltage,
+    )))
+
+  def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
+      'SeriesPowerInductor':
+    """Convenience function to connect both ports, returning this object so it can still be given a name."""
+    if pwr_in is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_in)
+    if pwr_out is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr_out, self.pwr_out)
+    return self

@@ -25,3 +25,7 @@ class Opamp(Analog, KiCadInstantiableBlock, Block):
     self.inp = self.Port(AnalogSink.empty())
     self.inn = self.Port(AnalogSink.empty())
     self.out = self.Port(AnalogSource.empty())
+
+
+class OpampElement(Opamp):
+  """Packed opamp element"""

@@ -403,7 +403,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       current_port = outable_ports[0]
       chain_blocks.append(elts[0])
     else:
-      raise EdgTypeError(f"first element 0 to chain", elts[0], (BasePort, Block))
+      raise EdgTypeError(f"first element 0 to chain", elts[0], (BasePort, Connection, Block))
 
     for i, elt in list(enumerate(elts))[1:-1]:
       elt = assert_cast(elt, (Block), f"middle arguments elts[{i}] to chain")
@@ -426,7 +426,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       else:
         raise ChainError(self, f"element {i} to chain {type(elt)} has no Input and Output, or InOut ports")
 
-    if isinstance(elts[-1], BasePort):
+    if isinstance(elts[-1], (BasePort, Connection)):
       chain_links.append(self.connect(current_port, elts[-1]))
     elif isinstance(elts[-1], Block):
       inable_ports = elts[-1]._get_ports_by_tag({Input}) + elts[-1]._get_ports_by_tag({InOut})
@@ -435,7 +435,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       chain_blocks.append(elts[-1])
       chain_links.append(self.connect(current_port, inable_ports[0]))
     else:
-      raise EdgTypeError(f"last argument {len(elts) - 1} to chain", elts[-1], (BasePort, Block))
+      raise EdgTypeError(f"last argument {len(elts) - 1} to chain", elts[-1], (BasePort, Connection, Block))
 
     return self._chains.register(ChainConnect(chain_blocks, chain_links))
 

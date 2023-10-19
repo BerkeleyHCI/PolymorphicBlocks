@@ -80,4 +80,20 @@ class JlcFet(JlcBaseFet, TableFet):
 
 
 class JlcSwitchFet(JlcBaseFet, TableSwitchFet):
-  pass
+  @init_in_parent
+  def __init__(self, *args, manual_gate_charge: RangeLike = RangeExpr.ZERO, **kwargs):
+    super().__init__(*args, **kwargs)
+    # allow the user to specify a gate charge
+    self.manual_gate_charge = self.ArgParameter(manual_gate_charge)
+    self.generator_param(self.manual_gate_charge)
+
+  def _table_postprocess(self, table: PartsTable) -> PartsTable:
+    manual_gate_charge = self.get(self.manual_gate_charge)
+    def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      return {self.GATE_CHARGE: manual_gate_charge}
+
+    # must run before TableFet power calculations
+    if not manual_gate_charge == Range.exact(0):
+      table = table.map_new_columns(process_row, overwrite=True)
+
+    return super()._table_postprocess(table)

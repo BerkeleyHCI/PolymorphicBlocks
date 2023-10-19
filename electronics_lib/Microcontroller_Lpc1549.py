@@ -35,7 +35,7 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
                               optional=True)
 
     self.swd = self.Port(SwdTargetPort.empty())
-    self.reset = self.Port(DigitalSink.empty())  # internally pulled up, TODO disable-able and assignable as GPIO
+    self.reset = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up, TODO disable-able and assignable as GPIO
     self._io_ports.insert(0, self.swd)
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:

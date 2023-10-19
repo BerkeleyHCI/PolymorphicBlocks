@@ -64,10 +64,13 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
     center = PartParserUtil.parse_value(match.group(1), '')
     voltage = PartParserUtil.parse_value(match.group(3), 'V')
     if match.group(2) is not None:
-      tolerance = PartParserUtil.parse_tolerance(match.group(2))
+      tol_str = match.group(2)
+      if not tol_str.startswith('±'):  # format conversion to more strict parser
+        tol_str = '±' + tol_str
+      capacitance = PartParserUtil.parse_abs_tolerance(tol_str, center, 'F')
     else:
-      tolerance = (-cls.CAPACITOR_DEFAULT_TOL, cls.CAPACITOR_DEFAULT_TOL)
-    return (Range.from_tolerance(center, tolerance), Range.zero_to_upper(voltage))
+      capacitance = Range.from_tolerance(center, (-cls.CAPACITOR_DEFAULT_TOL, cls.CAPACITOR_DEFAULT_TOL))
+    return (capacitance, Range.zero_to_upper(voltage))
 
   @classmethod
   def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Capacitor':
@@ -171,6 +174,8 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
           factor = self.DERATE_LOWEST
         derated = row[self.CAPACITANCE] * Range(factor, 1)
 
+      if derated.lower == 0:  # in case where tolerance is the nominal value
+        return None
       count = math.ceil(self.get(self.capacitance).lower / derated.lower)
       derated_parallel_capacitance = derated * count
       if not derated_parallel_capacitance.fuzzy_in(self.get(self.capacitance)):  # not satisfying spec, remove row
@@ -182,7 +187,7 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
               self.PARALLEL_CAPACITANCE: row[self.CAPACITANCE] * count}
 
     return table.map_new_columns(add_derated_row).filter(lambda row: (
-        row[self.PARALLEL_DERATED_CAPACITANCE] in self.get(self.capacitance)
+            row[self.PARALLEL_DERATED_CAPACITANCE] in self.get(self.capacitance)
     ))
 
   def _row_generate(self, row: PartsTableRow) -> None:
@@ -257,3 +262,52 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     if pwr is not None:
       cast(Block, builder.get_enclosing_block()).connect(pwr, self.pwr)
     return self
+
+
+class CombinedCapacitorElement(Capacitor):  # to avoid an abstract part error
+  def contents(self):
+    super().contents()
+    self.assign(self.actual_capacitance, self.capacitance)  # fake it, since a combined capacitance is handwavey
+
+
+class CombinedCapacitor(PassiveComponent, MultipackBlock, GeneratorBlock):
+  """A packed capacitor that combines multiple individual capacitors into a single component,
+  with the sum of or taking the max of the constituent capacitances."""
+  @init_in_parent
+  def __init__(self, *, extend_upper: BoolLike = False) -> None:
+    super().__init__()
+
+    self.elements = self.PackedPart(PackedBlockArray(CombinedCapacitorElement()))
+    self.pos = self.PackedExport(self.elements.ports_array(lambda x: x.pos))
+    self.neg = self.PackedExport(self.elements.ports_array(lambda x: x.neg))
+    self.capacitances = self.PackedParameter(self.elements.params_array(lambda x: x.capacitance))
+    self.voltages = self.PackedParameter(self.elements.params_array(lambda x: x.voltage))
+    self.voltage_rating_deratings = self.PackedParameter(self.elements.params_array(lambda x: x.voltage_rating_derating))
+    self.exact_capacitances = self.PackedParameter(self.elements.params_array(lambda x: x.exact_capacitance))
+
+    self.actual_capacitance = self.Parameter(RangeExpr())
+    self.actual_voltage_rating = self.Parameter(RangeExpr())
+    self.unpacked_assign(self.elements.params(lambda x: x.actual_voltage_rating), self.actual_voltage_rating)
+
+    self.extend_upper = self.ArgParameter(extend_upper)
+    self.generator_param(self.pos.requested(), self.neg.requested(), self.extend_upper)
+
+
+  def generate(self):
+    super().generate()
+    capacitance = self.capacitances.sum()
+    if self.get(self.extend_upper):
+      capacitance = RangeExpr._to_expr_type((capacitance.lower(), float('inf')))
+    self.cap = self.Block(Capacitor(capacitance, voltage=self.voltages.hull(),
+                                    exact_capacitance=self.exact_capacitances.all(),
+                                    voltage_rating_derating=self.voltage_rating_deratings.min()))
+    self.assign(self.actual_voltage_rating, self.cap.actual_voltage_rating)
+    self.assign(self.actual_capacitance, self.cap.actual_capacitance)
+    self.require(self.exact_capacitances.all_equal())
+
+    self.pos_merge = self.Block(PackedPassive())
+    self.neg_merge = self.Block(PackedPassive())
+    self.connect(self.cap.pos, self.pos_merge.merged)
+    self.connect(self.cap.neg, self.neg_merge.merged)
+    self.connect(self.pos, self.pos_merge.elts)
+    self.connect(self.neg, self.neg_merge.elts)

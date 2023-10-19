@@ -151,7 +151,7 @@ class SwitchingVoltageRegulator(VoltageRegulator):
     self.input_ripple_limit = self.ArgParameter(input_ripple_limit)
     self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
 
-    self.frequency = self.Parameter(RangeExpr())
+    self.actual_frequency = self.Parameter(RangeExpr())
 
 
 @abstract_block_default(lambda: IdealBuckConverter)
@@ -199,9 +199,9 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
                output_current: RangeLike, current_limits: RangeLike, inductor_current_ripple: RangeLike, *,
+               input_voltage_ripple: FloatLike,
+               output_voltage_ripple: FloatLike,
                efficiency: RangeLike = (0.9, 1.0),  # from TI reference
-               input_voltage_ripple: FloatLike = 75*mVolt,
-               output_voltage_ripple: FloatLike = 25*mVolt,
                dutycycle_limit: RangeLike = (0.1, 0.9),
                inductor_scale: FloatLike = 1.0):  # arbitrary
     super().__init__()

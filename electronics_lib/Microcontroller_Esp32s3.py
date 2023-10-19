@@ -273,6 +273,16 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Resett
       self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(
         gnd=self.gnd, pwr=self.pwr, io=self.ic.chip_pu)
 
+  ExportType = TypeVar('ExportType', bound=Port)
+  def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
+                          assign: Optional[str]) -> Optional[str]:
+    """Allow overloading strapping pins"""
+    if isinstance(self_io, DigitalBidir):
+      if assign == f'{name}=_GPIO0_STRAP':
+        self.connect(self_io, self.ic.io0)
+        return None
+    return super()._make_export_vector(self_io, inner_vector, name, assign)
+
 
 class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_Ios, IoController, GeneratorBlock,
                              FootprintBlock):
