@@ -179,10 +179,11 @@ Notes:
 - In many cases, the `_Small` (e.g. `Device:C_Small`) symbol can also be used.
 
 These higher-level analog parts
-| Symbol                           | HDL Block         | Notes                                                |
-----------------------------------|-------------------|---------------|------------------------------------------------------|
-| Simulation_SPICE:OPAMP           | Opamp             |  |
-| edg_importable:Amplifier | Amplifier | | 
-| edg_importable:DifferentialAmplifier | DifferentialAmplifier | |
-| edg_importable:IntegratorInverting | IntegratorInverting | |
-| edg_importable:OpampCurrentSensor | OpampCurrentSensor | | 
+
+| Symbol                               | HDL Block             | Notes |
+|--------------------------------------|-----------------------|-------|
+| Simulation_SPICE:OPAMP               | Opamp                 |       |
+| edg_importable:Amplifier             | Amplifier             |       |
+| edg_importable:DifferentialAmplifier | DifferentialAmplifier |       |
+| edg_importable:IntegratorInverting   | IntegratorInverting   |       |
+| edg_importable:OpampCurrentSensor    | OpampCurrentSensor    |       | 
