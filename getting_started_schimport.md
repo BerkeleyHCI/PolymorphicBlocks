@@ -11,7 +11,7 @@ _In this section, we build a graphical-schematic-defined HX711-based load cell a
 
 
 ## Schematic Definition
-Start by drawing the application schematic for the HX711, as described in Figure 4 of its [datasheet](https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf).
+**Start by drawing the application schematic for the HX711**, as described in Figure 4 of its [datasheet](https://cdn.sparkfun.com/datasheets/Sensors/ForceFlex/hx711_english.pdf).
 
 For common parts like capacitors, resistors, and transistors, we use the generic built-in KiCad symbols, which ultimately map down to HDL library blocks with parts selection automation.
 A full list is available in the [reference section](#reference).
@@ -19,8 +19,7 @@ Parts where there isn't a corresponding library block can instead be defined wit
 
 Hierarchical labels are used to define the block's boundary ports (electrical interface).
 
-Our finished schematic looks like this and is available in [examples/resources/Hx711.sch](examples/resources/Hx711.sch): 
-
+Our finished schematic looks like this and is available in [examples/resources/Hx711.sch](examples/resources/Hx711.sch):  
 ![HX711 schematic](docs/greybox_hx711.svg)
 
 A few notes here:
