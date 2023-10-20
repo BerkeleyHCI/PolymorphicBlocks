@@ -1,10 +1,10 @@
 import inspect
 import os
 from abc import abstractmethod
-from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, TypeVar
+from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, TypeVar, cast
 
-from edg_core import Block, GeneratorBlock, BasePort, Vector, init_in_parent, ArrayStringLike, StringLike, non_library, \
-    Bundle, InternalBlock
+from edg_core import Block, GeneratorBlock, BasePort, Port, Vector, init_in_parent, ArrayStringLike, StringLike, \
+    non_library, Bundle, InternalBlock
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
 from .PassivePort import Passive
@@ -139,7 +139,8 @@ class KiCadSchematicBlock(Block):
         return inner(self, path.split('.'))
 
     def import_kicad(self, filepath: str, locals: Mapping[str, Any] = {},
-                     *, nodes: Mapping[str, Optional[BasePort]] = {}, conversions: Mapping[str, CircuitPort] = {}):
+                     *, nodes: Mapping[str, Optional[BasePort]] = {}, conversions: Mapping[str, CircuitPort] = {},
+                     auto_adapt: bool = False):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
         # so declaring it here causes it to reference Opamp lazily
         from electronics_abstract_parts import Resistor, Capacitor, Opamp
@@ -205,6 +206,7 @@ class KiCadSchematicBlock(Block):
         for net in sch.nets:
             net_ports = [self._port_from_pin(pin, blocks_pins[pin.refdes], conversions)
                          for pin in net.pins]
+            boundary_ports: List[BasePort] = []
             net_label_names = set()
             port_label_names = set()
             for net_label in net.labels:
@@ -222,14 +224,25 @@ class KiCadSchematicBlock(Block):
                         f"global label {global_label_name} has both node and boundary port"
                     node = nodes[global_label_name]
                     if node is not None:
-                        net_ports.insert(0, node)
+                        boundary_ports.append(node)
                 elif global_label_port is not None:
                     # connect to boundary port, but not links
-                    net_ports.insert(0, global_label_port)
+                    boundary_ports.append(global_label_port)
                 else:
                     raise ValueError(f"global label {global_label_name} must connect to boundary port or node")
 
-            connection = self.connect(*net_ports)
+            # if specified, generate automatic adaptors for Passive ports
+            if auto_adapt and net_ports and all([isinstance(x, Passive) for x in net_ports]) and \
+                    boundary_ports and not all([isinstance(x, Passive) for x in boundary_ports]) and \
+                    all([isinstance(x, CircuitPort) for x in boundary_ports]):
+                passive_boundary_ports = [x for x in boundary_ports if isinstance(x, Passive)]
+                nonpassive_boundary_ports = [x for x in boundary_ports if not isinstance(x, Passive)]
+                internal_connection = self.connect(*passive_boundary_ports, *net_ports)
+                assert isinstance(nonpassive_boundary_ports[0], CircuitPort)
+                adapted = cast(Passive, net_ports[0]).adapt_to(nonpassive_boundary_ports[0].__class__())  # ideal port
+                connection = self.connect(*nonpassive_boundary_ports, adapted)
+            else:
+                connection = self.connect(*boundary_ports, *net_ports)
 
             if net_label_names:
                 assert len(net_label_names) == 1, "multiple net names not supported"

@@ -407,6 +407,60 @@ class TestBlinkyPacked(SimpleBoardTop):
       ])
 
 
+class Hx711(KiCadSchematicBlock, Block):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.gnd = self.Port(Ground.empty(), [Common])
+
+    self.dout = self.Port(DigitalSource.empty())
+    self.sck = self.Port(DigitalSink.empty())
+
+    self.ep = self.Port(Passive.empty())
+    self.en = self.Port(Passive.empty())
+    self.sp = self.Port(Passive.empty())
+    self.sn = self.Port(Passive.empty())
+
+  def contents(self) -> None:
+    super().contents()
+    self.Q1 = self.Block(Bjt.Npn((0, 5)*Volt, 0*Amp(tol=0)))
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+      }, auto_adapt=True)
+
+
+class TestBlinkyWithSchematicImport(SimpleBoardTop):
+  def contents(self) -> None:
+    super().contents()
+    self.usb = self.Block(UsbCReceptacle())
+    self.reg = self.Block(VoltageRegulator(3.3*Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.reg.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
+
+    with self.implicit_connect(
+            ImplicitConnect(self.reg.pwr_out, [Power]),
+            ImplicitConnect(self.reg.gnd, [Common]),
+    ) as imp:
+      self.mcu = imp.Block(IoController())
+
+      self.conn = self.Block(PassiveConnector(4))
+      self.sense = imp.Block(Hx711())
+      self.connect(self.mcu.gpio.request('hx711_dout'), self.sense.dout)
+      self.connect(self.mcu.gpio.request('hx711_sck'), self.sense.sck)
+      self.connect(self.conn.pins.request('1'), self.sense.ep)
+      self.connect(self.conn.pins.request('2'), self.sense.en)
+      self.connect(self.conn.pins.request('3'), self.sense.sp)
+      self.connect(self.conn.pins.request('4'), self.sense.sn)
+
+  def refinements(self) -> Refinements:
+    return super().refinements() + Refinements(
+      instance_refinements=[
+        (['reg'], Tps561201),
+        (['mcu'], Esp32_Wroom_32),
+      ],)
+
+
 class BlinkyTestCase(unittest.TestCase):
   def test_design_empty(self) -> None:
     compile_board_inplace(TestBlinkyEmpty, False)
