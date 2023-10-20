@@ -47,7 +47,7 @@ Start by **creating a empty `KiCadSchematicBlock` Block class:**
 
 > `KiCadSchematicBlock` is a `Block` that is defined by a KiCad schematic.
 
-Then, define the ports in `__init__(...)`, which must have the same name as the hierarchical labels:
+Then, **define the ports in `__init__(...)`**, which must have the same name as the hierarchical labels:
 
 ```diff
   class Hx711(KiCadSchematicBlock):
@@ -71,7 +71,43 @@ Then, define the ports in `__init__(...)`, which must have the same name as the 
 ```
 
 > Like the top-level board, the contents of a Block can be defined in `def contents(...)`.
-> However, interfaces (like boundary ports and constructor parameters) must be defined in `def __init__(...)`.  
+> However, interfaces (like boundary ports and constructor parameters) must be defined in `def __init__(...)`.
+
+> In the HDL model, ports must have a type.
+> `Ground`, `VoltageSink`, `DigitalSource`, and `DigitalSink` are typed ports that have electronics modeling (e.g. voltage limits for `VoltageSink` and IO thresholds for `DigitalSink`).
+> `Passive` represents a port with no electronics modeling and can be connected to any other `Passive` port.
+> Unlike schematic ERC, `Passive` cannot be directly connected to a typed port and requires an adaptor (described later).
+> 
+> As these are intermediate ports (they connect to internal ports, here in the schematic), they must be `.empty()` to not define parameters like voltage limits which will be inferred from internal connections.
+
+Then, **import the schematic**:
+
+```diff
+  class Hx711(KiCadSchematicBlock):
+    def __init__(self) -> None:
+      super().__init__()
+      ...
+
+    def contents(self) -> None:
+      super().contents()
++ 
++     self.import_kicad("path/to/your/hx711.sch", auto_adapt=True)
+```
+
+
+
+```diff
+  class Hx711(KiCadSchematicBlock):
+    def __init__(self) -> None:
+      super().__init__()
+      ...
+
+    def contents(self) -> None:
+      super().contents()
+  
++     self.Q1 = self.Block(Bjt.Npn((0, 5)*Volt, 0*Amp(tol=0)))
+      self.import_kicad("path/to/your/hx711.sch", auto_adapt=True)
+```
 
 
 ### Additional Modeling
