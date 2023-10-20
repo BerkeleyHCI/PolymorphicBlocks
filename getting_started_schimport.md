@@ -116,6 +116,28 @@ Then, **import the schematic**:
 ## Top-Level Board
 
 
+```diff
+  class BlinkyExample(SimpleBoardTop):
+    def contents(self) -> None:
+      super().contents()
+      ...
+
+      with self.implicit_connect(
+              ImplicitConnect(self.reg.pwr_out, [Power]),
+              ImplicitConnect(self.reg.gnd, [Common]),
+      ) as imp:
+        self.mcu = imp.Block(IoController())
+
++       self.conn = self.Block(PassiveConnector(4))
++       self.sense = imp.Block(Hx711())
++       self.connect(self.mcu.gpio.request('hx711_dout'), self.sense.dout)
++       self.connect(self.mcu.gpio.request('hx711_sck'), self.sense.sck)
++       self.connect(self.conn.pins.request('1'), self.sense.ep)
++       self.connect(self.conn.pins.request('2'), self.sense.en)
++       self.connect(self.conn.pins.request('3'), self.sense.sp)
++       self.connect(self.conn.pins.request('4'), self.sense.sn)
+```
+
 ## Reference
 
 These symbols can be used in schematic-defined blocks and map to the following passive-typed HDL blocks:
