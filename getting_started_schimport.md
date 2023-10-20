@@ -93,7 +93,13 @@ Then, **import the schematic**:
 +     self.import_kicad("path/to/your/hx711.sch", auto_adapt=True)
 ```
 
+> Many of the symbols in KiCad map to library Blocks with ports that are Passive-typed.
+> The `auto_adapt` argument in `import_kicad` automatically adds adapters from Passive to (for example) VoltageSink and DigitalSource at these interfaces.
+> These automatically-generated adapters produce ideal ports (for example, a VoltageSink with infinite voltage limits) and are great to get a quick-and-dirty schematic out fast, but do not enable the electronics model to check for correctness.
 
+Finally, while the capacitors and resistor parameters can be parsed by value, the transistor is more complex and must be instantiated separately in the HDL.
+**Instantiate a BJT in contents(...), making sure the name matches with the schematic refdes so the importer recognizes both as the same component.**
+**Make sure the schematic symbol has no value.**
 
 ```diff
   class Hx711(KiCadSchematicBlock):
@@ -108,12 +114,17 @@ Then, **import the schematic**:
       self.import_kicad("path/to/your/hx711.sch", auto_adapt=True)
 ```
 
-
-### Additional Modeling
+> Overall, there are four ways to define a component in this schematic import process:
+> 1. **Blackboxing** (like with the HX711 chip), where the symbol has a footprint defined: a Block is created with all Passive ports.
+> 2. **Value parsing** (like with resistors and capacitors), where the importer has an associated library Block for that particular symbol: the particular library Block is created and parses the value string to determine parameters.
+>    Typically, these are Passive-typed.
+> 3. **HDL instantiation** (like with the BJT), where the symbol has neither footprint or value, but a Block whose name matches the symbol refdes and with a defined symbol to port mapping: the existing Block is connected as described in the schematic.
+> 4. **Inline HDL** (not shown, but could be done with the BJT), where a Block's value contains HDL code prefixed with a `#`, and the resulting Block defines a symbol to port mapping.
+>    For the BJT, instead of instantiating the Block in `contents(...)`, you could instead have set the value in the schematic to `Bjt.Npn((0, 5)*Volt, 0*Amp(tol=0))`.
 
 
 ## Top-Level Board
-
+With a fully defined library Block, you can now **add it to your board:**
 
 ```diff
   class BlinkyExample(SimpleBoardTop):
@@ -137,18 +148,41 @@ Then, **import the schematic**:
 +       self.connect(self.conn.pins.request('4'), self.sense.sn)
 ```
 
+> The new Block should also show up in the library browser and can be added with graphical actions in the IDE.
+> A recompile may be needed for the library browser to index the new Block.
+
+
+### Additional Modeling
+
+TBD
+
+
 ## Reference
 
-These symbols can be used in schematic-defined blocks and map to the following passive-typed HDL blocks:
+These common symbols can be used in schematic import and map to the following passive-typed HDL blocks:
 
-| Symbol | HDL Block | Value Parsing | Notes |
-|---|---|---|---|
-| ducjs | cc | cc |
-| ducjs | cc | cc |
+| Symbol                             | HDL Block          | Value Parsing | Notes                            |
+|------------------------------------|--------------------|---------------|----------------------------------|
+| Device:C, Device:C_Polarized       | Capacitor          | e.g. 10uF 10V | Voltage rating must be specified |
+| Device:R                           | Resistor           | e.g. 100      |                                  |
+| Device:L                           | Inductor           |               |                                  |
+| Device:Q_NPN_\*, Device:Q_PNP_\*   | Bjt.Npn, Bjt.Pnp   |               |                                  |
+| Device:D                           | Diode              |               |                                  |
+| Device:L_Ferrite                   | FerriteBead        |               |                                  |
+| Device:Q_NMOS_\*, Device:Q_PMOS_\* | Fet.NFet, Fet.PFet |               |                                  |
+| Switch:SW_SPST                     | Switch             |               |                                  |
 
-These symbols may to non-passive-typed HDL blocks:
+Notes:
+- Blocks are passive-typed unless otherwise noted.
+- If Value Parsing is empty, the Block can only be defined by HDL instantiation or inline HDL.
+- All Blocks that can be used in schematic import can be found by searching for all subclasses of `KiCadImportableBlock`.
+- In many cases, the `_Small` (e.g. `Device:C_Small`) symbol can also be used.
 
-
-TODO:
-SChematic: must delete value from BJT
-Schematic: cap voltage must be cap V
+These higher-level analog parts
+| Symbol                           | HDL Block         | Notes                                                |
+----------------------------------|-------------------|---------------|------------------------------------------------------|
+| Simulation_SPICE:OPAMP           | Opamp             |  |
+| edg_importable:Amplifier | Amplifier | | 
+| edg_importable:DifferentialAmplifier | DifferentialAmplifier | |
+| edg_importable:IntegratorInverting | IntegratorInverting | |
+| edg_importable:OpampCurrentSensor | OpampCurrentSensor | | 
