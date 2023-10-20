@@ -407,7 +407,7 @@ class TestBlinkyPacked(SimpleBoardTop):
       ])
 
 
-class Hx711(KiCadSchematicBlock, Block):
+class Hx711(KiCadSchematicBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -426,8 +426,7 @@ class Hx711(KiCadSchematicBlock, Block):
     super().contents()
     self.Q1 = self.Block(Bjt.Npn((0, 5)*Volt, 0*Amp(tol=0)))
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
-      conversions={
-      }, auto_adapt=True)
+                      auto_adapt=True)
 
 
 class TestBlinkyWithSchematicImport(SimpleBoardTop):

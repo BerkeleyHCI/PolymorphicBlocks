@@ -31,7 +31,47 @@ A few notes here:
 
 
 ## HDL Stub
-While the 
+While the schematic defines the implementation, an HDL Block wrapper class is still required to interoperate with the rest of the system.
+Start by **creating a empty `KiCadSchematicBlock` Block class:**
+
+```diff
++ class Hx711(KiCadSchematicBlock):
++   def __init__(self) -> None:
++     super().__init__()
++     # block boundary (ports, parameters) definition here
++ 
++   def contents(self) -> None:
++     super().contents()
++     # block implementation (subblocks, internal connections, footprint) here
+```
+
+> `KiCadSchematicBlock` is a `Block` that is defined by a KiCad schematic.
+
+Then, define the ports in `__init__(...)`, which must have the same name as the hierarchical labels:
+
+```diff
+  class Hx711(KiCadSchematicBlock):
+    def __init__(self) -> None:
+      super().__init__()
++ 
++     self.pwr = self.Port(VoltageSink.empty(), [Power])
++     self.gnd = self.Port(Ground.empty(), [Common])
++ 
++     self.dout = self.Port(DigitalSource.empty())
++     self.sck = self.Port(DigitalSink.empty())
++ 
++     self.ep = self.Port(Passive.empty())
++     self.en = self.Port(Passive.empty())
++     self.sp = self.Port(Passive.empty())
++     self.sn = self.Port(Passive.empty())
+
+    def contents(self) -> None:
+      super().contents()
+      # block implementation (subblocks, internal connections, footprint) here
+```
+
+> Like the top-level board, the contents of a Block can be defined in `def contents(...)`.
+> However, interfaces (like boundary ports and constructor parameters) must be defined in `def __init__(...)`.  
 
 
 ### Additional Modeling
