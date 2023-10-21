@@ -153,9 +153,35 @@ With a fully defined library Block, you can now **add it to your board:**
 > A recompile may be needed for the library browser to index the new Block.
 
 
-### Additional Modeling
+## Additional Modeling
 
-TBD
+While a schematic-defined Block allows subcircuit definition quickly and easily, we didn't model the device's electrical characteristics like pin voltage limitations, and as a result the automated checks would not be able to help here.
+However, instead of using `auto_adapt`, we can instead define `conversions` on a symbol pin or boundary port basis.
+**Add these conversions:**
+```diff
+  class Hx711(KiCadSchematicBlock):
+    def __init__(self) -> None:
+      super().__init__()
+      ...
+
+    def contents(self) -> None:
+      super().contents()
+  
+      self.Q1 = self.Block(Bjt.Npn((0, 5)*Volt, 0*Amp(tol=0)))
+-     self.import_kicad("path/to/your/hx711.sch", auto_adapt=True)
++     self.import_kicad("path/to/your/hx711.sch"),
++                       conversions={
++                         'pwr': VoltageSink(
++                           voltage_limits=(2.6, 5.5)*Volt,
++                           current_draw=(0.3 + 0.2, 1400 + 100)*uAmp),
++                         'gnd': Ground(),
++                         'dout': DigitalSource.from_supply(self.gnd, self.pwr),
+ +                        'sck': DigitalSink.from_supply(self.gnd, self.pwr),
++                       })
+```
+
+Here, we manually specified port models for the boundary ports, in particular including the limits of the input voltage.
+Some of the port models have been left blank (notably, the digital input thresholds of the input SCK pin are missing, since they are not specified in the datasheet), and by convention these default to ideal models.
 
 
 ## Reference
