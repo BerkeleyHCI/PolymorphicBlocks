@@ -163,8 +163,8 @@ These common symbols can be used in schematic import and map to the following pa
 
 | Symbol                             | HDL Block          | Value Parsing | Notes                            |
 |------------------------------------|--------------------|---------------|----------------------------------|
-| Device:C, Device:C_Polarized       | Capacitor          | e.g. 10uF 10V | Voltage rating must be specified |
-| Device:R                           | Resistor           | e.g. 100      |                                  |
+| Device:C, Device:C_Polarized       | Capacitor          | e.g. `10uF 10V` | Voltage rating must be specified |
+| Device:R                           | Resistor           | e.g. `100`      |                                  |
 | Device:L                           | Inductor           |               |                                  |
 | Device:Q_NPN_\*, Device:Q_PNP_\*   | Bjt.Npn, Bjt.Pnp   |               |                                  |
 | Device:D                           | Diode              |               |                                  |
@@ -178,12 +178,23 @@ Notes:
 - All Blocks that can be used in schematic import can be found by searching for all subclasses of `KiCadImportableBlock`.
 - In many cases, the `_Small` (e.g. `Device:C_Small`) symbol can also be used.
 
-These higher-level analog parts
+These higher-level symbols have typed pins (like VoltageSink, Ground, and AnalogSink) and can be used to make higher-level analog signal chains:
 
-| Symbol                               | HDL Block             | Notes |
-|--------------------------------------|-----------------------|-------|
-| Simulation_SPICE:OPAMP               | Opamp                 |       |
-| edg_importable:Amplifier             | Amplifier             |       |
-| edg_importable:DifferentialAmplifier | DifferentialAmplifier |       |
-| edg_importable:IntegratorInverting   | IntegratorInverting   |       |
-| edg_importable:OpampCurrentSensor    | OpampCurrentSensor    |       | 
+| Symbol                               | HDL Block             | Notes                                                                                                                     |
+|--------------------------------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------|
+| Simulation_SPICE:OPAMP               | Opamp                 | Supports value parsing (with empty value); is the full application circuit for an opamp (including decoupling capacitors) |
+| edg_importable:Amplifier             | Amplifier             |                                                                                                                           |
+| edg_importable:DifferentialAmplifier | DifferentialAmplifier |                                                                                                                           |
+| edg_importable:IntegratorInverting   | IntegratorInverting   |                                                                                                                           |
+| edg_importable:OpampCurrentSensor    | OpampCurrentSensor    |                                                                                                                           | 
+
+
+## Defining Library Parts
+Continue to [the next part of the tutorial](getting_started_library.md) on defining a library Block in pure HDL.
+
+### Additional Resources
+If you want to some more complex examples of schematic-defined Blocks, check out:
+- The FET power gate [schematic](examples/resources/FetPowerGate.kicad_sch) and [FetPowerGate stub class](examples/test_multimeter.py), a power button that turns on a FET which can then be latched on by a microcontroller.
+- The priority power OR [schematic](electronics_lib/resources/PriorityPowerOr.kicad_sch) and [PriorityPowerOr stub class](electronics_lib/PowerConditioning.py), a diode-FET circuit that merges two voltage sources with priority.
+- The source measure unit analog chain [schematic](examples/resources/SourceMeasureControl.kicad_sch) and [SourceMeasureControl stub class](examples/test_usb_source_measure.py), which uses the analog building blocks above.
+- The differential amplifier [schematic](electronics_abstract_parts/resources/DifferentialAmplifier.kicad_sch) and [DifferentialAmplifier stub class](electronics_abstract_parts/OpampCircuits.py), a standard opamp circuit that mixes schematic definition for the connectivity and generator code to compute resistor values.

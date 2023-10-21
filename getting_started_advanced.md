@@ -276,7 +276,7 @@ class BlinkyExample(SimpleBoardTop):
 
 ## Board Optimization
 
-Continue to [part 4 of the tutorial](getting_started_optimization.md) on optimizing the board using packed components.
+Continue to [the next part of the tutorial](getting_started_optimization.md) on optimizing the board using packed components.
 
 ### Additional Resources
 Check out these examples of generators:

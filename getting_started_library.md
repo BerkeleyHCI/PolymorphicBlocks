@@ -392,4 +392,4 @@ class BlinkyExample(SimpleBoardTop):
 
 ## Advanced Library Construction
 
-Continue to [part 3 of the tutorial](getting_started_advanced.md) on using generators and port arrays to refactor the LED array as a parameterized block.
+Continue to [the next part of the tutorial](getting_started_advanced.md) on using generators and port arrays to refactor the LED array as a parameterized block.
