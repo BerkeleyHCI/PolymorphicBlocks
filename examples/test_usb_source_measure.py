@@ -72,8 +72,8 @@ class GatedEmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImporta
         'high_fet.G': AnalogSink(),
         'low_fet.G': AnalogSink(),
 
-        'high_res.1': VoltageSink(),
-        'low_res.1': VoltageSink(),
+        'high_res.2': AnalogSource(),
+        'low_res.2': AnalogSource(),
       })
 
 
