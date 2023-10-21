@@ -115,13 +115,14 @@ Finally, while the capacitors and resistor parameters can be parsed by value, th
 ```
 
 > Overall, there are four ways to define a component in this schematic import process:
-> 1. **Blackboxing** (like with the HX711 chip), where the symbol has a footprint defined: a Block is created with all Passive ports.
-> 2. **Value parsing** (like with resistors and capacitors), where the importer has an associated library Block for that particular symbol: the particular library Block is created and parses the value string to determine parameters.
+> 1. **Value parsing** (like with resistors and capacitors), where the importer has an associated library Block for that particular symbol: the particular library Block is created and parses the value string to determine parameters.
 >    Typically, these are Passive-typed.
-> 3. **HDL instantiation** (like with the BJT), where the symbol has neither footprint or value, but a Block whose name matches the symbol refdes and with a defined symbol to port mapping: the existing Block is connected as described in the schematic.
-> 4. **Inline HDL** (not shown, but could be done with the BJT), where a Block's value contains HDL code prefixed with a `#`, and the resulting Block defines a symbol to port mapping.
+> 2. **HDL instantiation** (like with the BJT), where the symbol has neither footprint or value, but a Block whose name matches the symbol refdes and with a defined symbol to port mapping: the existing Block is connected as described in the schematic.
+> 3. **Inline HDL** (not shown, but could be done with the BJT), where a Block's value contains HDL code prefixed with a `#`, and the resulting Block defines a symbol to port mapping.
 >    For the BJT, instead of instantiating the Block in `contents(...)`, you could instead have set the value in the schematic to `Bjt.Npn((0, 5)*Volt, 0*Amp(tol=0))`.
-
+> 4. **Blackboxing** (like with the HX711 chip), where the symbol has a footprint defined: a Block is created with all Passive ports.
+>
+> See the [reference section](#reference) below for KiCad symbols for value parsing, HDL instantiation, or inline HDL.  
 
 ## Top-Level Board
 With a fully defined library Block, you can now **add it to your board:**

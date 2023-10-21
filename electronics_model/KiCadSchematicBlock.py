@@ -206,7 +206,7 @@ class KiCadSchematicBlock(Block):
         for net in sch.nets:
             net_ports = [self._port_from_pin(pin, blocks_pins[pin.refdes], conversions)
                          for pin in net.pins]
-            boundary_ports: List[BasePort] = []
+            boundary_ports: List[Tuple[BasePort, str]] = []
             net_label_names = set()
             port_label_names = set()
             for net_label in net.labels:
@@ -224,25 +224,37 @@ class KiCadSchematicBlock(Block):
                         f"global label {global_label_name} has both node and boundary port"
                     node = nodes[global_label_name]
                     if node is not None:
-                        boundary_ports.append(node)
+                        boundary_ports.append((node, global_label_name))
                 elif global_label_port is not None:
                     # connect to boundary port, but not links
-                    boundary_ports.append(global_label_port)
+                    boundary_ports.append((global_label_port, global_label_name))
                 else:
                     raise ValueError(f"global label {global_label_name} must connect to boundary port or node")
 
-            # if specified, generate automatic adaptors for Passive ports
-            if auto_adapt and net_ports and all([isinstance(x, Passive) for x in net_ports]) and \
-                    boundary_ports and not all([isinstance(x, Passive) for x in boundary_ports]) and \
-                    all([isinstance(x, CircuitPort) for x in boundary_ports]):
-                passive_boundary_ports = [x for x in boundary_ports if isinstance(x, Passive)]
-                nonpassive_boundary_ports = [x for x in boundary_ports if not isinstance(x, Passive)]
-                internal_connection = self.connect(*passive_boundary_ports, *net_ports)
-                assert isinstance(nonpassive_boundary_ports[0], CircuitPort)
-                adapted = cast(Passive, net_ports[0]).adapt_to(nonpassive_boundary_ports[0].__class__())  # ideal port
-                connection = self.connect(*nonpassive_boundary_ports, adapted)
-            else:
-                connection = self.connect(*boundary_ports, *net_ports)
+            connection = self.connect(*net_ports)
+            can_adapt = net_ports and all([isinstance(x, Passive) for x in net_ports])
+            for (boundary_port, boundary_port_name) in boundary_ports:  # generate adapters as needed, port by port
+                if boundary_port_name in conversions:
+                    assert can_adapt, "conversion to boundary port only allowed for Passive ports"
+                    adapted: BasePort = cast(Passive, net_ports[0]).adapt_to(conversions[boundary_port_name])
+                elif auto_adapt and can_adapt and isinstance(boundary_port, CircuitPort):
+                    adapted = cast(Passive, net_ports[0]).adapt_to(boundary_port.__class__())
+                else:
+                    adapted = net_ports[0]  # no conversion needed, direct conversion
+                self.connect(adapted, boundary_port)
+            #
+            # # if specified, generate automatic adaptors for Passive ports
+            # if auto_adapt and net_ports and all([isinstance(x, Passive) for x in net_ports]) and \
+            #         boundary_ports and not all([isinstance(x, Passive) for x in boundary_ports]) and \
+            #         all([isinstance(x, CircuitPort) for x in boundary_ports]):
+            #     passive_boundary_ports = [x for x in boundary_ports if isinstance(x, Passive)]
+            #     nonpassive_boundary_ports = [x for x in boundary_ports if not isinstance(x, Passive)]
+            #     internal_connection = self.connect(*passive_boundary_ports, *net_ports)
+            #     assert isinstance(nonpassive_boundary_ports[0], CircuitPort)
+            #     adapted = cast(Passive, net_ports[0]).adapt_to(nonpassive_boundary_ports[0].__class__())  # ideal port
+            #     connection = self.connect(*nonpassive_boundary_ports, adapted)
+            # else:
+            #     connection = self.connect(*boundary_ports, *net_ports)
 
             if net_label_names:
                 assert len(net_label_names) == 1, "multiple net names not supported"
