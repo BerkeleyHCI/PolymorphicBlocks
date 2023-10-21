@@ -118,10 +118,8 @@ class EspAutoProgram(Interface, KiCadSchematicBlock):
     self.import_kicad(
       self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
-        'dtr_res.1': DigitalSink(),
-        'rts_res.1': DigitalSink(),
-        'q_en.E': DigitalSink(),
-        'q_boot.E': DigitalSink(),
-        'q_en.C':  output_model,
-        'q_boot.C': output_model
+        'dtr': DigitalSink(),
+        'rts': DigitalSink(),
+        'en':  output_model,
+        'boot': output_model
       })
