@@ -74,5 +74,6 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
         'boot_neg_diode.A': VoltageSource(
           voltage_out=-self.voltage_out,
         ),
-        'gnd': Ground(),
+        'boot_gnd_diode.K': Ground(),
+        'sense.2': Ground(),
       })
