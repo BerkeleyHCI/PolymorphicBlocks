@@ -1,4 +1,4 @@
-# Getting Started, Part 2: Schematic-Defined Library Blocks
+# Getting Started Tutorial: Schematic-Defined Library Blocks
 _In this section, we build a graphical-schematic-defined HX711-based load cell amplifier subcircuit block and add it to our board._
 
 > This section describes how to define a block in KiCad's graphical schematic editor and import it into an HDL flow.

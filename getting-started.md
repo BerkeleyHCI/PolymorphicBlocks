@@ -1,4 +1,4 @@
-# Getting Started
+# Getting Started Tutorial
 
 ## Core concepts
 The core abstraction is the hierarchical block diagram, which we will explain using an example design of a microcontroller driving an LED.

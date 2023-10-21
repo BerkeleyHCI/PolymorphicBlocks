@@ -1,4 +1,4 @@
-# Getting Started, Part 3: Advanced Library Construction
+# Getting Started Tutorial: Advanced Library Construction
 _In this section, we will convert the four-LED array into an n-LED array block and go through the advanced constructs of generators and port arrays._
 
 As a refresher, in the first part of the getting started tutorial, we dropped 4 LEDs directly in our top-level design sign with a `for` loop in:  
