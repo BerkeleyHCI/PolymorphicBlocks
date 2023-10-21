@@ -85,8 +85,7 @@ class KiCadSchematicBlock(Block):
     Net labels are used for internal schematic connectivity and net naming. Net label names are used
     as link names, and must not collide with any existing object member.
 
-    Passive-typed ports on instantiated components can be converted to the target port model
-    via the conversions mapping.
+    Passive-typed ports in the schematic can be converted to the target port model via the conversions mapping.
 
     This Block's interface (ports, parameters) must remain defined in HDL, to support static analysis tools."""
     @staticmethod
@@ -138,6 +137,19 @@ class KiCadSchematicBlock(Block):
                 return None
         return inner(self, path.split('.'))
 
+    """
+    Import the schematic file specified by the filepath.
+    locals specifies variables available to any inline HDL.
+    nodes specifies connections to the schematic's boundary ports, where they do not match by name to this 
+      Block's boundary ports
+    conversions specifies port type conversions (akin to .adapt_to) for Passive-typed ports in the schematic.
+    These can either be specified by a pin name (eg, 'R1.1'), in which case the pin is individually adapted,
+      or a schematic boundary port name (eg, 'PORT_A'), in which case the pins are connected as a Passive group
+      and an adapter is created from the group.
+    auto_adapt allows automatically adapting Passive-typed ports in the schematic to the corresponding 
+      ideal boundary port type.
+    This can be used in conjunction with conversions, though conversions take priority. 
+    """
     def import_kicad(self, filepath: str, locals: Mapping[str, Any] = {},
                      *, nodes: Mapping[str, Optional[BasePort]] = {}, conversions: Mapping[str, CircuitPort] = {},
                      auto_adapt: bool = False):
@@ -236,25 +248,13 @@ class KiCadSchematicBlock(Block):
             for (boundary_port, boundary_port_name) in boundary_ports:  # generate adapters as needed, port by port
                 if boundary_port_name in conversions:
                     assert can_adapt, "conversion to boundary port only allowed for Passive ports"
-                    adapted: BasePort = cast(Passive, net_ports[0]).adapt_to(conversions[boundary_port_name])
+                    adapted = cast(Passive, net_ports[0]).adapt_to(conversions[boundary_port_name])
+                    self.connect(adapted, boundary_port)
                 elif auto_adapt and can_adapt and isinstance(boundary_port, CircuitPort):
                     adapted = cast(Passive, net_ports[0]).adapt_to(boundary_port.__class__())
+                    self.connect(adapted, boundary_port)
                 else:
-                    adapted = net_ports[0]  # no conversion needed, direct conversion
-                self.connect(adapted, boundary_port)
-            #
-            # # if specified, generate automatic adaptors for Passive ports
-            # if auto_adapt and net_ports and all([isinstance(x, Passive) for x in net_ports]) and \
-            #         boundary_ports and not all([isinstance(x, Passive) for x in boundary_ports]) and \
-            #         all([isinstance(x, CircuitPort) for x in boundary_ports]):
-            #     passive_boundary_ports = [x for x in boundary_ports if isinstance(x, Passive)]
-            #     nonpassive_boundary_ports = [x for x in boundary_ports if not isinstance(x, Passive)]
-            #     internal_connection = self.connect(*passive_boundary_ports, *net_ports)
-            #     assert isinstance(nonpassive_boundary_ports[0], CircuitPort)
-            #     adapted = cast(Passive, net_ports[0]).adapt_to(nonpassive_boundary_ports[0].__class__())  # ideal port
-            #     connection = self.connect(*nonpassive_boundary_ports, adapted)
-            # else:
-            #     connection = self.connect(*boundary_ports, *net_ports)
+                    self.connect(connection, boundary_port)
 
             if net_label_names:
                 assert len(net_label_names) == 1, "multiple net names not supported"
