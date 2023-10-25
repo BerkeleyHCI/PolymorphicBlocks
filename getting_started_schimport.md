@@ -202,10 +202,10 @@ These common symbols can be used in schematic import and map to the following pa
 | Switch:SW_SPST                     | Switch             |                 |                                  |
 
 Notes:
-- Blocks are passive-typed unless otherwise noted.
+- Blocks are Passive-typed unless otherwise noted.
 - If Value Parsing is empty, the Block can only be defined by HDL instantiation or inline HDL.
 - All Blocks that can be used in schematic import can be found by searching for all subclasses of `KiCadImportableBlock`.
-- In many cases, the `_Small` (e.g. `Device:C_Small`) symbol can also be used.
+- In many cases, the `_Small` (like `Device:C_Small`) symbol can also be used.
 
 These higher-level symbols have typed pins (like VoltageSink, Ground, and AnalogSink) and can be used to make higher-level analog signal chains:
 
@@ -222,8 +222,8 @@ These higher-level symbols have typed pins (like VoltageSink, Ground, and Analog
 Continue to [the next part of the tutorial](getting_started_library.md) on defining a library Block in pure HDL.
 
 ### Additional Resources
-If you want to some more complex examples of schematic-defined Blocks, check out:
+If you want to see some more complex examples of schematic-defined Blocks, check out:
 - The FET power gate [schematic](examples/resources/FetPowerGate.kicad_sch) and [FetPowerGate stub class](examples/test_multimeter.py), a power button that turns on a FET which can then be latched on by a microcontroller.
 - The priority power OR [schematic](electronics_lib/resources/PriorityPowerOr.kicad_sch) and [PriorityPowerOr stub class](electronics_lib/PowerConditioning.py), a diode-FET circuit that merges two voltage sources with priority.
-- The source measure unit analog chain [schematic](examples/resources/SourceMeasureControl.kicad_sch) and [SourceMeasureControl stub class](examples/test_usb_source_measure.py), which uses the analog building blocks above.
+- The source measure unit analog chain [schematic](examples/resources/SourceMeasureControl.kicad_sch) and [SourceMeasureControl stub class](examples/test_usb_source_measure.py), a higher-level schematic that makes use of the opamp building blocks.
 - The differential amplifier [schematic](electronics_abstract_parts/resources/DifferentialAmplifier.kicad_sch) and [DifferentialAmplifier stub class](electronics_abstract_parts/OpampCircuits.py), a standard opamp circuit that mixes schematic definition for the connectivity and generator code to compute resistor values.
