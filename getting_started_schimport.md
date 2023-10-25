@@ -139,6 +139,8 @@ With a fully defined library Block, you can now **add it to your board:**
       ) as imp:
         self.mcu = imp.Block(IoController())
 
+        ...
+
 +       self.conn = self.Block(PassiveConnector(4))
 +       self.sense = imp.Block(Hx711())
 +       self.connect(self.mcu.gpio.request('hx711_dout'), self.sense.dout)
@@ -176,7 +178,7 @@ However, instead of using `auto_adapt`, we can instead define `conversions` on a
 +                           current_draw=(0.3 + 0.2, 1400 + 100)*uAmp),
 +                         'gnd': Ground(),
 +                         'dout': DigitalSource.from_supply(self.gnd, self.pwr),
- +                        'sck': DigitalSink.from_supply(self.gnd, self.pwr),
++                         'sck': DigitalSink.from_supply(self.gnd, self.pwr),
 +                       })
 ```
 
