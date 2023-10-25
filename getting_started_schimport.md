@@ -190,16 +190,16 @@ Some of the port models have been left blank (notably, the digital input thresho
 
 These common symbols can be used in schematic import and map to the following passive-typed HDL blocks:
 
-| Symbol                             | HDL Block          | Value Parsing | Notes                            |
-|------------------------------------|--------------------|---------------|----------------------------------|
+| Symbol                             | HDL Block          | Value Parsing   | Notes                            |
+|------------------------------------|--------------------|-----------------|----------------------------------|
 | Device:C, Device:C_Polarized       | Capacitor          | e.g. `10uF 10V` | Voltage rating must be specified |
 | Device:R                           | Resistor           | e.g. `100`      |                                  |
-| Device:L                           | Inductor           |               |                                  |
-| Device:Q_NPN_\*, Device:Q_PNP_\*   | Bjt.Npn, Bjt.Pnp   |               |                                  |
-| Device:D                           | Diode              |               |                                  |
-| Device:L_Ferrite                   | FerriteBead        |               |                                  |
-| Device:Q_NMOS_\*, Device:Q_PMOS_\* | Fet.NFet, Fet.PFet |               |                                  |
-| Switch:SW_SPST                     | Switch             |               |                                  |
+| Device:L                           | Inductor           |                 |                                  |
+| Device:Q_NPN_\*, Device:Q_PNP_\*   | Bjt.Npn, Bjt.Pnp   |                 |                                  |
+| Device:D                           | Diode              |                 |                                  |
+| Device:L_Ferrite                   | FerriteBead        |                 |                                  |
+| Device:Q_NMOS_\*, Device:Q_PMOS_\* | Fet.NFet, Fet.PFet |                 |                                  |
+| Switch:SW_SPST                     | Switch             |                 |                                  |
 
 Notes:
 - Blocks are passive-typed unless otherwise noted.
