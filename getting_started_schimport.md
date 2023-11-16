@@ -97,6 +97,15 @@ Then, **import the schematic**:
 > The `auto_adapt` argument in `import_kicad` automatically adds adapters from Passive to (for example) VoltageSink and DigitalSource at these interfaces.
 > These automatically-generated adapters produce ideal ports (for example, a VoltageSink with infinite voltage limits) and are great to get a quick-and-dirty schematic out fast, but do not enable the electronics model to check for correctness.
 
+> `KiCadSchematicBlock` provides a `file_path` method which allows paths to be specified relative to the Python file.
+> This takes a variable number of arguments, each as a path component under the Python file's folder.
+>
+> In the core libraries and examples, we typically put imported schematics in the `resources` folder and name the schematic consistently with the class, which is then imported as:
+> ```python
+> self.file_path("resources", f"{self.__class__.__name__}.kicad_sch")
+> ```
+
+
 Finally, while the capacitors and resistor parameters can be parsed by value, the transistor is more complex and must be instantiated separately in the HDL.
 **Instantiate a BJT in contents(...), making sure the name matches with the schematic refdes so the importer recognizes both as the same component.**
 **Make sure the schematic symbol has no value.**
