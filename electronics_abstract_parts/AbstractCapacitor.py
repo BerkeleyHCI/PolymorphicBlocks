@@ -48,9 +48,9 @@ class UnpolarizedCapacitor(PassiveComponent):
 @abstract_block
 class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
   """Polarized capacitor, which we assume will be the default"""
-  CAPACITOR_REGEX = re.compile("^" + f"([\d.{PartParserUtil.SI_PREFIXES}]+(?:\s*[{PartParserUtil.SI_PREFIXES}])?)\s*F?" +
+  CAPACITOR_REGEX = re.compile("^" + f"([\d.{PartParserUtil.SI_PREFIXES}]+)\s*F?" +
                                "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?" +
-                               "\s*" + f"([\d.{PartParserUtil.SI_PREFIXES}]+(?:\s*[{PartParserUtil.SI_PREFIXES}])?\s*V)" + "$")
+                               "\s*" + f"([\d.{PartParserUtil.SI_PREFIXES}]+\s*V)" + "$")
   CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
 
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:

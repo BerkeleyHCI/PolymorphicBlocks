@@ -78,15 +78,14 @@ class MultimeterAnalog(KiCadSchematicBlock, Block):
     output_voltage = self.pwr.link().voltage.hull(self.gnd.link().voltage)
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
-        'res.1': AnalogSink(),
-        'res.2': AnalogSource(  # assumed clamped by the switch in the resistor mux
+        'input_positive': AnalogSink(),
+        'output': AnalogSource(  # assumed clamped by the switch in the resistor mux
           voltage_out=output_voltage,
           signal_out=output_voltage,
           current_limits=(-10, 10)*mAmp,
           impedance=1*mOhm(tol=0)
         ),
-        'range.com': AnalogSink(),
-        'range.sw': AnalogSink(),
+        'input_negative': AnalogSink(),
       })
 
 
@@ -148,7 +147,7 @@ class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
           signal_out=(0, max_in_voltage),
           impedance=(1, 1000)*kOhm  # TODO properly model resistor mux
         ),
-        'diode.K': AnalogSink(  # TODO should be analog source
+        'output': AnalogSink(  # TODO should be analog source
           voltage_limits=self.voltage_rating
         )
       })
@@ -207,21 +206,17 @@ class FetPowerGate(PowerSwitch, KiCadSchematicBlock, Block):
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
-        'pull_res.1': VoltageSink(),
-        'pwr_fet.S': VoltageSink(
+        'pwr_in': VoltageSink(
           current_draw=self.pwr_out.link().current_drawn,
           voltage_limits=RangeExpr.ALL,
         ),
-        'pwr_fet.D': VoltageSource(
+        'pwr_out': VoltageSource(
           voltage_out=self.pwr_in.link().voltage,
           current_limits=RangeExpr.ALL,
         ),
-        'amp_res.2': DigitalSink(),  # TODO more modeling here?
-        'amp_fet.G': DigitalSink(),
-        'amp_fet.S': Ground(),
-        'amp_res.1': Ground(),
-        'btn.2': Ground(),
-        'btn_diode.A': DigitalSingleSource(
+        'control': DigitalSink(),  # TODO more modeling here?
+        'gnd': Ground(),
+        'btn_out': DigitalSingleSource(
           voltage_out=self.gnd.link().voltage,  # TODO model diode drop,
           output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
           low_signal_driver=True

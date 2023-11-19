@@ -1,4 +1,4 @@
-# Getting Started, Part 4: Optimization
+# Getting Started: Optimization
 _This short tutorial puts the finishing touches on your design, by multipacking the resistors into a quad-pack device._
 
 

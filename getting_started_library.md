@@ -1,4 +1,4 @@
-# Getting Started, Part 2: Building Library Blocks
+# Getting Started: Building Library Blocks
 _In this section, we build and add a digital magnetic field sensor ([LF21215TMR](https://www.littelfuse.com/~/media/electronics/datasheets/magnetic_sensors_and_reed_switches/littelfuse_tmr_switch_lf21215tmr_datasheet.pdf.pdf)) to our design._
 _We do this in two stages, first defining a `FootprintBlock` for the chip itself, then building the wrapper application circuit `Block` around it._
 
@@ -20,18 +20,14 @@ class Lf21215tmr_Device(FootprintBlock):
     # block implementation (subblocks, internal connections, footprint) here
 ```
 
-> If using the IDE: the class skeleton can be created from the Library Browser.
-> 1. Start by selecting an insertion location, at the top level of the file, outside any class or function.
-> 2. In the Library Browser, find the block you want to subclass (`FootprintBlock` here)
-> 3. Right click on the block entry, and select "Define New Subclass".
-> 4. Give it a name, here `Lf21215tmr_Device`
-> 5. It should insert the class skeleton.
-> 
 > While you can edit block definitions in the IDE, it must be part of a valid top-level design.
 > It currently is not possible to set a non-BoardTop block as the top level.
 > However, you can instantiate this block in your design, then double-click into it, and edit from there.
 > 
 > If you want to instantiate the new block from the GUI, you will need to recompile first.
+> 
+> IDE support for library construction is very limited.
+> You currently can't create Blocks or insert Ports from the IDE.
 
 > `__init__` is meant to define the interface of a block (all Ports and Parameters), while `contents` is meant to define the contents of a block (largely Blocks, connections, and constraints).
 > This split is not enforced (and there are cases where it is desirable to mix them into just `__init__`), but the main benefits of this are performance (avoid building the full design tree unnecessarily) and separation for readability.
@@ -52,9 +48,6 @@ class Lf21215tmr_Device(FootprintBlock):
     self.vout = self.Port(DigitalSource())
   ...
 ```
-
-> If using the IDE: ports can be instantiated through the library browser the same way as blocks are.
-> Make sure the caret is inside `__init__`.
 
 Similar to the buck converter blocks, these ports are also parameterized.
 We will need to modify these with values from the datasheet:
@@ -99,8 +92,6 @@ self.vout = self.Port(DigitalSource.from_supply(
   output_threshold_offset=(0.2, -0.3)
 ))
 ```
-
-> Neither `Ground()` nor `DigitalSource.from_supply()` can be directly instantiated from the IDE.
 
 > With a relatively simple example like this, you may be wondering why this needs an HDL instead of a diagram with property sheet interface that supports mathematical expressions.
 > That interface would have a few shortcomings:
@@ -314,8 +305,6 @@ class Lf21215tmr(Block):
     ...
 ```
 
-> `Export` cannot be created from the IDE.
-
 > <details>
 >   <summary>At this point, your HDL might look like...</summary>
 >
@@ -403,4 +392,4 @@ class BlinkyExample(SimpleBoardTop):
 
 ## Advanced Library Construction
 
-Continue to [part 3 of the tutorial](getting_started_advanced.md) on using generators and port arrays to refactor the LED array as a parameterized block.
+Continue to [the next part of the tutorial](getting_started_advanced.md) on using generators and port arrays to refactor the LED array as a parameterized block.
