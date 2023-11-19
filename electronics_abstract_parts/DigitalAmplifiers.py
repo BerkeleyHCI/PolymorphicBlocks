@@ -1,14 +1,23 @@
+from typing import Dict
+
 from electronics_model import *
 from .AbstractFets import SwitchFet
 from .AbstractResistor import Resistor
+from .AbstractDiodes import ZenerDiode
 from .Categories import PowerSwitch
 
 
-class HighSideSwitch(PowerSwitch, KiCadSchematicBlock):
+class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
+  """A high-side FET switch, using a two switch architecture, a main pass PFET with a amplifier NFET to drive its gate.
+  If clamp_voltage is nonzero, a zener clamp is generated to limit the PFET gate voltage.
+  The clamp resistor is specified as a ratio from the pull resistance.
+
+  TODO: clamp_voltage should be compared against the actual voltage so the clamp is automatically generated,
+  but generators don't support link terms (yet?)"""
   @init_in_parent
   def __init__(self, pull_resistance: RangeLike = 10000*Ohm(tol=0.01), max_rds: FloatLike = 1*Ohm,
                frequency: RangeLike = RangeExpr.ZERO, *,
-               clamp_voltage: RangeLike = (14, 18)*Volt) -> None:
+               clamp_voltage: RangeLike = RangeExpr.ZERO, clamp_resistance_ratio: FloatLike = 10) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])  # amplifier voltage
@@ -22,9 +31,11 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock):
     self.frequency = self.ArgParameter(frequency)
 
     self.clamp_voltage = self.ArgParameter(clamp_voltage)
+    self.clamp_resistance_ratio = self.ArgParameter(clamp_resistance_ratio)
+    self.generator_param(self.clamp_voltage)
 
-  def contents(self):
-    super().contents()
+  def generate(self):
+    super().generate()
 
     pwr_voltage = self.pwr.link().voltage
     pull_resistance = self.pull_resistance
@@ -45,12 +56,20 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock):
     ))
     self.pull = self.Block(Resistor(
       resistance=pull_resistance,
-      power=(0, pull_power_max)
+      power=(0, pull_power_max),
+      voltage=(0, pwr_voltage.upper())
     ))
+
+    clamp_voltage = self.get(self.clamp_voltage)
+    if clamp_voltage == Range(0, 0):  # no clamp
+      pass_gate_voltage = pwr_voltage
+    else:
+      pass_gate_voltage = self.clamp_voltage
+
     self.drv = self.Block(SwitchFet.PFet(
       drain_voltage=pwr_voltage,
       drain_current=self.output.link().current_drawn,
-      gate_voltage=pwr_voltage,
+      gate_voltage=pass_gate_voltage,
       rds_on=(0, self.max_rds),
       gate_charge=(0, float('inf')),  # TODO size on turnon time
       power=(0, 0) * Watt,
@@ -59,22 +78,37 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock):
                      pwr_voltage.lower() / low_amp_rds_max)  # TODO simultaneously solve both FETs
     ))
 
-    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
-                                     conversions={
-                                       'pwr': VoltageSink(
-                                         current_draw=self.output.link().current_drawn
-                                       ),
-                                       'output': DigitalSource(
-                                         voltage_out=(0, self.pwr.link().voltage.upper()),
-                                         current_limits=self.drv.actual_drain_current_rating,
-                                         output_thresholds=(0, self.pwr.link().voltage.upper()),
-                                       ),
-                                       'control': DigitalSink(
-                                         current_draw=(0, 0)*Amp  # TODO model pullup resistor current
-                                         # no voltage limits or threshold, those are constraints to pass into the FETs
-                                       ),
-                                       'gnd': Ground(),
-                                     })
+    conversions: Dict[str, CircuitPort] = {
+      'pwr': VoltageSink(
+        current_draw=self.output.link().current_drawn
+      ),
+      'output': DigitalSource(
+        voltage_out=(0, self.pwr.link().voltage.upper()),
+        current_limits=self.drv.actual_drain_current_rating,
+        output_thresholds=(0, self.pwr.link().voltage.upper()),
+      ),
+      'control': DigitalSink(
+        current_draw=(0, 0)*Amp  # TODO model pullup resistor current
+        # no voltage limits or threshold, those are constraints to pass into the FETs
+      ),
+      'gnd': Ground(),
+    }
+
+    if clamp_voltage == Range(0, 0):  # no clamp
+      self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+                                       conversions=conversions)
+    else:
+      self.zener = self.Block(ZenerDiode(self.clamp_voltage))
+      zlim_resistance = self.pull_resistance / self.clamp_resistance_ratio
+      zlim_voltage_max = pwr_voltage.upper() - self.clamp_voltage.lower()
+      zlim_power_max = zlim_voltage_max * zlim_voltage_max / zlim_resistance.lower()
+      self.zlim = self.Block(Resistor(
+        resistance=pull_resistance / self.clamp_resistance_ratio,
+        power=(0, zlim_power_max),
+        voltage=(0, zlim_voltage_max)
+      ))
+      self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}_Zener.kicad_sch"),
+                        conversions=conversions)
 
 
 class OpenDrainDriver(PowerSwitch, Block):
