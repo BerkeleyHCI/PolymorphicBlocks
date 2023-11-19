@@ -180,7 +180,7 @@ However, instead of using `auto_adapt`, we can instead define `conversions` on a
   
       self.Q1 = self.Block(Bjt.Npn((0, 5)*Volt, 0*Amp(tol=0)))
 -     self.import_kicad("path/to/your/hx711.sch", auto_adapt=True)
-+     self.import_kicad("path/to/your/hx711.sch"),
++     self.import_kicad("path/to/your/hx711.sch",
 +                       conversions={
 +                         'pwr': VoltageSink(
 +                           voltage_limits=(2.6, 5.5)*Volt,
@@ -191,8 +191,17 @@ However, instead of using `auto_adapt`, we can instead define `conversions` on a
 +                       })
 ```
 
-Here, we manually specified port models for the boundary ports, in particular including the limits of the input voltage.
-Some of the port models have been left blank (notably, the digital input thresholds of the input SCK pin are missing, since they are not specified in the datasheet), and by convention these default to ideal models.
+> `conversions` allows a port model to be specified on either a symbol pin or boundary port, and is defined as a dict from the pin name to the port model.
+> If specified on a symbol pin, the adapter is inserted inline at the symbol pin; and if specified on a boundary port, the adapter is inserted before the boundary port, with the symbol pins internally connected as Passive.
+> 
+> Port models can be fully or partially specified.
+> For example, the `pwr` VoltageSink is fully specified with both `voltage_limits` and `current_draw`, while the `sck` DigitalSink is only partially specified and missing its digital input thresholds which are not defined in the datasheet.
+> By convention, unspecified fields default to ideal models: for example, a missing `voltage_limits` would mean infinite voltage tolerance.
+> 
+> `conversions` can be used in conjunction with `auto_adapt`, with `conversions` taking priority:
+> ```python
+> self.import_kicad("path/to/your/hx711.sch", conversions={...}, auto_adapt=True)
+> ```
 
 
 ## Reference
