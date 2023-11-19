@@ -114,11 +114,15 @@ class TableDiode(Diode, BaseDiodeStandardFootprint, PartsTableFootprintSelector,
 
 
 @abstract_block
-class ZenerDiode(BaseDiode, DiscreteSemiconductor):
+class ZenerDiode(KiCadImportableBlock, BaseDiode, DiscreteSemiconductor):
   """Base class for untyped zeners
 
   TODO power? capacitance? leakage current?
   """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:D_Zener', 'Device:D_Zener_Small')
+    return {'A': self.anode, 'K': self.cathode}
+
   @init_in_parent
   def __init__(self, zener_voltage: RangeLike) -> None:
     super().__init__()

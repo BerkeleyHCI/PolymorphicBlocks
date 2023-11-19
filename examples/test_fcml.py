@@ -154,26 +154,22 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
         'high_boot_out_node': self.driver.high_pwr
       },
       conversions={
-        'low_fet.S': VoltageSink(
+        'low_in': VoltageSink(
           current_draw=self.low_out.link().current_drawn
         ),
-        'low_fet.D': VoltageSource(
+        'low_out': VoltageSource(
           voltage_out=self.low_in.link().voltage
         ),
-        'high_fet.D': VoltageSink(
+        'high_in': VoltageSink(
           current_draw=self.high_out.link().current_drawn
         ),
-        'high_fet.S': VoltageSource(
+        'high_out': VoltageSource(
           voltage_out=self.low_in.link().voltage
         ),
-        'cap.1': VoltageSink(),
-        'cap.2': VoltageSink(),
         'low_boot_cap.1': VoltageSink(),
-        'low_boot_cap.2': VoltageSink(),
         'high_boot_cap.1': VoltageSink(),
-        'high_boot_cap.2': VoltageSink(),
-        'low_gate_res.1': DigitalSink(),  # TODO model gate current draw
-        'high_gate_res.1': DigitalSink(),  # TODO model gate current draw
+        'low_gate': DigitalSink(),  # TODO model gate current draw
+        'high_gate': DigitalSink(),  # TODO model gate current draw
       })
 
 
