@@ -7,7 +7,8 @@ from .Categories import PowerSwitch
 class HighSideSwitch(PowerSwitch, KiCadSchematicBlock):
   @init_in_parent
   def __init__(self, pull_resistance: RangeLike = 10000*Ohm(tol=0.01), max_rds: FloatLike = 1*Ohm,
-               frequency: RangeLike = RangeExpr.ZERO) -> None:
+               frequency: RangeLike = RangeExpr.ZERO, *,
+               clamp_voltage: RangeLike = (14, 18)*Volt) -> None:
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])  # amplifier voltage
@@ -20,6 +21,8 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock):
     self.max_rds = self.ArgParameter(max_rds)
     self.frequency = self.ArgParameter(frequency)
 
+    self.clamp_voltage = self.ArgParameter(clamp_voltage)
+
   def contents(self):
     super().contents()
 
@@ -28,14 +31,12 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock):
     pull_current_max = pwr_voltage.upper() / pull_resistance.lower()
     pull_power_max = pwr_voltage.upper() * pwr_voltage.upper() / pull_resistance.lower()
 
-    gate_voltage = (3.0, 3.0) #(self.get(self.control.link().voltage)[1],  # TODO with better const prop we should use output_threshold[1]
-
     low_amp_rds_max = pull_resistance.lower() / 1000
 
     self.pre = self.Block(SwitchFet.NFet(
       drain_voltage=pwr_voltage,
       drain_current=(0, pull_current_max),
-      gate_voltage=gate_voltage,
+      gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper()),
       rds_on=(0, low_amp_rds_max),  # TODO size on turnon time
       gate_charge=(0, float('inf')),  # TODO size on turnon time
       power=(0, 0) * Watt,
