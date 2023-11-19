@@ -460,6 +460,12 @@
     (uuid f5ddbd1a-e315-4726-9c83-5f690a16c9c5)
   )
 
+  (text "The Zener limits Vgs to safe levels, even if pwr > Vgs,max.\nzlim limits the current through the Zener."
+    (at 128.27 106.68 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid e25c9be6-c90b-4730-a42a-90408da09a7b)
+  )
+
   (hierarchical_label "control" (shape input) (at 116.84 116.84 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid 0bc8cedd-6941-4a4d-95b4-ac6faeb3c0f4)
