@@ -54,21 +54,48 @@ class I2cConnector(Connector, Block):
     self.connect(self.i2c.scl, self.conn.pins.request('4').adapt_to(DigitalBidir()))
 
 
+class Rectifier_Sensor(KiCadSchematicBlock):
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.gnd = self.Port(Ground.empty(), [Common])
+
+    self.bldc_phase_1 = self.Port(DigitalSink.empty())
+    self.bldc_phase_2 = self.Port(DigitalSink.empty())
+    self.bldc_phase_3 = self.Port(DigitalSink.empty())
+
+    self.trigger_out = self.Port(AnalogSource.empty())
+
+  def contents(self) -> None:
+    super().contents()
+
+    Diode_Model = Diode((0, 30)*Volt, 0*Amp(tol=0))
+    self.D1 = self.Block(Diode_Model)
+    self.D2 = self.Block(Diode_Model)
+    self.D3 = self.Block(Diode_Model)
+    self.D4 = self.Block(Diode_Model)
+    self.D5 = self.Block(Diode_Model)
+    self.D6 = self.Block(Diode_Model)
+    self.D7 = self.Block(ZenerDiode(3.6*Volt(tol=0.05)))
+
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"), auto_adapt=True)
+
+
 class BldcHallSensor(Connector, Block):
-  """Generic BLDC hall sensor, as +5v, U, V, W, GND"""
+  """Generic BLDC hall sensor, as +3.3-5v, U, V, W, GND"""
   def __init__(self):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
 
     self.pwr = self.Export(self.conn.pins.request('1').adapt_to(VoltageSink(
-      voltage_limits=5*Volt(tol=0.1),
+      voltage_limits=(3, 5.5)*Volt(tol=0.1),
     )), [Power])
     self.gnd = self.Export(self.conn.pins.request('5').adapt_to(Ground()),
                            [Common])
 
     self.phases = self.Port(Vector(DigitalSingleSource.empty()))
     phase_model = DigitalSingleSource.low_from_supply(self.gnd)
-    for (pin, name) in [('2', 'u'), ('3', 'v'), ('4', 'w')]:
+    for (pin, name) in [('2', '1'), ('3', '2'), ('4', '3')]:
       phase = self.phases.append_elt(DigitalSingleSource.empty(), name)
       self.require(phase.is_connected(), f"all phases {name} must be connected")
       self.connect(phase, self.conn.pins.request(pin).adapt_to(phase_model))
@@ -86,7 +113,7 @@ class BldcController(JlcBoardTop):
 
     self.motor_pwr = self.Block(LipoConnector(voltage=(2.5, 4.2)*Volt*6, actual_voltage=(2.5, 4.2)*Volt*6))
 
-    self.vusb = self.connect(mcu_usb.vusb_out)
+    # self.vusb = self.connect(mcu_usb.vusb_out)
     self.v3v3 = self.connect(mcu_pwr.pwr_out)
     self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
       mcu_pwr.gnd_out, self.motor_pwr.gnd)
@@ -98,7 +125,7 @@ class BldcController(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
-      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
+      # (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
       (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
       (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
 
@@ -119,13 +146,23 @@ class BldcController(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.hall = imp.Block(BldcHallSensor())
-      self.connect(self.vusb, self.hall.pwr)
+      # self.connect(self.vusb, self.hall.pwr)
+      self.connect(self.v3v3, self.hall.pwr)
 
-      (self.hall_pull, self.hall_tp), _ = self.chain(self.hall.phases,
-                                                self.Block(PullupResistorArray(4.7*kOhm(tol=0.05))),
-                                                self.Block(DigitalArrayTestPoint()),
-                                                self.mcu.gpio.request_vector('hall'))
-      self.connect(self.hall_pull.pwr, self.v3v3)
+      # Experimental RC Filter in Hall Sensor Signal Line. Array version may be supported later
+      self.hall_pull = ElementDict[PullupResistor]()
+      self.hall_tp = ElementDict[DigitalTestPoint]()
+      self.hall_rc = ElementDict[DigitalLowPassRc]()
+      self.hall_rc_tp = ElementDict[DigitalTestPoint]()
+      for i in ['1', '2', '3']:
+        (self.hall_pull[i], self.hall_tp[i], self.hall_rc[i], self.hall_rc_tp[i]), _ = self.chain(
+          self.hall.phases.request(i),
+          self.Block(PullupResistor(4.7*kOhm(tol=0.05))),
+          self.Block(DigitalTestPoint()),
+          imp.Block(DigitalLowPassRc(4.7*kOhm(tol=0.05), 1.2*kHertz(tol=0.2))),
+          self.Block(DigitalTestPoint()),
+          self.mcu.gpio.request(f'hall_{i}'))
+        self.connect(self.hall_pull[i].pwr, self.v3v3)
 
     # BLDC CONTROLLER
     with self.implicit_connect(
@@ -163,7 +200,8 @@ class BldcController(JlcBoardTop):
                                           self.bldc_drv.ins)
 
       self.bldc = imp.Block(BldcConnector(2.5 * Amp))  # maximum of DRV8313
-      self.connect(self.bldc_drv.outs.request_vector(), self.bldc.phases)
+      # Added trigger sensor in between so the following is not directly connected anymore
+      # self.connect(self.bldc_drv.outs.request_vector(), self.bldc.phases)
 
       self.curr = ElementDict[CurrentSenseResistor]()
       self.curr_amp = ElementDict[Amplifier]()
@@ -178,6 +216,17 @@ class BldcController(JlcBoardTop):
                                             self.Block(AnalogTestPoint()),
                                             self.mcu.adc.request(f'curr_{i}'))
 
+    # TRIGGER SENSOR
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.trigger = imp.Block(Rectifier_Sensor())
+      self.connect(self.bldc_drv.outs.request("1"), self.trigger.bldc_phase_1, self.bldc.phases.request("1"))
+      self.connect(self.bldc_drv.outs.request("2"), self.trigger.bldc_phase_2, self.bldc.phases.request("2"))
+      self.connect(self.bldc_drv.outs.request("3"), self.trigger.bldc_phase_3, self.bldc.phases.request("3"))
+      self.connect(self.trigger.trigger_out, self.mcu.adc.request('trigger'))
+
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -185,30 +234,30 @@ class BldcController(JlcBoardTop):
         (['isense', 'amp', 'amp'], Opa197)
       ],
       instance_values=[
-        (['mcu', 'pin_assigns'], [
-          'ledb=3',
-          'isense=5',
-          'vsense=6',
-          'ledg=7',
-          'curr_3=8',
-          'curr_2=9',
-          'curr_1=10',
-          'bldc_in_1=11',
-          'bldc_en_1=12',
-          'bldc_in_2=13',
-          'bldc_en_2=14',
-          'bldc_in_3=15',
-          'ledr=16',
-          'bldc_en_3=17',
-          'bldc_reset=18',
-          'bldc_fault=19',
-          'sw1=20',
-          'i2c.sda=21',
-          'i2c.scl=22',
-          'hall_u=23',
-          'hall_v=24',
-          'hall_w=25',
-        ]),
+        # (['mcu', 'pin_assigns'], [
+        #   'ledb=3',
+        #   'isense=5',
+        #   'vsense=6',
+        #   'ledg=7',
+        #   'curr_3=8',
+        #   'curr_2=9',
+        #   'curr_1=10',
+        #   'bldc_in_1=11',
+        #   'bldc_en_1=12',
+        #   'bldc_in_2=13',
+        #   'bldc_en_2=14',
+        #   'bldc_in_3=15',
+        #   # 'ledr=16',
+        #   'bldc_en_3=17',
+        #   'bldc_reset=18',
+        #   'bldc_fault=19',
+        #   'sw1=20',
+        #   'i2c.sda=21',
+        #   'i2c.scl=22',
+        #   'hall_1=23',
+        #   'hall_2=24',
+        #   'hall_3=25',
+        # ]),
         (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
@@ -220,7 +269,6 @@ class BldcController(JlcBoardTop):
         (["bldc_drv", "vm_cap_bulk", "cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap
         (["bldc_drv", "cp_cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap
 
-        (["hall", "pwr", "voltage_limits"], Range(4, 5.5)),  # allow with the Feather Vbus diode drop
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
