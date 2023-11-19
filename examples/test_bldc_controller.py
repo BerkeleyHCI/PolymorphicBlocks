@@ -108,13 +108,11 @@ class BldcController(JlcBoardTop):
     super().contents()
 
     self.mcu = self.Block(IoController())
-    mcu_pwr = self.mcu.with_mixin(IoControllerPowerOut())
-    mcu_usb = self.mcu.with_mixin(IoControllerUsbOut())
 
     self.motor_pwr = self.Block(LipoConnector(voltage=(2.5, 4.2)*Volt*6, actual_voltage=(2.5, 4.2)*Volt*6))
-
-    # self.vusb = self.connect(mcu_usb.vusb_out)
+    mcu_pwr = self.mcu.with_mixin(IoControllerPowerOut())
     self.v3v3 = self.connect(mcu_pwr.pwr_out)
+
     self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
       mcu_pwr.gnd_out, self.motor_pwr.gnd)
     self.gnd = self.connect(self.gnd_merge.pwr_out)
@@ -124,15 +122,17 @@ class BldcController(JlcBoardTop):
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      # Peripherals
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
-      # (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
+      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
       (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
-      (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
+      # (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
 
-      i2c_bus = self.mcu.i2c.request('i2c')
+      # I2C
       (self.i2c_pull, self.i2c_tp, self.i2c), _ = self.chain(
-        i2c_bus, imp.Block(I2cPullup()), imp.Block(I2cTestPoint()), imp.Block(I2cConnector()))
+        self.mcu.i2c.request('i2c'), imp.Block(I2cPullup()), imp.Block(I2cTestPoint()), imp.Block(I2cConnector()))
 
+      # Voltage Reference for Bidirectional Current Sensing
       (self.ref_div, self.ref_buf, self.ref_tp), _ = self.chain(
         self.v3v3,
         imp.Block(VoltageDivider(output_voltage=1.5*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
@@ -203,6 +203,7 @@ class BldcController(JlcBoardTop):
       # Added trigger sensor in between so the following is not directly connected anymore
       # self.connect(self.bldc_drv.outs.request_vector(), self.bldc.phases)
 
+      # Per-Phase Current Sensing
       self.curr = ElementDict[CurrentSenseResistor]()
       self.curr_amp = ElementDict[Amplifier]()
       self.curr_tp = ElementDict[AnalogTestPoint]()
@@ -234,30 +235,30 @@ class BldcController(JlcBoardTop):
         (['isense', 'amp', 'amp'], Opa197)
       ],
       instance_values=[
-        # (['mcu', 'pin_assigns'], [
-        #   'ledb=3',
-        #   'isense=5',
-        #   'vsense=6',
-        #   'ledg=7',
-        #   'curr_3=8',
-        #   'curr_2=9',
-        #   'curr_1=10',
-        #   'bldc_in_1=11',
-        #   'bldc_en_1=12',
-        #   'bldc_in_2=13',
-        #   'bldc_en_2=14',
-        #   'bldc_in_3=15',
-        #   # 'ledr=16',
-        #   'bldc_en_3=17',
-        #   'bldc_reset=18',
-        #   'bldc_fault=19',
-        #   'sw1=20',
-        #   'i2c.sda=21',
-        #   'i2c.scl=22',
-        #   'hall_1=23',
-        #   'hall_2=24',
-        #   'hall_3=25',
-        # ]),
+        (['mcu', 'pin_assigns'], [
+          'trigger=3',
+          'isense=5',
+          'vsense=6',
+          'ledg=7',
+          'curr_3=8',
+          'curr_2=9',
+          'curr_1=10',
+          'bldc_in_1=11',
+          'bldc_en_1=12',
+          'bldc_in_2=13',
+          'bldc_en_2=14',
+          'bldc_in_3=15',
+          'ledr=16',
+          'bldc_en_3=17',
+          'bldc_reset=18',
+          'bldc_fault=19',
+          'sw1=20',
+          'i2c.sda=21',
+          'i2c.scl=22',
+          'hall_1=23',
+          'hall_2=24',
+          'hall_3=25',
+        ]),
         (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
