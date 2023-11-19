@@ -206,6 +206,7 @@ These common symbols can be used in schematic import and map to the following pa
 | Device:L                           | Inductor           |                 |                                  |
 | Device:Q_NPN_\*, Device:Q_PNP_\*   | Bjt.Npn, Bjt.Pnp   |                 |                                  |
 | Device:D                           | Diode              |                 |                                  |
+| Device:D_Zener                     | ZenerDiode         |                 |                                  |
 | Device:L_Ferrite                   | FerriteBead        |                 |                                  |
 | Device:Q_NMOS_\*, Device:Q_PMOS_\* | Fet.NFet, Fet.PFet |                 |                                  |
 | Switch:SW_SPST                     | Switch             |                 |                                  |
