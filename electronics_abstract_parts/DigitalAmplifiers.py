@@ -87,10 +87,7 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
         current_limits=self.drv.actual_drain_current_rating,
         output_thresholds=(0, self.pwr.link().voltage.upper()),
       ),
-      'control': DigitalSink(
-        current_draw=(0, 0)*Amp  # TODO model pullup resistor current
-        # no voltage limits or threshold, those are constraints to pass into the FETs
-      ),
+      'control': DigitalSink(),  # TODO model pullup resistor current
       'gnd': Ground(),
     }
 
