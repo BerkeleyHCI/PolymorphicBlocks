@@ -1,4 +1,4 @@
-# Getting Started
+# Getting Started Tutorial
 
 ## Core concepts
 The core abstraction is the hierarchical block diagram, which we will explain using an example design of a microcontroller driving an LED.
@@ -811,7 +811,7 @@ Good luck with building PCBs!
 
 
 ## Defining Library Parts
-Continue to [part 2 of the tutorial](getting_started_library.md) on defining a library part.
+Continue to [the next part of the tutorial](getting_started_library.md) on defining a library Block with a KiCad schematic.
 
 ### Additional Resources
 If you want to some more complex examples of boards designed in this HDL, check out:

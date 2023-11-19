@@ -237,23 +237,20 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
     self.import_kicad(
       self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
-        'pdr.1': VoltageSink(),
-        'diode.A': VoltageSink(
+        'pwr_hi': VoltageSink(
           current_draw=output_current_draw
         ),
-        'diode.K': VoltageSink(),  # arbitrary to make the connection
-        'fet.G': VoltageSink(),
-        'fet.D': VoltageSink(
+        'pwr_lo': VoltageSink(
           current_draw=output_current_draw
         ),
-        'fet.S': VoltageSource(
+        'pwr_out': VoltageSource(
           voltage_out=self.pwr_lo.link().voltage.hull(
             # use the spec voltage drop since using the actual voltage drop causes a circular dependency
             # (where current depends on voltage, but the diode voltage drop depends on the diode selection
             # which depends on the current through)
             self.pwr_hi.link().voltage - self.diode_voltage_drop),
         ),
-        'pdr.2': Ground(),
+        'gnd': Ground(),
       })
 
   def connected_from(self, gnd: Optional[Port[VoltageLink]] = None, pwr_hi: Optional[Port[VoltageLink]] = None,

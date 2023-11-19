@@ -58,23 +58,19 @@ class GatedEmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImporta
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
-        'high_fet.D': VoltageSink(
+        'pwr': VoltageSink(
           current_draw=self.current,
           voltage_limits=self.high_fet.actual_drain_voltage_rating.intersect(
             self.low_fet.actual_drain_voltage_rating)
         ),
-        'high_fet.S': VoltageSource(
+        'out': VoltageSource(
           voltage_out=self.pwr.link().voltage,
           current_limits=self.current
         ),
-        'low_fet.S': VoltageSink(),  # ideal, modeled by high_fet source
         'low_fet.D': Ground(),
 
         'high_fet.G': AnalogSink(),
         'low_fet.G': AnalogSink(),
-
-        'high_res.1': VoltageSink(),
-        'low_res.1': VoltageSink(),
 
         'high_res.2': AnalogSource(),
         'low_res.2': AnalogSource(),
@@ -168,10 +164,10 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
         conversions={
-          'rtop.1': AnalogSink(
+          'target': AnalogSink(
             impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
           ),
-          'rbot.1': AnalogSink(
+          'actual': AnalogSink(
             impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
           ),
           'rtop.2': AnalogSource(
