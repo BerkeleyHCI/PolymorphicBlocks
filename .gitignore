@@ -36,3 +36,4 @@ dmypy.json
 # Misc
 *.log
 *.csv
+.DS_Store
