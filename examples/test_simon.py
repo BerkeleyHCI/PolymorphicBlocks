@@ -87,7 +87,7 @@ class Simon(BoardTop):
           self.connect(driver.output.as_digital_source(), self.btn[i].led_a)
         else:
           (self.btn_zeroed_current[i],), _ = self.chain(
-            driver.output,
+            driver.output.as_digital_source(),
             self.Block(ForcedDigitalSinkCurrentDraw((0, 0))),
             self.btn[i].led_a)
 

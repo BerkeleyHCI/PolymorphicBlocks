@@ -15,7 +15,7 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
   TODO: clamp_voltage should be compared against the actual voltage so the clamp is automatically generated,
   but generators don't support link terms (yet?)"""
   @init_in_parent
-  def __init__(self, pull_resistance: RangeLike = 10000*Ohm(tol=0.01), max_rds: FloatLike = 1*Ohm,
+  def __init__(self, pull_resistance: RangeLike = 10000*Ohm(tol=0.05), max_rds: FloatLike = 1*Ohm,
                frequency: RangeLike = RangeExpr.ZERO, *,
                clamp_voltage: RangeLike = RangeExpr.ZERO, clamp_resistance_ratio: FloatLike = 10) -> None:
     super().__init__()
