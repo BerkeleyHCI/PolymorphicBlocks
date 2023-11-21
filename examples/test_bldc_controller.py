@@ -111,11 +111,15 @@ class BldcController(JlcBoardTop):
 
     self.motor_pwr = self.Block(LipoConnector(voltage=(2.5, 4.2)*Volt*6, actual_voltage=(2.5, 4.2)*Volt*6))
     mcu_pwr = self.mcu.with_mixin(IoControllerPowerOut())
-    self.v3v3 = self.connect(mcu_pwr.pwr_out)
+
+    self.lv_gate = self.Block(HighSideSwitch(clamp_voltage=(4, 7)*Volt))
+    self.connect(mcu_pwr.pwr_out, self.lv_gate.pwr)
+    self.v3v3 = self.lv_gate.output
+    self.connect(self.lv_gate.control, self.mcu.gpio.request('lv_gate'))
 
     self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
       mcu_pwr.gnd_out, self.motor_pwr.gnd)
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
+    self.gnd = self.connect(self.gnd_merge.pwr_out, self.lv_gate.gnd)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
@@ -124,8 +128,8 @@ class BldcController(JlcBoardTop):
     ) as imp:
       # Peripherals
       (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
-      (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
-      (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
+      # (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
+      # (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
       # (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
 
       # I2C
@@ -168,16 +172,24 @@ class BldcController(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+
+      self.hv_gate = imp.Block(HighSideSwitch(clamp_voltage=(14, 17)*Volt))
+      self.connect(self.motor_pwr.pwr, self.hv_gate.pwr)
+      self.connect(self.mcu.gpio.request('hv_gate'), self.hv_gate.control)
+      self.gated_motor_pwr = self.hv_gate.output
+
+      # Terminal Voltage Sensing
       self.vsense = imp.Block(VoltageSenseDivider(full_scale_voltage=(3.0, 3.3)*Volt,
                                                   impedance=10*kOhm(tol=0.2)))
-      self.connect(self.motor_pwr.pwr, self.vsense.input)
+      self.connect(self.gated_motor_pwr, self.vsense.input)
       (self.vsense_tp, ), _ = self.chain(self.vsense.output, self.Block(AnalogTestPoint()), self.mcu.adc.request('vsense'))
 
+      # Bidirectional Current Sensing
       self.isense = imp.Block(OpampCurrentSensor(
         resistance=0.05*Ohm(tol=0.01),
         ratio=Range.from_tolerance(10, 0.05), input_impedance=10*kOhm(tol=0.05)
       ))
-      self.connect(self.motor_pwr.pwr, self.isense.pwr_in, self.isense.pwr)
+      self.connect(self.gated_motor_pwr, self.isense.pwr_in, self.isense.pwr)
       self.connect(self.isense.ref, self.vref)
       (self.isense_tp, self.isense_clamp), _ = self.chain(
         self.isense.out,
@@ -239,7 +251,7 @@ class BldcController(JlcBoardTop):
           'trigger=3',
           'isense=5',
           'vsense=6',
-          'ledg=7',
+          'hv_gate=7',
           'curr_3=8',
           'curr_2=9',
           'curr_1=10',
@@ -248,7 +260,7 @@ class BldcController(JlcBoardTop):
           'bldc_in_2=13',
           'bldc_en_2=14',
           'bldc_in_3=15',
-          'ledr=16',
+          'lv_gate=16',
           'bldc_en_3=17',
           'bldc_reset=18',
           'bldc_fault=19',
