@@ -83,7 +83,7 @@ class IotFan(JlcBoardTop):
       for i in range(2):
         fan = self.fan[i] = self.Block(CpuFanConnector())
         fan_drv = self.fan_drv[i] = imp.Block(HighSideSwitch(pull_resistance=4.7*kOhm(tol=0.05), max_rds=0.3*Ohm))
-        self.connect(fan.pwr, fan_drv.output.as_voltage_source())
+        self.connect(fan.pwr, fan_drv.output)
         self.connect(fan.gnd, self.gnd)
         self.connect(self.mcu.gpio.request(f'fan_drv_{i}'), fan_drv.control)
 

@@ -24,7 +24,7 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.control = self.Port(DigitalSink.empty(), [Input])
-    self.output = self.Port(DigitalSource.empty(), [Output])
+    self.output = self.Port(VoltageSource.empty(), [Output])
 
     self.pull_resistance = self.ArgParameter(pull_resistance)
     self.max_rds = self.ArgParameter(max_rds)
@@ -82,10 +82,9 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
       'pwr': VoltageSink(
         current_draw=self.output.link().current_drawn
       ),
-      'output': DigitalSource(
-        voltage_out=(0, self.pwr.link().voltage.upper()),
+      'output': VoltageSource(
+        voltage_out=self.pwr.link().voltage,
         current_limits=self.drv.actual_drain_current_rating,
-        output_thresholds=(0, self.pwr.link().voltage.upper()),
       ),
       'control': DigitalSink(),  # TODO model pullup resistor current
       'gnd': Ground(),
