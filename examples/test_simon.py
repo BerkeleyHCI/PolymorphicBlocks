@@ -84,7 +84,7 @@ class Simon(BoardTop):
         driver = self.btn_drv[i] = imp.Block(HighSideSwitch(frequency=(0.1, 1) * kHertz))
         self.connect(self.mcu.gpio.request(f'btn_drv{i}'), driver.control)
         if i == 0:  # only one draws current, since we assume only one will be lit at any point in time
-          self.connect(driver.output, self.btn[i].led_a)
+          self.connect(driver.output.as_digital_source(), self.btn[i].led_a)
         else:
           (self.btn_zeroed_current[i],), _ = self.chain(
             driver.output,
