@@ -186,7 +186,7 @@ class BldcController(JlcBoardTop):
 
       # Bidirectional Current Sensing
       self.isense = imp.Block(OpampCurrentSensor(
-        resistance=0.05*Ohm(tol=0.01),
+        resistance=51*mOhm(tol=0.02),
         ratio=Range.from_tolerance(10, 0.05), input_impedance=10*kOhm(tol=0.05)
       ))
       self.connect(self.gated_motor_pwr, self.isense.pwr_in, self.isense.pwr)
@@ -222,7 +222,7 @@ class BldcController(JlcBoardTop):
       self.curr_amp = ElementDict[Amplifier]()
       self.curr_tp = ElementDict[AnalogTestPoint]()
       for i in ['1', '2', '3']:
-        self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
+        self.curr[i] = self.Block(CurrentSenseResistor(51*mOhm(tol=0.02), sense_in_reqd=False))\
             .connected(self.gnd_merge.pwr_out, self.bldc_drv.pgnds.request(i))
 
         self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
@@ -273,16 +273,18 @@ class BldcController(JlcBoardTop):
           'hall_2=22',
           'hall_3=23',
         ]),
-        (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'require_basic_part'], False),
         (['curr[1]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
         (['curr[2]', 'res', 'res', 'require_basic_part'], ParamValue(['curr[1]', 'res', 'res', 'require_basic_part'])),
         (['curr[2]', 'res', 'res', 'footprint_spec'], ParamValue(['curr[1]', 'res', 'res', 'footprint_spec'])),
         (['curr[3]', 'res', 'res', 'require_basic_part'], ParamValue(['curr[1]', 'res', 'res', 'require_basic_part'])),
         (['curr[3]', 'res', 'res', 'footprint_spec'], ParamValue(['curr[1]', 'res', 'res', 'footprint_spec'])),
+        (['isense', 'sense', 'res', 'res', 'require_basic_part'], ParamValue(['curr[1]', 'res', 'res', 'require_basic_part'])),
+        (['isense', 'sense', 'res', 'res', 'footprint_spec'], ParamValue(['curr[1]', 'res', 'res', 'footprint_spec'])),
 
         (["bldc_drv", "vm_cap_bulk", "cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap
-        (["bldc_drv", "cp_cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap
+        (["bldc_drv", "cp_cap", "voltage_rating_derating"], 0.6),
+        (['isense_clamp', 'diode', 'part'], "BZT52C3V0")  # allow using a 50V cap
 
       ],
       class_refinements=[
@@ -290,6 +292,7 @@ class BldcController(JlcBoardTop):
         (TestPoint, CompactKeystone5015),
       ],
       class_values=[
+        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
       ],
     )
 
