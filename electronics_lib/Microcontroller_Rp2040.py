@@ -328,10 +328,154 @@ class Rp2040(Resettable, IoControllerI2cTarget, IoControllerUsb, Microcontroller
     return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()
 
 
-class Xiao_Rp2040():
-  """
+class Xiao_Rp2040(Rp2040_Ios, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+  """XIAO RP2040 tiny socketed dev board with USB-C
   Requires this footprint library:
   https://github.com/Seeed-Studio/OPL_Kicad_Library/tree/master/Seeed%20Studio%20XIAO%20Series%20Library
   """
+  SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
+    'Vdd': '2',  # 3v3
+    'Vss': '4',
 
+    # 'reset': '1',
+    'Vbus': '26',
+    # 'EN': '27',  # controls the onboard 3.3 LDO, internally pulled up
+    # 'Vbat': '28',
+  }
+  RESOURCE_PIN_REMAP = {  # boundary pins only, inner pins ignored
+    'P0.31': '3',  # AREF
+    'P0.04': '5',  # A0
+    'P0.05': '6',  # A1
+    'P0.30': '7',  # A2
+    'P0.28': '8',  # A3
+    'P0.02': '9',  # A4
+    'P0.03': '10',  # A5
+    'P0.14': '11',  # SCK
+    'P0.13': '12',  # MOSI
+    'P0.15': '13',  # MISO
+    'P0.24': '14',  # RXD
+    'P0.25': '15',  # TXD
+    'P0.10': '16',  # D2
 
+    'P0.12': '17',  # SDA
+    'P0.11': '18',  # SCL
+    'P1.08': '19',  # D5
+    'P0.07': '20',  # D6
+    'P0.26': '21',  # D9
+    'P0.27': '22',  # D10
+    'P0.06': '23',  # D11
+    'P0.08': '24',  # D12
+    'P1.09': '25',  # D13
+  }
+
+  def _gnd_vdd(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+    return self.gnd, self.pwr
+
+  def __init__(self, **kwargs) -> None:
+    super().__init__(**kwargs)
+
+    self.pwr = self.Port(VoltageSink(
+      voltage_limits=(1.62, 3.63)*Volt,  # Table 628
+      current_draw=(1.2, 4.3)*mAmp + self.io_current_draw.upper()  # Table 629
+    ), [Power])
+    self.gnd = self.Port(Ground(), [Common])
+
+    # note: IOVDD is self.pwr
+    self.dvdd = self.Port(VoltageSink(  # Digital Core
+      voltage_limits=(0.99, 1.21)*Volt,  # Table 628
+      current_draw=(0.18, 40)*mAmp,  # Table 629 typ Dormant to Figure 171 approx max DVdd
+    ))
+    self.vreg_vout = self.Port(VoltageSource(  # actually adjustable, section 2.10.3
+      voltage_out=1.1*Volt(tol=0.03),  # default is 1.1v nominal with 3% variation (Table 192)
+      current_limits=(0, 100)*mAmp  # Table 1, max current
+    ))
+    self.vreg_vin = self.Port(VoltageSink(
+      voltage_limits=(1.62, 3.63)*Volt,  # Table 628
+      current_draw=self.vreg_vout.is_connected().then_else(self.vreg_vout.link().current_drawn, 0*Amp(tol=0)),
+    ))
+    self.usb_vdd = self.Port(VoltageSink(
+      voltage_limits=RangeExpr(),  # depends on if USB is needed
+      current_draw=(0.2, 2.0)*mAmp,  # Table 629 typ BOOTSEL Idle to max BOOTSEL Active
+    ))
+    self.adc_avdd = self.Port(VoltageSink(
+      voltage_limits=(2.97, 3.63)*Volt,  # Table 628, performance compromised at <2.97V, lowest 1.62V
+      # current draw not specified in datasheet
+    ))
+
+    # Additional ports (on top of IoController)
+    self.qspi = self.Port(SpiController.empty())  # TODO actually QSPI
+    self.qspi_cs = self.Port(DigitalBidir.empty())
+    self.qspi_sd2 = self.Port(DigitalBidir.empty())
+    self.qspi_sd3 = self.Port(DigitalBidir.empty())
+
+    self.xosc = self.Port(CrystalDriver(frequency_limits=(1, 15)*MHertz,  # datasheet 2.15.2.2
+                                        voltage_out=self.pwr.link().voltage),
+                          optional=True)
+
+    self.swd = self.Port(SwdTargetPort.empty())
+    self.run = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
+    self._io_ports.insert(0, self.swd)
+
+  def contents(self) -> None:
+    super().contents()
+
+    # Port models
+    dio_ft_model = self._dio_ft_model(self.gnd, self.pwr)
+    dio_std_model = self._dio_ft_model(self.gnd, self.pwr)
+
+    self.qspi.init_from(SpiController(dio_std_model))
+    self.qspi_cs.init_from(dio_std_model)
+    self.qspi_sd2.init_from(dio_std_model)
+    self.qspi_sd3.init_from(dio_std_model)
+    self.run.init_from(DigitalSink.from_bidir(dio_ft_model))
+
+  # Pin/peripheral resource definitions (table 3)
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return {
+      '51': self.qspi_sd3,
+      '52': self.qspi.sck,
+      '53': self.qspi.mosi,  # IO0
+      '54': self.qspi_sd2,
+      '55': self.qspi.miso,  # IO1
+      '56': self.qspi_cs,  # IO1
+
+      '20': self.xosc.xtal_in,
+      '21': self.xosc.xtal_out,
+
+      '24': self.swd.swclk,
+      '25': self.swd.swdio,
+      '26': self.run,
+
+      '19': self.gnd,  # TESTEN, connect to gnd
+
+      '1': self.pwr,  # IOVdd
+      '10': self.pwr,
+      '22': self.pwr,
+      '33': self.pwr,
+      '42': self.pwr,
+      '49': self.pwr,
+
+      '23': self.dvdd,
+      '50': self.dvdd,
+
+      '44': self.vreg_vin,
+      '45': self.vreg_vout,
+      '48': self.usb_vdd,
+      '43': self.adc_avdd,
+      '57': self.gnd,  # pad
+    }
+
+  def generate(self) -> None:
+    super().generate()
+
+    if not self.get(self.usb.requested()):  # Table 628, VDD_USB can be lower if USB not used (section 2.9.4)
+      self.assign(self.usb_vdd.voltage_limits, (1.62, 3.63)*Volt)
+    else:
+      self.assign(self.usb_vdd.voltage_limits, (3.135, 3.63)*Volt)
+
+    self.footprint(
+      'U', 'Seeed Studio XIAO Series Library:XIAO-Generic-Hybrid-14P-2.54-21X17.8MM',
+      self._make_pinning(),
+      mfr='Seeed Studio', part='XIAO RP2040',
+      datasheet='https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html'
+    )
