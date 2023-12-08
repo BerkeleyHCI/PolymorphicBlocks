@@ -1,10 +1,125 @@
+from abc import abstractmethod
 from typing import *
 
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Rp2040_Device(IoControllerI2cTarget, IoControllerUsb, BaseIoControllerPinmapGenerator, InternalSubcircuit,
+@non_library
+class Rp2040_Ios(IoControllerI2cTarget, IoControllerUsb, BaseIoControllerPinmapGenerator):
+  @abstractmethod
+  def _gnd_vdd(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+    """Returns GND, VDD."""
+    ...
+
+  def _dio_ft_model(self) -> DigitalBidir:
+    ...
+
+  def _dio_std_model(self) -> DigitalBidir:
+    ...
+
+  def _io_pinmap(self) -> PinMapUtil:
+    gnd, pwr = self._gnd_vdd()
+    dio_ft_model = ...
+    dio_std_model = ...
+    dio_usb_model = dio_ft_model  # similar enough, main difference seems to be PUR/PDR resistance
+
+    adc_model = AnalogSink.from_supply(  # Table 626
+      gnd, pwr,
+      voltage_limit_tolerance=(0, 0),  # ADC input voltage range
+      signal_limit_tolerance=(0, 0),  # ADC input voltage range
+      impedance=(100, float('inf')) * kOhm
+    )
+
+    uart_model = UartPort(DigitalBidir.empty())
+    spi_model = SpiController(DigitalBidir.empty())
+    i2c_model = I2cController(DigitalBidir.empty())
+    i2c_target_model = I2cTarget(DigitalBidir.empty())
+
+    return PinMapUtil([
+      PinResource('2', {'GPIO0': dio_ft_model}),
+      PinResource('3', {'GPIO1': dio_ft_model}),
+      PinResource('4', {'GPIO2': dio_ft_model}),
+      PinResource('5', {'GPIO3': dio_ft_model}),
+      PinResource('6', {'GPIO4': dio_ft_model}),
+      PinResource('7', {'GPIO5': dio_ft_model}),
+      PinResource('8', {'GPIO6': dio_ft_model}),
+      PinResource('9', {'GPIO7': dio_ft_model}),
+      PinResource('11', {'GPIO8': dio_ft_model}),
+      PinResource('12', {'GPIO9': dio_ft_model}),
+      PinResource('13', {'GPIO10': dio_ft_model}),
+      PinResource('14', {'GPIO11': dio_ft_model}),
+      PinResource('15', {'GPIO12': dio_ft_model}),
+      PinResource('16', {'GPIO13': dio_ft_model}),
+      PinResource('17', {'GPIO14': dio_ft_model}),
+      PinResource('18', {'GPIO15': dio_ft_model}),
+      PinResource('27', {'GPIO16': dio_ft_model}),
+      PinResource('28', {'GPIO17': dio_ft_model}),
+      PinResource('29', {'GPIO18': dio_ft_model}),
+      PinResource('30', {'GPIO19': dio_ft_model}),
+      PinResource('31', {'GPIO20': dio_ft_model}),
+      PinResource('32', {'GPIO21': dio_ft_model}),
+
+      PinResource('34', {'GPIO22': dio_ft_model}),
+      PinResource('35', {'GPIO23': dio_ft_model}),
+      PinResource('36', {'GPIO24': dio_ft_model}),
+      PinResource('37', {'GPIO25': dio_ft_model}),
+
+      PinResource('38', {'GPIO26': dio_std_model, 'ADC0': adc_model}),
+      PinResource('39', {'GPIO27': dio_std_model, 'ADC1': adc_model}),
+      PinResource('40', {'GPIO28': dio_std_model, 'ADC2': adc_model}),
+      PinResource('41', {'GPIO29': dio_std_model, 'ADC3': adc_model}),
+
+      # fixed-pin peripherals
+      PeripheralFixedPin('USB', UsbDevicePort(dio_usb_model), {
+        'dm': '46', 'dp': '47'
+      }),
+
+      # reassignable peripherals
+      PeripheralFixedResource('UART0', uart_model, {
+        'tx': ['GPIO0', 'GPIO12', 'GPIO16', 'GPIO28'],
+        'rx': ['GPIO1', 'GPIO13', 'GPIO17', 'GPIO29']
+      }),
+      PeripheralFixedResource('UART1', uart_model, {
+        'tx': ['GPIO4', 'GPIO8', 'GPIO20', 'GPIO24'],
+        'rx': ['GPIO5', 'GPIO9', 'GPIO21', 'GPIO25']
+      }),
+
+      PeripheralFixedResource('SPI0', spi_model, {
+        'miso': ['GPIO0', 'GPIO4', 'GPIO16', 'GPIO20'],  # RX
+        'sck': ['GPIO2', 'GPIO6', 'GPIO18', 'GPIO22'],
+        'mosi': ['GPIO3', 'GPIO7', 'GPIO19', 'GPIO23']  # TX
+      }),
+      PeripheralFixedResource('SPI1', spi_model, {
+        'miso': ['GPIO8', 'GPIO12', 'GPIO24', 'GPIO28'],  # RX
+        'sck': ['GPIO10', 'GPIO14', 'GPIO26'],
+        'mosi': ['GPIO11', 'GPIO15', 'GPIO27']  # TX
+      }),
+      # SPI peripheral omitted, since TX tri-state is not tied to CS and must be controlled in software
+      PeripheralFixedResource('I2C0', i2c_model, {
+        'sda': ['GPIO0', 'GPIO4', 'GPIO8', 'GPIO12', 'GPIO16', 'GPIO20', 'GPIO24', 'GPIO28'],
+        'scl': ['GPIO1', 'GPIO5', 'GPIO9', 'GPIO13', 'GPIO17', 'GPIO21', 'GPIO25', 'GPIO20']
+      }),
+      PeripheralFixedResource('I2C1', i2c_model, {
+        'sda': ['GPIO2', 'GPIO6', 'GPIO10', 'GPIO14', 'GPIO18', 'GPIO22', 'GPIO24', 'GPIO26'],
+        'scl': ['GPIO3', 'GPIO7', 'GPIO11', 'GPIO15', 'GPIO19', 'GPIO23', 'GPIO25', 'GPIO27']
+      }),
+      PeripheralFixedResource('I2C0_T', i2c_target_model, {  # TODO shared resource w/ I2C controller
+        'sda': ['GPIO0', 'GPIO4', 'GPIO8', 'GPIO12', 'GPIO16', 'GPIO20', 'GPIO24', 'GPIO28'],
+        'scl': ['GPIO1', 'GPIO5', 'GPIO9', 'GPIO13', 'GPIO17', 'GPIO21', 'GPIO25', 'GPIO20']
+      }),
+      PeripheralFixedResource('I2C1_T', i2c_target_model, {  # TODO shared resource w/ I2C controller
+        'sda': ['GPIO2', 'GPIO6', 'GPIO10', 'GPIO14', 'GPIO18', 'GPIO22', 'GPIO24', 'GPIO26'],
+        'scl': ['GPIO3', 'GPIO7', 'GPIO11', 'GPIO15', 'GPIO19', 'GPIO23', 'GPIO25', 'GPIO27']
+      }),
+
+      PeripheralFixedPin('SWD', SwdTargetPort(dio_std_model), {
+        'swdio': '25', 'swclk': '24',
+      }),
+    ])
+
+
+class Rp2040_Device(Rp2040_Ios, InternalSubcircuit,
                     GeneratorBlock, JlcPart, FootprintBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
@@ -105,103 +220,6 @@ class Rp2040_Device(IoControllerI2cTarget, IoControllerUsb, BaseIoControllerPinm
       '43': self.adc_avdd,
       '57': self.gnd,  # pad
     }
-
-  def _io_pinmap(self) -> PinMapUtil:
-    dio_usb_model = self._dio_ft_model  # similar enough, main difference seems to be PUR/PDR resistance
-
-    adc_model = AnalogSink.from_supply(  # Table 626
-      self.gnd, self.pwr,
-      voltage_limit_tolerance=(0, 0),  # ADC input voltage range
-      signal_limit_tolerance=(0, 0),  # ADC input voltage range
-      impedance=(100, float('inf')) * kOhm
-    )
-
-    uart_model = UartPort(DigitalBidir.empty())
-    spi_model = SpiController(DigitalBidir.empty())
-    i2c_model = I2cController(DigitalBidir.empty())
-    i2c_target_model = I2cTarget(DigitalBidir.empty())
-
-    return PinMapUtil([
-      PinResource('2', {'GPIO0': self._dio_ft_model}),
-      PinResource('3', {'GPIO1': self._dio_ft_model}),
-      PinResource('4', {'GPIO2': self._dio_ft_model}),
-      PinResource('5', {'GPIO3': self._dio_ft_model}),
-      PinResource('6', {'GPIO4': self._dio_ft_model}),
-      PinResource('7', {'GPIO5': self._dio_ft_model}),
-      PinResource('8', {'GPIO6': self._dio_ft_model}),
-      PinResource('9', {'GPIO7': self._dio_ft_model}),
-      PinResource('11', {'GPIO8': self._dio_ft_model}),
-      PinResource('12', {'GPIO9': self._dio_ft_model}),
-      PinResource('13', {'GPIO10': self._dio_ft_model}),
-      PinResource('14', {'GPIO11': self._dio_ft_model}),
-      PinResource('15', {'GPIO12': self._dio_ft_model}),
-      PinResource('16', {'GPIO13': self._dio_ft_model}),
-      PinResource('17', {'GPIO14': self._dio_ft_model}),
-      PinResource('18', {'GPIO15': self._dio_ft_model}),
-      PinResource('27', {'GPIO16': self._dio_ft_model}),
-      PinResource('28', {'GPIO17': self._dio_ft_model}),
-      PinResource('29', {'GPIO18': self._dio_ft_model}),
-      PinResource('30', {'GPIO19': self._dio_ft_model}),
-      PinResource('31', {'GPIO20': self._dio_ft_model}),
-      PinResource('32', {'GPIO21': self._dio_ft_model}),
-
-      PinResource('34', {'GPIO22': self._dio_ft_model}),
-      PinResource('35', {'GPIO23': self._dio_ft_model}),
-      PinResource('36', {'GPIO24': self._dio_ft_model}),
-      PinResource('37', {'GPIO25': self._dio_ft_model}),
-
-      PinResource('38', {'GPIO26': self._dio_std_model, 'ADC0': adc_model}),
-      PinResource('39', {'GPIO27': self._dio_std_model, 'ADC1': adc_model}),
-      PinResource('40', {'GPIO28': self._dio_std_model, 'ADC2': adc_model}),
-      PinResource('41', {'GPIO29': self._dio_std_model, 'ADC3': adc_model}),
-
-      # fixed-pin peripherals
-      PeripheralFixedPin('USB', UsbDevicePort(dio_usb_model), {
-        'dm': '46', 'dp': '47'
-      }),
-
-      # reassignable peripherals
-      PeripheralFixedResource('UART0', uart_model, {
-        'tx': ['GPIO0', 'GPIO12', 'GPIO16', 'GPIO28'],
-        'rx': ['GPIO1', 'GPIO13', 'GPIO17', 'GPIO29']
-      }),
-      PeripheralFixedResource('UART1', uart_model, {
-        'tx': ['GPIO4', 'GPIO8', 'GPIO20', 'GPIO24'],
-        'rx': ['GPIO5', 'GPIO9', 'GPIO21', 'GPIO25']
-      }),
-
-      PeripheralFixedResource('SPI0', spi_model, {
-        'miso': ['GPIO0', 'GPIO4', 'GPIO16', 'GPIO20'],  # RX
-        'sck': ['GPIO2', 'GPIO6', 'GPIO18', 'GPIO22'],
-        'mosi': ['GPIO3', 'GPIO7', 'GPIO19', 'GPIO23']  # TX
-      }),
-      PeripheralFixedResource('SPI1', spi_model, {
-        'miso': ['GPIO8', 'GPIO12', 'GPIO24', 'GPIO28'],  # RX
-        'sck': ['GPIO10', 'GPIO14', 'GPIO26'],
-        'mosi': ['GPIO11', 'GPIO15', 'GPIO27']  # TX
-      }),
-      # SPI peripheral omitted, since TX tri-state is not tied to CS and must be controlled in software
-      PeripheralFixedResource('I2C0', i2c_model, {
-        'sda': ['GPIO0', 'GPIO4', 'GPIO8', 'GPIO12', 'GPIO16', 'GPIO20', 'GPIO24', 'GPIO28'],
-        'scl': ['GPIO1', 'GPIO5', 'GPIO9', 'GPIO13', 'GPIO17', 'GPIO21', 'GPIO25', 'GPIO20']
-      }),
-      PeripheralFixedResource('I2C1', i2c_model, {
-        'sda': ['GPIO2', 'GPIO6', 'GPIO10', 'GPIO14', 'GPIO18', 'GPIO22', 'GPIO24', 'GPIO26'],
-        'scl': ['GPIO3', 'GPIO7', 'GPIO11', 'GPIO15', 'GPIO19', 'GPIO23', 'GPIO25', 'GPIO27']
-      }),
-      PeripheralFixedResource('I2C0_T', i2c_target_model, {  # TODO shared resource w/ I2C controller
-        'sda': ['GPIO0', 'GPIO4', 'GPIO8', 'GPIO12', 'GPIO16', 'GPIO20', 'GPIO24', 'GPIO28'],
-        'scl': ['GPIO1', 'GPIO5', 'GPIO9', 'GPIO13', 'GPIO17', 'GPIO21', 'GPIO25', 'GPIO20']
-      }),
-      PeripheralFixedResource('I2C1_T', i2c_target_model, {  # TODO shared resource w/ I2C controller
-        'sda': ['GPIO2', 'GPIO6', 'GPIO10', 'GPIO14', 'GPIO18', 'GPIO22', 'GPIO24', 'GPIO26'],
-        'scl': ['GPIO3', 'GPIO7', 'GPIO11', 'GPIO15', 'GPIO19', 'GPIO23', 'GPIO25', 'GPIO27']
-      }),
-
-      PeripheralFixedPin('SWD', SwdTargetPort(self._dio_std_model), {
-        'swdio': '25', 'swclk': '24',
-      }),
-    ])
 
   def generate(self) -> None:
     super().generate()
@@ -305,3 +323,12 @@ class Rp2040(Resettable, IoControllerI2cTarget, IoControllerUsb, Microcontroller
 
   def _crystal_required(self) -> bool:  # crystal needed for USB b/c tighter freq tolerance
     return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()
+
+
+class Xiao_Rp2040():
+  """
+  Requires this footprint library:
+  https://github.com/Seeed-Studio/OPL_Kicad_Library/tree/master/Seeed%20Studio%20XIAO%20Series%20Library
+  """
+
+
