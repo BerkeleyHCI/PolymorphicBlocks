@@ -12,16 +12,22 @@ class Rp2040_Ios(IoControllerI2cTarget, IoControllerUsb, BaseIoControllerPinmapG
     """Returns GND, VDD."""
     ...
 
-  def _dio_ft_model(self) -> DigitalBidir:
-    ...
+  def _dio_ft_model(self, gnd: Port[VoltageLink], pwr: Port[VoltageLink]) -> DigitalBidir:
+    return DigitalBidir.from_supply(  # Table 624
+      gnd, pwr,
+      voltage_limit_tolerance=(-0.3, 0.3) * Volt,
+      current_limits=(-12, 12)*mAmp,  # by IOH / IOL modes
+      input_threshold_abs=(0.8, 2.0)*Volt,  # for IOVdd=3.3, TODO other IOVdd ranges
+      pullup_capable=True, pulldown_capable=True
+    )
 
-  def _dio_std_model(self) -> DigitalBidir:
-    ...
+  def _dio_std_model(self, gnd: Port[VoltageLink], pwr: Port[VoltageLink]) -> DigitalBidir:
+    return self._dio_ft_model(gnd, pwr)
 
   def _io_pinmap(self) -> PinMapUtil:
     gnd, pwr = self._gnd_vdd()
-    dio_ft_model = ...
-    dio_std_model = ...
+    dio_ft_model = self._dio_ft_model(gnd, pwr)
+    dio_std_model = self._dio_std_model(gnd, pwr)
     dio_usb_model = dio_ft_model  # similar enough, main difference seems to be PUR/PDR resistance
 
     adc_model = AnalogSink.from_supply(  # Table 626
@@ -121,6 +127,9 @@ class Rp2040_Ios(IoControllerI2cTarget, IoControllerUsb, BaseIoControllerPinmapG
 
 class Rp2040_Device(Rp2040_Ios, InternalSubcircuit,
                     GeneratorBlock, JlcPart, FootprintBlock):
+  def _gnd_vdd(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+    return self.gnd, self.pwr
+
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -170,20 +179,14 @@ class Rp2040_Device(Rp2040_Ios, InternalSubcircuit,
     super().contents()
 
     # Port models
-    self._dio_ft_model = DigitalBidir.from_supply(  # Table 624
-      self.gnd, self.pwr,
-      voltage_limit_tolerance=(-0.3, 0.3) * Volt,
-      current_limits=(-12, 12)*mAmp,  # by IOH / IOL modes
-      input_threshold_abs=(0.8, 2.0)*Volt,  # for IOVdd=3.3, TODO other IOVdd ranges
-      pullup_capable=True, pulldown_capable=True
-    )
-    self._dio_std_model = self._dio_ft_model  # exactly the same characteristics
+    dio_ft_model = self._dio_ft_model(self.gnd, self.pwr)
+    dio_std_model = self._dio_ft_model(self.gnd, self.pwr)
 
-    self.qspi.init_from(SpiController(self._dio_std_model))
-    self.qspi_cs.init_from(self._dio_std_model)
-    self.qspi_sd2.init_from(self._dio_std_model)
-    self.qspi_sd3.init_from(self._dio_std_model)
-    self.run.init_from(DigitalSink.from_bidir(self._dio_ft_model))
+    self.qspi.init_from(SpiController(dio_std_model))
+    self.qspi_cs.init_from(dio_std_model)
+    self.qspi_sd2.init_from(dio_std_model)
+    self.qspi_sd3.init_from(dio_std_model)
+    self.run.init_from(DigitalSink.from_bidir(dio_ft_model))
 
   # Pin/peripheral resource definitions (table 3)
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
