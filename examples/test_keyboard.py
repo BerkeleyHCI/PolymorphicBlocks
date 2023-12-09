@@ -38,6 +38,12 @@ class Keyboard(JlcBoardTop):
       ],
       instance_values=[
       ],
+      class_refinements=[
+        (Switch, KailhSocket),
+      ],
+      class_values=[
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SMA')
+      ]
     )
 
 
