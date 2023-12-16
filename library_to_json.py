@@ -1,4 +1,5 @@
 # Simple tool that scans for libraries and dumps the whole thing to a proto file
+import sys
 from typing import TypedDict, Tuple, Optional, Union
 
 from edg_hdl_server.__main__ import LibraryElementIndexer
@@ -53,7 +54,14 @@ if __name__ == '__main__':
         if isinstance(obj, edg_core.Block):
             print(f"Elaborating block {name}")
             block_proto = builder.elaborate_toplevel(obj)
+            # convert IR to JsonDict
+            
+            # inspect into the args to get ArgParams
+            block_dict = BlockJsonDict()
+
             pb.root.members[name].hierarchy_block.CopyFrom(block_proto)
+
+            sys.exit(0)  # just do one for now
         # elif isinstance(obj, edg_core.Link):
         #     print(f"Elaborating link {name}")
         #     link_proto = builder.elaborate_toplevel(obj)
