@@ -53,6 +53,7 @@ from .AbstractSolidStateRelay import SolidStateRelay, AnalogIsolatedSwitch
 from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer, AnalogMuxer
 from .AbstractSwitch import Switch, TactileSwitch, MechanicalKeyswitch, DigitalSwitch
 from .AbstractSwitch import RotaryEncoder, RotaryEncoderSwitch, DigitalRotaryEncoder, DigitalRotaryEncoderSwitch
+from .AbstractSwitch import DirectionSwitch, DirectionSwitchCenter, DigitalDirectionSwitch, DigitalDirectionSwitchCenter
 from .AbstractOpamp import Opamp, OpampElement
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
 from .AbstractSpiMemory import SpiMemory, SpiMemoryQspi
