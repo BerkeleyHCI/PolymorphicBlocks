@@ -57,6 +57,32 @@ class RotaryEncoderSwitch(BlockInterfaceMixin[RotaryEncoder]):
     self.sw = self.Port(Passive.empty(), optional=True)
 
 
+@abstract_block
+class DirectionSwitch(DiscreteComponent):
+  """Directional switch with a, b, c, d (clockwise) switches and common."""
+  @init_in_parent
+  def __init__(self, voltage: RangeLike, current: RangeLike = 0*Amp(tol=0)) -> None:
+    super().__init__()
+
+    self.a = self.Port(Passive.empty())
+    self.b = self.Port(Passive.empty())
+    self.c = self.Port(Passive.empty())
+    self.d = self.Port(Passive.empty())
+    self.com = self.Port(Passive.empty())
+
+    self.current = self.ArgParameter(current)
+    self.voltage = self.ArgParameter(voltage)
+
+
+class DirectionSwitchCenter(BlockInterfaceMixin[DirectionSwitch]):
+  """DirectionSwitch mixin adding center switch pin (sharing a common with the encoder),
+  with ratings assumed to be the same between the switch and encoder."""
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    self.center = self.Port(Passive.empty(), optional=True)
+
+
 class DigitalSwitch(HumanInterface):
   """Wrapper around Switch that provides a digital port which is pulled low (to GND) when pressed."""
   def __init__(self) -> None:
