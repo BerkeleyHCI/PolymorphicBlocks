@@ -7,38 +7,40 @@ class Mcp47f_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, addr_lsb: IntLike) -> None:
     super().__init__()
-    self.vdd = self.Port(VoltageSink(
-      voltage_limits=(2.7, 5.5)*Volt,
-      current_draw=(3.3, 350)*uAmp))  # from software shutdown to operating
     self.vss = self.Port(Ground())
+    self.vdd = self.Port(VoltageSink(
+      voltage_limits=(2.7, 5.5)*Volt,  # technically down to 1.8 w/ reduced performance
+      current_draw=(0.00085, 2.5)*mAmp))  # quad DAC, serial inactive to EE write
 
-    # TODO IMPLEMENT ME
     ref_model = VoltageSink(
-      voltage_limits=(0.04*Volt, self.vdd.link().voltage.lower() - 0.04),
+      voltage_limits=(self.vss.link().voltage.lower(), self.vdd.link().voltage.lower() - 0.04), # buffered mode
       current_draw=(0, 0)  # input current not specified
     )
     self.vref0 = self.Port(ref_model)
     self.vref1 = self.Port(ref_model)
 
-    # TODO IMPLEMENT ME
-    out_model = AnalogSource.from_supply(
-      self.vss, self.vref,
-      signal_out_bound=(0.01*Volt, -0.04*Volt),  # output swing
-      current_limits=(-15, 15)*mAmp,  # short circuit current, typ
-      impedance=(171, 273)*Ohm  # derived from assumed Vout=2Vref=4.096, Isc=24mA or 15mA
+    out_ref0_model = AnalogSource.from_supply(
+      self.vss, self.vref0,
+      signal_out_bound=(0.01*Volt, -0.016*Volt),  # output amp min / max voltages
+      current_limits=(-3, 3)*mAmp,  # short circuit current, typ
+      impedance=(122, 900)*Ohm  # derived from assumed Vout=Vdd=2.7v, Isc=3-22mA
     )
-    self.vout0 = self.Port(out_model)
-    self.vout1 = self.Port(out_model)
-    self.vout2 = self.Port(out_model)
-    self.vout3 = self.Port(out_model)
+    out_ref1_model = AnalogSource.from_supply(
+      self.vss, self.vref1,
+      signal_out_bound=(0.01*Volt, -0.016*Volt),  # output amp min / max voltages
+      current_limits=(-3, 3)*mAmp,  # short circuit current, typ
+      impedance=(122, 900)*Ohm  # derived from assumed Vout=Vdd=2.7v, Isc=3-22mA
+    )
+    self.vout0 = self.Port(out_ref0_model)
+    self.vout1 = self.Port(out_ref1_model)
+    self.vout2 = self.Port(out_ref0_model)
+    self.vout3 = self.Port(out_ref1_model)
 
-    # TODO IMPLEMENT ME
-    dio_model = DigitalBidir.from_supply(
+    dio_model = DigitalBidir.from_supply(  # LAT0/1/HVC, same input thresholds for I2C
       self.vss, self.vdd,
-      voltage_limit_tolerance=(-0.3, 0.3)*Volt,
-      current_draw=(0, 0),  # leakage current not modeled
-      current_limits=(-25, 25)*mAmp,
-      input_threshold_factor=(0.2, 0.7)
+      voltage_limit_tolerance=(-0.6, 0.3)*Volt,
+      current_limits=(-2, 2)*mAmp,
+      input_threshold_factor=(0.3, 0.7)
     )
     self.lat0 = self.Port(dio_model)
     self.lat1 = self.Port(dio_model)
