@@ -81,6 +81,7 @@ from .Microcontroller_Rp2040 import Rp2040
 from .Fpga_Ice40up import Ice40up5k_Sg48
 
 from .IoExpander_Pcf8574 import Pcf8574
+from .IoExpander_Pca9554 import Pca9554
 
 from .Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector
 from .FanConnector import CpuFanConnector, CpuFanPwmControl
