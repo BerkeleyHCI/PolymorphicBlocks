@@ -90,4 +90,5 @@ class Pca9554(Interface, PinMappable):
   def contents(self) -> None:
     super().contents()
     self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)
+    # interestingly, the datasheet doesn't actually call for a local 0.1uF
     self.vdd_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
