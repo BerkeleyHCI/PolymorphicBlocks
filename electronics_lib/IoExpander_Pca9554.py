@@ -21,7 +21,7 @@ class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
       voltage_limit_tolerance=(-0.5, 0.5)*Volt,
       input_threshold_factor=(0.3, 0.7)
     )
-    self.i2c = self.Port(I2cTarget(i2c_model))
+    self.i2c = self.Port(I2cTarget(i2c_model, addresses=ArrayIntExpr()))
 
     self.io = self.Port(Vector(DigitalBidir.empty()), optional=True)
 
@@ -38,6 +38,7 @@ class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
 
     addr_lsb = self.get(self.addr_lsb)
     self.require((addr_lsb < 8) & (addr_lsb >= 0), f"addr_lsb={addr_lsb} must be within [0, 8)")
+    self.assign(self.i2c.addresses, [0x38 | addr_lsb])  # -A variant; otherwise 0x20 | lsb
 
     pinmaps = PinMapUtil([  # *PW (TSSOP16) variant
       PinResource('4', {'IO0': dout_model}),
