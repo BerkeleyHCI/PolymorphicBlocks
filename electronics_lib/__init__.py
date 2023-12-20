@@ -97,6 +97,7 @@ from .TestPoint_Rc import TeRc
 from .AdcSpi_Mcp3201 import Mcp3201
 from .AdcSpi_Mcp3561 import Mcp3561
 from .DacSpi_Mcp4901 import Mcp4921
+from .DacI2c_Mcp47f import Mcp47f
 
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
