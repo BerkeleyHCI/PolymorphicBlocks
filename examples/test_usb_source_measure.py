@@ -154,10 +154,10 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
         conversions={
-          'rtop.1': AnalogSink(
+          'target': AnalogSink(
             impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
           ),
-          'rbot.1': AnalogSink(
+          'actual': AnalogSink(
             impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
           ),
           'rtop.2': AnalogSource(

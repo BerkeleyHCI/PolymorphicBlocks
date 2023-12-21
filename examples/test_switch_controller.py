@@ -78,7 +78,7 @@ class SwitchController(JlcBoardTop):
       self.sw = imp.Block(HighSideSwitch())
       self.connect(self.mcu.gpio.request('sw'), self.sw.control)
       self.connect(self.isense.pwr_out, self.sw.pwr)
-      self.connect(self.sw.output.as_voltage_source(), self.conn.pwr)
+      self.connect(self.sw.output, self.conn.pwr)
 
     # Misc board
     self.duck = self.Block(DuckLogo())

@@ -215,7 +215,7 @@ class DigitalSink(DigitalBase):
       assert input_threshold_factor is None, "can only specify one input threshold type"
       input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
     else:
-      raise ValueError("no input threshold specified")
+      input_threshold = RangeExpr.EMPTY  # ideal
 
     return DigitalSink(  # TODO get rid of to_expr_type w/ dedicated Range conversion
       voltage_limits=neg.link().voltage.hull(pos.link().voltage) + \

@@ -1,10 +1,10 @@
 import inspect
 import os
 from abc import abstractmethod
-from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, TypeVar
+from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, TypeVar, cast
 
-from edg_core import Block, GeneratorBlock, BasePort, Vector, init_in_parent, ArrayStringLike, StringLike, non_library, \
-    Bundle, InternalBlock
+from edg_core import Block, GeneratorBlock, BasePort, Port, Vector, init_in_parent, ArrayStringLike, StringLike, \
+    non_library, Bundle, InternalBlock
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
 from .PassivePort import Passive
@@ -85,8 +85,7 @@ class KiCadSchematicBlock(Block):
     Net labels are used for internal schematic connectivity and net naming. Net label names are used
     as link names, and must not collide with any existing object member.
 
-    Passive-typed ports on instantiated components can be converted to the target port model
-    via the conversions mapping.
+    Passive-typed ports in the schematic can be converted to the target port model via the conversions mapping.
 
     This Block's interface (ports, parameters) must remain defined in HDL, to support static analysis tools."""
     @staticmethod
@@ -138,8 +137,22 @@ class KiCadSchematicBlock(Block):
                 return None
         return inner(self, path.split('.'))
 
+    """
+    Import the schematic file specified by the filepath.
+    locals specifies variables available to any inline HDL.
+    nodes specifies connections to the schematic's boundary ports, where they do not match by name to this 
+      Block's boundary ports
+    conversions specifies port type conversions (akin to .adapt_to) for Passive-typed ports in the schematic.
+    These can either be specified by a pin name (eg, 'R1.1'), in which case the pin is individually adapted,
+      or a schematic boundary port name (eg, 'PORT_A'), in which case the pins are connected as a Passive group
+      and an adapter is created from the group.
+    auto_adapt allows automatically adapting Passive-typed ports in the schematic to the corresponding 
+      ideal boundary port type.
+    This can be used in conjunction with conversions, though conversions take priority. 
+    """
     def import_kicad(self, filepath: str, locals: Mapping[str, Any] = {},
-                     *, nodes: Mapping[str, Optional[BasePort]] = {}, conversions: Mapping[str, CircuitPort] = {}):
+                     *, nodes: Mapping[str, Optional[BasePort]] = {}, conversions: Mapping[str, CircuitPort] = {},
+                     auto_adapt: bool = False):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
         # so declaring it here causes it to reference Opamp lazily
         from electronics_abstract_parts import Resistor, Capacitor, Opamp
@@ -205,6 +218,7 @@ class KiCadSchematicBlock(Block):
         for net in sch.nets:
             net_ports = [self._port_from_pin(pin, blocks_pins[pin.refdes], conversions)
                          for pin in net.pins]
+            boundary_ports: List[Tuple[BasePort, str]] = []
             net_label_names = set()
             port_label_names = set()
             for net_label in net.labels:
@@ -222,14 +236,26 @@ class KiCadSchematicBlock(Block):
                         f"global label {global_label_name} has both node and boundary port"
                     node = nodes[global_label_name]
                     if node is not None:
-                        net_ports.insert(0, node)
+                        boundary_ports.append((node, global_label_name))
                 elif global_label_port is not None:
                     # connect to boundary port, but not links
-                    net_ports.insert(0, global_label_port)
+                    boundary_ports.append((global_label_port, global_label_name))
                 else:
                     raise ValueError(f"global label {global_label_name} must connect to boundary port or node")
 
             connection = self.connect(*net_ports)
+            can_adapt = net_ports and all([isinstance(x, Passive) for x in net_ports])
+            for (boundary_port, boundary_port_name) in boundary_ports:  # generate adapters as needed, port by port
+                if boundary_port_name in conversions:
+                    assert can_adapt, "conversion to boundary port only allowed for Passive ports"
+                    adapted = cast(Passive, net_ports[0]).adapt_to(conversions[boundary_port_name])
+                    self.connect(adapted, boundary_port)
+                elif auto_adapt and can_adapt and isinstance(boundary_port, CircuitPort) and \
+                        not isinstance(boundary_port, Passive):
+                    adapted = cast(Passive, net_ports[0]).adapt_to(boundary_port.__class__())
+                    self.connect(adapted, boundary_port)
+                else:
+                    self.connect(connection, boundary_port)
 
             if net_label_names:
                 assert len(net_label_names) == 1, "multiple net names not supported"

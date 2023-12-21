@@ -19,10 +19,9 @@ class PhotodiodeSensor(LightSensor, KiCadSchematicBlock, Block):
     self.import_kicad(
       self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
-        'r.1': VoltageSink(),
-        'r.2': AnalogSink(),  # arbitrary to make the connection legal
-        'pd.A': Ground(),
-        'pd.K': AnalogSource(
+        'pwr': VoltageSink(),
+        'gnd': Ground(),
+        'out': AnalogSource(
           voltage_out=self.pwr.link().voltage.hull(self.gnd.link().voltage),
           signal_out=self.pwr.link().voltage.hull(self.gnd.link().voltage),
           # TODO: what is the impedance?

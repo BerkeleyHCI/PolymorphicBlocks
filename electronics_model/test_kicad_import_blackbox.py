@@ -2,7 +2,7 @@ import unittest
 
 import edgir
 from edg_core import Builder
-from electronics_model import KiCadSchematicBlock, Passive
+from electronics_model import KiCadSchematicBlock, Passive, VoltageSink, Ground, AnalogSource
 
 
 class KiCadBlackboxBlock(KiCadSchematicBlock):
@@ -14,6 +14,17 @@ class KiCadBlackboxBlock(KiCadSchematicBlock):
         self.gnd = self.Port(Passive.empty())
         self.out = self.Port(Passive.empty())
         self.import_kicad(self.file_path("resources", "test_kicad_import_blackbox.kicad_sch"))
+
+
+class KiCadBlackboxBlockAutoadapt(KiCadSchematicBlock):
+    """Same example as above, but with typed ports and auto-adaptor generation."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.pwr = self.Port(VoltageSink.empty())
+        self.gnd = self.Port(Ground.empty())
+        self.out = self.Port(AnalogSource.empty())
+        self.import_kicad(self.file_path("resources", "test_kicad_import_blackbox.kicad_sch"),
+                          auto_adapt=True)
 
 
 class KiCadImportBlackboxTestCase(unittest.TestCase):
@@ -69,3 +80,46 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
 
         self.assertIn(edgir.AssignLit(['SYM1', 'kicad_refdes_prefix'], 'SYM'), constraints)
         self.assertIn(edgir.AssignLit(['SYM1', 'kicad_footprint'], 'Symbol:Symbol_ESD-Logo_CopperTop'), constraints)
+
+    def test_import_blackbox_autoadapt(self):
+        # the elaborate_toplevel wrapper is needed since the inner block uses array ports
+        pb = Builder.builder.elaborate_toplevel(KiCadBlackboxBlockAutoadapt())
+        constraints = list(map(lambda pair: pair.value, pb.constraints))
+
+        # just check an adapter has been generated, don't need to check the details
+        expected_conn = edgir.ValueExpr()
+        expected_conn.exported.exterior_port.ref.steps.add().name = 'pwr'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = '(adapter)U1.ports.1'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = 'dst'
+        self.assertIn(expected_conn, constraints)
+
+        expected_conn = edgir.ValueExpr()
+        expected_conn.exported.exterior_port.ref.steps.add().name = 'gnd'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = '(adapter)U1.ports.3'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = 'dst'
+        self.assertIn(expected_conn, constraints)
+
+        expected_conn = edgir.ValueExpr()  # this one should be unchanged
+        expected_conn.connected.link_port.ref.steps.add().name = 'node'
+        expected_conn.connected.link_port.ref.steps.add().name = 'passives'
+        expected_conn.connected.link_port.ref.steps.add().allocate = ''
+        expected_conn.connected.block_port.ref.steps.add().name = 'U1'
+        expected_conn.connected.block_port.ref.steps.add().name = 'ports'
+        expected_conn.connected.block_port.ref.steps.add().allocate = '2'
+        self.assertIn(expected_conn, constraints)
+
+        expected_conn = edgir.ValueExpr()
+        expected_conn.connected.link_port.ref.steps.add().name = 'node'
+        expected_conn.connected.link_port.ref.steps.add().name = 'passives'
+        expected_conn.connected.link_port.ref.steps.add().allocate = ''
+        expected_conn.connected.block_port.ref.steps.add().name = 'res'
+        expected_conn.connected.block_port.ref.steps.add().name = 'a'
+        self.assertIn(expected_conn, constraints)
+
+        expected_conn = edgir.ValueExpr()
+        expected_conn.exported.exterior_port.ref.steps.add().name = 'out'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = '(adapter)res.b'
+        expected_conn.exported.internal_block_port.ref.steps.add().name = 'dst'
+        self.assertIn(expected_conn, constraints)
+
+        # blackbox definition not checked again

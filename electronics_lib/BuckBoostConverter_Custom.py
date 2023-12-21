@@ -44,7 +44,7 @@ class CustomBuckBoostConverter(DiscreteBoostConverter):
     # TODO in high (buck) switch
     self.connect(self.gnd, self.in_low_diode.anode.adapt_to(Ground()))
     self.connect(self.power_path.switch_in,  # internal node not modeled, assumed specs correct
-                 self.in_high_switch.output.as_voltage_source(),
+                 self.in_high_switch.output,
                  self.in_low_diode.cathode.adapt_to(VoltageSink()))
     self.out_high_diode = self.Block(Diode(
       reverse_voltage=self.output_voltage,

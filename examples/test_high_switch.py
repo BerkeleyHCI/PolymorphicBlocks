@@ -188,9 +188,9 @@ class LightsConnector(Connector, FootprintBlock):
 
     self.pwr = self.Port(VoltageSink(), [Power])  # unused, doesn't draw anything
     self.gnd = self.Port(Ground(), [Common])
-    self.out = ElementDict[DigitalSink]()
+    self.out = ElementDict[VoltageSink]()
     for i in range(2):
-      self.out[i] = self.Port(DigitalSink(current_draw=current_draw))
+      self.out[i] = self.Port(VoltageSink(current_draw=current_draw))
 
   def contents(self):
     super().contents()
