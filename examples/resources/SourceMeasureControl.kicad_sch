@@ -2356,7 +2356,7 @@
     (property "Reference" "gate" (at 212.09 83.82 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "#AnalogIsolatedSwitch()" (at 212.09 93.98 0)
+    (property "Value" "#VoltageIsolatedSwitch()" (at 212.09 93.98 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Footprint" "" (at 207.01 93.98 0)
