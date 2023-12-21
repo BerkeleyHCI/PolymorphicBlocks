@@ -1730,10 +1730,10 @@
   (symbol (lib_id "edg_importable:Mux2") (at 127 91.44 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 52f8f4ba-ca3a-4f13-965b-a7c5a2652c2f)
-    (property "Reference" "sw1" (at 127 87.63 0)
+    (property "Reference" "off_sw" (at 129.54 86.36 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "~" (at 127 86.36 0)
+    (property "Value" "#AnalogMuxer()" (at 127 100.33 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Footprint" "" (at 127 91.44 0)
@@ -1751,7 +1751,7 @@
     (instances
       (project "SourceMeasureControl"
         (path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-          (reference "sw1") (unit 1)
+          (reference "off_sw") (unit 1)
         )
       )
     )

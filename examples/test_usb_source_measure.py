@@ -7,20 +7,13 @@ from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # nee
 from edg import *
 
 
-class GatedEmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
-  """Emitter follower, where each transistor can have its input gated independently,
-  and a transistor with a disabled input will turn off.
-
-  For the SMU, this allows a turn-on scheme where the error integrated is railed to off one side,
-  and only the off side transistor turns on, then the proper output can be programmed.
-  After the output stabilizes, both transistors can be enabled (if desired), to run under the
-  analog feedback circuit.
+class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
+  """Emitter follower circuit
   """
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:Opamp'  # this requires an schematic-modified symbol
     return {
-      'IN': self.control, 'H': self.high_en, 'L': self.low_en,
-      '3': self.out, 'V+': self.pwr, 'V-': self.gnd
+      'IN': self.control, '3': self.out, 'V+': self.pwr, 'V-': self.gnd
     }
 
   @init_in_parent
@@ -32,8 +25,6 @@ class GatedEmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImporta
     self.out = self.Port(VoltageSource.empty())
 
     self.control = self.Port(AnalogSink.empty())
-    self.high_en = self.Port(DigitalSink.empty())
-    self.low_en = self.Port(DigitalSink.empty())
 
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)
@@ -56,28 +47,23 @@ class GatedEmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImporta
       gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
 
+    zener_model = ZenerDiode(15*Volt(tol=0.1))
+    self.clamp1 = self.Block(zener_model)
+    self.clamp2 = self.Block(zener_model)
+
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
-        'high_fet.D': VoltageSink(
+        'gnd': Ground(),
+        'pwr': VoltageSink(
           current_draw=self.current,
           voltage_limits=self.high_fet.actual_drain_voltage_rating.intersect(
             self.low_fet.actual_drain_voltage_rating)
         ),
-        'high_fet.S': VoltageSource(
+        'out': VoltageSource(
           voltage_out=self.pwr.link().voltage,
           current_limits=self.current
         ),
-        'low_fet.S': VoltageSink(),  # ideal, modeled by high_fet source
-        'low_fet.D': Ground(),
-
-        'high_fet.G': AnalogSink(),
-        'low_fet.G': AnalogSink(),
-
-        'high_res.1': VoltageSink(),
-        'low_res.1': VoltageSink(),
-
-        'high_res.2': AnalogSource(),
-        'low_res.2': AnalogSource(),
+        'control': AnalogSink(),
       })
 
 
