@@ -64,12 +64,12 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
 
     self.connect(self.pwr_in, self.ic.feta.adapt_to(VoltageSink(
       voltage_limits=self.ic.load_voltage_limit,  # TODO: assumed magic ground
+      current_draw=self.pwr_out.link().current_drawn
     )))
     self.connect(self.pwr_out, self.ic.fetb.adapt_to(VoltageSource(
       voltage_out=self.pwr_in.link().voltage,
       current_limits=self.ic.load_current_limit,
     )))
-    self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
 
 
 class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):

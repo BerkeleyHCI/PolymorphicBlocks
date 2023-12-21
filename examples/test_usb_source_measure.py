@@ -61,7 +61,7 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
         ),
         'out': VoltageSource(
           voltage_out=self.pwr.link().voltage,
-          current_limits=self.current
+          current_limits=self.high_fet.actual_drain_current_rating.intersect(self.low_fet.actual_drain_current_rating)
         ),
         'control': AnalogSink(),
       })
@@ -395,30 +395,6 @@ class UsbSourceMeasure(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          'pd_int=28',
-          'sw1=43',
-          'sw2=44',
-          'sw3=45',
-          'rgb_blue=46',
-          'rgb_green=47',
-          'rgb_red=48',
-
-          'dac_ldac=1',
-          'dac_in_cs=2',
-          'dac_ip_cs=3',
-          'spi.mosi=4',
-          'spi.miso=6',
-          'spi.sck=7',
-          'adc_v_cs=8',
-          'adc_i_cs=12',
-          'dac_v_cs=13',
-
-          'lcd_reset=15',
-          'lcd_rs=18',
-          'lcd_cs=21',
-
-          'low_en=22',
-          'high_en=23',
         ]),
         (['mcu', 'swd_swo_pin'], 'PIO0_8'),
         # allow the regulator to go into tracking mode
@@ -443,6 +419,7 @@ class UsbSourceMeasure(JlcBoardTop):
       class_refinements=[
         (SwdCortexTargetConnector, SwdCortexTargetTc2050),
         (Opamp, Tlv9061),  # higher precision opamps
+        (AnalogSwitch, Nlas4157),
         (SolidStateRelay, G3VM_61GR2),
         (BananaSafetyJack, Ct3151),
       ],
