@@ -244,7 +244,7 @@ class UsbSourceMeasure(JlcBoardTop):
     super().contents()
 
     # overall design parameters
-    CURRENT_RATING = (0, 3)*Amp
+    CURRENT_RATING = (0, 2)*Amp
 
     # USB PD port that supplies power to the load
     # TODO the transistor is only rated at Vgs=+/-20V
@@ -388,10 +388,12 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'amp', 'amp'], Opa197),
         (['control', 'imeas', 'amp', 'amp'], Opa197),
         (['control', 'vmeas', 'amp'], Opa197),
+        (['control', 'dmeas', 'amp'], Opa197),
         (['control', 'imeas', 'sense', 'res', 'res'], GenericChipResistor),  # big one not from JLC
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),
+        (['control', 'gate', 'ic'], Tlp3545a),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
