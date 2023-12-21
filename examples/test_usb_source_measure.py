@@ -193,6 +193,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
     self.drv_en = self.Port(DigitalSink.empty())
     self.off = self.Port(Vector(DigitalSink.empty()))
     self.out = self.Port(VoltageSource.empty())
+    self.boot_pwm = self.Port(DigitalSink.empty())  # referenced to pwr_logic
 
     self.measured_voltage = self.Port(AnalogSource.empty())
     self.measured_current = self.Port(AnalogSource.empty())
@@ -202,6 +203,14 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
 
   def contents(self):
     super().contents()
+
+    self.boot = self.Block(BootstrapVoltageAdder())
+    self.connect(self.gnd, self.boot.gnd)
+    self.connect(self.boot_pwm, self.boot.pwm)
+    self.connect(self.pwr_logic, self.boot.pwr)
+    self.connect(self.pwr, self.boot.pwr_pos)
+    self.connect(self.gnd, self.boot.pwr_neg)
+
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       locals={
         'err_volt': {
@@ -236,6 +245,9 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
         'clamp': {
           'voltage': (2.5, 3.0)*Volt
         }
+      }, nodes={
+        'boot_hi': self.boot.out_pos,
+        'boot_low': self.boot.out_neg,
       })
 
 

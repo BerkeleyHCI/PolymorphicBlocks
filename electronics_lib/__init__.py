@@ -64,6 +64,7 @@ from .BuckBoostConverter_Custom import CustomBuckBoostConverter
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr
 from .LedDriver_Al8861 import Al8861
 from .ResetGenerator_Apx803s import Apx803s
+from .BootstrapVoltageAdder import BootstrapVoltageAdder
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Microcontroller_Stm32f103 import Stm32f103_48
