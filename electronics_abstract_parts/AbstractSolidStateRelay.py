@@ -39,7 +39,7 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
   the digital side and the analog side.
   """
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
-    assert symbol_name == 'edg_importable:AnalogIsolatedSwitch'  # TODO FIXME USE PROPER SYMBOL
+    assert symbol_name == 'edg_importable:VoltageIsolatedSwitch'
     return {'in': self.signal, 'gnd': self.gnd, 'ain': self.pwr_in, 'aout': self.pwr_out}
 
   def __init__(self) -> None:

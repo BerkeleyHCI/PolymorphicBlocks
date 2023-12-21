@@ -190,8 +190,8 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
     self.control_voltage = self.Port(AnalogSink.empty())
     self.control_current_source = self.Port(AnalogSink.empty())
     self.control_current_sink = self.Port(AnalogSink.empty())
-    self.high_en = self.Port(DigitalSink.empty())
-    self.low_en = self.Port(DigitalSink.empty())
+    self.drv_en = self.Port(DigitalSink.empty())
+    self.off = self.Port(Vector(DigitalSink.empty()))
     self.out = self.Port(VoltageSource.empty())
 
     self.measured_voltage = self.Port(AnalogSource.empty())
@@ -361,8 +361,8 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.mcu.gpio.request('dac_ldac'),
                    self.dac_v.ldac, self.dac_ip.ldac, self.dac_in.ldac)
 
-      self.connect(self.mcu.gpio.request('high_en'), self.control.high_en)
-      self.connect(self.mcu.gpio.request('low_en'), self.control.low_en)
+      self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
+      self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
 
     self.outn = self.Block(BananaSafetyJack())
     self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
