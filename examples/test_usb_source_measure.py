@@ -211,6 +211,10 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
     self.connect(self.pwr, self.boot.pwr_pos)
     self.connect(self.gnd, self.boot.pwr_neg)
 
+    # TODO: support non-zero grounds
+    self.boot_neg_forced = self.Block(ForcedVoltage(0*Volt(tol=0)))
+    self.connect(self.boot_neg_forced.pwr_in, self.boot.out_neg)
+
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       locals={
         'err_volt': {
@@ -247,7 +251,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
         }
       }, nodes={
         'boot_hi': self.boot.out_pos,
-        'boot_low': self.boot.out_neg,
+        'boot_low': self.boot_neg_forced.pwr_out,
       })
 
 
@@ -375,6 +379,8 @@ class UsbSourceMeasure(JlcBoardTop):
 
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
+
+      self.connect(self.mcu.gpio.request('boot_pwm'), self.control.boot_pwm)
 
     self.outn = self.Block(BananaSafetyJack())
     self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
