@@ -1,9 +1,10 @@
 from electronics_abstract_parts import *
 
 
-class CustomBuckBoostConverter(DiscreteBoostConverter):
-  """Custom buck-boost that has two PWM inputs for the input high and output low switches,
-  with diodes for the complementary switches (non-synchronous)."""
+class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
+  """Custom synchronous buck-boost with four PWMs for the switches.
+  Because of the MOSFET body diode, will probably be fine-ish if the buck low-side FET and the boost high-side FET
+  are not driven"""
   @init_in_parent
   def __init__(self, *args,
                frequency: RangeLike = (100, 1000)*kHertz,
@@ -32,6 +33,33 @@ class CustomBuckBoostConverter(DiscreteBoostConverter):
     self.connect(self.power_path.pwr_in, self.pwr_in)
     self.connect(self.power_path.pwr_out, self.pwr_out)
     self.connect(self.power_path.gnd, self.gnd)
+
+    self.buck_sw = self.Block(FetHalfBridge(frequency=self.frequency))
+    self.connect(self.buck_sw.gnd, self.gnd)
+    self.connect(self.pwr_in, self.buck_sw.pwr)
+    self.connect(self.buck_sw.pwr_logic, self.pwr_logic)
+    self.connect(self.buck_sw.low_ctl, self.pwm_low)
+    self.connect(self.buck_sw.high_ctl, self.pwm_high)
+    (self.buck_sw_force, ), _ = self.chain(
+      self.buck_sw.out,  # current draw used to size FETs, size for peak current
+      self.Block(ForcedVoltageCurrentDraw(self.power_path.inductor_spec_peak_current)),
+      self.power_path.switch)
+
+    self.boost_sw = self.Block(FetHalfBridge(frequency=self.frequency))
+    self.connect(self.boost_sw.gnd, self.gnd)
+    self.connect(self.pwr_in, self.buck_sw.pwr)
+    self.connect(self.boost_sw.pwr_logic, self.pwr_logic)
+    self.connect(self.boost_sw.low_ctl, self.pwm_low)
+    self.connect(self.boost_sw.high_ctl, self.pwm_high)
+    (self.boost_sw_force, ), _ = self.chain(
+      self.boost_sw.out,  # current draw used to size FETs, size for peak current
+      self.Block(ForcedVoltageCurrentDraw(self.power_path.inductor_spec_peak_current)),
+      self.power_path.switch)
+
+
+
+
+
     self.in_high_switch = self.Block(HighSideSwitch(max_rds=self.rds_on.upper()))
     self.connect(self.in_high_switch.pwr, self.pwr_in)
     self.connect(self.in_high_switch.gnd, self.gnd)

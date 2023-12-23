@@ -5,7 +5,7 @@ class BootstrapVoltageAdder(KiCadSchematicBlock, Block):
     """Bipolar (positive and negative) voltage adder using a switched cap circuit.
     """
     @init_in_parent
-    def __init__(self):
+    def __init__(self, frequency: RangeExpr = 100*kHertz(tol=0), ripple_limit: FloatExpr = 25*mVolt):
         super().__init__()
 
         self.gnd = self.Port(Ground.empty())
@@ -16,6 +16,9 @@ class BootstrapVoltageAdder(KiCadSchematicBlock, Block):
 
         self.out_pos = self.Port(VoltageSource.empty())
         self.out_neg = self.Port(VoltageSource.empty())
+
+        self.frequency = self.ArgParameter(frequency)
+        self.ripple_limit = self.ArgParameter(ripple_limit)
 
     def contents(self):
         super().contents()
@@ -52,10 +55,11 @@ class BootstrapVoltageAdder(KiCadSchematicBlock, Block):
                                   current_draw=out_current
                               ),
                               'pwm': DigitalSink(
-                                    current_draw=(-out_current.upper(), out_current.upper())
+                                  current_draw=(-out_current.upper(), out_current.upper())
                               ),
                               'out_pos': VoltageSource(
-                                  self.pwr_pos.link().voltage + self.pwm.link().output_thresholds.upper()
+                                  self.pwr_pos.link().voltage + self.pwm.link().output_thresholds.upper(),
+                                  current_limits=
                               ),
                               'out_neg': VoltageSource(
                                   self.pwr_neg.link().voltage - self.pwm.link().output_thresholds.upper()
