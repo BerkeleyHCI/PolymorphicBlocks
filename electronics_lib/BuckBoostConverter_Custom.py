@@ -1,6 +1,38 @@
 from electronics_abstract_parts import *
 
 
+# These adapters are needed to properly orient the boost-side switch, since it outputs on the high side
+# and inputs in the center
+class VoltageSourceConnector(DummyDevice, NetBlock, GeneratorBlock):
+  """Connects two voltage sources together (FET center to power path inductor)."""
+  @init_in_parent
+  def __init__(self, current_draw: RangeLike) -> None:
+    super().__init__()
+    self.a = self.Port(VoltageSink(  # FET center: set current draw
+      voltage_limits=(0, 0)*Volt,  # should not be used
+      current_draw=current_draw
+    ), [Input])
+    self.b = self.Port(VoltageSink(  # inductor: dummy
+      voltage_limits=(0, 0)*Volt,  # should not be used
+      current_draw=(0, 0)*Amp  # should not be used
+    ), [Output])
+
+
+class VoltageSinkConnector(DummyDevice, NetBlock, GeneratorBlock):
+  """Connects two voltage sinks together (FET top sink to exterior source)."""
+  @init_in_parent
+  def __init__(self, voltage_out: RangeLike, current_limits: RangeLike) -> None:
+    super().__init__()
+    self.a = self.Port(VoltageSource(
+      voltage_out=voltage_out,
+      current_limits=(0, 0)*Amp  # should not be used
+    ), [Input])  # FET top: set output voltage
+    self.b = self.Port(VoltageSource(
+      voltage_out=voltage_out,
+      current_limits=current_limits
+    ), [Output])  # exterior source: set output voltage + Ilim
+
+
 class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
   """Custom synchronous buck-boost with four PWMs for the switches.
   Because of the MOSFET body diode, will probably be fine-ish if the buck low-side FET and the boost high-side FET
@@ -12,8 +44,11 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
                **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.buck_pwm = self.Port(DigitalSink.empty())
-    self.boost_pwm = self.Port(DigitalSink.empty())
+    self.pwr_logic = self.Port(VoltageSink.empty())
+    self.buck_pwm_low = self.Port(DigitalSink.empty())
+    self.buck_pwm_high = self.Port(DigitalSink.empty())
+    self.boost_pwm_low = self.Port(DigitalSink.empty())
+    self.boost_pwm_high = self.Port(DigitalSink.empty())
 
     self.frequency = self.ArgParameter(frequency)
     self.voltage_drop = self.ArgParameter(voltage_drop)
@@ -38,62 +73,30 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
     self.connect(self.buck_sw.gnd, self.gnd)
     self.connect(self.pwr_in, self.buck_sw.pwr)
     self.connect(self.buck_sw.pwr_logic, self.pwr_logic)
-    self.connect(self.buck_sw.low_ctl, self.pwm_low)
-    self.connect(self.buck_sw.high_ctl, self.pwm_high)
+    self.connect(self.buck_sw.low_ctl, self.buck_pwm_low)
+    self.connect(self.buck_sw.high_ctl, self.buck_pwm_high)
     (self.buck_sw_force, ), _ = self.chain(
       self.buck_sw.out,  # current draw used to size FETs, size for peak current
       self.Block(ForcedVoltageCurrentDraw(self.power_path.inductor_spec_peak_current)),
-      self.power_path.switch)
+      self.power_path.switch_out)
 
     self.boost_sw = self.Block(FetHalfBridge(frequency=self.frequency))
     self.connect(self.boost_sw.gnd, self.gnd)
     self.connect(self.pwr_in, self.buck_sw.pwr)
     self.connect(self.boost_sw.pwr_logic, self.pwr_logic)
-    self.connect(self.boost_sw.low_ctl, self.pwm_low)
-    self.connect(self.boost_sw.high_ctl, self.pwm_high)
-    (self.boost_sw_force, ), _ = self.chain(
-      self.boost_sw.out,  # current draw used to size FETs, size for peak current
-      self.Block(ForcedVoltageCurrentDraw(self.power_path.inductor_spec_peak_current)),
-      self.power_path.switch)
-
-
-
-
-
-    self.in_high_switch = self.Block(HighSideSwitch(max_rds=self.rds_on.upper()))
-    self.connect(self.in_high_switch.pwr, self.pwr_in)
-    self.connect(self.in_high_switch.gnd, self.gnd)
-    self.connect(self.in_high_switch.control, self.buck_pwm)
-    self.in_low_diode = self.Block(Diode(
-      reverse_voltage=self.pwr_in.link().voltage,
-      current=self.power_path.switch_in.current_draw,
-      voltage_drop=self.voltage_drop
-    ))
-    # TODO in high (buck) switch
-    self.connect(self.gnd, self.in_low_diode.anode.adapt_to(Ground()))
-    self.connect(self.power_path.switch_in,  # internal node not modeled, assumed specs correct
-                 self.in_high_switch.output,
-                 self.in_low_diode.cathode.adapt_to(VoltageSink()))
-    self.out_high_diode = self.Block(Diode(
-      reverse_voltage=self.output_voltage,
-      current=(0, self.power_path.inductor_spec_peak_current),
-      voltage_drop=self.voltage_drop
-    ))
-    self.out_low_switch = self.Block(Fet.NFet(
-      drain_voltage=self.output_voltage,
-      drain_current=(0, self.power_path.inductor_spec_peak_current),
-      gate_voltage=(self.boost_pwm.link().output_thresholds.upper(),
-                    self.boost_pwm.link().voltage.upper()),
-      rds_on=self.rds_on,
-    ))
-    self.connect(self.power_path.switch_out,  # internal node not modeled, assumed specs correct
-                 self.out_high_diode.anode.adapt_to(VoltageSink()),
-                 self.out_low_switch.drain.adapt_to(VoltageSink()))
-    self.connect(self.boost_pwm, self.out_low_switch.gate.adapt_to(DigitalSink(
-      # TODO model me
-    )))
-    self.connect(self.gnd, self.out_low_switch.source.adapt_to(Ground()))
-    self.connect(self.pwr_out, self.out_high_diode.cathode.adapt_to(VoltageSource(
-      voltage_out=self.output_voltage,  # assumed external controller regulates correctly
-      # TODO derive current limits
-    )))
+    self.connect(self.boost_sw.low_ctl, self.boost_pwm_low)
+    self.connect(self.boost_sw.high_ctl, self.boost_pwm_high)
+    (self.boost_pwr_conn, ), _ = self.chain(
+      self.boost_sw.pwr,
+      self.Block(VoltageSinkConnector(0*Volt(tol=0), 0*Amp(tol=0))),  # TODO FIXME
+      self.pwr_out
+    )
+    (self.boost_sw_conn, ), _ = self.chain(
+      self.power_path.switch_out,
+      self.Block(VoltageSourceConnector(0*Amp(tol=0))),  # TODO FIXME
+      self.boost_sw.out
+    )
+    # (self.boost_sw_force, ), _ = self.chain(
+    #   self.boost_sw.out,  # current draw used to size FETs, size for peak current
+    #   self.Block(ForcedVoltageCurrentDraw(self.power_path.inductor_spec_peak_current)),
+    #   self.power_path.switch)

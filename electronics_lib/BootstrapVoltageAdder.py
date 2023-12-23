@@ -23,11 +23,12 @@ class BootstrapVoltageAdder(KiCadSchematicBlock, Block):
     def contents(self):
         super().contents()
 
+        # TODO model diode forward voltage drops
         out_current = self.out_pos.link().current_drawn.hull(self.out_neg.link().current_drawn)
         diode_model = Diode(reverse_voltage=self.pwm.link().voltage.hull(0*Volt(tol=0)),
-                            current=out_current)
+                            current=out_current, voltage_drop=(0, 0.5)*Volt)
         cap_fly_model = Capacitor(1*uFarad(tol=0.2), voltage=self.pwr_pos.link().voltage + self.pwm.link().voltage)
-        cap_bulk_model = Capacitor(10*uFarad(tol=0.2), voltage=self.pwm.link().voltage)
+        cap_bulk_model = Capacitor(1*uFarad(tol=0.2), voltage=self.pwm.link().voltage)
 
         self.d_pos_1 = self.Block(diode_model)
         self.d_pos_2 = self.Block(diode_model)
@@ -43,6 +44,10 @@ class BootstrapVoltageAdder(KiCadSchematicBlock, Block):
         self.c_neg = self.Block(cap_bulk_model)
 
         # TODO verify calculations
+        # for current, from dQ = C * dV, so I = C * dV * f
+        # we assume (perhaps wrongly) that it will discharge to ripple_limit every cycle
+        # and that the switching cap action will bring it back up by 1/2 ripple_limit,
+        # for dV = ripple_limit/2
         self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
                           conversions={
                               'gnd': Ground(),  # protection only, no draw
@@ -59,9 +64,12 @@ class BootstrapVoltageAdder(KiCadSchematicBlock, Block):
                               ),
                               'out_pos': VoltageSource(
                                   self.pwr_pos.link().voltage + self.pwm.link().output_thresholds.upper(),
-                                  current_limits=
+                                  # NOTE - assumes flying cap = bulk cap
+                                  current_limits=self.c_pos.actual_capacitance * self.ripple_limit / 2 * self.frequency
                               ),
                               'out_neg': VoltageSource(
-                                  self.pwr_neg.link().voltage - self.pwm.link().output_thresholds.upper()
+                                  self.pwr_neg.link().voltage - self.pwm.link().output_thresholds.upper(),
+                                  # NOTE - assumes flying cap = bulk cap
+                                  current_limits=self.c_neg.actual_capacitance * self.ripple_limit / 2 * self.frequency
                               ),
                           })
