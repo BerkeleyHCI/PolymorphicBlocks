@@ -3,22 +3,7 @@ from electronics_abstract_parts import *
 
 # These adapters are needed to properly orient the boost-side switch, since it outputs on the high side
 # and inputs in the center
-class VoltageSourceConnector(DummyDevice, NetBlock, GeneratorBlock):
-  """Connects two voltage sources together (FET center to power path inductor)."""
-  @init_in_parent
-  def __init__(self, current_draw: RangeLike) -> None:
-    super().__init__()
-    self.a = self.Port(VoltageSink(  # FET center: set current draw
-      voltage_limits=(0, 0)*Volt,  # should not be used
-      current_draw=current_draw
-    ), [Input])
-    self.b = self.Port(VoltageSink(  # inductor: dummy
-      voltage_limits=(0, 0)*Volt,  # should not be used
-      current_draw=(0, 0)*Amp  # should not be used
-    ), [Output])
-
-
-class VoltageSinkConnector(DummyDevice, NetBlock, GeneratorBlock):
+class VoltageSinkConnector(DummyDevice, NetBlock):
   """Connects two voltage sinks together (FET top sink to exterior source)."""
   @init_in_parent
   def __init__(self, voltage_out: RangeLike, current_limits: RangeLike) -> None:
@@ -71,18 +56,17 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
 
     self.buck_sw = self.Block(FetHalfBridge(frequency=self.frequency))
     self.connect(self.buck_sw.gnd, self.gnd)
-    self.connect(self.pwr_in, self.buck_sw.pwr)
     self.connect(self.buck_sw.pwr_logic, self.pwr_logic)
     self.connect(self.buck_sw.low_ctl, self.buck_pwm_low)
     self.connect(self.buck_sw.high_ctl, self.buck_pwm_high)
-    (self.buck_sw_force, ), _ = self.chain(
-      self.buck_sw.out,  # current draw used to size FETs, size for peak current
-      self.Block(ForcedVoltageCurrentDraw(self.power_path.inductor_spec_peak_current)),
-      self.power_path.switch_out)
+    self.connect(self.pwr_in, self.buck_sw.pwr)
+    self.connect(  # current draw used to size FETs, size for peak current
+      self.buck_sw.out,
+      self.power_path.switch_in.adapt_to(VoltageSink(current_draw=self.power_path.actual_inductor_current))
+    )
 
     self.boost_sw = self.Block(FetHalfBridge(frequency=self.frequency))
     self.connect(self.boost_sw.gnd, self.gnd)
-    self.connect(self.pwr_in, self.buck_sw.pwr)
     self.connect(self.boost_sw.pwr_logic, self.pwr_logic)
     self.connect(self.boost_sw.low_ctl, self.boost_pwm_low)
     self.connect(self.boost_sw.high_ctl, self.boost_pwm_high)
@@ -91,9 +75,8 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
       self.Block(VoltageSinkConnector(0*Volt(tol=0), 0*Amp(tol=0))),  # TODO FIXME
       self.pwr_out
     )
-    (self.boost_sw_conn, ), _ = self.chain(
-      self.power_path.switch_out,
-      self.Block(VoltageSourceConnector(0*Amp(tol=0))),  # TODO FIXME
+    self.connect(  # current draw used to size FETs, size for peak current
+      self.power_path.switch_out.adapt_to(VoltageSink(current_draw=self.power_path.actual_inductor_current)),
       self.boost_sw.out
     )
     # (self.boost_sw_force, ), _ = self.chain(

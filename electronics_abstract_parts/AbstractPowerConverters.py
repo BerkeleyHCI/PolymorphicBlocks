@@ -513,8 +513,8 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # connected to the input cap, models input current
-    self.switch_in = self.Port(VoltageSink.empty())  # models input high and low switch current draws
-    self.switch_out = self.Port(VoltageSource.empty())  # models output high and low switch current draws
+    self.switch_in = self.Port(Passive.empty())  # models input high and low switch current draws
+    self.switch_out = self.Port(Passive.empty())  # models output high and low switch current draws
     self.pwr_out = self.Port(VoltageSink.empty())  # only used for the output cap
     self.gnd = self.Port(Ground.empty(), [Common])
 
@@ -538,6 +538,8 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.actual_buck_dutycycle = self.Parameter(RangeExpr())  # possible actual duty cycle in buck mode
     self.actual_boost_dutycycle = self.Parameter(RangeExpr())  # possible actual duty cycle in boost mode
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
+    self.actual_inductor_current = self.Parameter(RangeExpr())  # inductor current accounting for ripple (upper is peak)
+    self.actual_avg_current_rating = self.Parameter(RangeExpr())  # determined by inductor rating excl. ripple
 
   def contents(self):
     super().contents()
@@ -601,15 +603,11 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                            (self.inductor.actual_inductance * frequency.lower * output_voltage.lower))
     self.assign(self.actual_inductor_current_ripple, buck_actual_ripple.hull(boost_actual_ripple))
 
-    self.connect(self.switch_in, self.inductor.a.adapt_to(VoltageSink(
-      voltage_limits=RangeExpr.ALL,
-      current_draw=(min_current, inductor_spec_peak_current)  # peak currents
-    )))
-    self.connect(self.switch_out, self.inductor.b.adapt_to(VoltageSource(
-      voltage_out=self.output_voltage,
-      current_limits=(0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
-                      (self.actual_inductor_current_ripple.upper() / 2))
-    )))
+    self.connect(self.switch_in, self.inductor.a)
+    self.assign(self.actual_inductor_current, (min_current, inductor_spec_peak_current))  # peak currents
+    self.connect(self.switch_out, self.inductor.b)
+    self.assign(self.actual_avg_current_rating, (0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
+                                                 (self.actual_inductor_current_ripple.upper() / 2)))
 
     input_buck_min_cap = (output_current.upper * BuckConverterPowerPath.max_d_inverse_d(buck_dutycycle) /
                           (frequency.lower * input_voltage_ripple))
