@@ -6,15 +6,15 @@ from electronics_abstract_parts import *
 class VoltageSinkConnector(DummyDevice, NetBlock):
   """Connects two voltage sinks together (FET top sink to exterior source)."""
   @init_in_parent
-  def __init__(self, voltage_out: RangeLike, current_limits: RangeLike) -> None:
+  def __init__(self, voltage_out: RangeLike, a_current_limits: RangeLike, b_current_limits: RangeLike) -> None:
     super().__init__()
     self.a = self.Port(VoltageSource(
       voltage_out=voltage_out,
-      current_limits=(0, 0)*Amp  # should not be used
-    ), [Input])  # FET top: set output voltage
+      current_limits=a_current_limits
+    ), [Input])  # FET top: set output voltage, allow instantaneous current draw
     self.b = self.Port(VoltageSource(
       voltage_out=voltage_out,
-      current_limits=current_limits
+      current_limits=b_current_limits
     ), [Output])  # exterior source: set output voltage + Ilim
 
 
@@ -72,7 +72,9 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
     self.connect(self.boost_sw.high_ctl, self.boost_pwm_high)
     (self.boost_pwr_conn, ), _ = self.chain(
       self.boost_sw.pwr,
-      self.Block(VoltageSinkConnector(self.output_voltage, self.power_path.actual_avg_current_rating)),
+      self.Block(VoltageSinkConnector(self.output_voltage,
+                                      self.power_path.actual_inductor_current,
+                                      self.power_path.actual_avg_current_rating)),
       self.pwr_out
     )
     self.connect(  # current draw used to size FETs, size for peak current

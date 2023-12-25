@@ -243,7 +243,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
           'input_impedance': 10*kOhm(tol=0.05)
         },
         'vmeas': {
-          'ratio': Range.from_tolerance(1/22, 0.05),
+          'ratio': Range.from_tolerance(1/24, 0.05),
           'input_impedance': 220*kOhm(tol=0.05)
         },
         'clamp': {
@@ -423,7 +423,6 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),
-        (['control', 'gate', 'ic'], Tlp3545a),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -466,9 +465,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (SwdCortexTargetConnector, SwdCortexTargetTc2050),
         (Opamp, Tlv9061),  # higher precision opamps
         (AnalogSwitch, Nlas4157),
-        (SolidStateRelay, G3VM_61GR2),
+        (SolidStateRelay, Tlp3545a),
         (BananaSafetyJack, Ct3151),
-        # (HalfBridgeDriver, Ir2301),
         (HalfBridgeDriver, Ucc27282),
       ],
     )
