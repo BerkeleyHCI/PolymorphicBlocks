@@ -72,14 +72,10 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
     self.connect(self.boost_sw.high_ctl, self.boost_pwm_high)
     (self.boost_pwr_conn, ), _ = self.chain(
       self.boost_sw.pwr,
-      self.Block(VoltageSinkConnector(0*Volt(tol=0), 0*Amp(tol=0))),  # TODO FIXME
+      self.Block(VoltageSinkConnector(self.output_voltage, self.power_path.actual_avg_current_rating)),
       self.pwr_out
     )
     self.connect(  # current draw used to size FETs, size for peak current
       self.power_path.switch_out.adapt_to(VoltageSink(current_draw=self.power_path.actual_inductor_current)),
       self.boost_sw.out
     )
-    # (self.boost_sw_force, ), _ = self.chain(
-    #   self.boost_sw.out,  # current draw used to size FETs, size for peak current
-    #   self.Block(ForcedVoltageCurrentDraw(self.power_path.inductor_spec_peak_current)),
-    #   self.power_path.switch)

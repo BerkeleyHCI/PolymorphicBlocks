@@ -283,12 +283,14 @@ class UsbSourceMeasure(JlcBoardTop):
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
-
       (self.conv_force, self.conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
         imp.Block(CustomSyncBuckBoostConverter(output_voltage=(15, 30)*Volt,
-                                               frequency=250*kHertz(tol=0)))
+                                               frequency=500*kHertz(tol=0),
+                                               ripple_current_factor=(0.1, 0.5),
+                                               input_ripple_limit=250*mVolt,
+                                               ))
       )
       self.connect(self.conv.pwr_logic, self.v5)  # TODO 9v gate
       self.vconv = self.connect(self.conv.pwr_out)
@@ -431,6 +433,12 @@ class UsbSourceMeasure(JlcBoardTop):
         (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
         # JLC does not have frequency specs, must be checked TODO
         (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+
+        # ignore derating - it's really broken =(
+        (['conv', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
+        (['conv', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
+        (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
+        (['conv', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.85),
 
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
