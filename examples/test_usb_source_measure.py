@@ -264,7 +264,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
     # USB PD port that supplies power to the load
     # TODO the transistor is only rated at Vgs=+/-20V
-    self.usb = self.Block(UsbCReceptacle(voltage_out=(4.5, 20)*Volt, current_limits=(0, 5)*Amp))
+    self.usb = self.Block(UsbCReceptacle(voltage_out=(9, 20)*Volt, current_limits=(0, 5)*Amp))
 
     self.gnd = self.connect(self.usb.gnd)
     self.vusb = self.connect(self.usb.pwr)
@@ -274,12 +274,12 @@ class UsbSourceMeasure(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       # logic supplies
-      (self.reg_5v, self.reg_3v3), _ = self.chain(
+      (self.reg_6v, self.reg_3v3), _ = self.chain(
         self.vusb,
-        imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
+        imp.Block(BuckConverter(output_voltage=6.0*Volt(tol=0.05))),  # high enough to power gate driver
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05)))
       )
-      self.v5 = self.connect(self.reg_5v.pwr_out)
+      self.v6 = self.connect(self.reg_6v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
@@ -292,12 +292,12 @@ class UsbSourceMeasure(JlcBoardTop):
                                                input_ripple_limit=250*mVolt,
                                                ))
       )
-      self.connect(self.conv.pwr_logic, self.v5)  # TODO 9v gate
+      self.connect(self.conv.pwr_logic, self.v6)
       self.vconv = self.connect(self.conv.pwr_out)
 
       # analog supplies
       (self.reg_analog, ), _ = self.chain(
-        self.v5,
+        self.v6,
         imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.05)))
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
@@ -412,7 +412,7 @@ class UsbSourceMeasure(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Lpc1549_48),
-        (['reg_5v'], Tps54202h),
+        (['reg_6v'], Tps54202h),
         (['reg_3v3'], Xc6209),
         (['reg_analog'], Ap2210),
         (['control', 'amp', 'amp'], Opa197),
@@ -429,16 +429,21 @@ class UsbSourceMeasure(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
         ]),
         # allow the regulator to go into tracking mode
-        (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
-        (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
+        (['reg_6v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
+        (['reg_6v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+        (['reg_6v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
 
-        # ignore derating - it's really broken =(
+        # ignore derating on 20v - it's really broken =(
+        (['reg_6v', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
+        (['reg_6v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
         (['conv', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
         (['conv', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.85),
+        (['conv', 'boost_sw', 'high_fet', 'gate_voltage'], ParamValue(
+          ['conv', 'boost_sw', 'low_fet', 'gate_voltage']
+        )),  # TODO model is broken for unknown reasons
 
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
@@ -459,6 +464,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (AnalogSwitch, Nlas4157),
         (SolidStateRelay, G3VM_61GR2),
         (BananaSafetyJack, Ct3151),
+        # (HalfBridgeDriver, Ir2301),
+        (HalfBridgeDriver, Ucc27282),
       ],
     )
 
