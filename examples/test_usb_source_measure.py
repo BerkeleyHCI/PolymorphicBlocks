@@ -260,7 +260,7 @@ class UsbSourceMeasure(JlcBoardTop):
     super().contents()
 
     # overall design parameters
-    CURRENT_RATING = (0, 2)*Amp
+    OUTPUT_CURRENT_RATING = (0, 1)*Amp
 
     # USB PD port that supplies power to the load
     # TODO the transistor is only rated at Vgs=+/-20V
@@ -288,7 +288,7 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
         imp.Block(CustomSyncBuckBoostConverter(output_voltage=(15, 30)*Volt,
                                                frequency=500*kHertz(tol=0),
-                                               ripple_current_factor=(0.1, 0.5),
+                                               ripple_current_factor=(0.1, 0.8),
                                                input_ripple_limit=250*mVolt,
                                                ))
       )
@@ -316,7 +316,7 @@ class UsbSourceMeasure(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.control = imp.Block(SourceMeasureControl(
-        current=CURRENT_RATING,
+        current=OUTPUT_CURRENT_RATING,
         rds_on=(0, 0.2)*Ohm
       ))
       self.connect(self.v3v3, self.control.pwr_logic)
@@ -398,7 +398,7 @@ class UsbSourceMeasure(JlcBoardTop):
     self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
     self.outp = self.Block(BananaSafetyJack())
     self.connect(self.outp.port.adapt_to(VoltageSink(
-      current_draw=CURRENT_RATING
+      current_draw=OUTPUT_CURRENT_RATING
     )), self.control.out)
 
     # TODO next revision: add high precision ADCs
