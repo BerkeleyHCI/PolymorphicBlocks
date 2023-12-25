@@ -589,6 +589,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     inductor_spec_peak_current = max(buck_peak_current, boost_peak_current)
     self.assign(self.inductor_spec_peak_current, inductor_spec_peak_current)
 
+    # take intersection of buck and boost inductances, and hopefully they overlap
     inductance_min = max(buck_inductance_min, boost_inductance_min)
     inductance_max = min(buck_inductance_max, boost_inductance_max)
     self.inductor = self.Block(Inductor(

@@ -287,7 +287,7 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.conv_force, self.conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
-        imp.Block(CustomSyncBuckBoostConverter(output_voltage=(10, 40)*Volt,
+        imp.Block(CustomSyncBuckBoostConverter(output_voltage=(15, 30)*Volt,
                                                frequency=250*kHertz(tol=0)))
       )
       self.connect(self.conv.pwr_logic, self.v5)  # TODO 9v gate
