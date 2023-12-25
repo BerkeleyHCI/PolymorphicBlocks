@@ -58,9 +58,9 @@ class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableS
         new_cols[cls.CAPACITANCE] = PartParserUtil.parse_abs_tolerance(extracted_values['tolerance'][1],
                                                                        nominal_capacitance, 'F')
         new_cols[cls.NOMINAL_CAPACITANCE] = nominal_capacitance
-        new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
-          PartParserUtil.parse_value(extracted_values['voltage'][1], 'V')
-        )
+
+        new_cols[cls.VOLTAGE_RATING] = Range.from_abs_tolerance(  # voltage rating for ceramic caps is bidirectional
+          0, PartParserUtil.parse_value(extracted_values['voltage'][1], 'V'))
         new_cols[cls.VOLTCO] = cls.DERATE_VOLTCO_MAP[footprint]
 
         new_cols.update(cls._parse_jlcpcb_common(row))
