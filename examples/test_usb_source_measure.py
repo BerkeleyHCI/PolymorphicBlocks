@@ -264,36 +264,39 @@ class UsbSourceMeasure(JlcBoardTop):
 
     # USB PD port that supplies power to the load
     # TODO the transistor is only rated at Vgs=+/-20V
-    self.pwr_usb = self.Block(UsbCReceptacle(voltage_out=(4.5, 20)*Volt, current_limits=(0, 5)*Amp))
+    self.usb = self.Block(UsbCReceptacle(voltage_out=(4.5, 20)*Volt, current_limits=(0, 5)*Amp))
 
-    # Data-only USB port, for example to connect to a computer that can't source USB PD
-    # so the PD port can be connected to a dedicated power brick.
-    self.data_usb = self.Block(UsbCReceptacle())
+    self.gnd = self.connect(self.usb.gnd)
+    self.vusb = self.connect(self.usb.pwr)
 
-    # TODO next revision: add a USB data port switch so the PD port can also take data
-
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.pwr_usb.gnd, self.data_usb.gnd)
-
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
-    self.vusb = self.connect(self.pwr_usb.pwr)
-
+    # power supplies
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
+      # logic supplies
+      (self.reg_5v, self.reg_3v3), _ = self.chain(
         self.vusb,
         imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
-        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
-        imp.Block(VoltageIndicatorLed())
+        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05)))
       )
       self.v5 = self.connect(self.reg_5v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-      (self.reg_analog, self.led_analog), _ = self.chain(
+      # output power supplies
+
+      (self.conv_force, self.conv), _ = self.chain(
+        self.vusb,
+        imp.Block(ForcedVoltage(20*Volt(tol=0))),
+        imp.Block(CustomSyncBuckBoostConverter(output_voltage=(10, 40)*Volt,
+                                               frequency=250*kHertz(tol=0)))
+      )
+      self.connect(self.conv.pwr_logic, self.v5)  # TODO 9v gate
+      self.vconv = self.connect(self.conv.pwr_out)
+
+      # analog supplies
+      (self.reg_analog, ), _ = self.chain(
         self.v5,
-        imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.05))),
-        imp.Block(VoltageIndicatorLed())
+        imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.05)))
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
 
@@ -305,8 +308,9 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.vanalog, self.ref_buf.pwr)
       self.vcenter = self.connect(self.ref_buf.output)
 
+    # power path domain
     with self.implicit_connect(
-        ImplicitConnect(self.vusb, [Power]),
+        ImplicitConnect(self.vconv, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.control = imp.Block(SourceMeasureControl(
@@ -316,6 +320,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.v3v3, self.control.pwr_logic)
       self.connect(self.vcenter, self.control.ref_center)
 
+    # logic domain
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
@@ -324,12 +329,12 @@ class UsbSourceMeasure(JlcBoardTop):
 
       # TODO next revision: optional clamping diode on CC lines (as present in PD buddy sink, but not OtterPill)
       self.pd = imp.Block(Fusb302b())
-      self.connect(self.pwr_usb.pwr, self.pd.vbus)
-      self.connect(self.pwr_usb.cc, self.pd.cc)
+      self.connect(self.usb.pwr, self.pd.vbus)
+      self.connect(self.usb.cc, self.pd.cc)
 
       self.mcu = imp.Block(IoController())
 
-      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()),
+      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
                                        self.mcu.usb.request())
 
       (self.i2c_pull, ), _ = self.chain(self.mcu.i2c.request(), imp.Block(I2cPullup()), self.pd.i2c)
@@ -338,9 +343,9 @@ class UsbSourceMeasure(JlcBoardTop):
       self.rgb = imp.Block(IndicatorSinkRgbLed())
       self.connect(self.mcu.gpio.request_vector('rgb'), self.rgb.signals)
 
-      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
-      (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw2'))
-      (self.sw3, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw3'))
+      # (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
+      # (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw2'))
+      # (self.sw3, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw3'))
 
       # TODO next revision: Blackberry trackball UI, speakers?
 
@@ -380,6 +385,11 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
 
+      self.connect(self.mcu.gpio.request('buck_pwm_low'), self.conv.buck_pwm_low)
+      self.connect(self.mcu.gpio.request('buck_pwm_high'), self.conv.buck_pwm_high)
+      self.connect(self.mcu.gpio.request('boost_pwm_low'), self.conv.boost_pwm_low)
+      self.connect(self.mcu.gpio.request('boost_pwm_high'), self.conv.boost_pwm_high)
+
       self.connect(self.mcu.gpio.request('boot_pwm'), self.control.boot_pwm)
 
     self.outn = self.Block(BananaSafetyJack())
@@ -416,7 +426,6 @@ class UsbSourceMeasure(JlcBoardTop):
       instance_values=[
         (['mcu', 'pin_assigns'], [
         ]),
-        (['mcu', 'swd_swo_pin'], 'PIO0_8'),
         # allow the regulator to go into tracking mode
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
