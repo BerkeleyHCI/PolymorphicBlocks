@@ -442,6 +442,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'boost_sw', 'high_fet', 'gate_voltage'], ParamValue(
           ['conv', 'boost_sw', 'low_fet', 'gate_voltage']
         )),  # TODO model is broken for unknown reasons
+        (['control', 'boot', 'c_fly_pos', 'voltage_rating_derating'], 0.85),
+        (['control', 'boot', 'c_fly_neg', 'voltage_rating_derating'], 0.85),
         (['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'], Range.exact(100e-9)),  # reasonable worst case estimate
         (['conv', 'buck_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
         (['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
@@ -469,6 +471,9 @@ class UsbSourceMeasure(JlcBoardTop):
         (HalfBridgeDriver, Ucc27282),
         (DirectionSwitch, Skrh),
       ],
+      class_values=[
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+      ]
     )
 
 
