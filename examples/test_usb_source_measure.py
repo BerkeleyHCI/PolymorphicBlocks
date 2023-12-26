@@ -346,12 +346,6 @@ class UsbSourceMeasure(JlcBoardTop):
       self.rgb = imp.Block(IndicatorSinkRgbLed())
       self.connect(self.mcu.gpio.request_vector('rgb'), self.rgb.signals)
 
-      # (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
-      # (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw2'))
-      # (self.sw3, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw3'))
-
-      # TODO next revision: Blackberry trackball UI, speakers?
-
       shared_spi = self.mcu.spi.request('spi')
 
       self.lcd = imp.Block(Qt096t_if09())
@@ -374,8 +368,8 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.adc.pwr, self.vanalog)  # TODO: digital rail
       self.connect(self.adc.spi, shared_spi)
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
-      self.connect(self.adc.vins.allocate('0'), self.control.measured_voltage)
-      self.connect(self.adc.vins.allocate('1'), self.control.measured_current)
+      self.connect(self.adc.vins.request('0'), self.control.measured_voltage)
+      self.connect(self.adc.vins.request('1'), self.control.measured_current)
 
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
@@ -387,14 +381,25 @@ class UsbSourceMeasure(JlcBoardTop):
 
       self.connect(self.mcu.gpio.request('boot_pwm'), self.control.boot_pwm)
 
+      self.ioe = imp.Block(Pca9554())
+      self.connect(self.ioe.i2c, shared_i2c)
+      self.enc = imp.Block(DigitalRotaryEncoder())
+      self.connect(self.enc.a, self.ioe.io.request('enc_a'))
+      self.connect(self.enc.b, self.ioe.io.request('enc_b'))
+      self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.ioe.io.request('enc_sw'))
+      self.dir = imp.Block(DigitalDirectionSwitch())
+      self.connect(self.dir.a, self.ioe.io.request('dir_a'))
+      self.connect(self.dir.b, self.ioe.io.request('dir_b'))
+      self.connect(self.dir.c, self.ioe.io.request('dir_c'))
+      self.connect(self.dir.d, self.ioe.io.request('dir_d'))
+      self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.ioe.io.request('dir_cen'))
+
     self.outn = self.Block(BananaSafetyJack())
     self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
     self.outp = self.Block(BananaSafetyJack())
     self.connect(self.outp.port.adapt_to(VoltageSink(
       current_draw=OUTPUT_CURRENT_RATING
     )), self.control.out)
-
-    # TODO next revision: add high precision ADCs
 
     # Misc board
     self.duck = self.Block(DuckLogo())
@@ -404,9 +409,9 @@ class UsbSourceMeasure(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48),
+        (['mcu'], Esp32s3_Wroom_1),
         (['reg_6v'], Tps54202h),
-        (['reg_3v3'], Xc6209),
+        (['reg_3v3'], Ap7215),
         (['reg_analog'], Ap2210),
         (['control', 'amp', 'amp'], Opa197),
         (['control', 'imeas', 'amp', 'amp'], Opa197),
@@ -462,6 +467,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (SolidStateRelay, Tlp3545a),
         (BananaSafetyJack, Ct3151),
         (HalfBridgeDriver, Ucc27282),
+        (DirectionSwitch, Skrh),
       ],
     )
 

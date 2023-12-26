@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Dict, List
+from typing import Dict
 
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart

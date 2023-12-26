@@ -33,7 +33,8 @@ class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
       self.gnd, self.vdd,
       current_limits=(-10, 10)*mAmp,  # sink min @ 2.3v (-24mA typ @ 4.5v), source @ 2.3v
       voltage_limit_abs=(-0.5, 5.5)*Volt,
-      input_threshold_abs=(0.8, 2.0)*Volt
+      input_threshold_abs=(0.8, 2.0)*Volt,
+      pullup_capable=True  # always pullup
     )
 
     addr_lsb = self.get(self.addr_lsb)
