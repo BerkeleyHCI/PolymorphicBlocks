@@ -411,7 +411,7 @@ class UsbSourceMeasure(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
         (['reg_6v'], Tps54202h),
-        (['reg_3v3'], Ap7215),
+        (['reg_3v3'], Ldl1117),
         (['reg_analog'], Ap2210),
         (['control', 'amp', 'amp'], Opa197),
         (['control', 'imeas', 'amp', 'amp'], Opa197),
