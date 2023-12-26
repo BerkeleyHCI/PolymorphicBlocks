@@ -432,6 +432,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['reg_6v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
         # JLC does not have frequency specs, must be checked TODO
         (['reg_6v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+        (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
 
         # ignore derating on 20v - it's really broken =(
         (['reg_6v', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
