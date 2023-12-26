@@ -31,10 +31,10 @@ class Mcp47f_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
       current_limits=(-3, 3)*mAmp,  # short circuit current, typ
       impedance=(122, 900)*Ohm  # derived from assumed Vout=Vdd=2.7v, Isc=3-22mA
     )
-    self.vout0 = self.Port(out_ref0_model)
-    self.vout1 = self.Port(out_ref1_model)
-    self.vout2 = self.Port(out_ref0_model)
-    self.vout3 = self.Port(out_ref1_model)
+    self.vout0 = self.Port(out_ref0_model, optional=True)
+    self.vout1 = self.Port(out_ref1_model, optional=True)
+    self.vout2 = self.Port(out_ref0_model, optional=True)
+    self.vout3 = self.Port(out_ref1_model, optional=True)
 
     dio_model = DigitalBidir.from_supply(  # LAT0/1/HVC, same input thresholds for I2C
       self.vss, self.vdd,
@@ -94,10 +94,10 @@ class Mcp47f(DigitalToAnalog, Block):
     self.ref0 = self.Export(self.ic.vref0)
     self.ref1 = self.Export(self.ic.vref1)
 
-    self.out0 = self.Export(self.ic.vout0)
-    self.out1 = self.Export(self.ic.vout1)
-    self.out2 = self.Export(self.ic.vout2)
-    self.out3 = self.Export(self.ic.vout3)
+    self.out0 = self.Export(self.ic.vout0, optional=True)
+    self.out1 = self.Export(self.ic.vout1, optional=True)
+    self.out2 = self.Export(self.ic.vout2, optional=True)
+    self.out3 = self.Export(self.ic.vout3, optional=True)
 
     self.i2c = self.Export(self.ic.i2c,)
     self.lat0 = self.Export(self.ic.lat0)

@@ -339,7 +339,8 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
                                        self.mcu.usb.request())
 
-      (self.i2c_pull, ), _ = self.chain(self.mcu.i2c.request(), imp.Block(I2cPullup()), self.pd.i2c)
+      shared_i2c = self.mcu.i2c.request()
+      (self.i2c_pull, ), _ = self.chain(shared_i2c, imp.Block(I2cPullup()), self.pd.i2c)
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
@@ -360,29 +361,21 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(shared_spi, self.lcd.spi)  # MISO unused
       self.connect(self.mcu.gpio.request('lcd_cs'), self.lcd.cs)
 
-      (self.dac_v, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
-                                     self.control.control_voltage)
-      (self.dac_ip, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
-                                      self.control.control_current_source)
-      (self.dac_in, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
-                                      self.control.control_current_sink)
+      self.dac = imp.Block(Mcp47f())
+      self.connect(self.dac.out0, self.control.control_voltage)
+      self.connect(self.dac.out1, self.control.control_current_source)
+      self.connect(self.dac.out2, self.control.control_current_sink)
+      self.connect(self.dac.i2c, shared_i2c)
+      self.connect(self.dac.ref0, self.dac.ref1, self.vanalog)
+      self.connect(self.dac.lat0, self.dac.lat1, self.mcu.gpio.request('lat'))
 
-      (self.adc_v, ), _ = self.chain(self.control.measured_voltage, imp.Block(Mcp3201()),
-                                     shared_spi)
-      (self.adc_i, ), _ = self.chain(self.control.measured_current, imp.Block(Mcp3201()),
-                                     shared_spi)
-
-      self.connect(self.vanalog,
-                   self.dac_v.ref, self.dac_ip.ref, self.dac_in.ref,
-                   self.adc_v.ref, self.adc_i.ref)
-
-      self.connect(self.mcu.gpio.request('dac_v_cs'), self.dac_v.cs)
-      self.connect(self.mcu.gpio.request('dac_ip_cs'), self.dac_ip.cs)
-      self.connect(self.mcu.gpio.request('dac_in_cs'), self.dac_in.cs)
-      self.connect(self.mcu.gpio.request('adc_v_cs'), self.adc_v.cs)
-      self.connect(self.mcu.gpio.request('adc_i_cs'), self.adc_i.cs)
-      self.connect(self.mcu.gpio.request('dac_ldac'),
-                   self.dac_v.ldac, self.dac_ip.ldac, self.dac_in.ldac)
+      self.adc = imp.Block(Mcp3561())
+      self.connect(self.adc.pwra, self.vanalog)
+      self.connect(self.adc.pwr, self.vanalog)  # TODO: digital rail
+      self.connect(self.adc.spi, shared_spi)
+      self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
+      self.connect(self.adc.vins.allocate('0'), self.control.measured_voltage)
+      self.connect(self.adc.vins.allocate('1'), self.control.measured_current)
 
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
