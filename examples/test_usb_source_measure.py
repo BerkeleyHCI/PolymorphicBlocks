@@ -425,6 +425,8 @@ class UsbSourceMeasure(JlcBoardTop):
       instance_values=[
         (['mcu', 'pin_assigns'], [
         ]),
+        (['mcu', 'programming'], 'uart-auto'),
+
         # allow the regulator to go into tracking mode
         (['reg_6v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         (['reg_6v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
@@ -474,7 +476,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (DirectionSwitch, Skrh),
       ],
       class_values=[
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
+        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
       ]
     )
 
