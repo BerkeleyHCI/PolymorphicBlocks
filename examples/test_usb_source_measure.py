@@ -348,12 +348,9 @@ class UsbSourceMeasure(JlcBoardTop):
 
       shared_spi = self.mcu.spi.request('spi')
 
-      self.lcd = imp.Block(Qt096t_if09())
-      self.connect(self.reg_3v3.pwr_out.as_digital_source(), self.lcd.led)
-      self.connect(self.mcu.gpio.request('lcd_reset'), self.lcd.reset)
-      self.connect(self.mcu.gpio.request('lcd_rs'), self.lcd.rs)
-      self.connect(shared_spi, self.lcd.spi)  # MISO unused
-      self.connect(self.mcu.gpio.request('lcd_cs'), self.lcd.cs)
+      self.oled = imp.Block(Er_Oled_096_1_1())
+      self.connect(shared_i2c, self.oled.i2c)
+      self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
 
       self.dac = imp.Block(Mcp47f())
       self.connect(self.dac.out0, self.control.control_voltage)
@@ -478,6 +475,9 @@ class UsbSourceMeasure(JlcBoardTop):
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
+
+        (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
+        (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
       ]
     )
 
