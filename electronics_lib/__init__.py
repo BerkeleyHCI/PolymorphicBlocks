@@ -32,7 +32,7 @@ from .SpeakerDriver_Max98357a import Max98357a
 from .Microphone_Sd18ob261 import Sd18ob261
 from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061
-from .Opamp_Opa197 import Opa197
+from .Opamp_Opax197 import Opa197, Opa2197
 from .Opamp_Opax333 import Opa2333
 from .Opamp_Lmv321 import Lmv321
 from .CeramicResonator_Cstne import Cstne

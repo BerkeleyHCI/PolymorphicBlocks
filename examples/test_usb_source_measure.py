@@ -204,7 +204,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
   def contents(self):
     super().contents()
 
-    self.boot = self.Block(BootstrapVoltageAdder())
+    self.boot = self.Block(BootstrapVoltageAdder(frequency=1*MHertz(tol=0)))
     self.connect(self.gnd, self.boot.gnd)
     self.connect(self.boot_pwm, self.boot.pwm)
     self.connect(self.pwr_logic, self.boot.pwr)
@@ -401,6 +401,15 @@ class UsbSourceMeasure(JlcBoardTop):
       current_draw=OUTPUT_CURRENT_RATING
     )), self.control.out)
 
+  def multipack(self) -> None:
+    self.vimeas_amps = self.PackedBlock(Opa2197())
+    self.pack(self.vimeas_amps.elements.request('0'), ['control', 'vmeas', 'amp'])
+    self.pack(self.vimeas_amps.elements.request('1'), ['control', 'imeas', 'amp', 'amp'])
+
+    self.ampdmeas_amps = self.PackedBlock(Opa2197())
+    self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
+    self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -408,10 +417,6 @@ class UsbSourceMeasure(JlcBoardTop):
         (['reg_6v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
         (['reg_analog'], Ap2210),
-        (['control', 'amp', 'amp'], Opa197),
-        (['control', 'imeas', 'amp', 'amp'], Opa197),
-        (['control', 'vmeas', 'amp'], Opa197),
-        (['control', 'dmeas', 'amp'], Opa197),
         (['control', 'imeas', 'sense', 'res', 'res'], GenericChipResistor),  # big one not from JLC
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
         (['control', 'driver', 'low_fet'], CustomFet),
