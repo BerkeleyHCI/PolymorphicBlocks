@@ -286,9 +286,9 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.conv_force, self.conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
-        imp.Block(CustomSyncBuckBoostConverter(output_voltage=(15, 30)*Volt,
+        imp.Block(CustomSyncBuckBoostConverter(output_voltage=(15, 32)*Volt,
                                                frequency=500*kHertz(tol=0),
-                                               ripple_current_factor=(0.1, 0.8),
+                                               ripple_current_factor=(0.01, 0.9),
                                                input_ripple_limit=250*mVolt,
                                                ))
       )
@@ -401,11 +401,6 @@ class UsbSourceMeasure(JlcBoardTop):
       current_draw=OUTPUT_CURRENT_RATING
     )), self.control.out)
 
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
-    self.id = self.Block(IdDots4())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -448,6 +443,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'buck_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
         (['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
         (['conv', 'boost_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
+        (['conv', 'buck_sw', 'gate_res'], Range.from_tolerance(10, 0.05)),
+        (['conv', 'boost_sw', 'gate_res'], ParamValue(['conv', 'buck_sw', 'gate_res'])),
 
         # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
