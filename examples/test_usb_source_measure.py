@@ -336,8 +336,8 @@ class UsbSourceMeasure(JlcBoardTop):
 
       self.mcu = imp.Block(IoController())
 
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
-                                       self.mcu.usb.request())
+      (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
+                                                    self.mcu.usb.request())
 
       shared_i2c = self.mcu.i2c.request()
       (self.i2c_pull, ), _ = self.chain(shared_i2c, imp.Block(I2cPullup()), self.pd.i2c)
@@ -367,6 +367,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
       self.connect(self.adc.vins.request('0'), self.control.measured_voltage)
       self.connect(self.adc.vins.request('1'), self.control.measured_current)
+      self.connect(self.adc.vins.request('2'), self.vcenter)
 
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
@@ -414,7 +415,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['reg_6v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
         (['reg_analog'], Ap2210),
-        (['control', 'imeas', 'sense', 'res', 'res'], GenericChipResistor),  # big one not from JLC
+        # (['control', 'imeas', 'sense', 'res', 'res'], GenericChipResistor),  # big one not from JLC
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),
@@ -461,7 +462,10 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'driver', 'low_fet', 'part_spec'], 'SQJ431EP-T1_GE3'),
         (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
-        (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
+        # (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
+
+        (['control', 'imeas', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
+        (['control', 'imeas', 'sense', 'res', 'res', 'require_basic_part'], False),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
