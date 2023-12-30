@@ -269,28 +269,34 @@ class UsbSourceMeasure(JlcBoardTop):
     self.gnd = self.connect(self.usb.gnd)
     self.vusb = self.connect(self.usb.pwr)
 
+    self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
+    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
+
     # power supplies
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       # logic supplies
-      (self.reg_6v, self.reg_3v3), _ = self.chain(
+      (self.reg_6v, self.tp_6v, self.reg_3v3, self.tp_3v3), _ = self.chain(
         self.vusb,
         imp.Block(BuckConverter(output_voltage=6.0*Volt(tol=0.05))),  # high enough to power gate driver
-        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05)))
+        self.Block(VoltageTestPoint()),
+        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        self.Block(VoltageTestPoint())
       )
       self.v6 = self.connect(self.reg_6v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
-      (self.conv_force, self.conv), _ = self.chain(
+      (self.conv_force, self.conv, self.tp_conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
         imp.Block(CustomSyncBuckBoostConverter(output_voltage=(15, 32)*Volt,
                                                frequency=500*kHertz(tol=0),
                                                ripple_current_factor=(0.01, 0.9),
                                                input_ripple_limit=250*mVolt,
-                                               ))
+                                               )),
+        self.Block(VoltageTestPoint())
       )
       self.connect(self.conv.pwr_logic, self.v6)
       self.vconv = self.connect(self.conv.pwr_out)
@@ -374,10 +380,24 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
 
-      self.connect(self.mcu.gpio.request('buck_pwm_low'), self.conv.buck_pwm_low)
-      self.connect(self.mcu.gpio.request('buck_pwm_high'), self.conv.buck_pwm_high)
-      self.connect(self.mcu.gpio.request('boost_pwm_low'), self.conv.boost_pwm_low)
-      self.connect(self.mcu.gpio.request('boost_pwm_high'), self.conv.boost_pwm_high)
+      pull_model = PulldownResistor(10*kOhm(tol=0.05))
+      rc_model = DigitalLowPassRc(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))
+      (self.buckl_pull, self.buckl_rc, self.buckl_tp), _ = self.chain(
+        self.mcu.gpio.request('buck_pwm_low'),
+        imp.Block(pull_model), imp.Block(rc_model),
+        self.Block(DigitalTestPoint()), self.conv.buck_pwm_low)
+      (self.buckh_pull, self.buckh_rc, self.buckh_tp), _ = self.chain(
+        self.mcu.gpio.request('buck_pwm_high'),
+        imp.Block(pull_model), imp.Block(rc_model),
+        self.Block(DigitalTestPoint()), self.conv.buck_pwm_high)
+      (self.boostl_pull, self.boostl_rc, self.boostl_tp), _ = self.chain(
+        self.mcu.gpio.request('boost_pwm_low'),
+        imp.Block(pull_model), imp.Block(rc_model),
+        self.Block(DigitalTestPoint()), self.conv.boost_pwm_low)
+      (self.boosth_pull, self.boosth_rc, self.boosth_tp), _ = self.chain(
+        self.mcu.gpio.request('boost_pwm_high'),
+        imp.Block(pull_model), imp.Block(rc_model),
+        self.Block(DigitalTestPoint()), self.conv.boost_pwm_high)
 
       self.connect(self.mcu.gpio.request('boot_pwm'), self.control.boot_pwm)
 
@@ -424,6 +444,9 @@ class UsbSourceMeasure(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
+          # note: for ESP32-S3 compatibility: pins 35/36/37 are used by PSRAM
+          # note: for ESP32-C6 compatibility: pin 22 is NC
+
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
@@ -479,10 +502,12 @@ class UsbSourceMeasure(JlcBoardTop):
         (BananaSafetyJack, Ct3151),
         (HalfBridgeDriver, Ucc27282),
         (DirectionSwitch, Skrh),
+        (TestPoint, CompactKeystone5015),
       ],
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
+        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
 
         (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
         (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
