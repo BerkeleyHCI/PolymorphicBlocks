@@ -302,9 +302,10 @@ class UsbSourceMeasure(JlcBoardTop):
       self.vconv = self.connect(self.conv.pwr_out)
 
       # analog supplies
-      (self.reg_analog, ), _ = self.chain(
+      (self.reg_analog, self.tp_analog), _ = self.chain(
         self.v6,
-        imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.05)))
+        imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.05))),
+        self.Block(VoltageTestPoint())
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
 
@@ -327,7 +328,7 @@ class UsbSourceMeasure(JlcBoardTop):
         current=OUTPUT_CURRENT_RATING,
         rds_on=(0, 0.2)*Ohm
       ))
-      self.connect(self.v3v3, self.control.pwr_logic)
+      self.connect(self.vanalog, self.control.pwr_logic)
       self.connect(self.vcenter, self.control.ref_center)
 
     # logic domain
