@@ -315,6 +315,8 @@ class UsbSourceMeasure(JlcBoardTop):
         ImplicitConnect(self.vconv, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      # zener shunt in case the boost converter goes crazy
+      self.prot_conv = imp.Block(ProtectionZenerDiode(voltage=(32, 36)*Volt))
       self.control = imp.Block(SourceMeasureControl(
         current=OUTPUT_CURRENT_RATING,
         rds_on=(0, 0.2)*Ohm
@@ -466,6 +468,8 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['control', 'imeas', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
         (['control', 'imeas', 'sense', 'res', 'res', 'require_basic_part'], False),
+
+        (['prot_conv', 'diode', 'footprint_spec'], ''),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
