@@ -467,8 +467,18 @@ class UsbSourceMeasure(JlcBoardTop):
           'boot_pwm=38',
           'pd_int=39',
         ]),
-
         (['mcu', 'programming'], 'uart-auto'),
+
+        (['ioe', 'pin_assigns'], [
+          'dir_a=5',
+          'dir_cen=6',
+          'dir_c=7',
+          'dir_d=4',
+          'dir_b=12',
+          'enc_sw=11',
+          'enc_a=9',
+          'enc_b=10x',
+        ]),
 
         # allow the regulator to go into tracking mode
         (['reg_6v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
