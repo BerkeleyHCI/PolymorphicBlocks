@@ -187,13 +187,15 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
     self.gnd = self.Port(Ground.empty(), [Common])
     self.ref_center = self.Port(AnalogSink.empty())
 
+    self.pwr_gate_pos = self.Port(VoltageSink.empty())
+    self.pwr_gate_neg = self.Port(VoltageSink.empty())
+
     self.control_voltage = self.Port(AnalogSink.empty())
     self.control_current_source = self.Port(AnalogSink.empty())
     self.control_current_sink = self.Port(AnalogSink.empty())
     self.drv_en = self.Port(DigitalSink.empty())
     self.off = self.Port(Vector(DigitalSink.empty()))
     self.out = self.Port(VoltageSource.empty())
-    self.boot_pwm = self.Port(DigitalSink.empty())  # referenced to pwr_logic
 
     self.measured_voltage = self.Port(AnalogSource.empty())
     self.measured_current = self.Port(AnalogSource.empty())
@@ -203,17 +205,6 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
 
   def contents(self):
     super().contents()
-
-    self.boot = self.Block(BootstrapVoltageAdder(frequency=1*MHertz(tol=0)))
-    self.connect(self.gnd, self.boot.gnd)
-    self.connect(self.boot_pwm, self.boot.pwm)
-    self.connect(self.pwr_logic, self.boot.pwr)
-    self.connect(self.pwr, self.boot.pwr_pos)
-    self.connect(self.gnd, self.boot.pwr_neg)
-
-    # TODO: support non-zero grounds
-    self.boot_neg_forced = self.Block(ForcedVoltage(0*Volt(tol=0)))
-    self.connect(self.boot_neg_forced.pwr_in, self.boot.out_neg)
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       locals={
@@ -249,9 +240,6 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
         'clamp': {
           'voltage': (2.5, 3.0)*Volt
         }
-      }, nodes={
-        'boot_hi': self.boot.out_pos,
-        'boot_low': self.boot_neg_forced.pwr_out,
       })
 
 
@@ -331,6 +319,19 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.vanalog, self.control.pwr_logic)
       self.connect(self.vcenter, self.control.ref_center)
 
+      self.boot = self.Block(BootstrapVoltageAdder(frequency=1*MHertz(tol=0)))
+      self.connect(self.boot.gnd, self.gnd)
+      self.connect(self.boot.pwr, self.v3v3)
+      self.connect(self.boot.pwr_neg, self.gnd)
+      self.connect(self.boot.pwr_pos, self.conv.pwr_out)
+      self.boot_neg_forced = self.Block(ForcedVoltage(0*Volt(tol=0)))  # TODO: support non-zero grounds
+      self.connect(self.boot_neg_forced.pwr_in, self.boot.out_neg)
+      self.connect(self.boot_neg_forced.pwr_out, self.control.pwr_gate_neg)
+      self.connect(self.boot.out_pos, self.control.pwr_gate_pos)
+
+      self.tp_boot_neg = self.Block(VoltageTestPoint()).connected(self.boot.out_neg)
+      self.tp_boot_pos = self.Block(VoltageTestPoint()).connected(self.boot.out_pos)
+
     # logic domain
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
@@ -401,7 +402,7 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(pull_model), imp.Block(rc_model),
         self.Block(DigitalTestPoint()), self.conv.boost_pwm_high)
 
-      self.connect(self.mcu.gpio.request('boot_pwm'), self.control.boot_pwm)
+      self.connect(self.mcu.gpio.request('boot_pwm'), self.boot.pwm)
 
       self.ioe = imp.Block(Pca9554())
       self.connect(self.ioe.i2c, shared_i2c)
@@ -447,9 +448,10 @@ class UsbSourceMeasure(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
           # note: for ESP32-S3 compatibility: IO35/36/37 (pins 28-30) are used by PSRAM
           # note: for ESP32-C6 compatibility: pin 34 (22 on dedicated -C6 pattern) is NC
-          'rgb_red=15',
+          'rgb_red=18',
           'rgb_green=17',
-          'rgb_blue=18',
+          'rgb_blue=19',
+          'oled_reset=23',
 
           'adc_cs=4',
           'spi.sck=5',
@@ -499,8 +501,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'boost_sw', 'high_fet', 'gate_voltage'], ParamValue(
           ['conv', 'boost_sw', 'low_fet', 'gate_voltage']
         )),  # TODO model is broken for unknown reasons
-        (['control', 'boot', 'c_fly_pos', 'voltage_rating_derating'], 0.85),
-        (['control', 'boot', 'c_fly_neg', 'voltage_rating_derating'], 0.85),
+        (['boot', 'c_fly_pos', 'voltage_rating_derating'], 0.85),
+        (['boot', 'c_fly_neg', 'voltage_rating_derating'], 0.85),
         (['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'], Range.exact(100e-9)),  # reasonable worst case estimate
         (['conv', 'buck_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
         (['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
