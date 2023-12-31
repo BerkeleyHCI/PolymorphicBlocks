@@ -292,7 +292,7 @@ class UsbSourceMeasure(JlcBoardTop):
       # analog supplies
       (self.reg_analog, self.tp_analog), _ = self.chain(
         self.v6,
-        imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.05))),
+        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint())
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
@@ -439,10 +439,20 @@ class UsbSourceMeasure(JlcBoardTop):
         (['mcu'], Esp32s3_Wroom_1),
         (['reg_6v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
-        (['reg_analog'], Lp5907),
+        (['reg_analog'], Ap2210),
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),
+      ],
+      class_refinements=[
+        (EspProgrammingHeader, EspProgrammingTc2030),
+        (Opamp, Tlv9061),  # higher precision opamps
+        (AnalogSwitch, Nlas4157),
+        (SolidStateRelay, Tlp3545a),
+        (BananaSafetyJack, Ct3151),
+        (HalfBridgeDriver, Ucc27282),
+        (DirectionSwitch, Skrh),
+        (TestPoint, CompactKeystone5015),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -527,16 +537,6 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'imeas', 'sense', 'res', 'res', 'require_basic_part'], False),
 
         (['prot_conv', 'diode', 'footprint_spec'], ''),
-      ],
-      class_refinements=[
-        (EspProgrammingHeader, EspProgrammingTc2030),
-        (Opamp, Tlv9061),  # higher precision opamps
-        (AnalogSwitch, Nlas4157),
-        (SolidStateRelay, Tlp3545a),
-        (BananaSafetyJack, Ct3151),
-        (HalfBridgeDriver, Ucc27282),
-        (DirectionSwitch, Skrh),
-        (TestPoint, CompactKeystone5015),
       ],
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),

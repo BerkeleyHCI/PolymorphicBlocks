@@ -13,8 +13,7 @@ class Mcp47f_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
       current_draw=(0.00085, 2.5)*mAmp))  # quad DAC, serial inactive to EE write
 
     ref_model = VoltageSink(
-      voltage_limits=(self.vss.link().voltage.lower(), self.vdd.link().voltage.lower() - 0.04), # buffered mode
-      current_draw=(0, 0)  # input current not specified
+      voltage_limits=self.vss.link().voltage.hull(self.vdd.link().voltage)
     )
     self.vref0 = self.Port(ref_model)
     self.vref1 = self.Port(ref_model)
