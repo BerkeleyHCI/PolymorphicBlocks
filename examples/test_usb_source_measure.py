@@ -344,6 +344,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.usb.cc, self.pd.cc)
 
       self.mcu = imp.Block(IoController())
+      (self.led, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))  # debugging LED
 
       (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
                                                     self.mcu.usb.request())
@@ -375,8 +376,8 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.adc.spi, shared_spi)
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
       self.connect(self.adc.vins.request('0'), self.vcenter)
-      self.connect(self.adc.vins.request('1'), self.control.measured_voltage)
-      self.connect(self.adc.vins.request('2'), self.control.measured_current)
+      self.connect(self.adc.vins.request('1'), self.control.measured_current)
+      self.connect(self.adc.vins.request('2'), self.control.measured_voltage)
 
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
@@ -438,7 +439,6 @@ class UsbSourceMeasure(JlcBoardTop):
         (['reg_6v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
         (['reg_analog'], Ap2210),
-        # (['control', 'imeas', 'sense', 'res', 'res'], GenericChipResistor),  # big one not from JLC
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),
@@ -466,6 +466,8 @@ class UsbSourceMeasure(JlcBoardTop):
           'buck_pwm_low=35',
           'boot_pwm=38',
           'pd_int=39',
+
+          'led=_GPIO0_STRAP',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
