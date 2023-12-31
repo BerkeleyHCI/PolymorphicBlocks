@@ -439,7 +439,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['mcu'], Esp32s3_Wroom_1),
         (['reg_6v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
-        (['reg_analog'], Ap2210),
+        (['reg_analog'], Lp5907),
         (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),

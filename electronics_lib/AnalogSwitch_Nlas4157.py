@@ -1,7 +1,8 @@
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
-class Nlas4157_Device(InternalSubcircuit, FootprintBlock):
+class Nlas4157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
   def __init__(self):
     super().__init__()
 
@@ -44,6 +45,8 @@ class Nlas4157_Device(InternalSubcircuit, FootprintBlock):
       mfr='ON Semiconductor', part='NLAS4157',
       datasheet='https://www.onsemi.com/pdf/datasheet/nlas4157-d.pdf'
     )
+    self.assign(self.lcsc_part, 'C106912')
+    self.assign(self.actual_basic_part, False)
 
 
 class Nlas4157(AnalogSwitch):
