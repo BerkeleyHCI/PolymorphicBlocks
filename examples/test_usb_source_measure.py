@@ -362,9 +362,9 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
 
       self.dac = imp.Block(Mcp47f())
-      self.connect(self.dac.out0, self.control.control_voltage)
+      self.connect(self.dac.out0, self.control.control_current_sink)
       self.connect(self.dac.out1, self.control.control_current_source)
-      self.connect(self.dac.out2, self.control.control_current_sink)
+      self.connect(self.dac.out2, self.control.control_voltage)
       self.connect(self.dac.i2c, shared_i2c)
       self.connect(self.dac.ref0, self.dac.ref1, self.vanalog)
       self.connect(self.dac.lat0, self.dac.lat1, self.mcu.gpio.request('lat'))
@@ -374,9 +374,9 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.adc.pwr, self.vanalog)  # TODO: digital rail
       self.connect(self.adc.spi, shared_spi)
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
-      self.connect(self.adc.vins.request('0'), self.control.measured_voltage)
-      self.connect(self.adc.vins.request('1'), self.control.measured_current)
-      self.connect(self.adc.vins.request('2'), self.vcenter)
+      self.connect(self.adc.vins.request('0'), self.vcenter)
+      self.connect(self.adc.vins.request('1'), self.control.measured_voltage)
+      self.connect(self.adc.vins.request('2'), self.control.measured_current)
 
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
@@ -477,7 +477,7 @@ class UsbSourceMeasure(JlcBoardTop):
           'dir_b=12',
           'enc_sw=11',
           'enc_a=9',
-          'enc_b=10x',
+          'enc_b=10',
         ]),
 
         # allow the regulator to go into tracking mode
