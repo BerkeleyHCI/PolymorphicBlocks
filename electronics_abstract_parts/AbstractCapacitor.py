@@ -178,7 +178,10 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
 
       if derated.lower == 0:  # in case where tolerance is the nominal value
         return None
-      count = round(self.get(self.capacitance).lower / derated.lower)
+      # ceil is needed so that it generates the maximum number of capacitors, especially for where the upper bound
+      # is infinite (like decoupling capacitors for power converters), but float issues can cause the rounding to be
+      # too aggressive even for an exact match, so this reduces the count before ceil-ing it
+      count = math.ceil(self.get(self.capacitance).lower / derated.lower * (1-Range.DOUBLE_FLOAT_ROUND_FACTOR))
       derated_parallel_capacitance = derated * count
       if not derated_parallel_capacitance.fuzzy_in(self.get(self.capacitance)):  # not satisfying spec, remove row
         return None
