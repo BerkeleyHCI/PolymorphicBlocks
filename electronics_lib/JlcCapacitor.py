@@ -39,12 +39,12 @@ class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableS
   def _make_table(cls) -> PartsTable:
     CAPACITOR_MATCHES = {
       'nominal_capacitance': re.compile("(^|\s)([^±]\S+F)($|\s)"),
-      'tolerance': re.compile("(^|\s)(±\S*[%F])($|\s)"),
+      'tolerance': re.compile("(^|\s)(±\S+[%F])($|\s)"),
       'voltage': re.compile("(^|\s)(\d\S*V)($|\s)"),  # make sure not to catch 'Y5V'
     }
 
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if row['First Category'] != 'Capacitors':
+      if row['Second Category'] != 'Multilayer Ceramic Capacitors MLCC - SMD/SMT':
         return None
 
       new_cols: Dict[PartsTableColumn, Any] = {}

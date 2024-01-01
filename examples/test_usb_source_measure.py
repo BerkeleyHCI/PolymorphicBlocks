@@ -441,6 +441,9 @@ class UsbSourceMeasure(JlcBoardTop):
         (['reg_6v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
         (['reg_analog'], Ap2210),
+
+        (['control', 'driver', 'low_fet'], CustomFet),
+        (['control', 'driver', 'high_fet'], CustomFet),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
@@ -523,7 +526,10 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'imeas', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
         (['control', 'imeas', 'sense', 'res', 'res', 'require_basic_part'], False),
 
-        (['control', 'driver', 'low_fet', 'part'], 'SQD50P06-15L_GE3'),  # has a 30V/4A SOA
+        (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['control', 'driver', 'high_fet', 'part_spec'], 'SQD50N10-8M9L_GE3'),
+        (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['control', 'driver', 'low_fet', 'part_spec'], 'SQD50P06-15L_GE3'),  # has a 30V/4A SOA
 
         (['prot_conv', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
       ],
