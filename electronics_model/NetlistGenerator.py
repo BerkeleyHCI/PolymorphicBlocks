@@ -143,22 +143,12 @@ class NetlistTransform(TransformUtil.Transform):
         f"({mfr})" if mfr else ""
       ]
       part_str = " ".join(filter(None, part_comps))
-      value_comps = [
-        part_str,
-        value
-      ]
-      value_str = " - ".join(filter(None, value_comps))
-
+      value_str = value if value else (part if part else '')
       self.blocks[path] = kicad.Block(
         footprint_name,
         refdes,
         part_str,
-
-        # Uncomment one to set value field
-        # TODO this should be a user flag
-        value_str,  # including manufacturer
-        # lcsc_part or "",
-
+        value_str,
         list(path.blocks),
         list(self.short_paths[path].blocks),
         self.class_paths[path],
