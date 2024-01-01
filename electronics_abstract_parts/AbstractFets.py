@@ -38,7 +38,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor):
 
   @init_in_parent
   def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike, *,
-               gate_voltage: RangeLike = Range.all(), rds_on: RangeLike = Range.all(),
+               gate_voltage: RangeLike = (0, 0), rds_on: RangeLike = Range.all(),
                gate_charge: RangeLike = Range.all(), power: RangeLike = Range.exact(0),
                channel: StringLike = StringExpr()) -> None:
     super().__init__()

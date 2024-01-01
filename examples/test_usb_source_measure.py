@@ -32,24 +32,25 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
   def contents(self) -> None:
     super().contents()
 
+    zener_model = ZenerDiode((8, 10)*Volt)
+    self.clamp1 = self.Block(zener_model)
+    self.clamp2 = self.Block(zener_model)
+
+    gate_voltage = (-self.clamp1.actual_zener_voltage).hull(self.clamp2.actual_zener_voltage)
     self.high_fet = self.Block(Fet.NFet(
       drain_voltage=self.pwr.link().voltage,
       drain_current=self.current,
-      gate_voltage=self.control.link().voltage,
+      gate_voltage=gate_voltage,
       rds_on=self.rds_on,
       gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
     self.low_fet = self.Block(Fet.PFet(
       drain_voltage=self.pwr.link().voltage,
       drain_current=self.current,
-      gate_voltage=self.control.link().voltage,
+      gate_voltage=gate_voltage,
       rds_on=self.rds_on,
       gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
-
-    zener_model = ZenerDiode(15*Volt(tol=0.1))
-    self.clamp1 = self.Block(zener_model)
-    self.clamp2 = self.Block(zener_model)
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
@@ -517,13 +518,14 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'buck_sw', 'gate_res'], Range.from_tolerance(10, 0.05)),
         (['conv', 'boost_sw', 'gate_res'], ParamValue(['conv', 'buck_sw', 'gate_res'])),
 
-
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
 
         (['control', 'imeas', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
         (['control', 'imeas', 'sense', 'res', 'res', 'require_basic_part'], False),
 
-        (['prot_conv', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA')
+        (['control', 'driver', 'low_fet', 'part'], 'SQD50P06-15L_GE3'),  # has a 30V/4A SOA
+
+        (['prot_conv', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
       ],
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
