@@ -218,7 +218,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
         },
         'int': {
           'factor': Range.from_tolerance(1 / 4.7e-6, 0.15),
-          'capacitance': 1*nFarad(tol=0.15)
+          'capacitance': 1*nFarad(tol=0.1),
         },
         'amp': {
           'amplification': Range.from_tolerance(20, 0.05),
@@ -440,9 +440,6 @@ class UsbSourceMeasure(JlcBoardTop):
         (['reg_6v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
         (['reg_analog'], Ap2210),
-        (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
-        (['control', 'driver', 'low_fet'], CustomFet),
-        (['control', 'driver', 'high_fet'], CustomFet),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
@@ -520,18 +517,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'buck_sw', 'gate_res'], Range.from_tolerance(10, 0.05)),
         (['conv', 'boost_sw', 'gate_res'], ParamValue(['conv', 'buck_sw', 'gate_res'])),
 
-        # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
-        (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
-        (['control', 'driver', 'high_fet', 'manufacturer_spec'], 'Vishay Siliconix'),
-        (['control', 'driver', 'high_fet', 'part_spec'], 'SQJ148EP-T1_GE3'),
-        (['control', 'driver', 'high_fet', 'power'], Range(0, 0)),
-        # PFET option: SQJ431EP-T1_GE3, PNP BJT option: PHPT60410PYX
-        (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
-        (['control', 'driver', 'low_fet', 'manufacturer_spec'], 'Vishay Siliconix'),
-        (['control', 'driver', 'low_fet', 'part_spec'], 'SQJ431EP-T1_GE3'),
-        (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
+
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
-        # (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
 
         (['control', 'imeas', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
         (['control', 'imeas', 'sense', 'res', 'res', 'require_basic_part'], False),
