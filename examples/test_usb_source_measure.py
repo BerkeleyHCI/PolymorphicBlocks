@@ -330,8 +330,8 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.boot_neg_forced.pwr_out, self.control.pwr_gate_neg)
       self.connect(self.boot.out_pos, self.control.pwr_gate_pos)
 
-      self.tp_boot_neg = self.Block(VoltageTestPoint()).connected(self.boot.out_neg)
-      self.tp_boot_pos = self.Block(VoltageTestPoint()).connected(self.boot.out_pos)
+      self.tp_boot_neg = self.Block(VoltageTestPoint("vb-")).connected(self.boot.out_neg)
+      self.tp_boot_pos = self.Block(VoltageTestPoint("vb+")).connected(self.boot.out_pos)
 
     # logic domain
     with self.implicit_connect(
@@ -389,19 +389,19 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.buckl_pull, self.buckl_rc, self.buckl_tp), _ = self.chain(
         self.mcu.gpio.request('buck_pwm_low'),
         imp.Block(pull_model), imp.Block(rc_model),
-        self.Block(DigitalTestPoint()), self.conv.buck_pwm_low)
+        self.Block(DigitalTestPoint("bul")), self.conv.buck_pwm_low)
       (self.buckh_pull, self.buckh_rc, self.buckh_tp), _ = self.chain(
         self.mcu.gpio.request('buck_pwm_high'),
         imp.Block(pull_model), imp.Block(rc_model),
-        self.Block(DigitalTestPoint()), self.conv.buck_pwm_high)
+        self.Block(DigitalTestPoint("buh")), self.conv.buck_pwm_high)
       (self.boostl_pull, self.boostl_rc, self.boostl_tp), _ = self.chain(
         self.mcu.gpio.request('boost_pwm_low'),
         imp.Block(pull_model), imp.Block(rc_model),
-        self.Block(DigitalTestPoint()), self.conv.boost_pwm_low)
+        self.Block(DigitalTestPoint("bol")), self.conv.boost_pwm_low)
       (self.boosth_pull, self.boosth_rc, self.boosth_tp), _ = self.chain(
         self.mcu.gpio.request('boost_pwm_high'),
         imp.Block(pull_model), imp.Block(rc_model),
-        self.Block(DigitalTestPoint()), self.conv.boost_pwm_high)
+        self.Block(DigitalTestPoint("boh")), self.conv.boost_pwm_high)
 
       self.connect(self.mcu.gpio.request('boot_pwm'), self.boot.pwm)
 
