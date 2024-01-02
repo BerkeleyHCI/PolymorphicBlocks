@@ -352,6 +352,7 @@ class UsbSourceMeasure(JlcBoardTop):
                                                     self.mcu.usb.request())
 
       shared_i2c = self.mcu.i2c.request('i2c')
+      self.i2c_tp = self.Block(I2cTestPoint('i2c')).connected(shared_i2c)
       (self.i2c_pull, ), _ = self.chain(shared_i2c, imp.Block(I2cPullup()), self.pd.i2c)
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
 
