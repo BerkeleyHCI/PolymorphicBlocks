@@ -33,6 +33,8 @@ PART_ROTATIONS = {
   'C216623': 0,  # XC6209 1.5 SOT-23-5
   'C216624': 0,  # XC6209 3.3 SOT-23-5
   'C222571': 0,  # XC6209 5.0 SOT-23-5
+  'C86803': -90,  # PCA9554A TSSOP16
+  'C106912': -90,  # NLAS4157
 
   'C2962219': -90,  # 2x5 1.27mm header shrouded
   'C126830': 90,  # "SOT-23" USB ESD protector
@@ -66,6 +68,7 @@ _FOOTPRINT_ROTATIONS = {
   'Package_TO_SOT_SMD:SOT-89-3': 180,
   'Package_TO_SOT_SMD:SOT-323_SC-70': 180,
   'Package_TO_SOT_SMD:SOT-223-3_TabPin2': 180,
+  'Package_TO_SOT_SMD:TO-252-2': 180,  # aka DPak
   'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': -90,
   'Package_SO:SOIC-8_5.23x5.23mm_P1.27mm': -90,
   'Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm': -90,
@@ -92,6 +95,7 @@ PART_OFFSETS: Dict[str, Tuple[float, float]] = {
 }
 _FOOTPRINT_OFFSETS: Dict[str, Tuple[float, float]] = {
   'Package_TO_SOT_SMD:SOT-89-3': (-0.6, 0),
+  'Package_TO_SOT_SMD:TO-252-2': (-1.9, 0),  # aka DPak
 
   'Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11': (0, -1.25),
   'RF_Module:ESP32-WROOM-32': (0, 0.8),
