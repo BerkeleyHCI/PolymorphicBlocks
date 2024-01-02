@@ -311,7 +311,7 @@ class BinaryOpBinding(Binding):
   def __init__(self,
                lhs: ConstraintExpr,
                rhs: ConstraintExpr,
-               op: Union[NumericOp,BoolOp,EqOp,OrdOp,RangeSetOp]):
+               op: Union[NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp]):
     self.op_map = {
       # Numeric
       NumericOp.add: edgir.BinaryExpr.ADD,

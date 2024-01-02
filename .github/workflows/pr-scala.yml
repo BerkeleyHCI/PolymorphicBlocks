@@ -34,9 +34,7 @@ jobs:
       with:
         python-version: '3.10'
     - name: install dependencies
-      run: |
-        pip install protobuf sexpdata Deprecated
-
+      run: pip install -r requirements.txt
     - name: sbt test
       run: cd compiler && sbt -v +test
 

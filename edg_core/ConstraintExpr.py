@@ -193,7 +193,7 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
   def _create_binary_op(cls,
                         lhs: SelfType,
                         rhs: SelfType,
-                        op: Union[NumericOp,RangeSetOp]) -> SelfType:
+                        op: Union[NumericOp, RangeSetOp]) -> SelfType:
     """Creates a new expression that is the result of a binary operation on inputs"""
     if type(lhs) != type(rhs):
       raise TypeError(f"op args must be of same type, "
@@ -472,6 +472,16 @@ class StringExpr(ConstraintExpr[str, StringLike]):
   def _is_lit(self) -> bool:
     assert self._is_bound()
     return isinstance(self.binding, StringLiteralBinding)
+
+  def __add__(self, rhs: StringLike) -> StringExpr:
+    rhs_typed = self._to_expr_type(rhs)
+    assert self._is_bound() and rhs_typed._is_bound()
+    return self._new_bind(BinaryOpBinding(self, rhs_typed, NumericOp.add))
+
+  def __radd__(self, lhs: StringLike) -> StringExpr:
+    lhs_typed = self._to_expr_type(lhs)
+    assert lhs_typed._is_bound() and self._is_bound()
+    return self._new_bind(BinaryOpBinding(self, lhs_typed, NumericOp.add))
 
 
 class AssignExpr(ConstraintExpr[None, None]):
