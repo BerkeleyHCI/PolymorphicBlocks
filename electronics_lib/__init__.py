@@ -20,6 +20,7 @@ from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .RotaryEncoder_Alps import Ec11eWithSwitch, Ec11j15WithSwitch, Ec05e
+from .RotaryEncoder_Bourns import Pec11s
 from .DirectionSwitch_Alps import Skrh
 from .JlcCrystal import JlcCrystal
 from .JlcOscillator import JlcOscillator

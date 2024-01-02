@@ -455,6 +455,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (HalfBridgeDriver, Ucc27282),
         (DirectionSwitch, Skrh),
         (TestPoint, CompactKeystone5015),
+        (RotaryEncoder, Pec11s),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
