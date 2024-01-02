@@ -2,7 +2,7 @@
   (layer "F.Cu")
   (descr "Duckling")
   (attr board_only exclude_from_pos_files exclude_from_bom)
-  (fp_text reference "duck" (at 0 -4) (layer "F.SilkS") hide
+  (fp_text reference "duck" (at 0 -4) (layer "F.Fab") hide
       (effects (font (size 1.524 1.524) (thickness 0.3048)))
     (tstamp 9838478e-0ee9-455e-be55-9817bfc93ce2)
   )

@@ -6519,7 +6519,7 @@
     (descr "Converted using: svg2mod -i small.svg -o lemur_small.kicad_mod -c -f 0.2")
     (tags "svg2mod")
     (attr board_only exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "svg2mod" (at 0 -5.999317) (layer "F.SilkS") hide
+    (fp_text reference "svg2mod" (at 0 -5.999317) (layer "F.Fab") hide
         (effects (font (size 1.524 1.524) (thickness 0.3048)))
       (tstamp 3bca4efb-2cec-486e-b0c1-c5ca2da57ce3)
     )
@@ -9072,11 +9072,11 @@
     (descr "Converted using: svg2mod DucklingSolid.svg --force F.Cu -o 'C:\\Users\\Ducky\\Documents\\GitHub\\edg-ide\\PolymorphicBlocks\\examples\\edg.pretty\\DucklingSolid.kicad_mod' -P -p 2 -c --factor 0.1")
     (tags "svg2mod")
     (attr exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "svg2mod" (at 0 -5.703397) (layer "F.SilkS") hide
+    (fp_text reference "svg2mod" (at 0 -4) (layer "F.Fab") hide
         (effects (font (size 1.524 1.524) (thickness 0.3048)))
       (tstamp fec8dd3c-1e2a-422a-8be7-1a33226ebd7c)
     )
-    (fp_text value "G***" (at 0 5.703397) (layer "F.SilkS") hide
+    (fp_text value "G***" (at 0 4) (layer "F.SilkS") hide
         (effects (font (size 1.524 1.524) (thickness 0.3048)))
       (tstamp e770bcab-4db6-4beb-a8c9-5ec1946b3337)
     )
