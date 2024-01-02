@@ -17,12 +17,26 @@ class TestPoint(InternalSubcircuit, Block):
     self.tp_name = self.ArgParameter(name)
 
 
-class VoltageTestPoint(TypedTestPoint, Block):
-  """Test point with a VoltageSink port."""
-  def __init__(self):
+@non_library
+class BaseTypedTestPoint(TypedTestPoint, Block):
+  """Base class with utility infrastructure for typed test points"""
+  @init_in_parent
+  def __init__(self, name: StringLike = "") -> None:
     super().__init__()
+    self.io: Port
+    self.tp_name = self.ArgParameter(name)
+    self.tp = self.Block(TestPoint(name=StringExpr()))
+
+  def contents(self):
+    super().contents()
+    self.assign(self.tp.tp_name, (self.tp_name == "").then_else(self.io.link().name(), self.tp_name))
+
+
+class VoltageTestPoint(BaseTypedTestPoint, Block):
+  """Test point with a VoltageSink port."""
+  def __init__(self, *args):
+    super().__init__(*args)
     self.io = self.Port(VoltageSink.empty(), [InOut])
-    self.tp = self.Block(TestPoint(name=self.io.link().name()))
     self.connect(self.io, self.tp.io.adapt_to(VoltageSink()))
 
   def connected(self, io: Port[VoltageLink]) -> 'VoltageTestPoint':
@@ -30,12 +44,11 @@ class VoltageTestPoint(TypedTestPoint, Block):
     return self
 
 
-class DigitalTestPoint(TypedTestPoint, Block):
+class DigitalTestPoint(BaseTypedTestPoint, Block):
   """Test point with a DigitalSink port."""
-  def __init__(self):
-    super().__init__()
+  def __init__(self, *args):
+    super().__init__(*args)
     self.io = self.Port(DigitalSink.empty(), [InOut])
-    self.tp = self.Block(TestPoint(name=self.io.link().name()))
     self.connect(self.io, self.tp.io.adapt_to(DigitalSink()))
 
   def connected(self, io: Port[DigitalLink]) -> 'DigitalTestPoint':
@@ -45,10 +58,11 @@ class DigitalTestPoint(TypedTestPoint, Block):
 
 class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
   """Creates an array of Digital test points, sized from the port array's connections."""
-  def __init__(self):
+  def __init__(self, name: StringLike = ''):
     super().__init__()
     self.io = self.Port(Vector(DigitalSink.empty()), [InOut])
-    self.generator_param(self.io.requested())
+    self.tp_name = self.ArgParameter(name)
+    self.generator_param(self.io.requested(), self.tp_name)
 
   def generate(self):
     super().generate()
@@ -62,12 +76,11 @@ class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
       self.connect(self.io.append_elt(DigitalSink.empty(), requested), tp.io)
 
 
-class AnalogTestPoint(TypedTestPoint, Block):
+class AnalogTestPoint(BaseTypedTestPoint, Block):
   """Test point with a AnalogSink port."""
-  def __init__(self):
-    super().__init__()
+  def __init__(self, *args):
+    super().__init__(*args)
     self.io = self.Port(AnalogSink.empty(), [InOut])
-    self.tp = self.Block(TestPoint(name=self.io.link().name()))
     self.connect(self.io, self.tp.io.adapt_to(AnalogSink()))
 
   def connected(self, io: Port[AnalogLink]) -> 'AnalogTestPoint':
