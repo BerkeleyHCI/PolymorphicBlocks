@@ -54,7 +54,11 @@ class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
     super().generate()
     self.tp = ElementDict[DigitalTestPoint]()
     for requested in self.get(self.io.requested()):
-      tp = self.tp[requested] = self.Block(DigitalTestPoint())
+      # TODO: link() on Vector is not supported, so we leave the naming to the leaf link in the leaf test point
+      if self.get(self.tp_name) == '':
+        tp = self.tp[requested] = self.Block(DigitalTestPoint())
+      else:
+        tp = self.tp[requested] = self.Block(DigitalTestPoint(self.tp_name + f'.{requested}'))
       self.connect(self.io.append_elt(DigitalSink.empty(), requested), tp.io)
 
 
@@ -73,12 +77,18 @@ class AnalogTestPoint(TypedTestPoint, Block):
 
 class I2cTestPoint(TypedTestPoint, Block):
   """Two test points for I2C SDA and SCL"""
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, name: StringLike = ""):
     super().__init__()
     self.io = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
-    self.tp_scl = self.Block(DigitalTestPoint())
+    self.tp_name = self.ArgParameter(name)
+
+  def contents(self):
+    super().contents()
+    name_prefix = (self.tp_name == '').then_else(self.io.link().name(), self.tp_name)
+    self.tp_scl = self.Block(DigitalTestPoint(name_prefix + '.scl'))
+    self.tp_sda = self.Block(DigitalTestPoint(name_prefix + '.sda'))
     self.connect(self.tp_scl.io, self.io.scl)
-    self.tp_sda = self.Block(DigitalTestPoint())
     self.connect(self.tp_sda.io, self.io.sda)
 
   def connected(self, io: Port[I2cLink]) -> 'I2cTestPoint':
@@ -88,12 +98,18 @@ class I2cTestPoint(TypedTestPoint, Block):
 
 class CanControllerTestPoint(TypedTestPoint, Block):
   """Two test points for CAN controller-side TXD and RXD"""
-  def __init__(self):
+  @init_in_parent
+  def __init__(self, name: StringLike = ""):
     super().__init__()
     self.io = self.Port(CanPassivePort(DigitalBidir.empty()), [InOut])
-    self.tp_txd = self.Block(DigitalTestPoint())
+    self.tp_name = self.ArgParameter(name)
+
+  def contents(self):
+    super().contents()
+    name_prefix = (self.tp_name == '').then_else(self.io.link().name(), self.tp_name)
+    self.tp_txd = self.Block(DigitalTestPoint(name_prefix + '.txd'))
+    self.tp_rxd = self.Block(DigitalTestPoint(name_prefix + '.rxd'))
     self.connect(self.tp_txd.io, self.io.txd)
-    self.tp_rxd = self.Block(DigitalTestPoint())
     self.connect(self.tp_rxd.io, self.io.rxd)
 
   def connected(self, io: Port[CanLogicLink]) -> 'CanControllerTestPoint':
