@@ -58,6 +58,7 @@ class DigitalTestPoint(BaseTypedTestPoint, Block):
 
 class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
   """Creates an array of Digital test points, sized from the port array's connections."""
+  @init_in_parent
   def __init__(self, name: StringLike = ''):
     super().__init__()
     self.io = self.Port(Vector(DigitalSink.empty()), [InOut])
