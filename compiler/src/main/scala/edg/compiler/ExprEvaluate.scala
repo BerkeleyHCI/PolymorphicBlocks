@@ -31,6 +31,7 @@ object ExprEvaluate {
           case (FloatValue(lhs), FloatPromotable(rhs)) => FloatValue(lhs + rhs)
           case (FloatPromotable(lhs), FloatValue(rhs)) => FloatValue(lhs + rhs)
           case (IntValue(lhs), IntValue(rhs)) => IntValue(lhs + rhs)
+          case (TextValue(lhs), TextValue(rhs)) => TextValue(lhs + rhs)
           case _ =>
             throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
         }
