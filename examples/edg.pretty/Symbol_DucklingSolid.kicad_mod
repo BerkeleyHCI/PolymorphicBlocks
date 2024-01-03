@@ -2,7 +2,7 @@
   (layer "F.Cu")
   (descr "Converted using: svg2mod DucklingSolid.svg --force F.Cu -o 'C:\\Users\\Ducky\\Documents\\GitHub\\edg-ide\\PolymorphicBlocks\\examples\\edg.pretty\\DucklingSolid.kicad_mod' -P -p 2 -c --factor 0.1")
   (tags "svg2mod")
-  (attr exclude_from_pos_files exclude_from_bom)
+  (attr board_only exclude_from_pos_files exclude_from_bom)
   (fp_text reference "svg2mod" (at 0 -5.703397) (layer "F.Fab") hide
       (effects (font (size 1.524 1.524) (thickness 0.3048)))
     (tstamp f459ee82-dee2-4df0-9040-033b93dd7903)
