@@ -29,6 +29,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
     self.generator_param(self.addr_lsb, self.pin_assigns, self.io.requested())
 
   def generate(self) -> None:
+    super().generate()
     dout_model = DigitalBidir.from_supply(  # same between TI and NXP versions
       self.gnd, self.vdd,
       current_limits=(-25, 0.3)*mAmp,  # highly limited sourcing current

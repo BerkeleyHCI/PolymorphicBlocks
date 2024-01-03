@@ -406,6 +406,14 @@ class UsbSourceMeasure(JlcBoardTop):
 
       self.connect(self.mcu.gpio.request('boot_pwm'), self.boot.pwm)
 
+      (self.pass_temp, ), _ = self.chain(shared_i2c, imp.Block(Tmp1075n(0)))
+      (self.conv_temp, ), _ = self.chain(shared_i2c, imp.Block(Tmp1075n(1)))
+      (self.conv_sense, ), _ = self.chain(
+        self.vconv,
+        imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+        self.mcu.adc.request('vconv_sense')
+      )
+
       self.ioe = imp.Block(Pca9554())
       self.connect(self.ioe.i2c, shared_i2c)
       self.enc = imp.Block(DigitalRotaryEncoder())
@@ -461,9 +469,9 @@ class UsbSourceMeasure(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
           # note: for ESP32-S3 compatibility: IO35/36/37 (pins 28-30) are used by PSRAM
           # note: for ESP32-C6 compatibility: pin 34 (22 on dedicated -C6 pattern) is NC
-          'rgb_red=18',
-          'rgb_green=17',
-          'rgb_blue=19',
+          'rgb_red=20',
+          'rgb_green=21',
+          'rgb_blue=22',
           'oled_reset=23',
 
           'adc_cs=4',
@@ -483,6 +491,8 @@ class UsbSourceMeasure(JlcBoardTop):
           'pd_int=39',
 
           'led=_GPIO0_STRAP',
+
+          'vconv_sense=18',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
