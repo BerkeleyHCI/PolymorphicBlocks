@@ -469,8 +469,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
           # note: for ESP32-S3 compatibility: IO35/36/37 (pins 28-30) are used by PSRAM
           # note: for ESP32-C6 compatibility: pin 34 (22 on dedicated -C6 pattern) is NC
-          'rgb_red=20',
-          'rgb_green=21',
+          'rgb_green=20',
+          'rgb_red=21',
           'rgb_blue=22',
           'oled_reset=23',
 

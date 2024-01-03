@@ -56,7 +56,7 @@ class Tmp1075n_Device(InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBloc
         super().__init__()
         self.gnd = self.Port(Ground())
         self.vdd = self.Port(VoltageSink(
-            voltage_limits=(1.62, 3.3)*Volt,
+            voltage_limits=(1.62, 3.6)*Volt,
             current_draw=(0.5, 85)*uAmp  # shutdown to serial active
         ))
 
