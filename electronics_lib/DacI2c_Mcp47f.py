@@ -98,7 +98,7 @@ class Mcp47f(DigitalToAnalog, Block):
     self.out2 = self.Export(self.ic.vout2, optional=True)
     self.out3 = self.Export(self.ic.vout3, optional=True)
 
-    self.i2c = self.Export(self.ic.i2c,)
+    self.i2c = self.Export(self.ic.i2c)
     self.lat0 = self.Export(self.ic.lat0)
     self.lat1 = self.Export(self.ic.lat1)
 

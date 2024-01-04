@@ -351,6 +351,7 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
                                                     self.mcu.usb.request())
 
+      shared_spi = self.mcu.spi.request('spi')
       shared_i2c = self.mcu.i2c.request('i2c')
       self.i2c_tp = self.Block(I2cTestPoint('i2c')).connected(shared_i2c)
       (self.i2c_pull, ), _ = self.chain(shared_i2c, imp.Block(I2cPullup()), self.pd.i2c)
@@ -359,28 +360,9 @@ class UsbSourceMeasure(JlcBoardTop):
       self.rgb = imp.Block(IndicatorSinkRgbLed())
       self.connect(self.mcu.gpio.request_vector('rgb'), self.rgb.signals)
 
-      shared_spi = self.mcu.spi.request('spi')
-
       self.oled = imp.Block(Er_Oled_096_1_1())
       self.connect(shared_i2c, self.oled.i2c)
       self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
-
-      self.dac = imp.Block(Mcp47f())
-      self.connect(self.dac.out0, self.control.control_current_sink)
-      self.connect(self.dac.out1, self.control.control_current_source)
-      self.connect(self.dac.out2, self.control.control_voltage)
-      self.connect(self.dac.i2c, shared_i2c)
-      self.connect(self.dac.ref0, self.dac.ref1, self.vanalog)
-      self.connect(self.dac.lat0, self.dac.lat1, self.mcu.gpio.request('lat'))
-
-      self.adc = imp.Block(Mcp3561())
-      self.connect(self.adc.pwra, self.vanalog)
-      self.connect(self.adc.pwr, self.vanalog)  # TODO: digital rail
-      self.connect(self.adc.spi, shared_spi)
-      self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
-      self.connect(self.adc.vins.request('0'), self.vcenter)
-      self.connect(self.adc.vins.request('1'), self.control.measured_current)
-      self.connect(self.adc.vins.request('2'), self.control.measured_voltage)
 
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
@@ -426,6 +408,27 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.dir.c, self.ioe.io.request('dir_c'))
       self.connect(self.dir.d, self.ioe.io.request('dir_d'))
       self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.ioe.io.request('dir_cen'))
+
+    # analog domain
+    with self.implicit_connect(
+        ImplicitConnect(self.vanalog, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.dac = imp.Block(Mcp4728())
+      self.connect(self.dac.out0, self.control.control_voltage)
+      self.connect(self.dac.out1, self.control.control_current_sink)
+      self.connect(self.dac.out2, self.control.control_current_source)
+      self.connect(self.dac.i2c, shared_i2c)
+      self.connect(self.dac.ldac, self.mcu.gpio.request('ldac'))
+
+      self.adc = imp.Block(Mcp3561())
+      self.connect(self.adc.pwra, self.vanalog)
+      self.connect(self.adc.pwr, self.vanalog)  # TODO: digital rail
+      self.connect(self.adc.spi, shared_spi)
+      self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
+      self.connect(self.adc.vins.request('0'), self.vcenter)
+      self.connect(self.adc.vins.request('1'), self.control.measured_current)
+      self.connect(self.adc.vins.request('2'), self.control.measured_voltage)
 
     self.outn = self.Block(BananaSafetyJack())
     self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
@@ -480,7 +483,7 @@ class UsbSourceMeasure(JlcBoardTop):
           'spi.miso=7',
           'i2c.scl=8',
           'i2c.sda=9',
-          'lat=10',
+          'ldac=10',
           'drv_en=11',
           'off_0=12',
           'boost_pwm_high=31',
