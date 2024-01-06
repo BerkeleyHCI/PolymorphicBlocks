@@ -21,7 +21,7 @@ class Mcp4728_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
     self.vout2 = self.Port(out_model, optional=True)
     self.vout3 = self.Port(out_model, optional=True)
 
-    dio_model = DigitalBidir.from_supply(  # LAT0/1/HVC, same input thresholds for I2C
+    dio_model = DigitalBidir.from_supply(
       self.vss, self.vdd,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,
       input_threshold_factor=(0.3, 0.7)  # for Vdd >= 2.7v

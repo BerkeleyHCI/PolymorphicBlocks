@@ -119,5 +119,5 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         signal_out=self.ain.link().signal,
         current_limits=self.ic.load_current_limit,
         impedance=self.ain.link().source_impedance + self.ic.load_resistance
-      )))
+    )))
     self.connect(self.pull_merge.output, self.aout)
