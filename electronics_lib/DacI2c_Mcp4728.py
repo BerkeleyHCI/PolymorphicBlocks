@@ -1,3 +1,5 @@
+from typing import Any
+
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -35,13 +37,18 @@ class Mcp4728_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
   def generate(self) -> None:
     super().generate()
 
+    if self.get(self.ldac.is_connected()):
+      ldac_pin: CircuitPort = self.vdd
+    else:
+      ldac_pin = self.ldac
+
     self.footprint(
       'U', 'Package_SO:MSOP-10_3x3mm_P0.5mm',
       {
         '1': self.vdd,
         '2': self.i2c.scl,
         '3': self.i2c.sda,
-        '4': self.ldac if self.get(self.ldac.is_connected()) else self.vdd,
+        '4': ldac_pin,
         '5': self.rdy,  # float if not connected
         '6': self.vout0,
         '7': self.vout1,

@@ -52,7 +52,8 @@ class BomTransform(TransformUtil.Transform):
             manufacturer = self.design.get_value(context.path.to_tuple() + ('fp_mfr',)) or ''
             part = self.design.get_value(context.path.to_tuple() + ('fp_part',)) or ''
             assert isinstance(footprint, str) and isinstance(refdes, str) \
-                   and isinstance(jlc_number, str) and isinstance(value, str)
+                   and isinstance(jlc_number, str) and isinstance(value, str) \
+                   and isinstance(manufacturer, str) and isinstance(part, str)
             bom_item = BomItem(footprint=footprint, value=value, jlc_number=jlc_number,
                                manufacturer=manufacturer, part=part)
             self.bom_list.setdefault(bom_item, []).append(refdes)
