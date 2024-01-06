@@ -38,9 +38,9 @@ class Mcp4728_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
     super().generate()
 
     if self.get(self.ldac.is_connected()):
-      ldac_pin: CircuitPort = self.vdd
+      ldac_pin: CircuitPort = self.ldac
     else:
-      ldac_pin = self.ldac
+      ldac_pin = self.vdd
 
     self.footprint(
       'U', 'Package_SO:MSOP-10_3x3mm_P0.5mm',
