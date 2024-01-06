@@ -5,7 +5,7 @@ from edg import *
 from .test_robotdriver import PwmConnector
 
 
-class RobotDriver3(JlcBoardTop):
+class PcbBot(JlcBoardTop):
   """Robot driver that uses a ESP32 w/ camera and has student-proofing
   """
   def contents(self) -> None:
@@ -175,6 +175,6 @@ class RobotDriver3(JlcBoardTop):
     )
 
 
-class RobotDriver3TestCase(unittest.TestCase):
+class PcbBotTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(RobotDriver3)
+    compile_board_inplace(PcbBot)
