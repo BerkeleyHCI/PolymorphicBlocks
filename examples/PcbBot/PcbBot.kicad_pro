@@ -455,7 +455,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "../PcbBot.net",
+      "netlist": "PcbBot.net",
       "specctra_dsn": "",
       "step": "../../../../Downloads/RobotDriver3.step",
       "vrml": ""
