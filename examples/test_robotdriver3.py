@@ -11,7 +11,7 @@ class RobotDriver3(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.usb = self.Block(UsbCReceptacle(voltage_out=(9, 20)*Volt, current_limits=(0, 5)*Amp))
+    self.usb = self.Block(UsbCReceptacle())
     self.vusb = self.connect(self.usb.pwr)
 
     self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
@@ -26,18 +26,25 @@ class RobotDriver3(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.fuse, self.prot_in, self.tp_in,
-       self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
+      # TODO add reverse polarity protection circuit
+      (self.fuse, self.prot_batt, self.tp_batt), _ = self.chain(
         self.batt.pwr,
         imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
         imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
-        self.Block(VoltageTestPoint()),
+        self.Block(VoltageTestPoint()))
+      self.vbatt = self.connect(self.fuse.pwr_out)  # downstream of fuse
 
+      self.pwr_or = self.Block(PriorityPowerOr(
+        (0, 1)*Volt, (0, 0.1)*Ohm
+      )).connected_from(self.gnd_merge.pwr_out, self.usb.pwr, self.vbatt)
+      self.pwr = self.connect(self.pwr_or.pwr_out)
+
+      (self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
+        self.pwr,
         imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt)),
         self.Block(VoltageTestPoint()),
       )
-      self.vbatt = self.connect(self.fuse.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       (self.charger, ), _ = self.chain(
@@ -47,11 +54,6 @@ class RobotDriver3(JlcBoardTop):
         self.Block(IndicatorSinkLed(Led.Yellow)), self.charger.stat
       )
       self.connect(self.vusb, self.charge_led.pwr)
-
-      self.pwr_or = self.Block(PriorityPowerOr(
-        (0, 1)*Volt, (0, 0.1)*Ohm
-      )).connected_from(self.gnd_merge.pwr_out, self.usb.pwr, self.batt.pwr)
-      self.pwr = self.connect(self.pwr_or.pwr_out)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
@@ -116,15 +118,9 @@ class RobotDriver3(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.reg_2v5, ), _ = self.chain(
-        self.vbatt,
-        imp.Block(VoltageRegulator(output_voltage=2.5*Volt(tol=0.05)))
-      )
+      (self.reg_2v5, ), _ = self.chain(self.pwr, imp.Block(VoltageRegulator(output_voltage=2.5*Volt(tol=0.05))))
       self.v2v5 = self.connect(self.reg_2v5.pwr_out)
-      (self.reg_1v2, ), _ = self.chain(
-        self.vbatt,
-        imp.Block(VoltageRegulator(output_voltage=1.2*Volt(tol=0.05)))
-      )
+      (self.reg_1v2, ), _ = self.chain(self.pwr, imp.Block(VoltageRegulator(output_voltage=1.2*Volt(tol=0.05))))
       self.v1v2 = self.connect(self.reg_1v2.pwr_out)
 
       self.cam = imp.Block(Ov2640_Fpc24())
@@ -133,16 +129,6 @@ class RobotDriver3(JlcBoardTop):
       self.connect(self.cam.pwr_digital, self.v1v2)
       self.connect(self.mcu.with_mixin(IoControllerDvp8()).dvp8.request('cam'), self.cam.dvp8)
       self.connect(self.cam.sio, self.i2c)
-
-    # Mounting holes
-    self.m = ElementDict[MountingHole]()
-    for i in range(2):
-      self.m[i] = self.Block(MountingHole())
-
-    # Misc board
-    self.lemur = self.Block(LemurLogo())
-    self.duck = self.Block(DuckLogo())
-    self.id = self.Block(IdDots4())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -153,6 +139,10 @@ class RobotDriver3(JlcBoardTop):
         (['tof', 'elt[1]', 'conn'], PinSocket254),
         (['tof', 'elt[2]', 'conn'], PinSocket254),
         (['tof', 'elt[3]', 'conn'], PinSocket254),
+
+        (['reg_2v5'], Xc6206p),
+        (['reg_1v2'], Xc6206p),
+        (['rgb', 'package'], ThtRgbLed),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -160,9 +150,7 @@ class RobotDriver3(JlcBoardTop):
         (['expander', 'pin_assigns'], [
         ]),
 
-        # JLC does not have frequency specs, must be checked TODO
-        (['reg_3v3', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
-        (['reg_3v3', 'power_path', 'efficiency'], Range(1.0, 1.0)),  # waive this check
+        (['prot_batt', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),  # big diodes to dissipate more power
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
@@ -174,6 +162,16 @@ class RobotDriver3(JlcBoardTop):
       ],
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
+
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
+
+        # the camera recommended specs are excessively tight, so loosen them a bit
+        (Ov2640_Fpc24, ['device', 'dovdd', 'voltage_limits'], Range(1.71, 4.5)),
+        (Ov2640_Fpc24, ['device', 'dvdd', 'voltage_limits'], Range(1.1, 1.36)),  # allow 1v2
+        (Ov2640_Fpc24, ['device', 'avdd', 'voltage_limits'], Range(2.3, 3.0)),  # allow 2v5
+
+        (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
+        (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
       ],
     )
 
