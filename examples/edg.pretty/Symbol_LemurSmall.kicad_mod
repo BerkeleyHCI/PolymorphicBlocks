@@ -3,7 +3,7 @@
   (descr "Converted using: svg2mod -i small.svg -o lemur_small.kicad_mod -c -f 0.2")
   (tags "svg2mod")
   (attr board_only exclude_from_pos_files exclude_from_bom)
-  (fp_text reference "svg2mod" (at 0 -5.999317) (layer "F.SilkS") hide
+  (fp_text reference "svg2mod" (at 0 -5.999317) (layer "F.Fab") hide
       (effects (font (size 1.524 1.524) (thickness 0.3048)))
     (tstamp 002b8b51-14de-41dc-a84c-b88e834498d1)
   )

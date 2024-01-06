@@ -11,6 +11,8 @@ class JlcBaseDiode:
     'SOD-123': 'Diode_SMD:D_SOD-123',
     'SOD-323': 'Diode_SMD:D_SOD-323',
     'SMA,DO-214AC': 'Diode_SMD:D_SMA',
+    'SMA': 'Diode_SMD:D_SMA',
+    'SMAF': 'Diode_SMD:D_SMA',  # footprint compatible even if not the same package
     'SMB,DO-214AA': 'Diode_SMD:D_SMB',
     'SMC,DO-214AB': 'Diode_SMD:D_SMC',
   }

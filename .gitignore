@@ -36,3 +36,4 @@ dmypy.json
 # Misc
 *.log
 *.csv
+*.kicad_sch.lck

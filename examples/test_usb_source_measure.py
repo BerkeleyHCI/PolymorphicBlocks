@@ -7,20 +7,13 @@ from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # nee
 from edg import *
 
 
-class GatedEmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
-  """Emitter follower, where each transistor can have its input gated independently,
-  and a transistor with a disabled input will turn off.
-
-  For the SMU, this allows a turn-on scheme where the error integrated is railed to off one side,
-  and only the off side transistor turns on, then the proper output can be programmed.
-  After the output stabilizes, both transistors can be enabled (if desired), to run under the
-  analog feedback circuit.
+class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
+  """Emitter follower circuit
   """
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:Opamp'  # this requires an schematic-modified symbol
     return {
-      'IN': self.control, 'H': self.high_en, 'L': self.low_en,
-      '3': self.out, 'V+': self.pwr, 'V-': self.gnd
+      'IN': self.control, '3': self.out, 'V+': self.pwr, 'V-': self.gnd
     }
 
   @init_in_parent
@@ -32,8 +25,6 @@ class GatedEmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImporta
     self.out = self.Port(VoltageSource.empty())
 
     self.control = self.Port(AnalogSink.empty())
-    self.high_en = self.Port(DigitalSink.empty())
-    self.low_en = self.Port(DigitalSink.empty())
 
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)
@@ -41,23 +32,29 @@ class GatedEmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImporta
   def contents(self) -> None:
     super().contents()
 
+    zener_model = ZenerDiode((8, 10)*Volt)
+    self.clamp1 = self.Block(zener_model)
+    self.clamp2 = self.Block(zener_model)
+
+    gate_voltage = (-self.clamp1.actual_zener_voltage).hull(self.clamp2.actual_zener_voltage)
     self.high_fet = self.Block(Fet.NFet(
       drain_voltage=self.pwr.link().voltage,
       drain_current=self.current,
-      gate_voltage=self.control.link().voltage,
+      gate_voltage=gate_voltage,
       rds_on=self.rds_on,
       gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
     self.low_fet = self.Block(Fet.PFet(
       drain_voltage=self.pwr.link().voltage,
       drain_current=self.current,
-      gate_voltage=self.control.link().voltage,
+      gate_voltage=gate_voltage,
       rds_on=self.rds_on,
       gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
+        'gnd': Ground(),
         'pwr': VoltageSink(
           current_draw=self.current,
           voltage_limits=self.high_fet.actual_drain_voltage_rating.intersect(
@@ -65,15 +62,9 @@ class GatedEmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImporta
         ),
         'out': VoltageSource(
           voltage_out=self.pwr.link().voltage,
-          current_limits=self.current
+          current_limits=self.high_fet.actual_drain_current_rating.intersect(self.low_fet.actual_drain_current_rating)
         ),
-        'low_fet.D': Ground(),
-
-        'high_fet.G': AnalogSink(),
-        'low_fet.G': AnalogSink(),
-
-        'high_res.2': AnalogSource(),
-        'low_res.2': AnalogSource(),
+        'control': AnalogSink(),
       })
 
 
@@ -197,11 +188,14 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
     self.gnd = self.Port(Ground.empty(), [Common])
     self.ref_center = self.Port(AnalogSink.empty())
 
+    self.pwr_gate_pos = self.Port(VoltageSink.empty())
+    self.pwr_gate_neg = self.Port(VoltageSink.empty())
+
     self.control_voltage = self.Port(AnalogSink.empty())
     self.control_current_source = self.Port(AnalogSink.empty())
     self.control_current_sink = self.Port(AnalogSink.empty())
-    self.high_en = self.Port(DigitalSink.empty())
-    self.low_en = self.Port(DigitalSink.empty())
+    self.drv_en = self.Port(DigitalSink.empty())
+    self.off = self.Port(Vector(DigitalSink.empty()))
     self.out = self.Port(VoltageSource.empty())
 
     self.measured_voltage = self.Port(AnalogSource.empty())
@@ -212,6 +206,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
 
   def contents(self):
     super().contents()
+
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       locals={
         'err_volt': {
@@ -224,7 +219,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
         },
         'int': {
           'factor': Range.from_tolerance(1 / 4.7e-6, 0.15),
-          'capacitance': 1*nFarad(tol=0.15)
+          'capacitance': 1*nFarad(tol=0.1),
         },
         'amp': {
           'amplification': Range.from_tolerance(20, 0.05),
@@ -240,7 +235,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
           'input_impedance': 10*kOhm(tol=0.05)
         },
         'vmeas': {
-          'ratio': Range.from_tolerance(1/22, 0.05),
+          'ratio': Range.from_tolerance(1/24, 0.05),
           'input_impedance': 220*kOhm(tol=0.05)
         },
         'clamp': {
@@ -254,40 +249,52 @@ class UsbSourceMeasure(JlcBoardTop):
     super().contents()
 
     # overall design parameters
-    CURRENT_RATING = (0, 3)*Amp
+    OUTPUT_CURRENT_RATING = (0, 1)*Amp
 
     # USB PD port that supplies power to the load
     # TODO the transistor is only rated at Vgs=+/-20V
-    self.pwr_usb = self.Block(UsbCReceptacle(voltage_out=(4.5, 20)*Volt, current_limits=(0, 5)*Amp))
+    self.usb = self.Block(UsbCReceptacle(voltage_out=(9, 20)*Volt, current_limits=(0, 5)*Amp))
 
-    # Data-only USB port, for example to connect to a computer that can't source USB PD
-    # so the PD port can be connected to a dedicated power brick.
-    self.data_usb = self.Block(UsbCReceptacle())
+    self.gnd = self.connect(self.usb.gnd)
+    self.vusb = self.connect(self.usb.pwr)
 
-    # TODO next revision: add a USB data port switch so the PD port can also take data
+    self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
+    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
 
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.pwr_usb.gnd, self.data_usb.gnd)
-
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
-    self.vusb = self.connect(self.pwr_usb.pwr)
-
+    # power supplies
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.reg_5v, self.reg_3v3, self.led_3v3), _ = self.chain(
+      # logic supplies
+      (self.reg_6v, self.tp_6v, self.reg_3v3, self.tp_3v3), _ = self.chain(
         self.vusb,
-        imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
+        imp.Block(BuckConverter(output_voltage=6.0*Volt(tol=0.05))),  # high enough to power gate driver
+        self.Block(VoltageTestPoint()),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
-        imp.Block(VoltageIndicatorLed())
+        self.Block(VoltageTestPoint())
       )
-      self.v5 = self.connect(self.reg_5v.pwr_out)
+      self.v6 = self.connect(self.reg_6v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-      (self.reg_analog, self.led_analog), _ = self.chain(
-        self.v5,
-        imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.05))),
-        imp.Block(VoltageIndicatorLed())
+      # output power supplies
+      (self.conv_force, self.conv, self.tp_conv), _ = self.chain(
+        self.vusb,
+        imp.Block(ForcedVoltage(20*Volt(tol=0))),
+        imp.Block(CustomSyncBuckBoostConverter(output_voltage=(15, 32)*Volt,
+                                               frequency=500*kHertz(tol=0),
+                                               ripple_current_factor=(0.01, 0.9),
+                                               input_ripple_limit=250*mVolt,
+                                               )),
+        self.Block(VoltageTestPoint())
+      )
+      self.connect(self.conv.pwr_logic, self.v6)
+      self.vconv = self.connect(self.conv.pwr_out)
+
+      # analog supplies
+      (self.reg_analog, self.tp_analog), _ = self.chain(
+        self.v6,
+        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        self.Block(VoltageTestPoint())
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
 
@@ -299,17 +306,34 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.vanalog, self.ref_buf.pwr)
       self.vcenter = self.connect(self.ref_buf.output)
 
+    # power path domain
     with self.implicit_connect(
-        ImplicitConnect(self.vusb, [Power]),
+        ImplicitConnect(self.vconv, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      # zener shunt in case the boost converter goes crazy
+      self.prot_conv = imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt))
       self.control = imp.Block(SourceMeasureControl(
-        current=CURRENT_RATING,
+        current=OUTPUT_CURRENT_RATING,
         rds_on=(0, 0.2)*Ohm
       ))
-      self.connect(self.v3v3, self.control.pwr_logic)
+      self.connect(self.vanalog, self.control.pwr_logic)
       self.connect(self.vcenter, self.control.ref_center)
 
+      self.boot = self.Block(BootstrapVoltageAdder(frequency=1*MHertz(tol=0)))
+      self.connect(self.boot.gnd, self.gnd)
+      self.connect(self.boot.pwr, self.v3v3)
+      self.connect(self.boot.pwr_neg, self.gnd)
+      self.connect(self.boot.pwr_pos, self.conv.pwr_out)
+      self.boot_neg_forced = self.Block(ForcedVoltage(0*Volt(tol=0)))  # TODO: support non-zero grounds
+      self.connect(self.boot_neg_forced.pwr_in, self.boot.out_neg)
+      self.connect(self.boot_neg_forced.pwr_out, self.control.pwr_gate_neg)
+      self.connect(self.boot.out_pos, self.control.pwr_gate_pos)
+
+      self.tp_boot_neg = self.Block(VoltageTestPoint("vb-")).connected(self.boot.out_neg)
+      self.tp_boot_pos = self.Block(VoltageTestPoint("vb+")).connected(self.boot.out_pos)
+
+    # logic domain
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
@@ -318,144 +342,224 @@ class UsbSourceMeasure(JlcBoardTop):
 
       # TODO next revision: optional clamping diode on CC lines (as present in PD buddy sink, but not OtterPill)
       self.pd = imp.Block(Fusb302b())
-      self.connect(self.pwr_usb.pwr, self.pd.vbus)
-      self.connect(self.pwr_usb.cc, self.pd.cc)
+      self.connect(self.usb.pwr, self.pd.vbus)
+      self.connect(self.usb.cc, self.pd.cc)
 
       self.mcu = imp.Block(IoController())
+      (self.led, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))  # debugging LED
 
-      (self.usb_esd, ), _ = self.chain(self.data_usb.usb, imp.Block(UsbEsdDiode()),
-                                       self.mcu.usb.request())
+      (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
+                                                    self.mcu.usb.request())
 
-      (self.i2c_pull, ), _ = self.chain(self.mcu.i2c.request(), imp.Block(I2cPullup()), self.pd.i2c)
+      shared_spi = self.mcu.spi.request('spi')
+      shared_i2c = self.mcu.i2c.request('i2c')
+      self.i2c_tp = self.Block(I2cTestPoint('i2c')).connected(shared_i2c)
+      (self.i2c_pull, ), _ = self.chain(shared_i2c, imp.Block(I2cPullup()), self.pd.i2c)
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
       self.connect(self.mcu.gpio.request_vector('rgb'), self.rgb.signals)
 
-      (self.sw1, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw1'))
-      (self.sw2, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw2'))
-      (self.sw3, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw3'))
+      self.oled = imp.Block(Er_Oled_096_1_1())
+      self.connect(shared_i2c, self.oled.i2c)
+      self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
 
-      # TODO next revision: Blackberry trackball UI, speakers?
+      self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
+      self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
 
-      shared_spi = self.mcu.spi.request('spi')
+      pull_model = PulldownResistor(10*kOhm(tol=0.05))
+      rc_model = DigitalLowPassRc(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))
+      (self.buckl_pull, self.buckl_rc, self.buckl_tp), _ = self.chain(
+        self.mcu.gpio.request('buck_pwm_low'),
+        imp.Block(pull_model), imp.Block(rc_model),
+        self.Block(DigitalTestPoint("bul")), self.conv.buck_pwm_low)
+      (self.buckh_pull, self.buckh_rc, self.buckh_tp), _ = self.chain(
+        self.mcu.gpio.request('buck_pwm_high'),
+        imp.Block(pull_model), imp.Block(rc_model),
+        self.Block(DigitalTestPoint("buh")), self.conv.buck_pwm_high)
+      (self.boostl_pull, self.boostl_rc, self.boostl_tp), _ = self.chain(
+        self.mcu.gpio.request('boost_pwm_low'),
+        imp.Block(pull_model), imp.Block(rc_model),
+        self.Block(DigitalTestPoint("bol")), self.conv.boost_pwm_low)
+      (self.boosth_pull, self.boosth_rc, self.boosth_tp), _ = self.chain(
+        self.mcu.gpio.request('boost_pwm_high'),
+        imp.Block(pull_model), imp.Block(rc_model),
+        self.Block(DigitalTestPoint("boh")), self.conv.boost_pwm_high)
 
-      self.lcd = imp.Block(Qt096t_if09())
-      self.connect(self.reg_3v3.pwr_out.as_digital_source(), self.lcd.led)
-      self.connect(self.mcu.gpio.request('lcd_reset'), self.lcd.reset)
-      self.connect(self.mcu.gpio.request('lcd_rs'), self.lcd.rs)
-      self.connect(shared_spi, self.lcd.spi)  # MISO unused
-      self.connect(self.mcu.gpio.request('lcd_cs'), self.lcd.cs)
+      self.connect(self.mcu.gpio.request('boot_pwm'), self.boot.pwm)
 
-      (self.dac_v, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
-                                     self.control.control_voltage)
-      (self.dac_ip, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
-                                      self.control.control_current_source)
-      (self.dac_in, ), _ = self.chain(shared_spi, imp.Block(Mcp4921()),
-                                      self.control.control_current_sink)
+      (self.pass_temp, ), _ = self.chain(shared_i2c, imp.Block(Tmp1075n(0)))
+      (self.conv_temp, ), _ = self.chain(shared_i2c, imp.Block(Tmp1075n(1)))
+      (self.conv_sense, ), _ = self.chain(
+        self.vconv,
+        imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+        self.mcu.adc.request('vconv_sense')
+      )
 
-      (self.adc_v, ), _ = self.chain(self.control.measured_voltage, imp.Block(Mcp3201()),
-                                     shared_spi)
-      (self.adc_i, ), _ = self.chain(self.control.measured_current, imp.Block(Mcp3201()),
-                                     shared_spi)
+      self.ioe = imp.Block(Pca9554())
+      self.connect(self.ioe.i2c, shared_i2c)
+      self.enc = imp.Block(DigitalRotaryEncoder())
+      self.connect(self.enc.a, self.ioe.io.request('enc_a'))
+      self.connect(self.enc.b, self.ioe.io.request('enc_b'))
+      self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.ioe.io.request('enc_sw'))
+      self.dir = imp.Block(DigitalDirectionSwitch())
+      self.connect(self.dir.a, self.ioe.io.request('dir_a'))
+      self.connect(self.dir.b, self.ioe.io.request('dir_b'))
+      self.connect(self.dir.c, self.ioe.io.request('dir_c'))
+      self.connect(self.dir.d, self.ioe.io.request('dir_d'))
+      self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.ioe.io.request('dir_cen'))
 
-      self.connect(self.vanalog,
-                   self.dac_v.ref, self.dac_ip.ref, self.dac_in.ref,
-                   self.adc_v.ref, self.adc_i.ref)
+    # analog domain
+    with self.implicit_connect(
+        ImplicitConnect(self.vanalog, [Power]),
+        ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.dac = imp.Block(Mcp4728())
+      self.connect(self.dac.out0, self.control.control_voltage)
+      self.connect(self.dac.out1, self.control.control_current_sink)
+      self.connect(self.dac.out2, self.control.control_current_source)
+      self.connect(self.dac.i2c, shared_i2c)
+      self.connect(self.dac.ldac, self.mcu.gpio.request('ldac'))
 
-      self.connect(self.mcu.gpio.request('dac_v_cs'), self.dac_v.cs)
-      self.connect(self.mcu.gpio.request('dac_ip_cs'), self.dac_ip.cs)
-      self.connect(self.mcu.gpio.request('dac_in_cs'), self.dac_in.cs)
-      self.connect(self.mcu.gpio.request('adc_v_cs'), self.adc_v.cs)
-      self.connect(self.mcu.gpio.request('adc_i_cs'), self.adc_i.cs)
-      self.connect(self.mcu.gpio.request('dac_ldac'),
-                   self.dac_v.ldac, self.dac_ip.ldac, self.dac_in.ldac)
-
-      self.connect(self.mcu.gpio.request('high_en'), self.control.high_en)
-      self.connect(self.mcu.gpio.request('low_en'), self.control.low_en)
+      self.adc = imp.Block(Mcp3561())
+      self.connect(self.adc.pwra, self.vanalog)
+      self.connect(self.adc.pwr, self.vanalog)  # TODO: digital rail
+      self.connect(self.adc.spi, shared_spi)
+      self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
+      self.connect(self.adc.vins.request('0'), self.vcenter)
+      self.connect(self.adc.vins.request('1'), self.control.measured_current)
+      self.connect(self.adc.vins.request('2'), self.control.measured_voltage)
 
     self.outn = self.Block(BananaSafetyJack())
     self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
     self.outp = self.Block(BananaSafetyJack())
     self.connect(self.outp.port.adapt_to(VoltageSink(
-      current_draw=CURRENT_RATING
+      current_draw=OUTPUT_CURRENT_RATING
     )), self.control.out)
 
-    # TODO next revision: add high precision ADCs
+  def multipack(self) -> None:
+    self.vimeas_amps = self.PackedBlock(Opa2197())
+    self.pack(self.vimeas_amps.elements.request('0'), ['control', 'vmeas', 'amp'])
+    self.pack(self.vimeas_amps.elements.request('1'), ['control', 'imeas', 'amp', 'amp'])
 
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
-    self.id = self.Block(IdDots4())
+    self.ampdmeas_amps = self.PackedBlock(Opa2197())
+    self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
+    self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48),
-        (['reg_5v'], Tps54202h),
-        (['reg_3v3'], Xc6209),
+        (['mcu'], Esp32s3_Wroom_1),
+        (['reg_6v'], Tps54202h),
+        (['reg_3v3'], Ldl1117),
         (['reg_analog'], Ap2210),
-        (['control', 'amp', 'amp'], Opa197),
-        (['control', 'imeas', 'amp', 'amp'], Opa197),
-        (['control', 'vmeas', 'amp'], Opa197),
-        (['control', 'imeas', 'sense', 'res', 'res'], GenericChipResistor),  # big one not from JLC
-        (['control', 'int', 'c'], GenericMlcc),  # no 1nF basic parts from JLC
+
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),
       ],
+      class_refinements=[
+        (EspProgrammingHeader, EspProgrammingTc2030),
+        (Opamp, Tlv9061),  # higher precision opamps
+        (AnalogSwitch, Nlas4157),
+        (SolidStateRelay, Tlp3545a),
+        (BananaSafetyJack, Ct3151),
+        (HalfBridgeDriver, Ucc27282),
+        (DirectionSwitch, Skrh),
+        (TestPoint, CompactKeystone5015),
+        (RotaryEncoder, Pec11s),
+      ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          'pd_int=28',
-          'sw1=43',
-          'sw2=44',
-          'sw3=45',
-          'rgb_blue=46',
-          'rgb_green=47',
-          'rgb_red=48',
+          # note: for ESP32-S3 compatibility: IO35/36/37 (pins 28-30) are used by PSRAM
+          # note: for ESP32-C6 compatibility: pin 34 (22 on dedicated -C6 pattern) is NC
+          'rgb_green=20',
+          'rgb_red=21',
+          'rgb_blue=22',
+          'oled_reset=23',
 
-          'dac_ldac=1',
-          'dac_in_cs=2',
-          'dac_ip_cs=3',
-          'spi.mosi=4',
-          'spi.miso=6',
-          'spi.sck=7',
-          'adc_v_cs=8',
-          'adc_i_cs=12',
-          'dac_v_cs=13',
+          'adc_cs=4',
+          'spi.sck=5',
+          'spi.mosi=6',
+          'spi.miso=7',
+          'i2c.scl=8',
+          'i2c.sda=9',
+          'ldac=10',
+          'drv_en=11',
+          'off_0=12',
+          'boost_pwm_high=31',
+          'boost_pwm_low=32',
+          'buck_pwm_high=33',
+          'buck_pwm_low=35',
+          'boot_pwm=38',
+          'pd_int=39',
 
-          'lcd_reset=15',
-          'lcd_rs=18',
-          'lcd_cs=21',
+          'led=_GPIO0_STRAP',
 
-          'low_en=22',
-          'high_en=23',
+          'vconv_sense=18',
         ]),
-        (['mcu', 'swd_swo_pin'], 'PIO0_8'),
-        # allow the regulator to go into tracking mode
-        (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
-        (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
-        # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+        (['mcu', 'programming'], 'uart-auto'),
 
-        # NFET option: SQJ148EP-T1_GE3, NPN BJT option: PHPT60410NYX
-        (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
-        (['control', 'driver', 'high_fet', 'manufacturer_spec'], 'Vishay Siliconix'),
-        (['control', 'driver', 'high_fet', 'part_spec'], 'SQJ148EP-T1_GE3'),
-        (['control', 'driver', 'high_fet', 'power'], Range(0, 0)),
-        # PFET option: SQJ431EP-T1_GE3, PNP BJT option: PHPT60410PYX
-        (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_SO:PowerPAK_SO-8_Single'),
-        (['control', 'driver', 'low_fet', 'manufacturer_spec'], 'Vishay Siliconix'),
-        (['control', 'driver', 'low_fet', 'part_spec'], 'SQJ431EP-T1_GE3'),
-        (['control', 'driver', 'low_fet', 'power'], Range(0, 0)),
+        (['ioe', 'pin_assigns'], [
+          'dir_a=5',
+          'dir_cen=6',
+          'dir_c=7',
+          'dir_d=4',
+          'dir_b=12',
+          'enc_sw=11',
+          'enc_a=9',
+          'enc_b=10',
+        ]),
+
+        # allow the regulator to go into tracking mode
+        (['reg_6v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
+        (['reg_6v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
+        # JLC does not have frequency specs, must be checked TODO
+        (['reg_6v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+        (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+
+        # ignore derating on 20v - it's really broken =(
+        (['reg_6v', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
+        (['reg_6v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
+        (['conv', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
+        (['conv', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
+        (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
+        (['conv', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.85),
+        (['conv', 'boost_sw', 'high_fet', 'gate_voltage'], ParamValue(
+          ['conv', 'boost_sw', 'low_fet', 'gate_voltage']
+        )),  # TODO model is broken for unknown reasons
+        (['boot', 'c_fly_pos', 'voltage_rating_derating'], 0.85),
+        (['boot', 'c_fly_neg', 'voltage_rating_derating'], 0.85),
+        (['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'], Range.exact(100e-9)),  # reasonable worst case estimate
+        (['conv', 'buck_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
+        (['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
+        (['conv', 'boost_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
+        (['conv', 'buck_sw', 'low_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),  # require all FETs the same
+        (['conv', 'buck_sw', 'high_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
+        (['conv', 'boost_sw', 'high_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
+        (['conv', 'buck_sw', 'gate_res'], Range.from_tolerance(10, 0.05)),
+        (['conv', 'boost_sw', 'gate_res'], ParamValue(['conv', 'buck_sw', 'gate_res'])),
+
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
-        (['control', 'int', 'c', 'footprint_spec'], 'Capacitor_SMD:C_0603_1608Metric'),
+
+        (['control', 'imeas', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
+        (['control', 'imeas', 'sense', 'res', 'res', 'require_basic_part'], False),
+
+        (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['control', 'driver', 'high_fet', 'part_spec'], 'SQD50N10-8M9L_GE3'),
+        (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
+        (['control', 'driver', 'low_fet', 'part_spec'], 'SQD50P06-15L_GE3'),  # has a 30V/4A SOA
+
+        (['prot_conv', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
+        (['conv', 'power_path', 'inductor', 'part'], 'SLF12575T-470M2R7-PF'),  # first auto pick is OOS
       ],
-      class_refinements=[
-        (SwdCortexTargetConnector, SwdCortexTargetTc2050),
-        (Opamp, Tlv9061),  # higher precision opamps
-        (SolidStateRelay, G3VM_61GR2),
-        (BananaSafetyJack, Ct3151),
-      ],
+      class_values=[
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
+        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
+        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
+
+        (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
+        (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
+      ]
     )
 
 

@@ -376,11 +376,9 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
     self.output = self.Port(AnalogSource.empty())
     self.reference = self.Port(AnalogSink.empty())  # negative reference for the input and output signals
 
-    self.factor = self.ArgParameter(factor)
+    self.factor = self.ArgParameter(factor)  # output scale factor, 1/RC in units of 1/s
     self.capacitance = self.ArgParameter(capacitance)
-    self.series = self.ArgParameter(series)
-    self.tolerance = self.ArgParameter(tolerance)
-    self.generator_param(self.factor, self.capacitance, self.series, self.tolerance)
+    self.generator_param(self.factor, self.capacitance)
 
     self.actual_factor = self.Parameter(RangeExpr())
 
@@ -395,12 +393,9 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
   def generate(self) -> None:
     super().generate()
 
-    calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[self.get(self.series)], self.get(self.tolerance), IntegratorValues)
-    sel_resistance, sel_capacitance = calculator.find(IntegratorValues(self.get(self.factor), self.get(self.capacitance)))
-
-    self.r = self.Block(Resistor(resistance=Range.from_tolerance(sel_resistance, self.get(self.tolerance))))
+    self.r = self.Block(Resistor(Range.cancel_multiply(1/self.get(self.capacitance), 1/self.get(self.factor))))
     self.c = self.Block(Capacitor(
-      capacitance=Range.from_tolerance(sel_capacitance, self.get(self.tolerance)),
+      capacitance=self.capacitance,
       voltage=self.output.link().voltage
     ))
 
