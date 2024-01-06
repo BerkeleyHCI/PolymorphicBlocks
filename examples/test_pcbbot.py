@@ -68,7 +68,7 @@ class PcbBot(JlcBoardTop):
       self.tof = imp.Block(Vl53l0xArray(4, first_xshut_fixed=True))
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
-        imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
+        imp.Block(I2cPullup()), imp.Block(I2cTestPoint('i2c')),
         self.tof.i2c)
 
       # single onboard debugging LED
@@ -145,6 +145,20 @@ class PcbBot(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
+          'cam.y2=25',
+          'cam.y1=24',
+          'cam.y3=23',
+          'cam.y0=22',
+          'cam.y4=21',
+          'cam.pclk=20',
+          'cam.y5=19',
+          'cam.y6=18',
+          'cam.xclk=17',
+          'cam.y7=15',
+          'cam.href=12',
+          'cam.vsync=11',
+
+          'led=_GPIO0_STRAP',
         ]),
         (['expander', 'pin_assigns'], [
         ]),
