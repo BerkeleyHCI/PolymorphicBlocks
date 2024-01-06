@@ -11,7 +11,7 @@ class RobotDriver3(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.usb = self.Block(UsbCReceptacle())
+    self.usb = self.Block(UsbCReceptacle(current_limits=(0, 3)*Amp))
     self.vusb = self.connect(self.usb.pwr)
 
     self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
@@ -26,7 +26,6 @@ class RobotDriver3(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      # TODO add reverse polarity protection circuit
       (self.fuse, self.prot_batt, self.tp_batt), _ = self.chain(
         self.batt.pwr,
         imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
@@ -34,7 +33,7 @@ class RobotDriver3(JlcBoardTop):
         self.Block(VoltageTestPoint()))
       self.vbatt = self.connect(self.fuse.pwr_out)  # downstream of fuse
 
-      self.pwr_or = self.Block(PriorityPowerOr(
+      self.pwr_or = self.Block(PriorityPowerOr(  # also does reverse protection
         (0, 1)*Volt, (0, 0.1)*Ohm
       )).connected_from(self.gnd_merge.pwr_out, self.usb.pwr, self.vbatt)
       self.pwr = self.connect(self.pwr_or.pwr_out)
