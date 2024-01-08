@@ -61,7 +61,11 @@ class PcbBot(JlcBoardTop):
     ) as imp:
       self.mcu = imp.Block(IoController())
 
-      self.connect(self.mcu.usb.request(), self.usb.usb)
+      (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
+                                                    self.mcu.usb.request())
+
+      # single onboard debugging LED
+      (self.led, ), _ = self.chain(self.mcu.gpio.request('led'), imp.Block(IndicatorLed(Led.Red)))
 
       self.i2c = self.mcu.i2c.request('i2c')
 
@@ -70,9 +74,6 @@ class PcbBot(JlcBoardTop):
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint('i2c')),
         self.tof.i2c)
-
-      # single onboard debugging LED
-      (self.led, ), _ = self.chain(self.mcu.gpio.request('led'), imp.Block(IndicatorLed(Led.Red)))
 
       # IMU
       self.imu = imp.Block(Imu_Lsm6ds3trc())
