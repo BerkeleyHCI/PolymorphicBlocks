@@ -90,11 +90,7 @@ class PcbBot(JlcBoardTop):
 
       self.oled = imp.Block(Er_Oled_096_1_1())
       self.connect(self.i2c, self.oled.i2c)
-      (self.oled_rst, self.oled_pull), _ = self.chain(
-        imp.Block(Apx803s(reset_threshold=(2.88, 2.98)*Volt)),  # -29 variant used on Adafruit boards
-        imp.Block(PullupResistor(10*kOhm(tol=0.05))),
-        self.oled.reset
-      )
+      self.connect(self.oled.reset, self.mcu.gpio.request("oled_reset"))
 
       (self.batt_sense, ), _ = self.chain(
         self.vbatt,
@@ -112,7 +108,9 @@ class PcbBot(JlcBoardTop):
         servo = self.servo[i] = imp.Block(PwmConnector((0, 200)*mAmp))
         self.connect(self.mcu.gpio.request(f'servo{i}'), servo.pwm)
 
-      (self.npx, ), _ = self.chain(self.mcu.gpio.request('npx'), imp.Block(NeopixelArray(4*4)))
+
+      (self.npx, self.npx_key), _ = self.chain(self.mcu.gpio.request('npx'),  imp.Block(NeopixelArray(4*4)), imp.Block(Neopixel()))
+
 
     # CAMERA MULTI DOMAIN
     with self.implicit_connect(
@@ -130,6 +128,12 @@ class PcbBot(JlcBoardTop):
       self.connect(self.mcu.with_mixin(IoControllerDvp8()).dvp8.request('cam'), self.cam.dvp8)
       self.connect(self.cam.sio, self.i2c)
 
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.switch = imp.Block(DigitalSwitch())
+      self.connect(self.switch.out, self.mcu.gpio.request('pwr'))
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -139,10 +143,13 @@ class PcbBot(JlcBoardTop):
         (['tof', 'elt[1]', 'conn'], PinSocket254),
         (['tof', 'elt[2]', 'conn'], PinSocket254),
         (['tof', 'elt[3]', 'conn'], PinSocket254),
+        (['switch', 'package'], KailhSocket),
 
         (['reg_2v5'], Xc6206p),
         (['reg_1v2'], Xc6206p),
         (['rgb', 'package'], ThtRgbLed),
+        (['npx_key'], Sk6812Mini_E),
+
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -158,6 +165,18 @@ class PcbBot(JlcBoardTop):
           'cam.y7=15',
           'cam.href=12',
           'cam.vsync=11',
+
+          "i2c=I2CEXT0",
+          "i2c.scl=38",
+          "i2c.sda=4",
+          "0.dp=14",
+          "0.dm=13",
+          "servo0=5",
+          "servo1=6",
+          "servo2=8",
+          "servo3=10",
+          "npx=9",
+          "oled_reset=7",
 
           'led=_GPIO0_STRAP',
         ]),
