@@ -3,6 +3,7 @@ import unittest
 from edg import *
 
 from .test_robotdriver import PwmConnector
+from .test_multimeter import FetPowerGate
 
 
 class PcbBot(JlcBoardTop):
@@ -26,12 +27,13 @@ class PcbBot(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.fuse, self.prot_batt, self.tp_batt), _ = self.chain(
+      (self.fuse, self.gate, self.prot_batt, self.tp_batt), _ = self.chain(
         self.batt.pwr,
         imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
+        imp.Block(FetPowerGate()),
         imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
         self.Block(VoltageTestPoint()))
-      self.vbatt = self.connect(self.fuse.pwr_out)  # downstream of fuse
+      self.vbatt = self.connect(self.gate.pwr_out)  # downstream of fuse
 
       self.pwr_or = self.Block(PriorityPowerOr(  # also does reverse protection
         (0, 1)*Volt, (0, 0.1)*Ohm
@@ -67,6 +69,8 @@ class PcbBot(JlcBoardTop):
       # single onboard debugging LED
       (self.led, ), _ = self.chain(self.mcu.gpio.request('led'), imp.Block(IndicatorLed(Led.Red)))
 
+      (self.touch_sink, ), self.touch = self.chain(self.mcu.gpio.request('touch'), imp.Block(DummyDigitalSink()))
+
       self.i2c = self.mcu.i2c.request('i2c')
 
       self.tof = imp.Block(Vl53l0xArray(4, first_xshut_fixed=True))
@@ -97,6 +101,9 @@ class PcbBot(JlcBoardTop):
         imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
         self.mcu.adc.request('vbatt_sense')
       )
+
+      self.chain(self.gate.btn_out, self.mcu.gpio.request('sw0'))
+      self.chain(self.mcu.gpio.request('gate_control'), self.gate.control)
 
     # VBATT DOMAIN
     with self.implicit_connect(
@@ -176,9 +183,10 @@ class PcbBot(JlcBoardTop):
           "servo2=8",
           "servo3=10",
           "npx=9",
-          "oled_reset=7",
+          # "oled_reset=7",
 
           'led=_GPIO0_STRAP',
+          'touch=GPIO7'
         ]),
         (['expander', 'pin_assigns'], [
         ]),
