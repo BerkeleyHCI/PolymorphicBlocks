@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Dict, List
+from typing import Dict
 
 from electronics_abstract_parts import *
 from .JlcPart import JlcPart
@@ -21,7 +21,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
       voltage_limit_tolerance=(-0.5, 0.5)*Volt,
       input_threshold_factor=(0.3, 0.7)
     )
-    self.i2c = self.Port(I2cTarget(i2c_model))
+    self.i2c = self.Port(I2cTarget(i2c_model, addresses=ArrayIntExpr()))
 
     self.io = self.Port(Vector(DigitalBidir.empty()), optional=True)
 
@@ -29,6 +29,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
     self.generator_param(self.addr_lsb, self.pin_assigns, self.io.requested())
 
   def generate(self) -> None:
+    super().generate()
     dout_model = DigitalBidir.from_supply(  # same between TI and NXP versions
       self.gnd, self.vdd,
       current_limits=(-25, 0.3)*mAmp,  # highly limited sourcing current
@@ -38,6 +39,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
 
     addr_lsb = self.get(self.addr_lsb)
     self.require((addr_lsb < 8) & (addr_lsb >= 0), f"addr_lsb={addr_lsb} must be within [0, 8)")
+    self.assign(self.i2c.addresses, [0x20 | addr_lsb])
 
     pinmaps = PinMapUtil([
       PinResource('4', {'P0': dout_model}),

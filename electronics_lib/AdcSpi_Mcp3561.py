@@ -68,7 +68,7 @@ class Mcp3561_Device(InternalSubcircuit, FootprintBlock):
     )
 
 
-class Mcp3561(AnalogToDigital, Block):
+class Mcp3561(AnalogToDigital, GeneratorBlock):
   """MCP3561R up-to-24-bit delta-sigma ADC with internal voltage reference.
   """
   def __init__(self) -> None:
@@ -77,7 +77,8 @@ class Mcp3561(AnalogToDigital, Block):
     self.pwra = self.Port(VoltageSink.empty())
     self.pwr = self.Port(VoltageSink.empty())
     self.gnd = self.Export(self.ic.vss, [Common])
-    self.vref = self.Export(self.ic.vrefp, optional=True)
+    self.vref = self.Port(VoltageSource.empty(), optional=True)
+    self.generator_param(self.vref.is_connected())
 
     self.vins = self.Export(self.ic.ch)
 
@@ -103,3 +104,9 @@ class Mcp3561(AnalogToDigital, Block):
       self.dvdd_cap_1 = imp.Block(cap_model).connected(pwr=self.ic.dvdd)
 
       self.vref_cap = imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2))).connected(pwr=self.ic.vrefp)
+
+  def generate(self) -> None:
+    super().generate()
+
+    if self.get(self.vref.is_connected()):
+      self.connect(self.vref, self.ic.vrefp)

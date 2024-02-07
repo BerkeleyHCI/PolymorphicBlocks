@@ -39,12 +39,13 @@ class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableS
   def _make_table(cls) -> PartsTable:
     CAPACITOR_MATCHES = {
       'nominal_capacitance': re.compile("(^|\s)([^±]\S+F)($|\s)"),
-      'tolerance': re.compile("(^|\s)(±\S*[%F])($|\s)"),
+      'tolerance': re.compile("(^|\s)(±\S+[%F])($|\s)"),
       'voltage': re.compile("(^|\s)(\d\S*V)($|\s)"),  # make sure not to catch 'Y5V'
+      'tempco': re.compile("(^|\s)([CXYZ]\d[GPRSTUV])($|\s)"),
     }
 
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if row['First Category'] != 'Capacitors':
+      if row['Second Category'] != 'Multilayer Ceramic Capacitors MLCC - SMD/SMT':
         return None
 
       new_cols: Dict[PartsTableColumn, Any] = {}
@@ -52,15 +53,20 @@ class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableS
         # handle the footprint first since this is the most likely to filter
         footprint = cls.PACKAGE_FOOTPRINT_MAP[row[cls._PACKAGE_HEADER]]
         extracted_values = cls.parse(row[cls.DESCRIPTION_COL], CAPACITOR_MATCHES)
+
+        tempco = extracted_values['tempco'][1]
+        if tempco[0] not in ('X', 'C') or tempco[2] not in ('R', 'S', 'G'):
+          return None
+
         nominal_capacitance = PartParserUtil.parse_value(extracted_values['nominal_capacitance'][1], 'F')
 
         new_cols[cls.KICAD_FOOTPRINT] = footprint
         new_cols[cls.CAPACITANCE] = PartParserUtil.parse_abs_tolerance(extracted_values['tolerance'][1],
                                                                        nominal_capacitance, 'F')
         new_cols[cls.NOMINAL_CAPACITANCE] = nominal_capacitance
-        new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
-          PartParserUtil.parse_value(extracted_values['voltage'][1], 'V')
-        )
+
+        new_cols[cls.VOLTAGE_RATING] = Range.from_abs_tolerance(  # voltage rating for ceramic caps is bidirectional
+          0, PartParserUtil.parse_value(extracted_values['voltage'][1], 'V'))
         new_cols[cls.VOLTCO] = cls.DERATE_VOLTCO_MAP[footprint]
 
         new_cols.update(cls._parse_jlcpcb_common(row))
@@ -96,7 +102,6 @@ class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableS
     return [row[cls.BASIC_PART_HEADER], row[cls.PARALLEL_COUNT], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
 
   def _make_parallel_footprints(self, row: PartsTableRow) -> None:
-    assert row[self.PARALLEL_COUNT] < 10, f"too many parallel capacitors ({row[self.PARALLEL_COUNT]})"
     cap_model = JlcDummyCapacitor(set_lcsc_part=row[self.LCSC_PART_HEADER],
                                   set_basic_part=row[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE,
                                   footprint=row[self.KICAD_FOOTPRINT],

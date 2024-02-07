@@ -139,6 +139,8 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
   PARALLEL_CAPACITANCE = PartsTableColumn(Range)
   PARALLEL_DERATED_CAPACITANCE = PartsTableColumn(Range)
 
+  MAX_PARALLEL_COUNT = 10  # maximum parallel capacitors that can be generated
+
   # default derating parameters
   DERATE_MIN_VOLTAGE = 3.6  # voltage at which derating is zero
   DERATE_MIN_CAPACITANCE = 1.0e-6
@@ -176,9 +178,15 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
 
       if derated.lower == 0:  # in case where tolerance is the nominal value
         return None
-      count = math.ceil(self.get(self.capacitance).lower / derated.lower)
+      # ceil is needed so that it generates the maximum number of capacitors, especially for where the upper bound
+      # is infinite (like decoupling capacitors for power converters), but float issues can cause the rounding to be
+      # too aggressive even for an exact match, so this reduces the count before ceil-ing it
+      count = math.ceil(self.get(self.capacitance).lower / derated.lower * (1-Range.DOUBLE_FLOAT_ROUND_FACTOR))
       derated_parallel_capacitance = derated * count
       if not derated_parallel_capacitance.fuzzy_in(self.get(self.capacitance)):  # not satisfying spec, remove row
+        return None
+
+      if count > self.MAX_PARALLEL_COUNT:
         return None
 
       return {self.DERATED_CAPACITANCE: derated,
@@ -187,7 +195,7 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
               self.PARALLEL_CAPACITANCE: row[self.CAPACITANCE] * count}
 
     return table.map_new_columns(add_derated_row).filter(lambda row: (
-            row[self.PARALLEL_DERATED_CAPACITANCE] in self.get(self.capacitance)
+            row[self.PARALLEL_DERATED_CAPACITANCE].fuzzy_in(self.get(self.capacitance))
     ))
 
   def _row_generate(self, row: PartsTableRow) -> None:

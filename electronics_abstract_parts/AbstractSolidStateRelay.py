@@ -31,6 +31,47 @@ class SolidStateRelay(Interface, Block):
     self.load_resistance = self.Parameter(RangeExpr())
 
 
+class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
+  """Digitally controlled solid state relay that switches a voltage signal.
+  Includes a ballasting resistor.
+
+  The ports are not tagged with Input/Output/InOut, because of potential for confusion between
+  the digital side and the analog side.
+  """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name == 'edg_importable:VoltageIsolatedSwitch'
+    return {'in': self.signal, 'gnd': self.gnd, 'ain': self.pwr_in, 'aout': self.pwr_out}
+
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.signal = self.Port(DigitalSink.empty())
+    self.gnd = self.Port(Ground.empty(), [Common])
+
+    self.pwr_in = self.Port(VoltageSink.empty())
+    self.pwr_out = self.Port(VoltageSource.empty())
+
+    self.ic = self.Block(SolidStateRelay())
+    self.res = self.Block(Resistor(
+      resistance=(self.signal.link().voltage.upper() / self.ic.led_current_recommendation.upper(),
+                  self.signal.link().output_thresholds.upper() / self.ic.led_current_recommendation.lower())
+    ))
+    self.connect(self.signal, self.ic.leda.adapt_to(DigitalSink(
+      current_draw=self.signal.link().voltage / self.res.actual_resistance
+    )))
+    self.connect(self.res.a, self.ic.ledk)
+    self.connect(self.res.b.adapt_to(Ground()), self.gnd)
+
+    self.connect(self.pwr_in, self.ic.feta.adapt_to(VoltageSink(
+      voltage_limits=self.ic.load_voltage_limit,  # TODO: assumed magic ground
+      current_draw=self.pwr_out.link().current_drawn
+    )))
+    self.connect(self.pwr_out, self.ic.fetb.adapt_to(VoltageSource(
+      voltage_out=self.pwr_in.link().voltage,
+      current_limits=self.ic.load_current_limit,
+    )))
+
+
 class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
   """Digitally controlled solid state relay that switches an analog signal.
   Includes a ballasting resistor.

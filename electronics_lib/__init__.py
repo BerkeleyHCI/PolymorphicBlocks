@@ -20,6 +20,8 @@ from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AABattery
 from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .RotaryEncoder_Alps import Ec11eWithSwitch, Ec11j15WithSwitch, Ec05e
+from .RotaryEncoder_Bourns import Pec11s
+from .DirectionSwitch_Alps import Skrh
 from .JlcCrystal import JlcCrystal
 from .JlcOscillator import JlcOscillator
 from .JlcSwitches import JlcSwitch, Skrtlae010
@@ -31,7 +33,7 @@ from .SpeakerDriver_Max98357a import Max98357a
 from .Microphone_Sd18ob261 import Sd18ob261
 from .Opamp_Mcp6001 import Mcp6001
 from .Opamp_Tlv9061 import Tlv9061
-from .Opamp_Opa197 import Opa197
+from .Opamp_Opax197 import Opa197, Opa2197
 from .Opamp_Opax333 import Opa2333
 from .Opamp_Lmv321 import Lmv321
 from .CeramicResonator_Cstne import Cstne
@@ -59,10 +61,11 @@ from .BoostConverter_DiodesInc import Ap3012
 from .BoostConverter_Torex import Xc9142
 from .BoostConverter_TexasInstruments import Tps61040
 from .BuckConverter_Custom import CustomSyncBuckConverter
-from .BuckBoostConverter_Custom import CustomBuckBoostConverter
+from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverter
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr
 from .LedDriver_Al8861 import Al8861
 from .ResetGenerator_Apx803s import Apx803s
+from .BootstrapVoltageAdder import BootstrapVoltageAdder
 
 from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Microcontroller_Stm32f103 import Stm32f103_48
@@ -80,6 +83,7 @@ from .Microcontroller_Rp2040 import Rp2040
 from .Fpga_Ice40up import Ice40up5k_Sg48
 
 from .IoExpander_Pcf8574 import Pcf8574
+from .IoExpander_Pca9554 import Pca9554
 
 from .Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector
 from .FanConnector import CpuFanConnector, CpuFanPwmControl
@@ -95,6 +99,8 @@ from .TestPoint_Rc import TeRc
 from .AdcSpi_Mcp3201 import Mcp3201
 from .AdcSpi_Mcp3561 import Mcp3561
 from .DacSpi_Mcp4901 import Mcp4921
+from .DacI2c_Mcp47f import Mcp47f
+from .DacI2c_Mcp4728 import Mcp4728
 
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
@@ -110,6 +116,7 @@ from .EInk_E2154fs091 import E2154fs091
 from .EInk_Er_Epd027_2 import Er_Epd027_2
 from .EInk_WaveshareDriver import Waveshare_Epd
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
+from .SolidStateRelay_Toshiba import Tlp3545a
 from .AnalogSwitch_Nlas4157 import Nlas4157
 from .CanTransceiver_Iso1050 import Iso1050dub
 from .CanTransceiver_Sn65hvd230 import Sn65hvd230
@@ -140,7 +147,7 @@ from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc
 from .Mag_Qmc5883l import Mag_Qmc5883l
 from .EnvironmentalSensor_Sensirion import Shtc3
 from .EnvironmentalSensor_Bme680 import Bme680
-from .EnvironmentalSensor_Ti import Hdc1080
+from .EnvironmentalSensor_Ti import Hdc1080, Tmp1075n
 from .LightSensor_Bh1750 import Bh1750
 from .LightSensor_As7341 import As7341
 
