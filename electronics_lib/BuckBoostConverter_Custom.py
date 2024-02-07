@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class CustomBuckBoostConverter(DiscreteBoostConverter):
+class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
   """Custom buck-boost that has two PWM inputs for the input high and output low switches,
   with diodes for the complementary switches (non-synchronous)."""
   @init_in_parent
