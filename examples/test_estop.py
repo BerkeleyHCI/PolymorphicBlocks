@@ -174,7 +174,7 @@ class Estop(JlcBoardTop):
 
         # 3V3 DOMAIN section begins
         with self.implicit_connect(
-                ImplicitConnect(self.v3v3, [Power]),  # Implicitly connecting to the 3.3V power line
+                ImplicitConnect(self.mosfet.output, [Power]),  # Implicitly connecting to the 3.3V power line
                 ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting to common ground
         ) as imp:
             #TODO: Check: Current Sensor
@@ -187,7 +187,7 @@ class Estop(JlcBoardTop):
 
             self.connect(self.cbatt_sense.pwr_in, self.mosfet.output)
             self.connect(self.cbatt_sense.ref, self.batt.gnd.as_analog_source())
-            self.connect(self.cbatt_sense.out, self.mcu.adc.request(' '))
+            self.connect(self.cbatt_sense.out, self.mcu.adc.request('cbatt_sense'))
 
         #TODO: Check: Power output pins
         self.jst_out = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
@@ -219,7 +219,7 @@ class Estop(JlcBoardTop):
                     "i2c.sda=4",
                 ]),
                 (['cbatt_sense', 'sense', 'res', 'res', 'require_basic_part'], False),
-                (['reg_3v3v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
+                (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
                 # (['reg_3v3', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
             ],
             class_refinements=[
