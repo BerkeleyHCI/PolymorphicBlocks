@@ -22,8 +22,7 @@ class Estop(JlcBoardTop):
         #self.batt = self.Block(LipoConnector(actual_voltage=(7.2, 28)*Volt))
         self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
 
-
-    # Creating a merged voltage source from the USB and battery ground
+        # Creating a merged voltage source from the USB and battery ground
         self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
             self.usb.gnd, self.batt.gnd
         )
@@ -31,6 +30,8 @@ class Estop(JlcBoardTop):
         self.gnd = self.connect(self.gnd_merge.pwr_out)
         # Creating a test point for the ground connection
         self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
+
+
 
         # POWER section begins
         with self.implicit_connect(
@@ -62,9 +63,9 @@ class Estop(JlcBoardTop):
 
             # TODO: Chain for 12V power regulation
             # (self.reg_12v, self.prot_12v, self.tp_12v), _ = self.chain(
-            #     self.pwr,
+            #     self.vbatt,
             #     imp.Block(BuckConverter(output_voltage=12*Volt(tol=0.05))),  # 12V Voltage Regulator
-            #     imp.Block(ProtectionZenerDiode(voltage=(12.15, 12.6)*Volt)),  # Zener Diode for protection
+            #     imp.Block(ProtectionZenerDiode(voltage=(12.6, 13.0)*Volt)),  # Zener Diode for protection
             #     self.Block(VoltageTestPoint()),  # Voltage test point
             # )
             # self.v12 = self.connect(self.reg_12v.pwr_out)  # Connecting the output of 12V regulator
@@ -104,20 +105,13 @@ class Estop(JlcBoardTop):
             self.connect(self.i2c, self.expander.i2c)
 
 
-            # Directional switch: 5 buttons
+            # TODO: Check: Directional switch: 5 buttons
             self.dir = imp.Block(DigitalDirectionSwitch())
             self.connect(self.dir.a, self.mcu.gpio.request('dir_a'))
             self.connect(self.dir.b, self.mcu.gpio.request('dir_b'))
             self.connect(self.dir.c, self.mcu.gpio.request('dir_c'))
             self.connect(self.dir.d, self.mcu.gpio.request('dir_d'))
             self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.mcu.gpio.request('dir_cen'))
-
-
-
-            # self.sensor_current = self.Block(OpampCurrentSensor())
-
-            # self.main_mosfet = self.Block(HighSideSwitch(pull_resistance=, max_rds=, frequency=, clamp_voltage=,
-            #                                       clamp_resistance_ratio=))
 
             # Chain for RGB LED
             (self.rgb, ), _ = self.chain(self.expander.io.request_vector('rgb'), imp.Block(IndicatorSinkRgbLed()))
@@ -128,7 +122,7 @@ class Estop(JlcBoardTop):
             self.connect(self.oled.reset, self.mcu.gpio.request("oled_reset"))
 
             # Chain for battery voltage sensing
-            (self.batt_sense, ), _ = self.chain(
+            (self.vbatt_sense, ), _ = self.chain(
                 self.vbatt,
                 imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
                 self.mcu.adc.request('vbatt_sense')
@@ -163,12 +157,44 @@ class Estop(JlcBoardTop):
         self.connect(self.jst_3v3.pins.request('1').adapt_to(Ground()), self.gnd)
 
 
-    # Method to define refinements for the PCB design
+        #TODO: mosfet
+        with self.implicit_connect(
+                ImplicitConnect(self.gnd, [Common])
+        #ImplicitConnect(self.gnd, )
+        ) as imp:
+            self.mosfet = imp.Block(HighSideSwitch())
+            self.connect(self.mosfet.pwr, self.batt.pwr)
+            self.connect(self.mosfet.control, self.mcu.gpio.request('mosfet'))
+
+        # 3V3 DOMAIN section begins
+        with self.implicit_connect(
+                ImplicitConnect(self.v3v3, [Power]),  # Implicitly connecting to the 3.3V power line
+                ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting to common ground
+        ) as imp:
+            #TODO: Check: Current Sensor
+            self.cbatt_sense = imp.Block(OpampCurrentSensor(
+                resistance=0.01*Ohm(tol=0.01),
+                ratio=Range.from_tolerance(10, 0.05),
+                input_impedance=10*kOhm(tol=0.05)
+                )
+            )
+            self.connect(self.cbatt_sense.pwr_in, self.mosfet.output)
+            self.connect(self.cbatt_sense.ref, self.batt.gnd.as_analog_source())
+            self.connect(self.cbatt_sense.out, self.mcu.adc.request('cbatt_sense'))
+
+        #TODO: Check: Power output pins
+        self.jst_out = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
+        self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink()), self.cbatt_sense.pwr_out)
+        self.connect(self.jst_out.pins.request('1').adapt_to(Ground()), self.gnd)
+
+
+
+
+# Method to define refinements for the PCB design
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             # Below are various refinements and specifications for the components
             instance_refinements=[
-
                 # Refinements for specific components like MCU, voltage regulators, connectors, etc.
                 # These define particular models or types for the components used in the design
                 (['mcu'], Esp32s3_Wroom_1),
@@ -185,12 +211,13 @@ class Estop(JlcBoardTop):
                     "i2c.scl=38",
                     "i2c.sda=4",
                 ]),
+                (['cbatt_sense', 'sense', 'res', 'res', 'require_basic_part'], False),
             ],
             class_refinements=[
                 # Class-level refinements for certain types of components
                 # These set default series or types for categories of components like connectors, test points, etc.
                 (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
-                (DirectionSwitch, Skrh),            # TODO: Check whichone to use?
+                (DirectionSwitch, Skrh),            # TODO: Check which one to use?
                 (Speaker, ConnectorSpeaker),
             ],
             class_values=[
