@@ -19,7 +19,7 @@ class Estop(JlcBoardTop):
         self.vusb = self.connect(self.usb.pwr)
 
         # Adding a LiPo battery connector with a specified voltage range
-        self.batt = self.Block(LipoConnector(voltage=(4.5, 28)*Volt, actual_voltage=(4.5, 28)*Volt))
+        self.batt = self.Block(LipoConnector(voltage=(7.4, 28)*Volt, actual_voltage=(7.4, 28)*Volt, current_limits=(0.0, 20.0)*Amp))
         self.vbatt = self.connect(self.batt.pwr)
 
         # Creating a merged voltage source from the USB and battery ground
@@ -34,15 +34,27 @@ class Estop(JlcBoardTop):
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting ground to common ground
         ) as imp:
-            pass
-
-            # Chain for 3.3V power regulation
-            (self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
+            # Chain for 4V power regulation
+            (self.reg_4v, self.prot_4v, self.tp_4v), _ = self.chain(
                 self.vbatt,
+                imp.Block(VoltageRegulator(output_voltage=4.5*Volt(tol=0.05))),  # 3.3V Voltage Regulator
+                imp.Block(ProtectionZenerDiode(voltage=(5, 6)*Volt)),  # Zener Diode for protection
+                self.Block(VoltageTestPoint()),  # Voltage test point
+            )
+
+            self.pwr_or = self.Block(PriorityPowerOr(  # also does reverse protection
+                (0, 1)*Volt, (0, 0.1)*Ohm
+            )).connected_from(self.gnd_merge.pwr_out, self.usb.pwr, self.reg_4v.pwr_out)
+            self.pwr = self.connect(self.pwr_or.pwr_out)
+
+            # Chain for 3.3V from USB power regulation
+            (self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
+                self.pwr_or.pwr_out,
                 imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),  # 3.3V Voltage Regulator
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt)),  # Zener Diode for protection
                 self.Block(VoltageTestPoint()),  # Voltage test point
             )
+
             self.v3v3 = self.connect(self.reg_3v3.pwr_out)  # Connecting the output of 3.3V regulator
 
             # TODO: Chain for 12V power regulation
@@ -56,7 +68,7 @@ class Estop(JlcBoardTop):
 
             # TODO: Chain for 5V power regulation
             (self.reg_5v, self.prot_5v, self.tp_5v), _ = self.chain(
-                self.vbatt,
+                self.vbatt,  # TODO: should we cut the power to 5v line as well?
                 imp.Block(BuckConverter(output_voltage=5*Volt(tol=0.05))),  # 12V Voltage Regulator
                 imp.Block(ProtectionZenerDiode(voltage=(5.5, 6.0)*Volt)),  # Zener Diode for protection
                 self.Block(VoltageTestPoint()),  # Voltage test point
@@ -81,6 +93,8 @@ class Estop(JlcBoardTop):
             (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
                 self.i2c,
                 imp.Block(I2cPullup()), imp.Block(I2cTestPoint('i2c')),)
+            self.expander = imp.Block(Pca9554())
+            self.connect(self.i2c, self.expander.i2c)
 
             # TODO: Check: Directional switch: 5 buttons
             self.dir = imp.Block(DigitalDirectionSwitch())
@@ -99,6 +113,8 @@ class Estop(JlcBoardTop):
             self.connect(self.i2c, self.oled.i2c)
             self.connect(self.oled.reset, self.mcu.gpio.request("oled_reset"))
 
+            # self.chain(self.gate.btn_out, self.mcu.gpio.request('sw0'))
+            # self.chain(self.mcu.gpio.request('gate_control'), self.gate.control)
 
 
         # Speaker
@@ -125,15 +141,19 @@ class Estop(JlcBoardTop):
         self.connect(self.jst_3v3.pins.request('2').adapt_to(VoltageSink()), self.reg_3v3.pwr_out)
         self.connect(self.jst_3v3.pins.request('1').adapt_to(Ground()), self.gnd)
 
+        self.jst_12v = self.Block(PassiveConnector(length=2))   # lenth number of pins (auto allocate?
+        self.connect(self.jst_12v.pins.request('2').adapt_to(VoltageSink(current_draw=1.0*Amp)), self.reg_12v.pwr_out)
+        self.connect(self.jst_12v.pins.request('1').adapt_to(Ground()), self.gnd)
+
         #TODO: 5v devices
         with self.implicit_connect(
                 ImplicitConnect(self.v5, [Power]),  # Implicitly connecting to the 3.3V power line
                 ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting to common ground
         ) as imp:
-            (self.npx, ), _ = self.chain(self.mcu.gpio.request('npx'), imp.Block(Neopixel()))
+            (self.npx, ), _ = self.chain(self.expander.io.request('npx'), imp.Block(Neopixel()))
 
             self.jst_5v = self.Block(PassiveConnector(length=2))   # lenth number of pins (auto allocate?
-            self.connect(self.jst_5v.pins.request('2').adapt_to(VoltageSink()), self.v5)
+            self.connect(self.jst_5v.pins.request('2').adapt_to(VoltageSink(current_draw=0.5*Amp)), self.v5)
             self.connect(self.jst_5v.pins.request('1').adapt_to(Ground()), self.gnd)
 
 
@@ -207,7 +227,6 @@ class Estop(JlcBoardTop):
         #TODO: Check: Power output pins
         self.jst_out = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
         self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink()), self.cbatt_sense.pwr_out)
-        #self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink()), self.mosfet.output)
         self.connect(self.jst_out.pins.request('1').adapt_to(Ground()), self.gnd)
 
         #TODO:
@@ -230,8 +249,6 @@ class Estop(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
             ImplicitConnect(self.v3v3, [Power])
         ) as imp:
-            self.expander = imp.Block(Pca9554())
-            self.connect(self.i2c, self.expander.i2c)
 
             self.jst_estop = self.Block(PassiveConnector(length=6))   # lenth number of pins auto allocate?
             self.connect(self.jst_estop.pins.request('1').adapt_to(Ground()))
@@ -250,12 +267,24 @@ class Estop(JlcBoardTop):
             instance_refinements=[
                 # Refinements for specific components like MCU, voltage regulators, connectors, etc.
                 # These define particular models or types for the components used in the design
+               # default connector series unless otherwise specified
                 (['mcu'], Esp32s3_Wroom_1),
                 (['reg_12v'], Tps54202h),
                 (['reg_5v'], Tps54202h),
-                (['reg_3v3'], Tps54202h),
+                (['reg_4v'], Tps54202h),
+                (['reg_3v3'], Ldl1117),
                 (['reg_2v5'], Xc6206p),
                 (['reg_1v2'], Xc6206p),
+                (['spk', 'conn'], JstPhKVertical),
+                (['batt', 'conn'], JstPhKVertical),
+
+               (['jst_estop'], JstPhKVertical),
+                (['jst_12v'], JstPhKHorizontal),
+                (['jst_5v'], JstPhKHorizontal),
+                (['jst_3v3'], JstPhKHorizontal),
+                (['jst_out'], JstPhKHorizontal),
+                (['lipo_pins'], JstPhKHorizontal),
+                (['vbatt_pin'], JstPhKHorizontal),
             ],
             instance_values=[
                 # Specific value assignments for various component parameters
@@ -267,13 +296,18 @@ class Estop(JlcBoardTop):
                 # ]),
                 (['cbatt_sense', 'sense', 'res', 'res', 'require_basic_part'], False),
                 (['cPc_sense', 'sense', 'res', 'res', 'require_basic_part'], False),
-                (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
-                # (['reg_3v3', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
+                (['reg_4v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
+                (['reg_5v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
+                (['reg_12v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
+
+
+                (['batt', 'conn', 'fp_footprint', ], 'Connector_AMASS:AMASS_XT60IPW-M_1x03_P7.20mm_Horizontal'),
+                (['jst_out', 'fp_footprint', ], 'Connector_AMASS:AMASS_XT60IPW-M_1x03_P7.20mm_Horizontal'),
+
             ],
             class_refinements=[
                 # Class-level refinements for certain types of components
                 # These set default series or types for categories of components like connectors, test points, etc.
-                (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
                 (DirectionSwitch, Skrh),            # TODO: Check which one to use?
                 (Speaker, ConnectorSpeaker),
                 (Opamp, Opa197),

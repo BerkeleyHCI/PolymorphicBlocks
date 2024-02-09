@@ -61,7 +61,9 @@ class LipoConnector(Connector, Battery):
   Connector type not specified, up to the user through a refinement."""
   @init_in_parent
   def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args,
-               actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs):
+               actual_voltage: RangeLike = (2.5, 4.2)*Volt,
+               current_limits: RangeLike = (0, 5.5)*Amp,
+               **kwargs):
     from electronics_model.PassivePort import PassiveAdapterVoltageSink
     super().__init__(voltage, *args, **kwargs)
     self.chg = self.Port(VoltageSink.empty(), optional=True)  # ideal port for charging
@@ -71,7 +73,7 @@ class LipoConnector(Connector, Battery):
     pwr_pin = self.conn.pins.request('2')
     self.connect(self.pwr, pwr_pin.adapt_to(VoltageSource(
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
-      current_limits=(0, 5.5)*Amp,  # arbitrary assuming low capacity, 10 C discharge
+      current_limits=current_limits,  # arbitrary assuming low capacity, 10 C discharge
     )))
     self.chg_adapter = self.Block(PassiveAdapterVoltageSink())
     self.connect(pwr_pin, self.chg_adapter.src)
