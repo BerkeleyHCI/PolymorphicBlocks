@@ -19,10 +19,8 @@ class Estop(JlcBoardTop):
         self.vusb = self.connect(self.usb.pwr)
 
         # Adding a LiPo battery connector with a specified voltage range
-        #self.batt = self.Block(LipoConnector(actual_voltage=(7.2, 28)*Volt))
-        self.batt = self.Block(LipoConnector(voltage=(7.2, 28)*Volt, actual_voltage=(7.2, 28)*Volt))
+        self.batt = self.Block(LipoConnector(voltage=(4.5, 28)*Volt, actual_voltage=(4.5, 28)*Volt))
         self.vbatt = self.connect(self.batt.pwr)
-        #self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
 
         # Creating a merged voltage source from the USB and battery ground
         self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
@@ -32,7 +30,6 @@ class Estop(JlcBoardTop):
         self.gnd = self.connect(self.gnd_merge.pwr_out)
         # Creating a test point for the ground connection
         self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
-
 
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting ground to common ground
@@ -85,10 +82,6 @@ class Estop(JlcBoardTop):
                 self.i2c,
                 imp.Block(I2cPullup()), imp.Block(I2cTestPoint('i2c')),)
 
-            # # IO Expander setup
-            # self.expander = imp.Block(Pca9554())
-            # self.connect(self.i2c, self.expander.i2c)
-
             # TODO: Check: Directional switch: 5 buttons
             self.dir = imp.Block(DigitalDirectionSwitch())
             self.connect(self.dir.a, self.mcu.gpio.request('dir_a'))
@@ -106,12 +99,7 @@ class Estop(JlcBoardTop):
             self.connect(self.i2c, self.oled.i2c)
             self.connect(self.oled.reset, self.mcu.gpio.request("oled_reset"))
 
-            # Chain for battery voltage sensing
-            (self.vbatt_sense, ), _ = self.chain(
-                self.vbatt,
-                imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
-                self.mcu.adc.request('vbatt_sense')
-            )
+
 
         # Speaker
         with self.implicit_connect(
@@ -150,19 +138,56 @@ class Estop(JlcBoardTop):
 
 
 
-    #TODO: mosfet
+        #TODO: mosfet
         with self.implicit_connect(
-                ImplicitConnect(self.gnd, [Common])
+            ImplicitConnect(self.gnd, [Common]),
+            ImplicitConnect(self.vbatt, [Power])
         ) as imp:
             self.mosfet = imp.Block(HighSideSwitch(clamp_voltage=(14, 17)*Volt))
-            self.connect(self.mosfet.pwr, self.batt.pwr)
             self.connect(self.mosfet.control, self.mcu.gpio.request('mosfet'))
 
-        # 3V3 DOMAIN section begins
+            # Chain for battery voltage sensing
+            (self.vPc_sense, ), _ = self.chain(
+                self.vbatt,
+                imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+                self.mcu.adc.request('vPc_sense_sense')
+            )
+
+            #TODO: Check: Current Sensor
+            self.cPc_sense = imp.Block(OpampCurrentSensor(
+                resistance=0.01*Ohm(tol=0.01),
+                ratio=Range.from_tolerance(15, 0.05),
+                input_impedance=20*kOhm(tol=0.05)
+            ))
+            (self.cPc_sense_tp, self.cPc_sense_clamp), _ = self.chain(
+                self.cPc_sense.out,
+                self.Block(AnalogTestPoint()),
+                imp.Block(AnalogClampZenerDiode((2.7, 3.3)*Volt)),
+                self.mcu.adc.request('cPc_sense')
+            )
+
+            self.connect(self.cPc_sense.pwr_in, self.vbatt)
+            self.connect(self.cPc_sense.ref, self.batt.gnd.as_analog_source())
+            #
+            #
+            # Have pass thorough for PC
+            self.vbatt_pin = imp.Block(PassiveConnector(2))
+            self.connect(self.vbatt_pin.pins.request('1').adapt_to(Ground()))
+            self.connect(self.vbatt_pin.pins.request('2').adapt_to(VoltageSink()), self.cPc_sense.pwr_out)
+
+
+    # 3V3 DOMAIN section begins
         with self.implicit_connect(
                 ImplicitConnect(self.mosfet.output, [Power]),  # Implicitly connecting to the 3.3V power line
                 ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting to common ground
         ) as imp:
+            # Chain for battery voltage sensing
+            (self.vbatt_sense, ), _ = self.chain(
+                self.mosfet.output,
+                imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+                self.mcu.adc.request('vbatt_sense')
+            )
+
             #TODO: Check: Current Sensor
             self.cbatt_sense = imp.Block(OpampCurrentSensor(
                 resistance=0.01*Ohm(tol=0.01),
@@ -177,7 +202,7 @@ class Estop(JlcBoardTop):
             )
 
             self.connect(self.cbatt_sense.pwr_in, self.mosfet.output)
-            self.connect(self.cbatt_sense.ref, self.batt.gnd.as_analog_source())
+            self.connect(self.cbatt_sense.ref, self.mosfet.gnd.as_analog_source())
 
         #TODO: Check: Power output pins
         self.jst_out = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
@@ -198,8 +223,24 @@ class Estop(JlcBoardTop):
                 (self.v_sense[i], ), _ = self.chain(
                     self.lipo_pins.pins.request(str(i+2)).adapt_to(VoltageSource(voltage_out=(0.0, 5.0))),
                     imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
-                    self.mcu.adc.request(f'v_sense_{i+2}')
+                    self.mcu.adc.request(f'v_sense_{i+1}')
                 )
+
+        with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+            ImplicitConnect(self.v3v3, [Power])
+        ) as imp:
+            self.expander = imp.Block(Pca9554())
+            self.connect(self.i2c, self.expander.i2c)
+
+            self.jst_estop = self.Block(PassiveConnector(length=6))   # lenth number of pins auto allocate?
+            self.connect(self.jst_estop.pins.request('1').adapt_to(Ground()))
+            self.connect(self.jst_estop.pins.request('2').adapt_to(DigitalSource()), self.expander.io.request('sw_estop'))
+            self.connect(self.jst_estop.pins.request('3').adapt_to(DigitalSource()), self.expander.io.request('led_estop'))
+            self.connect(self.jst_estop.pins.request('4').adapt_to(DigitalSource()), self.expander.io.request('sw_nonestop'))
+            self.connect(self.jst_estop.pins.request('5').adapt_to(DigitalSource()), self.expander.io.request('led_nonestop'))
+
+
 
 
 # Method to define refinements for the PCB design
@@ -219,12 +260,13 @@ class Estop(JlcBoardTop):
             instance_values=[
                 # Specific value assignments for various component parameters
                 # These customize component features like pin assignments, diode footprints, etc.
-                (['mcu', 'pin_assigns'], [
-                    "i2c=I2CEXT0",
-                    "i2c.scl=38",
-                    "i2c.sda=4",
-                ]),
+                # (['mcu', 'pin_assigns'], [
+                #     "i2c=I2CEXT0",
+                #     "i2c.scl=38",
+                #     "i2c.sda=4",
+                # ]),
                 (['cbatt_sense', 'sense', 'res', 'res', 'require_basic_part'], False),
+                (['cPc_sense', 'sense', 'res', 'res', 'require_basic_part'], False),
                 (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
                 # (['reg_3v3', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
             ],
