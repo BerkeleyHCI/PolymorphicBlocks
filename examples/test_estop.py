@@ -39,27 +39,6 @@ class Estop(JlcBoardTop):
         ) as imp:
             pass
 
-
-
-        # POWER section begins
-        # with self.implicit_connect(
-        #         ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting ground to common ground
-        # ) as imp:
-        #     # Creating a chain of components for power management
-        #     (self.fuse, self.gate, self.prot_batt, self.tp_batt), _ = self.chain(
-        #         self.batt.pwr,
-        #         imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),  # Adding a PPTC fuse in the series
-        #         imp.Block(FetPowerGate()),  # Adding a FET power gate
-        #         imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),  # Adding a Zener diode for protection
-        #         self.Block(VoltageTestPoint()))  # Adding a voltage test point
-        #     self.vbatt = self.connect(self.gate.pwr_out)  # Connecting the output of the gate to vbatt
-        #
-        #     # Power OR block for managing power sources and reverse protection
-        #     self.pwr_or = self.Block(PriorityPowerOr(
-        #         (0, 1)*Volt, (0, 0.1)*Ohm
-        #     )).connected_from(self.gnd_merge.pwr_out, self.usb.pwr, self.vbatt)
-        #     self.pwr = self.connect(self.pwr_or.pwr_out)  # Connecting power output
-
             # Chain for 3.3V power regulation
             (self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
                 self.vbatt,
@@ -70,24 +49,23 @@ class Estop(JlcBoardTop):
             self.v3v3 = self.connect(self.reg_3v3.pwr_out)  # Connecting the output of 3.3V regulator
 
             # TODO: Chain for 12V power regulation
-            # (self.reg_12v, self.prot_12v, self.tp_12v), _ = self.chain(
-            #     self.vbatt,
-            #     imp.Block(BuckConverter(output_voltage=12*Volt(tol=0.05))),  # 12V Voltage Regulator
-            #     imp.Block(ProtectionZenerDiode(voltage=(12.7, 14.0)*Volt)),  # Zener Diode for protection
-            #     self.Block(VoltageTestPoint()),  # Voltage test point
-            # )
-            # self.v12 = self.connect(self.reg_12v.pwr_out)  # Connecting the output of 12V regulator
+            (self.reg_12v, self.prot_12v, self.tp_12v), _ = self.chain(
+                self.vbatt,
+                imp.Block(BuckConverter(output_voltage=12*Volt(tol=0.05))),  # 12V Voltage Regulator
+                imp.Block(ProtectionZenerDiode(voltage=(12.5, 14.0)*Volt)),  # Zener Diode for protection
+                self.Block(VoltageTestPoint()),  # Voltage test point
+            )
+            self.v12 = self.connect(self.reg_12v.pwr_out)  # Connecting the output of 12V regulator
 
+            # TODO: Chain for 5V power regulation
+            (self.reg_5v, self.prot_5v, self.tp_5v), _ = self.chain(
+                self.vbatt,
+                imp.Block(BuckConverter(output_voltage=5*Volt(tol=0.05))),  # 12V Voltage Regulator
+                imp.Block(ProtectionZenerDiode(voltage=(5.5, 6.0)*Volt)),  # Zener Diode for protection
+                self.Block(VoltageTestPoint()),  # Voltage test point
+            )
+            self.v5 = self.connect(self.reg_5v.pwr_out)  # Connecting the output of 12V regulator
 
-            # # Chain for battery charging
-            # (self.charger, ), _ = self.chain(
-            #     self.vusb, imp.Block(Mcp73831(200*mAmp(tol=0.2))), self.batt.chg  # Battery charger MCP73831
-            # )
-            # # Chain for the charging LED
-            # (self.charge_led, ), _ = self.chain(
-            #     self.Block(IndicatorSinkLed(Led.Yellow)), self.charger.stat  # Yellow LED to indicate charging
-            # )
-            # self.connect(self.vusb, self.charge_led.pwr)  # Connecting the power for the charge LED
 
         # 3V3 DOMAIN section begins
         with self.implicit_connect(
@@ -107,10 +85,9 @@ class Estop(JlcBoardTop):
                 self.i2c,
                 imp.Block(I2cPullup()), imp.Block(I2cTestPoint('i2c')),)
 
-            # IO Expander setup
-            self.expander = imp.Block(Pca9554())
-            self.connect(self.i2c, self.expander.i2c)
-
+            # # IO Expander setup
+            # self.expander = imp.Block(Pca9554())
+            # self.connect(self.i2c, self.expander.i2c)
 
             # TODO: Check: Directional switch: 5 buttons
             self.dir = imp.Block(DigitalDirectionSwitch())
@@ -121,7 +98,8 @@ class Estop(JlcBoardTop):
             self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.mcu.gpio.request('dir_cen'))
 
             # Chain for RGB LED
-            (self.rgb, ), _ = self.chain(self.expander.io.request_vector('rgb'), imp.Block(IndicatorSinkRgbLed()))
+            (self.led, ), _ = self.chain(self.mcu.gpio.request('led'), imp.Block(IndicatorLed(Led.Red)))
+
 
             # OLED display setup
             self.oled = imp.Block(Er_Oled_096_1_1())
@@ -135,13 +113,9 @@ class Estop(JlcBoardTop):
                 self.mcu.adc.request('vbatt_sense')
             )
 
-            # Connecting power gate control to MCU
-            # self.chain(self.gate.btn_out, self.mcu.gpio.request('sw0'))
-            # self.chain(self.mcu.gpio.request('gate_control'), self.gate.control)
-
         # Speaker
         with self.implicit_connect(
-            ImplicitConnect(self.vusb, [Power]),
+            ImplicitConnect(self.v3v3, [Power]),
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             (self.spk_drv, self.spk), _ = self.chain(
@@ -163,12 +137,24 @@ class Estop(JlcBoardTop):
         self.connect(self.jst_3v3.pins.request('2').adapt_to(VoltageSink()), self.reg_3v3.pwr_out)
         self.connect(self.jst_3v3.pins.request('1').adapt_to(Ground()), self.gnd)
 
+        #TODO: 5v devices
+        with self.implicit_connect(
+                ImplicitConnect(self.v5, [Power]),  # Implicitly connecting to the 3.3V power line
+                ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting to common ground
+        ) as imp:
+            (self.npx, ), _ = self.chain(self.mcu.gpio.request('npx'), imp.Block(Neopixel()))
 
-        #TODO: mosfet
+            self.jst_5v = self.Block(PassiveConnector(length=2))   # lenth number of pins (auto allocate?
+            self.connect(self.jst_5v.pins.request('2').adapt_to(VoltageSink()), self.v5)
+            self.connect(self.jst_5v.pins.request('1').adapt_to(Ground()), self.gnd)
+
+
+
+    #TODO: mosfet
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common])
         ) as imp:
-            self.mosfet = imp.Block(HighSideSwitch())
+            self.mosfet = imp.Block(HighSideSwitch(clamp_voltage=(14, 17)*Volt))
             self.connect(self.mosfet.pwr, self.batt.pwr)
             self.connect(self.mosfet.control, self.mcu.gpio.request('mosfet'))
 
@@ -182,12 +168,16 @@ class Estop(JlcBoardTop):
                 resistance=0.01*Ohm(tol=0.01),
                 ratio=Range.from_tolerance(15, 0.05),
                 input_impedance=20*kOhm(tol=0.05)
-                )
+                ))
+            (self.cbatt_sense_tp, self.cbatt_sense_clamp), _ = self.chain(
+                self.cbatt_sense.out,
+                self.Block(AnalogTestPoint()),
+                imp.Block(AnalogClampZenerDiode((2.7, 3.3)*Volt)),
+                self.mcu.adc.request('cbatt_sense')
             )
 
             self.connect(self.cbatt_sense.pwr_in, self.mosfet.output)
             self.connect(self.cbatt_sense.ref, self.batt.gnd.as_analog_source())
-            self.connect(self.cbatt_sense.out, self.mcu.adc.request('cbatt_sense'))
 
         #TODO: Check: Power output pins
         self.jst_out = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
@@ -195,6 +185,21 @@ class Estop(JlcBoardTop):
         #self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink()), self.mosfet.output)
         self.connect(self.jst_out.pins.request('1').adapt_to(Ground()), self.gnd)
 
+        #TODO:
+        n_lipo_pins = 6
+        self.lipo_pins = self.Block(PassiveConnector(length=n_lipo_pins+1))   # lenght number of pins auto allocate?
+        self.connect(self.lipo_pins.pins.request('1').adapt_to(Ground()), self.gnd)
+        self.v_sense = ElementDict[Connector]()
+
+        with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common])
+        ) as imp:
+            for i in range(n_lipo_pins):
+                (self.v_sense[i], ), _ = self.chain(
+                    self.lipo_pins.pins.request(str(i+2)).adapt_to(VoltageSource(voltage_out=(0.0, 5.0))),
+                    imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+                    self.mcu.adc.request(f'v_sense_{i+2}')
+                )
 
 
 # Method to define refinements for the PCB design
@@ -206,6 +211,7 @@ class Estop(JlcBoardTop):
                 # These define particular models or types for the components used in the design
                 (['mcu'], Esp32s3_Wroom_1),
                 (['reg_12v'], Tps54202h),
+                (['reg_5v'], Tps54202h),
                 (['reg_3v3'], Tps54202h),
                 (['reg_2v5'], Xc6206p),
                 (['reg_1v2'], Xc6206p),
