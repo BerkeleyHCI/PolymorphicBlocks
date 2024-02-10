@@ -20,9 +20,25 @@ class Estop(JlcBoardTop):
 
         # Adding a LiPo battery connector with a specified voltage range
         self.batt = self.Block(LipoConnector(voltage=(7.4, 28)*Volt, actual_voltage=(7.4, 28)*Volt, current_limits=(0.0, 20.0)*Amp))
-        self.vbatt = self.connect(self.batt.pwr)
 
-        # Creating a merged voltage source from the USB and battery ground
+        # Optional XT90 port
+        # self.lipo_xt90_in = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
+        # self.connect(self.lipo_xt90_in.pins.request('1').adapt_to(Ground()))
+
+        self.jst_aabatt = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
+        self.connect(self.jst_aabatt.pins.request('1').adapt_to(Ground()))
+        # Note: In reality, this is 3* AA batteries. but to avoid all complaints, set it same as the normal voltage
+        # 12v, 5v, 4v lines are capped at 4.5v
+        # self.aavbat = self.connect()
+        self.batt_merge = self.Block(MergedVoltageSource()).connected_from(
+            self.batt.pwr,
+            # self.lipo_xt90_in.pins.request('2').adapt_to(VoltageSource(voltage_out=(7.4, 28)*Volt)),
+            self.jst_aabatt.pins.request('2').adapt_to(VoltageSource(voltage_out=(7.4, 28)*Volt))
+        )
+        self.vbatt = self.connect(self.batt_merge.pwr_out)
+
+
+    # Creating a merged voltage source from the USB and battery ground
         self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
             self.usb.gnd, self.batt.gnd
         )
@@ -98,11 +114,11 @@ class Estop(JlcBoardTop):
 
             # TODO: Check: Directional switch: 5 buttons
             self.dir = imp.Block(DigitalDirectionSwitch())
-            self.connect(self.dir.a, self.mcu.gpio.request('dir_a'))
-            self.connect(self.dir.b, self.mcu.gpio.request('dir_b'))
-            self.connect(self.dir.c, self.mcu.gpio.request('dir_c'))
-            self.connect(self.dir.d, self.mcu.gpio.request('dir_d'))
-            self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.mcu.gpio.request('dir_cen'))
+            self.connect(self.dir.a, self.expander.io.request('dir_a'))
+            self.connect(self.dir.b, self.expander.io.request('dir_b'))
+            self.connect(self.dir.c, self.expander.io.request('dir_c'))
+            self.connect(self.dir.d, self.expander.io.request('dir_d'))
+            self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.expander.io.request('dir_cen'))
 
             # Chain for RGB LED
             (self.led, ), _ = self.chain(self.mcu.gpio.request('led'), imp.Block(IndicatorLed(Led.Red)))
@@ -163,7 +179,7 @@ class Estop(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
             ImplicitConnect(self.vbatt, [Power])
         ) as imp:
-            self.mosfet = imp.Block(HighSideSwitch(clamp_voltage=(14, 17)*Volt))
+            self.mosfet = imp.Block(HighSideSwitch(clamp_voltage=(14, 16)*Volt))
             self.connect(self.mosfet.control, self.mcu.gpio.request('mosfet'))
 
             # Chain for battery voltage sensing
@@ -188,8 +204,7 @@ class Estop(JlcBoardTop):
 
             self.connect(self.cPc_sense.pwr_in, self.vbatt)
             self.connect(self.cPc_sense.ref, self.batt.gnd.as_analog_source())
-            #
-            #
+
             # Have pass thorough for PC
             self.vbatt_pin = imp.Block(PassiveConnector(2))
             self.connect(self.vbatt_pin.pins.request('1').adapt_to(Ground()))
@@ -214,6 +229,7 @@ class Estop(JlcBoardTop):
                 ratio=Range.from_tolerance(15, 0.05),
                 input_impedance=20*kOhm(tol=0.05)
                 ))
+
             (self.cbatt_sense_tp, self.cbatt_sense_clamp), _ = self.chain(
                 self.cbatt_sense.out,
                 self.Block(AnalogTestPoint()),
@@ -226,7 +242,7 @@ class Estop(JlcBoardTop):
 
         #TODO: Check: Power output pins
         self.jst_out = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
-        self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink()), self.cbatt_sense.pwr_out)
+        self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink(current_draw=28*Amp)), self.cbatt_sense.pwr_out)
         self.connect(self.jst_out.pins.request('1').adapt_to(Ground()), self.gnd)
 
         #TODO:
@@ -245,17 +261,13 @@ class Estop(JlcBoardTop):
                     self.mcu.adc.request(f'v_sense_{i+1}')
                 )
 
-        with self.implicit_connect(
-            ImplicitConnect(self.gnd, [Common]),
-            ImplicitConnect(self.v3v3, [Power])
-        ) as imp:
 
-            self.jst_estop = self.Block(PassiveConnector(length=6))   # lenth number of pins auto allocate?
-            self.connect(self.jst_estop.pins.request('1').adapt_to(Ground()))
-            self.connect(self.jst_estop.pins.request('2').adapt_to(DigitalSource()), self.expander.io.request('sw_estop'))
-            self.connect(self.jst_estop.pins.request('3').adapt_to(DigitalSource()), self.expander.io.request('led_estop'))
-            self.connect(self.jst_estop.pins.request('4').adapt_to(DigitalSource()), self.expander.io.request('sw_nonestop'))
-            self.connect(self.jst_estop.pins.request('5').adapt_to(DigitalSource()), self.expander.io.request('led_nonestop'))
+        self.jst_estop = self.Block(PassiveConnector(length=6))   # lenth number of pins auto allocate?
+        self.connect(self.jst_estop.pins.request('1').adapt_to(Ground()))
+        self.connect(self.jst_estop.pins.request('2').adapt_to(DigitalSource()), self.mcu.gpio.request('sw_estop'))
+        self.connect(self.jst_estop.pins.request('3').adapt_to(DigitalSource()), self.mcu.gpio.request('led_estop'))
+        self.connect(self.jst_estop.pins.request('4').adapt_to(DigitalSource()), self.mcu.gpio.request('sw_nonestop'))
+        self.connect(self.jst_estop.pins.request('5').adapt_to(DigitalSource()), self.mcu.gpio.request('led_nonestop'))
 
 
 
@@ -285,6 +297,8 @@ class Estop(JlcBoardTop):
                 (['jst_out'], JstPhKHorizontal),
                 (['lipo_pins'], JstPhKHorizontal),
                 (['vbatt_pin'], JstPhKHorizontal),
+                (['jst_aabatt'], JstPhKVertical),
+                (['lipo_xt90_in'], JstPhKVertical),
             ],
             instance_values=[
                 # Specific value assignments for various component parameters
@@ -299,10 +313,16 @@ class Estop(JlcBoardTop):
                 (['reg_4v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
                 (['reg_5v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
                 (['reg_12v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
-
+                (['reg_4v', 'power_path', 'in_cap', 'cap','exact_capacitance'], False),
+                (['reg_5v', 'power_path', 'in_cap', 'cap','exact_capacitance'], False),
+                (['reg_3v3v', 'power_path', 'in_cap', 'cap','exact_capacitance'], False),
+                (['reg_12v', 'power_path', 'in_cap', 'cap', 'exact_capacitance '], False),
 
                 (['batt', 'conn', 'fp_footprint', ], 'Connector_AMASS:AMASS_XT60IPW-M_1x03_P7.20mm_Horizontal'),
                 (['jst_out', 'fp_footprint', ], 'Connector_AMASS:AMASS_XT60IPW-M_1x03_P7.20mm_Horizontal'),
+                (['vbatt_pin', 'fp_footprint', ], 'Connector_AMASS:AMASS_XT60IPW-M_1x03_P7.20mm_Horizontal'),
+                (['lipo_xt90_in', 'fp_footprint', ], 'Connector_Custom:AMASS_XT90PW-M'),
+
 
             ],
             class_refinements=[
