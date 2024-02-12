@@ -173,7 +173,6 @@ class Estop(JlcBoardTop):
             self.connect(self.jst_5v.pins.request('1').adapt_to(Ground()), self.gnd)
 
 
-
         #TODO: mosfet
         with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
@@ -223,26 +222,28 @@ class Estop(JlcBoardTop):
                 self.mcu.adc.request('vbatt_sense')
             )
 
-            #TODO: Check: Current Sensor
-            self.cbatt_sense = imp.Block(OpampCurrentSensor(
-                resistance=0.01*Ohm(tol=0.01),
-                ratio=Range.from_tolerance(15, 0.05),
-                input_impedance=20*kOhm(tol=0.05)
-                ))
+            # #TODO: Check: Current Sensor
+            # self.cbatt_sense = imp.Block(OpampCurrentSensor(
+            #     resistance=0.01*Ohm(tol=0.01),
+            #     ratio=Range.from_tolerance(15, 0.05),
+            #     input_impedance=20*kOhm(tol=0.05)
+            #     ))
+            #
+            # (self.cbatt_sense_tp, self.cbatt_sense_clamp), _ = self.chain(
+            #     self.cbatt_sense.out,
+            #     self.Block(AnalogTestPoint()),
+            #     imp.Block(AnalogClampZenerDiode((2.7, 3.3)*Volt)),
+            #     self.mcu.adc.request('cbatt_sense')
+            # )
 
-            (self.cbatt_sense_tp, self.cbatt_sense_clamp), _ = self.chain(
-                self.cbatt_sense.out,
-                self.Block(AnalogTestPoint()),
-                imp.Block(AnalogClampZenerDiode((2.7, 3.3)*Volt)),
-                self.mcu.adc.request('cbatt_sense')
-            )
+            self.cbatt_sense = self.Block(Ina139(resistor_shunt=0.001*Ohm(tol=0.05), gain=100))
 
             self.connect(self.cbatt_sense.pwr_in, self.mosfet.output)
             self.connect(self.cbatt_sense.ref, self.mosfet.gnd.as_analog_source())
 
         #TODO: Check: Power output pins
         self.jst_out = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
-        self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink(current_draw=28*Amp)), self.cbatt_sense.pwr_out)
+        self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink(current_draw=5*Amp)), self.cbatt_sense.pwr_out)
         self.connect(self.jst_out.pins.request('1').adapt_to(Ground()), self.gnd)
 
         #TODO:
@@ -308,6 +309,14 @@ class Estop(JlcBoardTop):
                 #     "i2c.scl=38",
                 #     "i2c.sda=4",
                 # ]),
+                (['expander', 'pin_assigns'], [
+                    "dir_cen=6",
+                    "dir_a=7",
+                    "dir_b=10",
+                    "dir_c=5",
+                    "dir_d=11",
+                    "npx=9",
+                ]),
                 (['cbatt_sense', 'sense', 'res', 'res', 'require_basic_part'], False),
                 (['cPc_sense', 'sense', 'res', 'res', 'require_basic_part'], False),
                 (['reg_4v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),

@@ -150,6 +150,7 @@ from .EnvironmentalSensor_Bme680 import Bme680
 from .EnvironmentalSensor_Ti import Hdc1080, Tmp1075n
 from .LightSensor_Bh1750 import Bh1750
 from .LightSensor_As7341 import As7341
+from .Ina139 import Ina139, Ina139_Device
 
 from .LedMatrix import CharlieplexedLedMatrix
 from .SwitchMatrix import SwitchMatrix
