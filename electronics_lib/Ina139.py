@@ -6,7 +6,7 @@ FOOTPRINT = 'footprint'
 INA1x9_PARAM = dict(
     Ina139={VOLTAGE_LIMIT:(2.7, 40)*Volt,
             FOOTPRINT:dict(
-                    refdes='U', footprint='Custom:SOT95P280X145-5N',
+                    refdes='U', footprint='edg:SOT95P280X145-5N',
                     mfr='Texas Instruments', 
                     part='INA139',
                     datasheet='https://www.ti.com/product/INA139'
@@ -14,7 +14,7 @@ INA1x9_PARAM = dict(
             },
     Ina169={VOLTAGE_LIMIT:(2.7, 60)*Volt,
             FOOTPRINT:dict(
-                refdes='U', footprint='Custom:SOT95P280X145-5N',
+                refdes='U', footprint='edg:SOT95P280X145-5N',
                 mfr='Texas Instruments',
                 part='INA169',
                 datasheet='https://www.ti.com/product/INA169'
