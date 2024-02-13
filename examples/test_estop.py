@@ -229,22 +229,27 @@ class Estop(JlcBoardTop):
             #     input_impedance=20*kOhm(tol=0.05)
             #     ))
             #
+
+        with self.implicit_connect(
+                ImplicitConnect(self.v3v3, [Power]),  # Implicitly connecting to the 3.3V power line
+                ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting to common ground
+        ) as imp:
+            self.cbatt_sense = imp.Block(Ina139WithBuffer(resistor_shunt=0.001*Ohm(tol=0.05), gain=Range.from_tolerance(100, 0.1)))
+            self.connect(self.cbatt_sense.pwr_in, self.mosfet.output)
+            self.connect(self.cbatt_sense.out, self.mcu.adc.request('cbatt_sense'))
             # (self.cbatt_sense_tp, self.cbatt_sense_clamp), _ = self.chain(
             #     self.cbatt_sense.out,
             #     self.Block(AnalogTestPoint()),
-            #     imp.Block(AnalogClampZenerDiode((2.7, 3.3)*Volt)),
+            #     imp.Block(AnalogClampZenerDiode((2.5, 3.3)*Volt)),
             #     self.mcu.adc.request('cbatt_sense')
             # )
 
-            self.cbatt_sense = self.Block(Ina169(resistor_shunt=0.001*Ohm(tol=0.05), gain=100))
+            # self.connect(self.reg_3v3.pwr_out, self.cbatt_sense.pwr_buffer)
 
-            self.connect(self.cbatt_sense.pwr_in, self.mosfet.output)
-            self.connect(self.cbatt_sense.pwr_logic, self.v3v3)
-            self.connect(self.cbatt_sense.out, self.mcu.adc.request('cbatt_sense'))
 
-        #TODO: Check: Power output pins
+    #TODO: Check: Power output pins
         self.jst_out = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
-        self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink(current_draw=5*Amp)), self.cbatt_sense.pwr_out)
+        self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink(current_draw=1*Amp)), self.cbatt_sense.pwr_out)
         self.connect(self.jst_out.pins.request('1').adapt_to(Ground()), self.gnd)
 
         #TODO:
@@ -300,6 +305,7 @@ class Estop(JlcBoardTop):
                 (['vbatt_pin'], JstPhKHorizontal),
                 (['jst_aabatt'], JstPhKVertical),
                 (['lipo_xt90_in'], JstPhKVertical),
+                (['cbatt_sense', 'opa'], Tlv9061)
             ],
             instance_values=[
                 # Specific value assignments for various component parameters
@@ -331,6 +337,7 @@ class Estop(JlcBoardTop):
                 (['jst_out', 'fp_footprint', ], 'Connector_AMASS:AMASS_XT60IPW-M_1x03_P7.20mm_Horizontal'),
                 (['vbatt_pin', 'fp_footprint', ], 'Connector_AMASS:AMASS_XT60IPW-M_1x03_P7.20mm_Horizontal'),
                 (['lipo_xt90_in', 'fp_footprint', ], 'Connector_Custom:AMASS_XT90PW-M'),
+
 
 
             ],
