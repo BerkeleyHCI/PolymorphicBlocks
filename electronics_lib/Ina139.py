@@ -1,5 +1,4 @@
 from edg import *  # Importing all from the 'edg' library for electronics design
-
 from typing import Dict, Type
 
 VOLTAGE_LIMIT = 'voltage_limits'
@@ -49,7 +48,7 @@ class Ina1x9_Device(FootprintBlock):
         **self.DEV_PARAM[FOOTPRINT])
 
 @non_library
-class Ina1x9(Sensor, Block):
+class Ina1x9Base(Sensor, Block):
     DEVICE: Type[Ina1x9_Device]
     @init_in_parent
     def __init__(self, resistor_shunt: RangeLike, gain: FloatLike) -> None:
@@ -64,7 +63,7 @@ class Ina1x9(Sensor, Block):
 
         self.pwr_logic = self.Export(self.ic.vplus, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
-        self.out = self.Export(self.ic.vout)
+
 
     def contents(self):
         self.connect(self.ic.vin_plus, self.Rs.sense_in)
@@ -74,7 +73,14 @@ class Ina1x9(Sensor, Block):
         self.connect(self.Rl.b.adapt_to(VoltageSink()), self.gnd)
 
 @non_library
-class Ina1x9WithBuffer(Ina1x9):
+class Ina1x9(Ina1x9Base):
+    @init_in_parent
+    def __init__(self, resistor_shunt: RangeLike, gain: FloatLike):
+        super().__init__(resistor_shunt, gain)
+        self.out = self.Export(self.ic.vout)
+
+@non_library
+class Ina1x9WithBuffer(Ina1x9Base):
     @init_in_parent
     def __init__(self, resistor_shunt: RangeLike, gain: FloatLike) -> None:
         # Instantiate the INA139 device
@@ -111,34 +117,5 @@ class Ina139WithBuffer(Ina1x9WithBuffer):
     DEVICE = Ina139_Device
 
 
-# class Ina139WithBuffer(Sensor, Block):
-#     @init_in_parent
-#     def __init__(self, resistor_shunt: RangeLike, gain: FloatLike) -> None:
-#         super().__init__()
-#         # Instantiate the INA139 device
-#         self.ic = self.Block(Ina139_Device())
-#         self.Rs = self.Block(CurrentSenseResistor(resistance=resistor_shunt) )# 0.001Ohm -> 35A, 0.1Ohm -> 3.5A, 1Ohm -> 0.35A
-#         self.Rl = self.Block(Resistor(resistance=(gain * 0.95, gain * 1.05)))
-#         self.opa = self.Block(Opamp())
-#
-#         self.vin_plus = self.Export(self.Rs.pwr_in)
-#         self.vin_minus = self.Export(self.Rs.pwr_out)
-#
-#         self.vplus = self.Export(self.ic.vplus, [Power])
-#         self.gnd = self.Export(self.ic.gnd, [Common])
-#         self.out = self.Export(self.opa.out)
-#         self.inn = self.Export(self.opa.inn)
-#
-#     def contents(self):
-#         self.connect(self.ic.vin_plus, self.Rs.sense_in)
-#         self.connect(self.ic.vin_minus, self.Rs.sense_out)
-#
-#         self.connect(self.Rl.a.adapt_to(AnalogSink()), self.ic.vout)
-#         self.connect(self.Rl.b.adapt_to(VoltageSink()), self.gnd)
-#
-#         self.connect(self.opa.pwr, self.ic.vplus)
-#         self.connect(self.opa.gnd, self.ic.gnd)
-#         # self.connect(self.opa.inn), self.gnd.as_analog_source()
-#         self.connect(self.opa.inp, self.ic.vout)
-
-
+class Ina169WithBuffer(Ina1x9WithBuffer):
+    DEVICE = Ina169_Device
