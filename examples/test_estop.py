@@ -236,10 +236,11 @@ class Estop(JlcBoardTop):
             #     self.mcu.adc.request('cbatt_sense')
             # )
 
-            self.cbatt_sense = self.Block(Ina139(resistor_shunt=0.001*Ohm(tol=0.05), gain=100))
+            self.cbatt_sense = self.Block(Ina169(resistor_shunt=0.001*Ohm(tol=0.05), gain=100))
 
             self.connect(self.cbatt_sense.pwr_in, self.mosfet.output)
-            self.connect(self.cbatt_sense.ref, self.mosfet.gnd.as_analog_source())
+            self.connect(self.cbatt_sense.pwr_logic, self.v3v3)
+            self.connect(self.cbatt_sense.out, self.mcu.adc.request('cbatt_sense'))
 
         #TODO: Check: Power output pins
         self.jst_out = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
@@ -261,7 +262,6 @@ class Estop(JlcBoardTop):
                     imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
                     self.mcu.adc.request(f'v_sense_{i+1}')
                 )
-
 
         self.jst_estop = self.Block(PassiveConnector(length=6))   # lenth number of pins auto allocate?
         self.connect(self.jst_estop.pins.request('1').adapt_to(Ground()))
