@@ -234,7 +234,7 @@ class Estop(JlcBoardTop):
                 ImplicitConnect(self.v3v3, [Power]),  # Implicitly connecting to the 3.3V power line
                 ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting to common ground
         ) as imp:
-            self.cbatt_sense = imp.Block(Ina139WithBuffer(resistor_shunt=0.001*Ohm(tol=0.05), gain=Range.from_tolerance(100, 0.1)))
+            self.cbatt_sense = imp.Block(Ina139WithBuffer(resistor_shunt=0.0047*Ohm(tol=0.05), gain=Range.from_tolerance(100, 0.1)))
             self.connect(self.cbatt_sense.pwr_in, self.mosfet.output)
             self.connect(self.cbatt_sense.out, self.mcu.adc.request('cbatt_sense'))
             # (self.cbatt_sense_tp, self.cbatt_sense_clamp), _ = self.chain(
@@ -249,7 +249,7 @@ class Estop(JlcBoardTop):
 
     #TODO: Check: Power output pins
         self.jst_out = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
-        self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink(current_draw=1*Amp)), self.cbatt_sense.pwr_out)
+        self.connect(self.jst_out.pins.request('2').adapt_to(VoltageSink(current_draw=20*Amp)), self.cbatt_sense.pwr_out)
         self.connect(self.jst_out.pins.request('1').adapt_to(Ground()), self.gnd)
 
         #TODO:
@@ -305,7 +305,8 @@ class Estop(JlcBoardTop):
                 (['vbatt_pin'], JstPhKHorizontal),
                 (['jst_aabatt'], JstPhKVertical),
                 (['lipo_xt90_in'], JstPhKVertical),
-                (['cbatt_sense', 'opa'], Tlv9061)
+                (['cbatt_sense', 'opa', 'amp'], Tlv9061),
+                (['cbatt_sense', 'Rs', 'res', 'res'], GenericAxialResistor)
             ],
             instance_values=[
                 # Specific value assignments for various component parameters
@@ -323,7 +324,7 @@ class Estop(JlcBoardTop):
                     "dir_d=11",
                     "npx=9",
                 ]),
-                (['cbatt_sense', 'sense', 'res', 'res', 'require_basic_part'], False),
+                (['cbatt_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
                 (['cPc_sense', 'sense', 'res', 'res', 'require_basic_part'], False),
                 (['reg_4v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
                 (['reg_5v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),

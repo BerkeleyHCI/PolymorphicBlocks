@@ -65,7 +65,7 @@ class Ina1x9Base(Sensor, Block):
         self.gnd = self.Export(self.ic.gnd, [Common])
 
         self.v_signal = self.pwr_out.link().current_drawn * self.Rs.actual_resistance * 1e3*1e-6 * self.Rl.actual_resistance
-        self.vout = self.ic.vout.adapt_to(AnalogSink(signal_limits=self.v_signal))
+        self.vout = self.ic.vout.adapt_to(AnalogSource())
 
     def contents(self):
         self.connect(self.ic.vin_plus, self.Rs.sense_in)
@@ -88,16 +88,16 @@ class Ina1x9WithBuffer(Ina1x9Base):
     def __init__(self, resistor_shunt: RangeLike, gain: RangeLike) -> None:
         # Instantiate the INA139 device
         super().__init__(resistor_shunt, gain)
-        self.opa = self.Block(Opamp())
-        self.out = self.Export(self.opa.out)
+        self.opa = self.Block(OpampFollower())
+        self.out = self.Export(self.opa.output)
         # self.pwr_buffer = self.Export(self.opa.pwr)
 
     def contents(self):
         super().contents()
         self.connect(self.opa.pwr, self.ic.vplus)
         self.connect(self.opa.gnd, self.ic.gnd)
-        self.connect(self.opa.inp, self.vout)
-        self.connect(self.opa.inn, self.opa.out)
+        self.connect(self.opa.input, self.vout)
+        # self.connect(self.opa.inn, self.opa.output)
 
 
 class Ina139_Device(Ina1x9_Device):
