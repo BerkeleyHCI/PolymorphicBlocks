@@ -178,7 +178,7 @@ class Estop(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
             ImplicitConnect(self.vbatt, [Power])
         ) as imp:
-            self.mosfet = imp.Block(HighSideSwitch(clamp_voltage=(14, 16)*Volt))
+            self.mosfet = imp.Block(HighSideSwitch(clamp_voltage=(7, 10)*Volt))
             self.connect(self.mosfet.control, self.mcu.gpio.request('mosfet'))
 
             # Chain for battery voltage sensing
@@ -263,17 +263,25 @@ class Estop(JlcBoardTop):
         ) as imp:
             for i in range(n_lipo_pins):
                 (self.v_sense[i], ), _ = self.chain(
-                    self.lipo_pins.pins.request(str(i+2)).adapt_to(VoltageSource(voltage_out=(0.0, 5.0))),
+                    self.lipo_pins.pins.request(str(i+2)).adapt_to(VoltageSource(voltage_out=(0.0, 4.5 * (i+1.0)))),
                     imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
                     self.mcu.adc.request(f'v_sense_{i+1}')
                 )
 
         self.jst_estop = self.Block(PassiveConnector(length=6))   # lenth number of pins auto allocate?
-        self.connect(self.jst_estop.pins.request('1').adapt_to(Ground()))
-        self.connect(self.jst_estop.pins.request('2').adapt_to(DigitalSource()), self.mcu.gpio.request('sw_estop'))
-        self.connect(self.jst_estop.pins.request('3').adapt_to(DigitalSource()), self.mcu.gpio.request('led_estop'))
-        self.connect(self.jst_estop.pins.request('4').adapt_to(DigitalSource()), self.mcu.gpio.request('sw_nonestop'))
-        self.connect(self.jst_estop.pins.request('5').adapt_to(DigitalSource()), self.mcu.gpio.request('led_nonestop'))
+        self.connect(self.jst_estop.pins.request('1').adapt_to(Ground()), self.gnd)
+        self.connect(self.jst_estop.pins.request('2').adapt_to(VoltageSink()), self.v5)
+        self.connect(self.jst_estop.pins.request('3').adapt_to(DigitalSource()), self.mcu.gpio.request('sw_estop'))
+        self.connect(self.jst_estop.pins.request('4').adapt_to(DigitalSource()), self.mcu.gpio.request('led_estop'))
+        self.connect(self.jst_estop.pins.request('5').adapt_to(DigitalSource()), self.mcu.gpio.request('sw_nonestop'))
+        self.connect(self.jst_estop.pins.request('6').adapt_to(DigitalSource()), self.mcu.gpio.request('led_nonestop'))
+
+
+        # Mounting holes
+        self.m = ElementDict[MountingHole]()
+        for i in range(4):
+            self.m[i] = self.Block(MountingHole())
+
 
 
 
@@ -296,6 +304,7 @@ class Estop(JlcBoardTop):
                 (['spk', 'conn'], JstPhKVertical),
                 (['batt', 'conn'], JstPhKVertical),
 
+
                (['jst_estop'], JstPhKVertical),
                 (['jst_12v'], JstPhKHorizontal),
                 (['jst_5v'], JstPhKHorizontal),
@@ -307,15 +316,27 @@ class Estop(JlcBoardTop):
                 (['lipo_xt90_in'], JstPhKVertical),
                 (['cbatt_sense', 'opa', 'amp'], Tlv9061),
                 (['cbatt_sense', 'Rs', 'res', 'res'], GenericAxialResistor)
+
             ],
             instance_values=[
                 # Specific value assignments for various component parameters
                 # These customize component features like pin assignments, diode footprints, etc.
-                # (['mcu', 'pin_assigns'], [
-                #     "i2c=I2CEXT0",
-                #     "i2c.scl=38",
-                #     "i2c.sda=4",
-                # ]),
+                (['mcu', 'pin_assigns'], [
+                    # "i2c=I2CEXT0",
+                    # "i2c.scl=38",
+                    # "i2c.sda=4",
+                    "sw_estop=35",
+                    "led_estop=34",
+                    "sw_nonestop=33",
+                    "led_nonestop=32",
+                    "led=9",
+                    "pwr=8",
+                    "oled_reset=19"
+
+
+
+
+                ]),
                 (['expander', 'pin_assigns'], [
                     "dir_cen=6",
                     "dir_a=7",
@@ -338,7 +359,14 @@ class Estop(JlcBoardTop):
                 (['jst_out', 'fp_footprint', ], 'Connector_AMASS:AMASS_XT60IPW-M_1x03_P7.20mm_Horizontal'),
                 (['vbatt_pin', 'fp_footprint', ], 'Connector_AMASS:AMASS_XT60IPW-M_1x03_P7.20mm_Horizontal'),
                 (['lipo_xt90_in', 'fp_footprint', ], 'Connector_Custom:AMASS_XT90PW-M'),
-
+                (['prot_4v', 'diode', 'part'],
+                    "TCLLZ5V6TR",
+                    ),
+                (['cPc_sense_clamp', 'diode', 'part'],
+                    "TCLLZ3V0TR",
+                   )
+                # (['mosfet', 'drv', 'fp_footprint'], 'Package_SO:PowerPAK_SO-8_Single'),
+                # (['mosfet', 'drv', 'lcsc_part'], 'SI7149DP-T1-GE3'),
 
 
             ],
@@ -348,6 +376,7 @@ class Estop(JlcBoardTop):
                 (DirectionSwitch, Skrh),            # TODO: Check which one to use?
                 (Speaker, ConnectorSpeaker),
                 (Opamp, Opa197),
+                (MountingHole, MountingHole_M2_5),
             ],
             class_values=[
                 # Class-level value settings for components

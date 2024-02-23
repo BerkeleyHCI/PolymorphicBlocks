@@ -8,7 +8,7 @@ INA1x9_PARAM = dict(
             FOOTPRINT:dict(
                     refdes='U', footprint='edg:SOT95P280X145-5N',
                     mfr='Texas Instruments', 
-                    part='INA139',
+                    part='INA139NA/3K',
                     datasheet='https://www.ti.com/product/INA139'
                 )
             },
@@ -16,7 +16,7 @@ INA1x9_PARAM = dict(
             FOOTPRINT:dict(
                 refdes='U', footprint='edg:SOT95P280X145-5N',
                 mfr='Texas Instruments',
-                part='INA169',
+                part='INA169NA/3K',
                 datasheet='https://www.ti.com/product/INA169'
             )
             },
