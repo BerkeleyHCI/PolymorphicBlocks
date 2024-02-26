@@ -16,7 +16,7 @@ from .Ground import Ground, GroundSource, Common
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource, DigitalLink
 from .DigitalPorts import DigitalBidirAdapterOpenDrain, DigitalBidirNotConnected
 from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
-from .TouchPort import TouchDriver, TouchPadPort
+from .TouchPort import TouchDriver, TouchPadPort, FootprintToucbPad
 from .UartPort import UartPort, UartLink
 from .SpiPort import SpiController, SpiPeripheral, SpiLink
 from .SpiPort import SpiMaster, SpiSlave  # legacy names
