@@ -108,6 +108,8 @@ class BaseIoController(PinMappable, InternalBlock, Block):
         )
       elif isinstance(io_port, AnalogSink):
         pass  # assumed no current draw into a sink
+      elif isinstance(io_port, TouchDriver):
+        pass  # assumed no current draw
       elif isinstance(io_port, AnalogSource):
         io_current_draw_builder = io_current_draw_builder + (
           io_port.link().current_drawn.lower().min(0), io_port.link().current_drawn.upper().max(0)

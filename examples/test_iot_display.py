@@ -65,6 +65,12 @@ class IotDisplay(JlcBoardTop):
         imp.Block(VoltageSenseDivider(full_scale_voltage=(0, 2.9)*Volt, impedance=(10, 100)*kOhm)),
         self.mcu.adc.request('vbat_sense'))
 
+      mcu_touch = self.mcu.with_mixin(IoControllerTouchDriver())
+      (self.touch_duck, ), _ = self.chain(
+        mcu_touch.touch.request('touch_duck'),
+        imp.Block(FootprintToucbPad('edg:Symbol_DucklingSolid'))
+      )
+
       # DISPLAY
       self.epd = imp.Block(Waveshare_Epd())
       self.connect(self.v3v3, self.epd.pwr)
