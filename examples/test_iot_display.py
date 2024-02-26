@@ -66,13 +66,18 @@ class IotDisplay(JlcBoardTop):
         self.mcu.adc.request('vbat_sense'))
 
       # DISPLAY
-      self.epd = imp.Block(Er_Epd027_2())
+      self.epd = imp.Block(Waveshare_Epd())
       self.connect(self.v3v3, self.epd.pwr)
       self.connect(self.mcu.spi.request('spi'), self.epd.spi)
       self.connect(self.mcu.gpio.request('epd_rst'), self.epd.reset)
       self.connect(self.mcu.gpio.request('epd_dc'), self.epd.dc)
       self.connect(self.mcu.gpio.request('epd_cs'), self.epd.cs)
       self.connect(self.mcu.gpio.request('epd_busy'), self.epd.busy)
+
+      # MISC
+      self.sd = imp.Block(SdCard())
+      self.connect(self.sd.cs, self.mcu.gpio.request('sd_cs'))
+      self.connect(self.mcu.spi.request('sd_spi'), self.sd.spi)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -97,14 +102,16 @@ class IotDisplay(JlcBoardTop):
           # 'spi.miso=NC',
           # 'epd_busy=35',
         ]),
-        (['mcu', 'programming'], 'uart-auto'),
+        (['mcu', 'programming'], 'uart-auto-button'),
 
-        (['reg_3v3', 'power_path', 'inductor', 'part'], "CBC3225T220KR"),
-        (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 17e6)),
+        (['reg_3v3', 'power_path', 'inductor', 'part'], "SWPA4030S330MT"),
+        (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 10e6)),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
         (TestPoint, CompactKeystone5015),
+        (Fpc050Bottom, Fpc050BottomFlip),  # top-contact so board is side-by-side with display
+        (SdCard, Molex1040310811),
       ],
       class_values=[
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
