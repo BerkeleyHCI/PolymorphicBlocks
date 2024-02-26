@@ -9,49 +9,30 @@ class IotDisplay(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    self.usb = self.Block(UsbCReceptacle(current_limits=(0, 3)*Amp))
-    self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
+    BATTERY_VOLTAGE = (4*1.0, 6*1.6)*Volt
 
-    self.vusb = self.connect(self.usb.pwr)
-    self.vbatt = self.connect(self.batt.pwr)
+    self.usb = self.Block(UsbCReceptacle(current_limits=(0, 3)*Amp))
+    self.batt = self.Block(LipoConnector(voltage=BATTERY_VOLTAGE, actual_voltage=BATTERY_VOLTAGE))  # 2-6 AA
+
+    self.vbat = self.connect(self.batt.pwr)
     self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
       self.usb.gnd, self.batt.gnd)
     self.gnd = self.connect(self.gnd_merge.pwr_out)
 
-    self.pwr_or = self.Block(PriorityPowerOr(
-      (0, 1)*Volt, (0, 0.1)*Ohm
-    )).connected_from(self.gnd_merge.pwr_out, self.usb.pwr, self.batt.pwr)
-    self.pwr = self.connect(self.pwr_or.pwr_out)
-
-    self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr_or.pwr_out)
+    self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.batt.pwr)
     self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
 
     # POWER
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.charger, ), _ = self.chain(
-        self.vusb, imp.Block(Mcp73831(200*mAmp(tol=0.2))), self.batt.chg
-      )
-      (self.charge_led, ), _ = self.chain(
-        self.Block(IndicatorSinkLed(Led.Yellow)), self.charger.stat
-      )
-      self.connect(self.vusb, self.charge_led.pwr)
-
       (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
         self.pwr,
-        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
-
-      (self.reg_12v, self.tp_12v), _ = self.chain(
-        self.pwr,
-        imp.Block(BoostConverter(output_voltage=(12, 15)*Volt)),
-        self.Block(VoltageTestPoint())
-      )
-      self.v12 = self.connect(self.reg_12v.pwr_out)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
@@ -72,42 +53,36 @@ class IotDisplay(JlcBoardTop):
       self.sw = ElementDict[DigitalSwitch]()
       for i in range(3):
         (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
-
-      self.oled28 = imp.Block(Er_Oled028_1())
-      self.oled22 = imp.Block(Er_Oled022_1())
       self.epd = imp.Block(Er_Epd027_2())
-      self.connect(self.v3v3, self.oled28.pwr, self.oled22.pwr, self.epd.pwr)
-      self.connect(self.v12, self.oled28.vcc, self.oled22.vcc)
-      self.connect(self.mcu.spi.request('spi'), self.oled28.spi, self.oled22.spi, self.epd.spi)
-      self.connect(self.mcu.gpio.request('oled_rst'), self.oled28.reset, self.oled22.reset, self.epd.reset)
-      self.connect(self.mcu.gpio.request('oled_dc'), self.oled28.dc, self.oled22.dc, self.epd.dc)
-      self.connect(self.mcu.gpio.request('oled_cs'), self.oled28.cs, self.oled22.cs, self.epd.cs)
+      self.connect(self.v3v3, self.epd.pwr)
+      self.connect(self.mcu.spi.request('spi'), self.epd.spi)
+      self.connect(self.mcu.gpio.request('epd_rst'), self.epd.reset)
+      self.connect(self.mcu.gpio.request('epd_dc'), self.epd.dc)
+      self.connect(self.mcu.gpio.request('epd_cs'), self.epd.cs)
       self.connect(self.mcu.gpio.request('epd_busy'), self.epd.busy)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
-        (['reg_3v3'], Ldl1117),
-        (['reg_12v'], Ap3012),
+        (['reg_3v3'], Tps54202h),
         (['batt', 'conn'], JstPhKVertical),
       ],
       instance_values=[
-        (['refdes_prefix'], 'D'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          'ledr=7',
-          'ledg=8',
-          'ledb=9',
-          'sw0=12',
-          'sw1=11',
-          'sw2=10',
-          'oled_rst=38',
-          'oled_cs=31',
-          'oled_dc=32',
-          'spi.sck=33',
-          'spi.mosi=34',
-          'spi.miso=NC',
-          'epd_busy=35',
+          # 'ledr=7',
+          # 'ledg=8',
+          # 'ledb=9',
+          # 'sw0=12',
+          # 'sw1=11',
+          # 'sw2=10',
+          # 'oled_rst=38',
+          # 'oled_cs=31',
+          # 'oled_dc=32',
+          # 'spi.sck=33',
+          # 'spi.mosi=34',
+          # 'spi.miso=NC',
+          # 'epd_busy=35',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
@@ -117,18 +92,12 @@ class IotDisplay(JlcBoardTop):
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
         (TestPoint, CompactKeystone5015),
-        (Fpc050Bottom, Fpc050BottomFlip),
       ],
       class_values=[
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),  # for parts commonality w/ other zeners on panel
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (Diode, ['part'], 'B0520W'),  # autopicked one is OOS, use common one with other diode
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
-
-        (Er_Oled028_1, ["device", "vcc", "voltage_limits"], Range(11.5, 16)),  # abs max ratings instead of recommended
-        (Er_Oled022_1, ["device", "vcc", "voltage_limits"], Range(12, 15)),  # abs max ratings instead of recommended
-        (Er_Oled022_1, ["device", "vcc", "current_draw"], Range(0, 0)),  # only one OLED will be active at any time
-        (Er_Oled022_1, ["iref_res", "resistance"], Range.from_tolerance(820e3, 0.1)),  # use a basic part
       ]
     )
 
