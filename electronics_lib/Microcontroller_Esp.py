@@ -91,6 +91,12 @@ class HasEspProgramming(IoController, GeneratorBlock):
         auto_prog = self.prog.with_mixin(EspProgrammingAutoReset())
         self.connect(self.program_en_node, auto_prog.en)
         self.connect(self.program_boot_node, auto_prog.boot)
+      elif programming == "uart-auto-button":  # both, where the boot button can be used with USB for example
+        self.boot = imp.Block(DigitalSwitch())
+        self.connect(self.boot.out, self.program_boot_node)
+        auto_prog = self.prog.with_mixin(EspProgrammingAutoReset())
+        self.connect(self.program_en_node, auto_prog.en)
+        self.connect(self.program_boot_node, auto_prog.boot)
       else:
         self.require(False, "unknown programming connector mode")
 
