@@ -141,7 +141,11 @@ class IotIron(JlcBoardTop):
       self.tp_pwm_l = self.Block(DigitalTestPoint()).connected(self.conv.pwm_low)
       self.tp_pwm_h = self.Block(DigitalTestPoint()).connected(self.conv.pwm_high)
 
-      (self.touch_sink, ), self.touch = self.chain(self.mcu.gpio.request('touch'), imp.Block(DummyDigitalSink()))
+      mcu_touch = self.mcu.with_mixin(IoControllerTouchDriver())
+      (self.touch_sink, ), _ = self.chain(
+        mcu_touch.touch.request('touch'),
+        imp.Block(FootprintToucbPad('edg:Symbol_DucklingSolid'))
+      )
 
     self.iron = self.Block(IronConnector())
     self.connect(self.conv.pwr_out, self.iron.pwr)
