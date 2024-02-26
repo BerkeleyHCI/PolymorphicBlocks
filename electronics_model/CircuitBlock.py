@@ -45,7 +45,7 @@ class FootprintBlock(Block):
     self.fp_refdes_prefix = self.Parameter(StringExpr())
 
   # TODO: allow value to be taken from parameters, ideally w/ string concat from params
-  def footprint(self, refdes: StringLike, footprint: StringLike, pinning: Mapping[StringLike, CircuitPort],
+  def footprint(self, refdes: StringLike, footprint: StringLike, pinning: Mapping[str, CircuitPort],
                 mfr: Optional[StringLike] = None, part: Optional[StringLike] = None, value: Optional[StringLike] = None,
                 datasheet: Optional[StringLike] = None) -> None:
     """Creates a footprint in this circuit block.
