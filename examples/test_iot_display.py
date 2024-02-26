@@ -4,12 +4,12 @@ from edg import *
 
 
 class IotDisplay(JlcBoardTop):
-  """IoT display with a WiFi microcontroller with connected display.
+  """Battery-powered IoT e-paper display with deep sleep.
   """
   def contents(self) -> None:
     super().contents()
 
-    BATTERY_VOLTAGE = (4*1.0, 6*1.6)*Volt
+    BATTERY_VOLTAGE = (4*1.15, 6*1.6)*Volt
 
     self.usb = self.Block(UsbCReceptacle(current_limits=(0, 3)*Amp))
     self.batt = self.Block(LipoConnector(voltage=BATTERY_VOLTAGE, actual_voltage=BATTERY_VOLTAGE))  # 2-6 AA
@@ -27,12 +27,15 @@ class IotDisplay(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-        self.pwr,
+        self.vbat,
         imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
+
+      self.vbat_sense_gate = imp.Block(HighSideSwitch())
+      self.connect(self.vbat_sense_gate.pwr, self.vbat)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
@@ -46,6 +49,7 @@ class IotDisplay(JlcBoardTop):
       (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
                                                     self.mcu.usb.request())
 
+      # DEBUGGING UI ELEMENTS
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
       (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
       (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
@@ -53,6 +57,15 @@ class IotDisplay(JlcBoardTop):
       self.sw = ElementDict[DigitalSwitch]()
       for i in range(3):
         (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
+
+      # SENSING
+      self.connect(self.vbat_sense_gate.control, self.mcu.gpio.request('vbat_sense_gate'))
+      (self.vbat_sense, ), _ = self.chain(
+        self.vbat_sense_gate.output,
+        imp.Block(VoltageSenseDivider(full_scale_voltage=(0, 2.9)*Volt, impedance=(10, 100)*kOhm)),
+        self.mcu.adc.request('vbat_sense'))
+
+      # DISPLAY
       self.epd = imp.Block(Er_Epd027_2())
       self.connect(self.v3v3, self.epd.pwr)
       self.connect(self.mcu.spi.request('spi'), self.epd.spi)
@@ -85,18 +98,17 @@ class IotDisplay(JlcBoardTop):
           # 'epd_busy=35',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
-        (['reg_12v', 'power_path', 'inductor', 'part'], "CBC3225T470KR"),
-        (['reg_12v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 7e6)),
-        (['pwr_or', 'diode', 'part'], 'B5819W SL'),  # autopicked one is OOS
+
+        (['reg_3v3', 'power_path', 'inductor', 'part'], "CBC3225T220KR"),
+        (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 17e6)),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
         (TestPoint, CompactKeystone5015),
       ],
       class_values=[
-        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),  # for parts commonality w/ other zeners on panel
+        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
-        (Diode, ['part'], 'B0520W'),  # autopicked one is OOS, use common one with other diode
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
       ]
     )
