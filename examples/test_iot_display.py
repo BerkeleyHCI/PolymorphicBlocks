@@ -70,6 +70,10 @@ class IotDisplay(JlcBoardTop):
         mcu_touch.touch.request('touch_duck'),
         imp.Block(FootprintToucbPad('edg:Symbol_DucklingSolid'))
       )
+      (self.touch_lemur, ), _ = self.chain(
+        mcu_touch.touch.request('touch_lemur'),
+        imp.Block(FootprintToucbPad('edg:Symbol_LemurSolid'))
+      )
 
       # DISPLAY
       self.epd = imp.Block(Waveshare_Epd())
