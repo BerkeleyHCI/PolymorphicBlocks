@@ -7,8 +7,9 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @non_library
-class Esp32s3_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerCan, IoControllerUsb,
-                         IoControllerI2s, IoControllerDvp8, IoControllerWifi, IoControllerBle, BaseIoController):
+class Esp32s3_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerTouchDriver, IoControllerCan,
+                         IoControllerUsb, IoControllerI2s, IoControllerDvp8, IoControllerWifi, IoControllerBle,
+                         BaseIoController):
   """Defines base interfaces for ESP32S3 microcontrollers"""
 
 
@@ -52,6 +53,7 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
     spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 80) * MHertz)
     i2c_model = I2cController(DigitalBidir.empty())  # section 3.5.6, 100/400kHz and up to 800kbit/s
     i2c_target_model = I2cController(DigitalBidir.empty())
+    touch_model = TouchDriver()
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI, up to 1Mbit/s
     i2s_model = I2sController(DigitalBidir.empty())
     dvp8_model = Dvp8Host(DigitalBidir.empty())
@@ -59,22 +61,22 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
     return PinMapUtil([  # table 2-1 for overview, table 3-3 for remapping, table 2-4 for ADC
       # VDD3P3_RTC domain
       # PinResource('GPIO0', {'GPIO0': self._dio_model}),  # strapping pin, boot mode
-      PinResource('GPIO1', {'GPIO1': dio_model, 'ADC1_CH0': adc_model}),
-      PinResource('GPIO2', {'GPIO2': dio_model, 'ADC1_CH1': adc_model}),
+      PinResource('GPIO1', {'GPIO1': dio_model, 'ADC1_CH0': adc_model, 'TOUCH1': touch_model}),
+      PinResource('GPIO2', {'GPIO2': dio_model, 'ADC1_CH1': adc_model, 'TOUCH2': touch_model}),
       # technically a strapping pin for JTAG control, but needs to be enabled by eFuse
-      PinResource('GPIO3', {'GPIO3': dio_model, 'ADC1_CH2': adc_model}),
-      PinResource('GPIO4', {'GPIO4': dio_model, 'ADC1_CH3': adc_model}),
-      PinResource('GPIO5', {'GPIO5': dio_model, 'ADC1_CH4': adc_model}),
-      PinResource('GPIO6', {'GPIO6': dio_model, 'ADC1_CH5': adc_model}),
-      PinResource('GPIO7', {'GPIO7': dio_model, 'ADC1_CH6': adc_model}),
-      PinResource('GPIO8', {'GPIO8': dio_model, 'ADC1_CH7': adc_model}),
-      PinResource('GPIO9', {'GPIO9': dio_model, 'ADC1_CH8': adc_model}),
-      PinResource('GPIO10', {'GPIO10': dio_model, 'ADC1_CH9': adc_model}),
+      PinResource('GPIO3', {'GPIO3': dio_model, 'ADC1_CH2': adc_model, 'TOUCH3': touch_model}),
+      PinResource('GPIO4', {'GPIO4': dio_model, 'ADC1_CH3': adc_model, 'TOUCH4': touch_model}),
+      PinResource('GPIO5', {'GPIO5': dio_model, 'ADC1_CH4': adc_model, 'TOUCH5': touch_model}),
+      PinResource('GPIO6', {'GPIO6': dio_model, 'ADC1_CH5': adc_model, 'TOUCH6': touch_model}),
+      PinResource('GPIO7', {'GPIO7': dio_model, 'ADC1_CH6': adc_model, 'TOUCH7': touch_model}),
+      PinResource('GPIO8', {'GPIO8': dio_model, 'ADC1_CH7': adc_model, 'TOUCH8': touch_model}),
+      PinResource('GPIO9', {'GPIO9': dio_model, 'ADC1_CH8': adc_model, 'TOUCH9': touch_model}),
+      PinResource('GPIO10', {'GPIO10': dio_model, 'ADC1_CH9': adc_model, 'TOUCH10': touch_model}),
       # ADC2 pins can't be used simultaneously with WiFi (section 2.3.3) and are not allocatable
-      PinResource('GPIO11', {'GPIO11': dio_model}),  # also ADC2_CH0
-      PinResource('GPIO12', {'GPIO12': dio_model}),  # also ADC2_CH1
-      PinResource('GPIO13', {'GPIO13': dio_model}),  # also ADC2_CH2
-      PinResource('GPIO14', {'GPIO14': dio_model}),  # also ADC2_CH3
+      PinResource('GPIO11', {'GPIO11': dio_model, 'TOUCH11': touch_model}),  # also ADC2_CH0
+      PinResource('GPIO12', {'GPIO12': dio_model, 'TOUCH12': touch_model}),  # also ADC2_CH1
+      PinResource('GPIO13', {'GPIO13': dio_model, 'TOUCH13': touch_model}),  # also ADC2_CH2
+      PinResource('GPIO14', {'GPIO14': dio_model, 'TOUCH14': touch_model}),  # also ADC2_CH3
 
       PinResource('XTAL_32K_P', {'GPIO15': dio_model}),  # also ADC2_CH4
       PinResource('XTAL_32K_N', {'GPIO16': dio_model}),  # also ADC2_CH5
