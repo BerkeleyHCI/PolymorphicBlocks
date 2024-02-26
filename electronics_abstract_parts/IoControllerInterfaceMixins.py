@@ -18,6 +18,14 @@ class IoControllerI2cTarget(BlockInterfaceMixin[BaseIoController]):
         self.implementation(lambda base: base._io_ports.append(self.i2c_target))
 
 
+class IoControllerTouchDriver(BlockInterfaceMixin[BaseIoController]):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.touch = self.Port(Vector(TouchDriver.empty()), optional=True)
+        self.implementation(lambda base: base._io_ports.insert(0, self.touch))  # allocate first
+
+
 class IoControllerDac(BlockInterfaceMixin[BaseIoController]):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
