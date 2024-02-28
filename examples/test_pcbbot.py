@@ -8,6 +8,28 @@ from .test_multimeter import FetPowerGate
 
 class PcbBot(JlcBoardTop):
   """Robot driver that uses a ESP32 w/ camera and has student-proofing
+
+  Key features:
+  - USB-C receptacle for power input and battery charging.
+  - LiPo battery connector with voltage regulation and protection circuits.
+  - Power management with priority power selection, fuse protection, and gate control.
+  - 3.3V voltage regulation for the main logic level power supply.
+  - Integrated battery charging circuit with status indication.
+  - I2C communication interface with pull-up resistors and test points.
+  - Time-of-flight (ToF) sensor array for distance measurement.
+  - Inertial Measurement Unit (IMU) and magnetometer for orientation sensing.
+  - IO expander for additional GPIOs and a thru-hole RGB LED indicator.
+  - OLED display
+  - PWM Servo motor
+  - Neopixel LED array for RGB lighting
+  - Camera module with voltage regulation for image capture.
+  - Digital switch for power control.
+  - Keyboard mechanical switch with RGB LED
+  - Ducky touch button
+
+  Known issues:
+  - Charging ic is not reverse protected
+  - MCU does not get turned off with the gate when powered by the USB and battery, though the vbatt line turns off. (by design)
   """
   def contents(self) -> None:
     super().contents()
@@ -183,8 +205,6 @@ class PcbBot(JlcBoardTop):
           "servo2=8",
           "servo3=10",
           "npx=9",
-          # "oled_reset=7",
-
           'led=_GPIO0_STRAP',
           'touch=GPIO7'
         ]),
