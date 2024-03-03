@@ -280,12 +280,7 @@ class DigitalSource(DigitalBase):
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink],
                   current_limits: RangeLike = RangeExpr.ALL, *,
                   output_threshold_offset: Optional[Tuple[FloatLike, FloatLike]] = None) -> DigitalSource:
-    if isinstance(neg, VoltageSource) and isinstance(pos, VoltageSource):
-      supply_range = neg.voltage_out.hull(pos.voltage_out)  # support disconnected source
-    else:
-      supply_range = neg.link().voltage.hull(pos.link().voltage)
-      assert isinstance(neg, VoltageSink) and isinstance(pos, VoltageSink)
-
+    supply_range = VoltageLink._supply_voltage_range(neg, pos)
     if output_threshold_offset is not None:
       output_offset_low = FloatExpr._to_expr_type(output_threshold_offset[0])
       output_offset_high = FloatExpr._to_expr_type(output_threshold_offset[1])
@@ -394,7 +389,7 @@ class DigitalBidir(DigitalBase):
     if input_threshold_factor is not None:
       assert input_threshold_abs is None, "can only specify one input threshold type"
       input_threshold_factor = RangeExpr._to_expr_type(input_threshold_factor)  # TODO avoid internal functions?
-      input_threshold = pos.link().voltage * input_threshold_factor
+      input_threshold = VoltageLink._voltage_range(pos) * input_threshold_factor
     elif input_threshold_abs is not None:
       assert input_threshold_factor is None, "can only specify one input threshold type"
       input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
@@ -407,8 +402,8 @@ class DigitalBidir(DigitalBase):
       output_threshold_factor = RangeExpr._to_expr_type(output_threshold_factor)
       # use a pessimistic range
       output_range = VoltageLink._voltage_range(pos).lower() - VoltageLink._voltage_range(neg).upper()
-      output_threshold = (VoltageLink._voltage_range(neg).upper() + output_threshold_factor.lower() * output_range.upper(),
-                          VoltageLink._voltage_range(neg).upper() + output_threshold_factor.upper() * output_range.lower(),)
+      output_threshold = (VoltageLink._voltage_range(neg).upper() + output_threshold_factor.lower() * output_range,
+                          VoltageLink._voltage_range(neg).upper() + output_threshold_factor.upper() * output_range)
     elif output_threshold_abs is not None:
       assert output_threshold_factor is None, "can only specify one output threshold type"
       output_threshold = RangeExpr._to_expr_type(output_threshold_abs)  # TODO avoid internal functions?
