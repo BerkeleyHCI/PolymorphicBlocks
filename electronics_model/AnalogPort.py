@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 from edg_core import *
 from edg_core.Blocks import DescriptionString
 from .CircuitBlock import CircuitLink
-from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink
+from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink, VoltageSource, VoltageSink
 
 
 class AnalogLink(CircuitLink):
@@ -125,12 +125,10 @@ class AnalogSink(AnalogBase):
                   signal_limit_abs: Optional[RangeLike] = None,
                   current_draw: RangeLike = RangeExpr.ZERO,
                   impedance: RangeLike = RangeExpr.INF):
-    supply_range = neg.link().voltage.hull(pos.link().voltage)
-
-    voltage_limit: RangeLike
+    supply_range = VoltageLink._supply_voltage_range(neg, pos)
     if voltage_limit_tolerance is not None:
       assert voltage_limit_abs is None
-      voltage_limit = supply_range + voltage_limit_tolerance
+      voltage_limit: RangeLike = supply_range + voltage_limit_tolerance
     elif voltage_limit_abs is not None:
       voltage_limit = voltage_limit_abs
     else:
@@ -179,14 +177,12 @@ class AnalogSource(AnalogBase):
                   signal_out_bound: Optional[Tuple[FloatLike, FloatLike]] = None,
                   current_limits: RangeLike = RangeExpr.ALL,
                   impedance: RangeLike = RangeExpr.ZERO):
-    supply_range = neg.link().voltage.hull(pos.link().voltage)
-
-    signal_out: RangeLike
+    supply_range = VoltageLink._supply_voltage_range(neg, pos)
     if signal_out_bound is not None:
       # signal limit bounds specified as (lower bound added to limit, upper bound added to limit)
       # typically (positive, negative)
-      signal_out = (supply_range.lower() + signal_out_bound[0],
-                    supply_range.upper() + signal_out_bound[1])
+      signal_out: RangeLike = (supply_range.lower() + signal_out_bound[0],
+                               supply_range.upper() + signal_out_bound[1])
     else:  # generic default
       signal_out = supply_range
 
