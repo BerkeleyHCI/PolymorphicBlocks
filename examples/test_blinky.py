@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class TestBasicBlinky(SimpleBoardTop):
+class TestBlinkyBasic(SimpleBoardTop):
   """The simplest cirucit, a microcontroller dev board with a LED."""
   def contents(self) -> None:
     self.mcu = self.Block(Nucleo_F303k8())
