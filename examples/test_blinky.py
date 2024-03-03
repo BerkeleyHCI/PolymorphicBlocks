@@ -3,6 +3,16 @@ import unittest
 from edg import *
 
 
+class TestBasicBlinky(SimpleBoardTop):
+  """The simplest cirucit, a microcontroller dev board with a LED."""
+  def contents(self) -> None:
+    self.mcu = self.Block(Nucleo_F303k8())
+    self.led = self.Block(IndicatorLed())
+
+    self.connect(self.led.signal, self.mcu.gpio.request())
+    self.connect(self.mcu.gnd_out, self.led.gnd)
+
+
 class TestBlinkyEmpty(SimpleBoardTop):
   pass
 
@@ -521,6 +531,9 @@ class TestBlinkyWithModeledSchematicImport(SimpleBoardTop):
 
 
 class BlinkyTestCase(unittest.TestCase):
+  def test_design_basic(self) -> None:
+    compile_board_inplace(TestBlinkyBasic, False)
+
   def test_design_empty(self) -> None:
     compile_board_inplace(TestBlinkyEmpty, False)
 
