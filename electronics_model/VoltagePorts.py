@@ -12,6 +12,20 @@ if TYPE_CHECKING:
 
 
 class VoltageLink(CircuitLink):
+  @classmethod
+  def _voltage_range(cls, port: Port[VoltageLink]):
+    """Returns the voltage for a Voltage port, either sink or source"""
+    if isinstance(port, VoltageSource):
+      return port.voltage_out
+    else:
+      assert isinstance(port, VoltageSink)
+      return port.link().voltage
+
+  @classmethod
+  def _supply_voltage_range(cls, neg: Port[VoltageLink], pos: Port[VoltageLink]):
+    """For a negative and positive Voltage port (either sink or source), returns the voltage span."""
+    return cls._voltage_range(neg).hull(cls._voltage_range(pos))
+
   def __init__(self) -> None:
     super().__init__()
 
