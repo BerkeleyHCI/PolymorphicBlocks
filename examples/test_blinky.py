@@ -532,7 +532,7 @@ class TestBlinkyWithModeledSchematicImport(SimpleBoardTop):
 
 class BlinkyTestCase(unittest.TestCase):
   def test_design_basic(self) -> None:
-    compile_board_inplace(TestBlinkyBasic, False)
+    compile_board_inplace(TestBlinkyBasic)  # generate this netlist as a test
 
   def test_design_empty(self) -> None:
     compile_board_inplace(TestBlinkyEmpty, False)
@@ -555,7 +555,7 @@ class BlinkyTestCase(unittest.TestCase):
     compile_board_inplace(TestBlinkyImplicit, False)
 
   def test_design_chain(self) -> None:
-    compile_board_inplace(TestBlinkyChain, False)
+    compile_board_inplace(TestBlinkyChain)  # generate this netlist as a test
 
   def test_design_micro(self) -> None:
     compile_board_inplace(TestBlinkyMicro, False)
