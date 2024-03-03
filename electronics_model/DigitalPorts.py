@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 from edg_core import *
 from edg_core.Blocks import DescriptionString
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
-from .VoltagePorts import CircuitPort, VoltageLink, VoltageSource
+from .VoltagePorts import CircuitPort, VoltageLink, VoltageSource, VoltageSink
 from .Units import Volt
 
 
@@ -195,16 +195,20 @@ class DigitalSink(DigitalBase):
                   current_draw: RangeLike = RangeExpr.ZERO,
                   input_threshold_factor: Optional[RangeLike] = None,
                   input_threshold_abs: Optional[RangeLike] = None) -> DigitalSink:
+    if isinstance(neg, VoltageSource) and isinstance(pos, VoltageSource):
+      supply_range = neg.voltage_out.hull(pos.voltage_out)  # support disconnected source
+    else:
+      supply_range = neg.link().voltage.hull(pos.link().voltage)
+      assert isinstance(neg, VoltageSink) and isinstance(pos, VoltageSink)
+
     voltage_limit: RangeLike
     if voltage_limit_abs is not None:
       assert voltage_limit_tolerance is None
       voltage_limit = voltage_limit_abs
     elif voltage_limit_tolerance is not None:
-      voltage_limit = neg.link().voltage.hull(pos.link().voltage) + \
-                      RangeExpr._to_expr_type(voltage_limit_tolerance)
+      voltage_limit = supply_range + RangeExpr._to_expr_type(voltage_limit_tolerance)
     else:  # generic default
-      voltage_limit = neg.link().voltage.hull(pos.link().voltage) + \
-                      RangeExpr._to_expr_type((-0.3, 0.3))
+      voltage_limit = supply_range + RangeExpr._to_expr_type((-0.3, 0.3))
 
     input_threshold: RangeLike
     if input_threshold_factor is not None:
@@ -218,8 +222,7 @@ class DigitalSink(DigitalBase):
       input_threshold = RangeExpr.EMPTY  # ideal
 
     return DigitalSink(  # TODO get rid of to_expr_type w/ dedicated Range conversion
-      voltage_limits=neg.link().voltage.hull(pos.link().voltage) + \
-                     RangeExpr._to_expr_type(voltage_limit),
+      voltage_limits=voltage_limit,
       current_draw=current_draw,
       input_thresholds=input_threshold
     )
@@ -283,6 +286,12 @@ class DigitalSource(DigitalBase):
   def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink],
                   current_limits: RangeLike = RangeExpr.ALL, *,
                   output_threshold_offset: Optional[Tuple[FloatLike, FloatLike]] = None) -> DigitalSource:
+    if isinstance(neg, VoltageSource) and isinstance(pos, VoltageSource):
+      supply_range = neg.voltage_out.hull(pos.voltage_out)  # support disconnected source
+    else:
+      supply_range = neg.link().voltage.hull(pos.link().voltage)
+      assert isinstance(neg, VoltageSink) and isinstance(pos, VoltageSink)
+
     if output_threshold_offset is not None:
       output_offset_low = FloatExpr._to_expr_type(output_threshold_offset[0])
       output_offset_high = FloatExpr._to_expr_type(output_threshold_offset[1])
@@ -292,7 +301,7 @@ class DigitalSource(DigitalBase):
       output_threshold = (neg.link().voltage.upper(), pos.link().voltage.lower())
 
     return DigitalSource(
-      voltage_out=(neg.link().voltage.lower(), pos.link().voltage.upper()),
+      voltage_out=supply_range,
       current_limits=current_limits,
       output_thresholds=output_threshold
     )
@@ -378,16 +387,20 @@ class DigitalBidir(DigitalBase):
                   output_threshold_factor: Optional[RangeLike] = None,
                   output_threshold_abs: Optional[RangeLike] = None,
                   pullup_capable: BoolLike = False, pulldown_capable: BoolLike = False) -> DigitalBidir:
+    if isinstance(neg, VoltageSource) and isinstance(pos, VoltageSource):
+      supply_range = neg.voltage_out.hull(pos.voltage_out)  # support disconnected source
+    else:
+      supply_range = neg.link().voltage.hull(pos.link().voltage)
+      assert isinstance(neg, VoltageSink) and isinstance(pos, VoltageSink)
+
     voltage_limit: RangeLike
     if voltage_limit_abs is not None:
       assert voltage_limit_tolerance is None
       voltage_limit = voltage_limit_abs
     elif voltage_limit_tolerance is not None:
-      voltage_limit = neg.link().voltage.hull(pos.link().voltage) + \
-                      RangeExpr._to_expr_type(voltage_limit_tolerance)
+      voltage_limit = supply_range + RangeExpr._to_expr_type(voltage_limit_tolerance)
     else:  # generic default
-      voltage_limit = neg.link().voltage.hull(pos.link().voltage) + \
-                      RangeExpr._to_expr_type((-0.3, 0.3))
+      voltage_limit = supply_range + RangeExpr._to_expr_type((-0.3, 0.3))
 
     input_threshold: RangeLike
     if input_threshold_factor is not None:
@@ -407,15 +420,15 @@ class DigitalBidir(DigitalBase):
       output_threshold = (output_threshold_factor.lower() * pos.link().voltage.upper(),
                           output_threshold_factor.upper() * pos.link().voltage.lower())
     elif output_threshold_abs is not None:
-      assert output_threshold_factor is None, "can only specify one outpt threshold type"
+      assert output_threshold_factor is None, "can only specify one output threshold type"
       output_threshold = RangeExpr._to_expr_type(output_threshold_abs)  # TODO avoid internal functions?
     else:  # assumed ideal
-      output_threshold = (neg.link().voltage.upper(), pos.link().voltage.lower())
+      output_threshold = supply_range
 
     return DigitalBidir(  # TODO get rid of to_expr_type w/ dedicated Range conversion
       voltage_limits=voltage_limit,
       current_draw=current_draw,
-      voltage_out=(neg.link().voltage.upper(), pos.link().voltage.lower()),
+      voltage_out=supply_range,
       current_limits=current_limits,
       input_thresholds=input_threshold,
       output_thresholds=output_threshold,

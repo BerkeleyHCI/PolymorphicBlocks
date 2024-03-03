@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 from edg_core import *
 from edg_core.Blocks import DescriptionString
 from .CircuitBlock import CircuitLink
-from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink
+from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink, VoltageSource, VoltageSink
 
 
 class AnalogLink(CircuitLink):
@@ -125,7 +125,11 @@ class AnalogSink(AnalogBase):
                   signal_limit_abs: Optional[RangeLike] = None,
                   current_draw: RangeLike = RangeExpr.ZERO,
                   impedance: RangeLike = RangeExpr.INF):
-    supply_range = neg.link().voltage.hull(pos.link().voltage)
+    if isinstance(neg, VoltageSource) and isinstance(pos, VoltageSource):
+      supply_range = neg.voltage_out.hull(pos.voltage_out)  # support disconnected source
+    else:
+      supply_range = neg.link().voltage.hull(pos.link().voltage)
+      assert isinstance(neg, VoltageSink) and isinstance(pos, VoltageSink)
 
     voltage_limit: RangeLike
     if voltage_limit_tolerance is not None:
@@ -179,7 +183,11 @@ class AnalogSource(AnalogBase):
                   signal_out_bound: Optional[Tuple[FloatLike, FloatLike]] = None,
                   current_limits: RangeLike = RangeExpr.ALL,
                   impedance: RangeLike = RangeExpr.ZERO):
-    supply_range = neg.link().voltage.hull(pos.link().voltage)
+    if isinstance(neg, VoltageSource) and isinstance(pos, VoltageSource):
+      supply_range = neg.voltage_out.hull(pos.voltage_out)  # support disconnected source
+    else:
+      supply_range = neg.link().voltage.hull(pos.link().voltage)
+      assert isinstance(neg, VoltageSink) and isinstance(pos, VoltageSink)
 
     signal_out: RangeLike
     if signal_out_bound is not None:
