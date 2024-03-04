@@ -124,9 +124,9 @@ class IotDisplay(JlcBoardTop):
         (SdCard, Molex1040310811),
       ],
       class_values=[
-        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
       ]
     )
 
