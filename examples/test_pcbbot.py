@@ -59,7 +59,7 @@ class PcbBot(JlcBoardTop):
 
       self.pwr_or = self.Block(PriorityPowerOr(  # also does reverse protection
         (0, 1)*Volt, (0, 0.1)*Ohm
-      )).connected_from(self.gnd_merge.pwr_out, self.usb.pwr, self.vbatt)
+      )).connected_from(self.gnd_merge.pwr_out, self.usb.pwr, self.gate.pwr_out)
       self.pwr = self.connect(self.pwr_or.pwr_out)
 
       (self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
