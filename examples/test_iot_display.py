@@ -53,10 +53,7 @@ class IotDisplay(JlcBoardTop):
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
       (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
       (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
-
-      self.sw = ElementDict[DigitalSwitch]()
-      for i in range(3):
-        (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw'))
 
       # SENSING
       self.connect(self.vbat_sense_gate.control, self.mcu.gpio.request('vbat_sense_gate'))
