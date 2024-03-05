@@ -3136,7 +3136,7 @@
 
   (footprint "Capacitor_SMD:C_1206_3216Metric" (layer "F.Cu")
     (tstamp 778b9349-db23-4e52-b134-c1faf8806b9f)
-    (at 83 95)
+    (at 82 95)
     (descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "capacitor")
     (property "Sheetfile" "electronics_lib.Microcontroller_Esp32s3.Esp32s3_Wroom_1")
@@ -5700,8 +5700,8 @@
     (fill (thermal_gap 0.2) (thermal_bridge_width 0.2))
     (polygon
       (pts
-        (xy 126.334651 155.513898)
-        (xy 74.334651 155.513898)
+        (xy 126 156)
+        (xy 74 156)
         (xy 74 92)
         (xy 126 92)
       )
