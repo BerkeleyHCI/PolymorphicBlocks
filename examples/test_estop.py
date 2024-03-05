@@ -144,17 +144,12 @@ class Estop(JlcBoardTop):
                 self.Block(Speaker())
             )
 
-        # Power switch setup
-        with self.implicit_connect(
-                ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting to common ground
-        ) as imp:
-            self.switch = imp.Block(DigitalSwitch())
-            self.connect(self.switch.out, self.mcu.gpio.request('pwr'))
+            (self.switch, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('pwr'))
 
 
         #TODO: Check: 3v3 output pins
         self.jst_3v3 = self.Block(PassiveConnector(length=2))   # lenth number of pins (auto allocate?
-        self.connect(self.jst_3v3.pins.request('2').adapt_to(VoltageSink()), self.reg_3v3.pwr_out)
+        self.connect(self.jst_3v3.pins.request('2').adapt_to(VoltageSink(current_draw=0.3*Amp)), self.reg_3v3.pwr_out)
         self.connect(self.jst_3v3.pins.request('1').adapt_to(Ground()), self.gnd)
 
         self.jst_12v = self.Block(PassiveConnector(length=2))   # lenth number of pins (auto allocate?
@@ -166,7 +161,7 @@ class Estop(JlcBoardTop):
                 ImplicitConnect(self.v5, [Power]),  # Implicitly connecting to the 3.3V power line
                 ImplicitConnect(self.gnd, [Common]),  # Implicitly connecting to common ground
         ) as imp:
-            (self.npx, ), _ = self.chain(self.expander.io.request('npx'), imp.Block(Neopixel()))
+            (self.npx, ), _ = self.chain(self.mcu.gpio.request('npx'), imp.Block(Neopixel()))
 
             self.jst_5v = self.Block(PassiveConnector(length=2))   # lenth number of pins (auto allocate?
             self.connect(self.jst_5v.pins.request('2').adapt_to(VoltageSink(current_draw=0.5*Amp)), self.v5)
@@ -206,7 +201,7 @@ class Estop(JlcBoardTop):
 
             # Have pass thorough for PC
             self.vbatt_pin = imp.Block(PassiveConnector(2))
-            self.connect(self.vbatt_pin.pins.request('1').adapt_to(Ground()))
+            self.connect(self.vbatt_pin.pins.request('1').adapt_to(Ground()), self.gnd)
             self.connect(self.vbatt_pin.pins.request('2').adapt_to(VoltageSink()), self.cPc_sense.pwr_out)
 
 
@@ -270,14 +265,16 @@ class Estop(JlcBoardTop):
 
         self.jst_estop = self.Block(PassiveConnector(length=6))   # lenth number of pins auto allocate?
         self.connect(self.jst_estop.pins.request('1').adapt_to(Ground()), self.gnd)
-        self.connect(self.jst_estop.pins.request('2').adapt_to(VoltageSink()), self.v5)
-        self.connect(self.jst_estop.pins.request('3').adapt_to(DigitalSource()), self.mcu.gpio.request('sw_estop'))
-        self.connect(self.jst_estop.pins.request('4').adapt_to(DigitalSource()), self.mcu.gpio.request('led_estop'))
-        self.connect(self.jst_estop.pins.request('5').adapt_to(DigitalSource()), self.mcu.gpio.request('sw_nonestop'))
-        self.connect(self.jst_estop.pins.request('6').adapt_to(DigitalSource()), self.mcu.gpio.request('led_nonestop'))
+        self.connect(self.jst_estop.pins.request('2').adapt_to(DigitalSource()), self.mcu.gpio.request('sw_estop'))
+        self.connect(self.jst_estop.pins.request('3').adapt_to(DigitalSource()), self.mcu.gpio.request('led_estop'))
+        self.connect(self.jst_estop.pins.request('4').adapt_to(DigitalSource()), self.mcu.gpio.request('sw_nonestop'))
+        self.connect(self.jst_estop.pins.request('5').adapt_to(DigitalSource()), self.mcu.gpio.request('led_nonestop'))
+        self.connect(self.jst_estop.pins.request('6').adapt_to(VoltageSink()), self.v3v3)
 
 
-        # Mounting holes
+
+
+    # Mounting holes
         self.m = ElementDict[MountingHole]()
         for i in range(4):
             self.m[i] = self.Block(MountingHole())
@@ -336,6 +333,7 @@ class Estop(JlcBoardTop):
 
 
 
+
                 ]),
                 (['expander', 'pin_assigns'], [
                     "dir_cen=6",
@@ -343,7 +341,6 @@ class Estop(JlcBoardTop):
                     "dir_b=10",
                     "dir_c=5",
                     "dir_d=11",
-                    "npx=9",
                 ]),
                 (['cbatt_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
                 (['cPc_sense', 'sense', 'res', 'res', 'require_basic_part'], False),
