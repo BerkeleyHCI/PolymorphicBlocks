@@ -75,7 +75,7 @@ class IotDisplay(JlcBoardTop):
       # DISPLAY
       self.epd = imp.Block(Waveshare_Epd())
       self.connect(self.v3v3, self.epd.pwr)
-      (self.tp_spi, ), _ = self.chain(self.mcu.spi.request('spi'), imp.Block(SpiTestPoint('epd')), self.epd.spi)
+      (self.tp_spi, ), _ = self.chain(self.mcu.spi.request('epd'), imp.Block(SpiTestPoint('epd')), self.epd.spi)
       (self.tp_rst, ), _ = self.chain(self.mcu.gpio.request('epd_rst'), imp.Block(DigitalTestPoint('rst')), self.epd.reset)
       (self.tp_dc, ), _ = self.chain(self.mcu.gpio.request('epd_dc'), imp.Block(DigitalTestPoint('dc')), self.epd.dc)
       (self.tp_cs, ), _ = self.chain(self.mcu.gpio.request('epd_cs'), imp.Block(DigitalTestPoint('cs')), self.epd.cs)
@@ -84,7 +84,7 @@ class IotDisplay(JlcBoardTop):
       # MISC
       self.sd = imp.Block(SdCard())
       self.connect(self.sd.cs, self.mcu.gpio.request('sd_cs'))
-      self.connect(self.mcu.spi.request('sd_spi'), self.sd.spi)
+      self.connect(self.mcu.spi.request('sd'), self.sd.spi)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -95,18 +95,19 @@ class IotDisplay(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
+          # note: for ESP32-S3 compatibility: IO35/36/37 (pins 28-30) are used by PSRAM
+          # note: for ESP32-C6 compatibility: pin 34 (22 on dedicated -C6 pattern) is NC
           'ledr=39',
           'ledg=38',
-          'ledb=35',
-          'sw=34',
-          # 'sw1=11',
-          # 'sw2=10',
-          # 'oled_rst=38',
-          # 'oled_cs=31',
-          # 'oled_dc=32',
-          # 'spi.sck=33',
-          # 'spi.mosi=34',
-          # 'spi.miso=NC',
+          'ledb=4',
+          'sw=5',
+          'epd_dc=31',
+          'epd_cs=32',
+          'epd.sck=33',
+          'epd.mosi=35',
+          'epd.miso=NC',
+
+          # 'epd_rst=31',
           # 'epd_busy=35',
         ]),
         (['mcu', 'programming'], 'uart-auto-button'),
