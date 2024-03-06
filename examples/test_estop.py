@@ -331,11 +331,6 @@ class Estop(JlcBoardTop):
                     "led=9",
                     "pwr=8",
                     "oled_reset=19"
-
-
-
-
-
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),
                 (['expander', 'pin_assigns'], [
@@ -364,8 +359,8 @@ class Estop(JlcBoardTop):
                     ),
                 (['cPc_sense_clamp', 'diode', 'part'],
                     "TCLLZ3V0TR",
-                   )
-                # (['mosfet', 'drv', 'fp_footprint'], 'Package_SO:PowerPAK_SO-8_Single'),
+                   ),
+
                 # (['mosfet', 'drv', 'lcsc_part'], 'SI7149DP-T1-GE3'),
 
 
@@ -386,6 +381,7 @@ class Estop(JlcBoardTop):
                 (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
                 (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
                 (JlcInductor, ['manual_frequency_rating'], Range.all()),
+                (Diode, ['diode','footprint_spec'], 'SOD-123'),
             ],
         )
 
