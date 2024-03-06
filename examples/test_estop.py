@@ -129,7 +129,10 @@ class Estop(JlcBoardTop):
             self.connect(self.i2c, self.oled.i2c)
             self.connect(self.oled.reset, self.mcu.gpio.request("oled_reset"))
 
-            # self.chain(self.gate.btn_out, self.mcu.gpio.request('sw0'))
+            (self.switch, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('pwr'))
+
+
+        # self.chain(self.gate.btn_out, self.mcu.gpio.request('sw0'))
             # self.chain(self.mcu.gpio.request('gate_control'), self.gate.control)
 
 
@@ -144,7 +147,6 @@ class Estop(JlcBoardTop):
                 self.Block(Speaker())
             )
 
-            (self.switch, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('pwr'))
 
 
         #TODO: Check: 3v3 output pins
@@ -223,7 +225,7 @@ class Estop(JlcBoardTop):
             #     ratio=Range.from_tolerance(15, 0.05),
             #     input_impedance=20*kOhm(tol=0.05)
             #     ))
-            #
+            # 5v drive bldc
 
         with self.implicit_connect(
                 ImplicitConnect(self.v3v3, [Power]),  # Implicitly connecting to the 3.3V power line
@@ -335,6 +337,7 @@ class Estop(JlcBoardTop):
 
 
                 ]),
+                (['mcu', 'programming'], 'uart-auto'),
                 (['expander', 'pin_assigns'], [
                     "dir_cen=6",
                     "dir_a=7",
@@ -374,6 +377,8 @@ class Estop(JlcBoardTop):
                 (Speaker, ConnectorSpeaker),
                 (Opamp, Opa197),
                 (MountingHole, MountingHole_M2_5),
+                (EspProgrammingHeader, EspProgrammingTc2030),
+                (TagConnect, TagConnectNonLegged)
             ],
             class_values=[
                 # Class-level value settings for components
