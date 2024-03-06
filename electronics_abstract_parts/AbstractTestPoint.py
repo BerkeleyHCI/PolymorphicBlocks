@@ -110,6 +110,29 @@ class I2cTestPoint(TypedTestPoint, Block):
     return self
 
 
+class SpiTestPoint(TypedTestPoint, Block):
+  """Test points for SPI"""
+  @init_in_parent
+  def __init__(self, name: StringLike = ""):
+    super().__init__()
+    self.io = self.Port(SpiPeripheral(DigitalBidir.empty()), [InOut])
+    self.tp_name = self.ArgParameter(name)
+
+  def contents(self):
+    super().contents()
+    name_prefix = (self.tp_name == '').then_else(self.io.link().name(), self.tp_name)
+    self.tp_sck = self.Block(DigitalTestPoint(name_prefix + '.sck'))
+    self.tp_mosi = self.Block(DigitalTestPoint(name_prefix + '.mosi'))
+    self.tp_miso = self.Block(DigitalTestPoint(name_prefix + '.miso'))
+    self.connect(self.tp_sck.io, self.io.sck)
+    self.connect(self.tp_mosi.io, self.io.mosi)
+    self.connect(self.tp_miso.io, self.io.miso)
+
+  def connected(self, io: Port[SpiLink]) -> 'SpiTestPoint':
+    cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self
+
+
 class CanControllerTestPoint(TypedTestPoint, Block):
   """Two test points for CAN controller-side TXD and RXD"""
   @init_in_parent

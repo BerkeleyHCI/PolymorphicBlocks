@@ -75,11 +75,11 @@ class IotDisplay(JlcBoardTop):
       # DISPLAY
       self.epd = imp.Block(Waveshare_Epd())
       self.connect(self.v3v3, self.epd.pwr)
-      self.connect(self.mcu.spi.request('spi'), self.epd.spi)
-      self.connect(self.mcu.gpio.request('epd_rst'), self.epd.reset)
-      self.connect(self.mcu.gpio.request('epd_dc'), self.epd.dc)
-      self.connect(self.mcu.gpio.request('epd_cs'), self.epd.cs)
-      self.connect(self.mcu.gpio.request('epd_busy'), self.epd.busy)
+      (self.tp_spi, ), _ = self.chain(self.mcu.spi.request('spi'), imp.Block(SpiTestPoint('epd')), self.epd.spi)
+      (self.tp_rst, ), _ = self.chain(self.mcu.gpio.request('epd_rst'), imp.Block(DigitalTestPoint('rst')), self.epd.reset)
+      (self.tp_dc, ), _ = self.chain(self.mcu.gpio.request('epd_dc'), imp.Block(DigitalTestPoint('dc')), self.epd.dc)
+      (self.tp_cs, ), _ = self.chain(self.mcu.gpio.request('epd_cs'), imp.Block(DigitalTestPoint('cs')), self.epd.cs)
+      (self.tp_busy, ), _ = self.chain(self.mcu.gpio.request('epd_busy'), imp.Block(DigitalTestPoint('bsy')), self.epd.busy)
 
       # MISC
       self.sd = imp.Block(SdCard())
@@ -95,10 +95,10 @@ class IotDisplay(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          # 'ledr=7',
-          # 'ledg=8',
-          # 'ledb=9',
-          # 'sw0=12',
+          'ledr=39',
+          'ledg=38',
+          'ledb=35',
+          'sw=34',
           # 'sw1=11',
           # 'sw2=10',
           # 'oled_rst=38',
