@@ -75,16 +75,16 @@ class IotDisplay(JlcBoardTop):
       # DISPLAY
       self.epd = imp.Block(Waveshare_Epd())
       self.connect(self.v3v3, self.epd.pwr)
-      (self.tp_spi, ), _ = self.chain(self.mcu.spi.request('epd'), imp.Block(SpiTestPoint('epd')), self.epd.spi)
-      (self.tp_rst, ), _ = self.chain(self.mcu.gpio.request('epd_rst'), imp.Block(DigitalTestPoint('rst')), self.epd.reset)
+      (self.tp_epd, ), _ = self.chain(self.mcu.spi.request('epd'), imp.Block(SpiTestPoint('epd')), self.epd.spi)
+      (self.tp_erst, ), _ = self.chain(self.mcu.gpio.request('epd_rst'), imp.Block(DigitalTestPoint('rst')), self.epd.reset)
       (self.tp_dc, ), _ = self.chain(self.mcu.gpio.request('epd_dc'), imp.Block(DigitalTestPoint('dc')), self.epd.dc)
-      (self.tp_cs, ), _ = self.chain(self.mcu.gpio.request('epd_cs'), imp.Block(DigitalTestPoint('cs')), self.epd.cs)
+      (self.tp_epd_cs, ), _ = self.chain(self.mcu.gpio.request('epd_cs'), imp.Block(DigitalTestPoint('cs')), self.epd.cs)
       (self.tp_busy, ), _ = self.chain(self.mcu.gpio.request('epd_busy'), imp.Block(DigitalTestPoint('bsy')), self.epd.busy)
 
       # MISC
       self.sd = imp.Block(SdCard())
-      self.connect(self.sd.cs, self.mcu.gpio.request('sd_cs'))
-      self.connect(self.mcu.spi.request('sd'), self.sd.spi)
+      (self.tp_sd, ), _ = self.chain(self.mcu.spi.request('sd'), imp.Block(SpiTestPoint('sd')), self.sd.spi)
+      (self.tp_sd_cs, ), _ = self.chain(self.mcu.gpio.request('sd_cs'), imp.Block(DigitalTestPoint('cs')), self.sd.cs)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -106,9 +106,18 @@ class IotDisplay(JlcBoardTop):
           'epd.sck=33',
           'epd.mosi=35',
           'epd.miso=NC',
+          'epd_rst=8',
+          'epd_busy=9',
+          'touch_duck=GPIO13',
+          'touch_lemur=GPIO14',
 
-          # 'epd_rst=31',
-          # 'epd_busy=35',
+          'vbat_sense=7',
+          'vbat_sense_gate=6',
+
+          'sd.miso=15',
+          'sd.sck=17',
+          'sd.mosi=18',
+          'sd_cs=19',
         ]),
         (['mcu', 'programming'], 'uart-auto-button'),
 
