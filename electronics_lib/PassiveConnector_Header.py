@@ -114,6 +114,14 @@ class JstPhSmVerticalJlc(JstPhSmVertical, JlcPart):
     return super().part_footprint_mfr_name(length)
 
 
+class JstGhSmHorizontal(FootprintPassiveConnector):
+  """JST SM*B-GHS-SM series connector: 1.25mm shrouded and polarized, in horizontal surface-mount."""
+  allowed_pins = range(2, 16+1)
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    return (f'Connector_JST:JST_GH_SM{length}B-GHS-TB_1x{length:02d}-1MP_P1.25mm_Horizontal',
+            "JST", f"SM{length}B-GHS-TB")
+
+
 class MolexSl(FootprintPassiveConnector):
   """Molex SL series connector: 2.54mm shrouded and polarized, in vertical through-hole.
   Breadboard wire compatible - especially for debugging in a pinch."""

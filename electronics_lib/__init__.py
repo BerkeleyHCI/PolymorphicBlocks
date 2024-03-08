@@ -41,7 +41,7 @@ from .CeramicResonator_Cstne import Cstne
 from .PassiveConnector_Header import PinHeader254, PinHeader254Vertical, PinHeader254Horizontal, PinSocket254
 from .PassiveConnector_Header import PinHeader254DualShroudedInline
 from .PassiveConnector_Header import PinHeader127DualShrouded
-from .PassiveConnector_Header import JstPhKVertical, JstPhSmVertical, JstPhKHorizontal, JstPhSmVerticalJlc, MolexSl
+from .PassiveConnector_Header import JstPhKVertical, JstPhSmVertical, JstPhKHorizontal, JstPhSmVerticalJlc, MolexSl, JstGhSmHorizontal
 from .PassiveConnector_Fpc import Fpc030, Fpc030Top, Fpc030Bottom, Fpc030TopBottom, HiroseFh35cshw
 from .PassiveConnector_Fpc import Fpc050, Fpc050Top, Fpc050Bottom, Fpc050BottomFlip, HiroseFh12sh, Afc01, Afc07Top, Te1734839
 from .PassiveConnector_TagConnect import TagConnect, TagConnectLegged, TagConnectNonLegged
@@ -106,6 +106,7 @@ from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
 from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, Sk6812_Side_A, NeopixelArray
 from .Lcd_Qt096t_if09 import Qt096t_if09
+from .Lcd_Round_1_28 import Lcd_Round_1_28
 from .Oled_Er_Oled_091_3 import Er_Oled_091_3
 from .Oled_Er_Oled_096_1_1 import Er_Oled_096_1_1
 from .Oled_Er_Oled_096_1c import Er_Oled_096_1c
