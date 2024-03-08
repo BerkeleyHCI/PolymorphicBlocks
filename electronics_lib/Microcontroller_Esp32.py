@@ -7,9 +7,9 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @non_library
-class Esp32_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, IoControllerCan,
-                       IoControllerDvp8, IoControllerI2s, IoControllerWifi, IoControllerBle, IoControllerBluetooth,
-                       BaseIoController):
+class Esp32_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerTouchDriver, IoControllerDac,
+                       IoControllerCan, IoControllerDvp8, IoControllerI2s, IoControllerWifi, IoControllerBle,
+                       IoControllerBluetooth, BaseIoController):
   """Defines base interfaces for ESP32 microcontrollers"""
 
 
@@ -63,6 +63,7 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
     spi_peripheral_model = SpiPeripheral(DigitalBidir.empty(), (0, 80) * MHertz)
     i2c_model = I2cController(DigitalBidir.empty())  # section 4.1.11, 100/400kHz and up to 5MHz
     i2c_target_model = I2cTarget(DigitalBidir.empty())
+    touch_model = TouchDriver()
     can_model = CanControllerPort(DigitalBidir.empty())  # aka TWAI
     i2s_model = I2sController(DigitalBidir.empty())
     dvp8_model = Dvp8Host(DigitalBidir.empty())
@@ -76,21 +77,21 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
 
       PinResource('VDET_1', {'ADC1_CH6': adc_model}),  # also input-only 'GPIO34': dio_model, RTC_GPIO
       PinResource('VDET_2', {'ADC1_CH7': adc_model}),  # also input-only 'GPIO35': dio_model,  RTC_GPIO
-      PinResource('32K_XP', {'GPIO32': dio_model, 'ADC1_CH4': adc_model}),  # also RTC_GPIO, 32K_XP
-      PinResource('32K_XN', {'GPIO33': dio_model, 'ADC1_CH5': adc_model}),  # also RTC_GPIO, 32K_XN
+      PinResource('32K_XP', {'GPIO32': dio_model, 'ADC1_CH4': adc_model, 'TOUCH9': touch_model}),  # also RTC_GPIO, 32K_XP
+      PinResource('32K_XN', {'GPIO33': dio_model, 'ADC1_CH5': adc_model, 'TOUCH8': touch_model}),  # also RTC_GPIO, 32K_XN
 
       PinResource('GPIO25', {'GPIO25': dio_model, 'ADC2_CH8': adc_model, 'DAC_1': dac_model}),  # also RTC_GPIO
       PinResource('GPIO26', {'GPIO26': dio_model, 'ADC2_CH9': adc_model, 'DAC_2': dac_model}),  # also RTC_GPIO
-      PinResource('GPIO27', {'GPIO27': dio_model, 'ADC2_CH7': adc_model}),  # also RTC_GPIO
+      PinResource('GPIO27', {'GPIO27': dio_model, 'ADC2_CH7': adc_model, 'TOUCH7': touch_model}),  # also RTC_GPIO
 
-      PinResource('MTMS', {'GPIO14': dio_model, 'ADC2_CH6': adc_model}),  # also RTC_GPIO
-      PinResource('MTDI', {'GPIO12': dio_model, 'ADC2_CH5': adc_model}),  # also RTC_GPIO, noncritical strapping pin
-      PinResource('MTCK', {'GPIO13': dio_model, 'ADC2_CH4': adc_model}),  # also RTC_GPIO
-      PinResource('MTDO', {'GPIO15': dio_model, 'ADC2_CH3': adc_model}),  # also RTC_GPIO, noncritical strapping pin
+      PinResource('MTMS', {'GPIO14': dio_model, 'ADC2_CH6': adc_model, 'TOUCH6': touch_model}),  # also RTC_GPIO
+      PinResource('MTDI', {'GPIO12': dio_model, 'ADC2_CH5': adc_model, 'TOUCH5': touch_model}),  # also RTC_GPIO, noncritical strapping pin
+      PinResource('MTCK', {'GPIO13': dio_model, 'ADC2_CH4': adc_model, 'TOUCH4': touch_model}),  # also RTC_GPIO
+      PinResource('MTDO', {'GPIO15': dio_model, 'ADC2_CH3': adc_model, 'TOUCH3': touch_model}),  # also RTC_GPIO, noncritical strapping pin
 
-      # PinResource('GPIO2', {'GPIO2': self._dio_model, 'ADC2_CH2': adc_model}),  # also RTC_GPIO, strapping pin
-      # PinResource('GPIO0', {'GPIO0': self._dio_model, 'ADC2_CH1': adc_model}),  # also RTC_GPIO, strapping pin
-      PinResource('GPIO4', {'GPIO4': dio_model, 'ADC2_CH0': adc_model}),  # also RTC_GPIO
+      # PinResource('GPIO2', {'GPIO2': self._dio_model, 'ADC2_CH2': adc_model, 'TOUCH2': touch_model}),  # also RTC_GPIO, strapping pin
+      # PinResource('GPIO0', {'GPIO0': self._dio_model, 'ADC2_CH1': adc_model, 'TOUCH1': touch_model}),  # also RTC_GPIO, strapping pin
+      PinResource('GPIO4', {'GPIO4': dio_model, 'ADC2_CH0': adc_model, 'TOUCH0': touch_model}),  # also RTC_GPIO
 
       # VDD_SDIO
       PinResource('GPIO16', {'GPIO16': sdio_model}),
