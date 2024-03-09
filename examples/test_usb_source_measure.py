@@ -422,9 +422,15 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.adc.pwr, self.vanalog)  # TODO: digital rail
       self.connect(self.adc.spi, shared_spi)
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
-      self.connect(self.adc.vins.request('0'), self.vcenter)
-      self.connect(self.adc.vins.request('1'), self.control.measured_current)
-      self.connect(self.adc.vins.request('2'), self.control.measured_voltage)
+      (self.vcenter_rc, ), _ = self.chain(self.vcenter,
+                                          imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
+                                          self.adc.vins.request('0'))
+      (self.imeas_rc, ), _ = self.chain(self.control.measured_current,
+                                        imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
+                                        self.adc.vins.request('1'))
+      (self.vmeas_rc, ), _ = self.chain(self.control.measured_voltage,
+                                        imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
+                                        self.adc.vins.request('2'))
 
     self.outn = self.Block(BananaSafetyJack())
     self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
