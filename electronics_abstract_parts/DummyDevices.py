@@ -51,6 +51,22 @@ class DummyDigitalSink(DummyDevice):
     ), [InOut])
 
 
+class DummyAnalogSource(DummyDevice):
+  @init_in_parent
+  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
+               signal_out: RangeLike = RangeExpr.EMPTY,
+               current_limits: RangeLike = RangeExpr.ALL,
+               impedance: RangeLike = RangeExpr.ZERO) -> None:
+    super().__init__()
+
+    self.io = self.Port(AnalogSource(
+      voltage_out=voltage_out,
+      signal_out=signal_out,
+      current_limits=current_limits,
+      impedance=impedance
+    ), [InOut])
+
+
 class DummyAnalogSink(DummyDevice):
   @init_in_parent
   def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL,
