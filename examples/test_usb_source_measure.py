@@ -357,9 +357,6 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.i2c_pull, ), _ = self.chain(shared_i2c, imp.Block(I2cPullup()), self.pd.i2c)
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
 
-      self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.mcu.gpio.request_vector('rgb'), self.rgb.signals)
-
       self.oled = imp.Block(Er_Oled_096_1_1())
       self.connect(shared_i2c, self.oled.i2c)
       self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
@@ -369,22 +366,18 @@ class UsbSourceMeasure(JlcBoardTop):
 
       pull_model = PulldownResistor(10*kOhm(tol=0.05))
       rc_model = DigitalLowPassRc(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))
-      (self.buckl_pull, self.buckl_rc, self.buckl_tp), _ = self.chain(
+      (self.buckl_pull, self.buckl_rc), _ = self.chain(
         self.mcu.gpio.request('buck_pwm_low'),
-        imp.Block(pull_model), imp.Block(rc_model),
-        self.Block(DigitalTestPoint("bul")), self.conv.buck_pwm_low)
-      (self.buckh_pull, self.buckh_rc, self.buckh_tp), _ = self.chain(
+        imp.Block(pull_model), imp.Block(rc_model), self.conv.buck_pwm_low)
+      (self.buckh_pull, self.buckh_rc), _ = self.chain(
         self.mcu.gpio.request('buck_pwm_high'),
-        imp.Block(pull_model), imp.Block(rc_model),
-        self.Block(DigitalTestPoint("buh")), self.conv.buck_pwm_high)
-      (self.boostl_pull, self.boostl_rc, self.boostl_tp), _ = self.chain(
+        imp.Block(pull_model), imp.Block(rc_model), self.conv.buck_pwm_high)
+      (self.boostl_pull, self.boostl_rc), _ = self.chain(
         self.mcu.gpio.request('boost_pwm_low'),
-        imp.Block(pull_model), imp.Block(rc_model),
-        self.Block(DigitalTestPoint("bol")), self.conv.boost_pwm_low)
-      (self.boosth_pull, self.boosth_rc, self.boosth_tp), _ = self.chain(
+        imp.Block(pull_model), imp.Block(rc_model), self.conv.boost_pwm_low)
+      (self.boosth_pull, self.boosth_rc), _ = self.chain(
         self.mcu.gpio.request('boost_pwm_high'),
-        imp.Block(pull_model), imp.Block(rc_model),
-        self.Block(DigitalTestPoint("boh")), self.conv.boost_pwm_high)
+        imp.Block(pull_model), imp.Block(rc_model), self.conv.boost_pwm_high)
 
       self.connect(self.mcu.gpio.request('boot_pwm'), self.boot.pwm)
 
@@ -399,15 +392,18 @@ class UsbSourceMeasure(JlcBoardTop):
       self.ioe = imp.Block(Pca9554())
       self.connect(self.ioe.i2c, shared_i2c)
       self.enc = imp.Block(DigitalRotaryEncoder())
-      self.connect(self.enc.a, self.ioe.io.request('enc_a'))
-      self.connect(self.enc.b, self.ioe.io.request('enc_b'))
-      self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.ioe.io.request('enc_sw'))
+      self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
+      self.connect(self.enc.b, self.mcu.gpio.request('enc_b'))
+      self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request('enc_sw'))
       self.dir = imp.Block(DigitalDirectionSwitch())
       self.connect(self.dir.a, self.ioe.io.request('dir_a'))
       self.connect(self.dir.b, self.ioe.io.request('dir_b'))
       self.connect(self.dir.c, self.ioe.io.request('dir_c'))
       self.connect(self.dir.d, self.ioe.io.request('dir_d'))
       self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.ioe.io.request('dir_cen'))
+
+      self.rgb = imp.Block(IndicatorSinkRgbLed())
+      self.connect(self.ioe.io.request_vector('rgb'), self.rgb.signals)
 
     # analog domain
     with self.implicit_connect(
@@ -472,30 +468,30 @@ class UsbSourceMeasure(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
           # note: for ESP32-S3 compatibility: IO35/36/37 (pins 28-30) are used by PSRAM
           # note: for ESP32-C6 compatibility: pin 34 (22 on dedicated -C6 pattern) is NC
-          'rgb_green=20',
-          'rgb_red=21',
-          'rgb_blue=22',
-          'oled_reset=23',
-
-          'adc_cs=4',
-          'spi.sck=5',
-          'spi.mosi=6',
-          'spi.miso=7',
-          'i2c.scl=8',
-          'i2c.sda=9',
-          'ldac=10',
-          'drv_en=11',
-          'off_0=12',
-          'boost_pwm_high=31',
-          'boost_pwm_low=32',
-          'buck_pwm_high=33',
-          'buck_pwm_low=35',
-          'boot_pwm=38',
-          'pd_int=39',
-
-          'led=_GPIO0_STRAP',
-
-          'vconv_sense=18',
+          # 'rgb_green=20',
+          # 'rgb_red=21',
+          # 'rgb_blue=22',
+          # 'oled_reset=23',
+          #
+          # 'adc_cs=4',
+          # 'spi.sck=5',
+          # 'spi.mosi=6',
+          # 'spi.miso=7',
+          # 'i2c.scl=8',
+          # 'i2c.sda=9',
+          # 'ldac=10',
+          # 'drv_en=11',
+          # 'off_0=12',
+          # 'boost_pwm_high=31',
+          # 'boost_pwm_low=32',
+          # 'buck_pwm_high=33',
+          # 'buck_pwm_low=35',
+          # 'boot_pwm=38',
+          # 'pd_int=39',
+          #
+          # 'led=_GPIO0_STRAP',
+          #
+          # 'vconv_sense=18',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
@@ -505,9 +501,6 @@ class UsbSourceMeasure(JlcBoardTop):
           'dir_c=7',
           'dir_d=4',
           'dir_b=12',
-          'enc_sw=11',
-          'enc_a=9',
-          'enc_b=10',
         ]),
 
         # allow the regulator to go into tracking mode
