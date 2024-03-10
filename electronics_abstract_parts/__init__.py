@@ -21,7 +21,7 @@ from .ESeriesUtil import ESeriesUtil
 from .SmdStandardPackage import SmdStandardPackage, SmdStandardPackageSelector
 
 from .AbstractDevices import Battery
-from .AbstractConnector import BananaJack, BananaSafetyJack
+from .AbstractConnector import BananaJack, BananaSafetyJack, RfConnector, RfConnectorTestPoint, UflConnector
 from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
 from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor
@@ -70,8 +70,9 @@ from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, Ceramic
 from .AbstractOscillator import Oscillator, TableOscillator
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConnectorReset, \
     SwdCortexTargetConnectorSwo, SwdCortexTargetConnectorTdi
-from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, AnalogTestPoint
-from .AbstractTestPoint import I2cTestPoint, CanControllerTestPoint
+from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, AnalogTestPoint, \
+    I2cTestPoint, CanControllerTestPoint
+from .AbstractTestPoint import AnalogRfTestPoint
 from .AbstractJumper import Jumper, DigitalJumper
 from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
 

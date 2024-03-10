@@ -411,9 +411,12 @@ class UsbSourceMeasure(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.dac = imp.Block(Mcp4728())
-      self.connect(self.dac.out0, self.control.control_voltage)
-      self.connect(self.dac.out1, self.control.control_current_sink)
-      self.connect(self.dac.out2, self.control.control_current_source)
+      (self.tp_cv, ), _ = self.chain(self.dac.out0, imp.Block(AnalogRfTestPoint('cv')),
+                                     self.control.control_voltage)
+      (self.tp_cisrc, ), _ = self.chain(self.dac.out1, imp.Block(AnalogRfTestPoint('cisrc')),
+                                        self.control.control_current_sink)
+      (self.tp_cisnk, ), _ = self.chain(self.dac.out2, imp.Block(AnalogRfTestPoint('cisnk')),
+                                        self.control.control_current_source)
       self.connect(self.dac.i2c, shared_i2c)
       self.connect(self.dac.ldac, self.mcu.gpio.request('ldac'))
 
@@ -422,15 +425,18 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.adc.pwr, self.vanalog)  # TODO: digital rail
       self.connect(self.adc.spi, shared_spi)
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
-      (self.vcenter_rc, ), _ = self.chain(self.vcenter,
-                                          imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
-                                          self.adc.vins.request('0'))
-      (self.imeas_rc, ), _ = self.chain(self.control.measured_current,
-                                        imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
-                                        self.adc.vins.request('1'))
-      (self.vmeas_rc, ), _ = self.chain(self.control.measured_voltage,
-                                        imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
-                                        self.adc.vins.request('2'))
+      (self.tp_vcen, self.vcen_rc, ), _ = self.chain(self.vcenter,
+                                                     imp.Block(AnalogRfTestPoint('cen')),
+                                                     imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),\
+                                                     self.adc.vins.request('0'))
+      (self.tp_mi, self.mi_rc, ), _ = self.chain(self.control.measured_current,
+                                                 imp.Block(AnalogRfTestPoint('mi')),
+                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
+                                                 self.adc.vins.request('1'))
+      (self.tp_mv, self.mv_rc, ), _ = self.chain(self.control.measured_voltage,
+                                                 imp.Block(AnalogRfTestPoint('mv')),
+                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
+                                                 self.adc.vins.request('2'))
 
     self.outn = self.Block(BananaSafetyJack())
     self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
@@ -469,6 +475,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (DirectionSwitch, Skrh),
         (TestPoint, CompactKeystone5015),
         (RotaryEncoder, Pec11s),
+        (RfConnector, UflConnector),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [

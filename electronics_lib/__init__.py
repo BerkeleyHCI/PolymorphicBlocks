@@ -92,6 +92,7 @@ from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbAPlugPads, UsbMicroBRec
 from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
 from .Fusb302b import Fusb302b
 from .Connector_Banana import Ct3151, Fcr7350
+from .Connector_Rf import Bwipx_1_001e
 
 from .TestPoint_Keystone import Keystone5015, CompactKeystone5015, Keystone5000
 from .TestPoint_Rc import TeRc
