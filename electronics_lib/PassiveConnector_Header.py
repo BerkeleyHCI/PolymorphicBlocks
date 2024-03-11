@@ -114,6 +114,35 @@ class JstPhSmVerticalJlc(JstPhSmVertical, JlcPart):
     return super().part_footprint_mfr_name(length)
 
 
+class JstShSmHorizontal(FootprintPassiveConnector, JlcPart):
+  """JST SH connector in SMD, with JLC part numbers for what parts are stocked (JST or clones,
+  since JLC's inventory of PH SMD connectors is pretty spotty)."""
+  PART_NUMBERS = {  # in order of decreasing stock, on 2022-08-23
+    2: 'C160402',
+    3: 'C160403',
+    4: 'C160404',
+    5: 'C136657',
+    6: 'C160405',
+    7: 'C160406',
+    8: 'C160407',
+    9: 'C160408',
+    10: 'C160409',
+    11: 'C515956',
+    12: 'C160411',
+    13: 'C160412',
+    14: 'C160413',
+    15: 'C160414',
+    20: 'C160415',
+  }
+  allowed_pins = PART_NUMBERS.keys()
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    # TODO this isn't the intended hook and uses side effects, but it works for now
+    self.assign(self.lcsc_part, self.PART_NUMBERS[length])
+    self.assign(self.actual_basic_part, False)
+    return (f'Connector_JST:JST_SH_SM{length:02d}B-SRSS-TB_1x{length:02d}-1MP_P1.00mm_Horizontal',
+            "JST", f"SM{length:02d}B-SRSS-TB")
+
+
 class MolexSl(FootprintPassiveConnector):
   """Molex SL series connector: 2.54mm shrouded and polarized, in vertical through-hole.
   Breadboard wire compatible - especially for debugging in a pinch."""

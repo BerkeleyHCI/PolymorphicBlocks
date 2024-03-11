@@ -298,6 +298,13 @@ class UsbSourceMeasure(JlcBoardTop):
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
 
+      # (self.reg_vref, self.tp_vref), _ = self.chain(
+      #   self.v6,
+      #   imp.Block(VoltageReference(output_voltage=3.3*Volt(tol=0.01))),
+      #   self.Block(VoltageTestPoint())
+      # )
+      # self.vref = self.connect(self.reg_vref.pwr_out)
+
       (self.ref_div, self.ref_buf), _ = self.chain(
         self.vanalog,
         imp.Block(VoltageDivider(output_voltage=1.5*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
@@ -351,14 +358,18 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
                                                     self.mcu.usb.request())
 
-      shared_spi = self.mcu.spi.request('spi')
-      shared_i2c = self.mcu.i2c.request('i2c')
-      self.i2c_tp = self.Block(I2cTestPoint('i2c')).connected(shared_i2c)
-      (self.i2c_pull, ), _ = self.chain(shared_i2c, imp.Block(I2cPullup()), self.pd.i2c)
+      int_i2c = self.mcu.i2c.request('int_i2c')
+      self.i2c_tp = self.Block(I2cTestPoint('i2c')).connected(int_i2c)
+      (self.i2c_pull, ), _ = self.chain(int_i2c, imp.Block(I2cPullup()), self.pd.i2c)
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
 
       self.oled = imp.Block(Er_Oled_096_1_1())
-      self.connect(shared_i2c, self.oled.i2c)
+      self.connect(int_i2c, self.oled.i2c)
+      # self.oled = imp.Block(Er_Oled022_1())
+      # (probably) pin compatible w/ 2.4" 128x64 ER-OLED024-2B; maybe also ER-OLED015-2B
+      # self.connect(self.mcu.spi.request('oled_spi'), self.oled.spi)
+      # self.connect(self.mcu.gpio.request('oled_cs'), self.oled.cs)
+      # self.connect(self.mcu.gpio.request('oled_dc'), self.oled.dc)
       self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
 
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
@@ -381,16 +392,17 @@ class UsbSourceMeasure(JlcBoardTop):
 
       self.connect(self.mcu.gpio.request('boot_pwm'), self.boot.pwm)
 
-      (self.pass_temp, ), _ = self.chain(shared_i2c, imp.Block(Tmp1075n(0)))
-      (self.conv_temp, ), _ = self.chain(shared_i2c, imp.Block(Tmp1075n(1)))
+      (self.pass_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(0)))
+      (self.conv_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(1)))
       (self.conv_sense, ), _ = self.chain(
         self.vconv,
         imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
         self.mcu.adc.request('vconv_sense')
       )
 
+      # expander and interface elements
       self.ioe = imp.Block(Pca9554())
-      self.connect(self.ioe.i2c, shared_i2c)
+      self.connect(self.ioe.i2c, int_i2c)
       self.enc = imp.Block(DigitalRotaryEncoder())
       self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
       self.connect(self.enc.b, self.mcu.gpio.request('enc_b'))
@@ -405,6 +417,11 @@ class UsbSourceMeasure(JlcBoardTop):
       self.rgb = imp.Block(IndicatorSinkRgbLed())
       self.connect(self.ioe.io.request_vector('rgb'), self.rgb.signals)
 
+      # expansion ports
+      (self.qwiic_pull, self.qwiic, ), _ = self.chain(self.mcu.i2c.request('qwiic'),
+                                                      imp.Block(I2cPullup()),
+                                                      imp.Block(QwiicTarget()))
+
     # analog domain
     with self.implicit_connect(
         ImplicitConnect(self.vanalog, [Power]),
@@ -417,13 +434,13 @@ class UsbSourceMeasure(JlcBoardTop):
                                         self.control.control_current_sink)
       (self.tp_cisnk, ), _ = self.chain(self.dac.out2, imp.Block(AnalogRfTestPoint('cisnk')),
                                         self.control.control_current_source)
-      self.connect(self.dac.i2c, shared_i2c)
+      self.connect(self.dac.i2c, int_i2c)
       self.connect(self.dac.ldac, self.mcu.gpio.request('ldac'))
 
       self.adc = imp.Block(Mcp3561())
       self.connect(self.adc.pwra, self.vanalog)
       self.connect(self.adc.pwr, self.vanalog)  # TODO: digital rail
-      self.connect(self.adc.spi, shared_spi)
+      self.connect(self.adc.spi, self.mcu.spi.request('adc_spi'))
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
       (self.tp_vcen, self.vcen_rc, ), _ = self.chain(self.vcenter,
                                                      imp.Block(AnalogRfTestPoint('cen')),
@@ -481,9 +498,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['mcu', 'pin_assigns'], [
           # note: for ESP32-S3 compatibility: IO35/36/37 (pins 28-30) are used by PSRAM
           # note: for ESP32-C6 compatibility: pin 34 (22 on dedicated -C6 pattern) is NC
-          # 'rgb_green=20',
-          # 'rgb_red=21',
-          # 'rgb_blue=22',
+
           # 'oled_reset=23',
           #
           # 'adc_cs=4',
@@ -514,6 +529,10 @@ class UsbSourceMeasure(JlcBoardTop):
           'dir_c=7',
           'dir_d=4',
           'dir_b=12',
+
+          # 'rgb_green=20',
+          # 'rgb_red=21',
+          # 'rgb_blue=22',
         ]),
 
         # allow the regulator to go into tracking mode

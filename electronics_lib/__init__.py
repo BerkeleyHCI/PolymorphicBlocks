@@ -41,7 +41,8 @@ from .CeramicResonator_Cstne import Cstne
 from .PassiveConnector_Header import PinHeader254, PinHeader254Vertical, PinHeader254Horizontal, PinSocket254
 from .PassiveConnector_Header import PinHeader254DualShroudedInline
 from .PassiveConnector_Header import PinHeader127DualShrouded
-from .PassiveConnector_Header import JstPhKVertical, JstPhSmVertical, JstPhKHorizontal, JstPhSmVerticalJlc, MolexSl
+from .PassiveConnector_Header import JstPhKVertical, JstPhSmVertical, JstPhKHorizontal, JstPhSmVerticalJlc, \
+    JstShSmHorizontal, MolexSl
 from .PassiveConnector_Fpc import Fpc030, Fpc030Top, Fpc030Bottom, Fpc030TopBottom, HiroseFh35cshw
 from .PassiveConnector_Fpc import Fpc050, Fpc050Top, Fpc050Bottom, Fpc050BottomFlip, HiroseFh12sh, Afc01, Afc07Top, Te1734839
 from .PassiveConnector_TagConnect import TagConnect, TagConnectLegged, TagConnectNonLegged
@@ -85,7 +86,7 @@ from .Fpga_Ice40up import Ice40up5k_Sg48
 from .IoExpander_Pcf8574 import Pcf8574
 from .IoExpander_Pca9554 import Pca9554
 
-from .Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector
+from .Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector, QwiicTarget
 from .FanConnector import CpuFanConnector, CpuFanPwmControl
 from .CanBlocks import Pesd1can
 from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbAPlugPads, UsbMicroBReceptacle
