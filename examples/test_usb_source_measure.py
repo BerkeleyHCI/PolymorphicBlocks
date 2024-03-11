@@ -266,14 +266,14 @@ class UsbSourceMeasure(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       # logic supplies
-      (self.reg_6v, self.tp_6v, self.reg_3v3, self.tp_3v3), _ = self.chain(
+      (self.reg_5v, self.tp_5v, self.reg_3v3, self.tp_3v3), _ = self.chain(
         self.vusb,
-        imp.Block(BuckConverter(output_voltage=6.0*Volt(tol=0.05))),  # high enough to power gate driver
+        imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint())
       )
-      self.v6 = self.connect(self.reg_6v.pwr_out)
+      self.v6 = self.connect(self.reg_5v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
@@ -298,12 +298,12 @@ class UsbSourceMeasure(JlcBoardTop):
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
 
-      # (self.reg_vref, self.tp_vref), _ = self.chain(
-      #   self.v6,
-      #   imp.Block(VoltageReference(output_voltage=3.3*Volt(tol=0.01))),
-      #   self.Block(VoltageTestPoint())
-      # )
-      # self.vref = self.connect(self.reg_vref.pwr_out)
+      (self.reg_vref, self.tp_vref), _ = self.chain(
+        self.v6,
+        imp.Block(VoltageReference(output_voltage=3.3*Volt(tol=0.01))),
+        self.Block(VoltageTestPoint())
+      )
+      self.vref = self.connect(self.reg_vref.pwr_out)
 
       (self.ref_div, self.ref_buf), _ = self.chain(
         self.vanalog,
@@ -475,9 +475,10 @@ class UsbSourceMeasure(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
-        (['reg_6v'], Tps54202h),
+        (['reg_5v'], Tps54202h),
         (['reg_3v3'], Ldl1117),
         (['reg_analog'], Ap2210),
+        (['reg_vref'], Ref30xx),
 
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),
@@ -536,15 +537,15 @@ class UsbSourceMeasure(JlcBoardTop):
         ]),
 
         # allow the regulator to go into tracking mode
-        (['reg_6v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
-        (['reg_6v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
+        (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
+        (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_6v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
 
         # ignore derating on 20v - it's really broken =(
-        (['reg_6v', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
-        (['reg_6v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
+        (['reg_5v', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
+        (['reg_5v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
         (['conv', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
