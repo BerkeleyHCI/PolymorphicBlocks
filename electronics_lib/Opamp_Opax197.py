@@ -3,6 +3,8 @@ from .JlcPart import JlcPart
 
 
 class Opa197_Device(InternalSubcircuit, JlcPart, FootprintBlock):
+
+  PARTS = [('OPA197IDR', 'C79274'), ('OPA189IDR', 'C781811') ]
   def __init__(self):
     super().__init__()
     self.vcc = self.Port(VoltageSink(
@@ -27,6 +29,7 @@ class Opa197_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
   def contents(self):
     super().contents()
+    part, lcsc_part = self.PARTS[0]
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
       {
@@ -39,10 +42,10 @@ class Opa197_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         '7': self.vcc,
         # 8 is NC
       },
-      mfr='Texas Instruments', part='OPA197IDR',
+      mfr='Texas Instruments', part=part,
       datasheet='https://www.ti.com/lit/ds/symlink/opa197.pdf'
     )
-    self.assign(self.lcsc_part, 'C79274')
+    self.assign(self.lcsc_part, lcsc_part)
     self.assign(self.actual_basic_part, False)
 
 
