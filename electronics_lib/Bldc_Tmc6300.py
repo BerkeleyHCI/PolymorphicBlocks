@@ -7,142 +7,178 @@ from .JlcPart import JlcPart
 class Tmc6300_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
-        self.vm = self.Port(VoltageSink(  # one 0.1uF capacitor per supply pin and a bulk Vm capacitor
-            voltage_limits=(8, 60)*Volt,  # Table 6.3 Vm
-            current_draw=RangeExpr(),
-        ))
-        self.v3p3 = self.Port(VoltageSource(  # internal regulator, bypass with 6.3v, 0.47uF capacitor
-            voltage_out=(3.1, 3.52)*Volt,  # Table 6.5 V3P3 voltage
-            current_limits=(0, 10)*mAmp,  # Table 6.3 max V3P3 load current
-        ))
-        self.vcp = self.Port(Passive())  # charge pump, 16V 0.1uF capacitor to Vm
         self.gnd = self.Port(Ground())
+        self.w = self.Port(DigitalSource())  # to BLDC W
+        self.vcp = self.Port(Passive())  # Charge pump voltage, optionally tie to VS using 1nF to 100nF capacitor
 
-        self.ens = self.Port(Vector(DigitalSink.empty()))
-        self.ins = self.Port(Vector(DigitalSink.empty()))
-        self.outs = self.Port(Vector(DigitalSource.empty()))
 
-        self.din_model = DigitalSink(  # nSleep, ENx, INx - internally pulled down 100k (Table 6.5)
-            voltage_limits=(-0.3, 5.25)*Volt,  # to input high voltage max
-            input_thresholds=(0.7, 2.2)
-        )
-        self.nreset = self.Port(self.din_model)  # required to be driven, to clear fault conditions
-        self.nsleep = self.Port(self.din_model)  # required, though can be tied high
-        self.nfault = self.Port(DigitalSingleSource.low_from_supply(self.gnd), optional=True)
+        self.uh = self.Port(DigitalSink.empty())
+        self.vh = self.Port(DigitalSink.empty())
+        self.wh = self.Port(DigitalSink.empty())
+        self.ul = self.Port(DigitalSink.empty())
+        self.wl = self.Port(DigitalSink.empty())
+        self.vl = self.Port(DigitalSink.empty())
+        self.vio = self.Port(VoltageSource(
+            voltage_out=(2.0, 5.25)*Volt,  # Table 7.1 Operational Range VVIO
+            current_limits=(0, 200)*uAmp,  # Table 7.2 DC and Timing Characteristics IVIO
+        ))
+        self.diag = self.Port(DigitalSingleSource.empty(), optional=True)
+        self.vout1v8 = self.Port(VoltageSource())
+        self.u = self.Port(DigitalSource())       # to BLDC U
+        self.bruv = self.Port(VoltageSink())    # Connect to GND directly or via a sense resistor
+        self.v = self.Port(DigitalSource())       # to BLDC V
+        self.vs = self.Port(VoltageSink(
+            voltage_limits=(2, 11)*Volt,  # Table 7.1 Operational Range vs
+            current_draw=(0, 2.4)*Amp, # Table 7.1 Operational Range vs
+        ))
+        self.brw = self.Port(VoltageSink())
 
-        self.pgnds = self.Port(Vector(VoltageSink.empty()))
-
-        self.cpl = self.Port(Passive())  # connect Vm rated, 0.01uF ceramic capacitor
-        self.cph = self.Port(Passive())
 
     def contents(self) -> None:
-        out_model = DigitalSource.from_supply(
-            self.gnd, self.vm,
-            current_limits=(-2.5, 2.5)*Amp  # peak current, section 1
-        )
-        pgnd_model = VoltageSink(
-            voltage_limits=(-0.5, 0.5)*Volt,  # Table 6.3 PGNDx voltage
-            current_draw=-self.vm.current_draw,
-        )
-        channel_currents = []
-        out_connected = []
-        for i in ['1', '2', '3']:
-            en_i = self.ens.append_elt(self.din_model, i)
-            in_i = self.ins.append_elt(self.din_model, i)
-            out_i = self.outs.append_elt(out_model, i)
-            self.pgnds.append_elt(pgnd_model, i)
-
-            self.require(out_i.is_connected().implies(en_i.is_connected() & in_i.is_connected()))
-            channel_currents.append(
-                out_i.is_connected().then_else(out_i.link().current_drawn.abs().upper(), 0*mAmp)
-            )
-            out_connected.append(out_i.is_connected())
-
-        overall_current = functools.reduce(lambda a, b: a.max(b), channel_currents)
-        self.assign(self.vm.current_draw, (0.5, 5)*mAmp +  # Table 6.5 Vm sleep typ to operating max
-                    (0,  overall_current))
-        any_out_connected = functools.reduce(lambda a, b: a | b, out_connected)
-        self.require(any_out_connected)
-
         self.footprint(
-            'U', 'Package_SO:HTSSOP-28-1EP_4.4x9.7mm_P0.65mm_EP2.85x5.4mm_ThermalVias',
+            'U', 'Package_DFN_QFN:QFN-20-1EP_3x3mm_P0.4mm_EP1.7x1.7mm',
             {
-                '1': self.cpl,
-                '2': self.cph,
-                '3': self.vcp,
-                '4': self.vm,
-                '5': self.outs['1'],
-                '6': self.pgnds['1'],
-                '7': self.pgnds['2'],
-                '8': self.outs['2'],
-                '9': self.outs['3'],
-                '10': self.pgnds['3'],
-                '11': self.vm,
-                '12': self.gnd,  # compp, can be grounded if unused (datasheet 10.1)
-                '13': self.gnd,  # compn, can be grounded if unused (datasheet 10.1)
+                '1': self.w,
+                '2': self.vcp,
+                '3': self.uh,
+                '4': self.vh,
+                '5': self.wh,
+                '6': self.ul,
+                '7': self.wl,
+                '8': self.gnd,
+                '9': self.gnd,
+                '10': self.vl,
+                '11': self.vio,
+                '12': self.diag,
+                '13': self.vout1v8,  # 1.8VOUT, attach 100nF ceramic capacitor to GND near to pin for best performance
                 '14': self.gnd,
-                '15': self.v3p3,
-                '16': self.nreset,
-                '17': self.nsleep,
-                '18': self.nfault,  # open-drain fault status (requires external pullup)
-                '19': self.gnd,  # ncompo, can be grounded if unused (datasheet 10.1)
-                '20': self.gnd,
-                '21': self.gnd,  # NC, grounded when unused in example layouts
-                '22': self.ens['3'],
-                '23': self.ins['3'],
-                '24': self.ens['2'],
-                '25': self.ins['2'],
-                '26': self.ens['1'],
-                '27': self.ins['1'],
-                '28': self.gnd,
+                '15': self.u,
+                '16': self.bruv,
+                '17': self.v,
+                '18': self.vs,
+                #'19': nc,  # Leave this pin open
+                '20': self.brw,
 
-                '29': self.gnd,  # exposed pad
+                'pad': self.gnd,  # Exposed die pad, connect the exposed die pad to a GND plane # TODO: how should we do this?
             },
-            mfr='Texas Instruments', part='DRV8313PWP',
-            datasheet='https://www.ti.com/lit/ds/symlink/drv8313.pdf'
+            mfr='Analog Device', part='TMC6300',
+            datasheet='https://www.analog.com/media/en/technical-documentation/data-sheets/TMC6300_datasheet_rev1.08.pdf'
         )
-        self.assign(self.lcsc_part, 'C92482')
 
 
 class Tmc6300(BldcDriver, Block):
     def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Tmc6300_Device())
-        self.pwr = self.Export(self.ic.vm)
+        self.pwr = self.Export(self.ic.vs)
         self.gnd = self.Export(self.ic.gnd, [Common])
+        self.diag = self.Export(self.ic.diag, optional=True)
 
-        self.ens = self.Export(self.ic.ens)
-        self.ins = self.Export(self.ic.ins)
-        self.nreset = self.Export(self.ic.nreset)  # required to be driven, to clear fault conditions
-        self.nsleep = self.Port(DigitalSink.empty(), optional=True)  # tied high if not connected
-        self.nfault = self.Export(self.ic.nfault, optional=True)
+        self.w = self.Export(self.ic.w)
+        self.v = self.Export(self.ic.v)
+        self.u = self.Export(self.ic.u)
 
-        self.outs = self.Export(self.ic.outs)
-        self.pgnds = self.Port(Vector(VoltageSink.empty()), optional=True)  # connected in the generator if used
+        self.uh = self.Export(self.ic.uh)
+        self.ul = self.Export(self.ic.ul)
+        self.vh = self.Export(self.ic.vh)
+        self.vl = self.Export(self.ic.vl)
+        self.wh = self.Export(self.ic.wh)
+        self.wl = self.Export(self.ic.wl)
+
+        self.vcc_io = self.Export(self.ic.vio)
+
+        self.bruv = self.Export(self.ic.bruv, optional=True)
+        self.brw = self.Export(self.ic.brw, optional=True)
 
     def contents(self):
         super().contents()
-        self.vm_cap_bulk = self.Block(DecouplingCapacitor((10*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
-        self.vm_cap1 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
-        self.vm_cap2 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
+        # U/V/W-H/L resistors
 
-        # TODO datasheet recommends 6.3v-rated cap, here we just derive it from the voltage rail
-        self.v3p3_cap = self.Block(DecouplingCapacitor(0.47*uFarad(tol=0.2))).connected(self.gnd, self.ic.v3p3)
+        with self.implicit_connect(
+                ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            self.res_uh = imp.Block(Resistor(resistance=100*kOhm(tol=0.01)))
+            self.connect(self.ic.uh, self.res_uh.a.adapt_to(DigitalSink()))
+            self.res_ul = imp.Block(Resistor(resistance=100*kOhm(tol=0.01)))
+            self.connect(self.ic.ul, self.res_ul.a.adapt_to(DigitalSink()))
+            self.res_vh = imp.Block(Resistor(resistance=100*kOhm(tol=0.01)))
+            self.connect(self.ic.vh, self.res_vh.a.adapt_to(DigitalSink()))
+            self.res_vl = imp.Block(Resistor(resistance=100*kOhm(tol=0.01)))
+            self.connect(self.ic.vl, self.res_vl.a.adapt_to(DigitalSink()))
+            self.res_wh = imp.Block(Resistor(resistance=100*kOhm(tol=0.01)))
+            self.connect(self.ic.wh, self.res_wh.a.adapt_to(DigitalSink()))
+            self.res_wl = imp.Block(Resistor(resistance=100*kOhm(tol=0.01)))
+            self.connect(self.ic.wl, self.res_wl.a.adapt_to(DigitalSink()))
 
-        vm_voltage = self.pwr.link().voltage - self.gnd.link().voltage
-        self.cp_cap = self.Block(Capacitor(0.01*uFarad(tol=0.2), vm_voltage))
-        self.connect(self.cp_cap.pos, self.ic.cph)
-        self.connect(self.cp_cap.neg, self.ic.cpl)
-
-        self.vcp_cap = self.Block(Capacitor(0.1*uFarad(tol=0.2), (0, 16)*Volt))
+        # VS decoupling capacitors
+        self.vs_cap1 = self.Block(DecouplingCapacitor(10*nFarad(tol=0.1))).connected(self.gnd, self.ic.vs)
+        self.vs_cap2 = self.Block(DecouplingCapacitor(10*nFarad(tol=0.1))).connected(self.gnd, self.ic.vs)
+        vs_voltage = self.pwr.link().voltage - self.gnd.link().voltage
+        self.vcp_cap = self.Block(Capacitor(10*nFarad(tol=0.1), vs_voltage))
         self.connect(self.vcp_cap.pos, self.ic.vcp)
-        self.connect(self.vcp_cap.neg.adapt_to(VoltageSink()), self.ic.vm)
+        self.connect(self.vcp_cap.neg.adapt_to(VoltageSink()), self.ic.vs)
 
-        self.nsleep_default = self.Block(DigitalSourceConnected()) \
-            .out_with_default(self.ic.nsleep, self.nsleep, self.ic.v3p3.as_digital_source())
+        # Vio cap
+        self.vio_cap = self.Block(DecouplingCapacitor(10.0*nFarad(tol=0.1))).connected(self.gnd, self.ic.vio)
 
-        self.pgnd_defaults = ElementDict[VoltageSourceConnected]()
-        for i in ['1', '2', '3']:
-            pgnd = self.pgnds.append_elt(VoltageSink.empty(), i)
-            self.pgnd_defaults[i] = self.Block(VoltageSourceConnected()) \
-                .out_with_default(self.ic.pgnds.request(i), pgnd, self.gnd)
+        # vout1v8 cap
+        self.vout1v8_cap = self.Block(DecouplingCapacitor(10.0*nFarad(tol=0.1))).connected(self.gnd, self.ic.vout1v8)
+
+
+        # TODO: set default?
+        # # Default Connection for bruv
+        # if not self.bruv.is_connected():
+        #     self.connect(self.ic.bruv, self.gnd)
+        # # Default Connection for brw
+        # if not self.brw.is_optional:
+        #     self.connect(self.ic.brw, self.gnd)
+        #
+
+class Tmc6300WithOpa(Tmc6300):
+    R_SENSE = [
+        # (R_sense Ohm, Max current Draw)
+        (1.50, 0.2),
+        (1.00, 0.3),
+        (0.75, 0.4),
+        (0.50, 0.6),
+        (0.330, 0.8),
+        (0.270, 1.0),
+        (0.220, 1.2),
+        (0.150, 1.6),
+        (0.120, 1.8),  # in the table says 2.0 A (duplicated)
+        (0.100, 2.0)   # Note: Limited by driver max. ratings
+    ]
+    @init_in_parent
+    def __init__(self):
+        # Instantiate the INA139 device
+        super().__init__()
+        self.opa = self.Block(OpampFollower())
+        self.opa_pwr = self.Export(self.opa.pwr)
+        self.out = self.Export(self.opa.output)
+
+
+
+
+
+
+    def contents(self):
+        super().contents()
+        self.connect(self.opa.gnd, self.ic.gnd)
+
+        pwr_I_max = self.pwr.link().current_drawn.upper()
+        r_sesne = self._find_r_sense(pwr_I_max)
+        self.Rs = self.Block(Resistor(resistance=r_sesne))
+
+        self.connect(self.bruv, self.Rs.a.adapt_to(VoltageSink()))
+        #self.connect(self.brw, self.Rs.a.adapt_to(VoltageSink()))
+        self.connect(self.Rs.b.adapt_to(VoltageSink()), self.gnd)
+
+        self.connect(self.opa.input, self.bruv.as_analog_source())
+
+    def _find_r_sense(self, I_max):
+        # Find the appropriate R_SENSE using zero order hold
+        return .1*Ohm(tol=0.1)
+        for r_sense, current in self.R_SENSE:
+            if I_max <= current:
+                return r_sense * Ohm
+        return  self.R_SENSE[-1][0] * Ohm # if more than 2Amp. It is invalid tho

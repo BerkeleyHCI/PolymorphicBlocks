@@ -37,7 +37,7 @@ class Lcd_Round_1_28(Lcd, GeneratorBlock):
     """1.28 inch round lcd" 240 by 240 Color LCD with optional touch, ISP display interface and I2C touch sensing."""
     def __init__(self) -> None:
         super().__init__()
-        self.device = self.Block(Lcd_Round_1_28_Board_Device)
+        self.device = self.Block(Lcd_Round_1_28_Board_Device())
         self.reset = self.Export(self.device.rst)
         self.spi = self.Port(SpiPeripheral.empty())
         self.cs = self.Export(self.device.cs, optional=True)
