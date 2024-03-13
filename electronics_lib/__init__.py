@@ -106,7 +106,7 @@ from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
 from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, Sk6812_Side_A, NeopixelArray
 from .Lcd_Qt096t_if09 import Qt096t_if09
-#from .Lcd_Round_1_28 import Lcd_Round_1_28
+from .Lcd_Round_1_28 import Lcd_Round_1_28
 from .Oled_Er_Oled_091_3 import Er_Oled_091_3
 from .Oled_Er_Oled_096_1_1 import Er_Oled_096_1_1
 from .Oled_Er_Oled_096_1c import Er_Oled_096_1c
@@ -143,7 +143,7 @@ from .Mechanicals import JlcToolingHole
 from .MotorDriver_L293dd import L293dd
 from .MotorDriver_Drv8833 import Drv8833
 from .Bldc_Drv8313 import Drv8313
-from .Bldc_Tmc6300 import Tmc6300
+from .Bldc_Tmc6300 import Tmc6300, Tmc6300WithOpa
 
 from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc
 from .Mag_Qmc5883l import Mag_Qmc5883l

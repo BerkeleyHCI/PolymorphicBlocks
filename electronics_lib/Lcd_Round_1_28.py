@@ -14,11 +14,12 @@ class Lcd_Round_1_28_Board_Device(InternalSubcircuit, Block):
         )))
         self.gnd = self.Export(self.conn.pins.request('2').adapt_to(Ground()), [Common])
 
-        din_model = DigitalSink.from_supply(
-            self.gnd, self.vdd,
-            voltage_limit_tolerance=(-0.3, 0.3),  # SSD1306 datasheet, Table 11-1
-            input_threshold_factor=(0.2, 0.8)
-        )
+        # din_model = DigitalSink.from_supply(
+        #     self.gnd, self.vdd,
+        #     voltage_limit_tolerance=(-0.3, 0.3),  # SSD1306 datasheet, Table 11-1
+        #     input_threshold_factor=(0.2, 0.8)
+        # )
+        din_model = DigitalSink()
 
         self.miso = self.Export(self.conn.pins.request('3').adapt_to(din_model))
         self.mosi = self.Export(self.conn.pins.request('4').adapt_to(din_model))
@@ -33,11 +34,15 @@ class Lcd_Round_1_28_Board_Device(InternalSubcircuit, Block):
         self.tp_int = self.Export(self.conn.pins.request('12').adapt_to(din_model))
         self.tp_rst = self.Export(self.conn.pins.request('13').adapt_to(din_model))
 
-class Lcd_Round_1_28(Lcd, GeneratorBlock):
-    """1.28 inch round lcd" 240 by 240 Color LCD with optional touch, ISP display interface and I2C touch sensing."""
+class Lcd_Round_1_28(Lcd, Block):
+    """1.28 inch round lcd" 240 by 240 Color LCD with optional touch, ISP display interface and I2C touch sensing.
+    Currently this is assuming that the display already comes with the driver. To be added"""
     def __init__(self) -> None:
         super().__init__()
+
         self.device = self.Block(Lcd_Round_1_28_Board_Device())
+        self.pwr = self.Export(self.device.vdd, [Power])
+        self.gnd = self.Export(self.device.gnd, [Common])
         self.reset = self.Export(self.device.rst)
         self.spi = self.Port(SpiPeripheral.empty())
         self.cs = self.Export(self.device.cs, optional=True)

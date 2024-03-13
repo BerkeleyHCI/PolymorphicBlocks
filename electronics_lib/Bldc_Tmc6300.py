@@ -25,13 +25,13 @@ class Tmc6300_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.diag = self.Port(DigitalSingleSource.empty(), optional=True)
         self.vout1v8 = self.Port(VoltageSource())
         self.u = self.Port(DigitalSource())       # to BLDC U
-        self.bruv = self.Port(VoltageSink())    # Connect to GND directly or via a sense resistor
+        self.bruv = self.Port(Passive())    # Connect to GND directly or via a sense resistor
         self.v = self.Port(DigitalSource())       # to BLDC V
         self.vs = self.Port(VoltageSink(
             voltage_limits=(2, 11)*Volt,  # Table 7.1 Operational Range vs
             current_draw=(0, 2.4)*Amp, # Table 7.1 Operational Range vs
         ))
-        self.brw = self.Port(VoltageSink())
+        self.brw = self.Port(Passive())
 
 
     def contents(self) -> None:
@@ -124,15 +124,15 @@ class Tmc6300(BldcDriver, Block):
         # vout1v8 cap
         self.vout1v8_cap = self.Block(DecouplingCapacitor(10.0*nFarad(tol=0.1))).connected(self.gnd, self.ic.vout1v8)
 
-
+    def generate(self):
         # TODO: set default?
-        # # Default Connection for bruv
-        # if not self.bruv.is_connected():
-        #     self.connect(self.ic.bruv, self.gnd)
-        # # Default Connection for brw
-        # if not self.brw.is_optional:
-        #     self.connect(self.ic.brw, self.gnd)
-        #
+        # Default Connection for bruv
+        if not self.bruv.is_connected():
+            self.connect(self.ic.bruv, self.gnd)
+        # Default Connection for brw
+        if not self.brw.is_optional:
+            self.connect(self.ic.brw, self.gnd)
+
 
 class Tmc6300WithOpa(Tmc6300):
     R_SENSE = [
@@ -156,29 +156,24 @@ class Tmc6300WithOpa(Tmc6300):
         self.opa_pwr = self.Export(self.opa.pwr)
         self.out = self.Export(self.opa.output)
 
-
-
-
-
-
     def contents(self):
         super().contents()
         self.connect(self.opa.gnd, self.ic.gnd)
 
+    def generate(self):
         pwr_I_max = self.pwr.link().current_drawn.upper()
         r_sesne = self._find_r_sense(pwr_I_max)
         self.Rs = self.Block(Resistor(resistance=r_sesne))
 
         self.connect(self.bruv, self.Rs.a.adapt_to(VoltageSink()))
-        #self.connect(self.brw, self.Rs.a.adapt_to(VoltageSink()))
+        self.connect(self.brw, self.Rs.a.adapt_to(VoltageSink()))
         self.connect(self.Rs.b.adapt_to(VoltageSink()), self.gnd)
 
         self.connect(self.opa.input, self.bruv.as_analog_source())
 
     def _find_r_sense(self, I_max):
         # Find the appropriate R_SENSE using zero order hold
-        return .1*Ohm(tol=0.1)
         for r_sense, current in self.R_SENSE:
             if I_max <= current:
                 return r_sense * Ohm
-        return  self.R_SENSE[-1][0] * Ohm # if more than 2Amp. It is invalid tho
+        return self.R_SENSE[-1][0] * Ohm # if more than 2Amp. It is invalid tho
