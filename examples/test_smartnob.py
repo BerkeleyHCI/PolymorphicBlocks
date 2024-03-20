@@ -4,7 +4,7 @@ from typing import Optional, cast
 from edg import *
 
 from .test_multimeter import FetPowerGate
-# from .test_bldc_controller import *
+from .test_bldc_controller import *
 
 
 
@@ -155,6 +155,7 @@ class SmartNob(JlcBoardTop):
             self.preg_3v3 = imp.Block(ProtectedVoltageRegulator(
                 output_voltage=3.3*Volt(tol=0.05), zener_diode_voltage=(3.45, 3.9)*Volt
             ))
+
             self.v3v3 = self.connect(self.preg_3v3.pwr_out)
 
 
@@ -226,13 +227,30 @@ class SmartNob(JlcBoardTop):
             (self.switch, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('pwr'))
 
 
-        #
+
         # with self.implicit_connect(
-        #             ImplicitConnect(self.gnd, [Common]),
+        #         ImplicitConnect(self.gnd, [Common]),
+        #         ImplicitConnect(self.pwr, [Power]),
         #     ) as imp:
-        #     BldcConnector()
-        #     BldcController()
-        #     MagneticEncoder()
+        #     self.bldc = imp.Block(BldcConnector(2.0 * Amp))
+        #
+        #     self.drv = imp.Block(Tmc6300WithOpa())
+        #     self.connect(self.drv.wh,  self.mcu.gpio.request('bldc_wh'))
+        #     self.connect(self.drv.wl,  self.mcu.gpio.request('bldc_wl'))
+        #     self.connect(self.drv.vh,  self.mcu.gpio.request('bldc_vh'))
+        #     self.connect(self.drv.vl,  self.mcu.gpio.request('bldc_vl'))
+        #     self.connect(self.drv.uh,  self.mcu.gpio.request('bldc_uh'))
+        #     self.connect(self.drv.ul,  self.mcu.gpio.request('bldc_ul'))
+        #
+        #     #self.connect(self.drv.vcc_io, self.mcu.gpio.request('bldc_vcc_io'))
+        #     self.connect(self.drv.diag, self.mcu.gpio.request('bldc_diag'))
+        #
+        #     self.connect(self.drv.w, self.bldc.phases.request('1'))
+        #     self.connect(self.drv.v, self.bldc.phases.request('2'))
+        #     self.connect(self.drv.u, self.bldc.phases.request('3'))
+
+            # self.encoder = imp.Block(MagneticEncoder())
+
 
 
 
@@ -240,10 +258,10 @@ class SmartNob(JlcBoardTop):
         return super().refinements() + Refinements(
             instance_refinements=[
                 (['mcu'], Esp32s3_Wroom_1),
-                (['reg_3v3'], Ldl1117),
+               (['preg_3v3', 'reg'], Ldl1117),
 
 
-                # (['reg_2v5'], Xc6206p),
+                #(['reg_3v3'], Ldl1117),
                 # (['reg_1v2'], Xc6206p),
                 # (['rgb', 'package'], ThtRgbLed),
                 # (['npx_key'], Sk6812Mini_E),
@@ -275,7 +293,7 @@ class SmartNob(JlcBoardTop):
             class_values=[
                 # (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
                 #
-                # (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
+                (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
 
                 # the camera recommended specs are excessively tight, so loosen them a bit
                 # (Ov2640_Fpc24, ['device', 'dovdd', 'voltage_limits'], Range(1.71, 4.5)),
