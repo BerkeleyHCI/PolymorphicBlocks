@@ -7,7 +7,14 @@ from .test_multimeter import FetPowerGate  # Importing FetPowerGate from test_mu
 
 # Defining a class PcbBot which inherits from JlcBoardTop, for designing a PCB with specific features
 class Estop(JlcBoardTop):
-    """Robot driver that uses an ESP32 with a camera and has student-proofing."""
+    """Wireless bluetooth Estop for upto 6cell 30Amp
+    Known issues:
+        - XT60 poles are flipped for the output
+        - 3.3, 5v, 12v jst connector flipped compared to the input AA just
+        - 4.2v input does not activate the circuit (because the 4.5v buck converter)
+        - INA139 connected opanp reading zero
+
+    """
 
     # Method to define the contents of the PCB
     def contents(self) -> None:
