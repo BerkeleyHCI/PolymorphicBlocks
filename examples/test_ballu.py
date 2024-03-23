@@ -4,7 +4,7 @@ from typing import Optional, cast
 
 from edg import *
 
-from .components_lib import OrPowerGate, ProtectedVoltageRegulator, LipoCharger
+from .components_lib import OrPowerGate, ProtectedVoltageRegulator, LipoCharger, OrPowerGateDirSw
 from .test_robotdriver import PwmConnector
 
 
@@ -29,7 +29,7 @@ class Ballu(JlcBoardTop):
         self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
 
 
-        self.gate = self.Block(OrPowerGate((0, 1)*Volt, (0, 0.1)*Ohm)).connected_from(self.gnd, self.vusb, self.batt.pwr)
+        self.gate = self.Block(OrPowerGateDirSw((0, 1)*Volt, (0, 0.1)*Ohm)).connected_from(self.gnd, self.vusb, self.batt.pwr)
         self.pwr = self.connect(self.gate.pwr_out)
 
 
@@ -70,12 +70,12 @@ class Ballu(JlcBoardTop):
                 self.i2c,
                 imp.Block(I2cPullup()), imp.Block(I2cTestPoint('i2c')),)
 
-            # IO EXPANDER
-
-            self.expander = imp.Block(Pca9554())
-            self.connect(self.i2c, self.expander.i2c)
-            self.r_led = imp.Block(IndicatorLed(Led.Red))
-            self.connect(self.expander.io.request('led'), self.r_led.signal)
+            # # IO EXPANDER
+            #
+            # self.expander = imp.Block(Pca9554())
+            # self.connect(self.i2c, self.expander.i2c)
+            # self.r_led = imp.Block(IndicatorLed(Led.Red))
+            # self.connect(self.expander.io.request('led'), self.r_led.signal)
 
 
             (self.batt_sense, ), _ = self.chain(
@@ -89,7 +89,9 @@ class Ballu(JlcBoardTop):
                 ImplicitConnect(self.pwr, [Power]),
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            (self.npx, self.npx_key), _ = self.chain(self.mcu.gpio.request('npx'),  imp.Block(NeopixelArray(4*4)), imp.Block(Neopixel()))
+            # (self.npx, self.npx_side), _ = self.chain(self.mcu.gpio.request('npx'),  imp.Block(NeopixelArray(4)), imp.Block(NeopixelArray(6)),)
+            (self.npx_side, ), _ = self.chain(self.mcu.gpio.request('npx'), imp.Block(NeopixelArray(8)))
+
 
         with self.implicit_connect(
             ImplicitConnect(self.v3v3, [Power]),
@@ -100,7 +102,7 @@ class Ballu(JlcBoardTop):
             self.mag = imp.Block(Mag_Qmc5883l())
             self.connect(self.i2c, self.imu.i2c, self.mag.i2c)
 
-            Oled
+            # Oled
             self.oled = imp.Block(Er_Oled_096_1_1())
             self.connect(self.i2c, self.oled.i2c)
             self.connect(self.oled.reset, self.mcu.gpio.request("oled_reset"))
@@ -112,7 +114,7 @@ class Ballu(JlcBoardTop):
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             self.servo = ElementDict[PwmConnector]()
-            for i in range(4):
+            for i in range(2):
                 servo = self.servo[i] = imp.Block(PwmConnector((0, 200)*mAmp))
                 self.connect(self.mcu.gpio.request(f'servo{i}'), servo.pwm)
 
@@ -133,9 +135,18 @@ class Ballu(JlcBoardTop):
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             # Power gait io
-            self.chain(self.gate.btn_out, self.mcu.gpio.request('sw0'))
+            self.chain(self.gate.btn_out, self.mcu.gpio.request('dir_cnt'))
+            self.chain(self.gate.dir_a, self.mcu.gpio.request('dir_a'))
+            self.chain(self.gate.dir_b, self.mcu.gpio.request('dir_b'))
+            self.chain(self.gate.dir_c, self.mcu.gpio.request('dir_c'))
+            self.chain(self.gate.dir_d, self.mcu.gpio.request('dir_d'))
+
             self.chain(self.mcu.gpio.request('gate_control'), self.gate.control)
-            (self.switch, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('pwr'))
+
+            # Mounting holes
+        self.m = ElementDict[MountingHole]()
+        for i in range(4):
+            self.m[i] = self.Block(MountingHole())
 
 
 
@@ -154,6 +165,20 @@ class Ballu(JlcBoardTop):
                 # (['npx_key'], Sk6812Mini_E),
 
                 (['spk', 'conn'], JstPhKVertical),
+                # (['npx', 'led[0]'], Ws2812b),
+                # (['npx', 'led[1]'], Ws2812b),
+                # (['npx', 'led[2]'], Ws2812b),
+                # (['npx', 'led[3]'], Ws2812b),
+                (['npx_side', 'led[0]'], Sk6812_Side_A),
+                (['npx_side', 'led[1]'], Sk6812_Side_A),
+                (['npx_side', 'led[2]'], Sk6812_Side_A),
+                (['npx_side', 'led[3]'], Sk6812_Side_A),
+                (['npx_side', 'led[4]'], Sk6812_Side_A),
+                (['npx_side', 'led[5]'], Sk6812_Side_A),
+                (['npx_side', 'led[6]'], Sk6812_Side_A),
+                (['npx_side', 'led[7]'], Sk6812_Side_A),
+
+
 
             ],
             instance_values=[
@@ -174,9 +199,13 @@ class Ballu(JlcBoardTop):
             class_refinements=[
                 (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
                 (TestPoint, CompactKeystone5015),
+                (DirectionSwitch, Skrh),
                 # (Vl53l0x, Vl53l0xConnector),
-                (Neopixel, Ws2812b),
-                # (MountingHole, MountingHole_M3),
+                #(Neopixel, Ws2812b),
+                (MountingHole, MountingHole_M2_5),
+                (EspProgrammingHeader, EspProgrammingTc2030),
+                (TagConnect, TagConnectNonLegged)
+
             ],
             class_values=[
                 # (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock

@@ -153,7 +153,7 @@ class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
       })
 
 
-class FetPowerGate(PowerSwitch, KiCadSchematicBlock, Block):
+class FetPowerGateNoBtn(PowerSwitch, KiCadSchematicBlock, Block):
   """A high-side PFET power gate that has a button to power on, can be latched
   on by an external signal, and provides the button output as a signal.
   """
@@ -196,6 +196,29 @@ class FetPowerGate(PowerSwitch, KiCadSchematicBlock, Block):
       voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
       reverse_recovery_time=RangeExpr.ALL
     ))
+
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+                      conversions={
+                        'pwr_in': VoltageSink(
+                          current_draw=self.pwr_out.link().current_drawn,
+                          voltage_limits=RangeExpr.ALL,
+                        ),
+                        'pwr_out': VoltageSource(
+                          voltage_out=self.pwr_in.link().voltage,
+                          current_limits=RangeExpr.ALL,
+                        ),
+                        'control': DigitalSink(),  # TODO more modeling here?
+                        'gnd': Ground(),
+                        'btn_out': DigitalSingleSource(
+                          voltage_out=self.gnd.link().voltage,  # TODO model diode drop,
+                          output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
+                          low_signal_driver=True
+                        )
+                      })
+
+class FetPowerGate(FetPowerGateNoBtn):
+  def contents(self):
+    max_voltage = self.control.link().voltage.upper()
     self.btn_diode = self.Block(Diode(
       reverse_voltage=(0, max_voltage),
       current=RangeExpr.ZERO,  # effectively no current
@@ -203,26 +226,7 @@ class FetPowerGate(PowerSwitch, KiCadSchematicBlock, Block):
       reverse_recovery_time=RangeExpr.ALL
     ))
     self.btn = self.Block(Switch(voltage=0*Volt(tol=0)))  # TODO - actually model switch voltage
-
-    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
-      conversions={
-        'pwr_in': VoltageSink(
-          current_draw=self.pwr_out.link().current_drawn,
-          voltage_limits=RangeExpr.ALL,
-        ),
-        'pwr_out': VoltageSource(
-          voltage_out=self.pwr_in.link().voltage,
-          current_limits=RangeExpr.ALL,
-        ),
-        'control': DigitalSink(),  # TODO more modeling here?
-        'gnd': Ground(),
-        'btn_out': DigitalSingleSource(
-          voltage_out=self.gnd.link().voltage,  # TODO model diode drop,
-          output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
-          low_signal_driver=True
-        )
-      })
-
+    super().contents()
 
 class Multimeter(JlcBoardTop):
   """A BLE multimeter with volts/ohms/diode mode - everything but the curent mode.
