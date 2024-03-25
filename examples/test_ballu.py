@@ -10,10 +10,19 @@ from .test_robotdriver import PwmConnector
 
 
 class Ballu(JlcBoardTop):
-    """Robot driver that uses a ESP32 w/ camera and has student-proofing
+    """
+    Ballu robot new generation pcb board that is designed to fit on each foot of the ballu.
 
     Key features:
     - ESP32-S3,
+    - usb-c programing, power supply, and charging
+    - 9 axis IMU
+    - Side firing Neopixel
+    - Speaker
+    - Oled screen
+    - Software power switch with directional switch (center)
+    - Directional switch
+
 
     """
     def contents(self) -> None:
@@ -69,13 +78,6 @@ class Ballu(JlcBoardTop):
             (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
                 self.i2c,
                 imp.Block(I2cPullup()), imp.Block(I2cTestPoint('i2c')),)
-
-            # # IO EXPANDER
-            #
-            # self.expander = imp.Block(Pca9554())
-            # self.connect(self.i2c, self.expander.i2c)
-            # self.r_led = imp.Block(IndicatorLed(Led.Red))
-            # self.connect(self.expander.io.request('led'), self.r_led.signal)
 
 
             (self.batt_sense, ), _ = self.chain(
@@ -209,14 +211,8 @@ class Ballu(JlcBoardTop):
             ],
             class_values=[
                 # (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
-                #
                 (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
 
-                # the camera recommended specs are excessively tight, so loosen them a bit
-                # (Ov2640_Fpc24, ['device', 'dovdd', 'voltage_limits'], Range(1.71, 4.5)),
-                # (Ov2640_Fpc24, ['device', 'dvdd', 'voltage_limits'], Range(1.1, 1.36)),  # allow 1v2
-                # (Ov2640_Fpc24, ['device', 'avdd', 'voltage_limits'], Range(2.3, 3.0)),  # allow 2v5
-                #
                 (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
                 (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
             ],
