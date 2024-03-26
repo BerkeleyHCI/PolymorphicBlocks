@@ -62,7 +62,7 @@ from .BoostConverter_Torex import Xc9142
 from .BoostConverter_TexasInstruments import Tps61040
 from .BuckConverter_Custom import CustomSyncBuckConverter
 from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverter
-from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr
+from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr, PmosReverseProtection
 from .LedDriver_Al8861 import Al8861
 from .ResetGenerator_Apx803s import Apx803s
 from .BootstrapVoltageAdder import BootstrapVoltageAdder
