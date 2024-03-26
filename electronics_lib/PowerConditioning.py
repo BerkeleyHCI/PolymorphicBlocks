@@ -279,7 +279,46 @@ class PmosReverseProtection(PowerConditioner, Block):
 
     self.clamp_voltage = self.ArgParameter(clamp_voltage)
     self.gate_resistor = self.ArgParameter(gate_resistor)
-    
+
+  def contents(self):
+    super().contents()
+
+    output_current_draw = self.pwr_out.link().current_drawn
+
+    self.fet = self.Block(Fet.PFet(  # doesn't account for reverse protection
+      drain_voltage=(0, self.pwr_out.link().voltage.upper()),
+      drain_current=output_current_draw,
+      # gate voltage accounts for a possible power on transient
+      gate_voltage=(self.clamp_voltage.upper(), (self.clamp_voltage.upper())),
+    ))
+
+    self.res = self.Block(Resistor(self.gate_resistor))
+    self.diode = self.Block(ZenerDiode(self.clamp_voltage))
+    self.connect(self.fet.gate, self.res.a)
+    self.connect(self.gnd, self.res.b.adapt_to(Ground()))
+
+    self.connect(self.pwr_in, self.fet.source.adapt_to(VoltageSink()))
+    self.connect(self.pwr_out, self.fet.drain.adapt_to(VoltageSource()))
+    self.connect(self.fet.drain, self.diode.cathode)
+    self.connect(self.fet.gate, self.diode.anode)
+
+
+class PmosReverseProtection(PowerConditioner, Block):
+  """
+  , here is a tradeoff between the Gate discharge time and Zener biasing.
+  In most cases, 100R-330R is good if there are chances for the appearance of sudden reverse voltage in the circuit.
+  But if there are no chances of sudden reverse voltage during the continuous working of the circuit, anything from the 1k-50k resistor value can be used.
+  """
+  @init_in_parent
+  def __init__(self, clamp_voltage: RangeLike, gate_resistor: RangeLike):
+    super().__init__()
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.pwr_in = self.Port(VoltageSink.empty())  # high-priority higher-voltage source
+    self.pwr_out = self.Port(VoltageSource.empty())
+
+    self.clamp_voltage = self.ArgParameter(clamp_voltage)
+    self.gate_resistor = self.ArgParameter(gate_resistor)
+
   def contents(self):
     super().contents()
 
