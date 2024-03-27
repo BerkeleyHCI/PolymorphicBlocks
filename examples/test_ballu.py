@@ -210,7 +210,7 @@ class Ballu(JlcBoardTop):
                 # (['expander', 'pin_assigns'], [
                 # ]),
 
-                (['OrPowerGate', 'prot', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),  # big diodes to dissipate more power
+                (['gate', 'prot', 'diode', 'part'], 'TCLLZ5V6TR'),
             ],
             class_refinements=[
                 (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
