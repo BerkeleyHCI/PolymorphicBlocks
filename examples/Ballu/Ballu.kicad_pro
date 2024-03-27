@@ -104,7 +104,7 @@
         "track_dangling": "warning",
         "track_width": "error",
         "tracks_crossing": "error",
-        "unconnected_items": "error",
+        "unconnected_items": "warning",
         "unresolved_variable": "error",
         "via_dangling": "warning",
         "zones_intersect": "error"
@@ -172,7 +172,9 @@
         }
       ],
       "track_widths": [
-        0.0
+        0.0,
+        0.5,
+        1.0
       ],
       "via_dimensions": [
         {

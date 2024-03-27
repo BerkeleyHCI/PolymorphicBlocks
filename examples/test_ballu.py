@@ -186,11 +186,25 @@ class Ballu(JlcBoardTop):
             instance_values=[
                 (['mcu', 'pin_assigns'], [
                     # "i2c=I2CEXT0",
-                    # "i2c.scl=38",
-                    # "i2c.sda=4",
+                    "led=5",
+                    "speaker.ws=12",
+                    "speaker.sd=10",
+                    "speaker.sck=11",
+                    "i2c.scl=18",
+                    "i2c.sda=19",
                     "0.dp=14",
                     "0.dm=13",
-                    "npx=9",
+                    "oled_reset=17",
+                    "gate_control=20",
+                    "npx=39",
+                    "servo0=8",
+                    "dir_cnt=22",
+                    "dir_b=34",
+                    "dir_d=33",
+                    "dir_c=32",
+                    "dir_a=31",
+                    "servo1=35",
+                    "pwr_sense=38"
                     # 'led=_GPIO0_STRAP',
                 ]),
                 # (['expander', 'pin_assigns'], [
