@@ -1,6 +1,5 @@
-from typing import *
-
 from electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
 @abstract_block
@@ -16,15 +15,10 @@ class SdCard(Memory):
 
     # IO thresholds from NXP AN10911 "SD(HC)-memory card and MMC interface conditioning"
     # Many devices also allow a +/-0.3v tolerance above / below Vdd/Vss
-    dio_model = DigitalBidir(
-      voltage_limits=(-0.3 * Volt, self.pwr.link().voltage.upper() + 0.3 * Volt),
-      current_draw=(0, 0) * Amp,
-      voltage_out=(0 * Volt, self.pwr.link().voltage.upper()),
-      current_limits=(0, 0) * mAmp,  # TODO drive strength not specified
-      input_thresholds=(0.25 * self.pwr.link().voltage.lower(),
-                        0.625 * self.pwr.link().voltage.upper()),
-      output_thresholds=(0.125 * self.pwr.link().voltage.upper(),
-                         0.75 * self.pwr.link().voltage.lower())
+    dio_model = DigitalBidir.from_supply(
+      self.gnd, self.pwr,
+      voltage_limit_tolerance=(-0.3, 0.3)*Volt,
+      input_threshold_factor=(0.25, 0.625)
     )
 
     self.spi = self.Port(SpiPeripheral(dio_model), [InOut])  # TODO does this port directionality make sense?
@@ -66,11 +60,12 @@ class SdSocket(SdCard, Connector, FootprintBlock):
     )
 
 
-class MicroSdSocket(SdCard, Connector, FootprintBlock):
+@abstract_block
+class MicroSdSocket(SdCard):
   """MicroSD socket"""
-  def __init__(self) -> None:
-    super().__init__()
 
+
+class HiroseDm3btDsfPejs(MicroSdSocket, Connector, FootprintBlock):
   def contents(self):
     super().contents()
     # TODO add pull up resistors and capacitors and w/e?
@@ -91,3 +86,28 @@ class MicroSdSocket(SdCard, Connector, FootprintBlock):
       mfr='Mirose', part='DM3BT-DSF-PEJS',
       datasheet='https://www.hirose.com/product/download/?distributor=digikey&type=2d&lang=en&num=DM3BT-DSF-PEJS'
     )
+
+
+class Molex1040310811(MicroSdSocket, Connector, JlcPart, FootprintBlock):
+  def contents(self):
+    super().contents()
+    # TODO add pull up resistors and capacitors and w/e?
+    self.footprint(
+      'J', 'Connector_Card:microSD_HC_Molex_104031-0811',
+      {
+        # '1': ,  # unused in SPI mode
+        '2': self.cs,
+        '3': self.spi.mosi,
+        '4': self.pwr,
+        '5': self.spi.sck,
+        '6': self.gnd,
+        '7': self.spi.miso,
+        # '8': ,  # unused in SPI mode
+        # '9', '10',  card detect switch, unused
+        '11': self.gnd,  # shell
+      },
+      mfr='Molex', part='104031-0811',
+      datasheet='https://www.molex.com/en-us/products/part-detail/1040310811?display=pdf'
+    )
+    self.assign(self.lcsc_part, 'C585350')
+    self.assign(self.actual_basic_part, False)

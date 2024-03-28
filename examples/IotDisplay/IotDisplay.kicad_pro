@@ -62,11 +62,10 @@
         }
       ],
       "drc_exclusions": [
-        "courtyards_overlap|28750001|120749999|0e309384-27e0-474e-8708-0acda40003c3|1f367e5b-0d7c-47bc-8bd5-c2684a0ec004",
-        "hole_clearance|35095000|130100000|c43afb39-9d6c-4b7e-9533-2e5885f09dc8|8372d105-4292-484a-b545-199e306afe1b",
-        "hole_clearance|35095000|130300000|c43afb39-9d6c-4b7e-9533-2e5885f09dc8|4a6e305d-5450-4150-9abe-90c708475955",
-        "hole_clearance|35095000|135700000|fdcad2c4-b0c8-495e-8faa-9126f9a720dd|6ac9fa48-e17b-4c73-8ba3-98a05c17faf5",
-        "hole_clearance|35095000|135900000|fdcad2c4-b0c8-495e-8faa-9126f9a720dd|b0acbc71-e4d1-4ed9-accb-24d47fe2f9c4"
+        "hole_clearance|81880000|106100000|e1a3442b-eaa6-4626-a4b2-4c6309a3b53c|deb4c30e-8cd5-4456-8200-59a470b6f3cd",
+        "hole_clearance|81880000|106300000|2903b366-83b2-49f1-828d-ea94fc091255|deb4c30e-8cd5-4456-8200-59a470b6f3cd",
+        "hole_clearance|81880000|111700000|72f173f9-489d-4b65-9f15-eea3cf0e2a4d|92c6a484-6015-4714-b953-3d549e7497c3",
+        "hole_clearance|81880000|111900000|e752a75d-73f3-466d-aeba-9737b8364de5|92c6a484-6015-4714-b953-3d549e7497c3"
       ],
       "meta": {
         "filename": "board_design_settings.json",
