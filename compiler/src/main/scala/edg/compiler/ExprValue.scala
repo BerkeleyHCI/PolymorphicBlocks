@@ -1,6 +1,7 @@
 package edg.compiler
 
 import edg.ExprBuilder.Literal
+import edgir.init.init
 import edgir.lit.lit
 
 import scala.collection.mutable
@@ -12,6 +13,16 @@ sealed trait ExprValue {
 }
 
 object ExprValue {
+  def classFromValInit(initObj: init.ValInit): Class[_ <: ExprValue] = initObj.`val` match {
+    case init.ValInit.Val.Floating(_) => classOf[FloatValue]
+    case init.ValInit.Val.Integer(_) => classOf[IntValue]
+    case init.ValInit.Val.Boolean(_) => classOf[BooleanValue]
+    case init.ValInit.Val.Text(_) => classOf[TextValue]
+    case init.ValInit.Val.Range(_) => classOf[RangeType]
+    case init.ValInit.Val.Array(_) => classOf[ArrayValue[Nothing]]
+    case _ => throw new IllegalArgumentException(s"Unknown valinit $initObj")
+  }
+
   def fromValueLit(literal: lit.ValueLit): ExprValue = literal.`type` match {
     case lit.ValueLit.Type.Floating(literal) => FloatValue(literal.`val`.toFloat)
     case lit.ValueLit.Type.Integer(literal) => IntValue(literal.`val`)

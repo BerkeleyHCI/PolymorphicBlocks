@@ -71,7 +71,7 @@ from .AbstractOscillator import Oscillator, TableOscillator
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConnectorReset, \
     SwdCortexTargetConnectorSwo, SwdCortexTargetConnectorTdi
 from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, AnalogTestPoint, \
-    I2cTestPoint, CanControllerTestPoint
+    I2cTestPoint, SpiTestPoint, CanControllerTestPoint
 from .AbstractTestPoint import AnalogRfTestPoint
 from .AbstractJumper import Jumper, DigitalJumper
 from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
@@ -85,7 +85,7 @@ from .UsbBitBang import UsbBitBang
 
 from .IoController import BaseIoController, IoController, IoControllerPowerRequired, BaseIoControllerPinmapGenerator
 from .IoControllerExportable import BaseIoControllerExportable
-from .IoControllerInterfaceMixins import IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerTouchDriver, \
+from .IoControllerInterfaceMixins import IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerTouchDriver,\
     IoControllerDac, IoControllerCan, IoControllerUsb, IoControllerI2s, IoControllerDvp8
 from .IoControllerInterfaceMixins import IoControllerPowerOut, IoControllerUsbOut
 from .IoControllerInterfaceMixins import IoControllerWifi, IoControllerBluetooth, IoControllerBle
