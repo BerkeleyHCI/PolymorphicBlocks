@@ -76,7 +76,9 @@ class Ltc3429(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
         self.pwr_out.link().current_drawn, (0, self.NMOS_CURRENT_LIMIT)*Amp,
         inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                        self.ripple_current_factor,
-                                                       rated_current=self.NMOS_CURRENT_LIMIT*Amp)
+                                                       rated_current=self.NMOS_CURRENT_LIMIT*Amp),
+        input_voltage_ripple=self.input_ripple_limit,
+        output_voltage_ripple=self.output_ripple_limit
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)

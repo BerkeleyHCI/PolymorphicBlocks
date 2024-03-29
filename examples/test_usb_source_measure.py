@@ -273,33 +273,33 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint())
       )
-      self.v6 = self.connect(self.reg_5v.pwr_out)
+      self.v5 = self.connect(self.reg_5v.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
       (self.conv_force, self.conv, self.tp_conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
-        imp.Block(CustomSyncBuckBoostConverter(output_voltage=(15, 32)*Volt,
+        imp.Block(CustomSyncBuckBoostConverter(output_voltage=(15, 30)*Volt,
                                                frequency=500*kHertz(tol=0),
                                                ripple_current_factor=(0.01, 0.9),
                                                input_ripple_limit=250*mVolt,
                                                )),
         self.Block(VoltageTestPoint())
       )
-      self.connect(self.conv.pwr_logic, self.v6)
+      self.connect(self.conv.pwr_logic, self.v5)
       self.vconv = self.connect(self.conv.pwr_out)
 
       # analog supplies
       (self.reg_analog, self.tp_analog), _ = self.chain(
-        self.v6,
+        self.v5,
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint())
       )
       self.vanalog = self.connect(self.reg_analog.pwr_out)
 
       (self.reg_vref, self.tp_vref), _ = self.chain(
-        self.v6,
+        self.v5,
         imp.Block(VoltageReference(output_voltage=3.3*Volt(tol=0.01))),
         self.Block(VoltageTestPoint())
       )
@@ -312,6 +312,15 @@ class UsbSourceMeasure(JlcBoardTop):
       )
       self.connect(self.vanalog, self.ref_buf.pwr)
       self.vcenter = self.connect(self.ref_buf.output)
+
+      (self.reg_vcontrol, self.tp_vcontrol), _ = self.chain(
+        self.v5,
+        imp.Block(BoostConverter(output_voltage=(30, 33)*Volt,  # up to but not greater
+                                 output_ripple_limit=1*mVolt)),
+        self.Block(VoltageTestPoint("vc+"))
+      )
+      self.vcontrol = self.connect(self.reg_vcontrol.pwr_out)
+
 
     # power path domain
     with self.implicit_connect(
@@ -327,18 +336,10 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.vanalog, self.control.pwr_logic)
       self.connect(self.vcenter, self.control.ref_center)
 
-      self.boot = self.Block(BootstrapVoltageAdder(frequency=1*MHertz(tol=0)))
-      self.connect(self.boot.gnd, self.gnd)
-      self.connect(self.boot.pwr, self.v3v3)
-      self.connect(self.boot.pwr_neg, self.gnd)
-      self.connect(self.boot.pwr_pos, self.conv.pwr_out)
       self.boot_neg_forced = self.Block(ForcedVoltage(0*Volt(tol=0)))  # TODO: support non-zero grounds
-      self.connect(self.boot_neg_forced.pwr_in, self.boot.out_neg)
+      self.connect(self.boot_neg_forced.pwr_in, self.gnd)
       self.connect(self.boot_neg_forced.pwr_out, self.control.pwr_gate_neg)
-      self.connect(self.boot.out_pos, self.control.pwr_gate_pos)
-
-      self.tp_boot_neg = self.Block(VoltageTestPoint("vb-")).connected(self.boot.out_neg)
-      self.tp_boot_pos = self.Block(VoltageTestPoint("vb+")).connected(self.boot.out_pos)
+      self.connect(self.vcontrol, self.control.pwr_gate_pos)
 
     # logic domain
     with self.implicit_connect(
@@ -389,8 +390,6 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.boosth_pull, self.boosth_rc), _ = self.chain(
         self.mcu.gpio.request('boost_pwm_high'),
         imp.Block(pull_model), imp.Block(rc_model), self.conv.boost_pwm_high)
-
-      self.connect(self.mcu.gpio.request('boot_pwm'), self.boot.pwm)
 
       (self.pass_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(0)))
       (self.conv_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(1)))
@@ -479,6 +478,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['reg_3v3'], Ldl1117),
         (['reg_analog'], Ap2210),
         (['reg_vref'], Ref30xx),
+        (['reg_vcontrol'], Lm2733),
 
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),
@@ -542,6 +542,7 @@ class UsbSourceMeasure(JlcBoardTop):
         # JLC does not have frequency specs, must be checked TODO
         (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+        (['reg_vcontrol', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
 
         # ignore derating on 20v - it's really broken =(
         (['reg_5v', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
@@ -550,6 +551,9 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
         (['conv', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.85),
+        (['reg_vcontrol', 'cf', 'voltage_rating_derating'], 0.85),
+        (['reg_vcontrol', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
+        (['reg_vcontrol', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'boost_sw', 'high_fet', 'gate_voltage'], ParamValue(
           ['conv', 'boost_sw', 'low_fet', 'gate_voltage']
         )),  # TODO model is broken for unknown reasons
@@ -576,11 +580,11 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'driver', 'low_fet', 'part_spec'], 'SQD50P06-15L_GE3'),  # has a 30V/4A SOA
 
         (['prot_conv', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
-        (['conv', 'power_path', 'inductor', 'part'], 'SLF12575T-470M2R7-PF'),  # first auto pick is OOS
+        # (['conv', 'power_path', 'inductor', 'part'], 'SLF12575T-470M2R7-PF'),  # first auto pick is OOS
       ],
       class_values=[
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
-        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
 
         (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec

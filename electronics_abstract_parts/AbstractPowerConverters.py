@@ -363,7 +363,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                efficiency: RangeLike = (0.8, 1.0),  # from TI reference
                input_voltage_ripple: FloatLike = 75*mVolt,
                output_voltage_ripple: FloatLike = 25*mVolt,
-               dutycycle_limit: RangeLike = (0.2, 0.85)):  # arbitrary
+               dutycycle_limit: RangeLike = (0.1, 0.9)):  # arbitrary
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models input cap and inductor power draw
