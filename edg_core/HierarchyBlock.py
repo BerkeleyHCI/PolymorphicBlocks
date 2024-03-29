@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import itertools
-from functools import reduce
+from functools import reduce, wraps
 from typing import *
 
 import edgir
@@ -40,6 +39,7 @@ def init_in_parent(fn: InitType) -> InitType:
   import inspect
   from .Builder import builder
 
+  @wraps(fn)
   def wrapped(self: Block, *args_tup, **kwargs) -> Any:
     args = list(args_tup)
     builder_prev = builder.get_curr_context()
