@@ -70,6 +70,7 @@ class PcbBot(JlcBoardTop):
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
+      self.pmos = imp.Block(PmosChargerReverseProtection())
       # self.pmos = imp.Block(PmosChargerReverseProtection())
       self.pmos = imp.Block(PmosChargerReverseProtection())
       (self.charger, ), _ = self.chain(
