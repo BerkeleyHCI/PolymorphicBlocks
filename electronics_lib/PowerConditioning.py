@@ -1,6 +1,7 @@
 from typing import Optional, cast
 
 from electronics_abstract_parts import *
+from electronics_model.PassivePort import PassiveAdapterVoltageSink
 
 
 class Supercap(DiscreteComponent, FootprintBlock):  # TODO actually model supercaps and parts selection
@@ -521,7 +522,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
     self.gnd = self.Port(Ground.empty(), [Common])
     self.pwr_out = self.Port(VoltageSource.empty(),)  # Load
     self.vbatt = self.Port(VoltageSink.empty(),)  # Battery
-    self.vcharger = self.Port(VoltageSink.empty(),)  # Charger
+    self.chg = self.Port(VoltageSink.empty(),)  # Charger
 
     self.r1_val = self.ArgParameter(r1)
     self.r2_val = self.ArgParameter(r2)
@@ -529,8 +530,8 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
 
   def contents(self):
     super().contents()
-    max_vcharge_voltage = self.vcharger.link().voltage.upper()
-    max_vcharge_current = self.vcharger.link().current_drawn.upper()
+    max_vcharge_voltage = self.chg.link().voltage.upper()
+    max_vcharge_current = self.chg.link().current_drawn.upper()
     max_vbatt_voltage = self.vbatt.link().voltage.upper()
     max_vbatt_current = self.vbatt.link().current_drawn.upper()
     # Create the PMOS transistors and resistors based on the provided schematic
@@ -549,16 +550,16 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
     self.r1 = self.Block(Resistor(resistance=self.r1_val))
     self.r2 = self.Block(Resistor(resistance=self.r2_val))
 
-
+    chg_adapter = self.Block(PassiveAdapterVoltageSink())
+    setattr(self, '(adapter)chg', chg_adapter)  # hack so the netlister recognizes this as an adapter
+    self.connect(self.mp1.drain, chg_adapter.src)
+    self.connect(self.chg, chg_adapter.dst)
 
     self.import_kicad(
       self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
         'vbatt': VoltageSink(
           current_draw=max_vbatt_current
-        ),
-        'vcharger': VoltageSink(
-          current_draw=max_vcharge_current
         ),
         'pwr_out': VoltageSource(
           voltage_out=max_vcharge_voltage),
