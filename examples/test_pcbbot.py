@@ -73,11 +73,12 @@ class PcbBot(JlcBoardTop):
       self.pmos = imp.Block(PmosChargerReverseProtection())
       # self.pmos = imp.Block(PmosChargerReverseProtection())
       self.pmos = imp.Block(PmosChargerReverseProtection())
+
       (self.charger, ), _ = self.chain(
-        self.vusb, imp.Block(Mcp73831(200*mAmp(tol=0.2))), self.batt.chg # self.pmos.vcharger,
+        self.vusb, imp.Block(Mcp73831(200*mAmp(tol=0.2))), self.pmos.chg # self.pmos.vcharger,
       )
-      # self.connect(self.pmos.vbatt, self.batt.chg)
-      # self.pvbatt = self.connect(self.pmos.vbatt, self.vbatt)
+      self.connect(self.pmos.vbatt, self.batt.chg)
+      self.pvbatt = self.connect(self.pmos.pwr_out)
       (self.charge_led, ), _ = self.chain(
         self.Block(IndicatorSinkLed(Led.Yellow)), self.charger.stat
       )
