@@ -102,7 +102,7 @@ class SubElementManager:
           dict.add_element(name, item)
           assigned.append(dict)
         else:  # require not conflicting name, or direct reassignment
-          assert name not in dict.container or item in dict.names, f"duplicate name {name}"
+          assert name not in dict.container or dict.names.get(item, None) == name, f"duplicate name {name}"
       assert len(assigned) <= 1, f"assigned {item} to multiple SubElementDict {assigned}"
 
   def name_of(self, item: Any) -> Optional[str]:
