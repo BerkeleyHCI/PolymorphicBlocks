@@ -118,6 +118,14 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
         process.exitValue()
     }
   }
+
+  // Forces a shutdown even if the process is busy
+  def destroy(): Unit = {
+    process match {
+      case Right(_) => // ignored
+      case Left(process) => process.destroyForcibly()
+    }
+  }
 }
 
 object PythonInterface {
@@ -156,6 +164,10 @@ class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], python
 
   def shutdown(): Int = {
     process.shutdown()
+  }
+
+  def destroy(): Unit = {
+    process.destroy()
   }
 
   // Hooks to implement when certain actions happen
