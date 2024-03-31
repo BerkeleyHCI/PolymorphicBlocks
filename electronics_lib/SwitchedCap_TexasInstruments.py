@@ -22,11 +22,11 @@ class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         ))
         self.assign(self.vp.current_draw, (1, 500)*uAmp + self.out.link().current_drawn)
 
-        self.sd = self.Port(DigitalSink.from_supply(
-            self.gnd, self.vp,
-            voltage_limit_tolerance=(-0.3, 0.3)*Volt,
-            input_threshold_abs=(0.8, 2)*Volt
-        ), optional=True)
+        # self.sd = self.Port(DigitalSink.from_supply(
+        #     self.gnd, self.vp,
+        #     voltage_limit_tolerance=(-0.3, 0.3)*Volt,
+        #     input_threshold_abs=(0.8, 2)*Volt
+        # ), optional=True)
 
     def contents(self):
         super().contents()
@@ -36,7 +36,7 @@ class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                 '1': self.gnd,
                 '2': self.out,
                 '3': self.capn,
-                '4': self.sd,
+                '4': self.vp,  # self.sd,
                 '5': self.vp,
                 '6': self.capp,
             },
@@ -47,32 +47,33 @@ class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Lm2664(VoltageRegulatorEnableWrapper):
+class Lm2664(Block):
     """Switched capacitor inverter"""
-    def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
-        return self.ic.sd
-
-    def __init__(self, *args, output_resistance_limit: FloatLike = 1*Ohm,
-                 output_ripple_limit: FloatLike = 25 * mVolt, **kwargs):
-        super().__init__(*args, **kwargs)
+    @init_in_parent
+    def __init__(self, output_resistance_limit: FloatLike = 25 * Ohm,
+                 output_ripple_limit: FloatLike = 25 * mVolt):
+        super().__init__()
+        self.ic = self.Block(Lm2664_Device())
+        self.gnd = self.Export(self.ic.gnd, [Common])
+        self.pwr_in = self.Export(self.ic.vp, [Power, Input])
+        self.pwr_out = self.Export(self.ic.out, [Output])
         self.output_resistance_limit = self.ArgParameter(output_resistance_limit)
         self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
 
     def contents(self):
         super().contents()
-        self.ic = self.Block(Lm2664_Device())
-        self.connect(self.ic.vp, self.pwr_in)
-        self.connect(self.ic.gnd, self.gnd)
-        self.connect(self.ic.out, self.pwr_out)
-
+        self.require(self.output_resistance_limit >= 2 * self.ic.SWITCH_RESISTANCE.upper,
+                     "min output resistance spec below switch resistance")
         self.cf = self.Block(Capacitor(
-            capacitance=2 / self.ic.FREQUENCY.lower /
-                        (self.output_resistance_limit - 2 * self.ic.SWITCH_RESISTANCE.lower),
+            capacitance=(2 / self.ic.FREQUENCY.lower /
+                         (self.output_resistance_limit - 2 * self.ic.SWITCH_RESISTANCE.upper),
+                         float('inf')),
             voltage=self.pwr_out.voltage_out
         ))
         self.connect(self.cf.neg, self.ic.capn)
         self.connect(self.cf.pos, self.ic.capp)
 
         self.cout = self.Block(DecouplingCapacitor(
-            self.pwr_out.link().current_drawn / self.ic.FREQUENCY.lower / self.output_ripple_limit
-        ))
+            (self.pwr_out.link().current_drawn.upper() / self.ic.FREQUENCY.lower / self.output_ripple_limit,
+             float('inf'))
+        )).connected(self.gnd, self.pwr_out)

@@ -321,6 +321,12 @@ class UsbSourceMeasure(JlcBoardTop):
       )
       self.vcontrol = self.connect(self.reg_vcontrol.pwr_out)
 
+      (self.reg_vcontroln, self.tp_vcontroln), _ = self.chain(
+        self.vanalog,
+        imp.Block(Lm2664(output_ripple_limit=5*mVolt)),
+        self.Block(VoltageTestPoint("vc-"))
+      )
+      self.vcontroln = self.connect(self.reg_vcontroln.pwr_out)
 
     # power path domain
     with self.implicit_connect(
@@ -336,9 +342,10 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.vanalog, self.control.pwr_logic)
       self.connect(self.vcenter, self.control.ref_center)
 
-      self.boot_neg_forced = self.Block(ForcedVoltage(0*Volt(tol=0)))  # TODO: support non-zero grounds
-      self.connect(self.boot_neg_forced.pwr_in, self.gnd)
-      self.connect(self.boot_neg_forced.pwr_out, self.control.pwr_gate_neg)
+      # TODO: support non-zero grounds
+      self.vcontroln_forced = self.Block(ForcedVoltageCurrent(0*Volt(tol=0), self.control.pwr_gate_pos.current_draw))
+      self.connect(self.vcontroln_forced.pwr_in, self.vcontroln)
+      self.connect(self.vcontroln_forced.pwr_out, self.control.pwr_gate_neg)
       self.connect(self.vcontrol, self.control.pwr_gate_pos)
 
     # logic domain
