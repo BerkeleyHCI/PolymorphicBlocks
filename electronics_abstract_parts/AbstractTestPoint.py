@@ -13,21 +13,21 @@ class TestPoint(InternalSubcircuit, Block):
   """Abstract test point that can take a name as a string, used as the footprint value.
   """
   @init_in_parent
-  def __init__(self, name: StringLike = "") -> None:
+  def __init__(self, tp_name: StringLike = "") -> None:
     super().__init__()
     self.io = self.Port(Passive(), [InOut])
-    self.tp_name = self.ArgParameter(name)
+    self.tp_name = self.ArgParameter(tp_name)
 
 
 @non_library
 class BaseTypedTestPoint(TypedTestPoint, Block):
   """Base class with utility infrastructure for typed test points"""
   @init_in_parent
-  def __init__(self, name: StringLike = "") -> None:
+  def __init__(self, tp_name: StringLike = "") -> None:
     super().__init__()
-    self.tp_name = self.ArgParameter(name)
-    self.tp = self.Block(TestPoint(name=StringExpr()))
     self.io: Port
+    self.tp_name = self.ArgParameter(tp_name)
+    self.tp = self.Block(TestPoint(tp_name=StringExpr()))
 
   def contents(self):
     super().contents()
@@ -38,9 +38,9 @@ class BaseTypedTestPoint(TypedTestPoint, Block):
 class BaseRfTestPoint(TypedTestPoint, Block):
   """Base class with utility infrastructure for typed RF test points."""
   @init_in_parent
-  def __init__(self, name: StringLike = "") -> None:
+  def __init__(self, tp_name: StringLike = "") -> None:
     super().__init__()
-    self.tp_name = self.ArgParameter(name)
+    self.tp_name = self.ArgParameter(tp_name)
     self.conn = self.Block(RfConnector())
     self.gnd = self.Export(self.conn.gnd, [Common])
     self.io: Port
@@ -78,10 +78,10 @@ class DigitalTestPoint(BaseTypedTestPoint, Block):
 class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
   """Creates an array of Digital test points, sized from the port array's connections."""
   @init_in_parent
-  def __init__(self, name: StringLike = ''):
+  def __init__(self, tp_name: StringLike = ''):
     super().__init__()
     self.io = self.Port(Vector(DigitalSink.empty()), [InOut])
-    self.tp_name = self.ArgParameter(name)
+    self.tp_name = self.ArgParameter(tp_name)
     self.generator_param(self.io.requested(), self.tp_name)
 
   def generate(self):
@@ -123,10 +123,10 @@ class AnalogRfTestPoint(BaseRfTestPoint, Block):
 class I2cTestPoint(TypedTestPoint, Block):
   """Two test points for I2C SDA and SCL"""
   @init_in_parent
-  def __init__(self, name: StringLike = ""):
+  def __init__(self, tp_name: StringLike = ""):
     super().__init__()
     self.io = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
-    self.tp_name = self.ArgParameter(name)
+    self.tp_name = self.ArgParameter(tp_name)
 
   def contents(self):
     super().contents()
@@ -144,10 +144,10 @@ class I2cTestPoint(TypedTestPoint, Block):
 class SpiTestPoint(TypedTestPoint, Block):
   """Test points for SPI"""
   @init_in_parent
-  def __init__(self, name: StringLike = ""):
+  def __init__(self, tp_name: StringLike = ""):
     super().__init__()
     self.io = self.Port(SpiPeripheral(DigitalBidir.empty()), [InOut])
-    self.tp_name = self.ArgParameter(name)
+    self.tp_name = self.ArgParameter(tp_name)
 
   def contents(self):
     super().contents()
@@ -167,10 +167,10 @@ class SpiTestPoint(TypedTestPoint, Block):
 class CanControllerTestPoint(TypedTestPoint, Block):
   """Two test points for CAN controller-side TXD and RXD"""
   @init_in_parent
-  def __init__(self, name: StringLike = ""):
+  def __init__(self, tp_name: StringLike = ""):
     super().__init__()
     self.io = self.Port(CanPassivePort(DigitalBidir.empty()), [InOut])
-    self.tp_name = self.ArgParameter(name)
+    self.tp_name = self.ArgParameter(tp_name)
 
   def contents(self):
     super().contents()
