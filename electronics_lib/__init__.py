@@ -124,6 +124,7 @@ from .SolidStateRelay_Toshiba import Tlp3545a
 from .AnalogSwitch_Nlas4157 import Nlas4157
 from .CanTransceiver_Iso1050 import Iso1050dub
 from .CanTransceiver_Sn65hvd230 import Sn65hvd230
+from .CurrentSense_Ad8418 import Ad8418a
 from .BatteryProtector_S8261A import BatteryProtector_S8261A
 from .BatteryCharger_Mcp73831 import Mcp73831
 from .Distance_Vl53l0x import Vl53l0x, Vl53l0xApplication, Vl53l0xConnector, Vl53l0xArray

@@ -2,6 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
+@non_library
 class Opa197_Base_Device(InternalSubcircuit):
   DEVICES: int
 

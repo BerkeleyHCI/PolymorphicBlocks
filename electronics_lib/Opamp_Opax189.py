@@ -136,7 +136,7 @@ class Opa2189(MultipackBlock, GeneratorBlock):
     super().generate()
     self.ic = self.Block(Opa2189_Device())
 
-    # Datasheet section 9: recommend 0.1uF bypass capacitors close to power supply pins
+    # Datasheet section 10: recommend 0.1uF bypass capacitors close to power supply pins
     self.vdd_cap = self.Block(DecouplingCapacitor(
       capacitance=0.1*uFarad(tol=0.2),
     )).connected(self.ic.vn, self.ic.vp)

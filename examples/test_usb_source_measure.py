@@ -11,9 +11,9 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
   """Emitter follower circuit
   """
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
-    assert symbol_name == 'edg_importable:Opamp'  # this requires an schematic-modified symbol
+    assert symbol_name == 'edg_importable:Follower'  # this requires an schematic-modified symbol
     return {
-      'IN': self.control, '3': self.out, 'V+': self.pwr, 'V-': self.gnd
+      '1': self.control, '3': self.out, 'V+': self.pwr, 'V-': self.gnd
     }
 
   @init_in_parent
@@ -230,9 +230,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
           'rds_on': self.rds_on
         },
         'imeas': {
-          'resistance': 0.1*Ohm(tol=0.01),
-          'ratio': Range.from_tolerance(1, 0.05),
-          'input_impedance': 10*kOhm(tol=0.05)
+          'resistance': 0.047*Ohm(tol=0.01),
         },
         'vmeas': {
           'ratio': Range.from_tolerance(1/24, 0.05),
@@ -469,11 +467,11 @@ class UsbSourceMeasure(JlcBoardTop):
     )), self.control.out)
 
   def multipack(self) -> None:
-    self.vimeas_amps = self.PackedBlock(Opa2197())
+    self.vimeas_amps = self.PackedBlock(Opa2189())
     self.pack(self.vimeas_amps.elements.request('0'), ['control', 'vmeas', 'amp'])
-    self.pack(self.vimeas_amps.elements.request('1'), ['control', 'imeas', 'amp', 'amp'])
+    self.pack(self.vimeas_amps.elements.request('1'), ['control', 'vbuf', 'amp'])
 
-    self.ampdmeas_amps = self.PackedBlock(Opa2197())
+    self.ampdmeas_amps = self.PackedBlock(Opa2189())
     self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
     self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
 
