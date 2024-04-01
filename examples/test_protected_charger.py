@@ -2,9 +2,6 @@ import unittest
 
 from edg import *
 
-from .test_robotdriver import PwmConnector
-from .test_multimeter import FetPowerGate
-
 
 class ProtectedCharger(JlcBoardTop):
     """A Lipo charger that does not blowup with reverse polarity from the battery
@@ -44,9 +41,12 @@ class ProtectedCharger(JlcBoardTop):
             )
             self.connect(self.vusb, self.charge_led.pwr)
 
+            self.pmos_load = imp.Block(PmosReverseProtection(clamp_voltage=(2.4, 4.2)*Volt, gate_resistor=300*Ohm(tol=0.05)))
+
         self.pwr_pins = self.Block(PassiveConnector(length=2))
-        self.connect(self.pwr_pins.pins.request('1').adapt_to(Ground()))
-        self.connect(self.pmos.pwr_out, self.pwr_pins.pins.request('2').adapt_to(VoltageSink()))
+        self.connect(self.pwr_pins.pins.request('1').adapt_to(Ground()), self.gnd)
+        self.connect(self.pmos.pwr_out, self.pmos_load.pwr_in)
+        self.connect(self.pmos_load.pwr_out, self.pwr_pins.pins.request('2').adapt_to(VoltageSink(current_draw=2.0*Amp)))
 
 
 
@@ -55,7 +55,7 @@ class ProtectedCharger(JlcBoardTop):
             instance_refinements=[
             ],
             instance_values=[
-                (['prot_batt', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),  # big diodes to dissipate more power
+                (['pmos', 'mp2', 'drain_current'], Range(0.0, 4.0)),
             ],
             class_refinements=[
                 (PassiveConnector, JstPhKHorizontal),  # default connector series unless otherwise specified
