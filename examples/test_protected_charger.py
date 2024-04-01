@@ -46,7 +46,7 @@ class ProtectedCharger(JlcBoardTop):
         self.pwr_pins = self.Block(PassiveConnector(length=2))
         self.connect(self.pwr_pins.pins.request('1').adapt_to(Ground()), self.gnd)
         self.connect(self.pmos.pwr_out, self.pmos_load.pwr_in)
-        self.connect(self.pmos_load.pwr_out, self.pwr_pins.pins.request('2').adapt_to(VoltageSink(current_draw=2.0*Amp)))
+        self.connect(self.pmos_load.pwr_out, self.pwr_pins.pins.request('2').adapt_to(VoltageSink(current_draw=(0, 2.0)*Amp)))
 
 
 

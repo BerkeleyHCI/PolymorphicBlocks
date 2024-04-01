@@ -354,10 +354,10 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
       self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
         'vbatt': VoltageSink(
-          current_draw=max_vbatt_current
+          current_draw=self.chg.link().current_drawn
         ),
         'pwr_out': VoltageSource(
-          voltage_out=max_vcharge_voltage),
+          voltage_out=self.chg.link().voltage),
         'gnd': Ground(),
       })
 
