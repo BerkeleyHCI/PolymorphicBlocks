@@ -265,156 +265,6 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
       cast(Block, builder.get_enclosing_block()).connect(pwr_lo, self.pwr_lo)
     return self
 
-class PmosReverseProtection(PowerConditioner, Block):
-  """
-  , here is a tradeoff between the Gate discharge time and Zener biasing.
-  In most cases, 100R-330R is good if there are chances for the appearance of sudden reverse voltage in the circuit.
-  But if there are no chances of sudden reverse voltage during the continuous working of the circuit, anything from the 1k-50k resistor value can be used.
-  """
-  @init_in_parent
-  def __init__(self, clamp_voltage: RangeLike, gate_resistor: RangeLike):
-    super().__init__()
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr_in = self.Port(VoltageSink.empty())  # high-priority higher-voltage source
-    self.pwr_out = self.Port(VoltageSource.empty())
-
-    self.clamp_voltage = self.ArgParameter(clamp_voltage)
-    self.gate_resistor = self.ArgParameter(gate_resistor)
-
-  def contents(self):
-    super().contents()
-
-    output_current_draw = self.pwr_out.link().current_drawn
-    # Pfet
-    self.fet = self.Block(Fet.PFet(
-      drain_voltage=(0, self.pwr_out.link().voltage.upper()),
-      drain_current=output_current_draw,
-      # gate voltage accounts for a possible power on transient
-      gate_voltage=(self.clamp_voltage.upper(), (self.clamp_voltage.upper())),
-    ))
-
-    self.res = self.Block(Resistor(self.gate_resistor))
-    self.diode = self.Block(ZenerDiode(self.clamp_voltage))
-    # PFet gate to res to gnd
-    self.connect(self.fet.gate, self.res.a)
-    self.connect(self.gnd, self.res.b.adapt_to(Ground()))
-    # pwr  going through the PFet
-    self.connect(self.pwr_in, self.fet.source.adapt_to(VoltageSink()))
-    self.connect(self.pwr_out, self.fet.drain.adapt_to(VoltageSource()))
-    # Connectign the diode from the gate to the pwr out side
-    self.connect(self.fet.drain, self.diode.cathode)
-    self.connect(self.fet.gate, self.diode.anode)
-
-
-
-
-class PmosChargerProtection(PowerConditioner, Block):
-  @init_in_parent
-  def __init__(self, r1: RangeLike = 100*kOhm(tol=0.01), r2:RangeLike = 100*kOhm(tol=0.01), rds_on: RangeLike =(0, 0.1)*Ohm):
-    super().__init__()
-
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr_out = self.Port(VoltageSource.empty(),)  # Load
-    self.vbatt = self.Port(VoltageSink.empty(),)  # Battery
-    self.vcharger = self.Port(VoltageSink.empty(),)  # Charger
-
-    self.r1_val = self.ArgParameter(r1)
-    self.r2_val = self.ArgParameter(r2)
-    self.rds_on = self.ArgParameter(rds_on)
-
-  def contents(self):
-    super().contents()
-    max_vcharge_voltage = self.vcharger.link().voltage.upper()
-    max_vcharge_current = self.vcharger.link().current_drawn.upper()
-    max_vbatt_voltage = self.vbatt.link().voltage.upper()
-    max_vbatt_current = self.vbatt.link().current_drawn.upper()
-    # Create the PMOS transistors and resistors based on the provided schematic
-    self.mp1 = self.Block(Fet.PFet(
-      drain_voltage=(0, max_vcharge_voltage), drain_current=(0, max_vcharge_current),
-      gate_voltage=(- max_vbatt_voltage, max_vbatt_voltage),
-      rds_on=self.rds_on,
-      power=(0, max_vcharge_voltage * max_vcharge_current)
-    ))
-    self.mp2 = self.Block(Fet.PFet(
-      drain_voltage=(0, max_vbatt_voltage), drain_current=(0, max_vbatt_current),
-      gate_voltage=(0, max_vcharge_voltage),
-      rds_on=self.rds_on,
-      power=(0, max_vbatt_voltage * max_vbatt_current)
-    ))
-    self.r1 = self.Block(Resistor(resistance=self.r1_val))
-    self.r2 = self.Block(Resistor(resistance=self.r2_val))
-
-    self.connect(self.mp1.source.adapt_to(VoltageSink()), self.vcharger)
-    self.connect(self.mp2.source.adapt_to(VoltageSink()), self.vcharger)
-    self.connect(self.r2.a.adapt_to(VoltageSink()), self.vcharger)
-
-    # Connect the source of MP1 to the battery, gate of MP1 to the charger through R1
-    self.connect(self.mp2.drain.adapt_to(VoltageSink()), self.vbatt)
-    self.connect(self.mp1.gate.adapt_to(VoltageSink()), self.vbatt)
-    self.connect(self.r2.b.adapt_to(VoltageSink()), self.vbatt)
-
-    self.mp1_drain = self.connect(self.mp1.drain.adapt_to(VoltageSink()), self.r1.a.adapt_to(VoltageSink()))
-    self.connect(self.mp2.gate.adapt_to(VoltageSink()), self.mp1_drain)
-    #self.mp1_drain = self.connect(self.mp1.drain.adapt_to(VoltageSink()), self.mp2.gate.adapt_to(VoltageSink()))
-   # self.connect(self.mp1_drain, self.r1.a.adapt_to(VoltageSink()))
-
-    self.connect(self.r1.b.adapt_to(Ground()), self.gnd)
-    self.connect(self.pwr_out, self.vcharger)
-
-
-
-class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
-  @init_in_parent
-  def __init__(self, r1: RangeLike = 100*kOhm(tol=0.01), r2:RangeLike = 100*kOhm(tol=0.01), rds_on: RangeLike =(0, 0.1)*Ohm):
-    super().__init__()
-
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr_out = self.Port(VoltageSource.empty(),)  # Load
-    self.vbatt = self.Port(VoltageSink.empty(),)  # Battery
-    self.vcharger = self.Port(VoltageSink.empty(),)  # Charger
-
-    self.r1_val = self.ArgParameter(r1)
-    self.r2_val = self.ArgParameter(r2)
-    self.rds_on = self.ArgParameter(rds_on)
-
-  def contents(self):
-    super().contents()
-    max_vcharge_voltage = self.vcharger.link().voltage.upper()
-    max_vcharge_current = self.vcharger.link().current_drawn.upper()
-    max_vbatt_voltage = self.vbatt.link().voltage.upper()
-    max_vbatt_current = self.vbatt.link().current_drawn.upper()
-    # Create the PMOS transistors and resistors based on the provided schematic
-    self.mp1 = self.Block(Fet.PFet(
-      drain_voltage=(0, max_vcharge_voltage), drain_current=(0, max_vcharge_current),
-      gate_voltage=(- max_vbatt_voltage, max_vbatt_voltage),
-      rds_on=self.rds_on,
-      power=(0, max_vcharge_voltage * max_vcharge_current)
-    ))
-    self.mp2 = self.Block(Fet.PFet(
-      drain_voltage=(0, max_vbatt_voltage), drain_current=(0, max_vbatt_current),
-      gate_voltage=(0, max_vcharge_voltage),
-      rds_on=self.rds_on,
-      power=(0, max_vbatt_voltage * max_vbatt_current)
-    ))
-    self.r1 = self.Block(Resistor(resistance=self.r1_val))
-    self.r2 = self.Block(Resistor(resistance=self.r2_val))
-
-
-
-    self.import_kicad(
-      self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
-      conversions={
-        'vbatt': VoltageSink(
-          current_draw=max_vbatt_current
-        ),
-        'vcharger': VoltageSink(
-          current_draw=max_vcharge_current
-        ),
-        'pwr_out': VoltageSource(
-          voltage_out=max_vcharge_voltage),
-        'gnd': Ground(),
-      })
-
 
 class PmosReverseProtection(PowerConditioner, Block):
   """
@@ -459,64 +309,9 @@ class PmosReverseProtection(PowerConditioner, Block):
 
 
 
-class PmosChargerProtection(PowerConditioner, Block):
-  @init_in_parent
-  def __init__(self, r1: RangeLike = 100*kOhm(tol=0.01), r2:RangeLike = 100*kOhm(tol=0.01), rds_on: RangeLike =(0, 0.1)*Ohm):
-    super().__init__()
-
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr_out = self.Port(VoltageSource.empty(),)  # Load
-    self.vbatt = self.Port(VoltageSink.empty(),)  # Battery
-    self.vcharger = self.Port(VoltageSink.empty(),)  # Charger
-
-    self.r1_val = self.ArgParameter(r1)
-    self.r2_val = self.ArgParameter(r2)
-    self.rds_on = self.ArgParameter(rds_on)
-
-  def contents(self):
-    super().contents()
-    max_vcharge_voltage = self.vcharger.link().voltage.upper()
-    max_vcharge_current = self.vcharger.link().current_drawn.upper()
-    max_vbatt_voltage = self.vbatt.link().voltage.upper()
-    max_vbatt_current = self.vbatt.link().current_drawn.upper()
-    # Create the PMOS transistors and resistors based on the provided schematic
-    self.mp1 = self.Block(Fet.PFet(
-      drain_voltage=(0, max_vcharge_voltage), drain_current=(0, max_vcharge_current),
-      gate_voltage=(- max_vbatt_voltage, max_vbatt_voltage),
-      rds_on=self.rds_on,
-      power=(0, max_vcharge_voltage * max_vcharge_current)
-    ))
-    self.mp2 = self.Block(Fet.PFet(
-      drain_voltage=(0, max_vbatt_voltage), drain_current=(0, max_vbatt_current),
-      gate_voltage=(0, max_vcharge_voltage),
-      rds_on=self.rds_on,
-      power=(0, max_vbatt_voltage * max_vbatt_current)
-    ))
-    self.r1 = self.Block(Resistor(resistance=self.r1_val))
-    self.r2 = self.Block(Resistor(resistance=self.r2_val))
-
-    self.connect(self.mp1.source.adapt_to(VoltageSink()), self.vcharger)
-    self.connect(self.mp2.source.adapt_to(VoltageSink()), self.vcharger)
-    self.connect(self.r2.a.adapt_to(VoltageSink()), self.vcharger)
-
-    # Connect the source of MP1 to the battery, gate of MP1 to the charger through R1
-    self.connect(self.mp2.drain.adapt_to(VoltageSink()), self.vbatt)
-    self.connect(self.mp1.gate.adapt_to(VoltageSink()), self.vbatt)
-    self.connect(self.r2.b.adapt_to(VoltageSink()), self.vbatt)
-
-    self.mp1_drain = self.connect(self.mp1.drain.adapt_to(VoltageSink()), self.r1.a.adapt_to(VoltageSink()))
-    self.connect(self.mp2.gate.adapt_to(VoltageSink()), self.mp1_drain)
-    #self.mp1_drain = self.connect(self.mp1.drain.adapt_to(VoltageSink()), self.mp2.gate.adapt_to(VoltageSink()))
-   # self.connect(self.mp1_drain, self.r1.a.adapt_to(VoltageSink()))
-
-    self.connect(self.r1.b.adapt_to(Ground()), self.gnd)
-    self.connect(self.pwr_out, self.vcharger)
-
-
-
 class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   @init_in_parent
-  def __init__(self, r1: RangeLike = 100*kOhm(tol=0.01), r2:RangeLike = 100*kOhm(tol=0.01), rds_on: RangeLike =(0, 0.1)*Ohm):
+  def __init__(self, r1_val: RangeLike = 100*kOhm(tol=0.01), r2_val: RangeLike = 100*kOhm(tol=0.01), rds_on: RangeLike =(0, 0.1)*Ohm):
     super().__init__()
 
     self.gnd = self.Port(Ground.empty(), [Common])
@@ -524,8 +319,8 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
     self.vbatt = self.Port(VoltageSink.empty(),)  # Battery
     self.chg = self.Port(VoltageSink.empty(),)  # Charger
 
-    self.r1_val = self.ArgParameter(r1)
-    self.r2_val = self.ArgParameter(r2)
+    self.r1_val = self.ArgParameter(r1_val)
+    self.r2_val = self.ArgParameter(r2_val)
     self.rds_on = self.ArgParameter(rds_on)
 
   def contents(self):
@@ -533,7 +328,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
     max_vcharge_voltage = self.chg.link().voltage.upper()
     max_vcharge_current = self.chg.link().current_drawn.upper()
     max_vbatt_voltage = self.vbatt.link().voltage.upper()
-    max_vbatt_current = self.vbatt.link().current_drawn.upper()
+    max_vbatt_current = self.vbatt.link().current_limits.upper() # TODO: check if we should use current_limit or current_draw
     # Create the PMOS transistors and resistors based on the provided schematic
     self.mp1 = self.Block(Fet.PFet(
       drain_voltage=(0, max_vcharge_voltage), drain_current=(0, max_vcharge_current),
@@ -552,7 +347,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
 
     chg_adapter = self.Block(PassiveAdapterVoltageSink())
     setattr(self, '(adapter)chg', chg_adapter)  # hack so the netlister recognizes this as an adapter
-    self.connect(self.mp1.drain, chg_adapter.src)
+    self.connect(self.mp1.source, chg_adapter.src)
     self.connect(self.chg, chg_adapter.dst)
 
     self.import_kicad(
