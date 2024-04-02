@@ -266,14 +266,14 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
     return self
 
 
-class PmosReverseProtection(PowerConditioner, Block):
+class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   """
   , here is a tradeoff between the Gate discharge time and Zener biasing.
   In most cases, 100R-330R is good if there are chances for the appearance of sudden reverse voltage in the circuit.
   But if there are no chances of sudden reverse voltage during the continuous working of the circuit, anything from the 1k-50k resistor value can be used.
   """
   @init_in_parent
-  def __init__(self, clamp_voltage: RangeLike, gate_resistor: RangeLike):
+  def __init__(self, gate_resistor: RangeLike = 100 * Ohm(tol=0.05), clamp_voltage: RangeLike = (0, 5) * Volt):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
     self.pwr_in = self.Port(VoltageSink.empty())  # high-priority higher-voltage source
@@ -296,16 +296,18 @@ class PmosReverseProtection(PowerConditioner, Block):
 
     self.res = self.Block(Resistor(self.gate_resistor))
     self.diode = self.Block(ZenerDiode(self.clamp_voltage))
-    # PFet gate to res to gnd
-    self.connect(self.fet.gate, self.res.a)
-    self.connect(self.gnd, self.res.b.adapt_to(Ground()))
-    # pwr  going through the PFet
-    self.connect(self.pwr_in, self.fet.source.adapt_to(VoltageSink()))
-    self.connect(self.pwr_out, self.fet.drain.adapt_to(VoltageSource()))
-    # Connectign the diode from the gate to the pwr out side
-    self.connect(self.fet.drain, self.diode.cathode)
-    self.connect(self.fet.gate, self.diode.anode)
 
+    self.import_kicad(
+      self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'pwr_in': VoltageSink(
+          current_draw=output_current_draw,
+        ),
+        'pwr_out': VoltageSource(
+          voltage_out=self.pwr_in.link().voltage,
+         ),
+        'gnd': Ground(),
+      })
 
 
 
