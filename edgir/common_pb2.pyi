@@ -15,15 +15,18 @@ import google.protobuf.internal.enum_type_wrapper
 import google.protobuf.message
 import sys
 import typing
+
 if sys.version_info >= (3, 10):
     import typing as typing_extensions
 else:
     import typing_extensions
+
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 @typing_extensions.final
 class Metadata(google.protobuf.message.Message):
     """* Arbitrary metadata stored in tree form."""
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     @typing_extensions.final
@@ -33,33 +36,31 @@ class Metadata(google.protobuf.message.Message):
         @typing_extensions.final
         class NodeEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
             KEY_FIELD_NUMBER: builtins.int
             VALUE_FIELD_NUMBER: builtins.int
             key: builtins.str
-
             @property
-            def value(self) -> global___Metadata:
-                ...
+            def value(self) -> global___Metadata: ...
+            def __init__(
+                self,
+                *,
+                key: builtins.str = ...,
+                value: global___Metadata | None = ...,
+            ) -> None: ...
+            def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+            def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
 
-            def __init__(self, *, key: builtins.str=..., value: global___Metadata | None=...) -> None:
-                ...
-
-            def HasField(self, field_name: typing_extensions.Literal['value', b'value']) -> builtins.bool:
-                ...
-
-            def ClearField(self, field_name: typing_extensions.Literal['key', b'key', 'value', b'value']) -> None:
-                ...
         NODE_FIELD_NUMBER: builtins.int
-
         @property
-        def node(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___Metadata]:
-            ...
+        def node(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___Metadata]: ...
+        def __init__(
+            self,
+            *,
+            node: collections.abc.Mapping[builtins.str, global___Metadata] | None = ...,
+        ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["node", b"node"]) -> None: ...
 
-        def __init__(self, *, node: collections.abc.Mapping[builtins.str, global___Metadata] | None=...) -> None:
-            ...
-
-        def ClearField(self, field_name: typing_extensions.Literal['node', b'node']) -> None:
-            ...
     UNKNOWN_FIELD_NUMBER: builtins.int
     KNOWN_FIELD_NUMBER: builtins.int
     MEMBERS_FIELD_NUMBER: builtins.int
@@ -67,46 +68,46 @@ class Metadata(google.protobuf.message.Message):
     BIN_LEAF_FIELD_NUMBER: builtins.int
     SOURCE_LOCATOR_FIELD_NUMBER: builtins.int
     ERROR_FIELD_NUMBER: builtins.int
-
     @property
-    def unknown(self) -> global___Empty:
-        ...
+    def unknown(self) -> global___Empty: ...
     known: builtins.str
-
     @property
-    def members(self) -> global___Metadata.Members:
-        ...
+    def members(self) -> global___Metadata.Members: ...
     text_leaf: builtins.str
     bin_leaf: builtins.bytes
-    '* I wanted to split binary and text data, since we might\n    just want to dump a raw file/image/datasheet in here\n    for safekeeping.\n\n    Mixing up binary and textual formats is just a recipe\n    for trouble.\n    '
+    """* I wanted to split binary and text data, since we might
+    just want to dump a raw file/image/datasheet in here
+    for safekeeping.
 
+    Mixing up binary and textual formats is just a recipe
+    for trouble.
+    """
     @property
     def source_locator(self) -> global___SourceLocator:
         """Defined formats
         Note: key should be the message definition name (eg, SourceLocator)
         TODO: how to handle multiple metadata of a given type?
         """
-
     @property
-    def error(self) -> global___Error:
-        ...
-
-    def __init__(self, *, unknown: global___Empty | None=..., known: builtins.str=..., members: global___Metadata.Members | None=..., text_leaf: builtins.str=..., bin_leaf: builtins.bytes=..., source_locator: global___SourceLocator | None=..., error: global___Error | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['bin_leaf', b'bin_leaf', 'error', b'error', 'known', b'known', 'members', b'members', 'meta', b'meta', 'source_locator', b'source_locator', 'text_leaf', b'text_leaf', 'type', b'type', 'unknown', b'unknown']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['bin_leaf', b'bin_leaf', 'error', b'error', 'known', b'known', 'members', b'members', 'meta', b'meta', 'source_locator', b'source_locator', 'text_leaf', b'text_leaf', 'type', b'type', 'unknown', b'unknown']) -> None:
-        ...
-
+    def error(self) -> global___Error: ...
+    def __init__(
+        self,
+        *,
+        unknown: global___Empty | None = ...,
+        known: builtins.str = ...,
+        members: global___Metadata.Members | None = ...,
+        text_leaf: builtins.str = ...,
+        bin_leaf: builtins.bytes = ...,
+        source_locator: global___SourceLocator | None = ...,
+        error: global___Error | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["bin_leaf", b"bin_leaf", "error", b"error", "known", b"known", "members", b"members", "meta", b"meta", "source_locator", b"source_locator", "text_leaf", b"text_leaf", "type", b"type", "unknown", b"unknown"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["bin_leaf", b"bin_leaf", "error", b"error", "known", b"known", "members", b"members", "meta", b"meta", "source_locator", b"source_locator", "text_leaf", b"text_leaf", "type", b"type", "unknown", b"unknown"]) -> None: ...
     @typing.overload
-    def WhichOneof(self, oneof_group: typing_extensions.Literal['meta', b'meta']) -> typing_extensions.Literal['members', 'text_leaf', 'bin_leaf', 'source_locator', 'error'] | None:
-        ...
-
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["meta", b"meta"]) -> typing_extensions.Literal["members", "text_leaf", "bin_leaf", "source_locator", "error"] | None: ...
     @typing.overload
-    def WhichOneof(self, oneof_group: typing_extensions.Literal['type', b'type']) -> typing_extensions.Literal['unknown', 'known'] | None:
-        ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["type", b"type"]) -> typing_extensions.Literal["unknown", "known"] | None: ...
+
 global___Metadata = Metadata
 
 @typing_extensions.final
@@ -115,44 +116,49 @@ class SourceLocator(google.protobuf.message.Message):
 
     * For locating source data
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     class _SourceType:
-        ValueType = typing.NewType('ValueType', builtins.int)
+        ValueType = typing.NewType("ValueType", builtins.int)
         V: typing_extensions.TypeAlias = ValueType
 
-    class _SourceTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[SourceLocator._SourceType.ValueType], builtins.type):
+    class _SourceTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[SourceLocator._SourceType.ValueType], builtins.type):  # noqa: F821
         DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
-        UNKNOWN: SourceLocator._SourceType.ValueType
-        DEFINITION: SourceLocator._SourceType.ValueType
-        'source defining this class, would be present in library'
-        INSTANTIATION: SourceLocator._SourceType.ValueType
-        'source of instantiation, would be present in design'
+        UNKNOWN: SourceLocator._SourceType.ValueType  # 0
+        DEFINITION: SourceLocator._SourceType.ValueType  # 1
+        """source defining this class, would be present in library"""
+        INSTANTIATION: SourceLocator._SourceType.ValueType  # 2
+        """source of instantiation, would be present in design"""
 
-    class SourceType(_SourceType, metaclass=_SourceTypeEnumTypeWrapper):
-        ...
-    UNKNOWN: SourceLocator.SourceType.ValueType
-    DEFINITION: SourceLocator.SourceType.ValueType
-    'source defining this class, would be present in library'
-    INSTANTIATION: SourceLocator.SourceType.ValueType
-    'source of instantiation, would be present in design'
+    class SourceType(_SourceType, metaclass=_SourceTypeEnumTypeWrapper): ...
+    UNKNOWN: SourceLocator.SourceType.ValueType  # 0
+    DEFINITION: SourceLocator.SourceType.ValueType  # 1
+    """source defining this class, would be present in library"""
+    INSTANTIATION: SourceLocator.SourceType.ValueType  # 2
+    """source of instantiation, would be present in design"""
+
     FILE_PACKAGE_FIELD_NUMBER: builtins.int
     LINE_OFFSET_FIELD_NUMBER: builtins.int
     COL_OFFSET_FIELD_NUMBER: builtins.int
     SOURCE_TYPE_FIELD_NUMBER: builtins.int
     file_package: builtins.str
-    'package name (portable, not tied to an absolute path) that locates the file'
+    """package name (portable, not tied to an absolute path) that locates the file"""
     line_offset: builtins.int
-    'line number'
+    """line number"""
     col_offset: builtins.int
-    'character offset within the line'
+    """character offset within the line"""
     source_type: global___SourceLocator.SourceType.ValueType
+    def __init__(
+        self,
+        *,
+        file_package: builtins.str = ...,
+        line_offset: builtins.int = ...,
+        col_offset: builtins.int = ...,
+        source_type: global___SourceLocator.SourceType.ValueType = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["col_offset", b"col_offset", "file_package", b"file_package", "line_offset", b"line_offset", "source_type", b"source_type"]) -> None: ...
 
-    def __init__(self, *, file_package: builtins.str=..., line_offset: builtins.int=..., col_offset: builtins.int=..., source_type: global___SourceLocator.SourceType.ValueType=...) -> None:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['col_offset', b'col_offset', 'file_package', b'file_package', 'line_offset', b'line_offset', 'source_type', b'source_type']) -> None:
-        ...
 global___SourceLocator = SourceLocator
 
 @typing_extensions.final
@@ -160,31 +166,38 @@ class Error(google.protobuf.message.Message):
     """* Used to communicate results of analysis / checking passes.
     Limited to Block and Link objects.
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     MESSAGE_FIELD_NUMBER: builtins.int
     TRACEBACK_FIELD_NUMBER: builtins.int
     SOURCE_FIELD_NUMBER: builtins.int
     message: builtins.str
-    'free-form error message'
+    """free-form error message"""
     traceback: builtins.str
-    'full traceback  TODO: should there be a structured stack trace?'
-
+    """full traceback  TODO: should there be a structured stack trace?"""
     @property
     def source(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___SourceLocator]:
         """source locator, eg line of failing constraint"""
+    def __init__(
+        self,
+        *,
+        message: builtins.str = ...,
+        traceback: builtins.str = ...,
+        source: collections.abc.Iterable[global___SourceLocator] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["message", b"message", "source", b"source", "traceback", b"traceback"]) -> None: ...
 
-    def __init__(self, *, message: builtins.str=..., traceback: builtins.str=..., source: collections.abc.Iterable[global___SourceLocator] | None=...) -> None:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['message', b'message', 'source', b'source', 'traceback', b'traceback']) -> None:
-        ...
 global___Error = Error
 
 @typing_extensions.final
 class Empty(google.protobuf.message.Message):
     """* Placeholder until I figure out how to import properly"""
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
-    def __init__(self) -> None:
-        ...
+    def __init__(
+        self,
+    ) -> None: ...
+
 global___Empty = Empty

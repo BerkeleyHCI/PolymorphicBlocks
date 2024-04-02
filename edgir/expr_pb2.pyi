@@ -27,17 +27,21 @@ defined for the sake on completeness.
 """
 import builtins
 import collections.abc
-from .. import edgir
+import edgir.common_pb2
+import edgir.lit_pb2
+import edgir.ref_pb2
 import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.internal.enum_type_wrapper
 import google.protobuf.message
 import sys
 import typing
+
 if sys.version_info >= (3, 10):
     import typing as typing_extensions
 else:
     import typing_extensions
+
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 @typing_extensions.final
@@ -45,60 +49,66 @@ class UnaryExpr(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     class _Op:
-        ValueType = typing.NewType('ValueType', builtins.int)
+        ValueType = typing.NewType("ValueType", builtins.int)
         V: typing_extensions.TypeAlias = ValueType
 
-    class _OpEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[UnaryExpr._Op.ValueType], builtins.type):
+    class _OpEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[UnaryExpr._Op.ValueType], builtins.type):  # noqa: F821
         DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
-        UNDEFINED: UnaryExpr._Op.ValueType
-        NEGATE: UnaryExpr._Op.ValueType
-        '* Negate :: Numeric a =>       a -> a\n        :: Numeric a => Range a -> Range a\n        '
-        NOT: UnaryExpr._Op.ValueType
-        '* Not :: Bool -> Bool'
-        INVERT: UnaryExpr._Op.ValueType
-        '* Invert ::       Float -> Float\n        :: Range Float -> Range Float\n        '
-        MIN: UnaryExpr._Op.ValueType
-        '* Min :: Range a -> a'
-        MAX: UnaryExpr._Op.ValueType
-        '* Max :: Range a -> a'
-        CENTER: UnaryExpr._Op.ValueType
-        '* Center :: Range a -> a'
-        WIDTH: UnaryExpr._Op.ValueType
-        '* Width :: Range a -> a'
+        UNDEFINED: UnaryExpr._Op.ValueType  # 0
+        NEGATE: UnaryExpr._Op.ValueType  # 1
+        """* Negate :: Numeric a =>       a -> a
+        :: Numeric a => Range a -> Range a
+        """
+        NOT: UnaryExpr._Op.ValueType  # 2
+        """* Not :: Bool -> Bool"""
+        INVERT: UnaryExpr._Op.ValueType  # 3
+        """* Invert ::       Float -> Float
+        :: Range Float -> Range Float
+        """
+        MIN: UnaryExpr._Op.ValueType  # 4
+        """* Min :: Range a -> a"""
+        MAX: UnaryExpr._Op.ValueType  # 5
+        """* Max :: Range a -> a"""
+        CENTER: UnaryExpr._Op.ValueType  # 6
+        """* Center :: Range a -> a"""
+        WIDTH: UnaryExpr._Op.ValueType  # 7
+        """* Width :: Range a -> a"""
 
-    class Op(_Op, metaclass=_OpEnumTypeWrapper):
-        ...
-    UNDEFINED: UnaryExpr.Op.ValueType
-    NEGATE: UnaryExpr.Op.ValueType
-    '* Negate :: Numeric a =>       a -> a\n    :: Numeric a => Range a -> Range a\n    '
-    NOT: UnaryExpr.Op.ValueType
-    '* Not :: Bool -> Bool'
-    INVERT: UnaryExpr.Op.ValueType
-    '* Invert ::       Float -> Float\n    :: Range Float -> Range Float\n    '
-    MIN: UnaryExpr.Op.ValueType
-    '* Min :: Range a -> a'
-    MAX: UnaryExpr.Op.ValueType
-    '* Max :: Range a -> a'
-    CENTER: UnaryExpr.Op.ValueType
-    '* Center :: Range a -> a'
-    WIDTH: UnaryExpr.Op.ValueType
-    '* Width :: Range a -> a'
+    class Op(_Op, metaclass=_OpEnumTypeWrapper): ...
+    UNDEFINED: UnaryExpr.Op.ValueType  # 0
+    NEGATE: UnaryExpr.Op.ValueType  # 1
+    """* Negate :: Numeric a =>       a -> a
+    :: Numeric a => Range a -> Range a
+    """
+    NOT: UnaryExpr.Op.ValueType  # 2
+    """* Not :: Bool -> Bool"""
+    INVERT: UnaryExpr.Op.ValueType  # 3
+    """* Invert ::       Float -> Float
+    :: Range Float -> Range Float
+    """
+    MIN: UnaryExpr.Op.ValueType  # 4
+    """* Min :: Range a -> a"""
+    MAX: UnaryExpr.Op.ValueType  # 5
+    """* Max :: Range a -> a"""
+    CENTER: UnaryExpr.Op.ValueType  # 6
+    """* Center :: Range a -> a"""
+    WIDTH: UnaryExpr.Op.ValueType  # 7
+    """* Width :: Range a -> a"""
+
     OP_FIELD_NUMBER: builtins.int
     VAL_FIELD_NUMBER: builtins.int
     op: global___UnaryExpr.Op.ValueType
-
     @property
-    def val(self) -> global___ValueExpr:
-        ...
+    def val(self) -> global___ValueExpr: ...
+    def __init__(
+        self,
+        *,
+        op: global___UnaryExpr.Op.ValueType = ...,
+        val: global___ValueExpr | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["val", b"val"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["op", b"op", "val", b"val"]) -> None: ...
 
-    def __init__(self, *, op: global___UnaryExpr.Op.ValueType=..., val: global___ValueExpr | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['val', b'val']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['op', b'op', 'val', b'val']) -> None:
-        ...
 global___UnaryExpr = UnaryExpr
 
 @typing_extensions.final
@@ -106,84 +116,182 @@ class UnarySetExpr(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     class _Op:
-        ValueType = typing.NewType('ValueType', builtins.int)
+        ValueType = typing.NewType("ValueType", builtins.int)
         V: typing_extensions.TypeAlias = ValueType
 
-    class _OpEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[UnarySetExpr._Op.ValueType], builtins.type):
+    class _OpEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[UnarySetExpr._Op.ValueType], builtins.type):  # noqa: F821
         DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
-        UNDEFINED: UnarySetExpr._Op.ValueType
-        SUM: UnarySetExpr._Op.ValueType
-        '* Sum :: (Numeric a) => Set a -> a\n        :: (Numeric a) => Set (Range a) -> Range a\n\n        Sum({}) = 0\n        '
-        ALL_TRUE: UnarySetExpr._Op.ValueType
-        '* All :: Set Bool -> Bool\n\n        All inputs are true\n        All({}) = True\n        '
-        ANY_TRUE: UnarySetExpr._Op.ValueType
-        '* Any :: Set Bool -> Bool\n\n        Any of the inputs are true\n        Any({}) = False\n        '
-        ALL_EQ: UnarySetExpr._Op.ValueType
-        '* AllEq :: (Equality a) => Set a -> Bool\n\n        AllEq({}) = True\n        '
-        ALL_UNIQUE: UnarySetExpr._Op.ValueType
-        '* AllUnique :: (Equality a) => Set a -> Bool\n\n        AllUnique(EmptySet) = True\n        '
-        MAXIMUM: UnarySetExpr._Op.ValueType
-        'SIZE = 6;\n\n        * Maximum :: (Ordered a) => Set a -> a\n\n        This op requires that the non-emptyness of the relevant set is assured\n        before being valid.\n        '
-        MINIMUM: UnarySetExpr._Op.ValueType
-        '* Minimum :: (Ordered a) => Set a -> a\n\n        This op requires that the non-emptyness of the relevant set is assured\n        before being valid.\n        '
-        SET_EXTRACT: UnarySetExpr._Op.ValueType
-        '* SetExtract :: Set a -> a\n\n        This op requires that the non-emptyness of the relevant set is assured\n        before being valid. In addition this assumes all values in the set are equal.\n        '
-        INTERSECTION: UnarySetExpr._Op.ValueType
-        '* Intersection :: Set (Range a) -> Range a\n\n        May produce an empty range.\n        Intersection({}) = [-inf, +inf]\n        '
-        HULL: UnarySetExpr._Op.ValueType
-        '* Hull :: Set (Range a) -> Range a\n        Returns the convex hull (union with all the inner missing bits filled in)\n        Hull({}) = EmptyRange\n        '
-        NEGATE: UnarySetExpr._Op.ValueType
-        '* Negate :: Numeric a => Set a         -> Set a\n        :: Numeric a => Set (Range a) -> Set (Range a)\n\n        Pointwise negate\n        '
-        INVERT: UnarySetExpr._Op.ValueType
-        '* Invert :: Set Float         -> Set Float\n        :: Set (Range Float) -> Set (Range Float)\n\n        Pointwise Invert\n        '
-        FLATTEN: UnarySetExpr._Op.ValueType
-        'Flatten[A] : Set[Set[A]] -> Set[A]\n        Given an array of array of elements, flattens the inner array.\n        Alternatively stated, concatenates all of the elements of the outer arrary\n        '
+        UNDEFINED: UnarySetExpr._Op.ValueType  # 0
+        SUM: UnarySetExpr._Op.ValueType  # 1
+        """* Sum :: (Numeric a) => Set a -> a
+        :: (Numeric a) => Set (Range a) -> Range a
 
-    class Op(_Op, metaclass=_OpEnumTypeWrapper):
-        ...
-    UNDEFINED: UnarySetExpr.Op.ValueType
-    SUM: UnarySetExpr.Op.ValueType
-    '* Sum :: (Numeric a) => Set a -> a\n    :: (Numeric a) => Set (Range a) -> Range a\n\n    Sum({}) = 0\n    '
-    ALL_TRUE: UnarySetExpr.Op.ValueType
-    '* All :: Set Bool -> Bool\n\n    All inputs are true\n    All({}) = True\n    '
-    ANY_TRUE: UnarySetExpr.Op.ValueType
-    '* Any :: Set Bool -> Bool\n\n    Any of the inputs are true\n    Any({}) = False\n    '
-    ALL_EQ: UnarySetExpr.Op.ValueType
-    '* AllEq :: (Equality a) => Set a -> Bool\n\n    AllEq({}) = True\n    '
-    ALL_UNIQUE: UnarySetExpr.Op.ValueType
-    '* AllUnique :: (Equality a) => Set a -> Bool\n\n    AllUnique(EmptySet) = True\n    '
-    MAXIMUM: UnarySetExpr.Op.ValueType
-    'SIZE = 6;\n\n    * Maximum :: (Ordered a) => Set a -> a\n\n    This op requires that the non-emptyness of the relevant set is assured\n    before being valid.\n    '
-    MINIMUM: UnarySetExpr.Op.ValueType
-    '* Minimum :: (Ordered a) => Set a -> a\n\n    This op requires that the non-emptyness of the relevant set is assured\n    before being valid.\n    '
-    SET_EXTRACT: UnarySetExpr.Op.ValueType
-    '* SetExtract :: Set a -> a\n\n    This op requires that the non-emptyness of the relevant set is assured\n    before being valid. In addition this assumes all values in the set are equal.\n    '
-    INTERSECTION: UnarySetExpr.Op.ValueType
-    '* Intersection :: Set (Range a) -> Range a\n\n    May produce an empty range.\n    Intersection({}) = [-inf, +inf]\n    '
-    HULL: UnarySetExpr.Op.ValueType
-    '* Hull :: Set (Range a) -> Range a\n    Returns the convex hull (union with all the inner missing bits filled in)\n    Hull({}) = EmptyRange\n    '
-    NEGATE: UnarySetExpr.Op.ValueType
-    '* Negate :: Numeric a => Set a         -> Set a\n    :: Numeric a => Set (Range a) -> Set (Range a)\n\n    Pointwise negate\n    '
-    INVERT: UnarySetExpr.Op.ValueType
-    '* Invert :: Set Float         -> Set Float\n    :: Set (Range Float) -> Set (Range Float)\n\n    Pointwise Invert\n    '
-    FLATTEN: UnarySetExpr.Op.ValueType
-    'Flatten[A] : Set[Set[A]] -> Set[A]\n    Given an array of array of elements, flattens the inner array.\n    Alternatively stated, concatenates all of the elements of the outer arrary\n    '
+        Sum({}) = 0
+        """
+        ALL_TRUE: UnarySetExpr._Op.ValueType  # 2
+        """* All :: Set Bool -> Bool
+
+        All inputs are true
+        All({}) = True
+        """
+        ANY_TRUE: UnarySetExpr._Op.ValueType  # 3
+        """* Any :: Set Bool -> Bool
+
+        Any of the inputs are true
+        Any({}) = False
+        """
+        ALL_EQ: UnarySetExpr._Op.ValueType  # 4
+        """* AllEq :: (Equality a) => Set a -> Bool
+
+        AllEq({}) = True
+        """
+        ALL_UNIQUE: UnarySetExpr._Op.ValueType  # 5
+        """* AllUnique :: (Equality a) => Set a -> Bool
+
+        AllUnique(EmptySet) = True
+        """
+        MAXIMUM: UnarySetExpr._Op.ValueType  # 10
+        """SIZE = 6;
+
+        * Maximum :: (Ordered a) => Set a -> a
+
+        This op requires that the non-emptyness of the relevant set is assured
+        before being valid.
+        """
+        MINIMUM: UnarySetExpr._Op.ValueType  # 11
+        """* Minimum :: (Ordered a) => Set a -> a
+
+        This op requires that the non-emptyness of the relevant set is assured
+        before being valid.
+        """
+        SET_EXTRACT: UnarySetExpr._Op.ValueType  # 12
+        """* SetExtract :: Set a -> a
+
+        This op requires that the non-emptyness of the relevant set is assured
+        before being valid. In addition this assumes all values in the set are equal.
+        """
+        INTERSECTION: UnarySetExpr._Op.ValueType  # 13
+        """* Intersection :: Set (Range a) -> Range a
+
+        May produce an empty range.
+        Intersection({}) = [-inf, +inf]
+        """
+        HULL: UnarySetExpr._Op.ValueType  # 14
+        """* Hull :: Set (Range a) -> Range a
+        Returns the convex hull (union with all the inner missing bits filled in)
+        Hull({}) = EmptyRange
+        """
+        NEGATE: UnarySetExpr._Op.ValueType  # 20
+        """* Negate :: Numeric a => Set a         -> Set a
+        :: Numeric a => Set (Range a) -> Set (Range a)
+
+        Pointwise negate
+        """
+        INVERT: UnarySetExpr._Op.ValueType  # 21
+        """* Invert :: Set Float         -> Set Float
+        :: Set (Range Float) -> Set (Range Float)
+
+        Pointwise Invert
+        """
+        FLATTEN: UnarySetExpr._Op.ValueType  # 30
+        """Flatten[A] : Set[Set[A]] -> Set[A]
+        Given an array of array of elements, flattens the inner array.
+        Alternatively stated, concatenates all of the elements of the outer arrary
+        """
+
+    class Op(_Op, metaclass=_OpEnumTypeWrapper): ...
+    UNDEFINED: UnarySetExpr.Op.ValueType  # 0
+    SUM: UnarySetExpr.Op.ValueType  # 1
+    """* Sum :: (Numeric a) => Set a -> a
+    :: (Numeric a) => Set (Range a) -> Range a
+
+    Sum({}) = 0
+    """
+    ALL_TRUE: UnarySetExpr.Op.ValueType  # 2
+    """* All :: Set Bool -> Bool
+
+    All inputs are true
+    All({}) = True
+    """
+    ANY_TRUE: UnarySetExpr.Op.ValueType  # 3
+    """* Any :: Set Bool -> Bool
+
+    Any of the inputs are true
+    Any({}) = False
+    """
+    ALL_EQ: UnarySetExpr.Op.ValueType  # 4
+    """* AllEq :: (Equality a) => Set a -> Bool
+
+    AllEq({}) = True
+    """
+    ALL_UNIQUE: UnarySetExpr.Op.ValueType  # 5
+    """* AllUnique :: (Equality a) => Set a -> Bool
+
+    AllUnique(EmptySet) = True
+    """
+    MAXIMUM: UnarySetExpr.Op.ValueType  # 10
+    """SIZE = 6;
+
+    * Maximum :: (Ordered a) => Set a -> a
+
+    This op requires that the non-emptyness of the relevant set is assured
+    before being valid.
+    """
+    MINIMUM: UnarySetExpr.Op.ValueType  # 11
+    """* Minimum :: (Ordered a) => Set a -> a
+
+    This op requires that the non-emptyness of the relevant set is assured
+    before being valid.
+    """
+    SET_EXTRACT: UnarySetExpr.Op.ValueType  # 12
+    """* SetExtract :: Set a -> a
+
+    This op requires that the non-emptyness of the relevant set is assured
+    before being valid. In addition this assumes all values in the set are equal.
+    """
+    INTERSECTION: UnarySetExpr.Op.ValueType  # 13
+    """* Intersection :: Set (Range a) -> Range a
+
+    May produce an empty range.
+    Intersection({}) = [-inf, +inf]
+    """
+    HULL: UnarySetExpr.Op.ValueType  # 14
+    """* Hull :: Set (Range a) -> Range a
+    Returns the convex hull (union with all the inner missing bits filled in)
+    Hull({}) = EmptyRange
+    """
+    NEGATE: UnarySetExpr.Op.ValueType  # 20
+    """* Negate :: Numeric a => Set a         -> Set a
+    :: Numeric a => Set (Range a) -> Set (Range a)
+
+    Pointwise negate
+    """
+    INVERT: UnarySetExpr.Op.ValueType  # 21
+    """* Invert :: Set Float         -> Set Float
+    :: Set (Range Float) -> Set (Range Float)
+
+    Pointwise Invert
+    """
+    FLATTEN: UnarySetExpr.Op.ValueType  # 30
+    """Flatten[A] : Set[Set[A]] -> Set[A]
+    Given an array of array of elements, flattens the inner array.
+    Alternatively stated, concatenates all of the elements of the outer arrary
+    """
+
     OP_FIELD_NUMBER: builtins.int
     VALS_FIELD_NUMBER: builtins.int
     op: global___UnarySetExpr.Op.ValueType
-
     @property
-    def vals(self) -> global___ValueExpr:
-        ...
+    def vals(self) -> global___ValueExpr: ...
+    def __init__(
+        self,
+        *,
+        op: global___UnarySetExpr.Op.ValueType = ...,
+        vals: global___ValueExpr | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["vals", b"vals"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["op", b"op", "vals", b"vals"]) -> None: ...
 
-    def __init__(self, *, op: global___UnarySetExpr.Op.ValueType=..., vals: global___ValueExpr | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['vals', b'vals']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['op', b'op', 'vals', b'vals']) -> None:
-        ...
 global___UnarySetExpr = UnarySetExpr
 
 @typing_extensions.final
@@ -191,109 +299,164 @@ class BinaryExpr(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     class _Op:
-        ValueType = typing.NewType('ValueType', builtins.int)
+        ValueType = typing.NewType("ValueType", builtins.int)
         V: typing_extensions.TypeAlias = ValueType
 
-    class _OpEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[BinaryExpr._Op.ValueType], builtins.type):
+    class _OpEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[BinaryExpr._Op.ValueType], builtins.type):  # noqa: F821
         DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
-        UNDEFINED: BinaryExpr._Op.ValueType
-        ADD: BinaryExpr._Op.ValueType
-        '* Add :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n        :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n        '
-        MULT: BinaryExpr._Op.ValueType
-        'SUB = 11; // Use ADD and NEGATE instead\n\n        * Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n        :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n        '
-        AND: BinaryExpr._Op.ValueType
-        'DIV = 13; // Use MULT and INVERT instead\n\n        * And :: (lhs :: Bool, rhs :: Bool) -> Bool\n        '
-        OR: BinaryExpr._Op.ValueType
-        '* Or :: (lhs :: Bool, rhs :: Bool) -> Bool'
-        XOR: BinaryExpr._Op.ValueType
-        '* Xor :: (lhs :: Bool, rhs :: Bool) -> Bool'
-        IMPLIES: BinaryExpr._Op.ValueType
-        '* Implies :: (lhs :: Bool, rhs :: Bool) -> Bool'
-        EQ: BinaryExpr._Op.ValueType
-        'IFF = 24; // Use EQ instead\n\n        * Eq :: (Equality a) =>  (lhs :: a, rhs :: a)  -> Bool\n        '
-        NEQ: BinaryExpr._Op.ValueType
-        '* Neq :: (Equality a) => (lhs :: a, rhs : a)  -> Bool'
-        GT: BinaryExpr._Op.ValueType
-        '* GT :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> Bool'
-        GTE: BinaryExpr._Op.ValueType
-        '* GTE :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool'
-        LT: BinaryExpr._Op.ValueType
-        '* LT :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool'
-        LTE: BinaryExpr._Op.ValueType
-        '* LTE :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool'
-        MAX: BinaryExpr._Op.ValueType
-        '* Max :: (Comparable a) => (lhs :: a, rhs :: a)  -> a'
-        MIN: BinaryExpr._Op.ValueType
-        '* Min :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> a'
-        INTERSECTION: BinaryExpr._Op.ValueType
-        'UNION = 50;\n\n        * Intersection :: (Numeric a) => (lhs : Range a, rhs : Range a) -> Range a\n        '
-        HULL: BinaryExpr._Op.ValueType
-        '* Hull :: (lhs :: Range a, rhs :: Range a) -> Range a\n        Given two input ranges, returns the convex hull (union with\n        all the inner missing bits filled in)\n        '
-        WITHIN: BinaryExpr._Op.ValueType
-        "INTERSECTS = 52;\n\n        * Within :: (Numeric a) => (lhs :: Range a, rhs :: Range a) -> Bool\n        :: (Numeric a) => (lhs ::       a, rhs :: Range a) -> Bool\n\n        Whether the lhs range or point is entirely within (contained by) the rhs.\n        Used to be named SUBSET changed to a name that doesn't also imply a set op.\n        "
-        RANGE: BinaryExpr._Op.ValueType
-        '* Range :: (Comparable a) => (lower :: a, upper :: a) -> Range a'
+        UNDEFINED: BinaryExpr._Op.ValueType  # 0
+        ADD: BinaryExpr._Op.ValueType  # 10
+        """* Add :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+        :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+        :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+        :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+        """
+        MULT: BinaryExpr._Op.ValueType  # 12
+        """SUB = 11; // Use ADD and NEGATE instead
 
-    class Op(_Op, metaclass=_OpEnumTypeWrapper):
-        ...
-    UNDEFINED: BinaryExpr.Op.ValueType
-    ADD: BinaryExpr.Op.ValueType
-    '* Add :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n    :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n    '
-    MULT: BinaryExpr.Op.ValueType
-    'SUB = 11; // Use ADD and NEGATE instead\n\n    * Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n    :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n    '
-    AND: BinaryExpr.Op.ValueType
-    'DIV = 13; // Use MULT and INVERT instead\n\n    * And :: (lhs :: Bool, rhs :: Bool) -> Bool\n    '
-    OR: BinaryExpr.Op.ValueType
-    '* Or :: (lhs :: Bool, rhs :: Bool) -> Bool'
-    XOR: BinaryExpr.Op.ValueType
-    '* Xor :: (lhs :: Bool, rhs :: Bool) -> Bool'
-    IMPLIES: BinaryExpr.Op.ValueType
-    '* Implies :: (lhs :: Bool, rhs :: Bool) -> Bool'
-    EQ: BinaryExpr.Op.ValueType
-    'IFF = 24; // Use EQ instead\n\n    * Eq :: (Equality a) =>  (lhs :: a, rhs :: a)  -> Bool\n    '
-    NEQ: BinaryExpr.Op.ValueType
-    '* Neq :: (Equality a) => (lhs :: a, rhs : a)  -> Bool'
-    GT: BinaryExpr.Op.ValueType
-    '* GT :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> Bool'
-    GTE: BinaryExpr.Op.ValueType
-    '* GTE :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool'
-    LT: BinaryExpr.Op.ValueType
-    '* LT :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool'
-    LTE: BinaryExpr.Op.ValueType
-    '* LTE :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool'
-    MAX: BinaryExpr.Op.ValueType
-    '* Max :: (Comparable a) => (lhs :: a, rhs :: a)  -> a'
-    MIN: BinaryExpr.Op.ValueType
-    '* Min :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> a'
-    INTERSECTION: BinaryExpr.Op.ValueType
-    'UNION = 50;\n\n    * Intersection :: (Numeric a) => (lhs : Range a, rhs : Range a) -> Range a\n    '
-    HULL: BinaryExpr.Op.ValueType
-    '* Hull :: (lhs :: Range a, rhs :: Range a) -> Range a\n    Given two input ranges, returns the convex hull (union with\n    all the inner missing bits filled in)\n    '
-    WITHIN: BinaryExpr.Op.ValueType
-    "INTERSECTS = 52;\n\n    * Within :: (Numeric a) => (lhs :: Range a, rhs :: Range a) -> Bool\n    :: (Numeric a) => (lhs ::       a, rhs :: Range a) -> Bool\n\n    Whether the lhs range or point is entirely within (contained by) the rhs.\n    Used to be named SUBSET changed to a name that doesn't also imply a set op.\n    "
-    RANGE: BinaryExpr.Op.ValueType
-    '* Range :: (Comparable a) => (lower :: a, upper :: a) -> Range a'
+        * Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+        :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+        :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+        :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+        """
+        AND: BinaryExpr._Op.ValueType  # 20
+        """DIV = 13; // Use MULT and INVERT instead
+
+        * And :: (lhs :: Bool, rhs :: Bool) -> Bool
+        """
+        OR: BinaryExpr._Op.ValueType  # 21
+        """* Or :: (lhs :: Bool, rhs :: Bool) -> Bool"""
+        XOR: BinaryExpr._Op.ValueType  # 22
+        """* Xor :: (lhs :: Bool, rhs :: Bool) -> Bool"""
+        IMPLIES: BinaryExpr._Op.ValueType  # 23
+        """* Implies :: (lhs :: Bool, rhs :: Bool) -> Bool"""
+        EQ: BinaryExpr._Op.ValueType  # 30
+        """IFF = 24; // Use EQ instead
+
+        * Eq :: (Equality a) =>  (lhs :: a, rhs :: a)  -> Bool
+        """
+        NEQ: BinaryExpr._Op.ValueType  # 31
+        """* Neq :: (Equality a) => (lhs :: a, rhs : a)  -> Bool"""
+        GT: BinaryExpr._Op.ValueType  # 40
+        """* GT :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> Bool"""
+        GTE: BinaryExpr._Op.ValueType  # 41
+        """* GTE :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool"""
+        LT: BinaryExpr._Op.ValueType  # 42
+        """* LT :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool"""
+        LTE: BinaryExpr._Op.ValueType  # 44
+        """* LTE :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool"""
+        MAX: BinaryExpr._Op.ValueType  # 45
+        """* Max :: (Comparable a) => (lhs :: a, rhs :: a)  -> a"""
+        MIN: BinaryExpr._Op.ValueType  # 46
+        """* Min :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> a"""
+        INTERSECTION: BinaryExpr._Op.ValueType  # 51
+        """UNION = 50;
+
+        * Intersection :: (Numeric a) => (lhs : Range a, rhs : Range a) -> Range a
+        """
+        HULL: BinaryExpr._Op.ValueType  # 54
+        """* Hull :: (lhs :: Range a, rhs :: Range a) -> Range a
+        Given two input ranges, returns the convex hull (union with
+        all the inner missing bits filled in)
+        """
+        WITHIN: BinaryExpr._Op.ValueType  # 53
+        """INTERSECTS = 52;
+
+        * Within :: (Numeric a) => (lhs :: Range a, rhs :: Range a) -> Bool
+        :: (Numeric a) => (lhs ::       a, rhs :: Range a) -> Bool
+
+        Whether the lhs range or point is entirely within (contained by) the rhs.
+        Used to be named SUBSET changed to a name that doesn't also imply a set op.
+        """
+        RANGE: BinaryExpr._Op.ValueType  # 1
+        """* Range :: (Comparable a) => (lower :: a, upper :: a) -> Range a"""
+
+    class Op(_Op, metaclass=_OpEnumTypeWrapper): ...
+    UNDEFINED: BinaryExpr.Op.ValueType  # 0
+    ADD: BinaryExpr.Op.ValueType  # 10
+    """* Add :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+    :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+    :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+    :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+    """
+    MULT: BinaryExpr.Op.ValueType  # 12
+    """SUB = 11; // Use ADD and NEGATE instead
+
+    * Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a
+    :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
+    :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a
+    :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a
+    """
+    AND: BinaryExpr.Op.ValueType  # 20
+    """DIV = 13; // Use MULT and INVERT instead
+
+    * And :: (lhs :: Bool, rhs :: Bool) -> Bool
+    """
+    OR: BinaryExpr.Op.ValueType  # 21
+    """* Or :: (lhs :: Bool, rhs :: Bool) -> Bool"""
+    XOR: BinaryExpr.Op.ValueType  # 22
+    """* Xor :: (lhs :: Bool, rhs :: Bool) -> Bool"""
+    IMPLIES: BinaryExpr.Op.ValueType  # 23
+    """* Implies :: (lhs :: Bool, rhs :: Bool) -> Bool"""
+    EQ: BinaryExpr.Op.ValueType  # 30
+    """IFF = 24; // Use EQ instead
+
+    * Eq :: (Equality a) =>  (lhs :: a, rhs :: a)  -> Bool
+    """
+    NEQ: BinaryExpr.Op.ValueType  # 31
+    """* Neq :: (Equality a) => (lhs :: a, rhs : a)  -> Bool"""
+    GT: BinaryExpr.Op.ValueType  # 40
+    """* GT :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> Bool"""
+    GTE: BinaryExpr.Op.ValueType  # 41
+    """* GTE :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool"""
+    LT: BinaryExpr.Op.ValueType  # 42
+    """* LT :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool"""
+    LTE: BinaryExpr.Op.ValueType  # 44
+    """* LTE :: (Comparable a) =>  (lhs :: a, rhs :: a) -> Bool"""
+    MAX: BinaryExpr.Op.ValueType  # 45
+    """* Max :: (Comparable a) => (lhs :: a, rhs :: a)  -> a"""
+    MIN: BinaryExpr.Op.ValueType  # 46
+    """* Min :: (Comparable a) =>  (lhs :: a, rhs :: a)  -> a"""
+    INTERSECTION: BinaryExpr.Op.ValueType  # 51
+    """UNION = 50;
+
+    * Intersection :: (Numeric a) => (lhs : Range a, rhs : Range a) -> Range a
+    """
+    HULL: BinaryExpr.Op.ValueType  # 54
+    """* Hull :: (lhs :: Range a, rhs :: Range a) -> Range a
+    Given two input ranges, returns the convex hull (union with
+    all the inner missing bits filled in)
+    """
+    WITHIN: BinaryExpr.Op.ValueType  # 53
+    """INTERSECTS = 52;
+
+    * Within :: (Numeric a) => (lhs :: Range a, rhs :: Range a) -> Bool
+    :: (Numeric a) => (lhs ::       a, rhs :: Range a) -> Bool
+
+    Whether the lhs range or point is entirely within (contained by) the rhs.
+    Used to be named SUBSET changed to a name that doesn't also imply a set op.
+    """
+    RANGE: BinaryExpr.Op.ValueType  # 1
+    """* Range :: (Comparable a) => (lower :: a, upper :: a) -> Range a"""
+
     OP_FIELD_NUMBER: builtins.int
     LHS_FIELD_NUMBER: builtins.int
     RHS_FIELD_NUMBER: builtins.int
     op: global___BinaryExpr.Op.ValueType
-
     @property
-    def lhs(self) -> global___ValueExpr:
-        ...
-
+    def lhs(self) -> global___ValueExpr: ...
     @property
-    def rhs(self) -> global___ValueExpr:
-        ...
+    def rhs(self) -> global___ValueExpr: ...
+    def __init__(
+        self,
+        *,
+        op: global___BinaryExpr.Op.ValueType = ...,
+        lhs: global___ValueExpr | None = ...,
+        rhs: global___ValueExpr | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["lhs", b"lhs", "rhs", b"rhs"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["lhs", b"lhs", "op", b"op", "rhs", b"rhs"]) -> None: ...
 
-    def __init__(self, *, op: global___BinaryExpr.Op.ValueType=..., lhs: global___ValueExpr | None=..., rhs: global___ValueExpr | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['lhs', b'lhs', 'rhs', b'rhs']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['lhs', b'lhs', 'op', b'op', 'rhs', b'rhs']) -> None:
-        ...
 global___BinaryExpr = BinaryExpr
 
 @typing_extensions.final
@@ -301,66 +464,86 @@ class BinarySetExpr(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     class _Op:
-        ValueType = typing.NewType('ValueType', builtins.int)
+        ValueType = typing.NewType("ValueType", builtins.int)
         V: typing_extensions.TypeAlias = ValueType
 
-    class _OpEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[BinarySetExpr._Op.ValueType], builtins.type):
+    class _OpEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[BinarySetExpr._Op.ValueType], builtins.type):  # noqa: F821
         DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
-        UNDEFINED: BinarySetExpr._Op.ValueType
-        ADD: BinarySetExpr._Op.ValueType
-        '* Add :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a\n        :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)\n        :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)\n        :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)\n        '
-        MULT: BinarySetExpr._Op.ValueType
-        '* Mult :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a\n        :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)\n        :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)\n        :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)\n        '
-        CONCAT: BinarySetExpr._Op.ValueType
-        'String concatenate operator\n        Concatenate : (lhs: String, rhss: Set[String]) -> Set[String] (prepend lhs to all elements)\n                    : (lhss: Set[String], rhs: String) -> Set[String] (append rhs to all elements)\n        '
+        UNDEFINED: BinarySetExpr._Op.ValueType  # 0
+        ADD: BinarySetExpr._Op.ValueType  # 10
+        """* Add :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a
+        :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)
+        :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)
+        :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)
+        """
+        MULT: BinarySetExpr._Op.ValueType  # 12
+        """* Mult :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a
+        :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)
+        :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)
+        :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)
+        """
+        CONCAT: BinarySetExpr._Op.ValueType  # 20
+        """String concatenate operator
+        Concatenate : (lhs: String, rhss: Set[String]) -> Set[String] (prepend lhs to all elements)
+                    : (lhss: Set[String], rhs: String) -> Set[String] (append rhs to all elements)
+        """
 
-    class Op(_Op, metaclass=_OpEnumTypeWrapper):
-        ...
-    UNDEFINED: BinarySetExpr.Op.ValueType
-    ADD: BinarySetExpr.Op.ValueType
-    '* Add :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a\n    :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)\n    :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)\n    :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)\n    '
-    MULT: BinarySetExpr.Op.ValueType
-    '* Mult :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a\n    :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)\n    :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)\n    :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)\n    '
-    CONCAT: BinarySetExpr.Op.ValueType
-    'String concatenate operator\n    Concatenate : (lhs: String, rhss: Set[String]) -> Set[String] (prepend lhs to all elements)\n                : (lhss: Set[String], rhs: String) -> Set[String] (append rhs to all elements)\n    '
+    class Op(_Op, metaclass=_OpEnumTypeWrapper): ...
+    UNDEFINED: BinarySetExpr.Op.ValueType  # 0
+    ADD: BinarySetExpr.Op.ValueType  # 10
+    """* Add :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a
+    :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)
+    :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)
+    :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)
+    """
+    MULT: BinarySetExpr.Op.ValueType  # 12
+    """* Mult :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a
+    :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)
+    :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)
+    :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)
+    """
+    CONCAT: BinarySetExpr.Op.ValueType  # 20
+    """String concatenate operator
+    Concatenate : (lhs: String, rhss: Set[String]) -> Set[String] (prepend lhs to all elements)
+                : (lhss: Set[String], rhs: String) -> Set[String] (append rhs to all elements)
+    """
+
     OP_FIELD_NUMBER: builtins.int
     LHSET_FIELD_NUMBER: builtins.int
     RHS_FIELD_NUMBER: builtins.int
     op: global___BinarySetExpr.Op.ValueType
-
     @property
-    def lhset(self) -> global___ValueExpr:
-        ...
-
+    def lhset(self) -> global___ValueExpr: ...
     @property
-    def rhs(self) -> global___ValueExpr:
-        ...
+    def rhs(self) -> global___ValueExpr: ...
+    def __init__(
+        self,
+        *,
+        op: global___BinarySetExpr.Op.ValueType = ...,
+        lhset: global___ValueExpr | None = ...,
+        rhs: global___ValueExpr | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["lhset", b"lhset", "rhs", b"rhs"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["lhset", b"lhset", "op", b"op", "rhs", b"rhs"]) -> None: ...
 
-    def __init__(self, *, op: global___BinarySetExpr.Op.ValueType=..., lhset: global___ValueExpr | None=..., rhs: global___ValueExpr | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['lhset', b'lhset', 'rhs', b'rhs']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['lhset', b'lhset', 'op', b'op', 'rhs', b'rhs']) -> None:
-        ...
 global___BinarySetExpr = BinarySetExpr
 
 @typing_extensions.final
 class ArrayExpr(google.protobuf.message.Message):
     """* Creates an array from element exprs"""
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     VALS_FIELD_NUMBER: builtins.int
-
     @property
-    def vals(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ValueExpr]:
-        ...
+    def vals(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ValueExpr]: ...
+    def __init__(
+        self,
+        *,
+        vals: collections.abc.Iterable[global___ValueExpr] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["vals", b"vals"]) -> None: ...
 
-    def __init__(self, *, vals: collections.abc.Iterable[global___ValueExpr] | None=...) -> None:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['vals', b'vals']) -> None:
-        ...
 global___ArrayExpr = ArrayExpr
 
 @typing_extensions.final
@@ -368,26 +551,24 @@ class RangeExpr(google.protobuf.message.Message):
     """* Ranges have an expression form, allowing you to constrain them without
     specifying them fully
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     MINIMUM_FIELD_NUMBER: builtins.int
     MAXIMUM_FIELD_NUMBER: builtins.int
-
     @property
-    def minimum(self) -> global___ValueExpr:
-        ...
-
+    def minimum(self) -> global___ValueExpr: ...
     @property
-    def maximum(self) -> global___ValueExpr:
-        ...
+    def maximum(self) -> global___ValueExpr: ...
+    def __init__(
+        self,
+        *,
+        minimum: global___ValueExpr | None = ...,
+        maximum: global___ValueExpr | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["maximum", b"maximum", "minimum", b"minimum"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["maximum", b"maximum", "minimum", b"minimum"]) -> None: ...
 
-    def __init__(self, *, minimum: global___ValueExpr | None=..., maximum: global___ValueExpr | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['maximum', b'maximum', 'minimum', b'minimum']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['maximum', b'maximum', 'minimum', b'minimum']) -> None:
-        ...
 global___RangeExpr = RangeExpr
 
 @typing_extensions.final
@@ -395,73 +576,68 @@ class StructExpr(google.protobuf.message.Message):
     """* Structs have an expression form, allowing you to constrain them without
     specifying them fully
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     @typing_extensions.final
     class ValsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
         key: builtins.str
-
         @property
-        def value(self) -> global___ValueExpr:
-            ...
+        def value(self) -> global___ValueExpr: ...
+        def __init__(
+            self,
+            *,
+            key: builtins.str = ...,
+            value: global___ValueExpr | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
 
-        def __init__(self, *, key: builtins.str=..., value: global___ValueExpr | None=...) -> None:
-            ...
-
-        def HasField(self, field_name: typing_extensions.Literal['value', b'value']) -> builtins.bool:
-            ...
-
-        def ClearField(self, field_name: typing_extensions.Literal['key', b'key', 'value', b'value']) -> None:
-            ...
     VALS_FIELD_NUMBER: builtins.int
-
     @property
-    def vals(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___ValueExpr]:
-        ...
+    def vals(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___ValueExpr]: ...
+    def __init__(
+        self,
+        *,
+        vals: collections.abc.Mapping[builtins.str, global___ValueExpr] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["vals", b"vals"]) -> None: ...
 
-    def __init__(self, *, vals: collections.abc.Mapping[builtins.str, global___ValueExpr] | None=...) -> None:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['vals', b'vals']) -> None:
-        ...
 global___StructExpr = StructExpr
 
 @typing_extensions.final
 class IfThenElseExpr(google.protobuf.message.Message):
     """* IfThenElse :: (cond :: Bool, tru :: a, fal :: a) -> a"""
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     COND_FIELD_NUMBER: builtins.int
     TRU_FIELD_NUMBER: builtins.int
     FAL_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
-
     @property
-    def cond(self) -> global___ValueExpr:
-        ...
-
+    def cond(self) -> global___ValueExpr: ...
     @property
-    def tru(self) -> global___ValueExpr:
-        ...
-
+    def tru(self) -> global___ValueExpr: ...
     @property
-    def fal(self) -> global___ValueExpr:
-        ...
-
+    def fal(self) -> global___ValueExpr: ...
     @property
-    def meta(self) -> edgir.common_pb2.Metadata:
-        ...
+    def meta(self) -> edgir.common_pb2.Metadata: ...
+    def __init__(
+        self,
+        *,
+        cond: global___ValueExpr | None = ...,
+        tru: global___ValueExpr | None = ...,
+        fal: global___ValueExpr | None = ...,
+        meta: edgir.common_pb2.Metadata | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["cond", b"cond", "fal", b"fal", "meta", b"meta", "tru", b"tru"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["cond", b"cond", "fal", b"fal", "meta", b"meta", "tru", b"tru"]) -> None: ...
 
-    def __init__(self, *, cond: global___ValueExpr | None=..., tru: global___ValueExpr | None=..., fal: global___ValueExpr | None=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['cond', b'cond', 'fal', b'fal', 'meta', b'meta', 'tru', b'tru']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['cond', b'cond', 'fal', b'fal', 'meta', b'meta', 'tru', b'tru']) -> None:
-        ...
 global___IfThenElseExpr = IfThenElseExpr
 
 @typing_extensions.final
@@ -470,26 +646,24 @@ class ExtractExpr(google.protobuf.message.Message):
     Extract :: (container :: Struct{index :: a}, index :: string)     -> a
     Extract :: (container :: Range a           , index :: {"minimum"|"maximum"}) -> a
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     CONTAINER_FIELD_NUMBER: builtins.int
     INDEX_FIELD_NUMBER: builtins.int
-
     @property
-    def container(self) -> global___ValueExpr:
-        ...
-
+    def container(self) -> global___ValueExpr: ...
     @property
-    def index(self) -> global___ValueExpr:
-        ...
+    def index(self) -> global___ValueExpr: ...
+    def __init__(
+        self,
+        *,
+        container: global___ValueExpr | None = ...,
+        index: global___ValueExpr | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["container", b"container", "index", b"index"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["container", b"container", "index", b"index"]) -> None: ...
 
-    def __init__(self, *, container: global___ValueExpr | None=..., index: global___ValueExpr | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['container', b'container', 'index', b'index']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['container', b'container', 'index', b'index']) -> None:
-        ...
 global___ExtractExpr = ExtractExpr
 
 @typing_extensions.final
@@ -500,26 +674,24 @@ class MapExtractExpr(google.protobuf.message.Message):
        This expression can map over a container and return a container of
        the relevant subexpression determined by a path. */
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     CONTAINER_FIELD_NUMBER: builtins.int
     PATH_FIELD_NUMBER: builtins.int
-
     @property
-    def container(self) -> global___ValueExpr:
-        ...
-
+    def container(self) -> global___ValueExpr: ...
     @property
-    def path(self) -> edgir.ref_pb2.LocalPath:
-        ...
+    def path(self) -> edgir.ref_pb2.LocalPath: ...
+    def __init__(
+        self,
+        *,
+        container: global___ValueExpr | None = ...,
+        path: edgir.ref_pb2.LocalPath | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["container", b"container", "path", b"path"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["container", b"container", "path", b"path"]) -> None: ...
 
-    def __init__(self, *, container: global___ValueExpr | None=..., path: edgir.ref_pb2.LocalPath | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['container', b'container', 'path', b'path']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['container', b'container', 'path', b'path']) -> None:
-        ...
 global___MapExtractExpr = MapExtractExpr
 
 @typing_extensions.final
@@ -528,19 +700,16 @@ class ConnectedExpr(google.protobuf.message.Message):
 
     This tells us whether the specified ports are connected
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     BLOCK_PORT_FIELD_NUMBER: builtins.int
     LINK_PORT_FIELD_NUMBER: builtins.int
     EXPANDED_FIELD_NUMBER: builtins.int
-
     @property
-    def block_port(self) -> global___ValueExpr:
-        ...
-
+    def block_port(self) -> global___ValueExpr: ...
     @property
-    def link_port(self) -> global___ValueExpr:
-        ...
-
+    def link_port(self) -> global___ValueExpr: ...
     @property
     def expanded(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ConnectedExpr]:
         """During compilation, ConnectedExpr may be expanded (allocate replaced with concrete path indices,
@@ -548,15 +717,16 @@ class ConnectedExpr(google.protobuf.message.Message):
         The expanded forms are stored here (including multiple elements in the array case),
         while the original (parent) is not modified.
         """
+    def __init__(
+        self,
+        *,
+        block_port: global___ValueExpr | None = ...,
+        link_port: global___ValueExpr | None = ...,
+        expanded: collections.abc.Iterable[global___ConnectedExpr] | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["block_port", b"block_port", "link_port", b"link_port"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["block_port", b"block_port", "expanded", b"expanded", "link_port", b"link_port"]) -> None: ...
 
-    def __init__(self, *, block_port: global___ValueExpr | None=..., link_port: global___ValueExpr | None=..., expanded: collections.abc.Iterable[global___ConnectedExpr] | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['block_port', b'block_port', 'link_port', b'link_port']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['block_port', b'block_port', 'expanded', b'expanded', 'link_port', b'link_port']) -> None:
-        ...
 global___ConnectedExpr = ConnectedExpr
 
 @typing_extensions.final
@@ -565,31 +735,29 @@ class ExportedExpr(google.protobuf.message.Message):
 
     This tells us whether the specified port is exported to the hierarchy block exterior port
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     EXTERIOR_PORT_FIELD_NUMBER: builtins.int
     INTERNAL_BLOCK_PORT_FIELD_NUMBER: builtins.int
     EXPANDED_FIELD_NUMBER: builtins.int
-
     @property
-    def exterior_port(self) -> global___ValueExpr:
-        ...
-
+    def exterior_port(self) -> global___ValueExpr: ...
     @property
-    def internal_block_port(self) -> global___ValueExpr:
-        ...
-
+    def internal_block_port(self) -> global___ValueExpr: ...
     @property
     def expanded(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ExportedExpr]:
         """see comment in ConnectedExpr"""
+    def __init__(
+        self,
+        *,
+        exterior_port: global___ValueExpr | None = ...,
+        internal_block_port: global___ValueExpr | None = ...,
+        expanded: collections.abc.Iterable[global___ExportedExpr] | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["exterior_port", b"exterior_port", "internal_block_port", b"internal_block_port"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["expanded", b"expanded", "exterior_port", b"exterior_port", "internal_block_port", b"internal_block_port"]) -> None: ...
 
-    def __init__(self, *, exterior_port: global___ValueExpr | None=..., internal_block_port: global___ValueExpr | None=..., expanded: collections.abc.Iterable[global___ExportedExpr] | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['exterior_port', b'exterior_port', 'internal_block_port', b'internal_block_port']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['expanded', b'expanded', 'exterior_port', b'exterior_port', 'internal_block_port', b'internal_block_port']) -> None:
-        ...
 global___ExportedExpr = ExportedExpr
 
 @typing_extensions.final
@@ -597,31 +765,30 @@ class AssignExpr(google.protobuf.message.Message):
     """Variable assignment (from an expression value), which allows dataflow to be directioned and explicit.
     Assignments should not be cyclic.
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     DST_FIELD_NUMBER: builtins.int
     SRC_FIELD_NUMBER: builtins.int
-
     @property
-    def dst(self) -> edgir.ref_pb2.LocalPath:
-        ...
-
+    def dst(self) -> edgir.ref_pb2.LocalPath: ...
     @property
-    def src(self) -> global___ValueExpr:
-        ...
+    def src(self) -> global___ValueExpr: ...
+    def __init__(
+        self,
+        *,
+        dst: edgir.ref_pb2.LocalPath | None = ...,
+        src: global___ValueExpr | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["dst", b"dst", "src", b"src"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["dst", b"dst", "src", b"src"]) -> None: ...
 
-    def __init__(self, *, dst: edgir.ref_pb2.LocalPath | None=..., src: global___ValueExpr | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['dst', b'dst', 'src', b'src']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['dst', b'dst', 'src', b'src']) -> None:
-        ...
 global___AssignExpr = AssignExpr
 
 @typing_extensions.final
 class ValueExpr(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LITERAL_FIELD_NUMBER: builtins.int
     BINARY_FIELD_NUMBER: builtins.int
     BINARY_SET_FIELD_NUMBER: builtins.int
@@ -642,77 +809,48 @@ class ValueExpr(google.protobuf.message.Message):
     ASSIGNTUNNEL_FIELD_NUMBER: builtins.int
     REF_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
-
     @property
-    def literal(self) -> edgir.lit_pb2.ValueLit:
-        ...
-
+    def literal(self) -> edgir.lit_pb2.ValueLit: ...
     @property
-    def binary(self) -> global___BinaryExpr:
-        ...
-
+    def binary(self) -> global___BinaryExpr: ...
     @property
-    def binary_set(self) -> global___BinarySetExpr:
-        ...
-
+    def binary_set(self) -> global___BinarySetExpr: ...
     @property
-    def unary(self) -> global___UnaryExpr:
-        ...
-
+    def unary(self) -> global___UnaryExpr: ...
     @property
-    def unary_set(self) -> global___UnarySetExpr:
-        ...
-
+    def unary_set(self) -> global___UnarySetExpr: ...
     @property
     def array(self) -> global___ArrayExpr:
         """SetExpr          set         = 5;"""
-
     @property
-    def struct(self) -> global___StructExpr:
-        ...
-
+    def struct(self) -> global___StructExpr: ...
     @property
-    def range(self) -> global___RangeExpr:
-        ...
-
+    def range(self) -> global___RangeExpr: ...
     @property
-    def ifThenElse(self) -> global___IfThenElseExpr:
-        ...
-
+    def ifThenElse(self) -> global___IfThenElseExpr: ...
     @property
-    def extract(self) -> global___ExtractExpr:
-        ...
-
+    def extract(self) -> global___ExtractExpr: ...
     @property
-    def map_extract(self) -> global___MapExtractExpr:
-        ...
-
+    def map_extract(self) -> global___MapExtractExpr: ...
     @property
     def connected(self) -> global___ConnectedExpr:
         """single port to single port connect"""
-
     @property
     def exported(self) -> global___ExportedExpr:
         """single port to single port export"""
-
     @property
     def connectedArray(self) -> global___ConnectedExpr:
         """array to array connect, where allocate means allocate a subarray"""
-
     @property
     def exportedArray(self) -> global___ExportedExpr:
         """array to array export, where allocate means allocate a subarray"""
-
     @property
-    def assign(self) -> global___AssignExpr:
-        ...
-
+    def assign(self) -> global___AssignExpr: ...
     @property
     def exportedTunnel(self) -> global___ExportedExpr:
         """These Exprs support cross-hierarchy operations
         single port to single port tunneling (cross-hierarchy) export:
         """
-
     @property
     def assignTunnel(self) -> global___AssignExpr:
         """- the exterior port may be a top-level port on any (recursive) sub-block
@@ -726,24 +864,36 @@ class ValueExpr(google.protobuf.message.Message):
 
         parameter assignment which may be cross-hierarchy
         """
-
     @property
-    def ref(self) -> edgir.ref_pb2.LocalPath:
-        ...
-
+    def ref(self) -> edgir.ref_pb2.LocalPath: ...
     @property
-    def meta(self) -> edgir.common_pb2.Metadata:
-        ...
+    def meta(self) -> edgir.common_pb2.Metadata: ...
+    def __init__(
+        self,
+        *,
+        literal: edgir.lit_pb2.ValueLit | None = ...,
+        binary: global___BinaryExpr | None = ...,
+        binary_set: global___BinarySetExpr | None = ...,
+        unary: global___UnaryExpr | None = ...,
+        unary_set: global___UnarySetExpr | None = ...,
+        array: global___ArrayExpr | None = ...,
+        struct: global___StructExpr | None = ...,
+        range: global___RangeExpr | None = ...,
+        ifThenElse: global___IfThenElseExpr | None = ...,
+        extract: global___ExtractExpr | None = ...,
+        map_extract: global___MapExtractExpr | None = ...,
+        connected: global___ConnectedExpr | None = ...,
+        exported: global___ExportedExpr | None = ...,
+        connectedArray: global___ConnectedExpr | None = ...,
+        exportedArray: global___ExportedExpr | None = ...,
+        assign: global___AssignExpr | None = ...,
+        exportedTunnel: global___ExportedExpr | None = ...,
+        assignTunnel: global___AssignExpr | None = ...,
+        ref: edgir.ref_pb2.LocalPath | None = ...,
+        meta: edgir.common_pb2.Metadata | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["array", b"array", "assign", b"assign", "assignTunnel", b"assignTunnel", "binary", b"binary", "binary_set", b"binary_set", "connected", b"connected", "connectedArray", b"connectedArray", "exported", b"exported", "exportedArray", b"exportedArray", "exportedTunnel", b"exportedTunnel", "expr", b"expr", "extract", b"extract", "ifThenElse", b"ifThenElse", "literal", b"literal", "map_extract", b"map_extract", "meta", b"meta", "range", b"range", "ref", b"ref", "struct", b"struct", "unary", b"unary", "unary_set", b"unary_set"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["array", b"array", "assign", b"assign", "assignTunnel", b"assignTunnel", "binary", b"binary", "binary_set", b"binary_set", "connected", b"connected", "connectedArray", b"connectedArray", "exported", b"exported", "exportedArray", b"exportedArray", "exportedTunnel", b"exportedTunnel", "expr", b"expr", "extract", b"extract", "ifThenElse", b"ifThenElse", "literal", b"literal", "map_extract", b"map_extract", "meta", b"meta", "range", b"range", "ref", b"ref", "struct", b"struct", "unary", b"unary", "unary_set", b"unary_set"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["expr", b"expr"]) -> typing_extensions.Literal["literal", "binary", "binary_set", "unary", "unary_set", "array", "struct", "range", "ifThenElse", "extract", "map_extract", "connected", "exported", "connectedArray", "exportedArray", "assign", "exportedTunnel", "assignTunnel", "ref"] | None: ...
 
-    def __init__(self, *, literal: edgir.lit_pb2.ValueLit | None=..., binary: global___BinaryExpr | None=..., binary_set: global___BinarySetExpr | None=..., unary: global___UnaryExpr | None=..., unary_set: global___UnarySetExpr | None=..., array: global___ArrayExpr | None=..., struct: global___StructExpr | None=..., range: global___RangeExpr | None=..., ifThenElse: global___IfThenElseExpr | None=..., extract: global___ExtractExpr | None=..., map_extract: global___MapExtractExpr | None=..., connected: global___ConnectedExpr | None=..., exported: global___ExportedExpr | None=..., connectedArray: global___ConnectedExpr | None=..., exportedArray: global___ExportedExpr | None=..., assign: global___AssignExpr | None=..., exportedTunnel: global___ExportedExpr | None=..., assignTunnel: global___AssignExpr | None=..., ref: edgir.ref_pb2.LocalPath | None=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['array', b'array', 'assign', b'assign', 'assignTunnel', b'assignTunnel', 'binary', b'binary', 'binary_set', b'binary_set', 'connected', b'connected', 'connectedArray', b'connectedArray', 'exported', b'exported', 'exportedArray', b'exportedArray', 'exportedTunnel', b'exportedTunnel', 'expr', b'expr', 'extract', b'extract', 'ifThenElse', b'ifThenElse', 'literal', b'literal', 'map_extract', b'map_extract', 'meta', b'meta', 'range', b'range', 'ref', b'ref', 'struct', b'struct', 'unary', b'unary', 'unary_set', b'unary_set']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['array', b'array', 'assign', b'assign', 'assignTunnel', b'assignTunnel', 'binary', b'binary', 'binary_set', b'binary_set', 'connected', b'connected', 'connectedArray', b'connectedArray', 'exported', b'exported', 'exportedArray', b'exportedArray', 'exportedTunnel', b'exportedTunnel', 'expr', b'expr', 'extract', b'extract', 'ifThenElse', b'ifThenElse', 'literal', b'literal', 'map_extract', b'map_extract', 'meta', b'meta', 'range', b'range', 'ref', b'ref', 'struct', b'struct', 'unary', b'unary', 'unary_set', b'unary_set']) -> None:
-        ...
-
-    def WhichOneof(self, oneof_group: typing_extensions.Literal['expr', b'expr']) -> typing_extensions.Literal['literal', 'binary', 'binary_set', 'unary', 'unary_set', 'array', 'struct', 'range', 'ifThenElse', 'extract', 'map_extract', 'connected', 'exported', 'connectedArray', 'exportedArray', 'assign', 'exportedTunnel', 'assignTunnel', 'ref'] | None:
-        ...
 global___ValueExpr = ValueExpr
