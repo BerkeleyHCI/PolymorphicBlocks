@@ -130,15 +130,22 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
 
 object PythonInterface {
   private val kHdlServerFilePaths = Seq(
-    ("edg_hdl_server/__main__.py", "edg_hdl_server"), // developing on this repo
-    ("PolymorphicBlocks/edg_hdl_server/__main__.py", "PolymorphicBlocks.edg_hdl_server") // this repo submoduled
+    ("edg_hdl_server/__main__.py", "edg_hdl_server", ""), // developing on this repo
+    (
+      "PolymorphicBlocks/edg_hdl_server/__main__.py",
+      "PolymorphicBlocks.edg_hdl_server",
+      "PolymorphicBlocks"
+    ) // this repo submoduled
   )
   // returns the HDL server Python script if it exists locally, otherwise returns None.
-  def serverPackageOption(root: Option[File] = None): Option[String] = {
-    kHdlServerFilePaths.map { case (path, packageName) =>
-      (root.map(new File(_, path)).getOrElse(new File(path)), packageName)
+  def serverPackageOption(root: Option[File] = None): Option[(String, File)] = {
+    kHdlServerFilePaths.map { case (path, packageName, packagePath) =>
+      val (file, packageFile) = root.map { root =>
+        (new File(root, path), new File(root, packagePath))
+      }.getOrElse((new File(path), new File(packagePath)))
+      (file, packageName, packageFile)
     }.collectFirst {
-      case (file, packageName) if file.exists() => packageName
+      case (file, packageName, packageFile) if file.exists() => (packageName, packageFile)
     }
   }
 }
@@ -148,11 +155,15 @@ object PythonInterface {
   *
   * If the serverFile is specified, run that; otherwise use "python -m edg_hdl_server" for the global package.
   */
-class PythonInterface(packageName: Option[String], pythonPaths: Seq[String], pythonInterpreter: String = "python") {
-  private val command = Seq(pythonInterpreter, "-u", "-m", packageName.getOrElse("edg_hdl_server"))
+class PythonInterface(
+    packageNameDir: Option[(String, File)],
+    pythonPaths: Seq[String],
+    pythonInterpreter: String = "python"
+) {
+  private val command = Seq(pythonInterpreter, "-u", "-m", packageNameDir.map(_._1).getOrElse("edg_hdl_server"))
   protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
     edgrpc.HdlResponse,
-    pythonPaths,
+    pythonPaths ++ packageNameDir.map(_._2.getAbsolutePath).toSeq,
     command
   )
   val processOutputStream: InputStream = process.outputStream
