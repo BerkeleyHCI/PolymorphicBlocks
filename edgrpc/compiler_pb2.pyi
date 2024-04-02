@@ -8,41 +8,40 @@ This no longer uses gRPC to avoid complexity of sockets.
 """
 import builtins
 import collections.abc
-import edgir.lit_pb2
-import edgir.ref_pb2
-import edgir.schema_pb2
-import edgrpc.hdl_pb2
+from .. import edgir
+from .. import edgrpc
 import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.message
 import sys
-
 if sys.version_info >= (3, 8):
     import typing as typing_extensions
 else:
     import typing_extensions
-
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 @typing_extensions.final
 class CompilerRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
     DESIGN_FIELD_NUMBER: builtins.int
     REFINEMENTS_FIELD_NUMBER: builtins.int
-    @property
-    def design(self) -> edgir.schema_pb2.Design: ...
-    @property
-    def refinements(self) -> edgrpc.hdl_pb2.Refinements: ...
-    def __init__(
-        self,
-        *,
-        design: edgir.schema_pb2.Design | None = ...,
-        refinements: edgrpc.hdl_pb2.Refinements | None = ...,
-    ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["design", b"design", "refinements", b"refinements"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["design", b"design", "refinements", b"refinements"]) -> None: ...
 
+    @property
+    def design(self) -> edgir.schema_pb2.Design:
+        ...
+
+    @property
+    def refinements(self) -> edgrpc.hdl_pb2.Refinements:
+        ...
+
+    def __init__(self, *, design: edgir.schema_pb2.Design | None=..., refinements: edgrpc.hdl_pb2.Refinements | None=...) -> None:
+        ...
+
+    def HasField(self, field_name: typing_extensions.Literal['design', b'design', 'refinements', b'refinements']) -> builtins.bool:
+        ...
+
+    def ClearField(self, field_name: typing_extensions.Literal['design', b'design', 'refinements', b'refinements']) -> None:
+        ...
 global___CompilerRequest = CompilerRequest
 
 @typing_extensions.final
@@ -52,38 +51,44 @@ class CompilerResult(google.protobuf.message.Message):
     @typing_extensions.final
     class Value(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
         PATH_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
-        @property
-        def path(self) -> edgir.ref_pb2.LocalPath: ...
-        @property
-        def value(self) -> edgir.lit_pb2.ValueLit: ...
-        def __init__(
-            self,
-            *,
-            path: edgir.ref_pb2.LocalPath | None = ...,
-            value: edgir.lit_pb2.ValueLit | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["path", b"path", "value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["path", b"path", "value", b"value"]) -> None: ...
 
+        @property
+        def path(self) -> edgir.ref_pb2.LocalPath:
+            ...
+
+        @property
+        def value(self) -> edgir.lit_pb2.ValueLit:
+            ...
+
+        def __init__(self, *, path: edgir.ref_pb2.LocalPath | None=..., value: edgir.lit_pb2.ValueLit | None=...) -> None:
+            ...
+
+        def HasField(self, field_name: typing_extensions.Literal['path', b'path', 'value', b'value']) -> builtins.bool:
+            ...
+
+        def ClearField(self, field_name: typing_extensions.Literal['path', b'path', 'value', b'value']) -> None:
+            ...
     DESIGN_FIELD_NUMBER: builtins.int
     ERROR_FIELD_NUMBER: builtins.int
     SOLVEDVALUES_FIELD_NUMBER: builtins.int
-    @property
-    def design(self) -> edgir.schema_pb2.Design: ...
-    error: builtins.str
-    @property
-    def solvedValues(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___CompilerResult.Value]: ...
-    def __init__(
-        self,
-        *,
-        design: edgir.schema_pb2.Design | None = ...,
-        error: builtins.str = ...,
-        solvedValues: collections.abc.Iterable[global___CompilerResult.Value] | None = ...,
-    ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["design", b"design"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["design", b"design", "error", b"error", "solvedValues", b"solvedValues"]) -> None: ...
 
+    @property
+    def design(self) -> edgir.schema_pb2.Design:
+        ...
+    error: builtins.str
+
+    @property
+    def solvedValues(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___CompilerResult.Value]:
+        ...
+
+    def __init__(self, *, design: edgir.schema_pb2.Design | None=..., error: builtins.str=..., solvedValues: collections.abc.Iterable[global___CompilerResult.Value] | None=...) -> None:
+        ...
+
+    def HasField(self, field_name: typing_extensions.Literal['design', b'design']) -> builtins.bool:
+        ...
+
+    def ClearField(self, field_name: typing_extensions.Literal['design', b'design', 'error', b'error', 'solvedValues', b'solvedValues']) -> None:
+        ...
 global___CompilerResult = CompilerResult
