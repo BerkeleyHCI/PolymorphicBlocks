@@ -275,6 +275,7 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   - This method is preferred over diode-based protection due to lower power loss
   - In most cases, 100R-330R is good if there are chances for the appearance of sudden reverse voltage in the circuit.
   - But if there are no chances of sudden reverse voltage during the continuous working of the circuit, anything from the 1k-50k resistor value can be used.
+  - Ref: https://components101.com/articles/design-guide-pmos-mosfet-for-reverse-voltage-polarity-protection
   """
   @init_in_parent
   def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), clamp_voltage: RangeLike = (0, 10.0) * Volt):
@@ -316,6 +317,14 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
 
 
 class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
+  """
+  - PMOS transistors are used in charging circuits to prevent reverse voltage from damaging the battery or the circuit.
+  They act as a switch that allows current flow only in the correct direction. Regular PMOS reverse protection may not be suitable for bidirectional circuit
+  - Limitation: the highest Vgs/Vds are bounded by the transistors spec.
+    - There is also a rare case when this circuit being disconnected when a charger is connected first. But always reverse protect.
+    - More info in https://www.edn.com/reverse-voltage-protection-for-battery-chargers/
+  - R1 and R2 are the pullup bias resistors for mp1 and mp2 PFet. 
+  """
   @init_in_parent
   def __init__(self, r1_val: RangeLike = 100*kOhm(tol=0.01), r2_val: RangeLike = 100*kOhm(tol=0.01), rds_on: RangeLike =(0, 0.1)*Ohm):
     super().__init__()
@@ -323,7 +332,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
     self.gnd = self.Port(Ground.empty(), [Common])
     self.pwr_out = self.Port(VoltageSource.empty(),)  # Load
     self.vbatt = self.Port(VoltageSink.empty(),)  # Battery
-    self.chg = self.Port(VoltageSink.empty(),)  # Charger
+    self.chg_in = self.Port(VoltageSink.empty(), )  # Charger
 
     self.r1_val = self.ArgParameter(r1_val)
     self.r2_val = self.ArgParameter(r2_val)
@@ -331,8 +340,11 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
 
   def contents(self):
     super().contents()
-    max_vcharge_voltage = self.chg.link().voltage.upper()
-    max_vcharge_current = self.chg.link().current_drawn.upper()
+    self.r1 = self.Block(Resistor(resistance=self.r1_val))
+    self.r2 = self.Block(Resistor(resistance=self.r2_val))
+
+    max_vcharge_voltage = self.chg_in.link().voltage.upper()
+    max_vcharge_current = self.chg_in.link().current_drawn.upper()
     max_vbatt_voltage = self.vbatt.link().voltage.upper()
     max_vbatt_current = self.vbatt.link().current_limits.upper() # TODO: check if we should use current_limit or current_draw
     # Create the PMOS transistors and resistors based on the provided schematic
@@ -346,24 +358,23 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
       drain_voltage=(0, max_vbatt_voltage), drain_current=(0, max_vbatt_current),
       gate_voltage=(0, max_vcharge_voltage),
       rds_on=self.rds_on,
-      power=(0, max_vbatt_voltage * max_vbatt_current)
+      power=(0, max_vbatt_current * max_vbatt_current * self.rds_on.upper())
     ))
-    self.r1 = self.Block(Resistor(resistance=self.r1_val))
-    self.r2 = self.Block(Resistor(resistance=self.r2_val))
+
 
     chg_adapter = self.Block(PassiveAdapterVoltageSink())
-    setattr(self, '(adapter)chg', chg_adapter)  # hack so the netlister recognizes this as an adapter
+    setattr(self, '(adapter)chg_in', chg_adapter)  # hack so the netlister recognizes this as an adapter
     self.connect(self.mp1.source, chg_adapter.src)
-    self.connect(self.chg, chg_adapter.dst)
+    self.connect(self.chg_in, chg_adapter.dst)
 
     self.import_kicad(
       self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
         'vbatt': VoltageSink(
-          current_draw=self.chg.link().current_drawn
+          current_draw=self.chg_in.link().current_drawn
         ),
         'pwr_out': VoltageSource(
-          voltage_out=self.chg.link().voltage),
+          voltage_out=self.chg_in.link().voltage),
         'gnd': Ground(),
       })
 

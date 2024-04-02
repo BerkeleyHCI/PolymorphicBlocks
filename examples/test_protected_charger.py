@@ -32,7 +32,7 @@ class ProtectedCharger(JlcBoardTop):
             self.pmos = imp.Block(PmosChargerReverseProtection())
 
             (self.charger, ), _ = self.chain(
-                self.vusb, imp.Block(Mcp73831(200*mAmp(tol=0.2))), self.pmos.chg
+                self.vusb, imp.Block(Mcp73831(200*mAmp(tol=0.2))), self.pmos.chg_in
             )
             self.connect(self.pmos.vbatt, self.batt.pwr)
 
