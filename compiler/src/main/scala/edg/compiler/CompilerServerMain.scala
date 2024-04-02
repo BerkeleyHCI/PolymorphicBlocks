@@ -13,8 +13,8 @@ import java.io.{File, PrintWriter, StringWriter}
 
 // a PythonInterface that uses the on-event hooks to forward stderr and stdout
 // without this, the compiler can freeze on large stdout/stderr data, possibly because of queue sizing
-class ForwardingPythonInterface(serverFile: Option[File], pythonPaths: Seq[String])
-    extends PythonInterface(serverFile, pythonPaths) {
+class ForwardingPythonInterface(packageName: Option[String], pythonPaths: Seq[String])
+    extends PythonInterface(packageName, pythonPaths) {
   def forwardProcessOutput(): Unit = {
     StreamUtils.forAvailable(processOutputStream) { data =>
       System.out.print(new String(data))
@@ -87,7 +87,7 @@ object CompilerServerMain {
   }
 
   def main(args: Array[String]): Unit = {
-    val hdlServerOption = PythonInterface.serverFileOption(None) // local relative path
+    val hdlServerOption = PythonInterface.serverPackageOption(None) // local relative path
     hdlServerOption.foreach { serverFile => println(s"Using local $serverFile") }
     val pyIf = new ForwardingPythonInterface(hdlServerOption, Seq(new File(".").getAbsolutePath))
     (pyIf.getProtoVersion() match {
