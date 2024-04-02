@@ -129,17 +129,16 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
 }
 
 object PythonInterface {
-  private val kHdlServerFilePath = "edg_hdl_server/__main__.py"
+  private val kHdlServerFilePaths = Seq(
+    ("edg_hdl_server/__main__.py", "edg_hdl_server"), // developing on this repo
+    ("PolymorphicBlocks/edg_hdl_server/__main__.py", "PolymorphicBlocks.edg_hdl_server") // this repo submoduled
+  )
   // returns the HDL server Python script if it exists locally, otherwise returns None.
-  def serverFileOption(root: Option[File] = None): Option[File] = {
-    val hdlServerFile = root match {
-      case Some(root) => new File(root, kHdlServerFilePath)
-      case None => new File(kHdlServerFilePath)
-    }
-    if (hdlServerFile.exists()) {
-      Some(hdlServerFile)
-    } else {
-      None
+  def serverPackageOption(root: Option[File] = None): Option[String] = {
+    kHdlServerFilePaths.map { case (path, packageName) =>
+      (root.map(new File(_, path)).getOrElse(new File(path)), packageName)
+    }.collectFirst {
+      case (file, packageName) if file.exists() => packageName
     }
   }
 }
@@ -149,11 +148,8 @@ object PythonInterface {
   *
   * If the serverFile is specified, run that; otherwise use "python -m edg_hdl_server" for the global package.
   */
-class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], pythonInterpreter: String = "python") {
-  val command = serverFile match { // -u for unbuffered mode
-    case Some(serverFile) => Seq(pythonInterpreter, "-u", serverFile.getAbsolutePath)
-    case None => Seq(pythonInterpreter, "-u", "-m", "edg_hdl_server")
-  }
+class PythonInterface(packageName: Option[String], pythonPaths: Seq[String], pythonInterpreter: String = "python") {
+  private val command = Seq(pythonInterpreter, "-u", "-m", packageName.getOrElse("edg_hdl_server"))
   protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
     edgrpc.HdlResponse,
     pythonPaths,
