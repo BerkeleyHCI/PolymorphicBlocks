@@ -10,9 +10,9 @@ class Estop(JlcBoardTop):
     """Wireless bluetooth Estop for upto 6cell 30Amp
     Known issues:
         - XT60 poles are flipped for the output
-        - 3.3, 5v, 12v jst connector flipped compared to the input AA just
         - 4.2v input does not activate the circuit (because the 4.5v buck converter)
-        - INA139 connected opanp reading zero
+        - INA139 connected opanp reading zero -> the gain Rl was supposed to be 100kOhm instead of 100 Ohm
+        - AA battery port gnd pin was not connected to anywhere
 
     """
 
@@ -33,7 +33,7 @@ class Estop(JlcBoardTop):
         # self.connect(self.lipo_xt90_in.pins.request('1').adapt_to(Ground()))
 
         self.jst_aabatt = self.Block(PassiveConnector(length=2))   # lenth number of pins auto allocate?
-        self.connect(self.jst_aabatt.pins.request('1').adapt_to(Ground()))
+        self.connect(self.jst_aabatt.pins.request('1').adapt_to(Ground()), self.gnd)
         # Note: In reality, this is 3* AA batteries. but to avoid all complaints, set it same as the normal voltage
         # 12v, 5v, 4v lines are capped at 4.5v
         # self.aavbat = self.connect()

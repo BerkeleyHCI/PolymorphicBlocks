@@ -56,7 +56,7 @@ class Ina1x9Base(Sensor, Block):
         # Instantiate the INA139 device
         self.ic = self.Block(self.DEVICE())
         self.Rs = self.Block(CurrentSenseResistor(resistance=resistor_shunt))# 0.001Ohm -> 35A, 0.1Ohm -> 3.5A, 1Ohm -> 0.35A
-        self.Rl = self.Block(Resistor(resistance=gain))
+        self.Rl = self.Block(Resistor(resistance=gain * kOhm))
 
         self.pwr_in = self.Export(self.Rs.pwr_in)
         self.pwr_out = self.Export(self.Rs.pwr_out)
