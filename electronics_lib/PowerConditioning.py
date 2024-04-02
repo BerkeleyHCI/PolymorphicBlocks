@@ -268,12 +268,16 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
 
 class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   """
-  , here is a tradeoff between the Gate discharge time and Zener biasing.
-  In most cases, 100R-330R is good if there are chances for the appearance of sudden reverse voltage in the circuit.
-  But if there are no chances of sudden reverse voltage during the continuous working of the circuit, anything from the 1k-50k resistor value can be used.
+  - This circuit uses a PMOS as a switch, which turns on when the power supply is correctly connected,
+  allowing current to flow to the load. If the power supply polarity is reversed, the PMOS turns off,
+  disconnecting the load and protecting the circuit.
+  - The inclusion of a Zener diode protects the PMOS from excessive gate-source voltage,
+  - This method is preferred over diode-based protection due to lower power loss
+  - In most cases, 100R-330R is good if there are chances for the appearance of sudden reverse voltage in the circuit.
+  - But if there are no chances of sudden reverse voltage during the continuous working of the circuit, anything from the 1k-50k resistor value can be used.
   """
   @init_in_parent
-  def __init__(self, gate_resistor: RangeLike = 100 * Ohm(tol=0.05), clamp_voltage: RangeLike = (0, 5) * Volt):
+  def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), clamp_voltage: RangeLike = (0, 10.0) * Volt):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
     self.pwr_in = self.Port(VoltageSink.empty())  # high-priority higher-voltage source
