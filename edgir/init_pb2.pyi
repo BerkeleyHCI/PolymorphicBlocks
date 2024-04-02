@@ -12,16 +12,14 @@ creating a value.
 FIXME :: Does this make more sense in another file?
 """
 import builtins
-import edgir.common_pb2
+from .. import edgir
 import google.protobuf.descriptor
 import google.protobuf.message
 import sys
-
 if sys.version_info >= (3, 8):
     import typing as typing_extensions
 else:
     import typing_extensions
-
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 @typing_extensions.final
@@ -31,9 +29,7 @@ class ValInit(google.protobuf.message.Message):
     I think the frontend should have more type specific wrappers around
     this since the data required for each type can be different.
     """
-
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
     FLOATING_FIELD_NUMBER: builtins.int
     INTEGER_FIELD_NUMBER: builtins.int
     BOOLEAN_FIELD_NUMBER: builtins.int
@@ -43,39 +39,52 @@ class ValInit(google.protobuf.message.Message):
     RANGE_FIELD_NUMBER: builtins.int
     ARRAY_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
-    @property
-    def floating(self) -> edgir.common_pb2.Empty: ...
-    @property
-    def integer(self) -> edgir.common_pb2.Empty: ...
-    @property
-    def boolean(self) -> edgir.common_pb2.Empty: ...
-    @property
-    def text(self) -> edgir.common_pb2.Empty: ...
-    @property
-    def set(self) -> edgir.common_pb2.Empty: ...
-    @property
-    def struct(self) -> edgir.common_pb2.Empty: ...
-    @property
-    def range(self) -> edgir.common_pb2.Empty: ...
-    @property
-    def array(self) -> global___ValInit: ...
-    @property
-    def meta(self) -> edgir.common_pb2.Metadata: ...
-    def __init__(
-        self,
-        *,
-        floating: edgir.common_pb2.Empty | None = ...,
-        integer: edgir.common_pb2.Empty | None = ...,
-        boolean: edgir.common_pb2.Empty | None = ...,
-        text: edgir.common_pb2.Empty | None = ...,
-        set: edgir.common_pb2.Empty | None = ...,
-        struct: edgir.common_pb2.Empty | None = ...,
-        range: edgir.common_pb2.Empty | None = ...,
-        array: global___ValInit | None = ...,
-        meta: edgir.common_pb2.Metadata | None = ...,
-    ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["array", b"array", "boolean", b"boolean", "floating", b"floating", "integer", b"integer", "meta", b"meta", "range", b"range", "set", b"set", "struct", b"struct", "text", b"text", "val", b"val"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["array", b"array", "boolean", b"boolean", "floating", b"floating", "integer", b"integer", "meta", b"meta", "range", b"range", "set", b"set", "struct", b"struct", "text", b"text", "val", b"val"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["val", b"val"]) -> typing_extensions.Literal["floating", "integer", "boolean", "text", "set", "struct", "range", "array"] | None: ...
 
+    @property
+    def floating(self) -> edgir.common_pb2.Empty:
+        ...
+
+    @property
+    def integer(self) -> edgir.common_pb2.Empty:
+        ...
+
+    @property
+    def boolean(self) -> edgir.common_pb2.Empty:
+        ...
+
+    @property
+    def text(self) -> edgir.common_pb2.Empty:
+        ...
+
+    @property
+    def set(self) -> edgir.common_pb2.Empty:
+        ...
+
+    @property
+    def struct(self) -> edgir.common_pb2.Empty:
+        ...
+
+    @property
+    def range(self) -> edgir.common_pb2.Empty:
+        ...
+
+    @property
+    def array(self) -> global___ValInit:
+        ...
+
+    @property
+    def meta(self) -> edgir.common_pb2.Metadata:
+        ...
+
+    def __init__(self, *, floating: edgir.common_pb2.Empty | None=..., integer: edgir.common_pb2.Empty | None=..., boolean: edgir.common_pb2.Empty | None=..., text: edgir.common_pb2.Empty | None=..., set: edgir.common_pb2.Empty | None=..., struct: edgir.common_pb2.Empty | None=..., range: edgir.common_pb2.Empty | None=..., array: global___ValInit | None=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
+        ...
+
+    def HasField(self, field_name: typing_extensions.Literal['array', b'array', 'boolean', b'boolean', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'set', b'set', 'struct', b'struct', 'text', b'text', 'val', b'val']) -> builtins.bool:
+        ...
+
+    def ClearField(self, field_name: typing_extensions.Literal['array', b'array', 'boolean', b'boolean', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'set', b'set', 'struct', b'struct', 'text', b'text', 'val', b'val']) -> None:
+        ...
+
+    def WhichOneof(self, oneof_group: typing_extensions.Literal['val', b'val']) -> typing_extensions.Literal['floating', 'integer', 'boolean', 'text', 'set', 'struct', 'range', 'array'] | None:
+        ...
 global___ValInit = ValInit

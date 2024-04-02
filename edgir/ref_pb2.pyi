@@ -13,71 +13,55 @@ We enforce certain structural properties by having a series of nested
 """
 import builtins
 import collections.abc
-import edgir.common_pb2
-import edgir.name_pb2
+from .. import edgir
 import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.internal.enum_type_wrapper
 import google.protobuf.message
 import sys
 import typing
-
 if sys.version_info >= (3, 10):
     import typing as typing_extensions
 else:
     import typing_extensions
-
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 class _Reserved:
-    ValueType = typing.NewType("ValueType", builtins.int)
+    ValueType = typing.NewType('ValueType', builtins.int)
     V: typing_extensions.TypeAlias = ValueType
 
 class _ReservedEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_Reserved.ValueType], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
-    UNDEFINED: _Reserved.ValueType  # 0
-    CONNECTED_LINK: _Reserved.ValueType  # 1
-    """* Directions we could move"""
-    IS_CONNECTED: _Reserved.ValueType  # 40
-    """* reserved parameters
-    true implies CONNECTED_LINK resolves; not available on PortArray
-    """
-    LENGTH: _Reserved.ValueType  # 42
-    """ EXISTS = 41;
-    available on PortArray and LinkArray
-    """
-    NAME: _Reserved.ValueType  # 44
-    ELEMENTS: _Reserved.ValueType  # 45
-    """available on PortArray and LinkArray, returns a list of string of element names"""
-    ALLOCATED: _Reserved.ValueType  # 46
-    """cannot be used as a generator dependency
-    available on PortArray, returns a list of string of incoming connection names,
-    """
+    UNDEFINED: _Reserved.ValueType
+    CONNECTED_LINK: _Reserved.ValueType
+    '* Directions we could move'
+    IS_CONNECTED: _Reserved.ValueType
+    '* reserved parameters\n    true implies CONNECTED_LINK resolves; not available on PortArray\n    '
+    LENGTH: _Reserved.ValueType
+    ' EXISTS = 41;\n    available on PortArray and LinkArray\n    '
+    NAME: _Reserved.ValueType
+    ELEMENTS: _Reserved.ValueType
+    'available on PortArray and LinkArray, returns a list of string of element names'
+    ALLOCATED: _Reserved.ValueType
+    'cannot be used as a generator dependency\n    available on PortArray, returns a list of string of incoming connection names,\n    '
 
 class Reserved(_Reserved, metaclass=_ReservedEnumTypeWrapper):
     """* These are reserved terms that we'll end up using in various places.
     I'd rather have these in the block/link/bridges where they're going
     to exist, but that's not possible without polymorphism protibuf doesn't have
     """
-
-UNDEFINED: Reserved.ValueType  # 0
-CONNECTED_LINK: Reserved.ValueType  # 1
-"""* Directions we could move"""
-IS_CONNECTED: Reserved.ValueType  # 40
-"""* reserved parameters
-true implies CONNECTED_LINK resolves; not available on PortArray
-"""
-LENGTH: Reserved.ValueType  # 42
-""" EXISTS = 41;
-available on PortArray and LinkArray
-"""
-NAME: Reserved.ValueType  # 44
-ELEMENTS: Reserved.ValueType  # 45
-"""available on PortArray and LinkArray, returns a list of string of element names"""
-ALLOCATED: Reserved.ValueType  # 46
-"""cannot be used as a generator dependency
-available on PortArray, returns a list of string of incoming connection names,
-"""
+UNDEFINED: Reserved.ValueType
+CONNECTED_LINK: Reserved.ValueType
+'* Directions we could move'
+IS_CONNECTED: Reserved.ValueType
+'* reserved parameters\ntrue implies CONNECTED_LINK resolves; not available on PortArray\n'
+LENGTH: Reserved.ValueType
+' EXISTS = 41;\navailable on PortArray and LinkArray\n'
+NAME: Reserved.ValueType
+ELEMENTS: Reserved.ValueType
+'available on PortArray and LinkArray, returns a list of string of element names'
+ALLOCATED: Reserved.ValueType
+'cannot be used as a generator dependency\navailable on PortArray, returns a list of string of incoming connection names,\n'
 global___Reserved = Reserved
 
 @typing_extensions.final
@@ -88,43 +72,27 @@ class LocalStep(google.protobuf.message.Message):
     The directions encode the type of thing we are referencing,
     but to the user all of these look just like local variables
     """
-
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
     RESERVED_PARAM_FIELD_NUMBER: builtins.int
     ALLOCATE_FIELD_NUMBER: builtins.int
     NAME_FIELD_NUMBER: builtins.int
     reserved_param: global___Reserved.ValueType
     allocate: builtins.str
-    """Allocates a new element in an array, valid for arrays only.
-    Empty string means automatically allocated, while a non-empty string is a suggested name.
-    """
+    'Allocates a new element in an array, valid for arrays only.\n    Empty string means automatically allocated, while a non-empty string is a suggested name.\n    '
     name: builtins.str
-    """*
-    A local name is what something is called in the context of its parent,
-    whether that parent is a namespace (as in the library) or some other
-    element (as in a design or heirarchy block).
+    "*\n    A local name is what something is called in the context of its parent,\n    whether that parent is a namespace (as in the library) or some other\n    element (as in a design or heirarchy block).\n\n    localNames should have the following properties:\n\n    - First char is a lower case letter\n    - All other chars must be letters, numbers, '-', '<', '>'\n    - lowerCamelCase is preffered, don't use any symbols in the name\n    if possible.\n\n    These are style guidelines, literally any string will work.\n    "
 
-    localNames should have the following properties:
+    def __init__(self, *, reserved_param: global___Reserved.ValueType=..., allocate: builtins.str=..., name: builtins.str=...) -> None:
+        ...
 
-    - First char is a lower case letter
-    - All other chars must be letters, numbers, '-', '<', '>'
-    - lowerCamelCase is preffered, don't use any symbols in the name
-    if possible.
+    def HasField(self, field_name: typing_extensions.Literal['allocate', b'allocate', 'name', b'name', 'reserved_param', b'reserved_param', 'step', b'step']) -> builtins.bool:
+        ...
 
-    These are style guidelines, literally any string will work.
-    """
-    def __init__(
-        self,
-        *,
-        reserved_param: global___Reserved.ValueType = ...,
-        allocate: builtins.str = ...,
-        name: builtins.str = ...,
-    ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["allocate", b"allocate", "name", b"name", "reserved_param", b"reserved_param", "step", b"step"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["allocate", b"allocate", "name", b"name", "reserved_param", b"reserved_param", "step", b"step"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["step", b"step"]) -> typing_extensions.Literal["reserved_param", "allocate", "name"] | None: ...
+    def ClearField(self, field_name: typing_extensions.Literal['allocate', b'allocate', 'name', b'name', 'reserved_param', b'reserved_param', 'step', b'step']) -> None:
+        ...
 
+    def WhichOneof(self, oneof_group: typing_extensions.Literal['step', b'step']) -> typing_extensions.Literal['reserved_param', 'allocate', 'name'] | None:
+        ...
 global___LocalStep = LocalStep
 
 @typing_extensions.final
@@ -132,24 +100,26 @@ class LocalPath(google.protobuf.message.Message):
     """* This is a path from a local context to some other local context.
     To be used as a reference.
     """
-
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
     STEPS_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
-    @property
-    def steps(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___LocalStep]: ...
-    @property
-    def meta(self) -> edgir.common_pb2.Metadata: ...
-    def __init__(
-        self,
-        *,
-        steps: collections.abc.Iterable[global___LocalStep] | None = ...,
-        meta: edgir.common_pb2.Metadata | None = ...,
-    ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["meta", b"meta"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["meta", b"meta", "steps", b"steps"]) -> None: ...
 
+    @property
+    def steps(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___LocalStep]:
+        ...
+
+    @property
+    def meta(self) -> edgir.common_pb2.Metadata:
+        ...
+
+    def __init__(self, *, steps: collections.abc.Iterable[global___LocalStep] | None=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
+        ...
+
+    def HasField(self, field_name: typing_extensions.Literal['meta', b'meta']) -> builtins.bool:
+        ...
+
+    def ClearField(self, field_name: typing_extensions.Literal['meta', b'meta', 'steps', b'steps']) -> None:
+        ...
 global___LocalPath = LocalPath
 
 @typing_extensions.final
@@ -157,30 +127,34 @@ class LibraryPath(google.protobuf.message.Message):
     """* This is a path to an element within a library from the root of
     a library. To be used as a way to reference such elements.
     """
-
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
     START_FIELD_NUMBER: builtins.int
     STEPS_FIELD_NUMBER: builtins.int
     TARGET_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
-    @property
-    def start(self) -> edgir.name_pb2.LibraryName: ...
-    @property
-    def steps(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.name_pb2.Namespace]: ...
-    @property
-    def target(self) -> global___LocalStep: ...
-    @property
-    def meta(self) -> edgir.common_pb2.Metadata: ...
-    def __init__(
-        self,
-        *,
-        start: edgir.name_pb2.LibraryName | None = ...,
-        steps: collections.abc.Iterable[edgir.name_pb2.Namespace] | None = ...,
-        target: global___LocalStep | None = ...,
-        meta: edgir.common_pb2.Metadata | None = ...,
-    ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["meta", b"meta", "start", b"start", "target", b"target"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["meta", b"meta", "start", b"start", "steps", b"steps", "target", b"target"]) -> None: ...
 
+    @property
+    def start(self) -> edgir.name_pb2.LibraryName:
+        ...
+
+    @property
+    def steps(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.name_pb2.Namespace]:
+        ...
+
+    @property
+    def target(self) -> global___LocalStep:
+        ...
+
+    @property
+    def meta(self) -> edgir.common_pb2.Metadata:
+        ...
+
+    def __init__(self, *, start: edgir.name_pb2.LibraryName | None=..., steps: collections.abc.Iterable[edgir.name_pb2.Namespace] | None=..., target: global___LocalStep | None=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
+        ...
+
+    def HasField(self, field_name: typing_extensions.Literal['meta', b'meta', 'start', b'start', 'target', b'target']) -> builtins.bool:
+        ...
+
+    def ClearField(self, field_name: typing_extensions.Literal['meta', b'meta', 'start', b'start', 'steps', b'steps', 'target', b'target']) -> None:
+        ...
 global___LibraryPath = LibraryPath
