@@ -263,3 +263,81 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
     if pwr_lo is not None:
       cast(Block, builder.get_enclosing_block()).connect(pwr_lo, self.pwr_lo)
     return self
+
+
+
+class FetPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from the multimater
+  """A high-side PFET power gate that has a button to power on, can be latched
+  on by an external signal, and provides the button output as a signal.
+  """
+  def __init__(self):
+    super().__init__()
+    self.pwr_in = self.Port(VoltageSink.empty(), [Input])
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])
+    self.gnd = self.Port(Ground.empty(), [Common])
+
+    self.btn_out = self.Port(DigitalSingleSource.empty())
+    self.btn_in = self.Port(DigitalSingleSource.empty())
+    self.control = self.Port(DigitalSink.empty())  # digital level control - gnd-referenced NFET gate
+
+  def contents(self):
+    super().contents()
+
+    max_voltage = self.control.link().voltage.upper()
+    max_current = self.pwr_out.link().current_drawn.upper()
+
+    self.pull_res = self.Block(Resistor(
+      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrary
+    ))
+    self.pwr_fet = self.Block(Fet.PFet(
+      drain_voltage=(0, max_voltage),
+      drain_current=(0, max_current),
+      gate_voltage=(max_voltage, max_voltage),  # TODO this ignores the diode drop
+    ))
+
+    self.amp_res = self.Block(Resistor(
+      resistance=10*kOhm(tol=0.05)  # TODO kind of arbitrary
+    ))
+    self.amp_fet = self.Block(Fet.NFet(
+      drain_voltage=(0, max_voltage),
+      drain_current=(0, 0),  # effectively no current
+      gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
+    ))
+
+    self.ctl_diode = self.Block(Diode(
+      reverse_voltage=(0, max_voltage),
+      current=RangeExpr.ZERO,  # effectively no current
+      voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
+      reverse_recovery_time=RangeExpr.ALL
+    ))
+
+    self.btn_diode = self.Block(Diode(
+      reverse_voltage=(0, max_voltage),
+      current=RangeExpr.ZERO,  # effectively no current
+      voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
+      reverse_recovery_time=RangeExpr.ALL
+    ))
+
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+                      conversions={
+                        'pwr_in': VoltageSink(
+                          current_draw=self.pwr_out.link().current_drawn,
+                          voltage_limits=RangeExpr.ALL,
+                        ),
+                        'pwr_out': VoltageSource(
+                          voltage_out=self.pwr_in.link().voltage,
+                          current_limits=RangeExpr.ALL,
+                        ),
+                        'control': DigitalSink(),  # TODO more modeling here?
+                        'gnd': Ground(),
+                        'btn_out': DigitalSingleSource(
+                          voltage_out=self.gnd.link().voltage,  # TODO model diode drop,
+                          output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
+                          low_signal_driver=True
+                        ),
+                        'btn_in': DigitalSingleSource(
+                          voltage_out=self.gnd.link().voltage,
+                          output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
+                          low_signal_driver=True
+                        )
+                      })

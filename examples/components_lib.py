@@ -3,7 +3,7 @@ from typing import Optional, cast
 
 from edg import *
 
-from .test_multimeter import FetPowerGate, FetPowerGateNoBtn
+from .test_multimeter import FetPowerGate as fpg
 
 
 
@@ -32,7 +32,7 @@ class OrPowerGate(PowerConditioner, Block):
             (self.fuse, self.gate, self.prot, self.tp), _ = self.chain(
                 self.pwr_lo,
                 imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
-                imp.Block(FetPowerGate()),
+                imp.Block(fpg()),
                 imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
                 self.Block(VoltageTestPoint()))
             self.vbatt = self.connect(self.gate.pwr_out)  # downstream of fuse
@@ -78,24 +78,14 @@ class OrPowerGateDirSw(OrPowerGate):
             (self.fuse, self.gate, self.prot, self.tp), _ = self.chain(
                 self.pwr_lo,
                 imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
-                imp.Block(FetPowerGateNoBtn()),
+                imp.Block(FetPowerGate()),
                 imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
                 self.Block(VoltageTestPoint()))
             self.vbatt = self.connect(self.gate.pwr_out)  # downstream of fuse
 
             self.connect(self.dir.gnd, self.gnd)
-
-            max_voltage = self.gate.btn_out.link().voltage.upper()
-
-            self.btn_diode = imp.Block(Diode(
-                reverse_voltage=(0, max_voltage),
-                current=RangeExpr.ZERO,  # effectively no current
-                voltage_drop=(0, 0.4)*Volt,  # TODO kind of arbitrary - should be parameterized
-                reverse_recovery_time=RangeExpr.ALL
-            ))
-            self.gate_btn_out = self.connect(self.gate.btn_out, self.btn_diode.cathode.adapt_to(DigitalSink()))
-            self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.gate.btn_out)
-            self.connect(self.btn_diode.anode.adapt_to(DigitalSink()), self.btn_out)
+            self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.gate.btn_in)
+            self.connect(self.gate.btn_out, self.btn_out)
 
             self.pwr_or = self.Block(PriorityPowerOr(  # also does reverse protection
                 self.diode_voltage_drop, self.fet_rds_on
