@@ -63,7 +63,8 @@ from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnableWra
 from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
-from .PowerCircuits import HalfBridge, FetHalfBridge
+from .PowerCircuits import HalfBridge, FetHalfBridge, HalfBridgeIndependent, HalfBridgePwm, FetHalfBridgeIndependent,\
+    FetHalfBridgePwmReset
 from .AbstractLedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
 from .AbstractFuse import Fuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
@@ -78,7 +79,7 @@ from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
 
 from .UsbConnectors import UsbConnector, UsbHostConnector, UsbDeviceConnector, UsbEsdDiode
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver, CanEsdDiode
-from .GateDrivers import HalfBridgeDriver
+from .GateDrivers import HalfBridgeDriver, HalfBridgeDriverIndependent, HalfBridgeDriverPwm
 from .DigitalIsolator import DigitalIsolator
 from .I2cPullup import I2cPullup
 from .UsbBitBang import UsbBitBang

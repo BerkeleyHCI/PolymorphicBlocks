@@ -1,10 +1,11 @@
 from electronics_model import *
+from .Resettable import Resettable
 from .AbstractResistor import Resistor
 from .AbstractFets import SwitchFet
-from .GateDrivers import HalfBridgeDriver
+from .GateDrivers import HalfBridgeDriver, HalfBridgeDriverIndependent, HalfBridgeDriverPwm
 
 
-@abstract_block_default(lambda: FetHalfBridge)
+@abstract_block_default(lambda: FetHalfBridgeIndependent)
 class HalfBridge(Block):
     """Half bridge circuit with logic-level inputs and current draw calculated from the output node.
     Two power rails: logic power (which can be used to power gate drivers), and the power rail."""
@@ -16,8 +17,21 @@ class HalfBridge(Block):
         self.out = self.Port(VoltageSource.empty())  # TODO should be DigitalSource?
 
         self.pwr_logic = self.Port(VoltageSink.empty())
+
+
+@abstract_block_default(lambda: FetHalfBridgeIndependent)
+class HalfBridgeIndependent(BlockInterfaceMixin[HalfBridge]):
+    def __init__(self):
+        super().__init__()
         self.low_ctl = self.Port(DigitalSink.empty())
         self.high_ctl = self.Port(DigitalSink.empty())
+
+
+@abstract_block_default(lambda: FetHalfBridgePwmReset)
+class HalfBridgePwm(BlockInterfaceMixin[HalfBridge]):
+    def __init__(self):
+        super().__init__()
+        self.pwm_ctl = self.Port(DigitalSink.empty())
 
 
 class FetHalfBridge(HalfBridge):
@@ -35,8 +49,6 @@ class FetHalfBridge(HalfBridge):
         self.driver = self.Block(HalfBridgeDriver(has_boot_diode=True))
         self.connect(self.driver.gnd, self.gnd)
         self.connect(self.driver.pwr, self.pwr_logic)
-        self.connect(self.low_ctl, self.driver.low_in)
-        self.connect(self.high_ctl, self.driver.high_in)
 
         gate_res_model = Resistor(self.gate_res)
 
@@ -79,3 +91,23 @@ class FetHalfBridge(HalfBridge):
             self.high_fet.source.adapt_to(VoltageSink()),
             self.driver.high_gnd,
             self.out)
+
+
+class FetHalfBridgeIndependent(FetHalfBridge, HalfBridgeIndependent):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        driver_mixin = self.driver.with_mixin(HalfBridgeDriverIndependent())
+        self.connect(self.low_ctl, driver_mixin.low_in)
+        self.connect(self.high_ctl, driver_mixin.high_in)
+
+
+class FetHalfBridgePwmReset(FetHalfBridge, HalfBridgePwm, Resettable, GeneratorBlock):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.connect(self.pwm_ctl, self.driver.with_mixin(HalfBridgeDriverPwm()).pwm_in)
+        self.generator_param(self.reset.is_connected())
+
+    def generate(self):
+        super().generate()
+        if self.get(self.reset.is_connected()):
+            self.connect(self.reset, self.driver.with_mixin(Resettable()).reset)
