@@ -18,7 +18,7 @@ class VoltageSinkConnector(DummyDevice, NetBlock):
     ), [Output])  # exterior source: set output voltage + Ilim
 
 
-class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
+class CustomSyncBuckBoostConverterIndependent(DiscreteBoostConverter):
   """Custom synchronous buck-boost with four PWMs for the switches.
   Because of the MOSFET body diode, will probably be fine-ish if the buck low-side FET and the boost high-side FET
   are not driven"""
@@ -59,8 +59,9 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
     self.buck_sw = self.Block(FetHalfBridge(frequency=self.frequency))
     self.connect(self.buck_sw.gnd, self.gnd)
     self.connect(self.buck_sw.pwr_logic, self.pwr_logic)
-    self.connect(self.buck_sw.low_ctl, self.buck_pwm_low)
-    self.connect(self.buck_sw.high_ctl, self.buck_pwm_high)
+    buck_sw_ctl = self.buck_sw.with_mixin(HalfBridgeIndependent())
+    self.connect(buck_sw_ctl.low_ctl, self.buck_pwm_low)
+    self.connect(buck_sw_ctl.high_ctl, self.buck_pwm_high)
     self.connect(self.pwr_in, self.buck_sw.pwr)
     self.connect(  # current draw used to size FETs, size for peak current
       self.buck_sw.out,
@@ -70,8 +71,9 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
     self.boost_sw = self.Block(FetHalfBridge(frequency=self.frequency))
     self.connect(self.boost_sw.gnd, self.gnd)
     self.connect(self.boost_sw.pwr_logic, self.pwr_logic)
-    self.connect(self.boost_sw.low_ctl, self.boost_pwm_low)
-    self.connect(self.boost_sw.high_ctl, self.boost_pwm_high)
+    boost_sw_ctl = self.boost_sw.with_mixin(HalfBridgeIndependent())
+    self.connect(boost_sw_ctl.low_ctl, self.boost_pwm_low)
+    self.connect(boost_sw_ctl.high_ctl, self.boost_pwm_high)
     (self.boost_pwr_conn, ), _ = self.chain(
       self.boost_sw.pwr,
       self.Block(VoltageSinkConnector(self.output_voltage,

@@ -278,11 +278,11 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.conv_force, self.conv, self.tp_conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
-        imp.Block(CustomSyncBuckBoostConverter(output_voltage=(15, 30)*Volt,
-                                               frequency=500*kHertz(tol=0),
-                                               ripple_current_factor=(0.01, 0.9),
-                                               input_ripple_limit=250*mVolt,
-                                               )),
+        imp.Block(CustomSyncBuckBoostConverterIndependent(output_voltage=(15, 30) * Volt,
+                                                          frequency=500*kHertz(tol=0),
+                                                          ripple_current_factor=(0.01, 0.9),
+                                                          input_ripple_limit=250*mVolt,
+                                                          )),
         self.Block(VoltageTestPoint())
       )
       self.connect(self.conv.pwr_logic, self.v5)

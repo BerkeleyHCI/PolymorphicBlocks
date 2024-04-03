@@ -34,6 +34,7 @@ class HalfBridgePwm(BlockInterfaceMixin[HalfBridge]):
         self.pwm_ctl = self.Port(DigitalSink.empty())
 
 
+@abstract_block
 class FetHalfBridge(HalfBridge):
     """Implementation of a half-bridge with two NFETs and a gate driver."""
     @init_in_parent
