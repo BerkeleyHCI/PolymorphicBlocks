@@ -1639,7 +1639,7 @@
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid 7e701471-7566-4ec7-bc5d-01c4b5f88ebf)
   )
-  (hierarchical_label "vbatt" (shape output) (at 187.96 83.82 0) (fields_autoplaced)
+  (hierarchical_label "pwr_in" (shape output) (at 187.96 83.82 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid a47934db-1933-4fca-a88e-84db51cda995)
   )

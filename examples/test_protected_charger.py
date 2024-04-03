@@ -34,14 +34,15 @@ class ProtectedCharger(JlcBoardTop):
             (self.charger, ), _ = self.chain(
                 self.vusb, imp.Block(Mcp73831(200*mAmp(tol=0.2))), self.pmos.chg_in
             )
-            self.connect(self.pmos.vbatt, self.batt.pwr)
+            self.connect(self.pmos.pwr_in, self.batt.pwr)
+            self.connect(self.pmos.chg_out, self.batt.chg)
 
             (self.charge_led, ), _ = self.chain(
                 self.Block(IndicatorSinkLed(Led.Yellow)), self.charger.stat
             )
             self.connect(self.vusb, self.charge_led.pwr)
 
-            self.pmos_load = imp.Block(PmosReverseProtection(clamp_voltage=(2.4, 4.2)*Volt, gate_resistor=300*Ohm(tol=0.05)))
+            self.pmos_load = imp.Block(PmosReverseProtection(gate_resistor=300*Ohm(tol=0.05)))
 
         self.pwr_pins = self.Block(PassiveConnector(length=3))
         self.connect(self.pwr_pins.pins.request('1').adapt_to(Ground()), self.gnd)
