@@ -237,7 +237,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
           'input_impedance': 220*kOhm(tol=0.05)
         },
         'clamp': {
-          'voltage': (2.5, 3.0)*Volt
+          'clamp_current': (5, 10)*mAmp  # absolute maximum rating of opamp
         }
       })
 
@@ -275,7 +275,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
-      (self.conv_force, self.conv, self.tp_conv), _ = self.chain(
+      (self.conv_inforce, self.conv, self.conv_outforce, self.tp_conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
         imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30) * Volt,
@@ -283,10 +283,11 @@ class UsbSourceMeasure(JlcBoardTop):
                                                   ripple_current_factor=(0.01, 0.9),
                                                   input_ripple_limit=250*mVolt,
                                                   )),
+        imp.Block(ForcedVoltage((2, 30)*Volt)),  # at least 2v to allow current sensor to work
         self.Block(VoltageTestPoint())
       )
       self.connect(self.conv.pwr_logic, self.v5)
-      self.vconv = self.connect(self.conv.pwr_out)
+      self.vconv = self.connect(self.conv_outforce.pwr_out)
 
       # analog supplies
       (self.reg_analog, self.tp_analog), _ = self.chain(

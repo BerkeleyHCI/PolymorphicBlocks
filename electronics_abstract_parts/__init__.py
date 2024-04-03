@@ -24,7 +24,7 @@ from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack, RfConnector, RfConnectorTestPoint, UflConnector
 from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
-from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor
+from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor, AnalogClampResistor
 from .AbstractResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
 from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CapacitorStandardFootprint, TableDeratingCapacitor
 from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor, CombinedCapacitor
