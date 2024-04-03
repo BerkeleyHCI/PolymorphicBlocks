@@ -95,7 +95,7 @@ class Ncp3420(HalfBridgeDriver, HalfBridgeDriverPwm, Resettable, GeneratorBlock)
           self.ic.vcc.current_draw
         ))
         self.connect(self.boot.cathode.adapt_to(VoltageSource(
-          voltage_out=self.pwr.link().voltage  # differential to SWN
+          voltage_out=self.high_gnd.link().voltage + self.pwr.link().voltage
         )), self.ic.bst)
         self.connect(self.boot.anode.adapt_to(VoltageSink(
           # no independent limits or current draw, reflected in parameters on other pins

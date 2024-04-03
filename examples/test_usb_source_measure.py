@@ -549,6 +549,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
         (['conv', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['reg_vcontrol', 'cf', 'voltage_rating_derating'], 0.85),
+        (['reg_vcontrol', 'cf', 'require_basic_part'], False),
         (['reg_vcontrol', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
         (['reg_vcontrol', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'boost_sw', 'high_fet', 'gate_voltage'], ParamValue(

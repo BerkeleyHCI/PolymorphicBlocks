@@ -31,7 +31,6 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
 
     self.pwr_logic = self.Port(VoltageSink.empty())
     self.buck_pwm = self.Port(DigitalSink.empty())
-    self.boost_pwm_low = self.Port(DigitalSink.empty())
     self.boost_pwm = self.Port(DigitalSink.empty())
 
     self.frequency = self.ArgParameter(frequency)
