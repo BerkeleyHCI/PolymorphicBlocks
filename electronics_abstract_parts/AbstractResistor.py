@@ -306,7 +306,7 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
   TODO: clamp_target should be inferred from the target voltage_limits,
   but voltage_limits doesn't always get propagated"""
   @init_in_parent
-  def __init__(self, clamp_target: RangeLike = (0, 3)*Volt, clamp_current: RangeLike = (0.5, 5)*mAmp,
+  def __init__(self, clamp_target: RangeLike = (0, 3)*Volt, clamp_current: RangeLike = (0.25, 2.5)*mAmp,
                protection_voltage: RangeLike = (0, 0)*Volt, zero_out: BoolLike = False):
     super().__init__()
 

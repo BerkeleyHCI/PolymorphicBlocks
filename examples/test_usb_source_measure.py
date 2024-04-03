@@ -7,6 +7,26 @@ from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # nee
 from edg import *
 
 
+class SourceMeasureDutConnector(Connector):
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(PinHeader254Horizontal(3))
+    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()), [Common])
+    self.io0 = self.Export(self.conn.pins.request('2').adapt_to(DigitalBidir()))
+    self.io1 = self.Export(self.conn.pins.request('3').adapt_to(DigitalBidir()))
+
+
+class SourceMeasureFan(Connector):
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(JstPhKVertical(2))
+    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()), [Common])
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink(
+      voltage_limits=5*Volt(tol=0.1),
+      current_draw=200*mAmp(tol=0)
+    )), [Power])
+
+
 class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
   """Emitter follower circuit
   """
@@ -237,7 +257,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
           'input_impedance': 220*kOhm(tol=0.05)
         },
         'clamp': {
-          'clamp_current': (5, 10)*mAmp  # absolute maximum rating of opamp
+          'clamp_current': (2.5, 5)*mAmp  # absolute maximum rating of ADC
         }
       })
 
@@ -305,8 +325,8 @@ class UsbSourceMeasure(JlcBoardTop):
       self.vref = self.connect(self.reg_vref.pwr_out)
 
       (self.ref_div, self.ref_buf), _ = self.chain(
-        self.vanalog,
-        imp.Block(VoltageDivider(output_voltage=1.5*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
+        self.vref,
+        imp.Block(VoltageDivider(output_voltage=1.65*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
         imp.Block(OpampFollower())
       )
       self.connect(self.vanalog, self.ref_buf.pwr)
@@ -419,12 +439,29 @@ class UsbSourceMeasure(JlcBoardTop):
                                                       imp.Block(I2cPullup()),
                                                       imp.Block(QwiicTarget()))
 
+      self.dutio = imp.Block(SourceMeasureDutConnector())
+      self.connect(self.mcu.gpio.request('dut0'), self.dutio.io0)
+      self.connect(self.mcu.gpio.request('dut1'), self.dutio.io1)
+
+    # 5v domain
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.fan_drv = imp.Block(HighSideSwitch())
+      self.connect(self.v5, self.fan_drv.pwr)
+      self.connect(self.mcu.gpio.request('fan'), self.fan_drv.control)
+      self.fan = imp.Block(SourceMeasureFan())
+      self.connect(self.fan.pwr, self.fan_drv.output)
+
     # analog domain
     with self.implicit_connect(
-        ImplicitConnect(self.vanalog, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.dac = imp.Block(Mcp4728())
+      (self.dac_ferrite, ), _ = self.chain(
+        self.vref,
+        imp.Block(SeriesPowerFerriteBead(Range.from_lower(1000))),
+        self.dac.pwr)
       (self.tp_cv, ), _ = self.chain(self.dac.out0, imp.Block(AnalogRfTestPoint('cv')),
                                      self.control.control_voltage)
       (self.tp_cisrc, ), _ = self.chain(self.dac.out1, imp.Block(AnalogRfTestPoint('cisrc')),
@@ -436,7 +473,8 @@ class UsbSourceMeasure(JlcBoardTop):
 
       self.adc = imp.Block(Mcp3561())
       self.connect(self.adc.pwra, self.vanalog)
-      self.connect(self.adc.pwr, self.vanalog)  # TODO: digital rail
+      self.connect(self.adc.pwr, self.v3v3)
+      self.connect(self.adc.vref, self.vref)
       self.connect(self.adc.spi, self.mcu.spi.request('adc_spi'))
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
       (self.tp_vcen, self.vcen_rc, ), _ = self.chain(self.vcenter,
