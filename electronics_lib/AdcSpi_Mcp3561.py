@@ -19,10 +19,12 @@ class Mcp3561_Device(InternalSubcircuit, GeneratorBlock, FootprintBlock):
       voltage_limits=(0.6*Volt, self.avdd.link().voltage.upper()),
     ))  # non-optional, requires decoupling cap
 
+    avdd_range = self.vss.link().voltage.hull(self.avdd.link().voltage)
+    vrefp_range = self.vss.link().voltage.hull(self.avdd.link().voltage)
     input_model = AnalogSink.from_supply(
       self.vss, self.avdd,  # maximum ratings up to AVdd
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,
-      signal_limit_abs=self.vss.link().voltage.hull(self.vrefp.link().voltage),
+      signal_limit_abs=(vrefp_range * 3).intersect(avdd_range),  # support GAIN=0.33
       impedance=(20, 510)*kOhm  # varies based on gain
     )
     self.ch = self.Port(Vector(AnalogSink.empty()))
@@ -102,7 +104,7 @@ class Mcp3561(AnalogToDigital, GeneratorBlock):
     self.pwra = self.Port(VoltageSink.empty())
     self.pwr = self.Port(VoltageSink.empty())
     self.gnd = self.Export(self.ic.vss, [Common])
-    self.vref = self.Port(VoltageSource.empty(), optional=True)
+    self.vref = self.Port(VoltageSink.empty(), optional=True)
     self.assign(self.ic.has_ext_ref, self.vref.is_connected())
     self.generator_param(self.vref.is_connected())
 
@@ -137,6 +139,6 @@ class Mcp3561(AnalogToDigital, GeneratorBlock):
 
     if self.get(self.vref.is_connected()):
       self.connect(self.vref, self.ic.vrefp)
-    else:  # dummy source
+    else:  # dummy source, for the Vref capacitor
       (self.vrefp_source, ), _ = self.chain(self.Block(DummyVoltageSource(voltage_out=2.4*Volt(tol=0.02))),
                                             self.ic.vrefp)
