@@ -462,7 +462,7 @@ class UsbSourceMeasure(JlcBoardTop):
   def multipack(self) -> None:
     self.vimeas_amps = self.PackedBlock(Opa2189())
     self.pack(self.vimeas_amps.elements.request('0'), ['control', 'vmeas', 'amp'])
-    self.pack(self.vimeas_amps.elements.request('1'), ['control', 'vbuf', 'amp'])
+    self.pack(self.vimeas_amps.elements.request('1'), ['control', 'hvbuf', 'amp'])
 
     self.ampdmeas_amps = self.PackedBlock(Opa2189())
     self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
@@ -588,6 +588,11 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
         (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
+
+        (Mcp3561, ['ic', 'ch', '0', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
+        (Mcp3561, ['ic', 'ch', '1', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
+        (Mcp3561, ['ic', 'ch', '2', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
+        (Mcp3561, ['ic', 'ch', '3', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
       ]
     )
 
