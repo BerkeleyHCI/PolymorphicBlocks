@@ -267,7 +267,7 @@ class UsbSourceMeasure(JlcBoardTop):
     super().contents()
 
     # overall design parameters
-    OUTPUT_CURRENT_RATING = (0, 1)*Amp
+    OUTPUT_CURRENT_RATING = (0, 3)*Amp
 
     # USB PD port that supplies power to the load
     # TODO the transistor is only rated at Vgs=+/-20V
