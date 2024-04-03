@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import *
 
 from electronics_abstract_parts import *
@@ -86,7 +87,7 @@ class Esp32c3_Ios(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator):
 
 
 @abstract_block
-class Esp32c3_Base(Esp32c3_Interfaces, InternalSubcircuit, BaseIoControllerPinmapGenerator):
+class Esp32c3_Base(Esp32c3_Ios, InternalSubcircuit, BaseIoControllerPinmapGenerator):
   """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5.
   PlatformIO: use board ID esp32-c3-devkitm-1
 
@@ -393,7 +394,7 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
 
 
 class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoController, GeneratorBlock,
-                             FootprintBlock):
+                   FootprintBlock):
   """ESP32-C3 development board, a tiny development (21x17.5mm) daughterboard with a RISC-V microcontroller
   supporting WiFi and BLE. Has an onboard USB connector, so this can also source power.
 

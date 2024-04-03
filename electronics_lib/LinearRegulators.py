@@ -105,6 +105,9 @@ class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
 
 
 class Ldl1117(LinearRegulator):
+  """A series of fixed-output, general-purpose, low-dropout linear regulators in SOT-223 and
+  supporting up to 18V input and 1.2A draw.
+  """
   def contents(self) -> None:
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),

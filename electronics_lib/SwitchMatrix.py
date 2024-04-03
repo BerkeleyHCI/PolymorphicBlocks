@@ -4,9 +4,11 @@ from electronics_abstract_parts import *
 
 
 class SwitchMatrix(HumanInterface, GeneratorBlock):
-  """A switch matrix that generates (rows * cols) switches while only using max(rows, cols) IOs, by arranging
-  them in a matrix, having the driver drive one col low at a time and reading which rows are low
-  (with all cols weakly pulled high).
+  """A switch matrix, such as for a keyboard, that generates (nrows * ncols) switches while only
+  using max(nrows, ncols) IOs.
+
+  Internally, the switches are in a matrix, with the driver driving one col low at a time while
+  reading which rows are low (with the other cols weakly pulled high).
   This uses the Switch abstract class, which can be refined into e.g. a tactile switch or mechanical keyswitch.
 
   This generates per-switch diodes which allows multiple keys to be pressed simultaneously.
