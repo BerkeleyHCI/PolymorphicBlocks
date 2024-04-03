@@ -18,7 +18,7 @@ class VoltageSinkConnector(DummyDevice, NetBlock):
     ), [Output])  # exterior source: set output voltage + Ilim
 
 
-class CustomSyncBuckBoostConverterIndependent(DiscreteBoostConverter):
+class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
   """Custom synchronous buck-boost with four PWMs for the switches.
   Because of the MOSFET body diode, will probably be fine-ish if the buck low-side FET and the boost high-side FET
   are not driven"""
@@ -30,10 +30,9 @@ class CustomSyncBuckBoostConverterIndependent(DiscreteBoostConverter):
     super().__init__(*args, **kwargs)
 
     self.pwr_logic = self.Port(VoltageSink.empty())
-    self.buck_pwm_low = self.Port(DigitalSink.empty())
-    self.buck_pwm_high = self.Port(DigitalSink.empty())
+    self.buck_pwm = self.Port(DigitalSink.empty())
     self.boost_pwm_low = self.Port(DigitalSink.empty())
-    self.boost_pwm_high = self.Port(DigitalSink.empty())
+    self.boost_pwm = self.Port(DigitalSink.empty())
 
     self.frequency = self.ArgParameter(frequency)
     self.voltage_drop = self.ArgParameter(voltage_drop)
@@ -59,9 +58,8 @@ class CustomSyncBuckBoostConverterIndependent(DiscreteBoostConverter):
     self.buck_sw = self.Block(FetHalfBridge(frequency=self.frequency))
     self.connect(self.buck_sw.gnd, self.gnd)
     self.connect(self.buck_sw.pwr_logic, self.pwr_logic)
-    buck_sw_ctl = self.buck_sw.with_mixin(HalfBridgeIndependent())
-    self.connect(buck_sw_ctl.low_ctl, self.buck_pwm_low)
-    self.connect(buck_sw_ctl.high_ctl, self.buck_pwm_high)
+    self.connect(self.buck_sw.with_mixin(HalfBridgePwm()).pwm_ctl, self.buck_pwm)
+    self.connect(self.buck_sw.with_mixin(Resettable()).reset, self.reset)
     self.connect(self.pwr_in, self.buck_sw.pwr)
     self.connect(  # current draw used to size FETs, size for peak current
       self.buck_sw.out,
@@ -71,9 +69,8 @@ class CustomSyncBuckBoostConverterIndependent(DiscreteBoostConverter):
     self.boost_sw = self.Block(FetHalfBridge(frequency=self.frequency))
     self.connect(self.boost_sw.gnd, self.gnd)
     self.connect(self.boost_sw.pwr_logic, self.pwr_logic)
-    boost_sw_ctl = self.boost_sw.with_mixin(HalfBridgeIndependent())
-    self.connect(boost_sw_ctl.low_ctl, self.boost_pwm_low)
-    self.connect(boost_sw_ctl.high_ctl, self.boost_pwm_high)
+    self.connect(self.boost_sw.with_mixin(HalfBridgePwm()).pwm_ctl, self.boost_pwm)
+    self.connect(self.boost_sw.with_mixin(Resettable()).reset, self.reset)
     (self.boost_pwr_conn, ), _ = self.chain(
       self.boost_sw.pwr,
       self.Block(VoltageSinkConnector(self.output_voltage,

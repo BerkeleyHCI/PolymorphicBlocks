@@ -278,11 +278,11 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.conv_force, self.conv, self.tp_conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
-        imp.Block(CustomSyncBuckBoostConverterIndependent(output_voltage=(15, 30) * Volt,
-                                                          frequency=500*kHertz(tol=0),
-                                                          ripple_current_factor=(0.01, 0.9),
-                                                          input_ripple_limit=250*mVolt,
-                                                          )),
+        imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30) * Volt,
+                                                  frequency=500*kHertz(tol=0),
+                                                  ripple_current_factor=(0.01, 0.9),
+                                                  input_ripple_limit=250*mVolt,
+                                                  )),
         self.Block(VoltageTestPoint())
       )
       self.connect(self.conv.pwr_logic, self.v5)
@@ -381,20 +381,12 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
 
-      pull_model = PulldownResistor(10*kOhm(tol=0.05))
       rc_model = DigitalLowPassRc(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))
-      (self.buckl_pull, self.buckl_rc), _ = self.chain(
-        self.mcu.gpio.request('buck_pwm_low'),
-        imp.Block(pull_model), imp.Block(rc_model), self.conv.buck_pwm_low)
-      (self.buckh_pull, self.buckh_rc), _ = self.chain(
-        self.mcu.gpio.request('buck_pwm_high'),
-        imp.Block(pull_model), imp.Block(rc_model), self.conv.buck_pwm_high)
-      (self.boostl_pull, self.boostl_rc), _ = self.chain(
-        self.mcu.gpio.request('boost_pwm_low'),
-        imp.Block(pull_model), imp.Block(rc_model), self.conv.boost_pwm_low)
-      (self.boosth_pull, self.boosth_rc), _ = self.chain(
-        self.mcu.gpio.request('boost_pwm_high'),
-        imp.Block(pull_model), imp.Block(rc_model), self.conv.boost_pwm_high)
+      (self.buck_rc, ), _ = self.chain(self.mcu.gpio.request('buck_pwm'), imp.Block(rc_model), self.conv.buck_pwm)
+      (self.boost_rc, ), _ = self.chain(self.mcu.gpio.request('boost_pwm'), imp.Block(rc_model), self.conv.boost_pwm)
+      (self.conv_en_pull, ), _ = self.chain(
+        self.mcu.gpio.request('conv_en'),
+        imp.Block(PulldownResistor(10*kOhm(tol=0.05))), self.conv.reset)
 
       (self.pass_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(0)))
       (self.conv_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(1)))
@@ -494,7 +486,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (AnalogSwitch, Nlas4157),
         (SolidStateRelay, Tlp3545a),
         (BananaSafetyJack, Ct3151),
-        (HalfBridgeDriver, Ucc27282),
+        (HalfBridgeDriver, Ncp3420),
         (DirectionSwitch, Skrh),
         (TestPoint, CompactKeystone5015),
         (RotaryEncoder, Pec11s),

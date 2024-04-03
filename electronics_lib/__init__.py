@@ -64,7 +64,7 @@ from .BoostConverter_Torex import Xc9142
 from .BoostConverter_TexasInstruments import Tps61040, Lm2733
 from .SwitchedCap_TexasInstruments import Lm2664
 from .BuckConverter_Custom import CustomSyncBuckConverterIndependent
-from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverterIndependent
+from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverterPwm
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr
 from .LedDriver_Al8861 import Al8861
 from .ResetGenerator_Apx803s import Apx803s
@@ -131,6 +131,7 @@ from .Distance_Vl53l0x import Vl53l0x, Vl53l0xApplication, Vl53l0xConnector, Vl5
 from .Isolator_Cbmud1200 import Cbmud1200l
 from .GateDriver_Ir2301 import Ir2301
 from .GateDriver_Ucc27282 import Ucc27282
+from .GateDriver_Ncp3420 import Ncp3420
 from .SpiMemory_W25q import W25q
 from .SpiMemory_93Lc import E93Lc_B
 from .UsbUart_Cp2102 import Cp2102
