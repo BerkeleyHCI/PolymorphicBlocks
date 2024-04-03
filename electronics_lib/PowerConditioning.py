@@ -271,20 +271,18 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   - This circuit uses a PMOS as a switch, which turns on when the power supply is correctly connected,
   allowing current to flow to the load. If the power supply polarity is reversed, the PMOS turns off,
   disconnecting the load and protecting the circuit.
-  - The inclusion of a Zener diode protects the PMOS from excessive gate-source voltage,
   - This method is preferred over diode-based protection due to lower power loss
   - In most cases, 100R-330R is good if there are chances for the appearance of sudden reverse voltage in the circuit.
   - But if there are no chances of sudden reverse voltage during the continuous working of the circuit, anything from the 1k-50k resistor value can be used.
   - Ref: https://components101.com/articles/design-guide-pmos-mosfet-for-reverse-voltage-polarity-protection
   """
   @init_in_parent
-  def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), clamp_voltage: RangeLike = (0, 10.0) * Volt):
+  def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05),):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
     self.pwr_in = self.Port(VoltageSink.empty())  # high-priority higher-voltage source
     self.pwr_out = self.Port(VoltageSource.empty())
 
-    self.clamp_voltage = self.ArgParameter(clamp_voltage)
     self.gate_resistor = self.ArgParameter(gate_resistor)
 
   def contents(self):
@@ -296,11 +294,12 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
       drain_voltage=(0, self.pwr_out.link().voltage.upper()),
       drain_current=output_current_draw,
       # gate voltage accounts for a possible power on transient
-      gate_voltage=(self.clamp_voltage.upper(), (self.clamp_voltage.upper())),
+      gate_voltage=(- self.pwr_out.link().voltage.upper(),  self.pwr_out.link().voltage.upper()),
     ))
 
     self.res = self.Block(Resistor(self.gate_resistor))
-    self.diode = self.Block(ZenerDiode(self.clamp_voltage))
+    # TODO: generate zener diode for high voltage applications
+    #  self.diode = self.Block(ZenerDiode(self.clamp_voltage))
 
     self.import_kicad(
       self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
