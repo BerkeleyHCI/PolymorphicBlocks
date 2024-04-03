@@ -95,8 +95,8 @@ class FetHalfBridge(HalfBridge):
 
 
 class FetHalfBridgeIndependent(FetHalfBridge, HalfBridgeIndependent):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def contents(self):
+        super().contents()
         driver_mixin = self.driver.with_mixin(HalfBridgeDriverIndependent())
         self.connect(self.low_ctl, driver_mixin.low_in)
         self.connect(self.high_ctl, driver_mixin.high_in)
@@ -105,10 +105,10 @@ class FetHalfBridgeIndependent(FetHalfBridge, HalfBridgeIndependent):
 class FetHalfBridgePwmReset(FetHalfBridge, HalfBridgePwm, Resettable, GeneratorBlock):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.connect(self.pwm_ctl, self.driver.with_mixin(HalfBridgeDriverPwm()).pwm_in)
         self.generator_param(self.reset.is_connected())
 
     def generate(self):
         super().generate()
+        self.connect(self.pwm_ctl, self.driver.with_mixin(HalfBridgeDriverPwm()).pwm_in)
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.driver.with_mixin(Resettable()).reset)
