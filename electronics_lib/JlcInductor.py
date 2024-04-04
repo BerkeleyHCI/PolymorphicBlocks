@@ -28,6 +28,10 @@ class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
      lambda match: {
        PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Taiyo-Yuden_NR-{match.group(1)}xx'
      }),
+    (re.compile("^SRP12(45|65)A?-.*$"),
+     lambda match: {
+       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns_SRP1245A'
+     }),
     (re.compile("^SRR1015-.*$"),
      lambda match: {
        PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns-SRR1005'
@@ -56,7 +60,7 @@ class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
   ]
 
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
-    (re.compile("(\S+A) (\S+H) (±\S+%) (\S+Ω) .* Inductors.*"),
+    (re.compile("(\S+A) (\S+H) (±\S+%)(?: \S+A)? (\S+Ω) .* Inductors.*"),
      lambda match: {
        TableInductor.INDUCTANCE: PartParserUtil.parse_abs_tolerance(
            match.group(3), PartParserUtil.parse_value(match.group(2), 'H'), 'H'),
@@ -64,7 +68,7 @@ class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
        TableInductor.CURRENT_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'A')),
        TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), 'Ω')),
      }),
-    (re.compile("(\S+A) (\S+H) ±(\S+H) (\S+Ω) .* Inductors.*"),
+    (re.compile("(\S+A) (\S+H) ±(\S+H)(?: \S+A)? (\S+Ω) .* Inductors.*"),
      lambda match: {
        TableInductor.INDUCTANCE: Range.from_abs_tolerance(PartParserUtil.parse_value(match.group(2), 'H'),
                                                           PartParserUtil.parse_value(match.group(3), 'H')),
