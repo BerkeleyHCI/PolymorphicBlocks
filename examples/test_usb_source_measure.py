@@ -250,7 +250,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
           'rds_on': self.rds_on
         },
         'imeas': {
-          'resistance': 0.047*Ohm(tol=0.01),
+          'resistance': 0.022*Ohm(tol=0.01),
         },
         'vmeas': {
           'ratio': Range.from_tolerance(1/24, 0.05),
@@ -267,7 +267,7 @@ class UsbSourceMeasure(JlcBoardTop):
     super().contents()
 
     # overall design parameters
-    OUTPUT_CURRENT_RATING = (0, 3)*Amp
+    OUTPUT_CURRENT_RATING = (0, 2.5)*Amp
 
     # USB PD port that supplies power to the load
     # TODO the transistor is only rated at Vgs=+/-20V
@@ -298,7 +298,7 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.conv_inforce, self.conv, self.conv_outforce, self.tp_conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
-        imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30) * Volt,
+        imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30)*Volt,  # design for 0.5x - 1.5x conv ratio
                                                   frequency=500*kHertz(tol=0),
                                                   ripple_current_factor=(0.01, 0.9),
                                                   input_ripple_limit=250*mVolt,
@@ -586,7 +586,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
         (['conv', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
-        (['conv', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.85),
+        (['conv', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.9),  # allow using a 35V cap
         (['reg_vcontrol', 'cf', 'voltage_rating_derating'], 0.85),
         (['reg_vcontrol', 'cf', 'require_basic_part'], False),
         (['reg_vcontrol', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
@@ -608,7 +608,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
 
-        (['control', 'imeas', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
+        (['control', 'imeas', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
         (['control', 'imeas', 'sense', 'res', 'res', 'require_basic_part'], False),
 
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
