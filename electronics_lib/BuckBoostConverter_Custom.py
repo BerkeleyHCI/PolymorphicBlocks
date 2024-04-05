@@ -59,7 +59,13 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
     self.connect(self.buck_sw.pwr_logic, self.pwr_logic)
     self.connect(self.buck_sw.with_mixin(HalfBridgePwm()).pwm_ctl, self.buck_pwm)
     self.connect(self.buck_sw.with_mixin(Resettable()).reset, self.reset)
-    self.connect(self.pwr_in, self.buck_sw.pwr)
+    (self.pwr_in_forced, ), _ = self.chain(  # use average draw instead of peak for external draw specs
+      self.pwr_in,
+      self.Block(ForcedVoltageCurrentDraw(self.pwr_out.link().current_drawn *
+                                          self.output_voltage / self.pwr_in.link().voltage /
+                                          self.power_path.efficiency)),
+      self.buck_sw.pwr
+    )
     self.connect(  # current draw used to size FETs, size for peak current
       self.buck_sw.out,
       self.power_path.switch_in.adapt_to(VoltageSink(current_draw=self.power_path.actual_inductor_current))

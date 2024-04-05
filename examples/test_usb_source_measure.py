@@ -267,11 +267,12 @@ class UsbSourceMeasure(JlcBoardTop):
     super().contents()
 
     # overall design parameters
-    OUTPUT_CURRENT_RATING = (0, 2.5)*Amp
+    OUTPUT_CURRENT_RATING = (0, 3)*Amp
 
     # USB PD port that supplies power to the load
     # TODO the transistor is only rated at Vgs=+/-20V
-    self.usb = self.Block(UsbCReceptacle(voltage_out=(9, 20)*Volt, current_limits=(0, 5)*Amp))
+    # USB PD can't actually do 8 A, but this suppresses the error and we can software-limit current draw
+    self.usb = self.Block(UsbCReceptacle(voltage_out=(9, 20)*Volt, current_limits=(0, 8)*Amp))
 
     self.gnd = self.connect(self.usb.gnd)
     self.vusb = self.connect(self.usb.pwr)
@@ -587,6 +588,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
         (['conv', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.9),  # allow using a 35V cap
+        (['conv', 'power_path', 'out_cap', 'cap', 'require_basic_part'], False),  # high volt caps are rare
         (['reg_vcontrol', 'cf', 'voltage_rating_derating'], 0.85),
         (['reg_vcontrol', 'cf', 'require_basic_part'], False),
         (['reg_vcontrol', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
