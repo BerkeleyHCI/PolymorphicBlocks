@@ -285,14 +285,14 @@ class UsbSourceMeasure(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       # logic supplies
-      (self.reg_5v, self.tp_5v, self.reg_3v3, self.tp_3v3), _ = self.chain(
+      (self.reg_v5, self.tp_v5, self.reg_3v3, self.tp_3v3), _ = self.chain(
         self.vusb,
         imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint())
       )
-      self.v5 = self.connect(self.reg_5v.pwr_out)
+      self.v5 = self.connect(self.reg_v5.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
@@ -309,6 +309,13 @@ class UsbSourceMeasure(JlcBoardTop):
       )
       self.connect(self.conv.pwr_logic, self.v5)
       self.vconv = self.connect(self.conv_outforce.pwr_out)
+
+      (self.reg_v12, self.tp_v12), _ = self.chain(
+        self.v5,
+        imp.Block(BoostConverter(output_voltage=12.5*Volt(tol=0.04))),  # limits of the OLED
+        self.Block(VoltageTestPoint("v12"))
+      )
+      self.v12 = self.connect(self.reg_v12.pwr_out)
 
       # analog supplies
       (self.reg_analog, self.tp_analog), _ = self.chain(
@@ -391,14 +398,14 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.i2c_pull, ), _ = self.chain(int_i2c, imp.Block(I2cPullup()), self.pd.i2c)
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
 
-      self.oled = imp.Block(Er_Oled_096_1_1())
+      self.oled = imp.Block(Er_Oled022_1())  # (probably) pin compatible w/ 2.4" ER-OLED024-2B; maybe ER-OLED015-2B
+      self.connect(self.oled.vcc, self.v12)
+      self.connect(self.oled.pwr, self.v3v3)
+      self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
       self.connect(int_i2c, self.oled.i2c)
-      # self.oled = imp.Block(Er_Oled022_1())
-      # (probably) pin compatible w/ 2.4" 128x64 ER-OLED024-2B; maybe also ER-OLED015-2B
       # self.connect(self.mcu.spi.request('oled_spi'), self.oled.spi)
       # self.connect(self.mcu.gpio.request('oled_cs'), self.oled.cs)
       # self.connect(self.mcu.gpio.request('oled_dc'), self.oled.dc)
-      self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
 
       self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
@@ -511,8 +518,9 @@ class UsbSourceMeasure(JlcBoardTop):
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
-        (['reg_5v'], Tps54202h),
+        (['reg_v5'], Tps54202h),
         (['reg_3v3'], Ldl1117),
+        (['reg_v12'], Lm2733),
         (['reg_analog'], Ap2210),
         (['reg_vref'], Ref30xx),
         (['reg_vcontrol'], Lm2733),
@@ -574,16 +582,19 @@ class UsbSourceMeasure(JlcBoardTop):
         ]),
 
         # allow the regulator to go into tracking mode
-        (['reg_5v', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
-        (['reg_5v', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
+        (['reg_v5', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
+        (['reg_v5', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
         # JLC does not have frequency specs, must be checked TODO
-        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+        (['reg_v5', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+        (['reg_v12', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['reg_vcontrol', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
 
         # ignore derating on 20v - it's really broken =(
-        (['reg_5v', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
-        (['reg_5v', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
+        (['reg_v5', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
+        (['reg_v5', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
+        (['reg_v12', 'cf', 'voltage_rating_derating'], 0.85),
+        (['reg_v12', 'cf', 'require_basic_part'], False),
         (['conv', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
         (['conv', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
@@ -620,14 +631,16 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['prot_conv', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
         # (['conv', 'power_path', 'inductor', 'part'], 'SLF12575T-470M2R7-PF'),  # first auto pick is OOS
+
+        (['oled', 'iref_res', 'require_basic_part'], False),
       ],
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
 
-        (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
-        (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
+        # (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
+        # (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
 
         (Mcp3561, ['ic', 'ch', '0', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
         (Mcp3561, ['ic', 'ch', '1', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
