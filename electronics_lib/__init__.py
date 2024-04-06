@@ -81,7 +81,7 @@ from .Microcontroller_Esp import HasEspProgramming
 from .Microcontroller_Esp import EspAutoProgram
 from .Microcontroller_Esp32 import Esp32_Wroom_32, Freenove_Esp32_Wrover
 from .Microcontroller_Esp32s3 import Esp32s3_Wroom_1, Freenove_Esp32s3_Wroom
-from .Microcontroller_Esp32c3 import Esp32c3_Wroom02, Esp32c3
+from .Microcontroller_Esp32c3 import Esp32c3_Wroom02, Esp32c3, Xiao_Esp32c3
 from .Microcontroller_Rp2040 import Rp2040
 from .Fpga_Ice40up import Ice40up5k_Sg48
 

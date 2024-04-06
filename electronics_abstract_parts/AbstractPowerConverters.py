@@ -9,8 +9,13 @@ from .Resettable import Resettable
 
 @abstract_block_default(lambda: IdealVoltageRegulator)
 class VoltageRegulator(PowerConditioner):
-  """Base class for all DC-DC voltage regulators with shared ground (non-isolated).
-  Can produce an output voltage lower than, equal to, or greater than its input voltage."""
+  """Structural abstract base class for DC-DC voltage regulators with shared ground (non-isolated).
+  This takes some input voltage and produces a stable voltage at output_voltage on its output.
+
+  While this abstract class does not define any limitations on the output voltage, subclasses and concrete
+  implementations commonly have restrictions, for example linear regulators can only produce voltages lower
+  than the input voltage.
+  """
   @init_in_parent
   def __init__(self, output_voltage: RangeLike) -> None:
     super().__init__()
@@ -58,7 +63,12 @@ class VoltageRegulatorEnableWrapper(Resettable, VoltageRegulator, GeneratorBlock
 
 @abstract_block_default(lambda: IdealLinearRegulator)
 class LinearRegulator(VoltageRegulator):
-  """Linear regulator, including supporting components in application circuit like capacitors if needed"""
+  """Structural abstract base class for linear regulators, a voltage regulator that can produce some
+  output voltage lower than its input voltage (minus some dropout) by 'burning' the excess voltage as heat.
+
+  Compared to switching converters like buck and boost converters, linear regulators usually have lower
+  complexity, lower parts count, and higher stability. However, depending on the application, they are
+  typically less efficient, and at higher loads may require thermal design considerations."""
 
 
 @abstract_block
