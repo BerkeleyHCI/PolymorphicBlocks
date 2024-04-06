@@ -413,9 +413,14 @@ class UsbSourceMeasure(JlcBoardTop):
       rc_model = DigitalLowPassRc(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))
       (self.buck_rc, ), _ = self.chain(self.mcu.gpio.request('buck_pwm'), imp.Block(rc_model), self.conv.buck_pwm)
       (self.boost_rc, ), _ = self.chain(self.mcu.gpio.request('boost_pwm'), imp.Block(rc_model), self.conv.boost_pwm)
+
+      self.conv_latch = imp.Block(Sn74lvc1g74())
       (self.conv_en_pull, ), _ = self.chain(
         self.mcu.gpio.request('conv_en'),
-        imp.Block(PulldownResistor(10*kOhm(tol=0.05))), self.conv.reset)
+        imp.Block(PullupResistor(10*kOhm(tol=0.05))),
+        self.conv_latch.nclr
+      )
+      self.connect(self.conv_latch.nq, self.conv.reset)
 
       (self.pass_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(0)))
       (self.conv_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(1)))
