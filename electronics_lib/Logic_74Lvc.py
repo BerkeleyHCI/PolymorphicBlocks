@@ -53,7 +53,9 @@ class Sn74lvc1g74_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class Sn74lvc1g74(Interface, Block):
-    """D flip-flop with clear and preset"""
+    """D flip-flop with clear and preset
+
+    TODO: should extend an abstract flip-lop interface, with async (n)set and (n)clear mixins"""
     @init_in_parent
     def __init__(self) -> None:
         super().__init__()

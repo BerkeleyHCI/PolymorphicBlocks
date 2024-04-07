@@ -414,10 +414,31 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.buck_rc, ), _ = self.chain(self.mcu.gpio.request('buck_pwm'), imp.Block(rc_model), self.conv.buck_pwm)
       (self.boost_rc, ), _ = self.chain(self.mcu.gpio.request('boost_pwm'), imp.Block(rc_model), self.conv.boost_pwm)
 
+      # TODO: this should be a wrapper VoltageComparator with more precise tolerancing
+      self.conv_comp = imp.Block(Lmv331())
+      (self.comp_ref, ), _ = self.chain(
+        self.v3v3,
+        imp.Block(VoltageDivider(output_voltage=1*Volt(tol=0.05),
+                                 impedance=(5, 50)*kOhm)),
+        self.conv_comp.inp
+      )
+      # full scale needs to be below the threshold so the trip point is above the modeled max
+      (self.comp_sense, ), _ = self.chain(
+        self.vconv,
+        imp.Block(VoltageSenseDivider(full_scale_voltage=0.9*Volt(tol=0.05),
+                                      impedance=(5, 50)*kOhm)),
+        self.conv_comp.inn
+      )
+
+      # TODO: should not allow simultaneous set and clr
       self.conv_latch = imp.Block(Sn74lvc1g74())
       (self.conv_en_pull, ), _ = self.chain(
         self.mcu.gpio.request('conv_en'),
         imp.Block(PullupResistor(10*kOhm(tol=0.05))),
+        self.conv_latch.nset
+      )
+      (self.comp_pull, ), _ = self.chain(
+        self.conv_comp.out,imp.Block(PullupResistor(resistance=10*kOhm(tol=0.05))),
         self.conv_latch.nclr
       )
       self.connect(self.conv_latch.nq, self.conv.reset)
