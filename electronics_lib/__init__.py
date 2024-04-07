@@ -122,6 +122,7 @@ from .EInk_WaveshareDriver import Waveshare_Epd
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .SolidStateRelay_Toshiba import Tlp3545a
 from .AnalogSwitch_Nlas4157 import Nlas4157
+from .AnalogSwitch_Dg468 import Dg468
 from .CanTransceiver_Iso1050 import Iso1050dub
 from .CanTransceiver_Sn65hvd230 import Sn65hvd230
 from .CurrentSense_Ad8418 import Ad8418a
