@@ -17,6 +17,12 @@ class Keyboard(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
+    self.mcu = self.Block(Xiao_Esp32c3())
+    self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
+
+    self.connect(self.sw.cols, self.mcu.gpio.request_vector())
+    self.connect(self.sw.rows, self.mcu.gpio.request_vector())
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -28,4 +34,4 @@ class Keyboard(JlcBoardTop):
 
 class KeyboardTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(Keyboard, False)
+    compile_board_inplace(Keyboard)

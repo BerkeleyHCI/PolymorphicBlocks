@@ -10,7 +10,7 @@ class SvgPcbTemplateBlock:
     and generation of non-templated footprints exists in the backend."""
     def _svgpcb_init(self) -> None:
         """Initializes this Block for SVGPCB template generation. Called from the backend."""
-        raise NotImplementedError
+        pass
 
     def _svgpcb_pathname(self) -> str:
         """Infrastructure method, returns the pathname for this Block as a JS-code-friendly string."""

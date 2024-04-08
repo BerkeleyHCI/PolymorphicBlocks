@@ -46,4 +46,5 @@ from .RefdesRefinementPass import RefdesRefinementPass
 from .NetlistBackend import NetlistBackend
 from .PinAssignmentUtil import PinAssignmentUtil, AnyPinAssign, PeripheralPinAssign, NotConnectedPin, AnyPin
 
+from .SvgPcbBackend import SvgPcbBackend
 from .SvgPcbTemplateBlock import SvgPcbTemplateBlock
