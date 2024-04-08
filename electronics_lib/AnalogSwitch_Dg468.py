@@ -58,7 +58,7 @@ class Dg468(AnalogSwitch):
     self.connect(self.gnd, self.ic.gnd)
     self.connect(self.com, self.ic.com)
     self.connect(self.inputs.append_elt(Passive.empty(), '1'), self.ic.no)
-    self.connect(self.control.append_elt(DigitalSink.empty(), '0'), self.ic.s)
+    self.connect(self.control.append_elt(DigitalSink.empty(), '0'), self.ic.in_)
 
     self.assign(self.analog_voltage_limits, self.ic.analog_voltage_limits)
     self.assign(self.analog_current_limits, self.ic.analog_current_limits)

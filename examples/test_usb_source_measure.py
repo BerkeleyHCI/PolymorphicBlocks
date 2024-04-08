@@ -35,9 +35,10 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
   The control line is one bit for each range (range connectivity is independent).
   Multiple ranges can be connected simultaneously, this allows make-before-break connectivity."""
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
-    assert symbol_name == 'edg_importable:ResistorMux'
+    assert symbol_name == 'edg_importable:CurrentSenseResistorMux'
     return {
-      'control': self.control, 'sw': self.com, 'com': self.input,
+      'control': self.control, 'sw': self.pwr_in, 'com': self.pwr_out,
+      'sen_sw': self.sense_in, 'sen_com': self.sense_out,
       'V+': self.pwr,  'V-': self.gnd
     }
 
@@ -57,13 +58,13 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 
     self.resistances = self.ArgParameter(resistances)
     self.currents = self.ArgParameter(currents)
-    self.generator_param(self.resistances)
+    self.generator_param(self.resistances, self.currents)
 
   def generate(self):
     super().generate()
     self.res = ElementDict[CurrentSenseResistor]()
     self.pwr_sw = ElementDict[VoltageIsolatedSwitch]()
-    self.sense_sw = ElementDict[AnalogSwitch]()
+    self.sense_sw = ElementDict[AnalogMuxer]()
     self.forced = ElementDict[ForcedVoltageCurrentDraw]()
 
     self.pwr_out_merge = self.Block(MergedVoltageSource())
@@ -79,7 +80,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
       for i, (resistance, current) in enumerate(zip(self.get(self.resistances), self.get(self.currents))):
         res = self.res[i] = self.Block(CurrentSenseResistor(resistance))
         pwr_sw = self.pwr_sw[i] = imp.Block(VoltageIsolatedSwitch())
-        sense_sw = self.sense_sw[i] = imp.Block(AnalogSwitch())
+        sense_sw = self.sense_sw[i] = imp.Block(AnalogMuxer())
         control = self.control.append_elt(DigitalSink.empty(), str(i))
         self.connect(pwr_sw.signal, control)
 
@@ -92,7 +93,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 
         # SENSE IN SWITCH PATH
         self.connect(res.sense_in, sense_sw.inputs.request('1'))  # NO connection
-        self.connect(self.sense_in_merge.inputs.request(str(i)), sense_sw.com)
+        self.connect(self.sense_in_merge.inputs.request(str(i)), sense_sw.out)
 
         self.connect(self.sense_out_merge.inputs.request(str(i)), res.sense_out)
 
@@ -284,7 +285,7 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
     self.control_voltage = self.Port(AnalogSink.empty())
     self.control_current_source = self.Port(AnalogSink.empty())
     self.control_current_sink = self.Port(AnalogSink.empty())
-    self.drv_en = self.Port(DigitalSink.empty())
+    self.irange = self.Port(Vector(DigitalSink.empty()))
     self.off = self.Port(Vector(DigitalSink.empty()))
     self.out = self.Port(VoltageSource.empty())
 
@@ -319,8 +320,18 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
           'current': self.current,
           'rds_on': self.rds_on
         },
+        'isense': {
+          'resistances': [
+            0.022*Ohm(tol=0.01),
+            0.22*Ohm(tol=0.01),
+          ],
+          'currents': [
+            (0, 3)*Amp,
+            (0, 300)*mAmp
+          ]
+        },
         'imeas': {
-          'resistance': 0.022*Ohm(tol=0.01),
+          'in_diff_range': RangeExpr(),
         },
         'vmeas': {
           'ratio': Range.from_tolerance(1/24, 0.05),
@@ -330,6 +341,8 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
           'clamp_current': (2.5, 5)*mAmp  # absolute maximum rating of ADC
         }
       })
+    self.imeas: Ad8418a  # schematic-defined
+    # self.assign(self.imeas.in_diff_range, RangeExpr())
 
 
 class UsbSourceMeasure(JlcBoardTop):
@@ -477,7 +490,7 @@ class UsbSourceMeasure(JlcBoardTop):
       # self.connect(self.mcu.gpio.request('oled_cs'), self.oled.cs)
       # self.connect(self.mcu.gpio.request('oled_dc'), self.oled.dc)
 
-      self.connect(self.mcu.gpio.request('drv_en'), self.control.drv_en)
+      self.connect(self.mcu.gpio.request_vector('irange'), self.control.irange)
       self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
 
       rc_model = DigitalLowPassRc(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))

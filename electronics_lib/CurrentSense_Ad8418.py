@@ -6,6 +6,7 @@ from .JlcPart import JlcPart
 
 class Ad8418a_Device(JlcPart, FootprintBlock):
     GAIN = Range.from_tolerance(20, 0.0015)
+    @init_in_parent
     def __init__(self, in_diff_range: RangeLike):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
@@ -25,10 +26,11 @@ class Ad8418a_Device(JlcPart, FootprintBlock):
         self.vref1 = self.Port(ref_model)
         self.vref2 = self.Port(ref_model)
 
+        self.in_diff_range = self.ArgParameter(in_diff_range)
         self.out = self.Port(AnalogSource(
             voltage_out=(0.032, self.vs.link().voltage.upper() - 0.032),
             signal_out=(self.vref1.link().signal + self.vref2.link().signal) / 2 +
-                       (in_diff_range * self.GAIN),
+                       (self.in_diff_range * self.GAIN),
             impedance=2*Ohm(tol=0)  # range not specified
         ))
 
@@ -54,14 +56,22 @@ class Ad8418a_Device(JlcPart, FootprintBlock):
 
 
 class Ad8418a(Sensor, KiCadImportableBlock, Block):
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name == 'edg_importable:DifferentialAmplifier'
+        return {
+            '+': self.sense_pos, '-': self.sense_neg,
+            'R': self.ref, '3': self.out,
+            'V+': self.pwr, 'V-': self.gnd
+        }
+
     @init_in_parent
-    def __init__(self, in_diff_range: RangeLike):
+    def __init__(self, in_diff_range: RangeLike = RangeExpr()):
         super().__init__()
-        self.amp = self.Block(Ad8418a_Device())
+        self.amp = self.Block(Ad8418a_Device(in_diff_range))
         self.sense_pos = self.Export(self.amp.inp)
         self.sense_neg = self.Export(self.amp.inn)
 
-        self.pwr_logic = self.Export(self.amp.vs, [Power])
+        self.pwr = self.Export(self.amp.vs, [Power])
         self.gnd = self.Export(self.amp.gnd, [Common])
         self.ref = self.Export(self.amp.vref1)  # TODO optional for grounded unidirectional
         self.out = self.Export(self.amp.out)
@@ -70,8 +80,3 @@ class Ad8418a(Sensor, KiCadImportableBlock, Block):
 
     def contents(self):
         self.connect(self.ref, self.amp.vref2)
-
-    def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
-        assert symbol_name == 'edg_importable:OpampCurrentSensor'
-        return {'+': self.pwr_in, '-': self.pwr_out, 'R': self.ref, '3': self.out,
-                'V+': self.pwr_logic, 'V-': self.gnd}
