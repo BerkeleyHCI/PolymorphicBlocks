@@ -86,7 +86,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
         pwr_sw = self.pwr_sw[i] = imp.Block(VoltageIsolatedSwitch())
         sense_sw = self.sense_sw[i] = imp.Block(AnalogMuxer())
         control = self.control.append_elt(DigitalSink.empty(), str(i))
-        self.connect(pwr_sw.signal, control)
+        self.connect(pwr_sw.signal, sense_sw.control.request(), control)
 
         # POWER PATH
         self.chain(pwr_sw.pwr_in, self.pwr_in)
@@ -333,8 +333,8 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
             0.22*Ohm(tol=0.01),
           ],
           'currents': [
-            (0, 3)*Amp,
-            (0, 300)*mAmp
+            (-3, 3)*Amp,
+            (-300, 300)*mAmp
           ]
         },
         'imeas': {
@@ -644,6 +644,9 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),
+
+        (['control', 'isense', 'sense_sw[0]', 'device'], Dg468),
+        (['control', 'isense', 'sense_sw[1]', 'device'], Dg468),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),

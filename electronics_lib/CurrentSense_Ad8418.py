@@ -67,7 +67,8 @@ class Ad8418a(Sensor, KiCadImportableBlock, Block):
     @init_in_parent
     def __init__(self, in_diff_range: RangeLike):
         super().__init__()
-        self.amp = self.Block(Ad8418a_Device(in_diff_range))
+        self.in_diff_range = self.ArgParameter(in_diff_range)
+        self.amp = self.Block(Ad8418a_Device(self.in_diff_range))
         self.sense_pos = self.Export(self.amp.inp)
         self.sense_neg = self.Export(self.amp.inn)
 
@@ -75,8 +76,6 @@ class Ad8418a(Sensor, KiCadImportableBlock, Block):
         self.gnd = self.Export(self.amp.gnd, [Common])
         self.ref = self.Export(self.amp.vref1)  # TODO optional for grounded unidirectional
         self.out = self.Export(self.amp.out)
-
-        self.in_diff_range = self.ArgParameter(in_diff_range)
 
     def contents(self):
         self.connect(self.ref, self.amp.vref2)

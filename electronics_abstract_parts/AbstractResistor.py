@@ -228,7 +228,7 @@ class SeriesPowerResistor(DiscreteApplication):
 
     self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
     self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
-    current_draw = self.pwr_out.link().current_drawn
+    current_draw = self.pwr_out.link().current_drawn.abs()
 
     self.res = self.Block(Resistor(
       resistance=self.resistance,
