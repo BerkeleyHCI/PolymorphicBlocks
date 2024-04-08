@@ -8,7 +8,7 @@ class Tlp3545a(SolidStateRelay, FootprintBlock):
     self.assign(self.led_current_limit, (5, 30)*mAmp)
     self.assign(self.led_current_recommendation, (5, 25)*mAmp)  # typ=10mA
     self.assign(self.load_voltage_limit, (-48, 48)*Volt)  # recommended, up to 60 max
-    self.assign(self.load_current_limit, (0, 4)*Amp)
+    self.assign(self.load_current_limit, (-4, 4)*Amp)
     self.assign(self.load_resistance, (35, 60)*mOhm)  # 'A' connection, supports AC but higher resistance
 
     self.footprint(

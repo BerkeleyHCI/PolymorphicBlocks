@@ -648,12 +648,13 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['control', 'isense', 'sense_sw[0]', 'device'], Dg468),
         (['control', 'isense', 'sense_sw[1]', 'device'], Dg468),
+        (['control', 'isense', 'pwr_sw[0]', 'ic'], Tlp3545a),
+        (['control', 'isense', 'pwr_sw[1]', 'ic'], Tlp3545a),  # TODO cheaper AQY282SX?
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
         (Opamp, Tlv9061),  # higher precision opamps
         (AnalogSwitch, Nlas4157),
-        (SolidStateRelay, Tlp3545a),
         (BananaSafetyJack, Ct3151),
         (HalfBridgeDriver, Ncp3420),
         (DirectionSwitch, Skrh),
@@ -742,8 +743,10 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
 
-        (['control', 'imeas', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
-        (['control', 'imeas', 'sense', 'res', 'res', 'require_basic_part'], False),
+        (['control', 'isense', 'res[0]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
+        (['control', 'isense', 'res[0]', 'res', 'res', 'require_basic_part'], False),
+        (['control', 'isense', 'res[1]', 'res', 'res', 'footprint_spec'], ParamValue(['control', 'isense', 'res[0]', 'res', 'res', 'footprint_spec'])),
+        (['control', 'isense', 'res[1]', 'res', 'res', 'require_basic_part'], False),
 
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
         (['control', 'driver', 'high_fet', 'part_spec'], 'SQD50N10-8M9L_GE3'),
