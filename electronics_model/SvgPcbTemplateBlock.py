@@ -3,25 +3,23 @@ from abc import abstractmethod
 
 
 class SvgPcbTemplateBlock:
-    """
-    EXPERIMENTAL! MAY CHANGE!
+    """EXPERIMENTAL! MAY CHANGE, NOT API-STABLE!
 
     A Block that can generate a SVG-PCB (https://github.com/leomcelroy/svg-pcb) layout template.
     This defines the per-class methods (including per-class code generation), the actual board-level code composition
-    and generation of non-templated footprints exists in the backend.
-    """
+    and generation of non-templated footprints exists in the backend."""
     def _svgpcb_init(self) -> None:
         """Initializes this Block for SVGPCB template generation. Called from the backend."""
-        pass
+        raise NotImplementedError
 
     def _svgpcb_pathname(self) -> str:
         """Infrastructure method, returns the pathname for this Block as a JS-code-friendly string."""
-        pass
+        raise NotImplementedError
 
     def _svgpcb_get(self, param: ConstraintExpr) -> str:
         """Infrastructure method, returns the value of the ConstraintExpr as a JS literal.
         Ranges are mapped to a two-element list."""
-        pass
+        raise NotImplementedError
 
     def _svgpcb_fn_name(self) -> str:
         """Infrastructure method (optionally user override-able), returns the SVGPCB function name
