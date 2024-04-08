@@ -3,7 +3,7 @@ from typing import cast
 from electronics_abstract_parts import *
 
 
-class SwitchMatrix(HumanInterface, GeneratorBlock):
+class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
   """A switch matrix, such as for a keyboard, that generates (nrows * ncols) switches while only
   using max(nrows, ncols) IOs.
 
@@ -14,6 +14,84 @@ class SwitchMatrix(HumanInterface, GeneratorBlock):
   This generates per-switch diodes which allows multiple keys to be pressed simultaneously.
   Diode anodes are attached to the rows, while cathodes go through each switch to the cols.
   """
+  def _svgpcb_fn_name(self) -> str:
+    return f"""SwitchMatrix_{self._svgpcb_pathname()}_{self._svgpcb_get(self.ncols)}_{self._svgpcb_get(self.nrows)}"""
+
+  def _svgpcb_template(self) -> str:
+    return f"""\
+function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0.25, 0]) {{
+  // Circuit generator params
+  const ncols = {self._svgpcb_get(self.ncols)}
+  const nrows = {self._svgpcb_get(self.nrows)}
+
+  // Global params
+  const traceSize = 0.015
+  const viaTemplate = via(0.02, 0.035)
+
+  // Return object
+  const obj = {{
+    footprints: {{}},
+    pts: {{}}
+  }}
+
+  // Parameter adjustment handles overlaid onto the board
+  // TODO needs more thought on how this works
+  obj.pts['rowHandle'] = pt(xy[0], xy[1] + rowSpacing)
+  obj.pts['colHandle']  = pt(xy[0] + colSpacing, xy[1])
+  obj.pts['diodeOffset']  = pt(xy[0] + diodeOffset[0], xy[1] + diodeOffset[1])
+
+  // Actual generator code
+  allColWirePoints = []
+  for (let yIndex=0; yIndex < nrows; yIndex++) {{
+    colWirePoints = []
+    rowDiodeVias = []
+
+    for (let xIndex=0; xIndex < ncols; xIndex++) {{
+      index = yIndex * ncols + xIndex + 1
+  
+      buttonPos = [colSpacing * xIndex, rowSpacing * yIndex]
+      obj.footprints[`switch[${{xIndex}}][${{yIndex}}]`] = button = board.add(button_6mm, {{
+        translate: buttonPos, rotate: 0,
+        id: {self._svgpcb_pathname()} + `_switch[${{xIndex}}][${{yIndex}}]`
+      }})
+  
+      diodePos = [buttonPos[0] + diodeOffset[0], buttonPos[1] + diodeOffset[1]]
+      obj[`diode[${{xIndex}}][${{yIndex}}]`] = diode = board.add(D_SMA, {{
+        translate: diodePos, rotate: 90,
+        id: {self._svgpcb_pathname()} + `_diode[${{xIndex}}][${{yIndex}}]`
+      }})
+  
+      // create stub wire for button -> column common line
+      colWirePoint = [buttonPos[0], button.padY("L2")]
+      board.wire([colWirePoint, button.pad("L2")], traceSize, "F.Cu")
+      colWirePoints.push(colWirePoint)
+  
+      // create wire for button -> diode
+      board.wire([button.pad("R2"), diode.pad(1)], traceSize, "F.Cu")
+      diodeViaPos = [diode.padX(2), diode.padY(2) + 0.5]
+      diodeVia = board.add(viaTemplate, {{translate: diodeViaPos}})
+      board.wire([diode.pad(2), diodeVia.pos], traceSize)
+  
+      if (rowDiodeVias.length > 0) {{
+        board.wire([rowDiodeVias[rowDiodeVias.length - 1].pos, diodeVia.pos], traceSize, "B.Cu")
+      }}
+      rowDiodeVias.push(diodeVia)
+    }}
+    allColWirePoints.push(colWirePoints)
+    }}
+
+    // Inter-row wiring
+    for (let xIndex=0; xIndex < allColWirePoints[0].length; xIndex++) {{
+      board.wire([
+        allColWirePoints[0][xIndex],
+        allColWirePoints[allColWirePoints.length - 1][xIndex]
+      ], traceSize, "F.Cu")
+    }}
+
+    return obj
+  }}
+"""
+
   @init_in_parent
   def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7)*Volt):
     super().__init__()
