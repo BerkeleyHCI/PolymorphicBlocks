@@ -6,7 +6,7 @@ from .JlcPart import JlcPart
 
 class Ad8418a_Device(JlcPart, FootprintBlock):
     GAIN = Range.from_tolerance(20, 0.0015)
-    def __init__(self):
+    def __init__(self, in_diff_range: RangeLike):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
         self.vs = self.Port(VoltageSink(
@@ -20,14 +20,17 @@ class Ad8418a_Device(JlcPart, FootprintBlock):
         )
         self.inn = self.Port(input_model)
         self.inp = self.Port(input_model)
-        self.out = self.Port(AnalogSource(
-            voltage_out=(0.032, self.vs.link().voltage.upper() - 0.032),
-            signal_out=(0.032, self.vs.link().voltage.upper() - 0.032),  # unknown at chip level
-            impedance=2*Ohm(tol=0)  # range not specified
-        ))
+
         ref_model = AnalogSink.from_supply(self.gnd, self.vs)  # not specified, surprisingly
         self.vref1 = self.Port(ref_model)
         self.vref2 = self.Port(ref_model)
+
+        self.out = self.Port(AnalogSource(
+            voltage_out=(0.032, self.vs.link().voltage.upper() - 0.032),
+            signal_out=(self.vref1.link().signal + self.vref2.link().signal) / 2 +
+                       (in_diff_range * self.GAIN),
+            impedance=2*Ohm(tol=0)  # range not specified
+        ))
 
     def contents(self):
         super().contents()
@@ -52,28 +55,21 @@ class Ad8418a_Device(JlcPart, FootprintBlock):
 
 class Ad8418a(Sensor, KiCadImportableBlock, Block):
     @init_in_parent
-    def __init__(self, resistance: RangeLike):
+    def __init__(self, in_diff_range: RangeLike):
         super().__init__()
-
-        self.sense = self.Block(CurrentSenseResistor(resistance=resistance))
-        self.pwr_in = self.Export(self.sense.pwr_in)
-        self.pwr_out = self.Export(self.sense.pwr_out)
-
         self.amp = self.Block(Ad8418a_Device())
+        self.sense_pos = self.Export(self.amp.inp)
+        self.sense_neg = self.Export(self.amp.inn)
+
         self.pwr_logic = self.Export(self.amp.vs, [Power])
         self.gnd = self.Export(self.amp.gnd, [Common])
         self.ref = self.Export(self.amp.vref1)  # TODO optional for grounded unidirectional
-        self.out = self.Port(AnalogSource.empty())
+        self.out = self.Export(self.amp.out)
+
+        self.in_diff_range = self.ArgParameter(in_diff_range)
 
     def contents(self):
         self.connect(self.ref, self.amp.vref2)
-        self.connect(self.amp.inp, self.sense.sense_in)
-        self.connect(self.amp.inn, self.sense.sense_out)
-
-        output_swing = self.pwr_out.link().current_drawn * self.sense.actual_resistance * self.amp.GAIN
-        self.force_signal = self.Block(ForcedAnalogSignal(output_swing + self.ref.link().signal))
-        self.connect(self.amp.out, self.force_signal.signal_in)
-        self.connect(self.force_signal.signal_out, self.out)
 
     def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
         assert symbol_name == 'edg_importable:OpampCurrentSensor'

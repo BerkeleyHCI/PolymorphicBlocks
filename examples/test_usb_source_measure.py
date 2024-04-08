@@ -1,5 +1,5 @@
 import unittest
-from typing import Mapping, Optional
+from typing import Mapping, Optional, Dict, List
 
 from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
 from electronics_abstract_parts.ResistiveDivider import DividerValues
@@ -25,6 +25,76 @@ class SourceMeasureFan(Connector):
       voltage_limits=5*Volt(tol=0.1),
       current_draw=200*mAmp(tol=0)
     )), [Power])
+
+
+class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBlock):
+  """Generates an array of current-sense resistors with one side muxed and the other end an array.
+  The resistors are tied common on the com side, and have a solid-state relay for the power path
+  on the input side. Each resistor has an analog switch on the input sense side.
+
+  The control line is one bit for each range (range connectivity is independent).
+  Multiple ranges can be connected simultaneously, this allows make-before-break connectivity."""
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name == 'edg_importable:ResistorMux'
+    return {
+      'control': self.control, 'sw': self.com, 'com': self.input,
+      'V+': self.pwr,  'V-': self.gnd
+    }
+
+  @init_in_parent
+  def __init__(self, resistances: ArrayRangeLike, currents: ArrayRangeLike):
+    super().__init__()
+
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+
+    self.pwr_in = self.Port(VoltageSink.empty())
+    self.pwr_out = self.Port(VoltageSource.empty())
+
+    self.control = self.Port(Vector(DigitalSink.empty()))
+    self.sense_in = self.Port(AnalogSource.empty())
+    self.sense_out = self.Port(AnalogSource.empty())
+
+    self.resistances = self.ArgParameter(resistances)
+    self.currents = self.ArgParameter(currents)
+    self.generator_param(self.resistances)
+
+  def generate(self):
+    super().generate()
+    self.res = ElementDict[CurrentSenseResistor]()
+    self.pwr_sw = ElementDict[VoltageIsolatedSwitch]()
+    self.sense_sw = ElementDict[AnalogSwitch]()
+    self.forced = ElementDict[ForcedVoltageCurrentDraw]()
+
+    self.pwr_out_merge = self.Block(MergedVoltageSource())
+    self.sense_in_merge = self.Block(MergedAnalogSource())
+    self.connect(self.sense_in_merge.output, self.sense_in)
+    self.sense_out_merge = self.Block(MergedAnalogSource())
+    self.connect(self.sense_out_merge.output, self.sense_out)
+
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+            ImplicitConnect(self.pwr, [Power])
+    ) as imp:
+      for i, (resistance, current) in enumerate(zip(self.get(self.resistances), self.get(self.currents))):
+        res = self.res[i] = self.Block(CurrentSenseResistor(resistance))
+        pwr_sw = self.pwr_sw[i] = imp.Block(VoltageIsolatedSwitch())
+        sense_sw = self.sense_sw[i] = imp.Block(AnalogSwitch())
+        control = self.control.append_elt(DigitalSink.empty(), str(i))
+        self.connect(pwr_sw.signal, control)
+
+        # POWER PATH
+        self.chain(pwr_sw.pwr_in, self.pwr_in)
+        self.connect(pwr_sw.pwr_out, res.pwr_in)
+        forced = self.forced[i] = self.Block(ForcedVoltageCurrentDraw(current))
+        self.connect(res.pwr_out, forced.pwr_in)
+        self.connect(self.pwr_out_merge.pwr_ins.request(str(i)), forced.pwr_out)
+
+        # SENSE IN SWITCH PATH
+        self.connect(res.sense_in, sense_sw.inputs.request('1'))  # NO connection
+        self.connect(self.sense_in_merge.inputs.request(str(i)), sense_sw.com)
+
+        self.connect(self.sense_out_merge.inputs.request(str(i)), res.sense_out)
 
 
 class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
