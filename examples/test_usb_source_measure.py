@@ -60,6 +60,8 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
     self.currents = self.ArgParameter(currents)
     self.generator_param(self.resistances, self.currents)
 
+    self.out_range = self.Parameter(RangeExpr())
+
   def generate(self):
     super().generate()
     self.res = ElementDict[CurrentSenseResistor]()
@@ -72,6 +74,8 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
     self.connect(self.sense_in_merge.output, self.sense_in)
     self.sense_out_merge = self.Block(MergedAnalogSource())
     self.connect(self.sense_out_merge.output, self.sense_out)
+
+    out_range = RangeExpr._to_expr_type(RangeExpr.EMPTY)
 
     with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
@@ -97,6 +101,9 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 
         self.connect(self.sense_out_merge.inputs.request(str(i)), res.sense_out)
 
+        out_range = out_range.hull(current * res.actual_resistance)
+
+    self.assign(self.out_range, out_range)
 
 class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
   """Emitter follower circuit
@@ -342,7 +349,8 @@ class SourceMeasureControl(KiCadSchematicBlock, Block):
         }
       })
     self.imeas: Ad8418a  # schematic-defined
-    # self.assign(self.imeas.in_diff_range, RangeExpr())
+    self.isense: RangingCurrentSenseResistor
+    self.assign(self.imeas.in_diff_range, self.isense.out_range)
 
 
 class UsbSourceMeasure(JlcBoardTop):

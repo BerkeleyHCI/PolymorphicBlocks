@@ -65,7 +65,7 @@ class Ad8418a(Sensor, KiCadImportableBlock, Block):
         }
 
     @init_in_parent
-    def __init__(self, in_diff_range: RangeLike = RangeExpr()):
+    def __init__(self, in_diff_range: RangeLike):
         super().__init__()
         self.amp = self.Block(Ad8418a_Device(in_diff_range))
         self.sense_pos = self.Export(self.amp.inp)
