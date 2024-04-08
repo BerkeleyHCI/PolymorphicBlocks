@@ -70,6 +70,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
     self.forced = ElementDict[ForcedVoltageCurrentDraw]()
 
     self.pwr_out_merge = self.Block(MergedVoltageSource())
+    self.connect(self.pwr_out_merge.pwr_out, self.pwr_out)
     self.sense_in_merge = self.Block(MergedAnalogSource())
     self.connect(self.sense_in_merge.output, self.sense_in)
     self.sense_out_merge = self.Block(MergedAnalogSource())
