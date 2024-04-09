@@ -93,7 +93,8 @@ class SvgPcbTransform(TransformUtil.Transform):
     self._svgpcb_blocks: List[Tuple[TransformUtil.Path, SvgPcbGeneratedBlock]] = []
 
   def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
-    if context.path == TransformUtil.Path.empty():  # ignore root
+    # ignore root, bit of a heuristic hack since importing the toplevel script can be brittle
+    if context.path == TransformUtil.Path.empty():
       return
 
     # TODO: dedup w/ class_from_library in edg_hdl_server
