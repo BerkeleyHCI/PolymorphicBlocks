@@ -6,7 +6,7 @@ from .CircuitBlock import FootprintBlock
 from .DigitalPorts import DigitalSource, DigitalSink
 from .SpiPort import SpiController, SpiPeripheral
 from .UartPort import UartPort
-from .footprint import NetPin, NetBlock
+from .NetlistGenerator import NetPin, NetBlock
 from .test_netlist import NetlistTestCase
 
 

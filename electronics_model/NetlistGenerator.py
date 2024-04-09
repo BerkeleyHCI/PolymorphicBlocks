@@ -4,7 +4,6 @@ from typing import *
 
 import edgir
 from edg_core import *
-from . import footprint as kicad
 
 
 class InvalidNetlistBlockException(BaseException):
@@ -15,21 +14,34 @@ class InvalidPackingException(BaseException):
   pass
 
 
+class NetBlock(NamedTuple):
+  footprint: str
+  refdes: str
+  part: str
+  value: str  # gets written directly to footprint
+  full_path: List[str]  # full path to this footprint
+  path: List[str]  # short path to this footprint
+  class_path: List[str]  # classes on short path to this footprint
+
+class NetPin(NamedTuple):
+  block_name: str
+  pin_name: str
+
 class Netlist(NamedTuple):  # TODO use TransformUtil.Path across the board
-  blocks: Dict[str, kicad.NetBlock]  # block name: footprint name
-  nets: Dict[str, List[kicad.NetPin]]  # net name: list of member pins
+  blocks: Dict[str, NetBlock]  # block name: footprint name
+  nets: Dict[str, List[NetPin]]  # net name: list of member pins
 
 
-Blocks = Dict[TransformUtil.Path, kicad.NetBlock]  # path -> Block
+Blocks = Dict[TransformUtil.Path, NetBlock]  # path -> Block
 Edges = Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Pins (block name, port / pin name) -> net-connected Pins
 AssertConnected = List[Tuple[TransformUtil.Path, TransformUtil.Path]]
 Names = Dict[TransformUtil.Path, TransformUtil.Path]  # Path -> shortened path name
 ClassPaths = Dict[TransformUtil.Path, List[str]]  # Path -> class names corresponding to shortened path name
 class NetlistTransform(TransformUtil.Transform):
   @staticmethod
-  def path_to_pin(path: TransformUtil.Path) -> kicad.NetPin:
+  def path_to_pin(path: TransformUtil.Path) -> NetPin:
     assert not path.links and not path.params
-    return kicad.NetPin('.'.join(path.blocks), '.'.join(path.ports))
+    return NetPin('.'.join(path.blocks), '.'.join(path.ports))
 
   @staticmethod
   def flatten_port(path: TransformUtil.Path, port: edgir.PortLike) -> Iterable[TransformUtil.Path]:
@@ -144,7 +156,7 @@ class NetlistTransform(TransformUtil.Transform):
       ]
       part_str = " ".join(filter(None, part_comps))
       value_str = value if value else (part if part else '')
-      self.blocks[path] = kicad.NetBlock(
+      self.blocks[path] = NetBlock(
         footprint_name,
         refdes,
         part_str,

@@ -1,22 +1,7 @@
 import zlib  # for deterministic hash
-from typing import NamedTuple, List, Mapping
+from typing import List, Mapping
+from .NetlistGenerator import NetBlock, NetPin
 
-import edgir
-from edg_core import TransformUtil
-
-
-class NetBlock(NamedTuple):
-  footprint: str
-  refdes: str
-  part: str
-  value: str  # gets written directly to footprint
-  full_path: List[str]  # full path to this footprint
-  path: List[str]  # short path to this footprint
-  class_path: List[str]  # classes on short path to this footprint
-
-class NetPin(NamedTuple):
-  block_name: str
-  pin_name: str
 
 ###############################################################################################################################################################################################
 

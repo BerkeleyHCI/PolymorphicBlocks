@@ -3,10 +3,9 @@ from typing import Type
 
 from edg_core import *
 from .CircuitBlock import FootprintBlock
-from .NetlistGenerator import NetlistTransform
+from .NetlistGenerator import NetlistTransform, NetPin, NetBlock
 from .RefdesRefinementPass import RefdesRefinementPass
 from .VoltagePorts import VoltageSource, VoltageSink
-from .footprint import NetPin, NetBlock
 
 
 class TestFakeSource(FootprintBlock):
