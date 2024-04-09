@@ -1,25 +1,36 @@
+from typing import Optional
+
 from edg_core import *
 from abc import abstractmethod
+import edgir
 
 
-class SvgPcbTemplateBlock:
+class SvgPcbTemplateBlock(Block):
     """EXPERIMENTAL! MAY CHANGE, NOT API-STABLE!
 
     A Block that can generate a SVG-PCB (https://github.com/leomcelroy/svg-pcb) layout template.
     This defines the per-class methods (including per-class code generation), the actual board-level code composition
     and generation of non-templated footprints exists in the backend."""
-    def _svgpcb_init(self) -> None:
+    def _svgpcb_init(self, pathname: TransformUtil.Path, design: CompiledDesign) -> None:
         """Initializes this Block for SVGPCB template generation. Called from the backend."""
-        pass
+        self._svgpcb_pathname_data = pathname
+        self._svgpcb_design = design
+        self._svgpcb_ref_map = self._get_ref_map(pathname.to_local_path())
 
     def _svgpcb_pathname(self) -> str:
         """Infrastructure method, returns the pathname for this Block as a JS-code-friendly string."""
-        raise NotImplementedError
+        return '_'.join(self._svgpcb_pathname_data.to_tuple())
 
-    def _svgpcb_get(self, param: ConstraintExpr) -> str:
+    def _svgpcb_get(self, param: ConstraintExpr) -> Optional[str]:
         """Infrastructure method, returns the value of the ConstraintExpr as a JS literal.
         Ranges are mapped to a two-element list."""
-        raise NotImplementedError
+        param_path = self._svgpcb_ref_map.get(param, None)
+        if param_path is None:
+            return None
+        param_val = self._svgpcb_design.get_value(param_path)
+        if param_val is None:
+            return None
+        return str(param_val)
 
     def _svgpcb_fn_name(self) -> str:
         """Infrastructure method (optionally user override-able), returns the SVGPCB function name

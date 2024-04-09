@@ -42,7 +42,7 @@ class SvgPcbTransform(TransformUtil.Transform):
     cls = getattr(elt_module, elt_split[-1])
     if issubclass(cls, SvgPcbTemplateBlock):
       generator_obj = cls()
-      generator_obj._svgpcb_init()
+      generator_obj._svgpcb_init(context.path, self.design)
       self._svgpcb_blocks.append((context.path,
                                   SvgPcbGeneratedBlock(
                                     generator_obj._svgpcb_fn_name(),
@@ -51,6 +51,6 @@ class SvgPcbTransform(TransformUtil.Transform):
     else:
       pass
 
-  def run(self) -> List[Tuple[TransformUtil.Path, SvgPcbTemplateBlock]]:
+  def run(self) -> List[Tuple[TransformUtil.Path, SvgPcbGeneratedBlock]]:
     self.transform_design(self.design.design)
     return self._svgpcb_blocks
