@@ -152,15 +152,18 @@ class BundleNetlistTestCase(unittest.TestCase):
       NetPin('peripheral2', '3'),
     ])
 
-    self.assertEqual(net.blocks['controller'], NetBlock(
-      'Resistor_SMD:R_Array_Concave_2x0603', 'R1', '', 'WeirdSpiController',
-      ['controller'], ['controller'], ['electronics_model.test_bundle_netlist.TestFakeSpiController']))
-    self.assertEqual(net.blocks['peripheral1'], NetBlock(
-      'Resistor_SMD:R_Array_Concave_2x0603', 'R2', '', 'WeirdSpiPeripheral',
-      ['peripheral1'], ['peripheral1'], ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']))
-    self.assertEqual(net.blocks['peripheral2'], NetBlock(
-      'Resistor_SMD:R_Array_Concave_2x0603', 'R3', '', 'WeirdSpiPeripheral',
-      ['peripheral2'], ['peripheral2'], ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']))
+    self.assertIn(NetBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R1', '', 'WeirdSpiController',
+                           ['controller'], ['controller'],
+                           ['electronics_model.test_bundle_netlist.TestFakeSpiController']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R2', '', 'WeirdSpiPeripheral',
+                           ['peripheral1'], ['peripheral1'],
+                           ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R3', '', 'WeirdSpiPeripheral',
+                           ['peripheral2'], ['peripheral2'],
+                           ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']),
+                  net.blocks)
 
   def test_uart_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestUartCircuit)
@@ -173,12 +176,12 @@ class BundleNetlistTestCase(unittest.TestCase):
       NetPin('a', '2'),
       NetPin('b', '1')
     ])
-    self.assertEqual(net.blocks['a'], NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                                               ['a'], ['a'],
-                                               ['electronics_model.test_bundle_netlist.TestFakeUartBlock']))
-    self.assertEqual(net.blocks['b'], NetBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '1k',
-                                               ['b'], ['b'],
-                                               ['electronics_model.test_bundle_netlist.TestFakeUartBlock']))
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
+                           ['a'], ['a'], ['electronics_model.test_bundle_netlist.TestFakeUartBlock']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '1k',
+                           ['b'], ['b'], ['electronics_model.test_bundle_netlist.TestFakeUartBlock']),
+                  net.blocks)
 
   def test_can_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestCanCircuit)
@@ -193,12 +196,12 @@ class BundleNetlistTestCase(unittest.TestCase):
       NetPin('node2', '2'),
       NetPin('node3', '2')
     ])
-    self.assertEqual(net.blocks['node1'], NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '120',
-                                                   ['node1'], ['node1'],
-                                                   ['electronics_model.test_bundle_netlist.TestFakeCanBlock']))
-    self.assertEqual(net.blocks['node2'], NetBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '120',
-                                                   ['node2'], ['node2'],
-                                                   ['electronics_model.test_bundle_netlist.TestFakeCanBlock']))
-    self.assertEqual(net.blocks['node3'], NetBlock('Resistor_SMD:R_0603_1608Metric', 'R3', '', '120',
-                                                   ['node3'], ['node3'],
-                                                   ['electronics_model.test_bundle_netlist.TestFakeCanBlock']))
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '120',
+                           ['node1'], ['node1'], ['electronics_model.test_bundle_netlist.TestFakeCanBlock']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '120',
+                           ['node2'], ['node2'], ['electronics_model.test_bundle_netlist.TestFakeCanBlock']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R3', '', '120',
+                           ['node3'], ['node3'], ['electronics_model.test_bundle_netlist.TestFakeCanBlock']),
+                  net.blocks)

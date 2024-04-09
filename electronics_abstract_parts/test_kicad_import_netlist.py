@@ -54,16 +54,19 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
     self.assertEqual(net.nets['out'], [
       NetPin('res', '2')
     ])
-    self.assertEqual(net.blocks['U1'], NetBlock('Package_TO_SOT_SMD:SOT-23', 'U1',
-                                                # expected value is wonky because netlisting combines part and value
-                                                'Sensor_Temperature:MCP9700AT-ETT', 'MCP9700AT-ETT',
-                                                ['dut', 'U1'], ['U1'],
-                                                ['electronics_model.KiCadSchematicBlock.KiCadBlackbox']))
-    self.assertEqual(net.blocks['SYM1'], NetBlock('Symbol:Symbol_ESD-Logo_CopperTop', 'SYM1',
-                                                  # expected value is wonky because netlisting combines part and value
-                                                  'Graphic:SYM_ESD_Small', 'SYM_ESD_Small',
-                                                  ['dut', 'SYM1'], ['SYM1'],
-                                                  ['electronics_model.KiCadSchematicBlock.KiCadBlackbox']))
-    self.assertEqual(net.blocks['res'], NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '',
-                                                 ['dut', 'res'], ['res'],
-                                                 ['electronics_abstract_parts.test_kicad_import_netlist.DummyResistor']))
+    self.assertIn(NetBlock('Package_TO_SOT_SMD:SOT-23', 'U1',
+                           # expected value is wonky because netlisting combines part and value
+                           'Sensor_Temperature:MCP9700AT-ETT', 'MCP9700AT-ETT',
+                           ['dut', 'U1'], ['U1'],
+                           ['electronics_model.KiCadSchematicBlock.KiCadBlackbox']),
+                  net.blocks)
+    self.assertIn(NetBlock('Symbol:Symbol_ESD-Logo_CopperTop', 'SYM1',
+                           # expected value is wonky because netlisting combines part and value
+                           'Graphic:SYM_ESD_Small', 'SYM_ESD_Small',
+                           ['dut', 'SYM1'], ['SYM1'],
+                           ['electronics_model.KiCadSchematicBlock.KiCadBlackbox']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '',
+                           ['dut', 'res'], ['res'],
+                           ['electronics_abstract_parts.test_kicad_import_netlist.DummyResistor']),
+                  net.blocks)
