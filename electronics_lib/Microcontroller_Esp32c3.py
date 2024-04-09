@@ -83,7 +83,7 @@ class Esp32c3_Ios(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator):
       PeripheralAnyResource('SPI2', spi_model),
       PeripheralAnyResource('SPI2_P', spi_peripheral_model),  # TODO shared resource w/ SPI controller
       PeripheralAnyResource('I2S', I2sController.empty()),
-    ])
+    ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
 
 @abstract_block
@@ -132,6 +132,19 @@ class Esp32c3_Wroom02_Device(Esp32c3_Base, FootprintBlock, JlcPart):
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf
   """
+  RESOURCE_PIN_REMAP = {
+    'MTMS': '3',  # GPIO4
+    'MTDI': '4',  # GPIO5
+    'MTCK': '5',  # GPIO6
+    'MTDO': '6',  # GPIO7
+    'GPIO10': '10',
+    'GPIO18': '13',
+    'GPIO19': '14',
+    'GPIO3': '15',
+    'GPIO1': '17',
+    'GPIO0': '18',
+  }
+
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper(super()._system_pinmap()).remap({
       'Vdd': '1',
@@ -142,20 +155,6 @@ class Esp32c3_Wroom02_Device(Esp32c3_Base, FootprintBlock, JlcPart):
       'GPIO9': '8',
       'RXD': '11',  # RXD, GPIO20
       'TXD': '12',  # TXD, GPIO21
-    })
-
-  def _io_pinmap(self) -> PinMapUtil:
-    return super()._io_pinmap().remap_pins({
-      'MTMS': '3',  # GPIO4
-      'MTDI': '4',  # GPIO5
-      'MTCK': '5',  # GPIO6
-      'MTDO': '6',  # GPIO7
-      'GPIO10': '10',
-      'GPIO18': '13',
-      'GPIO19': '14',
-      'GPIO3': '15',
-      'GPIO1': '17',
-      'GPIO0': '18',
     })
 
   def generate(self) -> None:
@@ -216,6 +215,31 @@ class Esp32c3_Device(Esp32c3_Base, FootprintBlock, JlcPart):
   """ESP32C3 with 4MB integrated flash
   TODO: support other part numbers, including without integrated flash
   """
+  RESOURCE_PIN_REMAP = {
+    'GPIO0': '4',
+    'GPIO1': '5',
+    'GPIO3': '8',
+    'MTMS': '9',  # GPIO4
+    'MTDI': '10',  # GPIO5
+    'MTCK': '12',  # GPIO6
+    'MTDO': '13',  # GPIO7
+    'GPIO10': '16',
+    'GPIO18': '25',
+    'GPIO19': '26',
+  }
+
+  def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    return VariantPinRemapper(super()._system_pinmap()).remap({
+      'Vdd': ['31', '32'],  # VDDA
+      'Vss': ['33'],  # 33 is EP
+      'GPIO2': '6',
+      'EN': '7',
+      'GPIO8': '14',
+      'GPIO9': '15',
+      'RXD': '27',  # U0RXD, GPIO20
+      'TXD': '28',  # U0TXD, GPIO21
+    })
+
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.lna_in = self.Port(Passive())
@@ -237,32 +261,6 @@ class Esp32c3_Device(Esp32c3_Base, FootprintBlock, JlcPart):
     # 10ppm requirement from ESP32-C3-WROOM schematic, and in ESP32 hardware design guidelines
     self.xtal = self.Port(CrystalDriver(frequency_limits=40*MHertz(tol=10e-6),
                                         voltage_out=self.pwr.link().voltage))
-
-  def _system_pinmap(self) -> Dict[str, CircuitPort]:
-    return VariantPinRemapper(super()._system_pinmap()).remap({
-      'Vdd': ['31', '32'],  # VDDA
-      'Vss': ['33'],  # 33 is EP
-      'GPIO2': '6',
-      'EN': '7',
-      'GPIO8': '14',
-      'GPIO9': '15',
-      'RXD': '27',  # U0RXD, GPIO20
-      'TXD': '28',  # U0TXD, GPIO21
-    })
-
-  def _io_pinmap(self) -> PinMapUtil:
-    return super()._io_pinmap().remap_pins({
-      'GPIO0': '4',
-      'GPIO1': '5',
-      'GPIO3': '8',
-      'MTMS': '9',  # GPIO4
-      'MTDI': '10',  # GPIO5
-      'MTCK': '12',  # GPIO6
-      'MTDO': '13',  # GPIO7
-      'GPIO10': '16',
-      'GPIO18': '25',
-      'GPIO19': '26',
-    })
 
   def generate(self) -> None:
     super().generate()

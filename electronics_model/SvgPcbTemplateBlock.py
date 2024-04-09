@@ -2,7 +2,6 @@ from typing import Optional
 
 from edg_core import *
 from abc import abstractmethod
-import edgir
 
 
 class SvgPcbTemplateBlock(Block):
@@ -19,7 +18,8 @@ class SvgPcbTemplateBlock(Block):
 
     def _svgpcb_pathname(self) -> str:
         """Infrastructure method, returns the pathname for this Block as a JS-code-friendly string."""
-        return '_'.join(self._svgpcb_pathname_data.to_tuple())
+        from .SvgPcbBackend import SvgPcbBackend
+        return SvgPcbBackend._pathname_to_svbpcb(self._svgpcb_pathname_data)
 
     def _svgpcb_get(self, param: ConstraintExpr) -> Optional[str]:
         """Infrastructure method, returns the value of the ConstraintExpr as a JS literal.
@@ -30,6 +30,7 @@ class SvgPcbTemplateBlock(Block):
         param_val = self._svgpcb_design.get_value(param_path)
         if param_val is None:
             return None
+        # TODO structure the output to be JS-friendly
         return str(param_val)
 
     def _svgpcb_fn_name(self) -> str:
@@ -45,5 +46,7 @@ class SvgPcbTemplateBlock(Block):
 
         Footprint IDs should be prefixed with _svgpcb_pathname, using underscores as additional separators.
         Use _svgpcb_get to get parameter values.
+
+        Should include a trailing newline.
         """
         raise NotImplementedError("implement me!")
