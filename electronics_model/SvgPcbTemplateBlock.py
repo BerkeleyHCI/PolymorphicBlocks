@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Optional, Any
 
 from edg_core import *
+from edg_core.ConstraintExpr import ConstraintExpr
 from abc import abstractmethod
 
 
@@ -21,7 +22,7 @@ class SvgPcbTemplateBlock(Block):
         from .SvgPcbBackend import SvgPcbBackend
         return SvgPcbBackend._pathname_to_svbpcb(self._svgpcb_pathname_data)
 
-    def _svgpcb_get(self, param: ConstraintExpr) -> Optional[str]:
+    def _svgpcb_get(self, param: ConstraintExpr[Any, Any]) -> Optional[str]:
         """Infrastructure method, returns the value of the ConstraintExpr as a JS literal.
         Ranges are mapped to a two-element list."""
         param_path = self._svgpcb_ref_map.get(param, None)
