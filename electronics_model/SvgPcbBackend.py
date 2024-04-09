@@ -1,6 +1,6 @@
 import importlib
 import inspect
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, NamedTuple
 
 import edgir
 from edg_core import BaseBackend, CompiledDesign, TransformUtil
@@ -23,11 +23,16 @@ class SvgPcbBackend(BaseBackend):
     ]
 
 
+class SvgPcbGeneratedBlock(NamedTuple):
+  name: str
+  svgpcb_code: str
+
+
 class SvgPcbTransform(TransformUtil.Transform):
   """Collects all SVGPCB blocks and initializes them."""
   def __init__(self, design: CompiledDesign):
     self.design = design
-    self._svgpcb_blocks: List[Tuple[TransformUtil.Path, SvgPcbTemplateBlock]] = {}
+    self._svgpcb_blocks: List[Tuple[TransformUtil.Path, SvgPcbGeneratedBlock]] = []
 
   def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
     # TODO: dedup w/ class_from_library in edg_hdl_server
@@ -38,7 +43,11 @@ class SvgPcbTransform(TransformUtil.Transform):
     if issubclass(cls, SvgPcbTemplateBlock):
       generator_obj = cls()
       generator_obj._svgpcb_init()
-      print(generator_obj)
+      self._svgpcb_blocks.append((context.path,
+                                  SvgPcbGeneratedBlock(
+                                    generator_obj._svgpcb_fn_name(),
+                                    generator_obj._svgpcb_template(),
+                                  )))
     else:
       pass
 
