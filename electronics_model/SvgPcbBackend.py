@@ -1,11 +1,10 @@
 import importlib
 import inspect
 from typing import List, Tuple, Dict, NamedTuple
-from . import footprint as kicad
 
 import edgir
 from edg_core import BaseBackend, CompiledDesign, TransformUtil
-from .NetlistGenerator import NetlistTransform
+from .NetlistGenerator import NetlistTransform, NetBlock, NetPin
 from .SvgPcbTemplateBlock import SvgPcbTemplateBlock
 
 
@@ -14,17 +13,16 @@ class SvgPcbBackend(BaseBackend):
   using block templates (if available) or bare footprints for other components.
   """
   @classmethod
-  def _block_matches_prefixes(cls, block: kicad.NetBlock, prefixes: List[List[str]]):
+  def _block_matches_prefixes(cls, block: NetBlock, prefixes: List[List[str]]):
     for prefix in prefixes:
       if block.path[0:min(len(block.path), len(prefix))] == prefix:
         return True
     return False
 
   @classmethod
-  def _filter_blocks_by_pathname(cls, blocks: Dict[str, kicad.NetBlock], exclude_prefixes: List[List[str]]) ->\
-          Dict[str, kicad.NetBlock]:
-    return {name: block for name, block in blocks.items()
-            if not cls._block_matches_prefixes(block, exclude_prefixes)}
+  def _filter_blocks_by_pathname(cls, blocks: List[NetBlock], exclude_prefixes: List[List[str]]) -> List[NetBlock]:
+    return [block for block in blocks
+            if not cls._block_matches_prefixes(block, exclude_prefixes)]
 
   @classmethod
   def _pathname_to_svbpcb(cls, path: TransformUtil.Path) -> str:
@@ -38,7 +36,7 @@ class SvgPcbBackend(BaseBackend):
   def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]:
     svgpcb_blocks = SvgPcbTransform(design).run()
     svgpcb_block_prefixes = [list(path.to_tuple()) for path, block in svgpcb_blocks]
-    netlist = NetlistTransform(design, refdes_mode="pathName").run()
+    netlist = NetlistTransform(design).run()
     other_blocks = self._filter_blocks_by_pathname(netlist.blocks, svgpcb_block_prefixes)
 
     functions_definitions = '\n'.join([block.svgpcb_code for path, block in svgpcb_blocks])
@@ -49,11 +47,11 @@ class SvgPcbBackend(BaseBackend):
     other_block_instantiations = ''.join([
       # TODO path from NetlistTransform should preserve LocalPath type
       f"""\
-const {path.replace('.', '_')} = board.add({self._footprint_to_svgpcb(block.footprint)}, {{
+const {'.'.join(block.path)} = board.add({self._footprint_to_svgpcb(block.footprint)}, {{
   translate: pt(0, 0), rotate: 0,
-  id: '{path.replace('.', '_')}'
+  id: '{'.'.join(block.path)}'
 }})\n"""
-      for path, block in other_blocks.items()
+      for block in other_blocks
     ])
 
     nets_pins_code = {name: ', '.join([

@@ -62,7 +62,7 @@ def gen_block_prop_refdes(refdes: str) -> str:
 def gen_block_prop_part(part: str) -> str:
   return f'(property (name "edg_part") (value "{part}"))'
 
-def block_exp(block_dict: Mapping[str, NetBlock]) -> str:
+def block_exp(blocks: List[NetBlock], refdes_pathname: bool) -> str:
         """Given a dictionary of block_names (strings) as keys and Blocks (namedtuples) as corresponding values
 
         Example:
@@ -75,11 +75,14 @@ def block_exp(block_dict: Mapping[str, NetBlock]) -> str:
         (value 1k)
         (footprint OptoDevice:R_LDR_4.9x4.2mm_P2.54mm_Vertical)
         (tstamp R3))
-
         """
         result = '(components' 
-        for block_name, block in block_dict.items():
-            result += '\n' + gen_block_comp(block_name) + '\n' +\
+        for block in blocks:
+            if refdes_pathname:
+                block_ref = '.'.join(block.path)
+            else:
+                block_ref = block.refdes
+            result += '\n' + gen_block_comp(block_ref) + '\n' +\
                       "  " + gen_block_value(block.value) + '\n' + \
                       "  " + gen_block_footprint(block.footprint) + '\n' + \
                       "  " + gen_block_prop_sheetname(block.path) + '\n' + \
@@ -131,5 +134,5 @@ def net_exp(nets: Mapping[str, List[NetPin]]) -> str:
 """4. Generate Full Netlist"""
 
 
-def generate_netlist(blocks_dict: Mapping[str, NetBlock], nets_dict: Mapping[str, List[NetPin]]) -> str:
-    return gen_header() + '\n' + block_exp(blocks_dict) + '\n' + net_exp(nets_dict) + '\n' + ')'
+def generate_netlist(blocks: List[NetBlock], nets_dict: Mapping[str, List[NetPin]], refdes_pathname: bool) -> str:
+    return gen_header() + '\n' + block_exp(blocks, refdes_pathname) + '\n' + net_exp(nets_dict) + '\n' + ')'

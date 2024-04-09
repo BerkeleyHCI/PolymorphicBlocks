@@ -28,7 +28,7 @@ class NetPin(NamedTuple):
   pin_name: str
 
 class Netlist(NamedTuple):  # TODO use TransformUtil.Path across the board
-  blocks: Dict[str, NetBlock]  # block name: footprint name
+  blocks: List[NetBlock]  # block name defined in the block itself
   nets: Dict[str, List[NetPin]]  # net name: list of member pins
 
 
@@ -53,7 +53,7 @@ class NetlistTransform(TransformUtil.Transform):
     else:
       raise ValueError(f"don't know how to flatten netlistable port {port}")
 
-  def __init__(self, design: CompiledDesign, refdes_mode: str = "pathName"):
+  def __init__(self, design: CompiledDesign):
     self.blocks: Blocks = {}
     self.edges: Edges = {}
     self.assert_connected: AssertConnected = []
@@ -63,7 +63,6 @@ class NetlistTransform(TransformUtil.Transform):
     self.names: Names = {}
 
     self.design = design
-    self.refdes_mode = refdes_mode
 
   def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
     # generate short paths for children first
@@ -166,12 +165,7 @@ class NetlistTransform(TransformUtil.Transform):
         self.class_paths[path],
       )
 
-      if self.refdes_mode == "pathName":
-        self.names[path] = self.short_paths[path]
-      elif self.refdes_mode == "refdes":
-        self.names[path] = TransformUtil.Path.empty().append_block(refdes)
-      else:
-        raise ValueError(f"Invalid valueMode value {self.refdes_mode}")
+      self.names[path] = self.short_paths[path]
 
       for pin_spec in footprint_pinning:
         assert isinstance(pin_spec, str)
@@ -351,8 +345,7 @@ class NetlistTransform(TransformUtil.Transform):
     named_nets = {self.name_net([name_pin(pin) for pin in net], net_prefix): net
                   for net in nets}
 
-    netlist_blocks = {str(self.names[block_path]): block
-                      for block_path, block in self.blocks.items()}
+    netlist_blocks = [block for path, block in self.blocks.items()]
     netlist_nets = {name: [self.path_to_pin(self.names[pin])
                             for pin in net if pin in self.names]
                     for name, net in named_nets.items()}
