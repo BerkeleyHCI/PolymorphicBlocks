@@ -14,15 +14,15 @@ class SvgPcbBackend(BaseBackend):
   using block templates (if available) or bare footprints for other components.
   """
   @classmethod
-  def _block_matches_prefixes(cls, block: kicad.Block, prefixes: List[List[str]]):
+  def _block_matches_prefixes(cls, block: kicad.NetBlock, prefixes: List[List[str]]):
     for prefix in prefixes:
       if block.path[0:min(len(block.path), len(prefix))] == prefix:
         return True
     return False
 
   @classmethod
-  def _filter_blocks_by_pathname(cls, blocks: Dict[str, kicad.Block], exclude_prefixes: List[List[str]]) ->\
-          Dict[str, kicad.Block]:
+  def _filter_blocks_by_pathname(cls, blocks: Dict[str, kicad.NetBlock], exclude_prefixes: List[List[str]]) ->\
+          Dict[str, kicad.NetBlock]:
     return {name: block for name, block in blocks.items()
             if not cls._block_matches_prefixes(block, exclude_prefixes)}
 

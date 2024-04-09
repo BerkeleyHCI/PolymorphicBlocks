@@ -2,7 +2,7 @@ import unittest
 
 from edg_core import *
 from .CircuitPackingBlock import PackedVoltageSource
-from .footprint import Pin, Block as FBlock  # TODO cleanup naming
+from .footprint import NetPin, NetBlock
 from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink
 from .test_netlist import NetlistTestCase
 
@@ -75,19 +75,19 @@ class MultipackNetlistTestCase(unittest.TestCase):
     net = NetlistTestCase.generate_net(TestPackedDevices)
 
     self.assertEqual(net.nets['vpos'], [
-      Pin('source', '1'),
-      Pin('sink', '1')
+      NetPin('source', '1'),
+      NetPin('sink', '1')
     ])
     self.assertEqual(net.nets['gnd'], [
-      Pin('source', '2'),
-      Pin('sink', '2')
+      NetPin('source', '2'),
+      NetPin('sink', '2')
     ])
-    self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
-                                                  ['source'], ['source'],
-                                                  ['electronics_model.test_netlist.TestFakeSource']))
-    self.assertEqual(net.blocks['sink'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                                                ['sink', 'device'], ['sink'],
-                                                ['electronics_model.test_multipack_netlist.TestPackedSink']))
+    self.assertEqual(net.blocks['source'], NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
+                                                    ['source'], ['source'],
+                                                    ['electronics_model.test_netlist.TestFakeSource']))
+    self.assertEqual(net.blocks['sink'], NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
+                                                  ['sink', 'device'], ['sink'],
+                                                  ['electronics_model.test_multipack_netlist.TestPackedSink']))
 
   def test_invalid_netlist(self) -> None:
     from .NetlistGenerator import InvalidPackingException

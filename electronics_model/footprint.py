@@ -1,17 +1,20 @@
 import zlib  # for deterministic hash
 from typing import NamedTuple, List, Mapping
 
+import edgir
+from edg_core import TransformUtil
 
-class Block(NamedTuple):
+
+class NetBlock(NamedTuple):
   footprint: str
   refdes: str
   part: str
   value: str  # gets written directly to footprint
-  full_path: List[str]  # short path to this footprint
+  full_path: List[str]  # full path to this footprint
   path: List[str]  # short path to this footprint
   class_path: List[str]  # classes on short path to this footprint
 
-class Pin(NamedTuple):
+class NetPin(NamedTuple):
   block_name: str
   pin_name: str
 
@@ -74,7 +77,7 @@ def gen_block_prop_refdes(refdes: str) -> str:
 def gen_block_prop_part(part: str) -> str:
   return f'(property (name "edg_part") (value "{part}"))'
 
-def block_exp(block_dict: Mapping[str, Block]) -> str:
+def block_exp(block_dict: Mapping[str, NetBlock]) -> str:
         """Given a dictionary of block_names (strings) as keys and Blocks (namedtuples) as corresponding values
 
         Example:
@@ -114,7 +117,7 @@ def gen_net_header(net_count: int, net_name: str) -> str:
 def gen_net_pin(block_name: str, pin_name: str) -> str:
     return "(node (ref {}) (pin {}))".format(block_name, pin_name)
 
-def net_exp(nets: Mapping[str, List[Pin]]) -> str:
+def net_exp(nets: Mapping[str, List[NetPin]]) -> str:
         """Given a dictionary of net names (strings) as keys and a list of connected Pins (namedtuples) as corresponding values
 
         Example:
@@ -143,5 +146,5 @@ def net_exp(nets: Mapping[str, List[Pin]]) -> str:
 """4. Generate Full Netlist"""
 
 
-def generate_netlist(blocks_dict: Mapping[str, Block], nets_dict: Mapping[str, List[Pin]]) -> str:
+def generate_netlist(blocks_dict: Mapping[str, NetBlock], nets_dict: Mapping[str, List[NetPin]]) -> str:
     return gen_header() + '\n' + block_exp(blocks_dict) + '\n' + net_exp(nets_dict) + '\n' + ')'

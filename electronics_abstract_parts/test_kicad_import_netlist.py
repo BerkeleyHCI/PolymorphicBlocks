@@ -6,7 +6,7 @@ from electronics_model import FootprintBlock, Passive
 from electronics_abstract_parts import Resistor
 from electronics_model.test_netlist import NetlistTestCase
 from electronics_model.test_kicad_import_blackbox import KiCadBlackboxBlock
-from electronics_model.footprint import Pin, Block as FBlock  # TODO cleanup naming
+from electronics_model.footprint import NetPin, NetBlock
 
 
 class PassiveDummy(Block):
@@ -42,28 +42,28 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
     ))
     # note, dut pruned out from paths since it's the only block in the top-level
     self.assertEqual(net.nets['pwr'], [
-      Pin('U1', '1')
+      NetPin('U1', '1')
     ])
     self.assertEqual(net.nets['gnd'], [
-      Pin('U1', '3')
+      NetPin('U1', '3')
     ])
     self.assertEqual(net.nets['node.0'], [
-      Pin('U1', '2'),
-      Pin('res', '1')
+      NetPin('U1', '2'),
+      NetPin('res', '1')
     ])
     self.assertEqual(net.nets['out'], [
-      Pin('res', '2')
+      NetPin('res', '2')
     ])
-    self.assertEqual(net.blocks['U1'], FBlock('Package_TO_SOT_SMD:SOT-23', 'U1',
-                                              # expected value is wonky because netlisting combines part and value
-                                              'Sensor_Temperature:MCP9700AT-ETT', 'MCP9700AT-ETT',
-                                              ['dut', 'U1'], ['U1'],
-                                              ['electronics_model.KiCadSchematicBlock.KiCadBlackbox']))
-    self.assertEqual(net.blocks['SYM1'], FBlock('Symbol:Symbol_ESD-Logo_CopperTop', 'SYM1',
+    self.assertEqual(net.blocks['U1'], NetBlock('Package_TO_SOT_SMD:SOT-23', 'U1',
                                                 # expected value is wonky because netlisting combines part and value
-                                                'Graphic:SYM_ESD_Small', 'SYM_ESD_Small',
-                                                ['dut', 'SYM1'], ['SYM1'],
+                                                'Sensor_Temperature:MCP9700AT-ETT', 'MCP9700AT-ETT',
+                                                ['dut', 'U1'], ['U1'],
                                                 ['electronics_model.KiCadSchematicBlock.KiCadBlackbox']))
-    self.assertEqual(net.blocks['res'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '',
-                                               ['dut', 'res'], ['res'],
-                                               ['electronics_abstract_parts.test_kicad_import_netlist.DummyResistor']))
+    self.assertEqual(net.blocks['SYM1'], NetBlock('Symbol:Symbol_ESD-Logo_CopperTop', 'SYM1',
+                                                  # expected value is wonky because netlisting combines part and value
+                                                  'Graphic:SYM_ESD_Small', 'SYM_ESD_Small',
+                                                  ['dut', 'SYM1'], ['SYM1'],
+                                                  ['electronics_model.KiCadSchematicBlock.KiCadBlackbox']))
+    self.assertEqual(net.blocks['res'], NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '',
+                                                 ['dut', 'res'], ['res'],
+                                                 ['electronics_abstract_parts.test_kicad_import_netlist.DummyResistor']))

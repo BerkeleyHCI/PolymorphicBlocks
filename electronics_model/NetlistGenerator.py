@@ -16,20 +16,20 @@ class InvalidPackingException(BaseException):
 
 
 class Netlist(NamedTuple):  # TODO use TransformUtil.Path across the board
-  blocks: Dict[str, kicad.Block]  # block name: footprint name
-  nets: Dict[str, List[kicad.Pin]]  # net name: list of member pins
+  blocks: Dict[str, kicad.NetBlock]  # block name: footprint name
+  nets: Dict[str, List[kicad.NetPin]]  # net name: list of member pins
 
 
-Blocks = Dict[TransformUtil.Path, kicad.Block]  # path -> Block
+Blocks = Dict[TransformUtil.Path, kicad.NetBlock]  # path -> Block
 Edges = Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Pins (block name, port / pin name) -> net-connected Pins
 AssertConnected = List[Tuple[TransformUtil.Path, TransformUtil.Path]]
 Names = Dict[TransformUtil.Path, TransformUtil.Path]  # Path -> shortened path name
 ClassPaths = Dict[TransformUtil.Path, List[str]]  # Path -> class names corresponding to shortened path name
 class NetlistTransform(TransformUtil.Transform):
   @staticmethod
-  def path_to_pin(path: TransformUtil.Path) -> kicad.Pin:
+  def path_to_pin(path: TransformUtil.Path) -> kicad.NetPin:
     assert not path.links and not path.params
-    return kicad.Pin('.'.join(path.blocks), '.'.join(path.ports))
+    return kicad.NetPin('.'.join(path.blocks), '.'.join(path.ports))
 
   @staticmethod
   def flatten_port(path: TransformUtil.Path, port: edgir.PortLike) -> Iterable[TransformUtil.Path]:
@@ -144,7 +144,7 @@ class NetlistTransform(TransformUtil.Transform):
       ]
       part_str = " ".join(filter(None, part_comps))
       value_str = value if value else (part if part else '')
-      self.blocks[path] = kicad.Block(
+      self.blocks[path] = kicad.NetBlock(
         footprint_name,
         refdes,
         part_str,
