@@ -156,7 +156,7 @@ class NetlistTransform(TransformUtil.Transform):
         pin_port_path = edgir.LocalPathList(pin_spec_split[1].split('.'))
 
         src_path = path.follow(pin_port_path, block)[0]
-        assert src_path not in self.pins
+        self.edges.setdefault(src_path, [])  # make sure there is a port entry so single-pin nets are named
         self.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
 
     for constraint_pair in block.constraints:

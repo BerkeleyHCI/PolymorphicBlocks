@@ -128,7 +128,7 @@ def net_exp(nets: List[Net], blocks: List[NetBlock], refdes_pathname: bool) -> s
 
         result = '(nets'
         for i, net in enumerate(nets):
-            result += '\n' + gen_net_header(i, net.name)
+            result += '\n' + gen_net_header(i + 1, net.name)
             for pin in net.pins:
                 result += '\n  ' + gen_net_pin(block_name(block_dict[pin.block_path], refdes_pathname), pin.pin_name)
             result += ')'
