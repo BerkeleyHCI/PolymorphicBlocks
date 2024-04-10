@@ -10,7 +10,17 @@ class SvgPcbTemplateBlock(Block):
 
     A Block that can generate a SVG-PCB (https://github.com/leomcelroy/svg-pcb) layout template.
     This defines the per-class methods (including per-class code generation), the actual board-level code composition
-    and generation of non-templated footprints exists in the backend."""
+    and generation of non-templated footprints exists in the backend.
+
+    This defines the interface and supporting utilities only."""
+    @staticmethod
+    def _svgpcb_pathname_to_svgpcb(path: TransformUtil.Path):
+        return '_'.join(path.to_tuple())
+
+    @staticmethod
+    def _svgpcb_footprint_to_svgpcb(footprint: str) -> str:  # KiCad footprint name to SVGPCB reference
+        return footprint.split(':')[-1].replace('-', '_').replace(' ', '_').replace('.', '_')
+
     def _svgpcb_init(self, pathname: TransformUtil.Path, design: CompiledDesign) -> None:
         """Initializes this Block for SVGPCB template generation. Called from the backend."""
         self._svgpcb_pathname_data = pathname
@@ -19,8 +29,7 @@ class SvgPcbTemplateBlock(Block):
 
     def _svgpcb_pathname(self) -> str:
         """Infrastructure method, returns the pathname for this Block as a JS-code-friendly string."""
-        from .SvgPcbBackend import SvgPcbBackend
-        return SvgPcbBackend._pathname_to_svbpcb(self._svgpcb_pathname_data)
+        return self._svgpcb_pathname_to_svgpcb(self._svgpcb_pathname_data)
 
     def _svgpcb_get(self, param: ConstraintExpr[Any, Any]) -> Optional[str]:
         """Infrastructure method, returns the value of the ConstraintExpr as a JS literal.
