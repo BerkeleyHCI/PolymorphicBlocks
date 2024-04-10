@@ -45,7 +45,6 @@ class SvgPcbBackend(BaseBackend):
       for path, block in svgpcb_blocks
     ])
     other_block_instantiations = ''.join([
-      # TODO path from NetlistTransform should preserve LocalPath type
       f"""\
 const {'_'.join(block.path)} = board.add({self._footprint_to_svgpcb(block.footprint)}, {{
   translate: pt(0, 0), rotate: 0,
