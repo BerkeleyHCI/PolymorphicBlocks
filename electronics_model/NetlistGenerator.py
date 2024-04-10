@@ -19,43 +19,28 @@ class NetBlock(NamedTuple):
   refdes: str
   part: str
   value: str  # gets written directly to footprint
-  full_path: List[str]  # full path to this footprint
+  full_path: TransformUtil.Path  # full path to this footprint
   path: List[str]  # short path to this footprint
-  class_path: List[str]  # classes on short path to this footprint
-
-# class NetPin(NamedTuple):
-#   block_path: TransformUtil.Path  # full path to the block
-#   pin_name: str
-#
-# class Net(NamedTuple):
-#   name: str
-#   pins: List[NetPin]
-#
-# class Netlist(NamedTuple):
-#   blocks: List[NetBlock]
-#   nets: List[Net]
-
+  class_path: List[edgir.LibraryPath]  # classes on short path to this footprint
 
 class NetPin(NamedTuple):
-  block_name: str
+  block_path: TransformUtil.Path  # full path to the block
   pin_name: str
 
-class Netlist(NamedTuple):  # TODO use TransformUtil.Path across the board
-  blocks: List[NetBlock]  # block name defined in the block itself
-  nets: Dict[str, List[NetPin]]  # net name: list of member pins
+class Net(NamedTuple):
+  name: str
+  pins: List[NetPin]
+
+class Netlist(NamedTuple):
+  blocks: List[NetBlock]
+  nets: List[Net]
 
 
-Blocks = Dict[TransformUtil.Path, NetBlock]  # path -> Block
-Edges = Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Pins (block name, port / pin name) -> net-connected Pins
+Blocks = Dict[TransformUtil.Path, NetBlock]  # Path -> Block
+Edges = Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Port Path -> connected Port Paths
 AssertConnected = List[Tuple[TransformUtil.Path, TransformUtil.Path]]
-Names = Dict[TransformUtil.Path, TransformUtil.Path]  # Path -> shortened path name
-ClassPaths = Dict[TransformUtil.Path, List[str]]  # Path -> class names corresponding to shortened path name
+ClassPaths = Dict[TransformUtil.Path, List[edgir.LibraryPath]]  # Path -> class names corresponding to shortened path name
 class NetlistTransform(TransformUtil.Transform):
-  @staticmethod
-  def path_to_pin(path: TransformUtil.Path) -> NetPin:
-    assert not path.links and not path.params
-    return NetPin('.'.join(path.blocks), '.'.join(path.ports))
-
   @staticmethod
   def flatten_port(path: TransformUtil.Path, port: edgir.PortLike) -> Iterable[TransformUtil.Path]:
     if port.HasField('port'):
@@ -68,12 +53,11 @@ class NetlistTransform(TransformUtil.Transform):
 
   def __init__(self, design: CompiledDesign):
     self.blocks: Blocks = {}
-    self.edges: Edges = {}
+    self.edges: Edges = {}  # as port Paths, including intermediates
+    self.pins: Dict[TransformUtil.Path, NetPin] = {}  # mapping from Port to pad
     self.assert_connected: AssertConnected = []
-    self.short_paths: Names = {TransformUtil.Path.empty(): TransformUtil.Path.empty()}  # seed root
+    self.short_paths: Dict[TransformUtil.Path, List[str]] = {TransformUtil.Path.empty(): []}  # seed root
     self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
-    self.pins: Set[TransformUtil.Path] = set()
-    self.names: Names = {}
 
     self.design = design
 
@@ -81,20 +65,6 @@ class NetlistTransform(TransformUtil.Transform):
     # generate short paths for children first
     short_path = self.short_paths[path]
     class_path = self.class_paths[path]
-
-    # TODO handle mixed net/connect operations
-    if isinstance(block, edgir.Link) and 'nets' in block.meta.members.node:
-      # Consolidate single-net link ports into just the link
-      for port_pair in block.ports:
-        self.short_paths[path.append_port(port_pair.name)] = short_path
-
-    else:
-      for port_pair in block.ports:
-        self.short_paths[path.append_port(port_pair.name)] = short_path.append_port(port_pair.name)
-
-    for link_pair in block.links:
-      self.short_paths[path.append_link(link_pair.name)] = short_path.append_link(link_pair.name)
-      self.class_paths[path.append_link(link_pair.name)] = class_path + [link_pair.value.link.self_class.target.name]
 
     main_internal_blocks: Dict[str, edgir.BlockLike] = {}
     other_internal_blocks: Dict[str, edgir.BlockLike] = {}
@@ -113,12 +83,12 @@ class NetlistTransform(TransformUtil.Transform):
       self.class_paths[path.append_block(name)] = class_path
     else:
       for (name, subblock) in main_internal_blocks.items():
-        self.short_paths[path.append_block(name)] = short_path.append_block(name)
-        self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class.target.name]
+        self.short_paths[path.append_block(name)] = short_path + [name]
+        self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
 
     for (name, subblock) in other_internal_blocks.items():
-      self.short_paths[path.append_block(name)] = short_path.append_block(name)
-      self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class.target.name]
+      self.short_paths[path.append_block(name)] = short_path + [name]
+      self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
 
     if 'nets' in block.meta.members.node:
       # add all-pairs edges
@@ -173,12 +143,10 @@ class NetlistTransform(TransformUtil.Transform):
         refdes,
         part_str,
         value_str,
-        list(path.blocks),
-        list(self.short_paths[path].blocks),
+        path,
+        self.short_paths[path],
         self.class_paths[path],
       )
-
-      self.names[path] = self.short_paths[path]
 
       for pin_spec in footprint_pinning:
         assert isinstance(pin_spec, str)
@@ -187,17 +155,9 @@ class NetlistTransform(TransformUtil.Transform):
         pin_name = pin_spec_split[0]
         port_path = edgir.LocalPathList(pin_spec_split[1].split('.'))
 
-        pin_path = path.append_port(pin_name)
-        self.pins.add(pin_path)
-        self.short_paths[pin_path] = short_path.append_port(pin_name)
-
         src_path = path.follow(port_path, block)[0]
-
-        # Create a unidirectional edge from the port to the footprint pin
-        self.edges.setdefault(src_path, []).append(pin_path)
-        self.edges.setdefault(pin_path, [])  # create a dummy entry
-
-        self.names[pin_path] = self.names[path].append_port(pin_name)
+        assert src_path not in self.pins
+        self.pins[src_path] = NetPin(path, pin_name)
 
     for constraint_pair in block.constraints:
       if constraint_pair.value.HasField('connected'):
@@ -252,17 +212,6 @@ class NetlistTransform(TransformUtil.Transform):
     else:
       raise ValueError(f"can't connect types {elt1}, {elt2}")
 
-  def visit_portlike(self, context: TransformUtil.TransformContext, port: edgir.PortLike) -> None:
-    self.pins.add(context.path)
-
-    short_path = self.short_paths[context.path]
-    if port.HasField('bundle'):  # TODO maybe shorten if just one?
-      for port_pair in port.bundle.ports:
-        self.short_paths[context.path.append_port(port_pair.name)] = short_path.append_port(port_pair.name)
-    elif port.HasField('array') and port.array.HasField('ports'):
-      for port_pair in port.array.ports.ports:
-        self.short_paths[context.path.append_port(port_pair.name)] = short_path.append_port(port_pair.name)
-
   def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
     self.process_blocklike(context.path, block)
 
@@ -312,15 +261,9 @@ class NetlistTransform(TransformUtil.Transform):
   def run(self) -> Netlist:
     self.transform_design(self.design.design)
 
-    # Sanity check to ensure all pins exist
-    for pin_src, pins_dst in self.edges.items():
-      assert pin_src in self.pins, f"missing net edge src pin {pin_src}"
-      for pin_dst in pins_dst:
-        assert pin_dst in self.pins, f"missing net edge dst pin {pin_dst}"
-
     # Convert to the netlist format
     seen: Set[TransformUtil.Path] = set()
-    nets: List[List[TransformUtil.Path]] = []  # use lists instead of sets to preserve ordering
+    nets: List[List[TransformUtil.Path]] = []  # lists preserve ordering
 
     for port, conns in self.edges.items():
       if port not in seen:
@@ -343,24 +286,17 @@ class NetlistTransform(TransformUtil.Transform):
       if pin_to_net[connected1] is not pin_to_net[connected2]:
         raise InvalidPackingException(f"packed pins {connected1}, {connected2} not connected")
 
-    def name_pin(pin: TransformUtil.Path) -> TransformUtil.Path:
-      if pin in self.short_paths:
-        return self.short_paths[pin]
-      else:
-        return pin
-
     board_refdes_prefix = self.design.get_value(('refdes_prefix',))
     if board_refdes_prefix is not None:
       assert isinstance(board_refdes_prefix, str)
       net_prefix = board_refdes_prefix
     else:
       net_prefix = ''
-    named_nets = {self.name_net([name_pin(pin) for pin in net], net_prefix): net
+    named_nets = {self.name_net(net, net_prefix): net
                   for net in nets}
 
     netlist_blocks = [block for path, block in self.blocks.items()]
-    netlist_nets = {name: [self.path_to_pin(self.names[pin])
-                            for pin in net if pin in self.names]
-                    for name, net in named_nets.items()}
+    netlist_nets = [Net(name, [self.pins[port] for port in net if port in self.pins])
+                    for name, net in named_nets.items()]
 
     return Netlist(netlist_blocks, netlist_nets)

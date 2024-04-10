@@ -19,7 +19,7 @@ class NetlistBackend(BaseBackend):
       raise ValueError(f"Invalid valueMode value {refdes_mode}")
 
     netlist = NetlistTransform(design).run()
-    netlist_string = kicad.generate_netlist(netlist.blocks, netlist.nets, refdes_pathname)
+    netlist_string = kicad.generate_netlist(netlist, refdes_pathname)
 
     return [
       (edgir.LocalPath(), netlist_string)

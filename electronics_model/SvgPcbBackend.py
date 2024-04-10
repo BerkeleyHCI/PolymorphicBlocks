@@ -54,17 +54,17 @@ const {'.'.join(block.path)} = board.add({self._footprint_to_svgpcb(block.footpr
       for block in other_blocks
     ])
 
-    nets_pins_code = {name: ', '.join([
-      f"""["{pin.block_name.replace('.', '_')}", "{pin.pin_name}"]"""
-      for pin in pins
+    nets_pins_code = {net.name: ', '.join([
+      f"""["{'_'.join(pin.block_path.to_tuple())}", "{pin.pin_name}"]"""
+      for pin in net.pins
     ])
-      for name, pins in netlist.nets.items()}
+      for net in netlist.nets}
     nets_code = [f"""\
   {{
-    name: "{name}",
+    name: "{net_name}",
     pads: [{net_code}]
   }}"""
-            for name, net_code in nets_pins_code.items()]
+            for net_name, net_code in nets_pins_code.items()]
     sep = ',\n'  # get past backslashes not allowed in f-strings
     netlist_code = f"""\
 board.setNetlist([

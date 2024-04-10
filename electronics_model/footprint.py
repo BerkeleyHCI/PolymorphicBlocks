@@ -1,6 +1,6 @@
 import zlib  # for deterministic hash
 from typing import List, Mapping
-from .NetlistGenerator import NetBlock, NetPin
+from .NetlistGenerator import Netlist, NetBlock, NetPin
 
 
 ###############################################################################################################################################################################################
@@ -134,5 +134,7 @@ def net_exp(nets: Mapping[str, List[NetPin]]) -> str:
 """4. Generate Full Netlist"""
 
 
-def generate_netlist(blocks: List[NetBlock], nets_dict: Mapping[str, List[NetPin]], refdes_pathname: bool) -> str:
+def generate_netlist(netlist: Netlist, refdes_pathname: bool) -> str:
+    blocks = netlist.blocks
+    nets_dict = netlist.nets
     return gen_header() + '\n' + block_exp(blocks, refdes_pathname) + '\n' + net_exp(nets_dict) + '\n' + ')'
