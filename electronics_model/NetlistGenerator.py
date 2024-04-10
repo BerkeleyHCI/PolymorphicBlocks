@@ -23,6 +23,19 @@ class NetBlock(NamedTuple):
   path: List[str]  # short path to this footprint
   class_path: List[str]  # classes on short path to this footprint
 
+# class NetPin(NamedTuple):
+#   block_path: TransformUtil.Path  # full path to the block
+#   pin_name: str
+#
+# class Net(NamedTuple):
+#   name: str
+#   pins: List[NetPin]
+#
+# class Netlist(NamedTuple):
+#   blocks: List[NetBlock]
+#   nets: List[Net]
+
+
 class NetPin(NamedTuple):
   block_name: str
   pin_name: str
