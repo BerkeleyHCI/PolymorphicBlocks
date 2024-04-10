@@ -759,8 +759,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['oled', 'iref_res', 'require_basic_part'], False),
       ],
       class_values=[
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
-        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
+        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
+        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
 
         # (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
