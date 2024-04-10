@@ -34,12 +34,6 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0
     pts: {{}}
   }}
 
-  // Parameter adjustment handles overlaid onto the board
-  // TODO needs more thought on how this works
-  obj.pts['rowHandle'] = pt(xy[0], xy[1] + rowSpacing)
-  obj.pts['colHandle']  = pt(xy[0] + colSpacing, xy[1])
-  obj.pts['diodeOffset']  = pt(xy[0] + diodeOffset[0], xy[1] + diodeOffset[1])
-
   // Actual generator code
   allColWirePoints = []
   for (let yIndex=0; yIndex < nrows; yIndex++) {{
