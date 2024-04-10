@@ -46,15 +46,15 @@ class SvgPcbBackend(BaseBackend):
     ])
     other_block_instantiations = ''.join([
       f"""\
-const {'_'.join(block.path)} = board.add({self._footprint_to_svgpcb(block.footprint)}, {{
+const {self._pathname_to_svbpcb(block.full_path)} = board.add({self._footprint_to_svgpcb(block.footprint)}, {{
   translate: pt(0, 0), rotate: 0,
-  id: '{'_'.join(block.path)}'
+  id: '{self._pathname_to_svbpcb(block.full_path)}'
 }})\n"""
       for block in other_blocks
     ])
 
     nets_pins_code = {net.name: ', '.join([
-      f"""["{'_'.join(pin.block_path.to_tuple())}", "{pin.pin_name}"]"""
+      f"""["{self._pathname_to_svbpcb(pin.block_path)}", "{pin.pin_name}"]"""
       for pin in net.pins
     ])
       for net in netlist.nets}
