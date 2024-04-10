@@ -6,8 +6,7 @@ from .CircuitBlock import FootprintBlock
 from .DigitalPorts import DigitalSource, DigitalSink
 from .SpiPort import SpiController, SpiPeripheral
 from .UartPort import UartPort
-from .NetlistGenerator import NetPin, NetBlock
-from .test_netlist import NetlistTestCase
+from .test_netlist import NetlistTestCase, Net, NetPin, NetBlock
 
 
 class TestFakeSpiController(FootprintBlock):
@@ -128,29 +127,29 @@ class BundleNetlistTestCase(unittest.TestCase):
   def test_spi_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestSpiCircuit)
 
-    self.assertEqual(net.nets['cs1_link'], [
-      NetPin('controller', '0'),
-      NetPin('peripheral1', '4'),
-    ])
-    self.assertEqual(net.nets['cs2_link'], [
-      NetPin('controller', '1'),
-      NetPin('peripheral2', '4'),
-    ])
-    self.assertEqual(net.nets['spi_link.sck'], [
-      NetPin('controller', '2'),
-      NetPin('peripheral1', '1'),
-      NetPin('peripheral2', '1'),
-    ])
-    self.assertEqual(net.nets['spi_link.mosi'], [
-      NetPin('controller', '4'),
-      NetPin('peripheral1', '2'),
-      NetPin('peripheral2', '2'),
-    ])
-    self.assertEqual(net.nets['spi_link.miso'], [
-      NetPin('controller', '3'),
-      NetPin('peripheral1', '3'),
-      NetPin('peripheral2', '3'),
-    ])
+    self.assertIn(Net('cs1_link', [
+      NetPin(['controller'], '0'),
+      NetPin(['peripheral1'], '4'),
+    ]), net.nets)
+    self.assertIn(Net('cs2_link', [
+      NetPin(['controller'], '1'),
+      NetPin(['peripheral2'], '4'),
+    ]), net.nets)
+    self.assertIn(Net('spi_link.sck', [
+      NetPin(['controller'], '2'),
+      NetPin(['peripheral1'], '1'),
+      NetPin(['peripheral2'], '1'),
+    ]), net.nets)
+    self.assertIn(Net('spi_link.mosi', [
+      NetPin(['controller'], '4'),
+      NetPin(['peripheral1'], '2'),
+      NetPin(['peripheral2'], '2'),
+    ]), net.nets)
+    self.assertIn(Net('spi_link.miso', [
+      NetPin(['controller'], '3'),
+      NetPin(['peripheral1'], '3'),
+      NetPin(['peripheral2'], '3'),
+    ]), net.nets)
 
     self.assertIn(NetBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R1', '', 'WeirdSpiController',
                            ['controller'], ['controller'],
@@ -168,14 +167,14 @@ class BundleNetlistTestCase(unittest.TestCase):
   def test_uart_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestUartCircuit)
 
-    self.assertEqual(net.nets['link.a_tx'], [
-      NetPin('a', '1'),
-      NetPin('b', '2')
-    ])
-    self.assertEqual(net.nets['link.b_tx'], [
-      NetPin('a', '2'),
-      NetPin('b', '1')
-    ])
+    self.assertIn(Net('link.a_tx', [
+      NetPin(['a'], '1'),
+      NetPin(['b'], '2')
+    ]), net.nets)
+    self.assertIn(Net('link.b_tx', [
+      NetPin(['a'], '2'),
+      NetPin(['b'], '1')
+    ]), net.nets)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
                            ['a'], ['a'], ['electronics_model.test_bundle_netlist.TestFakeUartBlock']),
                   net.blocks)
@@ -186,16 +185,16 @@ class BundleNetlistTestCase(unittest.TestCase):
   def test_can_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestCanCircuit)
 
-    self.assertEqual(net.nets['link.canh'], [
-      NetPin('node1', '1'),
-      NetPin('node2', '1'),
-      NetPin('node3', '1')
-    ])
-    self.assertEqual(net.nets['link.canl'], [
-      NetPin('node1', '2'),
-      NetPin('node2', '2'),
-      NetPin('node3', '2')
-    ])
+    self.assertIn(Net('link.canh', [
+      NetPin(['node1'], '1'),
+      NetPin(['node2'], '1'),
+      NetPin(['node3'], '1')
+    ]), net.nets)
+    self.assertIn(Net('link.canl', [
+      NetPin(['node1'], '2'),
+      NetPin(['node2'], '2'),
+      NetPin(['node3'], '2')
+    ]), net.nets)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '120',
                            ['node1'], ['node1'], ['electronics_model.test_bundle_netlist.TestFakeCanBlock']),
                   net.blocks)

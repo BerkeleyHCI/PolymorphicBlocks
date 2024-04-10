@@ -2,9 +2,8 @@ import unittest
 
 from edg_core import *
 from .CircuitPackingBlock import PackedVoltageSource
-from .NetlistGenerator import NetPin, NetBlock
 from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink
-from .test_netlist import NetlistTestCase
+from .test_netlist import NetlistTestCase, Net, NetPin, NetBlock
 
 
 class TestFakeSinkElement(TestBaseFakeSink):
@@ -74,14 +73,14 @@ class MultipackNetlistTestCase(unittest.TestCase):
   def test_packed_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestPackedDevices)
 
-    self.assertEqual(net.nets['vpos'], [
-      NetPin('source', '1'),
-      NetPin('sink', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      NetPin('source', '2'),
-      NetPin('sink', '2')
-    ])
+    self.assertIn(Net('vpos', [
+      NetPin(['source'], '1'),
+      NetPin(['sink', 'device'], '1')
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['sink', 'device'], '2')
+    ]), net.nets)
     self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                            ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
                   net.blocks)

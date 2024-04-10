@@ -4,9 +4,8 @@ import unittest
 from edg_core import Block, Range, Refinements, InOut
 from electronics_model import FootprintBlock, Passive
 from electronics_abstract_parts import Resistor
-from electronics_model.test_netlist import NetlistTestCase
+from electronics_model.test_netlist import NetlistTestCase, Net, NetPin, NetBlock
 from electronics_model.test_kicad_import_blackbox import KiCadBlackboxBlock
-from electronics_model.footprint import NetPin, NetBlock
 
 
 class PassiveDummy(Block):
@@ -41,19 +40,19 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
       ]
     ))
     # note, dut pruned out from paths since it's the only block in the top-level
-    self.assertEqual(net.nets['pwr'], [
-      NetPin('U1', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      NetPin('U1', '3')
-    ])
-    self.assertEqual(net.nets['node.0'], [
-      NetPin('U1', '2'),
-      NetPin('res', '1')
-    ])
-    self.assertEqual(net.nets['out'], [
-      NetPin('res', '2')
-    ])
+    self.assertIn(Net('dut.pwr', [
+      NetPin(['dut', 'U1'], '1')
+    ]), net.nets)
+    self.assertIn(Net('dut.gnd', [
+      NetPin(['dut', 'U1'], '3')
+    ]), net.nets)
+    self.assertIn(Net('dut.node', [
+      NetPin(['dut', 'U1'], '2'),
+      NetPin(['dut', 'res'], '1')
+    ]), net.nets)
+    self.assertIn(Net('dut.out', [
+      NetPin(['dut', 'res'], '2')
+    ]), net.nets)
     self.assertIn(NetBlock('Package_TO_SOT_SMD:SOT-23', 'U1',
                            # expected value is wonky because netlisting combines part and value
                            'Sensor_Temperature:MCP9700AT-ETT', 'MCP9700AT-ETT',

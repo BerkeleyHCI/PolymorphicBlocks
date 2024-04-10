@@ -54,7 +54,7 @@ class NetlistTransform(TransformUtil.Transform):
   def __init__(self, design: CompiledDesign):
     self.blocks: Blocks = {}
     self.edges: Edges = {}  # as port Paths, including intermediates
-    self.pins: Dict[TransformUtil.Path, NetPin] = {}  # mapping from Port to pad
+    self.pins: Dict[TransformUtil.Path, List[NetPin]] = {}  # mapping from Port to pad
     self.assert_connected: AssertConnected = []
     self.short_paths: Dict[TransformUtil.Path, List[str]] = {TransformUtil.Path.empty(): []}  # seed root
     self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
@@ -153,11 +153,11 @@ class NetlistTransform(TransformUtil.Transform):
         pin_spec_split = pin_spec.split('=')
         assert len(pin_spec_split) == 2
         pin_name = pin_spec_split[0]
-        port_path = edgir.LocalPathList(pin_spec_split[1].split('.'))
+        pin_port_path = edgir.LocalPathList(pin_spec_split[1].split('.'))
 
-        src_path = path.follow(port_path, block)[0]
+        src_path = path.follow(pin_port_path, block)[0]
         assert src_path not in self.pins
-        self.pins[src_path] = NetPin(path, pin_name)
+        self.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
 
     for constraint_pair in block.constraints:
       if constraint_pair.value.HasField('connected'):
@@ -291,7 +291,7 @@ class NetlistTransform(TransformUtil.Transform):
     named_nets = {self.name_net(net, net_prefix): net for net in nets}
 
     netlist_blocks = [block for path, block in self.blocks.items()]
-    netlist_nets = [Net(name, [self.pins[port] for port in net if port in self.pins])
+    netlist_nets = [Net(name, list(chain(*[self.pins[port] for port in net if port in self.pins])))
                     for name, net in named_nets.items()]
 
     return Netlist(netlist_blocks, netlist_nets)
