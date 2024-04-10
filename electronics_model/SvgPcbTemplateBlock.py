@@ -1,5 +1,6 @@
 from typing import Optional, Any
 
+import edgir
 from edg_core import *
 from edg_core.ConstraintExpr import ConstraintExpr
 from abc import abstractmethod
@@ -42,6 +43,17 @@ class SvgPcbTemplateBlock(Block):
             return None
         # TODO structure the output to be JS-friendly
         return str(param_val)
+
+    def _svgpcb_footprint_of(self, block_name: str) -> Optional[str]:
+        """Infrastructure method, returns the footprint for a sub-block, if there is one footprint.
+        TODO: very very guessy, assumes the block is the footprint (doesn't support levels of wrappers),
+        doesn't check for mutliple footprints"""
+        param_val = self._svgpcb_design.get_value(
+            edgir.localpath_concat(self._svgpcb_pathname_data.to_local_path(), block_name, 'fp_footprint'))
+        if param_val is None:
+            return None
+        assert isinstance(param_val, str)
+        return self._svgpcb_footprint_to_svgpcb(param_val)
 
     def _svgpcb_fn_name(self) -> str:
         """Infrastructure method (optionally user override-able), returns the SVGPCB function name
