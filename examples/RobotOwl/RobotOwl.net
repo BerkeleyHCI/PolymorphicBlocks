@@ -721,7 +721,7 @@
   (node (ref reg_12v.ic) (pin 3))
   (node (ref reg_12v.fb.top_res) (pin 2))
   (node (ref reg_12v.fb.bottom_res) (pin 1)))
-(net (code 21) (name "reg_12v.power_path.switch")
+(net (code 21) (name "reg_12v.(adapter)rect.anode")
   (node (ref reg_12v.ic) (pin 1))
   (node (ref reg_12v.power_path.inductor) (pin 2))
   (node (ref reg_12v.rect) (pin 2)))
