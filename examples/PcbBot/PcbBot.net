@@ -1657,7 +1657,7 @@
   (node (ref npx.led[15]) (pin 4)))
 (net (code 91) (name "npx_key.dout")
   (node (ref npx_key) (pin 2)))
-(net (code 92) (name "cam.(adapter)reset_cap.pos")
+(net (code 92) (name "cam.device.reset")
   (node (ref cam.device) (pin 19))
   (node (ref cam.reset_cap) (pin 1))
   (node (ref cam.reset_pull) (pin 2)))

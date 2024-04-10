@@ -353,7 +353,7 @@
   (node (ref UU1) (pin 27)))
 (net (code 19) (name "Uusbconv.cts")
   (node (ref UU1) (pin 23)))
-(net (code 20) (name "Uusbconv.(adapter)ic.vdd")
+(net (code 20) (name "Uusbconv.ic.vdd")
   (node (ref UU1) (pin 6))
   (node (ref UU1) (pin 9))
   (node (ref UC3) (pin 1)))

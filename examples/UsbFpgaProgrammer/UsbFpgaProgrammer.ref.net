@@ -552,7 +552,7 @@
   (node (ref FFB1) (pin 2))
   (node (ref FC1) (pin 1))
   (node (ref FC2) (pin 1)))
-(net (code 23) (name "Fft232.(adapter)ic.vccd")
+(net (code 23) (name "Fft232.ic.vccd")
   (node (ref FU1) (pin 39))
   (node (ref FU1) (pin 12))
   (node (ref FU1) (pin 24))

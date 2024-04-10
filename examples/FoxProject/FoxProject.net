@@ -917,7 +917,7 @@
   (node (ref epd.boost.boot_cap) (pin 2))
   (node (ref epd.boost.boot_neg_diode) (pin 1))
   (node (ref epd.boost.boot_gnd_diode) (pin 2)))
-(net (code 54) (name "Fcam.(adapter)reset_cap.pos")
+(net (code 54) (name "Fcam.device.reset")
   (node (ref cam.device) (pin 19))
   (node (ref cam.reset_cap) (pin 1))
   (node (ref cam.reset_pull) (pin 2)))
