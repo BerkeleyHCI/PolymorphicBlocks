@@ -1,11 +1,23 @@
 import unittest
-from typing import Type
+from typing import Type, List
 
+import edgir
 from edg_core import *
 from .CircuitBlock import FootprintBlock
-from .NetlistGenerator import NetlistTransform, NetPin, NetBlock
+from .NetlistGenerator import NetlistTransform, NetPin as RawNetPin, NetBlock as RawNetBlock, Net
 from .RefdesRefinementPass import RefdesRefinementPass
 from .VoltagePorts import VoltageSource, VoltageSink
+
+
+# wrapper / convenience constructors
+def NetPin(block_path: List[str], pin_name: str) -> RawNetPin:
+  return RawNetPin(TransformUtil.Path(tuple(block_path), (), (), ()), pin_name)
+
+def NetBlock(footprint: str, refdes: str, part: str, value: str, full_path: List[str], path: List[str],
+             class_path: List[str]) -> RawNetBlock:
+  return RawNetBlock(footprint, refdes, part, value,
+                     TransformUtil.Path(tuple(full_path), (), (), ()), path,
+                     [edgir.libpath(cls) for cls in class_path])
 
 
 class TestFakeSource(FootprintBlock):
@@ -173,34 +185,34 @@ class NetlistTestCase(unittest.TestCase):
   def test_basic_netlist(self) -> None:
     net = self.generate_net(TestBasicCircuit)
 
-    self.assertEqual(net.nets['vpos'], [
-      NetPin('source', '1'),
-      NetPin('sink', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      NetPin('source', '2'),
-      NetPin('sink', '2')
-    ])
+    self.assertIn(Net('vpos', [
+      NetPin(['source'], '1'),
+      NetPin(['sink'], '1')
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['sink'], '2')
+    ]), net.nets)
     self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
-                                                    ['source'], ['source'],
-                                                    ['electronics_model.test_netlist.TestFakeSource']), net.blocks)
+                           ['source'], ['source'],
+                           ['electronics_model.test_netlist.TestFakeSource']), net.blocks)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                                                  ['sink'], ['sink'],
-                                                  ['electronics_model.test_netlist.TestFakeSink']), net.blocks)
+                           ['sink'], ['sink'],
+                           ['electronics_model.test_netlist.TestFakeSink']), net.blocks)
 
   def test_multisink_netlist(self) -> None:
     net = self.generate_net(TestMultisinkCircuit)
 
-    self.assertEqual(net.nets['vpos'], [
-      NetPin('source', '1'),
-      NetPin('sink1', '1'),
-      NetPin('sink2', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      NetPin('source', '2'),
-      NetPin('sink1', '2'),
-      NetPin('sink2', '2')
-    ])
+    self.assertIn(Net('vpos', [
+      NetPin(['source'], '1'),
+      NetPin(['sink1'], '1'),
+      NetPin(['sink2'], '1')
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['sink1'], '2'),
+      NetPin(['sink2'], '2')
+    ]), net.nets)
     self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                            ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
                   net.blocks)
@@ -214,19 +226,19 @@ class NetlistTestCase(unittest.TestCase):
   def test_multinet_netlist(self) -> None:
     net = self.generate_net(TestMultinetCircuit)
 
-    self.assertEqual(net.nets['vin'], [
-      NetPin('source', '1'),
-      NetPin('adapter', '3')
-    ])
-    self.assertEqual(net.nets['vout'], [
-      NetPin('adapter', '2'),
-      NetPin('sink', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      NetPin('source', '2'),
-      NetPin('adapter', '1'),
-      NetPin('sink', '2')
-    ])
+    self.assertIn(Net('vin', [
+      NetPin(['source'], '1'),
+      NetPin(['adapter'], '3')
+    ]), net.nets)
+    self.assertIn(Net('vout', [
+      NetPin(['adapter'], '2'),
+      NetPin(['sink'], '1')
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['adapter'], '1'),
+      NetPin(['sink'], '2')
+    ]), net.nets)
     self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                            ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
                   net.blocks)
@@ -240,14 +252,14 @@ class NetlistTestCase(unittest.TestCase):
   def test_hierarchy_netlist(self) -> None:
     net = self.generate_net(TestHierarchyCircuit)
 
-    self.assertEqual(net.nets['vpos'], [
-      NetPin('source', '1'),
-      NetPin('sink', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      NetPin('source', '2'),
-      NetPin('sink', '2')
-    ])
+    self.assertIn(Net('vpos', [
+      NetPin(['source'], '1'),
+      NetPin(['sink', 'block'], '1')
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['sink', 'block'], '2')
+    ]), net.nets)
     self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                            ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
                   net.blocks)
@@ -258,16 +270,16 @@ class NetlistTestCase(unittest.TestCase):
   def test_dual_hierarchy_netlist(self) -> None:
     net = self.generate_net(TestDualHierarchyCircuit)
 
-    self.assertEqual(net.nets['vpos'], [
-      NetPin('source', '1'),
-      NetPin('sink.block1', '1'),
-      NetPin('sink.block2', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      NetPin('source', '2'),
-      NetPin('sink.block1', '2'),
-      NetPin('sink.block2', '2')
-    ])
+    self.assertIn(Net('vpos', [
+      NetPin(['source'], '1'),
+      NetPin(['sink', 'block1'], '1'),
+      NetPin(['sink', 'block2'], '1')
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['sink', 'block1'], '2'),
+      NetPin(['sink', 'block2'], '2')
+    ]), net.nets)
     self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                            ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
                   net.blocks)

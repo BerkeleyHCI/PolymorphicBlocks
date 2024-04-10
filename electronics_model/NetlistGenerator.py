@@ -62,43 +62,43 @@ class NetlistTransform(TransformUtil.Transform):
     self.design = design
 
   def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
-    # generate short paths for children first
-    short_path = self.short_paths[path]
-    class_path = self.class_paths[path]
-
-    main_internal_blocks: Dict[str, edgir.BlockLike] = {}
-    other_internal_blocks: Dict[str, edgir.BlockLike] = {}
     if isinstance(block, edgir.HierarchyBlock):
-      for block_pair in block.blocks:
-        subblock = block_pair.value
-        # ignore pseudoblocks like bridges and adapters that have no internals
-        if not subblock.hierarchy.blocks and 'fp_is_footprint' not in subblock.hierarchy.meta.members.node:
-          other_internal_blocks[block_pair.name] = block_pair.value
-        else:
-          main_internal_blocks[block_pair.name] = block_pair.value
+      # generate short paths for children first, for Blocks only
+      main_internal_blocks: Dict[str, edgir.BlockLike] = {}
+      other_internal_blocks: Dict[str, edgir.BlockLike] = {}
+      if isinstance(block, edgir.HierarchyBlock):
+        for block_pair in block.blocks:
+          subblock = block_pair.value
+          # ignore pseudoblocks like bridges and adapters that have no internals
+          if not subblock.hierarchy.blocks and 'fp_is_footprint' not in subblock.hierarchy.meta.members.node:
+            other_internal_blocks[block_pair.name] = block_pair.value
+          else:
+            main_internal_blocks[block_pair.name] = block_pair.value
 
-    if len(main_internal_blocks) == 1:
-      name = list(main_internal_blocks.keys())[0]
-      self.short_paths[path.append_block(name)] = short_path
-      self.class_paths[path.append_block(name)] = class_path
-    else:
-      for (name, subblock) in main_internal_blocks.items():
+      short_path = self.short_paths[path]
+      class_path = self.class_paths[path]
+
+      if len(main_internal_blocks) == 1:
+        name = list(main_internal_blocks.keys())[0]
+        self.short_paths[path.append_block(name)] = short_path
+        self.class_paths[path.append_block(name)] = class_path
+      else:
+        for (name, subblock) in main_internal_blocks.items():
+          self.short_paths[path.append_block(name)] = short_path + [name]
+          self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
+
+      for (name, subblock) in other_internal_blocks.items():
         self.short_paths[path.append_block(name)] = short_path + [name]
         self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
 
-    for (name, subblock) in other_internal_blocks.items():
-      self.short_paths[path.append_block(name)] = short_path + [name]
-      self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
-
     if 'nets' in block.meta.members.node:
-      # add all-pairs edges
+      # add self as a net
       # list conversion to deal with iterable-once
       flat_ports = list(chain(*[self.flatten_port(path.append_port(port_pair.name), port_pair.value)
                                 for port_pair in block.ports]))
-      for src_path in flat_ports:
-        for dst_path in flat_ports:
-          if src_path != dst_path:
-            self.edges.setdefault(src_path, []).append(dst_path)
+      self.edges.setdefault(path, []).extend(flat_ports)
+      for port_path in flat_ports:
+        self.edges.setdefault(port_path, []).append(path)
 
     if 'nets_packed' in block.meta.members.node:
       # this connects the first source to all destinations, then asserts all the sources are equal
@@ -236,22 +236,18 @@ class NetlistTransform(TransformUtil.Transform):
         return -1
       elif len(pin1.blocks) != len(pin2.blocks):  # prefer shorter block paths
         return len(pin1.blocks) - len(pin2.blocks)
+      elif pin1.links and not pin1.ports and not (pin2.links and not pin2.ports):  # prefer links
+        return -1
+      elif not (pin1.links and not pin1.ports) and pin2.links and not pin2.ports:
+        return 1
+      elif len(pin1.links) != len(pin2.links):  # prefer longer (more specific) link lengths
+        return len(pin2.links) - len(pin1.links)
       elif len(pin1.ports) == 1 and pin1.ports[0].isnumeric() and \
           (len(pin2.ports) != 1 or (pin2.ports and not pin2.ports[-1].isnumeric())):  # disprefer number-only ports
         return 1
       elif len(pin2.ports) == 1 and pin2.ports[0].isnumeric() and \
           (len(pin1.ports) != 1 or (pin1.ports and not pin1.ports[-1].isnumeric())):  # disprefer number-only ports
         return -1
-      elif len(pin1.ports) != len(pin2.ports):  # prefer shorter port lengths
-        return len(pin1.ports) - len(pin2.ports)
-      elif pin1.ports and not pin2.ports:  # prefer ports
-        return -1
-      elif not pin1.ports and pin2.ports:
-        return 1
-      elif pin1.links and not pin2.links:  # prefer links
-        return -1
-      elif not pin1.links and pin2.links:
-        return 1
       else:  # prefer shorter pin paths
         return len(pin1.ports) - len(pin2.ports)
     best_path = sorted(net, key=cmp_to_key(pin_name_goodness))[0]
@@ -292,8 +288,7 @@ class NetlistTransform(TransformUtil.Transform):
       net_prefix = board_refdes_prefix
     else:
       net_prefix = ''
-    named_nets = {self.name_net(net, net_prefix): net
-                  for net in nets}
+    named_nets = {self.name_net(net, net_prefix): net for net in nets}
 
     netlist_blocks = [block for path, block in self.blocks.items()]
     netlist_nets = [Net(name, [self.pins[port] for port in net if port in self.pins])
