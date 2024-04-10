@@ -52,13 +52,13 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0
       buttonPos = [colSpacing * xIndex, rowSpacing * yIndex]
       obj.footprints[`sw[${{xIndex}}][${{yIndex}}]`] = button = board.add(button_6mm, {{
         translate: buttonPos, rotate: 0,
-        id: {self._svgpcb_pathname()} + `_sw[${{xIndex}}][${{yIndex}}]`
+        id: `{self._svgpcb_pathname()}_sw[${{xIndex}}][${{yIndex}}]`
       }})
   
       diodePos = [buttonPos[0] + diodeOffset[0], buttonPos[1] + diodeOffset[1]]
       obj[`d[${{xIndex}}][${{yIndex}}]`] = diode = board.add(D_SMA, {{
         translate: diodePos, rotate: 90,
-        id: {self._svgpcb_pathname()} + `_d[${{xIndex}}][${{yIndex}}]`
+        id: `{self._svgpcb_pathname()}_d[${{xIndex}}][${{yIndex}}]`
       }})
   
       // create stub wire for button -> column common line
