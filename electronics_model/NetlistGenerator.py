@@ -224,32 +224,32 @@ class NetlistTransform(TransformUtil.Transform):
   @staticmethod
   def name_net(net: Iterable[TransformUtil.Path], net_prefix: str) -> str:
     """Names a net based on all the paths of ports and links that are part of the net."""
+    # higher criteria are preferred, True or larger number is preferred
+    CRITERIA: List[Callable[[TransformUtil.Path], Union[bool, int]]] = [
+      lambda pin: not (pin.blocks and pin.blocks[-1].startswith('(adapter)')),
+      lambda pin: not (pin.links and (pin.links[0].startswith('anon') or pin.links[0].startswith('_'))),
+      lambda pin: -len(pin.blocks),  # prefer shorter block paths
+      lambda pin: len(pin.links),  # prefer longer link paths
+      lambda pin: -len(pin.ports),  # prefer shorter (or no) port lengths
+      lambda pin: not(pin.ports and pin.ports[-1].isnumeric()),  # disprefer number-only ports
+    ]
     def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:
       assert not pin1.params and not pin2.params
-      # TODO rewrite rules to based on _anon internal depth, though elt[0] is likely where the _anon will be
-      # First disprefer anon or auto-generated names
-      if pin1.links and (pin1.links[0].startswith('anon') or pin1.links[0].startswith('_')) and \
-          (not pin2.links or pin2.links[0].startswith('anon') or pin2.links[0].startswith('_')):
-        return 1
-      elif (not pin1.links or pin1.links[0].startswith('anon') or pin1.links[0].startswith('_')) and \
-          (pin2.links and (pin2.links[0].startswith('anon') or pin2.links[0].startswith('_'))):
-        return -1
-      elif len(pin1.blocks) != len(pin2.blocks):  # prefer shorter block paths
-        return len(pin1.blocks) - len(pin2.blocks)
-      elif pin1.links and not pin1.ports and not (pin2.links and not pin2.ports):  # prefer links
-        return -1
-      elif not (pin1.links and not pin1.ports) and pin2.links and not pin2.ports:
-        return 1
-      elif len(pin1.links) != len(pin2.links):  # prefer longer (more specific) link lengths
-        return len(pin2.links) - len(pin1.links)
-      elif len(pin1.ports) == 1 and pin1.ports[0].isnumeric() and \
-          (len(pin2.ports) != 1 or (pin2.ports and not pin2.ports[-1].isnumeric())):  # disprefer number-only ports
-        return 1
-      elif len(pin2.ports) == 1 and pin2.ports[0].isnumeric() and \
-          (len(pin1.ports) != 1 or (pin1.ports and not pin1.ports[-1].isnumeric())):  # disprefer number-only ports
-        return -1
-      else:  # prefer shorter pin paths
-        return len(pin1.ports) - len(pin2.ports)
+      for test in CRITERIA:
+        pin1_result = test(pin1)
+        pin2_result = test(pin2)
+        if pin1_result == pin2_result:
+          continue
+        if isinstance(pin1_result, bool) and isinstance(pin2_result, bool):
+          if pin1_result:
+            return -1
+          else:
+            return 1
+        elif isinstance(pin1_result, int) and isinstance(pin2_result, int):
+          return pin2_result - pin1_result
+        else:
+          raise ValueError("mismatched result types")
+      return 0
     best_path = sorted(net, key=cmp_to_key(pin_name_goodness))[0]
 
     return net_prefix + str(best_path)

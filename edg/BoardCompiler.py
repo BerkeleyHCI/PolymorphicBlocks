@@ -26,6 +26,8 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
     with suppress(FileNotFoundError):
       os.remove(netlist_filename)
     with suppress(FileNotFoundError):
+      os.remove(netlist_refdes_filename)
+    with suppress(FileNotFoundError):
       os.remove(bom_filename)
 
   compiled = ScalaCompiler.compile(design, ignore_errors=True)
