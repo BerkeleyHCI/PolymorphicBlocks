@@ -735,7 +735,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'buck_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
         (['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
         (['conv', 'boost_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
-        (['conv', 'buck_sw', 'low_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),  # require all FETs the same
+        # require all FETs to be the same; note boost must elaborate first
+        (['conv', 'buck_sw', 'low_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
         (['conv', 'buck_sw', 'high_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
         (['conv', 'boost_sw', 'high_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
         (['conv', 'buck_sw', 'gate_res'], Range.from_tolerance(10, 0.05)),
