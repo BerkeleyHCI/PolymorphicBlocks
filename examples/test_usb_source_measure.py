@@ -632,6 +632,11 @@ class UsbSourceMeasure(JlcBoardTop):
     self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
     self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
 
+    # dualpack: dbuf / err_d
+    # dualpack: vbuf / err_volt
+    # dualpack: err_source / err_sink
+    # dualpack: int / ref_buf
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -646,15 +651,13 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),
 
-        (['control', 'isense', 'sense_sw[0]', 'device'], Dg468),
-        (['control', 'isense', 'sense_sw[1]', 'device'], Dg468),
-        (['control', 'isense', 'pwr_sw[0]', 'ic'], Tlp3545a),
-        (['control', 'isense', 'pwr_sw[1]', 'ic'], Tlp3545a),  # TODO cheaper AQY282SX?
+        (['control', 'off_sw', 'device'], Nlas4157),  # 3v3 compatible unlike DG468
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
         (Opamp, Tlv9061),  # higher precision opamps
-        (AnalogSwitch, Nlas4157),
+        (AnalogSwitch, Dg468),
+        (SolidStateRelay, Tlp3545a),  # TODO lower range switches can be cheaper AQY282SX
         (BananaSafetyJack, Ct3151),
         (HalfBridgeDriver, Ncp3420),
         (DirectionSwitch, Skrh),
