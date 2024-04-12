@@ -632,10 +632,21 @@ class UsbSourceMeasure(JlcBoardTop):
     self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
     self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
 
-    # dualpack: dbuf / err_d
-    # dualpack: vbuf / err_volt
-    # dualpack: err_source / err_sink
-    # dualpack: int / ref_buf
+    self.cd_amps = self.PackedBlock(Tlv9152())
+    self.pack(self.cd_amps.elements.request('0'), ['control', 'dbuf', 'amp'])
+    self.pack(self.cd_amps.elements.request('1'), ['control', 'err_d', 'amp'])
+
+    self.cv_amps = self.PackedBlock(Tlv9152())
+    self.pack(self.cv_amps.elements.request('0'), ['control', 'vbuf', 'amp'])
+    self.pack(self.cv_amps.elements.request('1'), ['control', 'err_volt', 'amp'])
+
+    self.ci_amps = self.PackedBlock(Tlv9152())
+    self.pack(self.ci_amps.elements.request('0'), ['control', 'err_sink', 'amp'])
+    self.pack(self.ci_amps.elements.request('1'), ['control', 'err_source', 'amp'])
+
+    self.cintref_amps = self.PackedBlock(Tlv9152())
+    self.pack(self.cintref_amps.elements.request('0'), ['control', 'int', 'amp'])
+    self.pack(self.cintref_amps.elements.request('1'), ['ref_buf', 'amp'])
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
