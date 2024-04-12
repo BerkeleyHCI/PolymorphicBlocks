@@ -79,3 +79,6 @@ class Ad8418a(Sensor, KiCadImportableBlock, Block):
 
     def contents(self):
         self.connect(self.ref, self.amp.vref2)
+        self.vdd_cap = self.Block(DecouplingCapacitor(
+            capacitance=0.1*uFarad(tol=0.2),
+        )).connected(self.gnd, self.pwr)
