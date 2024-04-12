@@ -429,6 +429,9 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(VoltageDivider(output_voltage=1.65*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
         imp.Block(OpampFollower())
       )
+      self.ref_cap = self.Block(Capacitor(0.1*uFarad(tol=0.2), voltage=self.ref_div.output.link().voltage))
+      self.connect(self.ref_cap.neg.adapt_to(Ground()), self.gnd)
+      self.connect(self.ref_cap.pos.adapt_to(AnalogSink()), self.ref_div.output)
       self.connect(self.vanalog, self.ref_buf.pwr)
       self.vcenter = self.connect(self.ref_buf.output)
 
@@ -605,15 +608,15 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
       (self.tp_vcen, self.vcen_rc, ), _ = self.chain(self.vcenter,
                                                      imp.Block(AnalogRfTestPoint('cen')),
-                                                     imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),\
+                                                     imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.25))),\
                                                      self.adc.vins.request('0'))
       (self.tp_mi, self.mi_rc, ), _ = self.chain(self.control.measured_current,
                                                  imp.Block(AnalogRfTestPoint('mi')),
-                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
+                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.25))),
                                                  self.adc.vins.request('1'))
       (self.tp_mv, self.mv_rc, ), _ = self.chain(self.control.measured_voltage,
                                                  imp.Block(AnalogRfTestPoint('mv')),
-                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.2))),
+                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.25))),
                                                  self.adc.vins.request('2'))
 
     self.outn = self.Block(BananaSafetyJack())
