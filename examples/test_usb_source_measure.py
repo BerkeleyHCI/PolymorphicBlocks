@@ -572,6 +572,12 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.mcu.gpio.request('dut0'), self.dutio.io0)
       self.connect(self.mcu.gpio.request('dut1'), self.dutio.io1)
 
+      mcu_touch = self.mcu.with_mixin(IoControllerTouchDriver())
+      (self.touch_duck, ), _ = self.chain(
+        mcu_touch.touch.request('touch_duck'),
+        imp.Block(FootprintToucbPad('edg:Symbol_DucklingSolid'))
+      )
+
     # 5v domain
     with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
@@ -713,11 +719,11 @@ class UsbSourceMeasure(JlcBoardTop):
           'dir_cen=6',
           'dir_c=7',
           'dir_d=4',
-          'dir_b=12',
+          'dir_b=9',
 
-          # 'rgb_green=20',
-          # 'rgb_red=21',
-          # 'rgb_blue=22',
+          'rgb_green=10',
+          'rgb_red=11',
+          'rgb_blue=12',
         ]),
 
         # allow the regulator to go into tracking mode
