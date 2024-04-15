@@ -675,6 +675,7 @@ class UsbSourceMeasure(JlcBoardTop):
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
+        (TagConnect, TagConnectNonLegged),  # really for initial flash / emergency upload only
         (Opamp, Tlv9061),  # higher precision opamps
         (AnalogSwitch, Dg468),
         (SolidStateRelay, Tlp3545a),  # TODO lower range switches can be cheaper AQY282SX
