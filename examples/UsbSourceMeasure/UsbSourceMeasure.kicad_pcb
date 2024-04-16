@@ -2774,7 +2774,7 @@
     (descr "Mounting Hole 2.7mm")
     (tags "mounting hole 2.7mm")
     (attr board_only exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "REF**" (at 0 -3.7) (layer "F.SilkS") hide
+    (fp_text reference "MH4" (at 0 -3.7) (layer "F.SilkS") hide
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 1f69f055-2983-4450-9f11-c9268de82c45)
     )
@@ -6257,7 +6257,7 @@
     (descr "Converted using: svg2mod hilab.svg --force F.Cu -P -p 2 -c --factor 0.08115236356")
     (tags "svg2mod")
     (attr board_only exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "svg2mod" (at 0 -5.039487) (layer "F.SilkS") hide
+    (fp_text reference "SYM2" (at 0 -5.039487) (layer "F.SilkS") hide
         (effects (font (size 1.524 1.524) (thickness 0.3048)))
       (tstamp d1a59825-5f10-4fce-9927-70482649c74f)
     )
@@ -7693,7 +7693,7 @@
     (descr "Converted using: svg2mod small-notext.svg -f 0.1538 -p 2")
     (tags "svg2mod")
     (attr board_only exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "svg2mod" (at 0 -3.5) (layer "F.SilkS") hide
+    (fp_text reference "SYM1" (at 0 -3.5) (layer "F.SilkS") hide
         (effects (font (size 1.524 1.524) (thickness 0.3048)))
       (tstamp 3609e5d8-d158-4e87-904a-6ec0916789fd)
     )
@@ -9438,7 +9438,7 @@
     (descr "Mounting Hole 2.7mm")
     (tags "mounting hole 2.7mm")
     (attr board_only exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "REF**" (at 0 -3.7) (layer "F.SilkS") hide
+    (fp_text reference "MH2" (at 0 -3.7) (layer "F.SilkS") hide
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 1f69f055-2983-4450-9f11-c9268de82c45)
     )
@@ -14766,7 +14766,7 @@
     (descr "Mounting Hole 2.7mm")
     (tags "mounting hole 2.7mm")
     (attr board_only exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "REF**" (at 0 -3.7) (layer "F.SilkS") hide
+    (fp_text reference "MH3" (at 0 -3.7) (layer "F.SilkS") hide
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 1f69f055-2983-4450-9f11-c9268de82c45)
     )
@@ -15358,7 +15358,7 @@
     (descr "Mounting Hole 2.7mm")
     (tags "mounting hole 2.7mm")
     (attr board_only exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "REF**" (at 0 -3.7) (layer "F.SilkS") hide
+    (fp_text reference "MH1" (at 0 -3.7) (layer "F.SilkS") hide
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 1f69f055-2983-4450-9f11-c9268de82c45)
     )
