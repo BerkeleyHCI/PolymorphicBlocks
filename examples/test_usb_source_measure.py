@@ -691,27 +691,36 @@ class UsbSourceMeasure(JlcBoardTop):
           # note: for ESP32-S3 compatibility: IO35/36/37 (pins 28-30) are used by PSRAM
           # note: for ESP32-C6 compatibility: pin 34 (22 on dedicated -C6 pattern) is NC
 
-          # 'oled_reset=23',
-          #
-          # 'adc_cs=4',
-          # 'spi.sck=5',
-          # 'spi.mosi=6',
-          # 'spi.miso=7',
-          # 'i2c.scl=8',
-          # 'i2c.sda=9',
-          # 'ldac=10',
-          # 'drv_en=11',
-          # 'off_0=12',
-          # 'boost_pwm_high=31',
-          # 'boost_pwm_low=32',
-          # 'buck_pwm_high=33',
-          # 'buck_pwm_low=35',
-          # 'boot_pwm=38',
-          # 'pd_int=39',
-          #
-          # 'led=_GPIO0_STRAP',
-          #
-          # 'vconv_sense=18',
+          'oled_reset=23',
+
+          'adc_cs=4',
+          'spi.sck=5',
+          'spi.mosi=6',
+          'spi.miso=7',
+          'ldac=10',
+
+          'i2c.scl=8',
+          'i2c.sda=9',
+
+          'boost_pwm=...',
+          'boost_pwm=...',
+          'conv_en=...',
+          'vconv_sense=...',
+          'pd_int=...',
+
+          'led=_GPIO0_STRAP',
+
+          'irange_0=...',
+          'irange_1=...',
+          'off_0=...',
+          'fan=...',
+
+          'dut0=...',
+          'dut1=...',
+
+          'enc_a=...',
+          'enc_b=...',
+          'enc_sw=...',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
