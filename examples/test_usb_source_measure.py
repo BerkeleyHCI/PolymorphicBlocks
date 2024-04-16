@@ -604,7 +604,6 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.tp_cisnk, ), _ = self.chain(self.dac.out2, imp.Block(AnalogRfTestPoint('cisnk')),
                                         self.control.control_current_source)
       self.connect(self.dac.i2c, int_i2c)
-      self.connect(self.dac.ldac, self.mcu.gpio.request('ldac'))
 
       self.adc = imp.Block(Mcp3561())
       self.connect(self.adc.pwra, self.vanalog)
@@ -691,49 +690,52 @@ class UsbSourceMeasure(JlcBoardTop):
           # note: for ESP32-S3 compatibility: IO35/36/37 (pins 28-30) are used by PSRAM
           # note: for ESP32-C6 compatibility: pin 34 (22 on dedicated -C6 pattern) is NC
 
-          'oled_reset=23',
+          'enc_a=4',
+          'enc_b=5',
+          'enc_sw=6',
 
-          'adc_cs=4',
-          'spi.sck=5',
-          'spi.mosi=6',
-          'spi.miso=7',
-          'ldac=10',
+          'dut0=7',
+          'dut1=8',
 
-          'i2c.scl=8',
-          'i2c.sda=9',
+          'adc_cs=9',
+          'adc_spi.sck=10',
+          'adc_spi.mosi=11',
+          'adc_spi.miso=12',
 
-          'boost_pwm=...',
-          'boost_pwm=...',
-          'conv_en=...',
-          'vconv_sense=...',
-          'pd_int=...',
+          'irange_0=15',
+          'irange_1=17',
+          'off_0=31',
+
+          'conv_en=35',
+          'buck_pwm=33',
+          'boost_pwm=32',
+          'vconv_sense=18',  # needs ADC
+
+          'int_i2c.scl=38',
+          'int_i2c.sda=39',
+
+          'qwiic.scl=25',
+          'qwiic.sda=24',
+          'pd_int=23',
+          'fan=19',
+          'oled_reset=20',
+          'touch_duck=22',
 
           'led=_GPIO0_STRAP',
 
-          'irange_0=...',
-          'irange_1=...',
-          'off_0=...',
-          'fan=...',
-
-          'dut0=...',
-          'dut1=...',
-
-          'enc_a=...',
-          'enc_b=...',
-          'enc_sw=...',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
         (['ioe', 'pin_assigns'], [
+          'dir_c=9',
+          'dir_cen=4',
           'dir_a=5',
-          'dir_cen=6',
-          'dir_c=7',
-          'dir_d=4',
-          'dir_b=9',
+          'dir_b=6',
+          'dir_d=7',
 
-          'rgb_green=10',
+          'rgb_blue=10',
           'rgb_red=11',
-          'rgb_blue=12',
+          'rgb_green=12',
         ]),
 
         # allow the regulator to go into tracking mode
