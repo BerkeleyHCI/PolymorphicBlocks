@@ -597,11 +597,11 @@ class UsbSourceMeasure(JlcBoardTop):
         self.vref,
         imp.Block(SeriesPowerFerriteBead(Range.from_lower(1000))),
         self.dac.pwr)
-      (self.tp_cv, ), _ = self.chain(self.dac.out0, imp.Block(AnalogRfTestPoint('cv')),
+      (self.tp_cv, ), _ = self.chain(self.dac.out2, imp.Block(AnalogRfTestPoint('cv')),
                                      self.control.control_voltage)
       (self.tp_cisrc, ), _ = self.chain(self.dac.out1, imp.Block(AnalogRfTestPoint('cisrc')),
                                         self.control.control_current_sink)
-      (self.tp_cisnk, ), _ = self.chain(self.dac.out2, imp.Block(AnalogRfTestPoint('cisnk')),
+      (self.tp_cisnk, ), _ = self.chain(self.dac.out0, imp.Block(AnalogRfTestPoint('cisnk')),
                                         self.control.control_current_source)
       self.connect(self.dac.i2c, int_i2c)
 
@@ -706,13 +706,13 @@ class UsbSourceMeasure(JlcBoardTop):
           'irange_1=17',
           'off_0=31',
 
-          'conv_en=35',
-          'buck_pwm=33',
+          'buck_pwm=35',
+          'conv_en=33',
           'boost_pwm=32',
           'vconv_sense=18',  # needs ADC
 
-          'int_i2c.scl=38',
-          'int_i2c.sda=39',
+          'int_i2c.scl=39',
+          'int_i2c.sda=38',
 
           'qwiic.scl=25',
           'qwiic.sda=24',
