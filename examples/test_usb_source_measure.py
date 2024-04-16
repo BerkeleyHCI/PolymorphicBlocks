@@ -694,16 +694,16 @@ class UsbSourceMeasure(JlcBoardTop):
           'enc_b=5',
           'enc_sw=6',
 
-          'dut0=7',
-          'dut1=8',
+          'dut0=15',
+          'dut1=17',
 
-          'adc_cs=9',
-          'adc_spi.sck=10',
-          'adc_spi.mosi=11',
-          'adc_spi.miso=12',
+          'adc_cs=7',
+          'adc_spi.sck=8',
+          'adc_spi.mosi=9',
+          'adc_spi.miso=10',
 
-          'irange_0=15',
-          'irange_1=17',
+          'irange_0=11',
+          'irange_1=12',
           'off_0=31',
 
           'buck_pwm=35',
