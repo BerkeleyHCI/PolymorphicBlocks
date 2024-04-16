@@ -444,7 +444,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.vcontrol = self.connect(self.reg_vcontrol.pwr_out)
 
       (self.reg_vcontroln, self.tp_vcontroln), _ = self.chain(
-        self.vanalog,
+        self.v3v3,
         imp.Block(Lm2664(output_ripple_limit=5*mVolt)),
         self.Block(VoltageTestPoint("vc-"))
       )
