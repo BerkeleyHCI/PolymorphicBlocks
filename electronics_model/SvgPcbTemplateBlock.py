@@ -1,4 +1,4 @@
-from typing import Optional, Any, List
+from typing import Optional, Any, List, Tuple
 
 import edgir
 from edg_core import *
@@ -49,26 +49,28 @@ class SvgPcbTemplateBlock(Block):
     def _svgpcb_footprint_block_path_of(self, block_path: List[str]) -> Optional[TransformUtil.Path]:
         """Infrastructure method, given the name of a container block, returns the block path of the footprint block
         if there is exactly one. Otherwise, returns None."""
-        param_val = self._svgpcb_design.get_value(
-            edgir.localpath_concat(self._svgpcb_pathname_data.to_local_path(), block_name, 'fp_footprint'))
-        if param_val is None:
+        block_path = self._svgpcb_pathname_data.append_block(*block_path)
+        candidate_blocks = [block for block in self._svgpcb_netlist.blocks
+                            if block.full_path.startswith(block_path)]
+        if len(candidate_blocks) == 1:
+            return candidate_blocks[0].full_path
+        else:
             return None
-        assert isinstance(param_val, str)
-        return self._svgpcb_footprint_to_svgpcb(param_val)
 
     def _svgpcb_footprint_of(self, path: TransformUtil.Path) -> str:
         """Infrastructure method, returns the footprint for the output of _svgpcb_footprint_block_path_of.
         If _svgpcb_footprint_block_path_of returned a value, this will return the footprint; otherwise crashes."""
-        param_val = self._svgpcb_design.get_value(
-            edgir.localpath_concat(self._svgpcb_pathname_data.to_local_path(), block_name, 'fp_footprint'))
-        if param_val is None:
-            return None
-        assert isinstance(param_val, str)
-        return self._svgpcb_footprint_to_svgpcb(param_val)
+        candidate_blocks = [block for block in self._svgpcb_netlist.blocks
+                            if block.full_path == path]
+        assert len(candidate_blocks) == 1
+        return candidate_blocks[0].footprint
 
-    def _svgpcb_pin_of(self, pin_path: List[str], footprint_path: TransformUtil.Path) -> Optional[str]:
+    def _svgpcb_pin_of(self, block_path: List[str], pin_path: List[str], footprint_path: TransformUtil.Path) -> Optional[str]:
         """Infrastructure method, given a footprint path from _svgpcb_footprint_block_path_of and a port that should
         be connected to one of its pins, returns the footprint pin that the port is connected to, if any."""
+        port_path = self._svgpcb_pathname_data.append_block(*block_path).append_port(*pin_path)
+
+
 
     def _svgpcb_fn_name(self) -> str:
         """Infrastructure method (optionally user override-able), returns the SVGPCB function name

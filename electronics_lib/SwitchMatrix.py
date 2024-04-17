@@ -22,11 +22,11 @@ class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
     diode_block = self._svgpcb_footprint_block_path_of(['d[0,0]'])
     assert switch_block is not None and diode_block is not None
     switch_footprint = self._svgpcb_footprint_of(switch_block)
-    switch_sw_pin = self._svgpcb_pin_of(['sw[0,0]', 'sw'], switch_block)
-    switch_com_pin = self._svgpcb_pin_of(['sw[0,0]', 'com'], switch_block)
+    switch_sw_pin = self._svgpcb_pin_of(['sw[0,0]'], ['sw'], switch_block)
+    switch_com_pin = self._svgpcb_pin_of(['sw[0,0]'], ['com'], switch_block)
     diode_footprint = self._svgpcb_footprint_of(diode_block)
-    diode_a_pin = self._svgpcb_pin_of(['d[0,0]', 'anode'], diode_block)
-    diode_k_pin = self._svgpcb_pin_of(['d[0,0]', 'cathode'], diode_block)
+    diode_a_pin = self._svgpcb_pin_of(['d[0,0]'], ['anode'], diode_block)
+    diode_k_pin = self._svgpcb_pin_of(['d[0,0]'], ['cathode'], diode_block)
     assert all([pin is not None for pin in [switch_sw_pin, switch_com_pin, diode_a_pin, diode_k_pin]])
 
     return f"""\
