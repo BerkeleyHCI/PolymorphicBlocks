@@ -56,7 +56,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0
 
       buttonPos = [colSpacing * xIndex, rowSpacing * yIndex]
       obj.footprints[`sw[${{xIndex}}][${{yIndex}}]`] = button = board.add(
-        {switch_footprint}, 
+        {switch_footprint},
         {{
           translate: buttonPos, rotate: 0,
           id: `{self._svgpcb_pathname()}_sw[${{xIndex}}][${{yIndex}}]`
