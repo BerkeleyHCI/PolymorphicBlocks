@@ -87,18 +87,18 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0
       rowDiodeVias.push(diodeVia)
     }}
     allColWirePoints.push(colWirePoints)
-    }}
-
-    // Inter-row wiring
-    for (let xIndex=0; xIndex < allColWirePoints[0].length; xIndex++) {{
-      board.wire([
-        allColWirePoints[0][xIndex],
-        allColWirePoints[allColWirePoints.length - 1][xIndex]
-      ], traceSize, "F.Cu")
-    }}
-
-    return obj
   }}
+
+  // Inter-row wiring
+  for (let xIndex=0; xIndex < allColWirePoints[0].length; xIndex++) {{
+    board.wire([
+      allColWirePoints[0][xIndex],
+      allColWirePoints[allColWirePoints.length - 1][xIndex]
+    ], traceSize, "F.Cu")
+  }}
+
+  return obj
+}}
 """
 
   @init_in_parent

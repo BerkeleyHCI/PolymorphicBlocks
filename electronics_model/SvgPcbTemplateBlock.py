@@ -54,7 +54,7 @@ class SvgPcbTemplateBlock(Block):
                             if block.full_path.startswith(block_path)]
         if len(candidate_blocks) != 1:
             return None
-        return candidate_blocks[0].full_path
+        return self._svgpcb_footprint_to_svgpcb(candidate_blocks[0].full_path)
 
     def _svgpcb_footprint_of(self, path: TransformUtil.Path) -> str:
         """Infrastructure method, returns the footprint for the output of _svgpcb_footprint_block_path_of.
