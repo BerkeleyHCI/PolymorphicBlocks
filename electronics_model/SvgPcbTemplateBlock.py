@@ -46,15 +46,15 @@ class SvgPcbTemplateBlock(Block):
         # TODO structure the output to be JS-friendly
         return str(param_val)
 
-    def _svgpcb_footprint_block_path_of(self, block_path: List[str]) -> Optional[TransformUtil.Path]:
+    def _svgpcb_footprint_block_path_of(self, block_ref: List[str]) -> Optional[TransformUtil.Path]:
         """Infrastructure method, given the name of a container block, returns the block path of the footprint block
         if there is exactly one. Otherwise, returns None."""
-        block_path = self._svgpcb_pathname_data.append_block(*block_path)
+        block_path = self._svgpcb_pathname_data.append_block(*block_ref)
         candidate_blocks = [block for block in self._svgpcb_netlist.blocks
                             if block.full_path.startswith(block_path)]
         if len(candidate_blocks) != 1:
             return None
-        return self._svgpcb_footprint_to_svgpcb(candidate_blocks[0].full_path)
+        return candidate_blocks[0].full_path
 
     def _svgpcb_footprint_of(self, path: TransformUtil.Path) -> str:
         """Infrastructure method, returns the footprint for the output of _svgpcb_footprint_block_path_of.
@@ -62,12 +62,12 @@ class SvgPcbTemplateBlock(Block):
         candidate_blocks = [block for block in self._svgpcb_netlist.blocks
                             if block.full_path == path]
         assert len(candidate_blocks) == 1
-        return candidate_blocks[0].footprint
+        return self._svgpcb_footprint_to_svgpcb(candidate_blocks[0].footprint)
 
-    def _svgpcb_pin_of(self, block_path: List[str], pin_path: List[str], footprint_path: TransformUtil.Path) -> Optional[str]:
+    def _svgpcb_pin_of(self, block_ref: List[str], pin_ref: List[str], footprint_path: TransformUtil.Path) -> Optional[str]:
         """Infrastructure method, given a footprint path from _svgpcb_footprint_block_path_of and a port that should
         be connected to one of its pins, returns the footprint pin that the port is connected to, if any."""
-        port_path = self._svgpcb_pathname_data.append_block(*block_path).append_port(*pin_path)
+        port_path = self._svgpcb_pathname_data.append_block(*block_ref).append_port(*pin_ref)
         candidate_nets = [net for net in self._svgpcb_netlist.nets
                           if port_path in net.ports]
         if len(candidate_nets) != 1:
