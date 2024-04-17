@@ -52,10 +52,9 @@ class SvgPcbTemplateBlock(Block):
         block_path = self._svgpcb_pathname_data.append_block(*block_path)
         candidate_blocks = [block for block in self._svgpcb_netlist.blocks
                             if block.full_path.startswith(block_path)]
-        if len(candidate_blocks) == 1:
-            return candidate_blocks[0].full_path
-        else:
+        if len(candidate_blocks) != 1:
             return None
+        return candidate_blocks[0].full_path
 
     def _svgpcb_footprint_of(self, path: TransformUtil.Path) -> str:
         """Infrastructure method, returns the footprint for the output of _svgpcb_footprint_block_path_of.
@@ -69,8 +68,15 @@ class SvgPcbTemplateBlock(Block):
         """Infrastructure method, given a footprint path from _svgpcb_footprint_block_path_of and a port that should
         be connected to one of its pins, returns the footprint pin that the port is connected to, if any."""
         port_path = self._svgpcb_pathname_data.append_block(*block_path).append_port(*pin_path)
-
-
+        candidate_nets = [net for net in self._svgpcb_netlist.nets
+                          if port_path in net.ports]
+        if len(candidate_nets) != 1:
+            return None
+        candidate_pins = [pin for pin in candidate_nets[0].pins
+                          if pin.block_path == footprint_path]
+        if len(candidate_pins) != 1:
+            return None
+        return candidate_pins[0].pin_name
 
     def _svgpcb_fn_name(self) -> str:
         """Infrastructure method (optionally user override-able), returns the SVGPCB function name
