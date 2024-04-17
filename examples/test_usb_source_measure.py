@@ -613,15 +613,15 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
       (self.tp_vcen, self.vcen_rc, ), _ = self.chain(self.vcenter,
                                                      imp.Block(AnalogRfTestPoint('cen')),
-                                                     imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.25))),\
+                                                     imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),\
                                                      self.adc.vins.request('0'))
       (self.tp_mi, self.mi_rc, ), _ = self.chain(self.control.measured_current,
                                                  imp.Block(AnalogRfTestPoint('mi')),
-                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.25))),
+                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),
                                                  self.adc.vins.request('1'))
       (self.tp_mv, self.mv_rc, ), _ = self.chain(self.control.measured_voltage,
                                                  imp.Block(AnalogRfTestPoint('mv')),
-                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 20*kHertz(tol=0.25))),
+                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),
                                                  self.adc.vins.request('2'))
 
     self.outn = self.Block(BananaSafetyJack())
@@ -796,11 +796,15 @@ class UsbSourceMeasure(JlcBoardTop):
         # (['conv', 'power_path', 'inductor', 'part'], 'SLF12575T-470M2R7-PF'),  # first auto pick is OOS
 
         (['oled', 'iref_res', 'require_basic_part'], False),
+
+        # these are since the auto-assigned parts are OOS
+        (['control', 'isense', 'res[1]', 'res', 'res', 'part'], "1206W4F220LT5E"),
+        (['conv', 'boost_sw', 'low_fet', 'part'], "KIA50N03BD"),
       ],
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
-        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
+        # (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015 is out of stock
 
         # (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
         # (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating

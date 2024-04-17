@@ -36,6 +36,9 @@ PART_ROTATIONS = {
   'C86803': -90,  # PCA9554A TSSOP16
   'C106912': -90,  # NLAS4157
   'C3663690': 180,  # TMP1075N
+  'C70285': 180,  # SN74LVC1G74DCUR
+  'C2651906': 0,  # DG468
+  'C840095': 0,  # LM2664 SOT-23-6
 
   'C2962219': -90,  # 2x5 1.27mm header shrouded
   'C126830': 90,  # "SOT-23" USB ESD protector
@@ -71,6 +74,7 @@ _FOOTPRINT_ROTATIONS = {
   'Package_TO_SOT_SMD:SOT-89-3': 180,
   'Package_TO_SOT_SMD:SOT-323_SC-70': 180,
   'Package_TO_SOT_SMD:SOT-223-3_TabPin2': 180,
+  'Package_TO_SOT_SMD:TO-252-2': 180,
   'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': -90,
   'Package_SO:SOIC-8_5.23x5.23mm_P1.27mm': -90,
   'Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm': -90,
@@ -94,9 +98,12 @@ PART_OFFSETS: Dict[str, Tuple[float, float]] = {
   'C262645': (0, -1),  # AFC07 FPC 30
   'C110293': (0, 0.1),  # SKRTLAE010 R/A switch
   'C116648': (0, 2.1),  # EC05E1220401
+
+  'C496552': (-0.3, 0),  # BWIPX-1-001E U.FL connector
 }
 _FOOTPRINT_OFFSETS: Dict[str, Tuple[float, float]] = {
   'Package_TO_SOT_SMD:SOT-89-3': (-0.6, 0),
+  'Package_TO_SOT_SMD:TO-252-2': (-2, 0),
 
   'Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11': (0, -1.25),
   'RF_Module:ESP32-WROOM-32': (0, 0.8),
