@@ -597,11 +597,11 @@ class UsbSourceMeasure(JlcBoardTop):
         self.vref,
         imp.Block(SeriesPowerFerriteBead(Range.from_lower(1000))),
         self.dac.pwr)
-      (self.tp_cv, ), _ = self.chain(self.dac.out2, imp.Block(AnalogRfTestPoint('cv')),
+      (self.tp_cv, ), _ = self.chain(self.dac.out0, imp.Block(AnalogRfTestPoint('cv')),
                                      self.control.control_voltage)
       (self.tp_cisrc, ), _ = self.chain(self.dac.out1, imp.Block(AnalogRfTestPoint('cisrc')),
                                         self.control.control_current_sink)
-      (self.tp_cisnk, ), _ = self.chain(self.dac.out0, imp.Block(AnalogRfTestPoint('cisnk')),
+      (self.tp_cisnk, ), _ = self.chain(self.dac.out2, imp.Block(AnalogRfTestPoint('cisnk')),
                                         self.control.control_current_source)
       self.connect(self.dac.i2c, int_i2c)
 
@@ -702,8 +702,8 @@ class UsbSourceMeasure(JlcBoardTop):
           'adc_spi.mosi=9',
           'adc_spi.miso=10',
 
-          'irange_0=11',
-          'irange_1=12',
+          'irange_0=12',
+          'irange_1=11',
           'off_0=31',
 
           'buck_pwm=35',
@@ -714,8 +714,8 @@ class UsbSourceMeasure(JlcBoardTop):
           'int_i2c.scl=39',
           'int_i2c.sda=38',
 
-          'qwiic.scl=25',
-          'qwiic.sda=24',
+          'qwiic.scl=24',
+          'qwiic.sda=25',
           'pd_int=23',
           'fan=19',
           'oled_reset=20',
