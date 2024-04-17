@@ -1,7 +1,7 @@
 # this class lives in electronics_abstract_parts since it requires the Resistor
 import unittest
 
-from edg_core import Block, Range, Refinements, InOut
+from edg_core import Block, Range, Refinements, InOut, TransformUtil
 from electronics_model import FootprintBlock, Passive
 from electronics_abstract_parts import Resistor
 from electronics_model.test_netlist import NetlistTestCase, Net, NetPin, NetBlock
@@ -42,6 +42,8 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
     # note, dut pruned out from paths since it's the only block in the top-level
     self.assertIn(Net('dut.pwr', [
       NetPin(['dut', 'U1'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('dut', 'U1').append_port('1')
     ]), net.nets)
     self.assertIn(Net('dut.gnd', [
       NetPin(['dut', 'U1'], '3')
