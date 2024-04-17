@@ -690,9 +690,9 @@ class UsbSourceMeasure(JlcBoardTop):
           # note: for ESP32-S3 compatibility: IO35/36/37 (pins 28-30) are used by PSRAM
           # note: for ESP32-C6 compatibility: pin 34 (22 on dedicated -C6 pattern) is NC
 
-          'enc_a=4',
-          'enc_b=5',
-          'enc_sw=6',
+          'enc_a=5',
+          'enc_b=6',
+          'enc_sw=4',
 
           'dut0=15',
           'dut1=17',
