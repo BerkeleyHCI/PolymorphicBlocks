@@ -1,9 +1,10 @@
-from typing import Optional, Any
+from typing import Optional, Any, List
 
 import edgir
 from edg_core import *
 from edg_core.ConstraintExpr import ConstraintExpr
 from abc import abstractmethod
+from .NetlistGenerator import Netlist
 
 
 class SvgPcbTemplateBlock(Block):
@@ -22,10 +23,11 @@ class SvgPcbTemplateBlock(Block):
     def _svgpcb_footprint_to_svgpcb(footprint: str) -> str:  # KiCad footprint name to SVGPCB reference
         return footprint.split(':')[-1].replace('-', '_').replace(' ', '_').replace('.', '_')
 
-    def _svgpcb_init(self, pathname: TransformUtil.Path, design: CompiledDesign) -> None:
+    def _svgpcb_init(self, pathname: TransformUtil.Path, design: CompiledDesign, netlist: Netlist) -> None:
         """Initializes this Block for SVGPCB template generation. Called from the backend."""
         self._svgpcb_pathname_data = pathname
         self._svgpcb_design = design
+        self._svgpcb_netlist = netlist
         self._svgpcb_ref_map = self._get_ref_map(pathname.to_local_path())
 
     def _svgpcb_pathname(self) -> str:
@@ -44,16 +46,29 @@ class SvgPcbTemplateBlock(Block):
         # TODO structure the output to be JS-friendly
         return str(param_val)
 
-    def _svgpcb_footprint_of(self, block_name: str) -> Optional[str]:
-        """Infrastructure method, returns the footprint for a sub-block, if there is one footprint.
-        TODO: very very guessy, assumes the block is the footprint (doesn't support levels of wrappers),
-        doesn't check for mutliple footprints"""
+    def _svgpcb_footprint_block_path_of(self, block_path: List[str]) -> Optional[TransformUtil.Path]:
+        """Infrastructure method, given the name of a container block, returns the block path of the footprint block
+        if there is exactly one. Otherwise, returns None."""
         param_val = self._svgpcb_design.get_value(
             edgir.localpath_concat(self._svgpcb_pathname_data.to_local_path(), block_name, 'fp_footprint'))
         if param_val is None:
             return None
         assert isinstance(param_val, str)
         return self._svgpcb_footprint_to_svgpcb(param_val)
+
+    def _svgpcb_footprint_of(self, path: TransformUtil.Path) -> str:
+        """Infrastructure method, returns the footprint for the output of _svgpcb_footprint_block_path_of.
+        If _svgpcb_footprint_block_path_of returned a value, this will return the footprint; otherwise crashes."""
+        param_val = self._svgpcb_design.get_value(
+            edgir.localpath_concat(self._svgpcb_pathname_data.to_local_path(), block_name, 'fp_footprint'))
+        if param_val is None:
+            return None
+        assert isinstance(param_val, str)
+        return self._svgpcb_footprint_to_svgpcb(param_val)
+
+    def _svgpcb_pin_of(self, pin_path: List[str], footprint_path: TransformUtil.Path) -> Optional[str]:
+        """Infrastructure method, given a footprint path from _svgpcb_footprint_block_path_of and a port that should
+        be connected to one of its pins, returns the footprint pin that the port is connected to, if any."""
 
     def _svgpcb_fn_name(self) -> str:
         """Infrastructure method (optionally user override-able), returns the SVGPCB function name

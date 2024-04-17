@@ -30,6 +30,7 @@ class NetPin(NamedTuple):
 class Net(NamedTuple):
   name: str
   pins: List[NetPin]
+  ports: List[TransformUtil.Path]
 
 class Netlist(NamedTuple):
   blocks: List[NetBlock]
@@ -291,7 +292,9 @@ class NetlistTransform(TransformUtil.Transform):
     named_nets = {self.name_net(net, net_prefix): net for net in nets}
 
     netlist_blocks = [block for path, block in self.blocks.items()]
-    netlist_nets = [Net(name, list(chain(*[self.pins[port] for port in net if port in self.pins])))
+    netlist_nets = [Net(name,
+                        list(chain(*[self.pins[port] for port in net if port in self.pins])),
+                        net)
                     for name, net in named_nets.items()]
 
     return Netlist(netlist_blocks, netlist_nets)
