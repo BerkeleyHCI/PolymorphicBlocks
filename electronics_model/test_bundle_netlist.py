@@ -130,25 +130,43 @@ class BundleNetlistTestCase(unittest.TestCase):
     self.assertIn(Net('cs1_link', [
       NetPin(['controller'], '0'),
       NetPin(['peripheral1'], '4'),
+    ], [
+      TransformUtil.Path.empty().append_block('controller').append_port('cs_out_1'),
+      TransformUtil.Path.empty().append_block('peripheral1').append_port('cs_in'),
     ]), net.nets)
     self.assertIn(Net('cs2_link', [
       NetPin(['controller'], '1'),
       NetPin(['peripheral2'], '4'),
+    ], [
+      TransformUtil.Path.empty().append_block('controller').append_port('cs_out_2'),
+      TransformUtil.Path.empty().append_block('peripheral2').append_port('cs_in'),
     ]), net.nets)
     self.assertIn(Net('spi_link.sck', [
       NetPin(['controller'], '2'),
       NetPin(['peripheral1'], '1'),
       NetPin(['peripheral2'], '1'),
+    ], [
+      TransformUtil.Path.empty().append_block('controller').append_port('spi', 'sck'),
+      TransformUtil.Path.empty().append_block('peripheral1').append_port('spi', 'sck'),
+      TransformUtil.Path.empty().append_block('peripheral2').append_port('spi', 'sck'),
     ]), net.nets)
     self.assertIn(Net('spi_link.mosi', [
       NetPin(['controller'], '4'),
       NetPin(['peripheral1'], '2'),
       NetPin(['peripheral2'], '2'),
+    ], [
+      TransformUtil.Path.empty().append_block('controller').append_port('spi', 'mosi'),
+      TransformUtil.Path.empty().append_block('peripheral1').append_port('spi', 'mosi'),
+      TransformUtil.Path.empty().append_block('peripheral2').append_port('spi', 'mosi'),
     ]), net.nets)
     self.assertIn(Net('spi_link.miso', [
       NetPin(['controller'], '3'),
       NetPin(['peripheral1'], '3'),
       NetPin(['peripheral2'], '3'),
+    ], [
+      TransformUtil.Path.empty().append_block('controller').append_port('spi', 'miso'),
+      TransformUtil.Path.empty().append_block('peripheral1').append_port('spi', 'miso'),
+      TransformUtil.Path.empty().append_block('peripheral2').append_port('spi', 'miso'),
     ]), net.nets)
 
     self.assertIn(NetBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R1', '', 'WeirdSpiController',
@@ -170,10 +188,16 @@ class BundleNetlistTestCase(unittest.TestCase):
     self.assertIn(Net('link.a_tx', [
       NetPin(['a'], '1'),
       NetPin(['b'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('a').append_port('port', 'tx'),
+      TransformUtil.Path.empty().append_block('b').append_port('port', 'rx'),
     ]), net.nets)
     self.assertIn(Net('link.b_tx', [
       NetPin(['a'], '2'),
       NetPin(['b'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('a').append_port('port', 'rx'),
+      TransformUtil.Path.empty().append_block('b').append_port('port', 'tx'),
     ]), net.nets)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
                            ['a'], ['a'], ['electronics_model.test_bundle_netlist.TestFakeUartBlock']),
@@ -189,11 +213,19 @@ class BundleNetlistTestCase(unittest.TestCase):
       NetPin(['node1'], '1'),
       NetPin(['node2'], '1'),
       NetPin(['node3'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('node1').append_port('port', 'canh'),
+      TransformUtil.Path.empty().append_block('node2').append_port('port', 'canh'),
+      TransformUtil.Path.empty().append_block('node3').append_port('port', 'canh'),
     ]), net.nets)
     self.assertIn(Net('link.canl', [
       NetPin(['node1'], '2'),
       NetPin(['node2'], '2'),
       NetPin(['node3'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('node1').append_port('port', 'canl'),
+      TransformUtil.Path.empty().append_block('node2').append_port('port', 'canl'),
+      TransformUtil.Path.empty().append_block('node3').append_port('port', 'canl'),
     ]), net.nets)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '120',
                            ['node1'], ['node1'], ['electronics_model.test_bundle_netlist.TestFakeCanBlock']),

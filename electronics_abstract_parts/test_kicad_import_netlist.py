@@ -43,17 +43,30 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
     self.assertIn(Net('dut.pwr', [
       NetPin(['dut', 'U1'], '1')
     ], [
-      TransformUtil.Path.empty().append_block('dut', 'U1').append_port('1')
+      TransformUtil.Path.empty().append_block('dut').append_port('pwr'),
+      TransformUtil.Path.empty().append_block('dut', 'U1').append_port('ports', '1'),
+      TransformUtil.Path.empty().append_block('dummypwr').append_port('port'),
     ]), net.nets)
     self.assertIn(Net('dut.gnd', [
       NetPin(['dut', 'U1'], '3')
+    ], [
+      TransformUtil.Path.empty().append_block('dut').append_port('gnd'),
+      TransformUtil.Path.empty().append_block('dut', 'U1').append_port('ports', '3'),
+      TransformUtil.Path.empty().append_block('dummygnd').append_port('port'),
     ]), net.nets)
     self.assertIn(Net('dut.node', [
       NetPin(['dut', 'U1'], '2'),
       NetPin(['dut', 'res'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('dut', 'U1').append_port('ports', '2'),
+      TransformUtil.Path.empty().append_block('dut', 'res').append_port('a'),
     ]), net.nets)
     self.assertIn(Net('dut.out', [
       NetPin(['dut', 'res'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('dut').append_port('out'),
+      TransformUtil.Path.empty().append_block('dut', 'res').append_port('b'),
+      TransformUtil.Path.empty().append_block('dummyout').append_port('port'),
     ]), net.nets)
     self.assertIn(NetBlock('Package_TO_SOT_SMD:SOT-23', 'U1',
                            # expected value is wonky because netlisting combines part and value

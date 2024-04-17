@@ -292,7 +292,7 @@ class NetlistTransform(TransformUtil.Transform):
     named_nets = {self.name_net(net, net_prefix): net for net in nets}
 
     def port_ignored_paths(path: TransformUtil.Path) -> bool:  # ignore link ports for netlisting
-      return path.links or any([block.startswith('(adapter)') or block.startswith('(bridge)') for block in path.blocks])
+      return bool(path.links) or any([block.startswith('(adapter)') or block.startswith('(bridge)') for block in path.blocks])
 
     netlist_blocks = [block for path, block in self.blocks.items()]
     netlist_nets = [Net(name,

@@ -76,10 +76,30 @@ class MultipackNetlistTestCase(unittest.TestCase):
     self.assertIn(Net('vpos', [
       NetPin(['source'], '1'),
       NetPin(['sink', 'device'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink1').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink2').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink').append_port('pos', '1'),
+      TransformUtil.Path.empty().append_block('sink').append_port('pos', '2'),
+      TransformUtil.Path.empty().append_block('sink', 'pos_comb').append_port('pwr_ins', '1'),
+      TransformUtil.Path.empty().append_block('sink', 'pos_comb').append_port('pwr_ins', '2'),
+      TransformUtil.Path.empty().append_block('sink', 'pos_comb').append_port('pwr_out'),
+      TransformUtil.Path.empty().append_block('sink', 'device').append_port('pos'),
     ]), net.nets)
     self.assertIn(Net('gnd', [
       NetPin(['source'], '2'),
       NetPin(['sink', 'device'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink1').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink2').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink').append_port('neg', '1'),
+      TransformUtil.Path.empty().append_block('sink').append_port('neg', '2'),
+      TransformUtil.Path.empty().append_block('sink', 'neg_comb').append_port('pwr_ins', '1'),
+      TransformUtil.Path.empty().append_block('sink', 'neg_comb').append_port('pwr_ins', '2'),
+      TransformUtil.Path.empty().append_block('sink', 'neg_comb').append_port('pwr_out'),
+      TransformUtil.Path.empty().append_block('sink', 'device').append_port('neg'),
     ]), net.nets)
     self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
                            ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
