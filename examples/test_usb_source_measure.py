@@ -625,11 +625,14 @@ class UsbSourceMeasure(JlcBoardTop):
                                                  self.adc.vins.request('2'))
 
     self.outn = self.Block(BananaSafetyJack())
-    self.connect(self.gnd, self.outn.port.adapt_to(Ground()))
     self.outp = self.Block(BananaSafetyJack())
-    self.connect(self.outp.port.adapt_to(VoltageSink(
-      current_draw=OUTPUT_CURRENT_RATING
-    )), self.control.out)
+    self.outd = self.Block(PinHeader254Horizontal(2))  # 2.54 output option
+    self.connect(self.gnd, self.outn.port.adapt_to(Ground()), self.outd.pins.request('1').adapt_to(Ground()))
+    self.connect(
+      self.control.out,
+      self.outp.port.adapt_to(VoltageSink(current_draw=OUTPUT_CURRENT_RATING)),
+      self.outd.pins.request('2').adapt_to(VoltageSink())
+    )
 
   def multipack(self) -> None:
     self.vimeas_amps = self.PackedBlock(Opa2189())
