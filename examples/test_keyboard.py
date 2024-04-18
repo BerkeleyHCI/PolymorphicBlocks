@@ -17,15 +17,31 @@ class Keyboard(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
+    self.usb = self.Block(UsbCReceptacle())
+    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
+    self.connect(self.usb.gnd, self.reg.gnd)
+    self.connect(self.usb.pwr, self.reg.pwr_in)
+
+    with self.implicit_connect(
+            ImplicitConnect(self.reg.pwr_out, [Power]),
+            ImplicitConnect(self.reg.gnd, [Common]),
+    ) as imp:
+      self.mcu = imp.Block(IoController())
+
+      self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
+      self.connect(self.sw.cols, self.mcu.gpio.request_vector())
+      self.connect(self.sw.rows, self.mcu.gpio.request_vector())
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
-      instance_refinements=[
-      ],
-      instance_values=[
+      class_refinements=[
+        (VoltageRegulator, Ldl1117),
+        (IoController, Stm32f103_48),
+        (Switch, KailhSocket),
       ],
     )
 
 
 class KeyboardTestCase(unittest.TestCase):
   def test_design(self) -> None:
-    compile_board_inplace(Keyboard, False)
+    compile_board_inplace(Keyboard)
