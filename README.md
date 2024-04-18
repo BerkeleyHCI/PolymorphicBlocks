@@ -90,18 +90,6 @@ See the [setup documentation](setup.md), then work through the [getting started 
 
 ## Additional Notes 
 
-### Project Status
-**This is functional and produces boards, but is still a continuing work-in-progress.**
-
-If you're looking for a mature PCB design tool that just works, this currently isn't it (yet).
-For a mature and open-source graphical schematic capture and board layout tool, check out [KiCad](https://kicad-pcb.org/).
-**However, if you are interested in trying something new, we're happy to help you and answer questions.**
-
-Current development focuses on supporting intermediate-level PCB projects, ie those an advanced hobbyist would make.
-Typical systems would involve power conditioning circuits, a microcontroller, and supporting peripherals (possibly including analog blocks).
-There is no hard-coded architecture (a microcontroller is not needed), and pure analog boards are possible.
-The system should also be able to handle projects that are much more or much less complex, especially if supporting libraries exist.
-
 ### Examples
 Example boards, including layouts, are available in the [examples/](examples/) directory, structured as unit tests and including board layouts:
 - [Blinky](examples/test_blinky.py): all variations of blinky from [the getting started tutorial](getting-started.md).
@@ -116,6 +104,18 @@ Example boards, including layouts, are available in the [examples/](examples/) d
 Ultimately, we'd like to see an open-source PCB HDL that increases design automation, reduces tedious work, and makes electronics more accessible to everyone.
 
 See [developing.md](developing.md) for developer documentation.
+
+### Project Status
+**This is functional and produces boards, but is still a continuing work-in-progress.**
+
+If you're looking for a mature PCB design tool that just works, this currently isn't it (yet).
+For a mature and open-source graphical schematic capture and board layout tool, check out [KiCad](https://kicad-pcb.org/).
+**However, if you are interested in trying something new, we're happy to help you and answer questions.**
+
+Current development focuses on supporting intermediate-level PCB projects, ie those an advanced hobbyist would make.
+Typical systems would involve power conditioning circuits, a microcontroller, and supporting peripherals (possibly including analog blocks).
+There is no hard-coded architecture (a microcontroller is not needed), and pure analog boards are possible.
+The system should also be able to handle projects that are much more or much less complex, especially if supporting libraries exist.
 
 ### Misc
 - **_What is EDG?_**:
