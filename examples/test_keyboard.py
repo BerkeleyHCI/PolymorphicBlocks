@@ -13,12 +13,12 @@ import unittest
 from edg import *
 
 
-class Keyboard(JlcBoardTop):
+class Keyboard(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
 
     self.usb = self.Block(UsbCReceptacle())
-    self.reg = self.Block(VoltageRegulator(3.3 * Volt(tol=0.05)))
+    self.reg = self.Block(Ldl1117(3.3*Volt(tol=0.05)))
     self.connect(self.usb.gnd, self.reg.gnd)
     self.connect(self.usb.pwr, self.reg.pwr_in)
 
@@ -26,7 +26,7 @@ class Keyboard(JlcBoardTop):
             ImplicitConnect(self.reg.pwr_out, [Power]),
             ImplicitConnect(self.reg.gnd, [Common]),
     ) as imp:
-      self.mcu = imp.Block(IoController())
+      self.mcu = imp.Block(Stm32f103_48())
 
       self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
       self.connect(self.sw.cols, self.mcu.gpio.request_vector())
@@ -35,8 +35,6 @@ class Keyboard(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[
-        (VoltageRegulator, Ldl1117),
-        (IoController, Stm32f103_48),
         (Switch, KailhSocket),
       ],
     )
