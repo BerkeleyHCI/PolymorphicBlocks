@@ -127,7 +127,7 @@ Example boards, including layouts, are available in the [examples/](examples/) d
 
 </td>
 <td>
-<img src="docs/boards/candapter.webp" width="640" align="center"/>
+<img src="docs/boards/candapter.webp" width="480" align="center"/>
 
 **[CAN Adapter](examples/test_can_adapter.py)**: an isolated [CANbus](https://en.wikipedia.org/wiki/CAN_bus) to USB-C adapter.
 
