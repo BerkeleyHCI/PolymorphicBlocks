@@ -123,7 +123,7 @@ Example boards, including layouts, are available in the [examples/](examples/) d
 <td>
 <img src="docs/boards/iotfandriver.webp" width="640" align="center"/>
 
-**[IoT Fan Driver](examples/test_iot_fan.py)**: an [ESPHome](https://esphome.io/index.html)-based internet-of-things fan controller, for up to two 3-pin or 4-pin (with speed control) computer fans.  
+**[IoT Fan Driver](examples/test_iot_fan.py)**: an [ESPHome](https://esphome.io/index.html)-based internet-of-things fan controller, controlling and monitoring up to two computer fans from a web page or [home automation dashboard](https://www.home-assistant.io/).
 
 </td>
 <td>
