@@ -27,6 +27,7 @@ class Keyboard(SimpleBoardTop):
             ImplicitConnect(self.reg.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(Stm32f103_48())
+      self.connect(self.usb.usb, self.mcu.usb.request())
 
       self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
       self.connect(self.sw.cols, self.mcu.gpio.request_vector())
