@@ -17,7 +17,7 @@ class SvgPcbTemplateBlock(Block):
     This defines the interface and supporting utilities only."""
     @staticmethod
     def _svgpcb_pathname_to_svgpcb(path: TransformUtil.Path):
-        return '_'.join(path.to_tuple())
+        return '_'.join(path.to_tuple()).replace('[', '_').replace(']', '_')
 
     @staticmethod
     def _svgpcb_footprint_to_svgpcb(footprint: str) -> str:  # KiCad footprint name to SVGPCB reference
