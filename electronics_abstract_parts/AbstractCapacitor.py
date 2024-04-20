@@ -256,7 +256,7 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     self.pwr = self.Export(self.cap.pos.adapt_to(VoltageSink(
       voltage_limits=(self.cap.actual_voltage_rating + self.gnd.link().voltage).hull(self.gnd.link().voltage),
       current_draw=0*Amp(tol=0)
-    )), [Power])
+    )), [Power, InOut])
 
     self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
 

@@ -65,6 +65,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
   def generate(self):
     super().generate()
     self.res = ElementDict[CurrentSenseResistor]()
+    self.clamp_res = ElementDict[AnalogClampResistor]()
     self.pwr_sw = ElementDict[VoltageIsolatedSwitch]()
     self.sense_sw = ElementDict[AnalogMuxer]()
     self.forced = ElementDict[ForcedVoltageCurrentDraw]()
@@ -84,6 +85,10 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
     ) as imp:
       for i, (resistance, current) in enumerate(zip(self.get(self.resistances), self.get(self.currents))):
         res = self.res[i] = self.Block(CurrentSenseResistor(resistance))
+        # clamp_res prevents device damage when load applied when unpowered
+        # sized for DG467/8 with 30mA maximum terminal current
+        clamp_res = self.clamp_res[i] = imp.Block(AnalogClampResistor(
+          clamp_current=(2.5, 25)*mAmp, clamp_target=(0, float('inf'))*Volt, zero_out=True))
         pwr_sw = self.pwr_sw[i] = imp.Block(VoltageIsolatedSwitch())
         sense_sw = self.sense_sw[i] = imp.Block(AnalogMuxer())
         control = self.control.append_elt(DigitalSink.empty(), str(i))
@@ -97,7 +102,8 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
         self.connect(self.pwr_out_merge.pwr_ins.request(str(i)), forced.pwr_out)
 
         # SENSE IN SWITCH PATH
-        self.connect(res.sense_in, sense_sw.inputs.request('1'))  # NO connection
+        self.connect(res.sense_in, clamp_res.signal_in)
+        self.connect(clamp_res.signal_out, sense_sw.inputs.request('1'))  # NO connection
         self.connect(self.sense_in_merge.inputs.request(str(i)), sense_sw.out)
 
         self.connect(self.sense_out_merge.inputs.request(str(i)), res.sense_out)
@@ -367,15 +373,21 @@ class UsbSourceMeasure(JlcBoardTop):
     self.usb = self.Block(UsbCReceptacle(voltage_out=(9, 20)*Volt, current_limits=(0, 8)*Amp))
 
     self.gnd = self.connect(self.usb.gnd)
-    self.vusb = self.connect(self.usb.pwr)
-
-    self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
     self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
 
     # power supplies
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      # input filtering
+      (self.filt_vusb, self.cap_vusb, self.tp_vusb), _ = self.chain(
+        self.usb.pwr,
+        self.Block(SeriesPowerFerriteBead()),
+        imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2))),
+        self.Block(VoltageTestPoint())
+      )
+      self.vusb = self.connect(self.filt_vusb.pwr_out)
+
       # logic supplies
       (self.reg_v5, self.tp_v5, self.reg_3v3, self.tp_3v3), _ = self.chain(
         self.vusb,
