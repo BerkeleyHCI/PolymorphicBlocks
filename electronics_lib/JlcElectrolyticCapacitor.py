@@ -5,16 +5,16 @@ from electronics_abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcElectrolyticCapacitor(TableCapacitor, ElectrolyticCapacitor, SmdStandardPackageSelector, JlcTableSelector):
+class JlcElectrolyticCapacitor(TableCapacitor, ElectrolyticCapacitor, CapacitorStandardFootprint, JlcTableSelector):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
-    (re.compile("(\S+F) .*(\S+V) .*(±\S+%) .*(?:([\d\.]+x[\d\.]+)mm) .*Aluminum Electrolytic Capacitors .*"),
+    (re.compile(".* (\S+F).* (\S+V).* (±\S+%).*([\d\.]+x[\d\.]+)mm Aluminum Electrolytic Capacitors.*"),
      lambda match: {  # discard the HF impedance parameter
-       TableCapacitor.NOMINAL_CAPACITANCE: PartParserUtil.parse_value(match.group(1), 'V'),
+       TableCapacitor.NOMINAL_CAPACITANCE: PartParserUtil.parse_value(match.group(1), 'F'),
        TableCapacitor.CAPACITANCE: PartParserUtil.parse_abs_tolerance(
-         match.group(3), PartParserUtil.parse_value(match.group(1), 'V'), 'V'),
+         match.group(3), PartParserUtil.parse_value(match.group(1), 'F'), 'F'),
        TableCapacitor.VOLTAGE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'V')),
 
-       SmdStandardPackageSelector.KICAD_FOOTPRINT: f"Capacitor_SMD:CP_Elec_{match.group(4)}",
+       JlcTableSelector.KICAD_FOOTPRINT: f"Capacitor_SMD:CP_Elec_{match.group(4)}",
      }),
   ]
 

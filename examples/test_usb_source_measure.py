@@ -383,7 +383,7 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.filt_vusb, self.cap_vusb, self.prot_vusb, self.tp_vusb), _ = self.chain(
         self.usb.pwr,
         self.Block(SeriesPowerFerriteBead()),
-        imp.Block(DecouplingCapacitor(100*uFarad(tol=0.2))),
+        imp.Block(DecouplingCapacitor(100*uFarad(tol=0.25))),
         imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # for parts commonality w/ the Vconv zener
         self.Block(VoltageTestPoint())
       )
@@ -687,7 +687,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['control', 'off_sw', 'device'], Nlas4157),  # 3v3 compatible unlike DG468
 
-        (['cap_vusb', 'cap'], JlcElectrolyticCapacitor)
+        (['cap_vusb', 'cap'], JlcElectrolyticCapacitor),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),

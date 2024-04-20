@@ -184,16 +184,31 @@ class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
 
 
 @non_library
-class TableCapacitor(Capacitor):
-  """Abstract table-based capacitor, providing some interface column definitions.
-  DO NOT USE DIRECTLY - this provides no selection logic implementation."""
+class TableCapacitor(CapacitorStandardFootprint, PartsTableFootprintSelector):
+  """Abstract table-based capacitor, providing some interface column definitions."""
   CAPACITANCE = PartsTableColumn(Range)
   NOMINAL_CAPACITANCE = PartsTableColumn(float)  # nominal capacitance, even with asymmetrical tolerances
   VOLTAGE_RATING = PartsTableColumn(Range)
 
+  @init_in_parent
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.generator_param(self.capacitance, self.voltage, self.voltage_rating_derating, self.exact_capacitance)
+
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
+    self.assign(self.actual_capacitance, row[self.CAPACITANCE])
+
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
+    return super()._row_filter(row) and \
+      derated_voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and \
+      row[self.CAPACITANCE].fuzzy_in(self.get(self.capacitance))
+
 
 @non_library
-class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTableFootprintSelector):
+class TableDeratingCapacitor(TableCapacitor):
   """Abstract table-based capacitor with derating based on a part-part voltage coefficient."""
   VOLTCO = PartsTableColumn(float)
   DERATED_CAPACITANCE = PartsTableColumn(Range)
@@ -214,15 +229,12 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
   def __init__(self, *args, single_nominal_capacitance: RangeLike = (0, 22)*uFarad, **kwargs):
     super().__init__(*args, **kwargs)
     self.single_nominal_capacitance = self.ArgParameter(single_nominal_capacitance)
-    self.generator_param(self.capacitance, self.voltage, self.single_nominal_capacitance,
-                         self.voltage_rating_derating, self.exact_capacitance)
+    self.generator_param(self.single_nominal_capacitance)
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
 
   def _row_filter(self, row: PartsTableRow) -> bool:
-    derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
-    return super()._row_filter(row) and \
-      derated_voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and \
+    return super()._row_filter(row) and\
       Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(self.get(self.single_nominal_capacitance))
 
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
@@ -264,8 +276,6 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
   def _row_generate(self, row: PartsTableRow) -> None:
     if row[self.PARALLEL_COUNT] == 1:
       super()._row_generate(row)  # creates the footprint
-      self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
-      self.assign(self.actual_capacitance, row[self.CAPACITANCE])
       self.assign(self.actual_derated_capacitance, row[self.DERATED_CAPACITANCE])
     else:
       self.assign(self.actual_part, f"{row[self.PARALLEL_COUNT]}x {row[self.PART_NUMBER_COL]}")
