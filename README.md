@@ -1,5 +1,11 @@
 # Polymorphic Blocks
 
+[](https://github.com/BerkeleyHCI/PolymorphicBlocks/actions/workflows/pr-scala.yml/badge.svg?branch=master)
+![](https://github.com/BerkeleyHCI/PolymorphicBlocks/actions/workflows/pr-python.yml/badge.svg?branch=master)
+![](https://img.shields.io/github/license/BerkeleyHCI/PolymorphicBlocks.svg)
+![Python](https://img.shields.io/badge/python-3.9-blue.svg)
+
+
 Polymorphic Blocks is an open-source, Python-based [hardware description language (HDL)](https://en.wikipedia.org/wiki/Hardware_description_language) for [printed circuit boards (PCBs)](https://en.wikipedia.org/wiki/Printed_circuit_board).
 By making use of programming concepts and capabilities, this project aims to **make circuit design faster and easier through high-level subcircuit library blocks** much like what makes software development so productive and approachable.
 Underlying language features enable these libraries to be general across many applications and provide a high degree of design automation.
