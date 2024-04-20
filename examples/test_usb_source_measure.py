@@ -380,35 +380,39 @@ class UsbSourceMeasure(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       # input filtering
-      (self.filt_vusb, self.cap_vusb, self.tp_vusb), _ = self.chain(
+      (self.filt_vusb, self.cap_vusb, self.prot_vusb, self.tp_vusb), _ = self.chain(
         self.usb.pwr,
         self.Block(SeriesPowerFerriteBead()),
         imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2))),
+        imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # for parts commonality w/ the Vconv zener
         self.Block(VoltageTestPoint())
       )
       self.vusb = self.connect(self.filt_vusb.pwr_out)
 
       # logic supplies
-      (self.reg_v5, self.tp_v5, self.reg_3v3, self.tp_3v3), _ = self.chain(
+      (self.reg_v5, self.tp_v5, self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
         self.vusb,
         imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        imp.Block(ProtectionZenerDiode(voltage=(3.6, 4.5)*Volt)),
         self.Block(VoltageTestPoint())
       )
       self.v5 = self.connect(self.reg_v5.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
-      (self.conv_inforce, self.conv, self.conv_outforce, self.tp_conv), _ = self.chain(
+      (self.conv_inforce, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
         imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30)*Volt,  # design for 0.5x - 1.5x conv ratio
                                                   frequency=500*kHertz(tol=0),
                                                   ripple_current_factor=(0.01, 0.9),
                                                   input_ripple_limit=250*mVolt,
+                                                  output_ripple_limit=(25*(7/9))*mVolt  # fill out the row of caps
                                                   )),
         imp.Block(ForcedVoltage((2, 30)*Volt)),  # at least 2v to allow current sensor to work
+        imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # zener shunt in case the boost converter goes crazy
         self.Block(VoltageTestPoint())
       )
       self.connect(self.conv.pwr_logic, self.v5)
@@ -467,8 +471,6 @@ class UsbSourceMeasure(JlcBoardTop):
         ImplicitConnect(self.vconv, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      # zener shunt in case the boost converter goes crazy
-      self.prot_conv = imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt))
       self.control = imp.Block(SourceMeasureControl(
         current=OUTPUT_CURRENT_RATING,
         rds_on=(0, 0.2)*Ohm
@@ -487,8 +489,6 @@ class UsbSourceMeasure(JlcBoardTop):
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.prot_3v3 = imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.75)*Volt))
-
       # TODO next revision: optional clamping diode on CC lines (as present in PD buddy sink, but not OtterPill)
       self.pd = imp.Block(Fusb302b())
       self.connect(self.usb.pwr, self.pd.vbus)
@@ -804,7 +804,9 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
         (['control', 'driver', 'low_fet', 'part_spec'], 'SQD50P06-15L_GE3'),  # has a 30V/4A SOA
 
+        (['prot_vusb', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
         (['prot_conv', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
+        (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
         # (['conv', 'power_path', 'inductor', 'part'], 'SLF12575T-470M2R7-PF'),  # first auto pick is OOS
 
         (['oled', 'iref_res', 'require_basic_part'], False),
