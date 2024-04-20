@@ -75,7 +75,7 @@ Additionally, the compiler...
 ### Under the Hood
 
 While degrees of library-based design are possible in graphical schematic tools, either informally with copy-paste or with hierarchical sheets, the main limitation is that these subcircuits are static and tuned for one particular application.
-Baked-in choices like component values, footprint, and part number selection may not meet requirements for a different application that might, for example, call for 1206 instead of 0402, or has different voltage rails.
+Baked-in choices like component values, footprint, and part number selection may not meet requirements for a different application that might, for example, call for through-hole components instead of surface-mount, or has different voltage rails.
 
 The HDL provides two mechanisms to enable general subcircuit libraries: _generators_ and _abstract parts_.
 Defining the subcircuit as code enables the library to contain logic to _generate_ the implementation to support many applications.
@@ -108,7 +108,7 @@ Example boards, including layouts, are available in the [examples/](examples/) d
 <td>
 <img src="docs/boards/ledmatrix.webp" width="240" align="center"/>
 
-**[LED Matrix](examples/test_ledmatrix.py)**: a 6x5 LED matrix display made up of discrete [charlieplexed](https://en.wikipedia.org/wiki/Charlieplexing) LEDs with a ESP32-C3 WiFi + RISC-V microcontroller, and demonstrating a charlieplexing array generator and packed resistors.
+**[LED Matrix](examples/test_ledmatrix.py)**: a 6x5 LED matrix using a [charlieplexed](https://en.wikipedia.org/wiki/Charlieplexing) circuit generator that drives 30 LEDs off of just 7 IO pins.
 
 </td>
 <td>
