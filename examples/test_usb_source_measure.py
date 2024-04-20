@@ -548,7 +548,7 @@ class UsbSourceMeasure(JlcBoardTop):
         self.conv_comp.out,imp.Block(PullupResistor(resistance=10*kOhm(tol=0.05))),
         self.conv_latch.nclr
       )
-      self.connect(self.conv_latch.nq, self.conv.reset)
+      self.connect(self.conv_latch.nq, self.conv.reset, self.mcu.gpio.request('conv_en_sense'))
 
       (self.pass_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(0)))
       (self.conv_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(1)))
@@ -733,10 +733,11 @@ class UsbSourceMeasure(JlcBoardTop):
 
           'qwiic.scl=24',
           'qwiic.sda=25',
-          'pd_int=23',
+          'pd_int=21',
           'fan=19',
           'oled_reset=20',
           'touch_duck=22',
+          'conv_en_sense=23',
 
           'led=_GPIO0_STRAP',
 
