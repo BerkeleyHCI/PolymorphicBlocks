@@ -204,8 +204,10 @@ class TableCapacitor(CapacitorStandardFootprint, PartsTableFootprintSelector):
     derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
     return super()._row_filter(row) and \
       derated_voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and \
-      row[self.CAPACITANCE].fuzzy_in(self.get(self.capacitance))
+      self._row_filter_capacitance(row)
 
+  def _row_filter_capacitance(self, row: PartsTableRow) -> bool:
+    return row[self.CAPACITANCE].fuzzy_in(self.get(self.capacitance))
 
 @non_library
 class TableDeratingCapacitor(TableCapacitor):
@@ -233,9 +235,9 @@ class TableDeratingCapacitor(TableCapacitor):
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
 
-  def _row_filter(self, row: PartsTableRow) -> bool:
-    return super()._row_filter(row) and\
-      Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(self.get(self.single_nominal_capacitance))
+  def _row_filter_capacitance(self, row: PartsTableRow) -> bool:
+    # post-derating capacitance filtering is in _table_postprocess
+    return Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(self.get(self.single_nominal_capacitance))
 
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     def add_derated_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
