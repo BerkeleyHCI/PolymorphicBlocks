@@ -639,7 +639,7 @@ class UsbSourceMeasure(JlcBoardTop):
     self.pack(self.vimeas_amps.elements.request('0'), ['control', 'vmeas', 'amp'])
     self.pack(self.vimeas_amps.elements.request('1'), ['control', 'hvbuf', 'amp'])
 
-    self.ampdmeas_amps = self.PackedBlock(Opa2189())
+    self.ampdmeas_amps = self.PackedBlock(Opa2171())
     self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
     self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
 
