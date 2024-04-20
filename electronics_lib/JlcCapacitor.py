@@ -5,7 +5,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart, JlcTableSelector
 
 
-class JlcCapacitor(TableDeratingCapacitor, SmdStandardPackageSelector, JlcTableSelector):
+class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageSelector, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     # 0201 not in parts table, C_0201_0603Metric
 

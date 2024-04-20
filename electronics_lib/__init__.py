@@ -8,6 +8,7 @@ from .JlcResistor import JlcResistor
 from .JlcResistorArray import JlcResistorArray
 from .GenericCapacitor import GenericMlcc
 from .JlcCapacitor import JlcCapacitor
+from .JlcElectrolyticCapacitor import JlcElectrolyticCapacitor
 from .JlcInductor import JlcInductor
 from .JlcFerriteBead import JlcFerriteBead
 from .Leds import SmtLed, ThtLed, Smt0606RgbLed, Smt0404RgbLed, ThtRgbLed

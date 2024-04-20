@@ -26,7 +26,8 @@ from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
 from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor, AnalogClampResistor
 from .AbstractResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
-from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CapacitorStandardFootprint, TableDeratingCapacitor
+from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CeramicCapacitor, ElectrolyticCapacitor, \
+    CapacitorStandardFootprint, TableCapacitor, TableDeratingCapacitor
 from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor, CombinedCapacitor
 from .AbstractInductor import Inductor, TableInductor, SeriesPowerInductor
 from .AbstractFerriteBead import FerriteBead, FerriteBeadStandardFootprint, TableFerriteBead, SeriesPowerFerriteBead

@@ -84,6 +84,19 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
     self.neg = self.Port(Passive.empty())
 
 
+@abstract_block
+class CeramicCapacitor(Capacitor):
+  """Abstract base class for ceramic capacitors, which appear more ideal in terms of lower ESP"""
+  pass
+
+
+@abstract_block
+class ElectrolyticCapacitor(Capacitor):
+  """Abstract base class for aluminum electrolytic capacitors capacitors which provide compact bulk capacitance
+  but at the cost of ESR"""
+  pass
+
+
 @non_library
 class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
   REFDES_PREFIX = 'C'
@@ -99,6 +112,56 @@ class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
       'Capacitor_SMD:C_1210_3225Metric',
       'Capacitor_SMD:C_1812_4532Metric',
       'Capacitor_SMD:C_2512_6332Metric',
+
+      'Capacitor_SMD:CP_Elec_3x5.3',
+      'Capacitor_SMD:CP_Elec_3x5.4',
+      'Capacitor_SMD:CP_Elec_4x3',
+      'Capacitor_SMD:CP_Elec_4x3.9',
+      'Capacitor_SMD:CP_Elec_4x4.5',
+      'Capacitor_SMD:CP_Elec_4x5.3',
+      'Capacitor_SMD:CP_Elec_4x5.4',
+      'Capacitor_SMD:CP_Elec_4x5.7',
+      'Capacitor_SMD:CP_Elec_4x5.8',
+      'Capacitor_SMD:CP_Elec_5x3',
+      'Capacitor_SMD:CP_Elec_5x3.9',
+      'Capacitor_SMD:CP_Elec_5x4.4',
+      'Capacitor_SMD:CP_Elec_5x4.5',
+      'Capacitor_SMD:CP_Elec_5x5.3',
+      'Capacitor_SMD:CP_Elec_5x5.4',
+      'Capacitor_SMD:CP_Elec_5x5.7',
+      'Capacitor_SMD:CP_Elec_5x5.8',
+      'Capacitor_SMD:CP_Elec_5x5.9',
+      'Capacitor_SMD:CP_Elec_6.3x3',
+      'Capacitor_SMD:CP_Elec_6.3x3.9',
+      'Capacitor_SMD:CP_Elec_6.3x4.5',
+      'Capacitor_SMD:CP_Elec_6.3x4.9',
+      'Capacitor_SMD:CP_Elec_6.3x5.2',
+      'Capacitor_SMD:CP_Elec_6.3x5.3',
+      'Capacitor_SMD:CP_Elec_6.3x5.4',
+      'Capacitor_SMD:CP_Elec_6.3x5.7',
+      'Capacitor_SMD:CP_Elec_6.3x5.8',
+      'Capacitor_SMD:CP_Elec_6.3x5.9',
+      'Capacitor_SMD:CP_Elec_6.3x7.7',
+      'Capacitor_SMD:CP_Elec_6.3x9.9',
+      'Capacitor_SMD:CP_Elec_8x5.4',
+      'Capacitor_SMD:CP_Elec_8x6.2',
+      'Capacitor_SMD:CP_Elec_8x6.5',
+      'Capacitor_SMD:CP_Elec_8x6.7',
+      'Capacitor_SMD:CP_Elec_8x6.9',
+      'Capacitor_SMD:CP_Elec_8x10',
+      'Capacitor_SMD:CP_Elec_8x10.5',
+      'Capacitor_SMD:CP_Elec_8x11.9',
+      'Capacitor_SMD:CP_Elec_10x7.7',
+      'Capacitor_SMD:CP_Elec_10x7.9',
+      'Capacitor_SMD:CP_Elec_10x10',
+      'Capacitor_SMD:CP_Elec_10x10.5',
+      'Capacitor_SMD:CP_Elec_10x12.5',
+      'Capacitor_SMD:CP_Elec_10x12.6',
+      'Capacitor_SMD:CP_Elec_10x14.3',
+      'Capacitor_SMD:CP_Elec_16x17.5',
+      'Capacitor_SMD:CP_Elec_16x22',
+      'Capacitor_SMD:CP_Elec_18x7.5',
+      'Capacitor_SMD:CP_Elec_18x22',
     ): lambda block: {
       '1': block.pos,
       '2': block.neg,
