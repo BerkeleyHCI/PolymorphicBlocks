@@ -1,6 +1,5 @@
 # Polymorphic Blocks
 
-
 ![](https://github.com/BerkeleyHCI/PolymorphicBlocks/actions/workflows/pr-python.yml/badge.svg?branch=master)
 ![](https://github.com/BerkeleyHCI/PolymorphicBlocks/actions/workflows/pr-scala.yml/badge.svg?branch=master)
 ![](https://img.shields.io/github/license/BerkeleyHCI/PolymorphicBlocks.svg)
