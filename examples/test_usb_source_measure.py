@@ -491,7 +491,7 @@ class UsbSourceMeasure(JlcBoardTop):
     ) as imp:
       # TODO next revision: optional clamping diode on CC lines (as present in PD buddy sink, but not OtterPill)
       self.pd = imp.Block(Fusb302b())
-      self.connect(self.usb.pwr, self.pd.vbus)
+      self.connect(self.vusb, self.pd.vbus)
       self.connect(self.usb.cc, self.pd.cc)
 
       self.mcu = imp.Block(IoController())
