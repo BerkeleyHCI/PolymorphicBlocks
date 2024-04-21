@@ -532,7 +532,7 @@ class UsbSourceMeasure(JlcBoardTop):
       # full scale needs to be below the threshold so the trip point is above the modeled max
       (self.comp_sense, ), _ = self.chain(
         self.vconv,
-        imp.Block(VoltageSenseDivider(full_scale_voltage=0.9*Volt(tol=0.05),
+        imp.Block(VoltageSenseDivider(full_scale_voltage=0.90*Volt(tol=0.05),
                                       impedance=(5, 50)*kOhm)),
         self.conv_comp.inn
       )
@@ -542,11 +542,11 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.conv_en_pull, ), _ = self.chain(
         self.mcu.gpio.request('conv_en'),
         imp.Block(PullupResistor(10*kOhm(tol=0.05))),
-        self.conv_latch.nset
+        self.conv_latch.nclr
       )
       (self.comp_pull, ), _ = self.chain(
         self.conv_comp.out, imp.Block(PullupResistor(resistance=10*kOhm(tol=0.05))),
-        self.conv_latch.nclr
+        self.conv_latch.nset
       )
       self.connect(self.conv_latch.nq, self.conv.reset, self.mcu.gpio.request('conv_en_sense'))
 
