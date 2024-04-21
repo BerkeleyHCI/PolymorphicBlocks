@@ -250,7 +250,7 @@
   (property (name "edg_path") (value "prot_3v3.diode"))
   (property (name "edg_short_path") (value "prot_3v3"))
   (property (name "edg_refdes") (value "D2"))
-  (property (name "edg_part") (value "1SMA4730A (Shandong Jingdao Microelectronics)"))
+  (property (name "edg_part") (value "1SMA4730AG (Shikues)"))
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "0eb80301"))
 (comp (ref "tp_3v3")
