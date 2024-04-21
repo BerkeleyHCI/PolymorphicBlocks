@@ -545,7 +545,7 @@ class UsbSourceMeasure(JlcBoardTop):
         self.conv_latch.nset
       )
       (self.comp_pull, ), _ = self.chain(
-        self.conv_comp.out,imp.Block(PullupResistor(resistance=10*kOhm(tol=0.05))),
+        self.conv_comp.out, imp.Block(PullupResistor(resistance=10*kOhm(tol=0.05))),
         self.conv_latch.nclr
       )
       self.connect(self.conv_latch.nq, self.conv.reset, self.mcu.gpio.request('conv_en_sense'))
@@ -687,7 +687,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['control', 'off_sw', 'device'], Nlas4157),  # 3v3 compatible unlike DG468
 
-        (['cap_vusb', 'cap'], JlcElectrolyticCapacitor),
+        (['cap_vusb', 'cap'], JlcAluminumCapacitor),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),

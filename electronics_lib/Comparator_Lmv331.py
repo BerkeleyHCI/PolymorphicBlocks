@@ -19,10 +19,7 @@ class Lmv331_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.inn = self.Port(in_model)
         self.inp = self.Port(in_model)
-        out_model = DigitalSource.from_supply(
-            self.gnd, self.vcc,
-            current_limits=(-5, 5)*mAmp  # for Vcc=2.7V, increases with higher Vcc
-        )
+        out_model = DigitalSingleSource.low_from_supply(self.gnd)
         self.out = self.Port(out_model)
 
     def contents(self) -> None:

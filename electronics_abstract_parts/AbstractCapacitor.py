@@ -91,7 +91,7 @@ class CeramicCapacitor(Capacitor):
 
 
 @abstract_block
-class ElectrolyticCapacitor(Capacitor):
+class AluminumCapacitor(Capacitor):
   """Abstract base class for aluminum electrolytic capacitors capacitors which provide compact bulk capacitance
   but at the cost of ESR"""
   pass
@@ -208,6 +208,7 @@ class TableCapacitor(CapacitorStandardFootprint, PartsTableFootprintSelector):
 
   def _row_filter_capacitance(self, row: PartsTableRow) -> bool:
     return row[self.CAPACITANCE].fuzzy_in(self.get(self.capacitance))
+
 
 @non_library
 class TableDeratingCapacitor(TableCapacitor):

@@ -97,7 +97,7 @@ class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
 
 
 class AnalogTestPoint(BaseTypedTestPoint, Block):
-  """Test point with a AnalogSink port and 50-ohm matching resistor."""
+  """Test point with a AnalogSink port"""
   def __init__(self, *args):
     super().__init__(*args)
     self.io = self.Port(AnalogSink.empty(), [InOut])
@@ -109,6 +109,7 @@ class AnalogTestPoint(BaseTypedTestPoint, Block):
 
 
 class AnalogRfTestPoint(BaseRfTestPoint, Block):
+  """Test point with a AnalogSink port and 50-ohm matching resistor."""
   def __init__(self, *args):
     super().__init__(*args)
     self.res = self.Block(Resistor(50*Ohm(tol=0.05)))

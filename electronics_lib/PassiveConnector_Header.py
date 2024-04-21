@@ -115,8 +115,7 @@ class JstPhSmVerticalJlc(JstPhSmVertical, JlcPart):
 
 
 class JstShSmHorizontal(FootprintPassiveConnector, JlcPart):
-  """JST SH connector in SMD, with JLC part numbers for what parts are stocked (JST or clones,
-  since JLC's inventory of PH SMD connectors is pretty spotty)."""
+  """JST SH connector in SMD, with JLC part numbers for what parts are stocked."""
   PART_NUMBERS = {  # in order of decreasing stock, on 2022-08-23
     2: 'C160402',
     3: 'C160403',
