@@ -810,21 +810,18 @@ class UsbSourceMeasure(JlcBoardTop):
         (['prot_vusb', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
         (['prot_conv', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
         (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
-        # (['conv', 'power_path', 'inductor', 'part'], 'SLF12575T-470M2R7-PF'),  # first auto pick is OOS
 
         (['oled', 'iref_res', 'require_basic_part'], False),
 
         # these are since the auto-assigned parts are OOS
         (['control', 'isense', 'res[1]', 'res', 'res', 'part'], "1206W4F220LT5E"),
         (['conv', 'boost_sw', 'low_fet', 'part'], "KIA50N03BD"),
+        (['prot_3v3', 'diode', 'part'], "1SMA4730AG")
       ],
       class_values=[
         (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
         (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
         # (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015 is out of stock
-
-        # (Er_Oled_096_1_1, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
-        # (Er_Oled_096_1_1, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
 
         (Mcp3561, ['ic', 'ch', '0', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
         (Mcp3561, ['ic', 'ch', '1', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
