@@ -51,6 +51,22 @@ class DummyDigitalSink(DummyDevice):
     ), [InOut])
 
 
+class DummyAnalogSource(DummyDevice):
+  @init_in_parent
+  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
+               signal_out: RangeLike = RangeExpr.EMPTY,
+               current_limits: RangeLike = RangeExpr.ALL,
+               impedance: RangeLike = RangeExpr.ZERO) -> None:
+    super().__init__()
+
+    self.io = self.Port(AnalogSource(
+      voltage_out=voltage_out,
+      signal_out=signal_out,
+      current_limits=current_limits,
+      impedance=impedance
+    ), [InOut])
+
+
 class DummyAnalogSink(DummyDevice):
   @init_in_parent
   def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL,
@@ -70,7 +86,7 @@ class DummyAnalogSink(DummyDevice):
 class ForcedVoltageCurrentDraw(DummyDevice, NetBlock):
   """Forces some input current draw regardless of the output's actual current draw value"""
   @init_in_parent
-  def __init__(self, forced_current_draw: RangeLike = RangeExpr()) -> None:
+  def __init__(self, forced_current_draw: RangeLike) -> None:
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink(
@@ -88,7 +104,7 @@ class ForcedVoltage(DummyDevice, NetBlock):
   """Forces some voltage on the output regardless of the input's actual voltage.
   Current draw is passed through unchanged."""
   @init_in_parent
-  def __init__(self, forced_voltage: RangeLike = RangeExpr()) -> None:
+  def __init__(self, forced_voltage: RangeLike) -> None:
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink(
@@ -100,6 +116,21 @@ class ForcedVoltage(DummyDevice, NetBlock):
     ), [Output])
 
     self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+
+
+class ForcedVoltageCurrent(DummyDevice, NetBlock):
+  """Forces some voltage and current on the output regardless of the input's actual parameters."""
+  @init_in_parent
+  def __init__(self, forced_voltage: RangeLike, forced_current: RangeLike) -> None:
+    super().__init__()
+
+    self.pwr_in = self.Port(VoltageSink(
+      current_draw=forced_current
+    ), [Input])
+
+    self.pwr_out = self.Port(VoltageSource(
+      voltage_out=forced_voltage
+    ), [Output])
 
 
 class ForcedAnalogVoltage(DummyDevice, NetBlock):

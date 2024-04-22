@@ -111,8 +111,9 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     self.driver = self.Block(HalfBridgeDriver(False))
     self.connect(self.driver.gnd, self.low_in)
     self.connect(self.driver.pwr, self.low_boot_out)
-    self.connect(self.driver.high_in, high_pwm)
-    self.connect(self.driver.low_in, low_pwm)
+    driver_indep = self.driver.with_mixin(HalfBridgeDriverIndependent())
+    self.connect(driver_indep.high_in, high_pwm)
+    self.connect(driver_indep.low_in, low_pwm)
     self.connect(self.driver.high_gnd, self.high_out)
 
     if self.get(self.high_boot_out.is_connected()):  # leave port disconnected if not used, to avoid an unsolved interface

@@ -1,8 +1,10 @@
-from typing import cast, List
+from typing import cast
 
 from electronics_model import *
 from electronics_model.CanPort import CanLogicLink
 from electronics_model.I2cPort import I2cLink
+from .AbstractConnector import RfConnector, RfConnectorTestPoint
+from .AbstractResistor import Resistor
 from .Categories import *
 
 
@@ -30,6 +32,23 @@ class BaseTypedTestPoint(TypedTestPoint, Block):
   def contents(self):
     super().contents()
     self.assign(self.tp.tp_name, (self.tp_name == "").then_else(self.io.link().name(), self.tp_name))
+
+
+@non_library
+class BaseRfTestPoint(TypedTestPoint, Block):
+  """Base class with utility infrastructure for typed RF test points."""
+  @init_in_parent
+  def __init__(self, tp_name: StringLike = "") -> None:
+    super().__init__()
+    self.tp_name = self.ArgParameter(tp_name)
+    self.conn = self.Block(RfConnector())
+    self.gnd = self.Export(self.conn.gnd, [Common])
+    self.io: Port
+
+  def contents(self):
+    super().contents()
+    conn_tp = self.conn.with_mixin(RfConnectorTestPoint(StringExpr()))
+    self.assign(conn_tp.tp_name, (self.tp_name == "").then_else(self.io.link().name(), self.tp_name))
 
 
 class VoltageTestPoint(BaseTypedTestPoint, Block):
@@ -78,13 +97,26 @@ class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
 
 
 class AnalogTestPoint(BaseTypedTestPoint, Block):
-  """Test point with a AnalogSink port."""
+  """Test point with a AnalogSink port"""
   def __init__(self, *args):
     super().__init__(*args)
     self.io = self.Port(AnalogSink.empty(), [InOut])
     self.connect(self.io, self.tp.io.adapt_to(AnalogSink()))
 
   def connected(self, io: Port[AnalogLink]) -> 'AnalogTestPoint':
+    cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self
+
+
+class AnalogRfTestPoint(BaseRfTestPoint, Block):
+  """Test point with a AnalogSink port and 50-ohm matching resistor."""
+  def __init__(self, *args):
+    super().__init__(*args)
+    self.res = self.Block(Resistor(50*Ohm(tol=0.05)))
+    self.io = self.Export(self.res.a.adapt_to(AnalogSink()), [InOut])
+    self.connect(self.res.b, self.conn.sig)
+
+  def connected(self, io: Port[AnalogLink]) -> 'AnalogRfTestPoint':
     cast(Block, builder.get_enclosing_block()).connect(io, self.io)
     return self
 

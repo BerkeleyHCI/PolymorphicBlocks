@@ -26,11 +26,24 @@ class HalfBridgeDriver(PowerSwitch, Block):
     self.pwr = self.Port(VoltageSink.empty(), [Power])  # logic side and low FET
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.low_in = self.Port(DigitalSink.empty())
-    self.high_in = self.Port(DigitalSink.empty())
-
     self.low_out = self.Port(DigitalSource.empty())  # referenced to main gnd
 
     self.high_pwr = self.Port(VoltageSink.empty(), optional=True)  # not used with internal boot diode
     self.high_gnd = self.Port(VoltageSink.empty())  # this encodes the voltage limit from gnd
     self.high_out = self.Port(DigitalSource.empty())  # referenced to high_pwr and high_gnd
+
+
+class HalfBridgeDriverIndependent(BlockInterfaceMixin[HalfBridgeDriver]):
+  """Mixin that specifies a half-bridge driver with independent inputs"""
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.low_in = self.Port(DigitalSink.empty())
+    self.high_in = self.Port(DigitalSink.empty())
+
+
+class HalfBridgeDriverPwm(BlockInterfaceMixin[HalfBridgeDriver]):
+  """Mixin that specifies a half-bridge driver with PWM input.
+  If an enable pin is provided, it should use the optional Resettable mixin"""
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.pwm_in = self.Port(DigitalSink.empty())

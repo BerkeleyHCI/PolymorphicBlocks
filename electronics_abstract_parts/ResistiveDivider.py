@@ -79,6 +79,8 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
     self.tolerance = self.ArgParameter(tolerance)
     self.generator_param(self.ratio, self.impedance, self.series, self.tolerance)
 
+    self.actual_rtop = self.Parameter(RangeExpr())
+    self.actual_rbot = self.Parameter(RangeExpr())
     self.actual_ratio = self.Parameter(RangeExpr())
     self.actual_impedance = self.Parameter(RangeExpr())
     self.actual_series_impedance = self.Parameter(RangeExpr())
@@ -118,6 +120,8 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
     self.connect(self.top_res.b, self.center, self.bottom_res.a)
     self.connect(self.bottom_res.b, self.bottom)
 
+    self.assign(self.actual_rtop, self.top_res.actual_resistance)
+    self.assign(self.actual_rbot, self.bottom_res.actual_resistance)
     self.assign(self.actual_impedance,
                 1 / (1 / self.top_res.actual_resistance + 1 / self.bottom_res.actual_resistance))
     self.assign(self.actual_series_impedance,
@@ -155,6 +159,8 @@ class BaseVoltageDivider(Block):
       voltage_limits=RangeExpr.ALL
     )))
 
+    self.actual_rtop = self.Parameter(RangeExpr(self.div.actual_rtop))
+    self.actual_rbot = self.Parameter(RangeExpr(self.div.actual_rbot))
     self.actual_ratio = self.Parameter(RangeExpr(self.div.actual_ratio))
     self.actual_impedance = self.Parameter(RangeExpr(self.div.actual_impedance))
     self.actual_series_impedance = self.Parameter(RangeExpr(self.div.actual_series_impedance))

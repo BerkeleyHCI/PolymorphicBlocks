@@ -91,7 +91,9 @@ class Xc9142(Resettable, DiscreteBoostConverter, GeneratorBlock):
         self.pwr_out.link().current_drawn, self.ic.actual_current_limit,
         inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                        self.ripple_current_factor,
-                                                       rated_current=self.ic.actual_current_limit.lower())
+                                                       rated_current=self.ic.actual_current_limit.lower()),
+        input_voltage_ripple=self.input_ripple_limit,
+        output_voltage_ripple=self.output_ripple_limit
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)

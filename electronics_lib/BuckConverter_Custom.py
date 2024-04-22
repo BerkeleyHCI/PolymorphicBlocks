@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class CustomSyncBuckConverter(DiscreteBoostConverter):
+class CustomSyncBuckConverterIndependent(DiscreteBoostConverter):
     """Custom synchronous buck with two PWM inputs for the high and low side gate drivers.
     Because of the MOSFET body diode, will probably be fine-ish if the low side FET is not driven."""
     @init_in_parent
@@ -44,8 +44,9 @@ class CustomSyncBuckConverter(DiscreteBoostConverter):
             self.Block(ForcedVoltageCurrentDraw(self.power_path.switch.link().current_drawn)),
             self.sw.pwr)
         self.connect(self.sw.pwr_logic, self.pwr_logic)
-        self.connect(self.sw.low_ctl, self.pwm_low)
-        self.connect(self.sw.high_ctl, self.pwm_high)
+        sw_ctl = self.sw.with_mixin(HalfBridgeIndependent())
+        self.connect(sw_ctl.low_ctl, self.pwm_low)
+        self.connect(sw_ctl.high_ctl, self.pwm_high)
         (self.sw_force, ), _ = self.chain(
             self.sw.out,  # current draw used to size FETs, size for peak current
             self.Block(ForcedVoltageCurrentDraw(self.power_path.output_current
