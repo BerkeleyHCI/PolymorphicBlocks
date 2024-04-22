@@ -1,19 +1,10 @@
 import zlib  # for deterministic hash
-from typing import NamedTuple, List, Mapping
+from typing import List
 
+import edgir
+from edg_core import TransformUtil
+from .NetlistGenerator import Netlist, NetBlock, Net
 
-class Block(NamedTuple):
-  footprint: str
-  refdes: str
-  part: str
-  value: str  # gets written directly to footprint
-  full_path: List[str]  # short path to this footprint
-  path: List[str]  # short path to this footprint
-  class_path: List[str]  # classes on short path to this footprint
-
-class Pin(NamedTuple):
-  block_name: str
-  pin_name: str
 
 ###############################################################################################################################################################################################
 
@@ -25,6 +16,12 @@ def gen_header() -> str:
 ###############################################################################################################################################################################################
 
 """2. Generating Blocks"""
+
+def block_name(block: NetBlock, refdes_pathname: bool) -> str:
+    if refdes_pathname:
+        return '.'.join(block.path)
+    else:
+        return block.refdes
 
 def gen_block_comp(block_name: str) -> str:
     return f'(comp (ref "{block_name}")'
@@ -55,15 +52,15 @@ def gen_block_prop_sheetname(block_path: List[str]) -> str:
     value = ""
   return f'(property (name "Sheetname") (value "{value}"))'
 
-def gen_block_prop_sheetfile(block_path: List[str]) -> str:
+def gen_block_prop_sheetfile(block_path: List[edgir.LibraryPath]) -> str:
   if len(block_path) >= 2:
-    value = block_path[-2]
+    value = block_path[-2].target.name
   else:
     value = ""
   return f'(property (name "Sheetfile") (value "{value}"))'
 
-def gen_block_prop_path(block_path: List[str]) -> str:
-  return f'(property (name "edg_path") (value "{".".join(block_path)}"))'
+def gen_block_prop_path(block_path: TransformUtil.Path) -> str:
+  return f'(property (name "edg_path") (value "{".".join(block_path.to_tuple())}"))'
 
 def gen_block_prop_shortpath(block_path: List[str]) -> str:
   return f'(property (name "edg_short_path") (value "{".".join(block_path)}"))'
@@ -74,7 +71,7 @@ def gen_block_prop_refdes(refdes: str) -> str:
 def gen_block_prop_part(part: str) -> str:
   return f'(property (name "edg_part") (value "{part}"))'
 
-def block_exp(block_dict: Mapping[str, Block]) -> str:
+def block_exp(blocks: List[NetBlock], refdes_pathname: bool) -> str:
         """Given a dictionary of block_names (strings) as keys and Blocks (namedtuples) as corresponding values
 
         Example:
@@ -87,11 +84,10 @@ def block_exp(block_dict: Mapping[str, Block]) -> str:
         (value 1k)
         (footprint OptoDevice:R_LDR_4.9x4.2mm_P2.54mm_Vertical)
         (tstamp R3))
-
         """
         result = '(components' 
-        for block_name, block in block_dict.items():
-            result += '\n' + gen_block_comp(block_name) + '\n' +\
+        for block in blocks:
+            result += '\n' + gen_block_comp(block_name(block, refdes_pathname)) + '\n' +\
                       "  " + gen_block_value(block.value) + '\n' + \
                       "  " + gen_block_footprint(block.footprint) + '\n' + \
                       "  " + gen_block_prop_sheetname(block.path) + '\n' + \
@@ -114,7 +110,7 @@ def gen_net_header(net_count: int, net_name: str) -> str:
 def gen_net_pin(block_name: str, pin_name: str) -> str:
     return "(node (ref {}) (pin {}))".format(block_name, pin_name)
 
-def net_exp(nets: Mapping[str, List[Pin]]) -> str:
+def net_exp(nets: List[Net], blocks: List[NetBlock], refdes_pathname: bool) -> str:
         """Given a dictionary of net names (strings) as keys and a list of connected Pins (namedtuples) as corresponding values
 
         Example:
@@ -128,13 +124,13 @@ def net_exp(nets: Mapping[str, List[Pin]]) -> str:
               (node (ref R4) (pin 2)))
               
         """
+        block_dict = {block.full_path: block for block in blocks}
+
         result = '(nets'
-        net_count = 1
-        for (net_name, pin_list) in nets.items():
-            result += '\n' + gen_net_header(net_count, net_name)
-            net_count += 1
-            for pin in pin_list:
-                result += '\n  ' + gen_net_pin(pin.block_name, pin.pin_name)
+        for i, net in enumerate(nets):
+            result += '\n' + gen_net_header(i + 1, net.name)
+            for pin in net.pins:
+                result += '\n  ' + gen_net_pin(block_name(block_dict[pin.block_path], refdes_pathname), pin.pin_name)
             result += ')'
         return result + ')'
 
@@ -143,5 +139,6 @@ def net_exp(nets: Mapping[str, List[Pin]]) -> str:
 """4. Generate Full Netlist"""
 
 
-def generate_netlist(blocks_dict: Mapping[str, Block], nets_dict: Mapping[str, List[Pin]]) -> str:
-    return gen_header() + '\n' + block_exp(blocks_dict) + '\n' + net_exp(nets_dict) + '\n' + ')'
+def generate_netlist(netlist: Netlist, refdes_pathname: bool) -> str:
+    return gen_header() + '\n' + block_exp(netlist.blocks, refdes_pathname) + '\n' \
+        + net_exp(netlist.nets, netlist.blocks, refdes_pathname) + '\n' + ')'

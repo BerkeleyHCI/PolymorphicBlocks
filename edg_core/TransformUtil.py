@@ -32,17 +32,39 @@ class Path(NamedTuple):  # internal helper type
   def empty(cls) -> Path:
     return Path((), (), (), ())
 
-  def append_block(self, name: str) -> Path:
-    assert not self.links and not self.ports and not self.params, f"tried to append block {name} to {self}"
-    return Path(self.blocks + (name, ), self.links, self.ports, self.params)
+  def startswith(self, prefix: Path) -> bool:
+    if self.blocks == prefix.blocks:  # exact match, check subpaths
+      if self.links == prefix.links:
+        if self.ports == prefix.ports:
+          return len(self.params) >= len(prefix.params) and self.params[:len(prefix.params)] == prefix.params
+        elif len(self.ports) >= len(prefix.ports) and self.ports[:len(prefix.ports)] == prefix.ports:
+          return (not self.params) and (not prefix.params)
+        else:
+          return False
 
-  def append_link(self, name: str) -> Path:
-    assert not self.ports and not self.params, f"tried to append link {name} to {self}"
-    return Path(self.blocks, self.links + (name, ), self.ports, self.params)
+      elif len(self.links) >= len(prefix.links) and self.links[:len(prefix.links)] == prefix.links:
+        return (not self.ports) and (not prefix.ports) and (not self.params) and (not prefix.params)
+      else:
+        return False
 
-  def append_port(self, name: str) -> Path:
-    assert not self.params, f"tried to append port {name} to {self}"
-    return Path(self.blocks, self.links, self.ports + (name, ), self.params)
+    elif len(self.blocks) >= len(prefix.blocks) and self.blocks[:len(prefix.blocks)] == prefix.blocks:
+      # partial match, check subpaths don't exist
+      return (not self.links) and (not prefix.links) and (not self.ports) and (not prefix.ports) and \
+        (not self.params) and (not prefix.params)
+    else:  # no match
+      return False
+
+  def append_block(self, *names: str) -> Path:
+    assert not self.links and not self.ports and not self.params, f"tried to append block {names} to {self}"
+    return Path(self.blocks + tuple(names), self.links, self.ports, self.params)
+
+  def append_link(self, *names: str) -> Path:
+    assert not self.ports and not self.params, f"tried to append link {names} to {self}"
+    return Path(self.blocks, self.links + tuple(names), self.ports, self.params)
+
+  def append_port(self, *names: str) -> Path:
+    assert not self.params, f"tried to append port {names} to {self}"
+    return Path(self.blocks, self.links, self.ports + tuple(names), self.params)
 
   def append_param(self, name: str) -> Path:
     return Path(self.blocks, self.links, self.ports, self.params + (name, ))
