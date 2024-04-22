@@ -47,9 +47,13 @@ class CompiledDesign:
 
   # Reserved.V is a string because it doesn't load properly at runtime
   # Serialized strings are used since proto objects are mutable and unhashable
-  def get_value(self, path: Iterable[Union[str, 'edgir.Reserved.V']]) -> Optional[edgir.LitTypes]:
-    path_key = edgir.LocalPathList(path).SerializeToString()
-    return self._values.get(path_key, None)
+  def get_value(self, path: Union[edgir.LocalPath, Iterable[Union[str, 'edgir.Reserved.V']]]) ->\
+          Optional[edgir.LitTypes]:
+    if isinstance(path, edgir.LocalPath):
+      localpath = path
+    else:
+      localpath = edgir.LocalPathList(path)
+    return self._values.get(localpath.SerializeToString(), None)
 
   def append_values(self, values: List[Tuple[edgir.LocalPath, edgir.ValueLit]]):
     """Append solved values to this design, such as from a refinement pass"""

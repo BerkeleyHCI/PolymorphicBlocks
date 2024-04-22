@@ -18,12 +18,15 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
 
     design_filename = os.path.join(target_dir, f'{target_name}.edg')
     netlist_filename = os.path.join(target_dir, f'{target_name}.net')
+    netlist_refdes_filename = os.path.join(target_dir, f'{target_name}.ref.net')
     bom_filename = os.path.join(target_dir, f'{target_name}.csv')
 
     with suppress(FileNotFoundError):
       os.remove(design_filename)
     with suppress(FileNotFoundError):
       os.remove(netlist_filename)
+    with suppress(FileNotFoundError):
+      os.remove(netlist_refdes_filename)
     with suppress(FileNotFoundError):
       os.remove(bom_filename)
 
@@ -39,12 +42,16 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
     raise edg_core.ScalaCompilerInterface.CompilerCheckError(f"error during compilation:\n{compiled.errors_str()}")
 
   netlist_all = NetlistBackend().run(compiled)
+  netlist_refdes = NetlistBackend().run(compiled, {'RefdesMode': 'refdes'})
   bom_all = GenerateBom().run(compiled)
   assert len(netlist_all) == 1
 
   if target_dir_name is not None:
     with open(netlist_filename, 'w', encoding='utf-8') as net_file:
       net_file.write(netlist_all[0][1])
+
+    with open(netlist_refdes_filename, 'w', encoding='utf-8') as net_file:
+      net_file.write(netlist_refdes[0][1])
 
     with open(bom_filename, 'w', encoding='utf-8') as bom_file:
       bom_file.write(bom_all[0][1])

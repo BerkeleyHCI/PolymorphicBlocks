@@ -156,3 +156,100 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
     self.out_cap = self.Block(DecouplingCapacitor(  # recommended by the datasheet
       capacitance=output_capacitance
     )).connected(self.gnd, self.pwr_out)
+
+
+class Lm2733_Device(InternalSubcircuit, JlcPart, FootprintBlock):
+  @init_in_parent
+  def __init__(self):
+    super().__init__()
+    self.pwr_in = self.Port(VoltageSink(
+      voltage_limits=(2.7, 14)*Volt,
+      current_draw=(0.000024, 3)*mAmp
+    ), [Power])
+    self.gnd = self.Port(Ground(), [Common])
+    self.sw = self.Port(VoltageSink())
+    self.fb = self.Port(AnalogSink(impedance=(20500, float('inf')) * kOhm))  # based on FB bias current
+
+    self.nshdn = self.Port(DigitalSink.from_supply(
+      self.gnd, self.pwr_in,
+      voltage_limit_tolerance=(-0.4, 0.3)*Volt,
+      input_threshold_abs=(0.5, 1.5)*Volt
+    ))
+
+  def contents(self):
+    super().contents()
+    self.footprint(
+      'U', 'Package_TO_SOT_SMD:SOT-23-5',
+      {
+        '1': self.sw,
+        '2': self.gnd,
+        '3': self.fb,
+        '4': self.nshdn,
+        '5': self.pwr_in,
+      },
+      mfr='Texas Instruments', part='LM2733X',  # X=1.6 MHz, Y=0.6 MHz
+      datasheet='https://www.ti.com/lit/ds/symlink/lm2733.pdf'
+    )
+    self.assign(self.lcsc_part, 'C80169')
+    self.assign(self.actual_basic_part, False)
+
+
+class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
+  """Adjustable boost converter in SOT-23-5 with integrated switch"""
+  def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
+    return self.ic.nshdn
+
+  def contents(self):
+    import math
+    super().contents()
+
+    self.assign(self.actual_frequency, (1.15, 1.85)*MHertz)
+
+    with self.implicit_connect(
+            ImplicitConnect(self.pwr_in, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.ic = imp.Block(Lm2733_Device())
+
+      self.fb = imp.Block(FeedbackVoltageDivider(
+        output_voltage=(1.205, 1.255) * Volt,
+        impedance=(10, 100) * kOhm,
+        assumed_input_voltage=self.output_voltage
+      ))
+      self.connect(self.fb.input, self.pwr_out)
+      self.connect(self.fb.output, self.ic.fb)
+
+      self.power_path = imp.Block(BoostConverterPowerPath(
+        self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.actual_frequency,
+        self.pwr_out.link().current_drawn, (0, 1)*Amp,
+        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
+                                                       self.ripple_current_factor,
+                                                       rated_current=0.5*Amp),
+        input_voltage_ripple=self.input_ripple_limit,
+        output_voltage_ripple=self.output_ripple_limit
+      ))
+      self.connect(self.power_path.pwr_out, self.pwr_out)
+      self.connect(self.power_path.switch, self.ic.sw)
+
+      self.cf = self.Block(Capacitor(  # arbitrary 15% target tolerance for zero location
+        capacitance=RangeExpr.cancel_multiply(1/(2 * math.pi * self.fb.actual_rtop),
+                                              1/(8000*Ohm(tol=0.15))),
+        voltage=self.pwr_out.voltage_out
+      ))
+      self.connect(self.cf.neg.adapt_to(AnalogSink()), self.ic.fb)
+      self.connect(self.cf.pos.adapt_to(VoltageSink()), self.pwr_out)
+
+      self.rect = self.Block(Diode(
+        reverse_voltage=(0, self.pwr_out.voltage_out.upper()),
+        current=self.pwr_out.link().current_drawn,
+        voltage_drop=(0, 0.8)*Volt,
+        reverse_recovery_time=(0, 500) * nSecond  # guess from Digikey's classification for "fast recovery"
+      ))
+      self.connect(self.ic.sw, self.rect.anode.adapt_to(VoltageSink()))
+      self.connect(self.pwr_out, self.rect.cathode.adapt_to(VoltageSource(
+        voltage_out=self.fb.actual_input_voltage,
+        current_limits=self.power_path.switch.current_limits
+      )))
+
+      self.require(self.pwr_out.voltage_out.upper() + self.rect.actual_voltage_drop.upper() <= 40,
+                   "max SW voltage")

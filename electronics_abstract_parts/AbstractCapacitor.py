@@ -84,6 +84,19 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
     self.neg = self.Port(Passive.empty())
 
 
+@abstract_block
+class CeramicCapacitor(Capacitor):
+  """Abstract base class for ceramic capacitors, which appear more ideal in terms of lower ESP"""
+  pass
+
+
+@abstract_block
+class AluminumCapacitor(Capacitor):
+  """Abstract base class for aluminum electrolytic capacitors capacitors which provide compact bulk capacitance
+  but at the cost of ESR"""
+  pass
+
+
 @non_library
 class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
   REFDES_PREFIX = 'C'
@@ -99,6 +112,56 @@ class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
       'Capacitor_SMD:C_1210_3225Metric',
       'Capacitor_SMD:C_1812_4532Metric',
       'Capacitor_SMD:C_2512_6332Metric',
+
+      'Capacitor_SMD:CP_Elec_3x5.3',
+      'Capacitor_SMD:CP_Elec_3x5.4',
+      'Capacitor_SMD:CP_Elec_4x3',
+      'Capacitor_SMD:CP_Elec_4x3.9',
+      'Capacitor_SMD:CP_Elec_4x4.5',
+      'Capacitor_SMD:CP_Elec_4x5.3',
+      'Capacitor_SMD:CP_Elec_4x5.4',
+      'Capacitor_SMD:CP_Elec_4x5.7',
+      'Capacitor_SMD:CP_Elec_4x5.8',
+      'Capacitor_SMD:CP_Elec_5x3',
+      'Capacitor_SMD:CP_Elec_5x3.9',
+      'Capacitor_SMD:CP_Elec_5x4.4',
+      'Capacitor_SMD:CP_Elec_5x4.5',
+      'Capacitor_SMD:CP_Elec_5x5.3',
+      'Capacitor_SMD:CP_Elec_5x5.4',
+      'Capacitor_SMD:CP_Elec_5x5.7',
+      'Capacitor_SMD:CP_Elec_5x5.8',
+      'Capacitor_SMD:CP_Elec_5x5.9',
+      'Capacitor_SMD:CP_Elec_6.3x3',
+      'Capacitor_SMD:CP_Elec_6.3x3.9',
+      'Capacitor_SMD:CP_Elec_6.3x4.5',
+      'Capacitor_SMD:CP_Elec_6.3x4.9',
+      'Capacitor_SMD:CP_Elec_6.3x5.2',
+      'Capacitor_SMD:CP_Elec_6.3x5.3',
+      'Capacitor_SMD:CP_Elec_6.3x5.4',
+      'Capacitor_SMD:CP_Elec_6.3x5.7',
+      'Capacitor_SMD:CP_Elec_6.3x5.8',
+      'Capacitor_SMD:CP_Elec_6.3x5.9',
+      'Capacitor_SMD:CP_Elec_6.3x7.7',
+      'Capacitor_SMD:CP_Elec_6.3x9.9',
+      'Capacitor_SMD:CP_Elec_8x5.4',
+      'Capacitor_SMD:CP_Elec_8x6.2',
+      'Capacitor_SMD:CP_Elec_8x6.5',
+      'Capacitor_SMD:CP_Elec_8x6.7',
+      'Capacitor_SMD:CP_Elec_8x6.9',
+      'Capacitor_SMD:CP_Elec_8x10',
+      'Capacitor_SMD:CP_Elec_8x10.5',
+      'Capacitor_SMD:CP_Elec_8x11.9',
+      'Capacitor_SMD:CP_Elec_10x7.7',
+      'Capacitor_SMD:CP_Elec_10x7.9',
+      'Capacitor_SMD:CP_Elec_10x10',
+      'Capacitor_SMD:CP_Elec_10x10.5',
+      'Capacitor_SMD:CP_Elec_10x12.5',
+      'Capacitor_SMD:CP_Elec_10x12.6',
+      'Capacitor_SMD:CP_Elec_10x14.3',
+      'Capacitor_SMD:CP_Elec_16x17.5',
+      'Capacitor_SMD:CP_Elec_16x22',
+      'Capacitor_SMD:CP_Elec_18x7.5',
+      'Capacitor_SMD:CP_Elec_18x22',
     ): lambda block: {
       '1': block.pos,
       '2': block.neg,
@@ -121,16 +184,34 @@ class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
 
 
 @non_library
-class TableCapacitor(Capacitor):
-  """Abstract table-based capacitor, providing some interface column definitions.
-  DO NOT USE DIRECTLY - this provides no selection logic implementation."""
+class TableCapacitor(CapacitorStandardFootprint, PartsTableFootprintSelector):
+  """Abstract table-based capacitor, providing some interface column definitions."""
   CAPACITANCE = PartsTableColumn(Range)
   NOMINAL_CAPACITANCE = PartsTableColumn(float)  # nominal capacitance, even with asymmetrical tolerances
   VOLTAGE_RATING = PartsTableColumn(Range)
 
+  @init_in_parent
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.generator_param(self.capacitance, self.voltage, self.voltage_rating_derating, self.exact_capacitance)
+
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
+    self.assign(self.actual_capacitance, row[self.CAPACITANCE])
+
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
+    return super()._row_filter(row) and \
+      derated_voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and \
+      self._row_filter_capacitance(row)
+
+  def _row_filter_capacitance(self, row: PartsTableRow) -> bool:
+    return row[self.CAPACITANCE].fuzzy_in(self.get(self.capacitance))
+
 
 @non_library
-class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTableFootprintSelector):
+class TableDeratingCapacitor(TableCapacitor):
   """Abstract table-based capacitor with derating based on a part-part voltage coefficient."""
   VOLTCO = PartsTableColumn(float)
   DERATED_CAPACITANCE = PartsTableColumn(Range)
@@ -151,16 +232,13 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
   def __init__(self, *args, single_nominal_capacitance: RangeLike = (0, 22)*uFarad, **kwargs):
     super().__init__(*args, **kwargs)
     self.single_nominal_capacitance = self.ArgParameter(single_nominal_capacitance)
-    self.generator_param(self.capacitance, self.voltage, self.single_nominal_capacitance,
-                         self.voltage_rating_derating, self.exact_capacitance)
+    self.generator_param(self.single_nominal_capacitance)
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
 
-  def _row_filter(self, row: PartsTableRow) -> bool:
-    derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
-    return super()._row_filter(row) and \
-      derated_voltage.fuzzy_in(row[self.VOLTAGE_RATING]) and \
-      Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(self.get(self.single_nominal_capacitance))
+  def _row_filter_capacitance(self, row: PartsTableRow) -> bool:
+    # post-derating capacitance filtering is in _table_postprocess
+    return Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(self.get(self.single_nominal_capacitance))
 
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     def add_derated_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -201,8 +279,6 @@ class TableDeratingCapacitor(CapacitorStandardFootprint, TableCapacitor, PartsTa
   def _row_generate(self, row: PartsTableRow) -> None:
     if row[self.PARALLEL_COUNT] == 1:
       super()._row_generate(row)  # creates the footprint
-      self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
-      self.assign(self.actual_capacitance, row[self.CAPACITANCE])
       self.assign(self.actual_derated_capacitance, row[self.DERATED_CAPACITANCE])
     else:
       self.assign(self.actual_part, f"{row[self.PARALLEL_COUNT]}x {row[self.PART_NUMBER_COL]}")
@@ -256,7 +332,7 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     self.pwr = self.Export(self.cap.pos.adapt_to(VoltageSink(
       voltage_limits=(self.cap.actual_voltage_rating + self.gnd.link().voltage).hull(self.gnd.link().voltage),
       current_draw=0*Amp(tol=0)
-    )), [Power])
+    )), [Power, InOut])
 
     self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
 

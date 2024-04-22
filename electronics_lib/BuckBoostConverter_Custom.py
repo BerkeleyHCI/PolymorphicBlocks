@@ -18,7 +18,7 @@ class VoltageSinkConnector(DummyDevice, NetBlock):
     ), [Output])  # exterior source: set output voltage + Ilim
 
 
-class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
+class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
   """Custom synchronous buck-boost with four PWMs for the switches.
   Because of the MOSFET body diode, will probably be fine-ish if the buck low-side FET and the boost high-side FET
   are not driven"""
@@ -30,10 +30,8 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
     super().__init__(*args, **kwargs)
 
     self.pwr_logic = self.Port(VoltageSink.empty())
-    self.buck_pwm_low = self.Port(DigitalSink.empty())
-    self.buck_pwm_high = self.Port(DigitalSink.empty())
-    self.boost_pwm_low = self.Port(DigitalSink.empty())
-    self.boost_pwm_high = self.Port(DigitalSink.empty())
+    self.buck_pwm = self.Port(DigitalSink.empty())
+    self.boost_pwm = self.Port(DigitalSink.empty())
 
     self.frequency = self.ArgParameter(frequency)
     self.voltage_drop = self.ArgParameter(voltage_drop)
@@ -48,7 +46,9 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
       self.pwr_out.link().current_drawn, Range.all(),  # TODO model current limits from FETs
       inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                      self.ripple_current_factor,
-                                                     rated_current=self.pwr_out.link().current_drawn.upper())
+                                                     rated_current=self.pwr_out.link().current_drawn.upper()),
+      input_voltage_ripple=self.input_ripple_limit,
+      output_voltage_ripple=self.output_ripple_limit
     ))
     self.connect(self.power_path.pwr_in, self.pwr_in)
     self.connect(self.power_path.pwr_out, self.pwr_out)
@@ -57,9 +57,15 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
     self.buck_sw = self.Block(FetHalfBridge(frequency=self.frequency))
     self.connect(self.buck_sw.gnd, self.gnd)
     self.connect(self.buck_sw.pwr_logic, self.pwr_logic)
-    self.connect(self.buck_sw.low_ctl, self.buck_pwm_low)
-    self.connect(self.buck_sw.high_ctl, self.buck_pwm_high)
-    self.connect(self.pwr_in, self.buck_sw.pwr)
+    self.connect(self.buck_sw.with_mixin(HalfBridgePwm()).pwm_ctl, self.buck_pwm)
+    self.connect(self.buck_sw.with_mixin(Resettable()).reset, self.reset)
+    (self.pwr_in_forced, ), _ = self.chain(  # use average draw instead of peak for external draw specs
+      self.pwr_in,
+      self.Block(ForcedVoltageCurrentDraw(self.pwr_out.link().current_drawn *
+                                          self.output_voltage / self.pwr_in.link().voltage /
+                                          self.power_path.efficiency)),
+      self.buck_sw.pwr
+    )
     self.connect(  # current draw used to size FETs, size for peak current
       self.buck_sw.out,
       self.power_path.switch_in.adapt_to(VoltageSink(current_draw=self.power_path.actual_inductor_current))
@@ -68,8 +74,8 @@ class CustomSyncBuckBoostConverter(DiscreteBoostConverter):
     self.boost_sw = self.Block(FetHalfBridge(frequency=self.frequency))
     self.connect(self.boost_sw.gnd, self.gnd)
     self.connect(self.boost_sw.pwr_logic, self.pwr_logic)
-    self.connect(self.boost_sw.low_ctl, self.boost_pwm_low)
-    self.connect(self.boost_sw.high_ctl, self.boost_pwm_high)
+    self.connect(self.boost_sw.with_mixin(HalfBridgePwm()).pwm_ctl, self.boost_pwm)
+    self.connect(self.boost_sw.with_mixin(Resettable()).reset, self.reset)
     (self.boost_pwr_conn, ), _ = self.chain(
       self.boost_sw.pwr,
       self.Block(VoltageSinkConnector(self.output_voltage,

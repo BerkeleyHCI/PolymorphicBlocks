@@ -1,4 +1,5 @@
 from electronics_abstract_parts import *
+from .PassiveConnector_Header import JstShSmHorizontal
 
 
 @abstract_block
@@ -77,3 +78,19 @@ class LipoConnector(Connector, Battery):
     self.connect(pwr_pin, self.chg_adapter.src)
     self.connect(self.chg, self.chg_adapter.dst)
     self.assign(self.actual_capacity, (500, 600)*mAmp)  # arbitrary
+
+
+class QwiicTarget(Connector):
+  """A Qwiic (https://www.sparkfun.com/qwiic) connector to a I2C target.
+  This would be on a board with a host controller."""
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(JstShSmHorizontal(4))
+    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()), [Common])
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink(
+      voltage_limits=3.3*Volt(tol=0.05),  # required 3.3v per the spec, tolerance assumed
+      current_draw=(0, 226)*mAmp,  # per the Qwiic FAQ, max current for the cable
+    )), [Power])
+    self.i2c = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
+    self.connect(self.i2c.sda, self.conn.pins.request('3').adapt_to(DigitalBidir()))
+    self.connect(self.i2c.scl, self.conn.pins.request('4').adapt_to(DigitalBidir()))

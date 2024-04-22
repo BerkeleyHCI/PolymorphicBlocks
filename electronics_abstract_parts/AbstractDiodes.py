@@ -1,4 +1,5 @@
 from typing import Dict
+from deprecated import deprecated
 
 from electronics_model import *
 from .DummyDevices import ForcedAnalogVoltage
@@ -183,6 +184,7 @@ class ProtectionZenerDiode(Protection):
     self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
 
 
+@deprecated("Use AnalogClampResistor, which should be cheaper and cause less signal distortion")
 class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
   """Analog overvoltage protection diode to clamp the input voltage"""
   @init_in_parent

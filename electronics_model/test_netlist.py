@@ -1,12 +1,23 @@
 import unittest
-from typing import Type
+from typing import Type, List
 
+import edgir
 from edg_core import *
 from .CircuitBlock import FootprintBlock
-from .NetlistGenerator import NetlistTransform
+from .NetlistGenerator import NetlistTransform, NetPin as RawNetPin, NetBlock as RawNetBlock, Net
 from .RefdesRefinementPass import RefdesRefinementPass
 from .VoltagePorts import VoltageSource, VoltageSink
-from .footprint import Pin, Block as FBlock  # TODO cleanup naming
+
+
+# wrapper / convenience constructors
+def NetPin(block_path: List[str], pin_name: str) -> RawNetPin:
+  return RawNetPin(TransformUtil.Path(tuple(block_path), (), (), ()), pin_name)
+
+def NetBlock(footprint: str, refdes: str, part: str, value: str, full_path: List[str], path: List[str],
+             class_path: List[str]) -> RawNetBlock:
+  return RawNetBlock(footprint, refdes, part, value,
+                     TransformUtil.Path(tuple(full_path), (), (), ()), path,
+                     [edgir.libpath(cls) for cls in class_path])
 
 
 class TestFakeSource(FootprintBlock):
@@ -174,109 +185,153 @@ class NetlistTestCase(unittest.TestCase):
   def test_basic_netlist(self) -> None:
     net = self.generate_net(TestBasicCircuit)
 
-    self.assertEqual(net.nets['vpos'], [
-      Pin('source', '1'),
-      Pin('sink', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      Pin('source', '2'),
-      Pin('sink', '2')
-    ])
-    self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
-                                                  ['source'], ['source'],
-                                                  ['electronics_model.test_netlist.TestFakeSource']))
-    self.assertEqual(net.blocks['sink'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                                                ['sink'], ['sink'],
-                                                ['electronics_model.test_netlist.TestFakeSink']))
+    self.assertIn(Net('vpos', [
+      NetPin(['source'], '1'),
+      NetPin(['sink'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink').append_port('pos'),
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['sink'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink').append_port('neg'),
+    ]), net.nets)
+    self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
+                           ['source'], ['source'],
+                           ['electronics_model.test_netlist.TestFakeSource']), net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
+                           ['sink'], ['sink'],
+                           ['electronics_model.test_netlist.TestFakeSink']), net.blocks)
 
   def test_multisink_netlist(self) -> None:
     net = self.generate_net(TestMultisinkCircuit)
 
-    self.assertEqual(net.nets['vpos'], [
-      Pin('source', '1'),
-      Pin('sink1', '1'),
-      Pin('sink2', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      Pin('source', '2'),
-      Pin('sink1', '2'),
-      Pin('sink2', '2')
-    ])
-    self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
-                                                  ['source'], ['source'],
-                                                  ['electronics_model.test_netlist.TestFakeSource']))
-    self.assertEqual(net.blocks['sink1'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                                                 ['sink1'], ['sink1'],
-                                                 ['electronics_model.test_netlist.TestFakeSink']))
-    self.assertEqual(net.blocks['sink2'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '1k',
-                                                 ['sink2'], ['sink2'],
-                                                 ['electronics_model.test_netlist.TestFakeSink']))
+    self.assertIn(Net('vpos', [
+      NetPin(['source'], '1'),
+      NetPin(['sink1'], '1'),
+      NetPin(['sink2'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink1').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink2').append_port('pos'),
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['sink1'], '2'),
+      NetPin(['sink2'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink1').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink2').append_port('neg'),
+    ]), net.nets)
+    self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
+                           ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
+                           ['sink1'], ['sink1'], ['electronics_model.test_netlist.TestFakeSink']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '1k',
+                           ['sink2'], ['sink2'], ['electronics_model.test_netlist.TestFakeSink']),
+                  net.blocks)
 
   def test_multinet_netlist(self) -> None:
     net = self.generate_net(TestMultinetCircuit)
 
-    self.assertEqual(net.nets['vin'], [
-      Pin('source', '1'),
-      Pin('adapter', '3')
-    ])
-    self.assertEqual(net.nets['vout'], [
-      Pin('adapter', '2'),
-      Pin('sink', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      Pin('source', '2'),
-      Pin('adapter', '1'),
-      Pin('sink', '2')
-    ])
-    self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
-                                                  ['source'], ['source'],
-                                                  ['electronics_model.test_netlist.TestFakeSource']))
-    self.assertEqual(net.blocks['adapter'], FBlock('Package_TO_SOT_SMD:SOT-223-3_TabPin2', 'U1', '', 'LD1117V33',
-                                                   ['adapter'], ['adapter'],
-                                                   ['electronics_model.test_netlist.TestFakeAdapter']))
-    self.assertEqual(net.blocks['sink'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                                                ['sink'], ['sink'],
-                                                ['electronics_model.test_netlist.TestFakeSink']))
+    self.assertIn(Net('vin', [
+      NetPin(['source'], '1'),
+      NetPin(['adapter'], '3')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('pos'),
+      TransformUtil.Path.empty().append_block('adapter').append_port('pos_in'),
+    ]), net.nets)
+    self.assertIn(Net('vout', [
+      NetPin(['adapter'], '2'),
+      NetPin(['sink'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('adapter').append_port('pos_out'),
+      TransformUtil.Path.empty().append_block('sink').append_port('pos'),
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['adapter'], '1'),
+      NetPin(['sink'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('neg'),
+      TransformUtil.Path.empty().append_block('adapter').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink').append_port('neg'),
+    ]), net.nets)
+    self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
+                           ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
+                  net.blocks)
+    self.assertIn(NetBlock('Package_TO_SOT_SMD:SOT-223-3_TabPin2', 'U1', '', 'LD1117V33',
+                           ['adapter'], ['adapter'], ['electronics_model.test_netlist.TestFakeAdapter']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
+                           ['sink'], ['sink'], ['electronics_model.test_netlist.TestFakeSink']),
+                  net.blocks)
 
   def test_hierarchy_netlist(self) -> None:
     net = self.generate_net(TestHierarchyCircuit)
 
-    self.assertEqual(net.nets['vpos'], [
-      Pin('source', '1'),
-      Pin('sink', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      Pin('source', '2'),
-      Pin('sink', '2')
-    ])
-    self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
-                                                  ['source'], ['source'],
-                                                  ['electronics_model.test_netlist.TestFakeSource']))
-    self.assertEqual(net.blocks['sink'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                                                ['sink', 'block'], ['sink'],
-                                                ['electronics_model.test_netlist.TestFakeSinkHierarchy']))
+    self.assertIn(Net('vpos', [
+      NetPin(['source'], '1'),
+      NetPin(['sink', 'block'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink', 'block').append_port('pos'),
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['sink', 'block'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink', 'block').append_port('neg'),
+    ]), net.nets)
+    self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
+                           ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
+                           ['sink', 'block'], ['sink'], ['electronics_model.test_netlist.TestFakeSinkHierarchy']),
+                  net.blocks)
 
   def test_dual_hierarchy_netlist(self) -> None:
     net = self.generate_net(TestDualHierarchyCircuit)
 
-    self.assertEqual(net.nets['vpos'], [
-      Pin('source', '1'),
-      Pin('sink.block1', '1'),
-      Pin('sink.block2', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      Pin('source', '2'),
-      Pin('sink.block1', '2'),
-      Pin('sink.block2', '2')
-    ])
-    self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
-                                                  ['source'], ['source'],
-                                                  ['electronics_model.test_netlist.TestFakeSource']))
-    self.assertEqual(net.blocks['sink.block1'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                                                       ['sink', 'block1'], ['sink', 'block1'],
-                                                       ['electronics_model.test_netlist.TestFakeDualSinkHierarchy',
-                                                        'electronics_model.test_netlist.TestFakeSink']))
-    self.assertEqual(net.blocks['sink.block2'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '1k',
-                                                       ['sink', 'block2'], ['sink', 'block2'],
-                                                       ['electronics_model.test_netlist.TestFakeDualSinkHierarchy',
-                                                        'electronics_model.test_netlist.TestFakeSink']))
+    self.assertIn(Net('vpos', [
+      NetPin(['source'], '1'),
+      NetPin(['sink', 'block1'], '1'),
+      NetPin(['sink', 'block2'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink', 'block1').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink', 'block2').append_port('pos'),
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['sink', 'block1'], '2'),
+      NetPin(['sink', 'block2'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink', 'block1').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink', 'block2').append_port('neg'),
+    ]), net.nets)
+    self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
+                           ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
+                           ['sink', 'block1'], ['sink', 'block1'],
+                           ['electronics_model.test_netlist.TestFakeDualSinkHierarchy',
+                            'electronics_model.test_netlist.TestFakeSink']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '1k',
+                           ['sink', 'block2'], ['sink', 'block2'],
+                           ['electronics_model.test_netlist.TestFakeDualSinkHierarchy',
+                            'electronics_model.test_netlist.TestFakeSink']),
+                  net.blocks)

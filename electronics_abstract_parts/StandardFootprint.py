@@ -11,10 +11,13 @@ class StandardFootprint(FootprintBlock, Generic[StandardPinningType]):
   FOOTPRINT_PINNING_MAP: Dict[Union[str, Tuple[str, ...]], PinningFunction]  # user-specified
   _EXPANDED_FOOTPRINT_PINNING_MAP: Optional[Dict[str, PinningFunction]] = None  # automatically-generated from above
 
-  def _make_pinning(self, footprint: str) -> Dict[str, CircuitPort]:
-    if self.__class__._EXPANDED_FOOTPRINT_PINNING_MAP is None:
+  @classmethod
+  def _footprint_pinning_map(cls) -> Dict[str, PinningFunction]:
+    """Returns the footprint pinning map as a dict of footprint name -> pinning fn, generating and caching the
+    expanded table as needed"""
+    if cls._EXPANDED_FOOTPRINT_PINNING_MAP is None:
       footprint_map = {}
-      for pinning_footprints, pinning_fn in self.FOOTPRINT_PINNING_MAP.items():
+      for pinning_footprints, pinning_fn in cls.FOOTPRINT_PINNING_MAP.items():
         if isinstance(pinning_footprints, tuple):
           for pinning_footprint in pinning_footprints:
             assert pinning_footprint not in footprint_map, f"duplicate footprint entry {pinning_footprint}"
@@ -24,5 +27,8 @@ class StandardFootprint(FootprintBlock, Generic[StandardPinningType]):
           footprint_map[pinning_footprints] = pinning_fn
         else:
           raise ValueError(f"unknown footprint entry {pinning_footprints}")
-      self.__class__._EXPANDED_FOOTPRINT_PINNING_MAP = footprint_map
-    return self.__class__._EXPANDED_FOOTPRINT_PINNING_MAP[footprint](self)
+      cls._EXPANDED_FOOTPRINT_PINNING_MAP = footprint_map
+    return cls._EXPANDED_FOOTPRINT_PINNING_MAP
+
+  def _make_pinning(self, footprint: str) -> Dict[str, CircuitPort]:
+    return self.__class__._footprint_pinning_map()[footprint](self)
