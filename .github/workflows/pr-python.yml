@@ -2,9 +2,12 @@
 # mypy: https://doedotdev.medium.com/mypy-for-github-action-7da1ebee99e7
 # optimization: https://github.com/marketplace/actions/skip-duplicate-actions#usage-examples
 
-name: Python PR build and tests
+name: HDL and example tests
 
 on:
+  push:
+    branches:
+      - "master"
   pull_request:
     types: [assigned, opened, synchronize, reopened, ready_for_review]
 

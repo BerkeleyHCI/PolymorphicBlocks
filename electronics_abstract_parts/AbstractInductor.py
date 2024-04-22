@@ -64,6 +64,7 @@ class InductorStandardFootprint(Inductor, StandardFootprint[Inductor]):
       'Inductor_SMD:L_Bourns-SRR1005',
       'Inductor_SMD:L_Bourns_SRR1210A',
       'Inductor_SMD:L_Bourns_SRR1260',
+      'Inductor_SMD:L_Bourns_SRP1245A',
 
       'Inductor_SMD:L_Sunlord_SWPA3010S',
       'Inductor_SMD:L_Sunlord_SWPA3012S',
@@ -105,6 +106,14 @@ class InductorStandardFootprint(Inductor, StandardFootprint[Inductor]):
       'Inductor_SMD:L_TDK_SLF12555',
       'Inductor_SMD:L_TDK_SLF12565',
       'Inductor_SMD:L_TDK_SLF12575',
+
+      'Inductor_SMD:L_Vishay_IHLP-1212',
+      'Inductor_SMD:L_Vishay_IHLP-1616',
+      'Inductor_SMD:L_Vishay_IHLP-2020',
+      'Inductor_SMD:L_Vishay_IHLP-2525',
+      'Inductor_SMD:L_Vishay_IHLP-4040',
+      'Inductor_SMD:L_Vishay_IHLP-5050',
+      'Inductor_SMD:L_Vishay_IHLP-6767',
     ): lambda block: {
       '1': block.a,
       '2': block.b,

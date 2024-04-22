@@ -88,6 +88,7 @@ class JlcTopRefinements(BaseBoardTop):
         (Opamp, Lmv321),
         (SpiMemory, W25q),  # 128M version is a basic part
         (TestPoint, Keystone5015),  # this is larger, but is part of JLC's parts inventory
+        (UflConnector, Bwipx_1_001e),
       ],
       class_values=[  # realistically only RCs are going to likely be basic parts
         (JlcResistor, ['require_basic_part'], True),

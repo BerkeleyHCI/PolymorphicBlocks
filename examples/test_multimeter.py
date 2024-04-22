@@ -383,11 +383,6 @@ class Multimeter(JlcBoardTop):
       self.connect(self.mcu.gpio.request_vector('measure_select'), self.measure.select)
       self.connect(self.mcu.gpio.request('adc_cs'), self.adc.cs)
 
-      self.adc_vref = self.connect(self.adc.vref)
-      (self.tp_vref, ), _ = self.chain(
-        self.adc.vref,
-        self.Block(VoltageTestPoint()))
-
       # DRIVER CIRCUITS
       self.driver = imp.Block(MultimeterCurrentDriver(
         voltage_rating=VOLTAGE_RATING
