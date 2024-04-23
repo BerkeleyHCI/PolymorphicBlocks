@@ -358,6 +358,15 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
     assert pb.HasField('range') and pb.range.minimum.HasField('floating') and pb.range.maximum.HasField('floating')
     return Range(pb.range.minimum.floating.val, pb.range.maximum.floating.val)
 
+  @classmethod
+  def cancel_multiply(cls, input_side: RangeLike, output_side: RangeLike) -> RangeExpr:
+    """See Range.cancel_multiply"""
+    input_expr = cls._to_expr_type(input_side)
+    output_expr = cls._to_expr_type(output_side)
+    lower = input_expr.upper() * output_expr.lower()
+    upper = input_expr.lower() * output_expr.upper()
+    return cls._to_expr_type((lower, upper))  # rely on internally to check for non-empty range
+
   def __init__(self, initializer: Optional[RangeLike] = None) -> None:
     # must cast non-empty initializer type, because range supports wider initializers
     # TODO and must ignore initializers of self-type (because model weirdness) - remove model support!
@@ -395,6 +404,9 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
 
   def upper(self) -> FloatExpr:
     return self._upper
+
+  def center(self) -> FloatExpr:
+    return (self._lower + self._upper) / 2
 
   @classmethod
   def _create_range_float_binary_op(cls,

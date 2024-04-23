@@ -68,7 +68,9 @@ class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
         self.pwr_out.link().current_drawn, (0, 0.5)*Amp,
         inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
                                                        self.ripple_current_factor,
-                                                       rated_current=0.5*Amp)
+                                                       rated_current=0.5*Amp),
+        input_voltage_ripple=self.input_ripple_limit,
+        output_voltage_ripple=self.output_ripple_limit
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)

@@ -23,7 +23,7 @@ class CompactKeystone5015(TestPoint, FootprintBlock, JlcPart):
   """Keystone 5015 / 5017 but with an experimental compact footprint"""
   def contents(self) -> None:
     super().contents()
-    self.assign(self.lcsc_part, 'C238130')
+    self.assign(self.lcsc_part, 'C2906768')
     self.assign(self.actual_basic_part, False)
     self.footprint(
       'TP', 'edg:TestPoint_TE_RCT_0805',

@@ -250,7 +250,8 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         (['mcu_test', 'swd_swo_pin'], 'GPIO16'),  # UART0 TX
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_14v', 'inductor', 'part'], "CBC3225T220KR"),
-        (['reg_14v', 'inductor', 'manual_frequency_rating'], Range(0, 17e6))  # 17MHz self-resonant
+        (['reg_14v', 'inductor', 'manual_frequency_rating'], Range(0, 17e6)),  # 17MHz self-resonant
+        (['reg_14v', 'out_cap', 'cap', 'voltage_rating_derating'], 0.85),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),

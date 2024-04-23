@@ -6,8 +6,7 @@ from .CircuitBlock import FootprintBlock
 from .DigitalPorts import DigitalSource, DigitalSink
 from .SpiPort import SpiController, SpiPeripheral
 from .UartPort import UartPort
-from .footprint import Pin, Block as FBlock  # TODO cleanup naming
-from .test_netlist import NetlistTestCase
+from .test_netlist import NetlistTestCase, Net, NetPin, NetBlock
 
 
 class TestFakeSpiController(FootprintBlock):
@@ -128,77 +127,112 @@ class BundleNetlistTestCase(unittest.TestCase):
   def test_spi_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestSpiCircuit)
 
-    self.assertEqual(net.nets['cs1_link'], [
-      Pin('controller', '0'),
-      Pin('peripheral1', '4'),
-    ])
-    self.assertEqual(net.nets['cs2_link'], [
-      Pin('controller', '1'),
-      Pin('peripheral2', '4'),
-    ])
-    self.assertEqual(net.nets['spi_link.sck'], [
-      Pin('controller', '2'),
-      Pin('peripheral1', '1'),
-      Pin('peripheral2', '1'),
-    ])
-    self.assertEqual(net.nets['spi_link.mosi'], [
-      Pin('controller', '4'),
-      Pin('peripheral1', '2'),
-      Pin('peripheral2', '2'),
-    ])
-    self.assertEqual(net.nets['spi_link.miso'], [
-      Pin('controller', '3'),
-      Pin('peripheral1', '3'),
-      Pin('peripheral2', '3'),
-    ])
+    self.assertIn(Net('cs1_link', [
+      NetPin(['controller'], '0'),
+      NetPin(['peripheral1'], '4'),
+    ], [
+      TransformUtil.Path.empty().append_block('controller').append_port('cs_out_1'),
+      TransformUtil.Path.empty().append_block('peripheral1').append_port('cs_in'),
+    ]), net.nets)
+    self.assertIn(Net('cs2_link', [
+      NetPin(['controller'], '1'),
+      NetPin(['peripheral2'], '4'),
+    ], [
+      TransformUtil.Path.empty().append_block('controller').append_port('cs_out_2'),
+      TransformUtil.Path.empty().append_block('peripheral2').append_port('cs_in'),
+    ]), net.nets)
+    self.assertIn(Net('spi_link.sck', [
+      NetPin(['controller'], '2'),
+      NetPin(['peripheral1'], '1'),
+      NetPin(['peripheral2'], '1'),
+    ], [
+      TransformUtil.Path.empty().append_block('controller').append_port('spi', 'sck'),
+      TransformUtil.Path.empty().append_block('peripheral1').append_port('spi', 'sck'),
+      TransformUtil.Path.empty().append_block('peripheral2').append_port('spi', 'sck'),
+    ]), net.nets)
+    self.assertIn(Net('spi_link.mosi', [
+      NetPin(['controller'], '4'),
+      NetPin(['peripheral1'], '2'),
+      NetPin(['peripheral2'], '2'),
+    ], [
+      TransformUtil.Path.empty().append_block('controller').append_port('spi', 'mosi'),
+      TransformUtil.Path.empty().append_block('peripheral1').append_port('spi', 'mosi'),
+      TransformUtil.Path.empty().append_block('peripheral2').append_port('spi', 'mosi'),
+    ]), net.nets)
+    self.assertIn(Net('spi_link.miso', [
+      NetPin(['controller'], '3'),
+      NetPin(['peripheral1'], '3'),
+      NetPin(['peripheral2'], '3'),
+    ], [
+      TransformUtil.Path.empty().append_block('controller').append_port('spi', 'miso'),
+      TransformUtil.Path.empty().append_block('peripheral1').append_port('spi', 'miso'),
+      TransformUtil.Path.empty().append_block('peripheral2').append_port('spi', 'miso'),
+    ]), net.nets)
 
-    self.assertEqual(net.blocks['controller'], FBlock(
-      'Resistor_SMD:R_Array_Concave_2x0603', 'R1', '', 'WeirdSpiController',
-      ['controller'], ['controller'], ['electronics_model.test_bundle_netlist.TestFakeSpiController']))
-    self.assertEqual(net.blocks['peripheral1'], FBlock(
-      'Resistor_SMD:R_Array_Concave_2x0603', 'R2', '', 'WeirdSpiPeripheral',
-      ['peripheral1'], ['peripheral1'], ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']))
-    self.assertEqual(net.blocks['peripheral2'], FBlock(
-      'Resistor_SMD:R_Array_Concave_2x0603', 'R3', '', 'WeirdSpiPeripheral',
-      ['peripheral2'], ['peripheral2'], ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']))
+    self.assertIn(NetBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R1', '', 'WeirdSpiController',
+                           ['controller'], ['controller'],
+                           ['electronics_model.test_bundle_netlist.TestFakeSpiController']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R2', '', 'WeirdSpiPeripheral',
+                           ['peripheral1'], ['peripheral1'],
+                           ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R3', '', 'WeirdSpiPeripheral',
+                           ['peripheral2'], ['peripheral2'],
+                           ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']),
+                  net.blocks)
 
   def test_uart_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestUartCircuit)
 
-    self.assertEqual(net.nets['link.a_tx'], [
-      Pin('a', '1'),
-      Pin('b', '2')
-    ])
-    self.assertEqual(net.nets['link.b_tx'], [
-      Pin('a', '2'),
-      Pin('b', '1')
-    ])
-    self.assertEqual(net.blocks['a'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                                             ['a'], ['a'],
-                                             ['electronics_model.test_bundle_netlist.TestFakeUartBlock']))
-    self.assertEqual(net.blocks['b'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '1k',
-                                             ['b'], ['b'],
-                                             ['electronics_model.test_bundle_netlist.TestFakeUartBlock']))
+    self.assertIn(Net('link.a_tx', [
+      NetPin(['a'], '1'),
+      NetPin(['b'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('a').append_port('port', 'tx'),
+      TransformUtil.Path.empty().append_block('b').append_port('port', 'rx'),
+    ]), net.nets)
+    self.assertIn(Net('link.b_tx', [
+      NetPin(['a'], '2'),
+      NetPin(['b'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('a').append_port('port', 'rx'),
+      TransformUtil.Path.empty().append_block('b').append_port('port', 'tx'),
+    ]), net.nets)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
+                           ['a'], ['a'], ['electronics_model.test_bundle_netlist.TestFakeUartBlock']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '1k',
+                           ['b'], ['b'], ['electronics_model.test_bundle_netlist.TestFakeUartBlock']),
+                  net.blocks)
 
   def test_can_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestCanCircuit)
 
-    self.assertEqual(net.nets['link.canh'], [
-      Pin('node1', '1'),
-      Pin('node2', '1'),
-      Pin('node3', '1')
-    ])
-    self.assertEqual(net.nets['link.canl'], [
-      Pin('node1', '2'),
-      Pin('node2', '2'),
-      Pin('node3', '2')
-    ])
-    self.assertEqual(net.blocks['node1'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '120',
-                                                 ['node1'], ['node1'],
-                                                 ['electronics_model.test_bundle_netlist.TestFakeCanBlock']))
-    self.assertEqual(net.blocks['node2'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '120',
-                                                 ['node2'], ['node2'],
-                                                 ['electronics_model.test_bundle_netlist.TestFakeCanBlock']))
-    self.assertEqual(net.blocks['node3'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R3', '', '120',
-                                                 ['node3'], ['node3'],
-                                                 ['electronics_model.test_bundle_netlist.TestFakeCanBlock']))
+    self.assertIn(Net('link.canh', [
+      NetPin(['node1'], '1'),
+      NetPin(['node2'], '1'),
+      NetPin(['node3'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('node1').append_port('port', 'canh'),
+      TransformUtil.Path.empty().append_block('node2').append_port('port', 'canh'),
+      TransformUtil.Path.empty().append_block('node3').append_port('port', 'canh'),
+    ]), net.nets)
+    self.assertIn(Net('link.canl', [
+      NetPin(['node1'], '2'),
+      NetPin(['node2'], '2'),
+      NetPin(['node3'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('node1').append_port('port', 'canl'),
+      TransformUtil.Path.empty().append_block('node2').append_port('port', 'canl'),
+      TransformUtil.Path.empty().append_block('node3').append_port('port', 'canl'),
+    ]), net.nets)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '120',
+                           ['node1'], ['node1'], ['electronics_model.test_bundle_netlist.TestFakeCanBlock']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '120',
+                           ['node2'], ['node2'], ['electronics_model.test_bundle_netlist.TestFakeCanBlock']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R3', '', '120',
+                           ['node3'], ['node3'], ['electronics_model.test_bundle_netlist.TestFakeCanBlock']),
+                  net.blocks)

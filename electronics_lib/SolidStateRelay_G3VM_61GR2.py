@@ -8,7 +8,7 @@ class G3VM_61GR2(SolidStateRelay, FootprintBlock):
     self.assign(self.led_current_limit, (3, 30)*mAmp)
     self.assign(self.led_current_recommendation, (5, 25)*mAmp)  # typ=10mA
     self.assign(self.load_voltage_limit, (-48, 48)*Volt)
-    self.assign(self.load_current_limit, (0, 1.3)*Amp)
+    self.assign(self.load_current_limit, (-1.3, 1.3)*Amp)
     self.assign(self.load_resistance, (80, 130)*mOhm)  # 80 mOhm is typical
 
     self.footprint(

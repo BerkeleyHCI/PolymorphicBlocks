@@ -2,9 +2,8 @@ import unittest
 
 from edg_core import *
 from .CircuitPackingBlock import PackedVoltageSource
-from .footprint import Pin, Block as FBlock  # TODO cleanup naming
 from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink
-from .test_netlist import NetlistTestCase
+from .test_netlist import NetlistTestCase, Net, NetPin, NetBlock
 
 
 class TestFakeSinkElement(TestBaseFakeSink):
@@ -74,20 +73,40 @@ class MultipackNetlistTestCase(unittest.TestCase):
   def test_packed_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestPackedDevices)
 
-    self.assertEqual(net.nets['vpos'], [
-      Pin('source', '1'),
-      Pin('sink', '1')
-    ])
-    self.assertEqual(net.nets['gnd'], [
-      Pin('source', '2'),
-      Pin('sink', '2')
-    ])
-    self.assertEqual(net.blocks['source'], FBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
-                                                  ['source'], ['source'],
-                                                  ['electronics_model.test_netlist.TestFakeSource']))
-    self.assertEqual(net.blocks['sink'], FBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                                                ['sink', 'device'], ['sink'],
-                                                ['electronics_model.test_multipack_netlist.TestPackedSink']))
+    self.assertIn(Net('vpos', [
+      NetPin(['source'], '1'),
+      NetPin(['sink', 'device'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink1').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink2').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink').append_port('pos', '1'),
+      TransformUtil.Path.empty().append_block('sink').append_port('pos', '2'),
+      TransformUtil.Path.empty().append_block('sink', 'pos_comb').append_port('pwr_ins', '1'),
+      TransformUtil.Path.empty().append_block('sink', 'pos_comb').append_port('pwr_ins', '2'),
+      TransformUtil.Path.empty().append_block('sink', 'pos_comb').append_port('pwr_out'),
+      TransformUtil.Path.empty().append_block('sink', 'device').append_port('pos'),
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['sink', 'device'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink1').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink2').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink').append_port('neg', '1'),
+      TransformUtil.Path.empty().append_block('sink').append_port('neg', '2'),
+      TransformUtil.Path.empty().append_block('sink', 'neg_comb').append_port('pwr_ins', '1'),
+      TransformUtil.Path.empty().append_block('sink', 'neg_comb').append_port('pwr_ins', '2'),
+      TransformUtil.Path.empty().append_block('sink', 'neg_comb').append_port('pwr_out'),
+      TransformUtil.Path.empty().append_block('sink', 'device').append_port('neg'),
+    ]), net.nets)
+    self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
+                           ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
+                  net.blocks)
+    self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
+                           ['sink', 'device'], ['sink'], ['electronics_model.test_multipack_netlist.TestPackedSink']),
+                  net.blocks)
 
   def test_invalid_netlist(self) -> None:
     from .NetlistGenerator import InvalidPackingException
