@@ -244,8 +244,12 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
+    self._param_docs = IdentityDict[ConstraintExpr, str]()
+
     self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)  # type: ignore
     self._required_ports = IdentitySet[BasePort]()
+    self._port_docs = IdentityDict[BasePort, str]()
+
     self._connects = self.manager.new_dict(Connection, anon_prefix='anon_link')
     self._connects_by_port = IdentityDict[BasePort, Connection]()  # port -> connection
     self._connect_delegateds = IdentityDict[Connection, List[Connection]]()  # for net joins, joined connect -> prior connects
@@ -474,7 +478,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     return constraint
 
   T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, *, optional: bool = False) -> T:
+  def Port(self, tpe: T, *, optional: bool = False, doc: Optional[str] = None) -> T:
     """Registers a port for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call Port(...) outside __init__",
@@ -488,10 +492,13 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     if not optional:
       self._required_ports.add(elt)
 
+    if doc is not None:
+      self._port_docs[elt] = doc
+
     return elt
 
   ConstraintType = TypeVar('ConstraintType', bound=ConstraintExpr)
-  def Parameter(self, tpe: ConstraintType) -> ConstraintType:
+  def Parameter(self, tpe: ConstraintType, *, doc: Optional[str] = None) -> ConstraintType:
     """Registers a parameter for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call Parameter(...) outside __init__",
@@ -503,6 +510,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     self._parameters.register(elt)
     if elt.initializer is not None:
       self._check_constraint(elt.initializer)
+
+    if doc is not None:
+      self._param_docs[elt] = doc
 
     return elt
 
