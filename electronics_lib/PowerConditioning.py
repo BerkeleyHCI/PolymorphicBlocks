@@ -279,13 +279,14 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   """
 
   @init_in_parent
-  def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), ):
+  def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), rds_on: RangeLike = Range.all()):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
     self.pwr_in = self.Port(VoltageSink.empty())
     self.pwr_out = self.Port(VoltageSource.empty())
 
     self.gate_resistor = self.ArgParameter(gate_resistor)
+    self.rds_on = self.ArgParameter(rds_on)
 
   def contents(self):
     super().contents()
@@ -293,8 +294,8 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
     self.fet = self.Block(Fet.PFet(
       drain_voltage=(0, self.pwr_out.link().voltage.upper()),
       drain_current=output_current_draw,
-      # gate voltage accounts for a possible power on transient
       gate_voltage=(- self.pwr_out.link().voltage.upper(), self.pwr_out.link().voltage.upper()),
+      rds_on=self.rds_on,
     ))
 
     self.res = self.Block(Resistor(self.gate_resistor))
@@ -394,6 +395,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
           current_draw=batt_current
         ),
         'pwr_out': VoltageSource(
-          voltage_out=batt_voltage),
+          voltage_out=batt_voltage
+        ),
         'gnd': Ground(),
       })
