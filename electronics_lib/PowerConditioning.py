@@ -275,15 +275,17 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
     diode_drop: The voltage drop across the diode.
 
   Ports:
-    pwr_in: A voltage sink port for the input power.
-    pwr_out: A voltage source port for the output power.
-    gnd: ground.
-    btn_out: An optional digital single source port for the button output signal, allowing the button state to be read independently of the control signal.
-    btn_in: A digital single source port for the button input signal. Should be connected to a button. Do not connect IO.
-    control: A digital sink port for external control to latch the power on.
+    pwr_in: A VoltageSink port for the input power.
+    pwr_out: A VoltageSource port for the output power, gated by the power button.
+    gnd: Ground.
+    btn_out: An optional DigitalSingleSource port for the button output signal, allowing the button state to be read independently of the control signal.
+    btn_in: A DigitalSingleSource port for the button input signal. Should be connected to a button. Do not connect IO.
+    control: A DigitalSink port for external control to latch the power on.
   """
+
   @init_in_parent
-  def __init__(self, pull_resistance: RangeLike=10*kOhm(tol=0.05), amp_resistance: RangeLike=10*kOhm(tol=0.05), diode_drop:RangeLike=(0, 0.4)*Volt):
+  def __init__(self, pull_resistance: RangeLike = 10 * kOhm(tol=0.05), amp_resistance: RangeLike = 10 * kOhm(tol=0.05),
+               diode_drop: RangeLike = (0, 0.4) * Volt):
     super().__init__()
     self.pwr_in = self.Port(VoltageSink.empty(), [Input])
     self.pwr_out = self.Port(VoltageSource.empty(), [Output])
@@ -300,9 +302,9 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
   def contents(self):
     super().contents()
 
-    control_voltage = self.control.link().voltage.hull(RangeExpr.ZERO,)
-    pwr_voltage = self.pwr_out.link().voltage.hull(RangeExpr.ZERO,)
-    pwr_current = self.pwr_out.link().current_drawn.hull(RangeExpr.ZERO,)
+    control_voltage = self.control.link().voltage.hull(RangeExpr.ZERO, )
+    pwr_voltage = self.pwr_out.link().voltage.hull(RangeExpr.ZERO, )
+    pwr_current = self.pwr_out.link().current_drawn.hull(RangeExpr.ZERO, )
 
     self.pull_res = self.Block(Resistor(
       resistance=self.pull_resistance
@@ -349,7 +351,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                         'control': DigitalSink(),  # TODO more modeling here?
                         'gnd': Ground(),
                         'btn_out': DigitalSingleSource(
-                          voltage_out=self.gnd.link().voltage-self.diode_drop.upper(),
+                          voltage_out=self.gnd.link().voltage - self.diode_drop.upper(),
                           output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
                           low_signal_driver=True
                         ),
@@ -360,10 +362,12 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                         )
                       })
 
+
 class SoftPowerSwitch(SoftPowerGate):
   """A soft power switch that inherits from SoftPowerGate, with an additional
   button for manual power control.
   """
+
   def contents(self):
-    self.btn = self.Block(Switch(voltage=0*Volt(tol=0)))  # TODO - actually model switch voltage
+    self.btn = self.Block(Switch(voltage=0 * Volt(tol=0)))  # TODO - actually model switch voltage
     super().contents()
