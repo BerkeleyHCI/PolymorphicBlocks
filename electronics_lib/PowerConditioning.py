@@ -278,7 +278,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
     pwr_in: A voltage sink port for the input power.
     pwr_out: A voltage source port for the output power.
     gnd: ground.
-    btn_out: A digital single source port for the button output signal.
+    btn_out: An optional digital single source port for the button output signal, allowing the button state to be read independently of the control signal.
     btn_in: A digital single source port for the button input signal. Should be connected to a button. Do not connect IO.
     control: A digital sink port for external control to latch the power on.
   """
