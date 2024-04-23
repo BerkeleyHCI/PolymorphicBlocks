@@ -301,7 +301,6 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
 
   def contents(self):
     super().contents()
-
     control_voltage = self.control.link().voltage.hull(RangeExpr.ZERO, )
     pwr_voltage = self.pwr_out.link().voltage.hull(RangeExpr.ZERO, )
     pwr_current = self.pwr_out.link().current_drawn.hull(RangeExpr.ZERO, )
@@ -312,7 +311,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
     self.pwr_fet = self.Block(Fet.PFet(
       drain_voltage=pwr_voltage,
       drain_current=pwr_current,
-      gate_voltage=(control_voltage.upper(), control_voltage.upper()),  # TODO this ignores the diode drop
+      gate_voltage=(-control_voltage.upper(), control_voltage.upper()),  # TODO this ignores the diode drop
     ))
 
     self.amp_res = self.Block(Resistor(
@@ -350,10 +349,9 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                         ),
                         'control': DigitalSink(),  # TODO more modeling here?
                         'gnd': Ground(),
-                        'btn_out': DigitalSingleSource(
+                        'btn_out': DigitalBidir(
                           voltage_out=self.gnd.link().voltage - self.diode_drop.upper(),
                           output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
-                          low_signal_driver=True
                         ),
                         'btn_in': DigitalSingleSource(
                           voltage_out=self.gnd.link().voltage,
