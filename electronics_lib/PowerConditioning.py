@@ -277,8 +277,9 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   anything from the 1k-50k resistor value can be used.
   - Ref: https://components101.com/articles/design-guide-pmos-mosfet-for-reverse-voltage-polarity-protection
   """
+
   @init_in_parent
-  def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05),):
+  def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), ):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
     self.pwr_in = self.Port(VoltageSink.empty())
@@ -293,7 +294,7 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
       drain_voltage=(0, self.pwr_out.link().voltage.upper()),
       drain_current=output_current_draw,
       # gate voltage accounts for a possible power on transient
-      gate_voltage=(- self.pwr_out.link().voltage.upper(),  self.pwr_out.link().voltage.upper()),
+      gate_voltage=(- self.pwr_out.link().voltage.upper(), self.pwr_out.link().voltage.upper()),
     ))
 
     self.res = self.Block(Resistor(self.gate_resistor))
@@ -308,7 +309,7 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
         ),
         'pwr_out': VoltageSource(
           voltage_out=self.pwr_in.link().voltage,
-         ),
+        ),
         'gnd': Ground(),
       })
 
@@ -329,21 +330,23 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
 
   Note:
       - Limitation: The highest Vgs/Vds are bounded by the transistors' specifications.
-      - There is also a rare case when this circuit being disconnected when a charger is connected first. But always reverse protect.
+      - There is also a rare case when this circuit being disconnected when a charger is connected first.
+      But always reverse protect.
       - R1 and R2 are the pullup bias resistors for mp1 and mp2 PFet.
 
   More info at: https://www.edn.com/reverse-voltage-protection-for-battery-chargers/
   """
 
   @init_in_parent
-  def __init__(self, r1_val: RangeLike = 100*kOhm(tol=0.01), r2_val: RangeLike = 100*kOhm(tol=0.01), rds_on: RangeLike =(0, 0.1)*Ohm):
+  def __init__(self, r1_val: RangeLike = 100 * kOhm(tol=0.01), r2_val: RangeLike = 100 * kOhm(tol=0.01),
+               rds_on: RangeLike = (0, 0.1) * Ohm):
     super().__init__()
 
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr_out = self.Port(VoltageSource.empty())   # Load
-    self.pwr_in = self.Port(VoltageSink.empty())      # For connecting battery pwr output
-    self.chg_in = self.Port(VoltageSink.empty())      # Charger input
-    self.chg_out = self.Port(VoltageSource.empty())   # Charging output to lipo
+    self.pwr_out = self.Port(VoltageSource.empty())  # Load
+    self.pwr_in = self.Port(VoltageSink.empty())  # For connecting battery pwr output
+    self.chg_in = self.Port(VoltageSink.empty())  # Charger input
+    self.chg_out = self.Port(VoltageSource.empty())  # Charging output to lipo
 
     self.r1_val = self.ArgParameter(r1_val)
     self.r2_val = self.ArgParameter(r2_val)
@@ -394,4 +397,3 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
           voltage_out=batt_voltage),
         'gnd': Ground(),
       })
-
