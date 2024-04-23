@@ -69,6 +69,6 @@ class ProtectedCharger(JlcBoardTop):
         )
 
 
-class PcbBotTestCase(unittest.TestCase):
+class ProtectedChargerTestCase(unittest.TestCase):
     def test_design(self) -> None:
         compile_board_inplace(ProtectedCharger)

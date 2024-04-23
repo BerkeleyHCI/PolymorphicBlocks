@@ -273,23 +273,22 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   disconnecting the load and protecting the circuit.
   - This method is preferred over diode-based protection due to lower power loss
   - In most cases, 100R-330R is good if there are chances for the appearance of sudden reverse voltage in the circuit.
-  - But if there are no chances of sudden reverse voltage during the continuous working of the circuit, anything from the 1k-50k resistor value can be used.
+  - But if there are no chances of sudden reverse voltage during the continuous working of the circuit,
+  anything from the 1k-50k resistor value can be used.
   - Ref: https://components101.com/articles/design-guide-pmos-mosfet-for-reverse-voltage-polarity-protection
   """
   @init_in_parent
   def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05),):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr_in = self.Port(VoltageSink.empty())  # high-priority higher-voltage source
+    self.pwr_in = self.Port(VoltageSink.empty())
     self.pwr_out = self.Port(VoltageSource.empty())
 
     self.gate_resistor = self.ArgParameter(gate_resistor)
 
   def contents(self):
     super().contents()
-
     output_current_draw = self.pwr_out.link().current_drawn
-    # Pfet
     self.fet = self.Block(Fet.PFet(
       drain_voltage=(0, self.pwr_out.link().voltage.upper()),
       drain_current=output_current_draw,
@@ -314,38 +313,37 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
       })
 
 
-
 class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
-  class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
-    """PMOS Charger Reverse Protection.
+  """PMOS Charger Reverse Protection.
 
-    PMOS transistors are used in charging circuits to prevent reverse voltage from damaging the battery or the circuit.
-    They act as a switch that allows current flow only in the correct direction. Regular PMOS reverse protection may not be suitable for bidirectional circuit.
+  PMOS transistors are used in charging circuits to prevent reverse voltage from damaging the battery or the circuit.
+  They act as a switch that allows current flow only in the correct direction.
+  Regular PMOS reverse protection may not be suitable for bidirectional circuit.
 
-    Ports:
-        - pwr_in: Power in from the battery
-        - pwr_out: Power out for the load
-        - chg_in: Charger input to charge the battery
-        - chg_out: Charging output for the battery
-        - gnd: Ground
+  Ports:
+      - pwr_in: Power in from the battery
+      - pwr_out: Power out for the load
+      - chg_in: Charger input to charge the battery
+      - chg_out: Charging output for the battery
+      - gnd: Ground
 
-    Note:
-        - Limitation: The highest Vgs/Vds are bounded by the transistors' specifications.
-        - There is also a rare case when this circuit being disconnected when a charger is connected first. But always reverse protect.
-        - R1 and R2 are the pullup bias resistors for mp1 and mp2 PFet.
+  Note:
+      - Limitation: The highest Vgs/Vds are bounded by the transistors' specifications.
+      - There is also a rare case when this circuit being disconnected when a charger is connected first. But always reverse protect.
+      - R1 and R2 are the pullup bias resistors for mp1 and mp2 PFet.
 
-    More info at: https://www.edn.com/reverse-voltage-protection-for-battery-chargers/
-    """
+  More info at: https://www.edn.com/reverse-voltage-protection-for-battery-chargers/
+  """
 
   @init_in_parent
   def __init__(self, r1_val: RangeLike = 100*kOhm(tol=0.01), r2_val: RangeLike = 100*kOhm(tol=0.01), rds_on: RangeLike =(0, 0.1)*Ohm):
     super().__init__()
 
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr_out = self.Port(VoltageSource.empty(),)  # Load
-    self.pwr_in = self.Port(VoltageSink.empty(), )  # For connecting battery pwr output
-    self.chg_in = self.Port(VoltageSink.empty(), )  # Charger input
-    self.chg_out = self.Port(VoltageSource.empty(),)  # Charging output to lipo
+    self.pwr_out = self.Port(VoltageSource.empty())   # Load
+    self.pwr_in = self.Port(VoltageSink.empty())      # For connecting battery pwr output
+    self.chg_in = self.Port(VoltageSink.empty())      # Charger input
+    self.chg_out = self.Port(VoltageSource.empty())   # Charging output to lipo
 
     self.r1_val = self.ArgParameter(r1_val)
     self.r2_val = self.ArgParameter(r2_val)
@@ -356,7 +354,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
     self.r1 = self.Block(Resistor(resistance=self.r1_val))
     self.r2 = self.Block(Resistor(resistance=self.r2_val))
 
-    batt_voltage = self.pwr_in.link().voltage.hull(self.chg_out.link().voltage).hull((0, 0))
+    batt_voltage = self.pwr_in.link().voltage.hull(self.chg_in.link().voltage).hull(self.gnd.link().voltage)
 
     # taking the max of the current for the both direction. 0 lower bound
     batt_current = self.pwr_in.link().current_limits.hull(self.chg_out.link().current_drawn).hull((0, 0))
