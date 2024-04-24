@@ -57,7 +57,7 @@ class MultipackOpampGenerator(MultipackOpamp, GeneratorBlock):
   def __init__(self):
     super().__init__()
     self.generator_param(self.pwr.requested(), self.gnd.requested(),
-                         self.inp.requested(), self.inn.requested(), self.out.requested())
+                         self.inn.requested(), self.inp.requested(), self.out.requested())
 
   def _make_multipack_opamp(self) -> OpampPorts:
     """Generates the opamp as a block in self, including any application circuit components like decoupling capacitors.
@@ -66,17 +66,17 @@ class MultipackOpampGenerator(MultipackOpamp, GeneratorBlock):
 
   def generate(self):
     super().generate()
-    amp_gnd, amp_pwr, amp_ios = self._make_multipack_opamp()
+    amp_ports = self._make_multipack_opamp()
 
     self.gnd_merge = self.Block(PackedVoltageSource())
     self.pwr_merge = self.Block(PackedVoltageSource())
-    self.connect(self.gnd_merge.pwr_out, amp_gnd)
-    self.connect(self.pwr_merge.pwr_out, amp_pwr)
+    self.connect(self.gnd_merge.pwr_out, amp_ports.gnd)
+    self.connect(self.pwr_merge.pwr_out, amp_ports.pwr)
 
     requested = self.get(self.pwr.requested())
     assert self.get(self.gnd.requested()) == self.get(self.inp.requested()) == \
            self.get(self.inn.requested()) == self.get(self.out.requested()) == requested
-    for i, (amp_neg, amp_pos, amp_out) in zip(requested, amp_ios):
+    for i, (amp_neg, amp_pos, amp_out) in zip(requested, amp_ports.amps):
       self.connect(self.pwr.append_elt(VoltageSink.empty(), i), self.pwr_merge.pwr_ins.request(i))
       self.connect(self.gnd.append_elt(VoltageSink.empty(), i), self.gnd_merge.pwr_ins.request(i))
       self.connect(self.inn.append_elt(AnalogSink.empty(), i), amp_neg)
