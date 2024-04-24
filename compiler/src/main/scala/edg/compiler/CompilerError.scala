@@ -19,14 +19,17 @@ object CompilerError {
       s"${missing.map(x => s"- $x").mkString("\n")}"
 
     override def toIr: edgcompiler.ErrorRecord = {
+      val missingStr = "missing " + missing.map(_.toString).mkString(", ")
       val (kind, path) = record match {
-        case ElaborateRecord.ExpandBlock(path, _) => ("Uncompiled block", Some(path.asIndirect.toLocalPath))
-        case ElaborateRecord.Block(path) => ("Uncompiled block", Some(path.asIndirect.toLocalPath))
-        case ElaborateRecord.Link(path) => ("Uncompiled link", Some(path.asIndirect.toLocalPath))
-        case ElaborateRecord.LinkArray(path) => ("Uncompiled link array", Some(path.asIndirect.toLocalPath))
+        case ElaborateRecord.ExpandBlock(path, _) =>
+          (f"Uncompiled block, $missingStr", Some(path.asIndirect.toLocalPath))
+        case ElaborateRecord.Block(path) => (f"Uncompiled block, $missingStr", Some(path.asIndirect.toLocalPath))
+        case ElaborateRecord.Link(path) => (f"Uncompiled link, $missingStr", Some(path.asIndirect.toLocalPath))
+        case ElaborateRecord.LinkArray(path) =>
+          (f"Uncompiled link array, $missingStr", Some(path.asIndirect.toLocalPath))
         case ElaborateRecord.Parameter(containerPath, _, postfix, _) =>
-          ("Uncompiled parameter", Some((containerPath.asIndirect ++ postfix).toLocalPath))
-        case _ => ("Uncompiled internal element", None)
+          (f"Uncompiled parameter, $missingStr", Some((containerPath.asIndirect ++ postfix).toLocalPath))
+        case _ => (f"Uncompiled internal element, $missingStr", None)
       }
       edgcompiler.ErrorRecord(
         path = path,
