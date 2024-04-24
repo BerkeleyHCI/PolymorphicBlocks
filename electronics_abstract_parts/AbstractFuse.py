@@ -8,7 +8,7 @@ from .StandardFootprint import StandardFootprint
 
 
 @abstract_block
-class Fuse(InternalSubcircuit, Block):
+class Fuse(DiscreteComponent, Block):
   @init_in_parent
   def __init__(self, trip_current: RangeLike, *, hold_current: RangeLike = RangeExpr.ALL,
                voltage: RangeLike = RangeExpr.ZERO) -> None:

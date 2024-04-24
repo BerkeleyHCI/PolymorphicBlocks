@@ -3,7 +3,7 @@ from electronics_abstract_parts import *
 
 
 @abstract_block
-class PassiveConnector(InternalSubcircuit, Block):
+class PassiveConnector(DiscreteComponent, Block):
   """A base Block that is an elastic n-ported connector with passive type.
   Interface only, no implementation.
 
