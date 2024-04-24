@@ -56,11 +56,6 @@ class UsbFpgaProgrammer(JlcBoardTop):
       self.connect(self.ft232.adbus.request('4'), self.out.cs)
       self.connect(self.ft232.adbus.request('7'), self.out.reset)
 
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.lemur = self.Block(LemurLogo())
-    self.id = self.Block(IdDots4())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

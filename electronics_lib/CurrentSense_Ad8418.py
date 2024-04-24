@@ -55,7 +55,7 @@ class Ad8418a_Device(JlcPart, FootprintBlock, InternalSubcircuit):
         self.assign(self.actual_basic_part, False)
 
 
-class Ad8418a(Sensor, KiCadImportableBlock, Block):
+class Ad8418a(CurrentSensor, KiCadImportableBlock, Block):
     def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
         assert symbol_name == 'edg_importable:DifferentialAmplifier'
         return {

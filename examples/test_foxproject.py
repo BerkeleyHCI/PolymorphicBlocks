@@ -55,7 +55,7 @@ class FoxProject(JlcBoardTop):
       (self.i2c_pull, ), self.i2c_chain = self.chain(
         self.i2c, imp.Block(I2cPullup()))
 
-      self.imu = imp.Block(Imu_Lsm6ds3trc())
+      self.imu = imp.Block(Lsm6ds3trc())
       self.connect(self.i2c, self.imu.i2c)
 
       (self.led, ), _ = self.chain(imp.Block(IndicatorLed(Led.Yellow)), self.mcu.gpio.request('led'))

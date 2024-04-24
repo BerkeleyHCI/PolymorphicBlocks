@@ -395,15 +395,6 @@ class Multimeter(JlcBoardTop):
       self.connect(self.mcu.gpio.request_vector('driver_select'), self.driver.select)
       self.connect(self.mcu.gpio.request('driver_enable'), self.driver.enable)
 
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
-    self.id = self.Block(IdDots4())
-
-    self.m1 = self.Block(MountingHole())
-    self.m2 = self.Block(MountingHole())
-
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -488,7 +479,6 @@ class Multimeter(JlcBoardTop):
         (BananaSafetyJack, Fcr7350),
         (AnalogSwitch, Nlas4157),
         (Speaker, ConnectorSpeaker),
-        (MountingHole, MountingHole_M3),
       ],
     )
 

@@ -14,8 +14,9 @@ from .Categories import Interface, AnalogToDigital, DigitalToAnalog
 from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver
 from .Categories import PowerSource, Connector, ProgrammingConnector
 from .Categories import HumanInterface, Display, Lcd, Oled, EInk, Light
-from .Categories import Sensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor, EnvironmentalSensor, LightSensor
-from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, Mechanical
+from .Categories import Sensor, CurrentSensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor, Camera, \
+    EnvironmentalSensor, LightSensor
+from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, DeprecatedBlock, Mechanical
 
 from .ESeriesUtil import ESeriesUtil
 from .SmdStandardPackage import SmdStandardPackage, SmdStandardPackageSelector

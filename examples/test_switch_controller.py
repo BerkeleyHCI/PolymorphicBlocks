@@ -80,10 +80,6 @@ class SwitchController(JlcBoardTop):
       self.connect(self.isense.pwr_out, self.sw.pwr)
       self.connect(self.sw.output, self.conn.pwr)
 
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.id = self.Block(IdDots4())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
