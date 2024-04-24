@@ -20,10 +20,12 @@ class VoltageRegulator(PowerConditioner):
   def __init__(self, output_voltage: RangeLike) -> None:
     super().__init__()
 
-    self.output_voltage = self.ArgParameter(output_voltage)
+    self.output_voltage = self.ArgParameter(output_voltage, doc="Target output voltage")
 
-    self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])
-    self.pwr_out = self.Port(VoltageSource.empty(), [Output])
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input],
+                            doc="Power input")
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output],
+                             doc="Regulated voltage output")
     self.gnd = self.Port(Ground.empty(), [Common])
 
   def contents(self):
@@ -444,7 +446,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     ))
 
     actual_ripple = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
-                         (self.inductor.actual_inductance * frequency.lower * output_voltage.lower))
+                     (self.inductor.actual_inductance * frequency.lower * output_voltage.lower))
     self.assign(self.actual_inductor_current_ripple, actual_ripple)
 
     self.connect(self.pwr_in, self.inductor.a.adapt_to(VoltageSink(
