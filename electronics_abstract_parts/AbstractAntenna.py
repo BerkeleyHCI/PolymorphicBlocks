@@ -5,7 +5,7 @@ from .PartsTablePart import PartsTableSelector
 
 
 @abstract_block
-class Antenna(Block):
+class Antenna(Interface, Block):
   @init_in_parent
   def __init__(self, frequency: RangeLike, impedance: RangeLike = Range.all(), power: RangeLike = (0, 0*Watt)):
     super().__init__()

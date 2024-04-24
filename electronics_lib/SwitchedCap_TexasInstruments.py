@@ -47,7 +47,7 @@ class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Lm2664(Block):
+class Lm2664(PowerConditioner, Block):
     """Switched capacitor inverter"""
     @init_in_parent
     def __init__(self, output_resistance_limit: FloatLike = 25 * Ohm,

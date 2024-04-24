@@ -175,6 +175,11 @@ class Sensor(Block):
 
 
 @abstract_block
+class CurrentSensor(Sensor):
+  pass
+
+
+@abstract_block
 class Accelerometer(Sensor):
   pass
 
@@ -200,13 +205,13 @@ class Magnetometer(Sensor):
 
 
 @abstract_block
-class DistanceSensor(Sensor):
+class Camera(Sensor):
+  """Imaging sensors, including visible / RGB, IR, and thermal."""
   pass
 
 
 @abstract_block
-class Mechanical(Block):
-  """Nonelectrical footprint, including plated and NPTH mounting holes."""
+class DistanceSensor(Sensor):
   pass
 
 
@@ -285,6 +290,20 @@ class IdealModel(InternalBlock):
 
 
 @abstract_block
-class Label(Block):
-  """Nonfunctional footprint, including copper and silkscreen labels."""
+class DeprecatedBlock(InternalBlock):
+  """Base class for blocks that are deprecated and planned to be removed"""
+  pass
+
+
+@abstract_block
+class Label(DeprecatedBlock):
+  """DEPRECATED: non-circuit footprints should be added in layout as non-schematic items.
+  Nonfunctional footprint, including copper and silkscreen labels."""
+  pass
+
+
+@abstract_block
+class Mechanical(DeprecatedBlock):
+  """DEPRECATED: non-circuit footprints should be added in layout as non-schematic items.
+  Nonelectrical footprint, including plated and NPTH mounting holes."""
   pass

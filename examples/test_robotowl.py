@@ -112,11 +112,6 @@ class RobotOwl(JlcBoardTop):
         imp.Block(LedConnector())
       )
 
-    # Mounting holes
-    self.m = ElementDict[MountingHole]()
-    for i in range(4):
-      self.m[i] = self.Block(MountingHole())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -150,7 +145,6 @@ class RobotOwl(JlcBoardTop):
         (PinHeader254, PinHeader254Horizontal),
         (TestPoint, CompactKeystone5015),
         (Speaker, ConnectorSpeaker),
-        (MountingHole, MountingHole_M2_5),
       ],
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock

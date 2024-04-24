@@ -42,11 +42,6 @@ class LedMatrix(JlcBoardTop):
       self.matrix = imp.Block(CharlieplexedLedMatrix(6, 5, current_draw=(3.5, 5)*mAmp, color=Led.Yellow))
       self.connect(self.mcu.gpio.request_vector('led'), self.matrix.ios)
 
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
-    self.id = self.Block(IdDots4())
-
   def multipack(self) -> None:
     self.matrix_res1 = self.PackedBlock(ResistorArray())
     self.pack(self.matrix_res1.elements.request('0'), ['matrix', 'res[0]'])

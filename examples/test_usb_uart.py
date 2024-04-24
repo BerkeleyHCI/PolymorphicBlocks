@@ -56,11 +56,6 @@ class UsbUart(JlcBoardTop):
       self.out = imp.Block(UartConnector())
       self.connect(self.usbconv.uart, self.out.uart)
 
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.lemur = self.Block(LemurLogo())
-    self.id = self.Block(IdDots4())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

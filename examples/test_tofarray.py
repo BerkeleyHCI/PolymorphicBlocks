@@ -105,13 +105,6 @@ class TofArray(JlcBoardTop):
         self.spk_drv.pwr
       )
 
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
-    self.id = self.Block(IdDots4())
-
-    self.lemur = self.Block(LemurLogo())
-
   def multipack(self) -> None:
     self.res1 = self.PackedBlock(ResistorArray())
     self.pack(self.res1.elements.request('0'), ['leds', 'led[0]', 'res'])

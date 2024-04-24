@@ -14,8 +14,9 @@ from .Categories import Interface, AnalogToDigital, DigitalToAnalog
 from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver
 from .Categories import PowerSource, Connector, ProgrammingConnector
 from .Categories import HumanInterface, Display, Lcd, Oled, EInk, Light
-from .Categories import Sensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor, EnvironmentalSensor, LightSensor
-from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, Mechanical
+from .Categories import Sensor, CurrentSensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor, Camera, \
+    EnvironmentalSensor, LightSensor
+from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, DeprecatedBlock, Mechanical
 
 from .ESeriesUtil import ESeriesUtil
 from .SmdStandardPackage import SmdStandardPackage, SmdStandardPackageSelector
@@ -55,7 +56,7 @@ from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer,
 from .AbstractSwitch import Switch, TactileSwitch, MechanicalKeyswitch, DigitalSwitch
 from .AbstractSwitch import RotaryEncoder, RotaryEncoderSwitch, DigitalRotaryEncoder, DigitalRotaryEncoderSwitch
 from .AbstractSwitch import DirectionSwitch, DirectionSwitchCenter, DigitalDirectionSwitch, DigitalDirectionSwitchCenter
-from .AbstractOpamp import Opamp, OpampElement
+from .AbstractOpamp import Opamp, OpampElement, MultipackOpamp, MultipackOpampGenerator
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
 from .AbstractSpiMemory import SpiMemory, SpiMemoryQspi
 from .OpampCurrentSensor import OpampCurrentSensor
@@ -77,6 +78,7 @@ from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, Di
 from .AbstractTestPoint import AnalogRfTestPoint
 from .AbstractJumper import Jumper, DigitalJumper
 from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
+from .TouchPad import FootprintToucbPad
 
 from .UsbConnectors import UsbConnector, UsbHostConnector, UsbDeviceConnector, UsbEsdDiode
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver, CanEsdDiode

@@ -102,8 +102,8 @@ class PcbBot(JlcBoardTop):
         self.tof.i2c)
 
       # IMU
-      self.imu = imp.Block(Imu_Lsm6ds3trc())
-      self.mag = imp.Block(Mag_Qmc5883l())
+      self.imu = imp.Block(Lsm6ds3trc())
+      self.mag = imp.Block(Qmc5883l())
       self.connect(self.i2c, self.imu.i2c, self.mag.i2c)
 
       # IO EXPANDER
@@ -216,10 +216,9 @@ class PcbBot(JlcBoardTop):
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
-        (Vl53l0x, Vl53l0xConnector),
+        (Vl53l0xBase, Vl53l0xConnector),
         (Speaker, ConnectorSpeaker),
         (Neopixel, Ws2812b),
-        (MountingHole, MountingHole_M3),
       ],
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock

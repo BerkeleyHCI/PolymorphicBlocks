@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Mag_Qmc5883l_Device(InternalSubcircuit, FootprintBlock, JlcPart):
+class Qmc5883l_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.vdd = self.Port(VoltageSink(
@@ -54,13 +54,13 @@ class Mag_Qmc5883l_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Mag_Qmc5883l(Magnetometer, Block):
+class Qmc5883l(Magnetometer, Block):
     """QMC5883L 3-axis magnetometer in single supply configuration.
     This part seems to be a licensed semi-copy of the HMC5883L which is no longer in production.
     It might be hardware drop-in compatible though the firmware protocol differs."""
     def __init__(self):
         super().__init__()
-        self.ic = self.Block(Mag_Qmc5883l_Device())
+        self.ic = self.Block(Qmc5883l_Device())
         self.vdd = self.Export(self.ic.vdd, [Power])
         self.connect(self.vdd, self.ic.vddio)
         self.gnd = self.Export(self.ic.gnd, [Common])

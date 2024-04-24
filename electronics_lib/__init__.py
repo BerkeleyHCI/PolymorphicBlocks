@@ -55,7 +55,7 @@ from .Jumpers import SolderJumperTriangular
 
 from .DebugHeaders import SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTagConnect, SwdCortexTargetTc2050
-from .SdCards import SdCard, SdSocket, MicroSdSocket, HiroseDm3btDsfPejs, Molex1040310811
+from .SdCards import SdCard, SdSocket, MicroSdSocket, Dm3btDsfPejs, Molex1040310811
 
 from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Ap7215, Xc6206p, Xc6209, Ap2210, Lp5907, L78l
 from .VoltageReferences import Ref30xx
@@ -129,9 +129,9 @@ from .AnalogSwitch_Dg468 import Dg468
 from .CanTransceiver_Iso1050 import Iso1050dub
 from .CanTransceiver_Sn65hvd230 import Sn65hvd230
 from .CurrentSense_Ad8418 import Ad8418a
-from .BatteryProtector_S8261A import BatteryProtector_S8261A
+from .BatteryProtector_S8261A import S8261A
 from .BatteryCharger_Mcp73831 import Mcp73831
-from .Distance_Vl53l0x import Vl53l0x, Vl53l0xApplication, Vl53l0xConnector, Vl53l0xArray
+from .Distance_Vl53l0x import Vl53l0xBase, Vl53l0x, Vl53l0xConnector, Vl53l0xArray
 from .Isolator_Cbmud1200 import Cbmud1200l
 from .GateDriver_Ir2301 import Ir2301
 from .GateDriver_Ucc27282 import Ucc27282
@@ -143,20 +143,18 @@ from .UsbInterface_Ft232h import Ft232hl
 from .Logic_74Ahct import L74Ahct1g125
 from .Logic_74Lvc import Sn74lvc1g74
 from .Comparator_Lmv331 import Lmv331
-from .Camera_Ov2640_Fpc24 import Ov2640_Fpc24
+from .Camera_Ov2640_Fpc24 import Ov2640, Ov2640_Fpc24
 
 from .Labels import DuckLogo, LeadFreeIndicator, IdDots4, LemurLogo
 from .Mechanicals import Outline_Pn1332
-from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, MountingHole_M4
-from .Mechanicals import MountingHole_NoPad_M2_5
-from .Mechanicals import JlcToolingHole
+from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, MountingHole_M4, MountingHole_NoPad_M2_5
 
 from .MotorDriver_L293dd import L293dd
 from .MotorDriver_Drv8833 import Drv8833
 from .Bldc_Drv8313 import Drv8313
 
-from .Imu_Lsm6ds3trc import Imu_Lsm6ds3trc
-from .Mag_Qmc5883l import Mag_Qmc5883l
+from .Imu_Lsm6ds3trc import Lsm6ds3trc
+from .Mag_Qmc5883l import Qmc5883l
 from .EnvironmentalSensor_Sensirion import Shtc3
 from .EnvironmentalSensor_Bme680 import Bme680
 from .EnvironmentalSensor_Ti import Hdc1080, Tmp1075n
@@ -171,3 +169,19 @@ from .Jacdac import JacdacDataPort, JacdacPassivePort
 from .Jacdac import JacdacEdgeConnector, JacdacDataInterface, Rclamp0521p
 from .Jacdac import JacdacMountingData1, JacdacMountingGnd2, JacdacMountingGnd4, JacdacMountingPwr3
 from .Jacdac import JacdacDeviceTop
+
+
+# compatibility shims
+import deprecated as __deprecated  # not to be exported
+
+@__deprecated.deprecated("new naming convention")
+class Vl53l0xApplication(Vl53l0x, DeprecatedBlock):
+    pass
+
+@__deprecated.deprecated("new naming convention")
+class Imu_Lsm6ds3trc(Lsm6ds3trc, DeprecatedBlock):
+    pass
+
+@__deprecated.deprecated("new naming convention")
+class Mag_Qmc5883l(Qmc5883l, DeprecatedBlock):
+    pass

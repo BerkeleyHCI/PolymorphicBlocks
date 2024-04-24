@@ -281,7 +281,7 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
         }, nodes=nodes)
 
 
-class SourceMeasureControl(KiCadSchematicBlock, Block):
+class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
   """Analog feedback circuit for the source-measure unit
   """
   @init_in_parent

@@ -88,10 +88,6 @@ class SevenSegment(JlcBoardTop):
       self.connect(self.v5v_sense.input, self.pwr)
       self.connect(self.v5v_sense.output, self.mcu.adc.request('v5v_sense'))
 
-    self.mount = ElementDict[MountingHole]()
-    for i in range(2):
-      self.mount[i] = self.Block(MountingHole_M2_5())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
