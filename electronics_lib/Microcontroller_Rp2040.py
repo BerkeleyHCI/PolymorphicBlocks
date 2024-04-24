@@ -225,20 +225,12 @@ class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcirc
     super().contents()
 
     # Port models
-    self._dio_ft_model = DigitalBidir.from_supply(  # Table 624
-      self.gnd, self.iovdd,
-      voltage_limit_tolerance=(-0.3, 0.3) * Volt,
-      current_limits=(-12, 12)*mAmp,  # by IOH / IOL modes
-      input_threshold_abs=(0.8, 2.0)*Volt,  # for IOVdd=3.3, TODO other IOVdd ranges
-      pullup_capable=True, pulldown_capable=True
-    )
-    self._dio_std_model = self._dio_ft_model  # exactly the same characteristics
-
-    self.qspi.init_from(SpiController(self._dio_std_model))
-    self.qspi_cs.init_from(self._dio_std_model)
-    self.qspi_sd2.init_from(self._dio_std_model)
-    self.qspi_sd3.init_from(self._dio_std_model)
-    self.run.init_from(DigitalSink.from_bidir(self._dio_ft_model))
+    dio_ft_model = dio_std_model = self._dio_model(self.gnd, self.iovdd)
+    self.qspi.init_from(SpiController(dio_std_model))
+    self.qspi_cs.init_from(dio_std_model)
+    self.qspi_sd2.init_from(dio_std_model)
+    self.qspi_sd3.init_from(dio_std_model)
+    self.run.init_from(DigitalSink.from_bidir(dio_ft_model))
 
   # Pin/peripheral resource definitions (table 3)
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
