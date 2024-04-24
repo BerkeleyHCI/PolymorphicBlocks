@@ -40,7 +40,7 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
     dio_usb_model = dio_ft_model = dio_std_model = self._dio_model(gnd, pwr)
 
     adc_model = AnalogSink.from_supply(  # Table 626
-      self.gnd, self.pwr,
+      gnd, pwr,
       voltage_limit_tolerance=(0, 0),  # ADC input voltage range
       signal_limit_tolerance=(0, 0),  # ADC input voltage range
       impedance=(100, float('inf')) * kOhm
@@ -137,44 +137,44 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
 class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcircuit,
                     GeneratorBlock, JlcPart, FootprintBlock):
   RESOURCE_PIN_REMAP = {
-    '2': 'GPIO0',
-    '3': 'GPIO1',
-    '4': 'GPIO2',
-    '5': 'GPIO3',
-    '6': 'GPIO4',
-    '7': 'GPIO5',
-    '8': 'GPIO6',
-    '9': 'GPIO7',
-    '11': 'GPIO8',
-    '12': 'GPIO9',
-    '13': 'GPIO10',
-    '14': 'GPIO11',
-    '15': 'GPIO12',
-    '16': 'GPIO13',
-    '17': 'GPIO14',
-    '18': 'GPIO15',
-    '27': 'GPIO16',
-    '28': 'GPIO17',
-    '29': 'GPIO18',
-    '30': 'GPIO19',
-    '31': 'GPIO20',
-    '32': 'GPIO21',
+    'GPIO0': '2',
+    'GPIO1': '3',
+    'GPIO2': '4',
+    'GPIO3': '5',
+    'GPIO4': '6',
+    'GPIO5': '7',
+    'GPIO6': '8',
+    'GPIO7': '9',
+    'GPIO8': '11',
+    'GPIO9': '12',
+    'GPIO10': '13',
+    'GPIO11': '14',
+    'GPIO12': '15',
+    'GPIO13': '16',
+    'GPIO14': '17',
+    'GPIO15': '18',
+    'GPIO16': '27',
+    'GPIO17': '28',
+    'GPIO18': '29',
+    'GPIO19': '30',
+    'GPIO20': '31',
+    'GPIO21': '32',
 
-    '34': 'GPIO22',
-    '35': 'GPIO23',
-    '36': 'GPIO24',
-    '37': 'GPIO25',
+    'GPIO22': '34',
+    'GPIO23': '35',
+    'GPIO24': '36',
+    'GPIO25': '37',
 
-    '38': 'GPIO26',
-    '39': 'GPIO27',
-    '40': 'GPIO28',
-    '41': 'GPIO29',
+    'GPIO26': '38',
+    'GPIO27': '39',
+    'GPIO28': '40',
+    'GPIO29': '41',
 
-    '46': 'USB_DM',
-    '47': 'USB_DP',
+    'USB_DM': '46',
+    'USB_DP': '47',
 
-    '25': 'SWDIO',
-    '24': 'SWCLK',
+    'SWDIO': '25',
+    'SWCLK': '24',
   }
 
   def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
@@ -259,12 +259,12 @@ class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcirc
 
       '19': self.gnd,  # TESTEN, connect to gnd
 
-      '1': self.pwr,  # IOVdd
-      '10': self.pwr,
-      '22': self.pwr,
-      '33': self.pwr,
-      '42': self.pwr,
-      '49': self.pwr,
+      '1': self.iovdd,
+      '10': self.iovdd,
+      '22': self.iovdd,
+      '33': self.iovdd,
+      '42': self.iovdd,
+      '49': self.iovdd,
 
       '23': self.dvdd,
       '50': self.dvdd,
