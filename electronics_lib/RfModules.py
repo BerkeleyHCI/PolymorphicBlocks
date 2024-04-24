@@ -83,7 +83,7 @@ class Xbee_S3b(Interface, Radiofrequency, FootprintBlock):
 
 
 class BlueSmirf(Interface, Radiofrequency, FootprintBlock):
-  """SlueSMiRF Gold/Silver"""
+  """BlueSMiRF Gold/Silver"""
   def __init__(self) -> None:
     super().__init__()
 
