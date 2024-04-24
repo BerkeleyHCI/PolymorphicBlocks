@@ -146,7 +146,7 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
 
 
 @abstract_block
-class Esp32s3_Base(Esp32s3_Ios, InternalSubcircuit, GeneratorBlock):
+class Esp32s3_Base(Esp32s3_Ios, GeneratorBlock):
   """Base class for ESP32-S3 series microcontrollers with WiFi and Bluetooth (classic and LE)
   and AI acceleration
 
@@ -180,7 +180,7 @@ class Esp32s3_Base(Esp32s3_Ios, InternalSubcircuit, GeneratorBlock):
     self.uart0 = self.Port(UartPort(dio_model), optional=True)  # programming
 
 
-class Esp32s3_Wroom_1_Device(Esp32s3_Base, FootprintBlock, JlcPart):
+class Esp32s3_Wroom_1_Device(Esp32s3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'VDD': '2',
     'GND': ['1', '40', '41'],  # 41 is EP

@@ -12,7 +12,7 @@ class Nrf52840_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCo
 
 
 @non_library
-class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, InternalSubcircuit, GeneratorBlock, FootprintBlock):
+class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, GeneratorBlock, FootprintBlock):
   """nRF52840 IO mappings
   https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.7.pdf"""
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
@@ -170,7 +170,7 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Interna
 
 
 @abstract_block
-class Nrf52840_Base(Nrf52840_Ios, InternalSubcircuit, GeneratorBlock):
+class Nrf52840_Base(Nrf52840_Ios, GeneratorBlock):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
 
   def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
@@ -287,7 +287,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interf
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.nreset)
 
-class Mdbt50q_1mv2_Device(Nrf52840_Base, JlcPart):
+class Mdbt50q_1mv2_Device(Nrf52840_Base, InternalSubcircuit, JlcPart):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': ['28', '30'],  # 28=Vdd, 30=VddH; 31=DccH is disconnected - from section 8.3 for input voltage <3.6v
     'Vss': ['1', '2', '15', '33', '55'],
