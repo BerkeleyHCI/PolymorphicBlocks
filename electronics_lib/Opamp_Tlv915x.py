@@ -52,45 +52,15 @@ class Tlv9152_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Tlv9152(MultipackOpamp, GeneratorBlock):
   """Dual RRIO opamps.
-
-  TODO infrastructure for packed opamps? Packed opamp abstract class?
   """
-  def __init__(self):
-    super().__init__()
-    self.elements = self.PackedPart(PackedBlockArray(OpampElement()))
-    self.pwr = self.PackedExport(self.elements.ports_array(lambda x: x.pwr))
-    self.gnd = self.PackedExport(self.elements.ports_array(lambda x: x.gnd))
-    self.inp = self.PackedExport(self.elements.ports_array(lambda x: x.inp))
-    self.inn = self.PackedExport(self.elements.ports_array(lambda x: x.inn))
-    self.out = self.PackedExport(self.elements.ports_array(lambda x: x.out))
-    self.generator_param(self.pwr.requested(), self.gnd.requested(),
-                         self.inp.requested(), self.inn.requested(), self.out.requested())
-
-  def generate(self):
-    super().generate()
+  def _make_multipack_opamp(self) -> MultipackOpamp.OpampPorts:
     self.ic = self.Block(Tlv9152_Device())
-
     # Datasheet section 9: recommend 0.1uF bypass capacitors close to power supply pins
     self.vdd_cap = self.Block(DecouplingCapacitor(
       capacitance=0.1*uFarad(tol=0.2),
     )).connected(self.ic.vn, self.ic.vp)
 
-    self.pwr_merge = self.Block(PackedVoltageSource())
-    self.gnd_merge = self.Block(PackedVoltageSource())
-    self.connect(self.pwr_merge.pwr_out, self.ic.vp)
-    self.connect(self.gnd_merge.pwr_out, self.ic.vn)
-
-    ic_ios = [
-      (self.ic.inpa, self.ic.inna, self.ic.outa),
-      (self.ic.inpb, self.ic.innb, self.ic.outb),
-    ]
-
-    requested = self.get(self.pwr.requested())
-    assert self.get(self.gnd.requested()) == self.get(self.inp.requested()) == \
-           self.get(self.inn.requested()) == self.get(self.out.requested()) == requested
-    for i, ic_io in zip(requested, ic_ios):
-      self.connect(self.pwr.append_elt(VoltageSink.empty(), i), self.pwr_merge.pwr_ins.request(i))
-      self.connect(self.gnd.append_elt(VoltageSink.empty(), i), self.gnd_merge.pwr_ins.request(i))
-      self.connect(self.inp.append_elt(AnalogSink.empty(), i), ic_io[0])
-      self.connect(self.inn.append_elt(AnalogSink.empty(), i), ic_io[1])
-      self.connect(self.out.append_elt(AnalogSource.empty(), i), ic_io[2])
+    return MultipackOpamp.OpampPorts(self.ic.vn, self.ic.vp, [
+      (self.ic.inna, self.ic.inpa, self.ic.outa),
+      (self.ic.innb, self.ic.inpb, self.ic.outb),
+    ])
