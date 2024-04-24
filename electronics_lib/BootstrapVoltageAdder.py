@@ -1,7 +1,7 @@
 from electronics_abstract_parts import *
 
 
-class BootstrapVoltageAdder(KiCadSchematicBlock, Block):
+class BootstrapVoltageAdder(KiCadSchematicBlock, PowerConditioner, Block):
     """Bipolar (positive and negative) voltage adder using a switched cap circuit.
     """
     @init_in_parent

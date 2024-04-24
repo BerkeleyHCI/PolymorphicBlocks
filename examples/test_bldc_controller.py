@@ -145,7 +145,7 @@ class BldcController(JlcBoardTop):
       (self.isense_tp, self.isense_clamp), _ = self.chain(
         self.isense.out,
         self.Block(AnalogTestPoint()),
-        imp.Block(AnalogClampZenerDiode((2.7, 3.3)*Volt)),
+        imp.Block(AnalogClampResistor()),
         self.mcu.adc.request('isense'))
 
       self.bldc_drv = imp.Block(Drv8313())

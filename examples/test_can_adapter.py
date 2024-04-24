@@ -67,11 +67,6 @@ class CanAdapter(BoardTop):
     self.can_v5v = self.connect(self.can_reg.pwr_out, self.xcvr.can_pwr)
     self.connect(self.can_gnd, self.xcvr.can_gnd)
 
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
-    self.id = self.Block(IdDots4())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

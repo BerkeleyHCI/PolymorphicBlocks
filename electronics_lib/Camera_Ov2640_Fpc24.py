@@ -57,12 +57,9 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Block):
         self.connect(self.sio.sda, self.conn.pins.request('22').adapt_to(dio_model))
 
 
-class Ov2640_Fpc24(Sensor, GeneratorBlock):
-    """OV2640 camera as a 24-pin FPC bottom contact connector, as seems to be common on ESP32 with camera boards.
-    Electrical parameters from https://www.uctronics.com/download/OV2640_DS.pdf
-    Pinning and interface circuit from https://github.com/Freenove/Freenove_ESP32_WROVER_Board/blob/f710fd6976e76ab76c29c2ee3042cd7bac22c3d6/Datasheet/ESP32_Schematic.pdf
-      and https://www.waveshare.com/w/upload/9/99/OV2640-Camera-Board-Schematic.pdf
-    On many boards, Y0 and Y1 (LSBs) are left unconnected to save IOs."""
+@abstract_block_default(lambda: Ov2640_Fpc24)
+class Ov2640(Camera, Block):
+    """OV2640 digital camera with DVP interface, commonly used with ESP32 devices"""
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Ov2640_Fpc24_Device())
@@ -77,6 +74,16 @@ class Ov2640_Fpc24(Sensor, GeneratorBlock):
 
         self.pwdn = self.Port(DigitalSink.empty(), optional=True)
         self.reset = self.Port(DigitalSink.empty(), optional=True)
+
+
+class Ov2640_Fpc24(Ov2640, GeneratorBlock):
+    """OV2640 camera as a 24-pin FPC bottom contact connector, as seems to be common on ESP32 with camera boards.
+    Electrical parameters from https://www.uctronics.com/download/OV2640_DS.pdf
+    Pinning and interface circuit from https://github.com/Freenove/Freenove_ESP32_WROVER_Board/blob/f710fd6976e76ab76c29c2ee3042cd7bac22c3d6/Datasheet/ESP32_Schematic.pdf
+      and https://www.waveshare.com/w/upload/9/99/OV2640-Camera-Board-Schematic.pdf
+    On many boards, Y0 and Y1 (LSBs) are left unconnected to save IOs."""
+    def __init__(self) -> None:
+        super().__init__()
         self.generator_param(self.pwdn.is_connected(), self.reset.is_connected())
 
     def contents(self):
@@ -103,7 +110,6 @@ class Ov2640_Fpc24(Sensor, GeneratorBlock):
         self.connect(self.dvp8.y5, self.device.y.request('7'))
         self.connect(self.dvp8.y6, self.device.y.request('8'))
         self.connect(self.dvp8.y7, self.device.y.request('9'))
-
 
     def generate(self):
         super().generate()

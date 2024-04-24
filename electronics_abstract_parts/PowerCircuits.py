@@ -3,10 +3,11 @@ from .Resettable import Resettable
 from .AbstractResistor import Resistor
 from .AbstractFets import SwitchFet
 from .GateDrivers import HalfBridgeDriver, HalfBridgeDriverIndependent, HalfBridgeDriverPwm
+from .Categories import PowerConditioner
 
 
 @abstract_block_default(lambda: FetHalfBridgeIndependent)
-class HalfBridge(Block):
+class HalfBridge(PowerConditioner, Block):
     """Half bridge circuit with logic-level inputs and current draw calculated from the output node.
     Two power rails: logic power (which can be used to power gate drivers), and the power rail."""
     def __init__(self):

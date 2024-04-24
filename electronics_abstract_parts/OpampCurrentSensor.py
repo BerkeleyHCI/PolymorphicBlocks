@@ -1,15 +1,18 @@
 from typing import Dict
 
 from electronics_abstract_parts import CurrentSenseResistor, DifferentialAmplifier
-from .Categories import Sensor
+from .Categories import CurrentSensor
 from .DummyDevices import ForcedAnalogSignal
 from electronics_model import *
 
 
-class OpampCurrentSensor(Sensor, KiCadImportableBlock, Block):
+class OpampCurrentSensor(CurrentSensor, KiCadImportableBlock, Block):
   """Current sensor block using a resistive sense element and an opamp-based differential amplifier.
   For a positive current (flowing from pwr_in -> pwr_out), this generates a positive voltage on the output.
   Output reference can be floating (eg, at Vdd/2) to allow bidirectional current sensing.
+
+  Discrete diffamp circuits generally have poor accuracy as a result of resistor tolerances, including
+  very poor common-mode rejection.
   """
   @init_in_parent
   def __init__(self, resistance: RangeLike, ratio: RangeLike, input_impedance: RangeLike):

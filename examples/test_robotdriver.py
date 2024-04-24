@@ -102,7 +102,7 @@ class RobotDriver(JlcBoardTop):
       self.connect(self.lcd.dc, self.mcu.gpio.request('lcd_dc'))
 
       # IMU
-      self.imu = imp.Block(Imu_Lsm6ds3trc())
+      self.imu = imp.Block(Lsm6ds3trc())
       self.connect(self.i2c, self.imu.i2c)
 
       # Current sensor
@@ -173,12 +173,6 @@ class RobotDriver(JlcBoardTop):
     self.connect(self.gnd, self.servo.gnd)
     self.connect(self.mcu.gpio.request('pwm'), self.servo.pwm)
 
-    # Misc board
-    self.lemur = self.Block(LemurLogo())
-    self.duck = self.Block(DuckLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
-    self.id = self.Block(IdDots4())
-
   def multipack(self) -> None:
     self.led_res = self.PackedBlock(ResistorArray())
     self.pack(self.led_res.elements.request('0'), ['leds', 'led[0]', 'res'])
@@ -240,7 +234,7 @@ class RobotDriver(JlcBoardTop):
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
-        (Vl53l0x, Vl53l0xConnector),
+        (Vl53l0xBase, Vl53l0xConnector),
         (TestPoint, TeRc),
         (Speaker, ConnectorSpeaker),
         (Neopixel, Ws2812b),
