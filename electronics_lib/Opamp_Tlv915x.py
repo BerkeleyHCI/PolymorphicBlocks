@@ -50,7 +50,7 @@ class Tlv9152_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Tlv9152(MultipackBlock, GeneratorBlock):
+class Tlv9152(MultipackOpamp, GeneratorBlock):
   """Dual RRIO opamps.
 
   TODO infrastructure for packed opamps? Packed opamp abstract class?

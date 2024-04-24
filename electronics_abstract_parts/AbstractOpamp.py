@@ -29,3 +29,13 @@ class Opamp(Analog, KiCadInstantiableBlock, Block):
 
 class OpampElement(Opamp):
   """Packed opamp element"""
+
+
+@abstract_block
+class MultipackOpamp(Analog, MultipackBlock):
+  """Base class for packed opamps - devices that have multiple opamps in a single package,
+  with shared power and ground connections. Typically used with the multipack feature to
+  fit individual opamps across the design hierarchy into one of these."""
+  def __init__(self) -> None:
+    super().__init__()
+    # TODO IMPLEMENT ME

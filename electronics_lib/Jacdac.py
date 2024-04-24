@@ -35,7 +35,13 @@ class JacdacPassivePort(Bundle[JacdacDataLink]):
         self.jd_data = self.Port(DigitalSink())  # needs to be typed but is as close to passive as possible
 
 
-class JacdacEdgeConnectorBare(FootprintBlock, GeneratorBlock):
+@abstract_block
+class JacdacSubcircuit(Interface):
+    """Category for Jacdac subcircuits"""
+    pass
+
+
+class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
     """Jacdac connector, in power sink or source mode (both available, but both may not be connected simultaneously).
     This is the bare connector, you should use the non-bare one with the recommended interface circuitry in most cases!
     Uses the recessed connector, which is the default used by the device outline generator.
@@ -125,7 +131,7 @@ class Rclamp0521p(TvsDiode, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class JacdacEdgeConnector(Connector, GeneratorBlock):
+class JacdacEdgeConnector(Connector, JacdacSubcircuit, GeneratorBlock):
     """Jacdac edge connector, in power sink or source mode (both available, but both may not be connected simultaneously).
     This includes the required per-port application circuitry, including status LEDs and ESD diodes.
     This does NOT include device-wide application circuitry like EMI filters.
@@ -179,7 +185,7 @@ class JacdacEdgeConnector(Connector, GeneratorBlock):
                                                                            capacitance=(0, 1)*pFarad)))
 
 
-class JacdacDataInterface(Block):
+class JacdacDataInterface(JacdacSubcircuit, Block):
     """Interface from a Jacdac data bus to a device, including protection and EMI filtering.
     Does NOT include per-port circuitry like ESD diodes and status LEDs."""
     def __init__(self):
@@ -215,7 +221,7 @@ class JacdacDataInterface(Block):
         self.connect(self.signal, self.rc.input.adapt_to(DigitalBidir()))
 
 
-class JacdacMountingData1(FootprintBlock):
+class JacdacMountingData1(JacdacSubcircuit, FootprintBlock):
     """Jacdac mounting hole for data, with a passive-typed port so it doesn't count as a connection
     for validation purposes."""
     def __init__(self):
@@ -231,7 +237,7 @@ class JacdacMountingData1(FootprintBlock):
         )
 
 
-class JacdacMountingGnd2(FootprintBlock):
+class JacdacMountingGnd2(JacdacSubcircuit, FootprintBlock):
     def __init__(self):
         super().__init__()
         self.gnd = self.Port(Ground())
@@ -245,7 +251,7 @@ class JacdacMountingGnd2(FootprintBlock):
         )
 
 
-class JacdacMountingGnd4(FootprintBlock):
+class JacdacMountingGnd4(JacdacSubcircuit, FootprintBlock):
     def __init__(self):
         super().__init__()
         self.gnd = self.Port(Ground())
@@ -259,7 +265,7 @@ class JacdacMountingGnd4(FootprintBlock):
         )
 
 
-class JacdacMountingPwr3(FootprintBlock):
+class JacdacMountingPwr3(JacdacSubcircuit, FootprintBlock):
     def __init__(self):
         super().__init__()
         self.jd_pwr = self.Port(VoltageSink())

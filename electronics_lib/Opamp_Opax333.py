@@ -50,7 +50,7 @@ class Opa2333_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Opa2333(MultipackBlock, GeneratorBlock):
+class Opa2333(MultipackOpamp, GeneratorBlock):
   """Dual precision RRIO (including negative input) opamps.
 
   TODO infrastructure for packed opamps? Packed opamp abstract class?

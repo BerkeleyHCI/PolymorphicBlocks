@@ -55,7 +55,7 @@ from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer,
 from .AbstractSwitch import Switch, TactileSwitch, MechanicalKeyswitch, DigitalSwitch
 from .AbstractSwitch import RotaryEncoder, RotaryEncoderSwitch, DigitalRotaryEncoder, DigitalRotaryEncoderSwitch
 from .AbstractSwitch import DirectionSwitch, DirectionSwitchCenter, DigitalDirectionSwitch, DigitalDirectionSwitchCenter
-from .AbstractOpamp import Opamp, OpampElement
+from .AbstractOpamp import Opamp, OpampElement, MultipackOpamp
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
 from .AbstractSpiMemory import SpiMemory, SpiMemoryQspi
 from .OpampCurrentSensor import OpampCurrentSensor
@@ -77,6 +77,7 @@ from .AbstractTestPoint import TestPoint, VoltageTestPoint, DigitalTestPoint, Di
 from .AbstractTestPoint import AnalogRfTestPoint
 from .AbstractJumper import Jumper, DigitalJumper
 from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
+from .TouchPad import FootprintToucbPad
 
 from .UsbConnectors import UsbConnector, UsbHostConnector, UsbDeviceConnector, UsbEsdDiode
 from .CanTransceiver import CanTransceiver, IsolatedCanTransceiver, CanEsdDiode

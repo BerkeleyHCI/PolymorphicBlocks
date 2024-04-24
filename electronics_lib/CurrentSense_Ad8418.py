@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Ad8418a_Device(JlcPart, FootprintBlock):
+class Ad8418a_Device(JlcPart, FootprintBlock, InternalSubcircuit):
     GAIN = Range.from_tolerance(20, 0.0015)
     @init_in_parent
     def __init__(self, in_diff_range: RangeLike):

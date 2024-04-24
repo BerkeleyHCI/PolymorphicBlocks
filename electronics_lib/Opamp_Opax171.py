@@ -67,7 +67,7 @@ class Opa2171_Device(Opa171_Base_Device, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Opa2171(MultipackBlock, GeneratorBlock):
+class Opa2171(MultipackOpamp, GeneratorBlock):
   """Dual precision general purpose RRO opamp.
 
   TODO infrastructure for packed opamps? Packed opamp abstract class? - shared w/ OPAx333
