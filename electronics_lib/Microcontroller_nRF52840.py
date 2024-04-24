@@ -210,7 +210,7 @@ class Nrf52840_Base(Nrf52840_Ios, GeneratorBlock):
     self._io_ports.insert(0, self.swd)
 
 
-class Holyiot_18010_Device(Nrf52840_Base):
+class Holyiot_18010_Device(Nrf52840_Base, InternalSubcircuit):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'Vdd': '14',
     'Vss': ['1', '25', '37'],

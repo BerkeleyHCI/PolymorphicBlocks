@@ -211,7 +211,7 @@ class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resett
         gnd=self.gnd, pwr=self.pwr, io=self.ic.en)
 
 
-class Esp32c3_Device(Esp32c3_Base, FootprintBlock, JlcPart):
+class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
   """ESP32C3 with 4MB integrated flash
   TODO: support other part numbers, including without integrated flash
   """
