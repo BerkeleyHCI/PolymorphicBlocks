@@ -252,7 +252,7 @@ class InternalSubcircuit(InternalBlock):
 
 
 @abstract_block
-class DiscreteComponent(InternalSubcircuit, Block):
+class DiscreteComponent(InternalBlock):
   """Discrete component that typically provides untyped ports (not to be be used directly), as a component to be used in an application circuit."""
   pass
 
