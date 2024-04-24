@@ -22,19 +22,28 @@ class CompiledDesign:
   def from_compiler_result(result: edgrpc.CompilerResult) -> 'CompiledDesign':
     values = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
               for value in result.solvedValues}
-    return CompiledDesign(result.design, values, result.error)
+    return CompiledDesign(result.design, values, list(result.errors))
 
   @staticmethod
   def from_request(design: edgir.Design, values: Iterable[edgrpc.ExprValue]) -> 'CompiledDesign':
     values_dict = {value.path.SerializeToString(): edgir.valuelit_to_lit(value.value)
                    for value in values}
-    return CompiledDesign(design, values_dict, "")
+    return CompiledDesign(design, values_dict, [])
 
-  def __init__(self, design: edgir.Design, values: Dict[bytes, edgir.LitTypes], error: str):
+  def __init__(self, design: edgir.Design, values: Dict[bytes, edgir.LitTypes], errors: List[edgrpc.ErrorRecord]):
     self.design = design
     self.contents = design.contents  # convenience accessor
-    self.error = error
+    self.errors = errors
     self._values = values
+
+  def errors_str(self) -> str:
+    err_strs = []
+    for error in self.errors:
+      error_pathname = edgir.local_path_to_str(error.path)
+      if error.name:
+        error_pathname += ':' + error.name
+      err_strs.append(f"{error.kind} @ {error_pathname}: {error.details}")
+    return '\n'.join([f'- {err_str}' for err_str in err_strs])
 
   # Reserved.V is a string because it doesn't load properly at runtime
   # Serialized strings are used since proto objects are mutable and unhashable
@@ -112,9 +121,10 @@ class ScalaCompilerInstance:
 
     assert result is not None
     assert result.HasField('design')
-    if result.error and not ignore_errors:
-      raise CompilerCheckError(f"error during compilation: \n{result.error}")
-    return CompiledDesign.from_compiler_result(result)
+    design = CompiledDesign.from_compiler_result(result)
+    if result.errors and not ignore_errors:
+      raise CompilerCheckError(f"error during compilation:\n{design.errors_str()}")
+    return design
 
   def close(self):
     assert self.process is not None
