@@ -116,7 +116,7 @@ class Opa2189_Device(Opax189_Base_Device, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Opa2189(MultipackOpampGenerator, GeneratorBlock):
+class Opa2189(MultipackOpampGenerator):
   """Dual precision RRO opamps.
   """
   def _make_multipack_opamp(self) -> MultipackOpampGenerator.OpampPorts:

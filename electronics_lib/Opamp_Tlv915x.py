@@ -50,17 +50,17 @@ class Tlv9152_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Tlv9152(MultipackOpamp, GeneratorBlock):
+class Tlv9152(MultipackOpampGenerator):
   """Dual RRIO opamps.
   """
-  def _make_multipack_opamp(self) -> MultipackOpamp.OpampPorts:
+  def _make_multipack_opamp(self) -> MultipackOpampGenerator.OpampPorts:
     self.ic = self.Block(Tlv9152_Device())
     # Datasheet section 9: recommend 0.1uF bypass capacitors close to power supply pins
     self.vdd_cap = self.Block(DecouplingCapacitor(
       capacitance=0.1*uFarad(tol=0.2),
     )).connected(self.ic.vn, self.ic.vp)
 
-    return MultipackOpamp.OpampPorts(self.ic.vn, self.ic.vp, [
+    return self.OpampPorts(self.ic.vn, self.ic.vp, [
       (self.ic.inna, self.ic.inpa, self.ic.outa),
       (self.ic.innb, self.ic.inpb, self.ic.outb),
     ])
