@@ -301,9 +301,9 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
 
   def contents(self):
     super().contents()
-    control_voltage = self.btn_in.link().voltage.hull(RangeExpr.ZERO, )
-    pwr_voltage = self.pwr_out.link().voltage.hull(RangeExpr.ZERO, )
-    pwr_current = self.pwr_out.link().current_drawn.hull(RangeExpr.ZERO, )
+    control_voltage = self.btn_in.link().voltage.hull(self.gnd.link().voltage)
+    pwr_voltage = self.pwr_out.link().voltage.hull(self.gnd.link().voltage)
+    pwr_current = self.pwr_out.link().current_drawn.hull(RangeExpr.ZERO)
 
     self.pull_res = self.Block(Resistor(
       resistance=self.pull_resistance
@@ -361,35 +361,27 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                       })
 
 
-class SoftPowerSwitch(SoftPowerGate):
+class SoftPowerSwitch(PowerSwitch, Block):
   """A soft power switch that inherits from SoftPowerGate, with an additional
   button for manual power control.
   """
-
-  def contents(self):
-    self.btn = self.Block(Switch(voltage=0 * Volt(tol=0)))  # TODO - actually model switch voltage
-    super().contents()
-
-
-class SoftPowerBtn(PowerSwitch, Block):
   @init_in_parent
   def __init__(self, pull_resistance: RangeLike = 10 * kOhm(tol=0.05), amp_resistance: RangeLike = 10 * kOhm(tol=0.05),
                diode_drop: RangeLike = (0, 0.4) * Volt):
     super().__init__()
 
+    self.gnd = self.Port(Ground.empty(), [Common])
     with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      pass
-    self.pwr_gate = self.Block(SoftPowerGate(pull_resistance, amp_resistance, diode_drop))
-    self.btn = self.Block(Switch(voltage=0 * Volt(tol=0)))  # TODO - actually model switch voltage
+      self.pwr_gate = imp.Block(SoftPowerGate(pull_resistance, amp_resistance, diode_drop))
+      self.btn = imp.Block(DigitalSwitch())
 
-    self.pwr_in = self.Export(self.pwr_gate.pwr_in)
-    self.pwr_out = self.Export(self.pwr_gate.pwr_out)
-    self.gnd = self.Port(Ground.empty(), [Common])
+    self.pwr_in = self.Export(self.pwr_gate.pwr_in, [Input])
+    self.pwr_out = self.Export(self.pwr_gate.pwr_out, [Output])
     self.btn_out = self.Export(self.pwr_gate.btn_out)
     self.control = self.Export(self.pwr_gate.control)
 
-
   def contents(self):
     super().contents()
+    self.connect(self.pwr_gate.btn_in, self.btn.out)
