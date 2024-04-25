@@ -279,7 +279,7 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   """
 
   @init_in_parent
-  def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), rds_on: RangeLike = Range.all()):
+  def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), rds_on: RangeLike = (0, 0.1) * Ohm):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
     self.pwr_in = self.Port(VoltageSink.empty())
@@ -316,25 +316,9 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
 
 
 class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
-  """PMOS Charger Reverse Protection.
-
-  PMOS transistors are used in charging circuits to prevent reverse voltage from damaging the battery or the circuit.
-  They act as a switch that allows current flow only in the correct direction.
-  Regular PMOS reverse protection may not be suitable for bidirectional circuit.
-
-  Ports:
-      - pwr_in: Power in from the battery
-      - pwr_out: Power out for the load
-      - chg_in: Charger input to charge the battery
-      - chg_out: Charging output for the battery
-      - gnd: Ground
-
-  Note:
-      - Limitation: The highest Vgs/Vds are bounded by the transistors' specifications.
-      - There is also a rare case when this circuit being disconnected when a charger is connected first.
-      But always reverse protect.
-      - R1 and R2 are the pullup bias resistors for mp1 and mp2 PFet.
-
+  """Charging capable a battery reverse protection using PMOS transistors. The highest battery voltage is bounded by the
+  transistors' Vgs/Vds. There is also a rare case when this circuit being disconnected when a charger is connected first.
+  But always reverse protect. R1 and R2 are the pullup bias resistors for mp1 and mp2 PFet.
   More info at: https://www.edn.com/reverse-voltage-protection-for-battery-chargers/
   """
 
@@ -344,10 +328,10 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
     super().__init__()
 
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr_out = self.Port(VoltageSource.empty())  # Load
-    self.pwr_in = self.Port(VoltageSink.empty())  # For connecting battery pwr output
-    self.chg_in = self.Port(VoltageSink.empty())  # Charger input
-    self.chg_out = self.Port(VoltageSource.empty())  # Charging output to lipo
+    self.pwr_out = self.Port(VoltageSource.empty(), doc="Power output for a load which will be also reverse protected from the battery")
+    self.pwr_in = self.Port(VoltageSink.empty(), doc="Power input from the battery")
+    self.chg_in = self.Port(VoltageSink.empty(), doc="Charger input to charge the battery")
+    self.chg_out = self.Port(VoltageSource.empty(), doc="Charging output to the battery chg port")
 
     self.r1_val = self.ArgParameter(r1_val)
     self.r2_val = self.ArgParameter(r2_val)

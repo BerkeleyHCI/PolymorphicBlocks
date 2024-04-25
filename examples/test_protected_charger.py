@@ -5,10 +5,9 @@ from edg import *
 
 class ProtectedCharger(JlcBoardTop):
     """A Lipo charger that does not blowup with reverse polarity from the battery
-
     Key features:
-    - Type C Lipo charger
-    - Reverse polarity protection with PMOS
+    - A type C Lipo charger
+    - Charging capable reverse polarity protection with PMOS
     - A Port for load
     """
 
