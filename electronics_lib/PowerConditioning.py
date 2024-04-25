@@ -266,21 +266,8 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
 
 
 class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from the multimater
-  """A high-side PFET power gate that has a button to power on, can be latched
-  on by an external signal, and provides the button output as a signal.
-
-  Attributes:
-    pull_resistance: The resistance of the pull-up resistor.
-    amp_resistance: The resistance of the amplifier resistor.
-    diode_drop: The voltage drop across the diode.
-
-  Ports:
-    pwr_in: A VoltageSink port for the input power.
-    pwr_out: A VoltageSource port for the output power, gated by the power button.
-    gnd: Ground.
-    btn_out: An optional DigitalSingleSource port for the button output signal, allowing the button state to be read independently of the control signal.
-    btn_in: A DigitalSingleSource port for the button input signal. Should be connected to a button. Do not connect IO.
-    control: A DigitalSink port for external control to latch the power on.
+  """A high-side PFET power gate that has a button to power on, can be latched on by an external signal,
+  and provides the button output as a signal.
   """
 
   @init_in_parent
@@ -288,12 +275,13 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                diode_drop: RangeLike = (0, 0.4) * Volt):
     super().__init__()
     self.pwr_in = self.Port(VoltageSink.empty(), [Input])
-    self.pwr_out = self.Port(VoltageSource.empty(), [Output])
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output], doc="Gate controlled power out")
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.btn_out = self.Port(DigitalSingleSource.empty())
-    self.btn_in = self.Port(DigitalSingleSource.empty())
-    self.control = self.Port(DigitalSink.empty())  # digital level control - gnd-referenced NFET gate
+    self.btn_out = self.Port(DigitalSingleSource.empty(), optional=True,
+                             doc="Allows the button state to be read independently of the control signal")
+    self.btn_in = self.Port(DigitalSingleSource.empty(), doc="Should be connected to a button output. Do not connect IO")
+    self.control = self.Port(DigitalSink.empty(), doc="external control to latch the power on")  # digital level control - gnd-referenced NFET gate
 
     self.pull_resistance = self.ArgParameter(pull_resistance)
     self.amp_resistance = self.ArgParameter(amp_resistance)
@@ -362,8 +350,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
 
 
 class SoftPowerSwitch(PowerSwitch, Block):
-  """A soft power switch that inherits from SoftPowerGate, with an additional
-  button for manual power control.
+  """A software power switch that adds a power button a user can turn on
   """
   @init_in_parent
   def __init__(self, pull_resistance: RangeLike = 10 * kOhm(tol=0.05), amp_resistance: RangeLike = 10 * kOhm(tol=0.05),
