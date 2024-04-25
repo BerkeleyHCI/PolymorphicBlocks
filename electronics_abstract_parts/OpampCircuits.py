@@ -1,5 +1,5 @@
 from math import ceil, log10
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Mapping
 
 from electronics_model import *
 from .AbstractResistor import Resistor
@@ -11,8 +11,14 @@ from .DummyDevices import ForcedAnalogSignal
 from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
 
-class OpampFollower(OpampApplication, KiCadSchematicBlock):
+class OpampFollower(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock):
   """Opamp follower circuit, outputs the same signal as the input (but probably stronger)."""
+  def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
+    assert symbol_name == 'edg_importable:Follower'
+    return {
+      '1': self.input, '3': self.output, 'V+': self.pwr, 'V-': self.gnd
+    }
+
   def __init__(self):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])

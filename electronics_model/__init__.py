@@ -16,7 +16,7 @@ from .Ground import Ground, GroundSource, Common
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource, DigitalLink
 from .DigitalPorts import DigitalBidirAdapterOpenDrain, DigitalBidirNotConnected
 from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
-from .TouchPort import TouchDriver, TouchPadPort, FootprintToucbPad
+from .TouchPort import TouchDriver, TouchPadPort
 from .UartPort import UartPort, UartLink
 from .SpiPort import SpiController, SpiPeripheral, SpiLink
 from .SpiPort import SpiMaster, SpiSlave  # legacy names
@@ -45,3 +45,5 @@ from .KiCadSchematicBlock import KiCadBlackbox, KiCadBlackboxBase
 from .RefdesRefinementPass import RefdesRefinementPass
 from .NetlistBackend import NetlistBackend
 from .PinAssignmentUtil import PinAssignmentUtil, AnyPinAssign, PeripheralPinAssign, NotConnectedPin, AnyPin
+
+from .SvgPcbTemplateBlock import SvgPcbTemplateBlock

@@ -12,6 +12,14 @@ import "edgir/lit.proto";
 import "edgrpc/hdl.proto";
 
 
+message ErrorRecord {
+  edgir.ref.LocalPath path = 1;  // link / block / port, cannot be the constraint
+  string kind = 2;  // kind of error, eg failed to generate
+  string name = 3;  // constraint name / short description
+  string details = 4;  // longer description, optional
+}
+
+
 message CompilerRequest {
   edgir.schema.Design design = 2;
   edgrpc.hdl.Refinements refinements = 3;
@@ -19,7 +27,7 @@ message CompilerRequest {
 
 message CompilerResult {
   edgir.schema.Design design = 1;
-  string error = 3;
+  repeated ErrorRecord errors = 4;
 
   message Value {
     edgir.ref.LocalPath path = 1;

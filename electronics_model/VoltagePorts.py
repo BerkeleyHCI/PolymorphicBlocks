@@ -127,8 +127,8 @@ class VoltageSink(VoltageBase):
   def from_gnd(gnd: VoltageSink, voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO) -> 'VoltageSink':
     return VoltageSink(
-      voltage_limits=voltage_limits - gnd.link().voltage,
-      current_draw = current_draw
+      voltage_limits=gnd.link().voltage + voltage_limits,
+      current_draw=current_draw
     )
 
   def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,

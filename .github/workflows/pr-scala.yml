@@ -1,9 +1,12 @@
 # Based on https://www.scala-sbt.org/1.x/docs/GitHub-Actions-with-sbt.html
 # optimization: https://github.com/marketplace/actions/skip-duplicate-actions#usage-examples
 
-name: Scala PR build and tests
+name: Compiler tests
 
 on:
+  push:
+    branches:
+      - "master"
   pull_request:
     types: [assigned, opened, synchronize, reopened, ready_for_review]
 

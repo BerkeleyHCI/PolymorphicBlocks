@@ -312,11 +312,6 @@ class Multimeter(JlcBoardTop):
       self.connect(self.mcu.gpio.request_vector('measure_select'), self.measure.select)
       self.connect(self.mcu.gpio.request('adc_cs'), self.adc.cs)
 
-      self.adc_vref = self.connect(self.adc.vref)
-      (self.tp_vref, ), _ = self.chain(
-        self.adc.vref,
-        self.Block(VoltageTestPoint()))
-
       # DRIVER CIRCUITS
       self.driver = imp.Block(MultimeterCurrentDriver(
         voltage_rating=VOLTAGE_RATING
@@ -328,15 +323,6 @@ class Multimeter(JlcBoardTop):
         self.driver.control)
       self.connect(self.mcu.gpio.request_vector('driver_select'), self.driver.select)
       self.connect(self.mcu.gpio.request('driver_enable'), self.driver.enable)
-
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
-    self.id = self.Block(IdDots4())
-
-    self.m1 = self.Block(MountingHole())
-    self.m2 = self.Block(MountingHole())
-
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -422,7 +408,6 @@ class Multimeter(JlcBoardTop):
         (BananaSafetyJack, Fcr7350),
         (AnalogSwitch, Nlas4157),
         (Speaker, ConnectorSpeaker),
-        (MountingHole, MountingHole_M3),
       ],
     )
 

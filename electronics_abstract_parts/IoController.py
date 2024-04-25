@@ -9,7 +9,7 @@ from .Categories import ProgrammableController
 
 
 @abstract_block
-class BaseIoController(PinMappable, InternalBlock, Block):
+class BaseIoController(PinMappable, Block):
   """An abstract IO controller block, that takes power input and provides a grab-bag of common IOs.
   A base interface for microcontrollers and microcontroller-like devices (eg, FPGAs).
   Pin assignments are handled via refinements and can be assigned to pins' allocated names.
@@ -190,7 +190,17 @@ def makeIdealIoController():  # needed to avoid circular import
 
 @abstract_block_default(makeIdealIoController)
 class IoController(ProgrammableController, BaseIoController):
-  """An abstract, generic IO controller with optional common IOs and power ports."""
+  """Structural abstract base class for a programmable controller chip (including microcontrollers that take firmware,
+  and FPGAs that take gateware).
+
+  This provides the model of a grab bag of IOs on its structural interface, and supports common peripherals as
+  Vectors of GPIO, ADC, I2C, and SPI. The pin_assigns argument can be used to specify how to map Vector elements
+  to physical (by footprint pin number) or logical pins (by pin name).
+  Less common peripheral types like CAN and DAC can be added with mixins.
+
+  This defines a power input port that powers the device, though the IoControllerPowerOut mixin can be used
+  for a controller that provides power, for example a development board powered from onboard USB.
+  """
   def __init__(self, *awgs, **kwargs) -> None:
     super().__init__(*awgs, **kwargs)
 

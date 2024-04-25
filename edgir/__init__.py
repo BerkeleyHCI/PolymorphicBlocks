@@ -67,7 +67,7 @@ def valuelit_to_lit(expr: ValueLit) -> LitTypes:
   elif expr.HasField('integer'):
     return expr.integer.val
   elif expr.HasField('range') and \
-       expr.range.minimum.HasField('floating') and expr.range.maximum.HasField('floating'):
+          expr.range.minimum.HasField('floating') and expr.range.maximum.HasField('floating'):
     from edg_core.Range import Range  # TODO fix me, this prevents a circular import
     return Range(expr.range.minimum.floating.val, expr.range.maximum.floating.val)
   elif expr.HasField('text'):
@@ -169,7 +169,8 @@ def AssignRef(dst: Iterable[str], src: Iterable[str]) -> ValueExpr:
   return pb
 
 
-def local_path_to_str(path: LocalPath) -> str:
+def local_path_to_str_list(path: LocalPath) -> List[str]:
+  """Convert a LocalPath to a list of its components. Reserved params are presented as strings."""
   def step_to_str(step: LocalStep) -> str:
     if step.HasField('name'):
       return step.name
@@ -180,8 +181,10 @@ def local_path_to_str(path: LocalPath) -> str:
       }[step.reserved_param]
     else:
       raise ValueError(f"unknown step {step}")
+  return [step_to_str(step) for step in path.steps]
 
-  return '.'.join([step_to_str(step) for step in path.steps])
+def local_path_to_str(path: LocalPath) -> str:
+  return '.'.join(local_path_to_str_list(path))
 
 @overload
 def add_pair(pb: RepeatedCompositeFieldContainer[NamedPortLike], name: str) -> PortLike: ...

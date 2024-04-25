@@ -74,7 +74,7 @@ object CompilerServerMain {
         new DesignStructuralValidate().map(compiled) ++ new DesignRefsValidate().validate(compiled)
       val result = edgcompiler.CompilerResult(
         design = Some(compiled),
-        error = errors.mkString("\n"),
+        errors = errors.map(_.toIr),
         solvedValues = constPropToSolved(compiler.getAllSolved)
       )
       result
@@ -82,7 +82,14 @@ object CompilerServerMain {
       case e: Throwable =>
         val sw = new StringWriter()
         e.printStackTrace(new PrintWriter(sw))
-        edgcompiler.CompilerResult(error = sw.toString)
+        edgcompiler.CompilerResult(errors =
+          Seq(edgcompiler.ErrorRecord(
+            path = Some(DesignPath().asIndirect.toLocalPath),
+            kind = "Internal error",
+            name = "",
+            details = sw.toString
+          ))
+        )
     }
   }
 

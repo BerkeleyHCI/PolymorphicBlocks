@@ -1,6 +1,7 @@
+from deprecated import deprecated
 from electronics_abstract_parts import *
 
-
+@deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class Outline_Pn1332(Mechanical, FootprintBlock):
   def contents(self):
     super().contents()
@@ -13,6 +14,7 @@ class Outline_Pn1332(Mechanical, FootprintBlock):
 
 
 @abstract_block
+@deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class MountingHole(Mechanical, FootprintBlock):
   FOOTPRINT: str = ''
   VALUE: str = ''
@@ -29,31 +31,25 @@ class MountingHole(Mechanical, FootprintBlock):
     )
 
 
+@deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class MountingHole_NoPad_M2_5(MountingHole):
   FOOTPRINT = 'MountingHole:MountingHole_2.5mm'
   VALUE = 'M2.5'
 
 
+@deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class MountingHole_M2_5(MountingHole):
   FOOTPRINT = 'MountingHole:MountingHole_2.7mm_M2.5_Pad_Via'
   VALUE = 'M2.5'
 
 
+@deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class MountingHole_M3(MountingHole):
   FOOTPRINT = 'MountingHole:MountingHole_3.2mm_M3_Pad_Via'
   VALUE = 'M3'
 
 
+@deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class MountingHole_M4(MountingHole):
   FOOTPRINT = 'MountingHole:MountingHole_4.3mm_M4_Pad_Via'
   VALUE = 'M4'
-
-
-class JlcToolingHole(Mechanical, FootprintBlock):
-  def contents(self):
-    super().contents()
-    self.footprint(
-      'H', 'edg:JlcToolingHole_1.152mm',
-      {},
-      datasheet='https://support.jlcpcb.com/article/92-how-to-add-tooling-holes-for-smt-assembly-order'
-    )

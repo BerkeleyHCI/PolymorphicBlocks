@@ -61,7 +61,7 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Ir2301(HalfBridgeDriver):
+class Ir2301(HalfBridgeDriver, HalfBridgeDriverIndependent):
   """IR2301 half-bridge driver supporting 600V offset, 5-20v input, external boot diode,
   no shoot through protect, no deadtime."""
   def contents(self):

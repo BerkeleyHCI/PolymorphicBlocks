@@ -69,8 +69,8 @@ class Vl53l0x_Device(Vl53l0x_DeviceBase, InternalSubcircuit, JlcPart, FootprintB
     self.assign(self.actual_basic_part, False)
 
 
-@abstract_block_default(lambda: Vl53l0xApplication)
-class Vl53l0x(DistanceSensor, Block):
+@abstract_block_default(lambda: Vl53l0x)
+class Vl53l0xBase(DistanceSensor, Block):
   """Abstract base class for VL53L0x application circuits"""
   def __init__(self) -> None:
     super().__init__()
@@ -83,7 +83,7 @@ class Vl53l0x(DistanceSensor, Block):
     self.gpio1 = self.Port(DigitalBidir.empty(), optional=True)
 
 
-class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0x, GeneratorBlock):
+class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0xBase, GeneratorBlock):
   """Connector to an external VL53L0X breakout board.
   Uses the pinout from the Adafruit product: https://www.adafruit.com/product/3317
   This has an onboard 2.8v regulator, but thankfully the IO tolerance is not referenced to Vdd"""
@@ -112,7 +112,7 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0x, GeneratorBlock):
       self.connect(self.pwr.as_digital_source(), self.conn.pins.request('6').adapt_to(gpio_model))
 
 
-class Vl53l0xApplication(Vl53l0x, GeneratorBlock):
+class Vl53l0x(Vl53l0xBase, GeneratorBlock):
   """Board-mount laser ToF sensor"""
   def contents(self):
     super().contents()
@@ -154,9 +154,9 @@ class Vl53l0xArray(DistanceSensor, GeneratorBlock):
 
   def generate(self):
     super().generate()
-    self.elt = ElementDict[Vl53l0x]()
+    self.elt = ElementDict[Vl53l0xBase]()
     for elt_i in range(self.get(self.count)):
-      elt = self.elt[str(elt_i)] = self.Block(Vl53l0x())
+      elt = self.elt[str(elt_i)] = self.Block(Vl53l0xBase())
       self.connect(self.pwr, elt.pwr)
       self.connect(self.gnd, elt.gnd)
       self.connect(self.i2c, elt.i2c)

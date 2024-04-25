@@ -61,7 +61,7 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Ucc27282(HalfBridgeDriver):
+class Ucc27282(HalfBridgeDriver, HalfBridgeDriverIndependent):
   """UCC27282 half-bridge driver supporting 100V offset, 5.5-16v input, internal boot diode,
   shoot through protect, no deadtime."""
   def contents(self):

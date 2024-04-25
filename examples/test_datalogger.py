@@ -37,9 +37,6 @@ class Datalogger(BoardTop):
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05)))
       )
 
-    self.outline = self.Block(Outline_Pn1332())
-    self.duck = self.Block(DuckLogo())
-
     self.vin = self.connect(self.pwr_conn.pwr)
     self.v5 = self.connect(self.pwr_5v_merge.pwr_out)
     self.v5_buffered = self.connect(self.buffer.pwr_out)
@@ -123,13 +120,6 @@ class Datalogger(BoardTop):
       (self.v12sense, ), _ = self.chain(self.vin, imp.Block(div_model), self.mcu.adc.request('v12sense'))
       (self.v5sense, ), _ = self.chain(self.v5, imp.Block(div_model), self.mcu.adc.request('v5sense'))
       (self.vscsense, ), _ = self.chain(self.buffer.sc_out, imp.Block(div_model), self.mcu.adc.request('vscsense'))
-
-    self.hole = ElementDict[MountingHole]()
-    for i in range(3):
-      self.hole[i] = self.Block(MountingHole_M4())
-
-    self.leadfree = self.Block(LeadFreeIndicator())
-    self.id = self.Block(IdDots4())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(

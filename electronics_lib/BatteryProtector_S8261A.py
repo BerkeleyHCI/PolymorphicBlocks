@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class BatteryProtector_S8261A_Device(InternalSubcircuit, JlcPart, FootprintBlock):
+class S8261A_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
@@ -35,12 +35,14 @@ class BatteryProtector_S8261A_Device(InternalSubcircuit, JlcPart, FootprintBlock
     self.assign(self.lcsc_part, 'C28081')
     self.assign(self.actual_basic_part, False)
 
-class BatteryProtector_S8261A(PowerConditioner, Block):
+class S8261A(PowerConditioner, Block):
+  """1-cell LiIon/LiPo Battery protection IC protecting against overcharge, overdischarge, over current.
+  """
   @init_in_parent
   def __init__(self) -> None:
     super().__init__()
 
-    self.ic = self.Block(BatteryProtector_S8261A_Device())
+    self.ic = self.Block(S8261A_Device())
 
     self.pwr_out = self.Port(VoltageSource.empty())
     self.gnd_out = self.Port(GroundSource.empty())
