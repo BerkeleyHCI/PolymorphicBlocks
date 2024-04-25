@@ -39,7 +39,7 @@ class RobotCrawlerSpec(BoardTop):
     self.servos = ElementDict[ServoFeedbackConnector]()
     for i in range(self.SERVO_COUNT):
       self.servos[str(i)] = self.Block(ServoFeedbackConnector())
-    self.imu = self.Block(Imu_Lsm6ds3trc())
+    self.imu = self.Block(Lsm6ds3trc())
 
     self.servos_cam = ElementDict[ServoFeedbackConnector]()
     for i in range(self.SERVO_CAM_COUNT):

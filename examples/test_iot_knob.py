@@ -66,7 +66,7 @@ class IotKnob(JlcBoardTop):
       self.als = imp.Block(Bh1750())
       self.connect(self.i2c, self.als.i2c)
 
-      self.dist = imp.Block(Vl53l0x())
+      self.dist = imp.Block(Vl53l0xBase())
       self.connect(self.i2c, self.dist.i2c)
 
       self.env = imp.Block(Shtc3())

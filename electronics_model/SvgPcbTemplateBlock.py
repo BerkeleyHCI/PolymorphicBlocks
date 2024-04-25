@@ -7,6 +7,7 @@ from abc import abstractmethod
 from .NetlistGenerator import Netlist
 
 
+@non_library
 class SvgPcbTemplateBlock(Block):
     """EXPERIMENTAL! MAY CHANGE, NOT API-STABLE!
 

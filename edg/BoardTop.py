@@ -51,7 +51,17 @@ class BoardTop(BaseBoardTop):
   pass
 
 
-class JlcToolingHoles(Mechanical, Block):
+class JlcToolingHole(InternalSubcircuit, FootprintBlock):
+  def contents(self):
+    super().contents()
+    self.footprint(
+      'H', 'edg:JlcToolingHole_1.152mm',
+      {},
+      datasheet='https://support.jlcpcb.com/article/92-how-to-add-tooling-holes-for-smt-assembly-order'
+    )
+
+
+class JlcToolingHoles(InternalSubcircuit, Block):
   def contents(self):
     super().contents()
     self.th1 = self.Block(JlcToolingHole())

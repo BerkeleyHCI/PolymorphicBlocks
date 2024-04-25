@@ -368,11 +368,6 @@ class Fcml(JlcBoardTop):
       (self.conv_out_sense, ), _ = self.chain(self.conv.pwr_out, imp.Block(div_model),
                                               self.mcu.adc.request('conv_out_sense'))
 
-    # Misc board
-    self.duck = self.Block(DuckLogo())
-    self.lemur = self.Block(LemurLogo())
-    self.id = self.Block(IdDots4())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

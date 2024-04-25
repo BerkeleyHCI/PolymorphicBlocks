@@ -1,6 +1,8 @@
 from electronics_abstract_parts import *
+from deprecated import deprecated
 
 
+@deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class LeadFreeIndicator(Label, FootprintBlock):
   def contents(self):
     super().contents()
@@ -11,6 +13,7 @@ class LeadFreeIndicator(Label, FootprintBlock):
     )
 
 
+@deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class IdDots4(Label, FootprintBlock):
   def contents(self):
     super().contents()
@@ -21,6 +24,7 @@ class IdDots4(Label, FootprintBlock):
     )
 
 
+@deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class DuckLogo(Label, FootprintBlock):
   def contents(self):
     super().contents()
@@ -31,6 +35,7 @@ class DuckLogo(Label, FootprintBlock):
     )
 
 
+@deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class LemurLogo(Label, FootprintBlock):
   def contents(self):
     super().contents()

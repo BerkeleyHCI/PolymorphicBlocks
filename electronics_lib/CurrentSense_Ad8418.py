@@ -4,7 +4,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Ad8418a_Device(JlcPart, FootprintBlock):
+class Ad8418a_Device(JlcPart, FootprintBlock, InternalSubcircuit):
     GAIN = Range.from_tolerance(20, 0.0015)
     @init_in_parent
     def __init__(self, in_diff_range: RangeLike):
@@ -55,7 +55,7 @@ class Ad8418a_Device(JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Ad8418a(Sensor, KiCadImportableBlock, Block):
+class Ad8418a(CurrentSensor, KiCadImportableBlock, Block):
     def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
         assert symbol_name == 'edg_importable:DifferentialAmplifier'
         return {

@@ -91,10 +91,6 @@ class Simon(BoardTop):
             self.Block(ForcedDigitalSinkCurrentDraw((0, 0))),
             self.btn[i].led_a)
 
-    self.duck = self.Block(DuckLogo())
-    self.leadfree = self.Block(LeadFreeIndicator())
-    self.id = self.Block(IdDots4())
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_values=[

@@ -256,9 +256,6 @@ class HighSwitch(BoardTop):
 
     self.v3v3 = self.connect(self.pwr.pwr_out)
 
-    self.outline = self.Block(Outline_Pn1332())
-    self.duck = self.Block(DuckLogo())
-
     with self.implicit_connect(
       ImplicitConnect(self.v3v3, [Power]),
       ImplicitConnect(self.gnd, [Common]),
@@ -301,10 +298,6 @@ class HighSwitch(BoardTop):
         light = self.light[i] = imp.Block(LightsDriver((0, 3) * Amp))
         self.connect(self.mcu.gpio.request(f'light_{i}0'), light.control[0])
         self.connect(self.mcu.gpio.request(f'light_{i}1'), light.control[1])
-
-    self.hole = ElementDict[MountingHole]()
-    for i in range(4):
-      self.hole[i] = self.Block(MountingHole_M4())
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(

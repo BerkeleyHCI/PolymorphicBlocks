@@ -87,7 +87,7 @@ class Esp32c3_Ios(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator):
 
 
 @abstract_block
-class Esp32c3_Base(Esp32c3_Ios, InternalSubcircuit, BaseIoControllerPinmapGenerator):
+class Esp32c3_Base(Esp32c3_Ios, BaseIoControllerPinmapGenerator):
   """Base class for ESP32-C3 series devices, with RISC-V core, 2.4GHz WiF,i, BLE5.
   PlatformIO: use board ID esp32-c3-devkitm-1
 
@@ -127,7 +127,7 @@ class Esp32c3_Base(Esp32c3_Ios, InternalSubcircuit, BaseIoControllerPinmapGenera
     self.uart0 = self.Port(UartPort(dio_model), optional=True)
 
 
-class Esp32c3_Wroom02_Device(Esp32c3_Base, FootprintBlock, JlcPart):
+class Esp32c3_Wroom02_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
   """ESP32C module
 
   Module datasheet: https://www.espressif.com/sites/default/files/documentation/esp32-c3-wroom-02_datasheet_en.pdf
@@ -211,7 +211,7 @@ class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resett
         gnd=self.gnd, pwr=self.pwr, io=self.ic.en)
 
 
-class Esp32c3_Device(Esp32c3_Base, FootprintBlock, JlcPart):
+class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
   """ESP32C3 with 4MB integrated flash
   TODO: support other part numbers, including without integrated flash
   """

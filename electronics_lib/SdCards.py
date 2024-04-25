@@ -65,7 +65,7 @@ class MicroSdSocket(SdCard):
   """MicroSD socket"""
 
 
-class HiroseDm3btDsfPejs(MicroSdSocket, Connector, FootprintBlock):
+class Dm3btDsfPejs(MicroSdSocket, Connector, FootprintBlock):
   def contents(self):
     super().contents()
     # TODO add pull up resistors and capacitors and w/e?

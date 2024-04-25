@@ -455,27 +455,27 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   from .ConstraintExpr import BoolLike, BoolExpr, FloatLike, FloatExpr, RangeLike, RangeExpr
   # type ignore is needed because IntLike overlaps BoolLike
   @overload
-  def ArgParameter(self, param: BoolLike) -> BoolExpr: ...  # type: ignore
+  def ArgParameter(self, param: BoolLike, *, doc: Optional[str] = None) -> BoolExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: IntLike) -> IntExpr: ...  # type: ignore
+  def ArgParameter(self, param: IntLike, *, doc: Optional[str] = None) -> IntExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: FloatLike) -> FloatExpr: ...  # type: ignore
+  def ArgParameter(self, param: FloatLike, *, doc: Optional[str] = None) -> FloatExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: RangeLike) -> RangeExpr: ...  # type: ignore
+  def ArgParameter(self, param: RangeLike, *, doc: Optional[str] = None) -> RangeExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: StringLike) -> StringExpr: ...  # type: ignore
+  def ArgParameter(self, param: StringLike, *, doc: Optional[str] = None) -> StringExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: ArrayBoolLike) -> ArrayBoolExpr: ...  # type: ignore
+  def ArgParameter(self, param: ArrayBoolLike, *, doc: Optional[str] = None) -> ArrayBoolExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: ArrayIntLike) -> ArrayIntExpr: ...  # type: ignore
+  def ArgParameter(self, param: ArrayIntLike, *, doc: Optional[str] = None) -> ArrayIntExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: ArrayFloatLike) -> ArrayFloatExpr: ...  # type: ignore
+  def ArgParameter(self, param: ArrayFloatLike, *, doc: Optional[str] = None) -> ArrayFloatExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: ArrayRangeLike) -> ArrayRangeExpr: ...  # type: ignore
+  def ArgParameter(self, param: ArrayRangeLike, *, doc: Optional[str] = None) -> ArrayRangeExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: ArrayStringLike) -> ArrayStringExpr: ...  # type: ignore
+  def ArgParameter(self, param: ArrayStringLike, *, doc: Optional[str] = None) -> ArrayStringExpr: ...  # type: ignore
 
-  def ArgParameter(self, param: CastableType) -> ConstraintExpr[Any, CastableType]:
+  def ArgParameter(self, param: CastableType, *, doc: Optional[str] = None) -> ConstraintExpr[Any, CastableType]:
     """Registers a constructor argument parameter for this Block.
     This doesn't actually do anything, but is needed to help the type system converter the *Like to a *Expr."""
     if not isinstance(param, ConstraintExpr):
@@ -484,23 +484,27 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
       raise TypeError(f"param to ArgParameter(...) must have binding")
     if not isinstance(param.binding, InitParamBinding):
       raise TypeError(f"param to ArgParameter(...) must be __init__ argument with @init_in_parent")
+
+    if doc is not None:
+      self._param_docs[param] = doc
+
     return param
 
   T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, tags: Iterable[PortTag]=[], *, optional: bool = False) -> T:
+  def Port(self, tpe: T, tags: Iterable[PortTag]=[], *, optional: bool = False, doc: Optional[str] = None) -> T:
     """Registers a port for this Block"""
     if not isinstance(tpe, (Port, Vector)):
       raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")
     for tag in tags:
       assert_cast(tag, PortTag, "tag for Port(...)")
 
-    port = super().Port(tpe, optional=optional)
+    port = super().Port(tpe, optional=optional, doc=doc)
 
     self._port_tags[port] = set(tags)
     return port  # type: ignore
 
   ExportType = TypeVar('ExportType', bound=BasePort)
-  def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False) -> ExportType:
+  def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False, doc: Optional[str] = None) -> ExportType:
     """Exports a port of a child block, but does not propagate tags or optional."""
     assert port._is_bound(), "can only export bound type"
     port_parent = port._block_parent()
@@ -510,10 +514,10 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     if isinstance(port, BaseVector):  # TODO can the vector and non-vector paths be unified?
       assert isinstance(port, Vector)
       new_port: BasePort = self.Port(Vector(port._tpe.empty()),
-                                     tags, optional=optional)
+                                     tags, optional=optional, doc=doc)
     elif isinstance(port, Port):
       new_port = self.Port(type(port).empty(),  # TODO is dropping args safe in all cases?
-                           tags, optional=optional)
+                           tags, optional=optional, doc=doc)
     else:
       raise NotImplementedError(f"unknown exported port type {port}")
 

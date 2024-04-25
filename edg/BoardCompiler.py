@@ -37,9 +37,9 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
     with open(design_filename, 'wb') as raw_file:
       raw_file.write(compiled.design.SerializeToString())
 
-  if compiled.error:
+  if compiled.errors:
     import edg_core
-    raise edg_core.ScalaCompilerInterface.CompilerCheckError(f"error during compilation: \n{compiled.error}")
+    raise edg_core.ScalaCompilerInterface.CompilerCheckError(f"error during compilation:\n{compiled.errors_str()}")
 
   netlist_all = NetlistBackend().run(compiled)
   netlist_refdes = NetlistBackend().run(compiled, {'RefdesMode': 'refdes'})

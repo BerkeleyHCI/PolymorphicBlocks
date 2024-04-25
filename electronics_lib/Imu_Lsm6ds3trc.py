@@ -2,7 +2,7 @@ from electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Imu_Lsm6ds3trc_Device(InternalSubcircuit, FootprintBlock, JlcPart):
+class Lsm6ds3trc_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.vdd = self.Port(VoltageSink(
@@ -53,10 +53,10 @@ class Imu_Lsm6ds3trc_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Imu_Lsm6ds3trc(Accelerometer, Gyroscope, Block):
+class Lsm6ds3trc(Accelerometer, Gyroscope, Block):
     def __init__(self):
         super().__init__()
-        self.ic = self.Block(Imu_Lsm6ds3trc_Device())
+        self.ic = self.Block(Lsm6ds3trc_Device())
         self.vdd = self.Export(self.ic.vdd, [Power])
         self.vddio = self.Export(self.ic.vddio, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
