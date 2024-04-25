@@ -267,15 +267,9 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
 
 
 class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
-  """
-  - This circuit uses a PMOS as a switch, which turns on when the power supply is correctly connected,
-  allowing current to flow to the load. If the power supply polarity is reversed, the PMOS turns off,
-  disconnecting the load and protecting the circuit.
-  - This method is preferred over diode-based protection due to lower power loss
-  - In most cases, 100R-330R is good if there are chances for the appearance of sudden reverse voltage in the circuit.
-  - But if there are no chances of sudden reverse voltage during the continuous working of the circuit,
-  anything from the 1k-50k resistor value can be used.
-  - Ref: https://components101.com/articles/design-guide-pmos-mosfet-for-reverse-voltage-polarity-protection
+  """Reverse polarity protection using a PMOS. This method has lower power loss over diode-based protection.
+  100R-330R is good but 1k-50k can be used for continuous load.
+  Ref: https://components101.com/articles/design-guide-pmos-mosfet-for-reverse-voltage-polarity-protection
   """
 
   @init_in_parent
