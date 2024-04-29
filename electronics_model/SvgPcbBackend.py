@@ -87,10 +87,10 @@ class SvgPcbBackend(BaseBackend):
         ]
         other_block_instantiations = [
             f"""\
-    const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(block.footprint)}, {{
-    translate: pt(0, 0), rotate: 0,
-    id: '{SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)}'
-    }})"""
+const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(block.footprint)}, {{
+  translate: pt(0, 0), rotate: 0,
+  id: '{SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)}'
+}})"""
             for block in other_blocks
         ]
 
