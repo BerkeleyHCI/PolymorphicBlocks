@@ -44,6 +44,7 @@ from .KiCadSchematicBlock import KiCadBlackbox, KiCadBlackboxBase
 
 from .RefdesRefinementPass import RefdesRefinementPass
 from .NetlistBackend import NetlistBackend
+from .SvgPcbBackend import SvgPcbBackend
 from .PinAssignmentUtil import PinAssignmentUtil, AnyPinAssign, PeripheralPinAssign, NotConnectedPin, AnyPin
 
 from .SvgPcbTemplateBlock import SvgPcbTemplateBlock
