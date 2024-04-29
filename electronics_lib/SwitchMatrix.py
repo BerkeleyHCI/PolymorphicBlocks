@@ -54,7 +54,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0
     for (let xIndex=0; xIndex < ncols; xIndex++) {{
       index = yIndex * ncols + xIndex + 1
 
-      buttonPos = [colSpacing * xIndex, rowSpacing * yIndex]
+      buttonPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * yIndex]
       obj.footprints[`sw[${{xIndex}}][${{yIndex}}]`] = button = board.add(
         {switch_footprint},
         {{
@@ -77,7 +77,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0
 
       // create wire for button -> diode
       board.wire([button.pad("{switch_sw_pin}"), diode.pad("{diode_k_pin}")], traceSize, "F.Cu")
-      diodeViaPos = [diode.padX("{diode_a_pin}"), diode.padY("{diode_a_pin}") + 0.5]
+      diodeViaPos = [diode.padX("{diode_a_pin}"), buttonPos[1] + rowSpacing / 2]
       diodeVia = board.add(viaTemplate, {{translate: diodeViaPos}})
       board.wire([diode.pad("{diode_a_pin}"), diodeVia.pos], traceSize)
 
