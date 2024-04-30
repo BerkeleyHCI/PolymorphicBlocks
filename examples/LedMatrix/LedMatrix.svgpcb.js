@@ -24,9 +24,9 @@ function CharlieplexedLedMatrix_5_6_matrix(xy, colSpacing=1, rowSpacing=1) {
 
     for (let xIndex=0; xIndex < kXCount; xIndex++) {
       ledPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * yIndex]
-      obj.footprints[`d[${yIndex}_${xIndex}]`] = led = board.add(LED_0603_1608Metric, {
+      obj.footprints[`led[${yIndex}_${xIndex}]`] = led = board.add(LED_0603_1608Metric, {
         translate: ledPos,
-        id: `matrix_d[${yIndex}_${xIndex}]`
+        id: `matrix_led_${yIndex}_${xIndex}_`
       })
       rowLeds.push(led)
 
@@ -71,9 +71,9 @@ function CharlieplexedLedMatrix_5_6_matrix(xy, colSpacing=1, rowSpacing=1) {
   allResistors = []
   for (let xIndex=0; xIndex < kXCount; xIndex++) {
     const resPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * kYCount]
-    obj.footprints[`r[${xIndex + 1}]`] = res = board.add(R_0603_1608Metric, {
+    obj.footprints[`res[${xIndex + 1}]`] = res = board.add(R_0603_1608Metric, {
       translate: resPos,
-      id: `matrix_r[${xIndex + 1}]`
+      id: `matrix_res_${xIndex + 1}_`
     })
     allResistors.push(res)
 
