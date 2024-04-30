@@ -1,6 +1,7 @@
 from typing import Optional, cast
 
 from electronics_abstract_parts import *
+from electronics_model.PassivePort import PassiveAdapterVoltageSink, PassiveAdapterVoltageSource
 
 
 class Supercap(DiscreteComponent, FootprintBlock):  # TODO actually model supercaps and parts selection
@@ -263,3 +264,116 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
     if pwr_lo is not None:
       cast(Block, builder.get_enclosing_block()).connect(pwr_lo, self.pwr_lo)
     return self
+
+
+class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
+  """Reverse polarity protection using a PMOS. This method has lower power loss over diode-based protection.
+  100R-330R is good but 1k-50k can be used for continuous load.
+  Ref: https://components101.com/articles/design-guide-pmos-mosfet-for-reverse-voltage-polarity-protection
+  """
+
+  @init_in_parent
+  def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), rds_on: RangeLike = (0, 0.1) * Ohm):
+    super().__init__()
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.pwr_in = self.Port(VoltageSink.empty())
+    self.pwr_out = self.Port(VoltageSource.empty())
+
+    self.gate_resistor = self.ArgParameter(gate_resistor)
+    self.rds_on = self.ArgParameter(rds_on)
+
+  def contents(self):
+    super().contents()
+    output_current_draw = self.pwr_out.link().current_drawn
+    self.fet = self.Block(Fet.PFet(
+      drain_voltage=(0, self.pwr_out.link().voltage.upper()),
+      drain_current=output_current_draw,
+      gate_voltage=(- self.pwr_out.link().voltage.upper(), self.pwr_out.link().voltage.upper()),
+      rds_on=self.rds_on,
+    ))
+
+    self.res = self.Block(Resistor(self.gate_resistor))
+    # TODO: generate zener diode for high voltage applications
+    #  self.diode = self.Block(ZenerDiode(self.clamp_voltage))
+
+    self.import_kicad(
+      self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'pwr_in': VoltageSink(
+          current_draw=output_current_draw,
+        ),
+        'pwr_out': VoltageSource(
+          voltage_out=self.pwr_in.link().voltage,
+        ),
+        'gnd': Ground(),
+      })
+
+
+class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
+  """Charging capable a battery reverse protection using PMOS transistors. The highest battery voltage is bounded by the
+  transistors' Vgs/Vds. There is also a rare case when this circuit being disconnected when a charger is connected first.
+  But always reverse protect. R1 and R2 are the pullup bias resistors for mp1 and mp2 PFet.
+  More info at: https://www.edn.com/reverse-voltage-protection-for-battery-chargers/
+  """
+
+  @init_in_parent
+  def __init__(self, r1_val: RangeLike = 100 * kOhm(tol=0.01), r2_val: RangeLike = 100 * kOhm(tol=0.01),
+               rds_on: RangeLike = (0, 0.1) * Ohm):
+    super().__init__()
+
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.pwr_out = self.Port(VoltageSource.empty(), doc="Power output for a load which will be also reverse protected from the battery")
+    self.pwr_in = self.Port(VoltageSink.empty(), doc="Power input from the battery")
+    self.chg_in = self.Port(VoltageSink.empty(), doc="Charger input to charge the battery. Must be connected to pwr_out.")
+    self.chg_out = self.Port(VoltageSource.empty(), doc="Charging output to the battery chg port. Must be connected to pwr_in,")
+
+    self.r1_val = self.ArgParameter(r1_val)
+    self.r2_val = self.ArgParameter(r2_val)
+    self.rds_on = self.ArgParameter(rds_on)
+
+  def contents(self):
+    super().contents()
+    self.r1 = self.Block(Resistor(resistance=self.r1_val))
+    self.r2 = self.Block(Resistor(resistance=self.r2_val))
+
+    batt_voltage = self.pwr_in.link().voltage.hull(self.chg_in.link().voltage).hull(self.gnd.link().voltage)
+
+    # taking the max of the current for the both direction. 0 lower bound
+    batt_current = self.pwr_out.link().current_drawn.hull(self.chg_out.link().current_drawn).hull((0, 0))
+    power = batt_current * batt_current * self.rds_on
+    r1_current = batt_voltage / self.r1.resistance
+
+    # Create the PMOS transistors and resistors based on the provided schematic
+    self.mp1 = self.Block(Fet.PFet(
+      drain_voltage=batt_voltage, drain_current=r1_current,
+      gate_voltage=(-batt_voltage.upper(), batt_voltage.upper()),
+      rds_on=self.rds_on,
+    ))
+    self.mp2 = self.Block(Fet.PFet(
+      drain_voltage=batt_voltage, drain_current=batt_current,
+      gate_voltage=(- batt_voltage.upper(), batt_voltage.upper()),
+      rds_on=self.rds_on,
+      power=power
+    ))
+
+    chg_in_adapter = self.Block(PassiveAdapterVoltageSink())
+    setattr(self, '(adapter)chg_in', chg_in_adapter)  # hack so the netlister recognizes this as an adapter
+    self.connect(self.mp1.source, chg_in_adapter.src)
+    self.connect(self.chg_in, chg_in_adapter.dst)
+
+    chg_out_adapter = self.Block(PassiveAdapterVoltageSource())
+    setattr(self, '(adapter)chg_out', chg_out_adapter)  # hack so the netlister recognizes this as an adapter
+    self.connect(self.r2.b, chg_out_adapter.src)
+    self.connect(self.chg_out, chg_out_adapter.dst)
+
+    self.import_kicad(
+      self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+      conversions={
+        'pwr_in': VoltageSink(
+          current_draw=batt_current
+        ),
+        'pwr_out': VoltageSource(
+          voltage_out=batt_voltage
+        ),
+        'gnd': Ground(),
+      })
