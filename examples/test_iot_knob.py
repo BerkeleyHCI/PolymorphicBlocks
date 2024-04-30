@@ -86,9 +86,9 @@ class IotKnob(JlcBoardTop):
         self.mcu.gpio.request('rgb'),
         imp.Block(L74Ahct1g125()),
         imp.Block(DigitalTestPoint()),
-        imp.Block(NeopixelArray(KNOB_LEDS)),
-        imp.Block(NeopixelArray(RING_LEDS)),
-        imp.Block(NeopixelArray(NUM_SECTIONS)))
+        imp.Block(NeopixelArrayCircular(KNOB_LEDS)),
+        imp.Block(NeopixelArrayCircular(RING_LEDS)),
+        imp.Block(NeopixelArrayCircular(NUM_SECTIONS)))
 
       self.io8_pur = self.Block(PullupResistor(4.7*kOhm(tol=0.05)))  # for ESP32C6 IO8 strapping compatibility
       self.connect(self.io8_pur.pwr, self.v3v3)

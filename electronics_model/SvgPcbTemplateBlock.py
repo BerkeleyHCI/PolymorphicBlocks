@@ -1,6 +1,5 @@
-from typing import Optional, Any, List, Tuple
+from typing import Optional, Any, List
 
-import edgir
 from edg_core import *
 from edg_core.ConstraintExpr import ConstraintExpr
 from abc import abstractmethod
@@ -79,10 +78,18 @@ class SvgPcbTemplateBlock(Block):
             return None
         return candidate_pins[0].pin_name
 
+    def _svgpcb_fn_name_adds(self) -> Optional[str]:
+        """Optional additional data to be added to the function name for readability, like parameter values."""
+        return None
+
     def _svgpcb_fn_name(self) -> str:
         """Infrastructure method (optionally user override-able), returns the SVGPCB function name
         for the template. This must be unique per-Block (so the pathname is encoded by default)."""
-        return f"""{self.__class__.__name__}_{self._svgpcb_pathname()}"""
+        optional_adds = self._svgpcb_fn_name_adds()
+        if optional_adds is not None:
+            return f"""{self.__class__.__name__}_{optional_adds}_{self._svgpcb_pathname()}"""
+        else:
+            return f"""{self.__class__.__name__}_{self._svgpcb_pathname()}"""
 
     @abstractmethod
     def _svgpcb_template(self) -> str:
