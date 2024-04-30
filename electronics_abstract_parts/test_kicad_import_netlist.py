@@ -72,15 +72,18 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
                            # expected value is wonky because netlisting combines part and value
                            'Sensor_Temperature:MCP9700AT-ETT', 'MCP9700AT-ETT',
                            ['dut', 'U1'], ['dut', 'U1'],
-                           ['electronics_model.KiCadSchematicBlock.KiCadBlackbox']),
+                           ['electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock',
+                            'electronics_model.KiCadSchematicBlock.KiCadBlackbox']),
                   net.blocks)
     self.assertIn(NetBlock('Symbol:Symbol_ESD-Logo_CopperTop', 'SYM1',
                            # expected value is wonky because netlisting combines part and value
                            'Graphic:SYM_ESD_Small', 'SYM_ESD_Small',
                            ['dut', 'SYM1'], ['dut', 'SYM1'],
-                           ['electronics_model.KiCadSchematicBlock.KiCadBlackbox']),
+                           ['electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock',
+                            'electronics_model.KiCadSchematicBlock.KiCadBlackbox']),
                   net.blocks)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '',
                            ['dut', 'res'], ['dut', 'res'],
-                           ['electronics_abstract_parts.test_kicad_import_netlist.DummyResistor']),
+                           ['electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock',
+                            'electronics_abstract_parts.test_kicad_import_netlist.DummyResistor']),
                   net.blocks)
