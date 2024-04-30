@@ -51,9 +51,9 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1) {{
 
     for (let xIndex=0; xIndex < kXCount; xIndex++) {{
       ledPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * yIndex]
-      obj.footprints[`d[${{yIndex}}_${{xIndex}}]`] = led = board.add({led_footprint}, {{
+      obj.footprints[`led[${{yIndex}}_${{xIndex}}]`] = led = board.add({led_footprint}, {{
         translate: ledPos,
-        id: `{self._svgpcb_pathname()}_d[${{yIndex}}_${{xIndex}}]`
+        id: `{self._svgpcb_pathname()}_led_${{yIndex}}_${{xIndex}}_`
       }})
       rowLeds.push(led)
 
@@ -98,9 +98,9 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1) {{
   allResistors = []
   for (let xIndex=0; xIndex < kXCount; xIndex++) {{
     const resPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * kYCount]
-    obj.footprints[`r[${{xIndex + 1}}]`] = res = board.add({res_footprint}, {{
+    obj.footprints[`res[${{xIndex + 1}}]`] = res = board.add({res_footprint}, {{
       translate: resPos,
-      id: `{self._svgpcb_pathname()}_r[${{xIndex + 1}}]`
+      id: `{self._svgpcb_pathname()}_res_${{xIndex + 1}}_`
     }})
     allResistors.push(res)
 

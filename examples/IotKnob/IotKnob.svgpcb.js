@@ -70,7 +70,7 @@ function NeopixelArrayCircular_4_rgb_knob(xy, rot=90, radius=1, startAngle=0, en
     obj.footprints[`led[${i}]`] = led = board.add(LED_SK6812_EC15_1_5x1_5mm, {
       translate: origin,
       rotate: angle + rot,
-      id: `rgb_knob_led[${i}]`
+      id: `rgb_knob_led_${i}_`
     })
 
     const gndOrigin = pAdd(xy, vRotate([radius - powerRadiusOffset, 0], angle))
@@ -181,7 +181,7 @@ function NeopixelArrayCircular_24_rgb_ring(xy, rot=90, radius=1, startAngle=0, e
     obj.footprints[`led[${i}]`] = led = board.add(LED_SK6812_EC15_1_5x1_5mm, {
       translate: origin,
       rotate: angle + rot,
-      id: `rgb_ring_led[${i}]`
+      id: `rgb_ring_led_${i}_`
     })
 
     const gndOrigin = pAdd(xy, vRotate([radius - powerRadiusOffset, 0], angle))
@@ -292,7 +292,7 @@ function NeopixelArrayCircular_6_rgb_sw(xy, rot=90, radius=1, startAngle=0, endA
     obj.footprints[`led[${i}]`] = led = board.add(LED_SK6812_EC15_1_5x1_5mm, {
       translate: origin,
       rotate: angle + rot,
-      id: `rgb_sw_led[${i}]`
+      id: `rgb_sw_led_${i}_`
     })
 
     const gndOrigin = pAdd(xy, vRotate([radius - powerRadiusOffset, 0], angle))
