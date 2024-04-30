@@ -42,16 +42,6 @@ class LedMatrix(JlcBoardTop):
       self.matrix = imp.Block(CharlieplexedLedMatrix(6, 5, current_draw=(3.5, 5)*mAmp, color=Led.Yellow))
       self.connect(self.mcu.gpio.request_vector('led'), self.matrix.ios)
 
-  def multipack(self) -> None:
-    self.matrix_res1 = self.PackedBlock(ResistorArray())
-    self.pack(self.matrix_res1.elements.request('0'), ['matrix', 'res[0]'])
-    self.pack(self.matrix_res1.elements.request('1'), ['matrix', 'res[1]'])
-    self.pack(self.matrix_res1.elements.request('2'), ['matrix', 'res[2]'])
-
-    self.matrix_res2 = self.PackedBlock(ResistorArray())
-    self.pack(self.matrix_res2.elements.request('0'), ['matrix', 'res[3]'])
-    self.pack(self.matrix_res2.elements.request('1'), ['matrix', 'res[4]'])
-
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
