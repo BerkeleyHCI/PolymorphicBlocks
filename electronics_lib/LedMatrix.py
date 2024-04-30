@@ -15,7 +15,6 @@ class CharlieplexedLedMatrix(Light, GeneratorBlock, SvgPcbTemplateBlock):
   def _svgpcb_template(self) -> str:
     led_block = self._svgpcb_footprint_block_path_of(['led[0_0]'])
     res_block = self._svgpcb_footprint_block_path_of(['res[0]'])
-    assert led_block is not None
     assert led_block is not None and res_block is not None
     led_footprint = self._svgpcb_footprint_of(led_block)
     led_a_pin = self._svgpcb_pin_of(['led[0_0]'], ['a'], led_block)
