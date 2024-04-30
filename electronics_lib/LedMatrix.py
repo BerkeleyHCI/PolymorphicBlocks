@@ -29,35 +29,35 @@ class CharlieplexedLedMatrix(Light, GeneratorBlock, SvgPcbTemplateBlock):
 function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1) {{
   const kXCount = {self._svgpcb_get(self.ncols)}  // number of columns (x dimension)
   const kYCount = {self._svgpcb_get(self.nrows)}  // number of rows (y dimension)
-  
+
   // Global params
   const traceSize = 0.015
   const viaTemplate = via(0.02, 0.035)
-  
+
   // Return object
   const obj = {{
     footprints: {{}},
     pts: {{}}
   }}
-    
+  
   allLeds = []
   allVias = []
   lastViasPreResistor = []  // state preserved between rows
   for (let yIndex=0; yIndex < kYCount; yIndex++) {{
     rowLeds = []
     rowVias = []
-  
+
     viasPreResistor = []
     viasPostResistor = []  // on the same net as the prior row pre-resistor
-    
+
     for (let xIndex=0; xIndex < kXCount; xIndex++) {{
       ledPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * yIndex]
       obj.footprints[`d[${{yIndex}}_${{xIndex}}]`] = led = board.add({led_footprint}, {{
-        translate: ledPos, 
+        translate: ledPos,
         id: `{self._svgpcb_pathname()}_d[${{yIndex}}_${{xIndex}}]`
       }})
       rowLeds.push(led)
-  
+
       // anode line
       thisVia = board.add(viaTemplate, {{
         translate: [ledPos[0] + colSpacing*1/3, ledPos[1]]
@@ -72,14 +72,14 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1) {{
     }}
     allLeds.push(rowLeds)
     allVias.push(rowVias)
-  
+
     // Wire the anode lines, including the row-crossing one accounting for the diagonal-skip where the resistor is in the schematic matrix
     // viasPreResistor guaranteed nonempty
     board.wire([viasPreResistor[0].pos, viasPreResistor[viasPreResistor.length - 1].pos], traceSize, "B.Cu")
     if (viasPostResistor.length > 0) {{
       board.wire([viasPostResistor[0].pos, viasPostResistor[viasPostResistor.length - 1].pos], traceSize, "B.Cu")
     }}
-  
+
     // Create the inter-row bridging trace, if applicable
     if (viasPostResistor.length > 0 && lastViasPreResistor.length > 0) {{
       via1Pos = lastViasPreResistor[lastViasPreResistor.length - 1].pos
@@ -92,10 +92,10 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1) {{
                  ],
                  traceSize, "B.Cu")
     }}
-  
+
     lastViasPreResistor = viasPreResistor
   }}
-  
+
   allResistors = []
   for (let xIndex=0; xIndex < kXCount; xIndex++) {{
     const resPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * kYCount]
@@ -104,13 +104,13 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1) {{
       id: `{self._svgpcb_pathname()}_r[${{xIndex + 1}}]`
     }})
     allResistors.push(res)
-    
+
     if (xIndex < allVias.length && xIndex < allVias[xIndex].length - 1) {{
       targetVia = allVias[xIndex][xIndex + 1]
       thisVia = board.add(viaTemplate, {{
         translate: [resPos[0] + colSpacing*2/3, targetVia.pos[1]]
       }})
-  
+
       board.wire([
         res.pad("{res_b_pin}"),
         [resPos[0] + colSpacing*2/3, res.padY("{res_b_pin}")],
@@ -139,7 +139,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1) {{
       ], traceSize, "B.Cu")
     }}
   }}
-    
+
   // create the along-column cathode line
   for (let xIndex=0; xIndex < kXCount; xIndex++) {{
     colPads = allLeds.flatMap(row => row.length > xIndex ? [row[xIndex].pad("{led_k_pin}")] : [])
