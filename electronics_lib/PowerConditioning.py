@@ -377,3 +377,111 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
         ),
         'gnd': Ground(),
       })
+
+
+class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from the multimater
+  """A high-side PFET power gate that has a button to power on, can be latched on by an external signal,
+  and provides the button output as a signal.
+  """
+
+  @init_in_parent
+  def __init__(self, pull_resistance: RangeLike = 10 * kOhm(tol=0.05), amp_resistance: RangeLike = 10 * kOhm(tol=0.05),
+               diode_drop: RangeLike = (0, 0.4) * Volt):
+    super().__init__()
+    self.pwr_in = self.Port(VoltageSink.empty(), [Input])
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output], doc="Gate controlled power out")
+    self.gnd = self.Port(Ground.empty(), [Common])
+
+    self.btn_out = self.Port(DigitalSingleSource.empty(), optional=True,
+                             doc="Allows the button state to be read independently of the control signal")
+    self.btn_in = self.Port(DigitalBidir.empty(), doc="Should be connected to a button output. Do not connect IO")
+    self.control = self.Port(DigitalSink.empty(), doc="external control to latch the power on")  # digital level control - gnd-referenced NFET gate
+
+    self.pull_resistance = self.ArgParameter(pull_resistance)
+    self.amp_resistance = self.ArgParameter(amp_resistance)
+    self.diode_drop = self.ArgParameter(diode_drop)
+
+  def contents(self):
+    super().contents()
+    control_voltage = self.btn_in.link().voltage.hull(self.gnd.link().voltage)
+    pwr_voltage = self.pwr_out.link().voltage.hull(self.gnd.link().voltage)
+    pwr_current = self.pwr_out.link().current_drawn.hull(RangeExpr.ZERO)
+
+    self.pull_res = self.Block(Resistor(
+      resistance=self.pull_resistance
+    ))
+    self.pwr_fet = self.Block(Fet.PFet(
+      drain_voltage=pwr_voltage,
+      drain_current=pwr_current,
+      gate_voltage=(-control_voltage.upper(), control_voltage.upper()),  # TODO this ignores the diode drop
+    ))
+
+    self.amp_res = self.Block(Resistor(
+      resistance=self.amp_resistance
+    ))
+    self.amp_fet = self.Block(Fet.NFet(
+      drain_voltage=control_voltage,
+      drain_current=RangeExpr.ZERO,  # effectively no current
+      gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
+    ))
+
+    self.ctl_diode = self.Block(Diode(
+      reverse_voltage=control_voltage,
+      current=RangeExpr.ZERO,  # effectively no current
+      voltage_drop=self.diode_drop,
+      reverse_recovery_time=RangeExpr.ALL
+    ))
+
+    self.btn_diode = self.Block(Diode(
+      reverse_voltage=control_voltage,
+      current=RangeExpr.ZERO,  # effectively no current
+      voltage_drop=self.diode_drop,
+      reverse_recovery_time=RangeExpr.ALL
+    ))
+
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+                      conversions={
+                        'pwr_in': VoltageSink(
+                          current_draw=self.pwr_out.link().current_drawn,
+                          voltage_limits=RangeExpr.ALL,
+                        ),
+                        'pwr_out': VoltageSource(
+                          voltage_out=self.pwr_in.link().voltage,
+                          current_limits=RangeExpr.ALL,
+                        ),
+                        'control': DigitalSink(),  # TODO more modeling here?
+                        'gnd': Ground(),
+                        'btn_out': DigitalSingleSource(
+                          voltage_out=self.gnd.link().voltage,
+                          output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
+                          low_signal_driver=True
+                        ),
+                        'btn_in': DigitalBidir(
+                          voltage_out=self.gnd.link().voltage,
+                          output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
+                          pullup_capable=True,
+                        )
+                      })
+
+
+class SoftPowerSwitch(PowerSwitch, Block):
+  """A software power switch that adds a power button a user can turn on
+  """
+  @init_in_parent
+  def __init__(self, pull_resistance: RangeLike = 10 * kOhm(tol=0.05), amp_resistance: RangeLike = 10 * kOhm(tol=0.05),
+               diode_drop: RangeLike = (0, 0.4) * Volt):
+    super().__init__()
+    self.pwr_gate = self.Block(SoftPowerGate(pull_resistance, amp_resistance, diode_drop))
+    self.gnd = self.Export(self.pwr_gate.gnd, [Common])
+    self.pwr_in = self.Export(self.pwr_gate.pwr_in, [Input])
+    self.pwr_out = self.Export(self.pwr_gate.pwr_out, [Output])
+    self.btn_out = self.Export(self.pwr_gate.btn_out)
+    self.control = self.Export(self.pwr_gate.control)
+
+  def contents(self):
+    super().contents()
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.btn = imp.Block(DigitalSwitch())
+    self.connect(self.pwr_gate.btn_in, self.btn.out)

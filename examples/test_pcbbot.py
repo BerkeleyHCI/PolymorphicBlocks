@@ -3,7 +3,6 @@ import unittest
 from edg import *
 
 from .test_robotdriver import PwmConnector
-from .test_multimeter import FetPowerGate
 
 
 class PcbBot(JlcBoardTop):
@@ -52,7 +51,7 @@ class PcbBot(JlcBoardTop):
       (self.fuse, self.gate, self.prot_batt, self.tp_batt), _ = self.chain(
         self.batt.pwr,
         imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
-        imp.Block(FetPowerGate()),
+        imp.Block(SoftPowerSwitch()),
         imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
         self.Block(VoltageTestPoint()))
       self.vbatt = self.connect(self.gate.pwr_out)  # downstream of fuse
