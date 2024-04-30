@@ -28,7 +28,7 @@ class ProtectedCharger(JlcBoardTop):
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            (self.tp,), _ = self.chain(self.batt.pwr, self.Block(VoltageTestPoint()), )
+            self.tp = self.Block(VoltageTestPoint()).connected(self.batt.pwr)
             self.pmos = imp.Block(PmosChargerReverseProtection())
 
             (self.charger,), _ = self.chain(
