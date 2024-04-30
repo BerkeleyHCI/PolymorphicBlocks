@@ -79,7 +79,7 @@ class NetlistTransform(TransformUtil.Transform):
       short_path = self.short_paths[path]
       class_path = self.class_paths[path]
 
-      if len(main_internal_blocks) == 1:
+      if len(main_internal_blocks) == 1 and short_path:  # never shorten top-level blocks
         name = list(main_internal_blocks.keys())[0]
         self.short_paths[path.append_block(name)] = short_path
         self.class_paths[path.append_block(name)] = class_path

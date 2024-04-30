@@ -24,8 +24,8 @@ class TestFakeSource(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pos = self.Port(VoltageSource())
-    self.neg = self.Port(VoltageSource())
+    self.pos = self.Port(VoltageSource(), optional=True)
+    self.neg = self.Port(VoltageSource(), optional=True)
 
   def contents(self) -> None:
     super().contents()
@@ -61,6 +61,13 @@ class TestFakeSink(TestBaseFakeSink, FootprintBlock):
       },
       value='1k'
     )
+
+
+class TestSinglePart(Block):
+  def contents(self) -> None:
+    super().contents()
+
+    self.source = self.Block(TestFakeSource())
 
 
 class TestBasicCircuit(Block):
@@ -181,6 +188,14 @@ class NetlistTestCase(unittest.TestCase):
     compiled = ScalaCompiler.compile(design, refinements)
     compiled.append_values(RefdesRefinementPass().run(compiled))
     return NetlistTransform(compiled).run()
+
+  def test_single_netlist(self) -> None:
+    net = self.generate_net(TestSinglePart)
+
+    # check that the top-level path element is never pruned, even when the design is one element
+    self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
+                           ['source'], ['source'],
+                           ['electronics_model.test_netlist.TestFakeSource']), net.blocks)
 
   def test_basic_netlist(self) -> None:
     net = self.generate_net(TestBasicCircuit)
