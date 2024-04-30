@@ -1,4 +1,4 @@
-function SwitchMatrix_sw_2_3(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0.25, 0]) {
+function SwitchMatrix_2_3_sw(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0.25, 0]) {
   // Circuit generator params
   const ncols = 2
   const nrows = 3
@@ -22,7 +22,7 @@ function SwitchMatrix_sw_2_3(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0.25, 
     for (let xIndex=0; xIndex < ncols; xIndex++) {
       index = yIndex * ncols + xIndex + 1
 
-      buttonPos = [colSpacing * xIndex, rowSpacing * yIndex]
+      buttonPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * yIndex]
       obj.footprints[`sw[${xIndex}][${yIndex}]`] = button = board.add(
         SW_Hotswap_Kailh_MX,
         {
@@ -45,7 +45,7 @@ function SwitchMatrix_sw_2_3(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0.25, 
 
       // create wire for button -> diode
       board.wire([button.pad("1"), diode.pad("1")], traceSize, "F.Cu")
-      diodeViaPos = [diode.padX("2"), diode.padY("2") + 0.5]
+      diodeViaPos = [diode.padX("2"), buttonPos[1] + rowSpacing / 2]
       diodeVia = board.add(viaTemplate, {translate: diodeViaPos})
       board.wire([diode.pad("2"), diodeVia.pos], traceSize)
 
@@ -68,7 +68,7 @@ function SwitchMatrix_sw_2_3(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0.25, 
   return obj
 }
 
-const sw = SwitchMatrix_sw_2_3(pt(0, 0))
+const sw = SwitchMatrix_2_3_sw(pt(0, 0))
 const usb_conn = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
   translate: pt(0, 0), rotate: 0,
   id: 'usb_conn'

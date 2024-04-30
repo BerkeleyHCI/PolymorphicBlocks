@@ -157,7 +157,7 @@ class Sk6812_Side_A(Neopixel, FootprintBlock):
         # potentially footprint-compatible with C2890037
 
 
-class NeopixelArray(Light, GeneratorBlock, SvgPcbTemplateBlock):
+class NeopixelArray(Light, GeneratorBlock):
     """An array of Neopixels"""
     @init_in_parent
     def __init__(self, count: IntLike):
@@ -184,7 +184,7 @@ class NeopixelArray(Light, GeneratorBlock, SvgPcbTemplateBlock):
         self.connect(self.dout, last_signal_pin)
 
 
-class NeopixelArrayCircular(NeopixelArray):
+class NeopixelArrayCircular(NeopixelArray, SvgPcbTemplateBlock):
     """An array of Neopixels, with a circular layout template"""
     def _svgpcb_fn_name_adds(self) -> Optional[str]:
         return f"{self._svgpcb_get(self.count)}"
