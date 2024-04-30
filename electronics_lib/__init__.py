@@ -68,7 +68,7 @@ from .BoostConverter_TexasInstruments import Tps61040, Lm2733
 from .SwitchedCap_TexasInstruments import Lm2664
 from .BuckConverter_Custom import CustomSyncBuckConverterIndependent
 from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverterPwm
-from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr, SoftPowerGate, SoftPowerSwitch
+from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr, SoftPowerGate, SoftPowerSwitch, PmosReverseProtection, PmosChargerReverseProtection
 from .LedDriver_Al8861 import Al8861
 from .ResetGenerator_Apx803s import Apx803s
 from .BootstrapVoltageAdder import BootstrapVoltageAdder
