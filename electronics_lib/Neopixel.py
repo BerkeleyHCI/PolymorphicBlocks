@@ -272,7 +272,7 @@ function {self._svgpcb_fn_name()}(xy, rot=90, radius=1, startAngle=0, endAngle=3
     obj.footprints[`led[${{i}}]`] = led = board.add({led_footprint}, {{
       translate: origin,
       rotate: angle + rot,
-      id: `{self._svgpcb_pathname()}_led[${{i}}]`
+      id: `{self._svgpcb_pathname()}_led_${{i}}_`
     }})
 
     const gndOrigin = pAdd(xy, vRotate([radius - powerRadiusOffset, 0], angle))
