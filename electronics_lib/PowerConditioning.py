@@ -280,7 +280,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
 
     self.btn_out = self.Port(DigitalSingleSource.empty(), optional=True,
                              doc="Allows the button state to be read independently of the control signal")
-    self.btn_in = self.Port(DigitalSingleSource.empty(), doc="Should be connected to a button output. Do not connect IO")
+    self.btn_in = self.Port(DigitalBidir.empty(), doc="Should be connected to a button output. Do not connect IO")
     self.control = self.Port(DigitalSink.empty(), doc="external control to latch the power on")  # digital level control - gnd-referenced NFET gate
 
     self.pull_resistance = self.ArgParameter(pull_resistance)
@@ -337,14 +337,15 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                         ),
                         'control': DigitalSink(),  # TODO more modeling here?
                         'gnd': Ground(),
-                        'btn_out': DigitalBidir(
-                          voltage_out=self.gnd.link().voltage - self.diode_drop.upper(),
-                          output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
-                        ),
-                        'btn_in': DigitalSingleSource(
+                        'btn_out': DigitalSingleSource(
                           voltage_out=self.gnd.link().voltage,
                           output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
                           low_signal_driver=True
+                        ),
+                        'btn_in': DigitalBidir(
+                          voltage_out=self.gnd.link().voltage,
+                          output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
+                          pullup_capable=True,
                         )
                       })
 
@@ -356,14 +357,8 @@ class SoftPowerSwitch(PowerSwitch, Block):
   def __init__(self, pull_resistance: RangeLike = 10 * kOhm(tol=0.05), amp_resistance: RangeLike = 10 * kOhm(tol=0.05),
                diode_drop: RangeLike = (0, 0.4) * Volt):
     super().__init__()
-
-    self.gnd = self.Port(Ground.empty(), [Common])
-    with self.implicit_connect(
-            ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.pwr_gate = imp.Block(SoftPowerGate(pull_resistance, amp_resistance, diode_drop))
-      self.btn = imp.Block(DigitalSwitch())
-
+    self.pwr_gate = self.Block(SoftPowerGate(pull_resistance, amp_resistance, diode_drop))
+    self.gnd = self.Export(self.pwr_gate.gnd, [Common])
     self.pwr_in = self.Export(self.pwr_gate.pwr_in, [Input])
     self.pwr_out = self.Export(self.pwr_gate.pwr_out, [Output])
     self.btn_out = self.Export(self.pwr_gate.btn_out)
@@ -371,4 +366,8 @@ class SoftPowerSwitch(PowerSwitch, Block):
 
   def contents(self):
     super().contents()
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.btn = imp.Block(DigitalSwitch())
     self.connect(self.pwr_gate.btn_in, self.btn.out)
