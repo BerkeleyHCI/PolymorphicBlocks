@@ -258,14 +258,14 @@ function {self._svgpcb_fn_name()}(xy, rot=90, radius=1, startAngle=0, endAngle=3
       pt2
     ]
   }}
-    
+
   const incrAngle = (endAngle - startAngle) / (kCount)
 
   var prevAngle = null
   var prevLed = null
   var prevGndOrigin = null
   var prevVinOrigin = null
-  
+
   for (i=0; i<kCount; i++) {{
     const angle = startAngle + incrAngle * i
     const origin = pAdd(xy, vRotate([radius, 0], angle))
@@ -280,14 +280,13 @@ function {self._svgpcb_fn_name()}(xy, rot=90, radius=1, startAngle=0, endAngle=3
       ...smoothPath(gndOrigin, led.pad({led_gnd_pin}),
                     angle)
       ), powerWidth)
-    
+
     const vinOrigin = pAdd(xy, vRotate([radius + powerRadiusOffset, 0], angle))
     board.wire(path(
       ...smoothPath(vinOrigin, led.pad({led_vdd_pin}),
                     angle)
       ), powerWidth)
 
-    
     if (prevLed != null) {{
       board.wire(path(
         ...smoothPath(prevLed.pad({led_dout_pin}), led.pad({led_din_pin}),
