@@ -1,4 +1,4 @@
-from typing import cast
+from typing import cast, Optional
 
 from electronics_abstract_parts import *
 
@@ -14,8 +14,8 @@ class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
   This generates per-switch diodes which allows multiple keys to be pressed simultaneously.
   Diode anodes are attached to the rows, while cathodes go through each switch to the cols.
   """
-  def _svgpcb_fn_name(self) -> str:
-    return f"""SwitchMatrix_{self._svgpcb_pathname()}_{self._svgpcb_get(self.ncols)}_{self._svgpcb_get(self.nrows)}"""
+  def _svgpcb_fn_name_adds(self) -> Optional[str]:
+    return f"{self._svgpcb_get(self.ncols)}_{self._svgpcb_get(self.nrows)}"
 
   def _svgpcb_template(self) -> str:
     switch_block = self._svgpcb_footprint_block_path_of(['sw[0,0]'])
