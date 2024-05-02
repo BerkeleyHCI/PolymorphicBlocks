@@ -39,7 +39,7 @@ class Vl53l0x_Device(Vl53l0x_DeviceBase, InternalSubcircuit, JlcPart, FootprintB
 
     gpio_model = self._gpio_model(self.vss, self.vdd)
     self.xshut = self.Port(DigitalSink.from_bidir(gpio_model))
-    self.gpio1 = self.Port(gpio_model, optional=True)
+    self.gpio1 = self.Port(DigitalSingleSource.low_from_supply(self.vss), optional=True)
 
     # TODO: support addresses, the default is 0x29 though it's software remappable
     self.i2c = self.Port(I2cTarget(self._i2c_io_model(self.vss, self.vdd)), [Output])
@@ -99,7 +99,9 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0xBase, GeneratorBlock):
 
     gpio_model = self._gpio_model(self.gnd, self.pwr)
 
-    self.connect(self.int, self.conn.pins.request('5').adapt_to(gpio_model))
+    self.connect(self.int, self.conn.pins.request('5').adapt_to(
+      DigitalSingleSource.low_from_supply(self.gnd)
+    ))
     i2c_io_model = self._i2c_io_model(self.gnd, self.pwr)
     self.connect(self.i2c.scl, self.conn.pins.request('3').adapt_to(i2c_io_model))
     self.connect(self.i2c.sda, self.conn.pins.request('4').adapt_to(i2c_io_model))

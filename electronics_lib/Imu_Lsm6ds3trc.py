@@ -65,8 +65,6 @@ class Lsm6ds3trc(Accelerometer, Gyroscope, DefaultExportBlock):
         self.int1 = self.Export(self.ic.int1, optional=True, doc="TODO")
         self.int2 = self.Export(self.ic.int2, optional=True, doc="TODO")
 
-        self.generator_param(self.pwr_io.is_connected())
-
     def contents(self):
         super().contents()
         self.vdd_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)

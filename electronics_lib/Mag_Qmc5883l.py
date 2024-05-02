@@ -63,7 +63,7 @@ class Qmc5883l(Magnetometer, DefaultExportBlock):
         self.ic = self.Block(Qmc5883l_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.pwr = self.Export(self.ic.vdd, [Power])
-        self.pwr_io = self.Export(self.ic.vddio, defaut=self.pwr, doc="TODO")
+        self.pwr_io = self.Export(self.ic.vddio, default=self.pwr, doc="TODO")
         self.i2c = self.Export(self.ic.i2c)
         self.drdy = self.Export(self.ic.drdy, optional=True)
 
