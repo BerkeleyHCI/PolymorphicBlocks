@@ -37,6 +37,7 @@ class Bh1750_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class Bh1750(LightSensor, Block):
+    """16-bit ambient light sensor, 1-65535 lx"""
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Bh1750_Device())

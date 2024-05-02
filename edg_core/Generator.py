@@ -5,6 +5,8 @@ from typing import *
 from deprecated import deprecated
 
 import edgir
+from .Ports import BasePort, Port
+from .PortTag import PortTag
 from .IdentityDict import IdentityDict
 from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding
 from .Blocks import BlockElaborationState, AbstractBlockProperty
@@ -130,3 +132,36 @@ class GeneratorBlock(Block):
     self._elaboration_state = BlockElaborationState.post_generate
 
     return self._def_to_proto()
+
+
+class DefaultExportBlock(GeneratorBlock):
+  """EXPERIMENTAL UTILITY CLASS. There needs to be a cleaner way to address this eventually,
+  perhaps as a core compiler construct.
+  This encapsulates the common pattern of an optional export, which if not externally connected,
+  connects the internal port to some other default port.
+  TODO The default can be specified as a port, or a function that returns a port (e.g. to instantiate adapters)."""
+  def __init__(self):
+    super().__init__()
+    self._default_exports: List[Tuple[BasePort, Port, Port]] = []  # internal, exported, default
+
+  ExportType = TypeVar('ExportType', bound=BasePort)
+  def Export(self, port: ExportType, *args, default: Optional[Port] = None, **kwargs) -> ExportType:
+    """A generator-only variant of Export that supports an optional default (either internal or external)
+    to connect the (internal) port being exported to, if the external exported port is not connected."""
+    if default is None:
+      new_port = super().Export(port, *args, **kwargs)
+    else:
+      assert 'optional' not in kwargs, "optional must not be specified with default"
+      new_port = super().Export(port, *args, optional=True, _connect=False, **kwargs)
+      assert isinstance(new_port, Port), "defaults only supported with Port types"
+      self.generator_param(new_port.is_connected())
+      self._default_exports.append((port, new_port, default))
+    return new_port
+
+  def generate(self):
+    super().generate()
+    for (internal, exported, default) in self._default_exports:
+      if self.get(exported.is_connected()):
+        self.connect(internal, exported)
+      else:
+        self.connect(internal, default)

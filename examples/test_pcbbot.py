@@ -94,7 +94,7 @@ class PcbBot(JlcBoardTop):
 
       self.i2c = self.mcu.i2c.request('i2c')
 
-      self.tof = imp.Block(Vl53l0xArray(4, first_xshut_fixed=True))
+      self.tof = imp.Block(Vl53l0xArray(4, first_reset_fixed=True))
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint('i2c')),
@@ -109,7 +109,7 @@ class PcbBot(JlcBoardTop):
       self.expander = imp.Block(Pca9554())
       self.connect(self.i2c, self.expander.i2c)
 
-      self.connect(self.expander.io.request_vector('tof_xshut'), self.tof.xshut)
+      self.connect(self.expander.io.request_vector('tof_reset'), self.tof.reset)
 
       (self.rgb, ), _ = self.chain(self.expander.io.request_vector('rgb'), imp.Block(IndicatorSinkRgbLed()))
 

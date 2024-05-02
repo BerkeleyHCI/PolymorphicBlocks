@@ -18,15 +18,21 @@ class BaseIoController(PinMappable, Block):
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
 
-    self.gpio = self.Port(Vector(DigitalBidir.empty()), optional=True)
-    self.adc = self.Port(Vector(AnalogSink.empty()), optional=True)
+    self.gpio = self.Port(Vector(DigitalBidir.empty()), optional=True,
+                          doc="Microcontroller digital GPIO pins")
+    self.adc = self.Port(Vector(AnalogSink.empty()), optional=True,
+                         doc="Microcontroller analog input pins")
 
-    self.spi = self.Port(Vector(SpiController.empty()), optional=True)
-    self.i2c = self.Port(Vector(I2cController.empty()), optional=True)
-    self.uart = self.Port(Vector(UartPort.empty()), optional=True)
+    self.spi = self.Port(Vector(SpiController.empty()), optional=True,
+                         doc="Microcontroller SPI controllers, each element is an independent SPI controller")
+    self.i2c = self.Port(Vector(I2cController.empty()), optional=True,
+                         doc="Microcontroller I2C controllers, each element is an independent I2C controller")
+    self.uart = self.Port(Vector(UartPort.empty()), optional=True,
+                          doc="Microcontroller UARTs")
 
     # USB should be a mixin, but because it's probably common, it's in base until mixins have GUI support
-    self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True)
+    self.usb = self.Port(Vector(UsbDevicePort.empty()), optional=True,
+                         doc="Microcontroller USB device ports")
 
     # CAN is now mixins, but automatically materialized for compatibility
     # In new code, explicit mixin syntax should be used.
@@ -199,13 +205,13 @@ class IoController(ProgrammableController, BaseIoController):
   Less common peripheral types like CAN and DAC can be added with mixins.
 
   This defines a power input port that powers the device, though the IoControllerPowerOut mixin can be used
-  for a controller that provides power, for example a development board powered from onboard USB.
+  for a controller that provides power (like USB-powered dev boards).
   """
   def __init__(self, *awgs, **kwargs) -> None:
     super().__init__(*awgs, **kwargs)
 
-    self.pwr = self.Port(VoltageSink.empty(), [Power], optional=True)
     self.gnd = self.Port(Ground.empty(), [Common], optional=True)
+    self.pwr = self.Port(VoltageSink.empty(), [Power], optional=True)
 
 
 @non_library
@@ -213,5 +219,5 @@ class IoControllerPowerRequired(IoController):
   """IO controller with required power pins."""
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-    self.require(self.pwr.is_connected())
     self.require(self.gnd.is_connected())
+    self.require(self.pwr.is_connected())

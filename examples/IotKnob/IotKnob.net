@@ -1433,7 +1433,7 @@
   (node (ref als.dvi_res) (pin 2))
   (node (ref als.ic) (pin 5))
   (node (ref als.dvi_cap) (pin 1)))
-(net (code 38) (name "Kdist.gpio1")
+(net (code 38) (name "Kdist.ic.gpio1")
   (node (ref dist.ic) (pin 7)))
 (net (code 39) (name "Koled.c1_cap.pos")
   (node (ref oled.c1_cap) (pin 1))

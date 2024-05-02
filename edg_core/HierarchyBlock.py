@@ -504,7 +504,8 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     return port  # type: ignore
 
   ExportType = TypeVar('ExportType', bound=BasePort)
-  def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False, doc: Optional[str] = None) -> ExportType:
+  def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False, doc: Optional[str] = None,
+             _connect = True) -> ExportType:
     """Exports a port of a child block, but does not propagate tags or optional."""
     assert port._is_bound(), "can only export bound type"
     port_parent = port._block_parent()
@@ -521,7 +522,9 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     else:
       raise NotImplementedError(f"unknown exported port type {port}")
 
-    self.connect(new_port, port)
+    if _connect:
+      self.connect(new_port, port)
+
     return new_port  # type: ignore
 
   BlockType = TypeVar('BlockType', bound='Block')

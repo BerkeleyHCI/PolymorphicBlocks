@@ -39,7 +39,7 @@ class Vl53l0x_Device(Vl53l0x_DeviceBase, InternalSubcircuit, JlcPart, FootprintB
 
     gpio_model = self._gpio_model(self.vss, self.vdd)
     self.xshut = self.Port(DigitalSink.from_bidir(gpio_model))
-    self.gpio1 = self.Port(gpio_model, optional=True)
+    self.gpio1 = self.Port(DigitalSingleSource.low_from_supply(self.vss), optional=True)
 
     # TODO: support addresses, the default is 0x29 though it's software remappable
     self.i2c = self.Port(I2cTarget(self._i2c_io_model(self.vss, self.vdd)), [Output])
@@ -70,17 +70,17 @@ class Vl53l0x_Device(Vl53l0x_DeviceBase, InternalSubcircuit, JlcPart, FootprintB
 
 
 @abstract_block_default(lambda: Vl53l0x)
-class Vl53l0xBase(DistanceSensor, Block):
-  """Abstract base class for VL53L0x application circuits"""
+class Vl53l0xBase(Resettable, DistanceSensor, Block):
+  """Abstract base class for VL53L0x devices"""
   def __init__(self) -> None:
     super().__init__()
 
-    self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
 
     self.i2c = self.Port(I2cTarget.empty())
-    self.xshut = self.Port(DigitalSink.empty(), optional=True)
-    self.gpio1 = self.Port(DigitalBidir.empty(), optional=True)
+    self.int = self.Port(DigitalSingleSource.empty(), optional=True,
+                         doc="Interrupt output for new data available")
 
 
 class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0xBase, GeneratorBlock):
@@ -89,7 +89,7 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0xBase, GeneratorBlock):
   This has an onboard 2.8v regulator, but thankfully the IO tolerance is not referenced to Vdd"""
   def contents(self):
     super().contents()
-    self.generator_param(self.xshut.is_connected())
+    self.generator_param(self.reset.is_connected(), self.int.is_connected())
 
   def generate(self):
     super().generate()
@@ -97,23 +97,25 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0xBase, GeneratorBlock):
     self.connect(self.pwr, self.conn.pins.request('1').adapt_to(self._vdd_model()))
     self.connect(self.gnd, self.conn.pins.request('2').adapt_to(Ground()))
 
-    gpio_model = self._gpio_model(self.gnd, self.pwr)
-
-    self.connect(self.gpio1, self.conn.pins.request('5').adapt_to(gpio_model))
     i2c_io_model = self._i2c_io_model(self.gnd, self.pwr)
     self.connect(self.i2c.scl, self.conn.pins.request('3').adapt_to(i2c_io_model))
     self.connect(self.i2c.sda, self.conn.pins.request('4').adapt_to(i2c_io_model))
     self.i2c.init_from(I2cTarget(DigitalBidir.empty(), []))
 
     gpio_model = self._gpio_model(self.gnd, self.pwr)
-    if self.get(self.xshut.is_connected()):
-      self.connect(self.xshut, self.conn.pins.request('6').adapt_to(gpio_model))
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.conn.pins.request('6').adapt_to(gpio_model))
     else:
       self.connect(self.pwr.as_digital_source(), self.conn.pins.request('6').adapt_to(gpio_model))
 
+    if self.get(self.int.is_connected()):
+      self.connect(self.int, self.conn.pins.request('5').adapt_to(
+        DigitalSingleSource.low_from_supply(self.gnd)
+      ))
+
 
 class Vl53l0x(Vl53l0xBase, GeneratorBlock):
-  """Board-mount laser ToF sensor"""
+  """Time-of-flight laser ranging sensor, up to 2m"""
   def contents(self):
     super().contents()
     self.ic = self.Block(Vl53l0x_Device())
@@ -121,8 +123,7 @@ class Vl53l0x(Vl53l0xBase, GeneratorBlock):
     self.connect(self.gnd, self.ic.vss)
 
     self.connect(self.i2c, self.ic.i2c)
-    self.connect(self.gpio1, self.ic.gpio1)
-    self.generator_param(self.xshut.is_connected())
+    self.generator_param(self.reset.is_connected(), self.int.is_connected())
 
     # Datasheet Figure 3, two decoupling capacitors
     self.vdd_cap = ElementDict[DecouplingCapacitor]()
@@ -131,26 +132,29 @@ class Vl53l0x(Vl53l0xBase, GeneratorBlock):
 
   def generate(self):
     super().generate()
-    if self.get(self.xshut.is_connected()):
-      self.connect(self.xshut, self.ic.xshut)
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.ic.xshut)
     else:
       self.connect(self.pwr.as_digital_source(), self.ic.xshut)
 
+    if self.get(self.int.is_connected()):
+      self.connect(self.int, self.ic.gpio1)
 
 class Vl53l0xArray(DistanceSensor, GeneratorBlock):
   """Array of Vl53l0x with common I2C but individually exposed XSHUT pins and optionally GPIO1 (interrupt)."""
   @init_in_parent
-  def __init__(self, count: IntLike, *, first_xshut_fixed: BoolLike = False):
+  def __init__(self, count: IntLike, *, first_reset_fixed: BoolLike = False):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
     self.i2c = self.Port(I2cTarget.empty())
-    self.xshut = self.Port(Vector(DigitalSink.empty()))
-    self.gpio1 = self.Port(Vector(DigitalBidir.empty()), optional=True)
+    self.reset = self.Port(Vector(DigitalSink.empty()))
+    # TODO better support for optional vectors so the inner doesn't connect if the outer doesn't connect
+    # self.int = self.Port(Vector(DigitalSingleSource.empty()), optional=True)
 
     self.count = self.ArgParameter(count)
-    self.first_xshut_fixed = self.ArgParameter(first_xshut_fixed)
-    self.generator_param(self.count, self.first_xshut_fixed)
+    self.first_reset_fixed = self.ArgParameter(first_reset_fixed)
+    self.generator_param(self.count, self.first_reset_fixed)
 
   def generate(self):
     super().generate()
@@ -160,9 +164,7 @@ class Vl53l0xArray(DistanceSensor, GeneratorBlock):
       self.connect(self.pwr, elt.pwr)
       self.connect(self.gnd, elt.gnd)
       self.connect(self.i2c, elt.i2c)
-      if self.get(self.first_xshut_fixed) and elt_i == 0:
-        self.connect(elt.pwr.as_digital_source(), elt.xshut)
+      if self.get(self.first_reset_fixed) and elt_i == 0:
+        self.connect(elt.pwr.as_digital_source(), elt.reset)
       else:
-        self.connect(self.xshut.append_elt(DigitalSink.empty(), str(elt_i)), elt.xshut)
-
-      self.connect(self.gpio1.append_elt(DigitalBidir.empty(), str(elt_i)), elt.gpio1)
+        self.connect(self.reset.append_elt(DigitalSink.empty(), str(elt_i)), elt.reset)

@@ -1433,7 +1433,7 @@
   (node (ref KR8) (pin 2))
   (node (ref KU4) (pin 5))
   (node (ref KC7) (pin 1)))
-(net (code 38) (name "Kdist.gpio1")
+(net (code 38) (name "Kdist.ic.gpio1")
   (node (ref KU5) (pin 7)))
 (net (code 39) (name "Koled.c1_cap.pos")
   (node (ref KC11) (pin 1))

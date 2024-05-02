@@ -7,7 +7,7 @@ from .Link import Link
 from .DesignTop import DesignTop
 from .BlockInterfaceMixin import BlockInterfaceMixin
 from .HierarchyBlock import Block, ImplicitConnect, init_in_parent, abstract_block, abstract_block_default
-from .Generator import GeneratorBlock
+from .Generator import GeneratorBlock, DefaultExportBlock
 from .MultipackBlock import PackedBlockArray, MultipackBlock
 from .PortBlocks import PortBridge, PortAdapter
 from .Array import Vector
