@@ -210,8 +210,8 @@ class IoController(ProgrammableController, BaseIoController):
   def __init__(self, *awgs, **kwargs) -> None:
     super().__init__(*awgs, **kwargs)
 
-    self.pwr = self.Port(VoltageSink.empty(), [Power], optional=True)
     self.gnd = self.Port(Ground.empty(), [Common], optional=True)
+    self.pwr = self.Port(VoltageSink.empty(), [Power], optional=True)
 
 
 @non_library
@@ -219,5 +219,5 @@ class IoControllerPowerRequired(IoController):
   """IO controller with required power pins."""
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-    self.require(self.pwr.is_connected())
     self.require(self.gnd.is_connected())
+    self.require(self.pwr.is_connected())

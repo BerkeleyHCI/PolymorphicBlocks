@@ -74,7 +74,7 @@ class TofArray(JlcBoardTop):
         self.mcu.i2c.request('i2c'),
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
         self.tof.i2c)
-      self.connect(self.mcu.gpio.request_vector('tof_xshut'), self.tof.xshut)
+      self.connect(self.mcu.gpio.request_vector('tof_reset'), self.tof.reset)
 
       (self.usb_esd, ), self.usb_chain = self.chain(
         self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
@@ -143,11 +143,11 @@ class TofArray(JlcBoardTop):
           'leds_2=29',
           'leds_3=30',
           'leds_4=31',
-          'tof_xshut_0=42',
-          'tof_xshut_1=41',
-          'tof_xshut_2=4',
-          'tof_xshut_3=3',
-          'tof_xshut_4=2',
+          'tof_reset_0=42',
+          'tof_reset_1=41',
+          'tof_reset_2=4',
+          'tof_reset_3=3',
+          'tof_reset_4=2',
         ]),
         (['mcu', 'swd_swo_pin'], 'PB3'),
       ],

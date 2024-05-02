@@ -113,7 +113,7 @@ class RobotDriver(JlcBoardTop):
 
       self.expander = imp.Block(Pcf8574(0))
       self.connect(self.i2c, self.expander.i2c)
-      self.connect(self.expander.io.request_vector('tof_xshut'), self.tof.xshut)
+      self.connect(self.expander.io.request_vector('tof_reset'), self.tof.reset)
 
       self.leds = imp.Block(IndicatorSinkLedArray(4))
       self.connect(self.expander.io.request_vector('led'), self.leds.signals)
@@ -220,9 +220,9 @@ class RobotDriver(JlcBoardTop):
           'led_1=5',
           'led_2=6',
           'led_3=7',
-          'tof_xshut_0=10',
-          'tof_xshut_1=11',
-          'tof_xshut_2=12',
+          'tof_reset_0=10',
+          'tof_reset_1=11',
+          'tof_reset_2=12',
         ]),
         (['isense', 'out', 'signal_out'], Range(0.1, 2.45)),  # trade range for resolution
         (['isense', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),

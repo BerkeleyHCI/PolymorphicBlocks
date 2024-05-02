@@ -35,11 +35,12 @@ class Shtc3_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class Shtc3(EnvironmentalSensor, Block):
+    """Humidity and temperature sensor with +/-2% RH and +/-0.2C"""
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Shtc3_Device())
-        self.pwr = self.Export(self.ic.vdd, [Power])
         self.gnd = self.Export(self.ic.vss, [Common])
+        self.pwr = self.Export(self.ic.vdd, [Power])
         self.i2c = self.Export(self.ic.i2c, [InOut])
 
     def contents(self):
