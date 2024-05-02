@@ -97,9 +97,6 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0xBase, GeneratorBlock):
     self.connect(self.pwr, self.conn.pins.request('1').adapt_to(self._vdd_model()))
     self.connect(self.gnd, self.conn.pins.request('2').adapt_to(Ground()))
 
-    gpio_model = self._gpio_model(self.gnd, self.pwr)
-
-
     i2c_io_model = self._i2c_io_model(self.gnd, self.pwr)
     self.connect(self.i2c.scl, self.conn.pins.request('3').adapt_to(i2c_io_model))
     self.connect(self.i2c.sda, self.conn.pins.request('4').adapt_to(i2c_io_model))
