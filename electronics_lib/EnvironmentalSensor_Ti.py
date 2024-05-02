@@ -37,6 +37,7 @@ class Hdc1080_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class Hdc1080(EnvironmentalSensor, Block):
+    """Temperature and humidity sensor with +/- 0.2C and +/- 2% RH typical accuracy"""
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Hdc1080_Device())
@@ -95,6 +96,7 @@ class Tmp1075n_Device(InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBloc
 
 
 class Tmp1075n(EnvironmentalSensor, Block):
+    """Temperature sensor with 0.25C typical accuracy"""
     @init_in_parent
     def __init__(self, addr_lsb: IntLike = 0):
         super().__init__()
@@ -103,7 +105,7 @@ class Tmp1075n(EnvironmentalSensor, Block):
         self.pwr = self.Export(self.ic.vdd, [Power])
 
         self.i2c = self.Export(self.ic.i2c, [InOut])
-        self.alert = self.Export(self.ic.alert, optional=True, doc="TODO")
+        self.alert = self.Export(self.ic.alert, optional=True, doc="Overtemperature SMBus alert")
 
     def contents(self):
         super().contents()

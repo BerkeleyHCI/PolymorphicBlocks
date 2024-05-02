@@ -71,7 +71,7 @@ class Vl53l0x_Device(Vl53l0x_DeviceBase, InternalSubcircuit, JlcPart, FootprintB
 
 @abstract_block_default(lambda: Vl53l0x)
 class Vl53l0xBase(Resettable, DistanceSensor, Block):
-  """Abstract base class for VL53L0x application circuits"""
+  """Abstract base class for VL53L0x devices"""
   def __init__(self) -> None:
     super().__init__()
 
@@ -99,9 +99,7 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0xBase, GeneratorBlock):
 
     gpio_model = self._gpio_model(self.gnd, self.pwr)
 
-    self.connect(self.int, self.conn.pins.request('5').adapt_to(
-      DigitalSingleSource.low_from_supply(self.gnd)
-    ))
+
     i2c_io_model = self._i2c_io_model(self.gnd, self.pwr)
     self.connect(self.i2c.scl, self.conn.pins.request('3').adapt_to(i2c_io_model))
     self.connect(self.i2c.sda, self.conn.pins.request('4').adapt_to(i2c_io_model))
@@ -114,7 +112,9 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0xBase, GeneratorBlock):
       self.connect(self.pwr.as_digital_source(), self.conn.pins.request('6').adapt_to(gpio_model))
 
     if self.get(self.int.is_connected()):
-      self.connect(self.int, self.ic.gpio1)
+      self.connect(self.int, self.conn.pins.request('5').adapt_to(
+        DigitalSingleSource.low_from_supply(self.gnd)
+      ))
 
 
 class Vl53l0x(Vl53l0xBase, GeneratorBlock):

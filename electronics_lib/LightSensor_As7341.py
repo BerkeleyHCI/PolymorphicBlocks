@@ -40,6 +40,8 @@ class As7341_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class As7341(LightSensor, Block):
+    """11-channel spectral sensor, from 350nm to 1000nm, with 8 visible light channels,
+    a NIR channel, a non-filtered ("clear" wideband) channel, and a flicker detection channel"""
     def __init__(self):
         super().__init__()
         self.ic = self.Block(As7341_Device())

@@ -54,16 +54,18 @@ class Lsm6ds3trc_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class Lsm6ds3trc(Accelerometer, Gyroscope, DefaultExportBlock):
+    """Integrated 3d accelerometer (ranging over +/- 2/4/8/16 g) and 3d gyroscope
+    (ranging over +/- 125/250/500/1000/2000 dps)."""
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Lsm6ds3trc_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.pwr = self.Export(self.ic.vdd, [Power])
-        self.pwr_io = self.Export(self.ic.vddio, default=self.pwr, doc="TODO")
+        self.pwr_io = self.Export(self.ic.vddio, default=self.pwr, doc="IO supply voltage")
 
         self.i2c = self.Export(self.ic.i2c)
-        self.int1 = self.Export(self.ic.int1, optional=True, doc="TODO")
-        self.int2 = self.Export(self.ic.int2, optional=True, doc="TODO")
+        self.int1 = self.Export(self.ic.int1, optional=True, doc="Programmable interrupt")
+        self.int2 = self.Export(self.ic.int2, optional=True, doc="Programmable interrupt")
 
     def contents(self):
         super().contents()
