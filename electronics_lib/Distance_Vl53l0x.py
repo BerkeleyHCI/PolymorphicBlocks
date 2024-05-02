@@ -89,7 +89,7 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0xBase, GeneratorBlock):
   This has an onboard 2.8v regulator, but thankfully the IO tolerance is not referenced to Vdd"""
   def contents(self):
     super().contents()
-    self.generator_param(self.reset.is_connected())
+    self.generator_param(self.reset.is_connected(), self.int.is_connected())
 
   def generate(self):
     super().generate()
@@ -113,6 +113,9 @@ class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0xBase, GeneratorBlock):
     else:
       self.connect(self.pwr.as_digital_source(), self.conn.pins.request('6').adapt_to(gpio_model))
 
+    if self.get(self.int.is_connected()):
+      self.connect(self.int, self.ic.gpio1)
+
 
 class Vl53l0x(Vl53l0xBase, GeneratorBlock):
   """Time-of-flight laser ranging sensor, up to 2m"""
@@ -123,8 +126,7 @@ class Vl53l0x(Vl53l0xBase, GeneratorBlock):
     self.connect(self.gnd, self.ic.vss)
 
     self.connect(self.i2c, self.ic.i2c)
-    self.connect(self.int, self.ic.gpio1)
-    self.generator_param(self.reset.is_connected())
+    self.generator_param(self.reset.is_connected(), self.int.is_connected())
 
     # Datasheet Figure 3, two decoupling capacitors
     self.vdd_cap = ElementDict[DecouplingCapacitor]()
@@ -138,6 +140,8 @@ class Vl53l0x(Vl53l0xBase, GeneratorBlock):
     else:
       self.connect(self.pwr.as_digital_source(), self.ic.xshut)
 
+    if self.get(self.int.is_connected()):
+      self.connect(self.int, self.ic.gpio1)
 
 class Vl53l0xArray(DistanceSensor, GeneratorBlock):
   """Array of Vl53l0x with common I2C but individually exposed XSHUT pins and optionally GPIO1 (interrupt)."""
@@ -148,7 +152,8 @@ class Vl53l0xArray(DistanceSensor, GeneratorBlock):
     self.gnd = self.Port(Ground.empty(), [Common])
     self.i2c = self.Port(I2cTarget.empty())
     self.reset = self.Port(Vector(DigitalSink.empty()))
-    self.int = self.Port(Vector(DigitalBidir.empty()), optional=True)
+    # TODO better support for optional vectors so the inner doesn't connect if the outer doesn't connect
+    # self.int = self.Port(Vector(DigitalSingleSource.empty()), optional=True)
 
     self.count = self.ArgParameter(count)
     self.first_reset_fixed = self.ArgParameter(first_reset_fixed)
@@ -166,5 +171,3 @@ class Vl53l0xArray(DistanceSensor, GeneratorBlock):
         self.connect(elt.pwr.as_digital_source(), elt.reset)
       else:
         self.connect(self.reset.append_elt(DigitalSink.empty(), str(elt_i)), elt.reset)
-
-      self.connect(self.int.append_elt(DigitalBidir.empty(), str(elt_i)), elt.int)
