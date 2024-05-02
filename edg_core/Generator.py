@@ -5,7 +5,7 @@ from typing import *
 from deprecated import deprecated
 
 import edgir
-from .Ports import BasePort
+from .Ports import BasePort, Port
 from .PortTag import PortTag
 from .IdentityDict import IdentityDict
 from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding
@@ -142,10 +142,10 @@ class DefaultExportBlock(GeneratorBlock):
   TODO The default can be specified as a port, or a function that returns a port (e.g. to instantiate adapters)."""
   def __init__(self):
     super().__init__()
-    self._default_exports: List[Tuple[BasePort, BasePort, BasePort]] = []  # internal, exported, default
+    self._default_exports: List[Tuple[BasePort, Port, Port]] = []  # internal, exported, default
 
   ExportType = TypeVar('ExportType', bound=BasePort)
-  def Export(self, port: ExportType, *args, default: Optional[BasePort] = None, **kwargs) -> ExportType:
+  def Export(self, port: ExportType, *args, default: Optional[Port] = None, **kwargs) -> ExportType:
     """A generator-only variant of Export that supports an optional default (either internal or external)
     to connect the (internal) port being exported to, if the external exported port is not connected."""
     if default is  None:
@@ -153,6 +153,7 @@ class DefaultExportBlock(GeneratorBlock):
     else:
       assert 'optional' not in kwargs, "optional must not be specified with default"
       new_port = super().Export(port, *args, optional=True, **kwargs)
+      assert isinstance(new_port, Port), "defaults only supported with Port types"
       self.generator_param(new_port.is_connected())
       self._default_exports.append((port, new_port, default))
     return new_port
