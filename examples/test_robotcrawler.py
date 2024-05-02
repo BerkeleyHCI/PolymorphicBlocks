@@ -106,7 +106,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
                    self.mcu_servo.with_mixin(IoControllerI2cTarget()).i2c_target.request('i2c'),
                    self.mcu_test.with_mixin(IoControllerI2cTarget()).i2c_target.request('i2c'))
 
-      self.connect(self.v3v3, self.imu.vdd, self.imu.vddio)
+      self.connect(self.v3v3, self.imu.pwr)
       self.connect(self.gnd, self.imu.gnd)
 
       (self.led, ), _ = self.chain(self.mcu.gpio.request('led'), imp.Block(IndicatorLed(Led.Yellow)))

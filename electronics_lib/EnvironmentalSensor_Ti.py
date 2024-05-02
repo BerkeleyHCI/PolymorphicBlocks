@@ -40,7 +40,7 @@ class Hdc1080(EnvironmentalSensor, Block):
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Hdc1080_Device())
-        self.vdd = self.Export(self.ic.vdd, [Power])
+        self.pwr = self.Export(self.ic.vdd, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c, [InOut])
 
@@ -99,10 +99,11 @@ class Tmp1075n(EnvironmentalSensor, Block):
     def __init__(self, addr_lsb: IntLike = 0):
         super().__init__()
         self.ic = self.Block(Tmp1075n_Device(addr_lsb))
-        self.vdd = self.Export(self.ic.vdd, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
+        self.pwr = self.Export(self.ic.vdd, [Power])
+
         self.i2c = self.Export(self.ic.i2c, [InOut])
-        self.alert = self.Export(self.ic.alert, optional=True)
+        self.alert = self.Export(self.ic.alert, optional=True, doc="TODO")
 
     def contents(self):
         super().contents()

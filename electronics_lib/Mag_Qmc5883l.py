@@ -54,25 +54,25 @@ class Qmc5883l_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Qmc5883l(Magnetometer, Block):
-    """QMC5883L 3-axis magnetometer in single supply configuration.
+class Qmc5883l(Magnetometer, DefaultExportBlock):
+    """3-axis magnetometer.
     This part seems to be a licensed semi-copy of the HMC5883L which is no longer in production.
     It might be hardware drop-in compatible though the firmware protocol differs."""
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Qmc5883l_Device())
-        self.vdd = self.Export(self.ic.vdd, [Power])
-        self.connect(self.vdd, self.ic.vddio)
         self.gnd = self.Export(self.ic.gnd, [Common])
+        self.pwr = self.Export(self.ic.vdd, [Power])
+        self.pwr_io = self.Export(self.ic.vddio, defaut=self.pwr, doc="TODO")
         self.i2c = self.Export(self.ic.i2c)
         self.drdy = self.Export(self.ic.drdy, optional=True)
 
     def contents(self):
         super().contents()
         self.vdd_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
-        self.set_cap = self.Block(Capacitor(0.22*uFarad(tol=0.2), voltage=self.vdd.link().voltage))
+        self.set_cap = self.Block(Capacitor(0.22*uFarad(tol=0.2), voltage=self.pwr.link().voltage))
         self.connect(self.set_cap.pos, self.ic.setp)
         self.connect(self.set_cap.neg, self.ic.setc)
-        self.c1 = self.Block(Capacitor(4.7*uFarad(tol=0.2), voltage=self.vdd.link().voltage))
+        self.c1 = self.Block(Capacitor(4.7*uFarad(tol=0.2), voltage=self.pwr.link().voltage))
         self.connect(self.c1.pos, self.ic.c1)
         self.connect(self.c1.neg.adapt_to(Ground()), self.gnd)

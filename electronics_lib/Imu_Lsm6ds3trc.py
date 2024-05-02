@@ -53,16 +53,19 @@ class Lsm6ds3trc_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Lsm6ds3trc(Accelerometer, Gyroscope, Block):
+class Lsm6ds3trc(Accelerometer, Gyroscope, DefaultExportBlock):
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Lsm6ds3trc_Device())
-        self.vdd = self.Export(self.ic.vdd, [Power])
-        self.vddio = self.Export(self.ic.vddio, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
+        self.pwr = self.Export(self.ic.vdd, [Power])
+        self.pwr_io = self.Export(self.ic.vddio, default=self.pwr, doc="TODO")
+
         self.i2c = self.Export(self.ic.i2c)
-        self.int1 = self.Export(self.ic.int1, optional=True)
-        self.int2 = self.Export(self.ic.int2, optional=True)
+        self.int1 = self.Export(self.ic.int1, optional=True, doc="TODO")
+        self.int2 = self.Export(self.ic.int2, optional=True, doc="TODO")
+
+        self.generator_param(self.pwr_io.is_connected())
 
     def contents(self):
         super().contents()
