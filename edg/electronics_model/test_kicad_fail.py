@@ -1,6 +1,6 @@
 import unittest
 
-from electronics_model import KiCadSchematicBlock, Passive
+from . import *
 
 
 class KiCadMissingPort(KiCadSchematicBlock):

@@ -1,6 +1,6 @@
 from typing import Optional, cast, Dict
 
-from electronics_model import *
+from ...electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprintSelector
 from .Categories import *

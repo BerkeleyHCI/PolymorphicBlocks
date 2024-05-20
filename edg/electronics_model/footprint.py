@@ -1,8 +1,8 @@
 import zlib  # for deterministic hash
 from typing import List
 
-import edgir
-from edg_core import TransformUtil
+from .. import edgir
+from ...core import TransformUtil
 from .NetlistGenerator import Netlist, NetBlock, Net
 
 

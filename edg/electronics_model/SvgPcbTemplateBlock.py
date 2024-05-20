@@ -1,8 +1,7 @@
 from typing import Optional, Any, List
 
-from edg_core import *
-from edg_core.ConstraintExpr import ConstraintExpr
 from abc import abstractmethod
+from ...core import *
 from .NetlistGenerator import Netlist
 
 

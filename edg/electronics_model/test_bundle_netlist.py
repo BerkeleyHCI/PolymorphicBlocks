@@ -1,11 +1,6 @@
 import unittest
 
-from edg_core import *
-from .CanPort import CanDiffPort
-from .CircuitBlock import FootprintBlock
-from .DigitalPorts import DigitalSource, DigitalSink
-from .SpiPort import SpiController, SpiPeripheral
-from .UartPort import UartPort
+from . import *
 from .test_netlist import NetlistTestCase, Net, NetPin, NetBlock
 
 

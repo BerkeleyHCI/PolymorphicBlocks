@@ -1,6 +1,6 @@
 from typing import Type, TypeVar, Generic
 
-from edg_core import *
+from ...core import *
 from .VoltagePorts import VoltageLink, VoltageSink, VoltageSource
 from .DigitalPorts import DigitalLink, DigitalSink, DigitalSource
 

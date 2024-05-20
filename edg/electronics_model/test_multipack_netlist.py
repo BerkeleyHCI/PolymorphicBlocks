@@ -1,6 +1,6 @@
 import unittest
 
-from edg_core import *
+from . import *
 from .CircuitPackingBlock import PackedVoltageSource
 from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink
 from .test_netlist import NetlistTestCase, Net, NetPin, NetBlock

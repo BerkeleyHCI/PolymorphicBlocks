@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from typing import Optional, Tuple
-from edg_core import *
-from edg_core.Blocks import DescriptionString
+from ...core import *
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
-from .VoltagePorts import CircuitPort, VoltageLink, VoltageSource, VoltageSink
+from .VoltagePorts import CircuitPort, VoltageLink, VoltageSource
 from .Units import Volt
 
 

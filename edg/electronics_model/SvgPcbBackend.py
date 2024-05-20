@@ -2,8 +2,8 @@ import importlib
 import inspect
 from typing import List, Tuple, NamedTuple, Dict
 
-import edgir
-from edg_core import BaseBackend, CompiledDesign, TransformUtil
+from .. import edgir
+from ...core import *
 from .NetlistGenerator import NetlistTransform, NetBlock, Netlist
 from .SvgPcbTemplateBlock import SvgPcbTemplateBlock
 

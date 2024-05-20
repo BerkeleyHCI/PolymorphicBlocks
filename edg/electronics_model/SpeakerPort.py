@@ -1,6 +1,6 @@
 from typing import *
 
-from edg_core import *
+from ...core import *
 from .AnalogPort import AnalogSource, AnalogSink
 
 

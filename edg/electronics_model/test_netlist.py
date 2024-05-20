@@ -2,11 +2,10 @@ import unittest
 from typing import Type, List
 
 import edgir
-from edg_core import *
+from . import *
 from .CircuitBlock import FootprintBlock
 from .NetlistGenerator import NetlistTransform, NetPin as RawNetPin, NetBlock as RawNetBlock, Net
 from .RefdesRefinementPass import RefdesRefinementPass
-from .VoltagePorts import VoltageSource, VoltageSink
 
 
 # wrapper / convenience constructors

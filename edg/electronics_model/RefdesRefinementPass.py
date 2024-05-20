@@ -1,8 +1,8 @@
 from typing import List, Tuple, Dict, Set
 
 import edgir
-from edg_core import CompiledDesign, TransformUtil
-from edg_core.BaseRefinementPass import BaseRefinementPass
+from ...core import CompiledDesign, TransformUtil
+from ...core.BaseRefinementPass import BaseRefinementPass
 
 
 class RefdesRefinementPass(BaseRefinementPass):

@@ -1,7 +1,7 @@
 from typing import *
 
-from edg_core import *
-from .DigitalPorts import DigitalBidir, DigitalSingleSource
+from ...core import *
+from .DigitalPorts import DigitalBidir
 
 
 class UsbLink(Link):

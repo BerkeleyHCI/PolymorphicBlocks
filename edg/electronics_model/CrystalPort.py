@@ -1,4 +1,4 @@
-from edg_core import *
+from ...core import *
 from .PassivePort import Passive
 
 

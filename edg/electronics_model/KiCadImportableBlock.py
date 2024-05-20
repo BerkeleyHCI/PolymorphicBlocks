@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import TypeVar, Type, Mapping
 
-from edg_core import *
+from ...core import *
 
 
 @non_library

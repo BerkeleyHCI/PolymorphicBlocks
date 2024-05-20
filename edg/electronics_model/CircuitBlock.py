@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from typing import *
-from edg_core import *
 
-import edgir
-from edg_core import IdentityDict  # TODO: this is ugly
-from edg_core.ConstraintExpr import Refable
+from .. import edgir
+from ...core import *
+from ...core import IdentityDict  # TODO: this is ugly
+from ...core.ConstraintExpr import Refable
 from .KiCadImportableBlock import KiCadImportableBlock
 
 if TYPE_CHECKING:
@@ -51,7 +51,7 @@ class FootprintBlock(Block):
     """Creates a footprint in this circuit block.
     Value is a one-line description of the part, eg 680R, 0.01uF, LPC1549, to be used as a aid during layout or
     assembly"""
-    from edg_core.Blocks import BlockElaborationState, BlockDefinitionError
+    from ...core.Blocks import BlockElaborationState, BlockDefinitionError
     from .VoltagePorts import CircuitPort
 
     if self._elaboration_state not in (BlockElaborationState.init, BlockElaborationState.contents,

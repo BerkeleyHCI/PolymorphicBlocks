@@ -1,10 +1,8 @@
 import unittest
 from typing import Type
 
-import edgir
-from edg_core import Range
-from electronics_abstract_parts import Resistor, Capacitor, Volt, Ohm, uFarad
-from electronics_model import KiCadSchematicBlock, Passive
+from .. import edgir
+from . import *
 
 
 # Note that all the below blocks are the same circuit (component values and connectivity)

@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from typing import Optional, Tuple
 
-from edg_core import *
-from edg_core.Blocks import DescriptionString
+from ...core import *
 from .CircuitBlock import CircuitLink
-from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink, VoltageSource, VoltageSink
+from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink
 
 
 class AnalogLink(CircuitLink):

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import re
-from typing import TypeVar, Type, overload, Union, Tuple, Optional
+from typing import TypeVar, Optional
 
-from edg_core import Range
+from ...core import *
 
 
 class PartParserUtil:

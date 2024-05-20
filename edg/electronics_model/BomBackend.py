@@ -2,7 +2,7 @@ import io
 from typing import List, Tuple, Dict, NamedTuple
 
 import edgir
-from edg_core import BaseBackend, CompiledDesign, TransformUtil
+from ...core import BaseBackend, CompiledDesign, TransformUtil
 
 import csv
 

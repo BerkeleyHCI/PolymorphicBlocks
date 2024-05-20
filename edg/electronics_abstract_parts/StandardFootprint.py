@@ -1,5 +1,5 @@
 from typing import Optional, Any, Dict, TypeVar, Generic, Callable, Union, List, Tuple
-from electronics_model import *
+from ...electronics_model import *
 
 
 StandardPinningType = TypeVar('StandardPinningType', bound=Block)

@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from collections import deque
 from typing import Sequence, Optional, TypeVar, Tuple, List, Generic, Type
 
-from electronics_model import *
+from ...electronics_model import *
 
 
 class ESeriesUtil:

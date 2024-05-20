@@ -1,4 +1,4 @@
-from electronics_model import *
+from ...electronics_model import *
 from . import PartsTableFootprintSelector, PartsTableColumn, Capacitor, PartsTableRow
 from .Categories import *
 from .StandardFootprint import StandardFootprint

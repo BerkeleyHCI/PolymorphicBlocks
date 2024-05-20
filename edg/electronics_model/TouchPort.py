@@ -1,5 +1,5 @@
-from edg_core import *
-from .CircuitBlock import CircuitLink, FootprintBlock
+from ...core import *
+from .CircuitBlock import CircuitLink
 from .VoltagePorts import CircuitPort
 
 

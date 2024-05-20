@@ -1,7 +1,7 @@
 from math import ceil, log10
 from typing import List, Tuple, Dict, Mapping
 
-from electronics_model import *
+from ...electronics_model import *
 from .AbstractResistor import Resistor
 from .AbstractCapacitor import Capacitor
 from .ResistiveDivider import ResistiveDivider

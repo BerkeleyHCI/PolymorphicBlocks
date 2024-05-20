@@ -1,7 +1,6 @@
-from typing import *
 import unittest
 
-from edg_core import *
+from ...core import *
 from .VoltagePorts import VoltageSinkBridge
 
 

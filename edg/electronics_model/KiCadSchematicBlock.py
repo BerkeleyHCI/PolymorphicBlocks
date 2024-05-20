@@ -3,8 +3,7 @@ import os
 from abc import abstractmethod
 from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, TypeVar, cast
 
-from edg_core import Block, GeneratorBlock, BasePort, Port, Vector, init_in_parent, ArrayStringLike, StringLike, \
-    non_library, Bundle, InternalBlock
+from ...core import *
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
 from .PassivePort import Passive
@@ -155,7 +154,7 @@ class KiCadSchematicBlock(Block):
                      auto_adapt: bool = False):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
         # so declaring it here causes it to reference Opamp lazily
-        from electronics_abstract_parts import Resistor, Capacitor, Opamp
+        from ...electronics_abstract_parts import Resistor, Capacitor, Opamp
         SYMBOL_MAP: Mapping[str, Type[KiCadInstantiableBlock]] = {
             'Device:R': Resistor,
             'Device:R_Small': Resistor,

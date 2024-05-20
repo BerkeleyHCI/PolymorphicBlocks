@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from edg_core import *
+from ...core import *
 from .Units import Volt, Amp
 from .VoltagePorts import VoltageSink, VoltageSource
 

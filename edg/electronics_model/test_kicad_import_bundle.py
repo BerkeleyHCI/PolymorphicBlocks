@@ -1,8 +1,7 @@
 import unittest
 
-import edgir
-from electronics_model import KiCadSchematicBlock, UartPort, DigitalBidir, DigitalSource, DigitalSink
-
+from .. import edgir
+from . import *
 
 class KiCadBundleBlock(KiCadSchematicBlock):
     """Block where the global labels are a bundle connection."""

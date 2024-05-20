@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from typing import Optional
-from electronics_model import *
+from ...electronics_model import *
 from .Categories import *
 from .AbstractCapacitor import DecouplingCapacitor
 from .AbstractInductor import Inductor

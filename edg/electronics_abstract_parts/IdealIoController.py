@@ -1,4 +1,4 @@
-from electronics_model import *
+from ...electronics_model import *
 from .Categories import IdealModel
 from .IoController import IoController
 from .IoControllerInterfaceMixins import IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, \

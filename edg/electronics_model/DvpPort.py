@@ -1,6 +1,6 @@
 from typing import *
 
-from edg_core import *
+from ...core import *
 from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
 
 

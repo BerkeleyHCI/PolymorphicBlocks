@@ -1,6 +1,6 @@
 from typing import List, Optional, TypeVar, cast
 
-from electronics_model import *
+from ...electronics_model import *
 from .IoController import BaseIoController
 
 

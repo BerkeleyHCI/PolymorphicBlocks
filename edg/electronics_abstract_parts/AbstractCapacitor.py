@@ -3,7 +3,7 @@ from abc import abstractmethod
 from typing import Optional, cast, Dict, Any, List, Tuple, Mapping
 import math
 
-from electronics_model import *
+from ...electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
 from .PartsTablePart import PartsTableFootprintSelector
 from .Categories import *

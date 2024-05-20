@@ -1,4 +1,4 @@
-from electronics_model import *
+from ...electronics_model import *
 from .Categories import PowerSwitch
 
 

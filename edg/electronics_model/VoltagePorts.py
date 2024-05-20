@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from typing import *
-from edg_core import *
-from edg_core.Blocks import DescriptionString
+from ...core import *
 from .CircuitBlock import CircuitPortBridge, CircuitLink, CircuitPortAdapter
-from .Units import Volt, Amp, Ohm
+from .Units import Volt, Ohm
 
 if TYPE_CHECKING:
   from .DigitalPorts import DigitalSource

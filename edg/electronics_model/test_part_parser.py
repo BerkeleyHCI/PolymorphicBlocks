@@ -1,6 +1,6 @@
 import unittest
 
-from edg_core import Range
+from . import *
 from .PartParserUtil import PartParserUtil
 
 

@@ -1,9 +1,10 @@
 from typing import Dict
 
-from electronics_abstract_parts import CurrentSenseResistor, DifferentialAmplifier
+from ...electronics_model import *
 from .Categories import CurrentSensor
 from .DummyDevices import ForcedAnalogSignal
-from electronics_model import *
+from .AbstractResistor import CurrentSenseResistor
+from .OpampCircuits import DifferentialAmplifier
 
 
 class OpampCurrentSensor(CurrentSensor, KiCadImportableBlock, Block):

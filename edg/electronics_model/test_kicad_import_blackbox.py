@@ -1,8 +1,8 @@
 import unittest
 
-import edgir
-from edg_core import Builder
-from electronics_model import KiCadSchematicBlock, Passive, VoltageSink, Ground, AnalogSource
+from .. import edgir
+from ...core import Builder
+from . import *
 
 
 class KiCadBlackboxBlock(KiCadSchematicBlock):

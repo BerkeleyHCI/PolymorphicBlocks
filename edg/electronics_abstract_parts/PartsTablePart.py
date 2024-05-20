@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Optional, Union, Any
 
-from electronics_model import *
+from ...electronics_model import *
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
 from .StandardFootprint import StandardFootprint
 
