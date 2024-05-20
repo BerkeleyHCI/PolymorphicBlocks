@@ -1,6 +1,6 @@
 from typing import List, cast, Dict
 
-from ...electronics_model import *
+from ..electronics_model import *
 from .Categories import *
 
 

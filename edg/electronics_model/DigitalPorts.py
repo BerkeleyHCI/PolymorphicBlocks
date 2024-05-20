@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Optional, Tuple
-from ...core import *
+from ..core import *
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
 from .VoltagePorts import CircuitPort, VoltageLink, VoltageSource
 from .Units import Volt

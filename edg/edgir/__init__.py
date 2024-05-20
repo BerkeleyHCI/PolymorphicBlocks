@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
   # Avoid a runtime circular import, these imports are done locally in scope
   # TODO this should be a separate util in edg_core
-  from ...core.Range import Range
+  from ..core.Range import Range
 
 PortTypes = Union[Port, PortArray, Bundle]
 BlockTypes = HierarchyBlock
@@ -68,7 +68,7 @@ def valuelit_to_lit(expr: ValueLit) -> LitTypes:
     return expr.integer.val
   elif expr.HasField('range') and \
           expr.range.minimum.HasField('floating') and expr.range.maximum.HasField('floating'):
-    from ...core.Range import Range  # TODO fix me, this prevents a circular import
+    from ..core.Range import Range  # TODO fix me, this prevents a circular import
     return Range(expr.range.minimum.floating.val, expr.range.maximum.floating.val)
   elif expr.HasField('text'):
     return expr.text.val
@@ -83,7 +83,7 @@ def valuelit_to_lit(expr: ValueLit) -> LitTypes:
 
 
 def lit_to_valuelit(value: LitTypes) -> ValueLit:
-  from ...core.Range import Range  # TODO fix me, this prevents a circular import
+  from ..core.Range import Range  # TODO fix me, this prevents a circular import
   pb = ValueLit()
   if isinstance(value, bool):
     pb.boolean.val = value

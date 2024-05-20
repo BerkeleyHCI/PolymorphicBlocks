@@ -3,7 +3,7 @@ from __future__ import annotations
 from math import log10, ceil
 from typing import List, Tuple
 
-from ...electronics_model import *
+from ..electronics_model import *
 from . import Analog, Resistor
 from .Categories import InternalSubcircuit
 from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil, ESeriesRatioValue

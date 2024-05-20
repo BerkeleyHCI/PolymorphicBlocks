@@ -1,6 +1,6 @@
 from .IoController import IoController
 from .AbstractCrystal import OscillatorReference
-from ...electronics_model import *
+from ..electronics_model import *
 
 
 @non_library

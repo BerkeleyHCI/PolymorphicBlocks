@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import *
-from ...core import *
+from ..core import *
 from .CircuitBlock import CircuitPortBridge, CircuitLink, CircuitPortAdapter
 from .Units import Volt, Ohm
 

@@ -1,7 +1,7 @@
 from typing import Optional, Any, List
 
 from abc import abstractmethod
-from ...core import *
+from ..core import *
 from .NetlistGenerator import Netlist
 
 

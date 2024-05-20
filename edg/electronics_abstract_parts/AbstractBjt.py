@@ -1,6 +1,6 @@
 from typing import Dict
 
-from ...electronics_model import *
+from ..electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprintSelector

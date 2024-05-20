@@ -1,7 +1,7 @@
 import unittest
 
 from .. import edgir
-from ...core import Builder
+from ..core import Builder
 from . import *
 
 

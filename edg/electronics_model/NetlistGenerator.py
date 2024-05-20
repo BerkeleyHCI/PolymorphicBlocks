@@ -3,7 +3,7 @@ from itertools import chain
 from typing import *
 
 import edgir
-from ...core import *
+from ..core import *
 
 
 class InvalidNetlistBlockException(BaseException):

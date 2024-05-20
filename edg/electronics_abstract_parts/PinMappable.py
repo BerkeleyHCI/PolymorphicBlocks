@@ -2,7 +2,7 @@ import itertools
 from abc import ABCMeta
 from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dict, Set
 
-from ...electronics_model import *
+from ..electronics_model import *
 
 
 @non_library

@@ -1,7 +1,7 @@
 from math import pi
 from typing import Optional, cast
 
-from ...electronics_model import *
+from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .AbstractCapacitor import Capacitor
 from .Categories import *

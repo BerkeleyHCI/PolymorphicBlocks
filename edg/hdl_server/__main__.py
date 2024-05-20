@@ -6,7 +6,7 @@ from typing import Set, Type, Tuple, TypeVar, cast
 
 from .. import edgir
 from .. import edgrpc
-from ...core import *
+from ..core import *
 
 
 EDG_PROTO_VERSION = 4

@@ -2,7 +2,7 @@ import unittest
 
 from . import *
 from .. import edgir
-from ...core import Builder
+from ..core import Builder
 
 
 class JlcBlackboxBlock(KiCadSchematicBlock):

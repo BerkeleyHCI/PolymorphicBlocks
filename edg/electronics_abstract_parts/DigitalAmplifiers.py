@@ -1,6 +1,6 @@
 from typing import Dict
 
-from ...electronics_model import *
+from ..electronics_model import *
 from .AbstractFets import SwitchFet
 from .AbstractResistor import Resistor
 from .AbstractDiodes import ZenerDiode

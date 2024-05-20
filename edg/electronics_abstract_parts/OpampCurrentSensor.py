@@ -1,6 +1,6 @@
 from typing import Dict
 
-from ...electronics_model import *
+from ..electronics_model import *
 from .Categories import CurrentSensor
 from .DummyDevices import ForcedAnalogSignal
 from .AbstractResistor import CurrentSenseResistor

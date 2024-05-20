@@ -1,4 +1,4 @@
-from ...core import *
+from ..core import *
 from .CircuitBlock import CircuitLink
 from .VoltagePorts import CircuitPort
 

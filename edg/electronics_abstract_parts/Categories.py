@@ -1,5 +1,5 @@
-from ...core import BoolLike, init_in_parent
-from ...electronics_model import Block, abstract_block, InternalBlock
+from ..core import BoolLike, init_in_parent
+from ..electronics_model import Block, abstract_block, InternalBlock
 
 
 @abstract_block

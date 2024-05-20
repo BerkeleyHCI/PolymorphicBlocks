@@ -1,6 +1,6 @@
 from typing import Tuple, Callable, Mapping, List
 
-from ...electronics_model import *
+from ..electronics_model import *
 from .JlcPart import JlcPart
 
 

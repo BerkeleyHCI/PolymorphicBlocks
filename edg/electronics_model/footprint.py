@@ -2,7 +2,7 @@ import zlib  # for deterministic hash
 from typing import List
 
 from .. import edgir
-from ...core import TransformUtil
+from ..core import TransformUtil
 from .NetlistGenerator import Netlist, NetBlock, Net
 
 

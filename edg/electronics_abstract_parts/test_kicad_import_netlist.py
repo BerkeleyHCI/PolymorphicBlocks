@@ -2,8 +2,8 @@
 import unittest
 
 from . import *
-from ...electronics_model.test_netlist import NetlistTestCase, Net, NetPin, NetBlock
-from ...electronics_model.test_kicad_import_blackbox import KiCadBlackboxBlock
+from ..electronics_model.test_netlist import NetlistTestCase, Net, NetPin, NetBlock
+from ..electronics_model.test_kicad_import_blackbox import KiCadBlackboxBlock
 
 
 class PassiveDummy(Block):

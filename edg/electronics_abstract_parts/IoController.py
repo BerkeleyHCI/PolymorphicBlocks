@@ -3,7 +3,7 @@ from typing import List, Dict, Tuple, Type, Optional
 
 from deprecated import deprecated
 
-from ...electronics_model import *
+from ..electronics_model import *
 from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
 from .Categories import ProgrammableController
 

@@ -3,7 +3,7 @@ import inspect
 from typing import List, Tuple, NamedTuple, Dict
 
 from .. import edgir
-from ...core import *
+from ..core import *
 from .NetlistGenerator import NetlistTransform, NetBlock, Netlist
 from .SvgPcbTemplateBlock import SvgPcbTemplateBlock
 

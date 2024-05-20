@@ -1,4 +1,4 @@
-from ...core import *
+from ..core import *
 
 from .CircuitBlock import FootprintBlock, CircuitPortBridge, CircuitPortAdapter, NetBlock
 from .VoltagePorts import CircuitPort

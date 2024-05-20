@@ -1,6 +1,6 @@
 import unittest
 
-from ...core import *
+from ..core import *
 from .VoltagePorts import VoltageSinkBridge
 
 

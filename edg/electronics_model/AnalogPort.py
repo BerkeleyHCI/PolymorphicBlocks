@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, Tuple
 
-from ...core import *
+from ..core import *
 from .CircuitBlock import CircuitLink
 from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink
 

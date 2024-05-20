@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import TypeVar, Optional
 
-from ...core import *
+from ..core import *
 
 
 class PartParserUtil:

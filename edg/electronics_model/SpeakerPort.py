@@ -1,6 +1,6 @@
 from typing import *
 
-from ...core import *
+from ..core import *
 from .AnalogPort import AnalogSource, AnalogSink
 
 

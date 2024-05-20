@@ -2,7 +2,7 @@ from typing import *
 from abc import abstractmethod
 from itertools import chain
 
-from ...core import *
+from ..core import *
 from .VoltagePorts import CircuitPort
 
 

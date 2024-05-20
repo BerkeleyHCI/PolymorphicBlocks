@@ -1,7 +1,7 @@
 import re
 from typing import Optional, cast, Mapping, Dict
 
-from ...electronics_model import *
+from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprintSelector
 from .Categories import *

@@ -1,5 +1,5 @@
-from ...core import *
-from ...electronics_model import *
+from ..core import *
+from ..electronics_model import *
 
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableBase, PartsTablePart, PartsTableFootprint, PartsTableSelector, PartsTableFootprintSelector

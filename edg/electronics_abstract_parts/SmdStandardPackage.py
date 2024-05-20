@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict
 
 from electronics_abstract_parts import PartsTableFootprintSelector, PartsTableRow
-from ...electronics_model import *
+from ..electronics_model import *
 
 @abstract_block
 class SmdStandardPackage(Block):

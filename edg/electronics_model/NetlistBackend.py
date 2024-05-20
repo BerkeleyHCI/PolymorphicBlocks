@@ -1,7 +1,7 @@
 from typing import List, Tuple, Dict
 
 from .. import edgir
-from ...core import *
+from ..core import *
 from . import footprint as kicad
 from .NetlistGenerator import NetlistTransform
 

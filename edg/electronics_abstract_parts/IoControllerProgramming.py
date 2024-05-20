@@ -1,6 +1,6 @@
 from typing import List
 
-from ...electronics_model import *
+from ..electronics_model import *
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConnectorReset, SwdCortexTargetConnectorSwo, \
   SwdCortexTargetConnectorTdi
 from .IoController import IoController

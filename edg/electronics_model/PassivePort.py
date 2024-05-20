@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TypeVar, Type, Dict
 
-from ...core import *
+from ..core import *
 from .AnalogPort import AnalogSource, AnalogSink
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource

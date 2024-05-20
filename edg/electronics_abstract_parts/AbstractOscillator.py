@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from ...electronics_model import *
+from ..electronics_model import *
 from . import PartsTableFootprint, PartsTableColumn, PartsTableRow, PartsTableSelector
 from .Categories import *
 

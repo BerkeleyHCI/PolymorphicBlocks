@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ...core import *
+from ..core import *
 from .PassivePort import Passive
 from .VoltagePorts import VoltageSource, VoltageSink
 

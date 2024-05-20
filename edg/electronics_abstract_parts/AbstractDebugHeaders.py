@@ -1,5 +1,5 @@
 from .Categories import ProgrammingConnector
-from ...electronics_model import *
+from ..electronics_model import *
 
 
 @abstract_block

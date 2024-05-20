@@ -1,6 +1,6 @@
 from typing import List
 
-from ...electronics_model import *
+from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableFootprintSelector

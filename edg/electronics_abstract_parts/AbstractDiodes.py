@@ -1,7 +1,7 @@
 from typing import Dict
 from deprecated import deprecated
 
-from ...electronics_model import *
+from ..electronics_model import *
 from .DummyDevices import ForcedAnalogVoltage
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow

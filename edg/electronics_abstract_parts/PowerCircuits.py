@@ -1,4 +1,4 @@
-from ...electronics_model import *
+from ..electronics_model import *
 from .Resettable import Resettable
 from .AbstractResistor import Resistor
 from .AbstractFets import SwitchFet
