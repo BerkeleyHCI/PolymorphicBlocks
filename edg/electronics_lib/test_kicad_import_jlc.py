@@ -1,9 +1,8 @@
 import unittest
 
-import edgir
-from edg_core import Builder
-from electronics_model import KiCadSchematicBlock, Passive
-from .JlcBlackbox import KiCadJlcBlackbox  # needed for import_kicad
+from . import *
+from .. import edgir
+from ...core import Builder
 
 
 class JlcBlackboxBlock(KiCadSchematicBlock):

@@ -1,7 +1,6 @@
 import unittest
 
-from electronics_abstract_parts import Resistor
-from electronics_model import *
+from . import *
 from .DummyDevices import DummyVoltageSource, DummyAnalogSink
 from .AbstractOpamp import Opamp
 from .OpampCircuits import Amplifier

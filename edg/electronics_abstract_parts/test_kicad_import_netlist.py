@@ -1,11 +1,9 @@
 # this class lives in electronics_abstract_parts since it requires the Resistor
 import unittest
 
-from edg_core import Block, Range, Refinements, InOut, TransformUtil
-from electronics_model import FootprintBlock, Passive
-from electronics_abstract_parts import Resistor
-from electronics_model.test_netlist import NetlistTestCase, Net, NetPin, NetBlock
-from electronics_model.test_kicad_import_blackbox import KiCadBlackboxBlock
+from . import *
+from ...electronics_model.test_netlist import NetlistTestCase, Net, NetPin, NetBlock
+from ...electronics_model.test_kicad_import_blackbox import KiCadBlackboxBlock
 
 
 class PassiveDummy(Block):

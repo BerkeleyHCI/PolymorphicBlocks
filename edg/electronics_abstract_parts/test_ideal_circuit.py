@@ -1,6 +1,6 @@
 import unittest
 
-from electronics_model import *
+from . import *
 from .IoController import IoController
 from .AbstractPowerConverters import LinearRegulator, BoostConverter
 from .Categories import IdealModel
