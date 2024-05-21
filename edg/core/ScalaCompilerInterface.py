@@ -64,8 +64,8 @@ class CompiledDesign:
 
 
 class ScalaCompilerInstance:
-  DEV_RELPATH = "../compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
-  PRECOMPIED_RELPATH = "resources/edg-compiler-precompiled.jar"
+  kDevRelpath = "../../compiler/target/scala-2.13/edg-compiler-precompiled.jar"
+  kPrecompiledRelpath = "resources/edg-compiler-precompiled.jar"
 
   def __init__(self, *, suppress_stderr: bool = False):
     self.process: Optional[Any] = None
@@ -75,8 +75,8 @@ class ScalaCompilerInstance:
 
   def check_started(self) -> None:
     if self.process is None:
-      dev_path = os.path.join(os.path.dirname(__file__), self.DEV_RELPATH)
-      precompiled_path = os.path.join(os.path.dirname(__file__), self.PRECOMPIED_RELPATH)
+      dev_path = os.path.join(os.path.dirname(__file__), self.kDevRelpath)
+      precompiled_path = os.path.join(os.path.dirname(__file__), self.kPrecompiledRelpath)
       if os.path.exists(dev_path):
         jar_path = dev_path
         print("Using development JAR")

@@ -29,33 +29,33 @@ class DesignInstantiationTestCase(unittest.TestCase):
     compiled_design = ScalaCompiler.compile(TopHierarchyBlock)
     pb = compiled_design.contents
 
-    self.assertEqual(pb.self_class.target.name, 'edg_core.test_hierarchy_block.TopHierarchyBlock')
+    self.assertEqual(pb.self_class.target.name, 'edg.core.test_hierarchy_block.TopHierarchyBlock')
 
     self.assertEqual(len(pb.blocks), 3)
 
     self.assertEqual(pb.blocks[0].name, 'source')
     self.assertEqual(pb.blocks[0].value.hierarchy.self_class.target.name,
-                     'edg_core.test_common.TestBlockSource')
+                     'edg.core.test_common.TestBlockSource')
     self.assertEqual(pb.blocks[0].value.hierarchy.ports[0].name, 'source')
     self.assertEqual(pb.blocks[0].value.hierarchy.ports[0].value.port.self_class.target.name,
-                     'edg_core.test_common.TestPortSource')
+                     'edg.core.test_common.TestPortSource')
 
     self.assertEqual(pb.blocks[1].name, 'sink1')
     self.assertEqual(pb.blocks[1].value.hierarchy.self_class.target.name,
-                     'edg_core.test_common.TestBlockSink')
+                     'edg.core.test_common.TestBlockSink')
     self.assertEqual(pb.blocks[1].value.hierarchy.ports[0].name, 'sink')
     self.assertEqual(pb.blocks[1].value.hierarchy.ports[0].value.port.self_class.target.name,
-                     'edg_core.test_common.TestPortSink')
+                     'edg.core.test_common.TestPortSink')
 
     self.assertEqual(pb.blocks[2].name, 'sink2')
     self.assertEqual(pb.blocks[2].value.hierarchy.self_class.target.name,
-                     'edg_core.test_common.TestBlockSink')
+                     'edg.core.test_common.TestBlockSink')
     self.assertEqual(pb.blocks[2].value.hierarchy.ports[0].name, 'sink')
     self.assertEqual(pb.blocks[2].value.hierarchy.ports[0].value.port.self_class.target.name,
-                     'edg_core.test_common.TestPortSink')
+                     'edg.core.test_common.TestPortSink')
 
     self.assertEqual(pb.links[0].name, 'test_net')
-    self.assertEqual(pb.links[0].value.link.self_class.target.name, 'edg_core.test_common.TestLink')
+    self.assertEqual(pb.links[0].value.link.self_class.target.name, 'edg.core.test_common.TestLink')
     self.assertEqual(pb.links[0].value.link.ports[0].name, 'source')
     self.assertEqual(pb.links[0].value.link.ports[0].value.port.self_class.target.name,
                      "edg.core.test_common.TestPortSource")
@@ -109,20 +109,20 @@ class DesignInstantiationTestCase(unittest.TestCase):
     self.assertEqual(compiled_design.contents.blocks[0].name, 'block')
     pb = compiled_design.contents.blocks[0].value.hierarchy
 
-    self.assertEqual(pb.self_class.target.name, 'edg_core.test_hierarchy_block.ExportPortHierarchyBlock')
+    self.assertEqual(pb.self_class.target.name, 'edg.core.test_hierarchy_block.ExportPortHierarchyBlock')
 
     self.assertEqual(len(pb.ports), 1)
     self.assertEqual(pb.ports[0].name, 'exported')
     self.assertEqual(pb.ports[0].value.port.self_class.target.name,
-                     'edg_core.test_common.TestPortSink')
+                     'edg.core.test_common.TestPortSink')
 
     self.assertEqual(len(pb.blocks), 1)
     self.assertEqual(pb.blocks[0].name, 'sink')
     self.assertEqual(pb.blocks[0].value.hierarchy.self_class.target.name,
-                     'edg_core.test_common.TestBlockSink')
+                     'edg.core.test_common.TestBlockSink')
     self.assertEqual(pb.blocks[0].value.hierarchy.ports[0].name, 'sink')
     self.assertEqual(pb.blocks[0].value.hierarchy.ports[0].value.port.self_class.target.name,
-                     'edg_core.test_common.TestPortSink')
+                     'edg.core.test_common.TestPortSink')
 
     self.assertEqual(len(pb.links), 0)
 
@@ -139,7 +139,7 @@ class DesignInstantiationTestCase(unittest.TestCase):
     self.assertEqual(compiled_design.contents.blocks[0].name, 'block')
     pb = compiled_design.contents.blocks[0].value.hierarchy
 
-    self.assertEqual(pb.self_class.target.name, 'edg_core.test_hierarchy_block.PortBridgeHierarchyBlock')
+    self.assertEqual(pb.self_class.target.name, 'edg.core.test_hierarchy_block.PortBridgeHierarchyBlock')
 
     self.assertEqual(len(pb.ports), 1)
     self.assertEqual(pb.ports[0].name, 'source_port')
@@ -149,21 +149,21 @@ class DesignInstantiationTestCase(unittest.TestCase):
     self.assertEqual(len(pb.blocks), 3)
     self.assertEqual(pb.blocks[0].name, 'sink1')
     self.assertEqual(pb.blocks[0].value.hierarchy.self_class.target.name,
-                     'edg_core.test_common.TestBlockSink')
+                     'edg.core.test_common.TestBlockSink')
     self.assertEqual(pb.blocks[0].value.hierarchy.ports[0].name, 'sink')
     self.assertEqual(pb.blocks[0].value.hierarchy.ports[0].value.port.self_class.target.name,
-                     'edg_core.test_common.TestPortSink')
+                     'edg.core.test_common.TestPortSink')
 
     self.assertEqual(pb.blocks[1].name, 'sink2')
     self.assertEqual(pb.blocks[1].value.hierarchy.self_class.target.name,
-                     'edg_core.test_common.TestBlockSink')
+                     'edg.core.test_common.TestBlockSink')
     self.assertEqual(pb.blocks[1].value.hierarchy.ports[0].name, 'sink')
     self.assertEqual(pb.blocks[1].value.hierarchy.ports[0].value.port.self_class.target.name,
-                     'edg_core.test_common.TestPortSink')
+                     'edg.core.test_common.TestPortSink')
 
     self.assertEqual(pb.blocks[2].name, '(bridge)source_port')
     self.assertEqual(pb.blocks[2].value.hierarchy.self_class.target.name,
-                     'edg_core.test_common.TestPortBridge')
+                     'edg.core.test_common.TestPortBridge')
     self.assertEqual(pb.blocks[2].value.hierarchy.ports[0].name, 'outer_port')
     self.assertEqual(pb.blocks[2].value.hierarchy.ports[0].value.port.self_class.target.name,
                      "edg.core.test_common.TestPortSink")
@@ -173,7 +173,7 @@ class DesignInstantiationTestCase(unittest.TestCase):
 
     self.assertEqual(len(pb.links), 1)
     self.assertEqual(pb.links[0].name, 'test_net')
-    self.assertEqual(pb.links[0].value.link.self_class.target.name, 'edg_core.test_common.TestLink')
+    self.assertEqual(pb.links[0].value.link.self_class.target.name, 'edg.core.test_common.TestLink')
     self.assertEqual(pb.links[0].value.link.ports[0].name, 'source')
     self.assertEqual(pb.links[0].value.link.ports[0].value.port.self_class.target.name,
                      "edg.core.test_common.TestPortSource")
