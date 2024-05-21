@@ -1,8 +1,7 @@
 import unittest
-from typing import List, Tuple
 
-from edg_core import Range
-from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil
+from . import *
+from .ESeriesUtil import ESeriesRatioUtil
 
 
 class PreferredNumberTestCase(unittest.TestCase):

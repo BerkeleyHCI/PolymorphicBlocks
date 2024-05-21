@@ -1,4 +1,4 @@
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 class Pec11s(RotaryEncoderSwitch, RotaryEncoder, FootprintBlock):

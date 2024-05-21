@@ -1,6 +1,6 @@
 from typing import Dict, List, Union, Set
 
-from electronics_model import CircuitPort
+from ..electronics_model import *
 
 
 class VariantPinRemapper:

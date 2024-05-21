@@ -1,5 +1,5 @@
 from ..electronics_abstract_parts import *
-from electronics_lib.JlcPart import JlcPart
+from .JlcPart import JlcPart
 
 
 class Cstne(CeramicResonator, GeneratorBlock, JlcPart, FootprintBlock):

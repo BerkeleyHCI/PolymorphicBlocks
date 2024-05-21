@@ -1,4 +1,4 @@
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 class Xbee_S3b_Device(InternalSubcircuit, FootprintBlock):

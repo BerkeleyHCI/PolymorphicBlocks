@@ -1,8 +1,8 @@
 import unittest
 
-from edg_core import Range
+from . import *
 from .ResistiveDivider import DividerValues
-from .ESeriesUtil import ESeriesUtil, ESeriesRatioUtil
+from .ESeriesUtil import ESeriesRatioUtil
 
 
 class ResistorDividerTest(unittest.TestCase):

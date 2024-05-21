@@ -1,4 +1,4 @@
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 from .SpiMemory_93Lc import E93Lc_B
 from .JlcPart import JlcPart
 

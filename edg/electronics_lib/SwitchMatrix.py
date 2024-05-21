@@ -1,6 +1,6 @@
 from typing import cast, Optional
 
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):

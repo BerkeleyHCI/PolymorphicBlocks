@@ -1,5 +1,5 @@
 from ..electronics_abstract_parts import *
-from electronics_lib import Fpc050Bottom
+from .PassiveConnector_Fpc import Fpc050Bottom
 from .EInkBoostPowerPath import EInkBoostPowerPath
 
 

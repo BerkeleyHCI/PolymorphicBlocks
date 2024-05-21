@@ -2,9 +2,8 @@ import csv
 import os
 from typing import List, Tuple, Dict, Optional
 
-import edgir
-from edg_core import BaseBackend, CompiledDesign, TransformUtil
-from electronics_abstract_parts import PartsTable
+from .. import edgir
+from ..electronics_abstract_parts import *
 
 
 class PartQuantityTransform(TransformUtil.Transform):

@@ -63,7 +63,7 @@ class LipoConnector(Connector, Battery):
   @init_in_parent
   def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args,
                actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs):
-    from electronics_model.PassivePort import PassiveAdapterVoltageSink
+    from ..electronics_model.PassivePort import PassiveAdapterVoltageSink
     super().__init__(voltage, *args, **kwargs)
     self.chg = self.Port(VoltageSink.empty(), optional=True)  # ideal port for charging
     self.conn = self.Block(PassiveConnector())

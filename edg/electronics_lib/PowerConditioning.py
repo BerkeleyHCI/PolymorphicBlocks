@@ -1,7 +1,7 @@
 from typing import Optional, cast
 
-from electronics_abstract_parts import *
-from electronics_model.PassivePort import PassiveAdapterVoltageSink, PassiveAdapterVoltageSource
+from ..electronics_abstract_parts import *
+from ..electronics_model.PassivePort import PassiveAdapterVoltageSink, PassiveAdapterVoltageSource
 
 
 class Supercap(DiscreteComponent, FootprintBlock):  # TODO actually model supercaps and parts selection

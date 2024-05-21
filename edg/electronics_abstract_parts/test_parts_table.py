@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from electronics_abstract_parts.PartsTable import *
+from .PartsTable import *
 
 
 class PartsTableTest(unittest.TestCase):

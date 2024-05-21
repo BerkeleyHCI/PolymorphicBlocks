@@ -1,5 +1,6 @@
 from ..electronics_abstract_parts import *
-from electronics_lib import PinHeader254, TagConnect
+from .PassiveConnector_Header import PinHeader254
+from .PassiveConnector_TagConnect import TagConnect
 
 
 # contains common blocks for ESP microcontrollers

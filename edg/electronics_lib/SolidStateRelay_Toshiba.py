@@ -1,4 +1,4 @@
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 class Tlp3545a(SolidStateRelay, FootprintBlock):

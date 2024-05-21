@@ -1,5 +1,5 @@
-from electronics_abstract_parts import *
-from electronics_lib.JlcPart import JlcPart
+from ..electronics_abstract_parts import *
+from .JlcPart import JlcPart
 
 
 class UsbAReceptacle(UsbHostConnector, FootprintBlock):

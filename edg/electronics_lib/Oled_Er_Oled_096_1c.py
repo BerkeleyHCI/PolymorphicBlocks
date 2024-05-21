@@ -1,5 +1,5 @@
 from ..electronics_abstract_parts import *
-from electronics_lib import Fpc030Bottom
+from .PassiveConnector_Fpc import Fpc030Bottom
 
 
 class Er_Oled_096_1c_Outline(InternalSubcircuit, FootprintBlock):

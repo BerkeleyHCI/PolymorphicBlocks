@@ -1,8 +1,6 @@
 import unittest
 
-from edg_core import Range
-from .AbstractResistor import Resistor
-from .AbstractCapacitor import Capacitor
+from . import *
 
 
 class KicadPartParsingTest(unittest.TestCase):

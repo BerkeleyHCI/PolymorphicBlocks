@@ -1,7 +1,7 @@
 from typing import Dict
 
 from ..electronics_abstract_parts import *
-from electronics_lib.JlcPart import JlcPart
+from .JlcPart import JlcPart
 
 
 class Ld1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
