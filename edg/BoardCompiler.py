@@ -4,7 +4,8 @@ from contextlib import suppress
 from typing import Type, Optional, Tuple
 
 from .core import Block, ScalaCompiler, CompiledDesign
-from .electronics_model import NetlistBackend, SvgPcbBackend
+from .electronics_model.NetlistBackend import NetlistBackend  # imported separately b/c mypy confuses with the modules
+from .electronics_model.SvgPcbBackend import SvgPcbBackend
 from .electronics_model.RefdesRefinementPass import RefdesRefinementPass
 from .electronics_model.BomBackend import GenerateBom
 
