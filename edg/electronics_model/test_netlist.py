@@ -2,7 +2,9 @@ import unittest
 from typing import Type, List
 
 from .. import edgir
-from . import *
+# to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
+from ..core import *
+from .VoltagePorts import VoltageSource, VoltageSink
 from .CircuitBlock import FootprintBlock
 from .NetlistGenerator import NetlistTransform, NetPin as RawNetPin, NetBlock as RawNetBlock, Net
 from .RefdesRefinementPass import RefdesRefinementPass

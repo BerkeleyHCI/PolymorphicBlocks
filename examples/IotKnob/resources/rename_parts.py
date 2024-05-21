@@ -5,7 +5,7 @@ from typing import List, Dict
 import sexpdata  # type: ignore
 
 sys.path.append(os.getcwd())  # allow electronics_model to be seen if run in root even if script isn't in root
-from electronics_model.KiCadSchematicParser import group_by_car, parse_symbol
+from edg.electronics_model.KiCadSchematicParser import group_by_car, parse_symbol
 
 # a quick'n'dirty script to rename refdeses in a KiCad PCB according to the remap table below
 # used since SVG-PCB (currently) doesn't seem to have a way to programmatically generate refdes

@@ -1,6 +1,6 @@
 import unittest
 
-from . import *
+from ..core import *
 from .CircuitPackingBlock import PackedVoltageSource
 from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink
 from .test_netlist import NetlistTestCase, Net, NetPin, NetBlock
