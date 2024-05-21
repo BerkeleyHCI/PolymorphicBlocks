@@ -7,7 +7,6 @@
   (property (name "Sheetfile") (value ""))
   (property (name "edg_path") (value "mcu"))
   (property (name "edg_short_path") (value "mcu"))
-  (property (name "edg_refdes") (value "U1"))
   (property (name "edg_part") (value "XIAO RP2040"))
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "02850146"))

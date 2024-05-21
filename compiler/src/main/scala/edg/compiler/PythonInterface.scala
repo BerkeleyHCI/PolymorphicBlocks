@@ -128,32 +128,13 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
   }
 }
 
-object PythonInterface {
-  private val kHdlServerFilePath = "edg_hdl_server/__main__.py"
-  // returns the HDL server Python script if it exists locally, otherwise returns None.
-  def serverFileOption(root: Option[File] = None): Option[File] = {
-    val hdlServerFile = root match {
-      case Some(root) => new File(root, kHdlServerFilePath)
-      case None => new File(kHdlServerFilePath)
-    }
-    if (hdlServerFile.exists()) {
-      Some(hdlServerFile)
-    } else {
-      None
-    }
-  }
-}
-
 /** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles them down to IR.
   * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
   *
-  * If the serverFile is specified, run that; otherwise use "python -m edg_hdl_server" for the global package.
+  * This invokes "python -m edg.hdl_server", using either the local or global (pip) module as available.
   */
-class PythonInterface(serverFile: Option[File], pythonPaths: Seq[String], pythonInterpreter: String = "python") {
-  val command = serverFile match { // -u for unbuffered mode
-    case Some(serverFile) => Seq(pythonInterpreter, "-u", serverFile.getAbsolutePath)
-    case None => Seq(pythonInterpreter, "-u", "-m", "edg_hdl_server")
-  }
+class PythonInterface(pythonPaths: Seq[String], pythonInterpreter: String = "python") {
+  val command = Seq(pythonInterpreter, "-u", "-m", "edg.hdl_server")
   protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
     edgrpc.HdlResponse,
     pythonPaths,
