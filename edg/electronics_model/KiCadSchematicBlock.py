@@ -154,7 +154,7 @@ class KiCadSchematicBlock(Block):
                      auto_adapt: bool = False):
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
         # so declaring it here causes it to reference Opamp lazily
-        from ..electronics_abstract_parts import Resistor, Capacitor, Opamp
+        from ..abstract_parts import Resistor, Capacitor, Opamp
         SYMBOL_MAP: Mapping[str, Type[KiCadInstantiableBlock]] = {
             'Device:R': Resistor,
             'Device:R_Small': Resistor,
