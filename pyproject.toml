@@ -25,7 +25,7 @@ dependencies = [
 requires-python = ">=3.9"
 
 [tool.setuptools]
-packages = ["edg"]
+packages = ["edg.edgir", "edg.edgrpc", "edg.core", "edg.hdl_server", "edg.electronics_model", "edg.abstract_parts", "edg.parts", "edg"]
 
 [tool.setuptools.package-data]
 edg = ["core/resources/edg-compiler-precompiled.jar", "abstract_parts/resources/*.kicad_sch", "parts/resources/Pruned_JLCPCB SMT Parts Library(20220419).csv", "parts/resources/*.kicad_sch"]
