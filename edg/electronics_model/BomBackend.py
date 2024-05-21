@@ -1,7 +1,7 @@
 import io
 from typing import List, Tuple, Dict, NamedTuple
 
-import edgir
+from .. import edgir
 from ..core import BaseBackend, CompiledDesign, TransformUtil
 
 import csv

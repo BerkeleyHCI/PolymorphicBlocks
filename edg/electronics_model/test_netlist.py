@@ -1,7 +1,7 @@
 import unittest
 from typing import Type, List
 
-import edgir
+from .. import edgir
 from . import *
 from .CircuitBlock import FootprintBlock
 from .NetlistGenerator import NetlistTransform, NetPin as RawNetPin, NetBlock as RawNetBlock, Net

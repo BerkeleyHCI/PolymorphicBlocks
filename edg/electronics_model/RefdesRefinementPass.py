@@ -1,6 +1,6 @@
 from typing import List, Tuple, Dict, Set
 
-import edgir
+from .. import edgir
 from ..core import CompiledDesign, TransformUtil
 from ..core.BaseRefinementPass import BaseRefinementPass
 

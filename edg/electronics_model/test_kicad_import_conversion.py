@@ -1,6 +1,6 @@
 import unittest
 
-import edgir
+from .. import edgir
 from . import *
 
 
