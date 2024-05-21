@@ -1,9 +1,9 @@
 import unittest
 from typing import Mapping, Optional, Dict, List
 
-from electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
-from electronics_abstract_parts.ResistiveDivider import DividerValues
-from electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic
+from edg.electronics_abstract_parts.ESeriesUtil import ESeriesRatioUtil
+from edg.electronics_abstract_parts.ResistiveDivider import DividerValues
+from edg.electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic
 from edg import *
 
 

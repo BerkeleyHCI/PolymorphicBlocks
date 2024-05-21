@@ -9,7 +9,7 @@ pip install protoletariat
 To compile, run in this directory:
 
 ```
-protoc --proto_path=. --python_out=.. --mypy_out=../edg edgir/*.proto edgrpc/*.proto
+protoc --proto_path=. --python_out=../edg --mypy_out=../edg edgir/*.proto edgrpc/*.proto
 protol --in-place --python-out ../edg protoc --proto-path=. edgir/*.proto edgrpc/*.proto
 ```
 
