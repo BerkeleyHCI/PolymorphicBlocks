@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import *
 
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 @non_library

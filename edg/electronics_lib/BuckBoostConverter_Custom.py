@@ -1,4 +1,4 @@
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 # These adapters are needed to properly orient the boost-side switch, since it outputs on the high side

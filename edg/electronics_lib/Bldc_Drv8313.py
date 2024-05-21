@@ -1,6 +1,6 @@
 import functools
 
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 

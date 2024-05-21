@@ -37,7 +37,7 @@ class BaseIoController(PinMappable, Block):
     # CAN is now mixins, but automatically materialized for compatibility
     # In new code, explicit mixin syntax should be used.
     self.can: Vector[CanControllerPort]
-    from electronics_abstract_parts import IoControllerCan
+    from .IoControllerInterfaceMixins import IoControllerCan
     self._can_mixin: Optional[IoControllerCan] = None
 
     self.io_current_draw = self.Parameter(RangeExpr())  # total current draw for all leaf-level IO sinks
@@ -50,7 +50,7 @@ class BaseIoController(PinMappable, Block):
     # note, getattr ONLY called when the field does not exist, and hasattr is implemented via getattr
     if self.__class__ is IoController and item == 'can':
       if self._can_mixin is None:
-        from electronics_abstract_parts import IoControllerCan
+        from .IoControllerInterfaceMixins import IoControllerCan
         self._can_mixin = self.with_mixin(IoControllerCan())
       return self._can_mixin.can
     else:

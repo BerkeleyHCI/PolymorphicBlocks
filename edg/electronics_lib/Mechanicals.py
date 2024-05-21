@@ -1,5 +1,5 @@
 from deprecated import deprecated
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class Outline_Pn1332(Mechanical, FootprintBlock):

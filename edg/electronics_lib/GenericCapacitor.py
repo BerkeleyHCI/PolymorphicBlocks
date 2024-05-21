@@ -1,7 +1,7 @@
 from typing import NamedTuple, Dict, Optional
 import math
 
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 class GenericMlcc(Capacitor, FootprintBlock, SmdStandardPackage, GeneratorBlock):

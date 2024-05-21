@@ -1,4 +1,4 @@
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 @abstract_block_default(lambda: CpuFan3Pin)

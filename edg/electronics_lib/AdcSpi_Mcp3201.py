@@ -1,6 +1,4 @@
-from typing import *
-
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 class Mcp3201_Device(InternalSubcircuit, FootprintBlock):

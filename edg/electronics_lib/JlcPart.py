@@ -1,7 +1,7 @@
 from typing import Optional, Dict, Any, Tuple, Callable, List
 import re
 
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 @non_library

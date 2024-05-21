@@ -1,7 +1,7 @@
 from typing import Optional, Any, Dict, List
 import re
 
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 

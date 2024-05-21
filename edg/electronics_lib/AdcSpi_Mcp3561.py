@@ -1,6 +1,6 @@
 from typing import Optional
 
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 class Mcp3561_Device(InternalSubcircuit, GeneratorBlock, FootprintBlock):

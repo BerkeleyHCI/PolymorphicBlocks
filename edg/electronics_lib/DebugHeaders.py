@@ -1,4 +1,4 @@
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 from .PassiveConnector_Header import PinHeader127DualShrouded
 from .PassiveConnector_TagConnect import TagConnect
 

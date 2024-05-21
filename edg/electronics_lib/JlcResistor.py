@@ -1,6 +1,6 @@
 import re
 from typing import Optional, Dict, Any
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 from electronics_lib.JlcPart import JlcTableSelector
 
 

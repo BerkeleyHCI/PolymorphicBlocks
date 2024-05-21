@@ -1,5 +1,5 @@
 from typing import *
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 class E2154fs091_Device(InternalSubcircuit, FootprintBlock):

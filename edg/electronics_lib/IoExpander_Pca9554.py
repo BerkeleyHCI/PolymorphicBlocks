@@ -1,7 +1,7 @@
 from itertools import chain
 from typing import Dict, List
 
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 from .JlcPart import JlcPart
 
 

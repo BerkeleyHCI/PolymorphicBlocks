@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 @non_library

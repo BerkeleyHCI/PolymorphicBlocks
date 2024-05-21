@@ -1,4 +1,4 @@
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 class Mcp47f_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):

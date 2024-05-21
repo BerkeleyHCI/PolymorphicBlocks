@@ -1,5 +1,5 @@
 from typing import Tuple, Iterable
-from electronics_abstract_parts import *
+from ..electronics_abstract_parts import *
 
 
 @abstract_block
