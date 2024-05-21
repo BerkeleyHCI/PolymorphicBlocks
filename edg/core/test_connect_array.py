@@ -42,7 +42,7 @@ class ArrayConnectProtoTestCase(unittest.TestCase):
   def test_link_inference(self) -> None:
     self.assertEqual(len(self.pb.links), 1)
     self.assertEqual(self.pb.links[0].name, 'test_net')
-    self.assertEqual(self.pb.links[0].value.array.self_class.target.name, "edg_core.test_common.TestLink")
+    self.assertEqual(self.pb.links[0].value.array.self_class.target.name, "edg.core.test_common.TestLink")
 
   def test_connectivity(self) -> None:
     self.assertEqual(len(self.pb.constraints), 3)
@@ -90,9 +90,9 @@ class ArrayAllocatedConnectProtoTestCase(unittest.TestCase):
   def test_link_inference(self) -> None:
     self.assertEqual(len(self.pb.links), 2)
     self.assertEqual(self.pb.links[0].name, 'test_net1')
-    self.assertEqual(self.pb.links[0].value.array.self_class.target.name, "edg_core.test_common.TestLink")
+    self.assertEqual(self.pb.links[0].value.array.self_class.target.name, "edg.core.test_common.TestLink")
     self.assertEqual(self.pb.links[1].name, 'test_net2')
-    self.assertEqual(self.pb.links[1].value.array.self_class.target.name, "edg_core.test_common.TestLink")
+    self.assertEqual(self.pb.links[1].value.array.self_class.target.name, "edg.core.test_common.TestLink")
 
   def test_connectivity(self) -> None:
     self.assertEqual(len(self.pb.constraints), 4)

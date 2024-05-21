@@ -69,7 +69,7 @@ class BlockVectorBaseProtoTestCase(unittest.TestCase):
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
     self.assertEqual(self.pb.ports[0].name, 'vector')
-    self.assertEqual(self.pb.ports[0].value.array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].value.array.self_class.target.name, "edg.core.test_elaboration_common.TestPortSink")
 
   def test_port_init(self) -> None:
     self.assertEqual(len(self.pb.constraints), 0)  # no constraints should generate
@@ -82,13 +82,13 @@ class BlockVectorProtoTestCase(unittest.TestCase):
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
     self.assertEqual(self.pb.ports[0].name, 'vector')
-    self.assertEqual(self.pb.ports[0].value.array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].value.array.self_class.target.name, "edg.core.test_elaboration_common.TestPortSink")
     array_ports = self.pb.ports[0].value.array.ports.ports
     self.assertEqual(len(array_ports), 2)
     self.assertEqual(array_ports[0].name, '0')
-    self.assertEqual(array_ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(array_ports[0].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortSink")
     self.assertEqual(array_ports[1].name, '1')
-    self.assertEqual(array_ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(array_ports[1].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortSink")
 
 
 class BlockVectorEmptyProtoTestCase(unittest.TestCase):
@@ -97,7 +97,7 @@ class BlockVectorEmptyProtoTestCase(unittest.TestCase):
 
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
-    self.assertEqual(self.pb.ports[0].value.array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].value.array.self_class.target.name, "edg.core.test_elaboration_common.TestPortSink")
     self.assertTrue(self.pb.ports[0].value.array.HasField('ports'))
     array_ports = self.pb.ports[0].value.array.ports.ports
     self.assertEqual(len(array_ports), 0)

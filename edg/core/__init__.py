@@ -1,4 +1,4 @@
-from .ConstraintExpr import BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
+from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike, LiteralConstructor
 from .ArrayExpr import ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr, ArrayRangeExpr, ArrayStringExpr
 from .ArrayExpr import ArrayBoolLike, ArrayFloatLike, ArrayIntLike, ArrayRangeLike, ArrayStringLike

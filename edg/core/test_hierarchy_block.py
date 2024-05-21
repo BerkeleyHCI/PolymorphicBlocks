@@ -21,19 +21,19 @@ class TopHierarchyBlockProtoTestCase(unittest.TestCase):
 
   def test_subblock_def(self) -> None:
     self.assertEqual(self.pb.blocks[0].name, 'source')
-    self.assertEqual(self.pb.blocks[0].value.lib_elem.base.target.name, "edg_core.test_common.TestBlockSource")
+    self.assertEqual(self.pb.blocks[0].value.lib_elem.base.target.name, "edg.core.test_common.TestBlockSource")
     self.assertFalse(self.pb.blocks[0].value.lib_elem.mixins)
     self.assertEqual(self.pb.blocks[1].name, 'sink1')
-    self.assertEqual(self.pb.blocks[1].value.lib_elem.base.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertEqual(self.pb.blocks[1].value.lib_elem.base.target.name, "edg.core.test_common.TestBlockSink")
     self.assertFalse(self.pb.blocks[1].value.lib_elem.mixins)
     self.assertEqual(self.pb.blocks[2].name, 'sink2')
-    self.assertEqual(self.pb.blocks[2].value.lib_elem.base.target.name, "edg_core.test_common.TestBlockSink")
+    self.assertEqual(self.pb.blocks[2].value.lib_elem.base.target.name, "edg.core.test_common.TestBlockSink")
     self.assertFalse(self.pb.blocks[2].value.lib_elem.mixins)
 
   def test_link_inference(self) -> None:
     self.assertEqual(len(self.pb.links), 1)
     self.assertEqual(self.pb.links[0].name, 'test_net')
-    self.assertEqual(self.pb.links[0].value.lib_elem.target.name, "edg_core.test_common.TestLink")
+    self.assertEqual(self.pb.links[0].value.lib_elem.target.name, "edg.core.test_common.TestLink")
 
   def test_connectivity(self) -> None:
     self.assertEqual(len(self.pb.constraints), 3)  # TODO: maybe filter by connection types in future for robustness
@@ -195,7 +195,7 @@ class ExportPortHierarchyBlockTestCase(unittest.TestCase):
   def test_exported_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
     self.assertEqual(self.pb.ports[0].name, 'exported')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_common.TestPortSink")
 
   def test_connectivity(self) -> None:
     self.assertEqual(len(self.pb.constraints), 1)
@@ -226,7 +226,7 @@ class IndirectExportPortHierarchyBlockTestCase(unittest.TestCase):
   def test_exported_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
     self.assertEqual(self.pb.ports[0].name, 'exported')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_common.TestPortSink")
 
   def test_connectivity(self) -> None:
     self.assertEqual(len(self.pb.constraints), 1)
@@ -258,7 +258,7 @@ class PortBridgeHierarchyBlockTestCase(unittest.TestCase):
   def test_exported_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
     self.assertEqual(self.pb.ports[0].name, 'source_port')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_common.TestPortSink")
 
   def test_connectivity(self) -> None:
     self.assertEqual(len(self.pb.constraints), 4)

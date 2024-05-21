@@ -44,9 +44,9 @@ class InnerLinkTestCase(unittest.TestCase):
 
   def test_inner_links(self) -> None:
     self.assertEqual(self.pb.links[0].name, 'a_net')
-    self.assertEqual(self.pb.links[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestLink")
+    self.assertEqual(self.pb.links[0].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestLink")
     self.assertEqual(self.pb.links[1].name, 'b_net')
-    self.assertEqual(self.pb.links[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestLink")
+    self.assertEqual(self.pb.links[1].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestLink")
 
   def test_connects(self) -> None:
     self.assertEqual(len(self.pb.constraints), 6)  # TODO: maybe filter by connection types in future for robustness

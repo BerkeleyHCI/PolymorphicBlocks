@@ -31,10 +31,10 @@ class MixinProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.HasField('default_refinement'), False)
 
   def test_superclass(self) -> None:
-    self.assertEqual(self.pb.self_class.target.name, "edg_core.test_mixin.TestMixin")
-    self.assertEqual(self.pb.prerefine_class.target.name, "edg_core.test_mixin.TestMixin")
+    self.assertEqual(self.pb.self_class.target.name, "edg.core.test_mixin.TestMixin")
+    self.assertEqual(self.pb.prerefine_class.target.name, "edg.core.test_mixin.TestMixin")
     self.assertEqual(len(self.pb.superclasses), 1)
-    self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_mixin.TestMixinBase")
+    self.assertEqual(self.pb.superclasses[0].target.name, "edg.core.test_mixin.TestMixinBase")
     self.assertEqual(len(self.pb.super_superclasses), 0)
 
   def test_param_def(self) -> None:
@@ -45,7 +45,7 @@ class MixinProtoTestCase(unittest.TestCase):
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
     self.assertEqual(self.pb.ports[0].name, 'mixin_port')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_common.TestPortSink")
 
   def test_connected_constraint(self) -> None:
     expected_constr = edgir.ValueExpr()
@@ -70,12 +70,12 @@ class MixinSubclassProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.HasField('default_refinement'), False)
 
   def test_superclass(self) -> None:
-    self.assertEqual(self.pb.self_class.target.name, "edg_core.test_mixin.TestMixinSubclass")
-    self.assertEqual(self.pb.prerefine_class.target.name, "edg_core.test_mixin.TestMixinSubclass")
+    self.assertEqual(self.pb.self_class.target.name, "edg.core.test_mixin.TestMixinSubclass")
+    self.assertEqual(self.pb.prerefine_class.target.name, "edg.core.test_mixin.TestMixinSubclass")
     self.assertEqual(len(self.pb.superclasses), 1)
-    self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_mixin.TestMixin")
+    self.assertEqual(self.pb.superclasses[0].target.name, "edg.core.test_mixin.TestMixin")
     self.assertEqual(len(self.pb.super_superclasses), 1)
-    self.assertEqual(self.pb.super_superclasses[0].target.name, "edg_core.test_mixin.TestMixinBase")
+    self.assertEqual(self.pb.super_superclasses[0].target.name, "edg.core.test_mixin.TestMixinBase")
 
   # the rest of this tests that it has inherited the mixin's base port and param
   def test_param_def(self) -> None:
@@ -86,7 +86,7 @@ class MixinSubclassProtoTestCase(unittest.TestCase):
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 1)
     self.assertEqual(self.pb.ports[0].name, 'mixin_port')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_common.TestPortSink")
 
   def test_connected_constraint(self) -> None:
     expected_constr = edgir.ValueExpr()
@@ -111,11 +111,11 @@ class MixinConcreteBlockProtoTestCase(unittest.TestCase):  # pretty straightforw
     self.assertEqual(self.pb.HasField('default_refinement'), False)
 
   def test_superclass(self) -> None:
-    self.assertEqual(self.pb.self_class.target.name, "edg_core.test_mixin.TestMixinConcreteBlock")
-    self.assertEqual(self.pb.prerefine_class.target.name, "edg_core.test_mixin.TestMixinConcreteBlock")
+    self.assertEqual(self.pb.self_class.target.name, "edg.core.test_mixin.TestMixinConcreteBlock")
+    self.assertEqual(self.pb.prerefine_class.target.name, "edg.core.test_mixin.TestMixinConcreteBlock")
     self.assertEqual(len(self.pb.superclasses), 2)
-    self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_mixin.TestMixin")
-    self.assertEqual(self.pb.superclasses[1].target.name, "edg_core.test_mixin.TestMixinBase")
+    self.assertEqual(self.pb.superclasses[0].target.name, "edg.core.test_mixin.TestMixin")
+    self.assertEqual(self.pb.superclasses[1].target.name, "edg.core.test_mixin.TestMixinBase")
 
   # the rest of this tests that it has inherited the mixin's base port and param
   def test_param_def(self) -> None:
@@ -126,9 +126,9 @@ class MixinConcreteBlockProtoTestCase(unittest.TestCase):  # pretty straightforw
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 2)
     self.assertEqual(self.pb.ports[0].name, 'base_port')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_common.TestPortSink")
     self.assertEqual(self.pb.ports[1].name, 'mixin_port')
-    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg_core.test_common.TestPortSink")
+    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg.core.test_common.TestPortSink")
 
   def test_connected_constraint(self) -> None:
     expected_constr = edgir.ValueExpr()

@@ -20,11 +20,11 @@ class PortSourceProtoTestCase(unittest.TestCase):
     self.pb = cast(edgir.Port, TestPortSource()._def_to_proto())
 
   def test_self_class(self):
-    self.assertEqual(self.pb.self_class.target.name, "edg_core.test_elaboration_common.TestPortSource")
+    self.assertEqual(self.pb.self_class.target.name, "edg.core.test_elaboration_common.TestPortSource")
 
   def test_superclasses(self):
     self.assertEqual(len(self.pb.superclasses), 1)
-    self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.superclasses[0].target.name, "edg.core.test_elaboration_common.TestPortBase")
 
   def test_contains_param(self):
     self.assertEqual(len(self.pb.params), 3)

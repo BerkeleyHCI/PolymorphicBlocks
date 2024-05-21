@@ -10,11 +10,11 @@ class LinkTestCase(unittest.TestCase):
     self.pb = TestLink()._elaborated_def_to_proto()
 
   def test_self_class(self):
-    self.assertEqual(self.pb.self_class.target.name, "edg_core.test_elaboration_common.TestLink")
+    self.assertEqual(self.pb.self_class.target.name, "edg.core.test_elaboration_common.TestLink")
 
   def test_superclasses(self):
     self.assertEqual(len(self.pb.superclasses), 1)
-    self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_elaboration_common.TestLinkBase")
+    self.assertEqual(self.pb.superclasses[0].target.name, "edg.core.test_elaboration_common.TestLinkBase")
     self.assertEqual(len(self.pb.super_superclasses), 0)
 
   def test_param_def(self):
@@ -29,9 +29,9 @@ class LinkTestCase(unittest.TestCase):
   def test_port_def(self):
     self.assertEqual(len(self.pb.ports), 2)
     self.assertTrue(self.pb.ports[0].name, 'source')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSource")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortSource")
     self.assertTrue(self.pb.ports[1].name, 'sinks')
-    self.assertEqual(self.pb.ports[1].value.array.self_class.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports[1].value.array.self_class.target.name, "edg.core.test_elaboration_common.TestPortSink")
 
   def test_constraints(self):
     # partial test of constraints, only the ones that are more interesting than tested elsewhere

@@ -25,9 +25,9 @@ class MixinUsageTestCase(unittest.TestCase):
 
   def test_subblock_def(self) -> None:
     self.assertEqual(self.pb.blocks[0].name, 'block')
-    self.assertEqual(self.pb.blocks[0].value.lib_elem.base.target.name, "edg_core.test_mixin.TestMixinBase")
+    self.assertEqual(self.pb.blocks[0].value.lib_elem.base.target.name, "edg.core.test_mixin.TestMixinBase")
     self.assertEqual(len(self.pb.blocks[0].value.lib_elem.mixins), 1)
-    self.assertEqual(self.pb.blocks[0].value.lib_elem.mixins[0].target.name, "edg_core.test_mixin.TestMixin")
+    self.assertEqual(self.pb.blocks[0].value.lib_elem.mixins[0].target.name, "edg.core.test_mixin.TestMixin")
 
   def test_connectivity(self) -> None:
     self.assertEqual(len(self.pb.constraints), 5)  # 4 connections + 1 initializer

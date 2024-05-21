@@ -58,14 +58,14 @@ class DesignInstantiationTestCase(unittest.TestCase):
     self.assertEqual(pb.links[0].value.link.self_class.target.name, 'edg_core.test_common.TestLink')
     self.assertEqual(pb.links[0].value.link.ports[0].name, 'source')
     self.assertEqual(pb.links[0].value.link.ports[0].value.port.self_class.target.name,
-                     "edg_core.test_common.TestPortSource")
+                     "edg.core.test_common.TestPortSource")
     self.assertEqual(pb.links[0].value.link.ports[1].name, 'sinks')
     self.assertEqual(pb.links[0].value.link.ports[1].value.array.ports.ports[0].name, '0')
     self.assertEqual(pb.links[0].value.link.ports[1].value.array.ports.ports[0].value.port.self_class.target.name,
-                     "edg_core.test_common.TestPortSink")
+                     "edg.core.test_common.TestPortSink")
     self.assertEqual(pb.links[0].value.link.ports[1].value.array.ports.ports[1].name, '1')
     self.assertEqual(pb.links[0].value.link.ports[1].value.array.ports.ports[1].value.port.self_class.target.name,
-                     "edg_core.test_common.TestPortSink")
+                     "edg.core.test_common.TestPortSink")
 
     constraints = list(map(lambda pair: pair.value, pb.constraints))
 
@@ -144,7 +144,7 @@ class DesignInstantiationTestCase(unittest.TestCase):
     self.assertEqual(len(pb.ports), 1)
     self.assertEqual(pb.ports[0].name, 'source_port')
     self.assertEqual(pb.ports[0].value.port.self_class.target.name,
-                     "edg_core.test_common.TestPortSink")
+                     "edg.core.test_common.TestPortSink")
 
     self.assertEqual(len(pb.blocks), 3)
     self.assertEqual(pb.blocks[0].name, 'sink1')
@@ -166,24 +166,24 @@ class DesignInstantiationTestCase(unittest.TestCase):
                      'edg_core.test_common.TestPortBridge')
     self.assertEqual(pb.blocks[2].value.hierarchy.ports[0].name, 'outer_port')
     self.assertEqual(pb.blocks[2].value.hierarchy.ports[0].value.port.self_class.target.name,
-                     "edg_core.test_common.TestPortSink")
+                     "edg.core.test_common.TestPortSink")
     self.assertEqual(pb.blocks[2].value.hierarchy.ports[1].name, 'inner_link')
     self.assertEqual(pb.blocks[2].value.hierarchy.ports[1].value.port.self_class.target.name,
-                     "edg_core.test_common.TestPortSource")
+                     "edg.core.test_common.TestPortSource")
 
     self.assertEqual(len(pb.links), 1)
     self.assertEqual(pb.links[0].name, 'test_net')
     self.assertEqual(pb.links[0].value.link.self_class.target.name, 'edg_core.test_common.TestLink')
     self.assertEqual(pb.links[0].value.link.ports[0].name, 'source')
     self.assertEqual(pb.links[0].value.link.ports[0].value.port.self_class.target.name,
-                     "edg_core.test_common.TestPortSource")
+                     "edg.core.test_common.TestPortSource")
     self.assertEqual(pb.links[0].value.link.ports[1].name, 'sinks')
     self.assertEqual(pb.links[0].value.link.ports[1].value.array.ports.ports[0].name, '0')
     self.assertEqual(pb.links[0].value.link.ports[1].value.array.ports.ports[0].value.port.self_class.target.name,
-                     "edg_core.test_common.TestPortSink")
+                     "edg.core.test_common.TestPortSink")
     self.assertEqual(pb.links[0].value.link.ports[1].value.array.ports.ports[1].name, '1')
     self.assertEqual(pb.links[0].value.link.ports[1].value.array.ports.ports[1].value.port.self_class.target.name,
-                     "edg_core.test_common.TestPortSink")
+                     "edg.core.test_common.TestPortSink")
 
     constraints = list(map(lambda pair: pair.value, pb.constraints))
 

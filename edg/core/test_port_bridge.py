@@ -11,9 +11,9 @@ class PortBridgeProtoTestCase(unittest.TestCase):
 
   def test_contains_param(self):
     self.assertEqual(self.pb.ports[0].name, 'outer_port')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSink")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortSink")
     self.assertEqual(self.pb.ports[1].name, 'inner_link')
-    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortSource")
+    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortSource")
 
   def test_constraints(self):
     self.assertEqual(len(self.pb.constraints), 2)

@@ -52,9 +52,9 @@ class BlockBaseProtoTestCase(unittest.TestCase):
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 2)
     self.assertEqual(self.pb.ports[0].name, 'base_port')
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortBase")
     self.assertEqual(self.pb.ports[1].name, 'base_port_constr')
-    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortBase")
 
   def test_connected_constraint(self) -> None:
     expected_constr = edgir.ValueExpr()
@@ -76,7 +76,7 @@ class BlockSecondBaseProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.is_abstract, True)
 
   def test_default(self) -> None:
-    self.assertEqual(self.pb.default_refinement.target.name, "edg_core.test_block.TestBlock")
+    self.assertEqual(self.pb.default_refinement.target.name, "edg.core.test_block.TestBlock")
 
 
 class BlockProtoTestCase(unittest.TestCase):
@@ -88,25 +88,25 @@ class BlockProtoTestCase(unittest.TestCase):
     self.assertEqual(self.pb.HasField('default_refinement'), False)
 
   def test_superclass(self) -> None:
-    self.assertEqual(self.pb.self_class.target.name, "edg_core.test_block.TestBlock")
-    self.assertEqual(self.pb.prerefine_class.target.name, "edg_core.test_block.TestBlock")
+    self.assertEqual(self.pb.self_class.target.name, "edg.core.test_block.TestBlock")
+    self.assertEqual(self.pb.prerefine_class.target.name, "edg.core.test_block.TestBlock")
     self.assertEqual(len(self.pb.superclasses), 2)
-    self.assertEqual(self.pb.superclasses[0].target.name, "edg_core.test_block.TestBlockBase")
-    self.assertEqual(self.pb.superclasses[1].target.name, "edg_core.test_block.TestBlockSecondSub")
+    self.assertEqual(self.pb.superclasses[0].target.name, "edg.core.test_block.TestBlockBase")
+    self.assertEqual(self.pb.superclasses[1].target.name, "edg.core.test_block.TestBlockSecondSub")
     self.assertEqual(len(self.pb.super_superclasses), 1)
-    self.assertEqual(self.pb.super_superclasses[0].target.name, "edg_core.test_block.TestBlockSecondBase")
+    self.assertEqual(self.pb.super_superclasses[0].target.name, "edg.core.test_block.TestBlockSecondBase")
 
     self.assertEqual(self.pb.params[0].name, "base_float")
     self.assertTrue(self.pb.params[0].value.HasField('floating'))
     self.assertEqual(self.pb.ports[0].name, "base_port")
-    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortBase")
     self.assertEqual(self.pb.ports[1].name, "base_port_constr")
-    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[1].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortBase")
 
   def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 3)
     self.assertEqual(self.pb.ports[2].name, "port_lit")
-    self.assertEqual(self.pb.ports[2].value.lib_elem.target.name, "edg_core.test_elaboration_common.TestPortBase")
+    self.assertEqual(self.pb.ports[2].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortBase")
     self.assertEqual(self.pb.constraints[0].name, "(reqd)base_port")
 
   def test_param_def(self) -> None:
