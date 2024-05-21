@@ -102,10 +102,10 @@ class MultipackNetlistTestCase(unittest.TestCase):
       TransformUtil.Path.empty().append_block('sink', 'device').append_port('neg'),
     ]), net.nets)
     self.assertIn(NetBlock('Capacitor_SMD:C_0603_1608Metric', 'C1', '', '1uF',
-                           ['source'], ['source'], ['electronics_model.test_netlist.TestFakeSource']),
+                           ['source'], ['source'], ['edg.electronics_model.test_netlist.TestFakeSource']),
                   net.blocks)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                           ['sink', 'device'], ['sink'], ['electronics_model.test_multipack_netlist.TestPackedSink']),
+                           ['sink', 'device'], ['sink'], ['edg.electronics_model.test_multipack_netlist.TestPackedSink']),
                   net.blocks)
 
   def test_invalid_netlist(self) -> None:

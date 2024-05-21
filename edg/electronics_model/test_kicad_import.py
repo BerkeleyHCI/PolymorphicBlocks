@@ -3,6 +3,7 @@ from typing import Type
 
 from .. import edgir
 from . import *
+from ..electronics_abstract_parts import Resistor, Capacitor
 
 
 # Note that all the below blocks are the same circuit (component values and connectivity)

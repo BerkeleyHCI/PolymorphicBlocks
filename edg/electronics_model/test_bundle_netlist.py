@@ -166,15 +166,15 @@ class BundleNetlistTestCase(unittest.TestCase):
 
     self.assertIn(NetBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R1', '', 'WeirdSpiController',
                            ['controller'], ['controller'],
-                           ['electronics_model.test_bundle_netlist.TestFakeSpiController']),
+                           ['edg.electronics_model.test_bundle_netlist.TestFakeSpiController']),
                   net.blocks)
     self.assertIn(NetBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R2', '', 'WeirdSpiPeripheral',
                            ['peripheral1'], ['peripheral1'],
-                           ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']),
+                           ['edg.electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']),
                   net.blocks)
     self.assertIn(NetBlock('Resistor_SMD:R_Array_Concave_2x0603', 'R3', '', 'WeirdSpiPeripheral',
                            ['peripheral2'], ['peripheral2'],
-                           ['electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']),
+                           ['edg.electronics_model.test_bundle_netlist.TestFakeSpiPeripheral']),
                   net.blocks)
 
   def test_uart_netlist(self) -> None:
@@ -195,10 +195,10 @@ class BundleNetlistTestCase(unittest.TestCase):
       TransformUtil.Path.empty().append_block('b').append_port('port', 'tx'),
     ]), net.nets)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '1k',
-                           ['a'], ['a'], ['electronics_model.test_bundle_netlist.TestFakeUartBlock']),
+                           ['a'], ['a'], ['edg.electronics_model.test_bundle_netlist.TestFakeUartBlock']),
                   net.blocks)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '1k',
-                           ['b'], ['b'], ['electronics_model.test_bundle_netlist.TestFakeUartBlock']),
+                           ['b'], ['b'], ['edg.electronics_model.test_bundle_netlist.TestFakeUartBlock']),
                   net.blocks)
 
   def test_can_netlist(self) -> None:
@@ -223,11 +223,11 @@ class BundleNetlistTestCase(unittest.TestCase):
       TransformUtil.Path.empty().append_block('node3').append_port('port', 'canl'),
     ]), net.nets)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R1', '', '120',
-                           ['node1'], ['node1'], ['electronics_model.test_bundle_netlist.TestFakeCanBlock']),
+                           ['node1'], ['node1'], ['edg.electronics_model.test_bundle_netlist.TestFakeCanBlock']),
                   net.blocks)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R2', '', '120',
-                           ['node2'], ['node2'], ['electronics_model.test_bundle_netlist.TestFakeCanBlock']),
+                           ['node2'], ['node2'], ['edg.electronics_model.test_bundle_netlist.TestFakeCanBlock']),
                   net.blocks)
     self.assertIn(NetBlock('Resistor_SMD:R_0603_1608Metric', 'R3', '', '120',
-                           ['node3'], ['node3'], ['electronics_model.test_bundle_netlist.TestFakeCanBlock']),
+                           ['node3'], ['node3'], ['edg.electronics_model.test_bundle_netlist.TestFakeCanBlock']),
                   net.blocks)
