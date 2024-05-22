@@ -775,7 +775,7 @@ class Compiler private (
     }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
-    val subblockProgress = progress / block.getBlocks.size
+    val subblockProgress = progress / (block.getBlocks.size + 1)
     currentProgress += subblockProgress
     progressFn.foreach(_(currentProgress))
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
