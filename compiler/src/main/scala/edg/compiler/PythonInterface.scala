@@ -134,8 +134,9 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
   * This invokes "python -m edg.hdl_server", using either the local or global (pip) module as available.
   */
 class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] = Seq()) {
-  val isSubmoduled = pythonPaths.map { pythonPath => // check if submoduled, if so prepend the submodule name
-    new File(new File(pythonPath), "PolymorphicBlocks/edg/hdl_server/__init__.py").exists()
+  val submoduleSearchPaths = if (pythonPaths.nonEmpty) pythonPaths else Seq(".")
+  val isSubmoduled = submoduleSearchPaths.map { searchPath => // check if submoduled, if so prepend the submodule name
+    new File(new File(searchPath), "PolymorphicBlocks/edg/hdl_server/__init__.py").exists()
   }.exists(identity)
   private val packageName = if (isSubmoduled) {
     "PolymorphicBlocks.edg.hdl_server"
