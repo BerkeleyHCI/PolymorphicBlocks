@@ -134,7 +134,13 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
   * This invokes "python -m edg.hdl_server", using either the local or global (pip) module as available.
   */
 class PythonInterface(pythonPaths: Seq[String], pythonInterpreter: String = "python") {
-  val command = Seq(pythonInterpreter, "-u", "-m", "edg.hdl_server")
+  // check if submoduled, if so prepend the submodule name
+  val packageName = if (new File("PolymorphicBlocks/edg/hdl_server/__init__.py").exists()) {
+    "PolymorphicBlocks.edg.hdl_server"
+  } else {
+    "edg.hdl_server"
+  }
+  val command = Seq(pythonInterpreter, "-u", "-m", packageName)
   protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
     edgrpc.HdlResponse,
     pythonPaths,
