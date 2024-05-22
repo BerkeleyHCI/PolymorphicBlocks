@@ -141,7 +141,8 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
       CompilerError.Unelaborated(
         ElaborateRecord.ExpandBlock(
           DesignPath() + "source" + "inner",
-          ElemBuilder.LibraryPath("sourceBlock")
+          ElemBuilder.LibraryPath("sourceBlock"),
+          0.5f
         ),
         Set()
       )
@@ -160,7 +161,8 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
       CompilerError.Unelaborated(
         ElaborateRecord.ExpandBlock(
           DesignPath() + "source" + "inner",
-          ElemBuilder.LibraryPath("sourceBlock")
+          ElemBuilder.LibraryPath("sourceBlock"),
+          0.5f
         ),
         Set()
       )
@@ -187,7 +189,8 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
       CompilerError.Unelaborated(
         ElaborateRecord.ExpandBlock(
           DesignPath() + "source" + "inner",
-          ElemBuilder.LibraryPath("sourceBlock")
+          ElemBuilder.LibraryPath("sourceBlock"),
+          0.5f
         ),
         Set()
       )

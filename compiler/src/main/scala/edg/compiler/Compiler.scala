@@ -19,9 +19,10 @@ object ElaborateRecord {
   sealed trait ElaborateDependency extends ElaborateRecord // an elaboration dependency source
 
   // step 1/2 for blocks: replaces library reference blocks with the concrete block from the library
-  case class ExpandBlock(blockPath: DesignPath, blockClass: ref.LibraryPath) extends ElaborateTask
+  // progress defined as the amount of progress done when the block and its entire subtree are fully compiled
+  case class ExpandBlock(blockPath: DesignPath, blockClass: ref.LibraryPath, progress: Float) extends ElaborateTask
   // step 2/2 for blocks, when generators are ready: processes the subtree (including connects and assigns)
-  case class Block(blockPath: DesignPath) extends ElaborateTask
+  case class Block(blockPath: DesignPath, progress: Float) extends ElaborateTask
   case class Link(linkPath: DesignPath) extends ElaborateTask
   case class LinkArray(linkPath: DesignPath) extends ElaborateTask
 
@@ -132,16 +133,19 @@ class Compiler private (
     val library: edg.wir.Library,
     val refinements: Refinements,
     val partial: PartialCompile,
-    initialize: Boolean
+    initialize: Boolean,
+    progressFn: Option[Float => Unit],
+    var currentProgress: Float
 ) {
   // public constructor that does not expose init, which is internal only
   def this(
       inputDesignPb: schema.Design,
       library: edg.wir.Library,
       refinements: Refinements = Refinements(),
-      partial: PartialCompile = PartialCompile()
+      partial: PartialCompile = PartialCompile(),
+      progressFn: Option[Float => Unit] = None
   ) = {
-    this(inputDesignPb, library, refinements, partial, true)
+    this(inputDesignPb, library, refinements, partial, true, progressFn, 0.0f)
   }
 
   // Working design tree data structure
@@ -171,7 +175,7 @@ class Compiler private (
       constProp.addAssignEqual(path.asIndirect, source.asIndirect, DesignPath(), "path refinement", forced = true)
     }
 
-    elaboratePending.addNode(ElaborateRecord.Block(DesignPath()), Seq()) // seed with root
+    elaboratePending.addNode(ElaborateRecord.Block(DesignPath(), 1.0f), Seq()) // seed with root
 
     // this is done inside expandBlock which isn't called for the root
     constProp.addAssignValue(IndirectDesignPath() + IndirectStep.Name, TextValue(""), DesignPath(), "name")
@@ -198,7 +202,15 @@ class Compiler private (
   // Creates a new copy of this compiler including all the work done already.
   // Useful for design space exploration, where the non-search portions of the design have been compiled.
   def fork(additionalRefinements: Refinements = Refinements(), partial: PartialCompile = PartialCompile()): Compiler = {
-    val cloned = new Compiler(inputDesignPb, library, refinements ++ additionalRefinements, partial, initialize = false)
+    val cloned = new Compiler(
+      inputDesignPb,
+      library,
+      refinements ++ additionalRefinements,
+      partial,
+      initialize = false,
+      progressFn,
+      currentProgress
+    )
     cloned.root = root.cloned
     cloned.elaboratePending.initFrom(elaboratePending)
     cloned.constProp.initFrom(constProp)
@@ -549,7 +561,7 @@ class Compiler private (
   // a separate phase that (for generators) may be gated on additional parameters.
   // Handles class type refinements and adds default parameters and class-based value refinements
   // For the generator, this will be a skeleton block.
-  protected def expandBlock(path: DesignPath): Unit = {
+  protected def expandBlock(path: DesignPath, progress: Float): Unit = {
     val block = resolveBlock(path).asInstanceOf[wir.BlockLibrary]
 
     val prerefineBlockPb = library.getBlock(block.target, block.mixins) match {
@@ -647,7 +659,7 @@ class Compiler private (
         }
       case _ => Seq()
     }
-    elaboratePending.addNode(ElaborateRecord.Block(path), deps)
+    elaboratePending.addNode(ElaborateRecord.Block(path, progress), deps)
   }
 
   // Given a link library at some path, expand it and return the instantiated block.
@@ -754,7 +766,7 @@ class Compiler private (
   /** Elaborate a block, mainly processing its internal blocks, links, and connected and parameter constraints. The
     * block should already have had its interface (ports and parameters) expanded.
     */
-  protected def elaborateBlock(path: DesignPath): Unit = {
+  protected def elaborateBlock(path: DesignPath, progress: Float): Unit = {
     val block = resolveBlock(path).asInstanceOf[wir.Block]
 
     block match {
@@ -763,9 +775,16 @@ class Compiler private (
     }
 
     // Queue up sub-trees that need elaboration - needs to be post-generate for generators
+    val subblockProgress = progress / block.getBlocks.size
+    currentProgress += subblockProgress
+    progressFn.foreach(_(currentProgress))
     block.getBlocks.foreach { case (innerBlockName, innerBlock) =>
       elaboratePending.addNode(
-        ElaborateRecord.ExpandBlock(path + innerBlockName, innerBlock.asInstanceOf[BlockLibrary].target),
+        ElaborateRecord.ExpandBlock(
+          path + innerBlockName,
+          innerBlock.asInstanceOf[BlockLibrary].target,
+          subblockProgress
+        ),
         Seq()
       )
     }
@@ -1615,15 +1634,15 @@ class Compiler private (
       readyList.foreach { elaborateRecord =>
         try {
           elaborateRecord match {
-            case elaborateRecord @ ElaborateRecord.ExpandBlock(blockPath, blockClass) =>
+            case elaborateRecord @ ElaborateRecord.ExpandBlock(blockPath, blockClass, blockProgress) =>
               if (partial.blocks.contains(blockPath) || partial.classes.contains(blockClass)) {
                 partialCompileIgnoredRecords.add(elaborateRecord)
               } else {
-                expandBlock(blockPath)
+                expandBlock(blockPath, blockProgress)
                 elaboratePending.setValue(elaborateRecord, None)
               }
-            case elaborateRecord @ ElaborateRecord.Block(blockPath) =>
-              elaborateBlock(blockPath)
+            case elaborateRecord @ ElaborateRecord.Block(blockPath, blockProgress) =>
+              elaborateBlock(blockPath, blockProgress)
               elaboratePending.setValue(elaborateRecord, None)
             case elaborateRecord @ ElaborateRecord.Link(linkPath) =>
               elaborateLink(linkPath)

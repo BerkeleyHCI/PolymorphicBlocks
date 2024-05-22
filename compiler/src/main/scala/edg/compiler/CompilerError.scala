@@ -21,9 +21,9 @@ object CompilerError {
     override def toIr: edgcompiler.ErrorRecord = {
       val missingStr = "missing " + missing.map(_.toString).mkString(", ")
       val (kind, path) = record match {
-        case ElaborateRecord.ExpandBlock(path, _) =>
+        case ElaborateRecord.ExpandBlock(path, _, _) =>
           (f"Uncompiled block, $missingStr", Some(path.asIndirect.toLocalPath))
-        case ElaborateRecord.Block(path) => (f"Uncompiled block, $missingStr", Some(path.asIndirect.toLocalPath))
+        case ElaborateRecord.Block(path, _) => (f"Uncompiled block, $missingStr", Some(path.asIndirect.toLocalPath))
         case ElaborateRecord.Link(path) => (f"Uncompiled link, $missingStr", Some(path.asIndirect.toLocalPath))
         case ElaborateRecord.LinkArray(path) =>
           (f"Uncompiled link array, $missingStr", Some(path.asIndirect.toLocalPath))
