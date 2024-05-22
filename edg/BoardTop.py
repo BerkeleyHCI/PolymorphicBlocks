@@ -1,4 +1,4 @@
-from electronics_lib import *
+from .parts import *
 
 
 class BaseBoardTop(DesignTop):

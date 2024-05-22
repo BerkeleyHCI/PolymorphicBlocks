@@ -3,10 +3,11 @@ import inspect
 from contextlib import suppress
 from typing import Type, Optional, Tuple
 
-from edg_core import Block, ScalaCompiler, CompiledDesign
-from electronics_model import NetlistBackend, SvgPcbBackend
-from electronics_model.RefdesRefinementPass import RefdesRefinementPass
-from electronics_model.BomBackend import GenerateBom
+from .core import Block, ScalaCompiler, CompiledDesign
+from .electronics_model.NetlistBackend import NetlistBackend  # imported separately b/c mypy confuses with the modules
+from .electronics_model.SvgPcbBackend import SvgPcbBackend
+from .electronics_model.RefdesRefinementPass import RefdesRefinementPass
+from .electronics_model.BomBackend import GenerateBom
 
 
 def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]]) -> CompiledDesign:
@@ -41,8 +42,8 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
       raw_file.write(compiled.design.SerializeToString())
 
   if compiled.errors:
-    import edg_core
-    raise edg_core.ScalaCompilerInterface.CompilerCheckError(f"error during compilation:\n{compiled.errors_str()}")
+    from . import core
+    raise core.ScalaCompilerInterface.CompilerCheckError(f"error during compilation:\n{compiled.errors_str()}")
 
   netlist_all = NetlistBackend().run(compiled)
   netlist_refdes = NetlistBackend().run(compiled, {'RefdesMode': 'refdes'})

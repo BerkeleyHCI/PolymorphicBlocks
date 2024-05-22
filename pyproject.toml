@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "edg"
-version = "0.0.1"
+version = "0.1.0"
 description = "Hardware description language for circuit boards"
 readme = "README.md"
 authors = [{ name = "Ducky", email = "richard.lin@berkeley.edu" }]
@@ -25,12 +25,10 @@ dependencies = [
 requires-python = ">=3.9"
 
 [tool.setuptools]
-packages = ["edgir", "edgrpc", "edg_core", "edg_hdl_server", "electronics_model", "electronics_abstract_parts", "electronics_lib", "edg"]
+packages = ["edg.edgir", "edg.edgrpc", "edg.core", "edg.hdl_server", "edg.electronics_model", "edg.abstract_parts", "edg.parts", "edg"]
 
 [tool.setuptools.package-data]
-edg_core = ["resources/edg-compiler-precompiled.jar"]
-electronics_abstract_parts = ["resources/*.kicad_sch"]
-electronics_lib = ["resources/Pruned_JLCPCB SMT Parts Library(20220419).csv", "resources/*.kicad_sch"]
+edg = ["core/resources/edg-compiler-precompiled.jar", "abstract_parts/resources/*.kicad_sch", "parts/resources/Pruned_JLCPCB SMT Parts Library(20220419).csv", "parts/resources/*.kicad_sch"]
 
 [project.urls]
 Homepage = "https://github.com/BerkeleyHCI/PolymorphicBlocks"

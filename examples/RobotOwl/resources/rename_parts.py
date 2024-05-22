@@ -5,7 +5,7 @@ import sexpdata  # type: ignore
 
 # this script must be placed and run in the project root directory, not within the examples folder
 # otherwise, this import fails since the root path is incorrect
-from electronics_model.KiCadSchematicParser import group_by_car, parse_symbol
+from edg.electronics_model.KiCadSchematicParser import group_by_car, parse_symbol
 
 # a quick'n'dirty script to rename refdeses in a KiCad PCB according to the remap table below
 # used since SVG-PCB (currently) doesn't seem to have a way to programmatically generate refdes
