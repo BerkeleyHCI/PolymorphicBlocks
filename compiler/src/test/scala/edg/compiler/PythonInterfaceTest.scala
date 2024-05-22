@@ -12,7 +12,7 @@ class PythonInterfaceTest extends AnyFlatSpec {
     val compiledDir = new File(getClass.getResource("").getPath)
     // above returns compiler/target/scala-2.xx/test-classes/edg/compiler, get the root repo dir
     val repoDir = compiledDir.getParentFile.getParentFile.getParentFile.getParentFile.getParentFile.getParentFile
-    val pyIf = new PythonInterface(Seq(repoDir.getAbsolutePath))
+    val pyIf = new PythonInterface(pythonPaths = Seq(repoDir.getAbsolutePath))
     pyIf.indexModule("edg.core").getClass should equal(classOf[Errorable.Success[Seq[LibraryPath]]])
     pyIf.shutdown() should equal(0)
   }
