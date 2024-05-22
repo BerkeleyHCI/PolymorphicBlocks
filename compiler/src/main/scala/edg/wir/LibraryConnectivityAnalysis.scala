@@ -7,11 +7,11 @@ import edgir.elem.elem
 object LibraryConnectivityAnalysis {
   // Shared library path to the base PortBridge class
   val portBridge =
-    ref.LibraryPath(target = Some(ref.LocalStep(step = ref.LocalStep.Step.Name("edg_core.PortBlocks.PortBridge"))))
+    ref.LibraryPath(target = Some(ref.LocalStep(step = ref.LocalStep.Step.Name("edg.core.PortBlocks.PortBridge"))))
   val portBridges = Set( // TODO this currently is a hack to avoid proper (multiple-level) subclass resolution
     portBridge,
     ref.LibraryPath(target =
-      Some(ref.LocalStep(step = ref.LocalStep.Step.Name("electronics_model.CircuitBlock.CircuitPortBridge")))
+      Some(ref.LocalStep(step = ref.LocalStep.Step.Name("edg.electronics_model.CircuitBlock.CircuitPortBridge")))
     )
   )
   val portBridgeOuterPort = "outer_port"
