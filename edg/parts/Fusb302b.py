@@ -62,7 +62,7 @@ class Fusb302b(Interface, Block):
 
     self.cc = self.Export(self.ic.cc)
     self.i2c = self.Export(self.ic.i2c)
-    self.int = self.Export(self.ic.int_n)
+    self.int = self.Export(self.ic.int_n, optional=True)
 
   def contents(self) -> None:
     super().contents()
