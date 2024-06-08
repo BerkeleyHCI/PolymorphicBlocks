@@ -146,7 +146,6 @@ class TableFet(FetStandardFootprint, BaseTableFet, PartsTableFootprintSelector):
       self.get(self.drain_voltage).fuzzy_in(row[self.VDS_RATING]) and \
       self.get(self.drain_current).fuzzy_in(row[self.IDS_RATING]) and \
       self.get(self.gate_voltage).fuzzy_in(row[self.VGS_RATING]) and \
-      self.get(self.gate_drive).fuzzy_in(row[self.VGS_DRIVE]) and \
       row[self.RDS_ON].fuzzy_in(self.get(self.rds_on)) and \
       row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])
@@ -209,6 +208,7 @@ class TableSwitchFet(SwitchFet, FetStandardFootprint, BaseTableFet, PartsTableFo
       self.get(self.drain_voltage).fuzzy_in(row[self.VDS_RATING]) and \
       self.get(self.drain_current).fuzzy_in(row[self.IDS_RATING]) and \
       self.get(self.gate_voltage).fuzzy_in(row[self.VGS_RATING]) and \
+      self.get(self.gate_drive).fuzzy_in(row[self.VGS_DRIVE]) and \
       row[self.RDS_ON].fuzzy_in(self.get(self.rds_on)) and \
       row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])
