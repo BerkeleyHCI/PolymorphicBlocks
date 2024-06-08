@@ -3,6 +3,45 @@ import unittest
 from edg import *
 
 
+class PmosHighSideSwitch(PowerSwitch):
+  """Single PMOS switch - this eventually should be combined with HighSideSwitch to be smart
+  if the voltage is within limits"""
+  @init_in_parent
+  def __init__(self, frequency: RangeLike = RangeExpr.ZERO, max_rds: FloatLike = 1*Ohm) -> None:
+    super().__init__()
+
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+
+    self.control = self.Port(DigitalSink.empty(), [Input])
+    self.output = self.Port(VoltageSource.empty(), [Output])
+
+    self.frequency = self.ArgParameter(frequency)
+    self.max_rds = self.ArgParameter(max_rds)
+
+  def contents(self):
+    super().contents()
+
+    self.drv = self.Block(SwitchFet.PFet(
+      drain_voltage=self.pwr.link().voltage,
+      drain_current=self.output.link().current_drawn,
+      gate_voltage=self.control.link().voltage,  # TODO needs to be diff from pwr.voltage
+      rds_on=(0, self.max_rds),
+      gate_charge=(0, float('inf')),  # TODO size on turnon time
+      power=(0, 0) * Watt,
+      frequency=self.frequency,
+      drive_current=self.control.link().current_limits  # TODO this is kind of a max drive current
+    ))
+
+    self.connect(self.pwr, self.drv.source.adapt_to(VoltageSink(
+      current_draw=self.output.link().current_drawn
+    )))
+    self.connect(self.output, self.drv.drain.adapt_to(VoltageSource(
+      voltage_out=self.pwr.link().voltage,
+      current_limits=self.drv.actual_drain_current_rating,
+    )))
+    self.connect(self.control, self.drv.gate.adapt_to(DigitalSink()))
+
+
 class IotDisplay(JlcBoardTop):
   """Battery-powered IoT e-paper display with deep sleep.
   """
@@ -71,8 +110,9 @@ class IotDisplay(JlcBoardTop):
         imp.Block(FootprintToucbPad('edg:Symbol_LemurSolid'))
       )
 
-      (self.epd_gate, ), _ = self.chain(self.mcu.gpio.request('epd_gate'), imp.Block(HighSideSwitch(pull_resistance=100*kOhm(tol=0.05))))
-      (self.mem_gate, ), _ = self.chain(self.mcu.gpio.request('mem_gate'), imp.Block(HighSideSwitch(pull_resistance=100*kOhm(tol=0.05))))
+      gate_model = PmosHighSideSwitch(max_rds=0.1*Ohm)
+      (self.epd_gate, ), _ = self.chain(self.mcu.gpio.request('epd_gate'), imp.Block(gate_model))
+      (self.mem_gate, ), _ = self.chain(self.mcu.gpio.request('mem_gate'), imp.Block(gate_model))
 
     # DISPLAY POWER DOMAIN
     with self.implicit_connect(
