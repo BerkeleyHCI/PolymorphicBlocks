@@ -26,11 +26,10 @@ class IotDisplay(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
+      (self.reg_3v3, self.tp_3v3), _ = self.chain(
         self.vbat,
         imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
-        self.Block(VoltageTestPoint()),
-        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
+        self.Block(VoltageTestPoint())
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
@@ -72,26 +71,41 @@ class IotDisplay(JlcBoardTop):
         imp.Block(FootprintToucbPad('edg:Symbol_LemurSolid'))
       )
 
-      # DISPLAY
+      (self.epd_gate, ), _ = self.chain(self.mcu.gpio.request('epd_gate'), imp.Block(HighSideSwitch(pull_resistance=100*kOhm(tol=0.05))))
+      (self.mem_gate, ), _ = self.chain(self.mcu.gpio.request('mem_gate'), imp.Block(HighSideSwitch(pull_resistance=100*kOhm(tol=0.05))))
+
+    # DISPLAY POWER DOMAIN
+    with self.implicit_connect(
+            ImplicitConnect(self.epd_gate.output, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
       self.epd = imp.Block(Waveshare_Epd())
-      self.connect(self.v3v3, self.epd.pwr)
       (self.tp_epd, ), _ = self.chain(self.mcu.spi.request('epd'), imp.Block(SpiTestPoint('epd')), self.epd.spi)
       (self.tp_erst, ), _ = self.chain(self.mcu.gpio.request('epd_rst'), imp.Block(DigitalTestPoint('rst')), self.epd.reset)
       (self.tp_dc, ), _ = self.chain(self.mcu.gpio.request('epd_dc'), imp.Block(DigitalTestPoint('dc')), self.epd.dc)
       (self.tp_epd_cs, ), _ = self.chain(self.mcu.gpio.request('epd_cs'), imp.Block(DigitalTestPoint('cs')), self.epd.cs)
       (self.tp_busy, ), _ = self.chain(self.mcu.gpio.request('epd_busy'), imp.Block(DigitalTestPoint('bsy')), self.epd.busy)
 
-      # MISC
+    # MEMORY POWER DOMAIN
+    with self.implicit_connect(
+            ImplicitConnect(self.mem_gate.output, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.mem_spi = self.mcu.spi.request('sd')
       self.sd = imp.Block(SdCard())
-      (self.tp_sd, ), _ = self.chain(self.mcu.spi.request('sd'), imp.Block(SpiTestPoint('sd')), self.sd.spi)
-      (self.tp_sd_cs, ), _ = self.chain(self.mcu.gpio.request('sd_cs'), imp.Block(DigitalTestPoint('cs')), self.sd.cs)
+      self.flash = imp.Block(W25q(Range.from_lower(16*1024*1024)))  # at least 16Mbit
+      (self.tp_sd, ), _ = self.chain(self.mem_spi, imp.Block(SpiTestPoint('sd')))
+      self.connect(self.mem_spi, self.sd.spi, self.flash.spi)
+      (self.tp_sd_cs, ), _ = self.chain(self.mcu.gpio.request('sd_cs'), imp.Block(DigitalTestPoint('sd_cs')), self.sd.cs)
+      (self.tp_fl_cs, ), _ = self.chain(self.mcu.gpio.request('fl_cs'), imp.Block(DigitalTestPoint('fl_cs')), self.flash.cs)
+
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
         (['reg_3v3'], Tps54202h),
-        (['batt', 'conn'], JstPhKVertical),
+        (['batt', 'conn'], JstPhKHorizontal),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
@@ -123,6 +137,7 @@ class IotDisplay(JlcBoardTop):
 
         (['reg_3v3', 'power_path', 'inductor', 'part'], "SWPA4030S330MT"),
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 10e6)),
+        (['reg_3v3', 'fb', 'impedance'], Range(20000.0, 100000.0))
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),

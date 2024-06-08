@@ -83,7 +83,7 @@ class Waveshare_Epd(EInk, GeneratorBlock):
         super().__init__()
         self.device = self.Block(Waveshare_Epd_Device())
         self.gnd = self.Export(self.device.vss, [Common])
-        self.pwr = self.Export(self.device.vdd)
+        self.pwr = self.Export(self.device.vdd, [Power])
         self.reset = self.Export(self.device.rst)
         self.spi = self.Export(self.device.spi)
         self.cs = self.Export(self.device.csb)
