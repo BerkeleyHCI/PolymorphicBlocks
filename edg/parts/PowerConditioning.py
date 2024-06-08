@@ -276,8 +276,8 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), rds_on: RangeLike = (0, 0.1) * Ohm):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr_in = self.Port(VoltageSink.empty())
-    self.pwr_out = self.Port(VoltageSource.empty())
+    self.pwr_in = self.Port(VoltageSink.empty(), [Input])
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])
 
     self.gate_resistor = self.ArgParameter(gate_resistor)
     self.rds_on = self.ArgParameter(rds_on)

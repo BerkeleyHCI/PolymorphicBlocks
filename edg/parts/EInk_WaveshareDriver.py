@@ -115,10 +115,13 @@ class Waveshare_Epd(EInk, GeneratorBlock):
 
         # current limit based on 200mA saturation current of reference inductor
         self.boost = self.Block(EInkBoostPowerPath(20*Volt(tol=0), (0, 200)*mAmp, 68*uHenry(tol=0.2),
-                                                   1*uFarad(tol=0.2), 4.7*uFarad(tol=0.2), 2.2*Ohm(tol=0.01)))
+                                                   4.7*uFarad(tol=0.2), 4.7*uFarad(tol=0.2), 3*Ohm(tol=0.01)))
         self.connect(self.gnd, self.boost.gnd)
         self.connect(self.pwr, self.boost.pwr_in)
         self.connect(self.device.gdr, self.boost.gate)
+        self.gate_pdr = self.Block(Resistor(10*kOhm(tol=0.05)))
+        self.connect(self.gate_pdr.a, self.boost.gate)
+        self.connect(self.gate_pdr.b.adapt_to(Ground()), self.gnd)
         self.connect(self.device.rese, self.boost.isense)
         self.connect(self.boost.pos_out, self.device.prevgh)
         self.connect(self.boost.neg_out, self.device.prevgl)

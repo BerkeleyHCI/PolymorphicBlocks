@@ -65,8 +65,9 @@ class IotDisplay(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.reg_3v3, self.tp_3v3), _ = self.chain(
+      (self.vbat_prot, self.reg_3v3, self.tp_3v3), _ = self.chain(
         self.vbat,
+        imp.Block(PmosReverseProtection()),
         imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint())
       )
@@ -177,7 +178,8 @@ class IotDisplay(JlcBoardTop):
 
         (['reg_3v3', 'power_path', 'inductor', 'part'], "SWPA4030S330MT"),
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 10e6)),
-        (['reg_3v3', 'fb', 'impedance'], Range(20000.0, 100000.0))
+        (['reg_3v3', 'fb', 'impedance'], Range(20000.0, 100000.0)),
+        (['epd', 'boost', 'sense', 'require_basic_part'], False),  # 3R is not a basic part
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
