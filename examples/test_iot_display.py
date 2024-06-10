@@ -55,12 +55,11 @@ class IotDisplay(JlcBoardTop):
     self.usb = self.Block(UsbCReceptacle(current_limits=(0, 3)*Amp))
     self.batt = self.Block(LipoConnector(voltage=BATTERY_VOLTAGE, actual_voltage=BATTERY_VOLTAGE))  # 2-6 AA
 
-    self.vbat = self.connect(self.batt.pwr)
     self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
       self.usb.gnd, self.batt.gnd)
     self.gnd = self.connect(self.gnd_merge.pwr_out)
 
-    self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.batt.pwr)
+    self.tp_pwr = self.Block(VoltageTestPoint("batt")).connected(self.batt.pwr)
     self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
 
     # POWER
@@ -68,11 +67,12 @@ class IotDisplay(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.vbat_prot, self.reg_3v3, self.tp_3v3), _ = self.chain(
-        self.vbat,
+        self.batt.pwr,
         imp.Block(PmosReverseProtection()),
         imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint())
       )
+      self.vbat = self.connect(self.vbat_prot.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       self.vbat_sense_gate = imp.Block(HighSideSwitch())
@@ -140,7 +140,7 @@ class IotDisplay(JlcBoardTop):
       (self.tp_sd, ), _ = self.chain(self.mem_spi, imp.Block(SpiTestPoint('sd')))
       self.connect(self.mem_spi, self.sd.spi, self.flash.spi)
       (self.tp_sd_cs, ), _ = self.chain(self.mcu.gpio.request('sd_cs'), imp.Block(DigitalTestPoint('sd_cs')), self.sd.cs)
-      (self.tp_fl_cs, ), _ = self.chain(self.mcu.gpio.request('fl_cs'), imp.Block(DigitalTestPoint('fl_cs')), self.flash.cs)
+      self.connect(self.mcu.gpio.request('fl_cs'), self.flash.cs)  # no test point, clip the SOIC
 
 
   def refinements(self) -> Refinements:
@@ -165,6 +165,7 @@ class IotDisplay(JlcBoardTop):
           'epd.miso=NC',
           'epd_rst=8',
           'epd_busy=9',
+          'epd_gate=10',
           'touch_duck=GPIO13',
           'touch_lemur=GPIO14',
 
@@ -175,6 +176,8 @@ class IotDisplay(JlcBoardTop):
           'sd.sck=17',
           'sd.mosi=18',
           'sd_cs=19',
+          'fl_cs=20',
+          'mem_gate=23',
         ]),
         (['mcu', 'programming'], 'uart-auto-button'),
 
