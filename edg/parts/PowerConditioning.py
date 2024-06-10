@@ -288,12 +288,11 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
     self.fet = self.Block(Fet.PFet(
       drain_voltage=(0, self.pwr_out.link().voltage.upper()),
       drain_current=output_current_draw,
-      gate_voltage=(- self.pwr_out.link().voltage.upper(), self.pwr_out.link().voltage.upper()),
+      gate_voltage=(-self.pwr_out.link().voltage.upper(), self.pwr_out.link().voltage.upper()),
       rds_on=self.rds_on,
     ))
 
-    self.res = self.Block(Resistor(self.gate_resistor))
-    # TODO: generate zener diode for high voltage applications
+    # TODO: generate zener diode + resistor for high voltage applications
     #  self.diode = self.Block(ZenerDiode(self.clamp_voltage))
 
     self.import_kicad(
