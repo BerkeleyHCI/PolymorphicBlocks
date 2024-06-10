@@ -92,8 +92,8 @@ class IotDisplay(JlcBoardTop):
 
       # DEBUGGING UI ELEMENTS
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
-      (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
-      (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.Blue)), self.mcu.gpio.request('ledb'))
+      (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Yellow)), self.mcu.gpio.request('ledg'))
+      (self.ledb, ), _ = self.chain(imp.Block(IndicatorLed(Led.White)), self.mcu.gpio.request('ledb'))
       (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw'))
 
       # SENSING
@@ -185,6 +185,7 @@ class IotDisplay(JlcBoardTop):
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 10e6)),
         (['reg_3v3', 'fb', 'impedance'], Range(20000.0, 100000.0)),
         (['epd', 'boost', 'sense', 'require_basic_part'], False),  # 3R is not a basic part
+        (['epd', 'boost', 'inductor', 'part'], "CBC3225T680KR")  # automated selection OOS
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
