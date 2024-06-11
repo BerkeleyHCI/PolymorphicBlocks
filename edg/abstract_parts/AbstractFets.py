@@ -125,7 +125,7 @@ class BaseTableFet(Fet):
   VDS_RATING = PartsTableColumn(Range)
   IDS_RATING = PartsTableColumn(Range)
   VGS_RATING = PartsTableColumn(Range)
-  VGS_DRIVE = PartsTableColumn(Range)
+  VGS_DRIVE = PartsTableColumn(Range)  # negative for PMOS
   RDS_ON = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   GATE_CHARGE = PartsTableColumn(Range)  # units of C

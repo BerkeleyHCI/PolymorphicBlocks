@@ -427,6 +427,10 @@ class Fcml(JlcBoardTop):
         (['conv', 'power_path', 'inductor', 'part'], 'NR8040T4R7N'),  # peg to prior part selection
         (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['reg_vgate', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+
+        # a bugfix for the SPI flash current draw increased the current beyond the USB port's capabilities
+        # this hack-patch keeps the example building
+        (['vusb', 'current_drawn'], Range(0.0311, 0.500)),
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified

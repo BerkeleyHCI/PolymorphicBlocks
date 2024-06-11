@@ -22,7 +22,7 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
     super().__init__()
     self.vcc = self.Port(VoltageSink(
       voltage_limits=(2.7, 3.6)*Volt,  # relaxed range that goes up to 104MHz
-      current_draw=(0.001, 25)*uAmp  # typ. power down to max write / erase
+      current_draw=(0.001, 25)*mAmp  # typ. power down to max write / erase
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 

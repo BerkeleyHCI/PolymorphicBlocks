@@ -276,8 +276,8 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), rds_on: RangeLike = (0, 0.1) * Ohm):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr_in = self.Port(VoltageSink.empty())
-    self.pwr_out = self.Port(VoltageSource.empty())
+    self.pwr_in = self.Port(VoltageSink.empty(), [Input])
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])
 
     self.gate_resistor = self.ArgParameter(gate_resistor)
     self.rds_on = self.ArgParameter(rds_on)
@@ -288,12 +288,11 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
     self.fet = self.Block(Fet.PFet(
       drain_voltage=(0, self.pwr_out.link().voltage.upper()),
       drain_current=output_current_draw,
-      gate_voltage=(- self.pwr_out.link().voltage.upper(), self.pwr_out.link().voltage.upper()),
+      gate_voltage=(-self.pwr_out.link().voltage.upper(), self.pwr_out.link().voltage.upper()),
       rds_on=self.rds_on,
     ))
 
-    self.res = self.Block(Resistor(self.gate_resistor))
-    # TODO: generate zener diode for high voltage applications
+    # TODO: generate zener diode + resistor for high voltage applications
     #  self.diode = self.Block(ZenerDiode(self.clamp_voltage))
 
     self.import_kicad(
