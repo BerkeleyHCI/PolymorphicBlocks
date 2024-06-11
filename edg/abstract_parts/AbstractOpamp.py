@@ -50,7 +50,7 @@ class MultipackOpamp(Analog, MultipackBlock):
 class MultipackOpampGenerator(MultipackOpamp, GeneratorBlock):
   """Skeleton base class that provides scaffolding for common packed opamp definitions"""
   class OpampPorts(NamedTuple):
-    gnd: VoltageSink
+    gnd: Ground
     pwr: VoltageSink
     amps: List[Tuple[AnalogSink, AnalogSink, AnalogSource]]  # amp-, amp+, out
 
@@ -78,7 +78,7 @@ class MultipackOpampGenerator(MultipackOpamp, GeneratorBlock):
            self.get(self.inn.requested()) == self.get(self.out.requested()) == requested
     for i, (amp_neg, amp_pos, amp_out) in zip(requested, amp_ports.amps):
       self.connect(self.pwr.append_elt(VoltageSink.empty(), i), self.pwr_merge.pwr_ins.request(i))
-      self.connect(self.gnd.append_elt(VoltageSink.empty(), i), self.gnd_merge.pwr_ins.request(i))
+      self.connect(self.gnd.append_elt(Ground.empty(), i), self.gnd_merge.pwr_ins.request(i))
       self.connect(self.inn.append_elt(AnalogSink.empty(), i), amp_neg)
       self.connect(self.inp.append_elt(AnalogSink.empty(), i), amp_pos)
       self.connect(self.out.append_elt(AnalogSource.empty(), i), amp_out)

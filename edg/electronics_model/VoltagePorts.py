@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import *
 from ..core import *
-from .CircuitBlock import CircuitPortBridge, CircuitLink, CircuitPortAdapter
+from .CircuitBlock import CircuitPort, CircuitPortBridge, CircuitLink, CircuitPortAdapter
+from .GroundPort import Ground
 from .Units import Volt, Ohm
 
 if TYPE_CHECKING:
@@ -100,12 +101,6 @@ class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources
     self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
 
 
-CircuitLinkType = TypeVar('CircuitLinkType', bound=Link)
-class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
-  """Electrical connection that represents a single port into a single copper net"""
-  pass
-
-
 class VoltageBase(CircuitPort[VoltageLink]):
   link_type = VoltageLink
 
@@ -123,7 +118,7 @@ class VoltageSink(VoltageBase):
   bridge_type = VoltageSinkBridge
 
   @staticmethod
-  def from_gnd(gnd: VoltageSink, voltage_limits: RangeLike = RangeExpr.ALL,
+  def from_gnd(gnd: Ground, voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO) -> 'VoltageSink':
     return VoltageSink(
       voltage_limits=gnd.link().voltage + voltage_limits,

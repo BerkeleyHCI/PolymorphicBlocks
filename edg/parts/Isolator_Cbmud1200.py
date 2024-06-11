@@ -7,7 +7,7 @@ from .JlcPart import JlcPart
 class Cbmud1200l_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self):
     super().__init__()
-    self.gnd1 = self.Port(VoltageSink())  # can be any voltage
+    self.gnd1 = self.Port(Ground())
     self.vdd1 = self.Port(VoltageSink.from_gnd(
       self.gnd1,
       voltage_limits=(2.5, 5.5)*Volt,
@@ -21,7 +21,7 @@ class Cbmud1200l_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.via = self.Port(in_model)
     self.vib = self.Port(in_model)
 
-    self.gnd2 = self.Port(VoltageSink())  # can be any voltage
+    self.gnd2 = self.Port(Ground())
     self.vdd2 = self.Port(VoltageSink.from_gnd(  # assumed the same as vdd1 ratings
       self.gnd2,
       voltage_limits=(2.5, 5.5)*Volt,

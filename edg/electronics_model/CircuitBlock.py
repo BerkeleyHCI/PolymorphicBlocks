@@ -129,3 +129,11 @@ class CircuitLink(NetBaseBlock, Link):
   def contents(self):
     super().contents()
     self.net()
+
+
+CircuitLinkType = TypeVar('CircuitLinkType', bound=Link)
+class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
+  """Electrical connection that represents a single port into a single copper net"""
+  pass
+
+
