@@ -144,7 +144,7 @@ class JacdacEdgeConnector(Connector, JacdacSubcircuit, GeneratorBlock):
         self.is_power_provider = self.ArgParameter(is_power_provider)
 
         # ports for power source mode
-        self.gnd_src = self.Port(GroundSource.empty(), optional=True)
+        self.gnd_src = self.Port(Ground.empty(), optional=True)  # TODO REMOVE ME
         self.jd_pwr_src = self.Port(VoltageSource.empty(), optional=True)
 
         self.gnd_sink = self.Port(Ground.empty(), optional=True)

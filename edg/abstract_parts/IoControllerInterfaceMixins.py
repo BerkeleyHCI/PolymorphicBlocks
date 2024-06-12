@@ -93,11 +93,12 @@ class IoControllerGroundOut(BlockInterfaceMixin[IoController]):
     Multiple power pin mixins can be used on the same class, but only one gnd_out can be connected."""
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.gnd_out = self.Port(GroundSource.empty(), optional=True,
+        # TODO: REMOVE ME
+        self.gnd_out = self.Port(Ground.empty(), optional=True,
                                  doc="Ground for power output ports, when the device is acting as a power source")
 
 
-class IoControllerPowerOut(IoControllerGroundOut, BlockInterfaceMixin[IoController]):
+class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
     """IO controller mixin that provides an output of the IO controller's VddIO rail, commonly 3.3v."""
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -105,7 +106,7 @@ class IoControllerPowerOut(IoControllerGroundOut, BlockInterfaceMixin[IoControll
                                  doc="Power output port, typically of the device's Vdd or VddIO rail; must be used with gnd_out")
 
 
-class IoControllerUsbOut(IoControllerGroundOut, BlockInterfaceMixin[IoController]):
+class IoControllerUsbOut(BlockInterfaceMixin[IoController]):
     """IO controller mixin that provides an output of the IO controller's USB Vbus."""
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

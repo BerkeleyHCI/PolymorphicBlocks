@@ -11,7 +11,7 @@ class Battery(PowerSource):
     super().__init__()
 
     self.pwr = self.Port(VoltageSource.empty())  # set by subclasses
-    self.gnd = self.Port(GroundSource.empty())
+    self.gnd = self.Port(Ground.empty())
 
     self.voltage = self.ArgParameter(voltage)
     self.capacity = self.ArgParameter(capacity)

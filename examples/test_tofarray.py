@@ -8,7 +8,7 @@ class CanConnector(Connector):
     super().__init__()
 
     self.pwr = self.Port(VoltageSource.empty(), optional=True)
-    self.gnd = self.Port(GroundSource.empty())
+    self.gnd = self.Port(Ground.empty())
     self.differential = self.Port(CanDiffPort.empty(), [Output])
 
     self.conn = self.Block(PassiveConnector())

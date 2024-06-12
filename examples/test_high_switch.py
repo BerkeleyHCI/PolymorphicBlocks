@@ -20,7 +20,7 @@ class CalSolCanBlock(Block):
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.can_pwr = self.Port(VoltageSource.empty(), optional=True)
-    self.can_gnd = self.Port(GroundSource.empty(), optional=True)
+    self.can_gnd = self.Port(Ground.empty(), optional=True)
 
     self.controller = self.Port(CanTransceiverPort.empty(), [Input])
     self.can = self.Port(CanDiffPort.empty(), optional=True)
