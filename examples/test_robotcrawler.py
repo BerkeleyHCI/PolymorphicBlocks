@@ -45,6 +45,7 @@ class RobotCrawlerSpec(BoardTop):
     for i in range(self.SERVO_CAM_COUNT):
       self.servos_cam[str(i)] = self.Block(ServoFeedbackConnector())
 
+
 class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
   """Implementation of the crawler robot, that implements what is needed to connect the interface blocks
   as well as optional additional blocks.

@@ -111,7 +111,7 @@ class IndicatorLedArray(Light, GeneratorBlock):
                current_draw: RangeLike = (1, 10) * mAmp):
     super().__init__()
     self.signals = self.Port(Vector(DigitalSink.empty()), [InOut])
-    self.gnd = self.Port(VoltageSink.empty(), [Common])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
     self.color = self.ArgParameter(color)
     self.current_draw = self.ArgParameter(current_draw)
