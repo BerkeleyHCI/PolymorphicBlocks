@@ -245,7 +245,6 @@ class Nucleo_F303k8(IoControllerUsbOut, IoControllerPowerOut, IoController, Stm3
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._vdd_model())
 
-    self.gnd_out.init_from(GroundSource())
     self.vusb_out.init_from(VoltageSource(
       voltage_out=(4.75 - 0.58, 5.1) * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
       current_limits=(0, 0.5) * Amp  # max USB draw  # TODO higher from external power

@@ -86,18 +86,6 @@ class IoControllerBle(BlockInterfaceMixin[BaseIoController]):
     """Mixin indicating this IoController has programmable Bluetooth LE. Does not expose any ports."""
 
 
-@non_library
-class IoControllerGroundOut(BlockInterfaceMixin[IoController]):
-    """Base mixin for an IoController that can act as a power output (e.g. dev boards),
-    this only provides the ground source pin. Subclasses can define output power pins.
-    Multiple power pin mixins can be used on the same class, but only one gnd_out can be connected."""
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        # TODO: REMOVE ME
-        self.gnd_out = self.Port(Ground.empty(), optional=True,
-                                 doc="Ground for power output ports, when the device is acting as a power source")
-
-
 class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
     """IO controller mixin that provides an output of the IO controller's VddIO rail, commonly 3.3v."""
     def __init__(self, *args, **kwargs) -> None:

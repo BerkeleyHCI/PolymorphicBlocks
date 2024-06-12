@@ -492,7 +492,6 @@ class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, I
 
     mbr120_drop = (0, 0.340)*Volt
     ap2112_3v3_out = 3.3*Volt(tol=0.015)  # note dropout voltage up to 400mV, current up to 600mA
-    self.gnd_out.init_from(GroundSource())
     self.vusb_out.init_from(VoltageSource(
       voltage_out=UsbConnector.USB2_VOLTAGE_RANGE - mbr120_drop,
       current_limits=UsbConnector.USB2_CURRENT_LIMITS

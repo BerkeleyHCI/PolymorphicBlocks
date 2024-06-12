@@ -431,7 +431,6 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, Rp2040_Ios, IoContro
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._iovdd_model())
 
-    self.gnd_out.init_from(GroundSource())
     self.vusb_out.init_from(VoltageSource(
       voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
       current_limits=UsbConnector.USB2_CURRENT_LIMITS

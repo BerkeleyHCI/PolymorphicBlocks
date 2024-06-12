@@ -441,7 +441,7 @@ class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoCont
       self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
       return VariantPinRemapper({
         'VDD': self.pwr_out,
-        'GND': self.gnd_out,
+        'GND': self.gnd,
         'VUSB': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
@@ -451,7 +451,6 @@ class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoCont
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._vdd_model())
 
-    self.gnd_out.init_from(GroundSource())
     self.vusb_out.init_from(VoltageSource(
       voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
       current_limits=UsbConnector.USB2_CURRENT_LIMITS

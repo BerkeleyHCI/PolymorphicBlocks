@@ -357,7 +357,6 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._vdd_model())
 
-    self.gnd_out.init_from(GroundSource())
     self.vusb_out.init_from(VoltageSource(
       voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
       current_limits=UsbConnector.USB2_CURRENT_LIMITS

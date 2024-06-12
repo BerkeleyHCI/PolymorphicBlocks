@@ -65,6 +65,7 @@ class GroundAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
 
 
 class Ground(CircuitPort):
+    link_type = GroundLink
     bridge_type = GroundBridge
 
     def as_digital_source(self) -> DigitalSource:
@@ -78,6 +79,8 @@ class Ground(CircuitPort):
 
 
 class GroundReference(CircuitPort):
+    link_type = GroundLink
+
     def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO) -> None:
         super().__init__()
         self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
