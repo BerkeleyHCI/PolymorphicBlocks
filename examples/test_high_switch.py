@@ -19,9 +19,6 @@ class CalSolCanBlock(Block):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.can_pwr = self.Port(VoltageSource.empty(), optional=True)
-    self.can_gnd = self.Port(Ground.empty(), optional=True)
-
     self.controller = self.Port(CanTransceiverPort.empty(), [Input])
     self.can = self.Port(CanDiffPort.empty(), optional=True)
 
@@ -32,12 +29,11 @@ class CalSolCanBlock(Block):
     self.connect(self.can, self.conn.differential)
 
     self.can_fuse = self.Block(SeriesPowerPptcFuse(150 * mAmp(tol=0.1)))
-    self.connect(self.conn.pwr, self.can_pwr, self.can_fuse.pwr_in)
-    self.connect(self.conn.gnd, self.can_gnd)
+    self.connect(self.conn.pwr, self.can_fuse.pwr_in)
 
     with self.implicit_connect(
         ImplicitConnect(self.can_fuse.pwr_out, [Power]),
-        ImplicitConnect(self.can_gnd, [Common]),
+        ImplicitConnect(self.conn.gnd, [Common]),
     ) as imp:
       self.reg = imp.Block(Ap2204k(5*Volt(tol=0.05)))  # TODO: replace with generic LinearRegulator?
 
@@ -52,7 +48,7 @@ class CalSolCanBlock(Block):
       self.connect(self.transceiver.controller, self.controller)
       self.connect(self.transceiver.can, self.can)
       self.connect(self.transceiver.can_pwr, self.reg.pwr_out)
-      self.connect(self.transceiver.can_gnd, self.can_gnd)
+      self.connect(self.transceiver.can_gnd, self.conn.gnd)
 
 
 class CanFuse(PptcFuse, FootprintBlock):
@@ -264,12 +260,6 @@ class HighSwitch(BoardTop):
 
       (self.can, ), self.can_chain = self.chain(self.mcu.with_mixin(IoControllerCan()).can.request('can'),
                                                 imp.Block(CalSolCanBlock()))
-
-      # TODO need proper support for exported unconnected ports
-      self.can_gnd_load = self.Block(DummyVoltageSink())
-      self.connect(self.can.can_gnd, self.can_gnd_load.pwr)
-      self.can_pwr_load = self.Block(DummyVoltageSink())
-      self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
       (self.vsense, ), _ = self.chain(  # TODO update to use VoltageSenseDivider
         self.vin,
