@@ -10,10 +10,10 @@ from .DummyDevices import DummyVoltageSource, DummyVoltageSink, DummyDigitalSink
 class IdealCircuitTestTop(Block):
   def __init__(self):
     super().__init__()
-    self.gnd = self.Block(DummyVoltageSource(0*Volt(tol=0)))
+    self.gnd = self.Block(DummyGround())
     self.pwr = self.Block(DummyVoltageSource(5*Volt(tol=0)))
     with self.implicit_connect(
-        ImplicitConnect(self.gnd.pwr, [Common]),
+        ImplicitConnect(self.gnd.gnd, [Common]),
     ) as imp:
       self.reg = imp.Block(LinearRegulator(2*Volt(tol=0)))
       self.connect(self.reg.pwr_in, self.pwr.pwr)

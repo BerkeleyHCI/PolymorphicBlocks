@@ -99,8 +99,8 @@ from .PinMappable import PinMappable, PinMapUtil
 from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 from .VariantPinRemapper import VariantPinRemapper
 
-from .DummyDevices import DummyPassive, DummyVoltageSource, DummyVoltageSink, DummyDigitalSink, DummyAnalogSource, \
-    DummyAnalogSink
+from .DummyDevices import DummyPassive, DummyGround, DummyVoltageSource, DummyVoltageSink, DummyDigitalSink, \
+    DummyAnalogSource, DummyAnalogSink
 from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltage, ForcedVoltageCurrent, ForcedAnalogVoltage,\
     ForcedAnalogSignal, ForcedDigitalSinkCurrentDraw
 from .MergedBlocks import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource, MergedSpiController
