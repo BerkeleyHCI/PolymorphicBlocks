@@ -18,7 +18,7 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Generat
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
   @abstractmethod
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+  def _vddio(self) -> Port[VoltageLink]:
     ...
 
   def _vdd_model(self) -> VoltageSink:
@@ -27,9 +27,9 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Generat
       current_draw=(0, 212 / 64 + 4.8)*mAmp + self.io_current_draw.upper()  # CPU @ max 212 Coremarks + 4.8mA in RF transmit
     )
 
-  def _dio_model(self, gnd: Port[VoltageLink], pwr: Port[VoltageLink]) -> DigitalBidir:
+  def _dio_model(self, pwr: Port[VoltageLink]) -> DigitalBidir:
     return DigitalBidir.from_supply(
-      gnd, pwr,
+      self.gnd, pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-6, 6)*mAmp,  # minimum current, high drive, Vdd>2.7
       current_draw=(0, 0)*Amp,
@@ -40,12 +40,12 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Generat
   def _io_pinmap(self) -> PinMapUtil:
     """Returns the mappable for given the input power and ground references.
     This separates the system pins definition from the IO pins definition."""
-    gnd, pwr = self._gnd_vddio()
-    dio_model = self._dio_model(gnd, pwr)
+    pwr = self._vddio()
+    dio_model = self._dio_model(pwr)
     dio_lf_model = dio_model  # "standard drive, low frequency IO only" (differences not modeled)
 
     adc_model = AnalogSink.from_supply(
-      gnd, pwr,
+      self.gnd, pwr,
       voltage_limit_tolerance=(0, 0),  # datasheet 6.23.2, analog inputs cannot exceed Vdd or be lower than Vss
       signal_limit_tolerance=(0, 0),
       impedance=Range.from_lower(1)*MOhm
@@ -173,8 +173,8 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Generat
 class Nrf52840_Base(Nrf52840_Ios, GeneratorBlock):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
 
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    return self.gnd, self.pwr
+  def _vddio(self) -> Port[VoltageLink]:
+    return self.pwr
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
@@ -187,8 +187,8 @@ class Nrf52840_Base(Nrf52840_Ios, GeneratorBlock):
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
 
-    self.pwr = self.Port(self._vdd_model(), [Power])
     self.gnd = self.Port(Ground(), [Common])
+    self.pwr = self.Port(self._vdd_model(), [Power])
 
     self.pwr_usb = self.Port(VoltageSink(
       voltage_limits=(4.35, 5.5)*Volt,
@@ -206,7 +206,7 @@ class Nrf52840_Base(Nrf52840_Ios, GeneratorBlock):
                               optional=True)
 
     self.swd = self.Port(SwdTargetPort.empty())
-    self.nreset = self.Port(DigitalSink.from_bidir(self._dio_model(self.gnd, self.pwr)), optional=True)
+    self.nreset = self.Port(DigitalSink.from_bidir(self._dio_model(self.pwr)), optional=True)
     self._io_ports.insert(0, self.swd)
 
 
@@ -462,27 +462,25 @@ class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, I
     # note onboard VBAT sense divider at P0.29
   }
 
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    if self.get(self.gnd.is_connected()):  # board sinks power
-      return self.gnd, self.pwr
+  def _vddio(self) -> Port[VoltageLink]:
+    if self.get(self.pwr.is_connected()):  # board sinks power
+      return self.pwr
     else:
-      return self.gnd_out, self.pwr_out
+      return self.pwr_out
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
-    if self.get(self.gnd.is_connected()):  # board sinks power
+    if self.get(self.pwr.is_connected()):  # board sinks power
       self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
       self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
-      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
       return VariantPinRemapper({
         'Vdd': self.pwr,
         'Vss': self.gnd,
       }).remap(self.SYSTEM_PIN_REMAP)
     else:  # board sources power (default)
       self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
-      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")
       return VariantPinRemapper({
         'Vdd': self.pwr_out,
-        'Vss': self.gnd_out,
+        'Vss': self.gnd,
         'Vbus': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 

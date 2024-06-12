@@ -19,8 +19,8 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
   @abstractmethod
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    """Returns GND and VDDIO (either can be VoltageSink or VoltageSource)."""
+  def _vddio(self) -> Port[VoltageLink]:
+    """Returns VDDIO (can be VoltageSink or VoltageSource)."""
     ...
 
   def _vdd_model(self) -> VoltageSink:
@@ -29,9 +29,9 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
       current_draw=(0.001, 355)*mAmp + self.io_current_draw.upper()  # from power off (table 4-8) to RF working (table 12 on WROOM datasheet)
     )
 
-  def _dio_model(self, gnd: Port[VoltageLink], pwr: Port[VoltageLink]) -> DigitalBidir:
+  def _dio_model(self, pwr: Port[VoltageLink]) -> DigitalBidir:
     return DigitalBidir.from_supply(  # table 4-4
-      gnd, pwr,
+      self.gnd, pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-28, 40)*mAmp,
       input_threshold_factor=(0.25, 0.75),
@@ -39,11 +39,11 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
     )
 
   def _io_pinmap(self) -> PinMapUtil:
-    gnd, pwr = self._gnd_vddio()
-    dio_model = self._dio_model(gnd, pwr)
+    pwr = self._vddio()
+    dio_model = self._dio_model(pwr)
 
     adc_model = AnalogSink.from_supply(
-      gnd, pwr,
+      self.gnd, pwr,
       signal_limit_abs=(0, 2.9)*Volt,  # table 4-5, effective ADC range at max attenuation
       # TODO: impedance / leakage - not specified by datasheet
     )
@@ -154,8 +154,8 @@ class Esp32s3_Base(Esp32s3_Ios, GeneratorBlock):
   """
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
 
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    return self.gnd, self.pwr
+  def _vddio(self) -> Port[VoltageLink]:
+    return self.pwr
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
@@ -174,7 +174,7 @@ class Esp32s3_Base(Esp32s3_Ios, GeneratorBlock):
     self.pwr = self.Port(self._vdd_model(), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
-    dio_model = self._dio_model(self.gnd, self.pwr)
+    dio_model = self._dio_model(self.pwr)
     self.chip_pu = self.Port(dio_model)  # table 2-5, power up/down control, do NOT leave floating
     self.io0 = self.Port(dio_model, optional=True)  # table 2-11, default pullup (SPI boot), set low to download boot
     self.uart0 = self.Port(UartPort(dio_model), optional=True)  # programming
@@ -337,34 +337,32 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_I
     'GPIO1': '38',
   }
 
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    if self.get(self.gnd.is_connected()):  # board sinks power
-      return self.gnd, self.pwr
+  def _vddio(self) -> Port[VoltageLink]:
+    if self.get(self.pwr.is_connected()):  # board sinks power
+      return self.pwr
     else:
-      return self.gnd_out, self.pwr_out
+      return self.pwr_out
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
-    if self.get(self.gnd.is_connected()):  # board sinks power
+    if self.get(self.pwr.is_connected()):  # board sinks power
       self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
       self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
-      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
       return VariantPinRemapper({
         'VDD': self.pwr,
         'GND': self.gnd,
       }).remap(self.SYSTEM_PIN_REMAP)
     else:  # board sources power (default)
       self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
-      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")
       return VariantPinRemapper({
         'VDD': self.pwr_out,
-        'GND': self.gnd_out,
+        'GND': self.gnd,
         'VUSB': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
   def _io_pinmap(self) -> PinMapUtil:  # allow the camera I2C pins to be used externally
-    gnd, pwr = self._gnd_vddio()
+    pwr = self._vddio()
     return super()._io_pinmap().add([
-      PeripheralFixedPin('CAM_SCCB', I2cController(self._dio_model(gnd, pwr), has_pullup=True), {
+      PeripheralFixedPin('CAM_SCCB', I2cController(self._dio_model(pwr), has_pullup=True), {
         'scl': '4', 'sda': '3'
       })
     ])
