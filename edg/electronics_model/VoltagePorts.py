@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import *
 from ..core import *
 from .CircuitBlock import CircuitPort, CircuitPortBridge, CircuitLink, CircuitPortAdapter
-from .GroundPort import Ground
+from .GroundPort import GroundLink
 from .Units import Volt, Ohm
 
 if TYPE_CHECKING:
@@ -122,7 +122,7 @@ class VoltageSink(VoltageBase):
   bridge_type = VoltageSinkBridge
 
   @staticmethod
-  def from_gnd(gnd: Ground, voltage_limits: RangeLike = RangeExpr.ALL,
+  def from_gnd(gnd: Port[GroundLink], voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO) -> 'VoltageSink':
     return VoltageSink(
       voltage_limits=gnd.link().voltage + voltage_limits,
