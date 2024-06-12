@@ -368,7 +368,7 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
 
     self.io2 = self.Port(DigitalBidir.empty(), optional=True)  # default pulldown (enable download boot), ignored during SPI boot
 
-    self.generator_param(self.gnd.is_connected())
+    self.generator_param(self.pwr.is_connected())
 
   def generate(self) -> None:
     super().generate()

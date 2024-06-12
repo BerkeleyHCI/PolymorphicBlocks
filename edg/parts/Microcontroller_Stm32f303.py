@@ -254,7 +254,7 @@ class Nucleo_F303k8(IoControllerUsbOut, IoControllerPowerOut, IoController, Stm3
       current_limits=(0, 0.5) * Amp  # max USB current draw, LDO also guarantees 500mA output current
     ))
 
-    self.generator_param(self.gnd.is_connected())
+    self.generator_param(self.pwr.is_connected())
 
   def generate(self) -> None:
     super().generate()

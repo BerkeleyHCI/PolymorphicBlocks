@@ -460,7 +460,7 @@ class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoCont
       current_limits=UsbConnector.USB2_CURRENT_LIMITS
     ))
 
-    self.generator_param(self.gnd.is_connected())
+    self.generator_param(self.pwr.is_connected())
 
   def generate(self) -> None:
     super().generate()
