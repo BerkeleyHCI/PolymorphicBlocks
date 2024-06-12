@@ -52,7 +52,7 @@ class RobotOwl(JlcBoardTop):
     self.vusb = self.connect(mcu_usb.vusb_out)
     self.v3v3 = self.connect(mcu_pwr.pwr_out)
 
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.mcu.gnd)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.mcu.gnd)
     self.tp_usb = self.Block(VoltageTestPoint()).connected(mcu_usb.vusb_out)
     self.tp_3v3 = self.Block(VoltageTestPoint()).connected(mcu_pwr.pwr_out)
 

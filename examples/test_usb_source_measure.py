@@ -373,7 +373,7 @@ class UsbSourceMeasure(JlcBoardTop):
     self.usb = self.Block(UsbCReceptacle(voltage_out=(9, 20)*Volt, current_limits=(0, 8)*Amp))
 
     self.gnd = self.connect(self.usb.gnd)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
 
     # power supplies
     with self.implicit_connect(

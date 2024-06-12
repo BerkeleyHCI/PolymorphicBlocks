@@ -56,7 +56,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
     self.gnd = self.connect(self.batt.gnd)
 
     self.tp_vbatt = self.Block(VoltageTestPoint()).connected(self.batt.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.batt.gnd)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.batt.gnd)
 
     # POWER
     with self.implicit_connect(

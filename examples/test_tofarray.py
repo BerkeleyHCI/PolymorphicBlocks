@@ -40,7 +40,7 @@ class TofArray(JlcBoardTop):
     self.gnd = self.connect(self.usb.gnd, self.can.gnd)
 
     self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
 
     # POWER
     with self.implicit_connect(

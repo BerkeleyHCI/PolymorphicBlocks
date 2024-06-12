@@ -17,7 +17,7 @@ class IotFan(JlcBoardTop):
     self.gnd = self.connect(self.pwr.gnd)
 
     self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.pwr.gnd)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
 
     # POWER
     with self.implicit_connect(

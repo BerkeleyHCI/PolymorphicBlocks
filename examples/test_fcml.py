@@ -312,7 +312,7 @@ class Fcml(JlcBoardTop):
       self.connect(self.conv.pwr_gate, self.vgate)
       self.connect(self.conv.pwr_ctl, self.v3v3)
       self.tp_conv_out = self.Block(VoltageTestPoint()).connected(self.conv.pwr_out)
-      self.tp_conv_gnd = self.Block(VoltageTestPoint()).connected(self.conv.gnd)
+      self.tp_conv_gnd = self.Block(GroundTestPoint()).connected(self.conv.gnd)
 
     # 3V3 DOMAIN
     with self.implicit_connect(

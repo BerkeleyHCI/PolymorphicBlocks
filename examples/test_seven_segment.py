@@ -14,7 +14,7 @@ class SevenSegment(JlcBoardTop):
     self.gnd = self.connect(self.pwr_conn.gnd)
 
     self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr_conn.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.pwr_conn.gnd)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr_conn.gnd)
 
     # POWER
     with self.implicit_connect(
