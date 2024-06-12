@@ -15,10 +15,7 @@ class Datalogger(BoardTop):
     self.connect(self.usb_conn.pwr, self.usb_forced_current.pwr_in)
 
     self.bat = self.Block(Cr2032())
-
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.usb_conn.gnd, self.pwr_conn.gnd, self.bat.gnd)
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
+    self.gnd = self.connect(self.usb_conn.gnd, self.pwr_conn.gnd, self.bat.gnd)
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),

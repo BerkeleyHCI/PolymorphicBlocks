@@ -41,7 +41,7 @@ class Simon(BoardTop):
 
     self.v5v = self.connect(mcu_usb.vusb_out)
     self.v3v3 = self.connect(mcu_pwr.pwr_out)
-    self.gnd = self.connect(mcu_pwr.gnd_out)
+    self.gnd = self.connect(self.mcu.gnd)
 
     with self.implicit_connect(
         ImplicitConnect(self.v5v, [Power]),

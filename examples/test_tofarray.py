@@ -37,9 +37,7 @@ class TofArray(JlcBoardTop):
     self.can = self.Block(CanConnector())
 
     self.vusb = self.connect(self.usb.pwr)
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.usb.gnd, self.can.gnd)
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
+    self.gnd = self.connect(self.usb.gnd, self.can.gnd)
 
     self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
     self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)

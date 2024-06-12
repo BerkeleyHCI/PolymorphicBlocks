@@ -276,13 +276,11 @@ class Fcml(JlcBoardTop):
 
     self.vusb_merge = self.Block(MergedVoltageSource()).connected_from(
       self.usb_mcu.pwr, self.usb_fpga.pwr)
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.usb_mcu.gnd, self.usb_fpga.gnd, self.conv_in.gnd)
     self.vusb = self.connect(self.vusb_merge.pwr_out)
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
+    self.gnd = self.connect(self.usb_mcu.gnd, self.usb_fpga.gnd, self.conv_in.gnd)
 
     self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.vusb_merge.pwr_out)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb_mcu.gnd)
 
     # POWER
     with self.implicit_connect(

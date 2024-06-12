@@ -51,6 +51,18 @@ class BaseRfTestPoint(TypedTestPoint, Block):
     self.assign(conn_tp.tp_name, (self.tp_name == "").then_else(self.io.link().name(), self.tp_name))
 
 
+class GroundTestPoint(BaseTypedTestPoint, Block):
+  """Test point with a VoltageSink port."""
+  def __init__(self, *args):
+    super().__init__(*args)
+    self.io = self.Port(Ground.empty(), [InOut])
+    self.connect(self.io, self.tp.io.adapt_to(Ground()))
+
+  def connected(self, io: Port[GroundLink]) -> 'GroundTestPoint':
+    cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self
+
+
 class VoltageTestPoint(BaseTypedTestPoint, Block):
   """Test point with a VoltageSink port."""
   def __init__(self, *args):

@@ -38,11 +38,8 @@ class PcbBot(JlcBoardTop):
 
     self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
 
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.usb.gnd, self.batt.gnd
-    )
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
+    self.gnd = self.connect(self.usb.gnd, self.batt.gnd)
+    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
 
     # POWER
     with self.implicit_connect(
@@ -58,7 +55,7 @@ class PcbBot(JlcBoardTop):
 
       self.pwr_or = self.Block(PriorityPowerOr(  # also does reverse protection
         (0, 1)*Volt, (0, 0.1)*Ohm
-      )).connected_from(self.gnd_merge.pwr_out, self.usb.pwr, self.gate.pwr_out)
+      )).connected_from(self.usb.gnd, self.usb.pwr, self.gate.pwr_out)
       self.pwr = self.connect(self.pwr_or.pwr_out)
 
       (self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(

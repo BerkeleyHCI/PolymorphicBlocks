@@ -88,9 +88,7 @@ class BldcController(JlcBoardTop):
 
     self.vusb = self.connect(mcu_usb.vusb_out)
     self.v3v3 = self.connect(mcu_pwr.pwr_out)
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      mcu_pwr.gnd_out, self.motor_pwr.gnd)
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
+    self.gnd = self.connect(self.mcu.gnd, self.motor_pwr.gnd)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
@@ -170,7 +168,7 @@ class BldcController(JlcBoardTop):
       self.curr_tp = ElementDict[AnalogTestPoint]()
       for i in ['1', '2', '3']:
         self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
-            .connected(self.gnd_merge.pwr_out, self.bldc_drv.pgnds.request(i))
+            .connected(self.mcu.gnd, self.bldc_drv.pgnds.request(i))
 
         self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
         self.connect(self.curr_amp[i].pwr, self.v3v3)

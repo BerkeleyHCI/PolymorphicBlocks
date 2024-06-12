@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from ..core import *
 from .PassivePort import Passive
+from .GroundPort import Ground, GroundReference
 from .VoltagePorts import VoltageSource, VoltageSink
 
 
@@ -28,6 +29,28 @@ class PackedPassive(NetPackingBlock, GeneratorBlock):
     self.elts.defined()
     for request in self.get(self.elts.requested()):
       self.elts.append_elt(Passive(), request)
+
+
+class PackedGround(NetPackingBlock, GeneratorBlock):
+  """Takes in several Ground connections that are of the same net (asserted in netlister),
+  and provides a single Ground."""
+  def __init__(self):
+    super().__init__()
+    self.gnd_ins = self.Port(Vector(Ground.empty()))
+    self.gnd_out = self.Port(GroundReference(
+      voltage_out=RangeExpr(),
+    ))
+    self.generator_param(self.gnd_ins.requested())
+    self.packed(self.gnd_ins, self.gnd_out)
+
+  def generate(self):
+    super().generate()
+    self.gnd_ins.defined()
+    for in_request in self.get(self.gnd_ins.requested()):
+      self.gnd_ins.append_elt(Ground(), in_request)
+
+    self.assign(self.gnd_out.voltage_out,
+                self.gnd_ins.hull(lambda x: x.link().voltage))
 
 
 class PackedVoltageSource(NetPackingBlock, GeneratorBlock):

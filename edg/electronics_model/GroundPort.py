@@ -35,7 +35,12 @@ class GroundBridge(CircuitPortBridge):
         super().__init__()
 
         self.outer_port = self.Port(Ground())
-        self.inner_link = self.Port(Ground())
+        self.inner_link = self.Port(GroundReference(voltage_out=RangeExpr()))
+
+    def contents(self) -> None:
+        super().contents()
+
+        self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
 
 
 class GroundAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
