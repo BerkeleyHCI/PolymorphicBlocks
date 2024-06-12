@@ -328,9 +328,10 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     super().__init__()
 
     self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
-    self.gnd = self.Export(self.cap.neg.adapt_to(VoltageSink()), [Common])
-    self.pwr = self.Export(self.cap.pos.adapt_to(VoltageSink(
-      voltage_limits=(self.cap.actual_voltage_rating + self.gnd.link().voltage).hull(self.gnd.link().voltage),
+    self.gnd = self.Export(self.cap.neg.adapt_to(Ground()), [Common])
+    self.pwr = self.Export(self.cap.pos.adapt_to(VoltageSink.from_gnd(
+      self.gnd,
+      voltage_limits=self.cap.actual_voltage_rating,
       current_draw=0*Amp(tol=0)
     )), [Power, InOut])
 
@@ -338,7 +339,7 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
 
     # TODO there should be a way to forward the description string of the inner element
 
-  def connected(self, gnd: Optional[Port[VoltageLink]] = None, pwr: Optional[Port[VoltageLink]] = None) -> \
+  def connected(self, gnd: Optional[Port[GroundLink]] = None, pwr: Optional[Port[VoltageLink]] = None) -> \
       'DecouplingCapacitor':
     """Convenience function to connect both ports, returning this object so it can still be given a name."""
     if gnd is not None:

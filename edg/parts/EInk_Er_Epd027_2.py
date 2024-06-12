@@ -113,7 +113,7 @@ class Er_Epd027_2(EInk, GeneratorBlock):
         self.vshr_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
             .connected(self.gnd, self.device.vshr)
         self.vsl_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
-            .connected(self.device.vsl, self.gnd)
+            .connected(self.gnd, self.device.vsl)
         self.vcom_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
             .connected(self.gnd, self.device.vcom)
 
