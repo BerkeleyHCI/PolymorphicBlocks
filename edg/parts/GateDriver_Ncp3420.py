@@ -34,7 +34,7 @@ class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       voltage_limits=(4.6, 15)*Volt,
     ))
     self.drvh = self.Port(DigitalSource.from_supply(
-      self.swn, self.bst,
+      self.swn.as_ground(), self.bst,
       current_limits=(-self.vcc.link().voltage.lower()/2.5, self.vcc.link().voltage.lower()/3.0)
     ))
 

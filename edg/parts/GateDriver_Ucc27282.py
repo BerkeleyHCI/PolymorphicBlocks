@@ -33,7 +33,7 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       voltage_out=self.hs.link().voltage + self.vdd.link().voltage,
     ))
     self.ho = self.Port(DigitalSource.from_supply(
-      self.hs, self.hb,
+      self.hs.as_ground(), self.hb,
       current_limits=(-3, 3)*Amp  # peak pullup and pulldown current
     ))
 

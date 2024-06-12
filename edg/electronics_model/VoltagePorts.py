@@ -7,7 +7,7 @@ from .GroundPort import GroundLink
 from .Units import Volt, Ohm
 
 if TYPE_CHECKING:
-  from .GroundPort import GroundReference
+  from .GroundPort import Ground, GroundReference
   from .DigitalPorts import DigitalSource
   from .AnalogPort import AnalogSource
 
@@ -23,9 +23,9 @@ class VoltageLink(CircuitLink):
       return port.link().voltage
 
   @classmethod
-  def _supply_voltage_range(cls, neg: Port[VoltageLink], pos: Port[VoltageLink]):
+  def _supply_voltage_range(cls, neg: Port[GroundLink], pos: Port[VoltageLink]):
     """For a negative and positive Voltage port (either sink or source), returns the voltage span."""
-    return cls._voltage_range(neg).hull(cls._voltage_range(pos))
+    return neg.link().voltage.hull(cls._voltage_range(pos))
 
   def __init__(self) -> None:
     super().__init__()

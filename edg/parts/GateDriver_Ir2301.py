@@ -36,7 +36,7 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       current_draw=RangeExpr()
     ))
     self.ho = self.Port(DigitalSource.from_supply(
-      self.vs, self.vb,
+      self.vs.as_ground(), self.vb,
       current_limits=(-250, 120)*mAmp  # static electrical characteristics: output short circuit pulsed current
     ))
     self.assign(self.vb.current_draw, (50, 190)*uAmp + self.ho.link().current_drawn)

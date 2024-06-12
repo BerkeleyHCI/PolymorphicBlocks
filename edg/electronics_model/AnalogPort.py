@@ -4,6 +4,7 @@ from typing import Optional, Tuple
 
 from ..core import *
 from .CircuitBlock import CircuitLink
+from .GroundPort import GroundLink
 from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink
 
 
@@ -116,7 +117,7 @@ class AnalogSink(AnalogBase):
   bridge_type = AnalogSinkBridge
 
   @staticmethod
-  def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
+  def from_supply(neg: Port[GroundLink], pos: Port[VoltageLink], *,
                   voltage_limit_tolerance: Optional[RangeLike] = None,
                   voltage_limit_abs: Optional[RangeLike] = None,
                   signal_limit_tolerance: Optional[RangeLike] = None,
@@ -172,7 +173,7 @@ class AnalogSource(AnalogBase):
   bridge_type = AnalogSourceBridge
 
   @staticmethod
-  def from_supply(neg: Port[VoltageLink], pos: Port[VoltageLink], *,
+  def from_supply(neg: Port[GroundLink], pos: Port[VoltageLink], *,
                   signal_out_bound: Optional[Tuple[FloatLike, FloatLike]] = None,
                   current_limits: RangeLike = RangeExpr.ALL,
                   impedance: RangeLike = RangeExpr.ZERO):
