@@ -30,7 +30,7 @@ class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       voltage_limits=(-5, 35)  # no current draw since this is a "ground" pin
     ))
     self.bst = self.Port(VoltageSink.from_gnd(
-      self.swn,
+      self.swn.as_ground(),
       voltage_limits=(4.6, 15)*Volt,
     ))
     self.drvh = self.Port(DigitalSource.from_supply(

@@ -26,7 +26,7 @@ class GroundLink(CircuitLink):
             "<b>voltage</b>: ", DescriptionString.FormatUnits(self.voltage, "V"))
 
         self.assign(self.voltage, self.ref.is_connected().then_else(
-            self.ref.voltage, (0, 0)*Volt
+            self.ref.voltage_out, (0, 0)*Volt
         ))
 
 
@@ -46,12 +46,7 @@ class GroundAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
         self.src = self.Port(Ground())
         self.dst = self.Port(DigitalSource(
             voltage_out=self.src.link().voltage,
-            output_thresholds=(  # use infinity for the other rail
-                (self.src.link().voltage.lower() > 0).then_else(FloatExpr._to_expr_type(-float('inf')),
-                                                                self.src.link().voltage.upper()),
-                (self.src.link().voltage.lower() > 0).then_else(self.src.link().voltage.lower(),
-                                                                FloatExpr._to_expr_type(float('inf')))
-            )
+            output_thresholds=(self.src.link().voltage.lower(), FloatExpr._to_expr_type(float('inf')))
         ))
 
 
@@ -83,9 +78,9 @@ class Ground(CircuitPort):
 
 
 class GroundReference(CircuitPort):
-    def __init__(self, voltage: RangeLike = RangeExpr.ZERO) -> None:
+    def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO) -> None:
         super().__init__()
-        self.voltage: RangeExpr = self.Parameter(RangeExpr(voltage))
+        self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
 
 
 from deprecated import deprecated

@@ -7,6 +7,7 @@ from .GroundPort import Ground
 from .Units import Volt, Ohm
 
 if TYPE_CHECKING:
+  from .GroundPort import GroundReference
   from .DigitalPorts import DigitalSource
   from .AnalogPort import AnalogSource
 
@@ -107,6 +108,9 @@ class VoltageBase(CircuitPort[VoltageLink]):
   # TODO: support isolation domains and offset grounds
 
   # these are here (instead of in VoltageSource) since the port may be on the other side of a bridge
+  def as_ground(self) -> GroundReference:
+    return self._convert(VoltageSinkAdapterGroundReference())
+
   def as_digital_source(self) -> DigitalSource:
     return self._convert(VoltageSinkAdapterDigitalSource())
 
@@ -132,6 +136,19 @@ class VoltageSink(VoltageBase):
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
 
 
+class VoltageSinkAdapterGroundReference(CircuitPortAdapter['GroundReference']):
+  @init_in_parent
+  def __init__(self):
+    super().__init__()
+    from .GroundPort import GroundReference
+    self.src = self.Port(VoltageSink(
+      voltage_limits=RangeExpr.ALL * Volt,
+    ))
+    self.dst = self.Port(GroundReference(
+      voltage_out=self.src.link().voltage,
+    ))
+
+
 class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
   @init_in_parent
   def __init__(self):
@@ -143,12 +160,7 @@ class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
     ))
     self.dst = self.Port(DigitalSource(
       voltage_out=self.src.link().voltage,
-      output_thresholds=(  # use infinity for the other rail
-        (self.src.link().voltage.lower() > 0).then_else(FloatExpr._to_expr_type(-float('inf')),
-                                                        self.src.link().voltage.upper()),
-        (self.src.link().voltage.lower() > 0).then_else(self.src.link().voltage.lower(),
-                                                        FloatExpr._to_expr_type(float('inf')))
-      )
+      output_thresholds=(FloatExpr._to_expr_type(-float('inf')), self.src.link().voltage.upper())
     ))
     self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
 
