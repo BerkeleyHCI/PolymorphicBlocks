@@ -130,7 +130,7 @@ class Vector(BaseVector, Generic[VectorType]):
     return self._elts.items()
 
   # unlike most other LibraryElement types, the names are stored in _elts and _allocates
-  def _name_of_child(self, subelt: Any) -> str:
+  def _name_of_child(self, subelt: Any, allow_unknown: bool = False) -> str:
     from .HierarchyBlock import Block
     block_parent = self._block_parent()
     assert isinstance(block_parent, Block)
@@ -141,7 +141,10 @@ class Vector(BaseVector, Generic[VectorType]):
       for (name, elt) in self._elts.items():
         if subelt is elt:
           return name
-      raise ValueError(f"no name for {subelt}")
+      if allow_unknown:
+        return f"(unknown {subelt.__class__.__name__})"
+      else:
+        raise ValueError(f"no name for {subelt}")
     elif builder.get_enclosing_block() is block_parent._parent:
       # in block enclosing the block defining this port (allocate required)
       for (i, (suggested_name, allocate_elt)) in enumerate(self._requests):
@@ -150,7 +153,10 @@ class Vector(BaseVector, Generic[VectorType]):
             return suggested_name
           else:
             return f"_allocate_{i}"
-      raise ValueError(f"allocated elt not found {subelt}")
+      if allow_unknown:
+        return f"(unknown {subelt.__class__.__name__})"
+      else:
+        raise ValueError(f"allocated elt not found {subelt}")
     else:
       raise ValueError(f"unknown context of array")
 

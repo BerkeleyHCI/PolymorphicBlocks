@@ -214,22 +214,28 @@ class LibraryElement(Refable, metaclass=ElementMeta):
       self.manager.add_element(name, value)
     super().__setattr__(name, value)
 
-  def _name_of_child(self, subelt: Any) -> str:
+  def _name_of_child(self, subelt: Any, allow_unknown: bool = False) -> str:
     self_name = self.manager.name_of(subelt)
     if self_name is not None:
       return self_name
     else:
-      raise ValueError(f"no name for {subelt}")
+      if allow_unknown:
+        return f"(unknown {subelt.__class__.__name__})"
+      else:
+        raise ValueError(f"no name for {subelt}")
 
-  def _path_from(self, base: LibraryElement) -> List[str]:
+  def _path_from(self, base: LibraryElement, allow_unknown: bool = False) -> List[str]:
     if base is self:
       return []
     else:
       assert self._parent is not None, "can't get path / name for non-bound element"
-      return self._parent._path_from(base) + [self._parent._name_of_child(self)]
+      return self._parent._path_from(base, allow_unknown) + [self._parent._name_of_child(self, allow_unknown)]
 
-  def _name_from(self, base: LibraryElement) -> str:
-    return '.'.join(self._path_from(base))
+  def _name_from(self, base: LibraryElement, allow_unknown: bool = False) -> str:
+    """Returns the path name to (inclusive) this element from some starting point.
+    allow_unknown allows elements that haven't been assigned a name yet to not crash,
+    this is useful when called from an error so the _name_from error doesn't stomp the real error."""
+    return '.'.join(self._path_from(base, allow_unknown))
 
   @classmethod
   def _static_def_name(cls) -> str:
