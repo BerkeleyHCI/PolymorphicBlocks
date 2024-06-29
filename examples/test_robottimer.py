@@ -64,7 +64,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
             self.mcu = imp.Block(Esp32s3_Wroom_1())
 
             self.i2c_pull = imp.Block(I2cPullup())
-            self.connect(self.mcu.i2c.request(), self.i2c_pull.i2c, self.imu.i2c)
+            self.connect(self.mcu.i2c.request('i2c'), self.i2c_pull.i2c, self.imu.i2c)
             for i in range(self.servo_fs90fb_COUNT):
                 self.connect(self.servo_fs90fbs[str(i)].pwm, self.mcu.gpio.request(f'fs90fb_{i}_pwm'))
                 self.connect(self.servo_fs90fbs[str(i)].fb, self.mcu.adc.request(f'fs90fb_{i}_fb'))
@@ -91,6 +91,8 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
             instance_values=[
                 (['mcu', 'pin_assigns'], [
                     'ledr=_GPIO0_STRAP',
+                    'ledy=35',
+                    'ledw=34',
 
                     'fs90fb_0_pwm=8',
                     'fs90fb_0_fb=4',
@@ -104,17 +106,20 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
                     'fs90r_0_pwm=13',
                     'fs90r_1_pwm=14',
 
-                    'fs90fb_4_pwm=25',
+                    'fs90fb_4_pwm=23',
                     'fs90fb_4_fb=15',
-                    'fs90fb_5_pwm=31',
+                    'fs90fb_5_pwm=24',
                     'fs90fb_5_fb=17',
-                    'fs90fb_6_pwm=32',
+                    'fs90fb_6_pwm=25',
                     'fs90fb_6_fb=38',
-                    'fs90fb_7_pwm=33',
+                    'fs90fb_7_pwm=31',
                     'fs90fb_7_fb=39',
 
-                    'fs90r_2_pwm=34',
-                    'fs90r_3_pwm=35',
+                    'fs90r_2_pwm=32',
+                    'fs90r_3_pwm=33',
+
+                    'i2c.scl=20',
+                    'i2c.sda=21',
                  ]),
                 (['mcu', 'programming'], 'uart-auto'),
             ],
