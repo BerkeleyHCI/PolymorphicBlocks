@@ -1167,7 +1167,7 @@
 
   (footprint "LED_SMD:LED_0603_1608Metric" (layer "F.Cu")
     (tstamp 260c1932-bfe4-4e15-b109-2b544af4a48e)
-    (at 113 95 180)
+    (at 113 96 180)
     (descr "LED SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
     (tags "LED")
     (property "Sheetfile" "edg.abstract_parts.AbstractLed.IndicatorLed")
@@ -2135,7 +2135,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tstamp 7ac9af73-126e-4dd9-9f18-07129e95f6f3)
-    (at 117 95)
+    (at 117 96)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "edg.abstract_parts.AbstractLed.IndicatorLed")
@@ -2315,7 +2315,7 @@
 
   (footprint "LED_SMD:LED_0603_1608Metric" (layer "F.Cu")
     (tstamp 9622c2a0-aa1a-4093-9c88-bc633448a159)
-    (at 113 97 180)
+    (at 113 98 180)
     (descr "LED SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
     (tags "LED")
     (property "Sheetfile" "edg.abstract_parts.AbstractLed.IndicatorLed")
@@ -2783,7 +2783,7 @@
 
   (footprint "Resistor_SMD:R_0603_1608Metric" (layer "F.Cu")
     (tstamp bc0aab99-ffb2-4529-abbd-9823a2bcceb0)
-    (at 117 97)
+    (at 117 98)
     (descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
     (property "Sheetfile" "edg.abstract_parts.AbstractLed.IndicatorLed")
@@ -3242,7 +3242,7 @@
     )
   )
 
-  (gr_line (start 124 150) (end 124 98)
+  (gr_line (start 125 150) (end 125 98)
     (stroke (width 0.0381) (type default)) (layer "Edge.Cuts") (tstamp 0d00d545-fbc6-4148-b1fc-a2c706e237c7))
   (gr_line (start 80 155) (end 120 155)
     (stroke (width 0.0381) (type default)) (layer "Edge.Cuts") (tstamp 6a09ec60-ee71-4560-b07e-a13ce6071478))
@@ -3252,7 +3252,7 @@
     (stroke (width 0.0381) (type default)) (layer "Edge.Cuts") (tstamp 799f0a18-e608-413f-bd2f-5ae5a75ff57d))
   (gr_arc (start 120 93) (mid 123.535534 94.464466) (end 125 98)
     (stroke (width 0.0381) (type default)) (layer "Edge.Cuts") (tstamp 84be9c28-73ca-4385-bf9f-e2017878fe41))
-  (gr_arc (start 124 150) (mid 122.535534 153.535534) (end 119 155)
+  (gr_arc (start 125 150) (mid 123.535534 153.535534) (end 120 155)
     (stroke (width 0.0381) (type default)) (layer "Edge.Cuts") (tstamp bf5e3db6-69f2-4387-85f7-39224db653f1))
   (gr_arc (start 75 98) (mid 76.464466 94.464466) (end 80 93)
     (stroke (width 0.0381) (type default)) (layer "Edge.Cuts") (tstamp d2bea268-53d3-4efd-9fef-dbb0b575eadc))
