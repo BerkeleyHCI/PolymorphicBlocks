@@ -91,6 +91,30 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
             instance_values=[
                 (['mcu', 'pin_assigns'], [
                     'ledr=_GPIO0_STRAP',
+
+                    'fs90fb_0_pwm=8',
+                    'fs90fb_0_fb=4',
+                    'fs90fb_1_pwm=9',
+                    'fs90fb_1_fb=5',
+                    'fs90fb_2_pwm=10',
+                    'fs90fb_2_fb=6',
+                    'fs90fb_3_pwm=11',
+                    'fs90fb_3_fb=7',
+
+                    'fs90r_0_pwm=13',
+                    'fs90r_1_pwm=14',
+
+                    'fs90fb_4_pwm=25',
+                    'fs90fb_4_fb=15',
+                    'fs90fb_5_pwm=31',
+                    'fs90fb_5_fb=17',
+                    'fs90fb_6_pwm=32',
+                    'fs90fb_6_fb=38',
+                    'fs90fb_7_pwm=33',
+                    'fs90fb_7_fb=39',
+
+                    'fs90r_2_pwm=34',
+                    'fs90r_3_pwm=35',
                  ]),
                 (['mcu', 'programming'], 'uart-auto'),
             ],
