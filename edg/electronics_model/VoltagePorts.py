@@ -3,11 +3,10 @@ from __future__ import annotations
 from typing import *
 from ..core import *
 from .CircuitBlock import CircuitPort, CircuitPortBridge, CircuitLink, CircuitPortAdapter
-from .GroundPort import GroundLink
+from .GroundPort import GroundLink, GroundReference
 from .Units import Volt, Ohm
 
 if TYPE_CHECKING:
-  from .GroundPort import Ground, GroundReference
   from .DigitalPorts import DigitalSource
   from .AnalogPort import AnalogSource
 
@@ -18,14 +17,15 @@ class VoltageLink(CircuitLink):
     """Returns the voltage for a Voltage port, either sink or source"""
     if isinstance(port, VoltageSource):
       return port.voltage_out
-    else:
-      assert isinstance(port, VoltageSink)
+    elif isinstance(port, VoltageSink):
       return port.link().voltage
+    else:
+      raise TypeError
 
   @classmethod
   def _supply_voltage_range(cls, neg: Port[GroundLink], pos: Port[VoltageLink]):
     """For a negative and positive Voltage port (either sink or source), returns the voltage span."""
-    return neg.link().voltage.hull(cls._voltage_range(pos))
+    return GroundLink._voltage_range(neg).hull(cls._voltage_range(pos))
 
   def __init__(self) -> None:
     super().__init__()

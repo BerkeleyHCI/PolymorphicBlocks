@@ -11,6 +11,16 @@ if TYPE_CHECKING:
 
 
 class GroundLink(CircuitLink):
+    @classmethod
+    def _voltage_range(cls, port: Port[GroundLink]):
+        if isinstance(port, Ground):
+            return port.is_connected().then_else(port.link().voltage,
+                                                 RangeExpr._to_expr_type(RangeExpr.ZERO))
+        elif isinstance(port, GroundReference):
+            return port.voltage_out
+        else:
+            raise TypeError
+
     def __init__(self) -> None:
         super().__init__()
 
