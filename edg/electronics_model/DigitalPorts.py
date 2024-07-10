@@ -391,7 +391,7 @@ class DigitalBidir(DigitalBase):
       assert input_threshold_abs is None, "can only specify one input threshold type"
       input_threshold_factor = RangeExpr._to_expr_type(input_threshold_factor)  # TODO avoid internal functions?
       input_range = VoltageLink._voltage_range(pos).lower() - neg_base
-      input_threshold = neg_base + input_range * input_threshold_factor
+      input_threshold = RangeExpr._to_expr_type(neg_base) + RangeExpr._to_expr_type(input_range) * input_threshold_factor
     elif input_threshold_abs is not None:
       assert input_threshold_factor is None, "can only specify one input threshold type"
       input_threshold = RangeExpr._to_expr_type(input_threshold_abs)  # TODO avoid internal functions?
@@ -404,7 +404,7 @@ class DigitalBidir(DigitalBase):
       output_threshold_factor = RangeExpr._to_expr_type(output_threshold_factor)
       # use a pessimistic range
       output_range = VoltageLink._voltage_range(pos).lower() - neg_base
-      output_threshold = neg_base + output_threshold_factor * output_range
+      output_threshold = RangeExpr._to_expr_type(neg_base) + output_threshold_factor * RangeExpr._to_expr_type(output_range)
     elif output_threshold_abs is not None:
       assert output_threshold_factor is None, "can only specify one output threshold type"
       output_threshold = RangeExpr._to_expr_type(output_threshold_abs)  # TODO avoid internal functions?
