@@ -85,7 +85,7 @@ class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
         super().contents()
 
         self.require(self.jd_pwr_src.is_connected() | self.jd_pwr_sink.is_connected())
-        self.require(self.jd_pwr_src.is_connected().implies(not self.jd_pwr_sink.is_connected()))
+        self.require(self.jd_pwr_src.is_connected().implies(~self.jd_pwr_sink.is_connected()))
 
     def generate(self):
         super().generate()
@@ -152,18 +152,19 @@ class JacdacEdgeConnector(Connector, JacdacSubcircuit, GeneratorBlock):
 
     def generate(self):
         super().contents()
-        self.conn = self.Block(JacdacEdgeConnectorBare(self.is_power_provider))
-
-        self.connect(self.jd_data.jd_data, self.conn.jd_data)
-
-        if self.get(self.jd_pwr_src.is_connected()):
-            jd_pwr_node = self.connect(self.jd_pwr_src, self.conn.jd_pwr_src)
-        else:
-            jd_pwr_node = self.connect(self.jd_pwr_sink, self.conn.jd_pwr_sink)
 
         with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
+            self.conn = imp.Block(JacdacEdgeConnectorBare(self.is_power_provider))
+
+            if self.get(self.jd_pwr_src.is_connected()):
+                jd_pwr_node = self.connect(self.jd_pwr_src, self.conn.jd_pwr_src)
+            else:
+                jd_pwr_node = self.connect(self.jd_pwr_sink, self.conn.jd_pwr_sink)
+
+            self.connect(self.jd_data.jd_data, self.conn.jd_data)
+
             (self.status_led, ), _ = self.chain(self.jd_status, imp.Block(IndicatorLed(Led.Orange)))
             (self.tvs_jd_pwr, ), _ = self.chain(jd_pwr_node,
                                                 imp.Block(ProtectionTvsDiode(working_voltage=(0, 5)*Volt)))
