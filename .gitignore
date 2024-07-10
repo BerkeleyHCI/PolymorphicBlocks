@@ -37,3 +37,4 @@ dmypy.json
 *.log
 *.csv
 *.kicad_sch.lck
+*.kicad_pcb.lck
