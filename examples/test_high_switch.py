@@ -80,7 +80,7 @@ class CalSolPowerConnector(Connector, FootprintBlock):
       voltage_out=12 * Volt(tol=0.1),
       current_limits=(0, 3) * Amp  # TODO get actual limits from LVPDB?
     ))
-    self.gnd = self.Port(GroundSource())
+    self.gnd = self.Port(Ground())
 
   def contents(self):
     super().contents()
@@ -104,7 +104,7 @@ class CalSolCanConnector(Connector, FootprintBlock):
       voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
       current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
     ))
-    self.gnd = self.Port(GroundSource())
+    self.gnd = self.Port(Ground())
     self.differential = self.Port(CanDiffPort(), [Output])
 
   def contents(self):
@@ -131,7 +131,7 @@ class CalSolCanConnectorRa(Connector, FootprintBlock):
       voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
       current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
     ))
-    self.gnd = self.Port(GroundSource())
+    self.gnd = self.Port(Ground())
     self.differential = self.Port(CanDiffPort(), [Output])
 
   def contents(self):
@@ -158,7 +158,7 @@ class M12CanConnector(Connector, FootprintBlock):
       voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
       current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
     ))
-    self.gnd = self.Port(GroundSource())
+    self.gnd = self.Port(Ground())
     self.differential = self.Port(CanDiffPort(), [Output])
 
   def contents(self):

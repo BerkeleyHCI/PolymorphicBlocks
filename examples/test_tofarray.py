@@ -16,7 +16,7 @@ class CanConnector(Connector):
       voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
       current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
     )))
-    self.connect(self.gnd, self.conn.pins.request('3').adapt_to(GroundSource()))
+    self.connect(self.gnd, self.conn.pins.request('3').adapt_to(Ground()))
     self.connect(self.differential.canh, self.conn.pins.request('4').adapt_to(DigitalSource()))
     self.connect(self.differential.canl, self.conn.pins.request('5').adapt_to(DigitalSource()))
 

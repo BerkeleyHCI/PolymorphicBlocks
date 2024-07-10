@@ -12,8 +12,8 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
     self.edge2 = self.create_edge()
 
     # TODO should connect to the nets, once .connected can take a Connection
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.edge2.gnd)
     self.tp_jd_pwr = self.Block(VoltageTestPoint()).connected(self.edge2.jd_pwr_sink)
-    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.edge2.gnd_sink)
 
     # POWER
     with self.implicit_connect(

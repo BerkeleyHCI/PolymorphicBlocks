@@ -59,13 +59,12 @@ class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
         self.is_power_provider = self.ArgParameter(is_power_provider)
 
         # ports for power source mode
-        self.gnd_src = self.Port(GroundSource(), optional=True)
+        self.gnd = self.Port(Ground(), [Common])
         self.jd_pwr_src = self.Port(VoltageSource(
             voltage_out=(3.5, 5.5)*Volt,
             current_limits=(0, 900)*mAmp
         ), optional=True)
 
-        self.gnd_sink = self.Port(Ground(), optional=True)
         self.jd_pwr_sink = self.Port(VoltageSink(
             # if not a power provider, extend the voltage range to directly connect to a power source edge
             voltage_limits=self.is_power_provider.then_else((4.3, 5.5)*Volt, (3.5, 5.5)*Amp),
@@ -80,30 +79,27 @@ class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
             output_thresholds=(0.3, 3.0)*Volt
         ))
 
-        self.generator_param(self.jd_pwr_src.is_connected(), self.gnd_src.is_connected())
+        self.generator_param(self.jd_pwr_src.is_connected())
 
     def contents(self):
         super().contents()
 
         self.require(self.jd_pwr_src.is_connected() | self.jd_pwr_sink.is_connected())
-        self.require(self.jd_pwr_src.is_connected().implies(self.gnd_src.is_connected()))
-        self.require(self.jd_pwr_sink.is_connected().implies(self.gnd_sink.is_connected()))
+        self.require(self.jd_pwr_src.is_connected().implies(not self.jd_pwr_sink.is_connected()))
 
     def generate(self):
         super().generate()
 
         if self.get(self.jd_pwr_src.is_connected()):
             pwr_node: CircuitPort = self.jd_pwr_src
-            gnd_node: CircuitPort = self.gnd_src
         else:
             pwr_node = self.jd_pwr_sink
-            gnd_node = self.gnd_sink
 
         self.footprint(  # EC refdes for edge connector
             'EC', 'Jacdac:JD-PEC-02_Prerouted_recessed',
             {
                 '1': self.jd_data,
-                '2': gnd_node,
+                '2': self.gnd,
                 '3': pwr_node,
             },
         )
@@ -144,18 +140,15 @@ class JacdacEdgeConnector(Connector, JacdacSubcircuit, GeneratorBlock):
         self.is_power_provider = self.ArgParameter(is_power_provider)
 
         # ports for power source mode
-        self.gnd_src = self.Port(Ground.empty(), optional=True)  # TODO REMOVE ME
+        self.gnd = self.Port(Ground.empty(), [Common])
         self.jd_pwr_src = self.Port(VoltageSource.empty(), optional=True)
-
-        self.gnd_sink = self.Port(Ground.empty(), optional=True)
         self.jd_pwr_sink = self.Port(VoltageSink.empty(), optional=True)
 
         self.jd_data = self.Port(JacdacDataPort.empty())
 
         self.jd_status = self.Port(DigitalSink.empty())  # for status LED
 
-        self.generator_param(self.gnd_src.is_connected(), self.jd_pwr_src.is_connected(),
-                             self.gnd_sink.is_connected(), self.jd_pwr_sink.is_connected())
+        self.generator_param(self.jd_pwr_src.is_connected(), self.jd_pwr_sink.is_connected())
 
     def generate(self):
         super().contents()
@@ -163,18 +156,13 @@ class JacdacEdgeConnector(Connector, JacdacSubcircuit, GeneratorBlock):
 
         self.connect(self.jd_data.jd_data, self.conn.jd_data)
 
-        if self.get(self.gnd_src.is_connected()):
-            gnd_node = self.connect(self.gnd_src, self.conn.gnd_src)
-        else:
-            gnd_node = self.connect(self.gnd_sink, self.conn.gnd_sink)
-
         if self.get(self.jd_pwr_src.is_connected()):
             jd_pwr_node = self.connect(self.jd_pwr_src, self.conn.jd_pwr_src)
         else:
             jd_pwr_node = self.connect(self.jd_pwr_sink, self.conn.jd_pwr_sink)
 
         with self.implicit_connect(
-            ImplicitConnect(gnd_node, [Common]),
+            ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             (self.status_led, ), _ = self.chain(self.jd_status, imp.Block(IndicatorLed(Led.Orange)))
             (self.tvs_jd_pwr, ), _ = self.chain(jd_pwr_node,
@@ -295,15 +283,15 @@ class JacdacDeviceTop(DesignTop):
 
         self.jd_data = self.connect(self.edge.jd_data, self.jd_mh1.jd_data)
         self.jd_pwr = self.connect(self.edge.jd_pwr_src, self.jd_mh3.jd_pwr)
-        self.gnd = self.connect(self.edge.gnd_src, self.jd_mh2.gnd, self.jd_mh4.gnd)
+        self.gnd = self.connect(self.edge.gnd, self.jd_mh2.gnd, self.jd_mh4.gnd)
         self.jd_status = self.connect(self.edge.jd_status)
 
     def create_edge(self) -> JacdacEdgeConnector:
         """Utility function, creates a new edge connector (in power sink mode) and connects it to the net.
         The edge connector Block is returned and must be assigned a name."""
         new_edge = self.Block(JacdacEdgeConnector())
+        self.connect(self.gnd, new_edge.gnd)
+        self.connect(self.jd_pwr, new_edge.jd_pwr_sink)
         self.connect(self.jd_data, new_edge.jd_data)
         self.connect(self.jd_status, new_edge.jd_status)
-        self.connect(self.jd_pwr, new_edge.jd_pwr_sink)
-        self.connect(self.gnd, new_edge.gnd_sink)
         return new_edge

@@ -12,7 +12,7 @@ class PowerBarrelJack(Connector, PowerSource, Block):
     super().__init__()
 
     self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits))
-    self.gnd = self.Port(GroundSource())
+    self.gnd = self.Port(Ground())
 
 
 class Pj_102ah(PowerBarrelJack, FootprintBlock):
@@ -68,7 +68,7 @@ class LipoConnector(Connector, Battery):
     self.chg = self.Port(VoltageSink.empty(), optional=True)  # ideal port for charging
     self.conn = self.Block(PassiveConnector())
 
-    self.connect(self.gnd, self.conn.pins.request('1').adapt_to(GroundSource()))
+    self.connect(self.gnd, self.conn.pins.request('1').adapt_to(Ground()))
     pwr_pin = self.conn.pins.request('2')
     self.connect(self.pwr, pwr_pin.adapt_to(VoltageSource(
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
