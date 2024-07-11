@@ -30,7 +30,7 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.nsleep = self.Port(self.din_model)  # required, though can be tied high
         self.nfault = self.Port(DigitalSingleSource.low_from_supply(self.gnd), optional=True)
 
-        self.pgnds = self.Port(Vector(VoltageSink.empty()))
+        self.pgnds = self.Port(Vector(Passive.empty()))
 
         self.cpl = self.Port(Passive())  # connect Vm rated, 0.01uF ceramic capacitor
         self.cph = self.Port(Passive())
@@ -40,17 +40,13 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             self.gnd, self.vm,
             current_limits=(-2.5, 2.5)*Amp  # peak current, section 1
         )
-        pgnd_model = VoltageSink(
-            voltage_limits=(-0.5, 0.5)*Volt,  # Table 6.3 PGNDx voltage
-            current_draw=-self.vm.current_draw,
-        )
         channel_currents = []
         out_connected = []
         for i in ['1', '2', '3']:
             en_i = self.ens.append_elt(self.din_model, i)
             in_i = self.ins.append_elt(self.din_model, i)
             out_i = self.outs.append_elt(out_model, i)
-            self.pgnds.append_elt(pgnd_model, i)
+            self.pgnds.append_elt(Passive(), i)
 
             self.require(out_i.is_connected().implies(en_i.is_connected() & in_i.is_connected()))
             channel_currents.append(
@@ -104,8 +100,9 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.lcsc_part, 'C92482')
 
 
-class Drv8313(BldcDriver, Block):
-    def __init__(self) -> None:
+class Drv8313(BldcDriver, GeneratorBlock):
+    @init_in_parent
+    def __init__(self, risense_res: RangeLike=100*mOhm(tol=0.01)) -> None:
         super().__init__()
         self.ic = self.Block(Drv8313_Device())
         self.pwr = self.Export(self.ic.vm)
@@ -118,7 +115,9 @@ class Drv8313(BldcDriver, Block):
         self.nfault = self.Export(self.ic.nfault, optional=True)
 
         self.outs = self.Export(self.ic.outs)
-        self.pgnds = self.Port(Vector(VoltageSink.empty()), optional=True)  # connected in the generator if used
+        self.pgnd_sense = self.Port(Vector(AnalogSource.empty()), optional=True)  # generates sense resistors if used
+        self.risense_res = self.ArgParameter(risense_res)
+        self.generator_param(self.pgnd_sense.requested())
 
     def contents(self):
         super().contents()
@@ -141,8 +140,17 @@ class Drv8313(BldcDriver, Block):
         self.nsleep_default = self.Block(DigitalSourceConnected()) \
             .out_with_default(self.ic.nsleep, self.nsleep, self.ic.v3p3.as_digital_source())
 
-        self.pgnd_defaults = ElementDict[VoltageSourceConnected]()
+    def generate(self):
+        super().generate()
+        pgnd_requested = self.get(self.pgnd_sense.requested())
+        self.pgnd_res = ElementDict[CurrentSenseResistor]
+        self.pgnd_sense.defined()
         for i in ['1', '2', '3']:
-            pgnd = self.pgnds.append_elt(VoltageSink.empty(), i)
-            self.pgnd_defaults[i] = self.Block(VoltageSourceConnected())\
-                .out_with_default(self.ic.pgnds.request(i), pgnd, self.gnd)
+            pgnd_pin = self.ic.pgnds.request(i)
+            if i in pgnd_requested:
+                res = self.pgnd_res[i] = self.Block(CurrentSenseResistor(resistance=self.risense_res))\
+                    .connected(self.gnd, pgnd_pin.adapt_to(VoltageSource()))
+                self.connect(self.pgnd_sense.append_elt(AnalogSource.empty(), i), res.sense_out)
+            else:
+                self.connect(pgnd_pin.adapt_to(Ground()), self.gnd)
+            

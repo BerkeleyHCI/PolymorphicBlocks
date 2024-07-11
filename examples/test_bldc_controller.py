@@ -166,15 +166,12 @@ class BldcController(JlcBoardTop):
       self.curr = ElementDict[CurrentSenseResistor]()
       self.curr_amp = ElementDict[Amplifier]()
       self.curr_tp = ElementDict[AnalogTestPoint]()
-      for i in ['1', '2', '3']:
-        self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
-            .connected(self.mcu.gnd, self.bldc_drv.pgnds.request(i))
-
-        self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
-        self.connect(self.curr_amp[i].pwr, self.v3v3)
-        (_, self.curr_tp[i], ), _ = self.chain(self.curr[i].sense_out, self.curr_amp[i],
-                                            self.Block(AnalogTestPoint()),
-                                            self.mcu.adc.request(f'curr_{i}'))
+      # for i in ['1', '2', '3']:
+      #   self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
+      #   self.connect(self.curr_amp[i].pwr, self.v3v3)
+      #   (_, self.curr_tp[i], ), _ = self.chain(self.bldc.pgnd_sense.request(i), self.curr_amp[i],
+      #                                       self.Block(AnalogTestPoint()),
+      #                                       self.mcu.adc.request(f'curr_{i}'))
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -188,9 +185,9 @@ class BldcController(JlcBoardTop):
           'isense=5',
           'vsense=6',
           'ledg=7',
-          'curr_3=8',
-          'curr_2=9',
-          'curr_1=10',
+          # 'curr_3=8',
+          # 'curr_2=9',
+          # 'curr_1=10',
           'bldc_in_1=11',
           'bldc_en_1=12',
           'bldc_in_2=13',
