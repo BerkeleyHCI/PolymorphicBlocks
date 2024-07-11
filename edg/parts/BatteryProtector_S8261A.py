@@ -91,6 +91,6 @@ class S8261A(PowerConditioner, Block):
     self.connect(self.gnd_out, self.co_fet.source.adapt_to(Ground()))
     self.connect(self.ic.co, self.co_fet.gate)
 
-    self.vm_res = self.Block(
-      SeriesPowerResistor(2 * kOhm(tol=0.10))
-    ).connected(self.gnd_out, self.ic.vm.adapt_to(VoltageSink()))
+    self.vm_res = self.Block(Resistor(2 * kOhm(tol=0.10)))
+    self.connect(self.vm_res.a.adapt_to(Ground()), self.gnd_out)
+    self.connect(self.vm_res.b, self.ic.vm)
