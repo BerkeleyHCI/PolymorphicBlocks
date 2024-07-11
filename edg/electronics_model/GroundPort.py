@@ -6,6 +6,7 @@ from .CircuitBlock import CircuitPortBridge, CircuitPortAdapter, CircuitLink, Ci
 from .Units import Volt, Ohm
 
 if TYPE_CHECKING:
+    from .VoltagePorts import VoltageSource
     from .DigitalPorts import DigitalSource
     from .AnalogPort import AnalogSource
 
@@ -53,6 +54,17 @@ class GroundBridge(CircuitPortBridge):
         self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
 
 
+class GroundAdapterVoltageSource(CircuitPortAdapter['VoltageSource']):
+    @init_in_parent
+    def __init__(self):
+        from .VoltagePorts import VoltageSource
+        super().__init__()
+        self.src = self.Port(Ground())
+        self.dst = self.Port(VoltageSource(
+            voltage_out=self.src.link().voltage,
+        ))
+
+
 class GroundAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
     @init_in_parent
     def __init__(self):
@@ -82,6 +94,9 @@ class GroundAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
 class Ground(CircuitPort):
     link_type = GroundLink
     bridge_type = GroundBridge
+
+    def as_voltage_source(self) -> AnalogSource:
+        return self._convert(GroundAdapterVoltageSource())
 
     def as_digital_source(self) -> DigitalSource:
         return self._convert(GroundAdapterDigitalSource())

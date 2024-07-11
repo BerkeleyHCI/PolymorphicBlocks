@@ -1,4 +1,5 @@
 import functools
+from typing import Optional
 
 from ..abstract_parts import *
 from .JlcPart import JlcPart
@@ -102,7 +103,7 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 class Drv8313(BldcDriver, GeneratorBlock):
     @init_in_parent
-    def __init__(self, risense_res: RangeLike=100*mOhm(tol=0.01)) -> None:
+    def __init__(self, *, risense_res: RangeLike = 100*mOhm(tol=0.05)) -> None:
         super().__init__()
         self.ic = self.Block(Drv8313_Device())
         self.pwr = self.Export(self.ic.vm)
@@ -114,7 +115,7 @@ class Drv8313(BldcDriver, GeneratorBlock):
         self.nsleep = self.Port(DigitalSink.empty(), optional=True)  # tied high if not connected
         self.nfault = self.Export(self.ic.nfault, optional=True)
 
-        self.outs = self.Export(self.ic.outs)
+        self.outs = self.Port(Vector(DigitalSource.empty()))
         self.pgnd_sense = self.Port(Vector(AnalogSource.empty()), optional=True)  # generates sense resistors if used
         self.risense_res = self.ArgParameter(risense_res)
         self.generator_param(self.pgnd_sense.requested())
@@ -143,13 +144,20 @@ class Drv8313(BldcDriver, GeneratorBlock):
     def generate(self):
         super().generate()
         pgnd_requested = self.get(self.pgnd_sense.requested())
-        self.pgnd_res = ElementDict[CurrentSenseResistor]
+        gnd_voltage_source: Optional[VoltageSource] = None  # only create one, if needed
+        self.pgnd_res = ElementDict[CurrentSenseResistor]()
         self.pgnd_sense.defined()
+        self.outs.defined()
         for i in ['1', '2', '3']:
             pgnd_pin = self.ic.pgnds.request(i)
+            out = self.outs.append_elt(DigitalSource.empty(), i)
+            self.connect(out, self.ic.outs.request(i))
             if i in pgnd_requested:
-                res = self.pgnd_res[i] = self.Block(CurrentSenseResistor(resistance=self.risense_res))\
-                    .connected(self.gnd, pgnd_pin.adapt_to(VoltageSource()))
+                if gnd_voltage_source is None:
+                    gnd_voltage_source = self.gnd.as_voltage_source()
+                res = self.pgnd_res[i] = self.Block(CurrentSenseResistor(
+                    resistance=self.risense_res, sense_in_reqd=False
+                )).connected(gnd_voltage_source, pgnd_pin.adapt_to(VoltageSink(current_draw=out.link().current_drawn)))
                 self.connect(self.pgnd_sense.append_elt(AnalogSource.empty(), i), res.sense_out)
             else:
                 self.connect(pgnd_pin.adapt_to(Ground()), self.gnd)
