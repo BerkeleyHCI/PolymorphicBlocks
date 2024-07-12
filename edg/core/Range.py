@@ -230,7 +230,7 @@ class Range:
     else:
       lower = container.lower * (1 + self.DOUBLE_FLOAT_ROUND_FACTOR)
 
-    if self.upper >= 0:
+    if container.upper >= 0:
       upper = container.upper * (1 + self.DOUBLE_FLOAT_ROUND_FACTOR)
     else:
       upper = container.upper * (1 - self.DOUBLE_FLOAT_ROUND_FACTOR)

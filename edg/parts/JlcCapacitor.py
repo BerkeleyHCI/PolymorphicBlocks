@@ -13,12 +13,14 @@ class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageS
     '0603': 'Capacitor_SMD:C_0603_1608Metric',
     '0805': 'Capacitor_SMD:C_0805_2012Metric',
     '1206': 'Capacitor_SMD:C_1206_3216Metric',
+    '1210': 'Capacitor_SMD:C_1210_3225Metric',
     '1812': 'Capacitor_SMD:C_1812_4532Metric',
 
     'C0402': 'Capacitor_SMD:C_0402_1005Metric',
     'C0603': 'Capacitor_SMD:C_0603_1608Metric',
     'C0805': 'Capacitor_SMD:C_0805_2012Metric',
     'C1206': 'Capacitor_SMD:C_1206_3216Metric',
+    'C1210': 'Capacitor_SMD:C_1210_3225Metric',
     'C1812': 'Capacitor_SMD:C_1812_4532Metric',
   }
   DERATE_VOLTCO_MAP = {  # in terms of %capacitance / V over 3.6
@@ -26,6 +28,7 @@ class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageS
     'Capacitor_SMD:C_0603_1608Metric': float('inf'),  # not supported, should not generate below 1uF
     'Capacitor_SMD:C_0805_2012Metric': 0.08,
     'Capacitor_SMD:C_1206_3216Metric': 0.04,
+    'Capacitor_SMD:C_1210_3225Metric': 0.04,
     'Capacitor_SMD:C_1812_4532Metric': 0.04,  # arbitrary, copy from 1206
   }
 
@@ -38,10 +41,10 @@ class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageS
   @classmethod
   def _make_table(cls) -> PartsTable:
     CAPACITOR_MATCHES = {
-      'nominal_capacitance': re.compile("(^|\s)([^±]\S+F)($|\s)"),
-      'tolerance': re.compile("(^|\s)(±\S+[%F])($|\s)"),
-      'voltage': re.compile("(^|\s)(\d\S*V)($|\s)"),  # make sure not to catch 'Y5V'
-      'tempco': re.compile("(^|\s)([CXYZ]\d[GPRSTUV])($|\s)"),
+      'nominal_capacitance': re.compile(r"(^|\s)([^±]\S+F)($|\s)"),
+      'tolerance': re.compile(r"(^|\s)(±\S+[%F])($|\s)"),
+      'voltage': re.compile(r"(^|\s)(\d\S*V)($|\s)"),  # make sure not to catch 'Y5V'
+      'tempco': re.compile(r"(^|\s)([CXYZ]\d[GPRSTUV])($|\s)"),
     }
 
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
