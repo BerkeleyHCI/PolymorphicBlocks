@@ -62,7 +62,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
                gate_res: RangeLike):
     super().__init__()
     # in is generally towards the supply side, out is towards the inductor side
-    self.low_in = self.Port(VoltageSink.empty())
+    self.low_in = self.Port(Ground.empty())
     self.low_out = self.Port(VoltageSource.empty())
     self.low_boot_in = self.Port(VoltageSink.empty())  # bootstrap voltage for the prior cell, except if is_first
     self.low_boot_out = self.Port(VoltageSource.empty())  # bootstrap voltage for this cell
@@ -73,7 +73,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     self.high_boot_in = self.Port(VoltageSink.empty())
 
     # control signals
-    self.gnd_ctl = self.Port(VoltageSink.empty())
+    self.gnd_ctl = self.Port(Ground.empty())
     self.pwr_ctl = self.Port(VoltageSink.empty())
     self.low_pwm = self.Port(DigitalSink.empty())
     self.high_pwm = self.Port(DigitalSink.empty())
@@ -92,7 +92,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     if self.get(self.is_first):
       low_pwm: Port[DigitalLink] = self.low_pwm
       high_pwm: Port[DigitalLink] = self.high_pwm
-      self.gnd_ctl.init_from(VoltageSink())  # ideal port, not connected
+      self.gnd_ctl.init_from(Ground())  # ideal port, not connected
       self.pwr_ctl.init_from(VoltageSink())  # ideal port, not connected
     else:
       self.ldo = self.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.1)))
@@ -114,7 +114,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     driver_indep = self.driver.with_mixin(HalfBridgeDriverIndependent())
     self.connect(driver_indep.high_in, high_pwm)
     self.connect(driver_indep.low_in, low_pwm)
-    self.connect(self.driver.high_gnd, self.high_out)
+    self.connect(self.driver.high_gnd, self.high_out.as_ground())
 
     if self.get(self.high_boot_out.is_connected()):  # leave port disconnected if not used, to avoid an unsolved interface
       self.connect(self.driver.high_pwr, self.high_boot_out)  # schematic connected to boot diode
@@ -155,9 +155,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
         'high_boot_out_node': self.driver.high_pwr
       },
       conversions={
-        'low_in': VoltageSink(
-          current_draw=self.low_out.link().current_drawn
-        ),
+        'low_in': Ground(),  # TODO better conventions for Ground vs VoltageSink|Source
         'low_out': VoltageSource(
           voltage_out=self.low_in.link().voltage
         ),
@@ -248,7 +246,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
         self.connect(sw.high_in, self.pwr_in)
         self.connect(sw.low_boot_in, self.pwr_gate)
       else:
-        self.connect(sw.low_in, last_sw.low_out)
+        self.connect(sw.low_in, last_sw.low_out.as_ground())
         self.connect(sw.high_in, last_sw.high_out)
         self.connect(sw.low_boot_in, last_sw.low_boot_out)
         self.connect(sw.high_boot_out, last_sw.high_boot_in)

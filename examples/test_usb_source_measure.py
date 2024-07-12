@@ -4,6 +4,7 @@ from typing import Mapping, Optional, Dict, List
 from edg.abstract_parts.ESeriesUtil import ESeriesRatioUtil
 from edg.abstract_parts.ResistiveDivider import DividerValues
 from edg.electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic
+from edg.electronics_model.GroundPort import GroundAdapterAnalogSource  # needed by imported schematic
 from edg import *
 
 
@@ -294,7 +295,7 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
     self.ref_center = self.Port(AnalogSink.empty())
 
     self.pwr_gate_pos = self.Port(VoltageSink.empty())
-    self.pwr_gate_neg = self.Port(VoltageSink.empty())
+    self.pwr_gate_neg = self.Port(Ground.empty())
 
     self.control_voltage = self.Port(AnalogSink.empty())
     self.control_current_source = self.Port(AnalogSink.empty())
@@ -464,7 +465,7 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(Lm2664(output_ripple_limit=5*mVolt)),
         self.Block(VoltageTestPoint("vc-"))
       )
-      self.vcontroln = self.connect(self.reg_vcontroln.pwr_out)
+      self.vcontroln = self.connect(self.reg_vcontroln.pwr_out.as_ground())
 
     # power path domain
     with self.implicit_connect(
@@ -478,10 +479,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.vanalog, self.control.pwr_logic)
       self.connect(self.vcenter, self.control.ref_center)
 
-      # TODO: support non-zero grounds
-      self.vcontroln_forced = self.Block(ForcedVoltageCurrent(0*Volt(tol=0), self.control.pwr_gate_pos.current_draw))
-      self.connect(self.vcontroln_forced.pwr_in, self.vcontroln)
-      self.connect(self.vcontroln_forced.pwr_out, self.control.pwr_gate_neg)
+      self.connect(self.vcontroln, self.control.pwr_gate_neg)
       self.connect(self.vcontrol, self.control.pwr_gate_pos)
 
     # logic domain
