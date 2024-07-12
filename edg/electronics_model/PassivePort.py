@@ -19,10 +19,10 @@ class PassiveLink(CircuitLink):
 
 class PassiveAdapterGround(CircuitPortAdapter[Ground]):
   @init_in_parent
-  def __init__(self):
+  def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL):
     super().__init__()
     self.src = self.Port(Passive())
-    self.dst = self.Port(Ground())
+    self.dst = self.Port(Ground(voltage_limits=voltage_limits))
 
 
 class PassiveAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):

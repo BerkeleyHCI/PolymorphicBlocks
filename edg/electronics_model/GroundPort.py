@@ -29,16 +29,20 @@ class GroundLink(CircuitLink):
         self.gnds = self.Port(Vector(Ground()))
 
         self.voltage = self.Parameter(RangeExpr())
+        self.voltage_limits = self.Parameter(RangeExpr())
 
     def contents(self) -> None:
         super().contents()
 
         self.description = DescriptionString(
-            "<b>voltage</b>: ", DescriptionString.FormatUnits(self.voltage, "V"))
+            "<b>voltage</b>: ", DescriptionString.FormatUnits(self.voltage, "V"),
+            " <b>of limits</b>: ", DescriptionString.FormatUnits(self.voltage_limits, "V"))
 
         self.assign(self.voltage, self.ref.is_connected().then_else(
             self.ref.voltage_out, (0, 0)*Volt
         ))
+        self.assign(self.voltage_limits, self.gnds.intersection(lambda x: x.voltage_limits))
+        self.require(self.voltage_limits.contains(self.voltage), "overvoltage")
 
 
 class GroundBridge(CircuitPortBridge):
@@ -104,8 +108,14 @@ class Ground(CircuitPort):
     def as_analog_source(self) -> AnalogSource:
         return self._convert(GroundAdapterAnalogSource())
 
-    def __init__(self) -> None:
+    @classmethod
+    def from_gnd(cls, gnd: Ground, voltage_limits: RangeLike = RangeExpr.ALL) -> Ground:
+        """Creates a ground with an optional voltage offset rating from some other ground"""
+        return Ground(voltage_limits=GroundLink._voltage_range(gnd) + voltage_limits)
+
+    def __init__(self, voltage_limits: RangeLike = Range.all()) -> None:
         super().__init__()
+        self.voltage_limits = self.Parameter(RangeExpr(voltage_limits))
 
 
 class GroundReference(CircuitPort):
@@ -113,7 +123,7 @@ class GroundReference(CircuitPort):
 
     def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO) -> None:
         super().__init__()
-        self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
+        self.voltage_out = self.Parameter(RangeExpr(voltage_out))
 
 
 from deprecated import deprecated

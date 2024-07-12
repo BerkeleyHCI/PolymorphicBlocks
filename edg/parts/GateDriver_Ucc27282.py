@@ -25,7 +25,7 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       current_limits=(-3, 3)*Amp  # peak pullup and pulldown current
     ))
 
-    self.hs = self.Port(VoltageSink.from_gnd(
+    self.hs = self.Port(Ground.from_gnd(
       self.vss,
       voltage_limits=(-8, 100)  # looser negative rating possible with pulses
     ))
@@ -33,7 +33,7 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       voltage_out=self.hs.link().voltage + self.vdd.link().voltage,
     ))
     self.ho = self.Port(DigitalSource.from_supply(
-      self.hs.as_ground(), self.hb,
+      self.hs, self.hb,
       current_limits=(-3, 3)*Amp  # peak pullup and pulldown current
     ))
 

@@ -170,7 +170,7 @@ class IotIron(JlcBoardTop):
         self.mcu.adc.request('iron_vsense')
       )
       (self.ifilt, self.tp_i, self.iamp), _ = self.chain(
-        self.iron.sense_out,
+        self.iron.isense,
         imp.Block(Amplifier((18, 25))),
         imp.Block(rc_filter_model),
         self.Block(AnalogTestPoint()),
@@ -227,8 +227,8 @@ class IotIron(JlcBoardTop):
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
-        (['isense', 'res', 'res', 'smd_min_package'], '2512'),  # more power headroom
-        (['isense', 'res', 'res', 'require_basic_part'], False),
+        (['iron', 'isense_res', 'res', 'res', 'smd_min_package'], '2512'),  # more power headroom
+        (['iron', 'isense_res', 'res', 'res', 'require_basic_part'], False),
 
         # these will be enforced by the firmware control mechanism
         # (['conv', 'pwr_in', 'current_draw'], Range(0, 3)),  # max 3A input draw
