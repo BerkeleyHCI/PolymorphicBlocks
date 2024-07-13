@@ -181,7 +181,7 @@ class IotIron(JlcBoardTop):
         ratio=(150, 165),
         input_impedance=(0.9, 5)*kOhm
       ))
-      self.connect(self.tamp.input_negative, self.iron.gnd.as_analog_source())
+      self.connect(self.tamp.input_negative, self.iron.isense)
       self.connect(self.tamp.input_positive, self.iron.thermocouple)
       self.connect(self.tamp.output, self.mcu.adc.request('thermocouple'))
       self.tp_t = self.Block(AnalogTestPoint()).connected(self.iron.thermocouple)
