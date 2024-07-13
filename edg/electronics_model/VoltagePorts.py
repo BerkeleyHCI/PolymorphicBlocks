@@ -4,7 +4,7 @@ from typing import *
 from ..core import *
 from .CircuitBlock import CircuitPort, CircuitPortBridge, CircuitLink, CircuitPortAdapter
 from .GroundPort import GroundLink, GroundReference
-from .Units import Volt, Ohm
+from .Units import Volt, Ohm, Amp
 
 if TYPE_CHECKING:
   from .DigitalPorts import DigitalSource
@@ -108,8 +108,8 @@ class VoltageBase(CircuitPort[VoltageLink]):
   # TODO: support isolation domains and offset grounds
 
   # these are here (instead of in VoltageSource) since the port may be on the other side of a bridge
-  def as_ground(self) -> GroundReference:
-    return self._convert(VoltageSinkAdapterGroundReference())
+  def as_ground(self, current_draw=(0, 0)*Amp) -> GroundReference:
+    return self._convert(VoltageSinkAdapterGroundReference(current_draw))
 
   def as_digital_source(self) -> DigitalSource:
     return self._convert(VoltageSinkAdapterDigitalSource())
@@ -138,11 +138,12 @@ class VoltageSink(VoltageBase):
 
 class VoltageSinkAdapterGroundReference(CircuitPortAdapter['GroundReference']):
   @init_in_parent
-  def __init__(self):
+  def __init__(self, current_draw: RangeLike):
     super().__init__()
     from .GroundPort import GroundReference
     self.src = self.Port(VoltageSink(
       voltage_limits=RangeExpr.ALL * Volt,
+      current_draw=current_draw
     ))
     self.dst = self.Port(GroundReference(
       voltage_out=self.src.link().voltage,

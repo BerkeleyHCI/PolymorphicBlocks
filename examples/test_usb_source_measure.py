@@ -465,7 +465,8 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(Lm2664(output_ripple_limit=5*mVolt)),
         self.Block(VoltageTestPoint("vc-"))
       )
-      self.vcontroln = self.connect(self.reg_vcontroln.pwr_out.as_ground())
+      self.vcontroln = self.connect(self.reg_vcontroln.pwr_out.as_ground(
+        current_draw=self.reg_vcontrol.pwr_out.link().current_drawn))
 
     # power path domain
     with self.implicit_connect(
