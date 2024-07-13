@@ -99,7 +99,7 @@ class Ground(CircuitPort):
     link_type = GroundLink
     bridge_type = GroundBridge
 
-    def as_voltage_source(self) -> AnalogSource:
+    def as_voltage_source(self) -> VoltageSource:
         return self._convert(GroundAdapterVoltageSource())
 
     def as_digital_source(self) -> DigitalSource:

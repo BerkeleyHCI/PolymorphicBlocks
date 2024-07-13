@@ -108,7 +108,10 @@ class VoltageBase(CircuitPort[VoltageLink]):
   # TODO: support isolation domains and offset grounds
 
   # these are here (instead of in VoltageSource) since the port may be on the other side of a bridge
-  def as_ground(self, current_draw=(0, 0)*Amp) -> GroundReference:
+  def as_ground(self, current_draw) -> GroundReference:
+    """Adapts this port to a ground. Current draw is the current drawn from this port, and is required
+    since ground does not model current draw.
+    """
     return self._convert(VoltageSinkAdapterGroundReference(current_draw))
 
   def as_digital_source(self) -> DigitalSource:

@@ -114,7 +114,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     driver_indep = self.driver.with_mixin(HalfBridgeDriverIndependent())
     self.connect(driver_indep.high_in, high_pwm)
     self.connect(driver_indep.low_in, low_pwm)
-    self.connect(self.driver.high_gnd, self.high_out.as_ground())
+    self.connect(self.driver.high_gnd, self.high_out.as_ground(self.driver.high_pwr.link().current_drawn))
 
     if self.get(self.high_boot_out.is_connected()):  # leave port disconnected if not used, to avoid an unsolved interface
       self.connect(self.driver.high_pwr, self.high_boot_out)  # schematic connected to boot diode
@@ -246,7 +246,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
         self.connect(sw.high_in, self.pwr_in)
         self.connect(sw.low_boot_in, self.pwr_gate)
       else:
-        self.connect(sw.low_in, last_sw.low_out.as_ground())
+        self.connect(sw.low_in, last_sw.low_out.as_ground((0, 0)*Amp))  # TODO ground current modeling
         self.connect(sw.high_in, last_sw.high_out)
         self.connect(sw.low_boot_in, last_sw.low_boot_out)
         self.connect(sw.high_boot_out, last_sw.high_boot_in)
