@@ -161,4 +161,3 @@ class Drv8313(BldcDriver, GeneratorBlock):
                 self.connect(self.pgnd_sense.append_elt(AnalogSource.empty(), i), res.sense_out)
             else:
                 self.connect(pgnd_pin.adapt_to(Ground()), self.gnd)
-            
