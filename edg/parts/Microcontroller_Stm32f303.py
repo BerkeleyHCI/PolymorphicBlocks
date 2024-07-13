@@ -225,14 +225,13 @@ class Nucleo_F303k8(IoControllerUsbOut, IoControllerPowerOut, IoController, Stm3
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
-      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
-      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
       return VariantPinRemapper({
         'Vdd': self.pwr,
         'Vss': self.gnd,
       }).remap(self.SYSTEM_PIN_REMAP)
     else:  # board sources power (default)
-      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
       return VariantPinRemapper({
         'Vdd': self.pwr_out,
         'Vss': self.gnd,

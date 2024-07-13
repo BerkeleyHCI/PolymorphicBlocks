@@ -335,15 +335,14 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
-      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
-      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
       return VariantPinRemapper({
         'Vdd': self.pwr,
         'Vss': self.gnd,
         'GPIO2': self.io2,
       }).remap(self.SYSTEM_PIN_REMAP)
     else:  # board sources power (default)
-      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
       return VariantPinRemapper({
         'Vdd': self.pwr_out,
         'Vss': self.gnd,

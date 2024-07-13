@@ -431,14 +431,13 @@ class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoCont
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
-      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
-      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
       return VariantPinRemapper({
         'VDD': self.pwr,
         'GND': self.gnd,
       }).remap(self.SYSTEM_PIN_REMAP)
     else:  # board sources power (default)
-      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
       return VariantPinRemapper({
         'VDD': self.pwr_out,
         'GND': self.gnd,
