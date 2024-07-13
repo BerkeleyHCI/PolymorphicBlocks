@@ -16,8 +16,8 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
   @abstractmethod
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    """Returns GND and VDDIO (either can be VoltageSink or VoltageSource)."""
+  def _vddio(self) -> Port[VoltageLink]:
+    """Returns VDDIO (can be VoltageSink or VoltageSource)."""
     ...
 
   def _iovdd_model(self):
@@ -26,9 +26,9 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
       current_draw=(1.2, 4.3)*mAmp + self.io_current_draw.upper()  # Table 629
     )
 
-  def _dio_model(self, gnd: Port[VoltageLink], pwr: Port[VoltageLink]) -> DigitalBidir:
+  def _dio_model(self, pwr: Port[VoltageLink]) -> DigitalBidir:
     return DigitalBidir.from_supply(  # table 4.4
-      gnd, pwr,
+      self.gnd, pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-12, 12)*mAmp,  # by IOH / IOL modes
       input_threshold_abs=(0.8, 2.0)*Volt,  # for IOVdd=3.3, TODO other IOVdd ranges
@@ -36,11 +36,11 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
     )
 
   def _io_pinmap(self) -> PinMapUtil:
-    gnd, pwr = self._gnd_vddio()
-    dio_usb_model = dio_ft_model = dio_std_model = self._dio_model(gnd, pwr)
+    pwr = self._vddio()
+    dio_usb_model = dio_ft_model = dio_std_model = self._dio_model(pwr)
 
     adc_model = AnalogSink.from_supply(  # Table 626
-      gnd, pwr,
+      self.gnd, pwr,
       voltage_limit_tolerance=(0, 0),  # ADC input voltage range
       signal_limit_tolerance=(0, 0),  # ADC input voltage range
       impedance=(100, float('inf')) * kOhm
@@ -177,8 +177,8 @@ class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcirc
     'SWCLK': '24',
   }
 
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    return self.gnd, self.iovdd
+  def _vddio(self) -> Port[VoltageLink]:
+    return self.iovdd
 
   def __init__(self, **kwargs) -> None:
     super().__init__(**kwargs)
@@ -225,7 +225,7 @@ class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcirc
     super().contents()
 
     # Port models
-    dio_ft_model = dio_std_model = self._dio_model(self.gnd, self.iovdd)
+    dio_ft_model = dio_std_model = self._dio_model(self.iovdd)
     self.qspi.init_from(SpiController(dio_std_model))
     self.qspi_cs.init_from(dio_std_model)
     self.qspi_sd2.init_from(dio_std_model)
@@ -403,27 +403,24 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, Rp2040_Ios, IoContro
     'GPIO3': '11',
   }
 
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    if self.get(self.gnd.is_connected()):  # board sinks power
-      return self.gnd, self.pwr
+  def _vddio(self) -> Port[VoltageLink]:
+    if self.get(self.pwr.is_connected()):  # board sinks power
+      return self.pwr
     else:
-      return self.gnd_out, self.pwr_out
+      return self.pwr_out
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
-    if self.get(self.gnd.is_connected()):  # board sinks power
-      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
-      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
-      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
+    if self.get(self.pwr.is_connected()):  # board sinks power
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
       return VariantPinRemapper({
         'VDD': self.pwr,
         'GND': self.gnd,
       }).remap(self.SYSTEM_PIN_REMAP)
     else:  # board sources power (default)
-      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
-      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")
       return VariantPinRemapper({
         'VDD': self.pwr_out,
-        'GND': self.gnd_out,
+        'GND': self.gnd,
         'VUSB': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
@@ -433,7 +430,6 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, Rp2040_Ios, IoContro
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._iovdd_model())
 
-    self.gnd_out.init_from(GroundSource())
     self.vusb_out.init_from(VoltageSource(
       voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
       current_limits=UsbConnector.USB2_CURRENT_LIMITS
@@ -443,7 +439,7 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, Rp2040_Ios, IoContro
       current_limits=UsbConnector.USB2_CURRENT_LIMITS
     ))
 
-    self.generator_param(self.gnd.is_connected())
+    self.generator_param(self.pwr.is_connected())
 
   def generate(self) -> None:
     super().generate()

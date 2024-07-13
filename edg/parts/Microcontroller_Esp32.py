@@ -18,8 +18,8 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
   @abstractmethod
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    """Returns GND and VDDIO (either can be VoltageSink or VoltageSource)."""
+  def _vddio(self) -> Port[VoltageLink]:
+    """Returns VDDIO (can be VoltageSink or VoltageSource)."""
     ...
 
   def _vdd_model(self) -> VoltageSink:
@@ -28,9 +28,9 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
       current_draw=(0.001, 370)*mAmp + self.io_current_draw.upper()  # from power off (table 8) to RF working (WRROM datasheet table 9)
     )
 
-  def _dio_model(self, gnd: Port[VoltageLink], pwr: Port[VoltageLink]) -> DigitalBidir:
+  def _dio_model(self, pwr: Port[VoltageLink]) -> DigitalBidir:
     return DigitalBidir.from_supply(  # section 5.2, table 15
-      gnd, pwr,
+      self.gnd, pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-28, 40)*mAmp,
       current_draw=(0, 0)*Amp,
@@ -39,10 +39,10 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
     )
 
   def _io_pinmap(self) -> PinMapUtil:
-    gnd, pwr = self._gnd_vddio()
-    dio_model = self._dio_model(gnd, pwr)
+    pwr = self._vddio()
+    dio_model = self._dio_model(pwr)
     sdio_model = DigitalBidir.from_supply(  # section 5.2, table 15, for SDIO power domain pins
-      gnd, pwr,
+      self.gnd, pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-28, 20)*mAmp,  # reduced sourcing capability
       current_draw=(0, 0)*Amp,
@@ -51,12 +51,12 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
     )
 
     adc_model = AnalogSink.from_supply(
-      gnd, pwr,
+      self.gnd, pwr,
       signal_limit_abs=(0.1, 2.45)*Volt,  # table 3-4, effective ADC range
       # TODO: impedance / leakage - not specified by datasheet
     )
 
-    dac_model = AnalogSource.from_supply(gnd, pwr)  # TODO: no specs in datasheet?!
+    dac_model = AnalogSource.from_supply(self.gnd, pwr)  # TODO: no specs in datasheet?!
 
     uart_model = UartPort(DigitalBidir.empty())
     spi_model = SpiController(DigitalBidir.empty(), (0, 80) * MHertz)  # section 4.1.17
@@ -153,7 +153,7 @@ class Esp32_Base(Esp32_Ios, GeneratorBlock):
     self.pwr = self.Port(self._vdd_model(), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
-    dio_model = self._dio_model(self.pwr, self.gnd)
+    dio_model = self._dio_model(self.pwr)
     self.chip_pu = self.Port(dio_model)  # power control, must NOT be left floating, table 1
     # section 2.4, table 5: strapping IOs that need a fixed value to boot, TODO currently not allocatable post-boot
     self.io0 = self.Port(dio_model, optional=True)  # default pullup (SPI boot), set low to download boot
@@ -162,8 +162,8 @@ class Esp32_Base(Esp32_Ios, GeneratorBlock):
     # similarly, the programming UART is fixed and allocated separately
     self.uart0 = self.Port(UartPort(dio_model), optional=True)
 
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    return self.gnd, self.pwr
+  def _vddio(self) -> Port[VoltageLink]:
+    return self.pwr
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
@@ -327,28 +327,25 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
     # 'GPIO23': '39',  # camera CSI_HREF
   }
 
-  def _gnd_vddio(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
-    if self.get(self.gnd.is_connected()):  # board sinks power
-      return self.gnd, self.pwr
+  def _vddio(self) -> Port[VoltageLink]:
+    if self.get(self.pwr.is_connected()):  # board sinks power
+      return self.pwr
     else:
-      return self.gnd_out, self.pwr_out
+      return self.pwr_out
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
-    if self.get(self.gnd.is_connected()):  # board sinks power
-      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
-      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
-      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
+    if self.get(self.pwr.is_connected()):  # board sinks power
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
       return VariantPinRemapper({
         'Vdd': self.pwr,
         'Vss': self.gnd,
         'GPIO2': self.io2,
       }).remap(self.SYSTEM_PIN_REMAP)
     else:  # board sources power (default)
-      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
-      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")
       return VariantPinRemapper({
         'Vdd': self.pwr_out,
-        'Vss': self.gnd_out,
+        'Vss': self.gnd,
         'Vusb': self.vusb_out,
         'GPIO2': self.io2,
       }).remap(self.SYSTEM_PIN_REMAP)
@@ -359,7 +356,6 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._vdd_model())
 
-    self.gnd_out.init_from(GroundSource())
     self.vusb_out.init_from(VoltageSource(
       voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
       current_limits=UsbConnector.USB2_CURRENT_LIMITS
@@ -371,13 +367,13 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
 
     self.io2 = self.Port(DigitalBidir.empty(), optional=True)  # default pulldown (enable download boot), ignored during SPI boot
 
-    self.generator_param(self.gnd.is_connected())
+    self.generator_param(self.pwr.is_connected())
 
   def generate(self) -> None:
     super().generate()
 
     gnd, pwr = self._gnd_vddio()
-    self.io2.init_from(self._dio_model(gnd, pwr))  # TODO remove this hack
+    self.io2.init_from(self._dio_model(pwr))  # TODO remove this hack
 
     self.footprint(
       'U', 'edg:Freenove_ESP32-WROVER',

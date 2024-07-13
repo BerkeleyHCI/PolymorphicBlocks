@@ -48,11 +48,11 @@ class RobotOwl(JlcBoardTop):
     mcu_usb = self.mcu.with_mixin(IoControllerUsbOut())
     mcu_i2s = self.mcu.with_mixin(IoControllerI2s())
 
-    self.gnd = self.connect(mcu_pwr.gnd_out)
+    self.gnd = self.connect(self.mcu.gnd)
     self.vusb = self.connect(mcu_usb.vusb_out)
     self.v3v3 = self.connect(mcu_pwr.pwr_out)
 
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(mcu_pwr.gnd_out)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.mcu.gnd)
     self.tp_usb = self.Block(VoltageTestPoint()).connected(mcu_usb.vusb_out)
     self.tp_3v3 = self.Block(VoltageTestPoint()).connected(mcu_pwr.pwr_out)
 

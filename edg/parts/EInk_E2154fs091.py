@@ -118,7 +118,7 @@ class E2154fs091(EInk):
     self.connect(self.boost_ind.b, self.boost_sw.drain, self.boot_cap.pos)
     self.connect(self.boost_sw.gate, self.ic.gdr)
     self.connect(self.boost_sw.source, self.boost_res.a, self.ic.rese)
-    self.connect(self.boost_res.b.adapt_to(VoltageSink()), self.gnd)
+    self.connect(self.boost_res.b.adapt_to(Ground()), self.gnd)
 
     self.vdd_cap0 = self.Block(DecouplingCapacitor(capacitance=0.11*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
     self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)

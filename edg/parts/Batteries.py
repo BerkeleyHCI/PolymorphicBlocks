@@ -9,7 +9,7 @@ class Cr2032(Battery, FootprintBlock):
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
       current_limits=(0, 10)*mAmp,
     ))
-    self.gnd.init_from(GroundSource())
+    self.gnd.init_from(Ground())
 
   def contents(self):
     super().contents()
@@ -35,7 +35,7 @@ class Li18650(Battery, FootprintBlock):
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
       current_limits=(0, 2)*Amp,  # arbitrary assuming low capacity, 1 C discharge
     ))
-    self.gnd.init_from(GroundSource())
+    self.gnd.init_from(Ground())
 
   def contents(self):
     super().contents()
@@ -61,7 +61,7 @@ class AABattery(Battery, FootprintBlock):
       voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
       current_limits=(0, 1)*Amp,
     ))
-    self.gnd.init_from(GroundSource())
+    self.gnd.init_from(Ground())
 
   def contents(self):
     super().contents()

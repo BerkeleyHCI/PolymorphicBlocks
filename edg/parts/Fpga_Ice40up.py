@@ -41,7 +41,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
   BITSTREAM_BITS: int = 0
 
   @staticmethod
-  def make_dio_model(gnd: VoltageSink, vccio: VoltageSink):
+  def make_dio_model(gnd: Ground, vccio: VoltageSink):
     return DigitalBidir.from_supply(
       gnd, vccio,
       voltage_limit_tolerance=(-0.3, 0.2) * Volt,  # table 4.13

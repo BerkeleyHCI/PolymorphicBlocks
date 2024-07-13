@@ -7,8 +7,9 @@ class S8261A_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     super().__init__()
 
     self.vss = self.Port(Ground())
-    self.vdd = self.Port(VoltageSink(
-      voltage_limits=self.vss.voltage_limits + RangeExpr._to_expr_type((-0.3, 12) * Volt),
+    self.vdd = self.Port(VoltageSink.from_gnd(
+      self.vss,
+      voltage_limits=(-0.3, 12) * Volt,
       current_draw=(0.7, 5.5) * uAmp
     ))
 
@@ -44,10 +45,10 @@ class S8261A(PowerConditioner, Block):
 
     self.ic = self.Block(S8261A_Device())
 
-    self.pwr_out = self.Port(VoltageSource.empty())
-    self.gnd_out = self.Port(GroundSource.empty())
-    self.pwr_in = self.Port(VoltageSink.empty())
     self.gnd_in = self.Export(self.ic.vss)
+    self.pwr_in = self.Port(VoltageSink.empty())
+    self.gnd_out = self.Port(Ground.empty())
+    self.pwr_out = self.Port(VoltageSource.empty())
 
     self.do_fet = self.Block(Fet.NFet(
       drain_current=self.pwr_in.link().current_drawn,
@@ -87,9 +88,9 @@ class S8261A(PowerConditioner, Block):
     self.connect(self.do_fet.drain, self.co_fet.drain)
 
     # co fet
-    self.connect(self.gnd_out, self.co_fet.source.adapt_to(GroundSource()))
+    self.connect(self.gnd_out, self.co_fet.source.adapt_to(Ground()))
     self.connect(self.ic.co, self.co_fet.gate)
 
-    self.vm_res = self.Block(
-      SeriesPowerResistor(2 * kOhm(tol=0.10))
-    ).connected(self.gnd_out, self.ic.vm.adapt_to(VoltageSink()))
+    self.vm_res = self.Block(Resistor(2 * kOhm(tol=0.10)))
+    self.connect(self.vm_res.a.adapt_to(Ground()), self.gnd_out)
+    self.connect(self.vm_res.b, self.ic.vm)

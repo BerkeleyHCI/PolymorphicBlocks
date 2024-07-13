@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TypeVar, Type, Dict
 
 from ..core import *
+from .GroundPort import Ground
 from .AnalogPort import AnalogSource, AnalogSink
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource
@@ -14,6 +15,14 @@ class PassiveLink(CircuitLink):
   def __init__(self):
     super().__init__()
     self.passives = self.Port(Vector(Passive()))
+
+
+class PassiveAdapterGround(CircuitPortAdapter[Ground]):
+  @init_in_parent
+  def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL):
+    super().__init__()
+    self.src = self.Port(Passive())
+    self.dst = self.Port(Ground(voltage_limits=voltage_limits))
 
 
 class PassiveAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
@@ -132,6 +141,7 @@ class PassiveBridge(CircuitPortBridge):
 class Passive(CircuitPort[PassiveLink]):
   """Basic copper-only port, which can be adapted to a more strongly typed Voltage/Digital/Analog* port"""
   adapter_type_map: Dict[Type[Port], Type[CircuitPortAdapter]] = {
+    Ground: PassiveAdapterGround,
     VoltageSource: PassiveAdapterVoltageSource,
     VoltageSink: PassiveAdapterVoltageSink,
     DigitalSink: PassiveAdapterDigitalSink,

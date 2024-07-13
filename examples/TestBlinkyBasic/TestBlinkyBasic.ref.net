@@ -37,7 +37,7 @@
 (net (code 1) (name "led.signal")
   (node (ref U1) (pin 10))
   (node (ref D1) (pin 2)))
-(net (code 2) (name "mcu.gnd_out")
+(net (code 2) (name "mcu.gnd")
   (node (ref U1) (pin 4))
   (node (ref U1) (pin 17))
   (node (ref R1) (pin 2)))

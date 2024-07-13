@@ -12,8 +12,8 @@ class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, Bas
   RESOURCE_PIN_REMAP: Dict[str, str]
 
   @abstractmethod
-  def _gnd_vddio_vdda(self) -> Tuple[Port[VoltageLink], Port[VoltageLink], Port[VoltageLink]]:
-    """Returns GND, VDDIO, VDDA (either can be VoltageSink or VoltageSource)."""
+  def _vddio_vdda(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+    """Returns VDDIO, VDDA (either can be VoltageSink or VoltageSource)."""
     ...
 
   def _vdd_model(self) -> VoltageSink:
@@ -26,40 +26,40 @@ class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, Bas
     """Returns the mappable for a STM32F303 device with the input power and ground references.
     This allows a shared definition between discrete chips and microcontroller boards"""
     # these are common to all IO blocks
-    gnd, vdd, vdda = self._gnd_vddio_vdda()
+    vdd, vdda = self._vddio_vdda()
 
     input_threshold_factor = (0.3, 0.7)  # TODO relaxed (but more complex) bounds available for different IO blocks
     current_limits = (-20, 20)*mAmp  # Section 6.3.14, TODO loose with relaxed VOL/VOH
     dio_tc_model = DigitalBidir.from_supply(
-      gnd, vdd,
+      self.gnd, vdd,
       voltage_limit_abs=(-0.3, 0.3) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tc_switch_model = DigitalBidir.from_supply(
-      gnd, vdd,
+      self.gnd, vdd,
       voltage_limit_abs=(-0.3, 0.3) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=(-3, 0),  # Table 13, note 1, can sink 3 mA and should not source current
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tt_model = DigitalBidir.from_supply(
-      gnd, vdd,
+      self.gnd, vdd,
       voltage_limit_abs=(-0.3, 3.6) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tta_model = DigitalBidir.from_supply(
-      gnd, vdd,
+      self.gnd, vdd,
       voltage_limit_abs=(-0.3 * Volt, vdda.link().voltage.lower() + 0.3 * Volt),  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_ft_model = DigitalBidir.from_supply(
-      gnd, vdd,
+      self.gnd, vdd,
       voltage_limit_abs=(-0.3, 5.5) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
@@ -67,7 +67,7 @@ class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, Bas
     )
     dio_ftf_model = dio_ft_model
     dio_boot0_model = DigitalBidir.from_supply(
-      gnd, vdd,
+      self.gnd, vdd,
       voltage_limit_abs=(-0.3, 5.5) * Volt,  # Table 19
       current_draw=(0, 0)*Amp, current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
@@ -75,13 +75,13 @@ class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, Bas
     )
 
     adc_model = AnalogSink.from_supply(
-      gnd, vdd,
+      self.gnd, vdd,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       signal_limit_tolerance=(0, 0),  # Table 60 conversion voltage range
       impedance=100*kOhm(tol=0)  # TODO: actually spec'd as maximum external impedance; internal impedance not given
     )
     dac_model = AnalogSource.from_supply(
-      gnd, vdd,
+      self.gnd, vdd,
       signal_out_bound=(0.2*Volt, -0.2*Volt),
       impedance=15*kOhm(tol=0)  # assumes buffer off
     )
@@ -217,27 +217,24 @@ class Nucleo_F303k8(IoControllerUsbOut, IoControllerPowerOut, IoController, Stm3
     'PB3': '30',  # CN4.15, D13
   }
 
-  def _gnd_vddio_vdda(self) -> Tuple[Port[VoltageLink], Port[VoltageLink], Port[VoltageLink]]:
-    if self.get(self.gnd.is_connected()):  # board sinks power
-      return self.gnd, self.pwr, self.pwr
+  def _vddio_vdda(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
+    if self.get(self.pwr.is_connected()):  # board sinks power
+      return self.pwr, self.pwr
     else:
-      return self.gnd_out, self.pwr_out, self.pwr_out
+      return self.pwr_out, self.pwr_out
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
-    if self.get(self.gnd.is_connected()):  # board sinks power
-      self.require(~self.vusb_out.is_connected(), "can't source USB power if source gnd not connected")
-      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if source gnd not connected")
-      self.require(~self.gnd_out.is_connected(), "can't source gnd if source gnd not connected")
+    if self.get(self.pwr.is_connected()):  # board sinks power
+      self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
+      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
       return VariantPinRemapper({
         'Vdd': self.pwr,
         'Vss': self.gnd,
       }).remap(self.SYSTEM_PIN_REMAP)
     else:  # board sources power (default)
-      self.require(~self.pwr.is_connected(), "can't sink power if source gnd connected")
-      self.require(~self.gnd.is_connected(), "can't sink gnd if source gnd connected")
       return VariantPinRemapper({
         'Vdd': self.pwr_out,
-        'Vss': self.gnd_out,
+        'Vss': self.gnd,
         'Vusb': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
@@ -247,7 +244,6 @@ class Nucleo_F303k8(IoControllerUsbOut, IoControllerPowerOut, IoController, Stm3
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._vdd_model())
 
-    self.gnd_out.init_from(GroundSource())
     self.vusb_out.init_from(VoltageSource(
       voltage_out=(4.75 - 0.58, 5.1) * Volt,  # 4.75V USB - 0.58v BAT60JFILM drop to 5.1 from LD1117S50TR, ignoring ST890CDR
       current_limits=(0, 0.5) * Amp  # max USB draw  # TODO higher from external power
@@ -257,7 +253,7 @@ class Nucleo_F303k8(IoControllerUsbOut, IoControllerPowerOut, IoController, Stm3
       current_limits=(0, 0.5) * Amp  # max USB current draw, LDO also guarantees 500mA output current
     ))
 
-    self.generator_param(self.gnd.is_connected())
+    self.generator_param(self.pwr.is_connected())
 
   def generate(self) -> None:
     super().generate()

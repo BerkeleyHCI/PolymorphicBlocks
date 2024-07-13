@@ -41,7 +41,7 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                cc_pullup_capable: BoolLike = False) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits), optional=True)
-    self.gnd = self.Port(GroundSource())
+    self.gnd = self.Port(Ground())
 
     self.usb = self.Port(UsbHostPort(), optional=True)
     self.shield = self.Port(Passive(), optional=True)
@@ -126,7 +126,7 @@ class UsbAPlugPads(UsbDeviceConnector, FootprintBlock):
       voltage_out=self.USB2_VOLTAGE_RANGE,
       current_limits=self.USB2_CURRENT_LIMITS
     ))
-    self.gnd.init_from(GroundSource())
+    self.gnd.init_from(Ground())
     self.usb.init_from(UsbHostPort())
 
     self.footprint(
@@ -151,7 +151,7 @@ class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
       voltage_out=self.USB2_VOLTAGE_RANGE,
       current_limits=self.USB2_CURRENT_LIMITS
     ))
-    self.gnd.init_from(GroundSource())
+    self.gnd.init_from(Ground())
     self.usb.init_from(UsbHostPort())
 
     self.footprint(

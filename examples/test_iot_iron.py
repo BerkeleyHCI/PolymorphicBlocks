@@ -7,21 +7,27 @@ class IronConnector(Connector, Block):
   """See main design for details about pinning and compatibility.
   This assumes a common ground with heater+ and thermocouple+.
   TODO: support series heater and thermocouple, requires additional protection circuits on amps
+  TODO: optional generation for isense_res, if not connected
   """
   @init_in_parent
-  def __init__(self):
+  def __init__(self, *, isense_resistance: RangeLike = 22*mOhm(tol=0.05), current_draw: RangeLike=(0, 3.25)*Amp):
     super().__init__()
     self.conn = self.Block(PinHeader254(3))
 
-    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()),
-                           [Common])
+    self.gnd = self.Port(Ground.empty(), [Common])
     self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink(
-      current_draw=(0, 3.25)*Amp
+      current_draw=current_draw
     )))
     self.thermocouple = self.Export(self.conn.pins.request('3').adapt_to(AnalogSource(
       voltage_out=self.gnd.link().voltage + (0, 14.3)*mVolt,
       signal_out=self.gnd.link().voltage + (0, 14.3)*mVolt  # up to ~350 C
     )), optional=True)
+
+    self.isense_res = self.Block(CurrentSenseResistor(resistance=isense_resistance, sense_in_reqd=False))
+    self.isense = self.Export(self.isense_res.sense_out)
+    self.connect(self.conn.pins.request('1').adapt_to(VoltageSink(current_draw=current_draw)),
+                 self.isense_res.pwr_out)
+    self.connect(self.gnd.as_voltage_source(), self.isense_res.pwr_in)
 
 
 class IotIron(JlcBoardTop):
@@ -41,7 +47,7 @@ class IotIron(JlcBoardTop):
     self.gnd = self.connect(self.usb.gnd)
 
     self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
 
     # POWER
     with self.implicit_connect(
@@ -147,16 +153,8 @@ class IotIron(JlcBoardTop):
         imp.Block(FootprintToucbPad('edg:Symbol_DucklingSolid'))
       )
 
-    self.iron = self.Block(IronConnector())
-    self.connect(self.conv.pwr_out, self.iron.pwr)
-
-    self.isense = self.Block(CurrentSenseResistor(resistance=22*mOhm(tol=0.05), sense_in_reqd=False))
-    self.connect(self.isense.pwr_in, self.gnd)
-    (self.isense_force, ), _ = self.chain(
-      self.isense.pwr_out,  # gnd currents not modeled, this forces one for sense resistor power
-      self.Block(ForcedVoltageCurrentDraw(forced_current_draw=self.iron.pwr.link().current_drawn)),
-      self.iron.gnd
-    )
+      self.iron = imp.Block(IronConnector())
+      self.connect(self.conv.pwr_out, self.iron.pwr)
 
     # IRON SENSE AMPS - 3v3 DOMAIN
     with self.implicit_connect(
@@ -172,7 +170,7 @@ class IotIron(JlcBoardTop):
         self.mcu.adc.request('iron_vsense')
       )
       (self.ifilt, self.tp_i, self.iamp), _ = self.chain(
-        self.isense.sense_out,
+        self.iron.isense,
         imp.Block(Amplifier((18, 25))),
         imp.Block(rc_filter_model),
         self.Block(AnalogTestPoint()),
@@ -183,7 +181,7 @@ class IotIron(JlcBoardTop):
         ratio=(150, 165),
         input_impedance=(0.9, 5)*kOhm
       ))
-      self.connect(self.tamp.input_negative, self.iron.gnd.as_analog_source())
+      self.connect(self.tamp.input_negative, self.iron.isense)
       self.connect(self.tamp.input_positive, self.iron.thermocouple)
       self.connect(self.tamp.output, self.mcu.adc.request('thermocouple'))
       self.tp_t = self.Block(AnalogTestPoint()).connected(self.iron.thermocouple)
@@ -229,8 +227,8 @@ class IotIron(JlcBoardTop):
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
-        (['isense', 'res', 'res', 'smd_min_package'], '2512'),  # more power headroom
-        (['isense', 'res', 'res', 'require_basic_part'], False),
+        (['iron', 'isense_res', 'res', 'res', 'smd_min_package'], '2512'),  # more power headroom
+        (['iron', 'isense_res', 'res', 'res', 'require_basic_part'], False),
 
         # these will be enforced by the firmware control mechanism
         # (['conv', 'pwr_in', 'current_draw'], Range(0, 3)),  # max 3A input draw

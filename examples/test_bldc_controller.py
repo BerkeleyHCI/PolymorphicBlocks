@@ -88,9 +88,7 @@ class BldcController(JlcBoardTop):
 
     self.vusb = self.connect(mcu_usb.vusb_out)
     self.v3v3 = self.connect(mcu_pwr.pwr_out)
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      mcu_pwr.gnd_out, self.motor_pwr.gnd)
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
+    self.gnd = self.connect(self.mcu.gnd, self.motor_pwr.gnd)
 
     # 3V3 DOMAIN
     with self.implicit_connect(
@@ -148,7 +146,7 @@ class BldcController(JlcBoardTop):
         imp.Block(AnalogClampResistor()),
         self.mcu.adc.request('isense'))
 
-      self.bldc_drv = imp.Block(Drv8313())
+      self.bldc_drv = imp.Block(Drv8313(risense_res=50*mOhm(tol=0.05)))
       self.connect(self.isense.pwr_out, self.bldc_drv.pwr)
 
       self.connect(self.mcu.gpio.request('bldc_reset'), self.bldc_drv.nreset)
@@ -169,14 +167,11 @@ class BldcController(JlcBoardTop):
       self.curr_amp = ElementDict[Amplifier]()
       self.curr_tp = ElementDict[AnalogTestPoint]()
       for i in ['1', '2', '3']:
-        self.curr[i] = self.Block(CurrentSenseResistor(50*mOhm(tol=0.05), sense_in_reqd=False))\
-            .connected(self.gnd_merge.pwr_out, self.bldc_drv.pgnds.request(i))
-
         self.curr_amp[i] = imp.Block(Amplifier(Range.from_tolerance(20, 0.05)))
         self.connect(self.curr_amp[i].pwr, self.v3v3)
-        (_, self.curr_tp[i], ), _ = self.chain(self.curr[i].sense_out, self.curr_amp[i],
-                                            self.Block(AnalogTestPoint()),
-                                            self.mcu.adc.request(f'curr_{i}'))
+        (_, self.curr_tp[i], ), _ = self.chain(self.bldc_drv.pgnd_sense.request(i), self.curr_amp[i],
+                                               self.Block(AnalogTestPoint()),
+                                               self.mcu.adc.request(f'curr_{i}'))
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -210,12 +205,12 @@ class BldcController(JlcBoardTop):
           'hall_w=25',
         ]),
         (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
-        (['curr[1]', 'res', 'res', 'require_basic_part'], False),
-        (['curr[1]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
-        (['curr[2]', 'res', 'res', 'require_basic_part'], ParamValue(['curr[1]', 'res', 'res', 'require_basic_part'])),
-        (['curr[2]', 'res', 'res', 'footprint_spec'], ParamValue(['curr[1]', 'res', 'res', 'footprint_spec'])),
-        (['curr[3]', 'res', 'res', 'require_basic_part'], ParamValue(['curr[1]', 'res', 'res', 'require_basic_part'])),
-        (['curr[3]', 'res', 'res', 'footprint_spec'], ParamValue(['curr[1]', 'res', 'res', 'footprint_spec'])),
+        (['bldc_drv', 'pgnd_res[1]', 'res', 'res', 'require_basic_part'], False),
+        (['bldc_drv', 'pgnd_res[1]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
+        (['bldc_drv', 'pgnd_res[2]', 'res', 'res', 'require_basic_part'], ParamValue(['bldc_drv', 'pgnd_res[1]', 'res', 'res', 'require_basic_part'])),
+        (['bldc_drv', 'pgnd_res[2]', 'res', 'res', 'footprint_spec'], ParamValue(['bldc_drv', 'pgnd_res[1]', 'res', 'res', 'footprint_spec'])),
+        (['bldc_drv', 'pgnd_res[3]', 'res', 'res', 'require_basic_part'], ParamValue(['bldc_drv', 'pgnd_res[1]', 'res', 'res', 'require_basic_part'])),
+        (['bldc_drv', 'pgnd_res[3]', 'res', 'res', 'footprint_spec'], ParamValue(['bldc_drv', 'pgnd_res[1]', 'res', 'res', 'footprint_spec'])),
 
         (["bldc_drv", "vm_cap_bulk", "cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap
         (["bldc_drv", "cp_cap", "voltage_rating_derating"], 0.6),  # allow using a 50V cap

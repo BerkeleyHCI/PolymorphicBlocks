@@ -37,7 +37,7 @@ class AmplifierTestTop(Block):
     (self.dummyref, ), _ = self.chain(self.dut.reference, self.Block(AnalogSourceDummy()))
     (self.dummyout, ), _ = self.chain(self.dut.output, self.Block(DummyAnalogSink()))
     (self.dummypwr, ), _ = self.chain(self.dut.pwr, self.Block(DummyVoltageSource()))
-    (self.dummygnd, ), _ = self.chain(self.dut.gnd, self.Block(DummyVoltageSource()))
+    (self.dummygnd, ), _ = self.chain(self.dut.gnd, self.Block(DummyGround()))
 
 
 class OpampCircuitTest(unittest.TestCase):

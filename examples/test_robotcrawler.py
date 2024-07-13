@@ -45,6 +45,7 @@ class RobotCrawlerSpec(BoardTop):
     for i in range(self.SERVO_CAM_COUNT):
       self.servos_cam[str(i)] = self.Block(ServoFeedbackConnector())
 
+
 class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
   """Implementation of the crawler robot, that implements what is needed to connect the interface blocks
   as well as optional additional blocks.
@@ -56,7 +57,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
     self.gnd = self.connect(self.batt.gnd)
 
     self.tp_vbatt = self.Block(VoltageTestPoint()).connected(self.batt.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.batt.gnd)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.batt.gnd)
 
     # POWER
     with self.implicit_connect(

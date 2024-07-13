@@ -10,6 +10,12 @@ class DummyPassive(DummyDevice):
     self.io = self.Port(Passive(), [InOut])
 
 
+class DummyGround(DummyDevice):
+  def __init__(self) -> None:
+    super().__init__()
+    self.gnd = self.Port(Ground(), [Common, InOut])
+
+
 class DummyVoltageSource(DummyDevice):
   @init_in_parent
   def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,

@@ -168,7 +168,7 @@
   (node (ref sw.d[1,2]) (pin 2)))
 (net (code 6) (name "mcu.pwr_out")
   (node (ref mcu) (pin 12)))
-(net (code 7) (name "mcu.gnd_out")
+(net (code 7) (name "mcu.gnd")
   (node (ref mcu) (pin 13)))
 (net (code 8) (name "mcu.vusb_out")
   (node (ref mcu) (pin 14)))

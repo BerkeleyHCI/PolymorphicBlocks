@@ -55,12 +55,10 @@ class IotDisplay(JlcBoardTop):
     self.usb = self.Block(UsbCReceptacle(current_limits=(0, 3)*Amp))
     self.batt = self.Block(LipoConnector(voltage=BATTERY_VOLTAGE, actual_voltage=BATTERY_VOLTAGE))  # 2-6 AA
 
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.usb.gnd, self.batt.gnd)
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
+    self.gnd = self.connect(self.usb.gnd, self.batt.gnd)
 
     self.tp_pwr = self.Block(VoltageTestPoint("batt")).connected(self.batt.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
 
     # POWER
     with self.implicit_connect(

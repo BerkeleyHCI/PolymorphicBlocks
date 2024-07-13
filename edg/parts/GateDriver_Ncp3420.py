@@ -25,7 +25,7 @@ class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       current_limits=(-self.vcc.link().voltage.lower()/2.5, self.vcc.link().voltage.lower()/3.0)
     ))
 
-    self.swn = self.Port(VoltageSink.from_gnd(
+    self.swn = self.Port(Ground.from_gnd(
       self.pgnd,
       voltage_limits=(-5, 35)  # no current draw since this is a "ground" pin
     ))

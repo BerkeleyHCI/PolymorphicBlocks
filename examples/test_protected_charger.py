@@ -19,11 +19,8 @@ class ProtectedCharger(JlcBoardTop):
 
         self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2) * Volt))
 
-        self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-            self.usb.gnd, self.batt.gnd
-        )
-        self.gnd = self.connect(self.gnd_merge.pwr_out)
-        self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.gnd_merge.pwr_out)
+        self.gnd = self.connect(self.usb.gnd, self.batt.gnd)
+        self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
 
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common]),

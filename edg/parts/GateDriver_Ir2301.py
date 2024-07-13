@@ -26,7 +26,7 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     )
     self.assign(self.vcc.current_draw, (50, 190)*uAmp + self.lo.link().current_drawn)
 
-    self.vs = self.Port(VoltageSink.from_gnd(
+    self.vs = self.Port(Ground.from_gnd(
       self.com,
       voltage_limits=(-5, 600)  # no current draw since this is a "ground" pin
     ))

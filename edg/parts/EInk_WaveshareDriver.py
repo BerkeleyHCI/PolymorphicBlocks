@@ -103,13 +103,13 @@ class Waveshare_Epd(EInk, GeneratorBlock):
             .connected(self.gnd, self.device.vdd1v8)
 
         self.vgl_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
-            .connected(self.device.vgl, self.gnd)
+            .connected(self.gnd, self.device.vgl)
         self.vgh_cap = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))) \
             .connected(self.gnd, self.device.vgh)
         self.vsh_cap = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))) \
             .connected(self.gnd, self.device.vsh)
         self.vsl_cap = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))) \
-            .connected(self.device.vsl, self.gnd)
+            .connected(self.gnd, self.device.vsl)
         self.vcom_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))) \
             .connected(self.gnd, self.device.vcom)
 

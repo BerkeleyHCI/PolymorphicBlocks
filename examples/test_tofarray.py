@@ -8,7 +8,7 @@ class CanConnector(Connector):
     super().__init__()
 
     self.pwr = self.Port(VoltageSource.empty(), optional=True)
-    self.gnd = self.Port(GroundSource.empty())
+    self.gnd = self.Port(Ground.empty())
     self.differential = self.Port(CanDiffPort.empty(), [Output])
 
     self.conn = self.Block(PassiveConnector())
@@ -16,7 +16,7 @@ class CanConnector(Connector):
       voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
       current_limits=(0, 0.15) * Amp  # TODO get actual limits from ???
     )))
-    self.connect(self.gnd, self.conn.pins.request('3').adapt_to(GroundSource()))
+    self.connect(self.gnd, self.conn.pins.request('3').adapt_to(Ground()))
     self.connect(self.differential.canh, self.conn.pins.request('4').adapt_to(DigitalSource()))
     self.connect(self.differential.canl, self.conn.pins.request('5').adapt_to(DigitalSource()))
 
@@ -37,12 +37,10 @@ class TofArray(JlcBoardTop):
     self.can = self.Block(CanConnector())
 
     self.vusb = self.connect(self.usb.pwr)
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.usb.gnd, self.can.gnd)
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
+    self.gnd = self.connect(self.usb.gnd, self.can.gnd)
 
     self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
-    self.tp_gnd = self.Block(VoltageTestPoint()).connected(self.usb.gnd)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
 
     # POWER
     with self.implicit_connect(

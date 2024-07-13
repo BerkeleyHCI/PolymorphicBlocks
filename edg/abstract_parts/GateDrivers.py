@@ -29,7 +29,7 @@ class HalfBridgeDriver(PowerSwitch, Block):
     self.low_out = self.Port(DigitalSource.empty())  # referenced to main gnd
 
     self.high_pwr = self.Port(VoltageSink.empty(), optional=True)  # not used with internal boot diode
-    self.high_gnd = self.Port(VoltageSink.empty())  # this encodes the voltage limit from gnd
+    self.high_gnd = self.Port(Ground.empty())  # a separate constraint needs to encode voltage limits
     self.high_out = self.Port(DigitalSource.empty())  # referenced to high_pwr and high_gnd
 
 

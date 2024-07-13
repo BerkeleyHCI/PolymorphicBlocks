@@ -10,7 +10,7 @@ class TestBlinkyBasic(SimpleBoardTop):
     self.led = self.Block(IndicatorLed())
 
     self.connect(self.led.signal, self.mcu.gpio.request())
-    self.connect(self.mcu.gnd_out, self.led.gnd)
+    self.connect(self.mcu.gnd, self.led.gnd)
 
 
 class TestBlinkyEmpty(SimpleBoardTop):

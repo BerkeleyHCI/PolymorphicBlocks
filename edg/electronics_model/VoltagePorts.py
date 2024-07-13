@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import *
 from ..core import *
-from .CircuitBlock import CircuitPortBridge, CircuitLink, CircuitPortAdapter
-from .Units import Volt, Ohm
+from .CircuitBlock import CircuitPort, CircuitPortBridge, CircuitLink, CircuitPortAdapter
+from .GroundPort import GroundLink, GroundReference
+from .Units import Volt, Ohm, Amp
 
 if TYPE_CHECKING:
   from .DigitalPorts import DigitalSource
@@ -16,14 +17,15 @@ class VoltageLink(CircuitLink):
     """Returns the voltage for a Voltage port, either sink or source"""
     if isinstance(port, VoltageSource):
       return port.voltage_out
-    else:
-      assert isinstance(port, VoltageSink)
+    elif isinstance(port, VoltageSink):
       return port.link().voltage
+    else:
+      raise TypeError
 
   @classmethod
-  def _supply_voltage_range(cls, neg: Port[VoltageLink], pos: Port[VoltageLink]):
+  def _supply_voltage_range(cls, neg: Port[GroundLink], pos: Port[VoltageLink]):
     """For a negative and positive Voltage port (either sink or source), returns the voltage span."""
-    return cls._voltage_range(neg).hull(cls._voltage_range(pos))
+    return GroundLink._voltage_range(neg).hull(cls._voltage_range(pos))
 
   def __init__(self) -> None:
     super().__init__()
@@ -100,18 +102,18 @@ class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources
     self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
 
 
-CircuitLinkType = TypeVar('CircuitLinkType', bound=Link)
-class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
-  """Electrical connection that represents a single port into a single copper net"""
-  pass
-
-
 class VoltageBase(CircuitPort[VoltageLink]):
   link_type = VoltageLink
 
   # TODO: support isolation domains and offset grounds
 
   # these are here (instead of in VoltageSource) since the port may be on the other side of a bridge
+  def as_ground(self, current_draw) -> GroundReference:
+    """Adapts this port to a ground. Current draw is the current drawn from this port, and is required
+    since ground does not model current draw.
+    """
+    return self._convert(VoltageSinkAdapterGroundReference(current_draw))
+
   def as_digital_source(self) -> DigitalSource:
     return self._convert(VoltageSinkAdapterDigitalSource())
 
@@ -123,7 +125,7 @@ class VoltageSink(VoltageBase):
   bridge_type = VoltageSinkBridge
 
   @staticmethod
-  def from_gnd(gnd: VoltageSink, voltage_limits: RangeLike = RangeExpr.ALL,
+  def from_gnd(gnd: Port[GroundLink], voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO) -> 'VoltageSink':
     return VoltageSink(
       voltage_limits=gnd.link().voltage + voltage_limits,
@@ -137,6 +139,20 @@ class VoltageSink(VoltageBase):
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
 
 
+class VoltageSinkAdapterGroundReference(CircuitPortAdapter['GroundReference']):
+  @init_in_parent
+  def __init__(self, current_draw: RangeLike):
+    super().__init__()
+    from .GroundPort import GroundReference
+    self.src = self.Port(VoltageSink(
+      voltage_limits=RangeExpr.ALL * Volt,
+      current_draw=current_draw
+    ))
+    self.dst = self.Port(GroundReference(
+      voltage_out=self.src.link().voltage,
+    ))
+
+
 class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
   @init_in_parent
   def __init__(self):
@@ -148,12 +164,7 @@ class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
     ))
     self.dst = self.Port(DigitalSource(
       voltage_out=self.src.link().voltage,
-      output_thresholds=(  # use infinity for the other rail
-        (self.src.link().voltage.lower() > 0).then_else(FloatExpr._to_expr_type(-float('inf')),
-                                                        self.src.link().voltage.upper()),
-        (self.src.link().voltage.lower() > 0).then_else(self.src.link().voltage.lower(),
-                                                        FloatExpr._to_expr_type(float('inf')))
-      )
+      output_thresholds=(FloatExpr._to_expr_type(-float('inf')), self.src.link().voltage.upper())
     ))
     self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
 

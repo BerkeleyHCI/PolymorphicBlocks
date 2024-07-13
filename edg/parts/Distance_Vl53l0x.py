@@ -12,7 +12,7 @@ class Vl53l0x_DeviceBase():
     )
 
   @staticmethod
-  def _gpio_model(vss: Port[VoltageLink], vdd: Port[VoltageLink]) -> DigitalBidir:
+  def _gpio_model(vss: Port[GroundLink], vdd: Port[VoltageLink]) -> DigitalBidir:
     # TODO: the datasheet references values to IOVDD, but the value of IOVDD is never stated.
     # This model assumes that IOVDD = Vdd
     return DigitalBidir.from_supply(
@@ -22,7 +22,7 @@ class Vl53l0x_DeviceBase():
     )
 
   @staticmethod
-  def _i2c_io_model(vss: Port[VoltageLink], vdd: Port[VoltageLink]) -> DigitalBidir:
+  def _i2c_io_model(vss: Port[GroundLink], vdd: Port[VoltageLink]) -> DigitalBidir:
     return DigitalBidir.from_supply(
       vss, vdd,
       voltage_limit_abs=(-0.5, 3.6),  # not referenced to Vdd!

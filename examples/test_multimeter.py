@@ -177,10 +177,7 @@ class Multimeter(JlcBoardTop):
     # so the PD port can be connected to a dedicated power brick.
     self.data_usb = self.Block(UsbCReceptacle())
 
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.bat.gnd, self.data_usb.gnd)
-
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
+    self.gnd = self.connect(self.bat.gnd, self.data_usb.gnd)
     self.vbat = self.connect(self.bat.pwr)
 
     # POWER
@@ -277,7 +274,7 @@ class Multimeter(JlcBoardTop):
       # and Vdd/2 (high impedance, but can measure negative voltages)
       self.inn = self.Block(BananaSafetyJack())
       self.inn_mux = imp.Block(AnalogMuxer()).mux_to(
-        inputs=[self.gnd_merge.pwr_out.as_analog_source(), self.ref_buf.output]
+        inputs=[self.bat.gnd.as_analog_source(), self.ref_buf.output]
       )
       self.inn_merge = self.Block(MergedAnalogSource()).connected_from(
         self.inn_mux.out, self.inn.port.adapt_to(AnalogSource()))

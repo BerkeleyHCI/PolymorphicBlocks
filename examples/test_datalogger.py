@@ -15,10 +15,7 @@ class Datalogger(BoardTop):
     self.connect(self.usb_conn.pwr, self.usb_forced_current.pwr_in)
 
     self.bat = self.Block(Cr2032())
-
-    self.gnd_merge = self.Block(MergedVoltageSource()).connected_from(
-      self.usb_conn.gnd, self.pwr_conn.gnd, self.bat.gnd)
-    self.gnd = self.connect(self.gnd_merge.pwr_out)
+    self.gnd = self.connect(self.usb_conn.gnd, self.pwr_conn.gnd, self.bat.gnd)
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
@@ -52,12 +49,6 @@ class Datalogger(BoardTop):
       self.connect(self.mcu.usb.request(), self.usb_conn.usb)
 
       (self.can, ), _ = self.chain(self.mcu.can.request('can'), imp.Block(CalSolCanBlock()))
-
-      # TODO need proper support for exported unconnected ports
-      self.can_gnd_load = self.Block(DummyVoltageSink())
-      self.connect(self.can.can_gnd, self.can_gnd_load.pwr)
-      self.can_pwr_load = self.Block(DummyVoltageSink())
-      self.connect(self.can.can_pwr, self.can_pwr_load.pwr)
 
       # mcu_i2c = self.mcu.i2c.request()  # no devices, ignored for now
       # self.i2c_pullup = imp.Block(I2cPullup())
