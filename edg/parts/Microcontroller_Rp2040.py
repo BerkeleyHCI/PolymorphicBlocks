@@ -17,7 +17,7 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
 
   @abstractmethod
   def _vddio(self) -> Port[VoltageLink]:
-    """Returns GND and VDDIO (can be VoltageSink or VoltageSource)."""
+    """Returns VDDIO (can be VoltageSink or VoltageSource)."""
     ...
 
   def _iovdd_model(self):
