@@ -153,8 +153,8 @@ class IotIron(JlcBoardTop):
         imp.Block(FootprintToucbPad('edg:Symbol_DucklingSolid'))
       )
 
-    self.iron = self.Block(IronConnector())
-    self.connect(self.conv.pwr_out, self.iron.pwr)
+      self.iron = imp.Block(IronConnector())
+      self.connect(self.conv.pwr_out, self.iron.pwr)
 
     # IRON SENSE AMPS - 3v3 DOMAIN
     with self.implicit_connect(

@@ -92,7 +92,7 @@ class FetHalfBridge(HalfBridge):
         self.connect(self.low_fet.drain.adapt_to(VoltageSource(
             voltage_out=self.pwr.link().voltage)),
             self.out)
-        self.connect(self.out.as_ground(self.driver.high_pwr.link().current_drawn), self.driver.high_gnd)
+        self.connect(self.out.as_ground((0, 0)*Amp), self.driver.high_gnd)  # TODO model driver current
 
 
 class FetHalfBridgeIndependent(FetHalfBridge, HalfBridgeIndependent):
