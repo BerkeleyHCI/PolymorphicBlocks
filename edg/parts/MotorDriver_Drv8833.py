@@ -80,14 +80,15 @@ class Drv8833_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.assign(self.lcsc_part, 'C50506')
 
 
-class Drv8833(BrushedMotorDriver, Block):
+class Drv8833(BrushedMotorDriver, GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
     self.ic = self.Block(Drv8833_Device())
     self.pwr = self.Export(self.ic.vm)
     self.gnd = self.Export(self.ic.gnd, [Common])
 
-    self.sleep = self.Export(self.ic.nsleep)  # required since internally pulled down (chip disabled)
+    self.sleep = self.Port(DigitalSink.empty(), optional=True)  # can be connected to 2-5v to avoid the resistor
+    self.generator_param(self.sleep.is_connected())
     self.ain1 = self.Export(self.ic.ain1, optional=True)
     self.ain2 = self.Export(self.ic.ain2, optional=True)
     self.bin1 = self.Export(self.ic.bin1, optional=True)
@@ -107,3 +108,13 @@ class Drv8833(BrushedMotorDriver, Block):
     self.vcp_cap = self.Block(Capacitor(0.01*uFarad(tol=0.2), (0, 16)*Volt))
     self.connect(self.vcp_cap.pos, self.ic.vcp)
     self.connect(self.vcp_cap.neg.adapt_to(VoltageSink()), self.ic.vm)
+
+  def generate(self) -> None:
+    super().generate()
+    if self.get(self.sleep.is_connected()):
+      self.connect(self.sleep, self.ic.nsleep)
+    else:  # generate default pullup, note chip is internal pulldown (disabled)
+      # TODO can direct connect if pwr voltage is <5.75v
+      self.sleep_pull = self.Block(Resistor(47*kOhm(tol=0.05)))
+      self.connect(self.sleep_pull.a.adapt_to(VoltageSink()), self.pwr)
+      self.connect(self.sleep_pull.b.adapt_to(DigitalSource()), self.ic.nsleep)
