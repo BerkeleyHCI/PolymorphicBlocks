@@ -80,7 +80,7 @@ class I2cTarget(Bundle[I2cLink]):
   bridge_type = I2cTargetBridge
 
   def __init__(self, model: Optional[DigitalBidir] = None, addresses: ArrayIntLike = []) -> None:
-    """Addresses specified excluding the R/W bit (as a 7-bit number)"""
+    """Addresses specified excluding the R/W bit (as a 7-bit number, as directly used by Arduino)"""
     super().__init__()
     if model is None:
       model = DigitalBidir()  # ideal by default
