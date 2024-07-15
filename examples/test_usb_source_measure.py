@@ -58,7 +58,7 @@ class SourceMeasureRangingCell(Interface, KiCadSchematicBlock):
                       })
     self.sense_sw: AnalogMuxer  # schematic-defined
     self.connect(self.control, self.sense_sw.control.request())
-    self.res: CurrentSenseResistor  # schematic-defined
+    self.res: CurrentSenseResistor
     self.assign(self.actual_resistance, self.res.actual_resistance)
 
 
@@ -813,10 +813,10 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
 
-        (['control', 'isense', 'res[0]', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
-        (['control', 'isense', 'res[0]', 'res', 'res', 'require_basic_part'], False),
-        (['control', 'isense', 'res[1]', 'res', 'res', 'footprint_spec'], ParamValue(['control', 'isense', 'res[0]', 'res', 'res', 'footprint_spec'])),
-        (['control', 'isense', 'res[1]', 'res', 'res', 'require_basic_part'], False),
+        (['control', 'isense', 'ranges[0]', 'res', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
+        (['control', 'isense', 'ranges[0]', 'res', 'res', 'res', 'require_basic_part'], False),
+        (['control', 'isense', 'ranges[1]', 'res', 'res', 'res', 'footprint_spec'], ParamValue(['control', 'isense', 'ranges[0]', 'res', 'res', 'res', 'footprint_spec'])),
+        (['control', 'isense', 'ranges[1]', 'res', 'res', 'res', 'require_basic_part'], False),
 
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
         (['control', 'driver', 'high_fet', 'part_spec'], 'SQD50N10-8M9L_GE3'),
@@ -830,7 +830,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['oled', 'iref_res', 'require_basic_part'], False),
 
         # these are since the auto-assigned parts are OOS
-        (['control', 'isense', 'res[1]', 'res', 'res', 'part'], "1206W4F220LT5E"),
+        (['control', 'isense', 'ranges[1]', 'res', 'res', 'res', 'part'], "1206W4F220LT5E"),
         (['conv', 'boost_sw', 'low_fet', 'part'], "KIA50N03BD"),
         (['prot_3v3', 'diode', 'part'], "1SMA4730AG")
       ],

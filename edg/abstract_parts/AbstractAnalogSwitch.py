@@ -108,7 +108,7 @@ class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
     pins: Dict[str, BasePort] = {
       'C': self.out, 'S': self.control, 'V+': self.pwr, 'V-': self.gnd
     }
-    pins.update({str(i+1): self.inputs.request() for i in range(count)})
+    pins.update({str(i+1): self.inputs.request(str(i)) for i in range(count)})
     return pins
 
   def __init__(self) -> None:
