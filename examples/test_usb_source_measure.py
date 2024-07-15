@@ -28,6 +28,40 @@ class SourceMeasureFan(Connector):
     )), [Power])
 
 
+class SourceMeasureRangingCell(Interface, KiCadSchematicBlock):
+  @init_in_parent
+  def __init__(self, resistance: RangeLike):
+    super().__init__()
+    self.resistance = self.ArgParameter(resistance)
+    self.actual_resistance = self.Parameter(RangeExpr())
+
+    self.gnd = self.Port(Ground.empty(), [Common])
+    self.pwr = self.Port(VoltageSink.empty(), [Power])
+
+    self.pwr_in = self.Port(VoltageSink.empty())
+    self.pwr_out = self.Port(VoltageSource.empty())
+
+    self.control = self.Port(DigitalSink.empty())
+    self.sense_in = self.Port(AnalogSource.empty())
+    self.sense_out = self.Port(AnalogSource.empty())
+
+  def contents(self):
+    super().contents()
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+                      locals={
+                        'clamp': {
+                          'clamp_current': (2.5, 25)*mAmp,
+                          'clamp_target': (0, float('inf'))*Volt,
+                          'zero_out': True
+                        },
+                        'resistance': self.resistance
+                      })
+    self.sense_sw: AnalogMuxer  # schematic-defined
+    self.connect(self.control, self.sense_sw.control.request())
+    self.res: CurrentSenseResistor  # schematic-defined
+    self.assign(self.actual_resistance, self.res.actual_resistance)
+
+
 class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBlock):
   """Generates an array of current-sense resistors with one side muxed and the other end an array.
   The resistors are tied common on the com side, and have a solid-state relay for the power path
@@ -65,12 +99,9 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 
   def generate(self):
     super().generate()
-    self.res = ElementDict[CurrentSenseResistor]()
-    self.clamp_res = ElementDict[AnalogClampResistor]()
-    self.pwr_sw = ElementDict[VoltageIsolatedSwitch]()
-    self.sense_sw = ElementDict[AnalogMuxer]()
-    self.forced = ElementDict[ForcedVoltageCurrentDraw]()
+    self.ranges = ElementDict[SourceMeasureRangingCell]()
 
+    self.forced = ElementDict[ForcedVoltageCurrentDraw]()
     self.pwr_out_merge = self.Block(MergedVoltageSource())
     self.connect(self.pwr_out_merge.pwr_out, self.pwr_out)
     self.sense_in_merge = self.Block(MergedAnalogSource())
@@ -85,31 +116,17 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
             ImplicitConnect(self.pwr, [Power])
     ) as imp:
       for i, (resistance, current) in enumerate(zip(self.get(self.resistances), self.get(self.currents))):
-        res = self.res[i] = self.Block(CurrentSenseResistor(resistance))
-        # clamp_res prevents device damage when load applied when unpowered
-        # sized for DG467/8 with 30mA maximum terminal current
-        clamp_res = self.clamp_res[i] = imp.Block(AnalogClampResistor(
-          clamp_current=(2.5, 25)*mAmp, clamp_target=(0, float('inf'))*Volt, zero_out=True))
-        pwr_sw = self.pwr_sw[i] = imp.Block(VoltageIsolatedSwitch())
-        sense_sw = self.sense_sw[i] = imp.Block(AnalogMuxer())
-        control = self.control.append_elt(DigitalSink.empty(), str(i))
-        self.connect(pwr_sw.signal, sense_sw.control.request(), control)
-
-        # POWER PATH
-        self.chain(pwr_sw.pwr_in, self.pwr_in)
-        self.connect(pwr_sw.pwr_out, res.pwr_in)
+        range = self.ranges[i] = imp.Block(SourceMeasureRangingCell(resistance))
+        self.connect(self.pwr_in, range.pwr_in)
         forced = self.forced[i] = self.Block(ForcedVoltageCurrentDraw(current))
-        self.connect(res.pwr_out, forced.pwr_in)
+        self.connect(range.pwr_out, forced.pwr_in)
         self.connect(self.pwr_out_merge.pwr_ins.request(str(i)), forced.pwr_out)
 
-        # SENSE IN SWITCH PATH
-        self.connect(res.sense_in, clamp_res.signal_in)
-        self.connect(clamp_res.signal_out, sense_sw.inputs.request('1'))  # NO connection
-        self.connect(self.sense_in_merge.inputs.request(str(i)), sense_sw.out)
+        self.connect(range.control, self.control.append_elt(DigitalSink.empty(), str(i)))
+        self.connect(self.sense_in_merge.inputs.request(str(i)), range.sense_in)
+        self.connect(self.sense_out_merge.inputs.request(str(i)), range.sense_out)
 
-        self.connect(self.sense_out_merge.inputs.request(str(i)), res.sense_out)
-
-        out_range = out_range.hull(current * res.actual_resistance)
+        out_range = out_range.hull(current * range.actual_resistance)
 
     self.assign(self.out_range, out_range)
 
