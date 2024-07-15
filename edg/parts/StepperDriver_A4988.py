@@ -15,7 +15,7 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.vbb1 = self.Port(vbb_model)
     self.vbb2 = self.Port(vbb_model)
     self.vdd = self.Port(VoltageSink(
-      voltage_limits=(3.3, 5.5)*Volt,
+      voltage_limits=(3, 5.5)*Volt,
       current_draw=(0.010, 8)*mAmp
     ))
     self.vreg = self.Port(VoltageSource(
@@ -110,8 +110,8 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class A4988(BrushedMotorDriver, GeneratorBlock):
   @init_in_parent
   def __init__(self, step_resolution: IntLike = 16,
-               itrip: RangeLike = 1*Amp(tol=0.05),
-               itrip_vref: RangeLike = 0.25*Volt(tol=0.02)) -> None:
+               itrip: RangeLike = 1*Amp(tol=0.15),
+               itrip_vref: RangeLike = 0.25*Volt(tol=0.08)) -> None:
     super().__init__()
     self.step_resolution = self.ArgParameter(step_resolution, doc="microstepping resolution (1, 2, 4, 8, or 16)")
     self.itrip = self.ArgParameter(itrip, doc="maximum (trip) current across motor windings")
@@ -126,9 +126,9 @@ class A4988(BrushedMotorDriver, GeneratorBlock):
     self.step = self.Export(self.ic.step)
     self.dir = self.Export(self.ic.dir)
 
-    self.enable = self.Export(self.ic.enable, optional=True, doc="disables FET outputs when high")
-    self.reset = self.Export(self.ic.reset, optional=True, doc="forces translator to Home state when low")
-    self.sleep = self.Export(self.ic.sleep, optional=True, doc="disables device (to reduce current draw) when low")
+    self.enable = self.Port(DigitalSink.empty(), optional=True, doc="disables FET outputs when high")
+    self.reset = self.Port(DigitalSink.empty(), optional=True, doc="forces translator to Home state when low")
+    self.sleep = self.Port(DigitalSink.empty(), optional=True, doc="disables device (to reduce current draw) when low")
     self.generator_param(self.enable.is_connected(), self.reset.is_connected(), self.sleep.is_connected())
 
     self.out1a = self.Export(self.ic.out1a)
@@ -161,7 +161,10 @@ class A4988(BrushedMotorDriver, GeneratorBlock):
 
     self.isense = ElementDict[Resistor]()
     for i, sensen in [('1', self.ic.sense1), ('2', self.ic.sense2)]:
-      isense = self.isense[i] = self.Block(Resistor(self.itrip_vref / self.itrip))  # TODO shrink tolerances
+      isense = self.isense[i] = self.Block(Resistor(
+        self.itrip_vref / self.itrip,  # TODO shrink tolerances
+        power=self.itrip_vref * self.itrip
+      ))
       self.connect(isense.a, sensen)
       self.connect(isense.b.adapt_to(Ground()), self.gnd)
 
@@ -173,15 +176,15 @@ class A4988(BrushedMotorDriver, GeneratorBlock):
       self.connect(self.gnd.as_digital_source(), self.ic.ms1, self.ic.ms2, self.ic.ms3)
     elif step_resolution == 2:  # half step
       self.connect(self.gnd.as_digital_source(), self.ic.ms2, self.ic.ms3)
-      self.connect(self.pwr.as_digital_source(), self.ic.ms1)
+      self.connect(self.pwr_logic.as_digital_source(), self.ic.ms1)
     elif step_resolution == 4:  # quarter step
       self.connect(self.gnd.as_digital_source(), self.ic.ms1, self.ic.ms3)
-      self.connect(self.pwr.as_digital_source(), self.ic.ms2)
+      self.connect(self.pwr_logic.as_digital_source(), self.ic.ms2)
     elif step_resolution == 8:  # eighth step
       self.connect(self.gnd.as_digital_source(), self.ic.ms3)
-      self.connect(self.pwr.as_digital_source(), self.ic.ms1, self.ic.ms2)
+      self.connect(self.pwr_logic.as_digital_source(), self.ic.ms1, self.ic.ms2)
     elif step_resolution == 16:  # sixteenth step
-      self.connect(self.pwr.as_digital_source(), self.ic.ms1, self.ic.ms2, self.ic.ms3)
+      self.connect(self.pwr_logic.as_digital_source(), self.ic.ms1, self.ic.ms2, self.ic.ms3)
     else:
       raise ValueError(f"unknown step_resolution {step_resolution}")
 
@@ -193,9 +196,9 @@ class A4988(BrushedMotorDriver, GeneratorBlock):
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.reset)
     else:
-      self.connect(self.pwr.as_digital_source(), self.ic.reset)
+      self.connect(self.pwr_logic.as_digital_source(), self.ic.reset)
 
     if self.get(self.sleep.is_connected()):
       self.connect(self.sleep, self.ic.sleep)
     else:
-      self.connect(self.pwr.as_digital_source(), self.ic.sleep)
+      self.connect(self.pwr_logic.as_digital_source(), self.ic.sleep)
