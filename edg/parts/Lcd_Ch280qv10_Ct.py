@@ -77,12 +77,15 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Block):
         self.wr_rs = self.Export(self.conn.pins.request('36').adapt_to(din_model))
         self.rs_scl = self.Export(self.conn.pins.request('37').adapt_to(din_model))
         self.cs = self.Export(self.conn.pins.request('38').adapt_to(din_model))
+        # pin 39 TE out unused
 
         ctp_dio_model = DigitalBidir.from_supply(
             self.gnd, self.iovcc,
             input_threshold_abs=(1.0, 1.9)*Volt
         )
-        self.ctp_i2c = self.Port(I2cTarget(ctp_dio_model, [0x38]))
+        self.ctp_i2c = self.Port(I2cTarget(DigitalBidir.empty(), [0x38]))
+        self.connect(self.conn.pins.request('44').adapt_to(dio_model), self.ctp_i2c.scl)
+        self.connect(self.conn.pins.request('45').adapt_to(dio_model), self.ctp_i2c.sda)
         # pin 46 is CTQ IRQ, unused (semantics not defined)
         self.ctp_res = self.Export(self.conn.pins.request('47').adapt_to(DigitalSink.from_bidir(ctp_dio_model)))
 
