@@ -5,7 +5,7 @@ from .PassiveConnector_Fpc import Fpc050Bottom
 class Ch280qv10_Ct_Outline(InternalSubcircuit, FootprintBlock):
     def contents(self) -> None:
         super().contents()
-        self.footprint('U', 'edg: Ch280qv10_Ct_Outline', {},
+        self.footprint('U', 'edg:Lcd_Ch280qv10_Ct_Outline', {},
                        'Adafruit', '2770',
                        datasheet='https://cdn-shop.adafruit.com/product-files/2770/SPEC-CH280QV10-CT_Rev.D.pdf')
 
