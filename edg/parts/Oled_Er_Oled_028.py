@@ -18,6 +18,11 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
 
         self.conn = self.Block(Fpc050Bottom(length=30))
 
+        vss_pin = self.conn.pins.request('2')
+        self.vss = self.Export(vss_pin.adapt_to(Ground()), [Common])
+        self.connect(vss_pin, self.conn.pins.request('1'), self.conn.pins.request('30'),  # NC/GND
+                     vlss5_pin)  # VLSS, connect to VSS externally
+
         vcc3_pin = self.conn.pins.request('3')
         self.connect(vcc3_pin, self.conn.pins.request('29'))
         self.vcc = self.Export(vcc3_pin.adapt_to(VoltageSink(
@@ -44,11 +49,6 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
 
         vlss5_pin = self.conn.pins.request('5')
         self.connect(vlss5_pin, self.conn.pins.request('28'))
-        self.vss = self.Export(self.conn.pins.request('2').adapt_to(Ground()), [Common])
-        self.connect(self.vss,
-                     self.conn.pins.request('1').adapt_to(Ground()),  # NC/GND
-                     self.conn.pins.request('30').adapt_to(Ground()),  # NC/GND
-                     vlss5_pin.adapt_to(Ground()))  # VLSS, connect to VSS externally
 
         din_model = DigitalSink.from_supply(
             self.vss, self.vddio,
@@ -66,14 +66,8 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
         self.miso_nc = self.Block(DigitalBidirNotConnected())
         self.connect(self.spi.miso, self.miso_nc.port)
 
-        self.connect(self.vss,
-                     self.conn.pins.request('10').adapt_to(Ground()),  # DB3
-                     self.conn.pins.request('9').adapt_to(Ground()),  # DB4
-                     self.conn.pins.request('8').adapt_to(Ground()),  # DB5
-                     self.conn.pins.request('7').adapt_to(Ground()),  # DB6
-                     self.conn.pins.request('6').adapt_to(Ground()),  # DB7
-                     self.conn.pins.request('15').adapt_to(Ground()),  # RW
-                     self.conn.pins.request('14').adapt_to(Ground()))  # ER
+        for i in list(range(6, 11)) + [15, 14]:  # DB7~DB3, RW, ER
+            self.connect(vss_pin, self.conn.pins.request(str(i)))
 
         self.dc = self.Export(self.conn.pins.request('18').adapt_to(din_model))  # ground if unused
         self.cs = self.Export(self.conn.pins.request('19').adapt_to(din_model))

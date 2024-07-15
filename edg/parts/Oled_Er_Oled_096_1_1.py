@@ -18,15 +18,15 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Block):
 
         self.conn = self.Block(Fpc050Bottom(length=30))
 
+        vss_pin = self.conn.pins.request('8')
+        self.vss = self.Export(vss_pin.adapt_to(Ground()), [Common])
+        self.connect(vss_pin, self.conn.pins.request('1'), self.conn.pins.request('30'),  # NC/GND
+                     self.conn.pins.request('29'))  # VLSS
+
         self.vdd = self.Export(self.conn.pins.request('9').adapt_to(VoltageSink(
             voltage_limits=(1.65, 3.3)*Volt,  # abs max is 4v
             current_draw=(1, 300)*uAmp  # sleep to operating
         )))
-        self.vss = self.Export(self.conn.pins.request('8').adapt_to(Ground()), [Common])
-        self.connect(self.vss,
-                     self.conn.pins.request('29').adapt_to(Ground()),  # VLSS
-                     self.conn.pins.request('1').adapt_to(Ground()),  # NC/GND
-                     self.conn.pins.request('30').adapt_to(Ground()))  # NC/GND
 
         self.vcc = self.Export(self.conn.pins.request('28').adapt_to(VoltageSource(
             voltage_out=(7, 7.5)*Volt,
@@ -66,14 +66,8 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Block):
         self.d1 = self.Export(self.conn.pins.request('19').adapt_to(din_model))
         self.d2 = self.Export(self.conn.pins.request('20').adapt_to(din_model), optional=True)
 
-        self.connect(self.vss,
-                     self.conn.pins.request('17').adapt_to(Ground()),  # E/RD, only for parallel
-                     self.conn.pins.request('16').adapt_to(Ground()),  # R/W, only for parallel
-                     self.conn.pins.request('21').adapt_to(Ground()),  # D3
-                     self.conn.pins.request('22').adapt_to(Ground()),  # D4
-                     self.conn.pins.request('23').adapt_to(Ground()),  # D5
-                     self.conn.pins.request('24').adapt_to(Ground()),  # D6
-                     self.conn.pins.request('25').adapt_to(Ground()))  # D7
+        for i in [17, 16] + list(range(21, 26)):  # RW, ER, DB3~DB7
+            self.connect(vss_pin, self.conn.pins.request(str(i)))
 
 
 class Er_Oled_096_1_1(Oled, GeneratorBlock):
