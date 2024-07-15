@@ -104,3 +104,5 @@ from .DummyDevices import DummyPassive, DummyGround, DummyVoltageSource, DummyVo
 from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltage, ForcedVoltageCurrent, ForcedAnalogVoltage,\
     ForcedAnalogSignal, ForcedDigitalSinkCurrentDraw
 from .MergedBlocks import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource, MergedSpiController
+
+from .Nonstrict3v3Compatible import Nonstrict3v3Compatible

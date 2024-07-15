@@ -10,7 +10,7 @@ class Ch280qv10_Ct_Outline(InternalSubcircuit, FootprintBlock):
                        datasheet='https://cdn-shop.adafruit.com/product-files/2770/SPEC-CH280QV10-CT_Rev.D.pdf')
 
 
-class Ch280qv10_Ct_Device(InternalSubcircuit, Block):
+class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
     """50-pin FPC connector for the CH280QV10-CT as sold by Adafruit
     Pin-compatible with some other 2.8" ILI9341 devices like ER-TFT028A2-4
     https://www.buydisplay.com/download/manual/ER-TFT028A2-4_Datasheet.pdf
@@ -30,14 +30,16 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Block):
         self.connect(iovcc_pin, self.conn.pins.request('41'))
         self.iovcc = self.Export(iovcc_pin.adapt_to(VoltageSink.from_gnd(
             self.gnd,
-            voltage_limits=(1.65, 3.3)*Volt,  # typ 1.8/2.8
-            # current_draw=(0.001, 35)*mAmp
+            voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                (1.65, 3.6)*Volt,  # extended range, abs max up to 4.6v
+                (1.65, 3.3)*Volt),  # typ 1.8/2.8
         )))
 
         self.vci = self.Export(self.conn.pins.request('42').adapt_to(VoltageSink.from_gnd(
             self.gnd,
-            voltage_limits=(2.5, 3.3)*Volt,  # typ 2.8
-            # current_draw=(0.001, 35)*mAmp
+            voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                (2.5, 3.6)*Volt,  # extended range, abs max up to 4.6v
+                (2.5, 3.3)*Volt),  # typ 2.8
         )))
 
         self.ledk = self.Export(self.conn.pins.request('1'))
@@ -83,11 +85,12 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Block):
             self.gnd, self.iovcc,
             input_threshold_abs=(1.0, 1.9)*Volt
         )
-        self.ctp_i2c = self.Port(I2cTarget(DigitalBidir.empty(), [0x38]))
-        self.connect(self.conn.pins.request('44').adapt_to(dio_model), self.ctp_i2c.scl)
+        self.ctp_i2c = self.Port(I2cTarget(DigitalBidir.empty(), [0x38]), optional=True)
+        self.connect(self.conn.pins.request('44').adapt_to(din_model), self.ctp_i2c.scl)
         self.connect(self.conn.pins.request('45').adapt_to(dio_model), self.ctp_i2c.sda)
         # pin 46 is CTQ IRQ, unused (semantics not defined)
         self.ctp_res = self.Export(self.conn.pins.request('47').adapt_to(DigitalSink.from_bidir(ctp_dio_model)))
+        self.require(self.ctp_i2c.is_connected().implies(self.ctp_res.is_connected()))
 
 
 class Ch280qv10_Ct(Lcd, Block):
@@ -103,7 +106,7 @@ class Ch280qv10_Ct(Lcd, Block):
         self.cs = self.Export(self.device.cs)
         self.dc = self.Export(self.device.wr_rs)
 
-        self.ctp_i2c = self.Export(self.device.ctp_i2c)
+        self.ctp_i2c = self.Export(self.device.ctp_i2c, optional=True)
 
     def contents(self):
         super().contents()
@@ -127,7 +130,7 @@ class Ch280qv10_Ct(Lcd, Block):
         self.led_res = ElementDict[Resistor]()
         for i, leda in [('1', self.device.leda1), ('2', self.device.leda2),
                         ('3', self.device.leda3), ('4', self.device.leda4)]:
-            led_res = self.led_res[i] = Resistor(68*Ohm(tol=0.05),  # TODO dynamic LED resistance, this is sized for 5v
-                                                 power=self.pwr.link().voltage * self.pwr.link().voltage * 68)
-            self.connect(led_res.a.adapt_to(VoltageSink()), self.pwr)
+            led_res = self.led_res[i] = self.Block(  # TODO dynamic LED resistance, this is sized for 5v
+                Resistor(47*Ohm(tol=0.05), power=self.pwr.link().voltage * self.pwr.link().voltage / 47))
+            self.connect(led_res.a.adapt_to(VoltageSink(current_draw=(0, 80)*mAmp)), self.pwr)  # TODO better current
             self.connect(led_res.b, leda)

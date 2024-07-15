@@ -11,7 +11,7 @@ class Er_Oled_091_3_Outline(InternalSubcircuit, FootprintBlock):
                        datasheet='https://www.buydisplay.com/download/manual/ER-OLED0.91-3_Series_Datasheet.pdf')
 
 
-class Er_Oled_091_3_Device(InternalSubcircuit, Block):
+class Er_Oled_091_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
     """15-pin FPC connector for the ER-OLED-0.91-3* device, configured to run off
     internal DC/DC"""
     def __init__(self) -> None:
@@ -28,11 +28,15 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Block):
             current_limits=0*mAmp(tol=0)  # external draw not allowed
         )))
         self.vdd = self.Export(self.conn.pins.request('7').adapt_to(VoltageSink(
-            voltage_limits=(1.65, 3.3)*Volt,  # abs max is 4v
+            voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                (1.65, 3.6)*Volt,  # abs max is 4v
+                (1.65, 3.3)*Volt),
             current_draw=(1, 300)*uAmp
         )))
         self.vbat = self.Export(self.conn.pins.request('5').adapt_to(VoltageSink(
-            voltage_limits=(3.3, 4.2)*Volt,  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
+            voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                (3.1, 4.2)*Volt,  # technically out of spec, works in practice near 3.3v
+                (3.3, 4.2)*Volt),  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
             current_draw=(23, 29)*mAmp
         )))
         self.vss = self.Export(self.conn.pins.request('6').adapt_to(Ground()), [Common])
