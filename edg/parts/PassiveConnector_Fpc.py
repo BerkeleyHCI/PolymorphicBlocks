@@ -61,6 +61,8 @@ class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
     15: 'C262664',
     24: 'C262669',
     30: 'C262671',
+    40: 'C262674',
+    50: 'C262676',
   }
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
@@ -79,6 +81,8 @@ class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
     8: 'C262581',
     24: 'C262643',
     30: 'C262645',
+    40: 'C262648',
+    50: 'C262650',
   }
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now

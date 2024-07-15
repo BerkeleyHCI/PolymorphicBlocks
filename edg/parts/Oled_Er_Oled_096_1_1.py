@@ -11,22 +11,24 @@ class Er_Oled_096_1_1_Outline(InternalSubcircuit, FootprintBlock):
                        datasheet='https://www.buydisplay.com/download/manual/ER-OLED0.96-1_Series_Datasheet.pdf')
 
 
-class Er_Oled_096_1_1_Device(InternalSubcircuit, Block):
+class Er_Oled_096_1_1_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
     """30-pin FPC connector for the ER-OLED-0.96-1.1* device, configured to run off internal DC/DC"""
     def __init__(self) -> None:
         super().__init__()
 
         self.conn = self.Block(Fpc050Bottom(length=30))
 
+        vss_pin = self.conn.pins.request('8')
+        self.vss = self.Export(vss_pin.adapt_to(Ground()), [Common])
+        self.connect(vss_pin, self.conn.pins.request('1'), self.conn.pins.request('30'),  # NC/GND
+                     self.conn.pins.request('29'))  # VLSS
+
         self.vdd = self.Export(self.conn.pins.request('9').adapt_to(VoltageSink(
-            voltage_limits=(1.65, 3.3)*Volt,  # abs max is 4v
+            voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                (1.65, 3.6)*Volt,  # abs max is 4v
+                (1.65, 3.3)*Volt),
             current_draw=(1, 300)*uAmp  # sleep to operating
         )))
-        self.vss = self.Export(self.conn.pins.request('8').adapt_to(Ground()), [Common])
-        self.connect(self.vss,
-                     self.conn.pins.request('29').adapt_to(Ground()),  # VLSS
-                     self.conn.pins.request('1').adapt_to(Ground()),  # NC/GND
-                     self.conn.pins.request('30').adapt_to(Ground()))  # NC/GND
 
         self.vcc = self.Export(self.conn.pins.request('28').adapt_to(VoltageSource(
             voltage_out=(7, 7.5)*Volt,
@@ -40,7 +42,9 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Block):
         )))
 
         self.vbat = self.Export(self.conn.pins.request('6').adapt_to(VoltageSink(
-            voltage_limits=(3.3, 4.2)*Volt,  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
+            voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                (3.1, 4.2)*Volt,  # technically out of spec, works in practice near 3.3v
+                (3.3, 4.2)*Volt),  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
             current_draw=(18.8, 32.0)*mAmp  # typ @ 50% on to max @ 100% on
         )))
         self.c1p = self.Export(self.conn.pins.request('4'))
@@ -66,24 +70,17 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Block):
         self.d1 = self.Export(self.conn.pins.request('19').adapt_to(din_model))
         self.d2 = self.Export(self.conn.pins.request('20').adapt_to(din_model), optional=True)
 
-        self.connect(self.vss,
-                     self.conn.pins.request('17').adapt_to(Ground()),  # E/RD, only for parallel
-                     self.conn.pins.request('16').adapt_to(Ground()),  # R/W, only for parallel
-                     self.conn.pins.request('21').adapt_to(Ground()),  # D3
-                     self.conn.pins.request('22').adapt_to(Ground()),  # D4
-                     self.conn.pins.request('23').adapt_to(Ground()),  # D5
-                     self.conn.pins.request('24').adapt_to(Ground()),  # D6
-                     self.conn.pins.request('25').adapt_to(Ground()))  # D7
+        for i in [17, 16] + list(range(21, 26)):  # RW, ER, DB3~DB7
+            self.connect(vss_pin, self.conn.pins.request(str(i)))
 
 
-class Er_Oled_096_1_1(Oled, GeneratorBlock):
+class Er_Oled_096_1_1(Oled, Resettable, GeneratorBlock):
     """SSD1306-based 0.96" 128x64 monochrome OLED, in either I2C or SPI mode."""
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Er_Oled_096_1_1_Device())
         self.gnd = self.Export(self.device.vss, [Common])
         self.pwr = self.Export(self.device.vdd, [Power])
-        self.reset = self.Export(self.device.res)
         self.spi = self.Port(SpiPeripheral.empty(), optional=True)
         self.cs = self.Port(DigitalSink.empty(), optional=True)
         self.dc = self.Port(DigitalSink.empty(), optional=True)
@@ -93,6 +90,8 @@ class Er_Oled_096_1_1(Oled, GeneratorBlock):
     def contents(self):
         super().contents()
         self.connect(self.pwr, self.device.vbat)
+        self.connect(self.reset, self.device.res)
+        self.require(self.reset.is_connected())
 
         self.lcd = self.Block(Er_Oled_096_1_1_Outline())  # for device outline
 

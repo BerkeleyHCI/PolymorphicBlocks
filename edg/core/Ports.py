@@ -129,6 +129,7 @@ class Port(BasePort, Generic[PortLinkType]):
     # TODO: maybe a cleaner solution is to mark port constructors in a Block context or Link context?
     self._link_instance: Optional[PortLinkType] = None
     self._bridge_instance: Optional[PortBridge] = None  # internal only
+    self._adapter_count: int = 0
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
     self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
@@ -181,10 +182,12 @@ class Port(BasePort, Generic[PortLinkType]):
       raise UnconnectableError(f"can only create adapters on own ports or subblock ports")
 
     adapter_inst = enclosing_block.Block(adapter)
+    adapter_name_suffix = f"_{self._adapter_count}" if self._adapter_count > 0 else ""
     enclosing_block.manager.add_element(
-      f"(adapter){block_parent._name_from(enclosing_block)}.{self._name_from(block_parent)}",
+      f"(adapter){block_parent._name_from(enclosing_block)}.{self._name_from(block_parent)}{adapter_name_suffix}",
       adapter_inst)
     enclosing_block.connect(self, adapter_inst.src)  # we don't name it to avoid explicit name conflicts
+    self._adapter_count += 1
     return adapter_inst.dst
 
   def _instance_to_proto(self) -> edgir.PortLike:

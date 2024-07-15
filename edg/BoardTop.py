@@ -122,8 +122,7 @@ class SimpleBoardTop(JlcTopRefinements):
         (PassiveConnector, PinHeader254),
       ],
       class_values=[
-        (Er_Oled_091_3, ['device', 'vbat', 'voltage_limits'], Range(3.0, 4.2)),  # technically out of spec
-        (Er_Oled_091_3, ['device', 'vdd', 'voltage_limits'], Range(1.65, 4.0)),  # use abs max rating
+        (Nonstrict3v3Compatible, ['nonstrict_3v3_compatible'], True),
         (JlcInductor, ['manual_frequency_rating'], Range.all()),
       ],
     )

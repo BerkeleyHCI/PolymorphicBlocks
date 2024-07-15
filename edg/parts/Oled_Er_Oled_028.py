@@ -18,6 +18,11 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
 
         self.conn = self.Block(Fpc050Bottom(length=30))
 
+        vss_pin = self.conn.pins.request('2')
+        self.vss = self.Export(vss_pin.adapt_to(Ground()), [Common])
+        self.connect(vss_pin, self.conn.pins.request('1'), self.conn.pins.request('30'),  # NC/GND
+                     self.conn.pins.request('5'), self.conn.pins.request('28'))  # VLSS, connect to VSS externally
+
         vcc3_pin = self.conn.pins.request('3')
         self.connect(vcc3_pin, self.conn.pins.request('29'))
         self.vcc = self.Export(vcc3_pin.adapt_to(VoltageSink(
@@ -42,14 +47,6 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
             current_draw=(2, 10)*uAmp  # typ sleep to max sleep, no operating draw given
         )))
 
-        vlss5_pin = self.conn.pins.request('5')
-        self.connect(vlss5_pin, self.conn.pins.request('28'))
-        self.vss = self.Export(self.conn.pins.request('2').adapt_to(Ground()), [Common])
-        self.connect(self.vss,
-                     self.conn.pins.request('1').adapt_to(Ground()),  # NC/GND
-                     self.conn.pins.request('30').adapt_to(Ground()),  # NC/GND
-                     vlss5_pin.adapt_to(Ground()))  # VLSS, connect to VSS externally
-
         din_model = DigitalSink.from_supply(
             self.vss, self.vddio,
             voltage_limit_tolerance=(-0.5, 0.3),  # assumed +0.3 tolerance
@@ -66,14 +63,8 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
         self.miso_nc = self.Block(DigitalBidirNotConnected())
         self.connect(self.spi.miso, self.miso_nc.port)
 
-        self.connect(self.vss,
-                     self.conn.pins.request('10').adapt_to(Ground()),  # DB3
-                     self.conn.pins.request('9').adapt_to(Ground()),  # DB4
-                     self.conn.pins.request('8').adapt_to(Ground()),  # DB5
-                     self.conn.pins.request('7').adapt_to(Ground()),  # DB6
-                     self.conn.pins.request('6').adapt_to(Ground()),  # DB7
-                     self.conn.pins.request('15').adapt_to(Ground()),  # RW
-                     self.conn.pins.request('14').adapt_to(Ground()))  # ER
+        for i in list(range(6, 11)) + [15, 14]:  # DB7~DB3, RW, ER
+            self.connect(vss_pin, self.conn.pins.request(str(i)))
 
         self.dc = self.Export(self.conn.pins.request('18').adapt_to(din_model))  # ground if unused
         self.cs = self.Export(self.conn.pins.request('19').adapt_to(din_model))
@@ -83,7 +74,7 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
         self.vsl = self.Export(self.conn.pins.request('27'))
 
 
-class Er_Oled028_1(Oled, GeneratorBlock):
+class Er_Oled028_1(Oled, Resettable, GeneratorBlock):
     """SSD1322-based 2.8" 256x64 monochrome OLED."""
     def __init__(self) -> None:
         super().__init__()
@@ -91,7 +82,6 @@ class Er_Oled028_1(Oled, GeneratorBlock):
         self.gnd = self.Export(self.device.vss, [Common])
         self.vcc = self.Export(self.device.vcc)  # device power
         self.pwr = self.Export(self.device.vddio)  # logic power
-        self.reset = self.Export(self.device.res)
         self.spi = self.Export(self.device.spi)
         self.cs = self.Export(self.device.cs)
         self.dc = self.Export(self.device.dc, optional=True)
@@ -101,6 +91,8 @@ class Er_Oled028_1(Oled, GeneratorBlock):
     def contents(self):
         super().contents()
         self.connect(self.pwr, self.device.vci)
+        self.connect(self.reset, self.device.res)
+        self.require(self.reset.is_connected())
 
         self.lcd = self.Block(Er_Oled028_1_Outline())  # for device outline
 
