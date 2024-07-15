@@ -110,7 +110,7 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class A4988(BrushedMotorDriver, GeneratorBlock):
   @init_in_parent
   def __init__(self, step_resolution: IntLike = 16,
-               itrip: RangeLike = ()*Amp,
+               itrip: RangeLike = 1*Amp(tol=0.05),
                itrip_vref: RangeLike = 0.25*Volt(tol=0.02)) -> None:
     super().__init__()
     self.step_resolution = self.ArgParameter(step_resolution, doc="microstepping resolution (1, 2, 4, 8, or 16)")
@@ -154,14 +154,14 @@ class A4988(BrushedMotorDriver, GeneratorBlock):
     self.connect(self.rosc.a.adapt_to(Ground()), self.gnd)
     self.connect(self.rosc.b, self.ic.rosc)
 
-    self.ref_div = self.Block(VoltageDivider(self.itrip_vref * 8, impedance=(1, 10)*kOhm))
+    self.ref_div = self.Block(VoltageDivider(output_voltage=self.itrip_vref * 8, impedance=(1, 10)*kOhm))
     self.connect(self.ref_div.gnd, self.gnd)
     self.connect(self.ref_div.input, self.pwr_logic)
     self.connect(self.ref_div.output, self.ic.ref)
 
     self.isense = ElementDict[Resistor]()
     for i, sensen in [('1', self.ic.sense1), ('2', self.ic.sense2)]:
-      isense = self.isense[i] = self.Block(Resistor(self.itrip_vref / self.itrip))
+      isense = self.isense[i] = self.Block(Resistor(self.itrip_vref / self.itrip))  # TODO shrink tolerances
       self.connect(isense.a, sensen)
       self.connect(isense.b.adapt_to(Ground()), self.gnd)
 
