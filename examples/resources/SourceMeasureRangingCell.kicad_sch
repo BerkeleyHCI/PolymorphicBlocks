@@ -683,7 +683,7 @@
   (symbol (lib_id "edg_importable:CurrentSenseResistor") (at 101.6 114.3 90) (mirror x) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid a1aa08ce-d4a5-4dd6-a985-31fe75183a22)
-    (property "Reference" "res" (at 101.6 110.49 90)
+    (property "Reference" "isense" (at 101.6 110.49 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "#CurrentSenseResistor(resistance)" (at 101.6 111.76 90)
@@ -702,7 +702,7 @@
     (instances
       (project "SourceMeasureRangingCell"
         (path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-          (reference "res") (unit 1)
+          (reference "isense") (unit 1)
         )
       )
     )
