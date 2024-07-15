@@ -74,7 +74,7 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
         self.vsl = self.Export(self.conn.pins.request('27'))
 
 
-class Er_Oled028_1(Oled, GeneratorBlock):
+class Er_Oled028_1(Oled, Resettable, GeneratorBlock):
     """SSD1322-based 2.8" 256x64 monochrome OLED."""
     def __init__(self) -> None:
         super().__init__()
@@ -82,7 +82,6 @@ class Er_Oled028_1(Oled, GeneratorBlock):
         self.gnd = self.Export(self.device.vss, [Common])
         self.vcc = self.Export(self.device.vcc)  # device power
         self.pwr = self.Export(self.device.vddio)  # logic power
-        self.reset = self.Export(self.device.res)
         self.spi = self.Export(self.device.spi)
         self.cs = self.Export(self.device.cs)
         self.dc = self.Export(self.device.dc, optional=True)
@@ -92,6 +91,8 @@ class Er_Oled028_1(Oled, GeneratorBlock):
     def contents(self):
         super().contents()
         self.connect(self.pwr, self.device.vci)
+        self.connect(self.reset, self.device.res)
+        self.require(self.reset.is_connected())
 
         self.lcd = self.Block(Er_Oled028_1_Outline())  # for device outline
 

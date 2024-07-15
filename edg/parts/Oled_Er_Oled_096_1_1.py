@@ -74,14 +74,13 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
             self.connect(vss_pin, self.conn.pins.request(str(i)))
 
 
-class Er_Oled_096_1_1(Oled, GeneratorBlock):
+class Er_Oled_096_1_1(Oled, Resettable, GeneratorBlock):
     """SSD1306-based 0.96" 128x64 monochrome OLED, in either I2C or SPI mode."""
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Er_Oled_096_1_1_Device())
         self.gnd = self.Export(self.device.vss, [Common])
         self.pwr = self.Export(self.device.vdd, [Power])
-        self.reset = self.Export(self.device.res)
         self.spi = self.Port(SpiPeripheral.empty(), optional=True)
         self.cs = self.Port(DigitalSink.empty(), optional=True)
         self.dc = self.Port(DigitalSink.empty(), optional=True)
@@ -91,6 +90,8 @@ class Er_Oled_096_1_1(Oled, GeneratorBlock):
     def contents(self):
         super().contents()
         self.connect(self.pwr, self.device.vbat)
+        self.connect(self.reset, self.device.res)
+        self.require(self.reset.is_connected())
 
         self.lcd = self.Block(Er_Oled_096_1_1_Outline())  # for device outline
 

@@ -36,7 +36,7 @@ class Qt096t_if09_Device(InternalSubcircuit, Block):
     self.leda = self.Export(self.conn.pins.request('1'))  # TODO maybe something else?
 
 
-class Qt096t_if09(Lcd, Block):
+class Qt096t_if09(Lcd, Resettable, Block):
   """ST7735S-based LCD module with a 8-pin 0.5mm-pitch FPC connector"""
   def __init__(self) -> None:
     super().__init__()
@@ -44,7 +44,6 @@ class Qt096t_if09(Lcd, Block):
     self.device = self.Block(Qt096t_if09_Device())
     self.gnd = self.Export(self.device.gnd, [Common])
     self.pwr = self.Export(self.device.vdd, [Power])
-    self.reset = self.Export(self.device.reset)
     self.rs = self.Export(self.device.rs)
     self.cs = self.Export(self.device.cs)
     self.spi = self.Export(self.device.spi)
@@ -52,6 +51,8 @@ class Qt096t_if09(Lcd, Block):
 
   def contents(self):
     super().contents()
+    self.connect(self.reset, self.device.reset)
+    self.require(self.reset.is_connected())
 
     self.led_res = self.Block(Resistor(resistance=100*Ohm(tol=0.05)))  # TODO dynamic sizing, power
     self.connect(self.led_res.a.adapt_to(DigitalSink(

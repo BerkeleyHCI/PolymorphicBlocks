@@ -93,7 +93,7 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.require(self.ctp_i2c.is_connected().implies(self.ctp_res.is_connected()))
 
 
-class Ch280qv10_Ct(Lcd, Block):
+class Ch280qv10_Ct(Lcd, Resettable, Block):
     """ILI9341-based 2.8" 320x240 color TFT supporting SPI interface and with optional capacitive touch
     Based on this example design https://www.adafruit.com/product/1947 / https://learn.adafruit.com/adafruit-2-8-tft-touch-shield-v2/downloads"""
     def __init__(self) -> None:
@@ -101,7 +101,6 @@ class Ch280qv10_Ct(Lcd, Block):
         self.device = self.Block(Ch280qv10_Ct_Device())
         self.gnd = self.Export(self.device.gnd, [Common])
         self.pwr = self.Export(self.device.iovcc, [Power])
-        self.reset = self.Export(self.device.reset)  # combined LCD and CTP reset
         self.spi = self.Port(SpiPeripheral.empty())
         self.cs = self.Export(self.device.cs)
         self.dc = self.Export(self.device.wr_rs)
@@ -110,10 +109,11 @@ class Ch280qv10_Ct(Lcd, Block):
 
     def contents(self):
         super().contents()
-        self.lcd = self.Block(Ch280qv10_Ct_Outline())  # for device outline
-
         self.connect(self.pwr, self.device.vci)
-        self.connect(self.reset, self.device.ctp_res)
+        self.connect(self.reset, self.device.reset, self.device.ctp_res)  # combined LCD and CTP reset
+        self.require(self.reset.is_connected())
+
+        self.lcd = self.Block(Ch280qv10_Ct_Outline())  # for device outline
 
         gnd_digital = self.gnd.as_digital_source()
         pwr_digital = self.pwr.as_digital_source()
