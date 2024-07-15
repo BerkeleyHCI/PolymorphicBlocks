@@ -34,7 +34,7 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
                 (1.65, 3.3)*Volt),  # typ 1.8/2.8
         )))
         self.connect(iovcc_pin, self.conn.pins.request('41'))
-        
+
         self.vci = self.Export(self.conn.pins.request('42').adapt_to(VoltageSink.from_gnd(
             self.gnd,
             voltage_limits=self.nonstrict_3v3_compatible.then_else(
