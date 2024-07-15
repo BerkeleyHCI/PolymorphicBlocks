@@ -153,6 +153,7 @@ from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, Mount
 from .MotorDriver_L293dd import L293dd
 from .MotorDriver_Drv8833 import Drv8833
 from .Bldc_Drv8313 import Drv8313
+from .StepperDriver_A4988 import A4988
 
 from .Imu_Lsm6ds3trc import Lsm6ds3trc
 from .Mag_Qmc5883l import Qmc5883l
