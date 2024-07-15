@@ -21,7 +21,7 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
         vss_pin = self.conn.pins.request('2')
         self.vss = self.Export(vss_pin.adapt_to(Ground()), [Common])
         self.connect(vss_pin, self.conn.pins.request('1'), self.conn.pins.request('30'),  # NC/GND
-                     vlss5_pin)  # VLSS, connect to VSS externally
+                     self.conn.pins.request('5'), self.conn.pins.request('28'))  # VLSS, connect to VSS externally
 
         vcc3_pin = self.conn.pins.request('3')
         self.connect(vcc3_pin, self.conn.pins.request('29'))
@@ -46,9 +46,6 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
             voltage_limits=(1.65*Volt, self.vci.link().voltage.upper()),
             current_draw=(2, 10)*uAmp  # typ sleep to max sleep, no operating draw given
         )))
-
-        vlss5_pin = self.conn.pins.request('5')
-        self.connect(vlss5_pin, self.conn.pins.request('28'))
 
         din_model = DigitalSink.from_supply(
             self.vss, self.vddio,

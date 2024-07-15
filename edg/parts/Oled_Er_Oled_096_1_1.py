@@ -11,7 +11,7 @@ class Er_Oled_096_1_1_Outline(InternalSubcircuit, FootprintBlock):
                        datasheet='https://www.buydisplay.com/download/manual/ER-OLED0.96-1_Series_Datasheet.pdf')
 
 
-class Er_Oled_096_1_1_Device(InternalSubcircuit, Block):
+class Er_Oled_096_1_1_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
     """30-pin FPC connector for the ER-OLED-0.96-1.1* device, configured to run off internal DC/DC"""
     def __init__(self) -> None:
         super().__init__()
@@ -24,7 +24,9 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Block):
                      self.conn.pins.request('29'))  # VLSS
 
         self.vdd = self.Export(self.conn.pins.request('9').adapt_to(VoltageSink(
-            voltage_limits=(1.65, 3.3)*Volt,  # abs max is 4v
+            voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                (1.65, 3.6)*Volt,  # abs max is 4v
+                (1.65, 3.3)*Volt),
             current_draw=(1, 300)*uAmp  # sleep to operating
         )))
 
@@ -40,7 +42,9 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Block):
         )))
 
         self.vbat = self.Export(self.conn.pins.request('6').adapt_to(VoltageSink(
-            voltage_limits=(3.3, 4.2)*Volt,  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
+            voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                (3.1, 4.2)*Volt,  # technically out of spec, works in practice near 3.3v
+                (3.3, 4.2)*Volt),  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
             current_draw=(18.8, 32.0)*mAmp  # typ @ 50% on to max @ 100% on
         )))
         self.c1p = self.Export(self.conn.pins.request('4'))
