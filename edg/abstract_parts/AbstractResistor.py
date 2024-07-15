@@ -256,7 +256,7 @@ class SeriesPowerResistor(DiscreteApplication):
     return self
 
 
-class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
+class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorBlock):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
   @init_in_parent
   def __init__(self, resistance: RangeLike, sense_in_reqd: BoolLike = True) -> None:
@@ -293,6 +293,10 @@ class CurrentSenseResistor(DiscreteApplication, GeneratorBlock):
     if pwr_out is not None:
       cast(Block, builder.get_enclosing_block()).connect(pwr_out, self.pwr_out)
     return self
+
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
+    assert symbol_name == 'edg_importable:CurrentSenseResistor'
+    return {'1': self.pwr_in, '2': self.pwr_out, 'sense_in': self.sense_in, 'sense_out': self.sense_out}
 
 
 class AnalogClampResistor(Protection, KiCadImportableBlock):
