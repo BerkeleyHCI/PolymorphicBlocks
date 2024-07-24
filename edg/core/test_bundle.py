@@ -1,4 +1,3 @@
-from typing import *
 import unittest
 
 from . import *
