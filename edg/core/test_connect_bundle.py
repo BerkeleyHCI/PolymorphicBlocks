@@ -20,7 +20,7 @@ class TestInvalidOuter(Block):
         self.connect(self.inner.port.a, self.source.source)
 
 
-class BundleConnectError(unittest.TestCase):
-    def test_contains_param(self) -> None:
+class BundleInnerConnectError(unittest.TestCase):
+    def test_connect_error(self) -> None:
         with self.assertRaises(UnconnectableError):
             TestInvalidOuter()._elaborated_def_to_proto()
