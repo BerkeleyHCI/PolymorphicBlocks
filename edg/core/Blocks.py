@@ -219,7 +219,7 @@ class DescriptionString():
       self.ref = ref
       self.units = units
 
-    def set_elt_proto(self, pb, ref_map):
+    def set_elt_proto(self, pb, ref_map=None):
       new_phrase = pb.description.add()
       new_phrase.param.path.CopyFrom(ref_map[self.ref])
       new_phrase.param.unit = self.units
