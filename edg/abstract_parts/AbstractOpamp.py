@@ -1,7 +1,7 @@
 from typing import Mapping, Tuple, List, NamedTuple
 
 from ..electronics_model import *
-from .Categories import Analog
+from .Categories import Analog, MultipackDevice
 
 
 @abstract_block
@@ -32,7 +32,7 @@ class OpampElement(Opamp):
 
 
 @abstract_block
-class MultipackOpamp(Analog, MultipackBlock):
+class MultipackOpamp(MultipackDevice, MultipackBlock):
   """Base class for packed opamps - devices that have multiple opamps in a single package,
   with shared power and ground connections. Typically used with the multipack feature to
   fit individual opamps across the design hierarchy into one of these."""
