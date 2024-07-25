@@ -219,7 +219,7 @@ class DescriptionString():
       self.ref = ref
       self.units = units
 
-    def set_elt_proto(self, pb, ref_map):
+    def set_elt_proto(self, pb, ref_map=None):
       new_phrase = pb.description.add()
       new_phrase.param.path.CopyFrom(ref_map[self.ref])
       new_phrase.param.unit = self.units
@@ -554,7 +554,10 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
         enclosing_block = port._block_parent()
         assert enclosing_block is not None
         if enclosing_block._parent is not self:
-          raise UnconnectableError("Inaccessible port for connection")
+          raise UnconnectableError("Inaccessible port: must be own port or inner block port")
+        if not(port._parent is enclosing_block or \
+                (isinstance(port._parent, Vector) and port._parent._parent is enclosing_block)):
+          raise UnconnectableError("Inaccessible port: cannot connect inner ports on inner blocks")
       self._connects_by_port[port] = connect
     connect.add_ports(connects_ports_new)
 
