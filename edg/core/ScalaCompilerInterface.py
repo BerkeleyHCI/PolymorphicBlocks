@@ -92,16 +92,15 @@ class ScalaCompilerInstance:
         stderr=subprocess.PIPE if self.suppress_stderr else None
       )
 
-      assert self.process.stdin is not None
-      self.request_serializer = BufferSerializer[edgrpc.CompilerRequest](self.process.stdin)
-      assert self.process.stdout is not None
-      self.response_deserializer = BufferDeserializer(edgrpc.CompilerResult, self.process.stdout)
-
   def compile(self, block: Type[Block], refinements: Refinements = Refinements(), *,
               ignore_errors: bool = False) -> CompiledDesign:
+    from ..hdl_server.__main__ import process_request
     self.check_started()
-    assert self.request_serializer is not None
-    assert self.response_deserializer is not None
+
+    assert self.process is not None
+    assert self.process.stdin is not None
+    assert self.process.stdout is not None
+    request_serializer = BufferSerializer[edgrpc.CompilerRequest](self.process.stdin)
 
     block_obj = block()
     request = edgrpc.CompilerRequest(
@@ -110,13 +109,30 @@ class ScalaCompilerInstance:
     )
     if isinstance(block_obj, DesignTop):
       refinements = block_obj.refinements() + refinements
-
     refinements.populate_proto(request.refinements)
 
-    self.request_serializer.write(request)
-    result = self.response_deserializer.read()
+    # write the initial request to the compiler process
+    request_serializer.write(request)
 
-    sys.stdout.buffer.write(self.response_deserializer.read_stdout())
+    # until the compiler gives back the response, this acts as the HDL server,
+    # taking requests in the opposite direction
+    # assert self.process.stdin is not None
+    # assert self.process.stdout is not None
+    # hdl_request_deserializer = BufferDeserializer(edgrpc.HdlRequest, self.process.stdout)
+    # hdl_response_serializer = BufferSerializer[edgrpc.HdlResponse](self.process.stdin)
+    # while True:
+    #   sys.stdout.buffer.write(hdl_request_deserializer.read_stdout())
+    #   hdl_request = hdl_request_deserializer.read()
+    #   assert hdl_request is not None
+    #   hdl_response = process_request(hdl_request)
+    #   if hdl_response is None:
+    #     break
+    #   hdl_response_serializer.write(hdl_response)
+
+    response_deserializer = BufferDeserializer(edgrpc.CompilerResult, self.process.stdout)
+    result = response_deserializer.read()
+
+    sys.stdout.buffer.write(response_deserializer.read_stdout())
     sys.stdout.buffer.flush()
 
     assert result is not None
