@@ -2,7 +2,7 @@ import importlib
 import inspect
 import sys
 from types import ModuleType
-from typing import Set, Type, Tuple, TypeVar, cast
+from typing import Set, Type, Tuple, TypeVar, cast, Optional
 
 from .. import edgir
 from .. import edgrpc
@@ -82,6 +82,67 @@ def class_from_library(elt: edgir.LibraryPath, expected_superclass: Type[Library
   return cls
 
 
+def process_request(request: edgrpc.HdlRequest) -> Optional[edgrpc.HdlResponse]:
+  response = edgrpc.HdlResponse()
+  if request.HasField('index_module'):
+    module = importlib.import_module(request.index_module.name)
+    library = LibraryElementIndexer()
+    indexed = [edgir.LibraryPath(target=edgir.LocalStep(name=indexed._static_def_name()))
+               for indexed in library.index_module(module)]
+    response.index_module.indexed.extend(indexed)
+    return response
+  elif request.HasField('get_library_element'):
+    cls = class_from_library(request.get_library_element.element,
+                             LibraryElement)  # type: ignore
+    obj, obj_proto = elaborate_class(cls)
+
+    response.get_library_element.element.CopyFrom(obj_proto)
+    if isinstance(obj, DesignTop):
+      obj.refinements().populate_proto(response.get_library_element.refinements)
+    return response
+  elif request.HasField('elaborate_generator'):
+    generator_type = class_from_library(request.elaborate_generator.element,
+                                        GeneratorBlock)
+    generator_obj = generator_type()
+
+    response.elaborate_generator.generated.CopyFrom(builder.elaborate_toplevel(
+      generator_obj,
+      is_generator=True,
+      generate_values=[(value.path, value.value) for value in request.elaborate_generator.values]))
+    return response
+  elif request.HasField('run_refinement'):
+    refinement_pass_class = class_from_library(request.run_refinement.refinement_pass,
+                                               BaseRefinementPass)  # type: ignore
+    refinement_pass = refinement_pass_class()
+
+    refinement_results = refinement_pass.run(
+      CompiledDesign.from_request(request.run_refinement.design, request.run_refinement.solvedValues))
+    response.run_refinement.SetInParent()
+    for path, refinement_result in refinement_results:
+      new_value = response.run_refinement.newValues.add()
+      new_value.path.CopyFrom(path)
+      new_value.value.CopyFrom(refinement_result)
+    return response
+  elif request.HasField('run_backend'):
+    backend_class = class_from_library(request.run_backend.backend,
+                                       BaseBackend)  # type: ignore
+    backend = backend_class()
+
+    backend_results = backend.run(
+      CompiledDesign.from_request(request.run_backend.design, request.run_backend.solvedValues),
+      dict(request.run_backend.arguments))
+    response.run_backend.SetInParent()
+    for path, backend_result in backend_results:
+      response_result = response.run_backend.results.add()
+      response_result.path.CopyFrom(path)
+      response_result.text = backend_result
+    return response
+  elif request.HasField('get_proto_version'):
+    response.get_proto_version = EDG_PROTO_VERSION
+    return response
+  else:
+    return None
+
 def run_server():
   stdin_deserializer = BufferDeserializer(edgrpc.HdlRequest, sys.stdin.buffer)
   stdout_serializer = BufferSerializer[edgrpc.HdlResponse](sys.stdout.buffer)
@@ -91,63 +152,14 @@ def run_server():
     if request is None:  # end of stream
       sys.exit(0)
 
-    response = edgrpc.HdlResponse()
     try:
-      if request.HasField('index_module'):
-        module = importlib.import_module(request.index_module.name)
-        library = LibraryElementIndexer()
-        indexed = [edgir.LibraryPath(target=edgir.LocalStep(name=indexed._static_def_name()))
-                   for indexed in library.index_module(module)]
-        response.index_module.indexed.extend(indexed)
-      elif request.HasField('get_library_element'):
-        cls = class_from_library(request.get_library_element.element,
-                                 LibraryElement)  # type: ignore
-        obj, obj_proto = elaborate_class(cls)
-
-        response.get_library_element.element.CopyFrom(obj_proto)
-        if isinstance(obj, DesignTop):
-          obj.refinements().populate_proto(response.get_library_element.refinements)
-      elif request.HasField('elaborate_generator'):
-        generator_type = class_from_library(request.elaborate_generator.element,
-                                            GeneratorBlock)
-        generator_obj = generator_type()
-
-        response.elaborate_generator.generated.CopyFrom(builder.elaborate_toplevel(
-          generator_obj,
-          is_generator=True,
-          generate_values=[(value.path, value.value) for value in request.elaborate_generator.values]))
-      elif request.HasField('run_refinement'):
-        refinement_pass_class = class_from_library(request.run_refinement.refinement_pass,
-                                                   BaseRefinementPass)  # type: ignore
-        refinement_pass = refinement_pass_class()
-
-        refinement_results = refinement_pass.run(
-          CompiledDesign.from_request(request.run_refinement.design, request.run_refinement.solvedValues))
-        response.run_refinement.SetInParent()
-        for path, refinement_result in refinement_results:
-          new_value = response.run_refinement.newValues.add()
-          new_value.path.CopyFrom(path)
-          new_value.value.CopyFrom(refinement_result)
-      elif request.HasField('run_backend'):
-        backend_class = class_from_library(request.run_backend.backend,
-                                           BaseBackend)  # type: ignore
-        backend = backend_class()
-
-        backend_results = backend.run(
-          CompiledDesign.from_request(request.run_backend.design, request.run_backend.solvedValues),
-          dict(request.run_backend.arguments))
-        response.run_backend.SetInParent()
-        for path, backend_result in backend_results:
-          response_result = response.run_backend.results.add()
-          response_result.path.CopyFrom(path)
-          response_result.text = backend_result
-      elif request.HasField('get_proto_version'):
-        response.get_proto_version = EDG_PROTO_VERSION
-      else:
+      response = process_request(request)
+      if response is None:
         raise RuntimeError(f"Unknown request {request}")
     except BaseException as e:
       import traceback
       # exception formatting from https://stackoverflow.com/questions/4564559/get-exception-description-and-stack-trace-which-caused-an-exception-all-as-a-st
+      response = edgrpc.HdlResponse()
       response.error.error = repr(e)
       response.error.traceback = "".join(traceback.TracebackException.from_exception(e).format())
       # also print it, to preserve the usual behavior of errors in Python
