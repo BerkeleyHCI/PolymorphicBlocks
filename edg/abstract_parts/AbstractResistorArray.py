@@ -14,7 +14,7 @@ class ResistorArrayElement(Resistor):  # to avoid an abstract part error
 
 
 @abstract_block
-class ResistorArray(PassiveComponent, MultipackBlock):
+class ResistorArray(MultipackDevice, MultipackBlock):
   """An n-element resistor array, where all resistors have the same resistance and power rating."""
   @init_in_parent
   def __init__(self, count: IntLike = 0) -> None:  # 0 means 'size automatically'

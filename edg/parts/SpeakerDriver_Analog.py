@@ -39,7 +39,7 @@ class Lm4871_Device(InternalSubcircuit, FootprintBlock):
         )
 
 
-class Lm4871(Interface, Block):
+class Lm4871(SpeakerDriver, Block):
     def __init__(self):
         super().__init__()
         # TODO should be a SpeakerDriver abstract part
@@ -128,7 +128,7 @@ class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Tpa2005d1(Interface, GeneratorBlock):
+class Tpa2005d1(SpeakerDriver, GeneratorBlock):
     """TPA2005D1 configured in single-ended input mode.
     Possible semi-pin-compatible with PAM8302AASCR (C113367), but which has internal resistor."""
     @init_in_parent
@@ -232,7 +232,7 @@ class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Pam8302a(Interface):
+class Pam8302a(SpeakerDriver, Block):
     """PAM8302A configured in single-ended input mode."""
     @init_in_parent
     def __init__(self):

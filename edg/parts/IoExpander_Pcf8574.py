@@ -78,7 +78,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
     self.assign(self.lcsc_part, "C86832")
 
 
-class Pcf8574(Interface, PinMappable):
+class Pcf8574(IoExpander, PinMappable):
   """8 bit I2C IO expander with 'quasi-bidirectional IOs'"""
   @init_in_parent
   def __init__(self, addr_lsb: IntLike = 0) -> None:

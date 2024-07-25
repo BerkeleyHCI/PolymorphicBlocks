@@ -74,7 +74,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, PartsTableFootprint, PartsTa
         self.assign(self.lcsc_part, jlc_part)
         self.assign(self.actual_basic_part, False)
 
-class Max98357a(Interface, Block):
+class Max98357a(SpeakerDriver, Block):
     """MAX98357A I2S speaker driver with default gain."""
     @init_in_parent
     def __init__(self):
