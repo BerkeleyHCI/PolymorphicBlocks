@@ -9,7 +9,7 @@ import edgir.ref.ref
 import edgir.schema.schema
 import edgrpc.hdl.{hdl => edgrpc}
 
-import java.io.{File, InputStream}
+import java.io.{File, InputStream, OutputStream}
 import scala.collection.mutable
 
 class ProtobufSubprocessException(msg: String) extends Exception(msg)
@@ -18,114 +18,118 @@ object ProtobufStdioSubprocess {
   val kHeaderMagicByte = 0xfe
 }
 
+class ProtobufStreamDeserializer[MessageType <: scalapb.GeneratedMessage](
+    stream: InputStream, // stream from the process
+    messageType: scalapb.GeneratedMessageCompanion[MessageType],
+    stdoutStream: OutputStream // where in-band non-protobuf data (eg, printfs) are written
+) {
+  // deserializes and returns the next Proto message, writing any non-protobuf data to stdoutStream
+  def read(): MessageType = {
+    val lastByte = readStdout()
+    if (lastByte != ProtobufStdioSubprocess.kHeaderMagicByte) {
+      throw new ProtobufSubprocessException(s"unexpected end of stream, got $lastByte")
+    }
+    messageType.parseDelimitedFrom(stream).get
+  }
+
+  // writes non-protobuf data to stdoutStream, or when readAll is true dumps all remaining data in the stream
+  // returns the last byte read, including -1 if the end-of-stream was reached
+  def readStdout(readAll: Boolean = false): Integer = {
+    var nextByte = 0
+    while (nextByte >= 0) {
+      nextByte = stream.read()
+      if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte && !readAll) {
+        return nextByte
+      } else {
+        stdoutStream.write(nextByte)
+      }
+    }
+    return nextByte
+  }
+}
+
+class ProtobufStreamSerializer[MessageType <: scalapb.GeneratedMessage](stream: OutputStream) {
+  def write(message: MessageType): Unit = {
+    stream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
+    message.writeDelimitedTo(stream)
+    stream.flush()
+  }
+}
+
 class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
     responseType: scalapb.GeneratedMessageCompanion[ResponseType],
     pythonPaths: Seq[String] = Seq(),
     args: Seq[String] = Seq()
 ) {
-  protected val process: Either[Process, Throwable] =
-    try {
-      val processBuilder = new ProcessBuilder(args: _*)
-      if (pythonPaths.nonEmpty) {
-        val env = processBuilder.environment()
-        val pythonPathString = pythonPaths.mkString(";")
-        Option(env.get("PYTHONPATH")) match { // merge existing PYTHONPATH if exists
-          case None => env.put("PYTHONPATH", pythonPathString)
-          case Some(envPythonPath) => env.put("PYTHONPATH", envPythonPath + ";" + pythonPathString)
-        }
+  protected val process: Process = {
+    val processBuilder = new ProcessBuilder(args: _*)
+    if (pythonPaths.nonEmpty) {
+      val env = processBuilder.environment()
+      val pythonPathString = pythonPaths.mkString(";")
+      Option(env.get("PYTHONPATH")) match { // merge existing PYTHONPATH if exists
+        case None => env.put("PYTHONPATH", pythonPathString)
+        case Some(envPythonPath) => env.put("PYTHONPATH", envPythonPath + ";" + pythonPathString)
       }
-      Left(processBuilder.start())
-    } catch {
-      case e: Throwable => Right(e) // if it fails store the exception to be thrown when we can
     }
+    processBuilder.start()
+  }
 
   // this provides a consistent Stream interface for both stdout and stderr
   // don't use PipedInputStream since it has a non-expanding buffer and is not single-thread safe
-  val outputStream = new QueueStream()
-  val errorStream: InputStream = process match { // the raw error stream from the process
-    case Left(process) => process.getErrorStream
-    case Right(_) => new QueueStream() // empty queue if the process never started
-  }
+  protected val stdoutStream = new QueueStream()
+  val outputStream = stdoutStream.getReader
+  val errorStream: InputStream = process.getErrorStream
 
-  protected def readStreamAvailable(stream: InputStream): String = {
-    var available = stream.available()
-    val outputBuilder = new mutable.StringBuilder()
-    while (available > 0) {
-      val array = new Array[Byte](available)
-      stream.read(array)
-      outputBuilder.append(new String(array))
-      available = stream.available()
-    }
-    outputBuilder.toString
-  }
+  protected val outputDeserializer =
+    new ProtobufStreamDeserializer[ResponseType](process.getInputStream, responseType, stdoutStream)
+  protected val outputSerializer = new ProtobufStreamSerializer[RequestType](process.getOutputStream)
 
-  def write(message: RequestType): Unit = {
-    process match {
-      case Right(err) =>
-        throw err
-      case Left(process) if !process.isAlive =>
-        throw new ProtobufSubprocessException("process died, " +
-          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
-      case Left(process) =>
-        process.getOutputStream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
-        message.writeDelimitedTo(process.getOutputStream)
-        process.getOutputStream.flush()
-    }
-  }
+  def write(message: RequestType): Unit = outputSerializer.write(message)
 
   def read(): ResponseType = {
-    process match {
-      case Right(err) =>
-        throw err
-      case Left(process) if !process.isAlive =>
-        throw new ProtobufSubprocessException("process died, " +
-          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
-      case Left(process) =>
-        var doneReadingStdout: Boolean = false
-        while (!doneReadingStdout) {
-          val nextByte = process.getInputStream.read()
-          if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte) {
-            doneReadingStdout = true
-          } else if (nextByte < 0) {
-            throw new ProtobufSubprocessException(s"unexpected end of stream, got $nextByte, " +
-              s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
-          } else {
-            outputStream.write(nextByte)
-          }
-        }
-        responseType.parseDelimitedFrom(process.getInputStream).get
+    if (!process.isAlive) {
+      throw new ProtobufSubprocessException("process died")
     }
+    outputDeserializer.read()
   }
 
   // Shuts down the stream and returns the exit value
   def shutdown(): Int = {
-    process match {
-      case Right(_) => -1 // give a generic failed value, otherwise doesn't need to do anything
-      case Left(process) =>
-        process.getOutputStream.close()
-        var doneReadingStdout: Boolean = false
-        while (!doneReadingStdout) {
-          val nextByte = process.getInputStream.read()
-          require(nextByte != ProtobufStdioSubprocess.kHeaderMagicByte)
-          if (nextByte < 0) {
-            doneReadingStdout = true
-          } else {
-            outputStream.write(nextByte)
-          }
-        }
-
-        process.waitFor()
-        process.exitValue()
-    }
+    process.getOutputStream.close()
+    process.waitFor()
+    outputDeserializer.readStdout()
+    process.exitValue()
   }
 
   // Forces a shutdown even if the process is busy
   def destroy(): Unit = {
-    process match {
-      case Right(_) => // ignored
-      case Left(process) => process.destroyForcibly()
-    }
+    process.destroyForcibly()
+    outputDeserializer.readStdout()
   }
+}
+
+abstract class BasePythonInterface {
+  // Hooks to implement when certain actions happen
+  protected def onLibraryRequest(element: ref.LibraryPath): Unit = {}
+  protected def onLibraryRequestComplete(
+      element: ref.LibraryPath,
+      result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
+  ): Unit = {}
+  protected def onElaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Unit = {}
+  protected def onElaborateGeneratorRequestComplete(
+      element: ref.LibraryPath,
+      values: Map[ref.LocalPath, ExprValue],
+      result: Errorable[elem.HierarchyBlock]
+  ): Unit = {}
+
+  def getProtoVersion(): Errorable[Int]
+  def indexModule(module: String): Errorable[Seq[ref.LibraryPath]]
+  def libraryRequest(element: ref.LibraryPath): Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
+
+  def elaborateGeneratorRequest(
+      element: ref.LibraryPath,
+      values: Map[ref.LocalPath, ExprValue]
+  ): Errorable[elem.HierarchyBlock]
 }
 
 /** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles them down to IR.
@@ -133,7 +137,8 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
   *
   * This invokes "python -m edg.hdl_server", using either the local or global (pip) module as available.
   */
-class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] = Seq()) {
+class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] = Seq())
+    extends BasePythonInterface {
   private val submoduleSearchPaths = if (pythonPaths.nonEmpty) pythonPaths else Seq(".")
   private val isSubmoduled =
     submoduleSearchPaths.map { searchPath => // check if submoduled, if so prepend the submodule name
@@ -158,19 +163,6 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
   def destroy(): Unit = {
     process.destroy()
   }
-
-  // Hooks to implement when certain actions happen
-  protected def onLibraryRequest(element: ref.LibraryPath): Unit = {}
-  protected def onLibraryRequestComplete(
-      element: ref.LibraryPath,
-      result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
-  ): Unit = {}
-  protected def onElaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Unit = {}
-  protected def onElaborateGeneratorRequestComplete(
-      element: ref.LibraryPath,
-      values: Map[ref.LocalPath, ExprValue],
-      result: Errorable[elem.HierarchyBlock]
-  ): Unit = {}
 
   def getProtoVersion(): Errorable[Int] = {
     val (reply, reqTime) = timeExec {
