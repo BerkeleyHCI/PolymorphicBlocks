@@ -64,7 +64,7 @@ class CompiledDesign:
 
 
 class ScalaCompilerInstance:
-  kDevRelpath = "../../compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOTjar"
+  kDevRelpath = "../../compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
   kPrecompiledRelpath = "resources/edg-compiler-precompiled.jar"
 
   def __init__(self, *, suppress_stderr: bool = False):

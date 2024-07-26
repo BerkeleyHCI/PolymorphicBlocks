@@ -9,7 +9,7 @@ import edgir.elem.elem
 import edgir.ref.ref
 import edgir.schema.schema
 
-import java.io.{File, PrintWriter, StringWriter}
+import java.io.{PrintWriter, StringWriter}
 
 // a PythonInterface that uses the on-event hooks to forward stderr and stdout
 // without this, the compiler can freeze on large stdout/stderr data, possibly because of queue sizing
