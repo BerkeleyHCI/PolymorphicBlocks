@@ -35,14 +35,14 @@ class ProtobufStreamDeserializer[MessageType <: scalapb.GeneratedMessage](
   // writes non-protobuf data to stdoutStream, or when readAll is true dumps all remaining data in the stream
   // returns the last byte read, including -1 if the end-of-stream was reached
   def readStdout(readAll: Boolean = false): Integer = {
-    var nextByte = 0
+    var nextByte = stream.read()
     while (nextByte >= 0) {
-      nextByte = stream.read()
       if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte && !readAll) {
         return nextByte
       } else {
         stdoutStream.write(nextByte)
       }
+      nextByte = stream.read()
     }
     return nextByte
   }
@@ -56,11 +56,17 @@ class ProtobufStreamSerializer[MessageType <: scalapb.GeneratedMessage](stream: 
   }
 }
 
+trait ProtobufInterface[RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage] {
+  def write(message: RequestType): Unit
+  def read(): ResponseType
+  def finish(): Unit
+}
+
 class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
     responseType: scalapb.GeneratedMessageCompanion[ResponseType],
     pythonPaths: Seq[String] = Seq(),
     args: Seq[String] = Seq()
-) {
+) extends ProtobufInterface[RequestType, ResponseType] {
   protected val process: Process = {
     val processBuilder = new ProcessBuilder(args: _*)
     if (pythonPaths.nonEmpty) {
@@ -84,14 +90,16 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
     new ProtobufStreamDeserializer[ResponseType](process.getInputStream, responseType, stdoutStream)
   protected val outputSerializer = new ProtobufStreamSerializer[RequestType](process.getOutputStream)
 
-  def write(message: RequestType): Unit = outputSerializer.write(message)
+  override def write(message: RequestType): Unit = outputSerializer.write(message)
 
-  def read(): ResponseType = {
+  override def read(): ResponseType = {
     if (!process.isAlive) {
       throw new ProtobufSubprocessException("process died")
     }
     outputDeserializer.read()
   }
+
+  override def finish() = shutdown()
 
   // Shuts down the stream and returns the exit value
   def shutdown(): Int = {
