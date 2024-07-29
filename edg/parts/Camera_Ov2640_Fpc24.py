@@ -2,7 +2,7 @@ from ..abstract_parts import *
 from .PassiveConnector_Fpc import Fpc050Bottom
 
 
-class Ov2640_Fpc24_Device(InternalSubcircuit, Block):
+class Ov2640_Fpc24_Device(InternalSubcircuit,Nonstrict3v3Compatible, Block):
     def __init__(self) -> None:
         super().__init__()
 
@@ -15,7 +15,7 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Block):
             current_draw=(6, 15)*mAmp  # active typ to max
         )))
         self.dvdd = self.Export(self.conn.pins.request('15').adapt_to(VoltageSink(
-            voltage_limits=(1.24, 1.36)*Volt,  # Table 6
+            voltage_limits=(1.14, 1.26)*Volt,  # Table 6
             current_draw=(30, 60)*mAmp  # active typ YUV to max compressed
         )))
         self.avdd = self.Export(self.conn.pins.request('21').adapt_to(VoltageSink(
