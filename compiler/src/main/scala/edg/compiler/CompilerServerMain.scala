@@ -13,39 +13,18 @@ import java.io.{PrintWriter, StringWriter}
 
 // a PythonInterface that uses the on-event hooks to forward stderr and stdout
 // without this, the compiler can freeze on large stdout/stderr data, possibly because of queue sizing
-class ForwardingPythonInterface(pythonPaths: Seq[String] = Seq())
-    extends PythonInterface(pythonPaths = pythonPaths) {
+// TODO REMOVE THIS REPLACE WITH HOST STDIO PROCESS INTERFACE
+class ForwardingPythonInterface(interpreter: String = "python", pythonPaths: Seq[String] = Seq())
+    extends ProtobufStdioSubprocess(interpreter = interpreter, pythonPaths = pythonPaths) {
   def forwardProcessOutput(): Unit = {
-    StreamUtils.forAvailable(processOutputStream) { data =>
+    StreamUtils.forAvailable(outputStream) { data =>
       System.out.print(new String(data))
       System.out.flush()
     }
-    StreamUtils.forAvailable(processErrorStream) { data =>
+    StreamUtils.forAvailable(errorStream) { data =>
       System.err.print(new String(data))
       System.err.flush()
     }
-  }
-
-  override protected def onLibraryRequestComplete(
-      element: ref.LibraryPath,
-      result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
-  ): Unit = {
-    forwardProcessOutput()
-  }
-
-  override protected def onElaborateGeneratorRequestComplete(
-      element: ref.LibraryPath,
-      values: Map[ref.LocalPath, ExprValue],
-      result: Errorable[elem.HierarchyBlock]
-  ): Unit = {
-    forwardProcessOutput()
-  }
-
-  override protected def onRunBackendComplete(
-      backend: ref.LibraryPath,
-      result: Errorable[Map[DesignPath, String]]
-  ): Unit = {
-    forwardProcessOutput()
   }
 }
 
@@ -94,7 +73,8 @@ object CompilerServerMain {
   }
 
   def main(args: Array[String]): Unit = {
-    val pyIf = new ForwardingPythonInterface()
+    val pyProcess = new ForwardingPythonInterface()
+    val pyIf = new PythonInterface(pyProcess)
     (pyIf.getProtoVersion() match {
       case Errorable.Success(pyVersion) if pyVersion == Compiler.kExpectedProtoVersion => None
       case Errorable.Success(pyMismatchVersion) => Some(pyMismatchVersion.toString)
@@ -121,7 +101,7 @@ object CompilerServerMain {
             throw new NotImplementedError() // provides a return type, shouldn't ever happen
         }
 
-        pyIf.forwardProcessOutput() // in case the hooks didn't catch everything
+        pyProcess.forwardProcessOutput() // in case the hooks didn't catch everything
 
         System.out.write(ProtobufStdioSubprocess.kHeaderMagicByte)
         result.writeDelimitedTo(System.out)

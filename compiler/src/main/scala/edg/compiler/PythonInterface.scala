@@ -56,17 +56,18 @@ class ProtobufStreamSerializer[MessageType <: scalapb.GeneratedMessage](stream: 
   }
 }
 
-trait ProtobufInterface[RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage] {
-  def write(message: RequestType): Unit
-  def read(): ResponseType
+trait ProtobufInterface {
+  def write(message: edgrpc.HdlRequest): Unit
+  def read(): edgrpc.HdlResponse
   def finish(): Unit
 }
 
-class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
-    responseType: scalapb.GeneratedMessageCompanion[ResponseType],
+class ProtobufStdioSubprocess(
     interpreter: String = "python",
     pythonPaths: Seq[String] = Seq()
-) extends ProtobufInterface[RequestType, ResponseType] {
+) extends ProtobufInterface {
+  val responseType = edgrpc.HdlResponse
+
   private val submoduleSearchPaths = if (pythonPaths.nonEmpty) pythonPaths else Seq(".")
   private val isSubmoduled =
     submoduleSearchPaths.map { searchPath => // check if submoduled, if so prepend the submodule name
@@ -95,12 +96,12 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
   val errorStream: InputStream = process.getErrorStream
 
   protected val outputDeserializer =
-    new ProtobufStreamDeserializer[ResponseType](process.getInputStream, responseType, stdoutStream)
-  protected val outputSerializer = new ProtobufStreamSerializer[RequestType](process.getOutputStream)
+    new ProtobufStreamDeserializer[edgrpc.HdlResponse](process.getInputStream, responseType, stdoutStream)
+  protected val outputSerializer = new ProtobufStreamSerializer[edgrpc.HdlRequest](process.getOutputStream)
 
-  override def write(message: RequestType): Unit = outputSerializer.write(message)
+  override def write(message: edgrpc.HdlRequest): Unit = outputSerializer.write(message)
 
-  override def read(): ResponseType = {
+  override def read(): edgrpc.HdlResponse = {
     if (!process.isAlive) {
       throw new ProtobufSubprocessException("process died")
     }
@@ -129,7 +130,7 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
   *
   * This invokes "python -m edg.hdl_server", using either the local or global (pip) module as available.
   */
-class PythonInterface(interface: ProtobufInterface[edgrpc.HdlRequest, edgrpc.HdlResponse]) {
+class PythonInterface(interface: ProtobufInterface) {
   def getProtoVersion(): Errorable[Int] = {
     val (reply, reqTime) = timeExec {
       interface.write(edgrpc.HdlRequest(
@@ -167,8 +168,10 @@ class PythonInterface(interface: ProtobufInterface[edgrpc.HdlRequest, edgrpc.Hdl
 
   // Hooks to implement when certain actions happen
   protected def onLibraryRequest(element: ref.LibraryPath): Unit = {}
-  protected def onLibraryRequestComplete(element: ref.LibraryPath,
-                                         result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
+  protected def onLibraryRequestComplete(
+      element: ref.LibraryPath,
+      result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
+  ): Unit = {}
 
   def libraryRequest(element: ref.LibraryPath): Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = {
     onLibraryRequest(element)
@@ -196,10 +199,10 @@ class PythonInterface(interface: ProtobufInterface[edgrpc.HdlRequest, edgrpc.Hdl
 
   protected def onElaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Unit = {}
   protected def onElaborateGeneratorRequestComplete(
-                                                     element: ref.LibraryPath,
-                                                     values: Map[ref.LocalPath, ExprValue],
-                                                     result: Errorable[elem.HierarchyBlock]
-                                                   ): Unit = {}
+      element: ref.LibraryPath,
+      values: Map[ref.LocalPath, ExprValue],
+      result: Errorable[elem.HierarchyBlock]
+  ): Unit = {}
 
   def elaborateGeneratorRequest(
       element: ref.LibraryPath,
