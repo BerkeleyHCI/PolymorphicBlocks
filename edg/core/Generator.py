@@ -134,6 +134,7 @@ class GeneratorBlock(Block):
     return self._def_to_proto()
 
 
+@non_library
 class DefaultExportBlock(GeneratorBlock):
   """EXPERIMENTAL UTILITY CLASS. There needs to be a cleaner way to address this eventually,
   perhaps as a core compiler construct.

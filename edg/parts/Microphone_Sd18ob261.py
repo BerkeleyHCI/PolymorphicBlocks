@@ -44,7 +44,7 @@ class Sd18ob261_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Sd18ob261(Interface, GeneratorBlock):
+class Sd18ob261(Microphone, GeneratorBlock):
     """SD18OB261-060 PDM microphone, probably footprint-compatible with similar Knowles devices.
     Application circuit is not specified in the datasheet, this uses the one from SPH0655LM4H
     (single 0.1uF decap)."""

@@ -78,7 +78,7 @@ class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
     self.assign(self.lcsc_part, 'C86803')
 
 
-class Pca9554(Interface, PinMappable):
+class Pca9554(IoExpander, PinMappable):
   """8 bit I2C IO expander"""
   @init_in_parent
   def __init__(self, addr_lsb: IntLike = 0) -> None:

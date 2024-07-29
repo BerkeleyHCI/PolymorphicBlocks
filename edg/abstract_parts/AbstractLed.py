@@ -278,7 +278,7 @@ class IndicatorSinkPackedRgbLedElement(IndicatorSinkLed):
     super().__init__(current_draw=RangeExpr())
 
 
-class IndicatorSinkPackedRgbLed(Light, MultipackBlock):
+class IndicatorSinkPackedRgbLed(MultipackDevice, MultipackBlock):
   def __init__(self):
     super().__init__()
 

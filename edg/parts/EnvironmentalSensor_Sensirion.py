@@ -34,7 +34,7 @@ class Shtc3_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Shtc3(EnvironmentalSensor, Block):
+class Shtc3(TemperatureSensor, HumiditySensor, Block):
     """Humidity and temperature sensor with +/-2% RH and +/-0.2C"""
     def __init__(self):
         super().__init__()

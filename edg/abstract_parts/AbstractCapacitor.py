@@ -355,7 +355,7 @@ class CombinedCapacitorElement(Capacitor):  # to avoid an abstract part error
     self.assign(self.actual_capacitance, self.capacitance)  # fake it, since a combined capacitance is handwavey
 
 
-class CombinedCapacitor(PassiveComponent, MultipackBlock, GeneratorBlock):
+class CombinedCapacitor(MultipackDevice, MultipackBlock, GeneratorBlock):
   """A packed capacitor that combines multiple individual capacitors into a single component,
   with the sum of or taking the max of the constituent capacitances."""
   @init_in_parent

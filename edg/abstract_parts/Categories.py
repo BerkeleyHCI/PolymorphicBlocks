@@ -86,6 +86,22 @@ class DigitalToAnalog(Interface):
 
 
 @abstract_block
+class SpeakerDriver(Interface):
+  pass
+
+
+@abstract_block
+class IoExpander(Interface):
+  pass
+
+
+@abstract_block
+class BitBangAdapter(Interface):
+  """Adapters that break out a structured Bundle to component wires, useful when bit-banging those protocols"""
+  pass
+
+
+@abstract_block
 class Radiofrequency(Block):
   """Radiofrequency devices."""
   pass
@@ -195,12 +211,39 @@ class EnvironmentalSensor(Sensor):
 
 
 @abstract_block
+class TemperatureSensor(EnvironmentalSensor):
+  pass
+
+
+@abstract_block
+class HumiditySensor(EnvironmentalSensor):
+  pass
+
+
+@abstract_block
+class PressureSensor(EnvironmentalSensor):
+  """Sensors measuring ambient pressure"""
+  pass
+
+
+@abstract_block
+class GasSensor(EnvironmentalSensor):
+  """Sensors measuring gas concentration, including non-particle IAQ, TVOC, eCO2, and CO2 sensors."""
+  pass
+
+
+@abstract_block
 class LightSensor(Sensor):
   pass
 
 
 @abstract_block
 class Magnetometer(Sensor):
+  pass
+
+
+@abstract_block
+class Microphone(Sensor):
   pass
 
 
@@ -224,6 +267,13 @@ class Protection(Block):
 @abstract_block
 class Testing(Block):
   """Blocks for testing (eg, test points) and programming (eg, programming headers)."""
+  pass
+
+
+@abstract_block
+class MultipackDevice(Block):
+  """A multipack device (e.g., dualpack opamp, quadpack resistor array) which blocks across the design
+  can be merged into."""
   pass
 
 
