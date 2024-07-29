@@ -64,11 +64,19 @@ trait ProtobufInterface[RequestType <: scalapb.GeneratedMessage, ResponseType <:
 
 class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
     responseType: scalapb.GeneratedMessageCompanion[ResponseType],
-    pythonPaths: Seq[String] = Seq(),
-    args: Seq[String] = Seq()
+    interpreter: String = "python",
+    pythonPaths: Seq[String] = Seq()
 ) extends ProtobufInterface[RequestType, ResponseType] {
+  private val submoduleSearchPaths = if (pythonPaths.nonEmpty) pythonPaths else Seq(".")
+  private val isSubmoduled =
+    submoduleSearchPaths.map { searchPath => // check if submoduled, if so prepend the submodule name
+      new File(new File(searchPath), "PolymorphicBlocks/edg/hdl_server/__init__.py").exists()
+    }.exists(identity)
+  val packagePrefix = if (isSubmoduled) "PolymorphicBlocks." else ""
+  private val packageName = packagePrefix + "edg.hdl_server"
+
   protected val process: Process = {
-    val processBuilder = new ProcessBuilder(args: _*)
+    val processBuilder = new ProcessBuilder(interpreter, "-u", "-m", packageName)
     if (pythonPaths.nonEmpty) {
       val env = processBuilder.environment()
       val pythonPathString = pythonPaths.mkString(";")
@@ -116,68 +124,18 @@ class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseT
   }
 }
 
-abstract class BasePythonInterface {
-  // Hooks to implement when certain actions happen
-  protected def onLibraryRequest(element: ref.LibraryPath): Unit = {}
-  protected def onLibraryRequestComplete(
-      element: ref.LibraryPath,
-      result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
-  ): Unit = {}
-  protected def onElaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Unit = {}
-  protected def onElaborateGeneratorRequestComplete(
-      element: ref.LibraryPath,
-      values: Map[ref.LocalPath, ExprValue],
-      result: Errorable[elem.HierarchyBlock]
-  ): Unit = {}
-
-  def getProtoVersion(): Errorable[Int]
-  def indexModule(module: String): Errorable[Seq[ref.LibraryPath]]
-  def libraryRequest(element: ref.LibraryPath): Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
-
-  def elaborateGeneratorRequest(
-      element: ref.LibraryPath,
-      values: Map[ref.LocalPath, ExprValue]
-  ): Errorable[elem.HierarchyBlock]
-}
-
 /** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles them down to IR.
   * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
   *
   * This invokes "python -m edg.hdl_server", using either the local or global (pip) module as available.
   */
-class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] = Seq())
-    extends BasePythonInterface {
-  private val submoduleSearchPaths = if (pythonPaths.nonEmpty) pythonPaths else Seq(".")
-  private val isSubmoduled =
-    submoduleSearchPaths.map { searchPath => // check if submoduled, if so prepend the submodule name
-      new File(new File(searchPath), "PolymorphicBlocks/edg/hdl_server/__init__.py").exists()
-    }.exists(identity)
-  val packagePrefix = if (isSubmoduled) "PolymorphicBlocks." else ""
-  private val packageName = packagePrefix + "edg.hdl_server"
-
-  private val command = Seq(interpreter, "-u", "-m", packageName)
-  protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
-    edgrpc.HdlResponse,
-    pythonPaths,
-    command
-  )
-  val processOutputStream: InputStream = process.outputStream
-  val processErrorStream: InputStream = process.errorStream
-
-  def shutdown(): Int = {
-    process.shutdown()
-  }
-
-  def destroy(): Unit = {
-    process.destroy()
-  }
-
+class PythonInterface(interface: ProtobufInterface[edgrpc.HdlRequest, edgrpc.HdlResponse]) {
   def getProtoVersion(): Errorable[Int] = {
     val (reply, reqTime) = timeExec {
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.GetProtoVersion(0) // dummy argument
       ))
-      process.read()
+      interface.read()
     }
     reply.response match {
       case edgrpc.HdlResponse.Response.GetProtoVersion(result) =>
@@ -192,10 +150,10 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
   def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = {
     val request = edgrpc.ModuleName(module)
     val (reply, reqTime) = timeExec {
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.IndexModule(value = request)
       ))
-      process.read()
+      interface.read()
     }
     reply.response match {
       case edgrpc.HdlResponse.Response.IndexModule(result) =>
@@ -207,6 +165,11 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
     }
   }
 
+  // Hooks to implement when certain actions happen
+  protected def onLibraryRequest(element: ref.LibraryPath): Unit = {}
+  protected def onLibraryRequestComplete(element: ref.LibraryPath,
+                                         result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
+
   def libraryRequest(element: ref.LibraryPath): Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = {
     onLibraryRequest(element)
 
@@ -214,10 +177,10 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
       element = Some(element)
     )
     val (reply, reqTime) = timeExec { // TODO plumb refinements through
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.GetLibraryElement(value = request)
       ))
-      process.read()
+      interface.read()
     }
     val result = reply.response match {
       case edgrpc.HdlResponse.Response.GetLibraryElement(result) =>
@@ -230,6 +193,13 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
     onLibraryRequestComplete(element, result)
     result
   }
+
+  protected def onElaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Unit = {}
+  protected def onElaborateGeneratorRequestComplete(
+                                                     element: ref.LibraryPath,
+                                                     values: Map[ref.LocalPath, ExprValue],
+                                                     result: Errorable[elem.HierarchyBlock]
+                                                   ): Unit = {}
 
   def elaborateGeneratorRequest(
       element: ref.LibraryPath,
@@ -247,10 +217,10 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
       }.toSeq
     )
     val (reply, reqTime) = timeExec {
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.ElaborateGenerator(value = request)
       ))
-      process.read()
+      interface.read()
     }
     val result = reply.response match {
       case edgrpc.HdlResponse.Response.ElaborateGenerator(result) =>
@@ -290,10 +260,10 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
       }.toSeq
     )
     val (reply, reqTime) = timeExec {
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.RunRefinement(value = request)
       ))
-      process.read()
+      interface.read()
     }
     val result = reply.response match {
       case edgrpc.HdlResponse.Response.RunRefinement(result) =>
@@ -326,10 +296,10 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
       arguments = arguments
     )
     val (reply, reqTime) = timeExec {
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.RunBackend(value = request)
       ))
-      process.read()
+      interface.read()
     }
     val result = reply.response match {
       case edgrpc.HdlResponse.Response.RunBackend(result) =>
