@@ -16,10 +16,9 @@ class QueueStream extends OutputStream {
 
   override def write(data: Int): Unit = queue.enqueue(data.toByte)
 
-  def getReader: Reader = new Reader
-
   class Reader extends InputStream {
     override def read(): Int = queue.dequeue()
     override def available(): Int = queue.length
   }
+  def getReader: Reader = new Reader
 }

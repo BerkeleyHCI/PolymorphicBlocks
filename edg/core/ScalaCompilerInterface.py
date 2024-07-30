@@ -67,11 +67,8 @@ class ScalaCompilerInstance:
   kDevRelpath = "../../compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
   kPrecompiledRelpath = "resources/edg-compiler-precompiled.jar"
 
-  def __init__(self, *, suppress_stderr: bool = False):
+  def __init__(self):
     self.process: Optional[Any] = None
-    self.suppress_stderr = suppress_stderr
-    self.request_serializer: Optional[BufferSerializer[edgrpc.CompilerRequest]] = None
-    self.response_deserializer: Optional[BufferDeserializer[edgrpc.CompilerResult]] = None
 
   def check_started(self) -> None:
     if self.process is None:
@@ -89,7 +86,7 @@ class ScalaCompilerInstance:
         ['java', '-jar', jar_path],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE if self.suppress_stderr else None
+        stderr=subprocess.PIPE
       )
 
   def compile(self, block: Type[Block], refinements: Refinements = Refinements(), *,
@@ -122,6 +119,7 @@ class ScalaCompilerInstance:
     hdl_response_serializer = BufferSerializer[edgrpc.HdlResponse](self.process.stdin)
     while True:
       sys.stdout.buffer.write(hdl_request_deserializer.read_stdout())
+      sys.stdout.buffer.flush()
       hdl_request = hdl_request_deserializer.read()
       assert hdl_request is not None
       hdl_response = process_request(hdl_request)
@@ -146,8 +144,7 @@ class ScalaCompilerInstance:
     assert self.process is not None
     self.process.stdin.close()
     self.process.stdout.close()
-    if self.suppress_stderr:
-      self.process.stderr.close()
+    self.process.stderr.close()
     self.process.wait()
 
 

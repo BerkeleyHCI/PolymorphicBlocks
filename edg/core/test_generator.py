@@ -1,7 +1,9 @@
 import unittest
+from os import devnull
+from contextlib import redirect_stderr
 
 from . import *
-from .ScalaCompilerInterface import ScalaCompiler, ScalaCompilerInstance
+from .ScalaCompilerInterface import ScalaCompiler
 
 
 class TestGeneratorAssign(Block):
@@ -205,8 +207,6 @@ class GeneratorFailure(GeneratorBlock):
 
 class GeneratorFailureTestCase(unittest.TestCase):
   def test_metadata(self) -> None:
-    # if we don't suppress the output, the error from the generator propagates to the test console
-    compiler = ScalaCompilerInstance(suppress_stderr=True)
-    with self.assertRaises(CompilerCheckError) as context:
-      compiler.compile(TestGeneratorFailure)
-    compiler.close()  # if we don't close it, we get a ResourceWarning
+    with self.assertRaises(CompilerCheckError), \
+            open(devnull, 'w') as fnull, redirect_stderr(fnull):  # suppress generator error
+      self.compiled = ScalaCompiler.compile(TestGeneratorFailure)

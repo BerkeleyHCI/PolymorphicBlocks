@@ -136,7 +136,7 @@ def process_request(request: edgrpc.HdlRequest) -> Optional[edgrpc.HdlResponse]:
     elif request.HasField('get_proto_version'):
       response.get_proto_version = EDG_PROTO_VERSION
     else:
-      response = None
+      return None
   except BaseException as e:
     import traceback
     # exception formatting from https://stackoverflow.com/questions/4564559/get-exception-description-and-stack-trace-which-caused-an-exception-all-as-a-st
@@ -160,7 +160,7 @@ def run_server():
     if response is None:
       raise RuntimeError(f"Unknown request {request}")
 
-    sys.stdout.buffer.write(stdin_deserializer.read_stdout())
+    sys.stdout.buffer.write(stdin_deserializer.read_stdout())  # forward prints and stuff
     stdout_serializer.write(response)
 
 
