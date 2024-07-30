@@ -116,18 +116,18 @@ class ScalaCompilerInstance:
 
     # until the compiler gives back the response, this acts as the HDL server,
     # taking requests in the opposite direction
-    # assert self.process.stdin is not None
-    # assert self.process.stdout is not None
-    # hdl_request_deserializer = BufferDeserializer(edgrpc.HdlRequest, self.process.stdout)
-    # hdl_response_serializer = BufferSerializer[edgrpc.HdlResponse](self.process.stdin)
-    # while True:
-    #   sys.stdout.buffer.write(hdl_request_deserializer.read_stdout())
-    #   hdl_request = hdl_request_deserializer.read()
-    #   assert hdl_request is not None
-    #   hdl_response = process_request(hdl_request)
-    #   if hdl_response is None:
-    #     break
-    #   hdl_response_serializer.write(hdl_response)
+    assert self.process.stdin is not None
+    assert self.process.stdout is not None
+    hdl_request_deserializer = BufferDeserializer(edgrpc.HdlRequest, self.process.stdout)
+    hdl_response_serializer = BufferSerializer[edgrpc.HdlResponse](self.process.stdin)
+    while True:
+      sys.stdout.buffer.write(hdl_request_deserializer.read_stdout())
+      hdl_request = hdl_request_deserializer.read()
+      assert hdl_request is not None
+      hdl_response = process_request(hdl_request)
+      if hdl_response is None:
+        break
+      hdl_response_serializer.write(hdl_response)
 
     response_deserializer = BufferDeserializer(edgrpc.CompilerResult, self.process.stdout)
     result = response_deserializer.read()

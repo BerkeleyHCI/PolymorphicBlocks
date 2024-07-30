@@ -1,6 +1,6 @@
 package edg.compiler
 
-import edg.util.{Errorable, StreamUtils}
+import edg.util.{Errorable, QueueStream, StreamUtils}
 import edgrpc.compiler.{compiler => edgcompiler}
 import edgrpc.compiler.compiler.{CompilerRequest, CompilerResult}
 import edgrpc.hdl.{hdl => edgrpc}
@@ -25,6 +25,23 @@ class ForwardingPythonInterface(interpreter: String = "python", pythonPaths: Seq
       System.err.print(new String(data))
       System.err.flush()
     }
+  }
+}
+
+class HostPythonInterface extends ProtobufInterface {
+  val responseType = edgrpc.HdlResponse
+
+  protected val stdoutStream = new QueueStream()
+  val outputStream = stdoutStream.getReader
+
+  protected val outputDeserializer =
+    new ProtobufStreamDeserializer[edgrpc.HdlResponse](System.in, responseType, stdoutStream)
+  protected val outputSerializer = new ProtobufStreamSerializer[edgrpc.HdlRequest](System.out)
+
+  override def write(message: edgrpc.HdlRequest): Unit = outputSerializer.write(message)
+
+  override def read(): edgrpc.HdlResponse = {
+    outputDeserializer.read()
   }
 }
 
@@ -73,35 +90,38 @@ object CompilerServerMain {
   }
 
   def main(args: Array[String]): Unit = {
-    val pyProcess = new ForwardingPythonInterface()
-    val pyIf = new PythonInterface(pyProcess)
-    (pyIf.getProtoVersion() match {
-      case Errorable.Success(pyVersion) if pyVersion == Compiler.kExpectedProtoVersion => None
-      case Errorable.Success(pyMismatchVersion) => Some(pyMismatchVersion.toString)
-      case Errorable.Error(errMsg) => Some(s"error $errMsg")
-    }).foreach { pyMismatchVersion =>
-      System.err.println(f"WARNING: Python / compiler version mismatch, Python reported $pyMismatchVersion, " +
-        f"expected ${Compiler.kExpectedProtoVersion}.")
-      System.err.println(f"If you get unexpected errors or results, consider updating the Python library or compiler.")
-      Thread.sleep(kHdlVersionMismatchDelayMs)
-    }
+    while (true) { // handle multiple requests sequentially in the same process
+      val expectedMagicByte = System.in.read()
+      if (expectedMagicByte == -1) {
+        System.exit(0) // end of stream, shut it down
+      }
 
-    val pyLib = new PythonInterfaceLibrary()
-    pyLib.withPythonInterface(pyIf) {
-      while (true) {
-        val expectedMagicByte = System.in.read()
-        require(expectedMagicByte == ProtobufStdioSubprocess.kHeaderMagicByte || expectedMagicByte < 0)
+      require(expectedMagicByte == ProtobufStdioSubprocess.kHeaderMagicByte || expectedMagicByte < 0)
+      val request = edgcompiler.CompilerRequest.parseDelimitedFrom(System.in)
 
-        val request = edgcompiler.CompilerRequest.parseDelimitedFrom(System.in)
-        val result = request match {
-          case Some(request) =>
-            compile(request, pyLib)
-          case None => // end of stream
-            System.exit(0)
-            throw new NotImplementedError() // provides a return type, shouldn't ever happen
-        }
+      val protoInterface = new HostPythonInterface()
+      val compilerInterface = new PythonInterface(protoInterface)
+      (compilerInterface.getProtoVersion() match {
+        case Errorable.Success(pyVersion) if pyVersion == Compiler.kExpectedProtoVersion => None
+        case Errorable.Success(pyMismatchVersion) => Some(pyMismatchVersion.toString)
+        case Errorable.Error(errMsg) => Some(s"error $errMsg")
+      }).foreach { pyMismatchVersion =>
+        System.err.println(f"WARNING: Python / compiler version mismatch, Python reported $pyMismatchVersion, " +
+          f"expected ${Compiler.kExpectedProtoVersion}.")
+        System.err.println(
+          f"If you get unexpected errors or results, consider updating the Python library or compiler."
+        )
+        Thread.sleep(kHdlVersionMismatchDelayMs)
+      }
 
-        pyProcess.forwardProcessOutput() // in case the hooks didn't catch everything
+      val pyLib = new PythonInterfaceLibrary()
+      pyLib.withPythonInterface(compilerInterface) {
+        val result = compile(request.get, pyLib)
+
+        assert(protoInterface.outputStream.available() == 0, "unhandled in-band data from HDL compiler")
+
+        // this acts as a message indicating end of compilation
+        protoInterface.write(edgrpc.HdlRequest())
 
         System.out.write(ProtobufStdioSubprocess.kHeaderMagicByte)
         result.writeDelimitedTo(System.out)

@@ -59,7 +59,6 @@ class ProtobufStreamSerializer[MessageType <: scalapb.GeneratedMessage](stream: 
 trait ProtobufInterface {
   def write(message: edgrpc.HdlRequest): Unit
   def read(): edgrpc.HdlResponse
-  def finish(): Unit
 }
 
 class ProtobufStdioSubprocess(
@@ -107,8 +106,6 @@ class ProtobufStdioSubprocess(
     }
     outputDeserializer.read()
   }
-
-  override def finish() = shutdown()
 
   // Shuts down the stream and returns the exit value
   def shutdown(): Int = {
