@@ -1,6 +1,6 @@
 package edg.util
 
-import java.io.InputStream
+import java.io.{InputStream, OutputStream}
 import collection.mutable
 
 /** Why the heck are we writing another QueueStream when we have things like Apache QueueInputStream?
@@ -11,12 +11,14 @@ import collection.mutable
   *
   * So here, yet another variation of Stream. Yay.
   */
-class QueueStream extends InputStream {
+class QueueStream extends OutputStream {
   protected val queue = mutable.Queue[Byte]()
 
-  override def read(): Int = queue.dequeue()
-  override def available(): Int = queue.length
+  override def write(data: Int): Unit = queue.enqueue(data.toByte)
 
-  // don't want to bother writing a separate OutputStream version, so the write methods are just stuffed in here
-  def write(data: Int): Unit = queue.enqueue(data.toByte)
+  class Reader extends InputStream {
+    override def read(): Int = queue.dequeue()
+    override def available(): Int = queue.length
+  }
+  def getReader: Reader = new Reader
 }
