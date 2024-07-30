@@ -71,6 +71,7 @@ object CompilerServerMain {
   }
 
   def main(args: Array[String]): Unit = {
+    val pyLib = new PythonInterfaceLibrary() // allow the library cache to persist across requests
     while (true) { // handle multiple requests sequentially in the same process
       val expectedMagicByte = System.in.read()
       if (expectedMagicByte == -1) {
@@ -94,7 +95,6 @@ object CompilerServerMain {
         Thread.sleep(kHdlVersionMismatchDelayMs)
       }
 
-      val pyLib = new PythonInterfaceLibrary()
       pyLib.withPythonInterface(compilerInterface) {
         val result = compile(request.get, pyLib)
 
