@@ -1,33 +1,16 @@
 package edg.compiler
 
-import edg.util.{Errorable, QueueStream, StreamUtils}
+import edg.util.{Errorable, QueueStream}
 import edgrpc.compiler.{compiler => edgcompiler}
 import edgrpc.compiler.compiler.{CompilerRequest, CompilerResult}
 import edgrpc.hdl.{hdl => edgrpc}
 import edg.wir.{DesignPath, IndirectDesignPath, Refinements}
-import edgir.elem.elem
-import edgir.ref.ref
-import edgir.schema.schema
 
 import java.io.{PrintWriter, StringWriter}
 
-// a PythonInterface that uses the on-event hooks to forward stderr and stdout
-// without this, the compiler can freeze on large stdout/stderr data, possibly because of queue sizing
-// TODO REMOVE THIS REPLACE WITH HOST STDIO PROCESS INTERFACE
-class ForwardingPythonInterface(interpreter: String = "python", pythonPaths: Seq[String] = Seq())
-    extends ProtobufStdioSubprocess(interpreter = interpreter, pythonPaths = pythonPaths) {
-  def forwardProcessOutput(): Unit = {
-    StreamUtils.forAvailable(outputStream) { data =>
-      System.out.print(new String(data))
-      System.out.flush()
-    }
-    StreamUtils.forAvailable(errorStream) { data =>
-      System.err.print(new String(data))
-      System.err.flush()
-    }
-  }
-}
-
+/** A python interface that uses the host stdio - where the host process 'flips' role and serves as the HDL server while
+  * compilation is running
+  */
 class HostPythonInterface extends ProtobufInterface {
   val responseType = edgrpc.HdlResponse
 
