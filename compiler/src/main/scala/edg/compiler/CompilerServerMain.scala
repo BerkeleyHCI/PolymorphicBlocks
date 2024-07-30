@@ -12,13 +12,11 @@ import java.io.{PrintWriter, StringWriter}
   * compilation is running
   */
 class HostPythonInterface extends ProtobufInterface {
-  val responseType = edgrpc.HdlResponse
-
   protected val stdoutStream = new QueueStream()
   val outputStream = stdoutStream.getReader
 
   protected val outputDeserializer =
-    new ProtobufStreamDeserializer[edgrpc.HdlResponse](System.in, responseType, stdoutStream)
+    new ProtobufStreamDeserializer[edgrpc.HdlResponse](System.in, edgrpc.HdlResponse, stdoutStream)
   protected val outputSerializer = new ProtobufStreamSerializer[edgrpc.HdlRequest](System.out)
 
   override def write(message: edgrpc.HdlRequest): Unit = outputSerializer.write(message)
@@ -78,8 +76,7 @@ object CompilerServerMain {
       if (expectedMagicByte == -1) {
         System.exit(0) // end of stream, shut it down
       }
-
-      require(expectedMagicByte == ProtobufStdioSubprocess.kHeaderMagicByte || expectedMagicByte < 0)
+      require(expectedMagicByte == ProtobufStdioSubprocess.kHeaderMagicByte)
       val request = edgcompiler.CompilerRequest.parseDelimitedFrom(System.in)
 
       val protoInterface = new HostPythonInterface()

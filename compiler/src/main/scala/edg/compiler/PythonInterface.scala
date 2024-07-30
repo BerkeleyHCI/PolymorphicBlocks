@@ -65,8 +65,6 @@ class ProtobufStdioSubprocess(
     interpreter: String = "python",
     pythonPaths: Seq[String] = Seq()
 ) extends ProtobufInterface {
-  val responseType = edgrpc.HdlResponse
-
   private val submoduleSearchPaths = if (pythonPaths.nonEmpty) pythonPaths else Seq(".")
   private val isSubmoduled =
     submoduleSearchPaths.map { searchPath => // check if submoduled, if so prepend the submodule name
@@ -95,7 +93,7 @@ class ProtobufStdioSubprocess(
   val errorStream: InputStream = process.getErrorStream
 
   protected val outputDeserializer =
-    new ProtobufStreamDeserializer[edgrpc.HdlResponse](process.getInputStream, responseType, stdoutStream)
+    new ProtobufStreamDeserializer[edgrpc.HdlResponse](process.getInputStream, edgrpc.HdlResponse, stdoutStream)
   protected val outputSerializer = new ProtobufStreamSerializer[edgrpc.HdlRequest](process.getOutputStream)
 
   override def write(message: edgrpc.HdlRequest): Unit = outputSerializer.write(message)
