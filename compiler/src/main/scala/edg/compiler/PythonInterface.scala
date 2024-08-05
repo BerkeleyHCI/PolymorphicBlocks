@@ -9,7 +9,7 @@ import edgir.ref.ref
 import edgir.schema.schema
 import edgrpc.hdl.{hdl => edgrpc}
 
-import java.io.{File, InputStream}
+import java.io.{File, InputStream, OutputStream}
 import scala.collection.mutable
 
 class ProtobufSubprocessException(msg: String) extends Exception(msg)
@@ -18,122 +18,53 @@ object ProtobufStdioSubprocess {
   val kHeaderMagicByte = 0xfe
 }
 
-class ProtobufStdioSubprocess[RequestType <: scalapb.GeneratedMessage, ResponseType <: scalapb.GeneratedMessage](
-    responseType: scalapb.GeneratedMessageCompanion[ResponseType],
-    pythonPaths: Seq[String] = Seq(),
-    args: Seq[String] = Seq()
+class ProtobufStreamDeserializer[MessageType <: scalapb.GeneratedMessage](
+    stream: InputStream, // stream from the process
+    messageType: scalapb.GeneratedMessageCompanion[MessageType],
+    stdoutStream: OutputStream // where in-band non-protobuf data (eg, printfs) are written
 ) {
-  protected val process: Either[Process, Throwable] =
-    try {
-      val processBuilder = new ProcessBuilder(args: _*)
-      if (pythonPaths.nonEmpty) {
-        val env = processBuilder.environment()
-        val pythonPathString = pythonPaths.mkString(";")
-        Option(env.get("PYTHONPATH")) match { // merge existing PYTHONPATH if exists
-          case None => env.put("PYTHONPATH", pythonPathString)
-          case Some(envPythonPath) => env.put("PYTHONPATH", envPythonPath + ";" + pythonPathString)
-        }
+  // deserializes and returns the next Proto message, writing any non-protobuf data to stdoutStream
+  def read(): MessageType = {
+    val lastByte = readStdout()
+    if (lastByte != ProtobufStdioSubprocess.kHeaderMagicByte) {
+      throw new ProtobufSubprocessException(s"unexpected end of stream, got $lastByte")
+    }
+    messageType.parseDelimitedFrom(stream).get
+  }
+
+  // writes non-protobuf data to stdoutStream, or when readAll is true dumps all remaining data in the stream
+  // returns the last byte read, including -1 if the end-of-stream was reached
+  def readStdout(readAll: Boolean = false): Integer = {
+    var nextByte = stream.read()
+    while (nextByte >= 0) {
+      if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte && !readAll) {
+        return nextByte
+      } else {
+        stdoutStream.write(nextByte)
       }
-      Left(processBuilder.start())
-    } catch {
-      case e: Throwable => Right(e) // if it fails store the exception to be thrown when we can
+      nextByte = stream.read()
     }
-
-  // this provides a consistent Stream interface for both stdout and stderr
-  // don't use PipedInputStream since it has a non-expanding buffer and is not single-thread safe
-  val outputStream = new QueueStream()
-  val errorStream: InputStream = process match { // the raw error stream from the process
-    case Left(process) => process.getErrorStream
-    case Right(_) => new QueueStream() // empty queue if the process never started
-  }
-
-  protected def readStreamAvailable(stream: InputStream): String = {
-    var available = stream.available()
-    val outputBuilder = new mutable.StringBuilder()
-    while (available > 0) {
-      val array = new Array[Byte](available)
-      stream.read(array)
-      outputBuilder.append(new String(array))
-      available = stream.available()
-    }
-    outputBuilder.toString
-  }
-
-  def write(message: RequestType): Unit = {
-    process match {
-      case Right(err) =>
-        throw err
-      case Left(process) if !process.isAlive =>
-        throw new ProtobufSubprocessException("process died, " +
-          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
-      case Left(process) =>
-        process.getOutputStream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
-        message.writeDelimitedTo(process.getOutputStream)
-        process.getOutputStream.flush()
-    }
-  }
-
-  def read(): ResponseType = {
-    process match {
-      case Right(err) =>
-        throw err
-      case Left(process) if !process.isAlive =>
-        throw new ProtobufSubprocessException("process died, " +
-          s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
-      case Left(process) =>
-        var doneReadingStdout: Boolean = false
-        while (!doneReadingStdout) {
-          val nextByte = process.getInputStream.read()
-          if (nextByte == ProtobufStdioSubprocess.kHeaderMagicByte) {
-            doneReadingStdout = true
-          } else if (nextByte < 0) {
-            throw new ProtobufSubprocessException(s"unexpected end of stream, got $nextByte, " +
-              s"buffered out=${readStreamAvailable(outputStream)}, err=${readStreamAvailable(errorStream)}")
-          } else {
-            outputStream.write(nextByte)
-          }
-        }
-        responseType.parseDelimitedFrom(process.getInputStream).get
-    }
-  }
-
-  // Shuts down the stream and returns the exit value
-  def shutdown(): Int = {
-    process match {
-      case Right(_) => -1 // give a generic failed value, otherwise doesn't need to do anything
-      case Left(process) =>
-        process.getOutputStream.close()
-        var doneReadingStdout: Boolean = false
-        while (!doneReadingStdout) {
-          val nextByte = process.getInputStream.read()
-          require(nextByte != ProtobufStdioSubprocess.kHeaderMagicByte)
-          if (nextByte < 0) {
-            doneReadingStdout = true
-          } else {
-            outputStream.write(nextByte)
-          }
-        }
-
-        process.waitFor()
-        process.exitValue()
-    }
-  }
-
-  // Forces a shutdown even if the process is busy
-  def destroy(): Unit = {
-    process match {
-      case Right(_) => // ignored
-      case Left(process) => process.destroyForcibly()
-    }
+    return nextByte
   }
 }
 
-/** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles them down to IR.
-  * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
-  *
-  * This invokes "python -m edg.hdl_server", using either the local or global (pip) module as available.
-  */
-class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] = Seq()) {
+class ProtobufStreamSerializer[MessageType <: scalapb.GeneratedMessage](stream: OutputStream) {
+  def write(message: MessageType): Unit = {
+    stream.write(ProtobufStdioSubprocess.kHeaderMagicByte)
+    message.writeDelimitedTo(stream)
+    stream.flush()
+  }
+}
+
+trait ProtobufInterface {
+  def write(message: edgrpc.HdlRequest): Unit
+  def read(): edgrpc.HdlResponse
+}
+
+class ProtobufStdioSubprocess(
+    interpreter: String = "python",
+    pythonPaths: Seq[String] = Seq()
+) extends ProtobufInterface {
   private val submoduleSearchPaths = if (pythonPaths.nonEmpty) pythonPaths else Seq(".")
   private val isSubmoduled =
     submoduleSearchPaths.map { searchPath => // check if submoduled, if so prepend the submodule name
@@ -142,42 +73,65 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
   val packagePrefix = if (isSubmoduled) "PolymorphicBlocks." else ""
   private val packageName = packagePrefix + "edg.hdl_server"
 
-  private val command = Seq(interpreter, "-u", "-m", packageName)
-  protected val process = new ProtobufStdioSubprocess[edgrpc.HdlRequest, edgrpc.HdlResponse](
-    edgrpc.HdlResponse,
-    pythonPaths,
-    command
-  )
-  val processOutputStream: InputStream = process.outputStream
-  val processErrorStream: InputStream = process.errorStream
+  protected val process: Process = {
+    val processBuilder = new ProcessBuilder(interpreter, "-u", "-m", packageName)
+    if (pythonPaths.nonEmpty) {
+      val env = processBuilder.environment()
+      val pythonPathString = pythonPaths.mkString(";")
+      Option(env.get("PYTHONPATH")) match { // merge existing PYTHONPATH if exists
+        case None => env.put("PYTHONPATH", pythonPathString)
+        case Some(envPythonPath) => env.put("PYTHONPATH", envPythonPath + ";" + pythonPathString)
+      }
+    }
+    processBuilder.start()
+  }
 
+  // this provides a consistent Stream interface for both stdout and stderr
+  // don't use PipedInputStream since it has a non-expanding buffer and is not single-thread safe
+  protected val stdoutStream = new QueueStream()
+  val outputStream = stdoutStream.getReader
+  val errorStream: InputStream = process.getErrorStream
+
+  protected val outputDeserializer =
+    new ProtobufStreamDeserializer[edgrpc.HdlResponse](process.getInputStream, edgrpc.HdlResponse, stdoutStream)
+  protected val outputSerializer = new ProtobufStreamSerializer[edgrpc.HdlRequest](process.getOutputStream)
+
+  override def write(message: edgrpc.HdlRequest): Unit = outputSerializer.write(message)
+
+  override def read(): edgrpc.HdlResponse = {
+    if (!process.isAlive) {
+      throw new ProtobufSubprocessException("process died")
+    }
+    outputDeserializer.read()
+  }
+
+  // Shuts down the stream and returns the exit value
   def shutdown(): Int = {
-    process.shutdown()
+    process.getOutputStream.close()
+    process.waitFor()
+    outputDeserializer.readStdout()
+    process.exitValue()
   }
 
+  // Forces a shutdown even if the process is busy
   def destroy(): Unit = {
-    process.destroy()
+    process.destroyForcibly()
+    outputDeserializer.readStdout()
   }
+}
 
-  // Hooks to implement when certain actions happen
-  protected def onLibraryRequest(element: ref.LibraryPath): Unit = {}
-  protected def onLibraryRequestComplete(
-      element: ref.LibraryPath,
-      result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
-  ): Unit = {}
-  protected def onElaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Unit = {}
-  protected def onElaborateGeneratorRequestComplete(
-      element: ref.LibraryPath,
-      values: Map[ref.LocalPath, ExprValue],
-      result: Errorable[elem.HierarchyBlock]
-  ): Unit = {}
-
+/** An interface to the Python HDL elaborator, which reads in Python HDL code and (partially) compiles them down to IR.
+  * The underlying Python HDL should not change while this is open. This will not reload updated Python HDL files.
+  *
+  * This invokes "python -m edg.hdl_server", using either the local or global (pip) module as available.
+  */
+class PythonInterface(interface: ProtobufInterface) {
   def getProtoVersion(): Errorable[Int] = {
     val (reply, reqTime) = timeExec {
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.GetProtoVersion(0) // dummy argument
       ))
-      process.read()
+      interface.read()
     }
     reply.response match {
       case edgrpc.HdlResponse.Response.GetProtoVersion(result) =>
@@ -192,10 +146,10 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
   def indexModule(module: String): Errorable[Seq[ref.LibraryPath]] = {
     val request = edgrpc.ModuleName(module)
     val (reply, reqTime) = timeExec {
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.IndexModule(value = request)
       ))
-      process.read()
+      interface.read()
     }
     reply.response match {
       case edgrpc.HdlResponse.Response.IndexModule(result) =>
@@ -207,6 +161,13 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
     }
   }
 
+  // Hooks to implement when certain actions happen
+  protected def onLibraryRequest(element: ref.LibraryPath): Unit = {}
+  protected def onLibraryRequestComplete(
+      element: ref.LibraryPath,
+      result: Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])]
+  ): Unit = {}
+
   def libraryRequest(element: ref.LibraryPath): Errorable[(schema.Library.NS.Val, Option[edgrpc.Refinements])] = {
     onLibraryRequest(element)
 
@@ -214,10 +175,10 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
       element = Some(element)
     )
     val (reply, reqTime) = timeExec { // TODO plumb refinements through
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.GetLibraryElement(value = request)
       ))
-      process.read()
+      interface.read()
     }
     val result = reply.response match {
       case edgrpc.HdlResponse.Response.GetLibraryElement(result) =>
@@ -230,6 +191,13 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
     onLibraryRequestComplete(element, result)
     result
   }
+
+  protected def onElaborateGeneratorRequest(element: ref.LibraryPath, values: Map[ref.LocalPath, ExprValue]): Unit = {}
+  protected def onElaborateGeneratorRequestComplete(
+      element: ref.LibraryPath,
+      values: Map[ref.LocalPath, ExprValue],
+      result: Errorable[elem.HierarchyBlock]
+  ): Unit = {}
 
   def elaborateGeneratorRequest(
       element: ref.LibraryPath,
@@ -247,10 +215,10 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
       }.toSeq
     )
     val (reply, reqTime) = timeExec {
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.ElaborateGenerator(value = request)
       ))
-      process.read()
+      interface.read()
     }
     val result = reply.response match {
       case edgrpc.HdlResponse.Response.ElaborateGenerator(result) =>
@@ -290,10 +258,10 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
       }.toSeq
     )
     val (reply, reqTime) = timeExec {
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.RunRefinement(value = request)
       ))
-      process.read()
+      interface.read()
     }
     val result = reply.response match {
       case edgrpc.HdlResponse.Response.RunRefinement(result) =>
@@ -326,10 +294,10 @@ class PythonInterface(interpreter: String = "python", pythonPaths: Seq[String] =
       arguments = arguments
     )
     val (reply, reqTime) = timeExec {
-      process.write(edgrpc.HdlRequest(
+      interface.write(edgrpc.HdlRequest(
         request = edgrpc.HdlRequest.Request.RunBackend(value = request)
       ))
-      process.read()
+      interface.read()
     }
     val result = reply.response match {
       case edgrpc.HdlResponse.Response.RunBackend(result) =>
