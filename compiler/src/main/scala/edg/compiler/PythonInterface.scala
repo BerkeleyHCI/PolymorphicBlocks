@@ -63,6 +63,7 @@ trait ProtobufInterface {
 
 class ProtobufStdioSubprocess(
     interpreter: String = "python",
+    cwd: Option[File] = None,
     pythonPaths: Seq[String] = Seq()
 ) extends ProtobufInterface {
   private val submoduleSearchPaths = if (pythonPaths.nonEmpty) pythonPaths else Seq(".")
@@ -83,6 +84,7 @@ class ProtobufStdioSubprocess(
         case Some(envPythonPath) => env.put("PYTHONPATH", envPythonPath + ";" + pythonPathString)
       }
     }
+    cwd.foreach(cwd => processBuilder.directory(cwd))
     processBuilder.start()
   }
 
