@@ -79,6 +79,7 @@ class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
   allowed_pins = _afc07_pins.intersection(HiroseFh12sh._kicad_pins)
   PART_NUMBERS = {  # partial list of the ones currently used
     8: 'C262581',
+    10: 'C262583',
     24: 'C262643',
     30: 'C262645',
     40: 'C262648',
