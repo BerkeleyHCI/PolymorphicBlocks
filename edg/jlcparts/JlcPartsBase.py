@@ -1,6 +1,6 @@
 from typing import Any, Tuple
 
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel, RootModel, Field
 import gzip
 
 kTestingFilename = "../../../../jlcparts/web/public/data/CrystalsakaOscillatorsakaResonatorsCrystals.json.gz"
@@ -12,7 +12,7 @@ kSchemaAttributes = "attributes"  # attribute table
 class JlcPartFile(BaseModel):
     category: str
     components: list[list[Any]]  # index-matched with schema
-    schema: list[str]
+    jlcpart_schema: list[str] = Field(..., alias='schema')
 
 class JlcPartValue(BaseModel):
     default: Tuple[str, str]  # value, type / units
