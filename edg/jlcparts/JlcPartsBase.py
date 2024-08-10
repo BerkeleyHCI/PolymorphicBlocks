@@ -1,4 +1,4 @@
-from typing import Any, Tuple, Optional, Dict, List
+from typing import Any, Optional, Dict, List
 
 from pydantic import BaseModel, RootModel, Field
 import gzip
@@ -8,7 +8,6 @@ from ..abstract_parts import *
 from ..parts import JlcPart
 
 kCrystalsTableFilename = "CrystalsakaOscillatorsakaResonatorsCrystals.json.gz"
-kMlccTableFilename = "CapacitorsMultilayer_Ceramic_Capacitors_MLCC___SMDakaSMT.json.gz"
 
 kSchemaLcsc = "lcsc"  # JLC part number
 kSchemaPartNumber = "mfr"  # manufacturer part name
@@ -92,5 +91,16 @@ class JlcPartsBase(JlcPart, PartsTableBase):
         return PartsTable(rows)
 
 
-if __name__ == "__main__":
-    JlcPartsBase.configure_root_dir("../../../../jlcparts/web/public/data/")
+from ..parts import JlcCapacitor
+
+class JlcPartsMlcc(JlcPartsBase):
+    _kFileName = "CapacitorsMultilayer_Ceramic_Capacitors_MLCC___SMDakaSMT.json.gz"
+
+    @classmethod
+    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes) \
+            -> Optional[Dict[PartsTableColumn, Any]]:
+        try:
+            row_dict[cls.KICAD_FOOTPRINT] = JlcCapacitor.PACKAGE_FOOTPRINT_MAP[package]
+            return row_dict
+        except KeyError:
+            return None
