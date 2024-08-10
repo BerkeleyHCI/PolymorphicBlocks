@@ -7,8 +7,7 @@ from .JlcPart import JlcPart, JlcTableSelector
 
 class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageSelector, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
-    # 0201 not in parts table, C_0201_0603Metric
-
+    '0201': 'Capacitor_SMD:C_0201_0603Metric',
     '0402': 'Capacitor_SMD:C_0402_1005Metric',
     '0603': 'Capacitor_SMD:C_0603_1608Metric',
     '0805': 'Capacitor_SMD:C_0805_2012Metric',

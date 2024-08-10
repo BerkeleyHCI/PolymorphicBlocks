@@ -25,17 +25,26 @@ class JlcPartsFile(BaseModel):
     jlcpart_schema: list[str] = Field(..., alias='schema')
 
 class JlcPartsAttributeEntry(BaseModel):
-    format: str
-    primary: str
+    # format: Optional[str] = None  # unused, no idea why this exists
+    # primary: Optional[str] = None  # unused, no idea why this exists
     values: dict[str, tuple[Any, str]]
 
 class JlcPartsAttributes(RootModel):
     root: dict[str, JlcPartsAttributeEntry]
 
 
-class JlcPartsBase(JlcPart, PartsTableBase):
+class JlcPartsBase(JlcPart, PartsTableFootprint, PartsTableBase):
     """Base class parsing parts from https://github.com/yaqwsx/jlcparts"""
     _parts_root_dir: Optional[str] = None
+
+    # overrides from PartsTableBase
+    PART_NUMBER_COL = PartsTableColumn(str)
+    MANUFACTURER_COL = PartsTableColumn(str)
+    DESCRIPTION_COL = PartsTableColumn(str)
+    DATASHEET_COL = PartsTableColumn(str)
+
+    # new columns here
+    kColLcsc = PartsTableColumn(str)
 
     @staticmethod
     def configure_root_dir(root_dir: str):
@@ -76,13 +85,14 @@ class JlcPartsBase(JlcPart, PartsTableBase):
         attributesIndex = data.jlcpart_schema.index(kSchemaAttributes)
         for component in data.components:
             row_dict: Dict[PartsTableColumn, Any] = {}
-            row_dict[PartsTableBase.PART_NUMBER_COL] = component[partNumberIndex]
-            row_dict[PartsTableBase.DESCRIPTION_COL] = component[descriptionIndex]
-            row_dict[PartsTableBase.DATASHEET_COL] = component[datasheetIndex]
+            row_dict[cls.PART_NUMBER_COL] = component[partNumberIndex]
+            row_dict[cls.DESCRIPTION_COL] = component[descriptionIndex]
+            row_dict[cls.DATASHEET_COL] = component[datasheetIndex]
+            row_dict[cls.kColLcsc] = component[lcscIndex]
 
             attributes = JlcPartsAttributes(**component[attributesIndex])
-            row_dict[PartsTableBase.MANUFACTURER_COL] = list(attributes.root[kAttributeManufacturer].values)[0][0]
-            package = list(attributes.root[kAttributePackage].values)[0][0]
+            row_dict[cls.MANUFACTURER_COL] = list(attributes.root[kAttributeManufacturer].values.values())[0][0]
+            package = list(attributes.root[kAttributePackage].values.values())[0][0]
 
             row_dict_opt = cls._entry_to_table_row(row_dict, package, attributes)
             if row_dict_opt is not None:
@@ -91,16 +101,3 @@ class JlcPartsBase(JlcPart, PartsTableBase):
         return PartsTable(rows)
 
 
-from ..parts import JlcCapacitor
-
-class JlcPartsMlcc(JlcPartsBase):
-    _kFileName = "CapacitorsMultilayer_Ceramic_Capacitors_MLCC___SMDakaSMT.json.gz"
-
-    @classmethod
-    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes) \
-            -> Optional[Dict[PartsTableColumn, Any]]:
-        try:
-            row_dict[cls.KICAD_FOOTPRINT] = JlcCapacitor.PACKAGE_FOOTPRINT_MAP[package]
-            return row_dict
-        except KeyError:
-            return None

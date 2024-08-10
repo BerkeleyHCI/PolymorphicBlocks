@@ -1,1 +1,2 @@
-from .JlcPartsBase import JlcPartsBase, JlcPartsMlcc
+from .JlcPartsBase import JlcPartsBase
+from .JlcPartsMlcc import JlcPartsMlcc
