@@ -44,7 +44,7 @@ class JlcPartsBase(JlcPart, PartsTableFootprint, PartsTableBase):
     DATASHEET_COL = PartsTableColumn(str)
 
     # new columns here
-    kColLcsc = PartsTableColumn(str)
+    _kColLcsc = PartsTableColumn(str)
 
     @staticmethod
     def configure_root_dir(root_dir: str):
@@ -88,7 +88,7 @@ class JlcPartsBase(JlcPart, PartsTableFootprint, PartsTableBase):
             row_dict[cls.PART_NUMBER_COL] = component[partNumberIndex]
             row_dict[cls.DESCRIPTION_COL] = component[descriptionIndex]
             row_dict[cls.DATASHEET_COL] = component[datasheetIndex]
-            row_dict[cls.kColLcsc] = component[lcscIndex]
+            row_dict[cls._kColLcsc] = component[lcscIndex]
 
             attributes = JlcPartsAttributes(**component[attributesIndex])
             row_dict[cls.MANUFACTURER_COL] = list(attributes.root[kAttributeManufacturer].values.values())[0][0]

@@ -90,7 +90,7 @@ class PartParserUtil:
     elif value.endswith('ppm'):
       value = value.removesuffix('ppm').rstrip()
       return Range.from_tolerance(center, float(value) * 1e-6)
-    elif value.endswith(units):
+    elif units and value.endswith(units):
       return Range.from_abs_tolerance(center, cls.parse_value(value, units))
 
     raise cls.ParseError(f"Unknown tolerance '{value}'")
