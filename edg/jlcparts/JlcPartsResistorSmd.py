@@ -24,19 +24,17 @@ class JlcPartsResistorSmd(TableResistor, SmdStandardPackageSelector, JlcPartsBas
                 ''
             )
 
-            power_rating = 0
             try:
                 power_rating = list(attributes.root[cls._kAttrPower].values.values())[0][0]
             except PartParserUtil.ParseError:
-                pass
+                power_rating = 0
             row_dict[cls.POWER_RATING] = Range.zero_to_upper(power_rating)
 
-            voltage_rating = 0
             try:
                 voltage_rating = PartParserUtil.parse_value((
                     list(attributes.root[cls._kAttrVoltageRating].values.values())[0][0]), 'V')
             except KeyError:
-                pass
+                voltage_rating = 0
             row_dict[cls.VOLTAGE_RATING] = Range.zero_to_upper(voltage_rating)
 
             return row_dict
