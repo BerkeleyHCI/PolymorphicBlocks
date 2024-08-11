@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Optional, Dict
 from ..abstract_parts import *
 from ..parts import JlcResistor
@@ -5,7 +6,7 @@ from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
 class JlcPartsResistorSmd(TableResistor, SmdStandardPackageSelector, JlcPartsBase):
-    _kFileName = "ResistorsChip_Resistor___Surface_Mount.json.gz"
+    _kFileName = "ResistorsChip_Resistor___Surface_Mount"
 
     _kAttrResistance = "Resistance"
     _kAttrResistanceTol = "Tolerance"
@@ -26,14 +27,15 @@ class JlcPartsResistorSmd(TableResistor, SmdStandardPackageSelector, JlcPartsBas
 
             try:
                 power_rating = list(attributes.root[cls._kAttrPower].values.values())[0][0]
-            except PartParserUtil.ParseError:
+                assert isinstance(power_rating, (int, float))
+            except (KeyError, AssertionError):  # sometimes 'NaN'
                 power_rating = 0
             row_dict[cls.POWER_RATING] = Range.zero_to_upper(power_rating)
 
             try:
-                voltage_rating = PartParserUtil.parse_value((
-                    list(attributes.root[cls._kAttrVoltageRating].values.values())[0][0]), 'V')
-            except KeyError:
+                voltage_rating = float(PartParserUtil.parse_value(
+                    list(attributes.root[cls._kAttrVoltageRating].values.values())[0][0], 'V'))
+            except (KeyError, PartParserUtil.ParseError):  # sometimes '-'
                 voltage_rating = 0
             row_dict[cls.VOLTAGE_RATING] = Range.zero_to_upper(voltage_rating)
 
