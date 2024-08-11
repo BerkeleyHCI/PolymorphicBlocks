@@ -42,7 +42,7 @@ class JlcPartsStockFile(RootModel):
     root: dict[str, int]  # LCSC to stock level
 
 
-class JlcPartsBase(JlcPart, PartsTableFootprint, PartsTableBase):
+class JlcPartsBase(JlcPart, PartsTableFootprint, PartsTableSelector, PartsTableBase):
     """Base class parsing parts from https://github.com/yaqwsx/jlcparts"""
     _config_parts_root_dir: Optional[str] = None
     _config_min_stock: int = 1000
@@ -124,4 +124,11 @@ class JlcPartsBase(JlcPart, PartsTableFootprint, PartsTableBase):
 
         return PartsTable(rows)
 
+    @classmethod
+    def _row_sort_by(cls, row: PartsTableRow) -> Any:
+        return [row[cls._kColIsBasic], row[cls.KICAD_FOOTPRINT]]
 
+    def _row_generate(self, row: PartsTableRow) -> None:
+        super()._row_generate(row)
+        self.assign(self.lcsc_part, row[self._kColLcsc])
+        self.assign(self.actual_basic_part, row[self._kColIsBasic])

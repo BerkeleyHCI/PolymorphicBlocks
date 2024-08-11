@@ -1,4 +1,3 @@
-import traceback
 from typing import Any, Optional, Dict
 from ..abstract_parts import *
 from ..parts import JlcResistor
