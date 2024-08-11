@@ -91,12 +91,14 @@ class JlcPartsBase(JlcPart, PartsTableFootprint, PartsTableSelector, PartsTableB
             data = JlcPartsFile.model_validate_json(f.read())
         with open(os.path.join(cls._config_parts_root_dir, cls._kFileName + kStockFilenamePostfix), 'r') as f:
             stocking = JlcPartsStockFile.model_validate_json(f.read())
-        rows: List[PartsTableRow] = []
+
         lcsc_index = data.jlcpart_schema.index(kSchemaLcsc)
         part_number_index = data.jlcpart_schema.index(kSchemaPartNumber)
         description_index = data.jlcpart_schema.index(kSchemaDescription)
         datasheet_index = data.jlcpart_schema.index(kSchemaDatasheet)
         attributes_index = data.jlcpart_schema.index(kSchemaAttributes)
+
+        rows: List[PartsTableRow] = []
         for component in data.components:
             row_dict: Dict[PartsTableColumn, Any] = {}
 
