@@ -1,4 +1,4 @@
-from typing import Any, Optional, Dict, List
+from typing import Any, Optional, Dict, List, TypeVar, Type
 
 from pydantic import BaseModel, RootModel, Field
 import gzip
@@ -34,15 +34,35 @@ class JlcPartsAttributeEntry(BaseModel):
     # primary: Optional[str] = None  # unused, no idea why this exists
     values: dict[str, tuple[Any, str]]
 
+ParsedType = TypeVar('ParsedType')  # can't be inside the class or it gets confused as a pydantic model entry
+
 class JlcPartsAttributes(RootModel):
     root: dict[str, JlcPartsAttributeEntry]
+
+    def get(self, key: str, expected_type: Type[ParsedType], default: Optional[ParsedType] = None) -> ParsedType:
+        """Utility function that gets an attribute of the specified name, checking that it is the expected type
+        or returning some default (if specified)."""
+        if key not in self.root:
+            if default is not None:
+                return default
+            else:
+                raise KeyError
+        entry_dict = self.root[key].values
+        assert len(entry_dict) == 1
+        value = next(iter(entry_dict.values()))[0]
+        if not isinstance(value, expected_type):
+            if default is not None:
+                return default
+            else:
+                raise TypeError
+        return value
 
 
 class JlcPartsStockFile(RootModel):
     root: dict[str, int]  # LCSC to stock level
 
 
-class JlcPartsBase(JlcPart, PartsTableFootprint, PartsTableSelector, PartsTableBase):
+class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
     """Base class parsing parts from https://github.com/yaqwsx/jlcparts"""
     _config_parts_root_dir: Optional[str] = None
     _config_min_stock: int = 1000
@@ -111,14 +131,14 @@ class JlcPartsBase(JlcPart, PartsTableFootprint, PartsTableSelector, PartsTableB
             row_dict[cls.DATASHEET_COL] = component[datasheet_index]
 
             attributes = JlcPartsAttributes(**component[attributes_index])
-            status = list(attributes.root[kAttributeStatus].values.values())[0][0]
+            status = attributes.get(kAttributeStatus, str)
             if status in kAttributeStatusFilters:
                 continue
-            basic_extended = list(attributes.root[kAttributeBasicType].values.values())[0][0]
+            basic_extended = attributes.get(kAttributeBasicType, str)
             row_dict[cls._kColIsBasic] = basic_extended == kAttributeBasicTypeBasic
 
-            row_dict[cls.MANUFACTURER_COL] = list(attributes.root[kAttributeManufacturer].values.values())[0][0]
-            package = list(attributes.root[kAttributePackage].values.values())[0][0]
+            row_dict[cls.MANUFACTURER_COL] = attributes.get(kAttributeManufacturer, str)
+            package = attributes.get(kAttributePackage, str)
 
             row_dict_opt = cls._entry_to_table_row(row_dict, package, attributes)
             if row_dict_opt is not None:

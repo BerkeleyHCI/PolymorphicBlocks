@@ -24,16 +24,13 @@ class JlcPartsResistorSmd(TableResistor, SmdStandardPackageSelector, JlcPartsBas
                 ''
             )
 
-            try:
-                power_rating = list(attributes.root[cls._kAttrPower].values.values())[0][0]
-                assert isinstance(power_rating, (int, float))
-            except (KeyError, AssertionError):  # sometimes 'NaN'
-                power_rating = 0
-            row_dict[cls.POWER_RATING] = Range.zero_to_upper(power_rating)
+            row_dict[cls.POWER_RATING] = Range.zero_to_upper(
+                attributes.get(cls._kAttrPower, float, 0)
+            )
 
             try:
                 voltage_rating = float(PartParserUtil.parse_value(
-                    list(attributes.root[cls._kAttrVoltageRating].values.values())[0][0], 'V'))
+                    attributes.get(cls._kAttrVoltageRating, str), 'V'))
             except (KeyError, PartParserUtil.ParseError):  # sometimes '-'
                 voltage_rating = 0
             row_dict[cls.VOLTAGE_RATING] = Range.zero_to_upper(voltage_rating)
