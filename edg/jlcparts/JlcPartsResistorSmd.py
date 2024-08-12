@@ -5,12 +5,7 @@ from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
 class JlcPartsResistorSmd(TableResistor, SmdStandardPackageSelector, JlcPartsBase):
-    _kFileName = "ResistorsChip_Resistor___Surface_Mount"
-
-    _kAttrResistance = "Resistance"
-    _kAttrResistanceTol = "Tolerance"
-    _kAttrPower = "Power"
-    _kAttrVoltageRating = "Overload voltage (max)"
+    _JLC_PARTS_FILE_NAME = "ResistorsChip_Resistor___Surface_Mount"
 
     @classmethod
     def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes) \
@@ -19,18 +14,18 @@ class JlcPartsResistorSmd(TableResistor, SmdStandardPackageSelector, JlcPartsBas
             row_dict[cls.KICAD_FOOTPRINT] = JlcResistor.PACKAGE_FOOTPRINT_MAP[package]
 
             row_dict[cls.RESISTANCE] = PartParserUtil.parse_abs_tolerance(
-                list(attributes.root[cls._kAttrResistanceTol].values.values())[0][0],
-                list(attributes.root[cls._kAttrResistance].values.values())[0][0],
+                list(attributes.root["Tolerance"].values.values())[0][0],
+                list(attributes.root["Resistance"].values.values())[0][0],
                 ''
             )
 
             row_dict[cls.POWER_RATING] = Range.zero_to_upper(
-                attributes.get(cls._kAttrPower, float, 0)
+                attributes.get("Power", float, 0)
             )
 
             try:
                 voltage_rating = float(PartParserUtil.parse_value(
-                    attributes.get(cls._kAttrVoltageRating, str), 'V'))
+                    attributes.get("Overload voltage (max)", str), 'V'))
             except (KeyError, PartParserUtil.ParseError):  # sometimes '-'
                 voltage_rating = 0
             row_dict[cls.VOLTAGE_RATING] = Range.zero_to_upper(voltage_rating)

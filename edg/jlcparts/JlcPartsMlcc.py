@@ -5,7 +5,7 @@ from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
 class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageSelector, JlcPartsBase):
-    _kFileName = "CapacitorsMultilayer_Ceramic_Capacitors_MLCC___SMDakaSMT.json.gz"
+    _JLC_PARTS_FILE_NAME = "CapacitorsMultilayer_Ceramic_Capacitors_MLCC___SMDakaSMT.json.gz"
 
     @classmethod
     def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes) \
