@@ -75,7 +75,7 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
 
     # new columns here
     LCSC_COL = PartsTableColumn(str)
-    BASIC_PART_COLL = PartsTableColumn(bool)
+    BASIC_PART_COL = PartsTableColumn(bool)
 
     @staticmethod
     def config_root_dir(root_dir: str):
@@ -86,7 +86,7 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
             f"attempted to reassign configure_root_dir, was {JlcPartsBase._config_parts_root_dir}, new {root_dir}"
         JlcPartsBase._config_parts_root_dir = root_dir
 
-    _JLC_PARTS_FILE_NAME: str  # set by subclass
+    _JLC_PARTS_FILE_NAMES: List[str]  # set by subclass
     _cached_table: Optional[PartsTable] = None  # set on a per-class basis
 
     @classmethod
@@ -107,50 +107,54 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
     def _parse_table(cls) -> PartsTable:
         """Parses the file to a PartsTable"""
         assert cls._config_parts_root_dir is not None, "must configure_root_dir with jlcparts data folder"
-        with gzip.open(os.path.join(cls._config_parts_root_dir, cls._JLC_PARTS_FILE_NAME + kTableFilenamePostfix), 'r') as f:
-            data = JlcPartsFile.model_validate_json(f.read())
-        with open(os.path.join(cls._config_parts_root_dir, cls._JLC_PARTS_FILE_NAME + kStockFilenamePostfix), 'r') as f:
-            stocking = JlcPartsStockFile.model_validate_json(f.read())
-
-        lcsc_index = data.jlcpart_schema.index(kSchemaLcsc)
-        part_number_index = data.jlcpart_schema.index(kSchemaPartNumber)
-        description_index = data.jlcpart_schema.index(kSchemaDescription)
-        datasheet_index = data.jlcpart_schema.index(kSchemaDatasheet)
-        attributes_index = data.jlcpart_schema.index(kSchemaAttributes)
 
         rows: List[PartsTableRow] = []
-        for component in data.components:
-            row_dict: Dict[PartsTableColumn, Any] = {}
 
-            row_dict[cls.LCSC_COL] = lcsc = component[lcsc_index]
-            if stocking.root.get(lcsc, 0) < cls._config_min_stock:
-                continue
+        for filename in cls._JLC_PARTS_FILE_NAMES:
+            with gzip.open(os.path.join(cls._config_parts_root_dir, filename + kTableFilenamePostfix), 'r') as f:
+                data = JlcPartsFile.model_validate_json(f.read())
+            with open(os.path.join(cls._config_parts_root_dir, filename + kStockFilenamePostfix), 'r') as f:
+                stocking = JlcPartsStockFile.model_validate_json(f.read())
 
-            row_dict[cls.PART_NUMBER_COL] = component[part_number_index]
-            row_dict[cls.DESCRIPTION_COL] = component[description_index]
-            row_dict[cls.DATASHEET_COL] = component[datasheet_index]
+            lcsc_index = data.jlcpart_schema.index(kSchemaLcsc)
+            part_number_index = data.jlcpart_schema.index(kSchemaPartNumber)
+            description_index = data.jlcpart_schema.index(kSchemaDescription)
+            datasheet_index = data.jlcpart_schema.index(kSchemaDatasheet)
+            attributes_index = data.jlcpart_schema.index(kSchemaAttributes)
 
-            attributes = JlcPartsAttributes(**component[attributes_index])
-            status = attributes.get(kAttributeStatus, str)
-            if status in kAttributeStatusFilters:
-                continue
-            basic_extended = attributes.get(kAttributeBasicType, str)
-            row_dict[cls.BASIC_PART_COLL] = basic_extended == kAttributeBasicTypeBasic
 
-            row_dict[cls.MANUFACTURER_COL] = attributes.get(kAttributeManufacturer, str)
-            package = attributes.get(kAttributePackage, str)
+            for component in data.components:
+                row_dict: Dict[PartsTableColumn, Any] = {}
 
-            row_dict_opt = cls._entry_to_table_row(row_dict, package, attributes)
-            if row_dict_opt is not None:
-                rows.append(PartsTableRow(row_dict_opt))
+                row_dict[cls.LCSC_COL] = lcsc = component[lcsc_index]
+                if stocking.root.get(lcsc, 0) < cls._config_min_stock:
+                    continue
+
+                row_dict[cls.PART_NUMBER_COL] = component[part_number_index]
+                row_dict[cls.DESCRIPTION_COL] = component[description_index]
+                row_dict[cls.DATASHEET_COL] = component[datasheet_index]
+
+                attributes = JlcPartsAttributes(**component[attributes_index])
+                status = attributes.get(kAttributeStatus, str)
+                if status in kAttributeStatusFilters:
+                    continue
+                basic_extended = attributes.get(kAttributeBasicType, str)
+                row_dict[cls.BASIC_PART_COL] = basic_extended == kAttributeBasicTypeBasic
+
+                row_dict[cls.MANUFACTURER_COL] = attributes.get(kAttributeManufacturer, str)
+                package = attributes.get(kAttributePackage, str)
+
+                row_dict_opt = cls._entry_to_table_row(row_dict, package, attributes)
+                if row_dict_opt is not None:
+                    rows.append(PartsTableRow(row_dict_opt))
 
         return PartsTable(rows)
 
     @classmethod
     def _row_sort_by(cls, row: PartsTableRow) -> Any:
-        return [row[cls.BASIC_PART_COLL], row[cls.KICAD_FOOTPRINT]]
+        return [row[cls.BASIC_PART_COL], row[cls.KICAD_FOOTPRINT]]
 
     def _row_generate(self, row: PartsTableRow) -> None:
         super()._row_generate(row)
         self.assign(self.lcsc_part, row[self.LCSC_COL])
-        self.assign(self.actual_basic_part, row[self.BASIC_PART_COLL])
+        self.assign(self.actual_basic_part, row[self.BASIC_PART_COL])

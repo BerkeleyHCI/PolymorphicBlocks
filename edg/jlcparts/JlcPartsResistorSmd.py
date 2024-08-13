@@ -5,7 +5,7 @@ from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
 class JlcPartsResistorSmd(TableResistor, SmdStandardPackageSelector, JlcPartsBase):
-    _JLC_PARTS_FILE_NAME = "ResistorsChip_Resistor___Surface_Mount"
+    _JLC_PARTS_FILE_NAMES = ["ResistorsChip_Resistor___Surface_Mount"]
 
     @classmethod
     def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes) \
