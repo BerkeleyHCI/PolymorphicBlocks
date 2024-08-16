@@ -57,6 +57,8 @@ class JlcPartsAttributes(RootModel):
                 raise TypeError
         return value
 
+    def __contains__(self, key: str) -> bool:
+        return key in self.root
 
 class JlcPartsStockFile(RootModel):
     root: dict[str, int]  # LCSC to stock level
