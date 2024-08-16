@@ -14,10 +14,10 @@ class JlcPartsResistorSmd(TableResistor, SmdStandardPackageSelector, JlcPartsBas
             row_dict[cls.KICAD_FOOTPRINT] = JlcResistor.PACKAGE_FOOTPRINT_MAP[package]
 
             row_dict[cls.RESISTANCE] = PartParserUtil.parse_abs_tolerance(
-                attributes.get("Tolerance", str), attributes.get("Resistance", float), '')
+                attributes.get("Tolerance", str), attributes.get("Resistance", float, sub='resistance'), '')
 
             row_dict[cls.POWER_RATING] = Range.zero_to_upper(
-                attributes.get("Power", float, 0)
+                attributes.get("Power", float, 0, sub='power')
             )
 
             try:  # sometimes '-'

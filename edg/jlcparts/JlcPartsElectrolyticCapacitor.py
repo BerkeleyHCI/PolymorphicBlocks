@@ -18,12 +18,12 @@ class JlcPartsElectrolyticCapacitor(TableCapacitor, AluminumCapacitor, Capacitor
         row_dict[cls.KICAD_FOOTPRINT] = f"Capacitor_SMD:CP_Elec_{match.group(1)}x{match.group(2)}",
 
         try:
-            nominal_capacitance = attributes.get("Capacitance", float)
+            nominal_capacitance = attributes.get("Capacitance", float, sub='capacitance')
             row_dict[cls.CAPACITANCE] = PartParserUtil.parse_abs_tolerance(
                 attributes.get("Tolerance", str), nominal_capacitance, '')
             row_dict[cls.NOMINAL_CAPACITANCE] = nominal_capacitance
             row_dict[cls.VOLTAGE_RATING] = Range.zero_to_upper(
-                attributes.get("Allowable voltage", float))
+                attributes.get("Allowable voltage", float, sub='voltage'))
 
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
