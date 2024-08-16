@@ -39,7 +39,7 @@ ParsedType = TypeVar('ParsedType')  # can't be inside the class or it gets confu
 class JlcPartsAttributes(RootModel):
     root: dict[str, JlcPartsAttributeEntry]
 
-    def get(self, key: str, expected_type: Type[ParsedType], default: Optional[ParsedType] = None) -> ParsedType:
+    def get(self, key: str, expected_type: Type[ParsedType], default: Optional[ParsedType] = None, sub='default') -> ParsedType:
         """Utility function that gets an attribute of the specified name, checking that it is the expected type
         or returning some default (if specified)."""
         if key not in self.root:
@@ -47,9 +47,7 @@ class JlcPartsAttributes(RootModel):
                 return default
             else:
                 raise KeyError
-        entry_dict = self.root[key].values
-        assert len(entry_dict) == 1
-        value = next(iter(entry_dict.values()))[0]
+        value = self.root[key].values[sub][0]
         if not isinstance(value, expected_type):
             if default is not None:
                 return default
