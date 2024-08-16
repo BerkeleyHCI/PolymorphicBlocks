@@ -14,10 +14,7 @@ class JlcPartsResistorSmd(TableResistor, SmdStandardPackageSelector, JlcPartsBas
             row_dict[cls.KICAD_FOOTPRINT] = JlcResistor.PACKAGE_FOOTPRINT_MAP[package]
 
             row_dict[cls.RESISTANCE] = PartParserUtil.parse_abs_tolerance(
-                list(attributes.root["Tolerance"].values.values())[0][0],
-                list(attributes.root["Resistance"].values.values())[0][0],
-                ''
-            )
+                attributes.get("Tolerance", str), attributes.get("Resistance", float), '')
 
             row_dict[cls.POWER_RATING] = Range.zero_to_upper(
                 attributes.get("Power", float, 0)
