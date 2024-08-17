@@ -33,11 +33,10 @@ class JlcPartsFet(TableFet, SmdStandardPackageSelector, JlcPartsBase):
             row_dict[cls.POWER_RATING] = Range.zero_to_upper(
                 attributes.get("Power dissipation (pd)", float, sub='power'))
 
-            try:  # not specified for most parts apparently
+            try:
                 input_capacitance: Optional[float] = attributes.get("Input capacitance (ciss@vds)", float, sub='capacity')
             except (KeyError, TypeError):
                 input_capacitance = None
-
             try:  # not specified for most parts apparently
                 gate_charge = Range.exact(
                     attributes.get("Total gate charge (qg@vgs)", float, sub='charge'))
