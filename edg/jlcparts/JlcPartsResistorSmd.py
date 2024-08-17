@@ -21,8 +21,7 @@ class JlcPartsResistorSmd(TableResistor, SmdStandardPackageSelector, JlcPartsBas
             )
 
             try:  # sometimes '-'
-                voltage_rating = float(PartParserUtil.parse_value(
-                    attributes.get("Overload voltage (max)", str), 'V'))
+                voltage_rating = PartParserUtil.parse_value(attributes.get("Overload voltage (max)", str), 'V')
             except (KeyError, PartParserUtil.ParseError):
                 voltage_rating = 0
             row_dict[cls.VOLTAGE_RATING] = Range.zero_to_upper(voltage_rating)

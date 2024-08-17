@@ -14,8 +14,8 @@ class JlcPartsFerriteBead(TableFerriteBead, SmdStandardPackageSelector, JlcParts
             row_dict[cls.KICAD_FOOTPRINT] = JlcFerriteBead.PACKAGE_FOOTPRINT_MAP[package]
 
             try:  # sometimes '-'
-                current_rating = float(PartParserUtil.parse_value(
-                    attributes.get("Current rating", str), 'A'))
+                current_rating = PartParserUtil.parse_value(
+                    attributes.get("Current rating", str), 'A')
             except (KeyError, PartParserUtil.ParseError):
                 current_rating = 0
             row_dict[cls.CURRENT_RATING] = Range.zero_to_upper(current_rating)
