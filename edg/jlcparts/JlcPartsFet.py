@@ -28,7 +28,7 @@ class JlcPartsFet(TableFet, SmdStandardPackageSelector, JlcPartsBase):
             row_dict[cls.VGS_DRIVE] = Range(
                 attributes.get("Gate threshold voltage (vgs(th)@id)", float, sub='Vgs'),
                 vgs_for_ids)
-            row_dict[cls.RDS_ON] = Range.from_lower(
+            row_dict[cls.RDS_ON] = Range.exact(
                 attributes.get("Drain source on resistance (rds(on)@vgs,id)", float, sub='Rds'))
             row_dict[cls.POWER_RATING] = Range.zero_to_upper(
                 attributes.get("Power dissipation (pd)", float, sub='power'))

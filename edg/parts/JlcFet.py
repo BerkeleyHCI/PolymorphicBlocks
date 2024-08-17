@@ -32,7 +32,7 @@ class JlcBaseFet(BaseTableFet, JlcTableSelector, PartsTableFootprint):
                                                      PartParserUtil.parse_value(match.group(5), 'V')),
        TableFet.VGS_DRIVE: Range(PartParserUtil.parse_value(match.group(6), 'V'),
                                  PartParserUtil.parse_value(match.group(5), 'V')),
-       TableFet.RDS_ON: Range.from_lower(PartParserUtil.parse_value(match.group(4), 'Ω')),
+       TableFet.RDS_ON: Range.exact(PartParserUtil.parse_value(match.group(4), 'Ω')),
        TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(3), 'W')),
        TableFet.GATE_CHARGE: Range.zero_to_upper(3000e-9),  # not specified, pessimistic upper bound
      }),
@@ -47,7 +47,7 @@ class JlcBaseFet(BaseTableFet, JlcTableSelector, PartsTableFootprint):
                                                      PartParserUtil.parse_value(match.group(4), 'V')),
        TableFet.VGS_DRIVE: Range(PartParserUtil.parse_value(match.group(6), 'V'),
                                  PartParserUtil.parse_value(match.group(4), 'V')),
-       TableFet.RDS_ON: Range.from_lower(PartParserUtil.parse_value(match.group(3), 'Ω')),
+       TableFet.RDS_ON: Range.exact(PartParserUtil.parse_value(match.group(3), 'Ω')),
        TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(5), 'W')),
        TableFet.GATE_CHARGE: Range.zero_to_upper(3000e-9),  # not specified, pessimistic upper bound
      }),
