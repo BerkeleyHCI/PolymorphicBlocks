@@ -38,14 +38,13 @@ class JlcPartsFet(TableFet, SmdStandardPackageSelector, JlcPartsBase):
             except (KeyError, TypeError):
                 input_capacitance = None
             try:  # not specified for most parts apparently
-                gate_charge = Range.exact(
-                    attributes.get("Total gate charge (qg@vgs)", float, sub='charge'))
+                gate_charge = attributes.get("Total gate charge (qg@vgs)", float, sub='charge')
             except (KeyError, TypeError):
                 if input_capacitance is not None:  # not strictly correct but kind of a guesstimate
                     gate_charge = input_capacitance * vgs_for_ids
                 else:
                     gate_charge = 3000e-9  # very pessimistic upper bound
-            row_dict[cls.GATE_CHARGE] = gate_charge
+            row_dict[cls.GATE_CHARGE] = Range.exact(gate_charge)
 
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
