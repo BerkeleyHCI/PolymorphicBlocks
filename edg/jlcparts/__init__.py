@@ -6,5 +6,6 @@ from .JlcPartsInductor import JlcPartsInductor
 from .JlcPartsFerriteBead import JlcPartsFerriteBead
 from .JlcPartsDiode import JlcPartsDiode
 from .JlcPartsLed import JlcPartsLed
+from .JlcPartsBjt import JlcPartsBjt
 from .JlcPartsFet import JlcPartsFet
 from .JlcPartsPptcFuse import JlcPartsPptcFuse
