@@ -3,6 +3,7 @@ from ..jlcparts import *
 
 
 class JlcPartsRefinements(DesignTop):
+  """List of refinements that use JlcParts - mix this into a BoardTop"""
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[
@@ -10,7 +11,7 @@ class JlcPartsRefinements(DesignTop):
         (Capacitor, JlcPartsMlcc),
         (Inductor, JlcPartsInductor),
         (Diode, JlcPartsDiode),
-        # (ZenerDiode, JlcPartsZenerDiode),
+        (ZenerDiode, JlcPartsZenerDiode),
         (Led, JlcPartsLed),
         (Bjt, JlcPartsBjt),
         (Fet, JlcPartsFet),

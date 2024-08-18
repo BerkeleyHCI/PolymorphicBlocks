@@ -4,7 +4,7 @@ from ..parts import JlcFet
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsFet(TableFet, SmdStandardPackageSelector, JlcPartsBase):
+class JlcPartsFet(TableFet, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = ["TransistorsMOSFETs"]
     _CHANNEL_MAP = {
         'N Channel': 'N',

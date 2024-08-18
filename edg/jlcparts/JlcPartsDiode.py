@@ -4,7 +4,7 @@ from ..parts import JlcDiode
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsDiode(TableDiode, SmdStandardPackageSelector, JlcPartsBase):
+class JlcPartsDiode(TableDiode, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = [
         "DiodesDiodes___Fast_Recovery_Rectifiers",
         "DiodesDiodes___General_Purpose",
@@ -31,6 +31,36 @@ class JlcPartsDiode(TableDiode, SmdStandardPackageSelector, JlcPartsBase):
             except (KeyError, PartParserUtil.ParseError):
                 reverse_recovery = Range.all()
             row_dict[cls.REVERSE_RECOVERY] = reverse_recovery
+
+            return row_dict
+        except (KeyError, TypeError, PartParserUtil.ParseError):
+            return None
+
+
+class JlcPartsZenerDiode(TableZenerDiode, JlcPartsBase):
+    _JLC_PARTS_FILE_NAMES = ["DiodesZener_Diodes"]
+
+    @classmethod
+    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes) \
+            -> Optional[Dict[PartsTableColumn, Any]]:
+        try:
+            row_dict[cls.KICAD_FOOTPRINT] = JlcDiode.PACKAGE_FOOTPRINT_MAP[package]
+            
+            if "Zener voltage (range)" in attributes:  # note, some devices have range='-'
+                zener_voltage_split = attributes.get("Zener voltage (range)", str).split('~')
+                zener_voltage = Range(
+                    PartParserUtil.parse_value(zener_voltage_split[0], 'V'),
+                    PartParserUtil.parse_value(zener_voltage_split[1], 'V')
+                )
+            else:  # explicit tolerance
+                zener_voltage = PartParserUtil.parse_abs_tolerance(
+                    attributes.get("Tolerance", str),
+                    PartParserUtil.parse_value(attributes.get("Zener voltage (nom)", str), 'V'),
+                    '')
+            row_dict[cls.ZENER_VOLTAGE] = zener_voltage
+
+            row_dict[cls.POWER_RATING] = Range.zero_to_upper(PartParserUtil.parse_value(
+                attributes.get("Power dissipation", str), 'W'))
 
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):

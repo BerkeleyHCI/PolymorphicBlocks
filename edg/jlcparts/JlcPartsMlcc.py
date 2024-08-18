@@ -13,10 +13,7 @@ class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageS
         try:
             footprint = JlcCapacitor.PACKAGE_FOOTPRINT_MAP[package]
             row_dict[cls.KICAD_FOOTPRINT] = footprint
-        except KeyError:
-            return None
 
-        try:
             nominal_capacitance = attributes.get("Capacitance", float, sub='capacitance')
             # note, tolerance not specified for many devices
             row_dict[cls.CAPACITANCE] = PartParserUtil.parse_abs_tolerance(
