@@ -29,6 +29,8 @@ class JlcPartsInductor(TableInductor, SmdStandardPackageSelector, JlcPartsBase):
                 attributes.get("Tolerance", str), attributes.get("Inductance", float, sub='inductance'), '')
             row_dict[cls.CURRENT_RATING] = Range.zero_to_upper(
                 attributes.get("Rated current", float, 0, sub='current'))
+            row_dict[cls.DC_RESISTANCE] = Range.zero_to_upper(
+                attributes.get("Dc resistance", float, 0, sub='resistance'))
             row_dict[cls.FREQUENCY_RATING] = Range.all()  # TODO ignored for now
 
             return row_dict
