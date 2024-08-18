@@ -94,6 +94,10 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
     _cached_table: Optional[PartsTable] = None  # set on a per-class basis
 
     @classmethod
+    def _make_table(cls) -> PartsTable:
+        return cls._jlc_table()
+
+    @classmethod
     def _jlc_table(cls) -> PartsTable:
         """Return the table, cached if possible"""
         if cls._cached_table is None:

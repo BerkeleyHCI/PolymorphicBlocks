@@ -45,7 +45,7 @@ class JlcPartsZenerDiode(TableZenerDiode, JlcPartsBase):
             -> Optional[Dict[PartsTableColumn, Any]]:
         try:
             row_dict[cls.KICAD_FOOTPRINT] = JlcDiode.PACKAGE_FOOTPRINT_MAP[package]
-            
+
             if "Zener voltage (range)" in attributes:  # note, some devices have range='-'
                 zener_voltage_split = attributes.get("Zener voltage (range)", str).split('~')
                 zener_voltage = Range(
