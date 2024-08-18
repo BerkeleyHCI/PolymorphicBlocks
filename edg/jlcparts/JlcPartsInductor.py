@@ -7,8 +7,9 @@ from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 class JlcPartsInductor(TableInductor, SmdStandardPackageSelector, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = [
         "InductorsakaCoilsakaTransformersPower_Inductors",
+        "InductorsakaCoilsakaTransformersInductors__SMD_",
+        "Inductors__Coils__ChokesPower_Inductors",
         "Inductors__Coils__ChokesInductors__SMD_",
-        "Inductors__Coils__ChokesPower_Inductors"
     ]
 
     @classmethod
@@ -29,8 +30,7 @@ class JlcPartsInductor(TableInductor, SmdStandardPackageSelector, JlcPartsBase):
                 attributes.get("Tolerance", str), attributes.get("Inductance", float, sub='inductance'), '')
             row_dict[cls.CURRENT_RATING] = Range.zero_to_upper(
                 attributes.get("Rated current", float, 0, sub='current'))
-            row_dict[cls.DC_RESISTANCE] = Range.zero_to_upper(
-                attributes.get("Dc resistance", float, 0, sub='resistance'))
+            row_dict[cls.DC_RESISTANCE] = Range.exact(attributes.get("Dc resistance", float, 0, sub='resistance'))
             row_dict[cls.FREQUENCY_RATING] = Range.all()  # TODO ignored for now
 
             return row_dict
