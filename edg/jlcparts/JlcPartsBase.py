@@ -24,15 +24,18 @@ kAttributeBasicType = "Basic/Extended"
 kAttributeBasicTypeBasic = "Basic"
 kAttributeStatusFilters = ["Discontinued"]  # parts with these statuses are filtered out
 
+
 class JlcPartsFile(BaseModel):
     category: str
     components: list[list[Any]]  # index-matched with schema
     jlcpart_schema: list[str] = Field(..., alias='schema')
 
+
 class JlcPartsAttributeEntry(BaseModel):
     # format: Optional[str] = None  # unused, no idea why this exists
     # primary: Optional[str] = None  # unused, no idea why this exists
     values: dict[str, tuple[Any, str]]
+
 
 ParsedType = TypeVar('ParsedType')  # can't be inside the class or it gets confused as a pydantic model entry
 
@@ -57,6 +60,7 @@ class JlcPartsAttributes(RootModel):
 
     def __contains__(self, key: str) -> bool:
         return key in self.root
+
 
 class JlcPartsStockFile(RootModel):
     root: dict[str, int]  # LCSC to stock level
