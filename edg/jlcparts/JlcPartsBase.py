@@ -59,7 +59,7 @@ class JlcPartsPrice(RootModel):
     root: list[JlcPartsPriceEntry]
 
     def for_min_qty(self) -> float:
-        min_seen_price = (sys.maxsize, sys.maxsize)  # return ridiculously high if not specified
+        min_seen_price = (sys.maxsize, float(sys.maxsize))  # return ridiculously high if not specified
 
         for bucket in self.root:
             if bucket.qFrom <= 1 or bucket.qFrom is None:  # short circuit for qty=1
