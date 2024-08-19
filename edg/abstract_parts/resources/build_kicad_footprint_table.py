@@ -3,12 +3,20 @@ Utility script that crawls a local KiCad installation's library files and builds
 This file is pregenerated and committed to the repository, and used by the parts tables.
 """
 import os
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, Optional
 import sexpdata  # type: ignore
 
 
 KICAD_FP_DIRECTORIES = ["C:/Program Files/KiCad/8.0/share/kicad/footprints"]
 OUTPUT_FILE = "resources/kicad_footprints.json"
+
+
+Line = Tuple[Tuple[float, float], Tuple[float, float]]  # startx, stary, endx, endy
+
+
+def lines_to_closed_path(lines: List[Line]) -> Optional[List[Line]]:
+    """Given a set of unordered lines, returns them ordered in a closed path, starting with the first line"""
+
 
 
 def sexp_list_find_all(container: list, key: str) -> List[List[Any]]:
@@ -21,12 +29,12 @@ def sexp_list_find_all(container: list, key: str) -> List[List[Any]]:
     return matching_elts
 
 
-def calculate_area(fp_contents: str) -> float:
+def calculate_area(fp_contents: str) -> Optional[float]:
     fp_top: List[Any] = sexpdata.loads(fp_contents)
     assert isinstance(fp_top[0], sexpdata.Symbol) and fp_top[0].value() == 'footprint'
 
     # gather all expressions with type fp_line and layer F.CrtYd, and parse XYs
-    fp_lines: List[Tuple[Tuple[float, float], Tuple[float, float]]] = []  # startx, stary, endx, endy
+    fp_lines: List[Line] = []
     for fp_line_elt in sexp_list_find_all(fp_top, 'fp_line'):
         layers = sexp_list_find_all(fp_line_elt, 'layer')
         assert len(layers) == 1
