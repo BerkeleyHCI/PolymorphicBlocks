@@ -5,10 +5,11 @@ This file is pregenerated and committed to the repository, and used by the parts
 import os
 from typing import Dict, List, Tuple, Any, Optional
 import sexpdata  # type: ignore
+from pydantic import RootModel
 
 
 KICAD_FP_DIRECTORIES = ["C:/Program Files/KiCad/8.0/share/kicad/footprints"]
-OUTPUT_FILE = "resources/kicad_footprints.json"
+OUTPUT_FILE = "kicad_footprints.json"
 
 
 Point = Tuple[float, float]
@@ -41,12 +42,17 @@ def lines_to_closed_path(lines: List[Line]) -> Optional[List[Line]]:
     return closed_path
 
 
-def closed_path_area(lines: List[Line]) -> Optional[float]:
+def polygon_lines_area(lines: List[Line]) -> Optional[float]:
+    """return the area enclosed by a set of lines (potentially unordered) forming a closed path
+    from https://www.geeksforgeeks.org/slicker-algorithm-to-find-the-area-of-a-polygon-in-java/
+    """
     closed_path = lines_to_closed_path(lines)
     if closed_path is None:
         return None
-
-    return None
+    sum = 0
+    for line in closed_path:
+        sum += line[1][0] * line[0][1] - line[0][0] * line[1][1]
+    return abs(sum) / 2
 
 
 def sexp_list_find_all(container: list, key: str) -> List[List[Any]]:
@@ -75,11 +81,15 @@ def calculate_area(fp_contents: str) -> Optional[float]:
         assert len(start) == 1 and len(end) == 1 and len(start[0]) == 3 and len(end[0]) == 3
         fp_lines.append(((float(start[0][1]), float(start[0][2])), (float(end[0][1]), float(end[0][2]))))
 
-    return closed_path_area(fp_lines)
+    return polygon_lines_area(fp_lines)
+
+
+class FootprintJson(RootModel):
+    root: dict[str, float]  # footprint name -> area
 
 
 if __name__ == "__main__":
-    fp_area_dict: Dict[str, float] = {}  # footprint name -> area
+    fp_area_dict: Dict[str, float] = {}
     for kicad_dir in KICAD_FP_DIRECTORIES:
         for dir, subdirs, _ in os.walk(kicad_dir):
             for subdir in subdirs:
@@ -90,4 +100,6 @@ if __name__ == "__main__":
                         with open(os.path.join(subdir, file)) as f:
                             fp_area = calculate_area(f.read())
                         print(f"{lib_name}:{fp_name} -> {fp_area}")
-                        assert False
+    json = FootprintJson(fp_area_dict)
+    with open(OUTPUT_FILE, 'r') as f:
+        f.write(json.model_dump_json(indent=2))
