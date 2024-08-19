@@ -10,20 +10,6 @@ from ..parts import JlcPart
 kTableFilenamePostfix = ".json.gz"
 kStockFilenamePostfix = ".stock.json"
 
-kSchemaLcsc = "lcsc"  # JLC part number
-kSchemaPartNumber = "mfr"  # manufacturer part name
-kSchemaDatasheet = "datasheet"  # URL
-kSchemaDescription = "description"
-kSchemaAttributes = "attributes"  # attribute table
-
-# common attributes across categories
-kAttributeManufacturer = "Manufacturer"
-kAttributePackage = "Package"
-kAttributeStatus = "Status"  # stocking status
-kAttributeBasicType = "Basic/Extended"
-kAttributeBasicTypeBasic = "Basic"
-kAttributeStatusFilters = ["Discontinued"]  # parts with these statuses are filtered out
-
 
 class JlcPartsFile(BaseModel):
     category: str
@@ -124,11 +110,11 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
             with open(os.path.join(cls._config_parts_root_dir, filename + kStockFilenamePostfix), 'r') as f:
                 stocking = JlcPartsStockFile.model_validate_json(f.read())
 
-            lcsc_index = data.jlcpart_schema.index(kSchemaLcsc)
-            part_number_index = data.jlcpart_schema.index(kSchemaPartNumber)
-            description_index = data.jlcpart_schema.index(kSchemaDescription)
-            datasheet_index = data.jlcpart_schema.index(kSchemaDatasheet)
-            attributes_index = data.jlcpart_schema.index(kSchemaAttributes)
+            lcsc_index = data.jlcpart_schema.index("lcsc")
+            part_number_index = data.jlcpart_schema.index("mfr")
+            description_index = data.jlcpart_schema.index("description")
+            datasheet_index = data.jlcpart_schema.index("datasheet")
+            attributes_index = data.jlcpart_schema.index("attributes")
 
 
             for component in data.components:
@@ -143,14 +129,12 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
                 row_dict[cls.DATASHEET_COL] = component[datasheet_index]
 
                 attributes = JlcPartsAttributes(**component[attributes_index])
-                status = attributes.get(kAttributeStatus, str)
-                if status in kAttributeStatusFilters:
+                if attributes.get("Status", str) in ["Discontinued"]:
                     continue
-                basic_extended = attributes.get(kAttributeBasicType, str)
-                row_dict[cls.BASIC_PART_COL] = basic_extended == kAttributeBasicTypeBasic
+                row_dict[cls.BASIC_PART_COL] = attributes.get("Basic/Extended", str) == "Basic"
 
-                row_dict[cls.MANUFACTURER_COL] = attributes.get(kAttributeManufacturer, str)
-                package = attributes.get(kAttributePackage, str)
+                row_dict[cls.MANUFACTURER_COL] = attributes.get("Manufacturer", str)
+                package = attributes.get("Package", str)
 
                 row_dict_opt = cls._entry_to_table_row(row_dict, filename, package, attributes)
                 if row_dict_opt is not None:

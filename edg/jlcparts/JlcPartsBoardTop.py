@@ -1,5 +1,14 @@
 from ..parts import *
-from ..jlcparts import *
+
+from .JlcPartsResistorSmd import JlcPartsResistorSmd
+from .JlcPartsMlcc import JlcPartsMlcc
+from .JlcPartsInductor import JlcPartsInductor
+from .JlcPartsFerriteBead import JlcPartsFerriteBead
+from .JlcPartsDiode import JlcPartsDiode, JlcPartsZenerDiode
+from .JlcPartsLed import JlcPartsLed
+from .JlcPartsBjt import JlcPartsBjt
+from .JlcPartsFet import JlcPartsFet
+from .JlcPartsPptcFuse import JlcPartsPptcFuse
 
 
 class JlcPartsRefinements(DesignTop):
