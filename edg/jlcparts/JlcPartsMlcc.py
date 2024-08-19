@@ -1,7 +1,6 @@
 from typing import Any, Optional, Dict
 from ..abstract_parts import *
-from ..parts import JlcCapacitor
-from ..parts.JlcCapacitor import JlcDummyCapacitor
+from ..parts.JlcCapacitor import JlcCapacitor, JlcDummyCapacitor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 

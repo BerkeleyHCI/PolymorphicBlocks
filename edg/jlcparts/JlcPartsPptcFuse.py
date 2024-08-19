@@ -1,6 +1,6 @@
 from typing import Any, Optional, Dict
 from ..abstract_parts import *
-from ..parts import JlcPptcFuse
+from ..parts.JlcPptcFuse import JlcPptcFuse
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 

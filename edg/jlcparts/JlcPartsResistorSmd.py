@@ -1,6 +1,6 @@
 from typing import Any, Optional, Dict
 from ..abstract_parts import *
-from ..parts import JlcResistor
+from ..parts.JlcResistor import JlcResistor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 

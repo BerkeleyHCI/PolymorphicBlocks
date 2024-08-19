@@ -1,6 +1,6 @@
 from typing import Any, Optional, Dict
 from ..abstract_parts import *
-from ..parts import JlcFerriteBead
+from ..parts.JlcFerriteBead import JlcFerriteBead
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
