@@ -97,10 +97,13 @@ if __name__ == "__main__":
                 lib_name = subdir.split('.pretty')[0]
                 for subdir, _, files in os.walk(os.path.join(dir, subdir)):
                     for file in files:
-                        fp_name = file.split('.kicad_mod')[0]
+                        fp_filename = file.split('.kicad_mod')[0]
                         with open(os.path.join(subdir, file)) as f:
                             fp_area = calculate_area(f.read())
-                        print(f"{lib_name}:{fp_name} -> {fp_area}")
+                        fp_name = lib_name + ":" + fp_filename
+                        if fp_area is not None:
+                            fp_area_dict[fp_name] = fp_area
+                        print(f"{fp_name} -> {fp_area}")
     json = FootprintJson(fp_area_dict)
     with open(OUTPUT_FILE, 'w') as f:
         f.write(json.model_dump_json(indent=2))
