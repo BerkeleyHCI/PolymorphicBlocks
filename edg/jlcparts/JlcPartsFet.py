@@ -4,7 +4,7 @@ from ..parts import JlcFet
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsFet(TableFet, JlcPartsBase):
+class JlcPartsBaseFet(BaseTableFet, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = ["TransistorsMOSFETs"]
     _CHANNEL_MAP = {
         'N Channel': 'N',
@@ -20,6 +20,8 @@ class JlcPartsFet(TableFet, JlcPartsBase):
             row_dict[cls.CHANNEL] = cls._CHANNEL_MAP[attributes.get("Type", str)]
             row_dict[cls.VDS_RATING] = Range.zero_to_upper(
                 attributes.get("Drain source voltage (vdss)", float, sub='voltage'))
+            row_dict[cls.IDS_RATING] = Range.zero_to_upper(PartParserUtil.parse_value(
+                attributes.get("Continuous drain current (id)", str), 'A'))
 
             # used as a proxy for lower bound for Vgs,max
             vgs_for_ids = attributes.get("Drain source on resistance (rds(on)@vgs,id)", float, sub='Vgs')
@@ -49,3 +51,27 @@ class JlcPartsFet(TableFet, JlcPartsBase):
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
+
+
+class JlcPartsFet(JlcPartsBaseFet, TableFet):
+    pass
+
+
+class JlcPartsSwitchFet(JlcPartsBaseFet, TableSwitchFet):
+    @init_in_parent
+    def __init__(self, *args, manual_gate_charge: RangeLike = RangeExpr.ZERO, **kwargs):
+        super().__init__(*args, **kwargs)
+        # allow the user to specify a gate charge
+        self.manual_gate_charge = self.ArgParameter(manual_gate_charge)
+        self.generator_param(self.manual_gate_charge)
+
+    def _table_postprocess(self, table: PartsTable) -> PartsTable:
+        manual_gate_charge = self.get(self.manual_gate_charge)
+        def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+            return {self.GATE_CHARGE: manual_gate_charge}
+
+        # must run before TableFet power calculations
+        if not manual_gate_charge == Range.exact(0):
+            table = table.map_new_columns(process_row, overwrite=True)
+
+        return super()._table_postprocess(table)

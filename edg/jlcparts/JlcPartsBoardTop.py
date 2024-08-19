@@ -7,7 +7,7 @@ from .JlcPartsFerriteBead import JlcPartsFerriteBead
 from .JlcPartsDiode import JlcPartsDiode, JlcPartsZenerDiode
 from .JlcPartsLed import JlcPartsLed
 from .JlcPartsBjt import JlcPartsBjt
-from .JlcPartsFet import JlcPartsFet
+from .JlcPartsFet import JlcPartsFet, JlcPartsSwitchFet
 from .JlcPartsPptcFuse import JlcPartsPptcFuse
 
 
@@ -24,7 +24,7 @@ class JlcPartsRefinements(DesignTop):
         (Led, JlcPartsLed),
         (Bjt, JlcPartsBjt),
         (Fet, JlcPartsFet),
-        # (SwitchFet, JlcSwitchFet),  # TODO IMPLEMENT ME
+        (SwitchFet, JlcPartsSwitchFet),
         (PptcFuse, JlcPartsPptcFuse),
         (FerriteBead, JlcPartsFerriteBead)
       ]
