@@ -8,7 +8,7 @@ class JlcPartsFerriteBead(TableFerriteBead, SmdStandardPackageSelector, JlcParts
     _JLC_PARTS_FILE_NAMES = ["FiltersakaEMI_OptimizationFerrite_Beads"]
 
     @classmethod
-    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes) \
+    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes) \
             -> Optional[Dict[PartsTableColumn, Any]]:
         try:
             row_dict[cls.KICAD_FOOTPRINT] = JlcFerriteBead.PACKAGE_FOOTPRINT_MAP[package]
@@ -21,7 +21,7 @@ class JlcPartsFerriteBead(TableFerriteBead, SmdStandardPackageSelector, JlcParts
             row_dict[cls.CURRENT_RATING] = Range.zero_to_upper(current_rating)
             # Dc resistance sometimes NaN
             row_dict[cls.DC_RESISTANCE] = Range.exact(attributes.get("Dc resistance", float, sub='resistance'))
-            row_dict[cls.HF_IMPEDANCE] = Range.zero_to_upper(
+            row_dict[cls.HF_IMPEDANCE] = Range.exact(
                 attributes.get("Impedance @ frequency", float, sub='esr'))
 
             return row_dict

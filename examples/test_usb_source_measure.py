@@ -248,8 +248,7 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
       self.diode = self.Block(Diode(  # TODO should be encoded as a voltage difference?
         reverse_voltage=self.amp.out.voltage_out,
         current=RangeExpr.ZERO,  # an approximation, current rating not significant here
-        voltage_drop=(0, 0.5)*Volt,  # arbitrary low threshold
-        reverse_recovery_time=(0, 500)*nSecond  # arbitrary for "fast recovery"
+        voltage_drop=(0, 0.5)*Volt  # arbitrary low threshold
       ))
       # regardless of diode direction, the port model is the same on both ends
       amp_out_model = AnalogSink(

@@ -6,14 +6,14 @@ from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 class JlcPartsDiode(TableDiode, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = [
+        "DiodesSchottky_Barrier_Diodes__SBD_",
         "DiodesDiodes___Fast_Recovery_Rectifiers",
         "DiodesDiodes___General_Purpose",
-        "DiodesSchottky_Barrier_Diodes__SBD_",
         "DiodesSwitching_Diode",
     ]
 
     @classmethod
-    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes) \
+    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes) \
             -> Optional[Dict[PartsTableColumn, Any]]:
         try:
             row_dict[cls.KICAD_FOOTPRINT] = JlcDiode.PACKAGE_FOOTPRINT_MAP[package]
@@ -29,7 +29,10 @@ class JlcPartsDiode(TableDiode, JlcPartsBase):
                 reverse_recovery = Range.exact(PartParserUtil.parse_value(
                     attributes.get("Reverse recovery time (trr)", str), 's'))
             except (KeyError, PartParserUtil.ParseError):
-                reverse_recovery = Range.all()
+                if filename == "DiodesDiodes___Fast_Recovery_Rectifiers":
+                    reverse_recovery = Range(0, 500e-9)  # arbitrary <500ns
+                else:
+                    reverse_recovery = Range.all()
             row_dict[cls.REVERSE_RECOVERY] = reverse_recovery
 
             return row_dict
@@ -41,7 +44,7 @@ class JlcPartsZenerDiode(TableZenerDiode, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = ["DiodesZener_Diodes"]
 
     @classmethod
-    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes) \
+    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes) \
             -> Optional[Dict[PartsTableColumn, Any]]:
         try:
             row_dict[cls.KICAD_FOOTPRINT] = JlcDiode.PACKAGE_FOOTPRINT_MAP[package]

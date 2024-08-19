@@ -105,7 +105,7 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
         return cls._cached_table
 
     @classmethod
-    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes)\
+    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes)\
             -> Optional[Dict[PartsTableColumn, Any]]:
         """Given an entry from jlcparts and row pre-populated with metadata, adds category-specific data to the row
         (in-place), and returns the row (or None, if it failed to parse and the row should be discarded)."""
@@ -152,7 +152,7 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
                 row_dict[cls.MANUFACTURER_COL] = attributes.get(kAttributeManufacturer, str)
                 package = attributes.get(kAttributePackage, str)
 
-                row_dict_opt = cls._entry_to_table_row(row_dict, package, attributes)
+                row_dict_opt = cls._entry_to_table_row(row_dict, filename, package, attributes)
                 if row_dict_opt is not None:
                     rows.append(PartsTableRow(row_dict_opt))
 

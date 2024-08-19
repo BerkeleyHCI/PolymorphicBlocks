@@ -8,7 +8,7 @@ class JlcPartsPptcFuse(PptcFuse, TableFuse, SmdStandardPackageSelector, JlcParts
     _JLC_PARTS_FILE_NAMES = ["Circuit_ProtectionResettable_Fuses"]
 
     @classmethod
-    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes) \
+    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes) \
             -> Optional[Dict[PartsTableColumn, Any]]:
         try:
             row_dict[cls.KICAD_FOOTPRINT] = JlcPptcFuse.PACKAGE_FOOTPRINT_MAP[package]

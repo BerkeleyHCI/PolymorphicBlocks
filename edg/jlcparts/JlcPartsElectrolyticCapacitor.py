@@ -9,7 +9,7 @@ class JlcPartsElectrolyticCapacitor(TableCapacitor, AluminumCapacitor, JlcPartsB
     _PACKAGE_PARSER = re.compile(r"^SMD,D([\d.]+)xL([\d.]+)mm$")
 
     @classmethod
-    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], package: str, attributes: JlcPartsAttributes) \
+    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes) \
             -> Optional[Dict[PartsTableColumn, Any]]:
 
         match = cls._PACKAGE_PARSER.match(package)
