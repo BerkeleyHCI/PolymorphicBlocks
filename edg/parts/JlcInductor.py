@@ -66,7 +66,7 @@ class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
            match.group(3), PartParserUtil.parse_value(match.group(2), 'H'), 'H'),
        TableInductor.FREQUENCY_RATING: Range.all(),  # ignored, checked elsewhere
        TableInductor.CURRENT_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'A')),
-       TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), 'Ω')),
+       TableInductor.DC_RESISTANCE: Range.exact(PartParserUtil.parse_value(match.group(4), 'Ω')),
      }),
     (re.compile("(\S+A) (\S+H) ±(\S+H)(?: \S+A)? (\S+Ω) .* Inductors.*"),
      lambda match: {
@@ -74,7 +74,7 @@ class JlcInductor(TableInductor, SmdStandardPackageSelector, JlcTableSelector):
                                                           PartParserUtil.parse_value(match.group(3), 'H')),
        TableInductor.FREQUENCY_RATING: Range.all(),  # ignored, checked elsewhere
        TableInductor.CURRENT_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'A')),
-       TableInductor.DC_RESISTANCE: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), 'Ω')),
+       TableInductor.DC_RESISTANCE: Range.exact(PartParserUtil.parse_value(match.group(4), 'Ω')),
      }),
   ]
 

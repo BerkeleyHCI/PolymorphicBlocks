@@ -44,7 +44,7 @@ from .Resettable import Resettable
 from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardFootprint, TableDiode
 from .AbstractDiodes import ZenerDiode, TableZenerDiode, ProtectionZenerDiode, AnalogClampZenerDiode
 from .AbstractTvsDiode import TvsDiode, ProtectionTvsDiode, DigitalTvsDiode
-from .AbstractLed import Led, LedStandardFootprint, RgbLedCommonAnode, LedColor, LedColorLike
+from .AbstractLed import Led, LedStandardFootprint, TableLed, RgbLedCommonAnode, LedColor, LedColorLike
 from .AbstractLed import IndicatorLed, IndicatorSinkLed, IndicatorSinkLedResistor, VoltageIndicatorLed, IndicatorSinkRgbLed
 from .AbstractLed import IndicatorSinkPackedRgbLed
 from .AbstractLed import IndicatorLedArray, IndicatorSinkLedArray

@@ -7,8 +7,7 @@ from .JlcPart import JlcPart, JlcTableSelector
 
 class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageSelector, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
-    # 0201 not in parts table, C_0201_0603Metric
-
+    '0201': 'Capacitor_SMD:C_0201_0603Metric',
     '0402': 'Capacitor_SMD:C_0402_1005Metric',
     '0603': 'Capacitor_SMD:C_0603_1608Metric',
     '0805': 'Capacitor_SMD:C_0805_2012Metric',
@@ -24,6 +23,7 @@ class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageS
     'C1812': 'Capacitor_SMD:C_1812_4532Metric',
   }
   DERATE_VOLTCO_MAP = {  # in terms of %capacitance / V over 3.6
+    'Capacitor_SMD:C_0201_0603Metric': float('inf'),  # not supported, should not generate below 1uF
     'Capacitor_SMD:C_0402_1005Metric': float('inf'),  # not supported, should not generate below 1uF
     'Capacitor_SMD:C_0603_1608Metric': float('inf'),  # not supported, should not generate below 1uF
     'Capacitor_SMD:C_0805_2012Metric': 0.08,

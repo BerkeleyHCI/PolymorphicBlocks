@@ -4,7 +4,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcTableSelector
 
 
-class JlcLed(LedStandardFootprint, JlcTableSelector, SmdStandardPackageSelector, PartsTableFootprintSelector):
+class JlcLed(TableLed, JlcTableSelector, SmdStandardPackageSelector, PartsTableFootprintSelector):
   PACKAGE_FOOTPRINT_MAP = {
     # 0201 not in parts table, LED_0201_0603Metric
 
@@ -34,9 +34,6 @@ class JlcLed(LedStandardFootprint, JlcTableSelector, SmdStandardPackageSelector,
     'C84256': Led.Red,
   }
 
-  # TODO this should probably be refactored into TableLed or something
-  COLOR = PartsTableColumn(str)
-
   @classmethod
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -58,16 +55,3 @@ class JlcLed(LedStandardFootprint, JlcTableSelector, SmdStandardPackageSelector,
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
-
-  @init_in_parent
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-    self.generator_param(self.color)
-
-  def _row_filter(self, row: PartsTableRow) -> bool:
-    return super()._row_filter(row) and \
-      (not self.get(self.color) or row[self.COLOR] == self.get(self.color))
-
-  def _row_generate(self, row: PartsTableRow) -> None:
-    super()._row_generate(row)
-    self.assign(self.actual_color, row[self.COLOR])

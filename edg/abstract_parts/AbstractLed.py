@@ -1,6 +1,8 @@
 from ..electronics_model import *
 from .Categories import *
 from .AbstractResistor import Resistor
+from .PartsTable import PartsTableColumn, PartsTableRow
+from .PartsTablePart import PartsTableFootprintSelector
 from .StandardFootprint import StandardFootprint
 
 LedColor = str  # type alias
@@ -12,6 +14,7 @@ class Led(DiscreteSemiconductor):
   # Common color definitions
   Red: LedColor = "red"
   Green: LedColor = "green"
+  GreenYellow: LedColor = "greenyellow"  # more a mellow green
   Blue: LedColor = "blue"
   Yellow: LedColor = "yellow"
   White: LedColor = "white"
@@ -58,6 +61,24 @@ class LedStandardFootprint(Led, StandardFootprint[Led]):
     '2010': None,
     '2512': None,
   }
+
+
+@non_library
+class TableLed(LedStandardFootprint, PartsTableFootprintSelector):
+  COLOR = PartsTableColumn(str)
+
+  @init_in_parent
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.generator_param(self.color)
+
+  def _row_filter(self, row: PartsTableRow) -> bool:
+    return super()._row_filter(row) and \
+      (not self.get(self.color) or row[self.COLOR] == self.get(self.color))
+
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.assign(self.actual_color, row[self.COLOR])
 
 
 @abstract_block
