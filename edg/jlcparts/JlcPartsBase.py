@@ -1,3 +1,4 @@
+import sys
 from typing import Any, Optional, Dict, List, TypeVar, Type
 
 from pydantic import BaseModel, RootModel, Field
@@ -48,6 +49,26 @@ class JlcPartsAttributes(RootModel):
         return key in self.root
 
 
+class JlcPartsPriceEntry(BaseModel):
+    price: float
+    qFrom: int
+    qTo: Optional[int]  # None = top bucket
+
+
+class JlcPartsPrice(RootModel):
+    root: list[JlcPartsPriceEntry]
+
+    def for_min_qty(self) -> float:
+        min_seen_price = (sys.maxsize, sys.maxsize)  # return ridiculously high if not specified
+
+        for bucket in self.root:
+            if bucket.qFrom <= 1 or bucket.qFrom is None:  # short circuit for qty=1
+                return bucket.price
+            if bucket.qFrom < min_seen_price[0]:
+                min_seen_price = (bucket.qFrom, bucket.price)
+        return min_seen_price[1]
+
+
 class JlcPartsStockFile(RootModel):
     root: dict[str, int]  # LCSC to stock level
 
@@ -66,6 +87,7 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
     # new columns here
     LCSC_COL = PartsTableColumn(str)
     BASIC_PART_COL = PartsTableColumn(bool)
+    COST_COL = PartsTableColumn(str)
 
     @staticmethod
     def config_root_dir(root_dir: str):
@@ -111,6 +133,7 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
             description_index = data.jlcpart_schema.index("description")
             datasheet_index = data.jlcpart_schema.index("datasheet")
             attributes_index = data.jlcpart_schema.index("attributes")
+            price_index = data.jlcpart_schema.index("price")
 
             for component in data.components:
                 row_dict: Dict[PartsTableColumn, Any] = {}
@@ -122,6 +145,7 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
                 row_dict[cls.PART_NUMBER_COL] = component[part_number_index]
                 row_dict[cls.DESCRIPTION_COL] = component[description_index]
                 row_dict[cls.DATASHEET_COL] = component[datasheet_index]
+                row_dict[cls.COST_COL] = JlcPartsPrice(component[price_index]).for_min_qty()
 
                 attributes = JlcPartsAttributes(**component[attributes_index])
                 if attributes.get("Status", str) in ["Discontinued"]:
@@ -138,7 +162,7 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
 
     @classmethod
     def _row_sort_by(cls, row: PartsTableRow) -> Any:
-        return [row[cls.BASIC_PART_COL], row[cls.KICAD_FOOTPRINT]]
+        return [row[cls.BASIC_PART_COL], row[cls.KICAD_FOOTPRINT], row[cls.COST_COL]]
 
     def _row_generate(self, row: PartsTableRow) -> None:
         super()._row_generate(row)
