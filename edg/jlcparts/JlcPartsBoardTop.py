@@ -24,7 +24,7 @@ class JlcPartsRefinements(DesignTop):
         (Led, JlcPartsLed),
         (Bjt, JlcPartsBjt),
         (Fet, JlcPartsFet),
-        (SwitchFet, JlcSwitchFet),
+        # (SwitchFet, JlcSwitchFet),  # TODO IMPLEMENT ME
         (PptcFuse, JlcPartsPptcFuse),
         (FerriteBead, JlcPartsFerriteBead)
       ]

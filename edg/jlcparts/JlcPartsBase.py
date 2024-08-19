@@ -81,10 +81,6 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
 
     @classmethod
     def _make_table(cls) -> PartsTable:
-        return cls._jlc_table()
-
-    @classmethod
-    def _jlc_table(cls) -> PartsTable:
         """Return the table, cached if possible"""
         if cls._cached_table is None:
             cls._cached_table = cls._parse_table()
@@ -116,7 +112,6 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
             datasheet_index = data.jlcpart_schema.index("datasheet")
             attributes_index = data.jlcpart_schema.index("attributes")
 
-
             for component in data.components:
                 row_dict: Dict[PartsTableColumn, Any] = {}
 
@@ -132,10 +127,9 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
                 if attributes.get("Status", str) in ["Discontinued"]:
                     continue
                 row_dict[cls.BASIC_PART_COL] = attributes.get("Basic/Extended", str) == "Basic"
-
                 row_dict[cls.MANUFACTURER_COL] = attributes.get("Manufacturer", str)
-                package = attributes.get("Package", str)
 
+                package = attributes.get("Package", str)
                 row_dict_opt = cls._entry_to_table_row(row_dict, filename, package, attributes)
                 if row_dict_opt is not None:
                     rows.append(PartsTableRow(row_dict_opt))

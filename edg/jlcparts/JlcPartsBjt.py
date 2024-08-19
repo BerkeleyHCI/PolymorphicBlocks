@@ -22,7 +22,7 @@ class JlcPartsBjt(TableBjt, JlcPartsBase):
                 attributes.get("Collector-emitter breakdown voltage (vceo)", str), 'V'))
             row_dict[cls.ICE_RATING] = Range.zero_to_upper(PartParserUtil.parse_value(
                 attributes.get("Collector current (ic)", str), 'A'))
-            row_dict[cls.GAIN] = Range.zero_to_upper(PartParserUtil.parse_value(
+            row_dict[cls.GAIN] = Range.exact(PartParserUtil.parse_value(
                 attributes.get("Dc current gain (hfe@ic,vce)", str).split('@')[0], ''))
             row_dict[cls.POWER_RATING] = Range.zero_to_upper(
                 attributes.get("Power dissipation (pd)", float, sub='power'))

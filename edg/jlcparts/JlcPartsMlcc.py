@@ -1,6 +1,7 @@
 from typing import Any, Optional, Dict
 from ..abstract_parts import *
 from ..parts import JlcCapacitor
+from ..parts.JlcCapacitor import JlcDummyCapacitor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
@@ -31,3 +32,24 @@ class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageS
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
+
+    @classmethod
+    def _row_sort_by(cls, row: PartsTableRow) -> Any:
+        return [row[cls.PARALLEL_COUNT], super(JlcPartsMlcc, cls)._row_sort_by(row)]
+
+    def _make_parallel_footprints(self, row: PartsTableRow) -> None:
+        cap_model = JlcDummyCapacitor(set_lcsc_part=row[self.LCSC_COL],
+                                      set_basic_part=row[self.BASIC_PART_COL],
+                                      footprint=row[self.KICAD_FOOTPRINT],
+                                      manufacturer=row[self.MANUFACTURER_COL], part_number=row[self.PART_NUMBER_COL],
+                                      value=row[self.DESCRIPTION_COL],
+                                      capacitance=row[self.NOMINAL_CAPACITANCE],
+                                      voltage=self.voltage)
+        self.c = ElementDict[JlcDummyCapacitor]()
+        for i in range(row[self.PARALLEL_COUNT]):
+            self.c[i] = self.Block(cap_model)
+            self.connect(self.c[i].pos, self.pos)
+            self.connect(self.c[i].neg, self.neg)
+
+        self.assign(self.lcsc_part, row[self.LCSC_COL])
+        self.assign(self.actual_basic_part, row[self.BASIC_PART_COL])
