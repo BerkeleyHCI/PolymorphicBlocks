@@ -11,12 +11,42 @@ KICAD_FP_DIRECTORIES = ["C:/Program Files/KiCad/8.0/share/kicad/footprints"]
 OUTPUT_FILE = "resources/kicad_footprints.json"
 
 
-Line = Tuple[Tuple[float, float], Tuple[float, float]]  # startx, stary, endx, endy
+Point = Tuple[float, float]
+Line = Tuple[Point, Point]  # start, end
 
 
 def lines_to_closed_path(lines: List[Line]) -> Optional[List[Line]]:
     """Given a set of unordered lines, returns them ordered in a closed path, starting with the first line"""
+    adjacency: Dict[Point, List[Point]] = {}  # bidirectional
+    if len(lines) < 2:
+        return None
+    for line in lines[1:]:  # element 0 is anchor
+        adjacency.setdefault(line[0], []).append(line[1])
+        adjacency.setdefault(line[1], []).append(line[0])
+    closed_path = [lines[0]]
+    while closed_path[-1][1] != closed_path[0][0]:  # while the path is not closed
+        last_point = closed_path[-1][1]
+        adjacent_points = adjacency.get(last_point, [])
+        if len(adjacent_points) != 1:  # ambiguous next point
+            return None
+        this_point = adjacent_points.pop()
+        closed_path.append((last_point, this_point))
+        adjacency[this_point].remove(last_point)
+        if not adjacency[this_point]:
+            del adjacency[this_point]
+        if not adjacency[last_point]:
+            del adjacency[last_point]
+    if len(adjacency) > 0:  # unused points not handled
+        return None
+    return closed_path
 
+
+def closed_path_area(lines: List[Line]) -> Optional[float]:
+    closed_path = lines_to_closed_path(lines)
+    if closed_path is None:
+        return None
+
+    return None
 
 
 def sexp_list_find_all(container: list, key: str) -> List[List[Any]]:
@@ -45,9 +75,7 @@ def calculate_area(fp_contents: str) -> Optional[float]:
         assert len(start) == 1 and len(end) == 1 and len(start[0]) == 3 and len(end[0]) == 3
         fp_lines.append(((float(start[0][1]), float(start[0][2])), (float(end[0][1]), float(end[0][2]))))
 
-    print(fp_lines)
-
-    return 0.0
+    return closed_path_area(fp_lines)
 
 
 if __name__ == "__main__":
