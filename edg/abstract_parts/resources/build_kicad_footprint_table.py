@@ -79,12 +79,13 @@ def calculate_area(fp_contents: str) -> Optional[float]:
         start = sexp_list_find_all(fp_line_elt, 'start')
         end = sexp_list_find_all(fp_line_elt, 'end')
         assert len(start) == 1 and len(end) == 1 and len(start[0]) == 3 and len(end[0]) == 3
-        fp_lines.append(((float(start[0][1]), float(start[0][2])), (float(end[0][1]), float(end[0][2]))))
+        fp_lines.append(((float(start[0][1]), float(start[0][2])),
+                         (float(end[0][1]), float(end[0][2]))))
 
     return polygon_lines_area(fp_lines)
 
 
-class FootprintJson(RootModel):
+class FootprintJson(RootModel):  # script relpath imports are weird so this is duplicated here
     root: dict[str, float]  # footprint name -> area
 
 
@@ -101,5 +102,5 @@ if __name__ == "__main__":
                             fp_area = calculate_area(f.read())
                         print(f"{lib_name}:{fp_name} -> {fp_area}")
     json = FootprintJson(fp_area_dict)
-    with open(OUTPUT_FILE, 'r') as f:
+    with open(OUTPUT_FILE, 'w') as f:
         f.write(json.model_dump_json(indent=2))
