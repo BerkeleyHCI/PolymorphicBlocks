@@ -69,7 +69,7 @@ class JlcPartsStockFile(RootModel):
 class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
     """Base class parsing parts from https://github.com/yaqwsx/jlcparts"""
     _config_parts_root_dir: Optional[str] = None
-    _config_min_stock: int = 1000
+    _config_min_stock: int = 250
 
     # overrides from PartsTableBase
     PART_NUMBER_COL = PartsTableColumn(str)

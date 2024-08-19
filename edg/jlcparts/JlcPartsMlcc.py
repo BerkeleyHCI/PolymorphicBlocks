@@ -19,8 +19,8 @@ class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageS
             row_dict[cls.CAPACITANCE] = PartParserUtil.parse_abs_tolerance(
                 attributes.get("Tolerance", str), nominal_capacitance, '')
             row_dict[cls.NOMINAL_CAPACITANCE] = nominal_capacitance
-            row_dict[cls.VOLTAGE_RATING] = Range.zero_to_upper(
-                attributes.get("Allowable voltage", float, 0, sub='voltage'))
+            row_dict[cls.VOLTAGE_RATING] = Range.from_abs_tolerance(  # voltage rating for ceramic caps is bidirectional
+                0, attributes.get("Allowable voltage", float, 0, sub='voltage'))
             row_dict[cls.VOLTCO] = JlcCapacitor.DERATE_VOLTCO_MAP[footprint]
 
             # arbitrary filter - TODO parameterization
