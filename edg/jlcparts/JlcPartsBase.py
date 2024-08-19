@@ -5,7 +5,7 @@ import gzip
 import os
 
 from ..abstract_parts import *
-from ..parts import JlcPart
+from ..parts.JlcPart import JlcPart
 
 kTableFilenamePostfix = ".json.gz"
 kStockFilenamePostfix = ".stock.json"
