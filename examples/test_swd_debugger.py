@@ -300,7 +300,6 @@ class PicoProbe(JlcBoardTop):
       ],
       class_values=[
         (SelectorArea, ['footprint_area'], Range.from_lower(1.5)),  # at least 0402
-        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
       ],
     )
 

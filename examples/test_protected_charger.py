@@ -59,9 +59,6 @@ class ProtectedCharger(JlcBoardTop):
                 (PassiveConnector, JstPhKHorizontal),  # default connector series unless otherwise specified
                 (TestPoint, CompactKeystone5015),
             ],
-            class_values=[
-                (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
-            ],
         )
 
 

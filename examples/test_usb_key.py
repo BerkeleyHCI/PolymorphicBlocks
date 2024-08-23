@@ -109,7 +109,6 @@ class UsbKey(JlcBoardTop):
         (['packed_mcu_vdd1_cap', 'cap', 'capacitance_minimum_size'], False),
       ],
       class_values=[
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
         (SelectorArea, ['footprint_area'], Range.from_lower(1.5)),  # at least 0402
         (Lp5907, ['ic', 'footprint_spec'], 'Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm'),
       ]

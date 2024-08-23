@@ -219,8 +219,6 @@ class PcbBot(JlcBoardTop):
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
 
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
-
         # the camera recommended specs are excessively tight, so loosen them a bit
         (Ov2640_Fpc24, ['device', 'dovdd', 'voltage_limits'], Range(1.71, 4.5)),
         (Ov2640_Fpc24, ['device', 'dvdd', 'voltage_limits'], Range(1.1, 1.36)),  # allow 1v2

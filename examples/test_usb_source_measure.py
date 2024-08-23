@@ -834,8 +834,6 @@ class UsbSourceMeasure(JlcBoardTop):
         (['prot_3v3', 'diode', 'part'], "1SMA4730AG")
       ],
       class_values=[
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
-        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
         # (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015 is out of stock
 
         (Mcp3561, ['ic', 'ch', '0', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower

@@ -193,8 +193,6 @@ class IotDisplay(JlcBoardTop):
       ],
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
-        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-123'),
       ]
     )
 
