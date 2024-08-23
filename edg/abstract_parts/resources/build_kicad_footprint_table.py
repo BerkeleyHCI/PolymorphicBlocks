@@ -49,7 +49,7 @@ def polygon_lines_area(lines: List[Line]) -> Optional[float]:
     closed_path = lines_to_closed_path(lines)
     if closed_path is None:
         return None
-    sum = 0
+    sum: float = 0
     for line in closed_path:
         sum += line[1][0] * line[0][1] - line[0][0] * line[1][1]
     return abs(sum) / 2
