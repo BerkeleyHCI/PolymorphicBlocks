@@ -227,7 +227,7 @@ class IotIron(JlcBoardTop):
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
-        (['iron', 'isense_res', 'res', 'res', 'smd_min_package'], '2512'),  # more power headroom
+        (['iron', 'isense_res', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),  # more power headroom
         (['iron', 'isense_res', 'res', 'res', 'require_basic_part'], False),
 
         # these will be enforced by the firmware control mechanism
