@@ -71,7 +71,7 @@ class JlcBaseFet(BaseTableFet, JlcTableSelector, PartsTableFootprint):
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row).sort_by(
-      lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
+      lambda row: [row[cls.BASIC_PART_HEADER], FootprintAreaTable.area_of(row[cls.KICAD_FOOTPRINT]), row[cls.COST]]
     )
 
 

@@ -47,7 +47,7 @@ class ESeriesResistor(SelectorArea, ResistorStandardFootprint, GeneratorBlock):
     suitable_packages = [(package_power, package) for package_power, package in self.PACKAGE_POWER
                          if package_power >= self.get(self.power).upper and
                          (not self.get(self.footprint_spec) or package == self.get(self.footprint_spec)) and
-                         (FootprintAreaTable.area_of(package).fuzzy_in(self.get(self.footprint_area)))]
+                         (Range.exact(FootprintAreaTable.area_of(package)).fuzzy_in(self.get(self.footprint_area)))]
     if not suitable_packages:
       raise ValueError("no suitable resistor packages")
 

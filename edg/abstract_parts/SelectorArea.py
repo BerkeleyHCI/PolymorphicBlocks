@@ -16,16 +16,12 @@ class FootprintAreaTable:
   _table: Optional[FootprintJson] = None
 
   @classmethod
-  def area_of(cls, footprint: str) -> Range:
+  def area_of(cls, footprint: str) -> float:
     """Returns the area of a footprint, returning infinity if unavailable"""
     if cls._table is None:
       with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "kicad_footprints.json"), 'r') as f:
         cls._table = FootprintJson.model_validate_json(f.read())
-    area = cls._table.root.get(footprint)
-    if area is not None:
-      return Range.exact(area,)
-    else:
-      return Range(float('inf'), float('inf'))
+    return cls._table.root.get(footprint) or float('inf')
 
 
 @abstract_block
@@ -58,4 +54,4 @@ class PartsTableAreaSelector(SelectorArea, PartsTableFootprintSelector):
 
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
-      (FootprintAreaTable.area_of(row[self.KICAD_FOOTPRINT]).fuzzy_in(self.get(self.footprint_area)))
+      (Range.exact(FootprintAreaTable.area_of(row[self.KICAD_FOOTPRINT])).fuzzy_in(self.get(self.footprint_area)))
