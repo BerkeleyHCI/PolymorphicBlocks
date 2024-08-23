@@ -4,7 +4,7 @@ from ..abstract_parts import *
 
 
 @non_library
-class ESeriesResistor(ResistorStandardFootprint, SmdStandardPackage, GeneratorBlock):
+class ESeriesResistor(SelectorArea, ResistorStandardFootprint, GeneratorBlock):
   """Default generator that automatically picks resistors from the E-series specified.
   Preferentially picks lower E-series (E1 before E3 before E6 ...) value meeting the needs
   at the specified tolerance.
@@ -23,7 +23,7 @@ class ESeriesResistor(ResistorStandardFootprint, SmdStandardPackage, GeneratorBl
     self.footprint_spec = self.ArgParameter(footprint_spec)
 
     self.generator_param(self.resistance, self.power, self.series, self.tolerance, self.footprint_spec,
-                         self.smd_min_package)
+                         self.footprint_area)
 
   def generate(self) -> None:
     super().generate()
@@ -44,12 +44,10 @@ class ESeriesResistor(ResistorStandardFootprint, SmdStandardPackage, GeneratorBl
     if not selected_range.fuzzy_in(resistance):
       raise ValueError(f"chosen resistances tolerance {tolerance} not within {resistance}")
 
-    minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(
-      self.get(self.smd_min_package), TableResistor.SMD_FOOTPRINT_MAP)
     suitable_packages = [(package_power, package) for package_power, package in self.PACKAGE_POWER
                          if package_power >= self.get(self.power).upper and
                          (not self.get(self.footprint_spec) or package == self.get(self.footprint_spec)) and
-                         (package not in minimum_invalid_footprints)]
+                         (FootprintAreaTable.area_of(package).fuzzy_in(self.get(self.footprint_area)))]
     if not suitable_packages:
       raise ValueError("no suitable resistor packages")
 

@@ -4,7 +4,7 @@ import math
 from ..abstract_parts import *
 
 
-class GenericMlcc(Capacitor, FootprintBlock, SmdStandardPackage, GeneratorBlock):
+class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):
   """
   Generic SMT ceramic capacitor (MLCC) picker that chooses a common value (E-series) based on rules
   specifying what capacitances / voltage ratings are available in what packages.
@@ -42,7 +42,7 @@ class GenericMlcc(Capacitor, FootprintBlock, SmdStandardPackage, GeneratorBlock)
     super().__init__(*args, **kwargs)
     self.footprint_spec = self.ArgParameter(footprint_spec)
     self.derating_coeff = self.ArgParameter(derating_coeff)
-    self.generator_param(self.capacitance, self.voltage, self.footprint_spec, self.smd_min_package, self.derating_coeff)
+    self.generator_param(self.capacitance, self.voltage, self.footprint_spec, self.footprint_area, self.derating_coeff)
 
     # Output values
     self.selected_nominal_capacitance = self.Parameter(RangeExpr())
@@ -112,11 +112,9 @@ class GenericMlcc(Capacitor, FootprintBlock, SmdStandardPackage, GeneratorBlock)
     footprint = self.get(self.footprint_spec)
 
     def select_package(nominal_capacitance: float, voltage: Range) -> Optional[str]:
-      minimum_invalid_footprints = SmdStandardPackage.get_smd_packages_below(
-        self.get(self.smd_min_package), TableDeratingCapacitor.SMD_FOOTPRINT_MAP)
       package_options = [spec for spec in self.PACKAGE_SPECS
                          if (not footprint or spec.name == footprint) and
-                         (spec.name not in minimum_invalid_footprints)]
+                         (FootprintAreaTable.area_of(spec.name).fuzzy_in(self.get(self.footprint_area)))]
 
       for package in package_options:
         if package.max >= nominal_capacitance:
