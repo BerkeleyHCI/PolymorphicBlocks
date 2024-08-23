@@ -82,7 +82,10 @@ def calculate_area(fp_contents: str) -> Optional[float]:
         fp_lines.append(((float(start[0][1]), float(start[0][2])),
                          (float(end[0][1]), float(end[0][2]))))
 
-    return polygon_lines_area(fp_lines)
+    area_opt = polygon_lines_area(fp_lines)
+    if area_opt is not None:
+        area_opt = round(area_opt, 6)  # round to remove excess precision
+    return area_opt
 
 
 class FootprintJson(RootModel):  # script relpath imports are weird so this is duplicated here
