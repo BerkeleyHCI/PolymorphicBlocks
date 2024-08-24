@@ -84,7 +84,7 @@ class JlcOscillator(TableOscillator, JlcTableBase, Block):
       new_cols.update(cls._parse_jlcpcb_common(row))
       return new_cols
 
-    return cls._jlc_table().map_new_columns(parse_row).sort_by(
+    return cls._jlc_table().map_new_columns(parse_row).sort_by(  # TODO dedup w/ JlcTableSelector._row_sort_by
       lambda row: [row[cls.BASIC_PART_HEADER], FootprintAreaTable.area_of(row[cls.KICAD_FOOTPRINT]), row[cls.COST]]
     )
 
