@@ -19,7 +19,7 @@ class FootprintAreaTable:
   def area_of(cls, footprint: str) -> float:
     """Returns the area of a footprint, returning infinity if unavailable"""
     if cls._table is None:
-      with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "kicad_footprints.json"), 'r') as f:
+      with open(os.path.join(os.path.dirname(__file__), "resources", "kicad_footprints.json"), 'r') as f:
         cls._table = FootprintJson.model_validate_json(f.read())
     return cls._table.root.get(footprint) or float('inf')
 
