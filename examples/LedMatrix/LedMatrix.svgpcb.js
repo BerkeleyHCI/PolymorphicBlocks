@@ -179,7 +179,7 @@ const tp_3v3_tp = board.add(TestPoint_Keystone_5015_Micro_Minature, {
   translate: pt(0, 0), rotate: 0,
   id: 'tp_3v3_tp'
 })
-const prot_3v3_diode = board.add(D_SOD_123, {
+const prot_3v3_diode = board.add(D_SOD_323, {
   translate: pt(0, 0), rotate: 0,
   id: 'prot_3v3_diode'
 })

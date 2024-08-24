@@ -21,7 +21,7 @@ from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSub
 from .Categories import MultipackDevice
 
 from .ESeriesUtil import ESeriesUtil
-from .SmdStandardPackage import SmdStandardPackage, SmdStandardPackageSelector
+from .SelectorArea import SelectorArea, PartsTableAreaSelector, FootprintAreaTable
 
 from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack, RfConnector, RfConnectorTestPoint, UflConnector

@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart, JlcTableSelector
 
 
-class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageSelector, JlcTableSelector):
+class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, PartsTableAreaSelector, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     '0201': 'Capacitor_SMD:C_0201_0603Metric',
     '0402': 'Capacitor_SMD:C_0402_1005Metric',
@@ -102,7 +102,7 @@ class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, SmdStandardPackageS
 
   @classmethod
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
-    return [row[cls.PARALLEL_COUNT], row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
+    return [row[cls.PARALLEL_COUNT], super(JlcCapacitor, cls)._row_sort_by(row)]
 
   def _make_parallel_footprints(self, row: PartsTableRow) -> None:
     cap_model = JlcDummyCapacitor(set_lcsc_part=row[self.LCSC_PART_HEADER],

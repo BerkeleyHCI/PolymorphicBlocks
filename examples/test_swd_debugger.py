@@ -184,7 +184,7 @@ class SwdDebugger(JlcBoardTop):
         (['mcu', 'swd_swo_pin'], 'PB3'),
       ],
       class_values=[
-        (SmdStandardPackage, ["smd_min_package"], "0402"),
+        (SelectorArea, ['footprint_area'], Range.from_lower(1.5)),  # at least 0402
       ],
     )
 
@@ -299,8 +299,7 @@ class PicoProbe(JlcBoardTop):
         (TagConnect, TagConnectNonLegged),
       ],
       class_values=[
-        (SmdStandardPackage, ["smd_min_package"], "0402"),
-        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
+        (SelectorArea, ['footprint_area'], Range.from_lower(1.5)),  # at least 0402
       ],
     )
 

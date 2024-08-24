@@ -42,7 +42,7 @@ class BaseBoardTop(DesignTop):
 
         (Speaker, ConnectorSpeaker),
       ], class_values=[
-        (SmdStandardPackage, ['smd_min_package'], '0603'),
+        (SelectorArea, ['footprint_area'], Range.from_lower(4.0)),  # at least 0603
       ]
     )
 

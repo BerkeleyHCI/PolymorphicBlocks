@@ -48,20 +48,6 @@ class LedStandardFootprint(Led, StandardFootprint[Led]):
     },
   }
 
-  SMD_FOOTPRINT_MAP = {
-    '01005': None,
-    '0201': None,
-    '0402': 'LED_SMD:LED_0402_1005Metric',
-    '0603': 'LED_SMD:LED_0603_1608Metric',
-    '0805': 'LED_SMD:LED_0805_2012Metric',
-    '1206': 'LED_SMD:LED_1206_3216Metric',
-    '1210': None,
-    '1806': None,
-    '1812': None,
-    '2010': None,
-    '2512': None,
-  }
-
 
 @non_library
 class TableLed(LedStandardFootprint, PartsTableFootprintSelector):

@@ -71,20 +71,6 @@ class FuseStandardFootprint(Fuse, StandardFootprint[Fuse]):
     },
   }
 
-  SMD_FOOTPRINT_MAP = {
-    '01005': None,
-    '0201': 'Resistor_SMD:R_0201_0603Metric',
-    '0402': 'Resistor_SMD:R_0402_1005Metric',
-    '0603': 'Resistor_SMD:R_0603_1608Metric',
-    '0805': 'Resistor_SMD:R_0805_2012Metric',
-    '1206': 'Resistor_SMD:R_1206_3216Metric',
-    '1210': 'Resistor_SMD:R_1210_3225Metric',
-    '1806': None,
-    '1812': 'Resistor_SMD:R_1812_4532Metric',
-    '2010': 'Resistor_SMD:R_2010_5025Metric',
-    '2512': 'Resistor_SMD:R_2512_6332Metric',
-  }
-
 
 @non_library
 class TableFuse(FuseStandardFootprint, PartsTableFootprintSelector):

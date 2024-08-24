@@ -32,7 +32,7 @@ function SwitchMatrix_2_3_sw(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0.25, 
 
       diodePos = [buttonPos[0] + diodeOffset[0], buttonPos[1] + diodeOffset[1]]
       obj[`d[${xIndex},${yIndex}]`] = diode = board.add(
-        D_SMA,
+        D_SOD_323,
         {
           translate: diodePos, rotate: 90,
           id: `sw_d_${xIndex}_${yIndex}_`

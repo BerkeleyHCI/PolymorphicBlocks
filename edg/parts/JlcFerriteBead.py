@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcFerriteBead(TableFerriteBead, SmdStandardPackageSelector, JlcTableSelector):
+class JlcFerriteBead(TableFerriteBead, PartsTableAreaSelector, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     '0402': 'Inductor_SMD:L_0402_1005Metric',
     '0603': 'Inductor_SMD:L_0603_1608Metric',
@@ -50,7 +50,3 @@ class JlcFerriteBead(TableFerriteBead, SmdStandardPackageSelector, JlcTableSelec
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
-
-  @classmethod
-  def _row_sort_by(cls, row: PartsTableRow) -> Any:
-    return [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]

@@ -72,9 +72,7 @@ class JlcDiode(TableDiode, JlcTableSelector, JlcBaseDiode):
       new_cols.update(cls._parse_jlcpcb_common(row))
       return new_cols
 
-    return cls._jlc_table().map_new_columns(parse_row).sort_by(
-      lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
-    )
+    return cls._jlc_table().map_new_columns(parse_row)
 
 
 class JlcZenerDiode(TableZenerDiode, JlcTableSelector, JlcBaseDiode):
@@ -110,6 +108,4 @@ class JlcZenerDiode(TableZenerDiode, JlcTableSelector, JlcBaseDiode):
       new_cols.update(cls._parse_jlcpcb_common(row))
       return new_cols
 
-    return cls._jlc_table().map_new_columns(parse_row).sort_by(
-      lambda row: [row[cls.BASIC_PART_HEADER], row[cls.KICAD_FOOTPRINT], row[cls.COST]]
-    )
+    return cls._jlc_table().map_new_columns(parse_row)

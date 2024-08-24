@@ -70,9 +70,6 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
         (['edge', 'status_led', 'color'], 'yellow'),  # NONSTANDARD, but uses a JLC basic part
         (['edge2', 'status_led', 'color'], 'yellow'),
       ],
-      class_values=[
-        (Diode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
-      ]
     )
 
 

@@ -168,20 +168,6 @@ class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
     },
   }
 
-  SMD_FOOTPRINT_MAP = {
-    '01005': None,
-    '0201': 'Capacitor_SMD:C_0201_0603Metric',
-    '0402': 'Capacitor_SMD:C_0402_1005Metric',
-    '0603': 'Capacitor_SMD:C_0603_1608Metric',
-    '0805': 'Capacitor_SMD:C_0805_2012Metric',
-    '1206': 'Capacitor_SMD:C_1206_3216Metric',
-    '1210': 'Capacitor_SMD:C_1210_3225Metric',
-    '1806': None,
-    '1812': 'Capacitor_SMD:C_1812_4532Metric',
-    '2010': None,
-    '2512': 'Capacitor_SMD:C_2512_6332Metric',
-  }
-
 
 @non_library
 class TableCapacitor(CapacitorStandardFootprint, PartsTableFootprintSelector):

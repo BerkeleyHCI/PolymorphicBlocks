@@ -227,7 +227,7 @@ class IotIron(JlcBoardTop):
         ]),
         (['mcu', 'programming'], 'uart-auto'),
 
-        (['iron', 'isense_res', 'res', 'res', 'smd_min_package'], '2512'),  # more power headroom
+        (['iron', 'isense_res', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),  # more power headroom
         (['iron', 'isense_res', 'res', 'res', 'require_basic_part'], False),
 
         # these will be enforced by the firmware control mechanism
@@ -253,7 +253,6 @@ class IotIron(JlcBoardTop):
         (TestPoint, CompactKeystone5015),
       ],
       class_values=[
-        (ZenerDiode, ['footprint_spec'], 'Diode_SMD:D_SOD-323'),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
         (Nonstrict3v3Compatible, ['nonstrict_3v3_compatible'], True),
       ]

@@ -4,7 +4,7 @@ from ..parts.JlcResistor import JlcResistor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsResistorSmd(TableResistor, SmdStandardPackageSelector, JlcPartsBase):
+class JlcPartsResistorSmd(TableResistor, PartsTableAreaSelector, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = ["ResistorsChip_Resistor___Surface_Mount"]
 
     @classmethod

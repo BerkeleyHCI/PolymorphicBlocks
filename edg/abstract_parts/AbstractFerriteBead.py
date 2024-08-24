@@ -63,20 +63,6 @@ class FerriteBeadStandardFootprint(FerriteBead, StandardFootprint[FerriteBead]):
     },
   }
 
-  SMD_FOOTPRINT_MAP = {
-    '01005': None,
-    '0201': 'Inductor_SMD:L_0201_0603Metric',
-    '0402': 'Inductor_SMD:L_0402_1005Metric',
-    '0603': 'Inductor_SMD:L_0603_1608Metric',
-    '0805': 'Inductor_SMD:L_0805_2012Metric',
-    '1206': 'Inductor_SMD:L_1206_3216Metric',
-    '1210': 'Inductor_SMD:L_1210_3225Metric',
-    '1806': None,
-    '1812': 'Inductor_SMD:L_1812_4532Metric',
-    '2010': 'Inductor_SMD:L_2010_5025Metric',
-    '2512': 'Inductor_SMD:L_2512_6332Metric',
-  }
-
 
 @non_library
 class TableFerriteBead(FerriteBeadStandardFootprint, PartsTableFootprintSelector):
