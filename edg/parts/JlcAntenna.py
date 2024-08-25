@@ -48,3 +48,6 @@ class JlcAntenna(TableAntenna, JlcTableSelector, PartsTableFootprintSelector):
     return {
       self.FOOTPRINT_PIN_MAP[footprint]: self.a,
     }
+
+
+lambda: JlcAntenna()  # ensure class is instantiable (non-abstract)

@@ -113,3 +113,6 @@ class JlcInductor(TableInductor, PartsTableAreaSelector, JlcTableSelector):
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcInductor()  # ensure class is instantiable (non-abstract)

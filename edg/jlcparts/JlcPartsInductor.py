@@ -43,3 +43,6 @@ class JlcPartsInductor(TableInductor, PartsTableAreaSelector, JlcPartsBase):
         # so the user must add the actual frequency rating in refinements
         self.manual_frequency_rating = self.Parameter(RangeExpr(Range.exact(0)))
         self.require(self.frequency.within(self.manual_frequency_rating))
+
+
+lambda: JlcPartsInductor()  # ensure class is instantiable (non-abstract)

@@ -133,3 +133,6 @@ class JlcDummyCapacitor(DummyCapacitorFootprint, JlcPart):
 
     self.assign(self.lcsc_part, set_lcsc_part)
     self.assign(self.actual_basic_part, set_basic_part)
+
+
+lambda: JlcCapacitor()  # ensure class is instantiable (non-abstract)

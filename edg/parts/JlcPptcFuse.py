@@ -49,3 +49,6 @@ class JlcPptcFuse(PptcFuse, TableFuse, PartsTableAreaSelector, JlcTableSelector)
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcPptcFuse()  # ensure class is instantiable (non-abstract)

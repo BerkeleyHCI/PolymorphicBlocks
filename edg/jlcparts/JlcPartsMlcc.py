@@ -52,3 +52,6 @@ class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, PartsTableAreaSelec
 
         self.assign(self.lcsc_part, row[self.LCSC_COL])
         self.assign(self.actual_basic_part, row[self.BASIC_PART_COL])
+
+
+lambda: JlcPartsMlcc()  # ensure class is instantiable (non-abstract)

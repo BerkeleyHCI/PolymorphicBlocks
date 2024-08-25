@@ -68,3 +68,6 @@ class JlcPartsZenerDiode(TableZenerDiode, JlcPartsBase):
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
+
+
+lambda: JlcPartsDiode(), JlcPartsZenerDiode()  # ensure class is instantiable (non-abstract)

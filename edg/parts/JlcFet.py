@@ -95,3 +95,6 @@ class JlcSwitchFet(JlcBaseFet, TableSwitchFet):
       table = table.map_new_columns(process_row, overwrite=True)
 
     return super()._table_postprocess(table)
+
+
+lambda: JlcFet, JlcSwitchFet()  # ensure class is instantiable (non-abstract)

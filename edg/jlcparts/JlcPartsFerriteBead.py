@@ -27,3 +27,6 @@ class JlcPartsFerriteBead(TableFerriteBead, PartsTableAreaSelector, JlcPartsBase
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
+
+
+lambda: JlcPartsFerriteBead()  # ensure class is instantiable (non-abstract)

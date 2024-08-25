@@ -59,3 +59,6 @@ class JlcResistor(TableResistor, PartsTableAreaSelector, JlcTableSelector):
         return None
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcResistor()  # ensure class is instantiable (non-abstract)

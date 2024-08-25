@@ -55,3 +55,6 @@ class JlcLed(TableLed, JlcTableSelector, PartsTableAreaSelector, PartsTableFootp
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcLed()  # ensure class is instantiable (non-abstract)

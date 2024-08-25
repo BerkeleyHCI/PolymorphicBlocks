@@ -50,3 +50,6 @@ class JlcFerriteBead(TableFerriteBead, PartsTableAreaSelector, JlcTableSelector)
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcFerriteBead()  # ensure class is instantiable (non-abstract)

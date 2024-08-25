@@ -28,3 +28,6 @@ class JlcPartsElectrolyticCapacitor(TableCapacitor, AluminumCapacitor, JlcPartsB
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
+
+
+lambda: JlcPartsElectrolyticCapacitor()  # ensure class is instantiable (non-abstract)

@@ -99,3 +99,6 @@ class JlcOscillator(TableOscillator, JlcTableBase, Block):
         self.connect(self.gnd, self.device.gnd)
         self.connect(self.out, self.device.out)
         self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+
+
+lambda: JlcOscillator()  # ensure class is instantiable (non-abstract)

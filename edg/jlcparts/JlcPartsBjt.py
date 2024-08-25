@@ -30,3 +30,6 @@ class JlcPartsBjt(TableBjt, JlcPartsBase):
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
+
+
+lambda: JlcPartsBjt()  # ensure class is instantiable (non-abstract)

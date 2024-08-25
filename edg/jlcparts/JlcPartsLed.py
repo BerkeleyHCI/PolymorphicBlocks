@@ -37,3 +37,6 @@ class JlcPartsLed(TableLed, PartsTableAreaSelector, JlcPartsBase):
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
+
+
+lambda: JlcPartsLed()  # ensure class is instantiable (non-abstract)

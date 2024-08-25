@@ -45,3 +45,6 @@ class JlcAluminumCapacitor(TableCapacitor, AluminumCapacitor, CapacitorStandardF
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcAluminumCapacitor()  # ensure class is instantiable (non-abstract)
