@@ -84,7 +84,7 @@ class BjtStandardFootprint(StandardFootprint[Bjt]):
   }
 
 
-class TableBjt(BjtStandardFootprint, Bjt, PartsTableFootprintSelector):
+class TableBjt(Bjt, PartsTableFootprintSelector):
   VCE_RATING = PartsTableColumn(Range)
   ICE_RATING = PartsTableColumn(Range)
   GAIN = PartsTableColumn(Range)

@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Optional, Union, Any
+from typing import Optional, Union, Any, ClassVar, Type
 
 from ..electronics_model import *
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
@@ -101,14 +101,12 @@ class PartsTableFootprint(PartsTablePart, Block):
 
 
 @non_library
-class PartsTableFootprintSelector(PartsTableSelector, FootprintBlock, PartsTableFootprint, StandardFootprint):
+class PartsTableFootprintSelector(PartsTableSelector, FootprintBlock, PartsTableFootprint):
   """PartsTableFootprint that includes the parts selection framework logic and footprint generator,
   including rows by a footprint spec.
   Subclasses must additionally define the fields required by StandardPinningFootprint, which defines the
   footprint name to pin mapping."""
-
-  # this needs to be defined by the implementing subclass
-  REFDES_PREFIX: str
+  _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint]]
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
@@ -122,8 +120,8 @@ class PartsTableFootprintSelector(PartsTableSelector, FootprintBlock, PartsTable
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.footprint(
-      self.REFDES_PREFIX, row[self.KICAD_FOOTPRINT],
-      self._make_pinning(row[self.KICAD_FOOTPRINT]),
+      self._STANDARD_FOOTPRINT.REFDES_PREFIX, row[self.KICAD_FOOTPRINT],
+      self._STANDARD_FOOTPRINT._make_pinning(self, row[self.KICAD_FOOTPRINT]),
       mfr=row[self.MANUFACTURER_COL], part=row[self.PART_NUMBER_COL],
       value=row[self.DESCRIPTION_COL],
       datasheet=row[self.DATASHEET_COL]
