@@ -1,7 +1,7 @@
 from ..abstract_parts import *
 
 
-class CustomDiode(Diode, BaseDiodeStandardFootprint, GeneratorBlock):
+class CustomDiode(Diode, BaseDiodeStandardFootprint, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, footprint_spec: StringLike = "",
                manufacturer_spec: StringLike = "", part_spec: StringLike = "", **kwargs):

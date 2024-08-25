@@ -62,8 +62,7 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor):
     )
 
 
-@non_library
-class BjtStandardFootprint(Bjt, StandardFootprint[Bjt]):
+class BjtStandardFootprint(StandardFootprint[Bjt]):
   REFDES_PREFIX = 'Q'
 
   FOOTPRINT_PINNING_MAP = {
@@ -85,7 +84,7 @@ class BjtStandardFootprint(Bjt, StandardFootprint[Bjt]):
   }
 
 
-class TableBjt(BjtStandardFootprint, PartsTableFootprintSelector):
+class TableBjt(BjtStandardFootprint, Bjt, PartsTableFootprintSelector):
   VCE_RATING = PartsTableColumn(Range)
   ICE_RATING = PartsTableColumn(Range)
   GAIN = PartsTableColumn(Range)

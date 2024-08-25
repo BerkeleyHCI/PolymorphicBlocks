@@ -1,7 +1,7 @@
 from ..abstract_parts import *
 
 
-class CustomFet(FetStandardFootprint, GeneratorBlock):
+class CustomFet(FetStandardFootprint, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, footprint_spec: StringLike = "",
                manufacturer_spec: StringLike = "", part_spec: StringLike = "", **kwargs):

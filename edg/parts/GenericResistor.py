@@ -4,7 +4,7 @@ from ..abstract_parts import *
 
 
 @non_library
-class ESeriesResistor(SelectorArea, ResistorStandardFootprint, GeneratorBlock):
+class ESeriesResistor(SelectorArea, ResistorStandardFootprint, FootprintBlock, GeneratorBlock):
   """Default generator that automatically picks resistors from the E-series specified.
   Preferentially picks lower E-series (E1 before E3 before E6 ...) value meeting the needs
   at the specified tolerance.

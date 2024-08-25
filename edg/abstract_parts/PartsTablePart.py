@@ -101,7 +101,7 @@ class PartsTableFootprint(PartsTablePart, Block):
 
 
 @non_library
-class PartsTableFootprintSelector(PartsTableSelector, PartsTableFootprint, StandardFootprint, FootprintBlock):
+class PartsTableFootprintSelector(PartsTableSelector, FootprintBlock, PartsTableFootprint, StandardFootprint):
   """PartsTableFootprint that includes the parts selection framework logic and footprint generator,
   including rows by a footprint spec.
   Subclasses must additionally define the fields required by StandardPinningFootprint, which defines the
