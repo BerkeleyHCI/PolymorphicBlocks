@@ -21,8 +21,7 @@ class BaseDiode(DiscreteSemiconductor):
     self.cathode = self.Port(Passive.empty())
 
 
-@non_library
-class BaseDiodeStandardFootprint(BaseDiode, StandardFootprint[BaseDiode]):
+class DiodeStandardFootprint(StandardFootprint[BaseDiode]):
   REFDES_PREFIX = 'D'
 
   FOOTPRINT_PINNING_MAP = {
@@ -88,7 +87,7 @@ class Diode(KiCadImportableBlock, BaseDiode):
 
 
 @non_library
-class TableDiode(Diode, BaseDiodeStandardFootprint, PartsTableFootprintSelector, GeneratorBlock):
+class TableDiode(Diode, PartsTableFootprintSelector, GeneratorBlock):
   VOLTAGE_RATING = PartsTableColumn(Range)  # tolerable blocking voltages, positive
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable currents, average
   FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
@@ -144,7 +143,7 @@ class ZenerDiode(KiCadImportableBlock, BaseDiode, DiscreteSemiconductor):
 
 
 @non_library
-class TableZenerDiode(ZenerDiode, BaseDiodeStandardFootprint, PartsTableFootprintSelector, GeneratorBlock):
+class TableZenerDiode(ZenerDiode, PartsTableFootprintSelector, GeneratorBlock):
   ZENER_VOLTAGE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)  # tolerable power
 

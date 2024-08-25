@@ -41,7 +41,7 @@ from .RfNetworks import PiLowPassFilter
 from .I2cPullup import I2cPullup
 from .Resettable import Resettable
 
-from .AbstractDiodes import BaseDiode, Diode, BaseDiodeStandardFootprint, TableDiode
+from .AbstractDiodes import BaseDiode, Diode, DiodeStandardFootprint, TableDiode
 from .AbstractDiodes import ZenerDiode, TableZenerDiode, ProtectionZenerDiode, AnalogClampZenerDiode
 from .AbstractTvsDiode import TvsDiode, ProtectionTvsDiode, DigitalTvsDiode
 from .AbstractLed import Led, LedStandardFootprint, TableLed, RgbLedCommonAnode, LedColor, LedColorLike

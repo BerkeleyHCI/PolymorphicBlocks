@@ -28,8 +28,7 @@ class Crystal(DiscreteComponent):
     )
 
 
-@non_library
-class CrystalStandardFootprint(Crystal, StandardFootprint[Crystal]):
+class CrystalStandardFootprint(StandardFootprint[Crystal]):
   REFDES_PREFIX = 'X'
 
   FOOTPRINT_PINNING_MAP = {
@@ -55,7 +54,7 @@ class CrystalStandardFootprint(Crystal, StandardFootprint[Crystal]):
 
 
 @non_library
-class TableCrystal(CrystalStandardFootprint, PartsTableFootprintSelector):
+class TableCrystal(Crystal, PartsTableFootprintSelector):
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)
 

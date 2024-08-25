@@ -42,8 +42,7 @@ class FerriteBead(PassiveComponent, KiCadImportableBlock):
     )
 
 
-@non_library
-class FerriteBeadStandardFootprint(FerriteBead, StandardFootprint[FerriteBead]):
+class FerriteBeadStandardFootprint(StandardFootprint[FerriteBead]):
   REFDES_PREFIX = 'FB'
 
   FOOTPRINT_PINNING_MAP = {
@@ -65,7 +64,7 @@ class FerriteBeadStandardFootprint(FerriteBead, StandardFootprint[FerriteBead]):
 
 
 @non_library
-class TableFerriteBead(FerriteBeadStandardFootprint, PartsTableFootprintSelector):
+class TableFerriteBead(FerriteBead, PartsTableFootprintSelector):
   CURRENT_RATING = PartsTableColumn(Range)
   HF_IMPEDANCE = PartsTableColumn(Range)
   DC_RESISTANCE = PartsTableColumn(Range)

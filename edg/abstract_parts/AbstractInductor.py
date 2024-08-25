@@ -45,8 +45,7 @@ class Inductor(PassiveComponent, KiCadImportableBlock):
     )
 
 
-@non_library
-class InductorStandardFootprint(Inductor, StandardFootprint[Inductor]):
+class InductorStandardFootprint(StandardFootprint[Inductor]):
   REFDES_PREFIX = 'L'
 
   FOOTPRINT_PINNING_MAP = {
@@ -122,7 +121,7 @@ class InductorStandardFootprint(Inductor, StandardFootprint[Inductor]):
 
 
 @non_library
-class TableInductor(InductorStandardFootprint, PartsTableFootprintSelector):
+class TableInductor(Inductor, PartsTableFootprintSelector):
   INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance
   FREQUENCY_RATING = PartsTableColumn(Range)  # tolerable frequencies
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable current

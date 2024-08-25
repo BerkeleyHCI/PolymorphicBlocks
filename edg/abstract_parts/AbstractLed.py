@@ -32,8 +32,7 @@ class Led(DiscreteSemiconductor):
     self.k = self.Port(Passive.empty())
 
 
-@non_library
-class LedStandardFootprint(Led, StandardFootprint[Led]):
+class LedStandardFootprint(StandardFootprint[Led]):
   REFDES_PREFIX = 'D'
 
   FOOTPRINT_PINNING_MAP = {
@@ -50,7 +49,7 @@ class LedStandardFootprint(Led, StandardFootprint[Led]):
 
 
 @non_library
-class TableLed(LedStandardFootprint, PartsTableFootprintSelector):
+class TableLed(Led, PartsTableFootprintSelector):
   COLOR = PartsTableColumn(str)
 
   @init_in_parent

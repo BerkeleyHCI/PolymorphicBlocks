@@ -81,8 +81,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor):
     )
 
 
-@non_library
-class FetStandardFootprint(Fet, StandardFootprint[Fet]):
+class FetStandardFootprint(StandardFootprint[Fet]):
   REFDES_PREFIX = 'Q'
 
   FOOTPRINT_PINNING_MAP = {
@@ -133,7 +132,7 @@ class BaseTableFet(Fet):
 
 
 @non_library
-class TableFet(FetStandardFootprint, BaseTableFet, PartsTableFootprintSelector):
+class TableFet(BaseTableFet, PartsTableFootprintSelector):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -187,7 +186,7 @@ class SwitchFet(Fet):
 
 
 @non_library
-class TableSwitchFet(SwitchFet, FetStandardFootprint, BaseTableFet, PartsTableFootprintSelector, GeneratorBlock):
+class TableSwitchFet(SwitchFet, BaseTableFet, PartsTableFootprintSelector, GeneratorBlock):
   SWITCHING_POWER = PartsTableColumn(Range)
   STATIC_POWER = PartsTableColumn(Range)
   TOTAL_POWER = PartsTableColumn(Range)

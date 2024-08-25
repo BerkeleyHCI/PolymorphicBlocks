@@ -63,8 +63,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
     )
 
 
-@non_library
-class ResistorStandardFootprint(Resistor, StandardFootprint[Resistor]):
+class ResistorStandardFootprint(StandardFootprint[Resistor]):
   REFDES_PREFIX = 'R'
 
   FOOTPRINT_PINNING_MAP = {
@@ -97,7 +96,7 @@ class ResistorStandardFootprint(Resistor, StandardFootprint[Resistor]):
 
 
 @non_library
-class TableResistor(ResistorStandardFootprint, PartsTableFootprintSelector):
+class TableResistor(Resistor, PartsTableFootprintSelector):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)

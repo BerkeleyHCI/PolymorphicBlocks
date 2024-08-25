@@ -48,8 +48,7 @@ class ResistorArray(MultipackDevice, MultipackBlock):
     )
 
 
-@non_library
-class ResistorArrayStandardFootprint(ResistorArray, StandardFootprint[ResistorArray]):
+class ResistorArrayStandardFootprint(StandardFootprint[ResistorArray]):
   REFDES_PREFIX = 'RN'
 
   # TODO some way to ensure the resistor count is sufficient?
@@ -87,7 +86,7 @@ class ResistorArrayStandardFootprint(ResistorArray, StandardFootprint[ResistorAr
 
 
 @non_library
-class TableResistorArray(ResistorArrayStandardFootprint, PartsTableFootprintSelector):
+class TableResistorArray(ResistorArray, PartsTableFootprintSelector):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   COUNT = PartsTableColumn(int)

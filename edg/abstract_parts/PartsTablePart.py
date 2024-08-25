@@ -106,6 +106,8 @@ class PartsTableFootprintSelector(PartsTableSelector, FootprintBlock, PartsTable
   including rows by a footprint spec.
   Subclasses must additionally define the fields required by StandardPinningFootprint, which defines the
   footprint name to pin mapping."""
+  # TODO: this should be typed on the StandardFootprint type, but type vars in ClassVar are disallowed
+  # https://github.com/python/mypy/issues/5144
   _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint]]
 
   @init_in_parent

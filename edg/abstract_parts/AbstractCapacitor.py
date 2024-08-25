@@ -97,8 +97,7 @@ class AluminumCapacitor(Capacitor):
   pass
 
 
-@non_library
-class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
+class CapacitorStandardFootprint(StandardFootprint[Capacitor]):
   REFDES_PREFIX = 'C'
 
   # IMPORTANT! DummyFootprint doesn't use this, it will break on anything that isn't this pinning
@@ -170,7 +169,7 @@ class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
 
 
 @non_library
-class TableCapacitor(CapacitorStandardFootprint, PartsTableFootprintSelector):
+class TableCapacitor(Capacitor, PartsTableFootprintSelector):
   """Abstract table-based capacitor, providing some interface column definitions."""
   CAPACITANCE = PartsTableColumn(Range)
   NOMINAL_CAPACITANCE = PartsTableColumn(float)  # nominal capacitance, even with asymmetrical tolerances
