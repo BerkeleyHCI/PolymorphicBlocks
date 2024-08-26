@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart, JlcTableSelector
 
 
-class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, PartsTableAreaSelector, JlcTableSelector):
+class JlcCapacitor(PartsTableSelectorFootprint, JlcTableSelector, TableDeratingCapacitor, CeramicCapacitor):
   PACKAGE_FOOTPRINT_MAP = {
     '0201': 'Capacitor_SMD:C_0201_0603Metric',
     '0402': 'Capacitor_SMD:C_0402_1005Metric',

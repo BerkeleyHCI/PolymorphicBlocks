@@ -4,7 +4,7 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcResistorArray(TableResistorArray, JlcTableSelector):
+class JlcResistorArray(PartsTableSelectorFootprint, JlcTableSelector, TableResistorArray):
   SERIES_PACKAGE_FOOTPRINT_MAP = {
     ('4D03', '0603_x4'): 'Resistor_SMD:R_Array_Concave_4x0603',  # 1206 overall size
     ('4D03', 'RES-ARRAY-SMD'): 'Resistor_SMD:R_Array_Concave_4x0603',  # same as above, but inconsistent footprint field

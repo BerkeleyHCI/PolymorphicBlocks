@@ -50,7 +50,7 @@ class Sg8101cg_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, self.in_actual_basic_part)
 
 
-class JlcOscillator(TableOscillator, JlcTableSelector):
+class JlcOscillator(JlcTableSelector, TableOscillator):
   SERIES_DEVICE_MAP = {
     'SG-8101CG': Sg8101cg_Device,
   }

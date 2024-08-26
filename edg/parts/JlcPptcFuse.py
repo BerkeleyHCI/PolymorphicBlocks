@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcPptcFuse(PptcFuse, TableFuse, PartsTableAreaSelector, JlcTableSelector):
+class JlcPptcFuse(PartsTableSelectorFootprint, JlcTableSelector, TableFuse, PptcFuse):
   PACKAGE_FOOTPRINT_MAP = {
     '0402': 'Resistor_SMD:R_0402_1005Metric',
     '0603': 'Resistor_SMD:R_0603_1608Metric',
