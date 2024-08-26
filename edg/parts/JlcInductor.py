@@ -26,35 +26,35 @@ class JlcInductor(TableInductor, PartsTableAreaSelector, JlcTableSelector):
   PART_FOOTPRINT_PARSERS: List[DescriptionParser] = [
     (re.compile("^NR(20|24|30|40|50|60|80).*$"),
      lambda match: {
-       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Taiyo-Yuden_NR-{match.group(1)}xx'
+     PartsTableSelectorFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Taiyo-Yuden_NR-{match.group(1)}xx'
      }),
     (re.compile("^SRP12(45|65)A?-.*$"),
      lambda match: {
-       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns_SRP1245A'
+       PartsTableSelectorFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns_SRP1245A'
      }),
     (re.compile("^SRR1015-.*$"),
      lambda match: {
-       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns-SRR1005'
+       PartsTableSelectorFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns-SRR1005'
      }),
     (re.compile("^SRR1210A?-.*$"),
      lambda match: {
-       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns_SRR1210A'
+       PartsTableSelectorFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns_SRR1210A'
      }),
     (re.compile("^SRR1260A?-.*$"),
      lambda match: {
-       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns_SRR1260'
+       PartsTableSelectorFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Bourns_SRR1260'
      }),
     (re.compile("^SWPA(3010|3012|3015|4010|4012|4018|4020|4025|4030|5012|5020|5040|6020|6028|6040|6045|8040)S.*$"),
      lambda match: {
-       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Sunlord_SWPA{match.group(1)}S'
+       PartsTableSelectorFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Sunlord_SWPA{match.group(1)}S'
      }),
     (re.compile("^SWRB(1204|1205|1207)S.*$"),
      lambda match: {
-       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Sunlord_SWRB{match.group(1)}S'
+       PartsTableSelectorFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_Sunlord_SWRB{match.group(1)}S'
      }),
     (re.compile("^SLF(6025|6028|6045|7032|7045|7055|10145|12555|12565|12575)T.*$"),
      lambda match: {
-       PartsTableFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_TDK_SLF{match.group(1)}'
+       PartsTableSelectorFootprint.KICAD_FOOTPRINT: f'Inductor_SMD:L_TDK_SLF{match.group(1)}'
      }),
     # Kicad does not have stock 1008 footprint
   ]

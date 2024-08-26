@@ -33,8 +33,7 @@ class PartsTableBase:
     return cls._TABLE
 
 
-@non_library
-class PartsTablePart(Block):
+class PartsTablePart(BlockInterfaceMixin[Block]):
   """An interface mixin for a part that is selected from a table, defining parameters to allow manual part selection
   as well as matching parts."""
   @init_in_parent
@@ -88,12 +87,8 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
       self.require(False, "no matching part")
 
 
-@non_library
-class PartsTableFootprint(PartsTablePart, Block):
-  """A PartsTablePart for footprints that defines footprint-specific columns and a footprint spec arg-param.
-  This Block doesn't need to directly be a footprint, only that the part search can filter on footprint."""
-  KICAD_FOOTPRINT = PartsTableColumn(str)
-
+class SelectorFootprint(BlockInterfaceMixin[Block]):
+  """Mixin that allows a specified footprint, for Blocks that automatically select a part."""
   @init_in_parent
   def __init__(self, *args, footprint_spec: StringLike = "", **kwargs):
     super().__init__(*args, **kwargs)
@@ -101,14 +96,11 @@ class PartsTableFootprint(PartsTablePart, Block):
 
 
 @non_library
-class PartsTableFootprintSelector(PartsTableSelector, PartsTableFootprint, FootprintBlock):
-  """PartsTableFootprint that includes the parts selection framework logic and footprint generator,
-  including rows by a footprint spec.
-  Subclasses must additionally define the fields required by StandardPinningFootprint, which defines the
-  footprint name to pin mapping."""
-  # TODO: this should be typed on the StandardFootprint type, but type vars in ClassVar are disallowed
-  # https://github.com/python/mypy/issues/5144
-  _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint]]
+class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
+  """A combination of PartsTableSelector with SelectorFootprint, with row filtering on footprint_spec.
+  Does not create the footprint itself, this can be used as a base class where footprint filtering is desired
+  but an internal block is created instead."""
+  KICAD_FOOTPRINT = PartsTableColumn(str)
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
@@ -118,6 +110,15 @@ class PartsTableFootprintSelector(PartsTableSelector, PartsTableFootprint, Footp
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       ((not self.get(self.footprint_spec)) or self.get(self.footprint_spec) == row[self.KICAD_FOOTPRINT])
+
+
+@non_library
+class PartsTableSelectorFootprint(PartsTableFootprintFilter, FootprintBlock):
+  """PartsTableFootprintFilter, but also with footprint creation. Must define a standard pinning.
+  """
+  # TODO: this should be typed on the StandardFootprint type, but type vars in ClassVar are disallowed
+  # https://github.com/python/mypy/issues/5144
+  _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint]]
 
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)

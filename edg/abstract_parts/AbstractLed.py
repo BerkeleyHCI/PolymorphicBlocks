@@ -2,7 +2,7 @@ from ..electronics_model import *
 from .Categories import *
 from .AbstractResistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelectorFootprint
 from .StandardFootprint import StandardFootprint
 
 LedColor = str  # type alias
@@ -49,7 +49,7 @@ class LedStandardFootprint(StandardFootprint[Led]):
 
 
 @non_library
-class TableLed(Led, PartsTableFootprintSelector):
+class TableLed(Led, PartsTableSelectorFootprint):
   _STANDARD_FOOTPRINT = LedStandardFootprint
 
   COLOR = PartsTableColumn(str)

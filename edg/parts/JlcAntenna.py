@@ -4,7 +4,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcTableBase
 
 
-class JlcAntenna(TableAntenna, JlcTableBase, PartsTableFootprint, FootprintBlock):
+class JlcAntenna(TableAntenna, JlcTableBase, PartsTableFootprintFilter, FootprintBlock):
   FOOTPRINT_PIN_MAP = {  # no antenna-specific footprints, re-use the diode footprints which have a polarity indicator
     'Diode_SMD:D_0402_1005Metric': '1',
     'Diode_SMD:D_0603_1608Metric': '1',
@@ -55,8 +55,6 @@ class JlcAntenna(TableAntenna, JlcTableBase, PartsTableFootprint, FootprintBlock
       value=row[self.DESCRIPTION_COL],
       datasheet=row[self.DATASHEET_COL]
     )
-
-    return
 
 
 lambda: JlcAntenna()  # ensure class is instantiable (non-abstract)

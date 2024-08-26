@@ -5,7 +5,7 @@ import os
 
 from ..electronics_model import *
 from .PartsTable import PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelectorFootprint
 
 
 class FootprintJson(RootModel):  # script relpath imports are weird so this is duplicated here
@@ -46,7 +46,7 @@ class SelectorArea(BlockInterfaceMixin[Block]):
 
 
 @non_library
-class PartsTableAreaSelector(SelectorArea, PartsTableFootprintSelector):
+class PartsTableAreaSelector(SelectorArea, PartsTableSelectorFootprint):
   """Defines an implementation for the area selector using parts tables and KICAD_FOOTPRINT."""
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)

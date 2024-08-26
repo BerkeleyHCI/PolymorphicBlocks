@@ -1,5 +1,5 @@
 from ..electronics_model import *
-from . import PartsTableFootprintSelector, PartsTableColumn, Capacitor, PartsTableRow
+from . import PartsTableSelectorFootprint, PartsTableColumn, Capacitor, PartsTableRow
 from .Categories import *
 from .StandardFootprint import StandardFootprint
 
@@ -54,7 +54,7 @@ class CrystalStandardFootprint(StandardFootprint[Crystal]):
 
 
 @non_library
-class TableCrystal(Crystal, PartsTableFootprintSelector):
+class TableCrystal(Crystal, PartsTableSelectorFootprint):
   _STANDARD_FOOTPRINT = CrystalStandardFootprint
 
   FREQUENCY = PartsTableColumn(Range)

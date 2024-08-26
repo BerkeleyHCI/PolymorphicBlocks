@@ -3,7 +3,7 @@ from typing import List
 from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelectorFootprint
 from .Categories import *
 from .StandardFootprint import StandardFootprint
 
@@ -86,7 +86,7 @@ class ResistorArrayStandardFootprint(StandardFootprint[ResistorArray]):
 
 
 @non_library
-class TableResistorArray(ResistorArray, PartsTableFootprintSelector):
+class TableResistorArray(ResistorArray, PartsTableSelectorFootprint):
   _STANDARD_FOOTPRINT = ResistorArrayStandardFootprint
 
   RESISTANCE = PartsTableColumn(Range)

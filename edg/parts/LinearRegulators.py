@@ -446,8 +446,8 @@ class Ap2210(VoltageRegulatorEnableWrapper, LinearRegulator):
       self.connect(self.pwr_out, self.ic.pwr_out, self.out_cap.pwr)
 
 
-class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, PartsTableFootprint, PartsTablePart, GeneratorBlock,
-                    JlcPart, FootprintBlock):
+class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, SelectorFootprint, PartsTablePart, JlcPart,
+                    GeneratorBlock, FootprintBlock):
   @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()

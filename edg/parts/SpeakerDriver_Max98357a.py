@@ -4,8 +4,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Max98357a_Device(InternalSubcircuit, JlcPart, PartsTableFootprint, PartsTablePart,
-                       GeneratorBlock, FootprintBlock):
+class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTablePart, GeneratorBlock, FootprintBlock):
     def __init__(self):
         super().__init__()
 

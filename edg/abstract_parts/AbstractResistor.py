@@ -3,7 +3,7 @@ from typing import Optional, cast, Mapping, Dict
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelectorFootprint
 from .Categories import *
 from .StandardFootprint import StandardFootprint
 
@@ -96,7 +96,7 @@ class ResistorStandardFootprint(StandardFootprint[Resistor]):
 
 
 @non_library
-class TableResistor(Resistor, PartsTableFootprintSelector):
+class TableResistor(Resistor, PartsTableSelectorFootprint):
   _STANDARD_FOOTPRINT = ResistorStandardFootprint
 
   RESISTANCE = PartsTableColumn(Range)

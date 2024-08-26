@@ -2,7 +2,7 @@ from typing import Dict, Optional, cast
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelectorFootprint
 from .Categories import *
 from .StandardFootprint import StandardFootprint
 
@@ -121,7 +121,7 @@ class InductorStandardFootprint(StandardFootprint[Inductor]):
 
 
 @non_library
-class TableInductor(Inductor, PartsTableFootprintSelector):
+class TableInductor(Inductor, PartsTableSelectorFootprint):
   _STANDARD_FOOTPRINT = InductorStandardFootprint
 
   INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance

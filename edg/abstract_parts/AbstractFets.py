@@ -2,7 +2,7 @@ from typing import Optional, Any, Dict
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelectorFootprint
 from .Categories import *
 from .StandardFootprint import StandardFootprint
 
@@ -132,7 +132,7 @@ class BaseTableFet(Fet):
 
 
 @non_library
-class TableFet(BaseTableFet, PartsTableFootprintSelector):
+class TableFet(BaseTableFet, PartsTableSelectorFootprint):
   _STANDARD_FOOTPRINT = FetStandardFootprint
 
   @init_in_parent
@@ -188,7 +188,7 @@ class SwitchFet(Fet):
 
 
 @non_library
-class TableSwitchFet(SwitchFet, BaseTableFet, PartsTableFootprintSelector, GeneratorBlock):
+class TableSwitchFet(SwitchFet, BaseTableFet, PartsTableSelectorFootprint, GeneratorBlock):
   _STANDARD_FOOTPRINT = FetStandardFootprint
 
   SWITCHING_POWER = PartsTableColumn(Range)

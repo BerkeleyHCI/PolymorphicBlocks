@@ -2,7 +2,7 @@ from typing import Optional, cast, Dict
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelectorFootprint
 from .Categories import *
 from .StandardFootprint import StandardFootprint
 
@@ -64,7 +64,7 @@ class FerriteBeadStandardFootprint(StandardFootprint[FerriteBead]):
 
 
 @non_library
-class TableFerriteBead(FerriteBead, PartsTableFootprintSelector):
+class TableFerriteBead(FerriteBead, PartsTableSelectorFootprint):
   _STANDARD_FOOTPRINT = FerriteBeadStandardFootprint
 
   CURRENT_RATING = PartsTableColumn(Range)

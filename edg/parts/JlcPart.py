@@ -88,7 +88,7 @@ class JlcTableBase(PartsTableBase):
 
 
 @non_library
-class JlcTableSelector(PartsTableSelector, JlcPart, JlcTableBase, PartsTableFootprint):
+class JlcTableSelector(PartsTableFootprintFilter, JlcPart, JlcTableBase):
   @classmethod
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return [row[cls.BASIC_PART_HEADER], FootprintAreaTable.area_of(row[cls.KICAD_FOOTPRINT]), row[cls.COST]]

@@ -3,7 +3,7 @@ from typing import Dict
 from ..electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelectorFootprint
 from .StandardFootprint import StandardFootprint
 
 
@@ -84,7 +84,7 @@ class BjtStandardFootprint(StandardFootprint[Bjt]):
   }
 
 
-class TableBjt(Bjt, PartsTableFootprintSelector):
+class TableBjt(Bjt, PartsTableSelectorFootprint):
   _STANDARD_FOOTPRINT = BjtStandardFootprint
 
   VCE_RATING = PartsTableColumn(Range)

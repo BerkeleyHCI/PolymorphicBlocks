@@ -5,7 +5,7 @@ from ..electronics_model import *
 from .DummyDevices import ForcedAnalogVoltage
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelectorFootprint
 from .StandardFootprint import StandardFootprint
 
 
@@ -87,7 +87,7 @@ class Diode(KiCadImportableBlock, BaseDiode):
 
 
 @non_library
-class TableDiode(Diode, PartsTableFootprintSelector, GeneratorBlock):
+class TableDiode(Diode, PartsTableSelectorFootprint, GeneratorBlock):
   _STANDARD_FOOTPRINT = DiodeStandardFootprint
 
   VOLTAGE_RATING = PartsTableColumn(Range)  # tolerable blocking voltages, positive
@@ -145,7 +145,7 @@ class ZenerDiode(KiCadImportableBlock, BaseDiode, DiscreteSemiconductor):
 
 
 @non_library
-class TableZenerDiode(ZenerDiode, PartsTableFootprintSelector, GeneratorBlock):
+class TableZenerDiode(ZenerDiode, PartsTableSelectorFootprint, GeneratorBlock):
   _STANDARD_FOOTPRINT = DiodeStandardFootprint
 
   ZENER_VOLTAGE = PartsTableColumn(Range)

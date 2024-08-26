@@ -3,7 +3,7 @@ from typing import Optional, cast
 from ..electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprint, PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelectorFootprint
 from .StandardFootprint import StandardFootprint
 
 
@@ -72,7 +72,7 @@ class FuseStandardFootprint(StandardFootprint[Fuse]):
 
 
 @non_library
-class TableFuse(Fuse, PartsTableFootprintSelector):
+class TableFuse(Fuse, PartsTableSelectorFootprint):
   _STANDARD_FOOTPRINT = FuseStandardFootprint
 
   TRIP_CURRENT = PartsTableColumn(Range)

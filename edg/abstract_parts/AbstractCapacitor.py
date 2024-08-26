@@ -5,7 +5,7 @@ import math
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelectorFootprint
 from .Categories import *
 from .StandardFootprint import StandardFootprint
 
@@ -169,7 +169,7 @@ class CapacitorStandardFootprint(StandardFootprint[Capacitor]):
 
 
 @non_library
-class TableCapacitor(Capacitor, PartsTableFootprintSelector):
+class TableCapacitor(Capacitor, PartsTableSelectorFootprint):
   """Abstract table-based capacitor, providing some interface column definitions."""
   _STANDARD_FOOTPRINT = CapacitorStandardFootprint
 

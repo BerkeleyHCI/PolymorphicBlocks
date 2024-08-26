@@ -1,7 +1,5 @@
-from abc import abstractmethod
-
 from ..electronics_model import *
-from . import PartsTableFootprint, PartsTableColumn, PartsTableRow, PartsTableSelector
+from . import PartsTableColumn, PartsTableRow, PartsTableSelector, SelectorFootprint
 from .Categories import *
 
 
@@ -29,7 +27,7 @@ class Oscillator(DiscreteApplication):
 
 
 @non_library
-class TableOscillator(Oscillator, PartsTableSelector, PartsTableFootprint):
+class TableOscillator(Oscillator, PartsTableSelector, SelectorFootprint):
   """Provides basic part table matching functionality for oscillators, by frequency only.
   Unlike other table-based passive components, this should generate the full application circuit.
   No default footprints are provided since these may be non-standard."""
