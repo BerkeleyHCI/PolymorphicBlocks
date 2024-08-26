@@ -4,7 +4,7 @@ from ..abstract_parts import *
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsElectrolyticCapacitor(TableCapacitor, AluminumCapacitor, JlcPartsBase):
+class JlcPartsElectrolyticCapacitor(TableCapacitor, AluminumCapacitor, PartsTableSelectorFootprint, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = ["CapacitorsAluminum_Electrolytic_Capacitors___SMD"]
     _PACKAGE_PARSER = re.compile(r"^SMD,D([\d.]+)xL([\d.]+)mm$")
 

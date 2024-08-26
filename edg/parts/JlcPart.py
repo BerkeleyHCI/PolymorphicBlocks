@@ -10,8 +10,8 @@ class JlcPart(Block):
   By default, this does not check for basic parts, but that can be changed in refinements.
   """
   @init_in_parent
-  def __init__(self, require_basic_part: BoolLike = False):
-    super().__init__()
+  def __init__(self, *args, require_basic_part: BoolLike = False, **kwargs):
+    super().__init__(*args, **kwargs)
     self.lcsc_part = self.Parameter(StringExpr())
     self.actual_basic_part = self.Parameter(BoolExpr())
     self.require_basic_part = self.ArgParameter(require_basic_part)

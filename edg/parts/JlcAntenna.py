@@ -4,7 +4,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcTableSelector
 
 
-class JlcAntenna(JlcTableSelector, TableAntenna, FootprintBlock):
+class JlcAntenna(TableAntenna, JlcTableSelector, FootprintBlock):
   # abstract Antenna does not define standard footprints, so we cannot mix in PartsTableSelectorFootprint
   # to do footprint generation
 

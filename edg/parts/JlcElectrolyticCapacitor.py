@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcAluminumCapacitor(PartsTableSelectorFootprint, JlcTableSelector, TableCapacitor, AluminumCapacitor):
+class JlcAluminumCapacitor(TableCapacitor, AluminumCapacitor, PartsTableSelectorFootprint, JlcTableSelector):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile(".* (\S+F).* (\S+V).* (±\S+%).*([\d\.]+x[\d\.]+)mm Aluminum Electrolytic Capacitors.*"),
      lambda match: {  # discard the HF impedance parameter

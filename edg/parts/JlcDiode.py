@@ -18,7 +18,7 @@ class JlcBaseDiode:
   }
 
 
-class JlcDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode, TableDiode):
+class JlcDiode(TableDiode, PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(\S+V) (\S+V)@\S+A (\S+A) .* Schottky Barrier Diodes \(SBD\).*"),
      lambda match: {
@@ -75,7 +75,7 @@ class JlcDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode, Tabl
     return cls._jlc_table().map_new_columns(parse_row)
 
 
-class JlcZenerDiode(PartsTableSelectorFootprint, JlcTableSelector, TableZenerDiode, JlcBaseDiode):
+class JlcZenerDiode(TableZenerDiode, PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("\S+A@\S+V (±\S+%) \S+Ω (?:Single )?(\S+W) (\S+V).* Zener Diodes.*"),
      lambda match: {

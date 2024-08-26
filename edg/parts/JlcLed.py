@@ -4,7 +4,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcTableSelector
 
 
-class JlcLed(TableLed, JlcTableSelector, PartsTableAreaSelector):
+class JlcLed(TableLed, PartsTableSelectorFootprint, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     # 0201 not in parts table, LED_0201_0603Metric
 

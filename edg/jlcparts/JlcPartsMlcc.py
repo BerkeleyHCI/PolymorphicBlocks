@@ -4,7 +4,7 @@ from ..parts.JlcCapacitor import JlcCapacitor, JlcDummyCapacitor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, PartsTableAreaSelector, JlcPartsBase):
+class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, PartsTableSelectorFootprint, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = ["CapacitorsMultilayer_Ceramic_Capacitors_MLCC___SMDakaSMT"]
 
     @classmethod

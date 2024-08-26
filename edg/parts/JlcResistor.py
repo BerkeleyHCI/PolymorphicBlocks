@@ -4,7 +4,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcTableSelector
 
 
-class JlcResistor(PartsTableSelectorFootprint, JlcTableSelector, TableResistor):
+class JlcResistor(TableResistor, PartsTableSelectorFootprint, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     # 0201 not in parts table, R_0201_0603Metric
 

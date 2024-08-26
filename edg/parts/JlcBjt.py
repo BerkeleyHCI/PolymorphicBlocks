@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcBjt(PartsTableSelectorFootprint, JlcTableSelector, TableBjt):
+class JlcBjt(TableBjt, PartsTableSelectorFootprint, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     'SOT-23': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',

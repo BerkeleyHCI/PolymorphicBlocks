@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcBaseFet(JlcTableSelector, BaseTableFet):
+class JlcBaseFet(JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     'SOT23-3': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
@@ -73,11 +73,11 @@ class JlcBaseFet(JlcTableSelector, BaseTableFet):
     return cls._jlc_table().map_new_columns(parse_row)
 
 
-class JlcFet(TableFet, JlcBaseFet):
+class JlcFet(TableFet, PartsTableSelectorFootprint, JlcBaseFet):
   pass
 
 
-class JlcSwitchFet(JlcBaseFet, TableSwitchFet):
+class JlcSwitchFet(TableSwitchFet, PartsTableSelectorFootprint, JlcBaseFet):
   @init_in_parent
   def __init__(self, *args, manual_gate_charge: RangeLike = RangeExpr.ZERO, **kwargs):
     super().__init__(*args, **kwargs)

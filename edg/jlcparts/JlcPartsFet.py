@@ -53,11 +53,11 @@ class JlcPartsBaseFet(JlcPartsBase, BaseTableFet):
             return None
 
 
-class JlcPartsFet(TableFet, JlcPartsBaseFet):
+class JlcPartsFet(TableFet, PartsTableSelectorFootprint, JlcPartsBaseFet):
     pass
 
 
-class JlcPartsSwitchFet(JlcPartsBaseFet, TableSwitchFet):
+class JlcPartsSwitchFet(TableSwitchFet, PartsTableSelectorFootprint, JlcPartsBaseFet):
     @init_in_parent
     def __init__(self, *args, manual_gate_charge: RangeLike = RangeExpr.ZERO, **kwargs):
         super().__init__(*args, **kwargs)
