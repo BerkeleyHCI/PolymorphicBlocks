@@ -171,6 +171,8 @@ class CapacitorStandardFootprint(StandardFootprint[Capacitor]):
 @non_library
 class TableCapacitor(Capacitor, PartsTableFootprintSelector):
   """Abstract table-based capacitor, providing some interface column definitions."""
+  _STANDARD_FOOTPRINT = CapacitorStandardFootprint
+
   CAPACITANCE = PartsTableColumn(Range)
   NOMINAL_CAPACITANCE = PartsTableColumn(float)  # nominal capacitance, even with asymmetrical tolerances
   VOLTAGE_RATING = PartsTableColumn(Range)

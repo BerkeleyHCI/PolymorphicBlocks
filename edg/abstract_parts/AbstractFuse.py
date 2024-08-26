@@ -73,6 +73,8 @@ class FuseStandardFootprint(StandardFootprint[Fuse]):
 
 @non_library
 class TableFuse(Fuse, PartsTableFootprintSelector):
+  _STANDARD_FOOTPRINT = FuseStandardFootprint
+
   TRIP_CURRENT = PartsTableColumn(Range)
   HOLD_CURRENT = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)

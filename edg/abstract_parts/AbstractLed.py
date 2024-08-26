@@ -50,6 +50,8 @@ class LedStandardFootprint(StandardFootprint[Led]):
 
 @non_library
 class TableLed(Led, PartsTableFootprintSelector):
+  _STANDARD_FOOTPRINT = LedStandardFootprint
+
   COLOR = PartsTableColumn(str)
 
   @init_in_parent

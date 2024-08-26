@@ -133,6 +133,8 @@ class BaseTableFet(Fet):
 
 @non_library
 class TableFet(BaseTableFet, PartsTableFootprintSelector):
+  _STANDARD_FOOTPRINT = FetStandardFootprint
+
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -187,6 +189,8 @@ class SwitchFet(Fet):
 
 @non_library
 class TableSwitchFet(SwitchFet, BaseTableFet, PartsTableFootprintSelector, GeneratorBlock):
+  _STANDARD_FOOTPRINT = FetStandardFootprint
+
   SWITCHING_POWER = PartsTableColumn(Range)
   STATIC_POWER = PartsTableColumn(Range)
   TOTAL_POWER = PartsTableColumn(Range)

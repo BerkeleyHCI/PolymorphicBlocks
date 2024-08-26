@@ -88,6 +88,8 @@ class Diode(KiCadImportableBlock, BaseDiode):
 
 @non_library
 class TableDiode(Diode, PartsTableFootprintSelector, GeneratorBlock):
+  _STANDARD_FOOTPRINT = DiodeStandardFootprint
+
   VOLTAGE_RATING = PartsTableColumn(Range)  # tolerable blocking voltages, positive
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable currents, average
   FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
@@ -144,6 +146,8 @@ class ZenerDiode(KiCadImportableBlock, BaseDiode, DiscreteSemiconductor):
 
 @non_library
 class TableZenerDiode(ZenerDiode, PartsTableFootprintSelector, GeneratorBlock):
+  _STANDARD_FOOTPRINT = DiodeStandardFootprint
+
   ZENER_VOLTAGE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)  # tolerable power
 

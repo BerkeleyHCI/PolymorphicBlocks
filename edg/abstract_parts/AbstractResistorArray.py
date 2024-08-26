@@ -87,6 +87,8 @@ class ResistorArrayStandardFootprint(StandardFootprint[ResistorArray]):
 
 @non_library
 class TableResistorArray(ResistorArray, PartsTableFootprintSelector):
+  _STANDARD_FOOTPRINT = ResistorArrayStandardFootprint
+
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   COUNT = PartsTableColumn(int)

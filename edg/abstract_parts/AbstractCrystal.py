@@ -55,6 +55,8 @@ class CrystalStandardFootprint(StandardFootprint[Crystal]):
 
 @non_library
 class TableCrystal(Crystal, PartsTableFootprintSelector):
+  _STANDARD_FOOTPRINT = CrystalStandardFootprint
+
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)
 

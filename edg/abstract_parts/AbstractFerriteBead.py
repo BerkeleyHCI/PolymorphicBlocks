@@ -65,6 +65,8 @@ class FerriteBeadStandardFootprint(StandardFootprint[FerriteBead]):
 
 @non_library
 class TableFerriteBead(FerriteBead, PartsTableFootprintSelector):
+  _STANDARD_FOOTPRINT = FerriteBeadStandardFootprint
+
   CURRENT_RATING = PartsTableColumn(Range)
   HF_IMPEDANCE = PartsTableColumn(Range)
   DC_RESISTANCE = PartsTableColumn(Range)

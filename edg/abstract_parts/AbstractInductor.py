@@ -122,6 +122,8 @@ class InductorStandardFootprint(StandardFootprint[Inductor]):
 
 @non_library
 class TableInductor(Inductor, PartsTableFootprintSelector):
+  _STANDARD_FOOTPRINT = InductorStandardFootprint
+
   INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance
   FREQUENCY_RATING = PartsTableColumn(Range)  # tolerable frequencies
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable current

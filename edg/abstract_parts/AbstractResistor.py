@@ -97,6 +97,8 @@ class ResistorStandardFootprint(StandardFootprint[Resistor]):
 
 @non_library
 class TableResistor(Resistor, PartsTableFootprintSelector):
+  _STANDARD_FOOTPRINT = ResistorStandardFootprint
+
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)

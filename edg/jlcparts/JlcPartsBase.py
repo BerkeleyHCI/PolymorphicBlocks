@@ -1,5 +1,6 @@
 import sys
-from typing import Any, Optional, Dict, List, TypeVar, Type
+from abc import abstractmethod, ABCMeta
+from typing import Any, Optional, Dict, List, TypeVar, Type, ClassVar, Protocol
 
 from pydantic import BaseModel, RootModel, Field
 import gzip
@@ -98,7 +99,7 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
             f"attempted to reassign configure_root_dir, was {JlcPartsBase._config_parts_root_dir}, new {root_dir}"
         JlcPartsBase._config_parts_root_dir = root_dir
 
-    _JLC_PARTS_FILE_NAMES: List[str]  # set by subclass
+    _JLC_PARTS_FILE_NAMES: ClassVar[List[str]]  # set by subclass
     _cached_table: Optional[PartsTable] = None  # set on a per-class basis
 
     @classmethod
