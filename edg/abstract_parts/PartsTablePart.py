@@ -33,7 +33,8 @@ class PartsTableBase:
     return cls._TABLE
 
 
-class PartsTablePart(BlockInterfaceMixin[Block]):
+@abstract_block
+class PartsTablePart(Block):
   """An interface mixin for a part that is selected from a table, defining parameters to allow manual part selection
   as well as matching parts."""
   @init_in_parent
@@ -87,7 +88,8 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
       self.require(False, "no matching part")
 
 
-class SelectorFootprint(BlockInterfaceMixin[Block]):
+@abstract_block
+class SelectorFootprint(PartsTablePart):
   """Mixin that allows a specified footprint, for Blocks that automatically select a part."""
   @init_in_parent
   def __init__(self, *args, footprint_spec: StringLike = "", **kwargs):
