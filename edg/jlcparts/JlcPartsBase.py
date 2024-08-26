@@ -1,6 +1,5 @@
 import sys
-from abc import abstractmethod, ABCMeta
-from typing import Any, Optional, Dict, List, TypeVar, Type, ClassVar, Protocol
+from typing import Any, Optional, Dict, List, TypeVar, Type, ClassVar
 
 from pydantic import BaseModel, RootModel, Field
 import gzip
