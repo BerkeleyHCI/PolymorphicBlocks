@@ -1,4 +1,4 @@
-from typing import Optional, Dict, TypeVar, Generic, Callable, Union, Tuple, ClassVar
+from typing import Optional, Dict, TypeVar, Generic, Callable, Union, Tuple, ClassVar, Protocol, Type
 
 from ..electronics_model import *
 
@@ -34,3 +34,10 @@ class StandardFootprint(Generic[StandardPinningType]):
   def _make_pinning(cls, block: StandardPinningType, footprint: str) -> Dict[str, CircuitPort]:
     """Returns the pinning for a footprint for a specific block's pins"""
     return cls._footprint_pinning_map()[footprint](block)
+
+
+class HasStandardFootprint:
+  """Base class that defines that a class supports a StandardFootprint"""
+  # TODO: this should be typed on the StandardFootprint type, but type vars in ClassVar are disallowed
+  # https://github.com/python/mypy/issues/5144
+  _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint]]

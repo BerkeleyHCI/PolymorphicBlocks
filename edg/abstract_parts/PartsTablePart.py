@@ -1,9 +1,9 @@
 from abc import abstractmethod
-from typing import Optional, Union, Any, ClassVar, Type
+from typing import Optional, Union, Any, ClassVar, Type, Protocol
 
 from ..electronics_model import *
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
-from .StandardFootprint import StandardFootprint
+from .StandardFootprint import HasStandardFootprint
 
 
 class PartsTableBase:
@@ -113,13 +113,9 @@ class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
 
 
 @non_library
-class PartsTableSelectorFootprint(PartsTableFootprintFilter, FootprintBlock):
+class PartsTableSelectorFootprint(PartsTableFootprintFilter, FootprintBlock, HasStandardFootprint):
   """PartsTableFootprintFilter, but also with footprint creation. Must define a standard pinning.
   """
-  # TODO: this should be typed on the StandardFootprint type, but type vars in ClassVar are disallowed
-  # https://github.com/python/mypy/issues/5144
-  _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint]]
-
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.footprint(

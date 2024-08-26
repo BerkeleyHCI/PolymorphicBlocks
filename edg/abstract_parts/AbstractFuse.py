@@ -3,12 +3,35 @@ from typing import Optional, cast
 from ..electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableSelectorFootprint
-from .StandardFootprint import StandardFootprint
+from .PartsTablePart import PartsTableSelector
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
+
+
+class FuseStandardFootprint(StandardFootprint['Fuse']):
+  REFDES_PREFIX = 'F'
+
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Resistor_SMD:R_0201_0603Metric',
+      'Resistor_SMD:R_0402_1005Metric',
+      'Resistor_SMD:R_0603_1608Metric',
+      'Resistor_SMD:R_0805_2012Metric',
+      'Resistor_SMD:R_1206_3216Metric',
+      'Resistor_SMD:R_1210_3225Metric',
+      'Resistor_SMD:R_1812_4532Metric',
+      'Resistor_SMD:R_2010_5025Metric',
+      'Resistor_SMD:R_2512_6332Metric',
+    ): lambda block: {
+      '1': block.a,
+      '2': block.b,
+    },
+  }
 
 
 @abstract_block
-class Fuse(DiscreteComponent, Block):
+class Fuse(DiscreteComponent, HasStandardFootprint):
+  _STANDARD_FOOTPRINT = FuseStandardFootprint
+
   @init_in_parent
   def __init__(self, trip_current: RangeLike, *, hold_current: RangeLike = RangeExpr.ALL,
                voltage: RangeLike = RangeExpr.ZERO) -> None:
@@ -50,31 +73,8 @@ class PptcFuse(Fuse):
   """PPTC self-resetting fuse"""
 
 
-class FuseStandardFootprint(StandardFootprint[Fuse]):
-  REFDES_PREFIX = 'F'
-
-  FOOTPRINT_PINNING_MAP = {
-    (
-      'Resistor_SMD:R_0201_0603Metric',
-      'Resistor_SMD:R_0402_1005Metric',
-      'Resistor_SMD:R_0603_1608Metric',
-      'Resistor_SMD:R_0805_2012Metric',
-      'Resistor_SMD:R_1206_3216Metric',
-      'Resistor_SMD:R_1210_3225Metric',
-      'Resistor_SMD:R_1812_4532Metric',
-      'Resistor_SMD:R_2010_5025Metric',
-      'Resistor_SMD:R_2512_6332Metric',
-    ): lambda block: {
-      '1': block.a,
-      '2': block.b,
-    },
-  }
-
-
 @non_library
-class TableFuse(Fuse, PartsTableSelectorFootprint):
-  _STANDARD_FOOTPRINT = FuseStandardFootprint
-
+class TableFuse(PartsTableSelector, Fuse):
   TRIP_CURRENT = PartsTableColumn(Range)
   HOLD_CURRENT = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)

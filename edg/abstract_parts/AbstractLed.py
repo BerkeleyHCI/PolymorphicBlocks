@@ -2,15 +2,34 @@ from ..electronics_model import *
 from .Categories import *
 from .AbstractResistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableSelectorFootprint
-from .StandardFootprint import StandardFootprint
+from .PartsTablePart import PartsTableSelector
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
+
+
+class LedStandardFootprint(StandardFootprint['Led']):
+  REFDES_PREFIX = 'D'
+
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'LED_SMD:LED_0402_1005Metric',
+      'LED_SMD:LED_0603_1608Metric',
+      'LED_SMD:LED_0805_2012Metric',
+      'LED_SMD:LED_1206_3216Metric',
+    ): lambda block: {
+      '2': block.a,
+      '1': block.k,
+    },
+  }
+
 
 LedColor = str  # type alias
 LedColorLike = StringLike  # type alias
 
 
 @abstract_block
-class Led(DiscreteSemiconductor):
+class Led(DiscreteSemiconductor, HasStandardFootprint):
+  _STANDARD_FOOTPRINT = LedStandardFootprint
+
   # Common color definitions
   Red: LedColor = "red"
   Green: LedColor = "green"
@@ -32,26 +51,8 @@ class Led(DiscreteSemiconductor):
     self.k = self.Port(Passive.empty())
 
 
-class LedStandardFootprint(StandardFootprint[Led]):
-  REFDES_PREFIX = 'D'
-
-  FOOTPRINT_PINNING_MAP = {
-    (
-      'LED_SMD:LED_0402_1005Metric',
-      'LED_SMD:LED_0603_1608Metric',
-      'LED_SMD:LED_0805_2012Metric',
-      'LED_SMD:LED_1206_3216Metric',
-    ): lambda block: {
-      '2': block.a,
-      '1': block.k,
-    },
-  }
-
-
 @non_library
-class TableLed(Led, PartsTableSelectorFootprint):
-  _STANDARD_FOOTPRINT = LedStandardFootprint
-
+class TableLed(PartsTableSelector, Led):
   COLOR = PartsTableColumn(str)
 
   @init_in_parent

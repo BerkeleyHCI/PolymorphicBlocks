@@ -4,7 +4,7 @@ from ..parts.JlcFet import JlcFet
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsBaseFet(BaseTableFet, JlcPartsBase):
+class JlcPartsBaseFet(JlcPartsBase, BaseTableFet):
     _JLC_PARTS_FILE_NAMES = ["TransistorsMOSFETs"]
     _CHANNEL_MAP = {
         'N Channel': 'N',
@@ -53,7 +53,7 @@ class JlcPartsBaseFet(BaseTableFet, JlcPartsBase):
             return None
 
 
-class JlcPartsFet(JlcPartsBaseFet, TableFet):
+class JlcPartsFet(TableFet, JlcPartsBaseFet):
     pass
 
 

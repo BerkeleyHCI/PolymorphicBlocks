@@ -2,13 +2,51 @@ from typing import Optional, Any, Dict
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
-from .PartsTablePart import PartsTableSelectorFootprint
+from .PartsTablePart import PartsTableSelector
 from .Categories import *
-from .StandardFootprint import StandardFootprint
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
+
+
+class FetStandardFootprint(StandardFootprint['Fet']):
+  REFDES_PREFIX = 'Q'
+
+  FOOTPRINT_PINNING_MAP = {
+    'Package_TO_SOT_SMD:SOT-23': lambda block: {
+      '1': block.gate,
+      '2': block.source,
+      '3': block.drain,
+    },
+    (
+      'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
+      'Package_TO_SOT_SMD:TO-252-2',
+      'Package_TO_SOT_SMD:TO-263-2'
+    ): lambda block: {
+      '1': block.gate,
+      '2': block.drain,
+      '3': block.source,
+    },
+    'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': lambda block: {
+      '1': block.source,
+      '2': block.source,
+      '3': block.source,
+      '4': block.gate,
+      '5': block.drain,
+      '6': block.drain,
+      '7': block.drain,
+      '8': block.drain,
+    },
+    'Package_SO:PowerPAK_SO-8_Single': lambda block: {
+      '1': block.source,
+      '2': block.source,
+      '3': block.source,
+      '4': block.gate,
+      '5': block.drain,
+    },
+  }
 
 
 @abstract_block
-class Fet(KiCadImportableBlock, DiscreteSemiconductor):
+class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   """Base class for untyped MOSFETs
   Drain voltage, drain current, and gate voltages are positive (absolute).
 
@@ -21,6 +59,8 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor):
   - https://www.allaboutcircuits.com/technical-articles/choosing-the-right-transistor-understanding-low-frequency-mosfet-parameters/
   - https://www.allaboutcircuits.com/technical-articles/choosing-the-right-transistor-understanding-dynamic-mosfet-parameters/
   """
+  _STANDARD_FOOTPRINT = FetStandardFootprint
+
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     # TODO actually check that the device channel corresponds with the schematic?
     assert symbol_name.startswith('Device:Q_NMOS_') or symbol_name.startswith('Device:Q_PMOS_')
@@ -81,44 +121,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor):
     )
 
 
-class FetStandardFootprint(StandardFootprint[Fet]):
-  REFDES_PREFIX = 'Q'
-
-  FOOTPRINT_PINNING_MAP = {
-    'Package_TO_SOT_SMD:SOT-23': lambda block: {
-      '1': block.gate,
-      '2': block.source,
-      '3': block.drain,
-    },
-    (
-      'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
-      'Package_TO_SOT_SMD:TO-252-2',
-      'Package_TO_SOT_SMD:TO-263-2'
-    ): lambda block: {
-      '1': block.gate,
-      '2': block.drain,
-      '3': block.source,
-    },
-    'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': lambda block: {
-      '1': block.source,
-      '2': block.source,
-      '3': block.source,
-      '4': block.gate,
-      '5': block.drain,
-      '6': block.drain,
-      '7': block.drain,
-      '8': block.drain,
-    },
-    'Package_SO:PowerPAK_SO-8_Single': lambda block: {
-      '1': block.source,
-      '2': block.source,
-      '3': block.source,
-      '4': block.gate,
-      '5': block.drain,
-    },
-  }
-
-
+@non_library
 class BaseTableFet(Fet):
   """Shared table columns for both TableFet and TableSwitchFet"""
   VDS_RATING = PartsTableColumn(Range)
@@ -132,9 +135,7 @@ class BaseTableFet(Fet):
 
 
 @non_library
-class TableFet(BaseTableFet, PartsTableSelectorFootprint):
-  _STANDARD_FOOTPRINT = FetStandardFootprint
-
+class TableFet(PartsTableSelector, BaseTableFet):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -188,9 +189,7 @@ class SwitchFet(Fet):
 
 
 @non_library
-class TableSwitchFet(SwitchFet, BaseTableFet, PartsTableSelectorFootprint, GeneratorBlock):
-  _STANDARD_FOOTPRINT = FetStandardFootprint
-
+class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
   SWITCHING_POWER = PartsTableColumn(Range)
   STATIC_POWER = PartsTableColumn(Range)
   TOTAL_POWER = PartsTableColumn(Range)

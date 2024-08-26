@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcBaseFet(BaseTableFet, JlcTableSelector):
+class JlcBaseFet(JlcTableSelector, BaseTableFet):
   PACKAGE_FOOTPRINT_MAP = {
     'SOT23-3': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
@@ -73,7 +73,7 @@ class JlcBaseFet(BaseTableFet, JlcTableSelector):
     return cls._jlc_table().map_new_columns(parse_row)
 
 
-class JlcFet(JlcBaseFet, TableFet):
+class JlcFet(TableFet, JlcBaseFet):
   pass
 
 

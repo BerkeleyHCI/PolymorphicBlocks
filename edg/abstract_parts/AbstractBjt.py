@@ -3,14 +3,38 @@ from typing import Dict
 from ..electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableSelectorFootprint
-from .StandardFootprint import StandardFootprint
+from .PartsTablePart import PartsTableSelector
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
+
+
+class BjtStandardFootprint(StandardFootprint['Bjt']):
+  REFDES_PREFIX = 'Q'
+
+  FOOTPRINT_PINNING_MAP = {
+    'Package_TO_SOT_SMD:SOT-23': lambda block: {
+      '1': block.base,
+      '2': block.emitter,
+      '3': block.collector,
+    },
+    'Package_TO_SOT_SMD:SOT-89-3': lambda block: {
+      '1': block.base,
+      '2': block.collector,
+      '3': block.emitter,
+    },
+    'Package_TO_SOT_SMD:SOT-323_SC-70': lambda block: {
+      '1': block.base,
+      '2': block.emitter,
+      '3': block.collector,
+    },
+  }
 
 
 @abstract_block
-class Bjt(KiCadImportableBlock, DiscreteSemiconductor):
+class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   """Base class for untyped BJTs
   """
+  _STANDARD_FOOTPRINT = BjtStandardFootprint
+
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     # TODO actually check that the device channel corresponds with the schematic?
     assert symbol_name.startswith('Device:Q_NPN_') or symbol_name.startswith('Device:Q_PNP_')
@@ -62,31 +86,7 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor):
     )
 
 
-class BjtStandardFootprint(StandardFootprint[Bjt]):
-  REFDES_PREFIX = 'Q'
-
-  FOOTPRINT_PINNING_MAP = {
-    'Package_TO_SOT_SMD:SOT-23': lambda block: {
-      '1': block.base,
-      '2': block.emitter,
-      '3': block.collector,
-    },
-    'Package_TO_SOT_SMD:SOT-89-3': lambda block: {
-      '1': block.base,
-      '2': block.collector,
-      '3': block.emitter,
-    },
-    'Package_TO_SOT_SMD:SOT-323_SC-70': lambda block: {
-      '1': block.base,
-      '2': block.emitter,
-      '3': block.collector,
-    },
-  }
-
-
-class TableBjt(Bjt, PartsTableSelectorFootprint):
-  _STANDARD_FOOTPRINT = BjtStandardFootprint
-
+class TableBjt(PartsTableSelector, Bjt):
   VCE_RATING = PartsTableColumn(Range)
   ICE_RATING = PartsTableColumn(Range)
   GAIN = PartsTableColumn(Range)
