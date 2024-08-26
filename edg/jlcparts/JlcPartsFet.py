@@ -77,4 +77,4 @@ class JlcPartsSwitchFet(TableSwitchFet, PartsTableSelectorFootprint, JlcPartsBas
         return super()._table_postprocess(table)
 
 
-lambda: JlcPartsFet(), JlcPartsSwitchFet  # ensure class is instantiable (non-abstract)
+lambda: JlcPartsFet(), JlcPartsSwitchFet()  # ensure class is instantiable (non-abstract)
