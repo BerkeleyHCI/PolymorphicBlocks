@@ -1,10 +1,13 @@
 from typing import Optional, Dict, Any
 
 from ..abstract_parts import *
-from .JlcPart import JlcTableBase
+from .JlcPart import JlcTableSelector
 
 
-class JlcAntenna(PartsTableSelectorFootprint, JlcTableBase, TableAntenna):
+class JlcAntenna(JlcTableSelector, TableAntenna, FootprintBlock):
+  # abstract Antenna does not define standard footprints, so we cannot mix in PartsTableSelectorFootprint
+  # to do footprint generation
+
   FOOTPRINT_PIN_MAP = {  # no antenna-specific footprints, re-use the diode footprints which have a polarity indicator
     'Diode_SMD:D_0402_1005Metric': '1',
     'Diode_SMD:D_0603_1608Metric': '1',
