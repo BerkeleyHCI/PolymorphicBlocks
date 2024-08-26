@@ -5,7 +5,7 @@ import os
 
 from ..electronics_model import *
 from .PartsTable import PartsTableRow
-from .PartsTablePart import PartsTableFootprintFilter, SelectorFootprint
+from .PartsTablePart import PartsTableFootprintFilter, PartsTablePart
 
 
 class FootprintJson(RootModel):  # script relpath imports are weird so this is duplicated here
@@ -25,7 +25,7 @@ class FootprintAreaTable:
 
 
 @abstract_block
-class SelectorArea(SelectorFootprint):
+class SelectorArea(PartsTablePart):
   """A base mixin that defines a footprint_area range specification for blocks that automatically select parts.
   Provides no implementation, only defines the specification parameter.
 
