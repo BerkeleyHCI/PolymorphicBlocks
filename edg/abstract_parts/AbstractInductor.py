@@ -2,51 +2,12 @@ from typing import Dict, Optional, cast
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelector
 from .Categories import *
-from .StandardFootprint import StandardFootprint
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-@abstract_block
-class Inductor(PassiveComponent, KiCadImportableBlock):
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
-    assert symbol_name in ('Device:L', 'Device:L_Small')
-    return {'1': self.a, '2': self.b}
-
-  @init_in_parent
-  def __init__(self, inductance: RangeLike,
-               current: RangeLike = RangeExpr.ZERO,
-               frequency: RangeLike = RangeExpr.ZERO) -> None:
-    super().__init__()
-
-    self.a = self.Port(Passive.empty())
-    self.b = self.Port(Passive.empty())
-
-    self.inductance = self.ArgParameter(inductance)
-    self.current = self.ArgParameter(current)  # defined as operating current range, non-directioned
-    self.frequency = self.ArgParameter(frequency)  # defined as operating frequency range
-    # TODO: in the future, when we consider efficiency - for now, use current ratings
-    # self.resistance_dc = self.Parameter(RangeExpr())
-
-    self.actual_inductance = self.Parameter(RangeExpr())
-    self.actual_current_rating = self.Parameter(RangeExpr())
-    self.actual_frequency_rating = self.Parameter(RangeExpr())
-
-  def contents(self):
-    super().contents()
-
-    self.description = DescriptionString(
-      "<b>inductance:</b> ", DescriptionString.FormatUnits(self.actual_inductance, "H"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.inductance, "H"), "\n",
-      "<b>current rating:</b> ", DescriptionString.FormatUnits(self.actual_current_rating, "A"),
-      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.current, "A"), "\n",
-      "<b>frequency rating:</b> ", DescriptionString.FormatUnits(self.actual_frequency_rating, "Hz"),
-      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz")
-    )
-
-
-@non_library
-class InductorStandardFootprint(Inductor, StandardFootprint[Inductor]):
+class InductorStandardFootprint(StandardFootprint['Inductor']):
   REFDES_PREFIX = 'L'
 
   FOOTPRINT_PINNING_MAP = {
@@ -121,8 +82,48 @@ class InductorStandardFootprint(Inductor, StandardFootprint[Inductor]):
   }
 
 
+@abstract_block
+class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
+  _STANDARD_FOOTPRINT = InductorStandardFootprint
+
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:L', 'Device:L_Small')
+    return {'1': self.a, '2': self.b}
+
+  @init_in_parent
+  def __init__(self, inductance: RangeLike,
+               current: RangeLike = RangeExpr.ZERO,
+               frequency: RangeLike = RangeExpr.ZERO) -> None:
+    super().__init__()
+
+    self.a = self.Port(Passive.empty())
+    self.b = self.Port(Passive.empty())
+
+    self.inductance = self.ArgParameter(inductance)
+    self.current = self.ArgParameter(current)  # defined as operating current range, non-directioned
+    self.frequency = self.ArgParameter(frequency)  # defined as operating frequency range
+    # TODO: in the future, when we consider efficiency - for now, use current ratings
+    # self.resistance_dc = self.Parameter(RangeExpr())
+
+    self.actual_inductance = self.Parameter(RangeExpr())
+    self.actual_current_rating = self.Parameter(RangeExpr())
+    self.actual_frequency_rating = self.Parameter(RangeExpr())
+
+  def contents(self):
+    super().contents()
+
+    self.description = DescriptionString(
+      "<b>inductance:</b> ", DescriptionString.FormatUnits(self.actual_inductance, "H"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.inductance, "H"), "\n",
+      "<b>current rating:</b> ", DescriptionString.FormatUnits(self.actual_current_rating, "A"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.current, "A"), "\n",
+      "<b>frequency rating:</b> ", DescriptionString.FormatUnits(self.actual_frequency_rating, "Hz"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz")
+    )
+
+
 @non_library
-class TableInductor(InductorStandardFootprint, PartsTableFootprintSelector):
+class TableInductor(PartsTableSelector, Inductor):
   INDUCTANCE = PartsTableColumn(Range)  # actual inductance incl. tolerance
   FREQUENCY_RATING = PartsTableColumn(Range)  # tolerable frequencies
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable current

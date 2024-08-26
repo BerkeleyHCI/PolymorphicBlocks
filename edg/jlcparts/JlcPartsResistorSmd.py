@@ -4,7 +4,7 @@ from ..parts.JlcResistor import JlcResistor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsResistorSmd(TableResistor, PartsTableAreaSelector, JlcPartsBase):
+class JlcPartsResistorSmd(TableResistor, PartsTableSelectorFootprint, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = ["ResistorsChip_Resistor___Surface_Mount"]
 
     @classmethod
@@ -29,3 +29,6 @@ class JlcPartsResistorSmd(TableResistor, PartsTableAreaSelector, JlcPartsBase):
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
+
+
+lambda: JlcPartsResistorSmd()  # ensure class is instantiable (non-abstract)

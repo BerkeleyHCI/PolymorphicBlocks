@@ -5,24 +5,11 @@ from ..electronics_model import *
 from .DummyDevices import ForcedAnalogVoltage
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
-from .StandardFootprint import StandardFootprint
+from .PartsTablePart import PartsTableSelector
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-@non_library
-class BaseDiode(DiscreteSemiconductor):
-  """Base class for diodes, with anode and cathode pins, including a very wide range of devices.
-  """
-  @init_in_parent
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.anode = self.Port(Passive.empty())
-    self.cathode = self.Port(Passive.empty())
-
-
-@non_library
-class BaseDiodeStandardFootprint(BaseDiode, StandardFootprint[BaseDiode]):
+class DiodeStandardFootprint(StandardFootprint['BaseDiode']):
   REFDES_PREFIX = 'D'
 
   FOOTPRINT_PINNING_MAP = {
@@ -46,6 +33,20 @@ class BaseDiodeStandardFootprint(BaseDiode, StandardFootprint[BaseDiode]):
       '3': block.anode,
     },
   }
+
+
+@non_library
+class BaseDiode(DiscreteSemiconductor, HasStandardFootprint):
+  """Base class for diodes, with anode and cathode pins, including a very wide range of devices.
+  """
+  _STANDARD_FOOTPRINT = DiodeStandardFootprint
+
+  @init_in_parent
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.anode = self.Port(Passive.empty())
+    self.cathode = self.Port(Passive.empty())
 
 
 @abstract_block
@@ -88,7 +89,7 @@ class Diode(KiCadImportableBlock, BaseDiode):
 
 
 @non_library
-class TableDiode(Diode, BaseDiodeStandardFootprint, PartsTableFootprintSelector, GeneratorBlock):
+class TableDiode(PartsTableSelector, Diode):
   VOLTAGE_RATING = PartsTableColumn(Range)  # tolerable blocking voltages, positive
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable currents, average
   FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
@@ -144,7 +145,7 @@ class ZenerDiode(KiCadImportableBlock, BaseDiode, DiscreteSemiconductor):
 
 
 @non_library
-class TableZenerDiode(ZenerDiode, BaseDiodeStandardFootprint, PartsTableFootprintSelector, GeneratorBlock):
+class TableZenerDiode(PartsTableSelector, ZenerDiode):
   ZENER_VOLTAGE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)  # tolerable power
 

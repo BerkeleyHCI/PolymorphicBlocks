@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart, JlcTableSelector
 
 
-class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, PartsTableAreaSelector, JlcTableSelector):
+class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, PartsTableSelectorFootprint, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     '0201': 'Capacitor_SMD:C_0201_0603Metric',
     '0402': 'Capacitor_SMD:C_0402_1005Metric',
@@ -133,3 +133,6 @@ class JlcDummyCapacitor(DummyCapacitorFootprint, JlcPart):
 
     self.assign(self.lcsc_part, set_lcsc_part)
     self.assign(self.actual_basic_part, set_basic_part)
+
+
+lambda: JlcCapacitor()  # ensure class is instantiable (non-abstract)

@@ -4,7 +4,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcTableSelector, DescriptionParser
 
 
-class JlcCrystal(TableCrystal, JlcTableSelector):
+class JlcCrystal(TableCrystal, PartsTableSelectorFootprint, JlcTableSelector):
   SERIES_PACKAGE_FOOTPRINT_MAP = {
     ('X3225', 'SMD-3225_4P'): 'Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm',
     ('TXM', 'SMD-2520_4P'): 'Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm',
@@ -53,3 +53,6 @@ class JlcCrystal(TableCrystal, JlcTableSelector):
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcCrystal()  # ensure class is instantiable (non-abstract)

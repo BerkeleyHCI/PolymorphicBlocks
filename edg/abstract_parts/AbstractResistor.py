@@ -3,13 +3,47 @@ from typing import Optional, cast, Mapping, Dict
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelector
 from .Categories import *
-from .StandardFootprint import StandardFootprint
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
+
+
+class ResistorStandardFootprint(StandardFootprint['Resistor']):
+  REFDES_PREFIX = 'R'
+
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Resistor_SMD:R_0201_0603Metric',
+      'Resistor_SMD:R_0402_1005Metric',
+      'Resistor_SMD:R_0603_1608Metric',
+      'Resistor_SMD:R_0805_2012Metric',
+      'Resistor_SMD:R_1206_3216Metric',
+      'Resistor_SMD:R_1210_3225Metric',
+      'Resistor_SMD:R_2010_5025Metric',
+      'Resistor_SMD:R_2512_6332Metric',
+
+      'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal',
+      'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal',
+      'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P12.70mm_Horizontal',
+      'Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P12.70mm_Horizontal',
+      'Resistor_THT:R_Axial_DIN0414_L11.9mm_D4.5mm_P15.24mm_Horizontal',
+
+      'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P1.90mm_Vertical',
+      'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical',
+      'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P2.54mm_Vertical',
+      'Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P5.08mm_Vertical',
+      'Resistor_THT:R_Axial_DIN0414_L11.9mm_D4.5mm_P5.08mm_Vertical',
+    ): lambda block: {
+      '1': block.a,
+      '2': block.b,
+    },
+  }
 
 
 @abstract_block
-class Resistor(PassiveComponent, KiCadInstantiableBlock):
+class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
+  _STANDARD_FOOTPRINT = ResistorStandardFootprint
+
   RESISTOR_REGEX = re.compile("^" + f"([\d.{PartParserUtil.SI_PREFIXES}]+(?:\s*[{PartParserUtil.SI_PREFIXES}])?)\s*[RΩ]?" +
                               "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%?)?" + "$")
   RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
@@ -64,40 +98,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock):
 
 
 @non_library
-class ResistorStandardFootprint(Resistor, StandardFootprint[Resistor]):
-  REFDES_PREFIX = 'R'
-
-  FOOTPRINT_PINNING_MAP = {
-    (
-      'Resistor_SMD:R_0201_0603Metric',
-      'Resistor_SMD:R_0402_1005Metric',
-      'Resistor_SMD:R_0603_1608Metric',
-      'Resistor_SMD:R_0805_2012Metric',
-      'Resistor_SMD:R_1206_3216Metric',
-      'Resistor_SMD:R_1210_3225Metric',
-      'Resistor_SMD:R_2010_5025Metric',
-      'Resistor_SMD:R_2512_6332Metric',
-
-      'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal',
-      'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal',
-      'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P12.70mm_Horizontal',
-      'Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P12.70mm_Horizontal',
-      'Resistor_THT:R_Axial_DIN0414_L11.9mm_D4.5mm_P15.24mm_Horizontal',
-
-      'Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P1.90mm_Vertical',
-      'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical',
-      'Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P2.54mm_Vertical',
-      'Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P5.08mm_Vertical',
-      'Resistor_THT:R_Axial_DIN0414_L11.9mm_D4.5mm_P5.08mm_Vertical',
-    ): lambda block: {
-      '1': block.a,
-      '2': block.b,
-    },
-  }
-
-
-@non_library
-class TableResistor(ResistorStandardFootprint, PartsTableFootprintSelector):
+class TableResistor(PartsTableSelector, Resistor):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)

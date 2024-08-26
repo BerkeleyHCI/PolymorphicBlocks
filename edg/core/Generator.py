@@ -22,8 +22,8 @@ class GeneratorBlock(Block):
   """Block which allows arbitrary Python code to generate its internal subcircuit,
   and unlike regular Blocks can rely on Python values of solved parameters.
   """
-  def __init__(self):
-    super().__init__()
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
     self._generator_params_list: list[ConstraintExpr] = []
     self._generator_param_values = IdentityDict[ConstraintExpr, Any]()

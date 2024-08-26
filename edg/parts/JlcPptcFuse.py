@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcPptcFuse(PptcFuse, TableFuse, PartsTableAreaSelector, JlcTableSelector):
+class JlcPptcFuse(TableFuse, PptcFuse, PartsTableSelectorFootprint, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     '0402': 'Resistor_SMD:R_0402_1005Metric',
     '0603': 'Resistor_SMD:R_0603_1608Metric',
@@ -49,3 +49,6 @@ class JlcPptcFuse(PptcFuse, TableFuse, PartsTableAreaSelector, JlcTableSelector)
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcPptcFuse()  # ensure class is instantiable (non-abstract)

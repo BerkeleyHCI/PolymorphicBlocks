@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Optional, Dict, List, TypeVar, Type
+from typing import Any, Optional, Dict, List, TypeVar, Type, ClassVar
 
 from pydantic import BaseModel, RootModel, Field
 import gzip
@@ -73,7 +73,7 @@ class JlcPartsStockFile(RootModel):
     root: dict[str, int]  # LCSC to stock level
 
 
-class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
+class JlcPartsBase(JlcPart, PartsTableFootprintFilter):
     """Base class parsing parts from https://github.com/yaqwsx/jlcparts"""
     _config_parts_root_dir: Optional[str] = None
     _config_min_stock: int = 250
@@ -98,7 +98,7 @@ class JlcPartsBase(JlcPart, PartsTableSelector, PartsTableFootprint):
             f"attempted to reassign configure_root_dir, was {JlcPartsBase._config_parts_root_dir}, new {root_dir}"
         JlcPartsBase._config_parts_root_dir = root_dir
 
-    _JLC_PARTS_FILE_NAMES: List[str]  # set by subclass
+    _JLC_PARTS_FILE_NAMES: ClassVar[List[str]]  # set by subclass
     _cached_table: Optional[PartsTable] = None  # set on a per-class basis
 
     @classmethod

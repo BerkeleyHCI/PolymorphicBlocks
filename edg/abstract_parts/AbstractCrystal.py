@@ -1,35 +1,10 @@
 from ..electronics_model import *
-from . import PartsTableFootprintSelector, PartsTableColumn, Capacitor, PartsTableRow
+from . import PartsTableSelector, PartsTableColumn, Capacitor, PartsTableRow
 from .Categories import *
-from .StandardFootprint import StandardFootprint
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-@abstract_block
-class Crystal(DiscreteComponent):
-  @init_in_parent
-  def __init__(self, frequency: RangeLike) -> None:
-    """Discrete crystal component."""
-    super().__init__()
-
-    self.frequency = self.ArgParameter(frequency)
-    self.actual_frequency = self.Parameter(RangeExpr())
-    self.actual_capacitance = self.Parameter(FloatExpr())
-
-    self.crystal = self.Port(CrystalPort(self.actual_frequency), [InOut])  # set by subclass
-    self.gnd = self.Port(Ground(), [Common])
-
-  def contents(self):
-    super().contents()
-
-    self.description = DescriptionString(
-      "<b>frequency:</b> ", DescriptionString.FormatUnits(self.actual_frequency, "Hz"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"), "\n",
-      "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.actual_capacitance, "F")
-    )
-
-
-@non_library
-class CrystalStandardFootprint(Crystal, StandardFootprint[Crystal]):
+class CrystalStandardFootprint(StandardFootprint['Crystal']):
   REFDES_PREFIX = 'X'
 
   FOOTPRINT_PINNING_MAP = {
@@ -54,8 +29,34 @@ class CrystalStandardFootprint(Crystal, StandardFootprint[Crystal]):
   }
 
 
+@abstract_block
+class Crystal(DiscreteComponent, HasStandardFootprint):
+  _STANDARD_FOOTPRINT = CrystalStandardFootprint
+
+  @init_in_parent
+  def __init__(self, frequency: RangeLike) -> None:
+    """Discrete crystal component."""
+    super().__init__()
+
+    self.frequency = self.ArgParameter(frequency)
+    self.actual_frequency = self.Parameter(RangeExpr())
+    self.actual_capacitance = self.Parameter(FloatExpr())
+
+    self.crystal = self.Port(CrystalPort(self.actual_frequency), [InOut])  # set by subclass
+    self.gnd = self.Port(Ground(), [Common])
+
+  def contents(self):
+    super().contents()
+
+    self.description = DescriptionString(
+      "<b>frequency:</b> ", DescriptionString.FormatUnits(self.actual_frequency, "Hz"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"), "\n",
+      "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.actual_capacitance, "F")
+    )
+
+
 @non_library
-class TableCrystal(CrystalStandardFootprint, PartsTableFootprintSelector):
+class TableCrystal(PartsTableSelector, Crystal):
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)
 

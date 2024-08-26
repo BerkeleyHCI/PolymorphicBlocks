@@ -4,7 +4,7 @@ from ..parts.JlcFerriteBead import JlcFerriteBead
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsFerriteBead(TableFerriteBead, PartsTableAreaSelector, JlcPartsBase):
+class JlcPartsFerriteBead(TableFerriteBead, PartsTableSelectorFootprint, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = ["FiltersakaEMI_OptimizationFerrite_Beads"]
 
     @classmethod
@@ -27,3 +27,6 @@ class JlcPartsFerriteBead(TableFerriteBead, PartsTableAreaSelector, JlcPartsBase
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
+
+
+lambda: JlcPartsFerriteBead()  # ensure class is instantiable (non-abstract)

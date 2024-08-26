@@ -35,8 +35,8 @@ class FootprintBlock(Block):
   Provides interfaces that define footprints and copper connections and generates to appropriate metadata.
   """
   # TODO perhaps don't allow part / package initializers since those shouldn't be used
-  def __init__(self) -> None:
-    super().__init__()
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
     self.fp_footprint = self.Parameter(StringExpr())
     self.fp_pinning = self.Parameter(ArrayStringExpr())
     self.fp_datasheet = self.Parameter(StringExpr())

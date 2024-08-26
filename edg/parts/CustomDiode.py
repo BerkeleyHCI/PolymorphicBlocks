@@ -1,7 +1,7 @@
 from ..abstract_parts import *
 
 
-class CustomDiode(Diode, BaseDiodeStandardFootprint, GeneratorBlock):
+class CustomDiode(Diode, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, footprint_spec: StringLike = "",
                manufacturer_spec: StringLike = "", part_spec: StringLike = "", **kwargs):
@@ -20,8 +20,8 @@ class CustomDiode(Diode, BaseDiodeStandardFootprint, GeneratorBlock):
 
   def generate(self) -> None:
     self.footprint(
-      'D', self.footprint_spec,
-      self._make_pinning(self.get(self.footprint_spec)),
+      self._STANDARD_FOOTPRINT.REFDES_PREFIX, self.footprint_spec,
+      self._STANDARD_FOOTPRINT._make_pinning(self, self.get(self.footprint_spec)),
       mfr=self.manufacturer_spec, part=self.part_spec,
       value=self.part_spec,
       datasheet=""

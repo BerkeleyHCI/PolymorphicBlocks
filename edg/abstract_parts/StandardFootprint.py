@@ -1,14 +1,14 @@
-from typing import Optional, Any, Dict, TypeVar, Generic, Callable, Union, List, Tuple
+from typing import Optional, Dict, TypeVar, Generic, Callable, Union, Tuple, ClassVar, Protocol, Type
+
 from ..electronics_model import *
 
 
 StandardPinningType = TypeVar('StandardPinningType', bound=Block)
 PinningFunction = Callable[[StandardPinningType], Dict[str, CircuitPort]]
-@non_library
-class StandardFootprint(FootprintBlock, Generic[StandardPinningType]):
-  """An infrastructural block that provides table to provide standard pin mapping from footprints."""
-
-  FOOTPRINT_PINNING_MAP: Dict[Union[str, Tuple[str, ...]], PinningFunction]  # user-specified
+class StandardFootprint(Generic[StandardPinningType]):
+  """A shared helper class that provides a table to provide standard pin mapping from footprints."""
+  REFDES_PREFIX: ClassVar[str]
+  FOOTPRINT_PINNING_MAP: ClassVar[Dict[Union[str, Tuple[str, ...]], PinningFunction]]  # user-specified
   _EXPANDED_FOOTPRINT_PINNING_MAP: Optional[Dict[str, PinningFunction]] = None  # automatically-generated from above
 
   @classmethod
@@ -30,5 +30,14 @@ class StandardFootprint(FootprintBlock, Generic[StandardPinningType]):
       cls._EXPANDED_FOOTPRINT_PINNING_MAP = footprint_map
     return cls._EXPANDED_FOOTPRINT_PINNING_MAP
 
-  def _make_pinning(self, footprint: str) -> Dict[str, CircuitPort]:
-    return self.__class__._footprint_pinning_map()[footprint](self)
+  @classmethod
+  def _make_pinning(cls, block: StandardPinningType, footprint: str) -> Dict[str, CircuitPort]:
+    """Returns the pinning for a footprint for a specific block's pins"""
+    return cls._footprint_pinning_map()[footprint](block)
+
+
+class HasStandardFootprint:
+  """Base class that defines that a class supports a StandardFootprint"""
+  # TODO: this should be typed on the StandardFootprint type, but type vars in ClassVar are disallowed
+  # https://github.com/python/mypy/issues/5144
+  _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint]]

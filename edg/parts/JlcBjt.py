@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcBjt(TableBjt, JlcTableSelector):
+class JlcBjt(TableBjt, PartsTableSelectorFootprint, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     'SOT-23': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
@@ -49,3 +49,6 @@ class JlcBjt(TableBjt, JlcTableSelector):
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcBjt()  # ensure class is instantiable (non-abstract)

@@ -4,7 +4,7 @@ from ..abstract_parts import *
 
 
 @non_library
-class ESeriesResistor(SelectorArea, ResistorStandardFootprint, GeneratorBlock):
+class ESeriesResistor(SelectorArea, Resistor, FootprintBlock, GeneratorBlock):
   """Default generator that automatically picks resistors from the E-series specified.
   Preferentially picks lower E-series (E1 before E3 before E6 ...) value meeting the needs
   at the specified tolerance.
@@ -55,8 +55,8 @@ class ESeriesResistor(SelectorArea, ResistorStandardFootprint, GeneratorBlock):
     self.assign(self.actual_power_rating, Range.zero_to_upper(suitable_packages[0][0]))
 
     self.footprint(
-      'R', suitable_packages[0][1],
-      self._make_pinning(suitable_packages[0][1]),
+      self._STANDARD_FOOTPRINT.REFDES_PREFIX, suitable_packages[0][1],
+      self._STANDARD_FOOTPRINT._make_pinning(self, suitable_packages[0][1]),
       value=f'{UnitUtils.num_to_prefix(selected_center, 3)}, {tolerance * 100:0.3g}%, {suitable_packages[0][0]} W',
     )
 

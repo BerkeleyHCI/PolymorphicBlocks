@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcAluminumCapacitor(TableCapacitor, AluminumCapacitor, CapacitorStandardFootprint, JlcTableSelector):
+class JlcAluminumCapacitor(TableCapacitor, AluminumCapacitor, PartsTableSelectorFootprint, JlcTableSelector):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile(".* (\S+F).* (\S+V).* (±\S+%).*([\d\.]+x[\d\.]+)mm Aluminum Electrolytic Capacitors.*"),
      lambda match: {  # discard the HF impedance parameter
@@ -38,10 +38,13 @@ class JlcAluminumCapacitor(TableCapacitor, AluminumCapacitor, CapacitorStandardF
       else:
         return None
 
-      if new_cols[cls.KICAD_FOOTPRINT] not in cls._footprint_pinning_map():
+      if new_cols[cls.KICAD_FOOTPRINT] not in cls._STANDARD_FOOTPRINT._footprint_pinning_map():
         return None
 
       new_cols.update(cls._parse_jlcpcb_common(row))
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcAluminumCapacitor()  # ensure class is instantiable (non-abstract)

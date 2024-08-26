@@ -10,8 +10,8 @@ class JlcPart(Block):
   By default, this does not check for basic parts, but that can be changed in refinements.
   """
   @init_in_parent
-  def __init__(self, require_basic_part: BoolLike = False):
-    super().__init__()
+  def __init__(self, *args, require_basic_part: BoolLike = False, **kwargs):
+    super().__init__(*args, **kwargs)
     self.lcsc_part = self.Parameter(StringExpr())
     self.actual_basic_part = self.Parameter(BoolExpr())
     self.require_basic_part = self.ArgParameter(require_basic_part)
@@ -88,7 +88,7 @@ class JlcTableBase(PartsTableBase):
 
 
 @non_library
-class JlcTableSelector(PartsTableSelector, JlcPart, JlcTableBase, PartsTableFootprint):
+class JlcTableSelector(PartsTableAreaSelector, PartsTableFootprintFilter, JlcPart, JlcTableBase):
   @classmethod
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return [row[cls.BASIC_PART_HEADER], FootprintAreaTable.area_of(row[cls.KICAD_FOOTPRINT]), row[cls.COST]]

@@ -4,7 +4,7 @@ from ..parts.JlcFet import JlcFet
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsBaseFet(BaseTableFet, JlcPartsBase):
+class JlcPartsBaseFet(JlcPartsBase, BaseTableFet):
     _JLC_PARTS_FILE_NAMES = ["TransistorsMOSFETs"]
     _CHANNEL_MAP = {
         'N Channel': 'N',
@@ -53,11 +53,11 @@ class JlcPartsBaseFet(BaseTableFet, JlcPartsBase):
             return None
 
 
-class JlcPartsFet(JlcPartsBaseFet, TableFet):
+class JlcPartsFet(TableFet, PartsTableSelectorFootprint, JlcPartsBaseFet):
     pass
 
 
-class JlcPartsSwitchFet(JlcPartsBaseFet, TableSwitchFet):
+class JlcPartsSwitchFet(TableSwitchFet, PartsTableSelectorFootprint, JlcPartsBaseFet):
     @init_in_parent
     def __init__(self, *args, manual_gate_charge: RangeLike = RangeExpr.ZERO, **kwargs):
         super().__init__(*args, **kwargs)
@@ -75,3 +75,6 @@ class JlcPartsSwitchFet(JlcPartsBaseFet, TableSwitchFet):
             table = table.map_new_columns(process_row, overwrite=True)
 
         return super()._table_postprocess(table)
+
+
+lambda: JlcPartsFet(), JlcPartsSwitchFet()  # ensure class is instantiable (non-abstract)

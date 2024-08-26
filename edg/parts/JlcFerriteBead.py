@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
-class JlcFerriteBead(TableFerriteBead, PartsTableAreaSelector, JlcTableSelector):
+class JlcFerriteBead(TableFerriteBead, PartsTableSelectorFootprint, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     '0402': 'Inductor_SMD:L_0402_1005Metric',
     '0603': 'Inductor_SMD:L_0603_1608Metric',
@@ -50,3 +50,6 @@ class JlcFerriteBead(TableFerriteBead, PartsTableAreaSelector, JlcTableSelector)
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcFerriteBead()  # ensure class is instantiable (non-abstract)

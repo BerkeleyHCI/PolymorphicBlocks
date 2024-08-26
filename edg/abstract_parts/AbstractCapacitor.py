@@ -1,104 +1,16 @@
 import re
 from abc import abstractmethod
-from typing import Optional, cast, Dict, Any, List, Tuple, Mapping
+from typing import Optional, cast, Dict, Any, Tuple, Mapping
 import math
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelector
 from .Categories import *
-from .StandardFootprint import StandardFootprint
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-@abstract_block
-class UnpolarizedCapacitor(PassiveComponent):
-  """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
-  @init_in_parent
-  def __init__(self, capacitance: RangeLike, voltage: RangeLike, *,
-               voltage_rating_derating: FloatLike = 0.5,
-               exact_capacitance: BoolLike = False) -> None:
-    super().__init__()
-
-    self.capacitance = self.ArgParameter(capacitance)
-    self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
-
-    # this is the scaling derating factor applied to the rated voltage spec
-    # eg, a value of 0.5 would mean the labeled rated voltage must be 2x the actual voltage
-    # 0.5 is the general rule of thumb for ceramic capacitors: https://www.sparkfun.com/news/1271
-    # this does not apply to capacitance derating, which is handled separately
-    self.voltage_rating_derating = self.ArgParameter(voltage_rating_derating)
-
-    # indicates whether the capacitance is exact (True) or nominal (False - typical case)
-    # in particular, nominal capacitance does not capacitance derate
-    self.exact_capacitance = self.ArgParameter(exact_capacitance)
-
-    self.actual_capacitance = self.Parameter(RangeExpr())
-    self.actual_voltage_rating = self.Parameter(RangeExpr())
-
-  def contents(self):
-    super().contents()
-
-    self.description = DescriptionString(
-      "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.actual_capacitance, "F"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.capacitance, "F"), "\n",
-      "<b>voltage rating:</b> ", DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
-      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.voltage, "V")
-    )
-
-@abstract_block
-class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock):
-  """Polarized capacitor, which we assume will be the default"""
-  CAPACITOR_REGEX = re.compile("^" + f"([\d.{PartParserUtil.SI_PREFIXES}]+)\s*F?" +
-                               "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?" +
-                               "\s*" + f"([\d.{PartParserUtil.SI_PREFIXES}]+\s*V)" + "$")
-  CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
-
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
-    assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
-    return {'1': self.pos, '2': self.neg}
-
-  @classmethod
-  def parse_capacitor(cls, value: str) -> Tuple[Range, Range]:
-    match = cls.CAPACITOR_REGEX.match(value)
-    assert match is not None, f"could not parse capacitor from value '{value}'"
-    center = PartParserUtil.parse_value(match.group(1), '')
-    voltage = PartParserUtil.parse_value(match.group(3), 'V')
-    if match.group(2) is not None:
-      tol_str = match.group(2)
-      if not tol_str.startswith('±'):  # format conversion to more strict parser
-        tol_str = '±' + tol_str
-      capacitance = PartParserUtil.parse_abs_tolerance(tol_str, center, 'F')
-    else:
-      capacitance = Range.from_tolerance(center, (-cls.CAPACITOR_DEFAULT_TOL, cls.CAPACITOR_DEFAULT_TOL))
-    return (capacitance, Range.zero_to_upper(voltage))
-
-  @classmethod
-  def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Capacitor':
-    return Capacitor(*cls.parse_capacitor(properties['Value']))
-
-  @init_in_parent
-  def __init__(self, *args, **kwargs) -> None:
-    super().__init__(*args, **kwargs)
-
-    self.pos = self.Port(Passive.empty())
-    self.neg = self.Port(Passive.empty())
-
-
-@abstract_block
-class CeramicCapacitor(Capacitor):
-  """Abstract base class for ceramic capacitors, which appear more ideal in terms of lower ESP"""
-  pass
-
-
-@abstract_block
-class AluminumCapacitor(Capacitor):
-  """Abstract base class for aluminum electrolytic capacitors capacitors which provide compact bulk capacitance
-  but at the cost of ESR"""
-  pass
-
-
-@non_library
-class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
+class CapacitorStandardFootprint(StandardFootprint['Capacitor']):
   REFDES_PREFIX = 'C'
 
   # IMPORTANT! DummyFootprint doesn't use this, it will break on anything that isn't this pinning
@@ -169,8 +81,97 @@ class CapacitorStandardFootprint(Capacitor, StandardFootprint[Capacitor]):
   }
 
 
+@abstract_block
+class UnpolarizedCapacitor(PassiveComponent):
+  """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
+  @init_in_parent
+  def __init__(self, capacitance: RangeLike, voltage: RangeLike, *,
+               voltage_rating_derating: FloatLike = 0.5,
+               exact_capacitance: BoolLike = False) -> None:
+    super().__init__()
+
+    self.capacitance = self.ArgParameter(capacitance)
+    self.voltage = self.ArgParameter(voltage)  # defined as operating voltage range
+
+    # this is the scaling derating factor applied to the rated voltage spec
+    # eg, a value of 0.5 would mean the labeled rated voltage must be 2x the actual voltage
+    # 0.5 is the general rule of thumb for ceramic capacitors: https://www.sparkfun.com/news/1271
+    # this does not apply to capacitance derating, which is handled separately
+    self.voltage_rating_derating = self.ArgParameter(voltage_rating_derating)
+
+    # indicates whether the capacitance is exact (True) or nominal (False - typical case)
+    # in particular, nominal capacitance does not capacitance derate
+    self.exact_capacitance = self.ArgParameter(exact_capacitance)
+
+    self.actual_capacitance = self.Parameter(RangeExpr())
+    self.actual_voltage_rating = self.Parameter(RangeExpr())
+
+  def contents(self):
+    super().contents()
+
+    self.description = DescriptionString(
+      "<b>capacitance:</b> ", DescriptionString.FormatUnits(self.actual_capacitance, "F"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.capacitance, "F"), "\n",
+      "<b>voltage rating:</b> ", DescriptionString.FormatUnits(self.actual_voltage_rating, "V"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.voltage, "V")
+    )
+
+@abstract_block
+class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock, HasStandardFootprint):
+  """Polarized capacitor, which we assume will be the default"""
+  _STANDARD_FOOTPRINT = CapacitorStandardFootprint
+
+  CAPACITOR_REGEX = re.compile("^" + f"([\d.{PartParserUtil.SI_PREFIXES}]+)\s*F?" +
+                               "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?" +
+                               "\s*" + f"([\d.{PartParserUtil.SI_PREFIXES}]+\s*V)" + "$")
+  CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
+
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
+    return {'1': self.pos, '2': self.neg}
+
+  @classmethod
+  def parse_capacitor(cls, value: str) -> Tuple[Range, Range]:
+    match = cls.CAPACITOR_REGEX.match(value)
+    assert match is not None, f"could not parse capacitor from value '{value}'"
+    center = PartParserUtil.parse_value(match.group(1), '')
+    voltage = PartParserUtil.parse_value(match.group(3), 'V')
+    if match.group(2) is not None:
+      tol_str = match.group(2)
+      if not tol_str.startswith('±'):  # format conversion to more strict parser
+        tol_str = '±' + tol_str
+      capacitance = PartParserUtil.parse_abs_tolerance(tol_str, center, 'F')
+    else:
+      capacitance = Range.from_tolerance(center, (-cls.CAPACITOR_DEFAULT_TOL, cls.CAPACITOR_DEFAULT_TOL))
+    return (capacitance, Range.zero_to_upper(voltage))
+
+  @classmethod
+  def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Capacitor':
+    return Capacitor(*cls.parse_capacitor(properties['Value']))
+
+  @init_in_parent
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
+
+    self.pos = self.Port(Passive.empty())
+    self.neg = self.Port(Passive.empty())
+
+
+@abstract_block
+class CeramicCapacitor(Capacitor):
+  """Abstract base class for ceramic capacitors, which appear more ideal in terms of lower ESP"""
+  pass
+
+
+@abstract_block
+class AluminumCapacitor(Capacitor):
+  """Abstract base class for aluminum electrolytic capacitors capacitors which provide compact bulk capacitance
+  but at the cost of ESR"""
+  pass
+
+
 @non_library
-class TableCapacitor(CapacitorStandardFootprint, PartsTableFootprintSelector):
+class TableCapacitor(PartsTableSelector, Capacitor):
   """Abstract table-based capacitor, providing some interface column definitions."""
   CAPACITANCE = PartsTableColumn(Range)
   NOMINAL_CAPACITANCE = PartsTableColumn(float)  # nominal capacitance, even with asymmetrical tolerances

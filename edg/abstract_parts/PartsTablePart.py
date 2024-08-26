@@ -1,9 +1,9 @@
 from abc import abstractmethod
-from typing import Optional, Union, Any
+from typing import Optional, Union, Any, ClassVar, Type, Protocol
 
 from ..electronics_model import *
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
-from .StandardFootprint import StandardFootprint
+from .StandardFootprint import HasStandardFootprint
 
 
 class PartsTableBase:
@@ -33,7 +33,7 @@ class PartsTableBase:
     return cls._TABLE
 
 
-@non_library
+@abstract_block
 class PartsTablePart(Block):
   """An interface mixin for a part that is selected from a table, defining parameters to allow manual part selection
   as well as matching parts."""
@@ -88,12 +88,9 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
       self.require(False, "no matching part")
 
 
-@non_library
-class PartsTableFootprint(PartsTablePart, Block):
-  """A PartsTablePart for footprints that defines footprint-specific columns and a footprint spec arg-param.
-  This Block doesn't need to directly be a footprint, only that the part search can filter on footprint."""
-  KICAD_FOOTPRINT = PartsTableColumn(str)
-
+@abstract_block
+class SelectorFootprint(PartsTablePart):
+  """Mixin that allows a specified footprint, for Blocks that automatically select a part."""
   @init_in_parent
   def __init__(self, *args, footprint_spec: StringLike = "", **kwargs):
     super().__init__(*args, **kwargs)
@@ -101,14 +98,11 @@ class PartsTableFootprint(PartsTablePart, Block):
 
 
 @non_library
-class PartsTableFootprintSelector(PartsTableSelector, PartsTableFootprint, StandardFootprint, FootprintBlock):
-  """PartsTableFootprint that includes the parts selection framework logic and footprint generator,
-  including rows by a footprint spec.
-  Subclasses must additionally define the fields required by StandardPinningFootprint, which defines the
-  footprint name to pin mapping."""
-
-  # this needs to be defined by the implementing subclass
-  REFDES_PREFIX: str
+class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
+  """A combination of PartsTableSelector with SelectorFootprint, with row filtering on footprint_spec.
+  Does not create the footprint itself, this can be used as a base class where footprint filtering is desired
+  but an internal block is created instead."""
+  KICAD_FOOTPRINT = PartsTableColumn(str)
 
   @init_in_parent
   def __init__(self, *args, **kwargs):
@@ -119,11 +113,16 @@ class PartsTableFootprintSelector(PartsTableSelector, PartsTableFootprint, Stand
     return super()._row_filter(row) and \
       ((not self.get(self.footprint_spec)) or self.get(self.footprint_spec) == row[self.KICAD_FOOTPRINT])
 
+
+@non_library
+class PartsTableSelectorFootprint(PartsTableFootprintFilter, FootprintBlock, HasStandardFootprint):
+  """PartsTableFootprintFilter, but also with footprint creation. Must define a standard pinning.
+  """
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.footprint(
-      self.REFDES_PREFIX, row[self.KICAD_FOOTPRINT],
-      self._make_pinning(row[self.KICAD_FOOTPRINT]),
+      self._STANDARD_FOOTPRINT.REFDES_PREFIX, row[self.KICAD_FOOTPRINT],
+      self._STANDARD_FOOTPRINT._make_pinning(self, row[self.KICAD_FOOTPRINT]),
       mfr=row[self.MANUFACTURER_COL], part=row[self.PART_NUMBER_COL],
       value=row[self.DESCRIPTION_COL],
       datasheet=row[self.DATASHEET_COL]

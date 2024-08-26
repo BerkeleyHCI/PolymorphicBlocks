@@ -4,7 +4,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcTableSelector
 
 
-class JlcLed(TableLed, JlcTableSelector, PartsTableAreaSelector, PartsTableFootprintSelector):
+class JlcLed(TableLed, PartsTableSelectorFootprint, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     # 0201 not in parts table, LED_0201_0603Metric
 
@@ -55,3 +55,6 @@ class JlcLed(TableLed, JlcTableSelector, PartsTableAreaSelector, PartsTableFootp
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcLed()  # ensure class is instantiable (non-abstract)

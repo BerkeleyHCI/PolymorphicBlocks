@@ -2,13 +2,36 @@ from typing import Optional, cast, Dict
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelector
 from .Categories import *
-from .StandardFootprint import StandardFootprint
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
+
+
+class FerriteBeadStandardFootprint(StandardFootprint['FerriteBead']):
+  REFDES_PREFIX = 'FB'
+
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Inductor_SMD:L_0201_0603Metric',
+      'Inductor_SMD:L_0402_1005Metric',
+      'Inductor_SMD:L_0603_1608Metric',
+      'Inductor_SMD:L_0805_2012Metric',
+      'Inductor_SMD:L_1206_3216Metric',
+      'Inductor_SMD:L_1210_3225Metric',
+      'Inductor_SMD:L_1812_4532Metric',
+      'Inductor_SMD:L_2010_5025Metric',
+      'Inductor_SMD:L_2512_6332Metric',
+    ): lambda block: {
+      '1': block.a,
+      '2': block.b,
+    },
+  }
 
 
 @abstract_block
-class FerriteBead(PassiveComponent, KiCadImportableBlock):
+class FerriteBead(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
+  _STANDARD_FOOTPRINT = FerriteBeadStandardFootprint
+
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Device:L_Ferrite', 'Device:L_Ferrite_Small')
     return {'1': self.a, '2': self.b}
@@ -43,29 +66,9 @@ class FerriteBead(PassiveComponent, KiCadImportableBlock):
 
 
 @non_library
-class FerriteBeadStandardFootprint(FerriteBead, StandardFootprint[FerriteBead]):
-  REFDES_PREFIX = 'FB'
+class TableFerriteBead(PartsTableSelector, FerriteBead):
+  _STANDARD_FOOTPRINT = FerriteBeadStandardFootprint
 
-  FOOTPRINT_PINNING_MAP = {
-    (
-      'Inductor_SMD:L_0201_0603Metric',
-      'Inductor_SMD:L_0402_1005Metric',
-      'Inductor_SMD:L_0603_1608Metric',
-      'Inductor_SMD:L_0805_2012Metric',
-      'Inductor_SMD:L_1206_3216Metric',
-      'Inductor_SMD:L_1210_3225Metric',
-      'Inductor_SMD:L_1812_4532Metric',
-      'Inductor_SMD:L_2010_5025Metric',
-      'Inductor_SMD:L_2512_6332Metric',
-    ): lambda block: {
-      '1': block.a,
-      '2': block.b,
-    },
-  }
-
-
-@non_library
-class TableFerriteBead(FerriteBeadStandardFootprint, PartsTableFootprintSelector):
   CURRENT_RATING = PartsTableColumn(Range)
   HF_IMPEDANCE = PartsTableColumn(Range)
   DC_RESISTANCE = PartsTableColumn(Range)

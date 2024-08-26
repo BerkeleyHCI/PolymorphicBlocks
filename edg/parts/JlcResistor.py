@@ -4,7 +4,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcTableSelector
 
 
-class JlcResistor(TableResistor, PartsTableAreaSelector, JlcTableSelector):
+class JlcResistor(TableResistor, PartsTableSelectorFootprint, JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     # 0201 not in parts table, R_0201_0603Metric
 
@@ -59,3 +59,6 @@ class JlcResistor(TableResistor, PartsTableAreaSelector, JlcTableSelector):
         return None
 
     return cls._jlc_table().map_new_columns(parse_row)
+
+
+lambda: JlcResistor()  # ensure class is instantiable (non-abstract)

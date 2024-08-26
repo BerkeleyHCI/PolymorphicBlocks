@@ -4,7 +4,10 @@ from ..abstract_parts import *
 from .JlcPart import JlcTableSelector
 
 
-class JlcAntenna(TableAntenna, JlcTableSelector, PartsTableFootprintSelector):
+class JlcAntenna(TableAntenna, JlcTableSelector, FootprintBlock):
+  # abstract Antenna does not define standard footprints, so we cannot mix in PartsTableSelectorFootprint
+  # to do footprint generation
+
   FOOTPRINT_PIN_MAP = {  # no antenna-specific footprints, re-use the diode footprints which have a polarity indicator
     'Diode_SMD:D_0402_1005Metric': '1',
     'Diode_SMD:D_0603_1608Metric': '1',
@@ -44,7 +47,17 @@ class JlcAntenna(TableAntenna, JlcTableSelector, PartsTableFootprintSelector):
 
     return cls._jlc_table().map_new_columns(parse_row)
 
-  def _make_pinning(self, footprint: str) -> Dict[str, CircuitPort]:
-    return {
-      self.FOOTPRINT_PIN_MAP[footprint]: self.a,
-    }
+  def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
+    self.footprint(
+      "ANT", row[self.KICAD_FOOTPRINT],
+      {
+        self.FOOTPRINT_PIN_MAP[row[self.KICAD_FOOTPRINT]]: self.a,
+      },
+      mfr=row[self.MANUFACTURER_COL], part=row[self.PART_NUMBER_COL],
+      value=row[self.DESCRIPTION_COL],
+      datasheet=row[self.DATASHEET_COL]
+    )
+
+
+lambda: JlcAntenna()  # ensure class is instantiable (non-abstract)

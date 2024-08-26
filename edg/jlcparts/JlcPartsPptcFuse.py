@@ -4,7 +4,7 @@ from ..parts.JlcPptcFuse import JlcPptcFuse
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsPptcFuse(PptcFuse, TableFuse, PartsTableAreaSelector, JlcPartsBase):
+class JlcPartsPptcFuse(TableFuse, PptcFuse, PartsTableSelectorFootprint, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = ["Circuit_ProtectionResettable_Fuses"]
 
     @classmethod
@@ -23,3 +23,6 @@ class JlcPartsPptcFuse(PptcFuse, TableFuse, PartsTableAreaSelector, JlcPartsBase
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
+
+
+lambda: JlcPartsPptcFuse()  # ensure class is instantiable (non-abstract)

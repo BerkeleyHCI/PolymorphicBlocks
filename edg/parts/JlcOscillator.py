@@ -1,7 +1,7 @@
 import re
 from typing import Optional, Dict, Any, List
 from ..abstract_parts import *
-from .JlcPart import JlcPart, JlcTableBase, DescriptionParser
+from .JlcPart import JlcPart, JlcTableSelector, DescriptionParser
 
 
 class JlcOscillator_Device(InternalSubcircuit, Block):
@@ -50,7 +50,7 @@ class Sg8101cg_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, self.in_actual_basic_part)
 
 
-class JlcOscillator(TableOscillator, JlcTableBase, Block):
+class JlcOscillator(TableOscillator, JlcTableSelector):
   SERIES_DEVICE_MAP = {
     'SG-8101CG': Sg8101cg_Device,
   }
@@ -99,3 +99,6 @@ class JlcOscillator(TableOscillator, JlcTableBase, Block):
         self.connect(self.gnd, self.device.gnd)
         self.connect(self.out, self.device.out)
         self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+
+
+lambda: JlcOscillator()  # ensure class is instantiable (non-abstract)

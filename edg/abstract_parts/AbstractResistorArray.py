@@ -1,55 +1,12 @@
-from typing import List
-
 from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableSelector
 from .Categories import *
-from .StandardFootprint import StandardFootprint
+from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-class ResistorArrayElement(Resistor):  # to avoid an abstract part error
-  def __init__(self):
-    super().__init__(resistance=RangeExpr(), power=RangeExpr())
-
-
-@abstract_block
-class ResistorArray(MultipackDevice, MultipackBlock):
-  """An n-element resistor array, where all resistors have the same resistance and power rating."""
-  @init_in_parent
-  def __init__(self, count: IntLike = 0) -> None:  # 0 means 'size automatically'
-    super().__init__()
-
-    self.count = self.ArgParameter(count)
-
-    self.elements = self.PackedPart(PackedBlockArray(ResistorArrayElement()))
-    self.a = self.PackedExport(self.elements.ports_array(lambda x: x.a))
-    self.b = self.PackedExport(self.elements.ports_array(lambda x: x.b))
-    self.resistances = self.PackedParameter(self.elements.params_array(lambda x: x.resistance))
-    self.powers = self.PackedParameter(self.elements.params_array(lambda x: x.power))
-
-    self.actual_count = self.Parameter(IntExpr())
-    self.actual_resistance = self.Parameter(RangeExpr())
-    self.actual_power_rating = self.Parameter(RangeExpr())  # per element
-
-    self.unpacked_assign(self.elements.params(lambda x: x.actual_resistance), self.actual_resistance)
-    self.unpacked_assign(self.elements.params(lambda x: x.actual_power_rating), self.actual_power_rating)
-
-  def contents(self):
-    super().contents()
-
-    self.description = DescriptionString(  # TODO better support for array typed
-      "<b>count:</b> ", DescriptionString.FormatUnits(self.actual_count, ""),  # TODO unitless
-      " <b>of spec</b> ", DescriptionString.FormatUnits(self.count, ""), "\n",
-      "<b>resistance:</b> ", DescriptionString.FormatUnits(self.actual_resistance, "Ω"),
-      " <b>of specs</b> ", DescriptionString.FormatUnits(self.resistances, "Ω"), "\n",
-      "<b>element power:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
-      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.powers, "W")
-    )
-
-
-@non_library
-class ResistorArrayStandardFootprint(ResistorArray, StandardFootprint[ResistorArray]):
+class ResistorArrayStandardFootprint(StandardFootprint['ResistorArray']):
   REFDES_PREFIX = 'RN'
 
   # TODO some way to ensure the resistor count is sufficient?
@@ -86,8 +43,50 @@ class ResistorArrayStandardFootprint(ResistorArray, StandardFootprint[ResistorAr
   }
 
 
+class ResistorArrayElement(Resistor):  # to avoid an abstract part error
+  def __init__(self):
+    super().__init__(resistance=RangeExpr(), power=RangeExpr())
+
+
+@abstract_block
+class ResistorArray(MultipackDevice, MultipackBlock, HasStandardFootprint):
+  """An n-element resistor array, where all resistors have the same resistance and power rating."""
+  _STANDARD_FOOTPRINT = ResistorArrayStandardFootprint
+
+  @init_in_parent
+  def __init__(self, count: IntLike = 0) -> None:  # 0 means 'size automatically'
+    super().__init__()
+
+    self.count = self.ArgParameter(count)
+
+    self.elements = self.PackedPart(PackedBlockArray(ResistorArrayElement()))
+    self.a = self.PackedExport(self.elements.ports_array(lambda x: x.a))
+    self.b = self.PackedExport(self.elements.ports_array(lambda x: x.b))
+    self.resistances = self.PackedParameter(self.elements.params_array(lambda x: x.resistance))
+    self.powers = self.PackedParameter(self.elements.params_array(lambda x: x.power))
+
+    self.actual_count = self.Parameter(IntExpr())
+    self.actual_resistance = self.Parameter(RangeExpr())
+    self.actual_power_rating = self.Parameter(RangeExpr())  # per element
+
+    self.unpacked_assign(self.elements.params(lambda x: x.actual_resistance), self.actual_resistance)
+    self.unpacked_assign(self.elements.params(lambda x: x.actual_power_rating), self.actual_power_rating)
+
+  def contents(self):
+    super().contents()
+
+    self.description = DescriptionString(  # TODO better support for array typed
+      "<b>count:</b> ", DescriptionString.FormatUnits(self.actual_count, ""),  # TODO unitless
+      " <b>of spec</b> ", DescriptionString.FormatUnits(self.count, ""), "\n",
+      "<b>resistance:</b> ", DescriptionString.FormatUnits(self.actual_resistance, "Ω"),
+      " <b>of specs</b> ", DescriptionString.FormatUnits(self.resistances, "Ω"), "\n",
+      "<b>element power:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.powers, "W")
+    )
+
+
 @non_library
-class TableResistorArray(ResistorArrayStandardFootprint, PartsTableFootprintSelector):
+class TableResistorArray(PartsTableSelector, ResistorArray):
   RESISTANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
   COUNT = PartsTableColumn(int)

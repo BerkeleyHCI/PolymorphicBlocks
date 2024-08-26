@@ -5,7 +5,7 @@ import os
 
 from ..electronics_model import *
 from .PartsTable import PartsTableRow
-from .PartsTablePart import PartsTableFootprintSelector
+from .PartsTablePart import PartsTableFootprintFilter, PartsTablePart
 
 
 class FootprintJson(RootModel):  # script relpath imports are weird so this is duplicated here
@@ -25,7 +25,7 @@ class FootprintAreaTable:
 
 
 @abstract_block
-class SelectorArea(BlockInterfaceMixin[Block]):
+class SelectorArea(PartsTablePart):
   """A base mixin that defines a footprint_area range specification for blocks that automatically select parts.
   Provides no implementation, only defines the specification parameter.
 
@@ -46,7 +46,7 @@ class SelectorArea(BlockInterfaceMixin[Block]):
 
 
 @non_library
-class PartsTableAreaSelector(SelectorArea, PartsTableFootprintSelector):
+class PartsTableAreaSelector(PartsTableFootprintFilter, SelectorArea):
   """Defines an implementation for the area selector using parts tables and KICAD_FOOTPRINT."""
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)

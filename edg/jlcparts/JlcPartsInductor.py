@@ -4,7 +4,7 @@ from ..parts.JlcInductor import JlcInductor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsInductor(TableInductor, PartsTableAreaSelector, JlcPartsBase):
+class JlcPartsInductor(TableInductor, PartsTableSelectorFootprint, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = [
         "InductorsakaCoilsakaTransformersPower_Inductors",
         "InductorsakaCoilsakaTransformersInductors__SMD_",
@@ -43,3 +43,6 @@ class JlcPartsInductor(TableInductor, PartsTableAreaSelector, JlcPartsBase):
         # so the user must add the actual frequency rating in refinements
         self.manual_frequency_rating = self.Parameter(RangeExpr(Range.exact(0)))
         self.require(self.frequency.within(self.manual_frequency_rating))
+
+
+lambda: JlcPartsInductor()  # ensure class is instantiable (non-abstract)
