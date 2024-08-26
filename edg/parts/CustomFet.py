@@ -23,8 +23,8 @@ class CustomFet(Fet, FootprintBlock, GeneratorBlock):
 
   def generate(self) -> None:
     self.footprint(
-      FetStandardFootprint.REFDES_PREFIX, self.footprint_spec,
-      FetStandardFootprint._make_pinning(self, self.get(self.footprint_spec)),
+      self._STANDARD_FOOTPRINT.REFDES_PREFIX, self.footprint_spec,
+      self._STANDARD_FOOTPRINT._make_pinning(self, self.get(self.footprint_spec)),
       mfr=self.manufacturer_spec, part=self.part_spec,
       value=self.part_spec,
       datasheet=""
