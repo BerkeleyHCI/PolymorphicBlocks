@@ -93,3 +93,21 @@ class Sx1262(Block):
     def contents(self) -> None:
         super().contents()
         self.connect(self.ic.vbat_io, self.pwr)
+
+        with self.implicit_connect(
+                ImplicitConnect(self.gnd, [Common])
+        ) as imp:
+            self.xtal = self.Block(Crystal(30*MHertz(tol=30e-6)))  # 30ppm for LoRaWAN systems
+            self.connect(self.xtal.crystal, self.ic.xtal)
+
+            self.vreg_cap = self.Block(DecouplingCapacitor(470*nFarad(tol=0.2))).connected(pwr=self.ic.vreg)
+            self.vbat_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(pwr=self.ic.vbat)
+            self.vdd_cap = self.Block(DecouplingCapacitor(1*uFarad(tol=0.2))).connected(pwr=self.ic.vbat)
+            self.vrpa_cap0 = self.Block(DecouplingCapacitor(47*pFarad(tol=0.05))).connected(pwr=self.ic.vr_pa)
+            self.vrpa_cap1 = self.Block(DecouplingCapacitor(47*nFarad(tol=0.05))).connected(pwr=self.ic.vr_pa)
+
+
+            self.dcc_l = self.Block(Inductor(  # from datasheet 5.1.5
+                15*uHenry(tol=0.2), current=(0, 100)*mAmp, frequency=20*MHertz(tol=0), resistance_dc=(0, 2)*Ohm))
+            self.connect(self.dcc_l.a, self.ic.dcc_sw)
+            self.connect(self.dcc_l.b.adapt_to(VoltageSink()), self.ic.vreg)  # actually the source, but ic assumes ldo
