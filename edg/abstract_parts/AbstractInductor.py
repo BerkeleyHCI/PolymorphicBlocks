@@ -93,7 +93,9 @@ class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
   @init_in_parent
   def __init__(self, inductance: RangeLike,
                current: RangeLike = RangeExpr.ZERO,
-               frequency: RangeLike = RangeExpr.ZERO) -> None:
+               frequency: RangeLike = RangeExpr.ZERO,
+               resistance_dc: RangeLike = (0, 1)*Ohm  # generic sane choice?
+               ) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())
@@ -102,12 +104,12 @@ class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
     self.inductance = self.ArgParameter(inductance)
     self.current = self.ArgParameter(current)  # defined as operating current range, non-directioned
     self.frequency = self.ArgParameter(frequency)  # defined as operating frequency range
-    # TODO: in the future, when we consider efficiency - for now, use current ratings
-    # self.resistance_dc = self.Parameter(RangeExpr())
+    self.resistance_dc = self.ArgParameter(resistance_dc)
 
     self.actual_inductance = self.Parameter(RangeExpr())
     self.actual_current_rating = self.Parameter(RangeExpr())
     self.actual_frequency_rating = self.Parameter(RangeExpr())
+    self.actual_resistance_dc = self.Parameter(RangeExpr())
 
   def contents(self):
     super().contents()
@@ -118,7 +120,9 @@ class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
       "<b>current rating:</b> ", DescriptionString.FormatUnits(self.actual_current_rating, "A"),
       " <b>of operating:</b> ", DescriptionString.FormatUnits(self.current, "A"), "\n",
       "<b>frequency rating:</b> ", DescriptionString.FormatUnits(self.actual_frequency_rating, "Hz"),
-      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz")
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"), "\n",
+      "<b>dc resistance:</b> ", DescriptionString.FormatUnits(self.actual_resistance_dc, "Ω"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.resistance_dc, "Ω"),
     )
 
 
@@ -139,7 +143,7 @@ class TableInductor(PartsTableSelector, Inductor):
     return super()._row_filter(row) and \
       row[self.INDUCTANCE].fuzzy_in(self.get(self.inductance)) and \
       self.get(self.current).fuzzy_in(row[self.CURRENT_RATING]) and \
-      row[self.DC_RESISTANCE].fuzzy_in(Range.zero_to_upper(1.0)) and \
+      row[self.DC_RESISTANCE].fuzzy_in(self.get(self.resistance_dc)) and \
       self.get(self.frequency).fuzzy_in(row[self.FREQUENCY_RATING])
 
   def _row_generate(self, row: PartsTableRow) -> None:
@@ -147,6 +151,7 @@ class TableInductor(PartsTableSelector, Inductor):
     self.assign(self.actual_inductance, row[self.INDUCTANCE])
     self.assign(self.actual_current_rating, row[self.CURRENT_RATING])
     self.assign(self.actual_frequency_rating, row[self.FREQUENCY_RATING])
+    self.assign(self.actual_resistance_dc, row[self.DC_RESISTANCE])
 
 
 class SeriesPowerInductor(DiscreteApplication):
