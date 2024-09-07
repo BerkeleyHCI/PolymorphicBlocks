@@ -136,7 +136,7 @@ class TableInductor(PartsTableSelector, Inductor):
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-    self.generator_param(self.inductance, self.current, self.frequency)
+    self.generator_param(self.inductance, self.current, self.frequency, self.resistance_dc)
 
   def _row_filter(self, row: PartsTableRow) -> bool:
     # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
