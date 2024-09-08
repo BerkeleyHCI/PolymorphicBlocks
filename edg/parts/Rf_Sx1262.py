@@ -1,10 +1,81 @@
 from ..abstract_parts import *
+from .JlcPart import JlcPart
+
+
+class Pe4259_Device(InternalSubcircuit, FootprintBlock, JlcPart):
+    def __init__(self):
+        super().__init__()
+
+        self.gnd = self.Port(Ground())
+        self.vdd = self.Port(Passive())  # modeled in container, series resistor recommended
+
+        self.rf1 = self.Port(Passive())
+        self.rf2 = self.Port(Passive())
+        self.rfc = self.Port(Passive())
+
+        self.ctrl = self.Port(Passive())  # modeled in container, series resistor recommended
+
+    def contents(self):
+        super().contents()
+
+        self.footprint(
+            'U', 'Package_TO_SOT_SMD:SOT-363_SC-70-6',
+            {
+                '1': self.rf1,
+                '2': self.gnd,
+                '3': self.rf2,
+                '4': self.ctrl,
+                '5': self.rfc,
+                '6': self.vdd,
+            },
+            mfr='pSemi', part='PE4259',
+            datasheet='https://www.psemi.com/pdf/datasheets/pe4259ds.pdf'
+        )
+        self.assign(self.lcsc_part, 'C470892')
+        self.assign(self.actual_basic_part, False)
+
+
+class Pe4259(Block, Nonstrict3v3Compatible):
+    """RF switch between 10 MHz to 3000 MHz, 1.8-3.3v input.
+    Requires all RF pins be held at 0v or are DC-blocked with a series cap.
+    TODO: perhaps a RfSwitch base class? maybe some relation to AnalogSwitch? (though not valid at DC)
+    """
+    def __init__(self):
+        super().__init__()
+        self.ic = self.Block(Pe4259_Device())
+        self.gnd = self.Export(self.ic.gnd, [Common])
+        self.rf1 = self.Export(self.ic.rf1)
+        self.rf2 = self.Export(self.ic.rf2)
+        self.rfc = self.Export(self.ic.rfc)
+        self.ctrl = self.Port(DigitalSink.empty())
+        self.vdd = self.Port(VoltageSink.empty(), [Power])
+
+    def contents(self):
+        super().contents()
+
+        self.vdd_res = self.Block(Resistor(1*kOhm(tol=0.05)))
+        self.connect(self.vdd_res.b, self.ic.vdd)
+        self.connect(self.vdd_res.a.adapt_to(VoltageSink.from_gnd(
+                self.gnd,
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (1.8, 4.0)*Volt,
+                    (1.8, 3.3)*Volt),
+                current_draw=(9, 20)*uAmp,
+        )), self.vdd)
+
+        self.ctrl_res = self.Block(Resistor(1*kOhm(tol=0.05)))
+        self.connect(self.ctrl_res.b, self.ic.ctrl)
+        self.connect(self.ctrl_res.a.adapt_to(DigitalSink.from_supply(
+            self.gnd, self.vdd,
+            voltage_limit_tolerance=(-0.3, 0.3)*Volt,
+            input_threshold_factor=(0.3, 0.7)
+        )), self.ctrl)
 
 
 class Sx1262_Device(FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.gnd = self.Port(Ground())
+        self.gnd = self.Port(Ground(), [Common])
         self.vbat = self.Port(VoltageSink.from_gnd(
             self.gnd,  # include Vbat
             voltage_limits=(1.8, 3.7)*Volt,
@@ -106,8 +177,31 @@ class Sx1262(Block):
             self.vrpa_cap0 = self.Block(DecouplingCapacitor(47*pFarad(tol=0.05))).connected(pwr=self.ic.vr_pa)
             self.vrpa_cap1 = self.Block(DecouplingCapacitor(47*nFarad(tol=0.05))).connected(pwr=self.ic.vr_pa)
 
-
             self.dcc_l = self.Block(Inductor(  # from datasheet 5.1.5
                 15*uHenry(tol=0.2), current=(0, 100)*mAmp, frequency=20*MHertz(tol=0), resistance_dc=(0, 2)*Ohm))
             self.connect(self.dcc_l.a, self.ic.dcc_sw)
             self.connect(self.dcc_l.b.adapt_to(VoltageSink()), self.ic.vreg)  # actually the source, but ic assumes ldo
+
+            # RF signal chain
+            self.ant = self.Block(Antenna(frequency=(2402, 2484)*MHertz, impedance=50*Ohm(tol=0.1), power=(0, 0.126)*Watt))
+
+            # transmit filter chain
+            self.vrpa_choke = self.Block(Inductor(47*nHenry(tol=0.05)))  # see ST AN5457 for values for other frequencies
+
+            # receive filter chain
+
+            # switch
+            dcblock_model = Capacitor(47*pFarad(tol=0.05))
+            self.rf_sw = self.Block(Pe4259())
+            self.tx_dcblock = self.Block(dcblock_model)
+            # self.connect(self.tx_dcblock.neg, ...)
+            self.connect(self.tx_dcblock.pos, self.rf_sw.rf1)
+            self.rfc_dcblock = self.Block(dcblock_model)
+            self.connect(self.rfc_dcblock.neg, self.rf_sw.rfc)
+
+            # antenna
+            (self.ant_pi, ), _ = self.chain(
+                self.rfc_dcblock.pos,
+                # imp.Block(PiLowPassFilter((2402-200, 2484+200)*MHertz, 35*Ohm, 10*Ohm, 50*Ohm,
+                #                           0.10, self.pwr.link().voltage, (0, 0.1)*Amp)),
+                self.ant.a)
