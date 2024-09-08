@@ -187,6 +187,8 @@ class Sx1262(Block):
 
             # transmit filter chain
             self.vrpa_choke = self.Block(Inductor(47*nHenry(tol=0.05)))  # see ST AN5457 for values for other frequencies
+            self.connect(self.vrpa_choke.a.adapt_to(VoltageSink()), self.ic.vr_pa)
+            # self.connect(self.vrpa_choke.b, ...)
 
             # receive filter chain
 
