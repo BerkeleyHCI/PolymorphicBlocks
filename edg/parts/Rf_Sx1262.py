@@ -183,10 +183,11 @@ class Sx1262(Block):
             self.connect(self.dcc_l.b.adapt_to(VoltageSink()), self.ic.vreg)  # actually the source, but ic assumes ldo
 
             # RF signal chain
-            self.ant = self.Block(Antenna(frequency=(2402, 2484)*MHertz, impedance=50*Ohm(tol=0.1), power=(0, 0.126)*Watt))
+            self.ant = self.Block(Antenna(frequency=(915-0.5, 915+0.5)*MHertz,  # up to 500kHz bandwidth in LoRa mode
+                                          impedance=50*Ohm(tol=0.1), power=(0, 0.159)*Watt))  # +22dBm
 
             # transmit filter chain
-            self.vrpa_choke = self.Block(Inductor(47*nHenry(tol=0.05)))  # see ST AN5457 for values for other frequencies
+            self.vrpa_choke = self.Block(Inductor(47*nHenry(tol=0.05)))  # see ST AN5457 for other frequencies
             self.connect(self.vrpa_choke.a.adapt_to(VoltageSink()), self.ic.vr_pa)
             # self.connect(self.vrpa_choke.b, ...)
 
