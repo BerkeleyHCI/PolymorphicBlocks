@@ -60,9 +60,8 @@ class PiLowPassFilterTest(unittest.TestCase):
 
         # example for SX1262
         l3, c3 = LHighPassFilter._calculate_values(915e6, complex(62, -112), complex(50, 0))
-        print(l3, c3)
         self.assertAlmostEqual(l3, 11.86e-9, delta=0.01e-9)
-        self.assertAlmostEqual(c3, 1.6803-12, delta=0.001e-12)
+        self.assertAlmostEqual(c3, 1.6803e-12, delta=0.0001e-12)
 
     def test_calculate_l_2hnotch(self) -> None:
         # example for SX1262

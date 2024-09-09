@@ -94,8 +94,13 @@ class LHighPassFilter(AnalogFilter, GeneratorBlock):
     def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
         """Calculate a L matching network for complex Z1 (parallel-inductor side) and Z2 (series-capacitor side)
         and returns L, C"""
-        rp1 = z1.real
-        assert z1.imag == 0  # TODO
+        if z1.imag != 0:  # if z1 complex, split into real resistance and stray capacitance
+            q1 = z1.imag / z1.real  # Q of the load
+            rp1 = z1.real * (q1 * q1 + 1)  # parallel transformation into rp2 real part and xp2 capacitive part
+            xp1 = rp1 / q1
+        else:
+            rp1 = z1.real
+            xp1 = 0  # technically infinite
 
         rs2 = z2.real
         xs2 = z2.imag  # if z1 complex, the stray capacitance which gets resonated out with more l
@@ -103,6 +108,10 @@ class LHighPassFilter(AnalogFilter, GeneratorBlock):
         q = sqrt(rp1 / rs2 - 1)
         net_xp = rp1 / q
         net_xs = - q * rs2  # TODO: where is the negative sign coming from
+
+        if xp1 != 0:
+            net_xp = 1/(1/net_xp - 1/xp1)  # add reactance to cancel out z1 in parallel
+
         return PiLowPassFilter._reactance_to_inductance(freq, net_xp), \
             PiLowPassFilter._reactance_to_capacitance(freq, net_xs - xs2)
 
