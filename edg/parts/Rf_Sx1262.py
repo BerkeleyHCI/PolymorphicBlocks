@@ -75,7 +75,7 @@ class Pe4259(Nonstrict3v3Compatible, Block):
         )), self.ctrl)
 
 
-class Sx1262BalunLike(Block):
+class Sx1262BalunLike(InternalSubcircuit, GeneratorBlock):
     """'Balun' circuit with design methodology from ST AN5457 LNA matching methodology.
     This consists of a high-pass L impedance-matching network plus a capacitor to balance out the differential
     input voltages. The series cap then needs to be adjusted for the mismatch from the balancing cap.
@@ -92,17 +92,43 @@ class Sx1262BalunLike(Block):
         l_c_new = (l_c * cp) / (cp - l_c)
         return l_l, l_c_new, cp
 
-    def __init__(self):
+    def __init__(self, frequency: FloatLike, src_resistance: FloatLike, src_reactance: FloatLike,
+                 load_resistance: FloatLike, tolerance: FloatLike,
+                 voltage: RangeLike, current: RangeLike):
         super().__init__()
         self.gnd = self.Port(Ground.empty(), [Common])
         self.input = self.Port(Passive.empty())
         self.rfi_n = self.Port(Passive.empty())
         self.rfi_p = self.Port(Passive.empty())
 
-    def contents(self):
-        super().contents()
+        self.frequency = self.ArgParameter(frequency)
+        self.src_resistance = self.ArgParameter(src_resistance)
+        self.src_reactance = self.ArgParameter(src_reactance)
+        self.load_resistance = self.ArgParameter(load_resistance)
+        self.voltage = self.ArgParameter(voltage)
+        self.current = self.ArgParameter(current)
+        self.tolerance = self.ArgParameter(tolerance)
 
+        self.generator_param(self.frequency, self.src_resistance, self.src_reactance, self.load_resistance,
+                             self.tolerance)
 
+    def generate(self) -> None:
+        super().generate()
+
+        zs = complex(self.get(self.src_resistance), self.get(self.src_reactance))
+        rl = complex(self.get(self.load_resistance), 0)
+
+        l, c, c_p = self._calculate_values(self.get(self.frequency), zs, rl)
+        tolerance = self.get(self.tolerance)
+
+        self.l = self.Block(Inductor(inductance=l*Henry(tol=tolerance), current=self.current))
+        self.c = self.Block(Capacitor(capacitance=c*Farad(tol=tolerance), voltage=self.voltage))
+        self.c_p = self.Block(Capacitor(capacitance=c_p*Farad(tol=tolerance), voltage=self.voltage))
+
+        self.connect(self.input, self.c.pos)
+        self.connect(self.rfi_n, self.c.neg, self.l.a)
+        self.connect(self.rfi_p, self.c_p.pos, self.l.b)
+        self.connect(self.gnd, self.c_p.neg.adapt_to(Ground()))
 
 
 class Sx1262_Device(FootprintBlock):
