@@ -24,7 +24,7 @@ class PiLowPassFilterTest(unittest.TestCase):
         # examples from https://www.silabs.com/documents/public/application-notes/an1275-imp-match-for-network-arch.pdf
         # note that its numerical results are wrong, but the equations are correct
         # overall result checked against https://www.eeweb.com/tools/l-match/
-        
+
         # example 7.1
         l0, c0 = LLowPassFilter._calculate_values(2445e6, complex(23, -11.5), complex(50, 0))
         self.assertAlmostEqual(l0, 2.3707e-9, delta=0.0001e-9)

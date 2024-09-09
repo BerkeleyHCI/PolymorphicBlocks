@@ -13,10 +13,7 @@ class LLowPassFilter(AnalogFilter, GeneratorBlock):
         """Calculate a L matching network for a real R1 (inductor side) and optionally-complex Z2 (capacitor side)
         and returns L, C2"""
         rp1 = z1.real
-        if z1.imag != 0:  # if z1 complex, split into real resistance and stray capacitance
-            ls1 = PiLowPassFilter._reactance_to_inductance(freq, -z1.imag)  # series inductance to resonate out cstray
-        else:
-            ls1 = 0  # for real impedance, no stray capacitance
+        xp1 = z1.imag  # if z1 complex, the stray capacitance which gets resonated out with more l
 
         if z2.imag != 0:  # if z2 complex, split into real resistance and stray capacitance
             q2 = z2.imag / z2.real  # Q of the load
@@ -30,7 +27,67 @@ class LLowPassFilter(AnalogFilter, GeneratorBlock):
         q = sqrt(rp2 / rp1 - 1)
         net_xp = -rp2 / q  # TODO: where is the negative sign coming from
         net_xs = q * rp1
-        return PiLowPassFilter._reactance_to_inductance(freq, net_xs) + ls1, PiLowPassFilter._reactance_to_capacitance(freq, net_xp) - cp2
+        print(net_xs - xp1)
+        return PiLowPassFilter._reactance_to_inductance(freq, net_xs - xp1),\
+            PiLowPassFilter._reactance_to_capacitance(freq, net_xp) - cp2
+
+
+class LLowPassFilterWith2HNotch(AnalogFilter, GeneratorBlock):
+    """L filter for impedance matching for RF with an overlaid second-harmonic LC notch filter.
+    The target reactance is given by the L filter.
+    Then, the L and C values are from the simultaneous solution of:
+    the parallel reactance equation, at bandpass frequency w:
+      x_L = w*L
+      x_C = -1/(w*C)
+      x_parallel = 1/(1/x_L+1/x_C),
+    the LC tank equation, at DIFFERENT bandstop frequency at the second harmonic w_bp = 2*w:
+      w_bp = 1/(sqrt(l*c))
+    solving both gives a new L of 3/4 the baseline L
+    """
+    @classmethod
+    def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float, float]:
+        """Returns L, Cp, Clc"""
+        l, c = LLowPassFilter._calculate_values(freq, z1, z2)
+        lc_l = l * 3 / 4
+        lc_c = 1/(lc_l * (2*pi*freq))
+        return lc_l, c, lc_c
+
+    @init_in_parent
+    def __init__(self, frequency: FloatLike, src_resistance: FloatLike, src_reactance: FloatLike,
+                 load_resistance: FloatLike, tolerance: FloatLike,
+                 voltage: RangeLike, current: RangeLike):
+        super().__init__()
+        self.input = self.Port(Passive.empty(), [Input])
+        self.output = self.Port(Passive.empty(), [Output])
+        self.gnd = self.Port(Ground.empty(), [Common])
+
+        self.frequency = self.ArgParameter(frequency)
+        self.src_resistance = self.ArgParameter(src_resistance)
+        self.src_reactance = self.ArgParameter(src_reactance)
+        self.load_resistance = self.ArgParameter(load_resistance)
+        self.voltage = self.ArgParameter(voltage)
+        self.current = self.ArgParameter(current)
+        self.tolerance = self.ArgParameter(tolerance)
+
+        self.generator_param(self.frequency, self.src_resistance, self.src_reactance, self.load_resistance,
+                             self.tolerance)
+
+    def generate(self) -> None:
+        super().generate()
+
+        zs = complex(self.get(self.src_resistance), self.get(self.src_reactance))
+        rl = self.get(self.load_resistance)
+
+        l, c, c_lc = self._calculate_values(self.get(self.frequency), zs, rl)
+        tolerance = self.get(self.tolerance)
+
+        self.l = self.Block(Inductor(inductance=l*Henry(tol=tolerance), current=self.current))
+        self.c = self.Block(Capacitor(capacitance=c*Farad(tol=tolerance), voltage=self.voltage))
+        self.c_lc = self.Block(Capacitor(capacitance=c_lc*Farad(tol=tolerance), voltage=self.voltage))
+
+        self.connect(self.input, self.l.a, self.c_lc.neg)
+        self.connect(self.l.b, self.c_lc.pos, self.c.pos, self.output)
+        self.connect(self.gnd, self.c.neg.adapt_to(Ground()))
 
 
 class PiLowPassFilter(AnalogFilter, GeneratorBlock):
