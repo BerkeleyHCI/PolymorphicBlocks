@@ -245,25 +245,38 @@ class Sx1262(Block):
             self.ant = self.Block(Antenna(frequency=(915-0.5, 915+0.5)*MHertz,  # up to 500kHz bandwidth in LoRa mode
                                           impedance=50*Ohm(tol=0.1), power=(0, 0.159)*Watt))  # +22dBm
 
-            # transmit filter chain
-            self.vrpa_choke = self.Block(Inductor(47*nHenry(tol=0.05)))  # see ST AN5457 for other frequencies
-            self.connect(self.vrpa_choke.a.adapt_to(VoltageSink()), self.ic.vr_pa)
-            # self.connect(self.vrpa_choke.b, ...)
-
-            # receive filter chain
-
             # switch
             dcblock_model = Capacitor(47*pFarad(tol=0.05))
             self.rf_sw = self.Block(Pe4259())
             self.tx_dcblock = self.Block(dcblock_model)
-            # self.connect(self.tx_dcblock.neg, ...)
             self.connect(self.tx_dcblock.pos, self.rf_sw.rf1)
             self.rfc_dcblock = self.Block(dcblock_model)
             self.connect(self.rfc_dcblock.neg, self.rf_sw.rfc)
 
+            # transmit filter chain
+            self.vrpa_choke = self.Block(Inductor(47*nHenry(tol=0.05)))  # see ST AN5457 for other frequencies
+            self.connect(self.vrpa_choke.a.adapt_to(VoltageSink()), self.ic.vr_pa)
+            self.connect(self.ic.rfo, self.vrpa_choke.b)
+
+            (self.tx_l, self.tx_pi), _ = self.chain(
+                self.ic.rfo,
+                imp.Block(LLowPassFilterWith2HNotch(915*MHertz, 11.7*Ohm, -4.8*Ohm, 50*Ohm, 0.1,
+                                                    (0, 10)*Volt, (0, 100)*mAmp)),
+                imp.Block(PiLowPassFilter((915-915/2, 915+915/2)*MHertz, 50*Ohm, 0, 50*Ohm, 0.1,  # Q=1
+                                          (0, 10)*Volt, (0, 100)*mAmp)),
+                self.tx_dcblock.neg
+            )
+
+            # receive filter chain
+            self.balun = self.Block(Sx1262BalunLike(915*MHertz, 74*Ohm, -134*Ohm, 50*Ohm, 0.1,
+                                                    (0, 10)*Volt, (0, 100)*mAmp))
+            self.connect(self.balun.input, self.rf_sw.rf2)
+            self.connect(self.balun.rfi_n, self.ic.rfi_n)
+            self.connect(self.balun.rfi_p, self.ic.rfi_p)
+
             # antenna
             (self.ant_pi, ), _ = self.chain(
                 self.rfc_dcblock.pos,
-                # imp.Block(PiLowPassFilter((2402-200, 2484+200)*MHertz, 35*Ohm, 10*Ohm, 50*Ohm,
-                #                           0.10, self.pwr.link().voltage, (0, 0.1)*Amp)),
+                imp.Block(PiLowPassFilter((915-915/2, 915+915/2)*MHertz, 50*Ohm, 0, 50*Ohm, 0.1,  # Q=1
+                                          (0, 10)*Volt, (0, 100)*mAmp)),
                 self.ant.a)
