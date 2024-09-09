@@ -27,7 +27,6 @@ class LLowPassFilter(AnalogFilter, GeneratorBlock):
         q = sqrt(rp2 / rp1 - 1)
         net_xp = -rp2 / q  # TODO: where is the negative sign coming from
         net_xs = q * rp1
-        print(net_xs - xp1)
         return PiLowPassFilter._reactance_to_inductance(freq, net_xs - xp1),\
             PiLowPassFilter._reactance_to_capacitance(freq, net_xp) - cp2
 
@@ -49,7 +48,7 @@ class LLowPassFilterWith2HNotch(AnalogFilter, GeneratorBlock):
         """Returns L, Cp, Clc"""
         l, c = LLowPassFilter._calculate_values(freq, z1, z2)
         lc_l = l * 3 / 4
-        lc_c = 1/(lc_l * (2*pi*freq))
+        lc_c = 1/(lc_l * (2*pi*2*freq)**2)
         return lc_l, c, lc_c
 
     @init_in_parent

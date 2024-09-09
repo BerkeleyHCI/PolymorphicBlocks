@@ -1,6 +1,6 @@
 import unittest
 
-from .RfNetworks import PiLowPassFilter, LLowPassFilter
+from .RfNetworks import PiLowPassFilter, LLowPassFilter, LLowPassFilterWith2HNotch
 
 
 class PiLowPassFilterTest(unittest.TestCase):
@@ -44,6 +44,13 @@ class PiLowPassFilterTest(unittest.TestCase):
         self.assertAlmostEqual(c2, 9.354e-12, delta=0.001e-12)
 
         # example for SX1262
-        l3, c3 = LLowPassFilter._calculate_values(915e6, complex(11.7, 4.8), complex(50, 0))
-        print(l3)
-        print(c3)
+        l3, c3 = LLowPassFilter._calculate_values(915e6, complex(11.7, -4.8), complex(50, 0))
+        self.assertAlmostEqual(l3, 4.517e-9, delta=0.001e-9)
+        self.assertAlmostEqual(c3, 6.294e-12, delta=0.001e-12)
+
+    def test_calculate_l_2hnotch(self) -> None:
+        # example for SX1262
+        l, c, c_lc = LLowPassFilterWith2HNotch._calculate_values(915e6, complex(11.7, -4.8), complex(50, 0))
+        self.assertAlmostEqual(l, 3.388e-9, delta=0.001e-9)
+        self.assertAlmostEqual(c, 6.294e-12, delta=0.001e-12)
+        self.assertAlmostEqual(c_lc, 2.233e-12, delta=0.001e-9)
