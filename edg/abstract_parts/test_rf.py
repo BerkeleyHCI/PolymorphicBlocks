@@ -23,17 +23,17 @@ class PiLowPassFilterTest(unittest.TestCase):
     def test_calculate_l(self) -> None:
         # examples from https://www.silabs.com/documents/public/application-notes/an1275-imp-match-for-network-arch.pdf
         # note that its numerical results are wrong, but the equations are correct
-        # RPload and XPload checked against https://www.w6ze.org/Calculators/Calc_SerParZ.html
-        #   but its parallel component disagrees
-        # stray capacitance checked against http://www.mathforengineers.com/AC-circuits-calculators/parallel-RC-circuit-Impedance.html
         # overall result checked against https://www.eeweb.com/tools/l-match/
-
+        
         # example 7.1
         l0, c0 = LLowPassFilter._calculate_values(2445e6, complex(23, -11.5), complex(50, 0))
         self.assertAlmostEqual(l0, 2.3707e-9, delta=0.0001e-9)
         self.assertAlmostEqual(c0, 1.4106e-12, delta=0.001e-12)
 
         # example 7.2, l network 1
+        # RPload and XPload checked against https://www.w6ze.org/Calculators/Calc_SerParZ.html
+        #   but its parallel component disagrees
+        # stray capacitance checked against http://www.mathforengineers.com/AC-circuits-calculators/parallel-RC-circuit-Impedance.html
         l1, c1 = LLowPassFilter._calculate_values(2445e6, complex(2.007, 0), complex(50, 0))
         self.assertAlmostEqual(l1, 0.6389e-9, delta=0.0001e-9)
         self.assertAlmostEqual(c1, 6.366e-12, delta=0.001e-12)
