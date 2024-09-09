@@ -9,23 +9,28 @@ from .Categories import *
 
 class LLowPassFilter(AnalogFilter, GeneratorBlock):
     @classmethod
-    def _calculate_values(cls, freq: float, r1: float, z2: complex) -> Tuple[float, float]:
+    def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
         """Calculate a L matching network for a real R1 (inductor side) and optionally-complex Z2 (capacitor side)
         and returns L, C2"""
-        if z2.imag != 0:
+        rp1 = z1.real
+        if z1.imag != 0:  # if z1 complex, split into real resistance and stray capacitance
+            ls1 = PiLowPassFilter._reactance_to_inductance(freq, -z1.imag)  # series inductance to resonate out cstray
+        else:
+            ls1 = 0  # for real impedance, no stray capacitance
+
+        if z2.imag != 0:  # if z2 complex, split into real resistance and stray capacitance
             q2 = z2.imag / z2.real  # Q of the load
-            # for z2 do a parallel transformation, to rp2 real resistance and xp2 capacitance
-            rp2 = z2.real * (q2 * q2 + 1)
+            rp2 = z2.real * (q2 * q2 + 1)  # parallel transformation into rp2 real part and xp2 capacitive part
             xp2 = rp2 / q2
             cp2 = PiLowPassFilter._reactance_to_capacitance(freq, xp2)  # parallel capacitance aka cstray
         else:
             rp2 = z2.real
             cp2 = 0  # for real impedance, no stray capacitance
 
-        q = sqrt(rp2 / r1 - 1)
+        q = sqrt(rp2 / rp1 - 1)
         net_xp = -rp2 / q  # TODO: where is the negative sign coming from
-        net_xs = q * r1
-        return PiLowPassFilter._reactance_to_inductance(freq, net_xs), PiLowPassFilter._reactance_to_capacitance(freq, net_xp) - cp2
+        net_xs = q * rp1
+        return PiLowPassFilter._reactance_to_inductance(freq, net_xs) + ls1, PiLowPassFilter._reactance_to_capacitance(freq, net_xp) - cp2
 
 
 class PiLowPassFilter(AnalogFilter, GeneratorBlock):
@@ -53,8 +58,8 @@ class PiLowPassFilter(AnalogFilter, GeneratorBlock):
         rh = max(z1.real, z2.real)
         rv = rh / (q*q + 1)
 
-        l1, c1 = LLowPassFilter._calculate_values(freq, rv, z1)
-        l2, c2 = LLowPassFilter._calculate_values(freq, rv, z2)
+        l1, c1 = LLowPassFilter._calculate_values(freq, complex(rv, 0), z1)
+        l2, c2 = LLowPassFilter._calculate_values(freq, complex(rv, 0), z2)
 
         return c1, c2, l1 + l2, rv
 
