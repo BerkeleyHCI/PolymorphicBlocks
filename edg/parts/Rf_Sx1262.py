@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -61,6 +63,46 @@ class Pe4259(Nonstrict3v3Compatible, Block):
                     (1.8, 4.0)*Volt,
                     (1.8, 3.3)*Volt),
                 current_draw=(9, 20)*uAmp,
+        )), self.vdd)
+
+        self.ctrl_res = self.Block(Resistor(1*kOhm(tol=0.05)))
+        self.connect(self.ctrl_res.b, self.ic.ctrl)
+        self.connect(self.ctrl_res.a.adapt_to(DigitalSink.from_supply(
+            self.gnd, self.vdd,
+            voltage_limit_tolerance=(-0.3, 0.3)*Volt,
+            input_threshold_factor=(0.3, 0.7)
+        )), self.ctrl)
+
+
+class Sx1262BalunLike(Block):
+    """'Balun' circuit with design methodology from ST AN5457 LNA matching methodology.
+    This consists of a high-pass L impedance-matching network plus a capacitor to balance out the differential
+    input voltages. The series cap then needs to be adjusted for the mismatch from the balancing cap.
+    """
+    @classmethod
+    def _calculate_values(cls, freq: float, z: complex) -> Tuple[float, float, float]:
+        """Calculate component values, returning the inductor, RFI_P cap, and RFI_N series cap.
+        The input cap to GND is DNP and omitted."""
+
+
+    def __init__(self):
+        super().__init__()
+        self.gnd = self.Port(Ground.empty(), [Common])
+        self.input = self.Port(Passive.empty())
+        self.rfi_n = self.Port(Passive.empty())
+        self.rfi_p = self.Port(Passive.empty())
+
+    def contents(self):
+        super().contents()
+
+        self.vdd_res = self.Block(Resistor(1*kOhm(tol=0.05)))
+        self.connect(self.vdd_res.b, self.ic.vdd)
+        self.connect(self.vdd_res.a.adapt_to(VoltageSink.from_gnd(
+            self.gnd,
+            voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                (1.8, 4.0)*Volt,
+                (1.8, 3.3)*Volt),
+            current_draw=(9, 20)*uAmp,
         )), self.vdd)
 
         self.ctrl_res = self.Block(Resistor(1*kOhm(tol=0.05)))

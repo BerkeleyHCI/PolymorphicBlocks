@@ -10,8 +10,8 @@ from .Categories import *
 class LLowPassFilter(AnalogFilter, GeneratorBlock):
     @classmethod
     def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
-        """Calculate a L matching network for a real R1 (inductor side) and optionally-complex Z2 (capacitor side)
-        and returns L, C2"""
+        """Calculate a L matching network for complex Z1 (series-inductor side) and Z2 (parallel-capacitor side)
+        and returns L, C"""
         rp1 = z1.real
         xp1 = z1.imag  # if z1 complex, the stray capacitance which gets resonated out with more l
 
@@ -87,6 +87,24 @@ class LLowPassFilterWith2HNotch(AnalogFilter, GeneratorBlock):
         self.connect(self.input, self.l.a, self.c_lc.neg)
         self.connect(self.l.b, self.c_lc.pos, self.c.pos, self.output)
         self.connect(self.gnd, self.c.neg.adapt_to(Ground()))
+
+
+class LHighPassFilter(AnalogFilter, GeneratorBlock):
+    @classmethod
+    def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
+        """Calculate a L matching network for complex Z1 (parallel-inductor side) and Z2 (series-capacitor side)
+        and returns L, C"""
+        rp1 = z1.real
+        assert z1.imag == 0  # TODO
+
+        rs2 = z2.real
+        xs2 = z2.imag  # if z1 complex, the stray capacitance which gets resonated out with more l
+
+        q = sqrt(rp1 / rs2 - 1)
+        net_xp = rp1 / q
+        net_xs = - q * rs2  # TODO: where is the negative sign coming from
+        return PiLowPassFilter._reactance_to_inductance(freq, net_xp), \
+            PiLowPassFilter._reactance_to_capacitance(freq, net_xs - xs2)
 
 
 class PiLowPassFilter(AnalogFilter, GeneratorBlock):
