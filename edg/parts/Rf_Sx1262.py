@@ -1,4 +1,5 @@
 from typing import Tuple
+from math import pi
 
 from ..abstract_parts import *
 from .JlcPart import JlcPart
@@ -80,10 +81,16 @@ class Sx1262BalunLike(Block):
     input voltages. The series cap then needs to be adjusted for the mismatch from the balancing cap.
     """
     @classmethod
-    def _calculate_values(cls, freq: float, z: complex) -> Tuple[float, float, float]:
-        """Calculate component values, returning the inductor, RFI_P cap, and RFI_N series cap.
+    def _calculate_values(cls, freq: float, z_int: complex, z_ext: complex) -> Tuple[float, float, float]:
+        """Calculate component values, returning the inductor, series cap, and parallel cap.
         The input cap to GND is DNP and omitted."""
-
+        l_l, l_c = LHighPassFilter._calculate_values(freq, z_int, z_ext)
+        # need the raw l (excluding the part canceling out internal reactance) to determine Cp
+        l_raw, _ = LHighPassFilter._calculate_values(freq, complex(z_int.real, 0), z_ext)
+        cp = PiLowPassFilter._reactance_to_capacitance(freq, -l_raw * 2 * pi * freq / 2)
+        # since cp is in series with l_c (through l_l), we need to eliminate its effect from l_c
+        l_c_new = (l_c * cp) / (cp - l_c)
+        return l_l, l_c_new, cp
 
     def __init__(self):
         super().__init__()
@@ -95,23 +102,7 @@ class Sx1262BalunLike(Block):
     def contents(self):
         super().contents()
 
-        self.vdd_res = self.Block(Resistor(1*kOhm(tol=0.05)))
-        self.connect(self.vdd_res.b, self.ic.vdd)
-        self.connect(self.vdd_res.a.adapt_to(VoltageSink.from_gnd(
-            self.gnd,
-            voltage_limits=self.nonstrict_3v3_compatible.then_else(
-                (1.8, 4.0)*Volt,
-                (1.8, 3.3)*Volt),
-            current_draw=(9, 20)*uAmp,
-        )), self.vdd)
 
-        self.ctrl_res = self.Block(Resistor(1*kOhm(tol=0.05)))
-        self.connect(self.ctrl_res.b, self.ic.ctrl)
-        self.connect(self.ctrl_res.a.adapt_to(DigitalSink.from_supply(
-            self.gnd, self.vdd,
-            voltage_limit_tolerance=(-0.3, 0.3)*Volt,
-            input_threshold_factor=(0.3, 0.7)
-        )), self.ctrl)
 
 
 class Sx1262_Device(FootprintBlock):
