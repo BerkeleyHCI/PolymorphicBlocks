@@ -1,6 +1,6 @@
 import unittest
 
-from .RfNetworks import PiLowPassFilter
+from .RfNetworks import PiLowPassFilter, LLowPassFilter
 
 
 class PiLowPassFilterTest(unittest.TestCase):
@@ -28,11 +28,11 @@ class PiLowPassFilterTest(unittest.TestCase):
         # stray capacitance checked against http://www.mathforengineers.com/AC-circuits-calculators/parallel-RC-circuit-Impedance.html
         # overall result checked against https://www.eeweb.com/tools/l-match/
         # l network 1
-        l1, c1 = PiLowPassFilter._calculate_l_values(2445e6, 2.007, complex(50, 0))
+        l1, c1 = LLowPassFilter._calculate_values(2445e6, 2.007, complex(50, 0))
         self.assertAlmostEqual(l1, 0.6389e-9, delta=0.0001e-9)
         self.assertAlmostEqual(c1, 6.366e-12, delta=0.001e-12)
 
         # l network 2
-        l2, c2 = PiLowPassFilter._calculate_l_values(2445e6, 2.007, complex(21, -1.15))
+        l2, c2 = LLowPassFilter._calculate_values(2445e6, 2.007, complex(21, -1.15))
         self.assertAlmostEqual(l2, 0.4026e-9, delta=0.0001e-9)
         self.assertAlmostEqual(c2, 9.354e-12, delta=0.001e-12)

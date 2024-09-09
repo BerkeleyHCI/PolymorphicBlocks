@@ -7,6 +7,27 @@ from .AbstractInductor import Inductor
 from .Categories import *
 
 
+class LLowPassFilter(AnalogFilter, GeneratorBlock):
+    @classmethod
+    def _calculate_values(cls, freq: float, r1: float, z2: complex) -> Tuple[float, float]:
+        """Calculate a L matching network for a real R1 (inductor side) and optionally-complex Z2 (capacitor side)
+        and returns L, C2"""
+        if z2.imag != 0:
+            q2 = z2.imag / z2.real  # Q of the load
+            # for z2 do a parallel transformation, to rp2 real resistance and xp2 capacitance
+            rp2 = z2.real * (q2 * q2 + 1)
+            xp2 = rp2 / q2
+            cp2 = PiLowPassFilter._reactance_to_capacitance(freq, xp2)  # parallel capacitance aka cstray
+        else:
+            rp2 = z2.real
+            cp2 = 0  # for real impedance, no stray capacitance
+
+        q = sqrt(rp2 / r1 - 1)
+        net_xp = -rp2 / q  # TODO: where is the negative sign coming from
+        net_xs = q * r1
+        return PiLowPassFilter._reactance_to_inductance(freq, net_xs), PiLowPassFilter._reactance_to_capacitance(freq, net_xp) - cp2
+
+
 class PiLowPassFilter(AnalogFilter, GeneratorBlock):
     """Passive-typed pi impedance matching network.
     Based on equations from https://www.silabs.com/documents/public/application-notes/an1275-imp-match-for-network-arch.pdf
@@ -26,33 +47,14 @@ class PiLowPassFilter(AnalogFilter, GeneratorBlock):
         return reactance / (2*pi*freq)
 
     @classmethod
-    def _calculate_l_values(cls, freq: float, r1: float, z2: complex) -> Tuple[float, float]:
-        """Calculate a L matching network for a real R1 and optionally-complex Z2
-        and returns L, C2"""
-        if z2.imag != 0:
-            q2 = z2.imag / z2.real  # Q of the load
-            # for z2 do a parallel transformation, to rp2 real resistance and xp2 capacitance
-            rp2 = z2.real * (q2 * q2 + 1)
-            xp2 = rp2 / q2
-            cp2 = cls._reactance_to_capacitance(freq, xp2)  # parallel capacitance aka cstray
-        else:
-            rp2 = z2.real
-            cp2 = 0  # for real impedance, no stray capacitance
-
-        q = sqrt(rp2 / r1 - 1)
-        net_xp = -rp2 / q  # TODO: where is the negative sign coming from
-        net_xs = q * r1
-        return cls._reactance_to_inductance(freq, net_xs), cls._reactance_to_capacitance(freq, net_xp) - cp2
-
-    @classmethod
     def _calculate_values(cls, freq: float, q: float, z1: complex, z2: complex) -> Tuple[float, float, float, float]:
         """Given the center frequency, q factor, impedances z1 and z2, calculate the matching network
         and returns C1, C2, L, and virtual resistance Rv"""
         rh = max(z1.real, z2.real)
         rv = rh / (q*q + 1)
 
-        l1, c1 = cls._calculate_l_values(freq, rv, z1)
-        l2, c2 = cls._calculate_l_values(freq, rv, z2)
+        l1, c1 = LLowPassFilter._calculate_values(freq, rv, z1)
+        l2, c2 = LLowPassFilter._calculate_values(freq, rv, z2)
 
         return c1, c2, l1 + l2, rv
 
