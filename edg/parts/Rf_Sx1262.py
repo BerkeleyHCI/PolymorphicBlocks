@@ -47,8 +47,8 @@ class Pe4259(Nonstrict3v3Compatible, Block):
         super().__init__()
         self.ic = self.Block(Pe4259_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
-        self.rf1 = self.Export(self.ic.rf1)
-        self.rf2 = self.Export(self.ic.rf2)
+        self.rf1 = self.Export(self.ic.rf1)  # connected when CTRL high
+        self.rf2 = self.Export(self.ic.rf2)  # connected when CTRL low
         self.rfc = self.Export(self.ic.rfc)
         self.ctrl = self.Port(DigitalSink.empty())
         self.vdd = self.Port(VoltageSink.empty(), [Power])
@@ -164,9 +164,9 @@ class Sx1262_Device(FootprintBlock):
             current_limits=(-0, 0)*mAmp,  # not specified
             input_threshold_factor=(0.3, 0.7)
         )
-        self.dio1 = self.Port(dio_model, optional=True)
-        self.dio2 = self.Port(dio_model, optional=True)
-        self.dio3 = self.Port(dio_model, optional=True)
+        self.dio1 = self.Port(dio_model, optional=True)  # generic IRQ
+        self.dio2 = self.Port(dio_model, optional=True)  # generic IRQ, plus TX switch (1=Tx, 0=otherwise)
+        self.dio3 = self.Port(dio_model, optional=True)  # generic IRQ, plus TXCO control
         self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 16)*MHertz))
         self.nss = self.Port(DigitalSink.from_bidir(dio_model))
         self.busy = self.Port(DigitalSource.from_bidir(dio_model), optional=True)
@@ -227,6 +227,7 @@ class Sx1262(Resettable, Block):
         self.cs = self.Export(self.ic.nss)
         self.require(self.reset.is_connected())  # TODO allow hard tie?
         self.connect(self.reset, self.ic.nreset)
+        self.dio1 = self.Export(self.ic.dio1, optional=True)
 
     def contents(self) -> None:
         super().contents()

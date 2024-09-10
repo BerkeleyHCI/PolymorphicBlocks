@@ -37,6 +37,9 @@ class EspLora(JlcBoardTop):
       self.mcu = imp.Block(IoController())
       self.mcu.with_mixin(IoControllerBle())
 
+      (self.usb_esd, ), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()),
+                                                    self.mcu.usb.request())
+
       (self.ledr, ), _ = self.chain(self.mcu.gpio.request('ledr'), imp.Block(IndicatorLed(Led.Red)))
       (self.ledg, ), _ = self.chain(self.mcu.gpio.request('ledg'), imp.Block(IndicatorLed(Led.Green)))
       (self.ledb, ), _ = self.chain(self.mcu.gpio.request('ledb'), imp.Block(IndicatorLed(Led.Blue)))
@@ -46,14 +49,22 @@ class EspLora(JlcBoardTop):
         (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
 
       self.lora = imp.Block(Sx1262())
-      self.connect(self.mcu.spi.request('lora'), self.lora.spi)
-      self.connect(self.mcu.gpio.request('lora_cs'), self.lora.cs)
-      self.connect(self.mcu.gpio.request('lora_rst'), self.lora.reset)
+      (self.tp_lora_spi, ), _ = self.chain(self.mcu.spi.request('lora'), imp.Block(SpiTestPoint('lr')), self.lora.spi)
+      (self.tp_lora_cs, ), _ = self.chain(self.mcu.gpio.request('lora_cs'), imp.Block(DigitalTestPoint('lr_cs')),
+                                          self.lora.cs)
+      (self.tp_lora_rst, ), _ = self.chain(self.mcu.gpio.request('lora_rst'), imp.Block(DigitalTestPoint('lr_rs')),
+                                           self.lora.reset)
+      (self.tp_lora_dio, ), _ = self.chain(self.mcu.gpio.request('lora_dio'), imp.Block(DigitalTestPoint('lr_di')),
+                                           self.lora.dio1)
 
       self.oled = imp.Block(Er_Oled_096_1_1())
       self.i2c_pull = imp.Block(I2cPullup())
       self.connect(self.mcu.i2c.request('i2c'), self.i2c_pull.i2c, self.oled.i2c)
       self.connect(self.mcu.gpio.request('oled_rst'), self.oled.reset)
+
+      self.sd = imp.Block(SdCard())
+      self.connect(self.mcu.spi.request('sd'), self.sd.spi)
+      self.connect(self.mcu.gpio.request('sd_cs'), self.sd.cs)
 
   def multipack(self) -> None:
     self.tx_cpack = self.PackedBlock(CombinedCapacitor())
@@ -77,16 +88,21 @@ class EspLora(JlcBoardTop):
           'lora_cs=GPIO7',
           'lora_rst=GPIO8',
           'lora.miso=GPIO3',
-          # TODO LORA_DIO = GPIO33
+          'lora_dio=GPIO38',  # IO33 on original, but is a PSRAM pin
           'i2c.sda=GPIO18',
           'i2c.scl=GPIO17',
+          'sd_cs=GPIO13',
+          'sd.mosi=GPIO11',
+          'sd.sck=GPIO14',
+          'sd.miso=GPIO2',
         ]),
-        (['mcu', 'programming'], 'uart-auto'),
-        (['usb', 'conn', 'current_limits'], Range(0.0, 0.52)),  # fudge it a bit
+        (['mcu', 'programming'], 'uart-auto-button'),
+        (['usb', 'conn', 'current_limits'], Range(0.0, 0.72)),  # fudge it a bit
         (['lora', 'balun', 'c', 'capacitance'], Range(2.8e-12 * 0.8, 2.8e-12 * 1.2))  # extend tolerance to find a part
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
+        (SdCard, Molex1040310811),
         (TestPoint, CompactKeystone5015),
       ],
       class_values=[
