@@ -42,7 +42,7 @@ class EspLora(JlcBoardTop):
       (self.ledb, ), _ = self.chain(self.mcu.gpio.request('ledb'), imp.Block(IndicatorLed(Led.Blue)))
 
       self.sw = ElementDict[DigitalSwitch]()
-      for i in range(4):
+      for i in range(2):
         (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
 
       self.lora = imp.Block(Sx1262())
@@ -60,9 +60,11 @@ class EspLora(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
         (['reg_3v3'], Ldl1117),
+        (['lora', 'ant'], RfConnectorAntenna),
+        (['lora', 'ant', 'conn'], Amphenol901143),
       ],
       instance_values=[
-        # (['refdes_prefix'], 'C'),  # unique refdes for panelization
+        (['refdes_prefix'], 'L'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
           # LoRa and OLED pinnings consistent with Lilygo T3S3
           'lora.mosi=GPIO6',
@@ -74,14 +76,15 @@ class EspLora(JlcBoardTop):
           'i2c.sda=GPIO18',
           'i2c.scl=GPIO17',
         ]),
-        (['mcu', 'programming'], 'uart-auto')
+        (['mcu', 'programming'], 'uart-auto'),
+        (['usb', 'conn', 'current_limits'], Range(0.0, 0.52))  # fudge it a bit
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
         (TestPoint, CompactKeystone5015),
       ],
       class_values=[
-        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
+        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
         (Nonstrict3v3Compatible, ['nonstrict_3v3_compatible'], True),
       ]
     )

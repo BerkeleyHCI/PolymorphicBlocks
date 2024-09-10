@@ -25,7 +25,8 @@ from .ESeriesUtil import ESeriesUtil
 from .SelectorArea import SelectorArea, PartsTableAreaSelector, FootprintAreaTable
 
 from .AbstractDevices import Battery
-from .AbstractConnector import BananaJack, BananaSafetyJack, RfConnector, RfConnectorTestPoint, UflConnector
+from .AbstractConnector import BananaJack, BananaSafetyJack, RfConnector, RfConnectorTestPoint, RfConnectorAntenna,\
+    UflConnector, SmaConnector, SmaMConnector, SmaFConnector
 from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
 from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor, AnalogClampResistor

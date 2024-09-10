@@ -250,9 +250,6 @@ class Sx1262(Resettable, Block):
             self.connect(self.dcc_l.b.adapt_to(VoltageSink()), self.ic.vreg)  # actually the source, but ic assumes ldo
 
             # RF signal chain
-            self.ant = self.Block(Antenna(frequency=(915-0.5, 915+0.5)*MHertz,  # up to 500kHz bandwidth in LoRa mode
-                                          impedance=50*Ohm(tol=0.1), power=(0, 0.159)*Watt))  # +22dBm
-
             # switch
             rf_voltage = (0, 10)*Volt  # assumed, wild guess
             rf_current = (0, 100)*mAmp  # assumed, wild guess
@@ -287,8 +284,9 @@ class Sx1262(Resettable, Block):
             self.connect(self.balun.rfi_p, self.ic.rfi_p)
 
             # antenna
-            (self.ant_pi, ), _ = self.chain(
+            (self.ant_pi, self.ant), _ = self.chain(
                 self.rfc_dcblock.pos,
                 imp.Block(PiLowPassFilter((915-915/2, 915+915/2)*MHertz, 50*Ohm, 0, 50*Ohm, 0.1,  # Q=1
                                           rf_voltage, rf_current)),
-                self.ant.a)
+                imp.Block(Antenna(frequency=(915-0.5, 915+0.5)*MHertz,  # up to 500kHz bandwidth in LoRa mode
+                                  impedance=50*Ohm(tol=0.1), power=(0, 0.159)*Watt)))    # +22dBm
