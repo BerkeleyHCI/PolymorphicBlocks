@@ -55,6 +55,11 @@ class EspLora(JlcBoardTop):
       self.connect(self.mcu.i2c.request('i2c'), self.i2c_pull.i2c, self.oled.i2c)
       self.connect(self.mcu.gpio.request('oled_rst'), self.oled.reset)
 
+  def multipack(self) -> None:
+    self.tx_cpack = self.PackedBlock(CombinedCapacitor())
+    self.pack(self.tx_cpack.elements.request('0'), ['lora', 'tx_l', 'c'])
+    self.pack(self.tx_cpack.elements.request('1'), ['lora', 'tx_pi', 'c1'])
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -77,7 +82,8 @@ class EspLora(JlcBoardTop):
           'i2c.scl=GPIO17',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
-        (['usb', 'conn', 'current_limits'], Range(0.0, 0.52))  # fudge it a bit
+        (['usb', 'conn', 'current_limits'], Range(0.0, 0.52)),  # fudge it a bit
+        (['lora', 'balun', 'c', 'capacitance'], Range(2.8e-12 * 0.8, 2.8e-12 * 1.2))  # extend tolerance to find a part
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
