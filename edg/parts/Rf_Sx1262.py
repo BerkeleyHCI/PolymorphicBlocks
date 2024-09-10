@@ -92,6 +92,7 @@ class Sx1262BalunLike(InternalSubcircuit, GeneratorBlock):
         l_c_new = (l_c * cp) / (cp - l_c)
         return l_l, l_c_new, cp
 
+    @init_in_parent
     def __init__(self, frequency: FloatLike, src_resistance: FloatLike, src_reactance: FloatLike,
                  load_resistance: FloatLike, tolerance: FloatLike,
                  voltage: RangeLike, current: RangeLike):
@@ -213,7 +214,9 @@ class Sx1262_Device(FootprintBlock):
 
 class Sx1262(Block):
     """Sub-GHZ (150-960MHz) RF transceiver with LoRa support, with discrete RF frontend and parameterized by frequency.
-    Up to 62.5kb/s in LoRa mode and 300kb/s in FSK mode."""
+    Up to 62.5kb/s in LoRa mode and 300kb/s in FSK mode.
+    TODO: RF frequency parameterization
+    """
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Sx1262_Device())

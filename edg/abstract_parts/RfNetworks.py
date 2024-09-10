@@ -7,7 +7,9 @@ from .AbstractInductor import Inductor
 from .Categories import *
 
 
-class LLowPassFilter(AnalogFilter, GeneratorBlock):
+class LLowPassFilter:
+    # TODO: implement as circuit generator
+
     @classmethod
     def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
         """Calculate a L matching network for complex Z1 (series-inductor side) and Z2 (parallel-capacitor side)
@@ -89,7 +91,9 @@ class LLowPassFilterWith2HNotch(AnalogFilter, GeneratorBlock):
         self.connect(self.gnd, self.c.neg.adapt_to(Ground()))
 
 
-class LHighPassFilter(AnalogFilter, GeneratorBlock):
+class LHighPassFilter:
+    # TODO: implement as circuit generator
+
     @classmethod
     def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
         """Calculate a L matching network for complex Z1 (parallel-inductor side) and Z2 (series-capacitor side)
