@@ -50,6 +50,11 @@ class EspLora(JlcBoardTop):
       self.connect(self.mcu.gpio.request('lora_cs'), self.lora.cs)
       self.connect(self.mcu.gpio.request('lora_rst'), self.lora.reset)
 
+      self.oled = imp.Block(Er_Oled_096_1_1())
+      self.i2c_pull = imp.Block(I2cPullup())
+      self.connect(self.mcu.i2c.request('i2c'), self.i2c_pull.i2c, self.oled.i2c)
+      self.connect(self.mcu.gpio.request('oled_rst'), self.oled.reset)
+
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -59,6 +64,15 @@ class EspLora(JlcBoardTop):
       instance_values=[
         # (['refdes_prefix'], 'C'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
+          # LoRa and OLED pinnings consistent with Lilygo T3S3
+          'lora.mosi=GPIO6',
+          'lora.sck=GPIO5',
+          'lora_cs=GPIO7',
+          'lora_rst=GPIO8',
+          'lora.miso=GPIO3',
+          # TODO LORA_DIO = GPIO33
+          'i2c.sda=GPIO18',
+          'i2c.scl=GPIO17',
         ]),
         (['mcu', 'programming'], 'uart-auto')
       ],
