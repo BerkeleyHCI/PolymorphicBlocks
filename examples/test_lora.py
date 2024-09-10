@@ -45,7 +45,10 @@ class EspLora(JlcBoardTop):
       for i in range(4):
         (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
 
-      self.lora = self.Block(Sx1262())
+      self.lora = imp.Block(Sx1262())
+      self.connect(self.mcu.spi.request('lora'), self.lora.spi)
+      self.connect(self.mcu.gpio.request('lora_cs'), self.lora.cs)
+      self.connect(self.mcu.gpio.request('lora_rst'), self.lora.reset)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
@@ -65,6 +68,7 @@ class EspLora(JlcBoardTop):
       ],
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
+        (Nonstrict3v3Compatible, ['nonstrict_3v3_compatible'], True),
       ]
     )
 

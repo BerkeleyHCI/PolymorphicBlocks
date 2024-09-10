@@ -164,12 +164,12 @@ class Sx1262_Device(FootprintBlock):
             current_limits=(-0, 0)*mAmp,  # not specified
             input_threshold_factor=(0.3, 0.7)
         )
-        self.dio1 = self.Port(dio_model)
-        self.dio2 = self.Port(dio_model)
-        self.dio3 = self.Port(dio_model)
+        self.dio1 = self.Port(dio_model, optional=True)
+        self.dio2 = self.Port(dio_model, optional=True)
+        self.dio3 = self.Port(dio_model, optional=True)
         self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 16)*MHertz))
         self.nss = self.Port(DigitalSink.from_bidir(dio_model))
-        self.busy = self.Port(DigitalSource.from_bidir(dio_model))
+        self.busy = self.Port(DigitalSource.from_bidir(dio_model), optional=True)
 
         self.nreset = self.Port(DigitalSink.from_supply(
             self.gnd, self.vbat_io,
@@ -212,7 +212,7 @@ class Sx1262_Device(FootprintBlock):
         )
 
 
-class Sx1262(Block):
+class Sx1262(Resettable, Block):
     """Sub-GHZ (150-960MHz) RF transceiver with LoRa support, with discrete RF frontend and parameterized by frequency.
     Up to 62.5kb/s in LoRa mode and 300kb/s in FSK mode.
     TODO: RF frequency parameterization
@@ -223,6 +223,11 @@ class Sx1262(Block):
         self.pwr = self.Export(self.ic.vbat, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
 
+        self.spi = self.Export(self.ic.spi)
+        self.cs = self.Export(self.ic.nss)
+        self.require(self.reset.is_connected())  # TODO allow hard tie?
+        self.connect(self.reset, self.ic.nreset)
+
     def contents(self) -> None:
         super().contents()
         self.connect(self.ic.vbat_io, self.pwr)
@@ -230,14 +235,14 @@ class Sx1262(Block):
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common])
         ) as imp:
-            self.xtal = self.Block(Crystal(30*MHertz(tol=30e-6)))  # 30ppm for LoRaWAN systems
+            self.xtal = imp.Block(Crystal(30*MHertz(tol=30e-6)))  # 30ppm for LoRaWAN systems
             self.connect(self.xtal.crystal, self.ic.xtal)
 
-            self.vreg_cap = self.Block(DecouplingCapacitor(470*nFarad(tol=0.2))).connected(pwr=self.ic.vreg)
-            self.vbat_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(pwr=self.ic.vbat)
-            self.vdd_cap = self.Block(DecouplingCapacitor(1*uFarad(tol=0.2))).connected(pwr=self.ic.vbat)
-            self.vrpa_cap0 = self.Block(DecouplingCapacitor(47*pFarad(tol=0.05))).connected(pwr=self.ic.vr_pa)
-            self.vrpa_cap1 = self.Block(DecouplingCapacitor(47*nFarad(tol=0.05))).connected(pwr=self.ic.vr_pa)
+            self.vreg_cap = imp.Block(DecouplingCapacitor(470*nFarad(tol=0.2))).connected(pwr=self.ic.vreg)
+            self.vbat_cap = imp.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(pwr=self.ic.vbat)
+            self.vdd_cap = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2))).connected(pwr=self.ic.vbat)
+            self.vrpa_cap0 = imp.Block(DecouplingCapacitor(47*pFarad(tol=0.05))).connected(pwr=self.ic.vr_pa)
+            self.vrpa_cap1 = imp.Block(DecouplingCapacitor(47*nFarad(tol=0.05))).connected(pwr=self.ic.vr_pa)
 
             self.dcc_l = self.Block(Inductor(  # from datasheet 5.1.5
                 15*uHenry(tol=0.2), current=(0, 100)*mAmp, frequency=20*MHertz(tol=0), resistance_dc=(0, 2)*Ohm))
@@ -249,8 +254,12 @@ class Sx1262(Block):
                                           impedance=50*Ohm(tol=0.1), power=(0, 0.159)*Watt))  # +22dBm
 
             # switch
-            dcblock_model = Capacitor(47*pFarad(tol=0.05))
-            self.rf_sw = self.Block(Pe4259())
+            rf_voltage = (0, 10)*Volt  # assumed, wild guess
+            rf_current = (0, 100)*mAmp  # assumed, wild guess
+            dcblock_model = Capacitor(47*pFarad(tol=0.05), voltage=rf_voltage)
+            self.rf_sw = imp.Block(Pe4259())
+            self.connect(self.rf_sw.vdd, self.pwr)
+            self.connect(self.rf_sw.ctrl, self.ic.dio2)
             self.tx_dcblock = self.Block(dcblock_model)
             self.connect(self.tx_dcblock.pos, self.rf_sw.rf1)
             self.rfc_dcblock = self.Block(dcblock_model)
@@ -264,15 +273,15 @@ class Sx1262(Block):
             (self.tx_l, self.tx_pi), _ = self.chain(
                 self.ic.rfo,
                 imp.Block(LLowPassFilterWith2HNotch(915*MHertz, 11.7*Ohm, -4.8*Ohm, 50*Ohm, 0.1,
-                                                    (0, 10)*Volt, (0, 100)*mAmp)),
+                                                    rf_voltage, rf_current)),
                 imp.Block(PiLowPassFilter((915-915/2, 915+915/2)*MHertz, 50*Ohm, 0, 50*Ohm, 0.1,  # Q=1
-                                          (0, 10)*Volt, (0, 100)*mAmp)),
+                                          rf_voltage, rf_current)),
                 self.tx_dcblock.neg
             )
 
             # receive filter chain
-            self.balun = self.Block(Sx1262BalunLike(915*MHertz, 74*Ohm, -134*Ohm, 50*Ohm, 0.1,
-                                                    (0, 10)*Volt, (0, 100)*mAmp))
+            self.balun = imp.Block(Sx1262BalunLike(915*MHertz, 74*Ohm, -134*Ohm, 50*Ohm, 0.1,
+                                                    rf_voltage, rf_current))
             self.connect(self.balun.input, self.rf_sw.rf2)
             self.connect(self.balun.rfi_n, self.ic.rfi_n)
             self.connect(self.balun.rfi_p, self.ic.rfi_p)
@@ -281,5 +290,5 @@ class Sx1262(Block):
             (self.ant_pi, ), _ = self.chain(
                 self.rfc_dcblock.pos,
                 imp.Block(PiLowPassFilter((915-915/2, 915+915/2)*MHertz, 50*Ohm, 0, 50*Ohm, 0.1,  # Q=1
-                                          (0, 10)*Volt, (0, 100)*mAmp)),
+                                          rf_voltage, rf_current)),
                 self.ant.a)
