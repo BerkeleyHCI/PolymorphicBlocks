@@ -11,10 +11,19 @@ class JiecangRj12Connector(Block):
         self.conn = self.Block(PassiveConnector(length=6))
         self.gnd = self.Export(self.conn.pins.request('2').adapt_to(Ground()), [Common])
         self.pwr = self.Export(self.conn.pins.request('4').adapt_to(VoltageSource(
-            voltage_out=5*Volt(tol=0))))  # TODO no voltage tolerance or current limits specified
+            voltage_out=5*Volt(tol=0),
+            current_limits=(0, 300)*mAmp)))  # reportedly drives at least 300mA
         self.uart = self.Port(UartPort.empty())
-        self.connect(self.uart.tx, self.conn.pins.request('5').adapt_to(DigitalSource()))  # DTX, controller -> handset
-        self.connect(self.uart.rx, self.conn.pins.request('3').adapt_to(DigitalSink()))  # HTX, handset -> controller
+        # UART pins internally pulled up to 5v, use a zener as a cheap level shifter
+        zener_model = ZenerDiode((3.0, 3.6)*Volt)
+        self.z_dtx = self.Block(zener_model)
+        self.z_htx = self.Block(zener_model)
+        self.connect(self.z_dtx.anode.adapt_to(Ground()), self.z_htx.anode.adapt_to(Ground()), self.gnd)
+
+        self.connect(self.conn.pins.request('5'), self.z_dtx.cathode)  # DTX, controller -> handset
+        self.connect(self.uart.tx, self.z_dtx.cathode.adapt_to(DigitalSource()))
+        self.connect(self.conn.pins.request('3'), self.z_htx.cathode)  # HTX, handset -> controller
+        self.connect(self.uart.rx, self.z_htx.cathode.adapt_to(DigitalSink()))
 
 
 class DeskController(JlcBoardTop):
@@ -74,7 +83,7 @@ class DeskController(JlcBoardTop):
                 self.io8_pu.io,
                 imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
                 self.Block(AnalogTestPoint()),
-                imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
+                imp.Block(Tpa2005d1(gain=Range.from_tolerance(4, 0.2))),
                 self.Block(Speaker()))
 
             (self.npx_tp, self.npx, ), _ = self.chain(self.mcu.gpio.request('npx'),
@@ -97,6 +106,9 @@ class DeskController(JlcBoardTop):
                     'spk=_GPIO8_STRAP_EXT_PU',  # use the strapping pin to save on IOs
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),
+                (['spk_drv', 'pwr', 'current_draw'], Range(0.0022, 0.08)),  # don't run at full power
+                (['npx', 'vdd', 'current_draw'], Range(0.0036, 0.08)),
+                (['mcu', 'ic', 'pwr', 'current_draw'], Range(1.0E-6, 0.1))  # assume it doesn't run full bore
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
