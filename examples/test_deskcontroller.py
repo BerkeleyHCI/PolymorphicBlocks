@@ -60,16 +60,18 @@ class DeskController(JlcBoardTop):
             self.oled = imp.Block(Er_Oled_096_1_1())
             self.i2c_pull = imp.Block(I2cPullup())
             self.connect(self.mcu.i2c.request('i2c'), self.i2c_pull.i2c, self.oled.i2c)
-            (self.io2_pu, ), _ = self.chain(self.mcu.gpio.request('oled_rst'),
-                                            imp.Block(PullupResistor(4.7*kOhm(tol=0.05))), self.oled.reset)
+
+            self.io8_pu = imp.Block(PullupResistor(4.7*kOhm(tol=0.05)))
+            self.io2_pu = imp.Block(PullupResistor(4.7*kOhm(tol=0.05)))
+            self.connect(self.mcu.gpio.request('oled_rst'), self.io2_pu.io, self.oled.reset)
+            self.connect(self.mcu.gpio.request('spk'), self.io8_pu.io)  # TODO support in chain
 
         with self.implicit_connect(  # 5V DOMAIN
                 ImplicitConnect(self.pwr, [Power]),
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            (self.spk_dac, self.io8_pu, self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
-                self.mcu.gpio.request('spk'),
-                imp.Block(PullupResistor(4.7*kOhm(tol=0.05))),
+            (self.spk_dac, self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
+                self.io8_pu.io,
                 imp.Block(LowPassRcDac(1*kOhm(tol=0.05), 5*kHertz(tol=0.5))),
                 self.Block(AnalogTestPoint()),
                 imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
