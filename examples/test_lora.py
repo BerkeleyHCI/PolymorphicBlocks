@@ -17,8 +17,7 @@ class EspLora(JlcBoardTop):
     self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
     self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
 
-    # POWER
-    with self.implicit_connect(
+    with self.implicit_connect(  # POWER
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
@@ -29,8 +28,7 @@ class EspLora(JlcBoardTop):
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-    # 3V3 DOMAIN
-    with self.implicit_connect(
+    with self.implicit_connect(  # 3V3 DOMAIN
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:

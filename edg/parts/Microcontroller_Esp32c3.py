@@ -178,6 +178,9 @@ class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resett
     self.ic: Esp32c3_Wroom02_Device
     self.generator_param(self.reset.is_connected())
 
+    self.io2_ext_connected: bool = False
+    self.io8_ext_connected: bool = False
+
   def contents(self) -> None:
     super().contents()
 
@@ -193,14 +196,6 @@ class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resett
       self.vcc_cap0 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))  # C1
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
-      # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
-      # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
-      # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
-      vdd_pull = self.pwr.as_digital_source()
-      self.connect(self.ic.io8, vdd_pull)
-      self.connect(self.ic.io2, vdd_pull)
-
-
   def generate(self) -> None:
     super().generate()
 
@@ -209,6 +204,36 @@ class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resett
     else:
       self.en_pull = self.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(
         gnd=self.gnd, pwr=self.pwr, io=self.ic.en)
+
+    # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
+    # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
+    # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
+    if not self.io8_ext_connected:
+      self.connect(self.ic.io8, self.pwr.as_digital_source())
+      self.io8_ext_connected = True  # set to ensure this runs after external connections
+    if not self.io2_ext_connected:
+      self.connect(self.ic.io2, self.pwr.as_digital_source())
+      self.io2_ext_connected = True  # set to ensure this runs after external connections
+
+  ExportType = TypeVar('ExportType', bound=Port)
+  def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
+                          assign: Optional[str]) -> Optional[str]:
+    """Add support for _GPIO2/8/9_STRAP and remap them to io2/8/9."""
+    if isinstance(self_io, DigitalBidir):
+      if assign == f'{name}=_GPIO2_STRAP_EXT_PU':  # assume external pullup
+        self.connect(self_io, self.ic.io2)
+        assert not self.io2_ext_connected  # assert not yet hard tied
+        self.io2_ext_connected = True
+        return None
+      elif assign == f'{name}=_GPIO8_STRAP_EXT_PU':  # assume external pullup
+        self.connect(self_io, self.ic.io8)
+        assert not self.io8_ext_connected  # assert not yet hard tied
+        self.io8_ext_connected = True
+        return None
+      elif assign == f'{name}=_GPIO9_STRAP':
+        self.connect(self_io, self.ic.io9)
+        return None
+    return super()._make_export_vector(self_io, inner_vector, name, assign)
 
 
 class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
@@ -359,12 +384,11 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
     # Note strapping pins (section 3.3) IO2, 8, 9; IO9 is internally pulled up
     # IO9 (internally pulled up) is 1 for SPI boot and 0 for download boot
     # IO2 must be 1 for both SPI and download boot, while IO8 must be 1 for download boot
-    vdd_pull = self.pwr.as_digital_source()
     if not self.io8_ext_connected:
-      self.connect(self.ic.io8, vdd_pull)
+      self.connect(self.ic.io8, self.pwr.as_digital_source())
       self.io8_ext_connected = True  # set to ensure this runs after external connections
     if not self.io2_ext_connected:
-      self.connect(self.ic.io2, vdd_pull)
+      self.connect(self.ic.io2, self.pwr.as_digital_source())
       self.io2_ext_connected = True  # set to ensure this runs after external connections
 
   ExportType = TypeVar('ExportType', bound=Port)
@@ -372,12 +396,12 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
                           assign: Optional[str]) -> Optional[str]:
     """Add support for _GPIO2/8/9_STRAP and remap them to io2/8/9."""
     if isinstance(self_io, DigitalBidir):
-      if assign == f'{name}=_GPIO2_STRAP':
+      if assign == f'{name}=_GPIO2_STRAP_EXT_PU':
         self.connect(self_io, self.ic.io2)
         assert not self.io2_ext_connected  # assert not yet hard tied
         self.io2_ext_connected = True
         return None
-      elif assign == f'{name}=_GPIO8_STRAP':
+      elif assign == f'{name}=_GPIO8_STRAP_EXT_PU':
         self.connect(self_io, self.ic.io8)
         assert not self.io8_ext_connected  # assert not yet hard tied
         self.io8_ext_connected = True

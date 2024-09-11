@@ -105,7 +105,7 @@ class IotFan(JlcBoardTop):
         (['refdes_prefix'], 'F'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
           'v12_sense=4',
-          'rgb=_GPIO2_STRAP',  # force using the strapping pin, since we're out of IOs
+          'rgb=_GPIO2_STRAP_EXT_PU',  # force using the strapping pin, since we're out of IOs
           'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
 
           'fan_drv_0=5',
