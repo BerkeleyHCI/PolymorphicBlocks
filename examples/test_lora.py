@@ -56,7 +56,11 @@ class EspLora(JlcBoardTop):
       self.oled = imp.Block(Er_Oled_096_1_1())
       self.i2c_pull = imp.Block(I2cPullup())
       self.connect(self.mcu.i2c.request('i2c'), self.i2c_pull.i2c, self.oled.i2c)
-      self.connect(self.mcu.gpio.request('oled_rst'), self.oled.reset)
+      (self.oled_rst, self.oled_pull), _ = self.chain(
+        imp.Block(Apx803s()),  # -29 variant used on Adafruit boards
+        imp.Block(PullupResistor(10*kOhm(tol=0.05))),
+        self.oled.reset
+      )
 
       self.sd = imp.Block(SdCard())
       self.connect(self.mcu.spi.request('sd'), self.sd.spi)
