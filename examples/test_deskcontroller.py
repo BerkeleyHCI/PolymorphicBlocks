@@ -14,15 +14,20 @@ class JiecangRj12Connector(Block):
             voltage_out=5*Volt(tol=0),
             current_limits=(0, 300)*mAmp)))  # reportedly drives at least 300mA
         self.uart = self.Port(UartPort.empty())
-        # UART pins internally pulled up to 5v, use a zener as a cheap level shifter
+        # UART pins internally pulled up to 5v, use a resistor + zener as a cheap level shifter
+        res_model = Resistor(1*kOhm(tol=0.05))
+        self.r_dtx = self.Block(res_model)
+        self.r_htx = self.Block(res_model)
         zener_model = ZenerDiode((3.0, 3.6)*Volt)
         self.z_dtx = self.Block(zener_model)
         self.z_htx = self.Block(zener_model)
         self.connect(self.z_dtx.anode.adapt_to(Ground()), self.z_htx.anode.adapt_to(Ground()), self.gnd)
 
-        self.connect(self.conn.pins.request('5'), self.z_dtx.cathode)  # DTX, controller -> handset
+        self.connect(self.conn.pins.request('5'), self.r_dtx.a)  # DTX, controller -> handset
+        self.connect(self.r_dtx.b, self.z_dtx.cathode)
         self.connect(self.uart.tx, self.z_dtx.cathode.adapt_to(DigitalSource()))
-        self.connect(self.conn.pins.request('3'), self.z_htx.cathode)  # HTX, handset -> controller
+        self.connect(self.conn.pins.request('3'), self.r_htx.a)  # HTX, handset -> controller
+        self.connect(self.r_htx.b, self.z_htx.cathode)
         self.connect(self.uart.rx, self.z_htx.cathode.adapt_to(DigitalSink()))
 
 
