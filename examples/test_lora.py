@@ -42,9 +42,7 @@ class EspLora(JlcBoardTop):
       (self.ledg, ), _ = self.chain(self.mcu.gpio.request('ledg'), imp.Block(IndicatorLed(Led.Green)))
       (self.ledb, ), _ = self.chain(self.mcu.gpio.request('ledb'), imp.Block(IndicatorLed(Led.Blue)))
 
-      self.sw = ElementDict[DigitalSwitch]()
-      for i in range(2):
-        (self.sw[i], ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw{i}'))
+      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw'))
 
       self.lora = imp.Block(Sx1262())
       (self.tp_lora_spi, ), _ = self.chain(self.mcu.spi.request('lora'), imp.Block(SpiTestPoint('lr')), self.lora.spi)

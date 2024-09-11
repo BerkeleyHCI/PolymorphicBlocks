@@ -279,7 +279,7 @@ class Sx1262(Resettable, Block):
 
             # receive filter chain
             self.balun = imp.Block(Sx1262BalunLike(915*MHertz, 74*Ohm, -134*Ohm, 50*Ohm, 0.1,
-                                                    rf_voltage, rf_current))
+                                                   rf_voltage, rf_current))
             self.connect(self.balun.input, self.rf_sw.rf2)
             self.connect(self.balun.rfi_n, self.ic.rfi_n)
             self.connect(self.balun.rfi_p, self.ic.rfi_p)
