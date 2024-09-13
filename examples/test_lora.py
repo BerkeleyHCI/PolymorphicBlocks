@@ -11,18 +11,21 @@ class EspLora(JlcBoardTop):
     super().contents()
 
     self.usb = self.Block(UsbCReceptacle())
-    self.pwr = self.connect(self.usb.pwr)
     self.gnd = self.connect(self.usb.gnd)
-
-    self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
     self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
 
     with self.implicit_connect(  # POWER
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.choke, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-        self.pwr,
+      (self.choke, self.tp_pwr), _ = self.chain(
+        self.usb.pwr,
         self.Block(SeriesPowerFerriteBead()),
+        self.Block(VoltageTestPoint())
+      )
+      self.pwr = self.connect(self.choke.pwr_out)
+
+      (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
+        self.pwr,
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
