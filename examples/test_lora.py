@@ -20,8 +20,9 @@ class EspLora(JlcBoardTop):
     with self.implicit_connect(  # POWER
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
+      (self.choke, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
         self.pwr,
+        self.Block(SeriesPowerFerriteBead()),
         imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
@@ -41,8 +42,6 @@ class EspLora(JlcBoardTop):
       (self.ledr, ), _ = self.chain(self.mcu.gpio.request('ledr'), imp.Block(IndicatorLed(Led.Red)))
       (self.ledg, ), _ = self.chain(self.mcu.gpio.request('ledg'), imp.Block(IndicatorLed(Led.Green)))
       (self.ledb, ), _ = self.chain(self.mcu.gpio.request('ledb'), imp.Block(IndicatorLed(Led.Blue)))
-
-      (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request(f'sw'))
 
       self.lora = imp.Block(Sx1262())
       (self.tp_lora_spi, ), _ = self.chain(self.mcu.spi.request('lora'), imp.Block(SpiTestPoint('lr')), self.lora.spi)
