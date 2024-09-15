@@ -97,6 +97,10 @@ class EspLora(JlcBoardTop):
           'sd.mosi=GPIO11',
           'sd.sck=GPIO14',
           'sd.miso=GPIO2',
+
+          'ledr=34',
+          'ledg=35',
+          'ledb=39',
         ]),
         (['mcu', 'programming'], 'uart-auto-button'),
         (['usb', 'conn', 'current_limits'], Range(0.0, 0.72)),  # fudge it a bit
