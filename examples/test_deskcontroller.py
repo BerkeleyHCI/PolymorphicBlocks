@@ -100,7 +100,7 @@ class DeskController(JlcBoardTop):
             instance_refinements=[
                 (['mcu'], Esp32c3_Wroom02),
                 (['reg_3v3'], Ldl1117),
-                (['conn', 'conn'], JstPhKHorizontal),
+                (['conn', 'conn'], JstPhKVertical),
                 (['spk', 'conn'], JstPhKVertical),
             ],
             instance_values=[
@@ -120,6 +120,8 @@ class DeskController(JlcBoardTop):
                 (TagConnect, TagConnectNonLegged),
                 (TestPoint, CompactKeystone5015),
                 (Speaker, ConnectorSpeaker),
+                (Switch, KailhSocket),
+                (Neopixel, Sk6812Mini_E),
             ],
             class_values=[
                 (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
