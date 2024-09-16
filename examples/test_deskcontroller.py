@@ -99,7 +99,7 @@ class DeskController(JlcBoardTop):
         return super().refinements() + Refinements(
             instance_refinements=[
                 (['mcu'], Esp32c3_Wroom02),
-                (['reg_3v3'], Ldl1117),
+                (['reg_3v3'], Ap7215),
                 (['conn', 'conn'], JstPhKVertical),
                 (['spk', 'conn'], JstPhKVertical),
             ],
