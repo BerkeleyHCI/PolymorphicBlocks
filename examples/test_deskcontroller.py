@@ -101,7 +101,7 @@ class DeskController(JlcBoardTop):
                 (['mcu'], Esp32c3_Wroom02),
                 (['reg_3v3'], Ldl1117),
                 (['conn', 'conn'], JstPhKHorizontal),
-                (['spk', 'conn'], JstPhKHorizontal),
+                (['spk', 'conn'], JstPhKVertical),
             ],
             instance_values=[
                 (['refdes_prefix'], 'D'),  # unique refdes for panelization
@@ -117,6 +117,7 @@ class DeskController(JlcBoardTop):
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
+                (TagConnect, TagConnectNonLegged),
                 (TestPoint, CompactKeystone5015),
                 (Speaker, ConnectorSpeaker),
             ],
