@@ -104,7 +104,15 @@ class EspLora(JlcBoardTop):
         ]),
         (['mcu', 'programming'], 'uart-auto-button'),
         (['usb', 'conn', 'current_limits'], Range(0.0, 0.72)),  # fudge it a bit
-        (['lora', 'balun', 'c', 'capacitance'], Range(2.8e-12 * 0.8, 2.8e-12 * 1.2))  # extend tolerance to find a part
+        (['lora', 'balun', 'c', 'capacitance'], Range(2.8e-12 * 0.8, 2.8e-12 * 1.2)),  # extend tolerance to find a part
+        (['lora', 'dcc_l', 'manual_frequency_rating'], Range(0, 20e6)),
+        # these RF passives aren't common / basic parts and will be DNP'd anyways
+        (['lora', 'vrpa_cap1', 'cap', 'require_basic_part'], False),
+        (['lora', 'tx_l', 'c_lc', 'require_basic_part'], False),
+        (['lora', 'tx_pi', 'c2', 'require_basic_part'], False),
+        (['lora', 'balun', 'c_p', 'require_basic_part'], False),
+        (['lora', 'ant_pi', 'c1', 'require_basic_part'], False),
+        (['lora', 'ant_pi', 'c2', 'require_basic_part'], False),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
