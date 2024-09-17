@@ -66,8 +66,8 @@ class DeskController(JlcBoardTop):
             self.connect(self.mcu.uart.request('ctl'), self.conn.uart)
 
             self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
-            self.connect(self.sw.cols, self.mcu.gpio.request_vector())
-            self.connect(self.sw.rows, self.mcu.gpio.request_vector())
+            self.connect(self.sw.cols, self.mcu.gpio.request_vector('swc'))
+            self.connect(self.sw.rows, self.mcu.gpio.request_vector('swr'))
 
             (self.ledr, ), _ = self.chain(self.mcu.gpio.request('ledr'), imp.Block(IndicatorLed(Led.Red)))
 
@@ -75,9 +75,9 @@ class DeskController(JlcBoardTop):
             self.i2c_pull = imp.Block(I2cPullup())
             self.connect(self.mcu.i2c.request('i2c'), self.i2c_pull.i2c, self.oled.i2c)
 
-            self.io8_pu = imp.Block(PullupResistor(4.7*kOhm(tol=0.05)))
             self.io2_pu = imp.Block(PullupResistor(4.7*kOhm(tol=0.05)))
-            self.connect(self.mcu.gpio.request('oled_rst'), self.io2_pu.io, self.oled.reset)
+            self.connect(self.mcu.gpio.request('oled_rst'), self.oled.reset, self.io2_pu.io)
+            self.io8_pu = imp.Block(PullupResistor(4.7*kOhm(tol=0.05)))
             self.connect(self.mcu.gpio.request('spk'), self.io8_pu.io)  # TODO support in chain
 
         with self.implicit_connect(  # 5V DOMAIN
@@ -109,6 +109,15 @@ class DeskController(JlcBoardTop):
                     'ledr=_GPIO9_STRAP',  # use the strapping pin to save on IOs
                     'oled_rst=_GPIO2_STRAP_EXT_PU',  # use the strapping pin to save on IOs
                     'spk=_GPIO8_STRAP_EXT_PU',  # use the strapping pin to save on IOs
+
+                    'i2c.sda=10',  # PU part of I2C pullup
+                    'i2c.scl=13',
+
+                    'swr_2=14',
+                    'swr_1=15',
+                    'swr_0=17',
+                    'swc_1=18',
+                    'swc_0=3',
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),
                 (['spk_drv', 'pwr', 'current_draw'], Range(0.0022, 0.08)),  # don't run at full power

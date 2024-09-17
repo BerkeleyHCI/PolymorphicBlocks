@@ -119,7 +119,7 @@ class Esp32c3_Base(Esp32c3_Ios, BaseIoControllerPinmapGenerator):
     # section 2.4: strapping IOs that need a fixed value to boot, and currently can't be allocated as GPIO
     dio_model = self._dio_model(self.pwr)
     self.en = self.Port(dio_model)  # needs external pullup
-    self.io2 = self.Port(dio_model)  # needs external pullup
+    self.io2 = self.Port(dio_model)  # needs external pullup; affects IO glitching on boot
     self.io8 = self.Port(dio_model)  # needs external pullup, required for download boot
     self.io9 = self.Port(dio_model, optional=True)  # internally pulled up for SPI boot, connect to GND for download
 
