@@ -41,6 +41,7 @@ from .ResistiveDivider import FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, AnalogLowPassRc, DigitalLowPassRc, DigitalLowPassRcArray, LowPassRcDac, PullupDelayRc
 from .RfNetworks import LLowPassFilter, LHighPassFilter, LLowPassFilterWith2HNotch, PiLowPassFilter
 from .I2cPullup import I2cPullup
+from .LevelShifter import BidirectionaLevelShifter
 from .Resettable import Resettable
 
 from .AbstractDiodes import BaseDiode, Diode, DiodeStandardFootprint, TableDiode

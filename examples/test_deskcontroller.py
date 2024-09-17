@@ -91,9 +91,13 @@ class DeskController(JlcBoardTop):
                 imp.Block(Tpa2005d1(gain=Range.from_tolerance(4, 0.2))),
                 self.Block(Speaker()))
 
-            (self.npx_tp, self.npx, ), _ = self.chain(self.mcu.gpio.request('npx'),
-                                                      self.Block(DigitalTestPoint()),
-                                                      imp.Block(NeopixelArray(6)))
+            self.npx_shift = imp.Block(BidirectionaLevelShifter(lv_res=RangeExpr.INF))
+            self.connect(self.npx_shift.lv_pwr, self.v3v3)
+            self.connect(self.npx_shift.hv_pwr, self.pwr)
+            self.connect(self.mcu.gpio.request('npx'), self.npx_shift.lv_io)
+            (self.npx_tp, self.npx), _ = self.chain(self.npx_shift.hv_io,
+                                                    self.Block(DigitalTestPoint()),
+                                                    imp.Block(NeopixelArray(6)))
 
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
