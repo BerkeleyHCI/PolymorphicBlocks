@@ -112,8 +112,8 @@ class DeskController(JlcBoardTop):
                     'oled_rst=_GPIO2_STRAP_EXT_PU',  # use the strapping pin to save on IOs
                     'spk=_GPIO8_STRAP_EXT_PU',  # use the strapping pin to save on IOs
 
-                    'i2c.sda=17',  # PU part of I2C pullup
-                    'i2c.scl=18',
+                    'i2c.sda=18',
+                    'i2c.scl=17',
 
                     'swr_2=10',
                     'swr_1=13',
