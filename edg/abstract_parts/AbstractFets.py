@@ -11,7 +11,10 @@ class FetStandardFootprint(StandardFootprint['Fet']):
   REFDES_PREFIX = 'Q'
 
   FOOTPRINT_PINNING_MAP = {
-    'Package_TO_SOT_SMD:SOT-23': lambda block: {
+    (
+      'Package_TO_SOT_SMD:SOT-23',
+      'Package_TO_SOT_SMD:SOT-323_SC-70',
+    ): lambda block: {
       '1': block.gate,
       '2': block.source,
       '3': block.drain,
