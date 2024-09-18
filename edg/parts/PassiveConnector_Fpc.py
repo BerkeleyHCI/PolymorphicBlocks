@@ -88,7 +88,7 @@ class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
     # TODO this isn't the intended hook and uses side effects, but it works for now
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
     self.assign(self.actual_basic_part, False)
-    return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
+    return (f'Connector_FFC-FPC:TE_{length//10}-1734839-{length%10}_1x{length:02d}-1MP_P0.5mm_Horizontal',
             "Jushuo", f"AFC07-S{length:02d}ECA-00")  # CA is packaging
 
 
