@@ -2,7 +2,7 @@ from ..electronics_model import *
 from .Categories import *
 from .AbstractResistor import PullupResistor
 from .AbstractFets import Fet
-from .DummyDevices import DummyGround
+from .DummyDevices import DummyGround, DummyVoltageSink
 
 class BidirectionaLevelShifter(Interface, GeneratorBlock):
     """Bidirectional level shifter for low frequency (ish) signals, probably good for up to ~1MHz.
@@ -48,3 +48,6 @@ class BidirectionaLevelShifter(Interface, GeneratorBlock):
             self.lv_pu = self.Block(PullupResistor(self.lv_res)).connected(self.lv_pwr, self.lv_io)
         if self.get(self.hv_res) != RangeExpr.INF:
             self.hv_pu = self.Block(PullupResistor(self.hv_res)).connected(self.hv_pwr, self.hv_io)
+        else:
+            self.dummy_hv = self.Block(DummyVoltageSink())  # must be connected
+            self.connect(self.dummy_hv.pwr, self.hv_pwr)

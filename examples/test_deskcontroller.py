@@ -14,21 +14,18 @@ class JiecangRj12Connector(Block):
             voltage_out=5*Volt(tol=0),
             current_limits=(0, 300)*mAmp)))  # reportedly drives at least 300mA
         self.uart = self.Port(UartPort.empty())
-        # UART pins internally pulled up to 5v, use a resistor + zener as a cheap level shifter
-        res_model = Resistor(1*kOhm(tol=0.05))
-        self.r_dtx = self.Block(res_model)
-        self.r_htx = self.Block(res_model)
-        zener_model = ZenerDiode((3.0, 3.6)*Volt)
-        self.z_dtx = self.Block(zener_model)
-        self.z_htx = self.Block(zener_model)
-        self.connect(self.z_dtx.anode.adapt_to(Ground()), self.z_htx.anode.adapt_to(Ground()), self.gnd)
-
-        self.connect(self.conn.pins.request('5'), self.r_dtx.a)  # DTX, controller -> handset
-        self.connect(self.r_dtx.b, self.z_dtx.cathode)
-        self.connect(self.uart.tx, self.z_dtx.cathode.adapt_to(DigitalSource()))
-        self.connect(self.conn.pins.request('3'), self.r_htx.a)  # HTX, handset -> controller
-        self.connect(self.r_htx.b, self.z_htx.cathode)
-        self.connect(self.uart.rx, self.z_htx.cathode.adapt_to(DigitalSink()))
+        # UART pins internally pulled up to 5v, need a level shifter
+        shift_model = BidirectionaLevelShifter(hv_res=RangeExpr.INF)  # 5v pullup internal to controller box
+        self.dtx_shift = self.Block(shift_model)
+        self.htx_shift = self.Block(shift_model)
+        self.pwr_io = self.Port(VoltageSink.empty())
+        self.connect(self.pwr, self.dtx_shift.hv_pwr, self.htx_shift.hv_pwr)
+        self.connect(self.pwr_io, self.dtx_shift.lv_pwr, self.htx_shift.lv_pwr)
+        self.connect(self.gnd, self.dtx_shift.gnd, self.htx_shift.gnd)
+        self.connect(self.dtx_shift.hv_io, self.conn.pins.request('5').adapt_to(DigitalSource()))  # DTX, controller -> handset
+        self.connect(self.dtx_shift.lv_io, self.uart.tx)
+        self.connect(self.htx_shift.hv_io, self.conn.pins.request('3').adapt_to(DigitalSink()))  # HTX, handset -> controller
+        self.connect(self.htx_shift.lv_io, self.uart.rx)
 
 
 class DeskController(JlcBoardTop):
@@ -63,6 +60,7 @@ class DeskController(JlcBoardTop):
             self.mcu = imp.Block(IoController())
             self.mcu.with_mixin(IoControllerWifi())
 
+            self.connect(self.conn.pwr_io, self.v3v3)
             self.connect(self.mcu.uart.request('ctl'), self.conn.uart)
 
             self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
@@ -121,7 +119,10 @@ class DeskController(JlcBoardTop):
                     'swr_1=15',
                     'swr_0=17',
                     'swc_1=18',
-                    'swc_0=3',
+                    'swc_0=6',
+
+                    'ctl.rx=3',
+                    'ctl.tx=4',
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),
                 (['spk_drv', 'pwr', 'current_draw'], Range(0.0022, 0.08)),  # don't run at full power
@@ -135,6 +136,7 @@ class DeskController(JlcBoardTop):
                 (Speaker, ConnectorSpeaker),
                 (Switch, KailhSocket),
                 (Neopixel, Sk6812Mini_E),
+                (Fpc050Bottom, Fpc050BottomFlip)
             ],
             class_values=[
                 (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
