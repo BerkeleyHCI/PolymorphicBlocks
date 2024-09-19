@@ -3,7 +3,7 @@ import unittest
 from edg import *
 
 
-class JiecangRj12Connector(Block):
+class JiecangConnector(Block):
     """RJ-12 connector for (some?) Jiecang standing desk controllers
     https://github.com/phord/Jarvis?tab=readme-ov-file#physical-interface-rj-12"""
     def __init__(self):
@@ -15,16 +15,16 @@ class JiecangRj12Connector(Block):
             current_limits=(0, 300)*mAmp)))  # reportedly drives at least 300mA
         self.uart = self.Port(UartPort.empty())
         # UART pins internally pulled up to 5v, need a level shifter
-        shift_model = BidirectionaLevelShifter(hv_res=RangeExpr.INF)  # 5v pullup internal to controller box
-        self.dtx_shift = self.Block(shift_model)
-        self.htx_shift = self.Block(shift_model)
         self.pwr_io = self.Port(VoltageSink.empty())
+        self.dtx_shift = self.Block(BidirectionaLevelShifter(hv_res=RangeExpr.INF, src_hint='hv'))
+        self.htx_shift = self.Block(BidirectionaLevelShifter(hv_res=RangeExpr.INF, src_hint='lv'))
         self.connect(self.pwr, self.dtx_shift.hv_pwr, self.htx_shift.hv_pwr)
         self.connect(self.pwr_io, self.dtx_shift.lv_pwr, self.htx_shift.lv_pwr)
-        self.connect(self.gnd, self.dtx_shift.gnd, self.htx_shift.gnd)
-        self.connect(self.dtx_shift.hv_io, self.conn.pins.request('5').adapt_to(DigitalSource()))  # DTX, controller -> handset
+        self.connect(self.dtx_shift.hv_io, self.conn.pins.request('5').adapt_to(
+            DigitalSource.from_supply(self.gnd, self.pwr)))  # DTX, controller -> handset
         self.connect(self.dtx_shift.lv_io, self.uart.tx)
-        self.connect(self.htx_shift.hv_io, self.conn.pins.request('3').adapt_to(DigitalSink()))  # HTX, handset -> controller
+        self.connect(self.htx_shift.hv_io, self.conn.pins.request('3').adapt_to(
+            DigitalSink.from_supply(self.gnd, self.pwr)))  # HTX, handset -> controller
         self.connect(self.htx_shift.lv_io, self.uart.rx)
 
 
@@ -35,7 +35,7 @@ class DeskController(JlcBoardTop):
     def contents(self) -> None:
         super().contents()
 
-        self.conn = self.Block(JiecangRj12Connector())
+        self.conn = self.Block(JiecangConnector())
         self.pwr = self.connect(self.conn.pwr)
         self.gnd = self.connect(self.conn.gnd)
 
@@ -89,7 +89,7 @@ class DeskController(JlcBoardTop):
                 imp.Block(Tpa2005d1(gain=Range.from_tolerance(4, 0.2))),
                 self.Block(Speaker()))
 
-            self.npx_shift = imp.Block(BidirectionaLevelShifter(lv_res=RangeExpr.INF))
+            self.npx_shift = imp.Block(BidirectionaLevelShifter(lv_res=RangeExpr.INF, src_hint='lv'))
             self.connect(self.npx_shift.lv_pwr, self.v3v3)
             self.connect(self.npx_shift.hv_pwr, self.pwr)
             self.connect(self.mcu.gpio.request('npx'), self.npx_shift.lv_io)
