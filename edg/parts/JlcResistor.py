@@ -51,8 +51,11 @@ class JlcResistor(TableResistor, PartsTableSelectorFootprint, JlcTableSelector):
         new_cols[cls.POWER_RATING] = Range.zero_to_upper(
           PartParserUtil.parse_value(extracted_values['power'][1], 'W'))
 
-        new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
-          PartParserUtil.parse_value(extracted_values['voltage'][1], 'V'))
+        if 'voltage' in extracted_values:
+          new_cols[cls.VOLTAGE_RATING] = Range.zero_to_upper(
+          PartParserUtil.parse_value(extracted_values.get('voltage', ('', '0V'))[1], 'V'))
+        else:
+          new_cols[cls.VOLTAGE_RATING] = Range(0, 0)
 
         return new_cols
       except (KeyError, PartParserUtil.ParseError):
