@@ -54,7 +54,7 @@ class HiroseFh12sh(Fpc050Bottom, FootprintPassiveConnector):
 class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
   """Jushuo AFC01 series bottom-contact 0.5mm-pitch FPC connectors, with partial JLC numbers for some parts
   and re-using the probably-compatible but not-purpose-designed FH12 footprint."""
-  _afc01_pins = set(range(4, 60+1))  # as listed by the part table
+  _afc01_pins = set(range(4, 60 + 1))  # as listed by the part table
   allowed_pins = _afc01_pins.intersection(HiroseFh12sh._kicad_pins)
   PART_NUMBERS = {  # partial list of the ones currently used
     4: 'C262260',  # FCC
@@ -90,6 +90,7 @@ class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
     54: 'C262677',
     60: 'C2918970'  # FCC
   }
+
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
@@ -101,46 +102,46 @@ class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
 class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
   """Jushuo AFC07 series slide-lock top-contact 0.5mm-pitch FPC connectors, with partial JLC numbers for some parts
   and re-using the probably-compatible but not-purpose-designed FH12 footprint."""
-  _afc07_pins = set(range(4, 60+1))  # as listed by the part table
+  _afc07_pins = set(range(4, 60 + 1))  # as listed by the part table
   allowed_pins = _afc07_pins.intersection(HiroseFh12sh._kicad_pins)
   PART_NUMBERS = {  # partial list of the ones currently used
     4: 'C2764271',
     5: 'C262230',
     # 5: 'C262578',
     6: 'C413943',
-    7: '', #46
+    7: '',  # 46
     8: 'C262581',
-    #8: 'C11084',
+    # 8: 'C11084',
     10: 'C262583',
     12: 'C11086',
     13: 'C262238',
     14: 'C11087',
-    #14: 'C262587',
+    # 14: 'C262587',
     15: 'C262240',
-    #15: 'C262588',
+    # 15: 'C262588',
     16: 'C11088',
     18: 'C11089',
-    #18: 'C2840708',
+    # 18: 'C2840708',
     20: 'C262641',
     22: 'C262642',
-    #22: 'C11091',
+    # 22: 'C11091',
     24: 'C262643',
-    #24: 'C11092',
+    # 24: 'C11092',
     26: 'C262644',
-    #26: 'C11094',
+    # 26: 'C11094',
     28: 'C2886796',
     30: 'C262645',
-    #30: 'C262645',
+    # 30: 'C262645',
     32: 'C11096',
     34: 'C262252',
     36: 'C262254',
     40: 'C262648',
     45: 'C262256',
-    #40: 'C11097',
+    # 40: 'C11097',
     50: 'C262650',
-    #50: 'C11098',
+    # 50: 'C11098',
     54: 'C262258',
-    #54: 'C2691600',
+    # 54: 'C2691600',
     60: 'C262652'
   }
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
