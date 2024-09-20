@@ -220,7 +220,6 @@ class PcbBot(JlcBoardTop):
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
 
         # the camera recommended specs are excessively tight, so loosen them a bit
-        (Ov2640_Fpc24, ['device', 'dvdd', 'voltage_limits'], Range(1.1, 1.36)),  # allow 1v2
         (Ov2640_Fpc24, ['device', 'avdd', 'voltage_limits'], Range(2.3, 3.0)),  # allow 2v5
         (Nonstrict3v3Compatible, ['nonstrict_3v3_compatible'], True),
       ],
