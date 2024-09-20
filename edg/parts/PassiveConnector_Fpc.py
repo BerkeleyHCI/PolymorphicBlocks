@@ -57,12 +57,38 @@ class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
   _afc01_pins = set(range(4, 60+1))  # as listed by the part table
   allowed_pins = _afc01_pins.intersection(HiroseFh12sh._kicad_pins)
   PART_NUMBERS = {  # partial list of the ones currently used
+    4: 'C262260',  # FCC
+    5: 'C262654',
+    6: 'C262262',  # FCC
+    7: 'C262263',  # FCC
     8: 'C262657',
+    # 8: 'C262264', # FCC
+    9: 'C262265',  # FCC
+    10: 'C262266',  # FCC
+    12: 'C262268',  # FCC
+    13: 'C262269',  # FCC
+    14: 'C577443',  # FCC
     15: 'C262664',
+    # 15: 'C262271', # FCC
+    16: 'C262272',  # FCC
+    18: 'C262273',  # FCC
+    20: 'C262274',  # FCC
+    22: 'C262275',  # FCC
     24: 'C262669',
+    # 24: 'C262276', # FCC
+    26: 'C262277',  # FCC
+    28: 'C262278',  # FCC
     30: 'C262671',
+    # 30: 'C262279', #FCC
+    32: 'C262280',
+    36: 'C262673',
     40: 'C262674',
+    # 40: 'C262282', #FCC
+    45: 'C13507',  # FCC
     50: 'C262676',
+    # 50:'C262284', # FCC
+    54: 'C262677',
+    60: 'C2918970'  # FCC
   }
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
@@ -78,11 +104,44 @@ class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
   _afc07_pins = set(range(4, 60+1))  # as listed by the part table
   allowed_pins = _afc07_pins.intersection(HiroseFh12sh._kicad_pins)
   PART_NUMBERS = {  # partial list of the ones currently used
+    4: 'C2764271',
+    5: 'C262230',
+    # 5: 'C262578',
+    6: 'C413943',
+    7: '', #46
     8: 'C262581',
+    #8: 'C11084',
+    10: 'C262583',
+    12: 'C11086',
+    13: 'C262238',
+    14: 'C11087',
+    #14: 'C262587',
+    15: 'C262240',
+    #15: 'C262588',
+    16: 'C11088',
+    18: 'C11089',
+    #18: 'C2840708',
+    20: 'C262641',
+    22: 'C262642',
+    #22: 'C11091',
     24: 'C262643',
+    #24: 'C11092',
+    26: 'C262644',
+    #26: 'C11094',
+    28: 'C2886796',
     30: 'C262645',
+    #30: 'C262645',
+    32: 'C11096',
+    34: 'C262252',
+    36: 'C262254',
     40: 'C262648',
+    45: 'C262256',
+    #40: 'C11097',
     50: 'C262650',
+    #50: 'C11098',
+    54: 'C262258',
+    #54: 'C2691600',
+    60: 'C262652'
   }
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
