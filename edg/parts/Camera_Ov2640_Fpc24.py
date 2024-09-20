@@ -13,7 +13,7 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.dovdd = self.Export(self.conn.pins.request('14').adapt_to(VoltageSink(
             voltage_limits=self.nonstrict_3v3_compatible.then_else(
                 (1.71, 4.5)*Volt,  # Table 6, absolute maximum (Table 5) is 4.5v
-                (1.71, 3.3)*Volt,),
+                (1.71, 3.3)*Volt),
             current_draw=(6, 15)*mAmp  # active typ to max
         )))
         self.dvdd = self.Export(self.conn.pins.request('15').adapt_to(VoltageSink(
