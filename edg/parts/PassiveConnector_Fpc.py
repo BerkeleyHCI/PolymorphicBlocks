@@ -54,42 +54,86 @@ class HiroseFh12sh(Fpc050Bottom, FootprintPassiveConnector):
 class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
   """Jushuo AFC01 series bottom-contact 0.5mm-pitch FPC connectors, with partial JLC numbers for some parts
   and re-using the probably-compatible but not-purpose-designed FH12 footprint."""
-  _afc01_pins = set(range(4, 60+1))  # as listed by the part table
+  _afc01_pins = set(range(4, 60 + 1))  # as listed by the part table
   allowed_pins = _afc01_pins.intersection(HiroseFh12sh._kicad_pins)
   PART_NUMBERS = {  # partial list of the ones currently used
-    8: 'C262657',
-    15: 'C262664',
-    24: 'C262669',
-    30: 'C262671',
-    40: 'C262674',
-    50: 'C262676',
+    # including -FCC (tube) and -FCA (T&R) suffix
+    4: 'C262260',  # FCC
+    5: 'C262654',  # FCA
+    6: 'C262262',  # FCC
+    7: 'C262263',  # FCC
+    8: 'C262657',  # also C262264 for -FCC
+    9: 'C262265',  # FCC
+    10: 'C262266',  # FCC
+    12: 'C262268',  # FCC
+    13: 'C262269',  # FCC
+    14: 'C577443',  # FCC
+    15: 'C262664',  # also C262271 for -FCC
+    16: 'C262272',  # FCC
+    18: 'C262273',  # FCC
+    20: 'C262274',  # FCC
+    22: 'C262275',  # FCC
+    24: 'C262669',  # also C262276 for -FCC
+    26: 'C262277',  # FCC
+    28: 'C262278',  # FCC
+    30: 'C262671',  # also C262279 for -FCC
+    32: 'C262280',  # FCC
+    36: 'C262673',  # FCA
+    40: 'C262674',  # also C262282 for FCC
+    45: 'C13507',  # FCC
+    50: 'C262676',  # also C262284 for FCC
+    54: 'C262677',  # FCA
+    60: 'C2918970'  # FCC
   }
+
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
     self.assign(self.actual_basic_part, False)
     return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
-            "Jushuo", f"AFC01-S{length:02d}FCA-00")  # CA is T&R packaging
+            "Jushuo", f"AFC01-S{length:02d}FC*-00")  # CA is T&R packaging
 
 
 class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
   """Jushuo AFC07 series slide-lock top-contact 0.5mm-pitch FPC connectors, with partial JLC numbers for some parts
   and re-using the probably-compatible but not-purpose-designed FH12 footprint."""
-  _afc07_pins = set(range(4, 60+1))  # as listed by the part table
+  _afc07_pins = set(range(4, 60 + 1))  # as listed by the part table
   allowed_pins = _afc07_pins.intersection(HiroseFh12sh._kicad_pins)
   PART_NUMBERS = {  # partial list of the ones currently used
-    8: 'C262581',
-    24: 'C262643',
-    30: 'C262645',
-    40: 'C262648',
-    50: 'C262650',
+    # including -ECC (tube) and -ECA (T&R) suffix
+    4: 'C2764271',  # ECA
+    5: 'C262230',  # also C262578 for -ECA
+    6: 'C413943',  # ECC
+    7: 'C262232',  # ECC
+    8: 'C262581',  # also C11084 for -ECC
+    10: 'C262583',  # ECA
+    12: 'C11086',  # ECC
+    13: 'C262238',  # ECC
+    14: 'C11087',  # also C262587 for -ECA
+    15: 'C262240',  # also C262588 for -ECA
+    16: 'C11088',  # ECC
+    18: 'C11089',  # also C2840708 for -ECC
+    20: 'C262641',  # ECA
+    22: 'C262642',  # also C11091 for -ECC
+    24: 'C262643',  # also C11092 for -ECC
+    26: 'C262644',  # also C11094 for -ECC
+    28: 'C2886796',  # ECA
+    30: 'C262645',  # also C262645 for -ECA
+    32: 'C11096',  # ECC
+    34: 'C262252',  # ECC
+    36: 'C262254',  # ECC
+    40: 'C262648',  # also C11097 for -ECC
+    45: 'C262256',  # ECC
+    50: 'C262650',  # also C11098 for -ECC
+    54: 'C262258',  # also C2691600 for -ECC
+    60: 'C262652'  # ECA
   }
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
     self.assign(self.actual_basic_part, False)
     return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
-            "Jushuo", f"AFC07-S{length:02d}ECA-00")  # CA is packaging
+            "Jushuo", f"AFC07-S{length:02d}EC*-00")  # CA is packaging
 
 
 class Te1734839(Fpc050Top, FootprintPassiveConnector):
