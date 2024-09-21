@@ -196,3 +196,25 @@ class CanControllerTestPoint(TypedTestPoint, Block):
   def connected(self, io: Port[CanLogicLink]) -> 'CanControllerTestPoint':
     cast(Block, builder.get_enclosing_block()).connect(io, self.io)
     return self
+
+
+class CanDiffTestPoint(TypedTestPoint, Block):
+  """Two test points for CAN differential-side canh and canl"""
+
+  @init_in_parent
+  def __init__(self, tp_name: StringLike = ""):
+    super().__init__()
+    self.io = self.Port(CanDiffPort(DigitalBidir.empty()), [InOut])
+    self.tp_name = self.ArgParameter(tp_name)
+
+  def contents(self):
+    super().contents()
+    name_prefix = (self.tp_name == '').then_else(self.io.link().name(), self.tp_name)
+    self.tp_canh = self.Block(DigitalTestPoint(name_prefix + '.canh'))
+    self.tp_canl = self.Block(DigitalTestPoint(name_prefix + '.canl'))
+    self.connect(self.tp_canh.io, self.io.canh)
+    self.connect(self.tp_canl.io, self.io.canl)
+
+  def connected(self, io: Port[CanLogicLink]) -> 'CanDiffTestPoint':
+    cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self

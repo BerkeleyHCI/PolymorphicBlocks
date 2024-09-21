@@ -79,7 +79,7 @@ from .AbstractOscillator import Oscillator, TableOscillator
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConnectorReset, \
     SwdCortexTargetConnectorSwo, SwdCortexTargetConnectorTdi
 from .AbstractTestPoint import TestPoint, GroundTestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, \
-    AnalogTestPoint, I2cTestPoint, SpiTestPoint, CanControllerTestPoint
+    AnalogTestPoint, I2cTestPoint, SpiTestPoint, CanControllerTestPoint, CanDiffTestPoint
 from .AbstractTestPoint import AnalogRfTestPoint
 from .AbstractJumper import Jumper, DigitalJumper
 from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
