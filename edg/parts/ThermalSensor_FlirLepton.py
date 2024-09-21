@@ -9,11 +9,11 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.gnd = self.Port(Ground())
         self.vddc = self.Port(VoltageSink(
             voltage_limits=(1.14, 1.26)*Volt,  # 50mVpp max ripple
-            current_draw=(76, 110)*mAmp
+            current_draw=(76, 110)*mAmp  # no sleep current specified
         ))
         self.vdd = self.Port(VoltageSink(
             voltage_limits=(2.72, 2.88)*Volt,  # 30mVpp max ripple, 4.8V abs max
-            current_draw=(12, 16)*mAmp
+            current_draw=(12, 16)*mAmp  # no sleep current specified
         ))
         self.vddio = self.Port(VoltageSink(  # IO ring and shutter assembly
             voltage_limits=(2.8, 3.1)*Volt,  # 50mVpp max ripple, 4.8V abs max
@@ -81,15 +81,17 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class FlirLepton(Sensor, Resettable, Block):
-    """Series of socketed thermal cameras, 8.7Hz at either 80x60 or 160x120 resolution depending on sensor.
-    Only the part number for the socket is generated, the sensor (a $100+ part) must be purchased separately."""
+    """Series of socketed thermal cameras, 8.7Hz at either 80x60 or 160x120 resolution (depending on sensor) and
+    <50mK (35mK typical) NETD.
+    Only the part number for the socket is generated, the sensor (a $100+ part) must be purchased separately.
+    """
     @init_in_parent
     def __init__(self):
         super().__init__()
         self.ic = self.Block(FlirLepton_Device())
-        self.pwr_io = self.Export(self.ic.vddio, doc="3.0v IO voltage including shutter")
+        self.pwr_io = self.Export(self.ic.vddio, doc="3.0v IO voltage including shutter, IOs are 3.3v compatible from +0.6v tolerance rating")
         self.pwr = self.Export(self.ic.vdd, doc="2.8v")
-        self.pwr_core = self.Export(self.ic.vddc, doc="1.2v digital core voltage")
+        self.pwr_core = self.Export(self.ic.vddc, doc="1.2v core voltage")
 
         self.connect(self.reset, self.ic.reset_l, self.ic.pwr_dwn_l)
         self.require(self.reset.is_connected())
