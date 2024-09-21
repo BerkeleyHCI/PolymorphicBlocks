@@ -7,10 +7,30 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
-        self.vdd = self.Port(VoltageSink(
-            # voltage_limits=(1.62, 3.6)*Volt,
-            # current_draw=(0.5, 85)*uAmp
+        self.vddc = self.Port(VoltageSink(
+            voltage_limits=(1.14, 1.26)*Volt,  # 50mVpp max ripple
+            current_draw=(76, 110)*mAmp
         ))
+        self.vdd = self.Port(VoltageSink(
+            voltage_limits=(2.72, 2.88)*Volt,  # 30mVpp max ripple, 4.8V abs max
+            current_draw=(12, 16)*mAmp
+        ))
+        self.vddio = self.Port(VoltageSink(  # IO ring and shutter assembly
+            voltage_limits=(2.8, 3.1)*Volt,  # 50mVpp max ripple, 4.8V abs max
+            current_draw=(1, 310)*mAmp  # min to max during FFC
+        ))
+        dio_model = DigitalBidir.from_supply(
+            self.gnd, self.vddio,
+            voltage_limit_tolerance=(0, 0.6)*Volt)
+
+        self.master_clk = self.Port(DigitalSink.from_bidir(dio_model))  # 25MHz clock
+        self.spi = self.Port(SpiPeripheral(dio_model, (0, 20)*MHertz))
+        self.cs = self.Port(DigitalSink.from_bidir(dio_model))
+        self.i2c = self.Port(I2cTarget(dio_model, [0x2a]))  # frequency up to 1MHz
+
+        self.reset_l = self.Port(DigitalSink.from_bidir(dio_model))
+        self.pwr_dwn_l = self.Port(DigitalSink.from_bidir(dio_model))
+        self.vsync = self.Port(DigitalSource.from_bidir(dio_model), optional=True)
 
     def generate(self) -> None:
         super().generate()
@@ -32,16 +52,16 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 '33': self.gnd,  # socket shield
 
                 '2': self.vsync,  # aka GPIO3
-                # '3': GPIO2, reserved
-                # '4': GPIO2, reserved
-                # '5': GPIO2, reserved
+                # '3': GPIO2, reserved, "should not be connected"
+                # '4': GPIO1, reserved, "should not be connected"
+                # '5': GPIO0, reserved, "should not be connected"
                 '7': self.vddc,
                 '11': self.spi.mosi,
                 '12': self.spi.miso,
                 '13': self.spi.sck,
                 '14': self.cs,
                 '16': self.vddio,
-                '17': self.vprog,
+                # '17': self.vprog,  # unused
                 '19': self.vdd,
                 '21': self.i2c.scl,
                 '22': self.i2c.sda,
@@ -60,14 +80,33 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class FlirLepton(Sensor, Block):
-    """Series of socketed thermal cameras, 9Hz at either 80x60 or 160x120 resolution depending on sensor.
+class FlirLepton(Sensor, Resettable, Block):
+    """Series of socketed thermal cameras, 8.7Hz at either 80x60 or 160x120 resolution depending on sensor.
     Only the part number for the socket is generated, the sensor (a $100+ part) must be purchased separately."""
     @init_in_parent
     def __init__(self):
         super().__init__()
         self.ic = self.Block(FlirLepton_Device())
+        self.pwr_io = self.Export(self.ic.vddio, doc="3.0v IO voltage including shutter")
+        self.pwr = self.Export(self.ic.vdd, doc="2.8v")
+        self.pwr_core = self.Export(self.ic.vddc, doc="1.2v digital core voltage")
+
+        self.connect(self.reset, self.ic.reset_l, self.ic.pwr_dwn_l)
+        self.require(self.reset.is_connected())
+
+        self.spi = self.Export(self.ic.spi, doc="Video over SPI")
+        self.cci = self.Export(self.ic.spi, doc="I2C-like Command and Control Interface")
+        self.vsync = self.Export(self.ic.vsync, optional=True, doc="Optional frame-sync output")
 
     def contents(self):
         super().contents()
-        # self.vdd_cap = self.Block(DecouplingCapacitor(0.01*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
+
+        self.vddc_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vddc)
+        self.vddio_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vddio)
+        self.vdd_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
+
+        with self.implicit_connect(
+                ImplicitConnect(self.pwr_io, [Power]),
+                ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            (self.mclk, ), _ = self.chain(imp.Block(Oscillator((24.975, 25.025)*MHertz)), self.ic.master_clk)
