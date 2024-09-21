@@ -57,37 +57,32 @@ class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
   _afc01_pins = set(range(4, 60 + 1))  # as listed by the part table
   allowed_pins = _afc01_pins.intersection(HiroseFh12sh._kicad_pins)
   PART_NUMBERS = {  # partial list of the ones currently used
+    # including -FCC (tube) and -FCA (T&R) suffix
     4: 'C262260',  # FCC
-    5: 'C262654',
+    5: 'C262654',  # FCA
     6: 'C262262',  # FCC
     7: 'C262263',  # FCC
-    8: 'C262657',
-    # 8: 'C262264', # FCC
+    8: 'C262657',  # also C262264 for -FCC
     9: 'C262265',  # FCC
     10: 'C262266',  # FCC
     12: 'C262268',  # FCC
     13: 'C262269',  # FCC
     14: 'C577443',  # FCC
-    15: 'C262664',
-    # 15: 'C262271', # FCC
+    15: 'C262664',  # also C262271 for -FCC
     16: 'C262272',  # FCC
     18: 'C262273',  # FCC
     20: 'C262274',  # FCC
     22: 'C262275',  # FCC
-    24: 'C262669',
-    # 24: 'C262276', # FCC
+    24: 'C262669',  # also C262276 for -FCC
     26: 'C262277',  # FCC
     28: 'C262278',  # FCC
-    30: 'C262671',
-    # 30: 'C262279', #FCC
-    32: 'C262280',
-    36: 'C262673',
-    40: 'C262674',
-    # 40: 'C262282', #FCC
+    30: 'C262671',  # also C262279 for -FCC
+    32: 'C262280',  # FCC
+    36: 'C262673',  # FCA
+    40: 'C262674',  # also C262282 for FCC
     45: 'C13507',  # FCC
-    50: 'C262676',
-    # 50:'C262284', # FCC
-    54: 'C262677',
+    50: 'C262676',  # also C262284 for FCC
+    54: 'C262677',  # FCA
     60: 'C2918970'  # FCC
   }
 
@@ -96,7 +91,7 @@ class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
     self.assign(self.actual_basic_part, False)
     return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
-            "Jushuo", f"AFC01-S{length:02d}FCA-00")  # CA is T&R packaging
+            "Jushuo", f"AFC01-S{length:02d}FC*-00")  # CA is T&R packaging
 
 
 class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
@@ -105,51 +100,40 @@ class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
   _afc07_pins = set(range(4, 60 + 1))  # as listed by the part table
   allowed_pins = _afc07_pins.intersection(HiroseFh12sh._kicad_pins)
   PART_NUMBERS = {  # partial list of the ones currently used
-    4: 'C2764271',
-    5: 'C262230',
-    # 5: 'C262578',
-    6: 'C413943',
-    7: '',  # 46
-    8: 'C262581',
-    # 8: 'C11084',
-    10: 'C262583',
-    12: 'C11086',
-    13: 'C262238',
-    14: 'C11087',
-    # 14: 'C262587',
-    15: 'C262240',
-    # 15: 'C262588',
-    16: 'C11088',
-    18: 'C11089',
-    # 18: 'C2840708',
-    20: 'C262641',
-    22: 'C262642',
-    # 22: 'C11091',
-    24: 'C262643',
-    # 24: 'C11092',
-    26: 'C262644',
-    # 26: 'C11094',
-    28: 'C2886796',
-    30: 'C262645',
-    # 30: 'C262645',
-    32: 'C11096',
-    34: 'C262252',
-    36: 'C262254',
-    40: 'C262648',
-    45: 'C262256',
-    # 40: 'C11097',
-    50: 'C262650',
-    # 50: 'C11098',
-    54: 'C262258',
-    # 54: 'C2691600',
-    60: 'C262652'
+    # including -ECC (tube) and -ECA (T&R) suffix
+    4: 'C2764271',  # ECA
+    5: 'C262230',  # also C262578 for -ECA
+    6: 'C413943',  # ECC
+    7: 'C262232',  # ECC
+    8: 'C262581',  # also C11084 for -ECC
+    10: 'C262583',  # ECA
+    12: 'C11086',  # ECC
+    13: 'C262238',  # ECC
+    14: 'C11087',  # also C262587 for -ECA
+    15: 'C262240',  # also C262588 for -ECA
+    16: 'C11088',  # ECC
+    18: 'C11089',  # also C2840708 for -ECC
+    20: 'C262641',  # ECA
+    22: 'C262642',  # also C11091 for -ECC
+    24: 'C262643',  # also C11092 for -ECC
+    26: 'C262644',  # also C11094 for -ECC
+    28: 'C2886796',  # ECA
+    30: 'C262645',  # also C262645 for -ECA
+    32: 'C11096',  # ECC
+    34: 'C262252',  # ECC
+    36: 'C262254',  # ECC
+    40: 'C262648',  # also C11097 for -ECC
+    45: 'C262256',  # ECC
+    50: 'C262650',  # also C11098 for -ECC
+    54: 'C262258',  # also C2691600 for -ECC
+    60: 'C262652'  # ECA
   }
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
     self.assign(self.actual_basic_part, False)
     return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
-            "Jushuo", f"AFC07-S{length:02d}ECA-00")  # CA is packaging
+            "Jushuo", f"AFC07-S{length:02d}EC*-00")  # CA is packaging
 
 
 class Te1734839(Fpc050Top, FootprintPassiveConnector):
