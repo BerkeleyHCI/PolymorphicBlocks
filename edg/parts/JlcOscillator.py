@@ -25,8 +25,10 @@ class JlcOscillator_Device(InternalSubcircuit, Block):
     self.in_actual_basic_part = self.ArgParameter(in_actual_basic_part)
 
 
-class Sg8101cg_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
-  FOOTPRINT = 'Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm'  # doesn't perfectly match datasheet recommended geometry
+@non_library
+class Sg8101_Base_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
+  FOOTPRINT: str
+
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -50,9 +52,18 @@ class Sg8101cg_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, self.in_actual_basic_part)
 
 
+class Sg8101cg_Device(Sg8101_Base_Device):
+  FOOTPRINT = 'Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm'  # doesn't perfectly match datasheet recommended geometry
+
+
+class Sg8101ce_Device(Sg8101_Base_Device):
+  FOOTPRINT = 'Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm'  # doesn't perfectly match datasheet recommended geometry
+
+
 class JlcOscillator(TableOscillator, JlcTableSelector):
   SERIES_DEVICE_MAP = {
     'SG-8101CG': Sg8101cg_Device,
+    'SG-8101CE': Sg8101ce_Device,
   }
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
     (re.compile("(±\S+ppm) .* (\S+MHz) .* Pre-programmed Oscillators .*"),
