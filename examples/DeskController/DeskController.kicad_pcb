@@ -8027,271 +8027,6 @@
 			)
 		)
 	)
-	(footprint "Capacitor_SMD:C_0603_1608Metric"
-		(layer "B.Cu")
-		(uuid "127d6edc-8524-46a4-bf60-df04a056aca7")
-		(at 162 107.5 180)
-		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
-		(tags "capacitor")
-		(property "Reference" "oled.vbat_cap"
-			(at -2.5 0 360)
-			(layer "B.SilkS")
-			(uuid "7d14537d-5bfb-4540-85f4-8c01eb9785fd")
-			(effects
-				(font
-					(size 0.8 0.6)
-					(thickness 0.1)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Value" "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
-			(at 0 -1.43 360)
-			(layer "B.Fab")
-			(uuid "153bedb6-f549-4b48-a9ca-b0800fcb6654")
-			(effects
-				(font
-					(size 0.8 0.6)
-					(thickness 0.1)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "1e365c03-ade7-4a73-bbdf-409a6702ab89")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "87e91554-7e20-41cf-961c-4e79f83e0395")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "4973c2e8-0d71-4a87-a2d7-87332da9ed5f")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_part" "CL10A105KB8NNNC (Samsung Electro-Mechanics)"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "21231fee-5257-4926-b735-90fab3bdee81")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_path" "oled.vbat_cap.cap"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "783d9707-f2a6-4253-ab28-c4f528a6d148")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_refdes" "IC18"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "aa937118-e0c9-4392-b535-e7cc31cdb44e")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_short_path" "oled.vbat_cap"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "eaaec9fe-2a44-4456-9d5a-c1faeb26614d")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043201a5/00000000-0000-0000-0000-00000ec70341")
-		(sheetname "oled")
-		(sheetfile "edg.parts.Oled_Er_Oled_096_1_1.Er_Oled_096_1_1")
-		(attr smd)
-		(fp_line
-			(start 0.14058 0.51)
-			(end -0.14058 0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "B.SilkS")
-			(uuid "4d07ccf3-c4e6-4a08-9b60-44362e9c15ff")
-		)
-		(fp_line
-			(start 0.14058 -0.51)
-			(end -0.14058 -0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "B.SilkS")
-			(uuid "0a1f5f23-21c6-4577-a748-d492c6cf8af9")
-		)
-		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "abbe1351-340b-4035-acd2-d585be053154")
-		)
-		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "6ac5f075-d6de-4898-b187-0358ad7b2dbb")
-		)
-		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "c6514625-7607-43ab-99cf-4e02bcaed862")
-		)
-		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "cff23aee-fab8-40db-9481-db869d1b67b4")
-		)
-		(fp_line
-			(start 0.8 0.4)
-			(end -0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "ba101577-c402-4849-a80b-576cda8a33e3")
-		)
-		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "a12aecc5-2223-4a62-bbe7-daed0e30efe7")
-		)
-		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "06e8738d-fcd0-415e-8a6f-88e0343037ae")
-		)
-		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "8e5d189d-368d-47dd-8619-36300338d2bb")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(uuid "c7216dc4-4a20-4988-95c1-07ea217cedbe")
-			(effects
-				(font
-					(size 0.4 0.4)
-					(thickness 0.06)
-				)
-				(justify mirror)
-			)
-		)
-		(pad "1" smd roundrect
-			(at -0.775 0 180)
-			(size 0.9 0.95)
-			(layers "B.Cu" "B.Paste" "B.Mask")
-			(roundrect_rratio 0.25)
-			(net 3 "Dv3v3")
-			(uuid "ceca02d6-8205-4a96-95e0-941877d8ee77")
-		)
-		(pad "2" smd roundrect
-			(at 0.775 0 180)
-			(size 0.9 0.95)
-			(layers "B.Cu" "B.Paste" "B.Mask")
-			(roundrect_rratio 0.25)
-			(net 2 "Dgnd")
-			(uuid "a3a11079-5fc9-4121-826d-b21c269e2978")
-		)
-		(model "${KICAD6_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
 	(footprint "Package_SO:MSOP-8-1EP_3x3mm_P0.65mm_EP1.68x1.88mm_ThermalVias"
 		(layer "B.Cu")
 		(uuid "1aac62c1-fed6-4d86-b746-2637477f8461")
@@ -11194,271 +10929,6 @@
 			)
 		)
 	)
-	(footprint "Capacitor_SMD:C_0603_1608Metric"
-		(layer "B.Cu")
-		(uuid "57ff8bda-1d0d-43bb-9964-282056f199dd")
-		(at 162 104.5 180)
-		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
-		(tags "capacitor")
-		(property "Reference" "oled.c2_cap"
-			(at -2.5 0 360)
-			(layer "B.SilkS")
-			(uuid "ab2f3c9f-7291-45a1-8ff8-0cb66165f84f")
-			(effects
-				(font
-					(size 0.8 0.6)
-					(thickness 0.1)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Value" "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
-			(at 0 -1.43 360)
-			(layer "B.Fab")
-			(uuid "24c16404-6fad-4fa9-87c4-69c8a54cc63a")
-			(effects
-				(font
-					(size 0.8 0.6)
-					(thickness 0.1)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "b228e166-59db-49a6-a65c-918cbfadf9c7")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "4dac6949-170b-4ae5-b7a3-3c8976871af1")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "070a505a-8ec7-4d81-9e7b-767ff9fc4f3a")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_part" "CL10A105KB8NNNC (Samsung Electro-Mechanics)"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "66d69583-7034-4eea-bb7f-1209bd6ad2d7")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_path" "oled.c2_cap"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "621ec8c4-d9e3-4af2-a6ec-17db85a78e3b")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_refdes" "IC15"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "341f2215-1e15-464b-a5ce-ef40cd573b12")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_short_path" "oled.c2_cap"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "40297ad3-d0a4-497e-acf3-afd8ab47059c")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043201a5/00000000-0000-0000-0000-000007290229")
-		(sheetname "oled")
-		(sheetfile "edg.parts.Oled_Er_Oled_096_1_1.Er_Oled_096_1_1")
-		(attr smd)
-		(fp_line
-			(start 0.14058 0.51)
-			(end -0.14058 0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "B.SilkS")
-			(uuid "cee9e6a1-6e33-4768-acc5-bbacbd872dec")
-		)
-		(fp_line
-			(start 0.14058 -0.51)
-			(end -0.14058 -0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "B.SilkS")
-			(uuid "19d7e439-9c73-40e3-aebf-f25f3d672e07")
-		)
-		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "2ef2fa39-e1db-42db-8e34-7b8812f3f942")
-		)
-		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "5dfba726-6054-4649-a3b5-cafe3bfdc222")
-		)
-		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "3fdbd872-9c3a-4bcd-8485-a5e22b2d3843")
-		)
-		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "65a87f9d-b4a3-4b5d-bf4c-a59e54529390")
-		)
-		(fp_line
-			(start 0.8 0.4)
-			(end -0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "45e180c9-ef2b-4c49-b327-ce72df1ca3eb")
-		)
-		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "055950e1-0c4a-4bf4-a931-71b61b2b525d")
-		)
-		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "bc1cfa5d-0fed-43ca-886e-f263c0efd0d6")
-		)
-		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "f6f3f422-e3c9-4197-a8b8-91daf5810760")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(uuid "0370efbb-ae0b-479f-8c0c-c70395d7bd7c")
-			(effects
-				(font
-					(size 0.4 0.4)
-					(thickness 0.06)
-				)
-				(justify mirror)
-			)
-		)
-		(pad "1" smd roundrect
-			(at -0.775 0 180)
-			(size 0.9 0.95)
-			(layers "B.Cu" "B.Paste" "B.Mask")
-			(roundrect_rratio 0.25)
-			(net 42 "Doled.c2_cap.pos")
-			(uuid "18d3f5f7-0d64-4e67-a823-ae49cb893012")
-		)
-		(pad "2" smd roundrect
-			(at 0.775 0 180)
-			(size 0.9 0.95)
-			(layers "B.Cu" "B.Paste" "B.Mask")
-			(roundrect_rratio 0.25)
-			(net 44 "Doled.c2_cap.neg")
-			(uuid "0d267710-f341-4aca-bfcb-cc306de6b50c")
-		)
-		(model "${KICAD6_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
 	(footprint "Resistor_SMD:R_0603_1608Metric"
 		(layer "B.Cu")
 		(uuid "58b70a3f-fc84-4685-a0e1-fae2a78fb25e")
@@ -11664,271 +11134,6 @@
 			(uuid "0ea0d955-d2d3-4917-8d12-e3b32ebbb0a3")
 		)
 		(model "${KICAD8_3DMODEL_DIR}/Resistor_SMD.3dshapes/R_0603_1608Metric.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
-	(footprint "Capacitor_SMD:C_0603_1608Metric"
-		(layer "B.Cu")
-		(uuid "59cb63dd-028f-4f84-a2ec-dc671c02e160")
-		(at 162 109 180)
-		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
-		(tags "capacitor")
-		(property "Reference" "oled.vdd_cap1"
-			(at -2.5 0 360)
-			(layer "B.SilkS")
-			(uuid "bbee1837-010c-42cc-b3b4-23d900c048d3")
-			(effects
-				(font
-					(size 0.8 0.6)
-					(thickness 0.1)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Value" "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
-			(at 0 -1.43 360)
-			(layer "B.Fab")
-			(uuid "08aea707-89e9-4074-8c1b-43b919ab750c")
-			(effects
-				(font
-					(size 0.8 0.6)
-					(thickness 0.1)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "81ebf3ca-00a9-4a17-b0bf-9969a91e086f")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "7248e6ab-bde0-4b95-919c-e3ce5f0fe2ca")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "1267675d-7068-4aeb-b192-1e35cffcd85b")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_part" "CL10A105KB8NNNC (Samsung Electro-Mechanics)"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "5deb8a2d-a412-4a5f-89e2-8af7700277ee")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_path" "oled.vdd_cap1.cap"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "7361c0be-d899-4140-a178-5afa2f9eeea8")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_refdes" "IC17"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "454cc903-f9e6-467c-930b-7bded6995d51")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_short_path" "oled.vdd_cap1"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "1256d9ad-02df-487c-994d-16ba794a3263")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043201a5/00000000-0000-0000-0000-00000e670303")
-		(sheetname "oled")
-		(sheetfile "edg.parts.Oled_Er_Oled_096_1_1.Er_Oled_096_1_1")
-		(attr smd)
-		(fp_line
-			(start 0.14058 0.51)
-			(end -0.14058 0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "B.SilkS")
-			(uuid "30f8b76d-ddf0-4dec-88df-387a88dfe113")
-		)
-		(fp_line
-			(start 0.14058 -0.51)
-			(end -0.14058 -0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "B.SilkS")
-			(uuid "9d037441-e38f-48f4-9b92-43967f10677f")
-		)
-		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "5f3d3ca4-e1cc-425e-a556-d165036c193f")
-		)
-		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "835c12ff-8431-425b-ab71-5c112a8d4cde")
-		)
-		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "ae6fe8f2-60e0-4306-ac55-56659a6f94e7")
-		)
-		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "f6619b31-7ae9-480a-9d51-ee360afe49c8")
-		)
-		(fp_line
-			(start 0.8 0.4)
-			(end -0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "37d26852-f143-43b8-b330-a8dbf9bd587b")
-		)
-		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "5566d00e-6018-46b6-a341-2a0d3eec6464")
-		)
-		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "49e1c1e3-5bba-4b53-a953-5a5042b658ce")
-		)
-		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "09ab2bd9-9832-4272-b66c-4cdcf589a9dd")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(uuid "2ad4a82a-acde-4764-8c75-f7dde9543407")
-			(effects
-				(font
-					(size 0.4 0.4)
-					(thickness 0.06)
-				)
-				(justify mirror)
-			)
-		)
-		(pad "1" smd roundrect
-			(at -0.775 0 180)
-			(size 0.9 0.95)
-			(layers "B.Cu" "B.Paste" "B.Mask")
-			(roundrect_rratio 0.25)
-			(net 3 "Dv3v3")
-			(uuid "58f53295-9081-4edf-b176-f83d5174671d")
-		)
-		(pad "2" smd roundrect
-			(at 0.775 0 180)
-			(size 0.9 0.95)
-			(layers "B.Cu" "B.Paste" "B.Mask")
-			(roundrect_rratio 0.25)
-			(net 2 "Dgnd")
-			(uuid "0a29e8d2-a736-4f1a-966c-95dc3558abaf")
-		)
-		(model "${KICAD6_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -13594,271 +12799,6 @@
 			(uuid "6b4393ee-3474-4838-ad5f-6ad111cb73cb")
 		)
 		(model "${KICAD6_3DMODEL_DIR}/Resistor_SMD.3dshapes/R_0603_1608Metric.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-	)
-	(footprint "Capacitor_SMD:C_0603_1608Metric"
-		(layer "B.Cu")
-		(uuid "77fcce45-205c-4bdd-9376-604c00e6e6a2")
-		(at 162 106 180)
-		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
-		(tags "capacitor")
-		(property "Reference" "oled.c1_cap"
-			(at -2.5 0 360)
-			(layer "B.SilkS")
-			(uuid "ac4bf140-4814-4881-8ab4-555998b06f71")
-			(effects
-				(font
-					(size 0.8 0.6)
-					(thickness 0.1)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Value" "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
-			(at 0 -1.43 360)
-			(layer "B.Fab")
-			(uuid "e783abed-9f7b-42fb-b615-6af0bacbc581")
-			(effects
-				(font
-					(size 0.8 0.6)
-					(thickness 0.1)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "4f8d5da7-2e5d-4ac0-9604-c44683d12630")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "85dadb12-bc2d-4055-b8e4-e54d15a568b5")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "Description" ""
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "076155bc-cb84-4854-abd6-bd02a9d59c90")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_part" "CL10A105KB8NNNC (Samsung Electro-Mechanics)"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "735ad62d-ba54-40be-a314-764e82d0fccc")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_path" "oled.c1_cap"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "83278517-fe7c-466e-9dac-2ee7788af0af")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_refdes" "IC14"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "2e1a7637-04c9-498b-b151-3791ceb692b0")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "edg_short_path" "oled.c1_cap"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "5c2edbfb-a31a-4890-918b-6804e2fe762c")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(path "/00000000-0000-0000-0000-0000043201a5/00000000-0000-0000-0000-000007240228")
-		(sheetname "oled")
-		(sheetfile "edg.parts.Oled_Er_Oled_096_1_1.Er_Oled_096_1_1")
-		(attr smd)
-		(fp_line
-			(start 0.14058 0.51)
-			(end -0.14058 0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "B.SilkS")
-			(uuid "730f8892-2c9f-4d69-9273-922a4dae832c")
-		)
-		(fp_line
-			(start 0.14058 -0.51)
-			(end -0.14058 -0.51)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "B.SilkS")
-			(uuid "9afc8b6c-0e6e-493e-bd93-2584470deacd")
-		)
-		(fp_line
-			(start 1.48 0.73)
-			(end -1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "150b22f2-a9d8-4b59-9d32-7030fca0a932")
-		)
-		(fp_line
-			(start 1.48 -0.73)
-			(end 1.48 0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "415674ac-c0e6-4511-9363-45f158d079f3")
-		)
-		(fp_line
-			(start -1.48 0.73)
-			(end -1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "75d5e350-2e69-4460-9c03-d353553746ef")
-		)
-		(fp_line
-			(start -1.48 -0.73)
-			(end 1.48 -0.73)
-			(stroke
-				(width 0.05)
-				(type solid)
-			)
-			(layer "B.CrtYd")
-			(uuid "fc9b5da1-f2b9-48f7-aced-dc8988e738dd")
-		)
-		(fp_line
-			(start 0.8 0.4)
-			(end -0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "5ccfa103-fb17-40dc-8362-deebfc583058")
-		)
-		(fp_line
-			(start 0.8 -0.4)
-			(end 0.8 0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "3b75712f-d73e-4b37-ab58-f4ac1451b625")
-		)
-		(fp_line
-			(start -0.8 0.4)
-			(end -0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "dffed109-39f2-4992-997b-ed06d2c6519e")
-		)
-		(fp_line
-			(start -0.8 -0.4)
-			(end 0.8 -0.4)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(layer "B.Fab")
-			(uuid "e2235da1-1787-4f7a-8856-045e1a5758aa")
-		)
-		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
-			(layer "B.Fab")
-			(uuid "3c52810c-4493-4281-b240-2a1293d9ba04")
-			(effects
-				(font
-					(size 0.4 0.4)
-					(thickness 0.06)
-				)
-				(justify mirror)
-			)
-		)
-		(pad "1" smd roundrect
-			(at -0.775 0 180)
-			(size 0.9 0.95)
-			(layers "B.Cu" "B.Paste" "B.Mask")
-			(roundrect_rratio 0.25)
-			(net 41 "Doled.c1_cap.pos")
-			(uuid "61314d77-89d3-46a8-ab8b-8b38ec77d4e5")
-		)
-		(pad "2" smd roundrect
-			(at 0.775 0 180)
-			(size 0.9 0.95)
-			(layers "B.Cu" "B.Paste" "B.Mask")
-			(roundrect_rratio 0.25)
-			(net 45 "Doled.c1_cap.neg")
-			(uuid "f1f5813c-3c40-4496-8839-c8d878cd42b4")
-		)
-		(model "${KICAD6_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_0603_1608Metric.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -25143,27 +24083,27 @@
 	)
 	(segment
 		(start 106.65 94.15)
+		(end 95.5 94.15)
+		(width 0.2)
+		(layer "B.Cu")
+		(net 28)
+		(uuid "5c4bfd21-9642-449c-8a74-73187b2c28a9")
+	)
+	(segment
+		(start 109.25 95.75)
 		(end 108.25 95.75)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 28)
-		(uuid "5c999d3c-2412-49cf-9313-9ae5d949b5bb")
+		(uuid "99546cf8-01de-4d06-8d82-eac60a75a609")
 	)
 	(segment
-		(start 96 94.15)
+		(start 108.25 95.75)
 		(end 106.65 94.15)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 28)
-		(uuid "c84766dd-12c4-432c-b3ab-d34b23f29bcb")
-	)
-	(segment
-		(start 108.25 95.75)
-		(end 109.75 95.75)
-		(width 0.2)
-		(layer "B.Cu")
-		(net 28)
-		(uuid "e4660a87-cb88-433a-9afc-843992f256af")
+		(uuid "fedb5397-e7b4-401c-a92d-35f654143b96")
 	)
 	(segment
 		(start 119 94)
@@ -25246,28 +24186,28 @@
 		(uuid "f949501d-7e87-4d47-abd9-24c7c4e63b94")
 	)
 	(segment
-		(start 76.95 94.15)
+		(start 89.25 95.75)
 		(end 87.65 94.15)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 30)
-		(uuid "84d7cdcb-3787-4351-9fdd-b942c3fb3421")
+		(uuid "177110f4-801e-4066-8f4a-83211c3676b4")
 	)
 	(segment
-		(start 89.25 95.75)
-		(end 90.7 95.75)
-		(width 0.2)
-		(layer "B.Cu")
-		(net 30)
-		(uuid "c3eedd80-689f-41ac-b155-74f4ab3c5ca5")
-	)
-	(segment
-		(start 87.65 94.15)
+		(start 90.2 95.75)
 		(end 89.25 95.75)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 30)
-		(uuid "e966401a-1051-488f-86ab-88893b7bc755")
+		(uuid "47c82697-8afe-49dc-b586-8a1a81472de7")
+	)
+	(segment
+		(start 87.65 94.15)
+		(end 76.45 94.15)
+		(width 0.2)
+		(layer "B.Cu")
+		(net 30)
+		(uuid "6c212574-e784-4a92-aa5b-f6aba72fab94")
 	)
 	(segment
 		(start 59 94)
@@ -25446,52 +24386,84 @@
 		(uuid "d44f7490-f220-4041-a4e3-f8109098dc1c")
 	)
 	(segment
-		(start 100.435 104.45)
-		(end 100.435 102.54)
+		(start 99.935 102.565)
+		(end 100 102.5)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 34)
-		(uuid "75a76337-44fa-4a17-8cc0-e267176fb9fe")
+		(uuid "5285ba13-11f0-4e7b-b649-9b96e318dd64")
 	)
 	(segment
-		(start 138.535 104.45)
-		(end 138.535 102.54)
+		(start 99.935 104.45)
+		(end 99.935 102.565)
+		(width 0.2)
+		(layer "B.Cu")
+		(net 34)
+		(uuid "ea52288b-e8f5-4b6a-97b6-b4c3d0f28c8c")
+	)
+	(segment
+		(start 138.035 104.45)
+		(end 138.035 102.535)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 35)
-		(uuid "d0f948ff-86c7-4b48-990c-4ecc109191a8")
+		(uuid "7d21f33a-530c-4ec7-ba28-7b22e5488c0f")
 	)
 	(segment
-		(start 119.485 104.45)
-		(end 119.485 102.54)
+		(start 138.035 102.535)
+		(end 138 102.5)
+		(width 0.2)
+		(layer "B.Cu")
+		(net 35)
+		(uuid "9c3f72fa-9bc4-44f2-b513-9bf4c2a72567")
+	)
+	(segment
+		(start 118.985 104.45)
+		(end 118.985 102.515)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 36)
-		(uuid "69305276-f2dc-46cc-9218-eed2080c4a61")
+		(uuid "24faa497-4668-4c94-ae5e-6596ad3864f6")
 	)
 	(segment
-		(start 62.335 104.45)
-		(end 62.335 102.54)
+		(start 118.985 102.515)
+		(end 119 102.5)
+		(width 0.2)
+		(layer "B.Cu")
+		(net 36)
+		(uuid "82ade856-9e66-4d62-904d-084ad70a7007")
+	)
+	(segment
+		(start 61.835 104.45)
+		(end 61.835 102.665)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 37)
-		(uuid "e1c145ae-3f76-4a3a-a8cd-ad6e5042d99c")
+		(uuid "441fe4ab-d630-462a-82f2-a0eedc77b16b")
 	)
 	(segment
-		(start 157.585 104.45)
-		(end 157.585 102.54)
+		(start 61.835 102.665)
+		(end 62 102.5)
 		(width 0.2)
 		(layer "B.Cu")
-		(net 38)
-		(uuid "cf12efa6-7d7c-4072-8e51-373a02319d28")
+		(net 37)
+		(uuid "e26eceb9-d727-497e-ad8b-8ac1d023f753")
 	)
 	(segment
-		(start 81.385 104.45)
-		(end 81.385 102.54)
+		(start 80.885 104.45)
+		(end 80.885 102.615)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 39)
-		(uuid "19b65e82-f3f3-4c83-ac71-a5de14251740")
+		(uuid "6fad2001-5c1a-49e4-97de-b8da4be13f04")
+	)
+	(segment
+		(start 80.885 102.615)
+		(end 81 102.5)
+		(width 0.2)
+		(layer "B.Cu")
+		(net 39)
+		(uuid "ac7445dd-10a5-44f6-92b7-d749090dd324")
 	)
 	(segment
 		(start 186.05 107.95)
@@ -31064,39 +30036,31 @@
 	(group ""
 		(uuid "3124e895-a3a5-428b-b126-b5d69050379e")
 		(members "05393998-9165-40c5-9e2f-bc56b9d6bb9b" "058cef4c-f8ee-498f-84d4-767ed0afefe1"
-			"127d6edc-8524-46a4-bf60-df04a056aca7" "12c768d4-db31-4319-aff9-385d59a090ba"
-			"13fb0db9-442b-40c8-8ce0-593cfb2c4c82" "14ba068a-9236-4360-918d-e139cc9a7906"
-			"1562a245-75ec-4e95-af52-8d38b9c0abc0" "16df1c99-cc8d-437b-9402-7fe5ad86a1ab"
-			"19b65e82-f3f3-4c83-ac71-a5de14251740" "1a44e2ac-1de5-4808-b93f-af73b15721a6"
+			"12c768d4-db31-4319-aff9-385d59a090ba" "13fb0db9-442b-40c8-8ce0-593cfb2c4c82"
+			"14ba068a-9236-4360-918d-e139cc9a7906" "1562a245-75ec-4e95-af52-8d38b9c0abc0"
+			"16df1c99-cc8d-437b-9402-7fe5ad86a1ab" "1a44e2ac-1de5-4808-b93f-af73b15721a6"
 			"1b557f26-4116-4ad2-a4af-e620d8079311" "1bdc3119-9385-4833-83b0-44410da848d2"
 			"2242d6f7-7064-4c56-a1bd-d33f2d9a8add" "250a91a6-61f8-4b51-83ff-2f633c1b6e5c"
 			"27d4dee5-5f42-42c4-b549-c622fc3a4ae6" "29d786e9-11b9-416f-b4d8-f1fe3c4a8fa0"
 			"2ac8274c-4738-455a-ba60-083bec887c27" "35a37758-1f49-4262-a0c2-840e6cea2cf3"
 			"400de00e-3e3c-4272-a329-5256f44e168f" "493e2f66-9c6f-4457-a228-59f425bd65a2"
-			"53d40b15-7485-47a4-860a-1e100fb47046" "57ff8bda-1d0d-43bb-9964-282056f199dd"
-			"59cb63dd-028f-4f84-a2ec-dc671c02e160" "5ad400cc-7c9f-4c49-9883-b357371387cb"
-			"5c999d3c-2412-49cf-9313-9ae5d949b5bb" "5d860901-785b-45de-b4fe-ea3105e41706"
-			"6337f7df-91be-403e-8e64-374beca1e2ff" "66011c13-2f37-44f4-a584-ab0cc8f179be"
-			"66375fb2-1c23-42ed-a07c-ab9c6af43ebe" "66ce0ffb-e12a-46f3-b84d-0cbf57379c62"
-			"69305276-f2dc-46cc-9218-eed2080c4a61" "69c7e2b3-ef91-44f5-b4db-e016e611fcc8"
+			"53d40b15-7485-47a4-860a-1e100fb47046" "5ad400cc-7c9f-4c49-9883-b357371387cb"
+			"5d860901-785b-45de-b4fe-ea3105e41706" "6337f7df-91be-403e-8e64-374beca1e2ff"
+			"66011c13-2f37-44f4-a584-ab0cc8f179be" "66375fb2-1c23-42ed-a07c-ab9c6af43ebe"
+			"66ce0ffb-e12a-46f3-b84d-0cbf57379c62" "69c7e2b3-ef91-44f5-b4db-e016e611fcc8"
 			"69cd14fc-a2c7-40fc-8ca8-553f32ba2017" "6d186ac4-ce23-408d-be80-26369159e6b0"
 			"6e62f808-8931-4249-a939-612481aae7cd" "6e98cf7f-ca1f-4fa1-aff7-faf83936d029"
-			"74f922a3-0d6d-4dd1-91ef-586889f4f706" "75a76337-44fa-4a17-8cc0-e267176fb9fe"
-			"77acd35e-7c37-44aa-91c4-84cef3ff8cae" "77fcce45-205c-4bdd-9376-604c00e6e6a2"
+			"74f922a3-0d6d-4dd1-91ef-586889f4f706" "77acd35e-7c37-44aa-91c4-84cef3ff8cae"
 			"7c8db51e-da5d-42f9-b20b-45e253a1ebb8" "7e06cdfb-3106-46fe-bc89-2c3d9eada7a5"
 			"7e547182-3f03-4d1d-8cd2-4c9181372264" "81fed54a-d5d1-4f6e-aeab-6a83e2482737"
-			"84d7cdcb-3787-4351-9fdd-b942c3fb3421" "892b4d8f-98f5-4c50-962a-8c2732c77097"
-			"9b397eb8-42a8-4045-8b4f-9d0309b692dc" "b2ac6643-19e3-4f8b-b650-41d5036f812c"
-			"b2dc1cf9-4c86-4782-b339-dcd40a44a79a" "b6dfdbb0-1db5-45d9-9297-46b30b0971fe"
-			"c11c1454-ea27-47dd-9f42-1e9fadcb9317" "c3eedd80-689f-41ac-b155-74f4ab3c5ca5"
-			"c84766dd-12c4-432c-b3ab-d34b23f29bcb" "c86570b5-3c5c-4afa-84b2-abaa48c6427d"
-			"c8f385c8-252f-4f0b-9d91-44aa85b581f1" "c96353dc-5e7d-4776-a441-51f7aab133f1"
-			"cd0a039d-2ae3-4bf3-b7a8-37099e9ddc4e" "cf12efa6-7d7c-4072-8e51-373a02319d28"
-			"cf8bb8ed-398a-4ebc-906c-fa15fc232f30" "d0f948ff-86c7-4b48-990c-4ecc109191a8"
-			"d1dc1d21-0d4d-4fdc-9f75-7cac0f4aa567" "d304598c-24a5-4ec1-a74d-7570dd482af3"
-			"d5bacc3c-36b5-4fd9-bc9b-31004bde3226" "d8874f20-75ef-4522-8c2d-0dcfd3635137"
-			"d8a24f90-08d8-475e-b7b0-b2942b2cb62d" "e1c145ae-3f76-4a3a-a8cd-ad6e5042d99c"
-			"e4660a87-cb88-433a-9afc-843992f256af" "e966401a-1051-488f-86ab-88893b7bc755"
+			"892b4d8f-98f5-4c50-962a-8c2732c77097" "9b397eb8-42a8-4045-8b4f-9d0309b692dc"
+			"b2ac6643-19e3-4f8b-b650-41d5036f812c" "b2dc1cf9-4c86-4782-b339-dcd40a44a79a"
+			"b6dfdbb0-1db5-45d9-9297-46b30b0971fe" "c11c1454-ea27-47dd-9f42-1e9fadcb9317"
+			"c86570b5-3c5c-4afa-84b2-abaa48c6427d" "c8f385c8-252f-4f0b-9d91-44aa85b581f1"
+			"c96353dc-5e7d-4776-a441-51f7aab133f1" "cd0a039d-2ae3-4bf3-b7a8-37099e9ddc4e"
+			"cf8bb8ed-398a-4ebc-906c-fa15fc232f30" "d1dc1d21-0d4d-4fdc-9f75-7cac0f4aa567"
+			"d304598c-24a5-4ec1-a74d-7570dd482af3" "d5bacc3c-36b5-4fd9-bc9b-31004bde3226"
+			"d8874f20-75ef-4522-8c2d-0dcfd3635137" "d8a24f90-08d8-475e-b7b0-b2942b2cb62d"
 			"e9c407ad-ef3e-41ea-a743-520cfa546b76" "ec1ff8da-c02a-4908-b4d2-f6b7b92b229e"
 			"f4b3f151-e4e9-4a1f-a5a4-c082a86b9566" "f581b38f-55ff-4cd3-aea8-14d54157a25f"
 			"fb290e19-0e20-46ef-9de5-59563dee543c" "fb984e93-135f-45d2-af8a-97dd82948850"
