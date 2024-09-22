@@ -89,10 +89,12 @@ class IotThermalCamera(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
         (['reg_3v3'], Tps54202h),
+        (['cam', 'device', 'conn'], Fpc050BottomFlip),
       ],
       instance_values=[
         (['refdes_prefix'], 'T'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
+
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_2v8', 'ic', 'actual_dropout'], Range(0.0, 0.05)),  # 3.3V @ 100mA

@@ -5735,7 +5735,7 @@
 			)
 		)
 		(property "edg_part" "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec))"
-			(at 216 -80 360)
+			(at 216 -80 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "bec7b52a-e8fc-40e4-8424-6839a0985f28")
@@ -5747,7 +5747,7 @@
 			)
 		)
 		(property "edg_path" "i2c_pull.sda_res.res"
-			(at 216 -80 360)
+			(at 216 -80 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "da5fafce-9dad-46cc-8110-28bb2d99e1b6")
@@ -5759,7 +5759,7 @@
 			)
 		)
 		(property "edg_refdes" "IR6"
-			(at 216 -80 360)
+			(at 216 -80 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "69a3fbef-7cf6-4ec7-9f65-97e3866fe78e")
@@ -5771,7 +5771,7 @@
 			)
 		)
 		(property "edg_short_path" "i2c_pull.sda_res"
-			(at 216 -80 360)
+			(at 216 -80 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "aa4b3ded-fe44-453b-a4f6-d69c732752e3")
@@ -17059,7 +17059,7 @@
 			)
 		)
 		(property "edg_part" "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec))"
-			(at 214 -78 360)
+			(at 214 -78 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "4f84ac8d-949b-4284-9741-fd31223dbc72")
@@ -17071,7 +17071,7 @@
 			)
 		)
 		(property "edg_path" "i2c_pull.scl_res.res"
-			(at 214 -78 360)
+			(at 214 -78 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "8e209657-2936-4dcb-81a8-54e271d26870")
@@ -17083,7 +17083,7 @@
 			)
 		)
 		(property "edg_refdes" "IR5"
-			(at 214 -78 360)
+			(at 214 -78 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "8e6c2892-11d7-4c30-998f-556828e77a90")
@@ -17095,7 +17095,7 @@
 			)
 		)
 		(property "edg_short_path" "i2c_pull.scl_res"
-			(at 214 -78 360)
+			(at 214 -78 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "edcd4d88-9806-452c-af6a-646371454247")
@@ -28302,29 +28302,21 @@
 		(uuid "28dcd164-0100-4736-80e8-a78ea3b30c6c")
 		(members "042fd4ef-b6d2-45af-92a9-c05bf995786c" "07d7c255-1516-480a-890a-39c4af6d352a"
 			"0ca4dbe5-7ab7-45b3-badb-0480c7e3d676" "109648c9-2d5a-490b-b69d-0438eded1858"
-			"11a96048-4511-4f9a-b058-8fdffc4c16d9" "11f54866-4bd1-4253-98f8-3684db4a42f2"
-			"1340f0ae-5cba-45e8-b24c-c691a5985522" "15d477fd-8e40-4bde-92f8-73a0ab4edadf"
+			"11a96048-4511-4f9a-b058-8fdffc4c16d9" "1340f0ae-5cba-45e8-b24c-c691a5985522"
 			"19ac0226-0a7e-4326-a5c2-b5ba354ea0ce" "287498d1-c633-4fe5-8f76-3e48e6a71fe3"
 			"2f6996ee-e9e4-4cea-8e45-a0a21799f8ae" "30efcdd1-60ef-42d7-a9b3-5b0b94e46768"
 			"33024629-f538-4368-b8c9-158053369a16" "390fe568-e635-4449-8ac7-43f59f367105"
 			"39ef5853-3649-4a3a-b983-64f4931b5cd8" "3ec88695-7339-4913-9d34-efeaccc2a4a9"
-			"43010154-0066-4866-b58c-93fadb930b69" "4390c7b1-f3bf-4358-8ffe-bbd685559b89"
 			"48b7b256-5c98-4626-8f1c-7153c336457a" "4a592b3c-5a0b-467b-8781-2e178fc1a2e7"
 			"62086903-cc74-4d7d-a8f2-b1dce88e5016" "63b81c2a-616b-4fff-9b97-159ffc670cd0"
-			"6bdfcd39-cd5a-4e7c-a88c-6afc1ef74b77" "742d83c4-918a-43b2-acab-299c5afa780a"
-			"75529efa-d367-4c63-bec5-7ffcc2149c48" "79cd5c54-0816-4aba-81ac-835a75652dfb"
-			"7cc850eb-e3bf-44ac-b7a3-444ff1f0441f" "7cdb2552-cce6-4b0e-ae8d-43aa985a4e47"
-			"7d1e4a4f-91b2-4c0a-b251-25369d035949" "84ba190f-63b5-4fe2-9b7a-8bc7b5c148f4"
-			"8a0cc1aa-ed2e-4373-9b87-4900d3c5dcf0" "951a9cb4-cae1-4824-8bb9-fb68911a8063"
-			"a15e11c0-186a-4115-9703-fe1124caf9dc" "a1ea4927-68be-40f3-aef0-1d7961ad5520"
-			"b217cb1f-463b-4d55-9a12-3fe78774eacb" "b98b5d5c-67bd-4396-b2db-f3cf9e6b2cdd"
-			"b9bb9996-1de5-4d62-bdac-49c1657deb47" "be3917a1-3598-4523-a576-8fd0d47b8363"
-			"c440719c-55a5-4f76-a6af-7b809f672c77" "cef38dc5-b289-4778-b7f3-f40a23fa70fa"
-			"d08343d0-9a10-4c5f-a70d-1ec349e2250d" "d3f39edb-5e85-40c2-bcc2-3231c9df85ec"
-			"d4bee5e8-26a8-4833-a029-81cef442ea32" "d7df928a-4e63-4658-9329-215109a4d8c4"
-			"e9745285-2b4a-43b2-baa5-a4d7afc3f314" "ebdafd0c-26f8-4b71-82d1-d42cb9abef0a"
-			"ede91bff-6742-4adb-b8b7-e448b78c4d5e" "ef3db68e-b205-45fc-a106-f507f345aa74"
-			"f0b61ae7-5ae3-4928-aa56-35f440a1febf" "fadda5fa-6dd0-4eb9-ae96-02fff1f6a78f"
+			"742d83c4-918a-43b2-acab-299c5afa780a" "75529efa-d367-4c63-bec5-7ffcc2149c48"
+			"7cdb2552-cce6-4b0e-ae8d-43aa985a4e47" "7d1e4a4f-91b2-4c0a-b251-25369d035949"
+			"84ba190f-63b5-4fe2-9b7a-8bc7b5c148f4" "8a0cc1aa-ed2e-4373-9b87-4900d3c5dcf0"
+			"951a9cb4-cae1-4824-8bb9-fb68911a8063" "a15e11c0-186a-4115-9703-fe1124caf9dc"
+			"b9bb9996-1de5-4d62-bdac-49c1657deb47" "c440719c-55a5-4f76-a6af-7b809f672c77"
+			"d7df928a-4e63-4658-9329-215109a4d8c4" "e9745285-2b4a-43b2-baa5-a4d7afc3f314"
+			"ebdafd0c-26f8-4b71-82d1-d42cb9abef0a" "ede91bff-6742-4adb-b8b7-e448b78c4d5e"
+			"fadda5fa-6dd0-4eb9-ae96-02fff1f6a78f"
 		)
 	)
 	(group ""
