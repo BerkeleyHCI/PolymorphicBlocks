@@ -49,7 +49,7 @@
         "silk_text_upright": false,
         "zones": {
           "45_degree_only": false,
-          "min_clearance": 0.25
+          "min_clearance": 0.2
         }
       },
       "diff_pair_dimensions": [
@@ -258,7 +258,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "EspLora.kicad_pro",
+    "filename": "IotThermalCamera.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -278,40 +278,6 @@
         "track_width": 0.15,
         "via_diameter": 0.7,
         "via_drill": 0.3,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.15,
-        "diff_pair_gap": 0.15,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.15,
-        "line_style": 0,
-        "microvia_diameter": 0.6858,
-        "microvia_drill": 0.3302,
-        "name": "Battery",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.5,
-        "via_diameter": 0.9,
-        "via_drill": 0.5,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.15,
-        "diff_pair_gap": 0.15,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.15,
-        "line_style": 0,
-        "microvia_diameter": 0.6858,
-        "microvia_drill": 0.3302,
-        "name": "Power",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.25,
-        "via_diameter": 0.9,
-        "via_drill": 0.5,
         "wire_width": 6
       }
     ],
