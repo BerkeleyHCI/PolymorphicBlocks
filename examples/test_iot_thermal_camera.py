@@ -82,6 +82,7 @@ class IotThermalCamera(JlcBoardTop):
       self.connect(self.flir.cci, self.i2c)
       self.connect(self.flir.reset, self.mcu.gpio.request('flir_rst'))
       self.connect(self.flir.cs, self.mcu.gpio.request('flir_cs'))
+      self.connect(self.flir.vsync, self.mcu.gpio.request('flir_vsync'))
 
 
   def refinements(self) -> Refinements:
