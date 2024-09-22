@@ -60,6 +60,12 @@ class IotThermalCamera(JlcBoardTop):
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
 
+      mcu_touch = self.mcu.with_mixin(IoControllerTouchDriver())
+      (self.touch_duck, ), _ = self.chain(
+        mcu_touch.touch.request('touch_duck'),
+        imp.Block(FootprintToucbPad('edg:Symbol_DucklingSolid'))
+      )
+
       # debugging LEDs
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
 
@@ -73,6 +79,7 @@ class IotThermalCamera(JlcBoardTop):
       self.connect(self.cam.pwr_digital, self.v1v2)
       self.connect(self.cam.dvp8, self.mcu.with_mixin(IoControllerDvp8()).dvp8.request('cam'))
       self.connect(self.cam.sio, self.i2c)
+      self.connect(self.cam.reset, self.mcu.gpio.request('cam_rst'))
 
       self.flir = imp.Block(FlirLepton())
       self.connect(self.flir.pwr_io, self.v3v0)
@@ -95,7 +102,33 @@ class IotThermalCamera(JlcBoardTop):
       instance_values=[
         (['refdes_prefix'], 'T'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
+          'cam.vsync=25',
+          'cam.href=24',
+          'cam_rst=23',
+          'cam.y7=22',
+          'cam.xclk=21',
+          'cam.y6=20',
+          'cam.y5=15',
+          'cam.pclk=19',
+          'cam.y4=12',
+          'cam.y0=18',
+          'cam.y3=10',
+          'cam.y1=17',
+          'cam.y2=11',
 
+          'i2c.sda=31',
+          'i2c.scl=32',
+
+          'flir_rst=33',
+          'flir_cs=35',
+          'flir.sck=34',
+          'flir.mosi=39',
+          'flir.miso=38',
+          'flir_vsync=7',
+
+          'ledr=_GPIO0_STRAP',
+
+          'touch_duck=4',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_2v8', 'ic', 'actual_dropout'], Range(0.0, 0.05)),  # 3.3V @ 100mA
