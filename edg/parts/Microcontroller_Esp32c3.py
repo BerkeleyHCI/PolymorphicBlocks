@@ -352,7 +352,7 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
       self.vddcpu_cap = imp.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))  # C10
       self.vddspi_cap = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2)))  # C11
 
-      self.ant = self.Block(Antenna(frequency=(2402, 2484)*MHertz, impedance=50*Ohm(tol=0.1), power=(0, 0.126)*Watt))
+      self.ant = imp.Block(Antenna(frequency=(2402, 2484)*MHertz, impedance=50*Ohm(tol=0.1), power=(0, 0.126)*Watt))
       # expand the bandwidth to allow a lower Q and higher bandwidth
       # TODO: more principled calculation of Q / bandwidth, voltage, current and tolerance
       # 10% tolerance is roughly to support 5% off-nominal tolerance plus 5% component tolerance
