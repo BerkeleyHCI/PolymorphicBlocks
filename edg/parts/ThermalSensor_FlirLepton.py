@@ -32,8 +32,8 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.pwr_dwn_l = self.Port(DigitalSink.from_bidir(dio_model))
         self.vsync = self.Port(DigitalSource.from_bidir(dio_model), optional=True)
 
-    def generate(self) -> None:
-        super().generate()
+    def contents(self) -> None:
+        super().contents()
 
         self.footprint(
             'U', 'edg:Molex_1050281001',
@@ -89,6 +89,7 @@ class FlirLepton(Sensor, Resettable, Block):
     def __init__(self):
         super().__init__()
         self.ic = self.Block(FlirLepton_Device())
+        self.gnd = self.Export(self.ic.gnd, [Common])
         self.pwr_io = self.Export(self.ic.vddio, doc="3.0v IO voltage including shutter, IOs are 3.3v compatible from +0.6v tolerance rating")
         self.pwr = self.Export(self.ic.vdd, doc="2.8v")
         self.pwr_core = self.Export(self.ic.vddc, doc="1.2v core voltage")

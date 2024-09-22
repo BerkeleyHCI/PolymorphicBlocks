@@ -36,8 +36,8 @@ class RfConnectorTestPoint(BlockInterfaceMixin[RfConnector]):
 
 class RfConnectorAntenna(Antenna):
   """RF connector used as an antenna"""
-  def __init__(self):
-    super().__init__()
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
     self.conn = self.Block(RfConnector())
     self.connect(self.conn.sig, self.a)
     self.connect(self.conn.gnd, self.gnd)
