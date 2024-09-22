@@ -7,15 +7,18 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
-        self.vddc = self.Port(VoltageSink(
+        self.vddc = self.Port(VoltageSink.from_gnd(
+            self.gnd,
             voltage_limits=(1.14, 1.26)*Volt,  # 50mVpp max ripple
             current_draw=(76, 110)*mAmp  # no sleep current specified
         ))
-        self.vdd = self.Port(VoltageSink(
+        self.vdd = self.Port(VoltageSink.from_gnd(
+            self.gnd,
             voltage_limits=(2.72, 2.88)*Volt,  # 30mVpp max ripple, 4.8V abs max
             current_draw=(12, 16)*mAmp  # no sleep current specified
         ))
-        self.vddio = self.Port(VoltageSink(  # IO ring and shutter assembly
+        self.vddio = self.Port(VoltageSink.from_gnd(  # IO ring and shutter assembly
+            self.gnd,
             voltage_limits=(2.8, 3.1)*Volt,  # 50mVpp max ripple, 4.8V abs max
             current_draw=(1, 310)*mAmp  # min to max during FFC
         ))
@@ -26,7 +29,7 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.master_clk = self.Port(DigitalSink.from_bidir(dio_model))  # 25MHz clock
         self.spi = self.Port(SpiPeripheral(dio_model, (0, 20)*MHertz))
         self.cs = self.Port(DigitalSink.from_bidir(dio_model))
-        self.i2c = self.Port(I2cTarget(dio_model, [0x2a]))  # frequency up to 1MHz
+        self.cci = self.Port(I2cTarget(dio_model, [0x2a]))  # frequency up to 1MHz
 
         self.reset_l = self.Port(DigitalSink.from_bidir(dio_model))
         self.pwr_dwn_l = self.Port(DigitalSink.from_bidir(dio_model))
@@ -63,8 +66,8 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 '16': self.vddio,
                 # '17': self.vprog,  # unused
                 '19': self.vdd,
-                '21': self.i2c.scl,
-                '22': self.i2c.sda,
+                '21': self.cci.scl,
+                '22': self.cci.sda,
                 '23': self.pwr_dwn_l,
                 '24': self.reset_l,
                 '26': self.master_clk,
@@ -98,7 +101,8 @@ class FlirLepton(Sensor, Resettable, Block):
         self.require(self.reset.is_connected())
 
         self.spi = self.Export(self.ic.spi, doc="Video over SPI")
-        self.cci = self.Export(self.ic.spi, doc="I2C-like Command and Control Interface")
+        self.cs = self.Export(self.ic.cs)
+        self.cci = self.Export(self.ic.cci, doc="I2C-like Command and Control Interface")
         self.vsync = self.Export(self.ic.vsync, optional=True, doc="Optional frame-sync output")
 
     def contents(self):

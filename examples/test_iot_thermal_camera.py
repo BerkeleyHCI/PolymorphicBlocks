@@ -28,19 +28,19 @@ class IotThermalCamera(JlcBoardTop):
 
       (self.reg_3v0, ), _ = self.chain(
         self.pwr,
-        imp.Block(VoltageRegulator(output_voltage=3.0*Volt(tol=0.05)))
+        imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.05)))
       )
       self.v3v0 = self.connect(self.reg_3v0.pwr_out)
 
       (self.reg_2v8, ), _ = self.chain(
         self.pwr,
-        imp.Block(VoltageRegulator(output_voltage=2.8*Volt(tol=0.05)))
+        imp.Block(LinearRegulator(output_voltage=2.8*Volt(tol=0.05)))
       )
       self.v2v8 = self.connect(self.reg_2v8.pwr_out)
 
       (self.reg_1v2, ), _ = self.chain(
         self.pwr,
-        imp.Block(VoltageRegulator(output_voltage=1.2*Volt(tol=0.05)))
+        imp.Block(LinearRegulator(output_voltage=1.2*Volt(tol=0.05)))
       )
       self.v1v2 = self.connect(self.reg_1v2.pwr_out)
 
@@ -78,16 +78,13 @@ class IotThermalCamera(JlcBoardTop):
       self.connect(self.flir.spi, self.mcu.spi.request('flir'))
       self.connect(self.flir.cci, self.i2c)
       self.connect(self.flir.reset, self.mcu.gpio.request('flir_rst'))
+      self.connect(self.flir.cs, self.mcu.gpio.request('flir_cs'))
 
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
-
-        (['reg_3v0'], Xc6206p),
-        (['reg_2v8'], Xc6206p),
-        (['reg_1v2'], Xc6206p),
       ],
       instance_values=[
         (['refdes_prefix'], 'T'),  # unique refdes for panelization
@@ -98,6 +95,7 @@ class IotThermalCamera(JlcBoardTop):
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
         (TestPoint, CompactKeystone5015),
+        (LinearRegulator, Xc6206p),  # default type for all LDOs
       ],
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
