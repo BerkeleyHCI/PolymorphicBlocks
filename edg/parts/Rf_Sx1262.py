@@ -207,9 +207,11 @@ class Sx1262_Device(FootprintBlock):
                 '24': self.vr_pa,
                 '25': self.gnd,  # EP, labeled as pin 0 on datasheet
             },
-            mfr='Semtech Corporation', part='SX1262',
+            mfr='Semtech Corporation', part='SX1262IMLTRT',
             datasheet='https://semtech.my.salesforce.com/sfc/p/E0000000JelG/a/2R000000Un7F/yT.fKdAr9ZAo3cJLc4F2cBdUsMftpT2vsOICP7NmvMo'
         )
+        self.assign(self.lcsc_part, 'C191341')
+        self.assign(self.actual_basic_part, False)
 
 
 class Sx1262(Resettable, Block):

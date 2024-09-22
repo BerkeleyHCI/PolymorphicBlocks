@@ -73,8 +73,7 @@ class DeskController(JlcBoardTop):
             self.i2c_pull = imp.Block(I2cPullup())
             self.connect(self.mcu.i2c.request('i2c'), self.i2c_pull.i2c, self.oled.i2c)
 
-            self.io2_pu = imp.Block(PullupResistor(4.7*kOhm(tol=0.05)))
-            self.connect(self.mcu.gpio.request('oled_rst'), self.oled.reset, self.io2_pu.io)
+            self.connect(self.mcu.gpio.request('oled_rst'), self.oled.reset)
             self.io8_pu = imp.Block(PullupResistor(4.7*kOhm(tol=0.05)))
             self.connect(self.mcu.gpio.request('spk'), self.io8_pu.io)  # TODO support in chain
 
@@ -109,7 +108,7 @@ class DeskController(JlcBoardTop):
                 (['refdes_prefix'], 'D'),  # unique refdes for panelization
                 (['mcu', 'pin_assigns'], [
                     'ledr=_GPIO9_STRAP',  # use the strapping pin to save on IOs
-                    'oled_rst=_GPIO2_STRAP_EXT_PU',  # use the strapping pin to save on IOs
+                    'oled_rst=_GPIO2_STRAP_EXT_PU',  # not pulled up, affects startup glitching
                     'spk=_GPIO8_STRAP_EXT_PU',  # use the strapping pin to save on IOs
 
                     'i2c.sda=18',
