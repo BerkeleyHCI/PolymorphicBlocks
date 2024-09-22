@@ -8,7 +8,7 @@ from .JlcPart import JlcPart
 class Pn7160_Device(FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
-        self.gnd = self.Port(Ground(), [Common])
+        self.vss = self.Port(Ground(), [Common])
         self.vbat = self.Port(VoltageSink.from_gnd(
             self.gnd,
             voltage_limits=(2.5, 5.5)*Volt,
@@ -20,8 +20,26 @@ class Pn7160_Device(FootprintBlock, JlcPart):
             self.gnd,
             voltage_limits=(3.0, 3.6)*Volt))  # also available in 1.8v nominal
 
+        # internally generated supplies
+        self.vdd = self.Port(VoltageSource(
+            ...
+        ))
+        self.vmid = self.Port(VoltageSource(...
+                                            ))
+        self.vddtx = self.Port(VoltageSource(...))
+
         self.xtal = self.Port(CrystalDriver(frequency_limits=27.12*MHertz(tol=50e-6)))
 
+        # antenna interface
+        self.tx1 = self.Port(Passive())
+        self.tx2 = self.Port(Passive())
+        self.rxp = self.Port(Passive())
+        self.rxn = self.Port(Passive())
+
+        self.ant1 = self.Port(Passive())
+        self.ant2 = self.Port(Passive())
+
+        # digital interfaces
         self.i2c = self.Port(I2cTarget(..., addresses=[0x28]))  # in ADR = (0, 0)
 
         self.irq = self.Port(..., optional=True)  # I2C can be polled, but IRQ is recommended
@@ -70,12 +88,12 @@ class Pn7160_Device(FootprintBlock, JlcPart):
                 '1': self.vss,  # self.i2c_adr0,
                 # '2': DWL_REQ, firmware download control, leave open or ground if unused (internal pulldown)
                 '3': self.vss,  # self.i2c_adr1,
-                '4': self.vss,
+                '4': self.vss,  # Vsspad
                 '5': self.i2c.sda,
-                '6': self.vdd,
+                '6': self.vddpad,
                 '7': self.i2c.scl,
                 '8': self.irq,
-                '9': self.vss,
+                '9': self.vss,  # VssA
                 '10': self.ven,  # reset + hard power down
                 # 11 internally connected, leave open
                 '12': self.vbat,  # Vbat2
@@ -86,18 +104,18 @@ class Pn7160_Device(FootprintBlock, JlcPart):
                 '17': self.vddvmin,
                 '18': self.vddtx,  # TVddIn
                 '19': self.tx2,
-                '20': self.vssx,
+                '20': self.vss,  # VssTx
                 '21': self.tx1,
                 '22': self.vddtx,  # TVddIn2
-                '23': self.ant1,
-                '24': self.ant2,
-                '25': self.vddhf,
-                '26': self.vdda,
+                # '23': self.ant1,  # ANT1/2, VddHF are for antenna connection for wake-up, not used
+                # '24': self.ant2,
+                # '25': self.vddhf,
+                '26': self.vdd,  # AVdd
                 '27': self.vdd,
                 '28': self.vbat,
                 '29': self.xtal.xtal_out,  # xtal2
                 '30': self.xtal.xtal_in,  # nfc_clk_xtal1,
-                '31': self.vddd,
+                '31': self.vdd,  # DVdd / Vddd
                 # 32-36 NC
                 # '37': self.dcdcen,  # for external DC-DC mode, connect to enable
                 # 38 NC
@@ -124,8 +142,21 @@ class Pn7160(Resettable, Block):
     def contents(self):
         super().contents()
 
-        # TODO technically only needed in RF active polling mode
-        self.xtal = self.Block(OscillatorReference(27.12*MHertz(tol=50e-6)))
-        self.connect(self.xtal.gnd, self.gnd)
-        self.connect(self.ic.xtal, self.xtal.crystal)
+        self.connect(self.ic.vbat, self.ic.vddup)  # CFG1, VddUp and Vbat from same supply
 
+        with self.implicit_connect(
+                ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            # caps table from hardware design guide
+            self.cvddup = imp.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))).connected(pwr=self.ic.vddup)
+            self.cvbat = imp.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))).connected(pwr=self.ic.vbat)
+            self.cvbat1 = imp.Block(DecouplingCapacitor(capacitance=100*nFarad(tol=0.2))).connected(pwr=self.ic.vbat)
+            self.cvdd1 = imp.Block(DecouplingCapacitor(capacitance=2.2*uFarad(tol=0.2))).connected(pwr=self.ic.vdd)
+            self.cvdd2 = imp.Block(DecouplingCapacitor(capacitance=2.2*uFarad(tol=0.2))).connected(pwr=self.ic.vdd)
+            self.ctvdd1 = imp.Block(DecouplingCapacitor(capacitance=2.2*uFarad(tol=0.2))).connected(pwr=self.ic.vddtx)
+            self.ctvdd2 = imp.Block(DecouplingCapacitor(capacitance=2.2*uFarad(tol=0.2))).connected(pwr=self.ic.vddtx)
+            self.cvddpad = imp.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2))).connected(pwr=self.ic.vddpad)
+            self.cvddmid = imp.Block(DecouplingCapacitor(capacitance=100*nFarad(tol=0.2))).connected(pwr=self.ic.vddpad)
+
+            self.xtal = imp.Block(OscillatorReference(27.12*MHertz(tol=50e-6)))  # TODO only needed in RF polling mode
+            self.connect(self.ic.xtal, self.xtal.crystal)
