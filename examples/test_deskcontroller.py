@@ -98,12 +98,6 @@ class DeskController(JlcBoardTop):
                                                     self.Block(DigitalTestPoint()),
                                                     imp.Block(NeopixelArray(6)))
 
-            self.nfc = imp.Block(Pn7160())
-            self.connect(self.nfc.pwr, self.pwr)
-            self.connect(self.nfc.pwr_io, self.v3v3)
-            self.connect(self.nfc.i2c, self.i2c)
-            self.connect(self.nfc.reset, self.reset)
-
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[
@@ -126,10 +120,10 @@ class DeskController(JlcBoardTop):
                     'swr_1=13',
                     'swr_0=14',
                     'swc_1=15',
-                    'swc_0=6',
+                    'swc_0=5',
 
-                    'ctl.rx=3',
-                    'ctl.tx=4',
+                    'ctl.rx=4',
+                    'ctl.tx=3',
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),
                 (['spk_drv', 'pwr', 'current_draw'], Range(0.0022, 0.08)),  # don't run at full power
