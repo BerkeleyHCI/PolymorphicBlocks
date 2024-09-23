@@ -73,7 +73,7 @@ class JlcPartsStockFile(RootModel):
     root: dict[str, int]  # LCSC to stock level
 
 
-class JlcPartsBase(JlcPart, PartsTableFootprintFilter):
+class JlcPartsBase(JlcPart, PartsTableAreaSelector, PartsTableFootprintFilter):
     """Base class parsing parts from https://github.com/yaqwsx/jlcparts"""
     _config_parts_root_dir: Optional[str] = None
     _config_min_stock: int = 250
