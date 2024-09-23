@@ -132,7 +132,7 @@ class Sx1262BalunLike(InternalSubcircuit, GeneratorBlock):
         self.connect(self.gnd, self.c_p.neg.adapt_to(Ground()))
 
 
-class Sx1262_Device(FootprintBlock):
+class Sx1262_Device(FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])

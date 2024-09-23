@@ -71,9 +71,11 @@ class DeskController(JlcBoardTop):
 
             self.oled = imp.Block(Er_Oled_096_1_1())
             self.i2c_pull = imp.Block(I2cPullup())
-            self.connect(self.mcu.i2c.request('i2c'), self.i2c_pull.i2c, self.oled.i2c)
+            self.i2c = self.mcu.i2c.request('i2c')
+            self.connect(self.i2c, self.i2c_pull.i2c, self.oled.i2c)
 
-            self.connect(self.mcu.gpio.request('oled_rst'), self.oled.reset)
+            self.reset = self.mcu.gpio.request('oled_rst')
+            self.connect(self.reset, self.oled.reset)
             self.io8_pu = imp.Block(PullupResistor(4.7*kOhm(tol=0.05)))
             self.connect(self.mcu.gpio.request('spk'), self.io8_pu.io)  # TODO support in chain
 
@@ -95,6 +97,12 @@ class DeskController(JlcBoardTop):
             (self.npx_tp, self.npx), _ = self.chain(self.npx_shift.hv_io,
                                                     self.Block(DigitalTestPoint()),
                                                     imp.Block(NeopixelArray(6)))
+
+            self.nfc = imp.Block(Pn7160())
+            self.connect(self.nfc.pwr, self.pwr)
+            self.connect(self.nfc.pwr_io, self.v3v3)
+            self.connect(self.nfc.i2c, self.i2c)
+            self.connect(self.nfc.reset, self.reset)
 
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
