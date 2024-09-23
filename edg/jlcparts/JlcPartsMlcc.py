@@ -31,7 +31,7 @@ class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, PartsTableSelectorF
 
             # arbitrary filter - TODO parameterization
             tempco = attributes.get("Temperature coefficient", str)
-            if len(tempco) < 3 or tempco[0] not in ('X', 'C') or tempco[2] not in ('R', 'S', 'G'):
+            if len(tempco) < 3 or tempco[0] not in ('X', 'C', 'N') or tempco[2] not in ('R', 'S', 'G', '0'):
                 return None
 
             return row_dict
