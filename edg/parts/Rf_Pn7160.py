@@ -5,6 +5,50 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
+# TODO some of these are pretty general RF building blocks and can be moved into shared libraries
+# but until there are enough use cases they'll be buried here for now
+
+class NfcAntenna(Block):
+    """NFC antenna connector, also calculates the complex impedance from series-LRC parameters.
+    In this model, the L and R are in series, and the C is in parallel with the LR stack.
+    As in https://www.nxp.com/docs/en/application-note/AN13219.pdf
+    """
+    @classmethod
+    def impedance_from_lrc(cls, freq: float, inductance: float, resistance: float, capacitance: float = 0.1e-9) -> complex:
+        """Calculates the complex impedance of this antenna given the antenna L, R, C.
+        A default C of 0.1pF
+        From https://www.eetimes.eu/impedance-matching-for-nfc-applications/"""
+        w = 2 * pi * freq
+        realpart = resistance / ((1 - (w**2) * inductance * capacitance)**2 + (w * resistance * capacitance)**2)
+        imagpart = (w * inductance - (w**3) * (inductance**2) * capacitance - w * (resistance**2) * capacitance) / \
+                   ((1 - (w**2) * inductance * capacitance)**2 + (w * resistance * capacitance)**2)
+        return complex(realpart, imagpart)
+
+    def __init__(self):
+        super().__init__()
+        self.conn = self.Block(PassiveConnector(length=2))  # arbitrary
+
+    def contents(self):
+        super().contents()
+
+
+class LcLowpassFilter(Block):
+    @classmethod
+    def _calculate_capacitance(cls, freq_cutoff: float, inductance: float) -> float:
+        # from f = 1 / (2 pi sqrt(LC))
+        return 1 / (inductance * (2*pi*freq_cutoff)**2)
+
+
+class DifferentialLLowPassFilter:
+    # TODO: implement as circuit generator
+
+    @classmethod
+    def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
+        # calculate single-ended values from single-ended filter
+        se_l, se_c = LLowPassFilter._calculate_values(freq, z1, z2)
+        return se_l, se_c
+
+
 class Pn7160_Device(FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
@@ -141,3 +185,7 @@ class Pn7160(Resettable, Block):
             self.connect(self.ic.xtal, self.xtal.crystal)
 
             # TODO antenna and RF filter / match generation
+            # LC filter cutoff must be at least 14.4MHz (center + 848kHz sub carrier)
+            # recommended asymmetrical cutoff is 22MHz, 160nH
+
+            # matching circuit
