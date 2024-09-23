@@ -95,7 +95,7 @@ class DeskController(JlcBoardTop):
             self.connect(self.npx_shift.hv_pwr, self.pwr)
             self.connect(self.mcu.gpio.request('npx'), self.npx_shift.lv_io)
             (self.npx_tp, self.npx), _ = self.chain(self.npx_shift.hv_io,
-                                                    self.Block(DigitalTestPoint()),
+                                                    self.Block(DigitalTestPoint('npx')),
                                                     imp.Block(NeopixelArray(6)))
 
     def refinements(self) -> Refinements:
