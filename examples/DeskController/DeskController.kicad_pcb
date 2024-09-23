@@ -31015,27 +31015,6 @@
 			)
 		)
 	)
-	(zone
-		(net 2)
-		(net_name "Dgnd")
-		(layers "F&B.Cu")
-		(uuid "69cc3168-ddb2-4d32-a49c-e4ddc18a49b1")
-		(hatch edge 0.508)
-		(connect_pads
-			(clearance 0.254)
-		)
-		(min_thickness 0.2)
-		(filled_areas_thickness no)
-		(fill yes
-			(thermal_gap 0.2)
-			(thermal_bridge_width 0.2)
-		)
-		(polygon
-			(pts
-				(xy 175 190.5) (xy 73 190.5) (xy 73 149.5) (xy 175 149.5)
-			)
-		)
-	)
 	(group ""
 		(uuid "2fe3391b-d142-4c15-8a42-4aed948b6ebb")
 		(members "09874aa3-1131-4696-9a4a-49bbaab8b275" "1b1d78b5-207a-4e12-9214-d34038532853"
