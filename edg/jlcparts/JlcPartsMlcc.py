@@ -7,6 +7,12 @@ from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, PartsTableSelectorFootprint, JlcPartsBase):
     _JLC_PARTS_FILE_NAMES = ["CapacitorsMultilayer_Ceramic_Capacitors_MLCC___SMDakaSMT"]
 
+    @init_in_parent
+    def __init__(self, *args, capacitance_minimum_size: BoolLike = True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.capacitance_minimum_size = self.ArgParameter(capacitance_minimum_size)
+        self.generator_param(self.capacitance_minimum_size)
+
     @classmethod
     def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes) \
             -> Optional[Dict[PartsTableColumn, Any]]:
@@ -31,6 +37,27 @@ class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, PartsTableSelectorF
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
+
+    def _table_postprocess(self, table: PartsTable) -> PartsTable:
+        # TODO deduplicate w/ JlcCapacitor
+        def filter_minimum_size(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+            # enforce minimum packages, note the cutoffs are exclusive
+            nominal_capacitance = row[self.NOMINAL_CAPACITANCE]
+            footprint = row[self.KICAD_FOOTPRINT]
+            if nominal_capacitance > 10e-6 and footprint not in [
+                'Capacitor_SMD:C_1206_3216Metric',
+            ]:
+                return None
+            elif nominal_capacitance > 1e-6 and footprint not in [
+                'Capacitor_SMD:C_0805_2012Metric',
+                'Capacitor_SMD:C_1206_3216Metric',
+            ]:
+                return None
+            return {}
+        table = super()._table_postprocess(table)
+        if self.get(self.capacitance_minimum_size):
+            table = table.map_new_columns(filter_minimum_size)
+        return table
 
     @classmethod
     def _row_sort_by(cls, row: PartsTableRow) -> Any:
