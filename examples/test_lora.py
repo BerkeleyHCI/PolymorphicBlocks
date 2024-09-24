@@ -55,9 +55,11 @@ class EspLora(JlcBoardTop):
       (self.tp_lora_dio, ), _ = self.chain(self.mcu.gpio.request('lora_dio'), imp.Block(DigitalTestPoint('lr_di')),
                                            self.lora.dio1)
 
-      self.oled = imp.Block(Er_Oled_096_1_1())
+      self.i2c = self.mcu.i2c.request('i2c')
       self.i2c_pull = imp.Block(I2cPullup())
-      self.connect(self.mcu.i2c.request('i2c'), self.i2c_pull.i2c, self.oled.i2c)
+
+      self.oled = imp.Block(Er_Oled_096_1_1())
+      self.connect(self.i2c, self.i2c_pull.i2c, self.oled.i2c)
       (self.oled_rst, self.oled_pull), _ = self.chain(
         imp.Block(Apx803s()),  # -29 variant used on Adafruit boards
         imp.Block(PullupResistor(10*kOhm(tol=0.05))),
@@ -67,6 +69,12 @@ class EspLora(JlcBoardTop):
       self.sd = imp.Block(SdCard())
       self.connect(self.mcu.spi.request('sd'), self.sd.spi)
       self.connect(self.mcu.gpio.request('sd_cs'), self.sd.cs)
+
+      self.nfc = imp.Block(Pn7160())
+      self.connect(self.nfc.pwr, self.pwr)
+      self.connect(self.nfc.pwr_io, self.v3v3)
+      self.connect(self.nfc.i2c, self.i2c)
+      self.connect(self.nfc.reset, self.mcu.gpio.request('rst'))
 
   def multipack(self) -> None:
     self.tx_cpack = self.PackedBlock(CombinedCapacitor())
@@ -80,6 +88,7 @@ class EspLora(JlcBoardTop):
         (['reg_3v3'], Ldl1117),
         (['lora', 'ant'], RfConnectorAntenna),
         (['lora', 'ant', 'conn'], Amphenol901143),
+        (['nfc', 'ant', 'conn'], JstPhKVertical),
       ],
       instance_values=[
         (['refdes_prefix'], 'L'),  # unique refdes for panelization

@@ -32,6 +32,7 @@ class NfcAntenna(GeneratorBlock):
         For differential configuration, halve the result and split among the +/- terminals."""
         return impedance.imag / target_q - impedance.real
 
+    @init_in_parent
     def __init__(self, freq: FloatLike, inductance: FloatLike, resistance: FloatLike, capacitance: FloatLike):
         super().__init__()
         self.conn = self.Block(PassiveConnector(length=2))  # arbitrary
@@ -49,6 +50,9 @@ class NfcAntenna(GeneratorBlock):
     def generate(self):
         super().generate()
 
+        self.connect(self.ant1, self.conn.pins.request('1'))
+        self.connect(self.ant2, self.conn.pins.request('2'))
+
         impedance = NfcAntenna.impedance_from_lrc(self.get(self.freq), self.get(self.inductance),
                                                   self.get(self.resistance), self.get(self.capacitance))
         self.assign(self.z_real, impedance.real)
@@ -62,6 +66,7 @@ class DifferentialLcLowpassFilter(GeneratorBlock):
     def _calculate_capacitance(cls, freq_cutoff: float, inductance: float) -> float:
         return 1 / (inductance * (2*pi*freq_cutoff)**2)  # from f = 1 / (2 pi sqrt(LC))
 
+    @init_in_parent
     def __init__(self, freq_cutoff: FloatLike, inductance: FloatLike, input_res: FloatLike,
                  freq: FloatLike, current: RangeExpr, voltage: RangeExpr):
         super().__init__()
@@ -74,13 +79,13 @@ class DifferentialLcLowpassFilter(GeneratorBlock):
         self.z_real = self.Parameter(FloatExpr())  # output impedance real part
         self.z_imag = self.Parameter(FloatExpr())
 
-        self.generator_param(self.inductance, self.input_res, self.freq)
+        self.generator_param(self.freq_cutoff, self.inductance, self.input_res, self.freq)
 
         self.in1 = self.Port(Passive())
         self.in2 = self.Port(Passive())
         self.out1 = self.Port(Passive())
         self.out2 = self.Port(Passive())
-        self.gnd = self.Port(Ground(), [Common])
+        self.gnd = self.Port(Ground.empty(), [Common])
 
     def generate(self):
         super().generate()
@@ -114,6 +119,7 @@ class DifferentialLLowPassFilter(GeneratorBlock):
         se_cp = PiLowPassFilter._reactance_to_capacitance(freq, se_xp)
         return se_cs, se_cp
 
+    @init_in_parent
     def __init__(self, freq: FloatLike, src_r: FloatLike, src_x: FloatLike, snk_r: FloatLike, snk_x: FloatLike,
                  voltage: RangeLike):
         super().__init__()
@@ -123,13 +129,13 @@ class DifferentialLLowPassFilter(GeneratorBlock):
         self.snk_r = self.ArgParameter(snk_r)
         self.snk_x = self.ArgParameter(snk_x)
         self.voltage = self.ArgParameter(voltage)
-        self.generator_param(self.src_r, self.src_x, self.snk_r, self.snk_x)
+        self.generator_param(self.freq, self.src_r, self.src_x, self.snk_r, self.snk_x)
 
         self.in1 = self.Port(Passive())
         self.in2 = self.Port(Passive())
         self.out1 = self.Port(Passive())
         self.out2 = self.Port(Passive())
-        self.gnd = self.Port(Ground(), [Common])
+        self.gnd = self.Port(Ground.empty(), [Common])
 
     def generate(self):
         super().generate()
