@@ -52,7 +52,7 @@ class NfcAntennaTest(unittest.TestCase):
         # excel matching from https://www.nxp.com/docs/en/application-note/AN13219.pdf
         # source_z = NfcAntenna.impedance_from_lrc(13.56e6, 160e-9 * 2, 20, 330e-12)  # doesn't work
         source_z = complex(44, 24)  # this works, but unclear how this was obtained
-        sink_z = NfcAntenna.impedance_from_lrc(13.56e6, 1522e-9, 1.40, 0.1e-12) + 2.54*2
-        diff_cs, diff_cp = DifferentialLLowPassFilter._calculate_se_values(13.56e6, source_z.conjugate(), sink_z.conjugate())
+        ant_z = NfcAntenna.impedance_from_lrc(13.56e6, 1522e-9, 1.40, 0.1e-12) + 2.54*2
+        diff_cs, diff_cp = DifferentialLLowPassFilter._calculate_se_values(13.56e6, source_z.conjugate(), ant_z.conjugate())
         self.assertAlmostEqual(diff_cs * 2, -65.1e-12, delta=0.2e-12)
         self.assertAlmostEqual(diff_cp * 2, -111.0e-12, delta=0.7e-12)
