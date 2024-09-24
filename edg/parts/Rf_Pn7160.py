@@ -24,6 +24,12 @@ class NfcAntenna(Block):
                    ((1 - (w**2) * inductance * capacitance)**2 + (w * resistance * capacitance)**2)
         return complex(realpart, imagpart)
 
+    @classmethod
+    def damp_res_from_impedance(self, impedance: complex, target_q: float) -> float:
+        """Calculates the single-ended damping resistance needed to achieve some target Q.
+        For differential configuration, halve the result and split among the +/- terminals."""
+        return impedance.imag / target_q - impedance.real
+
     def __init__(self):
         super().__init__()
         self.conn = self.Block(PassiveConnector(length=2))  # arbitrary
