@@ -38,11 +38,55 @@ class NfcAntenna(Block):
         super().contents()
 
 
-class LcLowpassFilter(Block):
+class DifferentialLcLowpassFilter(GeneratorBlock):
+    """Differential LC lowpass filter, commonly used as an EMC filter in the NFC analog frontend
+    Input resistance is used to calculate the output impedance"""
     @classmethod
     def _calculate_capacitance(cls, freq_cutoff: float, inductance: float) -> float:
         # from f = 1 / (2 pi sqrt(LC))
         return 1 / (inductance * (2*pi*freq_cutoff)**2)
+
+    def __init__(self, freq_cutoff: FloatLike, inductance: FloatLike, input_res: FloatLike,
+                 freq: FloatLike,current: RangeExpr, voltage: RangeExpr):
+        super().__init__()
+        self.freq_cutoff = self.ArgParameter(freq_cutoff)
+        self.inductance = self.ArgParameter(inductance)
+        self.input_res = self.ArgParameter(input_res)
+        self.freq = self.ArgParameter(freq)
+        self.current = self.ArgParameter(current)
+        self.voltage = self.ArgParameter(voltage)
+        self.z_real = self.Parameter(FloatExpr())  # output impedance real part
+        self.z_imag = self.Parameter(FloatExpr())
+
+        self.generator_param(self.inductance, self.input_res, self.freq)
+
+        self.in1 = self.Port(Passive())
+        self.in2 = self.Port(Passive())
+        self.out1 = self.Port(Passive())
+        self.out2 = self.Port(Passive())
+        self.gnd = self.Port(Ground(), [Common])
+
+    def generate(self):
+        super().generate()
+
+        inductor_model = Inductor(self.get(self.inductance)*Henry(tol=0.1),
+                                  current=self.current, frequency=(0, self.freq_cutoff))
+        self.l1 = self.Block(inductor_model)
+        self.l2 = self.Block(inductor_model)
+        capacitance = self._calculate_capacitance(self.get(self.freq_cutoff), self.get(self.inductance))
+        cap_model = Capacitor(capacitance*Farad(tol=0.1), voltage=self.voltage)
+        self.c1 = self.Block(cap_model)
+        self.c2 = self.Block(cap_model)
+        self.connect(self.in1, self.l1.a)
+        self.connect(self.l1.b, self.c1.pos, self.out1)
+        self.connect(self.in2, self.l2.a)
+        self.connect(self.l2.b, self.c2.pos, self.out2)
+        self.connect(self.c1.neg.adapt_to(Ground()), self.c2.neg.adapt_to(Ground()), self.gnd)
+
+        impedance = NfcAntenna.impedance_from_lrc(self.get(self.freq), self.get(self.inductance),
+                                                  self.get(self.input_res), capacitance)
+        self.assign(self.z_real, impedance.real)
+        self.assign(self.z_imag, impedance.imag)
 
 
 class DifferentialLLowPassFilter:

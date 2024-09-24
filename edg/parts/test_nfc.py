@@ -1,6 +1,6 @@
 import unittest
 
-from .Rf_Pn7160 import NfcAntenna, LcLowpassFilter, DifferentialLLowPassFilter
+from .Rf_Pn7160 import NfcAntenna, DifferentialLcLowpassFilter, DifferentialLLowPassFilter
 
 
 class NfcAntennaTest(unittest.TestCase):
@@ -27,7 +27,7 @@ class NfcAntennaTest(unittest.TestCase):
 
     def test_lc(self) -> None:
         # asymmetrical matching case from https://www.nxp.com/docs/en/application-note/AN13219.pdf
-        self.assertAlmostEqual(LcLowpassFilter._calculate_capacitance(22e6, 160e-9),
+        self.assertAlmostEqual(DifferentialLcLowpassFilter._calculate_capacitance(22e6, 160e-9),
                                327.1e-12, delta=0.1e-12)
 
     def test_l_match(self) -> None:
