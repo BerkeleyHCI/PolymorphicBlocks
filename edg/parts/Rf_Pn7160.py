@@ -7,6 +7,7 @@ from .JlcPart import JlcPart
 
 # TODO some of these are pretty general RF building blocks and can be moved into shared libraries
 # but until there are enough use cases they'll be buried here for now
+# TODO: maybe have a RfPort / DifferentialRfPort bidirectional type modeling impedances
 
 class NfcAntenna(Block):
     """NFC antenna connector, also calculates the complex impedance from series-LRC parameters.
@@ -43,11 +44,10 @@ class DifferentialLcLowpassFilter(GeneratorBlock):
     Input resistance is used to calculate the output impedance"""
     @classmethod
     def _calculate_capacitance(cls, freq_cutoff: float, inductance: float) -> float:
-        # from f = 1 / (2 pi sqrt(LC))
-        return 1 / (inductance * (2*pi*freq_cutoff)**2)
+        return 1 / (inductance * (2*pi*freq_cutoff)**2)  # from f = 1 / (2 pi sqrt(LC))
 
     def __init__(self, freq_cutoff: FloatLike, inductance: FloatLike, input_res: FloatLike,
-                 freq: FloatLike,current: RangeExpr, voltage: RangeExpr):
+                 freq: FloatLike, current: RangeExpr, voltage: RangeExpr):
         super().__init__()
         self.freq_cutoff = self.ArgParameter(freq_cutoff)
         self.inductance = self.ArgParameter(inductance)
@@ -89,9 +89,7 @@ class DifferentialLcLowpassFilter(GeneratorBlock):
         self.assign(self.z_imag, impedance.imag)
 
 
-class DifferentialLLowPassFilter:
-    # TODO: implement as circuit generator
-
+class DifferentialLLowPassFilter(GeneratorBlock):
     @classmethod
     def _calculate_se_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
         # calculate single-ended values from single-ended filter
@@ -99,6 +97,41 @@ class DifferentialLLowPassFilter:
         se_cs = PiLowPassFilter._reactance_to_capacitance(freq, se_xs)
         se_cp = PiLowPassFilter._reactance_to_capacitance(freq, se_xp)
         return se_cs, se_cp
+
+    def __init__(self, freq: FloatLike, src_r: FloatLike, src_x: FloatLike, snk_r: FloatLike, snk_x: FloatLike,
+                 voltage: RangeLike):
+        super().__init__()
+        self.freq = self.ArgParameter(freq)
+        self.src_r = self.ArgParameter(src_r)
+        self.src_x = self.ArgParameter(src_x)
+        self.snk_r = self.ArgParameter(snk_r)
+        self.snk_x = self.ArgParameter(snk_x)
+        self.voltage = self.ArgParameter(voltage)
+        self.generator_param(self.src_r, self.src_x, self.snk_r, self.snk_x)
+
+        self.in1 = self.Port(Passive())
+        self.in2 = self.Port(Passive())
+        self.out1 = self.Port(Passive())
+        self.out2 = self.Port(Passive())
+        self.gnd = self.Port(Ground(), [Common])
+
+    def generate(self):
+        super().generate()
+
+        diff_cs, diff_cp = self._calculate_se_values(self.get(self.freq),
+                                                     complex(self.get(self.src_r), self.get(self.src_x)),
+                                                     complex(self.get(self.snk_r), self.get(self.snk_x)))
+        cs_model = Capacitor(diff_cs*2*Farad(tol=0.1), voltage=self.voltage)
+        self.cs1 = self.Block(cs_model)
+        self.cs2 = self.Block(cs_model)
+        cp_model = Capacitor(diff_cp*2*Farad(tol=0.1), voltage=self.voltage)
+        self.cp1 = self.Block(cp_model)
+        self.cp2 = self.Block(cp_model)
+        self.connect(self.in1, self.cs1.pos)
+        self.connect(self.cs1.neg, self.cp1.pos, self.out1)
+        self.connect(self.in2, self.cs2.pos)
+        self.connect(self.cs2.neg, self.cp2.pos, self.out2)
+        self.connect(self.cp1.neg.adapt_to(Ground()), self.cp2.neg.adapt_to(Ground()), self.gnd)
 
 
 class Pn7160_Device(FootprintBlock, JlcPart):
@@ -236,8 +269,21 @@ class Pn7160(Resettable, Block):
             self.xtal = imp.Block(OscillatorReference(27.12*MHertz(tol=50e-6)))  # TODO only needed in RF polling mode
             self.connect(self.ic.xtal, self.xtal.crystal)
 
-            # TODO antenna and RF filter / match generation
-            # LC filter cutoff must be at least 14.4MHz (center + 848kHz sub carrier)
-            # recommended asymmetrical cutoff is 22MHz, 160nH
+            # for symmetrical tuning, 14.4-14.7MHz cutoff, for asymmetrical tuning, 20-22MHz cutoff
+            # 20-ohm differential to TX1-TX2 is a recommendation from the datasheet
+            # voltage and current are guesses, voltage is to spec a 50V NP0
+            # while the reference design uses 160nH, this chooses 220nH to align with the E6 series
+            self.emc = imp.Block(DifferentialLcLowpassFilter(
+                freq_cutoff=14.7*MHertz, inductance=220*nHenry, input_res=20*Ohm,
+                freq=13.56*MHertz, current=(0, 300)*mAmp, voltage=(0, 25)*Volt
+            ))
+            # TODO should calculate impedance separately from the filter
+            self.connect(self.ic.tx1, self.emc.in1)
+            self.connect(self.ic.tx2, self.emc.in2)
 
-            # matching circuit
+            self.match = imp.Block(DifferentialLLowPassFilter(
+                freq=13.56*MHertz, src_r=self.emc.z_real, src_x=self.emc.z_imag,
+                snk_r=..., snk_x=..., voltage=(0, 25)*Volt
+            ))
+            self.connect(self.emc.out1, self.match.in1)
+            self.connect(self.emc.out2, self.match.in2)
