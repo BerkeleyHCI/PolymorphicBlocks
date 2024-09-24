@@ -9,28 +9,37 @@ from .Categories import *
 
 class LLowPassFilter:
     # TODO: implement as circuit generator
-
     @classmethod
-    def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
-        """Calculate a L matching network for complex Z1 (series-inductor side) and Z2 (parallel-capacitor side)
-        and returns L, C"""
+    @classmethod
+    def _calculate_impedance(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
+        """Calculate the impedances for the elements of the L matching network,
+        for complex Z1 (series-inductor side) and Z2 (parallel-capacitor side),
+        returning reactances Xs (series element) and Xp (parallel element)"""
         rp1 = z1.real
         xp1 = z1.imag  # if z1 complex, the stray capacitance which gets resonated out with more l
 
         if z2.imag != 0:  # if z2 complex, split into real resistance and stray capacitance
             q2 = z2.imag / z2.real  # Q of the load
             rp2 = z2.real * (q2 * q2 + 1)  # parallel transformation into rp2 real part and xp2 capacitive part
-            xp2 = rp2 / q2
-            cp2 = PiLowPassFilter._reactance_to_capacitance(freq, xp2)  # parallel capacitance aka cstray
+            xp2 = rp2 / q2  # parallel capacitance aka cstray
         else:
             rp2 = z2.real
-            cp2 = 0  # for real impedance, no stray capacitance
+            xp2 = float('inf')  # for real impedance, no stray capacitance
 
         q = sqrt(rp2 / rp1 - 1)
         net_xp = -rp2 / q  # TODO: where is the negative sign coming from
         net_xs = q * rp1
-        return PiLowPassFilter._reactance_to_inductance(freq, net_xs - xp1),\
-            PiLowPassFilter._reactance_to_capacitance(freq, net_xp) - cp2
+
+        return net_xs - xp1, 1/(1/net_xp - 1/xp2)
+
+    @classmethod
+    def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
+        """Calculate a L matching network for complex Z1 (series-inductor side) and Z2 (parallel-capacitor side)
+        and returns L, C"""
+        xs, xp = cls._calculate_impedance(freq, z1, z2)
+
+        return PiLowPassFilter._reactance_to_inductance(freq, xs),\
+            PiLowPassFilter._reactance_to_capacitance(freq, xp)
 
 
 class LLowPassFilterWith2HNotch(AnalogFilter, GeneratorBlock):

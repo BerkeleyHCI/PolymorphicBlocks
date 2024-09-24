@@ -26,6 +26,15 @@ class NfcAntennaTest(unittest.TestCase):
                                327.1e-12, delta=0.1e-12)
 
     def test_l_match(self) -> None:
+        # from https://www.eetimes.eu/impedance-matching-for-nfc-applications-part-2/
+        # single-ended conversion
+        source_z = NfcAntenna.impedance_from_lrc(13.56e6, 470e-9 * 2, 25 * 2, 247e-12 / 2)  # 25 ohm TX output assumed
+        self.assertAlmostEqual(source_z, complex(165.82, -45.46), delta=0.01)
+        diff_cs, diff_cp = DifferentialLLowPassFilter._calculate_values(13.56e6, source_z, complex(1.87, -62.53))
+        print(diff_cs*2, diff_cp*2)
+        self.assertAlmostEqual(diff_cs*2, 45-12, delta=1e-12)
+        self.assertAlmostEqual(diff_cp*2, 337-12, delta=1e-12)
+
         # target impedance of 20 ohm - determines transmit power
 
         # asymmetrical matching case from https://www.nxp.com/docs/en/application-note/AN13219.pdf
