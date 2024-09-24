@@ -124,6 +124,13 @@ class EspLora(JlcBoardTop):
         (['lora', 'balun', 'c_p', 'require_basic_part'], False),
         (['lora', 'ant_pi', 'c1', 'require_basic_part'], False),
         (['lora', 'ant_pi', 'c2', 'require_basic_part'], False),
+
+        (['nfc', 'emc', 'c1', 'require_basic_part'], False),
+        (['nfc', 'emc', 'c2', 'require_basic_part'], False),
+        (['nfc', 'damp', 'r1', 'require_basic_part'], False),
+        (['nfc', 'damp', 'r2', 'require_basic_part'], False),
+        (['nfc', 'match', 'cp1', 'require_basic_part'], False),
+        (['nfc', 'match', 'cp2', 'require_basic_part'], False),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
