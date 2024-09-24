@@ -43,7 +43,7 @@ class DifferentialLLowPassFilter:
     # TODO: implement as circuit generator
 
     @classmethod
-    def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
+    def _calculate_se_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
         # calculate single-ended values from single-ended filter
         se_xs, se_xp = LLowPassFilter._calculate_impedance(z1, z2)
         se_cs = PiLowPassFilter._reactance_to_capacitance(freq, se_xs)
