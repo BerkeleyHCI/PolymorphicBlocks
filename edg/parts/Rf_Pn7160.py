@@ -5,11 +5,12 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
-# TODO some of these are pretty general RF building blocks and can be moved into shared libraries
+# TODO: some of these are pretty general RF building blocks and can be moved into shared libraries
 # but until there are enough use cases they'll be buried here for now
+# TODO: this is a bit of a structural mess right now, as with the other RF blocks, and needs refactoring
 # TODO: maybe have a RfPort / DifferentialRfPort bidirectional type modeling impedances
 
-class NfcAntenna(Block):
+class NfcAntenna(GeneratorBlock):
     """NFC antenna connector, also calculates the complex impedance from series-LRC parameters.
     In this model, the L and R are in series, and the C is in parallel with the LR stack.
     As in https://www.nxp.com/docs/en/application-note/AN13219.pdf
@@ -31,12 +32,27 @@ class NfcAntenna(Block):
         For differential configuration, halve the result and split among the +/- terminals."""
         return impedance.imag / target_q - impedance.real
 
-    def __init__(self):
+    def __init__(self, freq: FloatLike, inductance: FloatLike, resistance: FloatLike, capacitance: FloatLike):
         super().__init__()
         self.conn = self.Block(PassiveConnector(length=2))  # arbitrary
+        self.ant1 = self.Port(Passive())
+        self.ant2 = self.Port(Passive())
 
-    def contents(self):
-        super().contents()
+        self.freq = self.ArgParameter(freq)
+        self.inductance = self.ArgParameter(inductance)
+        self.resistance = self.ArgParameter(resistance)
+        self.capacitance = self.ArgParameter(capacitance)
+        self.generator_param(self.freq, self.inductance, self.resistance, self.capacitance)
+        self.z_real = self.Parameter(FloatExpr())
+        self.z_imag = self.Parameter(FloatExpr())
+
+    def generate(self):
+        super().generate()
+
+        impedance = NfcAntenna.impedance_from_lrc(self.get(self.freq), self.get(self.inductance),
+                                                  self.get(self.resistance), self.get(self.capacitance))
+        self.assign(self.z_real, impedance.real)
+        self.assign(self.z_imag, impedance.imag)
 
 
 class DifferentialLcLowpassFilter(GeneratorBlock):
@@ -273,17 +289,25 @@ class Pn7160(Resettable, Block):
             # 20-ohm differential to TX1-TX2 is a recommendation from the datasheet
             # voltage and current are guesses, voltage is to spec a 50V NP0
             # while the reference design uses 160nH, this chooses 220nH to align with the E6 series
+            SIGNAL_FREQ = 13.56*MHertz
+
             self.emc = imp.Block(DifferentialLcLowpassFilter(
                 freq_cutoff=14.7*MHertz, inductance=220*nHenry, input_res=20*Ohm,
-                freq=13.56*MHertz, current=(0, 300)*mAmp, voltage=(0, 25)*Volt
-            ))
-            # TODO should calculate impedance separately from the filter
+                freq=SIGNAL_FREQ, current=(0, 300)*mAmp, voltage=(0, 25)*Volt
+            ))  # TODO should calculate impedance separately from the filter
             self.connect(self.ic.tx1, self.emc.in1)
             self.connect(self.ic.tx2, self.emc.in2)
 
+            # ant specs from NXP AN13219 for 40x40mm PCB antemma
+            self.ant = self.Block(NfcAntenna(freq=SIGNAL_FREQ, inductance=1522*nHenry,
+                                             resistance=1.40*Ohm, capacitance=2.0*pFarad))
+
             self.match = imp.Block(DifferentialLLowPassFilter(
-                freq=13.56*MHertz, src_r=self.emc.z_real, src_x=self.emc.z_imag,
-                snk_r=..., snk_x=..., voltage=(0, 25)*Volt
+                freq=SIGNAL_FREQ, src_r=self.emc.z_real, src_x=-self.emc.z_imag,
+                snk_r=self.ant.z_real, snk_x=-self.ant.z_imag, voltage=(0, 25)*Volt
             ))
             self.connect(self.emc.out1, self.match.in1)
             self.connect(self.emc.out2, self.match.in2)
+
+            self.connect(self.match.out1, self.ant.ant1)
+            self.connect(self.match.out2, self.ant.ant2)
