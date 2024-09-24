@@ -178,10 +178,10 @@ class DifferentialLLowPassFilter(GeneratorBlock):
         diff_cs, diff_cp = self._calculate_se_values(self.get(self.freq),
                                                      complex(self.get(self.src_r), self.get(self.src_x)),
                                                      complex(self.get(self.snk_r), self.get(self.snk_x)))
-        cs_model = Capacitor(diff_cs*2*Farad(tol=0.1), voltage=self.voltage)
+        cs_model = Capacitor(-diff_cs*2*Farad(tol=0.1), voltage=self.voltage)
         self.cs1 = self.Block(cs_model)
         self.cs2 = self.Block(cs_model)
-        cp_model = Capacitor(diff_cp*2*Farad(tol=0.1), voltage=self.voltage)
+        cp_model = Capacitor(-diff_cp*2*Farad(tol=0.1), voltage=self.voltage)
         self.cp1 = self.Block(cp_model)
         self.cp2 = self.Block(cp_model)
         self.connect(self.in1, self.cs1.pos)
