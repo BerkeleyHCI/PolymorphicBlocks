@@ -112,9 +112,11 @@ class EspLora(JlcBoardTop):
           'ledb=39',
         ]),
         (['mcu', 'programming'], 'uart-auto-button'),
-        (['usb', 'conn', 'current_limits'], Range(0.0, 0.72)),  # fudge it a bit
+        (['usb', 'conn', 'current_limits'], Range(0.0, 1.1)),  # fudge it a lot, also assumed not everything run simultaneously
         (['lora', 'balun', 'c', 'capacitance'], Range(2.8e-12 * 0.8, 2.8e-12 * 1.2)),  # extend tolerance to find a part
         (['lora', 'dcc_l', 'manual_frequency_rating'], Range(0, 20e6)),
+        (['nfc', 'emc', 'l1', 'manual_frequency_rating'], Range(0, 100e6)),
+        (['nfc', 'emc', 'l2', 'manual_frequency_rating'], Range(0, 100e6)),
         # these RF passives aren't common / basic parts and will be DNP'd anyways
         (['lora', 'vrpa_cap1', 'cap', 'require_basic_part'], False),
         (['lora', 'tx_l', 'c_lc', 'require_basic_part'], False),

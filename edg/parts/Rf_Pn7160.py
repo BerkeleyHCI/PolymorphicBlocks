@@ -191,6 +191,34 @@ class DifferentialLLowPassFilter(GeneratorBlock):
         self.connect(self.cp1.neg.adapt_to(Ground()), self.cp2.neg.adapt_to(Ground()), self.gnd)
 
 
+class Pn7160RxFilter(Block):
+    @init_in_parent
+    def __init__(self, resistance: RangeLike, capacitance: RangeLike, voltage: RangeLike):
+        super().__init__()
+        self.resistance = self.ArgParameter(resistance)
+        self.capacitance = self.ArgParameter(capacitance)
+        self.voltage = self.ArgParameter(voltage)
+        self.in1 = self.Port(Passive())
+        self.in2 = self.Port(Passive())
+        self.out1 = self.Port(Passive())
+        self.out2 = self.Port(Passive())
+
+    def contents(self):
+        super().contents()
+        rrx_model = Resistor(resistance=self.resistance)
+        self.rrx1 = self.Block(rrx_model)
+        self.rrx2 = self.Block(rrx_model)
+        crx_model = Capacitor(capacitance=self.capacitance, voltage=self.voltage)
+        self.crx1 = self.Block(crx_model)
+        self.crx2 = self.Block(crx_model)
+        self.connect(self.in1, self.rrx1.a)
+        self.connect(self.rrx1.b, self.crx1.pos)
+        self.connect(self.crx1.neg, self.out1)
+        self.connect(self.in2, self.rrx2.a)
+        self.connect(self.rrx2.b, self.crx2.pos)
+        self.connect(self.crx2.neg, self.out2)
+
+
 class Pn7160_Device(FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
@@ -328,19 +356,24 @@ class Pn7160(Resettable, Block):
 
             # for symmetrical tuning, 14.4-14.7MHz cutoff, for asymmetrical tuning, 20-22MHz cutoff
             # 20-ohm differential to TX1-TX2 is a recommendation from the datasheet
-            # voltage and current are guesses, voltage is to spec a 50V NP0
             # while the reference design uses 160nH, this chooses 220nH to align with the E6 series
             SIGNAL_FREQ = 13.56*MHertz
+            CAP_VOLTAGE = (0, 25)*Volt  # wild guess, to spec for 50V NP0 after derating
+
+            # suggested initial values from AN13219
+            self.rx = self.Block(Pn7160RxFilter(resistance=2.2*kOhm(tol=0.05), capacitance=1*nFarad(tol=0.1),
+                                                voltage=CAP_VOLTAGE))
+            self.connect(self.ic.rxn, self.rx.out1)
+            self.connect(self.ic.rxp, self.rx.out2)
 
             self.emc = imp.Block(DifferentialLcLowpassFilter(
                 freq_cutoff=14.7*MHertz, inductance=220*nHenry, input_res=20*Ohm,
-                freq=SIGNAL_FREQ, current=(0, 300)*mAmp, voltage=(0, 25)*Volt
+                freq=SIGNAL_FREQ, current=(0, 300)*mAmp, voltage=CAP_VOLTAGE
             ))  # TODO should calculate impedance separately from the filter
             self.connect(self.ic.tx1, self.emc.in1)
             self.connect(self.ic.tx2, self.emc.in2)
 
-            # ant specs from NXP AN13219 for 40x40mm PCB antemma
-            self.ant = self.Block(NfcAntenna(freq=SIGNAL_FREQ, inductance=1522*nHenry,
+            self.ant = self.Block(NfcAntenna(freq=SIGNAL_FREQ, inductance=1522*nHenry,  # from NXP AN13219 PCB antenna
                                              resistance=1.40*Ohm, capacitance=2.0*pFarad))
             self.damp = self.Block(NfcAntennaDampening(target_q=20, ant_r=self.ant.z_real, ant_x=self.ant.z_imag))
             self.connect(self.damp.ant1, self.ant.ant1)
@@ -348,10 +381,10 @@ class Pn7160(Resettable, Block):
 
             self.match = imp.Block(DifferentialLLowPassFilter(  # complex conjugate both sides
                 freq=SIGNAL_FREQ, src_r=self.emc.z_real, src_x=-self.emc.z_imag,
-                snk_r=self.damp.z_real, snk_x=-self.damp.z_imag, voltage=(0, 25)*Volt
+                snk_r=self.damp.z_real, snk_x=-self.damp.z_imag, voltage=CAP_VOLTAGE
             ))
-            self.connect(self.emc.out1, self.match.in1)
-            self.connect(self.emc.out2, self.match.in2)
+            self.connect(self.emc.out1, self.match.in1, self.rx.in1)
+            self.connect(self.emc.out2, self.match.in2, self.rx.in2)
 
             self.connect(self.match.out1, self.damp.in1)
             self.connect(self.match.out2, self.damp.in2)
