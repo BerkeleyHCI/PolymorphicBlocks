@@ -11,7 +11,7 @@ class LLowPassFilter:
     # TODO: implement as circuit generator
     @classmethod
     @classmethod
-    def _calculate_impedance(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
+    def _calculate_impedance(cls, z1: complex, z2: complex) -> Tuple[float, float]:
         """Calculate the impedances for the elements of the L matching network,
         for complex Z1 (series-inductor side) and Z2 (parallel-capacitor side),
         returning reactances Xs (series element) and Xp (parallel element)"""
@@ -36,8 +36,7 @@ class LLowPassFilter:
     def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
         """Calculate a L matching network for complex Z1 (series-inductor side) and Z2 (parallel-capacitor side)
         and returns L, C"""
-        xs, xp = cls._calculate_impedance(freq, z1, z2)
-
+        xs, xp = cls._calculate_impedance(z1, z2)
         return PiLowPassFilter._reactance_to_inductance(freq, xs),\
             PiLowPassFilter._reactance_to_capacitance(freq, xp)
 

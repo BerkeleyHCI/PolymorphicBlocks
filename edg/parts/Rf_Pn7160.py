@@ -45,8 +45,10 @@ class DifferentialLLowPassFilter:
     @classmethod
     def _calculate_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
         # calculate single-ended values from single-ended filter
-        se_l, se_c = LLowPassFilter._calculate_values(freq, z1, z2)
-        return se_l, se_c
+        se_xs, se_xp = LLowPassFilter._calculate_impedance(z1, z2)
+        se_cs = PiLowPassFilter._reactance_to_capacitance(freq, se_xs)
+        se_cp = PiLowPassFilter._reactance_to_capacitance(freq, se_xp)
+        return se_cs, se_cp
 
 
 class Pn7160_Device(FootprintBlock, JlcPart):
