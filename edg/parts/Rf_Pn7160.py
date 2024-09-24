@@ -9,6 +9,7 @@ from .JlcPart import JlcPart
 # but until there are enough use cases they'll be buried here for now
 # TODO: this is a bit of a structural mess right now, as with the other RF blocks, and needs refactoring
 # TODO: maybe have a RfPort / DifferentialRfPort bidirectional type modeling impedances
+# TODO: use actual component values in calculations, to account for tolerance stackup
 
 class NfcAntenna(GeneratorBlock):
     """NFC antenna connector, also calculates the complex impedance from series-LRC parameters.
@@ -25,12 +26,6 @@ class NfcAntenna(GeneratorBlock):
         imagpart = (w * inductance - (w**3) * (inductance**2) * capacitance - w * (resistance**2) * capacitance) / \
                    ((1 - (w**2) * inductance * capacitance)**2 + (w * resistance * capacitance)**2)
         return complex(realpart, imagpart)
-
-    @classmethod
-    def damp_res_from_impedance(self, impedance: complex, target_q: float) -> float:
-        """Calculates the single-ended damping resistance needed to achieve some target Q.
-        For differential configuration, halve the result and split among the +/- terminals."""
-        return impedance.imag / target_q - impedance.real
 
     @init_in_parent
     def __init__(self, freq: FloatLike, inductance: FloatLike, resistance: FloatLike, capacitance: FloatLike):
@@ -57,6 +52,46 @@ class NfcAntenna(GeneratorBlock):
                                                   self.get(self.resistance), self.get(self.capacitance))
         self.assign(self.z_real, impedance.real)
         self.assign(self.z_imag, impedance.imag)
+
+
+class NfcAntennaDampening(GeneratorBlock):
+    """Differential antenna dampening circuit, two inline resistors to achieve some target Q
+    """
+    @classmethod
+    def damp_res_from_impedance(self, impedance: complex, target_q: float) -> float:
+        """Calculates the single-ended damping resistance needed to achieve some target Q.
+        For differential configuration, halve the result and split among the +/- terminals."""
+        return impedance.imag / target_q - impedance.real
+
+    @init_in_parent
+    def __init__(self, target_q: FloatLike, ant_r: FloatLike, ant_x: FloatLike):
+        super().__init__()
+        self.in1 = self.Port(Passive())
+        self.in2 = self.Port(Passive())
+        self.ant1 = self.Port(Passive())
+        self.ant2 = self.Port(Passive())
+
+        self.target_q = self.ArgParameter(target_q)
+        self.ant_r = self.ArgParameter(ant_r)
+        self.ant_x = self.ArgParameter(ant_x)
+        self.generator_param(self.target_q, self.ant_r, self.ant_x)
+        self.z_real = self.Parameter(FloatExpr())
+        self.z_imag = self.Parameter(FloatExpr())
+
+    def generate(self):
+        super().generate()
+
+        res_value = self.damp_res_from_impedance(complex(self.get(self.ant_r), self.get(self.ant_x)),
+                                                 self.get(self.target_q))
+        res_model = Resistor((res_value / 2)*Ohm(tol=0.05))
+        self.r1 = self.Block(res_model)
+        self.r2 = self.Block(res_model)
+        self.connect(self.in1, self.r1.a)
+        self.connect(self.in2, self.r2.a)
+        self.connect(self.r1.b, self.ant1)
+        self.connect(self.r2.b, self.ant2)
+        self.assign(self.z_real, self.ant_r + res_value * 2)
+        self.assign(self.z_imag, self.ant_x)
 
 
 class DifferentialLcLowpassFilter(GeneratorBlock):
@@ -307,13 +342,16 @@ class Pn7160(Resettable, Block):
             # ant specs from NXP AN13219 for 40x40mm PCB antemma
             self.ant = self.Block(NfcAntenna(freq=SIGNAL_FREQ, inductance=1522*nHenry,
                                              resistance=1.40*Ohm, capacitance=2.0*pFarad))
+            self.damp = self.Block(NfcAntennaDampening(target_q=20, ant_r=self.ant.z_real, ant_x=self.ant.z_imag))
+            self.connect(self.damp.ant1, self.ant.ant1)
+            self.connect(self.damp.ant2, self.ant.ant2)
 
-            self.match = imp.Block(DifferentialLLowPassFilter(
+            self.match = imp.Block(DifferentialLLowPassFilter(  # complex conjugate both sides
                 freq=SIGNAL_FREQ, src_r=self.emc.z_real, src_x=-self.emc.z_imag,
-                snk_r=self.ant.z_real, snk_x=-self.ant.z_imag, voltage=(0, 25)*Volt
+                snk_r=self.damp.z_real, snk_x=-self.damp.z_imag, voltage=(0, 25)*Volt
             ))
             self.connect(self.emc.out1, self.match.in1)
             self.connect(self.emc.out2, self.match.in2)
 
-            self.connect(self.match.out1, self.ant.ant1)
-            self.connect(self.match.out2, self.ant.ant2)
+            self.connect(self.match.out1, self.damp.in1)
+            self.connect(self.match.out2, self.damp.in2)

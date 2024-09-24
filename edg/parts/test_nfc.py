@@ -1,6 +1,6 @@
 import unittest
 
-from .Rf_Pn7160 import NfcAntenna, DifferentialLcLowpassFilter, DifferentialLLowPassFilter
+from .Rf_Pn7160 import NfcAntenna, NfcAntennaDampening, DifferentialLcLowpassFilter, DifferentialLLowPassFilter
 
 
 class NfcAntennaTest(unittest.TestCase):
@@ -23,7 +23,7 @@ class NfcAntennaTest(unittest.TestCase):
     def test_damp_res(self) -> None:
         # excel matching from https://www.nxp.com/docs/en/application-note/AN13219.pdf
         ant_z = NfcAntenna.impedance_from_lrc(13.56e6, 1522e-9, 1.40, 0.1e-12)
-        self.assertAlmostEqual(NfcAntenna.damp_res_from_impedance(ant_z, 20), 2.54*2, delta=0.01)
+        self.assertAlmostEqual(NfcAntennaDampening.damp_res_from_impedance(ant_z, 20), 2.54*2, delta=0.01)
 
     def test_lc(self) -> None:
         # asymmetrical matching case from https://www.nxp.com/docs/en/application-note/AN13219.pdf
