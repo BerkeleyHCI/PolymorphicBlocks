@@ -138,6 +138,7 @@ class IotFan(JlcBoardTop):
       class_values=[
         (Esp32c3, ['not_recommended'], True),
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
+        (DiscreteRfWarning, ['discrete_rf_warning'], False),
       ]
     )
 

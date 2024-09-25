@@ -313,7 +313,8 @@ class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Esp32c3_Interfaces,
-              WithCrystalGenerator, IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
+              WithCrystalGenerator, IoControllerPowerRequired, BaseIoControllerExportable, DiscreteRfWarning,
+              GeneratorBlock):
   """ESP32-C3 application circuit, bare chip + RF circuits.
   NOT RECOMMENDED - you will need to do your own RF layout, instead consider using the WROOM module."""
 
@@ -324,15 +325,11 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
     self.ic: Esp32c3_Device
     self.generator_param(self.reset.is_connected())
 
-    self.not_recommended = self.Parameter(BoolExpr(False))
-
     self.io2_ext_connected: bool = False
     self.io8_ext_connected: bool = False
 
   def contents(self) -> None:
     super().contents()
-    self.require(self.not_recommended, "not recommended: requires RF design, consider using the module version instead")
-
     with self.implicit_connect(
         ImplicitConnect(self.pwr, [Power]),
         ImplicitConnect(self.gnd, [Common])

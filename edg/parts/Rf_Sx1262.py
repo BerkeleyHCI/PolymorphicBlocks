@@ -214,7 +214,7 @@ class Sx1262_Device(FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Sx1262(Resettable, Block):
+class Sx1262(Resettable, DiscreteRfWarning, Block):
     """Sub-GHZ (150-960MHz) RF transceiver with LoRa support, with discrete RF frontend and parameterized by frequency.
     Up to 62.5kb/s in LoRa mode and 300kb/s in FSK mode.
     TODO: RF frequency parameterization
@@ -272,15 +272,15 @@ class Sx1262(Resettable, Block):
 
             (self.tx_l, self.tx_pi), _ = self.chain(
                 self.ic.rfo,
-                imp.Block(LLowPassFilterWith2HNotch(915*MHertz, 11.7*Ohm, -4.8*Ohm, 50*Ohm, 0.1,
+                imp.Block(LLowPassFilterWith2HNotch(915*MHertz, 11.7*Ohm, -4.8*Ohm, 50*Ohm, 0.2,
                                                     rf_voltage, rf_current)),
-                imp.Block(PiLowPassFilter((915-915/2, 915+915/2)*MHertz, 50*Ohm, 0, 50*Ohm, 0.1,  # Q=1
+                imp.Block(PiLowPassFilter((915-915/2, 915+915/2)*MHertz, 50*Ohm, 0, 50*Ohm, 0.2,  # Q=1
                                           rf_voltage, rf_current)),
                 self.tx_dcblock.neg
             )
 
             # receive filter chain
-            self.balun = imp.Block(Sx1262BalunLike(915*MHertz, 74*Ohm, -134*Ohm, 50*Ohm, 0.1,
+            self.balun = imp.Block(Sx1262BalunLike(915*MHertz, 74*Ohm, -134*Ohm, 50*Ohm, 0.15,
                                                    rf_voltage, rf_current))
             self.connect(self.balun.input, self.rf_sw.rf2)
             self.connect(self.balun.rfi_n, self.ic.rfi_n)
@@ -289,7 +289,7 @@ class Sx1262(Resettable, Block):
             # antenna
             (self.ant_pi, self.ant), _ = self.chain(
                 self.rfc_dcblock.pos,
-                imp.Block(PiLowPassFilter((915-915/2, 915+915/2)*MHertz, 50*Ohm, 0, 50*Ohm, 0.1,  # Q=1
+                imp.Block(PiLowPassFilter((915-915/2, 915+915/2)*MHertz, 50*Ohm, 0, 50*Ohm, 0.2,  # Q=1
                                           rf_voltage, rf_current)),
                 imp.Block(Antenna(frequency=(915-0.5, 915+0.5)*MHertz,  # up to 500kHz bandwidth in LoRa mode
                                   impedance=50*Ohm(tol=0.1), power=(0, 0.159)*Watt)))    # +22dBm

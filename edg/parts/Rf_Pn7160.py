@@ -28,7 +28,8 @@ class NfcAntenna(FootprintBlock, GeneratorBlock):
         return complex(realpart, imagpart)
 
     @init_in_parent
-    def __init__(self, ant_footprint: StringLike, freq: FloatLike, inductance: FloatLike, resistance: FloatLike, capacitance: FloatLike):
+    def __init__(self, ant_footprint: StringLike, freq: FloatLike, inductance: FloatLike, resistance: FloatLike,
+                 capacitance: FloatLike):
         super().__init__()
         self.ant1 = self.Port(Passive())
         self.ant2 = self.Port(Passive())
@@ -50,7 +51,7 @@ class NfcAntenna(FootprintBlock, GeneratorBlock):
         self.assign(self.z_real, impedance.real)
         self.assign(self.z_imag, impedance.imag)
 
-        self.footprint('AMT', self.ant_footprint, {'1': self.ant1, '2': self.ant2})
+        self.footprint('ANT', self.ant_footprint, {'1': self.ant1, '2': self.ant2})
 
 
 class NfcAntennaDampening(GeneratorBlock):
@@ -319,7 +320,7 @@ class Pn7160_Device(FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Pn7160(Resettable, Block):
+class Pn7160(Resettable, DiscreteRfWarning, Block):
     """Multi-protocol NFC controller, up to 1.3W output power, in I2C ('A' suffix)
     """
     def __init__(self):

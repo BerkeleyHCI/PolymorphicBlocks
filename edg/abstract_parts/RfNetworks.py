@@ -7,9 +7,22 @@ from .AbstractInductor import Inductor
 from .Categories import *
 
 
+class DiscreteRfWarning(BlockInterfaceMixin[Block]):
+    """Mixin class providing a override-able (via refinements) warnings for blocks with a discrete RF layout.
+    Discrete RF circuits can be tricky to get right from a layout standpoint and may require tuning to account for
+    parasitics of real devices."""
+    @init_in_parent
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.discrete_rf_warning = self.Parameter(BoolExpr(False))
+
+    def contents(self):
+        super().contents()
+        self.require(self.discrete_rf_warning == False, "warning: discrete RF circuit, design may be tricky")
+
+
 class LLowPassFilter:
     # TODO: implement as circuit generator
-    @classmethod
     @classmethod
     def _calculate_impedance(cls, z1: complex, z2: complex) -> Tuple[float, float]:
         """Calculate the impedances for the elements of the L matching network,

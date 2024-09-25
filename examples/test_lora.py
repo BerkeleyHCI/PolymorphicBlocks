@@ -150,6 +150,7 @@ class EspLora(JlcBoardTop):
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
         (Nonstrict3v3Compatible, ['nonstrict_3v3_compatible'], True),
+        (DiscreteRfWarning, ['discrete_rf_warning'], False),
       ]
     )
 
