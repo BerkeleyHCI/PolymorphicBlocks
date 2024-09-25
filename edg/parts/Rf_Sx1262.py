@@ -244,8 +244,8 @@ class Sx1262(Resettable, DiscreteRfWarning, Block):
             self.vreg_cap = imp.Block(DecouplingCapacitor(470*nFarad(tol=0.2))).connected(pwr=self.ic.vreg)
             self.vbat_cap = imp.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(pwr=self.ic.vbat)
             self.vdd_cap = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2))).connected(pwr=self.ic.vbat)
-            self.vrpa_cap0 = imp.Block(DecouplingCapacitor(47*pFarad(tol=0.05))).connected(pwr=self.ic.vr_pa)
-            self.vrpa_cap1 = imp.Block(DecouplingCapacitor(47*nFarad(tol=0.05))).connected(pwr=self.ic.vr_pa)
+            self.vrpa_cap0 = imp.Block(DecouplingCapacitor(47*pFarad(tol=0.2))).connected(pwr=self.ic.vr_pa)
+            self.vrpa_cap1 = imp.Block(DecouplingCapacitor(47*nFarad(tol=0.2))).connected(pwr=self.ic.vr_pa)
 
             self.dcc_l = self.Block(Inductor(  # from datasheet 5.1.5
                 15*uHenry(tol=0.2), current=(0, 100)*mAmp, frequency=20*MHertz(tol=0), resistance_dc=(0, 2)*Ohm))

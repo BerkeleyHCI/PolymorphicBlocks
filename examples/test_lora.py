@@ -43,8 +43,8 @@ class EspLora(JlcBoardTop):
                                                     self.mcu.usb.request())
 
       (self.ledr, ), _ = self.chain(self.mcu.gpio.request('ledr'), imp.Block(IndicatorLed(Led.Red)))
-      (self.ledg, ), _ = self.chain(self.mcu.gpio.request('ledg'), imp.Block(IndicatorLed(Led.Green)))
-      (self.ledb, ), _ = self.chain(self.mcu.gpio.request('ledb'), imp.Block(IndicatorLed(Led.Blue)))
+      (self.ledg, ), _ = self.chain(self.mcu.gpio.request('ledg'), imp.Block(IndicatorLed(Led.Yellow)))
+      (self.ledb, ), _ = self.chain(self.mcu.gpio.request('ledb'), imp.Block(IndicatorLed(Led.White)))
 
       self.lora = imp.Block(Sx1262())
       (self.tp_lora_spi, ), _ = self.chain(self.mcu.spi.request('lora'), imp.Block(SpiTestPoint('lr')), self.lora.spi)
@@ -119,7 +119,6 @@ class EspLora(JlcBoardTop):
         (['nfc', 'emc', 'l1', 'manual_frequency_rating'], Range(0, 100e6)),
         (['nfc', 'emc', 'l2', 'manual_frequency_rating'], Range(0, 100e6)),
         # these RF passives aren't common / basic parts and will be DNP'd anyways
-        (['lora', 'vrpa_cap1', 'cap', 'require_basic_part'], False),
         (['lora', 'tx_l', 'c_lc', 'require_basic_part'], False),
         (['lora', 'tx_pi', 'c2', 'require_basic_part'], False),
         (['lora', 'balun', 'c_p', 'require_basic_part'], False),
