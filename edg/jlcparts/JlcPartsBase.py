@@ -148,8 +148,6 @@ class JlcPartsBase(JlcPart, PartsTableAreaSelector, PartsTableFootprintFilter):
                 row_dict[cls.COST_COL] = JlcPartsPrice(component[price_index]).for_min_qty()
 
                 attributes = JlcPartsAttributes(**component[attributes_index])
-                # if attributes.get("Status", str) in ["Discontinued"]:  # this isn't accurate
-                #     continue
                 row_dict[cls.BASIC_PART_COL] = attributes.get("Basic/Extended", str) == "Basic"
                 row_dict[cls.MANUFACTURER_COL] = attributes.get("Manufacturer", str)
 
