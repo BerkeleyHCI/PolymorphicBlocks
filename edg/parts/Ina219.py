@@ -49,6 +49,7 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, Block):
             datasheet='https://www.ti.com/lit/ds/symlink/ina219.pdf'
         )
         self.assign(self.lcsc_part, "C87469")
+        self.assign(self.actual_basic_part, False)
 
 
 class Ina219(CurrentSensor, Block):
