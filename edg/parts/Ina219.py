@@ -13,20 +13,17 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, Block):
         ))
         self.gnd = self.Port(Ground())
 
-        dio_model = DigitalBidir.from_supply(
+        self.i2c = self.Port(I2cTarget(DigitalBidir.empty(), addresses=[0x40]))
+        self.i2c.sda.init_from(DigitalBidir.from_supply(
+            self.gnd, self.vs,
+            voltage_limit_abs=(-0.3, 6.0) * Volt,
+            input_threshold_factor=(0.3, 0.7)
+        ))
+        self.i2c.scl.init_from(DigitalSink.from_supply(
             self.gnd, self.vs,
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,
             input_threshold_factor=(0.3, 0.7)
-        )
-        dio_sda_model = DigitalBidir.from_supply(
-            self.gnd, self.vs,
-            voltage_limit_abs=(-0.3 * Volt, 6.0 * Volt),
-            input_threshold_factor=(0.3, 0.7)
-        )
-
-        self.i2c = self.Port(I2cTarget(DigitalBidir.empty(), addresses=[0x40]))
-        self.i2c.sda.init_from(dio_sda_model)
-        self.i2c.scl.init_from(DigitalSink.from_bidir(dio_model))
+        ))
 
         self.in_pos = self.Port(AnalogSink(voltage_limits=(-0.3, 26) * Volt))
         self.in_neg = self.Port(AnalogSink(voltage_limits=(-0.3, 26) * Volt))
