@@ -9,6 +9,7 @@ class JlcPartsLed(TableLed, PartsTableSelectorFootprint, JlcPartsBase):
         "OptoelectronicsLED_Indication___Discrete",
         "Photoelectric_DevicesLight_Emitting_Diodes__LED_",
         "OptocouplerakaLEDakaDigital_TubeakaPhotoelectric_DeviceLight_Emitting_Diodes__LED_",
+        "Optocouplers_and_LEDs_and_InfraredLight_Emitting_Diodes__LED_",
         ]
     _COLOR_MAP = {
         'red': Led.Red,
@@ -31,8 +32,19 @@ class JlcPartsLed(TableLed, PartsTableSelectorFootprint, JlcPartsBase):
         try:
             row_dict[cls.KICAD_FOOTPRINT] = JlcLed.PACKAGE_FOOTPRINT_MAP[package]
 
-            table_color = attributes.get('Emitted color', str).lower()
-            row_dict[cls.COLOR] = cls._COLOR_MAP[table_color]
+            part_color: Optional[str] = None
+            if 'Emitted color' in attributes:
+                table_color = attributes.get('Emitted color', str).lower()
+                part_color = cls._COLOR_MAP[table_color]
+            else:  # older basic parts don't have the parametrics
+                desc = row_dict[cls.DESCRIPTION_COL].lower()
+                for color_str, color in cls._COLOR_MAP.items():
+                    if color_str in desc:
+                        part_color = color
+                        break
+            if part_color is None:
+                raise KeyError
+            row_dict[cls.COLOR] = part_color
 
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
