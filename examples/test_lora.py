@@ -56,10 +56,10 @@ class EspLora(JlcBoardTop):
                                            self.lora.dio1)
 
       self.i2c = self.mcu.i2c.request('i2c')
-      self.i2c_pull = imp.Block(I2cPullup())
+      (self.i2c_pull, self.i2c_tp), _ = self.chain(self.i2c, imp.Block(I2cPullup()), self.Block(I2cTestPoint('i2c')))
 
       self.oled = imp.Block(Er_Oled_096_1_1())
-      self.connect(self.i2c, self.i2c_pull.i2c, self.oled.i2c)
+      self.connect(self.i2c, self.oled.i2c)
       (self.oled_rst, self.oled_pull), _ = self.chain(
         imp.Block(Apx803s()),  # -29 variant used on Adafruit boards
         imp.Block(PullupResistor(10*kOhm(tol=0.05))),
@@ -74,7 +74,7 @@ class EspLora(JlcBoardTop):
       self.connect(self.nfc.pwr, self.pwr)
       self.connect(self.nfc.pwr_io, self.v3v3)
       self.connect(self.nfc.i2c, self.i2c)
-      self.connect(self.nfc.reset, self.mcu.gpio.request('rst'))
+      self.connect(self.nfc.reset, self.mcu.gpio.request('nfc_rst'))
 
   def multipack(self) -> None:
     self.tx_cpack = self.PackedBlock(CombinedCapacitor())
@@ -88,7 +88,6 @@ class EspLora(JlcBoardTop):
         (['reg_3v3'], Ldl1117),
         (['lora', 'ant'], RfConnectorAntenna),
         (['lora', 'ant', 'conn'], Amphenol901143),
-        (['nfc', 'ant', 'conn'], JstPhKVertical),
       ],
       instance_values=[
         (['refdes_prefix'], 'L'),  # unique refdes for panelization
@@ -106,6 +105,8 @@ class EspLora(JlcBoardTop):
           'sd.mosi=GPIO11',
           'sd.sck=GPIO14',
           'sd.miso=GPIO2',
+
+          'nfc_rst=32',
 
           'ledr=34',
           'ledg=35',
@@ -131,6 +132,15 @@ class EspLora(JlcBoardTop):
         (['nfc', 'damp', 'r2', 'require_basic_part'], False),
         (['nfc', 'match', 'cp1', 'require_basic_part'], False),
         (['nfc', 'match', 'cp2', 'require_basic_part'], False),
+
+        (['nfc', 'cvdd1', 'cap', 'footprint_spec'], "Capacitor_SMD:C_0805_2012Metric"),
+        (['nfc', 'cvdd2', 'cap', 'footprint_spec'], "Capacitor_SMD:C_0805_2012Metric"),
+        (['nfc', 'ctvdd1', 'cap', 'footprint_spec'], "Capacitor_SMD:C_0805_2012Metric"),
+        (['nfc', 'ctvdd2', 'cap', 'footprint_spec'], "Capacitor_SMD:C_0805_2012Metric"),
+        (['nfc', 'cvdd1', 'cap', 'require_basic_part'], False),
+        (['nfc', 'cvdd2', 'cap', 'require_basic_part'], False),
+        (['nfc', 'ctvdd1', 'cap', 'require_basic_part'], False),
+        (['nfc', 'ctvdd2', 'cap', 'require_basic_part'], False),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),

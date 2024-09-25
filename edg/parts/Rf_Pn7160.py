@@ -11,8 +11,8 @@ from .JlcPart import JlcPart
 # TODO: maybe have a RfPort / DifferentialRfPort bidirectional type modeling impedances
 # TODO: use actual component values in calculations, to account for tolerance stackup
 
-class NfcAntenna(GeneratorBlock):
-    """NFC antenna connector, also calculates the complex impedance from series-LRC parameters.
+class NfcAntenna(FootprintBlock, GeneratorBlock):
+    """NFC antenna, also calculates the complex impedance from series-LRC parameters.
     In this model, the L and R are in series, and the C is in parallel with the LR stack.
     As in https://www.nxp.com/docs/en/application-note/AN13219.pdf
     """
@@ -28,12 +28,12 @@ class NfcAntenna(GeneratorBlock):
         return complex(realpart, imagpart)
 
     @init_in_parent
-    def __init__(self, freq: FloatLike, inductance: FloatLike, resistance: FloatLike, capacitance: FloatLike):
+    def __init__(self, ant_footprint: StringLike, freq: FloatLike, inductance: FloatLike, resistance: FloatLike, capacitance: FloatLike):
         super().__init__()
-        self.conn = self.Block(PassiveConnector(length=2))  # arbitrary
         self.ant1 = self.Port(Passive())
         self.ant2 = self.Port(Passive())
 
+        self.ant_footprint = self.ArgParameter(ant_footprint)
         self.freq = self.ArgParameter(freq)
         self.inductance = self.ArgParameter(inductance)
         self.resistance = self.ArgParameter(resistance)
@@ -45,13 +45,12 @@ class NfcAntenna(GeneratorBlock):
     def generate(self):
         super().generate()
 
-        self.connect(self.ant1, self.conn.pins.request('1'))
-        self.connect(self.ant2, self.conn.pins.request('2'))
-
         impedance = NfcAntenna.impedance_from_lrc(self.get(self.freq), self.get(self.inductance),
                                                   self.get(self.resistance), self.get(self.capacitance))
         self.assign(self.z_real, impedance.real)
         self.assign(self.z_imag, impedance.imag)
+
+        self.footprint('AMT', self.ant_footprint, {'1': self.ant1, '2': self.ant2})
 
 
 class NfcAntennaDampening(GeneratorBlock):
@@ -363,8 +362,8 @@ class Pn7160(Resettable, Block):
             # suggested initial values from AN13219
             self.rx = self.Block(Pn7160RxFilter(resistance=2.2*kOhm(tol=0.05), capacitance=1*nFarad(tol=0.1),
                                                 voltage=CAP_VOLTAGE))
-            self.connect(self.ic.rxn, self.rx.out1)
-            self.connect(self.ic.rxp, self.rx.out2)
+            self.connect(self.ic.rxp, self.rx.out1)
+            self.connect(self.ic.rxn, self.rx.out2)
 
             self.emc = imp.Block(DifferentialLcLowpassFilter(
                 freq_cutoff=14.7*MHertz, inductance=220*nHenry, input_res=20*Ohm,
@@ -373,7 +372,10 @@ class Pn7160(Resettable, Block):
             self.connect(self.ic.tx1, self.emc.in1)
             self.connect(self.ic.tx2, self.emc.in2)
 
-            self.ant = self.Block(NfcAntenna(freq=SIGNAL_FREQ, inductance=1522*nHenry,  # from NXP AN13219 PCB antenna
+            # footprint generated from https://github.com/nideri/nfc_antenna_generator
+            # python antGen.py -f ref -n 4 -l 40 -w 40 -c 0.4 -s 0.3 -d 0.3 -t 3
+            self.ant = self.Block(NfcAntenna(ant_footprint='board:an13219',
+                                             freq=SIGNAL_FREQ, inductance=1522*nHenry,  # from NXP AN13219 PCB antenna
                                              resistance=1.40*Ohm, capacitance=2.0*pFarad))
             self.damp = self.Block(NfcAntennaDampening(target_q=20, ant_r=self.ant.z_real, ant_x=self.ant.z_imag))
             self.connect(self.damp.ant1, self.ant.ant1)
