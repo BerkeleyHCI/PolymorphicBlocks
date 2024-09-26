@@ -95,7 +95,7 @@ class Er_Tft_128_3(Lcd, Resettable, Block):
         self.led_res = self.Block(Resistor(
             resistance=(self.pwr.link().voltage.upper() / forward_current.upper(),
                         self.pwr.link().voltage.lower() / forward_current.lower())))
-        self.connect(self.led_res.a.adapt_to(VoltageSink(current_draw=(1, 40) * mAmp)), self.pwr)
+        self.connect(self.led_res.a.adapt_to(VoltageSink(current_draw=forward_current)), self.pwr)
         self.connect(self.led_res.b, self.ic.leda)
         self.connect(self.pwr, self.ic.ctp_vdd)
         self.require(self.ctp_i2c.is_connected() == self.ctp_rst.is_connected())
