@@ -95,8 +95,6 @@ class Er_Tft_128_3(Lcd, Resettable, Block):
         self.led_res = self.Block(Resistor(
             resistance=(self.pwr.link().voltage.upper() / forward_current.upper(),
                         self.pwr.link().voltage.lower() / forward_current.lower())))
-        # self.led_res = self.Block(Resistor(50 * Ohm(tol=0.05))) # TODO:  a optional backlight dimming circuit (using a FET from a logic-level control signal).
-
         self.connect(self.led_res.a.adapt_to(VoltageSink(current_draw=(1, 40) * mAmp)), self.pwr)
         self.connect(self.led_res.b, self.ic.leda)
         self.connect(self.pwr, self.ic.ctp_vdd)
