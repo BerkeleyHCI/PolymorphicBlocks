@@ -97,8 +97,10 @@ class FlirLepton(Sensor, Resettable, Block):
         self.pwr = self.Export(self.ic.vdd, doc="2.8v")
         self.pwr_core = self.Export(self.ic.vddc, doc="1.2v core voltage")
 
-        self.connect(self.reset, self.ic.reset_l, self.ic.pwr_dwn_l)
-        self.require(self.reset.is_connected())
+        self.shutdown = self.Export(self.ic.pwr_dwn_l)  # TODO this can be hard tied high
+
+        self.connect(self.reset, self.ic.reset_l)
+        self.require(self.reset.is_connected())  # must be sequenced post-pwr_dwn
 
         self.spi = self.Export(self.ic.spi, doc="Video over SPI")
         self.cs = self.Export(self.ic.cs)

@@ -93,6 +93,7 @@ class IotThermalCamera(JlcBoardTop):
       self.connect(self.flir.spi, self.mcu.spi.request('flir'))
       self.connect(self.flir.cci, self.i2c)
       self.connect(self.flir.reset, self.mcu.gpio.request('flir_rst'))
+      self.connect(self.flir.shutdown, self.mcu.gpio.request('flir_pwrdn'))
       self.connect(self.flir.cs, self.mcu.gpio.request('flir_cs'))
       self.connect(self.flir.vsync, self.mcu.gpio.request('flir_vsync'))
 
@@ -124,16 +125,17 @@ class IotThermalCamera(JlcBoardTop):
           'i2c.sda=31',
           'i2c.scl=32',
 
-          'flir_rst=33',
-          'flir_cs=35',
-          'flir.sck=34',
-          'flir.mosi=39',
-          'flir.miso=38',
+          'flir_pwrdn=33',
+          'flir_rst=34',
+          'flir_cs=38',
+          'flir.sck=39',
+          'flir.mosi=5',
+          'flir.miso=4',
           'flir_vsync=7',
 
           'ledr=_GPIO0_STRAP',
 
-          'touch_duck=4',
+          'touch_duck=6',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_2v8', 'ic', 'actual_dropout'], Range(0.0, 0.05)),  # 3.3V @ 100mA
