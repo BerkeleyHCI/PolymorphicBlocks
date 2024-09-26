@@ -91,7 +91,7 @@ class Er_Tft_128_3(Lcd, Resettable, Block):
         # self.lcd = self.Block(Er_Tft_128_3_Outline())  # for ic outline
 
         self.connect(self.ic.ledk.adapt_to(Ground()), self.gnd)
-        forward_current = (1, 30)*mAmp
+        forward_current = (24, 30)*mAmp
         self.led_res = self.Block(Resistor(
             resistance=(self.pwr.link().voltage.upper() / forward_current.upper(),
                         self.pwr.link().voltage.lower() / forward_current.lower())))
