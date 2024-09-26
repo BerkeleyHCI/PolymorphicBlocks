@@ -11,13 +11,18 @@ class IotThermalCamera(JlcBoardTop):
 
     self.usb = self.Block(UsbCReceptacle())
     self.gnd = self.connect(self.usb.gnd)
-    self.pwr = self.connect(self.usb.pwr)
     self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
-    self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
 
     with self.implicit_connect(  # POWER
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      (self.choke, self.tp_pwr), _ = self.chain(
+        self.usb.pwr,
+        self.Block(SeriesPowerFerriteBead()),
+        self.Block(VoltageTestPoint())
+      )
+      self.pwr = self.connect(self.choke.pwr_out)
+
       (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
         self.pwr,
         imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
@@ -28,19 +33,19 @@ class IotThermalCamera(JlcBoardTop):
 
       (self.reg_3v0, ), _ = self.chain(
         self.v3v3,
-        imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.05)))
+        imp.Block(LinearRegulator(output_voltage=3.0*Volt(tol=0.03)))
       )
       self.v3v0 = self.connect(self.reg_3v0.pwr_out)
 
       (self.reg_2v8, ), _ = self.chain(
         self.v3v3,
-        imp.Block(LinearRegulator(output_voltage=2.8*Volt(tol=0.05)))
+        imp.Block(LinearRegulator(output_voltage=2.8*Volt(tol=0.03)))
       )
       self.v2v8 = self.connect(self.reg_2v8.pwr_out)
 
       (self.reg_1v2, ), _ = self.chain(
         self.v3v3,
-        imp.Block(LinearRegulator(output_voltage=1.2*Volt(tol=0.05)))
+        imp.Block(LinearRegulator(output_voltage=1.2*Volt(tol=0.03)))
       )
       self.v1v2 = self.connect(self.reg_1v2.pwr_out)
 
@@ -58,7 +63,7 @@ class IotThermalCamera(JlcBoardTop):
       self.i2c = self.mcu.i2c.request('i2c')
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
-        imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
+        imp.Block(I2cPullup()), imp.Block(I2cTestPoint('i2c')))
 
       mcu_touch = self.mcu.with_mixin(IoControllerTouchDriver())
       (self.touch_duck, ), _ = self.chain(

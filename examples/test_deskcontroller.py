@@ -36,15 +36,19 @@ class DeskController(JlcBoardTop):
         super().contents()
 
         self.conn = self.Block(JiecangConnector())
-        self.pwr = self.connect(self.conn.pwr)
         self.gnd = self.connect(self.conn.gnd)
-
-        self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.conn.pwr)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.conn.gnd)
 
         with self.implicit_connect(  # POWER
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
+            (self.choke, self.tp_pwr), _ = self.chain(
+                self.conn.pwr,
+                self.Block(SeriesPowerFerriteBead()),
+                self.Block(VoltageTestPoint())
+            )
+            self.pwr = self.connect(self.choke.pwr_out)
+
             (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
                 self.pwr,
                 imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
@@ -102,7 +106,7 @@ class DeskController(JlcBoardTop):
         return super().refinements() + Refinements(
             instance_refinements=[
                 (['mcu'], Esp32c3_Wroom02),
-                (['reg_3v3'], Ap7215),
+                (['reg_3v3'], Ldl1117),
                 (['conn', 'conn'], JstPhKVertical),
                 (['spk', 'conn'], JstPhKVertical),
             ],
@@ -128,7 +132,7 @@ class DeskController(JlcBoardTop):
                 (['mcu', 'programming'], 'uart-auto'),
                 (['spk_drv', 'pwr', 'current_draw'], Range(0.0022, 0.08)),  # don't run at full power
                 (['npx', 'vdd', 'current_draw'], Range(0.0036, 0.08)),
-                (['mcu', 'ic', 'pwr', 'current_draw'], Range(1.0E-6, 0.1))  # assume it doesn't run full bore
+                (['mcu', 'ic', 'pwr', 'current_draw'], Range(1.0E-6, 0.1)),  # assume it doesn't run full bore
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
@@ -142,6 +146,7 @@ class DeskController(JlcBoardTop):
             class_values=[
                 (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
                 (Nonstrict3v3Compatible, ['nonstrict_3v3_compatible'], True),
+                (Er_Oled_096_1_1, ['iref_res', 'resistance'], Range.from_tolerance(470e3, 0.1)),
             ]
         )
 

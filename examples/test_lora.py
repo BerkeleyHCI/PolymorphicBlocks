@@ -113,7 +113,10 @@ class EspLora(JlcBoardTop):
           'ledb=39',
         ]),
         (['mcu', 'programming'], 'uart-auto-button'),
-        (['usb', 'conn', 'current_limits'], Range(0.0, 1.1)),  # fudge it a lot, also assumed not everything run simultaneously
+
+        (['usb', 'conn', 'current_limits'], Range(0.0, 1.1)),  # fudge it a lot
+        (['pwr', 'current_drawn'], Range(0.031392638, 0.8)),  # allow use of basic part ferrite, assume not everything run simultaneously
+
         (['lora', 'balun', 'c', 'capacitance'], Range(2.8e-12 * 0.8, 2.8e-12 * 1.2)),  # extend tolerance to find a part
         (['lora', 'dcc_l', 'manual_frequency_rating'], Range(0, 20e6)),
         (['nfc', 'emc', 'l1', 'manual_frequency_rating'], Range(0, 100e6)),
@@ -150,6 +153,7 @@ class EspLora(JlcBoardTop):
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
         (Nonstrict3v3Compatible, ['nonstrict_3v3_compatible'], True),
         (DiscreteRfWarning, ['discrete_rf_warning'], False),
+        (Er_Oled_096_1_1, ['iref_res', 'resistance'], Range.from_tolerance(470e3, 0.1)),
       ]
     )
 
