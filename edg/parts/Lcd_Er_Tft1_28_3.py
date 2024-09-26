@@ -34,7 +34,7 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
 
         dio_model = DigitalBidir.from_supply(
             self.gnd, self.vdd,
-            voltage_limit_abs=(-0.3 * Volt, self.vdd.voltage_limits.upper()),
+            voltage_limit_tolerance=(-0.3, 0.3)*Volt,
             input_threshold_factor=(0.3, 0.7)
         )
 
