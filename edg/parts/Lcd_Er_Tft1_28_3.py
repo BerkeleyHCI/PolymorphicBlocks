@@ -68,7 +68,7 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
 
 
 class Er_Tft_128_3(Lcd, Resettable, Block):
-    """GC9A01-based 1.28" 240x240 TFT, with optional capacitive touch panel."""
+    """GC9A01-based 1.28" 240x240 TFT, with optional CST816S-based capacitive touch panel."""
 
     def __init__(self) -> None:
         super().__init__()
