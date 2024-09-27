@@ -18,6 +18,13 @@ class Pe4259_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
         self.ctrl = self.Port(Passive())  # modeled in container, series resistor recommended
 
+        self.restricted_availiability = self.Parameter(BoolExpr(True))
+        self.require(self.restricted_availiability == False, "part has restricted availiability, DO NOT USE, see class def for details")
+        # from a major component distributor, the vendor specifically forbids sales to individuals
+        # https://www.reddit.com/r/rfelectronics/comments/1dubvj7/psemi_forbidding_resellers_from_selling_to/ has speculation
+        # note that most other comparable RF switches do not have single-pin control
+        # a future revision so the application circuit will replace this part with a dual-pin control circuit
+
     def contents(self):
         super().contents()
 

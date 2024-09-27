@@ -143,6 +143,9 @@ class EspLora(JlcBoardTop):
         (['nfc', 'cvdd2', 'cap', 'require_basic_part'], False),
         (['nfc', 'ctvdd1', 'cap', 'require_basic_part'], False),
         (['nfc', 'ctvdd2', 'cap', 'require_basic_part'], False),
+
+        # got bamboozled, this will be replaced in the future with a part from a non-awful vendor
+        (['lora', 'rf_sw', 'ic', 'restricted_availiability'], False),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
