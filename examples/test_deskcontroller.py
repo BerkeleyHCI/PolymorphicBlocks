@@ -94,7 +94,9 @@ class DeskController(JlcBoardTop):
                 imp.Block(Tpa2005d1(gain=Range.from_tolerance(4, 0.2))),
                 self.Block(Speaker()))
 
-            self.npx_shift = imp.Block(BidirectionaLevelShifter(lv_res=RangeExpr.INF, src_hint='lv'))
+            # 1k pullup on the HV side is necessary for ~5v input, 4.7k does not provide a sufficient signal
+            self.npx_shift = imp.Block(BidirectionaLevelShifter(lv_res=RangeExpr.INF, hv_res=1*kOhm(tol=0.05),
+                                                                src_hint='lv'))
             self.connect(self.npx_shift.lv_pwr, self.v3v3)
             self.connect(self.npx_shift.hv_pwr, self.pwr)
             self.connect(self.mcu.gpio.request('npx'), self.npx_shift.lv_io)
