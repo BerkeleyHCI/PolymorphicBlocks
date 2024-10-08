@@ -38,18 +38,18 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
             input_threshold_factor=(0.3, 0.7)
         )
 
-        self.rs = self.Export(self.conn.pins.request('5').adapt_to(DigitalSink()))
+        self.rs = self.Export(self.conn.pins.request('5').adapt_to(DigitalSink.from_bidir(dio_model)))
 
         # Control pins
         self.spi = self.Port(SpiPeripheral.empty())
-        self.cs = self.Export(self.conn.pins.request('6').adapt_to(dio_model))
-        self.connect(self.spi.sck, self.conn.pins.request('7').adapt_to(dio_model))
-        self.connect(self.spi.mosi, self.conn.pins.request('8').adapt_to(dio_model))
+        self.cs = self.Export(self.conn.pins.request('6').adapt_to(DigitalSink.from_bidir(dio_model)))
+        self.connect(self.spi.sck, self.conn.pins.request('7').adapt_to(DigitalSink.from_bidir(dio_model)))
+        self.connect(self.spi.mosi, self.conn.pins.request('8').adapt_to(DigitalSink.from_bidir(dio_model)))
 
         self.miso_nc = self.Block(DigitalBidirNotConnected())
         self.connect(self.spi.miso, self.miso_nc.port)
 
-        self.rst = self.Export(self.conn.pins.request('9').adapt_to(DigitalSink()))
+        self.rst = self.Export(self.conn.pins.request('9').adapt_to(DigitalSink.from_bidir((dio_model))))
 
         # Capacitive Touch Panel (CTP)
         self.ctp_i2c = self.Port(I2cTarget(DigitalBidir.empty(), addresses=[0x15]),)
@@ -61,10 +61,10 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
 
         self.connect(self.gnd, self.conn.pins.request('11').adapt_to(Ground()))
 
-        self.ctp_rst = self.Export(self.conn.pins.request('12').adapt_to(dio_model))
-        self.ctp_int = self.Export(self.conn.pins.request('13').adapt_to(dio_model))
+        self.ctp_rst = self.Export(self.conn.pins.request('12').adapt_to(DigitalSink.from_bidir(dio_model)))
+        self.ctp_int = self.Export(self.conn.pins.request('13').adapt_to(DigitalSink.from_bidir(dio_model)))
         self.connect(self.ctp_i2c.sda, self.conn.pins.request('14').adapt_to(dio_model))
-        self.connect(self.ctp_i2c.scl, self.conn.pins.request('15').adapt_to(dio_model))
+        self.connect(self.ctp_i2c.scl, self.conn.pins.request('15').adapt_to(DigitalSink.from_bidir(dio_model)))
 
 
 class Er_Tft_128_3(Lcd, Resettable, Block):
@@ -92,9 +92,10 @@ class Er_Tft_128_3(Lcd, Resettable, Block):
 
         self.connect(self.ic.ledk.adapt_to(Ground()), self.gnd)
         forward_current = (24, 30)*mAmp
+        forward_voltage = 2.9*Volt
         self.led_res = self.Block(Resistor(
-            resistance=(self.pwr.link().voltage.upper() / forward_current.upper(),
-                        self.pwr.link().voltage.lower() / forward_current.lower())))
+            resistance=((self.pwr.link().voltage.upper() - forward_voltage) / forward_current.upper(),
+                        (self.pwr.link().voltage.lower() - forward_voltage) / forward_current.lower())))
         self.connect(self.led_res.a.adapt_to(VoltageSink(current_draw=forward_current)), self.pwr)
         self.connect(self.led_res.b, self.ic.leda)
         self.connect(self.pwr, self.ic.ctp_vdd)
