@@ -131,6 +131,7 @@ from .AnalogSwitch_Dg468 import Dg468
 from .CanTransceiver_Iso1050 import Iso1050dub
 from .CanTransceiver_Sn65hvd230 import Sn65hvd230
 from .CurrentSense_Ad8418 import Ad8418a
+from .Ina219 import Ina219
 from .BatteryProtector_S8261A import S8261A
 from .BatteryCharger_Mcp73831 import Mcp73831
 from .Distance_Vl53l0x import Vl53l0xBase, Vl53l0x, Vl53l0xConnector, Vl53l0xArray
