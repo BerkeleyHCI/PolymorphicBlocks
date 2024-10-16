@@ -6,8 +6,14 @@ from edg import *
 class EspLora(JlcBoardTop):
   """ESP32 + discrete 915MHz LoRa via SX1262. USB-C powered.
   TODO: add RF TVS diode to avoid device damage
+  TODO: for future versions: use TCXO for SX1262, connect BUSY pin
 
-  Compatible with Meshtastic using these variant.h defines:
+  Compatible with Meshtastic, with these notes for build configuration:
+  - SX126X_DIO3_TCXO_VOLTAGE must not be defined (this design uses a crystal)
+  - SX126X_BUSY should be defined to -1 (BUSY not connected)
+  - SX126X_DIO2, SX126X_DIO3 can be left undefined (not connected to microcontroller)
+
+  variant.h defines:
   #define BUTTON_PIN 0 // This is the BOOT button
   #define BUTTON_NEED_PULLUP
 
@@ -28,7 +34,7 @@ class EspLora(JlcBoardTop):
   #define SX126X_BUSY -1
   #endif
 
-  and these pins_arduino.h defines:
+  pins_arduino.h defines:
   static const uint8_t SDA = 18;
   static const uint8_t SCL = 17;
 
@@ -43,8 +49,6 @@ class EspLora(JlcBoardTop):
   #define SPI_CS (13)
 
   #define SDCARD_CS SPI_CS
-
-  Future versions should use a TCXO and connect the busy pin to make it compatible with stock firmware.
   """
   def contents(self) -> None:
     super().contents()
