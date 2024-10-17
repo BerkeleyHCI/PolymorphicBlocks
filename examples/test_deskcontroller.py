@@ -20,10 +20,10 @@ class JiecangConnector(Block):
         self.htx_shift = self.Block(BidirectionaLevelShifter(hv_res=RangeExpr.INF, src_hint='lv'))
         self.connect(self.pwr, self.dtx_shift.hv_pwr, self.htx_shift.hv_pwr)
         self.connect(self.pwr_io, self.dtx_shift.lv_pwr, self.htx_shift.lv_pwr)
-        self.connect(self.dtx_shift.hv_io, self.conn.pins.request('5').adapt_to(
+        self.connect(self.dtx_shift.hv_io, self.conn.pins.request('3').adapt_to(
             DigitalSource.from_supply(self.gnd, self.pwr)))  # DTX, controller -> handset
         self.connect(self.dtx_shift.lv_io, self.uart.tx)
-        self.connect(self.htx_shift.hv_io, self.conn.pins.request('3').adapt_to(
+        self.connect(self.htx_shift.hv_io, self.conn.pins.request('5').adapt_to(
             DigitalSink.from_supply(self.gnd, self.pwr)))  # HTX, handset -> controller
         self.connect(self.htx_shift.lv_io, self.uart.rx)
 
@@ -128,8 +128,8 @@ class DeskController(JlcBoardTop):
                     'swc_1=15',
                     'swc_0=5',
 
-                    'ctl.rx=4',
-                    'ctl.tx=3',
+                    'ctl.rx=3',
+                    'ctl.tx=4',
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),
                 (['spk_drv', 'pwr', 'current_draw'], Range(0.0022, 0.08)),  # don't run at full power
