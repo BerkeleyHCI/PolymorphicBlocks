@@ -95,8 +95,10 @@ class EspLora(JlcBoardTop):
                                           self.lora.cs)
       (self.tp_lora_rst, ), _ = self.chain(self.mcu.gpio.request('lora_rst'), imp.Block(DigitalTestPoint('lr_rs')),
                                            self.lora.reset)
-      (self.tp_lora_dio, ), _ = self.chain(self.mcu.gpio.request('lora_dio'), imp.Block(DigitalTestPoint('lr_di')),
-                                           self.lora.dio1)
+      (self.tp_lora_dio, ), _ = self.chain(self.mcu.gpio.request('lora_irq'), imp.Block(DigitalTestPoint('lr_di')),
+                                           self.lora.irq)
+      (self.tp_lora_busy, ), _ = self.chain(self.mcu.gpio.request('lora_busy'), imp.Block(DigitalTestPoint('lr_bs')),
+                                           self.lora.busy)
 
       self.i2c = self.mcu.i2c.request('i2c')
       (self.i2c_pull, self.i2c_tp), _ = self.chain(self.i2c, imp.Block(I2cPullup()), self.Block(I2cTestPoint('i2c')))

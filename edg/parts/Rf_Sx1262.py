@@ -236,7 +236,9 @@ class Sx1262(Resettable, DiscreteRfWarning, Block):
         self.cs = self.Export(self.ic.nss)
         self.require(self.reset.is_connected())  # TODO allow hard tie?
         self.connect(self.reset, self.ic.nreset)
-        self.dio1 = self.Export(self.ic.dio1, optional=True)
+        self.irq = self.Export(self.ic.dio1)  # "at least one DIO must be used for IRQ", this arbitrarily uses DIO1
+        # note, DIO2 is used for RF switch, DIO3 is used for TCXO control; these functions cannot be remapped elsewhere
+        self.busy = self.Export(self.ic.busy)  # "the BUSY line is mandatory"
 
     def contents(self) -> None:
         super().contents()
