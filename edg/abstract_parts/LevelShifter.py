@@ -5,10 +5,10 @@ from .AbstractFets import Fet
 from .DummyDevices import DummyVoltageSink
 
 class BidirectionaLevelShifter(Interface, GeneratorBlock):
-    """Bidirectional level shifter for low frequency (ish) signals, probably good for up to ~1MHz.
+    """Bidirectional level shifter for low(ish) frequency signals.
     Circuit design from Phillips AN97055, https://cdn-shop.adafruit.com/datasheets/an97055.pdf
     When both sides are floating or driving high, the FET is off and the pullups provide the high signal.
-    When the LV side drives low, the FET source goes to ground, putting the FET into conduction and  pulling HV low.
+    When the LV side drives low, the FET source goes to ground, putting the FET into conduction and pulling HV low.
     When the HV side drives low, the body diode pulls the FET source low, then goes into conduction.
 
     Use infinity resistance to not generate a resistor, for example if it is known there is already a resistor

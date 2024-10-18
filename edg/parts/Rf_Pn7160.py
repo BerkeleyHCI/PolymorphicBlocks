@@ -264,7 +264,7 @@ class Pn7160_Device(FootprintBlock, JlcPart):
 
         self.irq = self.Port(DigitalSource.from_supply(
             self.vss, self.vddpad,
-        ), optional=True)  # I2C can be polled, but IRQ is recommended
+        ))  # per AN12988 I2C can be polled but IRQ is recommended, but per UM11495 IRQ is required
         self.ven = self.Port(DigitalSink.from_supply(  # reset
             self.vss, self.vbat,
             voltage_limit_tolerance=(0, 0),
@@ -330,6 +330,7 @@ class Pn7160(Resettable, DiscreteRfWarning, Block):
         self.pwr = self.Export(self.ic.vbat)
         self.pwr_io = self.Export(self.ic.vddpad)
         self.i2c = self.Export(self.ic.i2c)
+        self.irq = self.Export(self.ic.irq)
 
     def contents(self):
         super().contents()

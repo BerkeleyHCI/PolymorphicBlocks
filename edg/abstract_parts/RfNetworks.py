@@ -10,7 +10,9 @@ from .Categories import *
 class DiscreteRfWarning(BlockInterfaceMixin[Block]):
     """Mixin class providing a override-able (via refinements) warnings for blocks with a discrete RF layout.
     Discrete RF circuits can be tricky to get right from a layout standpoint and may require tuning to account for
-    parasitics of real devices."""
+    parasitics of real devices.
+    The discrete RF library components / generators are also experimental and subject to change.
+    They also do not adhere to the tolerance conventions of non-RF parts."""
     @init_in_parent
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -55,11 +55,11 @@ class SmaConnector(RfConnector):
 
 @abstract_block
 class SmaMConnector(SmaConnector):
-  """Base class for a SMA M connector, pin with external threads.
+  """Base class for a SMA M connector, pin with internal threads.
   Typically used on the antenna itself."""
 
 
 @abstract_block
 class SmaFConnector(SmaConnector):
-  """Base class for a SMA F connector, socket with internal threads.
+  """Base class for a SMA F connector, socket with external threads.
   Typically used for an antenna connector for sub-2.4GHz applications; 2.4GHz uses RP-SMA."""
