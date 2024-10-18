@@ -144,8 +144,8 @@ class EspLora(JlcBoardTop):
           'lora_cs=GPIO7',
           'lora_rst=GPIO8',
           'lora.miso=GPIO3',
-          'lora_dio=GPIO38',  # IO33 on original, but is a PSRAM pin
-          'lora_busy=GPIO39',  # IO34 on original, but is a PSRAM pin
+          'lora_irq=GPIO38',  # IO33 on original, but is a PSRAM pin
+          'lora_busy=GPIO40',  # IO34 on original, but is a PSRAM pin
           'i2c.sda=GPIO18',
           'i2c.scl=GPIO17',
           'sd_cs=GPIO13',
@@ -154,7 +154,7 @@ class EspLora(JlcBoardTop):
           'sd.miso=GPIO2',
 
           'nfc_rst=32',
-          'nfc_irq=47',
+          'nfc_irq=GPIO47',
 
           'ledr=34',
           'ledg=35',
