@@ -25,7 +25,7 @@ class JlcPartsBaseFet(JlcPartsBase, BaseTableFet):
 
             # used as a proxy for lower bound for Vgs,max
             vgs_for_ids = attributes.get("Drain source on resistance (rds(on)@vgs,id)", float, sub='Vgs')
-            row_dict[cls.VGS_RATING] = Range.zero_to_upper(vgs_for_ids)
+            row_dict[cls.VGS_RATING] = Range.from_abs_tolerance(0, vgs_for_ids)  # bidirectional rating
 
             row_dict[cls.VGS_DRIVE] = Range(
                 attributes.get("Gate threshold voltage (vgs(th)@id)", float, sub='Vgs'),

@@ -11,7 +11,10 @@ class BjtStandardFootprint(StandardFootprint['Bjt']):
   REFDES_PREFIX = 'Q'
 
   FOOTPRINT_PINNING_MAP = {
-    'Package_TO_SOT_SMD:SOT-23': lambda block: {
+    (
+      'Package_TO_SOT_SMD:SOT-23',
+      'Package_TO_SOT_SMD:SOT-323_SC-70',
+    ): lambda block: {
       '1': block.base,
       '2': block.emitter,
       '3': block.collector,
@@ -20,11 +23,6 @@ class BjtStandardFootprint(StandardFootprint['Bjt']):
       '1': block.base,
       '2': block.collector,
       '3': block.emitter,
-    },
-    'Package_TO_SOT_SMD:SOT-323_SC-70': lambda block: {
-      '1': block.base,
-      '2': block.emitter,
-      '3': block.collector,
     },
   }
 

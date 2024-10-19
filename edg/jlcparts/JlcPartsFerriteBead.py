@@ -19,8 +19,11 @@ class JlcPartsFerriteBead(TableFerriteBead, PartsTableSelectorFootprint, JlcPart
             except (KeyError, PartParserUtil.ParseError):
                 current_rating = 0
             row_dict[cls.CURRENT_RATING] = Range.zero_to_upper(current_rating)
-            # Dc resistance sometimes NaN
-            row_dict[cls.DC_RESISTANCE] = Range.exact(attributes.get("Dc resistance", float, sub='resistance'))
+            if row_dict[cls.PART_NUMBER_COL] == 'GZ2012D101TF':  # additional data for a basic part
+                row_dict[cls.DC_RESISTANCE] = Range.exact(0.15)  # from https://evelta.com/content/datasheets/212-Ferrite-2012.pdf
+            else:
+                # Dc resistance sometimes NaN
+                row_dict[cls.DC_RESISTANCE] = Range.exact(attributes.get("Dc resistance", float, sub='resistance'))
             row_dict[cls.HF_IMPEDANCE] = Range.exact(
                 attributes.get("Impedance @ frequency", float, sub='esr'))
 

@@ -49,6 +49,7 @@ class JlcAntenna(TableAntenna, JlcTableSelector, FootprintBlock):
 
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
+    self.gnd.init_from(Ground())  # unused for current parts
     self.footprint(
       "ANT", row[self.KICAD_FOOTPRINT],
       {

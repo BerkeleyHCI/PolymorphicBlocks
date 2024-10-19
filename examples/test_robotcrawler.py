@@ -263,11 +263,10 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
         # the camera recommended specs are excessively tight, so loosen them a bit
-        (Ov2640_Fpc24, ['device', 'dovdd', 'voltage_limits'], Range(1.71, 4.5)),
-        (Ov2640_Fpc24, ['device', 'dvdd', 'voltage_limits'], Range(1.1, 1.36)),  # allow 1v2
         (Ov2640_Fpc24, ['device', 'avdd', 'voltage_limits'], Range(2.3, 3.0)),  # allow 2v5
         (Er_Oled_096_1c, ['device', 'vcc', 'voltage_limits'], Range(8, 19)),  # abs maximum ratings
         (ServoFeedbackConnector, ['pwr', 'current_draw'], Range(0.005, 0.005)),  # ignore non-static draw
+        (Nonstrict3v3Compatible, ['nonstrict_3v3_compatible'], True),
       ]
     )
 

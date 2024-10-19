@@ -57,7 +57,7 @@ from .DebugHeaders import SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTagConnect, SwdCortexTargetTc2050
 from .SdCards import SdCard, SdSocket, MicroSdSocket, Dm3btDsfPejs, Molex1040310811
 
-from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Ap7215, Xc6206p, Xc6209, Ap2210, Lp5907, L78l
+from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Ap7215, Xc6206p, Xc6209, Ap2210, Lp5907, Tlv757p, L78l
 from .VoltageReferences import Ref30xx
 from .BuckConverter_TexasInstruments import Tps561201, Tps54202h
 from .BuckConverter_Ap3418 import Ap3418
@@ -98,7 +98,7 @@ from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbAPlugPads, UsbMicroBRec
 from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
 from .Fusb302b import Fusb302b
 from .Connector_Banana import Ct3151, Fcr7350
-from .Connector_Rf import Bwipx_1_001e
+from .Connector_Rf import Bwipx_1_001e, Amphenol901143
 
 from .TestPoint_Keystone import Keystone5015, CompactKeystone5015, Keystone5000
 from .TestPoint_Rc import TeRc
@@ -144,6 +144,8 @@ from .UsbUart_Cp2102 import Cp2102
 from .UsbInterface_Ft232h import Ft232hl
 from .Logic_74Ahct import L74Ahct1g125
 from .Logic_74Lvc import Sn74lvc1g74
+from .Rf_Sx1262 import Sx1262
+from .Rf_Pn7160 import Pn7160
 from .Comparator_Lmv331 import Lmv331
 from .Camera_Ov2640_Fpc24 import Ov2640, Ov2640_Fpc24
 
@@ -163,6 +165,7 @@ from .EnvironmentalSensor_Bme680 import Bme680
 from .EnvironmentalSensor_Ti import Hdc1080, Tmp1075n
 from .LightSensor_Bh1750 import Bh1750
 from .LightSensor_As7341 import As7341
+from .ThermalSensor_FlirLepton import FlirLepton
 
 from .LedMatrix import CharlieplexedLedMatrix
 from .SwitchMatrix import SwitchMatrix
