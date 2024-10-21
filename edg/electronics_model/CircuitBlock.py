@@ -91,6 +91,13 @@ class FootprintBlock(Block):
       self.assign(self.fp_datasheet, '')
 
 
+class WrapperFootprintBlock(FootprintBlock):
+  """Block that has a footprint and optionally internal contents, but the netlister ignores internal components.
+  Useful for, for example, a breakout board where the modelling details are provided by the chip circuit itself.
+  EXPERIMENTAL - API SUBJECT TO CHANGE."""
+  pass
+
+
 @abstract_block
 class NetBlock(InternalBlock, NetBaseBlock, Block):
   def contents(self):
