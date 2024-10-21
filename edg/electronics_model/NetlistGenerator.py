@@ -37,7 +37,8 @@ class Netlist(NamedTuple):
   nets: List[Net]
 
 
-Blocks = Dict[TransformUtil.Path, NetBlock]  # Path -> Block
+Scopes = Dict[TransformUtil.Path, Optional[TransformUtil.Path]]  # Block -> containing board scope
+Footprints = Dict[TransformUtil.Path, NetBlock]  # Path -> Block footprint
 Edges = Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Port Path -> connected Port Paths
 AssertConnected = List[Tuple[TransformUtil.Path, TransformUtil.Path]]
 ClassPaths = Dict[TransformUtil.Path, List[edgir.LibraryPath]]  # Path -> class names corresponding to shortened path name
@@ -53,7 +54,7 @@ class NetlistTransform(TransformUtil.Transform):
       raise ValueError(f"don't know how to flatten netlistable port {port}")
 
   def __init__(self, design: CompiledDesign):
-    self.blocks: Blocks = {}
+    self.footprints: Footprints = {}
     self.edges: Edges = {}  # as port Paths, including intermediates
     self.pins: Dict[TransformUtil.Path, List[NetPin]] = {}  # mapping from Port to pad
     self.assert_connected: AssertConnected = []
@@ -139,7 +140,7 @@ class NetlistTransform(TransformUtil.Transform):
       ]
       part_str = " ".join(filter(None, part_comps))
       value_str = value if value else (part if part else '')
-      self.blocks[path] = NetBlock(
+      self.footprints[path] = NetBlock(
         footprint_name,
         refdes,
         part_str,
@@ -294,10 +295,10 @@ class NetlistTransform(TransformUtil.Transform):
     def port_ignored_paths(path: TransformUtil.Path) -> bool:  # ignore link ports for netlisting
       return bool(path.links) or any([block.startswith('(adapter)') or block.startswith('(bridge)') for block in path.blocks])
 
-    netlist_blocks = [block for path, block in self.blocks.items()]
+    netlist_footprints = [footprint for path, footprint in self.footprints.items()]
     netlist_nets = [Net(name,
                         list(chain(*[self.pins[port] for port in net if port in self.pins])),
                         [port for port in net if not port_ignored_paths(port)])
                     for name, net in named_nets.items()]
 
-    return Netlist(netlist_blocks, netlist_nets)
+    return Netlist(netlist_footprints, netlist_nets)
