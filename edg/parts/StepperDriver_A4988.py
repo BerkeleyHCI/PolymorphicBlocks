@@ -237,41 +237,35 @@ class PololuA4988(WrapperFootprintBlock, GeneratorBlock):
     # TODO: deduplicate w/ A4988 application circuit
     step_resolution = self.get(self.step_resolution)
     if step_resolution == 1:  # full step
-      ms1_node = ms2_node = ms3_node = self.gnd.as_digital_source()
+      self.connect(self.gnd.as_digital_source(), self.model.ms1, self.model.ms2, self.model.ms3)
     elif step_resolution == 2:  # half step
-      ms2_node = ms3_node = self.gnd.as_digital_source()
-      ms1_node = self.pwr_logic.as_digital_source()
+      self.connect(self.gnd.as_digital_source(), self.model.ms2, self.model.ms3)
+      self.connect(self.pwr_logic.as_digital_source(), self.model.ms1)
     elif step_resolution == 4:  # quarter step
-      ms1_node = ms3_node = self.gnd.as_digital_source()
-      ms2_node = self.pwr_logic.as_digital_source()
+      self.connect(self.gnd.as_digital_source(), self.model.ms1, self.model.ms3)
+      self.connect(self.pwr_logic.as_digital_source(), self.model.ms2)
     elif step_resolution == 8:  # eighth step
-      ms3_node = self.gnd.as_digital_source()
-      ms1_node = ms2_node = self.pwr_logic.as_digital_source()
+      self.connect(self.gnd.as_digital_source(), self.model.ms3)
+      self.connect(self.pwr_logic.as_digital_source(), self.model.ms1, self.model.ms2)
     elif step_resolution == 16:  # sixteenth step
-      ms1_node = ms2_node = ms3_node = self.pwr_logic.as_digital_source()
+      self.connect(self.pwr_logic.as_digital_source(), self.model.ms1, self.model.ms2, self.model.ms3)
     else:
       raise ValueError(f"unknown step_resolution {step_resolution}")
-    self.connect(self.model.ms1, ms1_node)
-    self.connect(self.model.ms2, ms2_node)
-    self.connect(self.model.ms3, ms3_node)
 
     if self.get(self.enable.is_connected()):
-      enable_node = self.enable
+      self.connect(self.enable, self.model.enable)
     else:
-      enable_node = self.gnd.as_digital_source()
-    self.connect(enable_node, self.model.enable)
+      self.connect(self.gnd.as_digital_source(), self.model.enable)
 
     if self.get(self.reset.is_connected()):
-      reset_node = self.reset
+      self.connect(self.reset, self.model.reset)
     else:
-      reset_node = self.pwr_logic.as_digital_source()
-    self.connect(reset_node, self.model.reset)
+      self.connect(self.pwr_logic.as_digital_source(), self.model.reset)
 
     if self.get(self.sleep.is_connected()):
-      sleep_node = self.sleep
+      self.connect(self.sleep, self.model.sleep)
     else:
-      sleep_node = self.pwr_logic.as_digital_source()
-    self.connect(sleep_node, self.model.sleep)
+      self.connect(self.pwr_logic.as_digital_source(), self.model.sleep)
 
     # these are implemented internal to the breakout board
     (self.dummy_vreg, ), _ = self.chain(self.Block(DummyVoltageSink()), self.model.vreg)
