@@ -202,3 +202,105 @@ class A4988(BrushedMotorDriver, GeneratorBlock):
       self.connect(self.sleep, self.ic.sleep)
     else:
       self.connect(self.pwr_logic.as_digital_source(), self.ic.sleep)
+
+
+class PololuA4988(WrapperFootprintBlock, GeneratorBlock):
+  @init_in_parent
+  def __init__(self, step_resolution: IntLike = 16):
+    super().__init__()
+    self.step_resolution = self.ArgParameter(step_resolution, doc="microstepping resolution (1, 2, 4, 8, or 16)")
+    self.generator_param(self.step_resolution)
+
+    self.model = self.Block(A4988_Device())
+    self.gnd = self.Export(self.model.gnd, [Common])
+    self.pwr = self.Export(self.model.vbb1)
+    self.pwr_logic = self.Export(self.model.vdd)
+
+    self.step = self.Export(self.model.step)
+    self.dir = self.Export(self.model.dir)
+
+    self.enable = self.Port(DigitalSink.empty(), optional=True, doc="disables FET outputs when high")
+    self.reset = self.Port(DigitalSink.empty(), optional=True, doc="forces translator to Home state when low")
+    self.sleep = self.Port(DigitalSink.empty(), optional=True, doc="disables device (to reduce current draw) when low")
+    self.generator_param(self.enable.is_connected(), self.reset.is_connected(), self.sleep.is_connected())
+
+    self.out1a = self.Export(self.model.out1a)
+    self.out1b = self.Export(self.model.out1b)
+    self.out2a = self.Export(self.model.out2a)
+    self.out2b = self.Export(self.model.out2b)
+
+  def generate(self) -> None:
+    super().generate()
+
+    self.connect(self.pwr, self.model.vbb2)
+
+    step_resolution = self.get(self.step_resolution)
+    if step_resolution == 1:  # full step
+      ms1_node = ms2_node = ms3_node = self.gnd.as_digital_source()
+    elif step_resolution == 2:  # half step
+      ms2_node = ms3_node = self.gnd.as_digital_source()
+      ms1_node = self.pwr_logic.as_digital_source()
+    elif step_resolution == 4:  # quarter step
+      ms1_node = ms3_node = self.gnd.as_digital_source()
+      ms2_node = self.pwr_logic.as_digital_source()
+    elif step_resolution == 8:  # eighth step
+      ms3_node = self.gnd.as_digital_source()
+      ms1_node = ms2_node = self.pwr_logic.as_digital_source()
+    elif step_resolution == 16:  # sixteenth step
+      ms1_node = ms2_node = ms3_node = self.pwr_logic.as_digital_source()
+    else:
+      raise ValueError(f"unknown step_resolution {step_resolution}")
+    self.connect(self.model.ms1, ms1_node)
+    self.connect(self.model.ms2, ms2_node)
+    self.connect(self.model.ms3, ms3_node)
+
+    if self.get(self.enable.is_connected()):
+      enable_node = self.enable
+    else:
+      enable_node = self.gnd.as_digital_source()
+    self.connect(enable_node, self.model.enable)
+
+    if self.get(self.reset.is_connected()):
+      reset_node = self.reset
+    else:
+      reset_node = self.pwr_logic.as_digital_source()
+    self.connect(reset_node, self.model.reset)
+
+    if self.get(self.sleep.is_connected()):
+      sleep_node = self.sleep
+    else:
+      sleep_node = self.pwr_logic.as_digital_source()
+    self.connect(sleep_node, self.model.sleep)
+
+    (self.dummy_vreg, ), _ = self.chain(self.Block(DummyVoltageSink()), self.model.vreg)
+    (self.dummy_vcp, ), _ = self.chain(self.Block(DummyPassive()), self.model.vcp)
+    (self.dummy_cp1, ), _ = self.chain(self.Block(DummyPassive()), self.model.cp1)
+    (self.dummy_cp2, ), _ = self.chain(self.Block(DummyPassive()), self.model.cp2)
+    (self.dummy_rosc, ), _ = self.chain(self.Block(DummyPassive()), self.model.rosc)
+    (self.dummy_ref, ), _ = self.chain(self.Block(DummyAnalogSource()), self.model.ref)
+    (self.dummy_sense1, ), _ = self.chain(self.Block(DummyPassive()), self.model.sense1)
+    (self.dummy_sense2, ), _ = self.chain(self.Block(DummyPassive()), self.model.sense2)
+
+    self.footprint(
+      'U', 'edg:DIP-16_W12.70mm',
+      {
+        '1': self.pwr,
+        '2': self.gnd,
+        '3': self.out2b,
+        '4': self.out2a,
+        '5': self.out1a,
+        '6': self.out1b,
+        '7': self.pwr_logic,
+        '8': self.gnd,
+        '9': self.dir,
+        '10': self.step,
+        '11': sleep_node,
+        '12': reset_node,
+        '13': ms3_node,
+        '14': ms2_node,
+        '15': ms1_node,
+        '16': enable_node,
+      },
+      mfr='Pololu', part='1182',
+      datasheet='https://www.pololu.com/product/1182'
+    )
