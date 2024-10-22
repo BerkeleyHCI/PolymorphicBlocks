@@ -22,6 +22,7 @@ class NetBlock(NamedTuple):
   full_path: TransformUtil.Path  # full path to this footprint
   path: List[str]  # short path to this footprint
   class_path: List[edgir.LibraryPath]  # classes on short path to this footprint
+  board_scope: Optional[TransformUtil.Path]
 
 class NetPin(NamedTuple):
   block_path: TransformUtil.Path  # full path to the block
@@ -37,6 +38,10 @@ class Netlist(NamedTuple):
   nets: List[Net]
 
 
+# The concept of board scopes is footprints associated with a scope (defined as a path) that is a board,
+# to support multi-board assemblies and virtual components.
+# The default (top-level) board has TransformUtil.Path.empty().
+# None board scope means the footprints do not exist (virtual component), eg the associated blocks were for modeling.
 Scopes = Dict[TransformUtil.Path, Optional[TransformUtil.Path]]  # Block -> containing board scope
 Footprints = Dict[TransformUtil.Path, NetBlock]  # Path -> Block footprint
 Edges = Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Port Path -> connected Port Paths
@@ -54,6 +59,7 @@ class NetlistTransform(TransformUtil.Transform):
       raise ValueError(f"don't know how to flatten netlistable port {port}")
 
   def __init__(self, design: CompiledDesign):
+    self.scopes: Scopes = {TransformUtil.Path.empty(): TransformUtil.Path.empty()}  # seed root
     self.footprints: Footprints = {}
     self.edges: Edges = {}  # as port Paths, including intermediates
     self.pins: Dict[TransformUtil.Path, List[NetPin]] = {}  # mapping from Port to pad
@@ -71,6 +77,12 @@ class NetlistTransform(TransformUtil.Transform):
       if isinstance(block, edgir.HierarchyBlock):
         for block_pair in block.blocks:
           subblock = block_pair.value
+
+          if 'fp_is_wrapper' in block.meta.members.node:
+            self.scopes[path.append_block(block_pair.name)] = None  # wrapper internal blocks ignored
+          else:
+            self.scopes[path.append_block(block_pair.name)] = self.scopes[path]
+
           # ignore pseudoblocks like bridges and adapters that have no internals
           if not subblock.hierarchy.blocks and 'fp_is_footprint' not in subblock.hierarchy.meta.members.node:
             other_internal_blocks[block_pair.name] = block_pair.value
@@ -148,6 +160,7 @@ class NetlistTransform(TransformUtil.Transform):
         path,
         self.short_paths[path],
         self.class_paths[path],
+        self.scopes[path]
       )
 
       for pin_spec in footprint_pinning:
@@ -295,7 +308,8 @@ class NetlistTransform(TransformUtil.Transform):
     def port_ignored_paths(path: TransformUtil.Path) -> bool:  # ignore link ports for netlisting
       return bool(path.links) or any([block.startswith('(adapter)') or block.startswith('(bridge)') for block in path.blocks])
 
-    netlist_footprints = [footprint for path, footprint in self.footprints.items()]
+    netlist_footprints = [footprint for path, footprint in self.footprints.items()
+                          if footprint.board_scope == TransformUtil.Path.empty()]
     netlist_nets = [Net(name,
                         list(chain(*[self.pins[port] for port in net if port in self.pins])),
                         [port for port in net if not port_ignored_paths(port)])

@@ -49,4 +49,4 @@ class NetlistWrapperTestCase(unittest.TestCase):
     self.assertIn(NetBlock('Inductor_SMD:L_0603_1608Metric', 'L1', '', '100',
                            ['sink'], ['sink'],
                            ['edg.electronics_model.test_netlist_wrapper.SinkWrapperBlock']), net.blocks)
-    self.assertEquals(len(net.blocks), 2)  # should only generate top-level source and sink
+    self.assertEqual(len(net.blocks), 2)  # should only generate top-level source and sink

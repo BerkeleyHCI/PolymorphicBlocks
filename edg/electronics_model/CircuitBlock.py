@@ -95,7 +95,9 @@ class WrapperFootprintBlock(FootprintBlock):
   """Block that has a footprint and optionally internal contents, but the netlister ignores internal components.
   Useful for, for example, a breakout board where the modelling details are provided by the chip circuit itself.
   EXPERIMENTAL - API SUBJECT TO CHANGE."""
-  pass
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.fp_is_wrapper = self.Metadata("A")  # TODO replace with not metadata, eg superclass inspection
 
 
 @abstract_block
