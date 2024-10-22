@@ -234,6 +234,7 @@ class PololuA4988(WrapperFootprintBlock, GeneratorBlock):
 
     self.connect(self.pwr, self.model.vbb2)
 
+    # TODO: deduplicate w/ A4988 application circuit
     step_resolution = self.get(self.step_resolution)
     if step_resolution == 1:  # full step
       ms1_node = ms2_node = ms3_node = self.gnd.as_digital_source()
@@ -272,6 +273,7 @@ class PololuA4988(WrapperFootprintBlock, GeneratorBlock):
       sleep_node = self.pwr_logic.as_digital_source()
     self.connect(sleep_node, self.model.sleep)
 
+    # these are implemented internal to the breakout board
     (self.dummy_vreg, ), _ = self.chain(self.Block(DummyVoltageSink()), self.model.vreg)
     (self.dummy_vcp, ), _ = self.chain(self.Block(DummyPassive()), self.model.vcp)
     (self.dummy_cp1, ), _ = self.chain(self.Block(DummyPassive()), self.model.cp1)
