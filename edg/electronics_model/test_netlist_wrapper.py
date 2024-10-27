@@ -1,6 +1,6 @@
 import unittest
-from ..core import Block
-from .test_netlist import NetlistTestCase, TestFakeSource, TestFakeSink, NetBlock
+from ..core import Block, TransformUtil
+from .test_netlist import NetlistTestCase, TestFakeSource, TestFakeSink, NetBlock, Net, NetPin
 from . import WrapperFootprintBlock, VoltageSink
 
 
@@ -17,8 +17,8 @@ class SinkWrapperBlock(WrapperFootprintBlock):
 
     self.load1 = self.Block(TestFakeSink())
     self.load2 = self.Block(TestFakeSink())
-    self.connect(self.pos, self.load1.pos, self.load2.pos)
-    self.connect(self.neg, self.load1.neg, self.load2.neg)
+    self.vpos = self.connect(self.pos, self.load1.pos, self.load2.pos)
+    self.gnd = self.connect(self.neg, self.load1.neg, self.load2.neg)
 
     self.footprint(  # only this footprint shows up
       'L', 'Inductor_SMD:L_0603_1608Metric',  # distinct footprint and value from internal blocks
@@ -41,7 +41,6 @@ class TestWrapperCircuit(Block):
     self.gnd = self.connect(self.source.neg, self.sink.neg)
 
 
-
 class NetlistWrapperTestCase(unittest.TestCase):
   def test_warpper_netlist(self) -> None:
     net = NetlistTestCase.generate_net(TestWrapperCircuit)
@@ -50,3 +49,19 @@ class NetlistWrapperTestCase(unittest.TestCase):
                            ['sink'], ['sink'],
                            ['edg.electronics_model.test_netlist_wrapper.SinkWrapperBlock']), net.blocks)
     self.assertEqual(len(net.blocks), 2)  # should only generate top-level source and sink
+    self.assertEqual(len(net.blocks), 2)  # should only generate top-level source and sink
+
+    self.assertIn(Net('vpos', [  # ensure extraneous nets not generated
+      NetPin(['source'], '1'),
+      NetPin(['sink'], '1')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('pos'),
+      TransformUtil.Path.empty().append_block('sink').append_port('pos'),
+    ]), net.nets)
+    self.assertIn(Net('gnd', [
+      NetPin(['source'], '2'),
+      NetPin(['sink'], '2')
+    ], [
+      TransformUtil.Path.empty().append_block('source').append_port('neg'),
+      TransformUtil.Path.empty().append_block('sink').append_port('neg'),
+    ]), net.nets)
