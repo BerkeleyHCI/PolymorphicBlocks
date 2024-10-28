@@ -50,7 +50,7 @@ class NetlistWrapperTestCase(unittest.TestCase):
                            ['edg.electronics_model.test_netlist_wrapper.SinkWrapperBlock']), net.blocks)
     self.assertEqual(len(net.blocks), 2)  # should only generate top-level source and sink
 
-    # can't check number of nets because internal nets do get generated
+    self.assertEqual(len(net.nets), 2)  # ensure empty nets pruned
     self.assertIn(Net('vpos', [  # ensure extraneous nets not generated
       NetPin(['source'], '1'),
       NetPin(['sink'], '1')

@@ -330,6 +330,7 @@ class NetlistTransform(TransformUtil.Transform):
                         list(chain(*[scope.pins[port] for port in net if port in scope.pins])),
                         [port for port in net if not port_ignored_paths(port)])
                     for name, net in named_nets.items()]
+    netlist_nets = [net for net in netlist_nets if net.pins]  # prune empty nets
 
     return Netlist(netlist_footprints, netlist_nets)
 
