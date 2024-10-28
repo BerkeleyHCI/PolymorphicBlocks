@@ -205,14 +205,79 @@ class A4988(BrushedMotorDriver, GeneratorBlock):
       self.connect(self.pwr_logic.as_digital_source(), self.ic.sleep)
 
 
-class PololuA4988(A4988, WrapperFootprintBlock):
+class PololuA4988(WrapperFootprintBlock, GeneratorBlock):
   """Pololu breakout board for the A4988 stepper driver. Adjustable current limit with onboard trimpot."""
   @init_in_parent
   def __init__(self, step_resolution: IntLike = 16):
-    super().__init__(step_resolution)
+    super().__init__()
+    self.step_resolution = self.ArgParameter(step_resolution, doc="microstepping resolution (1, 2, 4, 8, or 16)")
+    self.generator_param(self.step_resolution)
+
+    self.model = self.Block(A4988_Device())
+    self.gnd = self.Export(self.model.gnd, [Common])
+    self.pwr = self.Export(self.model.vbb1)
+    self.pwr_logic = self.Export(self.model.vdd)
+
+    self.step = self.Export(self.model.step)
+    self.dir = self.Export(self.model.dir)
+
+    self.enable = self.Port(DigitalSink.empty(), optional=True, doc="disables FET outputs when high")
+    self.reset = self.Port(DigitalSink.empty(), optional=True, doc="forces translator to Home state when low")
+    self.sleep = self.Port(DigitalSink.empty(), optional=True, doc="disables device (to reduce current draw) when low")
+    self.generator_param(self.enable.is_connected(), self.reset.is_connected(), self.sleep.is_connected())
+
+    self.out1a = self.Export(self.model.out1a)
+    self.out1b = self.Export(self.model.out1b)
+    self.out2a = self.Export(self.model.out2a)
+    self.out2b = self.Export(self.model.out2b)
 
   def generate(self) -> None:
     super().generate()
+
+    self.connect(self.pwr, self.model.vbb2)
+
+    # TODO: deduplicate w/ A4988 application circuit
+    step_resolution = self.get(self.step_resolution)
+    if step_resolution == 1:  # full step
+      self.connect(self.gnd.as_digital_source(), self.model.ms1, self.model.ms2, self.model.ms3)
+    elif step_resolution == 2:  # half step
+      self.connect(self.gnd.as_digital_source(), self.model.ms2, self.model.ms3)
+      self.connect(self.pwr_logic.as_digital_source(), self.model.ms1)
+    elif step_resolution == 4:  # quarter step
+      self.connect(self.gnd.as_digital_source(), self.model.ms1, self.model.ms3)
+      self.connect(self.pwr_logic.as_digital_source(), self.model.ms2)
+    elif step_resolution == 8:  # eighth step
+      self.connect(self.gnd.as_digital_source(), self.model.ms3)
+      self.connect(self.pwr_logic.as_digital_source(), self.model.ms1, self.model.ms2)
+    elif step_resolution == 16:  # sixteenth step
+      self.connect(self.pwr_logic.as_digital_source(), self.model.ms1, self.model.ms2, self.model.ms3)
+    else:
+      raise ValueError(f"unknown step_resolution {step_resolution}")
+
+    if self.get(self.enable.is_connected()):
+      self.connect(self.enable, self.model.enable)
+    else:
+      self.connect(self.gnd.as_digital_source(), self.model.enable)
+
+    if self.get(self.reset.is_connected()):
+      self.connect(self.reset, self.model.reset)
+    else:
+      self.connect(self.pwr_logic.as_digital_source(), self.model.reset)
+
+    if self.get(self.sleep.is_connected()):
+      self.connect(self.sleep, self.model.sleep)
+    else:
+      self.connect(self.pwr_logic.as_digital_source(), self.model.sleep)
+
+    # these are implemented internal to the breakout board
+    (self.dummy_vreg, ), _ = self.chain(self.Block(DummyVoltageSink()), self.model.vreg)
+    (self.dummy_vcp, ), _ = self.chain(self.Block(DummyPassive()), self.model.vcp)
+    (self.dummy_cp1, ), _ = self.chain(self.Block(DummyPassive()), self.model.cp1)
+    (self.dummy_cp2, ), _ = self.chain(self.Block(DummyPassive()), self.model.cp2)
+    (self.dummy_rosc, ), _ = self.chain(self.Block(DummyPassive()), self.model.rosc)
+    (self.dummy_ref, ), _ = self.chain(self.Block(DummyAnalogSource()), self.model.ref)
+    (self.dummy_sense1, ), _ = self.chain(self.Block(DummyPassive()), self.model.sense1)
+    (self.dummy_sense2, ), _ = self.chain(self.Block(DummyPassive()), self.model.sense2)
 
     self.footprint(
       'U', 'edg:DIP-16_W12.70mm',
@@ -227,12 +292,12 @@ class PololuA4988(A4988, WrapperFootprintBlock):
         '8': self.gnd,
         '9': self.dir,
         '10': self.step,
-        '11': self.ic.sleep,
-        '12': self.ic.reset,
-        '13': self.ic.ms3,
-        '14': self.ic.ms2,
-        '15': self.ic.ms1,
-        '16': self.ic.enable,
+        '11': self.model.sleep,
+        '12': self.model.reset,
+        '13': self.model.ms3,
+        '14': self.model.ms2,
+        '15': self.model.ms1,
+        '16': self.model.enable,
       },
       mfr='Pololu', part='1182',
       datasheet='https://www.pololu.com/product/1182'
