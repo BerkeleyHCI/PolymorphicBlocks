@@ -30,7 +30,7 @@ class Ref30xx_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     assert suitable_parts, "no regulator with compatible output"
     part_output_voltage, part_number, lcsc_part = suitable_parts[0]
 
-    self.assign(self.actual_target_voltage, part_output_voltage)
+    self.assign(self.pwr_out.voltage_out, part_output_voltage)
     self.assign(self.lcsc_part, lcsc_part)
     self.assign(self.actual_basic_part, False)
     self.footprint(

@@ -101,21 +101,20 @@ class LinearRegulatorDevice(Block):
     # these device model parameters must be provided by subtypes
     self.actual_dropout = self.Parameter(RangeExpr())
     self.actual_quiescent_current = self.Parameter(RangeExpr())
-    self.actual_target_voltage = self.Parameter(RangeExpr())
 
     self.gnd = self.Port(Ground(), [Common])
     self.pwr_in = self.Port(VoltageSink(
-      voltage_limits=RangeExpr(),
+      voltage_limits=RangeExpr(),  # parameters set by subtype
       current_draw=RangeExpr()
     ), [Power, Input])
     self.pwr_out = self.Port(VoltageSource(
-      voltage_out=self.actual_target_voltage,
+      voltage_out=self.RangeExpr(),  # parameters set by subtype
       current_limits=RangeExpr()
     ), [Output])
     self.assign(self.pwr_in.current_draw,
                 self.pwr_out.link().current_drawn + self.actual_quiescent_current)
 
-    self.require(self.actual_target_voltage.lower() + self.actual_dropout.upper() <= self.pwr_in.link().voltage.lower(),
+    self.require(self.pwr_out.voltage_out.lower() + self.actual_dropout.upper() <= self.pwr_in.link().voltage.lower(),
                  "excessive dropout")
 
 
