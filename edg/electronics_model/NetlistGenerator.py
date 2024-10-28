@@ -114,7 +114,7 @@ class NetlistTransform(TransformUtil.Transform):
       for (name, subblock) in other_internal_blocks.items():
         self.short_paths[path.append_block(name)] = short_path + [name]
         self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
-    elif isinstance(block, edgir.Link):
+    elif isinstance(block, (edgir.Link, edgir.LinkArray)):
       for link_pair in block.links:
         self.scopes[path.append_link(link_pair.name)] = scope
 
