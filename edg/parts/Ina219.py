@@ -1,5 +1,5 @@
-from edg import *
-from edg.parts.JlcPart import JlcPart
+from ..abstract_parts import *
+from .JlcPart import JlcPart
 
 
 class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, Block):

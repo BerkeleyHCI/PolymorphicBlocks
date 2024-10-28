@@ -234,7 +234,7 @@ class RobotDriver(JlcBoardTop):
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
-        (Vl53l0xBase, Vl53l0xConnector),
+        (Vl53l0x, Vl53l0xConnector),
         (TestPoint, TeRc),
         (Speaker, ConnectorSpeaker),
         (Neopixel, Ws2812b),

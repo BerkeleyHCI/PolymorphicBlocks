@@ -1,6 +1,6 @@
 from ..core import *
 
-from .CircuitBlock import FootprintBlock, CircuitPortBridge, CircuitPortAdapter, NetBlock
+from .CircuitBlock import FootprintBlock, WrapperFootprintBlock, CircuitPortBridge, CircuitPortAdapter, NetBlock
 from .VoltagePorts import CircuitPort
 
 from .Units import Farad, uFarad, nFarad, pFarad, MOhm, kOhm, Ohm, mOhm, Henry, uHenry, nHenry

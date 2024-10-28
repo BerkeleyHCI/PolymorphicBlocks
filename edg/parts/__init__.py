@@ -133,7 +133,7 @@ from .CurrentSense_Ad8418 import Ad8418a
 from .Ina219 import Ina219
 from .BatteryProtector_S8261A import S8261A
 from .BatteryCharger_Mcp73831 import Mcp73831
-from .Distance_Vl53l0x import Vl53l0xBase, Vl53l0x, Vl53l0xConnector, Vl53l0xArray
+from .Distance_Vl53l0x import Vl53l0x, Vl53l0xConnector, Vl53l0xArray
 from .Isolator_Cbmud1200 import Cbmud1200l
 from .GateDriver_Ir2301 import Ir2301
 from .GateDriver_Ucc27282 import Ucc27282
@@ -156,7 +156,7 @@ from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, Mount
 from .MotorDriver_L293dd import L293dd
 from .MotorDriver_Drv8833 import Drv8833
 from .Bldc_Drv8313 import Drv8313
-from .StepperDriver_A4988 import A4988
+from .StepperDriver_A4988 import A4988, PololuA4988
 
 from .Imu_Lsm6ds3trc import Lsm6ds3trc
 from .Mag_Qmc5883l import Qmc5883l
