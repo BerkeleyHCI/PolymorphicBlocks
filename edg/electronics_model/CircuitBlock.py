@@ -92,8 +92,9 @@ class FootprintBlock(Block):
 
 
 class WrapperFootprintBlock(FootprintBlock):
-  """Block that has a footprint and optionally internal contents, but the netlister ignores internal components.
-  Useful for, for example, a breakout board where the modelling details are provided by the chip circuit itself.
+  """Block that has a footprint and optional internal contents, but the netlister ignores internal components.
+  Useful for, for example, a breakout board where the modelling details are provided by internal chip blocks,
+  but needs to show up as only a carrier board footprint.
   EXPERIMENTAL - API SUBJECT TO CHANGE."""
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)

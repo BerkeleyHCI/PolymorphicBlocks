@@ -28,7 +28,7 @@ class RefdesTransform(TransformUtil.Transform):
     }
 
     self.block_refdes_list: List[Tuple[TransformUtil.Path, str]] = []  # populated in traversal order
-    self.refdes_last: Dict[(TransformUtil.Path, str), int] = {}  # (scope, prefix) -> num
+    self.refdes_last: Dict[Tuple[TransformUtil.Path, str], int] = {}  # (scope, prefix) -> num
 
   def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
     scope = self.scopes[context.path]

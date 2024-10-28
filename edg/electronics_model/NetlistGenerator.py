@@ -36,6 +36,7 @@ class Netlist(NamedTuple):
   blocks: List[NetBlock]
   nets: List[Net]
 
+
 # The concept of board scopes is footprints associated with a scope (defined as a path) that is a board,
 # to support multi-board assemblies and virtual components.
 # The default (top-level) board has TransformUtil.Path.empty().
@@ -77,15 +78,15 @@ class NetlistTransform(TransformUtil.Transform):
   def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
     # TODO may need rethought to support multi-board assemblies
     scope = self.scopes[path]  # including footprint and exports, and everything within a link
-    internal_scope = scope  # for link connections within this block, if this is a block
+    internal_scope = scope  # for internal blocks
 
     if isinstance(block, edgir.HierarchyBlock):
       if 'fp_is_wrapper' in block.meta.members.node:  # wrapper internal blocks ignored
         internal_scope = None
       for block_pair in block.blocks:
         self.scopes[path.append_block(block_pair.name)] = internal_scope
-      for link_pair in block.links:
-        self.scopes[path.append_link(link_pair.name)] = internal_scope
+      for link_pair in block.links:  # links considered to be the same scope as self
+        self.scopes[path.append_link(link_pair.name)] = scope
 
       # generate short paths for children first, for Blocks only
       main_internal_blocks: Dict[str, edgir.BlockLike] = {}

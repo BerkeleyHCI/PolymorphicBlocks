@@ -92,7 +92,7 @@ class Vl53l0xConnector(Vl53l0x, WrapperFootprintBlock):
   def generate(self):
     super().generate()
     self.footprint(
-      'J', 'Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical',
+      'J', 'Connector_PinSocket_2.54mm:PinSocket_1x06_P2.54mm_Vertical',
       {
         '1': self.pwr,
         '2': self.gnd,
