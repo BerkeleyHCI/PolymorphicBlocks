@@ -45,9 +45,14 @@ class BoardScope(NamedTuple):
   footprints: Dict[TransformUtil.Path, NetBlock]  # Path -> Block footprint
   edges: Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Port Path -> connected Port Paths
   pins: Dict[TransformUtil.Path, List[NetPin]]  # mapping from Port to pad
+  assert_connected: List[Tuple[TransformUtil.Path, TransformUtil.Path]]
+
+  @classmethod
+  def empty(cls, path: TransformUtil.Path):  # returns a fresh, empty BordScope
+    return BoardScope(path, {}, {}, {}, [])
+
 
 Scopes = Dict[TransformUtil.Path, Optional[BoardScope]]  # Block -> board scope (reference, aliased across entries)
-AssertConnected = List[Tuple[TransformUtil.Path, TransformUtil.Path]]
 ClassPaths = Dict[TransformUtil.Path, List[edgir.LibraryPath]]  # Path -> class names corresponding to shortened path name
 class NetlistTransform(TransformUtil.Transform):
   @staticmethod
@@ -61,10 +66,9 @@ class NetlistTransform(TransformUtil.Transform):
       raise ValueError(f"don't know how to flatten netlistable port {port}")
 
   def __init__(self, design: CompiledDesign):
-    self.all_scopes = [BoardScope(TransformUtil.Path.empty(), {}, {}, {})]  # list of unique scopes
+    self.all_scopes = [BoardScope.empty(TransformUtil.Path.empty())]  # list of unique scopes
     self.scopes: Scopes = {TransformUtil.Path.empty(): self.all_scopes[0]}
 
-    self.assert_connected: AssertConnected = []
     self.short_paths: Dict[TransformUtil.Path, List[str]] = {TransformUtil.Path.empty(): []}  # seed root
     self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
 
@@ -136,7 +140,7 @@ class NetlistTransform(TransformUtil.Transform):
         scope.edges.setdefault(dst_path, []).append(flat_srcs[0])
       for src_path in flat_srcs:  # assert all sources connected
         for dst_path in flat_srcs:
-          self.assert_connected.append((src_path, dst_path))  # TODO move into board scope
+          scope.assert_connected.append((src_path, dst_path))
 
     if 'fp_is_footprint' in block.meta.members.node and scope is not None:
       footprint_name = self.design.get_value(path.to_tuple() + ('fp_footprint',))
@@ -182,20 +186,21 @@ class NetlistTransform(TransformUtil.Transform):
         scope.edges.setdefault(src_path, [])  # make sure there is a port entry so single-pin nets are named
         scope.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
 
-    if internal_scope is not None:
-      for constraint_pair in block.constraints:
+    for constraint_pair in block.constraints:
+      if internal_scope is not None:
         if constraint_pair.value.HasField('connected'):
           self.process_connected(path, block, internal_scope, constraint_pair.value.connected)
-        elif constraint_pair.value.HasField('exported'):
-          self.process_exported(path, block, internal_scope, constraint_pair.value.exported)
-        elif constraint_pair.value.HasField('exportedTunnel'):
-          self.process_exported(path, block, internal_scope, constraint_pair.value.exportedTunnel)
         elif constraint_pair.value.HasField('connectedArray'):
           for expanded_connect in constraint_pair.value.connectedArray.expanded:
             self.process_connected(path, block, internal_scope, expanded_connect)
+      if scope is internal_scope and scope is not None:
+        if constraint_pair.value.HasField('exported'):
+          self.process_exported(path, block, scope, constraint_pair.value.exported)
         elif constraint_pair.value.HasField('exportedArray'):
           for expanded_export in constraint_pair.value.exportedArray.expanded:
-            self.process_exported(path, block, internal_scope, expanded_export)
+            self.process_exported(path, block, scope, expanded_export)
+        elif constraint_pair.value.HasField('exportedTunnel'):
+          self.process_exported(path, block, scope, constraint_pair.value.exportedTunnel)
 
   def process_connected(self, path: TransformUtil.Path, current: edgir.EltTypes, scope: BoardScope,
                         constraint: edgir.ConnectedExpr) -> None:
@@ -306,7 +311,7 @@ class NetlistTransform(TransformUtil.Transform):
       for pin in net:
         pin_to_net[pin] = net
 
-    for (connected1, connected2) in self.assert_connected:  # TODO restrict to scope
+    for (connected1, connected2) in scope.assert_connected:
       if pin_to_net[connected1] is not pin_to_net[connected2]:
         raise InvalidPackingException(f"packed pins {connected1}, {connected2} not connected")
 
