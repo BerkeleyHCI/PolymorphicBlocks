@@ -71,19 +71,17 @@ class NetlistTransform(TransformUtil.Transform):
     self.design = design
 
   def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
-    scope = self.scopes[path]
+    # TODO may need rethought to support multi-board assemblies
+    scope = self.scopes[path]  # including footprint and exports, and everything within a link
+    internal_scope = scope  # for link connections within this block, if this is a block
 
     if isinstance(block, edgir.HierarchyBlock):
       if 'fp_is_wrapper' in block.meta.members.node:  # wrapper internal blocks ignored
-        for block_pair in block.blocks:
-          self.scopes[path.append_block(block_pair.name)] = None
-        for link_pair in block.links:
-          self.scopes[path.append_link(link_pair.name)] = None
-      else:
-        for block_pair in block.blocks:
-          self.scopes[path.append_block(block_pair.name)] = scope
-        for link_pair in block.links:
-          self.scopes[path.append_link(link_pair.name)] = scope
+        internal_scope = None
+      for block_pair in block.blocks:
+        self.scopes[path.append_block(block_pair.name)] = internal_scope
+      for link_pair in block.links:
+        self.scopes[path.append_link(link_pair.name)] = internal_scope
 
       # generate short paths for children first, for Blocks only
       main_internal_blocks: Dict[str, edgir.BlockLike] = {}
@@ -184,20 +182,20 @@ class NetlistTransform(TransformUtil.Transform):
         scope.edges.setdefault(src_path, [])  # make sure there is a port entry so single-pin nets are named
         scope.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
 
-    if scope is not None:
+    if internal_scope is not None:
       for constraint_pair in block.constraints:
         if constraint_pair.value.HasField('connected'):
-          self.process_connected(path, block, scope, constraint_pair.value.connected)
+          self.process_connected(path, block, internal_scope, constraint_pair.value.connected)
         elif constraint_pair.value.HasField('exported'):
-          self.process_exported(path, block, scope, constraint_pair.value.exported)
+          self.process_exported(path, block, internal_scope, constraint_pair.value.exported)
         elif constraint_pair.value.HasField('exportedTunnel'):
-          self.process_exported(path, block, scope, constraint_pair.value.exportedTunnel)
+          self.process_exported(path, block, internal_scope, constraint_pair.value.exportedTunnel)
         elif constraint_pair.value.HasField('connectedArray'):
           for expanded_connect in constraint_pair.value.connectedArray.expanded:
-            self.process_connected(path, block, scope, expanded_connect)
+            self.process_connected(path, block, internal_scope, expanded_connect)
         elif constraint_pair.value.HasField('exportedArray'):
           for expanded_export in constraint_pair.value.exportedArray.expanded:
-            self.process_exported(path, block, scope, expanded_export)
+            self.process_exported(path, block, internal_scope, expanded_export)
 
   def process_connected(self, path: TransformUtil.Path, current: edgir.EltTypes, scope: BoardScope,
                         constraint: edgir.ConnectedExpr) -> None:
