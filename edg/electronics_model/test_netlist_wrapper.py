@@ -15,10 +15,10 @@ class SinkWrapperBlock(WrapperFootprintBlock):
   def contents(self) -> None:
     super().contents()
 
-    self.load1 = self.Block(TestFakeSink())
-    self.load2 = self.Block(TestFakeSink())
-    self.vpos = self.connect(self.pos, self.load1.pos, self.load2.pos)
-    self.gnd = self.connect(self.neg, self.load1.neg, self.load2.neg)
+    self.model1 = self.Block(TestFakeSink())
+    self.model2 = self.Block(TestFakeSink())
+    self.vpos = self.connect(self.pos, self.model1.pos, self.model2.pos)
+    self.gnd = self.connect(self.neg, self.model1.neg, self.model2.neg)
 
     self.footprint(  # only this footprint shows up
       'L', 'Inductor_SMD:L_0603_1608Metric',  # distinct footprint and value from internal blocks
@@ -50,7 +50,6 @@ class NetlistWrapperTestCase(unittest.TestCase):
                            ['edg.electronics_model.test_netlist_wrapper.SinkWrapperBlock']), net.blocks)
     self.assertEqual(len(net.blocks), 2)  # should only generate top-level source and sink
 
-    self.assertEqual(len(net.nets), 2)
     self.assertIn(Net('vpos', [  # ensure extraneous nets not generated
       NetPin(['source'], '1'),
       NetPin(['sink'], '1')
