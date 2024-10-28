@@ -18,8 +18,7 @@ def NetBlock(footprint: str, refdes: str, part: str, value: str, full_path: List
              class_path: List[str]) -> RawNetBlock:
   return RawNetBlock(footprint, refdes, part, value,
                      TransformUtil.Path(tuple(full_path), (), (), ()), path,
-                     [edgir.libpath(cls) for cls in class_path],
-                     TransformUtil.Path.empty())
+                     [edgir.libpath(cls) for cls in class_path])
 
 
 class TestFakeSource(FootprintBlock):
