@@ -212,7 +212,7 @@ class PcbBot(JlcBoardTop):
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
-        (Vl53l0xBase, Vl53l0xConnector),
+        (Vl53l0x, Vl53l0xConnector),
         (Speaker, ConnectorSpeaker),
         (Neopixel, Ws2812b),
       ],
