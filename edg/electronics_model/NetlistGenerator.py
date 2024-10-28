@@ -187,14 +187,13 @@ class NetlistTransform(TransformUtil.Transform):
         scope.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
 
     for constraint_pair in block.constraints:
-      if internal_scope is not None:
+      if scope is not None:
         if constraint_pair.value.HasField('connected'):
-          self.process_connected(path, block, internal_scope, constraint_pair.value.connected)
+          self.process_connected(path, block, scope, constraint_pair.value.connected)
         elif constraint_pair.value.HasField('connectedArray'):
           for expanded_connect in constraint_pair.value.connectedArray.expanded:
-            self.process_connected(path, block, internal_scope, expanded_connect)
-      if scope is internal_scope and scope is not None:
-        if constraint_pair.value.HasField('exported'):
+            self.process_connected(path, block, scope, expanded_connect)
+        elif constraint_pair.value.HasField('exported'):
           self.process_exported(path, block, scope, constraint_pair.value.exported)
         elif constraint_pair.value.HasField('exportedArray'):
           for expanded_export in constraint_pair.value.exportedArray.expanded:
