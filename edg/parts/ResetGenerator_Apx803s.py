@@ -4,7 +4,7 @@ from .JlcPart import JlcPart
 
 class Apx803s_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart):
     @init_in_parent
-    def __init__(self, reset_threshold: RangeLike = (2.59, 2.67)*Volt) -> None:
+    def __init__(self, reset_threshold: RangeLike) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
         self.vcc = self.Port(VoltageSink(
@@ -48,7 +48,7 @@ class Apx803s_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
 
 class Apx803s(Interface, Block):
     @init_in_parent
-    def __init__(self, reset_threshold: RangeLike) -> None:
+    def __init__(self, reset_threshold: RangeLike = (2.88, 2.98)*Volt) -> None:  # expanded range for FP precision
         super().__init__()
         self.ic = self.Block(Apx803s_Device(reset_threshold))  # datasheet doesn't require decaps
         self.pwr = self.Export(self.ic.vcc, [Power])

@@ -91,6 +91,16 @@ class FootprintBlock(Block):
       self.assign(self.fp_datasheet, '')
 
 
+class WrapperFootprintBlock(FootprintBlock):
+  """Block that has a footprint and optional internal contents, but the netlister ignores internal components.
+  Useful for, for example, a breakout board where the modelling details are provided by internal chip blocks,
+  but needs to show up as only a carrier board footprint.
+  EXPERIMENTAL - API SUBJECT TO CHANGE."""
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.fp_is_wrapper = self.Metadata("A")  # TODO replace with not metadata, eg superclass inspection
+
+
 @abstract_block
 class NetBlock(InternalBlock, NetBaseBlock, Block):
   def contents(self):

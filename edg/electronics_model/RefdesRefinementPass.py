@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Set
+from typing import List, Tuple, Dict, Set, Optional
 
 from .. import edgir
 from ..core import CompiledDesign, TransformUtil
@@ -23,18 +23,28 @@ class RefdesTransform(TransformUtil.Transform):
       assert isinstance(board_refdes_prefix, str)
       self.board_refdes_prefix = board_refdes_prefix
 
+    self.scopes: Dict[TransformUtil.Path, Optional[TransformUtil.Path]] = {
+      TransformUtil.Path.empty(): TransformUtil.Path.empty()
+    }
+
     self.block_refdes_list: List[Tuple[TransformUtil.Path, str]] = []  # populated in traversal order
-    self.seen_blocks: Set[TransformUtil.Path] = set()
-    self.refdes_last: Dict[str, int] = {}
+    self.refdes_last: Dict[Tuple[TransformUtil.Path, str], int] = {}  # (scope, prefix) -> num
 
   def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
-    if 'fp_is_footprint' in block.meta.members.node:
+    scope = self.scopes[context.path]
+    internal_scope = scope
+    if 'fp_is_wrapper' in block.meta.members.node:  # wrapper internal blocks ignored
+      internal_scope = None
+
+    for block_pair in block.blocks:
+      self.scopes[context.path.append_block(block_pair.name)] = internal_scope
+
+    if 'fp_is_footprint' in block.meta.members.node and scope is not None:
       refdes_prefix = self.design.get_value(context.path.to_tuple() + ('fp_refdes_prefix',))
       assert isinstance(refdes_prefix, str)
 
-      refdes_id = self.refdes_last.get(refdes_prefix, 0) + 1
-      self.refdes_last[refdes_prefix] = refdes_id
-      assert context.path not in self.seen_blocks
+      refdes_id = self.refdes_last.get((scope, refdes_prefix), 0) + 1
+      self.refdes_last[(scope, refdes_prefix)] = refdes_id
       self.block_refdes_list.append((context.path, self.board_refdes_prefix + refdes_prefix + str(refdes_id)))
 
   def run(self) -> List[Tuple[TransformUtil.Path, str]]:

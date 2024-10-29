@@ -393,10 +393,10 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
     elif isinstance(item, (int, float, FloatExpr)):
       return self._create_bool_op(FloatExpr._to_expr_type(item), self, OrdOp.within)
 
-  def intersect(self, other: RangeLike) -> RangeExpr:
+  def intersect(self, other: Union[RangeLike, FloatLike]) -> RangeExpr:
     return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.intersection)
 
-  def hull(self, other: RangeLike) -> RangeExpr:
+  def hull(self, other: Union[RangeLike, FloatLike]) -> RangeExpr:
     return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.hull)
 
   def lower(self) -> FloatExpr:

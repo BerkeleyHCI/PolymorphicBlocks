@@ -93,7 +93,6 @@ class Ov2640_Fpc24(Ov2640, GeneratorBlock):
         self.dovdd_cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))\
             .connected(self.device.dgnd, self.device.dovdd)
 
-        self.reset_pull = self.Block(PullupResistor(10*kOhm(tol=0.05))).connected(self.pwr, self.device.reset)
         self.reset_cap = self.Block(Capacitor(capacitance=0.1*uFarad(tol=0.2), voltage=self.pwr.link().voltage))
         self.connect(self.reset_cap.neg.adapt_to(Ground()), self.gnd)
         self.connect(self.reset_cap.pos.adapt_to(DigitalSink()), self.device.reset)
@@ -122,3 +121,5 @@ class Ov2640_Fpc24(Ov2640, GeneratorBlock):
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.device.reset)
+        else:
+            self.reset_pull = self.Block(PullupResistor(10*kOhm(tol=0.05))).connected(self.pwr, self.device.reset)

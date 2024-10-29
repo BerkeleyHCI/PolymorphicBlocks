@@ -25,7 +25,8 @@ from .ESeriesUtil import ESeriesUtil
 from .SelectorArea import SelectorArea, PartsTableAreaSelector, FootprintAreaTable
 
 from .AbstractDevices import Battery
-from .AbstractConnector import BananaJack, BananaSafetyJack, RfConnector, RfConnectorTestPoint, UflConnector
+from .AbstractConnector import BananaJack, BananaSafetyJack, RfConnector, RfConnectorTestPoint, RfConnectorAntenna,\
+    UflConnector, SmaConnector, SmaMConnector, SmaFConnector
 from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
 from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor, AnalogClampResistor
@@ -38,8 +39,9 @@ from .AbstractFerriteBead import FerriteBead, FerriteBeadStandardFootprint, Tabl
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, VoltageSenseDivider
 from .ResistiveDivider import FeedbackVoltageDivider, SignalDivider
 from .PassiveFilters import LowPassRc, AnalogLowPassRc, DigitalLowPassRc, DigitalLowPassRcArray, LowPassRcDac, PullupDelayRc
-from .RfNetworks import PiLowPassFilter
+from .RfNetworks import DiscreteRfWarning, LLowPassFilter, LHighPassFilter, LLowPassFilterWith2HNotch, PiLowPassFilter
 from .I2cPullup import I2cPullup
+from .LevelShifter import BidirectionaLevelShifter
 from .Resettable import Resettable
 
 from .AbstractDiodes import BaseDiode, Diode, DiodeStandardFootprint, TableDiode

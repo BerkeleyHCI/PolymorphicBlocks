@@ -208,11 +208,12 @@ class PcbBot(JlcBoardTop):
         ]),
 
         (['prot_batt', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),  # big diodes to dissipate more power
+        (['reg_3v3', 'ic', 'actual_dropout'], Range(0.0, 0.3))  # tighter dropout from lower current draw
       ],
       class_refinements=[
         (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
         (TestPoint, CompactKeystone5015),
-        (Vl53l0xBase, Vl53l0xConnector),
+        (Vl53l0x, Vl53l0xConnector),
         (Speaker, ConnectorSpeaker),
         (Neopixel, Ws2812b),
       ],

@@ -2,47 +2,31 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Vl53l0x_DeviceBase():
-  """Shared common definitions for VL53L0x devices"""
-  @staticmethod
-  def _vdd_model() -> VoltageSink:
-    return VoltageSink(
-      voltage_limits=(2.6, 3.5) * Volt,
-      current_draw=(3, 40000) * uAmp  # up to 40mA including VCSEL when ranging
-    )
-
-  @staticmethod
-  def _gpio_model(vss: Port[GroundLink], vdd: Port[VoltageLink]) -> DigitalBidir:
-    # TODO: the datasheet references values to IOVDD, but the value of IOVDD is never stated.
-    # This model assumes that IOVDD = Vdd
-    return DigitalBidir.from_supply(
-      vss, vdd,
-      voltage_limit_abs=(-0.5, 3.6),  # not referenced to Vdd!
-      input_threshold_factor=(0.3, 0.7),
-    )
-
-  @staticmethod
-  def _i2c_io_model(vss: Port[GroundLink], vdd: Port[VoltageLink]) -> DigitalBidir:
-    return DigitalBidir.from_supply(
-      vss, vdd,
-      voltage_limit_abs=(-0.5, 3.6),  # not referenced to Vdd!
-      input_threshold_abs=(0.6, 1.12),
-    )
-
-
-class Vl53l0x_Device(Vl53l0x_DeviceBase, InternalSubcircuit, JlcPart, FootprintBlock):
+class Vl53l0x_Device(InternalSubcircuit, JlcPart, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
-    self.vdd = self.Port(self._vdd_model(), [Power])
+    self.vdd = self.Port(VoltageSink(
+      voltage_limits=(2.6, 3.5) * Volt,
+      current_draw=(3, 40000) * uAmp  # up to 40mA including VCSEL when ranging
+    ), [Power])
     self.vss = self.Port(Ground(), [Common])
 
-    gpio_model = self._gpio_model(self.vss, self.vdd)
+    # TODO: the datasheet references values to IOVDD, but the value of IOVDD is never stated.
+    gpio_model = DigitalBidir.from_supply(  # This model assumes that IOVDD = Vdd
+      self.vss, self.vdd,
+      voltage_limit_abs=(-0.5, 3.6),  # not referenced to Vdd!
+      input_threshold_factor=(0.3, 0.7),
+    )
     self.xshut = self.Port(DigitalSink.from_bidir(gpio_model))
     self.gpio1 = self.Port(DigitalSingleSource.low_from_supply(self.vss), optional=True)
 
     # TODO: support addresses, the default is 0x29 though it's software remappable
-    self.i2c = self.Port(I2cTarget(self._i2c_io_model(self.vss, self.vdd)), [Output])
+    self.i2c = self.Port(I2cTarget(DigitalBidir.from_supply(
+      self.vss, self.vdd,
+      voltage_limit_abs=(-0.5, 3.6),  # not referenced to Vdd!
+      input_threshold_abs=(0.6, 1.12),
+    )), [Output])
 
   def contents(self):
     super().contents()
@@ -69,66 +53,19 @@ class Vl53l0x_Device(Vl53l0x_DeviceBase, InternalSubcircuit, JlcPart, FootprintB
     self.assign(self.actual_basic_part, False)
 
 
-@abstract_block_default(lambda: Vl53l0x)
-class Vl53l0xBase(Resettable, DistanceSensor, Block):
-  """Abstract base class for VL53L0x devices"""
-  def __init__(self) -> None:
+class Vl53l0x(DistanceSensor, Resettable, GeneratorBlock):
+  """Time-of-flight laser ranging sensor, up to 2m"""
+  def __init__(self):
     super().__init__()
+    self.ic = self.Block(Vl53l0x_Device())
+    self.gnd = self.Export(self.ic.vss, [Common])
+    self.pwr = self.Export(self.ic.vdd, [Power])
 
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr = self.Port(VoltageSink.empty(), [Power])
+    self.i2c = self.Export(self.ic.i2c)
 
-    self.i2c = self.Port(I2cTarget.empty())
     self.int = self.Port(DigitalSingleSource.empty(), optional=True,
                          doc="Interrupt output for new data available")
-
-
-class Vl53l0xConnector(Vl53l0x_DeviceBase, Vl53l0xBase, GeneratorBlock):
-  """Connector to an external VL53L0X breakout board.
-  Uses the pinout from the Adafruit product: https://www.adafruit.com/product/3317
-  This has an onboard 2.8v regulator, but thankfully the IO tolerance is not referenced to Vdd"""
-  def contents(self):
-    super().contents()
     self.generator_param(self.reset.is_connected(), self.int.is_connected())
-
-  def generate(self):
-    super().generate()
-    self.conn = self.Block(PassiveConnector(length=6))
-    self.connect(self.pwr, self.conn.pins.request('1').adapt_to(self._vdd_model()))
-    self.connect(self.gnd, self.conn.pins.request('2').adapt_to(Ground()))
-
-    i2c_io_model = self._i2c_io_model(self.gnd, self.pwr)
-    self.connect(self.i2c.scl, self.conn.pins.request('3').adapt_to(i2c_io_model))
-    self.connect(self.i2c.sda, self.conn.pins.request('4').adapt_to(i2c_io_model))
-    self.i2c.init_from(I2cTarget(DigitalBidir.empty(), []))
-
-    gpio_model = self._gpio_model(self.gnd, self.pwr)
-    if self.get(self.reset.is_connected()):
-      self.connect(self.reset, self.conn.pins.request('6').adapt_to(gpio_model))
-    else:
-      self.connect(self.pwr.as_digital_source(), self.conn.pins.request('6').adapt_to(gpio_model))
-
-    if self.get(self.int.is_connected()):
-      self.connect(self.int, self.conn.pins.request('5').adapt_to(
-        DigitalSingleSource.low_from_supply(self.gnd)
-      ))
-
-
-class Vl53l0x(Vl53l0xBase, GeneratorBlock):
-  """Time-of-flight laser ranging sensor, up to 2m"""
-  def contents(self):
-    super().contents()
-    self.ic = self.Block(Vl53l0x_Device())
-    self.connect(self.pwr, self.ic.vdd)
-    self.connect(self.gnd, self.ic.vss)
-
-    self.connect(self.i2c, self.ic.i2c)
-    self.generator_param(self.reset.is_connected(), self.int.is_connected())
-
-    # Datasheet Figure 3, two decoupling capacitors
-    self.vdd_cap = ElementDict[DecouplingCapacitor]()
-    self.vdd_cap[0] = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
-    self.vdd_cap[1] = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
   def generate(self):
     super().generate()
@@ -139,6 +76,33 @@ class Vl53l0x(Vl53l0xBase, GeneratorBlock):
 
     if self.get(self.int.is_connected()):
       self.connect(self.int, self.ic.gpio1)
+
+    # Datasheet Figure 3, two decoupling capacitors
+    self.vdd_cap = ElementDict[DecouplingCapacitor]()
+    self.vdd_cap[0] = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+    self.vdd_cap[1] = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+
+
+class Vl53l0xConnector(Vl53l0x, WrapperFootprintBlock):
+  """Connector to an external VL53L0X breakout board.
+  Uses the pinout from the Adafruit product: https://www.adafruit.com/product/3317
+  This has an onboard 2.8v regulator, but thankfully the IO tolerance is not referenced to Vdd
+
+  TODO: not completely correct that this should extend the application circuit"""
+  def generate(self):
+    super().generate()
+    self.footprint(
+      'J', 'Connector_PinSocket_2.54mm:PinSocket_1x06_P2.54mm_Vertical',
+      {
+        '1': self.pwr,
+        '2': self.gnd,
+        '3': self.i2c.scl,
+        '4': self.i2c.sda,
+        '5': self.ic.gpio1,
+        '6': self.ic.xshut
+      },
+    )
+
 
 class Vl53l0xArray(DistanceSensor, GeneratorBlock):
   """Array of Vl53l0x with common I2C but individually exposed XSHUT pins and optionally GPIO1 (interrupt)."""
@@ -158,9 +122,9 @@ class Vl53l0xArray(DistanceSensor, GeneratorBlock):
 
   def generate(self):
     super().generate()
-    self.elt = ElementDict[Vl53l0xBase]()
+    self.elt = ElementDict[Vl53l0x]()
     for elt_i in range(self.get(self.count)):
-      elt = self.elt[str(elt_i)] = self.Block(Vl53l0xBase())
+      elt = self.elt[str(elt_i)] = self.Block(Vl53l0x())
       self.connect(self.pwr, elt.pwr)
       self.connect(self.gnd, elt.gnd)
       self.connect(self.i2c, elt.i2c)

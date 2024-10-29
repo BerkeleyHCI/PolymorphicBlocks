@@ -18,3 +18,18 @@ class Bwipx_1_001e(RfConnectorTestPoint, UflConnector, JlcPart, FootprintBlock):
         )
         self.assign(self.lcsc_part, 'C496552')
         self.assign(self.actual_basic_part, False)
+
+
+class Amphenol901143(SmaFConnector, FootprintBlock):
+    """PTH right-angle SMA-F connector"""
+    def contents(self):
+        super().contents()
+        self.footprint(
+            'J', 'Connector_Coaxial:SMA_Amphenol_901-143_Horizontal',
+            {
+                '1': self.sig,
+                '2': self.gnd,
+            },
+            mfr='Amphenol RF', part='901-143',
+            datasheet='https://s3-us-west-2.amazonaws.com/catsy.582/C901-143.pdf'
+        )

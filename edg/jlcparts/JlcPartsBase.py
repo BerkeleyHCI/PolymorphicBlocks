@@ -73,7 +73,7 @@ class JlcPartsStockFile(RootModel):
     root: dict[str, int]  # LCSC to stock level
 
 
-class JlcPartsBase(JlcPart, PartsTableFootprintFilter):
+class JlcPartsBase(JlcPart, PartsTableAreaSelector, PartsTableFootprintFilter):
     """Base class parsing parts from https://github.com/yaqwsx/jlcparts"""
     _config_parts_root_dir: Optional[str] = None
     _config_min_stock: int = 250
@@ -148,8 +148,6 @@ class JlcPartsBase(JlcPart, PartsTableFootprintFilter):
                 row_dict[cls.COST_COL] = JlcPartsPrice(component[price_index]).for_min_qty()
 
                 attributes = JlcPartsAttributes(**component[attributes_index])
-                if attributes.get("Status", str) in ["Discontinued"]:
-                    continue
                 row_dict[cls.BASIC_PART_COL] = attributes.get("Basic/Extended", str) == "Basic"
                 row_dict[cls.MANUFACTURER_COL] = attributes.get("Manufacturer", str)
 
@@ -162,7 +160,7 @@ class JlcPartsBase(JlcPart, PartsTableFootprintFilter):
 
     @classmethod
     def _row_sort_by(cls, row: PartsTableRow) -> Any:
-        return [row[cls.BASIC_PART_COL], FootprintAreaTable.area_of(row[cls.KICAD_FOOTPRINT]), row[cls.COST_COL]]
+        return [not row[cls.BASIC_PART_COL], FootprintAreaTable.area_of(row[cls.KICAD_FOOTPRINT]), row[cls.COST_COL]]
 
     def _row_generate(self, row: PartsTableRow) -> None:
         super()._row_generate(row)

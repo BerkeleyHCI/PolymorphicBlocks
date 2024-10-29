@@ -44,6 +44,9 @@ PART_ROTATIONS = {
   'C126830': 90,  # "SOT-23" USB ESD protector
   'C6568': -90,  # CP2102 USB UART
   'C976032': -90,  # LGA-16 QMC5883L
+  'C3303790': -90,  # PN7160 QFN
+  'C191341': -90,  # SX1262
+  'C470892': -90,  # PE4259
 
   'C650309': -90,  # AD5941
 
@@ -144,8 +147,8 @@ PACKAGE_ROTATIONS = {footprint.split(':')[-1]: rot for footprint, rot in _FOOTPR
 PART_OFFSETS: Dict[str, Tuple[float, float]] = {
   'C262669': (0, -0.5),  # AFC01 FPC 24
   'C262671': (0, -0.5),  # AFC01 FPC 30
-  'C262643': (0, -1),  # AFC07 FPC 24
-  'C262645': (0, -1),  # AFC07 FPC 30
+  'C262643': (0, -0.7),  # AFC07 FPC 24
+  'C262645': (0, -0.7),  # AFC07 FPC 30
   'C110293': (0, 0.1),  # SKRTLAE010 R/A switch
   'C116648': (0, 2.1),  # EC05E1220401
 

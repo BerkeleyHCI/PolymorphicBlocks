@@ -19,7 +19,8 @@ class Antenna(Interface, Block):
     self.power = self.ArgParameter(power)
     self.actual_power_rating = self.Parameter(RangeExpr())
 
-    self.a = self.Port(Passive.empty())
+    self.a = self.Port(Passive.empty(), [Input])
+    self.gnd = self.Port(Ground.empty(), [Common])
 
 
 @non_library

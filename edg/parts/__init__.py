@@ -57,7 +57,7 @@ from .DebugHeaders import SwdCortexTargetHeader
 from .DebugHeaders import SwdCortexTargetTc2050, SwdCortexTargetTagConnect, SwdCortexTargetTc2050
 from .SdCards import SdCard, SdSocket, MicroSdSocket, Dm3btDsfPejs, Molex1040310811
 
-from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Ap7215, Xc6206p, Xc6209, Ap2210, Lp5907, L78l
+from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Ap7215, Xc6206p, Xc6209, Ap2210, Lp5907, Tlv757p, L78l
 from .VoltageReferences import Ref30xx
 from .BuckConverter_TexasInstruments import Tps561201, Tps54202h
 from .BuckConverter_Ap3418 import Ap3418
@@ -98,7 +98,7 @@ from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbAPlugPads, UsbMicroBRec
 from .UsbPorts import Tpd2e009, Pesd5v0x1bt, Pgb102st23
 from .Fusb302b import Fusb302b
 from .Connector_Banana import Ct3151, Fcr7350
-from .Connector_Rf import Bwipx_1_001e
+from .Connector_Rf import Bwipx_1_001e, Amphenol901143
 
 from .TestPoint_Keystone import Keystone5015, CompactKeystone5015, Keystone5000
 from .TestPoint_Rc import TeRc
@@ -134,7 +134,7 @@ from .CurrentSense_Ad8418 import Ad8418a
 from .Ina219 import Ina219
 from .BatteryProtector_S8261A import S8261A
 from .BatteryCharger_Mcp73831 import Mcp73831
-from .Distance_Vl53l0x import Vl53l0xBase, Vl53l0x, Vl53l0xConnector, Vl53l0xArray
+from .Distance_Vl53l0x import Vl53l0x, Vl53l0xConnector, Vl53l0xArray
 from .Isolator_Cbmud1200 import Cbmud1200l
 from .GateDriver_Ir2301 import Ir2301
 from .GateDriver_Ucc27282 import Ucc27282
@@ -145,6 +145,8 @@ from .UsbUart_Cp2102 import Cp2102
 from .UsbInterface_Ft232h import Ft232hl
 from .Logic_74Ahct import L74Ahct1g125
 from .Logic_74Lvc import Sn74lvc1g74
+from .Rf_Sx1262 import Sx1262
+from .Rf_Pn7160 import Pn7160
 from .Comparator_Lmv331 import Lmv331
 from .Camera_Ov2640_Fpc24 import Ov2640, Ov2640_Fpc24
 
@@ -155,7 +157,7 @@ from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, Mount
 from .MotorDriver_L293dd import L293dd
 from .MotorDriver_Drv8833 import Drv8833
 from .Bldc_Drv8313 import Drv8313
-from .StepperDriver_A4988 import A4988
+from .StepperDriver_A4988 import A4988, PololuA4988
 
 from .Imu_Lsm6ds3trc import Lsm6ds3trc
 from .Mag_Qmc5883l import Qmc5883l
@@ -164,6 +166,7 @@ from .EnvironmentalSensor_Bme680 import Bme680
 from .EnvironmentalSensor_Ti import Hdc1080, Tmp1075n
 from .LightSensor_Bh1750 import Bh1750
 from .LightSensor_As7341 import As7341
+from .ThermalSensor_FlirLepton import FlirLepton
 
 from .LedMatrix import CharlieplexedLedMatrix
 from .SwitchMatrix import SwitchMatrix
