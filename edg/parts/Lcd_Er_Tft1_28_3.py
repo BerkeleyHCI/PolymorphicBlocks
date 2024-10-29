@@ -1,6 +1,5 @@
-from edg.parts.PassiveConnector_Fpc import Fpc050Bottom
-from edg import *
-from edg.abstract_parts import *
+from .PassiveConnector_Fpc import Fpc050Bottom
+from ..abstract_parts import *
 
 
 class Er_Tft_128_3_Outline(InternalSubcircuit, FootprintBlock):
