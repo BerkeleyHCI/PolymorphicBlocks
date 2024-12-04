@@ -49,7 +49,7 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.miso_nc = self.Block(DigitalBidirNotConnected())
         self.connect(self.spi.miso, self.miso_nc.port)
 
-        self.rst = self.Export(self.conn.pins.request('7').adapt_to(DigitalSink.from_bidir((dio_model))))
+        self.rst = self.Export(self.conn.pins.request('7').adapt_to(DigitalSink.from_bidir(dio_model)))
 
         # Capacitive Touch Panel (CTP)
         self.ctp_i2c = self.Port(I2cTarget(DigitalBidir.empty(), addresses=[0x15]),)
