@@ -1009,6 +1009,17 @@
 		)
 		(uuid "bfa3573a-eb53-451f-aaaf-55f7da5dfebc")
 	)
+	(text "note, switch has\nnonzero impedance"
+		(exclude_from_sim no)
+		(at 101.6 143.764 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c0f9d1f9-6f85-4c88-b2e4-3fee277296df")
+	)
 	(global_label "pwr_in"
 		(shape input)
 		(at 90.17 114.3 180)
