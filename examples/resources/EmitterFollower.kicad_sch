@@ -5,343 +5,6 @@
 	(uuid "b55f6c44-5d5d-4524-bb86-893662f64598")
 	(paper "A4")
 	(lib_symbols
-		(symbol "Analog_Switch:DG9421DV"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "U"
-				(at -3.683 5.334 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Value" "DG9421DV"
-				(at -3.683 3.556 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Footprint" "Package_SO:TSOP-6_1.65x3.05mm_P0.95mm"
-				(at 0 -2.54 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://www.vishay.com/docs/70679/dg9421.pdf"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Single SPST Precision Low-Voltage, Low-Glitch CMOS Analog Switch, normally ON, 2Ohm Ron, TSOP-6"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "CMOS Analog Switch"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "TSOP*1.65x3.05mm*P0.95mm*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "DG9421DV_1_1"
-				(rectangle
-					(start -3.81 2.54)
-					(end 3.81 -2.54)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(circle
-					(center -2.159 0)
-					(radius 0.508)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -5.08 0) (xy -2.794 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 0.762) (xy 2.54 0.762)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -2.54) (xy 0 -2.032)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -1.778) (xy 0 -1.524)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -1.27) (xy 0 -1.016)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -0.762) (xy 0 -0.508)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -0.254) (xy 0 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 0.254) (xy 0 0.508)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 5.08 0) (xy 2.794 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.159 0)
-					(radius 0.508)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -7.62 0 0)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 0 180)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 0 -5.08 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(symbol "DG9421DV_2_0"
-				(pin power_in line
-					(at 0 12.7 270)
-					(length 2.54)
-					(name "V+"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 2.54 -12.7 90)
-					(length 2.54)
-					(name "V-"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -12.7 90)
-					(length 2.54)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(symbol "DG9421DV_2_1"
-				(rectangle
-					(start -3.81 10.16)
-					(end 6.35 -10.16)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-			)
-		)
 		(symbol "Device:D_Zener"
 			(pin_numbers hide)
 			(pin_names
@@ -1179,6 +842,203 @@
 				)
 			)
 		)
+		(symbol "edg_importable:Mux2"
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at -2.54 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Mux2"
+				(at -5.08 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "SOT* SG-*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Mux2_0_1"
+				(polyline
+					(pts
+						(xy -1.27 -1.905) (xy -1.27 -3.81)
+					)
+					(stroke
+						(width 0.5)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.54 1.27) (xy -2.54 -1.27) (xy 2.54 -3.81) (xy 2.54 0.635) (xy 2.54 1.27) (xy 2.54 1.905)
+						(xy 2.54 3.81) (xy -2.54 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "Mux2_1_1"
+				(pin input line
+					(at -1.27 -3.81 90)
+					(length 1.905)
+					(name "S"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number ""
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 1.27 5.08 270)
+					(length 1.905)
+					(name "V+"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number ""
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 1.27 -5.08 90)
+					(length 1.905)
+					(name "V-"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number ""
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 1.27 180)
+					(length 2.54)
+					(name "~"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -1.27 180)
+					(length 2.54)
+					(name "~"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "~"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "C"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+			)
+		)
 	)
 	(junction
 		(at 114.3 95.25)
@@ -1193,6 +1053,12 @@
 		(uuid "7010e156-24e5-4947-92cc-a3f5143dc71e")
 	)
 	(junction
+		(at 93.98 107.95)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "79e7bae7-a018-40a3-9ac2-c3a4ad803933")
+	)
+	(junction
 		(at 114.3 92.71)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1205,16 +1071,18 @@
 		(uuid "9cdef6c4-5387-438c-94e2-c0d5b5a8a386")
 	)
 	(junction
-		(at 93.98 87.63)
+		(at 93.98 82.55)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "c124453d-1e19-4e9b-a117-7a36660b47c1")
+		(uuid "a990067a-db8f-4e51-b951-d14e1c013e64")
 	)
-	(junction
-		(at 93.98 102.87)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "c3c2912f-da28-4aa5-92c6-5f9d96b38a3d")
+	(no_connect
+		(at 83.82 106.68)
+		(uuid "841480d0-a69b-4a28-b810-3d0196d39141")
+	)
+	(no_connect
+		(at 83.82 81.28)
+		(uuid "a5da3b09-258d-4e78-978e-ef670744b5e6")
 	)
 	(wire
 		(pts
@@ -1228,7 +1096,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 102.87) (xy 78.74 102.87)
+			(xy 76.2 109.22) (xy 83.82 109.22)
 		)
 		(stroke
 			(width 0)
@@ -1238,7 +1106,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 99.06) (xy 93.98 99.06)
+			(xy 99.06 104.14) (xy 93.98 104.14)
 		)
 		(stroke
 			(width 0)
@@ -1248,7 +1116,7 @@
 	)
 	(wire
 		(pts
-			(xy 114.3 110.49) (xy 114.3 107.95)
+			(xy 114.3 115.57) (xy 114.3 113.03)
 		)
 		(stroke
 			(width 0)
@@ -1258,7 +1126,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 90.17) (xy 93.98 90.17)
+			(xy 99.06 86.36) (xy 93.98 86.36)
 		)
 		(stroke
 			(width 0)
@@ -1268,7 +1136,7 @@
 	)
 	(wire
 		(pts
-			(xy 93.98 102.87) (xy 106.68 102.87)
+			(xy 93.98 107.95) (xy 106.68 107.95)
 		)
 		(stroke
 			(width 0)
@@ -1278,7 +1146,7 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 90.17) (xy 111.76 90.17)
+			(xy 106.68 86.36) (xy 111.76 86.36)
 		)
 		(stroke
 			(width 0)
@@ -1288,13 +1156,23 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 95.25) (xy 76.2 102.87)
+			(xy 76.2 95.25) (xy 76.2 109.22)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "4003ec07-b808-4d08-9ee6-172addd0ee9a")
+	)
+	(wire
+		(pts
+			(xy 114.3 102.87) (xy 114.3 97.79)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5be3b69c-2ccd-4f48-a0a1-4923f54f9885")
 	)
 	(wire
 		(pts
@@ -1318,7 +1196,7 @@
 	)
 	(wire
 		(pts
-			(xy 93.98 99.06) (xy 93.98 102.87)
+			(xy 93.98 104.14) (xy 93.98 107.95)
 		)
 		(stroke
 			(width 0)
@@ -1328,7 +1206,7 @@
 	)
 	(wire
 		(pts
-			(xy 111.76 99.06) (xy 111.76 97.79)
+			(xy 111.76 104.14) (xy 111.76 97.79)
 		)
 		(stroke
 			(width 0)
@@ -1338,7 +1216,7 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 99.06) (xy 111.76 99.06)
+			(xy 106.68 104.14) (xy 111.76 104.14)
 		)
 		(stroke
 			(width 0)
@@ -1348,7 +1226,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 87.63) (xy 76.2 87.63)
+			(xy 83.82 83.82) (xy 76.2 83.82)
 		)
 		(stroke
 			(width 0)
@@ -1378,7 +1256,7 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 87.63) (xy 93.98 87.63)
+			(xy 106.68 82.55) (xy 93.98 82.55)
 		)
 		(stroke
 			(width 0)
@@ -1398,7 +1276,7 @@
 	)
 	(wire
 		(pts
-			(xy 111.76 90.17) (xy 111.76 92.71)
+			(xy 111.76 86.36) (xy 111.76 92.71)
 		)
 		(stroke
 			(width 0)
@@ -1428,7 +1306,7 @@
 	)
 	(wire
 		(pts
-			(xy 93.98 90.17) (xy 93.98 87.63)
+			(xy 93.98 86.36) (xy 93.98 82.55)
 		)
 		(stroke
 			(width 0)
@@ -1438,7 +1316,7 @@
 	)
 	(wire
 		(pts
-			(xy 114.3 80.01) (xy 114.3 82.55)
+			(xy 114.3 74.93) (xy 114.3 77.47)
 		)
 		(stroke
 			(width 0)
@@ -1458,7 +1336,17 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 87.63) (xy 76.2 95.25)
+			(xy 114.3 87.63) (xy 114.3 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fd5800c8-69de-467a-9a6f-a84269c0fa2a")
+	)
+	(wire
+		(pts
+			(xy 76.2 83.82) (xy 76.2 95.25)
 		)
 		(stroke
 			(width 0)
@@ -1488,53 +1376,9 @@
 			)
 		)
 	)
-	(global_label "pwr_gate_neg"
-		(shape input)
-		(at 101.6 121.92 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "1506ef9e-4db2-4011-a7f6-191fba7e4c5d")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 117.285 121.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "gnd"
 		(shape input)
-		(at 101.6 124.46 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "2480d41c-ebf0-45cc-a62d-2eebfa916060")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 108.0322 124.46 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "high_gate"
-		(shape input)
-		(at 86.36 92.71 180)
+		(at 87.63 113.03 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1542,9 +1386,31 @@
 			)
 			(justify right)
 		)
-		(uuid "321789b4-d90c-4eff-bae0-ad26ccb76715")
+		(uuid "15126e4e-b3dc-43da-9fa5-aca7e50c9708")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 74.2431 92.71 0)
+			(at 81.1978 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "pwr_gate_pos"
+		(shape input)
+		(at 87.63 77.47 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "51f95ccf-df7a-47e7-b7c3-131fd806a61b")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 72.0055 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1576,31 +1442,9 @@
 			)
 		)
 	)
-	(global_label "pwr_gate_neg"
-		(shape input)
-		(at 101.6 137.16 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "5db92f9a-545c-4487-a0a7-20758459c72d")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 117.285 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "gnd"
 		(shape input)
-		(at 114.3 110.49 180)
+		(at 114.3 115.57 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1610,7 +1454,7 @@
 		)
 		(uuid "93188758-51f1-486b-82a3-bc65c01e894c")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 108.4398 110.4106 0)
+			(at 108.4398 115.4906 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1622,7 +1466,7 @@
 	)
 	(global_label "pwr"
 		(shape input)
-		(at 114.3 80.01 180)
+		(at 114.3 74.93 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1632,7 +1476,7 @@
 		)
 		(uuid "9d6ea499-c2d9-42f7-b353-3c544df4396f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 108.6212 79.9306 0)
+			(at 108.6212 74.8506 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1644,7 +1488,7 @@
 	)
 	(global_label "pwr_gate_pos"
 		(shape input)
-		(at 76.2 124.46 180)
+		(at 87.63 102.87 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1652,9 +1496,9 @@
 			)
 			(justify right)
 		)
-		(uuid "b068ff03-beeb-4143-b925-4a32e93249a8")
+		(uuid "9eb8efb4-ee33-41e4-b285-8be2f9e4d31d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 60.5755 124.46 0)
+			(at 72.0055 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1666,29 +1510,7 @@
 	)
 	(global_label "gnd"
 		(shape input)
-		(at 101.6 139.7 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "cc58eb9e-1b8b-4b0e-930e-9a5a624e55be")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 108.0322 139.7 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "low_gate"
-		(shape input)
-		(at 86.36 107.95 180)
+		(at 87.63 87.63 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1696,9 +1518,9 @@
 			)
 			(justify right)
 		)
-		(uuid "d28dbe96-aca0-45db-8109-8e194a2aeb96")
+		(uuid "d2ac8e8c-e2a1-4785-b5cc-32a2b08fbe1a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 75.1502 107.95 0)
+			(at 81.1978 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1708,25 +1530,84 @@
 			)
 		)
 	)
-	(global_label "pwr_gate_pos"
-		(shape input)
-		(at 76.2 139.7 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "eb404c97-bd2f-4aa1-8bf4-871b881ad87f")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 60.5755 139.7 0)
+	(symbol
+		(lib_name "edg_importable:Mux2")
+		(lib_id "edg_importable:Mux2")
+		(at 88.9 107.95 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "08b71093-5a3e-4024-9de2-48ca45ff18fa")
+		(property "Reference" "high_gate"
+			(at 88.9 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
+			)
+		)
+		(property "Value" "#AnalogMuxer()"
+			(at 88.9 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 88.9 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 88.9 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 88.9 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin ""
+			(uuid "39916852-1856-4a3a-8364-46d5485a0d2a")
+		)
+		(pin ""
+			(uuid "0b4a7e84-09e5-49c9-8f5f-8d6f5e8b6ea6")
+		)
+		(pin ""
+			(uuid "0907fcd1-a54f-4b88-8907-357138e125ff")
+		)
+		(pin "1"
+			(uuid "66abd2a5-1dee-4d7b-84a3-71e1180b4866")
+		)
+		(pin "2"
+			(uuid "7a54a992-e45a-45cd-b324-64c3b62b3e2b")
+		)
+		(pin "C"
+			(uuid "882050eb-4c3f-4d03-a38c-de31d04e06bf")
+		)
+		(instances
+			(project "EmitterFollower"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "high_gate")
+					(unit 1)
+				)
 			)
 		)
 	)
@@ -1798,87 +1679,8 @@
 		)
 	)
 	(symbol
-		(lib_id "Analog_Switch:DG9421DV")
-		(at 88.9 124.46 90)
-		(unit 2)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "3267bdb7-8690-47df-8744-fd4337e0a9e3")
-		(property "Reference" "high_gate"
-			(at 88.9 116.84 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "~"
-			(at 88.9 116.84 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_SO:TSOP-6_1.65x3.05mm_P0.95mm"
-			(at 91.44 124.46 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.vishay.com/docs/70679/dg9421.pdf"
-			(at 88.9 124.46 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Single SPST Precision Low-Voltage, Low-Glitch CMOS Analog Switch, normally ON, 2Ohm Ron, TSOP-6"
-			(at 88.9 124.46 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "21d98b90-608d-4743-a18b-1c2167a129e0")
-		)
-		(pin "1"
-			(uuid "6a817172-0c13-4077-aa13-b6b5a104dcab")
-		)
-		(pin "5"
-			(uuid "927f0ee4-4f7e-472c-a3f3-702974dc5c6a")
-		)
-		(pin "3"
-			(uuid "c417845c-f95a-4dea-aa1a-09d7d5832ccd")
-		)
-		(pin "6"
-			(uuid "f4895e85-39f6-43dc-b41d-a902e2832245")
-		)
-		(pin "4"
-			(uuid "645522e8-38f2-4305-8d0e-f312188a1834")
-		)
-		(instances
-			(project "EmitterFollower"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "high_gate")
-					(unit 2)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:Q_PMOS_DGS")
-		(at 111.76 102.87 0)
+		(at 111.76 107.95 0)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -1887,7 +1689,7 @@
 		(dnp no)
 		(uuid "4942b8c6-1376-4a43-aecf-0ca7cde06a42")
 		(property "Reference" "low_fet"
-			(at 118.11 101.6 0)
+			(at 118.11 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1896,7 +1698,7 @@
 			)
 		)
 		(property "Value" "~"
-			(at 118.11 104.1399 0)
+			(at 118.11 109.2199 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1905,7 +1707,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 116.84 105.41 0)
+			(at 116.84 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1914,7 +1716,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 111.76 102.87 0)
+			(at 111.76 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1923,7 +1725,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 111.76 102.87 0)
+			(at 111.76 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1950,88 +1752,9 @@
 		)
 	)
 	(symbol
-		(lib_id "Analog_Switch:DG9421DV")
-		(at 86.36 102.87 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "55f6827e-a5bd-49ad-8617-0e3a5af4f1a8")
-		(property "Reference" "low_gate"
-			(at 86.36 98.806 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "~"
-			(at 86.36 98.806 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_SO:TSOP-6_1.65x3.05mm_P0.95mm"
-			(at 86.36 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.vishay.com/docs/70679/dg9421.pdf"
-			(at 86.36 102.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Single SPST Precision Low-Voltage, Low-Glitch CMOS Analog Switch, normally ON, 2Ohm Ron, TSOP-6"
-			(at 86.36 102.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "21d98b90-608d-4743-a18b-1c2167a129e0")
-		)
-		(pin "1"
-			(uuid "ce9c225f-ea2a-47b4-8378-861b706cb096")
-		)
-		(pin "5"
-			(uuid "927f0ee4-4f7e-472c-a3f3-702974dc5c6a")
-		)
-		(pin "3"
-			(uuid "2f9a0485-3bd4-4e9e-9646-3fdfccad2c7b")
-		)
-		(pin "6"
-			(uuid "f4895e85-39f6-43dc-b41d-a902e2832245")
-		)
-		(pin "4"
-			(uuid "82292b76-fabb-4247-8c36-aadd1ad93ea2")
-		)
-		(instances
-			(project ""
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "low_gate")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_name "R_1")
 		(lib_id "Device:R")
-		(at 102.87 90.17 90)
+		(at 102.87 86.36 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2039,7 +1762,7 @@
 		(dnp no)
 		(uuid "622b8522-e2cf-47e2-b1b0-9f526c22c382")
 		(property "Reference" "high_res"
-			(at 102.87 92.71 90)
+			(at 102.87 88.9 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2047,7 +1770,7 @@
 			)
 		)
 		(property "Value" "100k"
-			(at 102.87 90.17 90)
+			(at 102.87 86.36 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2055,7 +1778,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 102.87 91.948 90)
+			(at 102.87 88.138 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2064,7 +1787,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 102.87 90.17 0)
+			(at 102.87 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2073,7 +1796,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 102.87 90.17 0)
+			(at 102.87 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2166,7 +1889,7 @@
 	(symbol
 		(lib_name "R_1")
 		(lib_id "Device:R")
-		(at 102.87 99.06 90)
+		(at 102.87 104.14 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2174,7 +1897,7 @@
 		(dnp no)
 		(uuid "8f89b971-2ab7-457c-a735-5e470aec7a82")
 		(property "Reference" "low_res"
-			(at 102.87 101.6 90)
+			(at 102.87 111.76 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2182,7 +1905,7 @@
 			)
 		)
 		(property "Value" "100k"
-			(at 102.87 99.06 90)
+			(at 102.87 104.14 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2190,7 +1913,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 102.87 100.838 90)
+			(at 102.87 105.918 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2199,7 +1922,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 102.87 99.06 0)
+			(at 102.87 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2208,7 +1931,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 102.87 99.06 0)
+			(at 102.87 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2232,41 +1955,34 @@
 		)
 	)
 	(symbol
-		(lib_id "Analog_Switch:DG9421DV")
-		(at 86.36 87.63 0)
+		(lib_name "edg_importable:Mux2")
+		(lib_id "edg_importable:Mux2")
+		(at 88.9 82.55 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "96113646-a654-4a8a-a348-c714b4190a32")
-		(property "Reference" "high_gate"
-			(at 86.36 83.566 0)
+		(uuid "d59ccab1-88bd-4c60-8975-bfac7e597eb6")
+		(property "Reference" "low_gate"
+			(at 88.9 90.17 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "~"
-			(at 86.36 83.566 0)
+		(property "Value" "#AnalogMuxer()"
+			(at 88.9 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "Package_SO:TSOP-6_1.65x3.05mm_P0.95mm"
-			(at 86.36 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.vishay.com/docs/70679/dg9421.pdf"
-			(at 86.36 87.63 0)
+		(property "Footprint" ""
+			(at 88.9 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2274,8 +1990,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Single SPST Precision Low-Voltage, Low-Glitch CMOS Analog Switch, normally ON, 2Ohm Ron, TSOP-6"
-			(at 86.36 87.63 0)
+		(property "Datasheet" "~"
+			(at 88.9 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2283,108 +1999,38 @@
 				(hide yes)
 			)
 		)
-		(pin "2"
-			(uuid "aad806ca-1fe8-42bf-8216-0758be562cff")
+		(property "Description" ""
+			(at 88.9 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin ""
+			(uuid "5a2da553-bbe6-4297-b894-bec18df1b296")
+		)
+		(pin ""
+			(uuid "9e1299ac-dd86-4a76-bbfd-bc6c0240c337")
+		)
+		(pin ""
+			(uuid "10d552d4-170a-40ff-ad90-1b38a513a3c0")
 		)
 		(pin "1"
-			(uuid "ce9c225f-ea2a-47b4-8378-861b706cb096")
+			(uuid "5c5ebbae-e5ea-4d39-b80d-4ae980872338")
 		)
-		(pin "5"
-			(uuid "cff40428-5b46-4ce5-9309-fccfb85a5e14")
+		(pin "2"
+			(uuid "ab057c8e-3f76-44b2-b4e6-e4cab926680a")
 		)
-		(pin "3"
-			(uuid "2f9a0485-3bd4-4e9e-9646-3fdfccad2c7b")
-		)
-		(pin "6"
-			(uuid "8c5db20f-9cb1-4af7-a096-294e494e45ec")
-		)
-		(pin "4"
-			(uuid "82292b76-fabb-4247-8c36-aadd1ad93ea2")
+		(pin "C"
+			(uuid "baf686d6-1e8c-459e-a1e4-ddfb0809aee9")
 		)
 		(instances
 			(project "EmitterFollower"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "high_gate")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Analog_Switch:DG9421DV")
-		(at 88.9 139.7 90)
-		(unit 2)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "dbb066cb-a149-49bc-a01c-a32aa64b554f")
-		(property "Reference" "low_gate"
-			(at 88.9 132.08 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "~"
-			(at 88.9 132.08 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_SO:TSOP-6_1.65x3.05mm_P0.95mm"
-			(at 91.44 139.7 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.vishay.com/docs/70679/dg9421.pdf"
-			(at 88.9 139.7 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Single SPST Precision Low-Voltage, Low-Glitch CMOS Analog Switch, normally ON, 2Ohm Ron, TSOP-6"
-			(at 88.9 139.7 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "21d98b90-608d-4743-a18b-1c2167a129e0")
-		)
-		(pin "1"
-			(uuid "ce9c225f-ea2a-47b4-8378-861b706cb096")
-		)
-		(pin "5"
-			(uuid "927f0ee4-4f7e-472c-a3f3-702974dc5c6a")
-		)
-		(pin "3"
-			(uuid "2f9a0485-3bd4-4e9e-9646-3fdfccad2c7b")
-		)
-		(pin "6"
-			(uuid "f4895e85-39f6-43dc-b41d-a902e2832245")
-		)
-		(pin "4"
-			(uuid "82292b76-fabb-4247-8c36-aadd1ad93ea2")
-		)
-		(instances
-			(project ""
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "low_gate")
-					(unit 2)
+					(unit 1)
 				)
 			)
 		)
@@ -2459,7 +2105,7 @@
 	)
 	(symbol
 		(lib_id "Device:Q_NMOS_DGS")
-		(at 111.76 87.63 0)
+		(at 111.76 82.55 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2468,7 +2114,7 @@
 		(fields_autoplaced yes)
 		(uuid "f83281e0-0e56-4804-a03c-4e5ff1bb8a2b")
 		(property "Reference" "high_fet"
-			(at 118.11 86.3599 0)
+			(at 118.11 81.2799 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2477,7 +2123,7 @@
 			)
 		)
 		(property "Value" "~"
-			(at 118.11 88.8999 0)
+			(at 118.11 83.8199 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2486,7 +2132,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 116.84 85.09 0)
+			(at 116.84 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2495,7 +2141,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 111.76 87.63 0)
+			(at 111.76 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2504,7 +2150,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 111.76 87.63 0)
+			(at 111.76 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
