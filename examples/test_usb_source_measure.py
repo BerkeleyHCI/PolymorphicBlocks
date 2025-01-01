@@ -145,9 +145,12 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
+    self.pwr_gate_pos = self.Port(VoltageSink.empty(), [Power])
     self.out = self.Port(VoltageSource.empty())
 
     self.control = self.Port(AnalogSink.empty())
+    self.high_gate_ctl = self.Port(DigitalSink.empty())
+    self.low_gate_ctl = self.Port(DigitalSink.empty())
 
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)
@@ -177,8 +180,8 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
-        'gnd': Ground(),
-        'pwr': VoltageSink(
+        'low_fet.D': Ground(),
+        'high_fet.D': VoltageSink(
           current_draw=self.current,
           voltage_limits=self.high_fet.actual_drain_voltage_rating.intersect(
             self.low_fet.actual_drain_voltage_rating)
@@ -188,7 +191,20 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
           current_limits=self.high_fet.actual_drain_current_rating.intersect(self.low_fet.actual_drain_current_rating)
         ),
         'control': AnalogSink(),
+
+        # TODO FIXME
+        'res.2': AnalogSource(),
+        'clamp1.A': AnalogSink(),
+        'low_res.1': AnalogSink(),
+        'low_fet.G': AnalogSink(),
+        'high_res.1': AnalogSink(),
+        'high_fet.G': AnalogSink(),
       })
+
+    self.high_gate: AnalogMuxer  # defined in schematic
+    self.connect(self.high_gate_ctl, self.high_gate.control.request())
+    self.low_gate: AnalogMuxer
+    self.connect(self.low_gate_ctl, self.low_gate.control.request())
 
 
 class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):

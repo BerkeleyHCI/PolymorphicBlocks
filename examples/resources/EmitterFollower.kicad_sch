@@ -1053,12 +1053,6 @@
 		(uuid "7010e156-24e5-4947-92cc-a3f5143dc71e")
 	)
 	(junction
-		(at 93.98 107.95)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "79e7bae7-a018-40a3-9ac2-c3a4ad803933")
-	)
-	(junction
 		(at 114.3 92.71)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1071,10 +1065,16 @@
 		(uuid "9cdef6c4-5387-438c-94e2-c0d5b5a8a386")
 	)
 	(junction
+		(at 93.98 107.95)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "a7a69345-bd8c-48c7-bc38-9997399b594c")
+	)
+	(junction
 		(at 93.98 82.55)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "a990067a-db8f-4e51-b951-d14e1c013e64")
+		(uuid "b29329e9-4c0b-4bc2-947a-cd84f7480fb3")
 	)
 	(no_connect
 		(at 83.82 106.68)
@@ -1533,7 +1533,7 @@
 	(symbol
 		(lib_name "edg_importable:Mux2")
 		(lib_id "edg_importable:Mux2")
-		(at 88.9 107.95 0)
+		(at 88.9 82.55 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -1542,7 +1542,7 @@
 		(dnp no)
 		(uuid "08b71093-5a3e-4024-9de2-48ca45ff18fa")
 		(property "Reference" "high_gate"
-			(at 88.9 115.57 0)
+			(at 88.9 90.17 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1550,7 +1550,7 @@
 			)
 		)
 		(property "Value" "#AnalogMuxer()"
-			(at 88.9 116.84 0)
+			(at 88.9 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1558,7 +1558,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 88.9 107.95 0)
+			(at 88.9 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1567,7 +1567,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 88.9 107.95 0)
+			(at 88.9 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1576,7 +1576,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 88.9 107.95 0)
+			(at 88.9 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1897,7 +1897,7 @@
 		(dnp no)
 		(uuid "8f89b971-2ab7-457c-a735-5e470aec7a82")
 		(property "Reference" "low_res"
-			(at 102.87 111.76 90)
+			(at 102.87 106.934 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1957,7 +1957,7 @@
 	(symbol
 		(lib_name "edg_importable:Mux2")
 		(lib_id "edg_importable:Mux2")
-		(at 88.9 82.55 0)
+		(at 88.9 107.95 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -1966,7 +1966,7 @@
 		(dnp no)
 		(uuid "d59ccab1-88bd-4c60-8975-bfac7e597eb6")
 		(property "Reference" "low_gate"
-			(at 88.9 90.17 0)
+			(at 88.9 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1974,7 +1974,7 @@
 			)
 		)
 		(property "Value" "#AnalogMuxer()"
-			(at 88.9 91.44 0)
+			(at 88.9 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1982,7 +1982,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 88.9 82.55 0)
+			(at 88.9 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1991,7 +1991,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 88.9 82.55 0)
+			(at 88.9 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2000,7 +2000,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 88.9 82.55 0)
+			(at 88.9 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
