@@ -131,12 +131,13 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
     self.assign(self.out_range, out_range)
 
 class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
-  """Emitter follower circuit
+  """Emitter follower circuit.
   """
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:Follower'  # this requires an schematic-modified symbol
     return {
-      '1': self.control, '3': self.out, 'V+': self.pwr, 'V-': self.gnd
+      '1': self.control, '3': self.out, 'V+': self.pwr, 'V-': self.gnd,
+      'HG': self.high_gate_ctl, 'LG': self.low_gate_ctl, 'VG': self.pwr_gate_pos
     }
 
   @init_in_parent
@@ -332,6 +333,8 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
     self.control_voltage = self.Port(AnalogSink.empty())
     self.control_current_source = self.Port(AnalogSink.empty())
     self.control_current_sink = self.Port(AnalogSink.empty())
+    self.high_gate_ctl = self.Port(DigitalSink.empty())
+    self.low_gate_ctl = self.Port(DigitalSink.empty())
     self.irange = self.Port(Vector(DigitalSink.empty()))
     self.off = self.Port(Vector(DigitalSink.empty()))
     self.out = self.Port(VoltageSource.empty())
@@ -539,14 +542,19 @@ class UsbSourceMeasure(JlcBoardTop):
       self.oled = imp.Block(Er_Oled022_1())  # (probably) pin compatible w/ 2.4" ER-OLED024-2B; maybe ER-OLED015-2B
       self.connect(self.oled.vcc, self.v12)
       self.connect(self.oled.pwr, self.v3v3)
-      self.connect(self.mcu.gpio.request('oled_reset'), self.oled.reset)
+      self.oled_rc = imp.Block(PullupDelayRc(10 * kOhm(tol=0.05), 10*mSecond(tol=0.2))).connected(io=self.oled.reset)
       self.connect(int_i2c, self.oled.i2c)
       # self.connect(self.mcu.spi.request('oled_spi'), self.oled.spi)
       # self.connect(self.mcu.gpio.request('oled_cs'), self.oled.cs)
       # self.connect(self.mcu.gpio.request('oled_dc'), self.oled.dc)
 
-      self.connect(self.mcu.gpio.request_vector('irange'), self.control.irange)
-      self.connect(self.mcu.gpio.request_vector('off'), self.control.off)
+      # expander for low-speed control signals
+      self.ioe_ctl = imp.Block(Pca9554())
+      self.connect(self.ioe_ctl.i2c, int_i2c)
+      self.connect(self.ioe_ctl.io.request('high_gate_ctl'), self.control.high_gate_ctl)
+      self.connect(self.ioe_ctl.io.request('low_gate_ctl'), self.control.low_gate_ctl)
+      self.connect(self.ioe_ctl.io.request_vector('irange'), self.control.irange)
+      self.connect(self.ioe_ctl.io.request_vector('off'), self.control.off)
 
       rc_model = DigitalLowPassRc(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))
       (self.buck_rc, ), _ = self.chain(self.mcu.gpio.request('buck_pwm'), imp.Block(rc_model), self.conv.buck_pwm)
@@ -590,21 +598,21 @@ class UsbSourceMeasure(JlcBoardTop):
       )
 
       # expander and interface elements
-      self.ioe = imp.Block(Pca9554())
-      self.connect(self.ioe.i2c, int_i2c)
+      self.ioe_ui = imp.Block(Pca9554(addr_lsb=2))
+      self.connect(self.ioe_ui.i2c, int_i2c)
       self.enc = imp.Block(DigitalRotaryEncoder())
       self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
       self.connect(self.enc.b, self.mcu.gpio.request('enc_b'))
       self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request('enc_sw'))
       self.dir = imp.Block(DigitalDirectionSwitch())
-      self.connect(self.dir.a, self.ioe.io.request('dir_a'))
-      self.connect(self.dir.b, self.ioe.io.request('dir_b'))
-      self.connect(self.dir.c, self.ioe.io.request('dir_c'))
-      self.connect(self.dir.d, self.ioe.io.request('dir_d'))
-      self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.ioe.io.request('dir_cen'))
+      self.connect(self.dir.a, self.ioe_ui.io.request('dir_a'))
+      self.connect(self.dir.b, self.ioe_ui.io.request('dir_b'))
+      self.connect(self.dir.c, self.ioe_ui.io.request('dir_c'))
+      self.connect(self.dir.d, self.ioe_ui.io.request('dir_d'))
+      self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.ioe_ui.io.request('dir_cen'))
 
       self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.ioe.io.request_vector('rgb'), self.rgb.signals)
+      self.connect(self.ioe_ui.io.request_vector('rgb'), self.rgb.signals)
 
       # expansion ports
       (self.qwiic_pull, self.qwiic, ), _ = self.chain(self.mcu.i2c.request('qwiic'),
@@ -750,9 +758,9 @@ class UsbSourceMeasure(JlcBoardTop):
           'adc_spi.mosi=9',
           'adc_spi.miso=10',
 
-          'irange_0=12',
-          'irange_1=11',
-          'off_0=31',
+          # 'irange_0=12',
+          # 'irange_1=11',
+          # 'off_0=31',
 
           'buck_pwm=35',
           'conv_en=33',
@@ -766,7 +774,6 @@ class UsbSourceMeasure(JlcBoardTop):
           'qwiic.sda=25',
           'pd_int=21',
           'fan=19',
-          'oled_reset=20',
           'touch_duck=22',
           'conv_en_sense=23',
 

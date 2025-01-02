@@ -46,10 +46,16 @@ class PullupDelayRc(DigitalFilter, Block):
 
     self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=1/(2 * pi * self.time_constant),
                                    voltage=self.pwr.link().voltage))
+    self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
 
     self.connect(self.pwr, self.rc.input.adapt_to(VoltageSink()))
-    self.io = self.Export(self.rc.output.adapt_to(DigitalSingleSource.high_from_supply(self.pwr)), [Output])
-    self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
+    # IO is DigitalBidir instead of DigitalSingleSource to avoid triggering an assert that there is no low driver
+    # which is strictly true, but the capacitance is in practice the low driver.
+    # It is not DigitalSource to allow it to coexist with other sources.
+    self.io = self.Export(self.rc.output.adapt_to(DigitalBidir.from_supply(
+      self.gnd, self.pwr,
+      pullup_capable=True
+    )), [Output])
 
   def connected(self, *, gnd: Optional[Port[VoltageLink]] = None, pwr: Optional[Port[VoltageLink]] = None,
                 io: Optional[Port[DigitalLink]] = None) -> 'PullupDelayRc':
