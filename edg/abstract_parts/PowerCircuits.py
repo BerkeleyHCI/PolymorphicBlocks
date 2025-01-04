@@ -1,10 +1,12 @@
 from ..electronics_model import *
 from .Resettable import Resettable
-from .AbstractResistor import Resistor
+from .AbstractResistor import Resistor, SeriesPowerResistor
 from .AbstractFets import SwitchFet
 from .GateDrivers import HalfBridgeDriver, HalfBridgeDriverIndependent, HalfBridgeDriverPwm
 from .DigitalAmplifiers import HighSideSwitch
 from .Categories import PowerConditioner
+from .MergedBlocks import MergedVoltageSource
+from .DummyDevices import ForcedVoltageCurrentDraw
 
 
 @abstract_block_default(lambda: FetHalfBridgeIndependent)
@@ -118,7 +120,9 @@ class FetHalfBridgePwmReset(FetHalfBridge, HalfBridgePwm, Resettable, GeneratorB
 
 class FetPrecharge(Block):
     """Precharge circuit that limits inrush current with an resistor, then provides low supply impedance
-    by closing a power FET."""
+    by closing a power FET.
+
+    TODO: calculate power rating needed for some capacitance instead of spec'ing for DC"""
     @init_in_parent
     def __init__(self, precharge_resistance: RangeLike = 100*Ohm(tol=0.1),
                  pull_resistance: RangeLike = 10000*Ohm(tol=0.05),
@@ -136,10 +140,21 @@ class FetPrecharge(Block):
     def contents(self):
         super().contents()
 
-        self.switch = self.Block(HighSideSwitch(self.pull_resistance, self.max_rds))
+        self.switch = self.Block(HighSideSwitch(
+            pull_resistance=self.pull_resistance, max_rds=self.max_rds))
         self.connect(self.switch.gnd, self.gnd)
         self.connect(self.switch.pwr, self.pwr_in)
-        self.connect(self.switch.output, self.pwr_out)
         self.connect(self.switch.control, self.control)
 
+        (self.res_forcein, self.res, self.res_forceout), _ = self.chain(
+            self.pwr_in,
+            self.Block(ForcedVoltageCurrentDraw(0*Amp(tol=0))),  # current draw modeled by switch
+            self.Block(SeriesPowerResistor(resistance=self.precharge_resistance)),
+            self.Block(ForcedVoltageCurrentDraw(
+                VoltageLink._supply_voltage_range(self.gnd, self.pwr_in) / self.precharge_resistance)),
+        )
 
+        self.merge = self.Block(MergedVoltageSource()).connected_from(
+            self.switch.output, self.res_forceout.pwr_out
+        )
+        self.connect(self.merge.pwr_out, self.pwr_out)

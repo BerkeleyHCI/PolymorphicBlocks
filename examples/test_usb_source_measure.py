@@ -416,10 +416,9 @@ class UsbSourceMeasure(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       # input filtering
-      (self.filt_vusb, self.cap_vusb, self.prot_vusb, self.tp_vusb), _ = self.chain(
+      (self.filt_vusb, self.prot_vusb, self.tp_vusb), _ = self.chain(
         self.usb.pwr,
         self.Block(SeriesPowerFerriteBead()),
-        imp.Block(DecouplingCapacitor(100*uFarad(tol=0.25))),
         imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # for parts commonality w/ the Vconv zener
         self.Block(VoltageTestPoint())
       )
@@ -438,10 +437,12 @@ class UsbSourceMeasure(JlcBoardTop):
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
-      (self.conv_inforce, self.precharge, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
+      (self.conv_inforce, self.precharge, self.cap_conv, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
-        imp.Block(FetPrecharge(max_rds=0.1*Ohm)),  # avoid excess capacitance on VBus
+        # avoid excess capacitance on VBus
+        imp.Block(FetPrecharge(precharge_resistance=330*Ohm(tol=0.1), max_rds=0.1*Ohm)),
+        imp.Block(DecouplingCapacitor(100*uFarad(tol=0.25))),
         imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30)*Volt,  # design for 0.5x - 1.5x conv ratio
                                                   frequency=500*kHertz(tol=0),
                                                   ripple_current_factor=(0.01, 0.9),
