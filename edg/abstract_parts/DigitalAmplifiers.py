@@ -23,8 +23,8 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
     self.pwr = self.Port(VoltageSink.empty(), [Power])  # amplifier voltage
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.control = self.Port(DigitalSink.empty(), [Input])
-    self.output = self.Port(VoltageSource.empty(), [Output])
+    self.control = self.Port(DigitalSink.empty())
+    self.output = self.Port(VoltageSource.empty())
 
     self.pull_resistance = self.ArgParameter(pull_resistance)
     self.max_rds = self.ArgParameter(max_rds)

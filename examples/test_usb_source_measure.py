@@ -438,9 +438,10 @@ class UsbSourceMeasure(JlcBoardTop):
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
-      (self.conv_inforce, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
+      (self.conv_inforce, self.precharge, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
+        imp.Block(FetPrecharge(max_rds=0.1*Ohm)),  # avoid excess capacitance on VBus
         imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30)*Volt,  # design for 0.5x - 1.5x conv ratio
                                                   frequency=500*kHertz(tol=0),
                                                   ripple_current_factor=(0.01, 0.9),
@@ -588,6 +589,7 @@ class UsbSourceMeasure(JlcBoardTop):
         self.conv_latch.nset
       )
       self.connect(self.conv_latch.nq, self.conv.reset, self.mcu.gpio.request('conv_en_sense'))
+      self.connect(self.precharge.control, self.mcu.gpio.request('precharge_control'))
 
       (self.pass_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(0)))
       (self.conv_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(1)))
