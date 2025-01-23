@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from typing import Optional, Tuple
+
+from deprecated import deprecated
+
 from ..core import *
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
 from .GroundPort import GroundLink
@@ -12,33 +15,26 @@ class DigitalLink(CircuitLink):
   """A link for digital IOs. Because of the wide variations on digital IOs, this is kind of a beast.
 
   Overall, this means a port that deals with signals that can be driven to two levels, high or low.
+  Directionality is modeled as signal dataflow.
   The types of ports are:
-  - Source: can drive both high or low, but not read.
-  - Single source: can drive either high or low, but not the other, and cannot read.
-    Example: open-drain outputs, pull-up resistors.
+  - Source: can drive high and/or low (including push-pull, pull-up, and open-drain), but can't read.
   - Sink: cannot drive, but can read.
   - Bidir: can drive both high and low, and can read.
 
-  Single sources are complex, since they require a complementary weak signal driver (pull-up).
-  Pull-ups can either be explicit (discrete resistor) or part of a Bidir (configurable pull-ups
-  are common on many microcontroller pins).
-
-  Weak signal drivers (pull up resistors) do not need a complementary single source, since they
-  may simply be used to provide a default.
+  Sources can be modeled as high and/or low-side drivers. If not push-pull, an opposite-polarity pull is required.
+  Pulls do not need a complementary driver and can be used to provide a default state.
+  Sources and bidir are modeled as being pull-capable.
   """
   # can't subclass VoltageLink because the constraint behavior is slightly different with presence of Bidir
 
   def __init__(self) -> None:
     super().__init__()
 
-    self.source = self.Port(DigitalSource(), optional=True)
-    self.single_sources = self.Port(Vector(DigitalSingleSource()), optional=True)
+    self.source = self.Port(Vector(DigitalSource()), optional=True)
     self.sinks = self.Port(Vector(DigitalSink()), optional=True)
     self.bidirs = self.Port(Vector(DigitalBidir()), optional=True)
 
-    # TODO RangeBuilder initializer for voltage
     self.voltage = self.Parameter(RangeExpr())
-
     self.voltage_limits = self.Parameter(RangeExpr())
 
     self.current_drawn = self.Parameter(RangeExpr())
@@ -440,51 +436,11 @@ class DigitalBidir(DigitalBase):
     self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
     self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
 
-  def as_open_drain(self) -> DigitalSingleSource:
-    """Adapts this DigitalBidir to a DigitalSingleSource open-drain (low-side-only) driver.
-    Not that not all digital ports can be driven in open-drain mode, check your particular IO's capabilities."""
-    return self._convert(DigitalBidirAdapterOpenDrain())
 
-
-class DigitalSingleSourceBridge(CircuitPortBridge):
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.outer_port = self.Port(DigitalSingleSource(
-      voltage_out=RangeExpr(),
-      output_thresholds=RangeExpr(),
-      pulldown_capable=False,
-      pullup_capable=False,
-      low_signal_driver=BoolExpr(),
-      high_signal_driver=BoolExpr(),
-    ))
-
-    self.inner_link = self.Port(DigitalBidir(
-      voltage_out=RangeExpr.EMPTY,  # don't contribute to the link voltage
-      voltage_limits=RangeExpr.ALL,
-      current_draw=RangeExpr.ZERO,  # single source does not draw any current
-      input_thresholds=RangeExpr.EMPTY,
-      output_thresholds=RangeExpr.ALL,  # don't contribute to the link thresholds
-      pulldown_capable=True, pullup_capable=True  # ideal port, checked at upper link
-    ))
-
-  def contents(self) -> None:
-    super().contents()
-
-    self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
-    self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
-    self.assign(self.outer_port.low_signal_driver, self.inner_link.link()._only_low_single_source_driver)
-    self.assign(self.outer_port.high_signal_driver, self.inner_link.link()._only_high_single_source_driver)
-    self.require(self.outer_port.low_signal_driver | self.outer_port.high_signal_driver &
-                 ~(self.outer_port.low_signal_driver & self.outer_port.high_signal_driver),
-                 "must have either (exclusive or) high or low signal drivers internally")
-
-
-class DigitalSingleSource(DigitalBase):
-  bridge_type = DigitalSingleSourceBridge
-
+class DigitalSingleSourceFake:
   @staticmethod
-  def low_from_supply(neg: Port[VoltageLink], is_pulldown: bool = False) -> DigitalSingleSource:
+  @deprecated("use DigitalSource.sink_from_supply")
+  def low_from_supply(neg: Port[VoltageLink], is_pulldown: bool = False) -> DigitalSource:
     return DigitalSingleSource(
       voltage_out=neg.link().voltage,
       output_thresholds=(neg.link().voltage.upper(), float('inf')),
@@ -493,7 +449,8 @@ class DigitalSingleSource(DigitalBase):
     )
 
   @staticmethod
-  def high_from_supply(pos: Port[VoltageLink], is_pullup: bool = False) -> DigitalSingleSource:
+  @deprecated("use DigitalSource.source_from_supply")
+  def high_from_supply(pos: Port[VoltageLink], is_pullup: bool = False) -> DigitalSource:
     return DigitalSingleSource(
       voltage_out=pos.link().voltage,
       output_thresholds=(-float('inf'), pos.link().voltage.lower()),
@@ -501,14 +458,12 @@ class DigitalSingleSource(DigitalBase):
       high_signal_driver=not is_pullup
     )
 
-  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
+  def __call__(self, voltage_out: RangeLike = RangeExpr.ZERO,
                output_thresholds: RangeLike = RangeExpr.ALL, *,
                pullup_capable: BoolLike = False,
                pulldown_capable: BoolLike = False,
                low_signal_driver: BoolLike = False,
-               high_signal_driver: BoolLike = False) -> None:
-    super().__init__()
-
+               high_signal_driver: BoolLike = False) -> DigitalSource:
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.output_thresholds: RangeExpr = self.Parameter(RangeExpr(output_thresholds))
 
@@ -519,20 +474,4 @@ class DigitalSingleSource(DigitalBase):
     self.high_signal_driver = self.Parameter(BoolExpr(high_signal_driver))
 
 
-class DigitalBidirAdapterOpenDrain(CircuitPortAdapter[DigitalSingleSource]):
-  """Adapter where a DigitalBidir is run as an open-drain (low-side single source) port."""
-  @init_in_parent
-  def __init__(self):
-    super().__init__()
-    self.src = self.Port(DigitalBidir(  # otherwise ideal
-      voltage_out=RangeExpr(),
-      current_draw=RangeExpr()
-    ))
-    self.dst = self.Port(DigitalSingleSource(
-      voltage_out=(0, 0)*Volt,  # TODO should propagate from src voltage lower, but creates a circular dependency
-      output_thresholds=(self.src.link().output_thresholds.lower(), float('inf')),
-      pulldown_capable=False,
-      low_signal_driver=True
-    ))
-    self.assign(self.src.voltage_out, self.dst.link().voltage)
-    self.assign(self.src.current_draw, self.dst.link().current_drawn)
+DigitalSingleSource = DigitalSingleSourceFake()
