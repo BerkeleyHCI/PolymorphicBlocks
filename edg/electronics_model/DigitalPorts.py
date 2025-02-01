@@ -269,8 +269,12 @@ class DigitalSource(DigitalBase):
 
   @staticmethod
   def from_bidir(model: DigitalBidir) -> DigitalSource:
-    return DigitalSource(model.voltage_out, model.current_limits, output_thresholds=model.output_thresholds,
-                         pullup_capable=model.pullup_capable, pulldown_capable=model.pulldown_capable)
+    model_is_empty = not model._get_initializers([])
+    if not model_is_empty:  # DigitalSource has additional high_driver and low_driver fields
+      return DigitalSource(model.voltage_out, model.current_limits, output_thresholds=model.output_thresholds,
+                           pullup_capable=model.pullup_capable, pulldown_capable=model.pulldown_capable)
+    else:
+      return DigitalSource.empty()
 
   def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
                current_limits: RangeLike = RangeExpr.ALL, *,
