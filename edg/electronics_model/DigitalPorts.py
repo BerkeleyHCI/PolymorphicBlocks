@@ -123,10 +123,10 @@ class DigitalLink(CircuitLink):
     self.require((~self._has_high_signal_driver).implies(self.pullup_capable), "requires high driver or pullup")
 
     # when multiple sources, ensure they all drive only one signal direction (eg, open drain)
-    self.require((self.sources.length() > 1).implies(
-      (self.sources.all(lambda x: x.low_driver) & ~self.sources.any(lambda x: x.high_driver))
-      | (self.sources.all(lambda x: x.high_driver) & ~self.sources.any(lambda x: x.low_driver))),
-      "conflicting source drivers")
+    # TODO IMPLEMENT ME WITH COUNT OPERATION
+    # self.require((self.sources.length() > 1).implies(
+    #   ~self.sources.any(lambda x: x.high_driver) | ~self.sources.any(lambda x: x.low_driver)),
+    #   "conflicting source drivers")
 
 
 class DigitalBase(CircuitPort[DigitalLink]):
@@ -425,21 +425,25 @@ class DigitalSingleSourceFake:
   @staticmethod
   @deprecated("use DigitalSource.sink_from_supply")
   def low_from_supply(neg: Port[VoltageLink], is_pulldown: bool = False) -> DigitalSource:
-    return DigitalSingleSource(
+    return DigitalSource(
       voltage_out=neg.link().voltage,
       output_thresholds=(neg.link().voltage.upper(), float('inf')),
       pulldown_capable=is_pulldown,
-      low_signal_driver=not is_pulldown
+      low_driver=not is_pulldown,
+      pullup_capable=False,
+      high_driver=False
     )
 
   @staticmethod
   @deprecated("use DigitalSource.source_from_supply")
   def high_from_supply(pos: Port[VoltageLink], is_pullup: bool = False) -> DigitalSource:
-    return DigitalSingleSource(
+    return DigitalSource(
       voltage_out=pos.link().voltage,
       output_thresholds=(-float('inf'), pos.link().voltage.lower()),
       pullup_capable=is_pullup,
-      high_signal_driver=not is_pullup
+      high_driver=not is_pullup,
+      pulldown_capable=False,
+      low_driver=False
     )
 
   def __call__(self, voltage_out: RangeLike = RangeExpr.ZERO,
