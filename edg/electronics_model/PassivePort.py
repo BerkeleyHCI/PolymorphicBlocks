@@ -52,12 +52,15 @@ class PassiveAdapterDigitalSource(CircuitPortAdapter[DigitalSource]):
                current_limits: RangeLike = RangeExpr.ALL,
                output_thresholds: RangeLike = RangeExpr.ALL,
                pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False):
+               pulldown_capable: BoolLike = False,
+               high_driver: BoolLike = True,
+               low_driver: BoolLike = True):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(DigitalSource(voltage_out=voltage_out, current_limits=current_limits,
                                        output_thresholds=output_thresholds,
-                                       pullup_capable=pullup_capable, pulldown_capable=pulldown_capable))
+                                       pullup_capable=pullup_capable, pulldown_capable=pulldown_capable,
+                                       high_driver=high_driver, low_driver=low_driver))
 
 
 class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):

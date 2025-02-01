@@ -124,8 +124,8 @@ class DigitalLink(CircuitLink):
 
     # when multiple sources, ensure they all drive only one signal direction (eg, open drain)
     self.require((self.sources.length() > 1).implies(
-      (self.sources.all(lambda x: x.low_driver) and ~self.sources.any(lambda x: x.high_driver))
-      or (self.sources.all(lambda x: x.high_driver) and ~self.sources.any(lambda x: x.low_driver))),
+      (self.sources.all(lambda x: x.low_driver) & ~self.sources.any(lambda x: x.high_driver))
+      | (self.sources.all(lambda x: x.high_driver) & ~self.sources.any(lambda x: x.low_driver))),
       "conflicting source drivers")
 
 
@@ -444,8 +444,14 @@ class DigitalSingleSourceFake:
                pulldown_capable: BoolLike = False,
                low_signal_driver: BoolLike = False,
                high_signal_driver: BoolLike = False) -> DigitalSource:
-    raise NotImplementedError  # TODO IMPLEMENT ME
-    return DigitalSource.empty()
+    return DigitalSource(
+      voltage_out=voltage_out,
+      output_thresholds=output_thresholds,
+      pullup_capable=pullup_capable,
+      pulldown_capable=pulldown_capable,
+      low_driver=low_signal_driver,
+      high_driver=high_signal_driver
+    )
 
   def empty(self):
     return DigitalSource.empty()
