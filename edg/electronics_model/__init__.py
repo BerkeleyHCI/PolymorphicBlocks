@@ -14,7 +14,7 @@ from .PassivePort import Passive, PassiveLink
 from .GroundPort import Ground, GroundSource, GroundReference, GroundLink, Common
 from .VoltagePorts import VoltageSource, VoltageSink, Power, VoltageLink
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource, DigitalLink
-from .DigitalPorts import DigitalBidirAdapterOpenDrain, DigitalBidirNotConnected
+from .DigitalPorts import DigitalBidirNotConnected
 from .AnalogPort import AnalogSource, AnalogSink, AnalogLink
 from .TouchPort import TouchDriver, TouchPadPort
 from .UartPort import UartPort, UartLink

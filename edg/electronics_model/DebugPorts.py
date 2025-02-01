@@ -46,9 +46,9 @@ class SwdTargetPort(Bundle[SwdLink]):
 class SwdPullPort(Bundle[SwdLink]):
   link_type = SwdLink
 
-  def __init__(self, model: Optional[DigitalSingleSource] = None) -> None:
+  def __init__(self, model: Optional[DigitalSource] = None) -> None:
     super().__init__()
     if model is None:
-      model = DigitalSingleSource()  # ideal by default
+      model = DigitalSource()  # ideal by default
     self.swdio = self.Port(model)
     self.swclk = self.Port(model)

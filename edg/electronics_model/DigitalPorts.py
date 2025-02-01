@@ -30,7 +30,7 @@ class DigitalLink(CircuitLink):
   def __init__(self) -> None:
     super().__init__()
 
-    self.source = self.Port(Vector(DigitalSource()), optional=True)
+    self.sources = self.Port(Vector(DigitalSource()), optional=True)
     self.sinks = self.Port(Vector(DigitalSink()), optional=True)
     self.bidirs = self.Port(Vector(DigitalBidir()), optional=True)
 
@@ -66,17 +66,10 @@ class DigitalLink(CircuitLink):
       "\n<b>output thresholds</b>: ", DescriptionString.FormatUnits(self.output_thresholds, "V"),
       ", <b>input thresholds</b>: ", DescriptionString.FormatUnits(self.input_thresholds, "V"))
 
-    self.require(self.source.is_connected() | (self.single_sources.length() > 0) | (self.bidirs.length() > 0),
-                 "DigitalLink must have some kind of source")
-
     # TODO clean this up, massively, like, this needs new constructs to simplify this pattern
     voltage_hull = self.bidirs.hull(lambda x: x.voltage_out)
-    voltage_hull = self.single_sources.any_connected().then_else(
-      voltage_hull.hull(self.single_sources.hull(lambda x: x.voltage_out)),
-      voltage_hull
-    )
-    voltage_hull = self.source.is_connected().then_else(
-      voltage_hull.hull(self.source.voltage_out),
+    voltage_hull = self.sources.any_connected().then_else(
+      voltage_hull.hull(self.sources.hull(lambda x: x.voltage_out)),
       voltage_hull
     )
     self.assign(self.voltage, voltage_hull)
@@ -90,67 +83,50 @@ class DigitalLink(CircuitLink):
       self.sinks.sum(lambda x: x.current_draw) + self.bidirs.sum(lambda x: x.current_draw)
     )
     self.assign(self.current_limits,
-                self.source.is_connected().then_else(
-                  self.source.current_limits,
+                self.sources.any_connected().then_else(
+                  self.sources.intersection(lambda x: x.current_limits),
                   RangeExpr._to_expr_type(RangeExpr.ALL))
                 .intersect(self.bidirs.intersection(lambda x: x.current_limits)))
     self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
 
-    source_output_thresholds = self.source.is_connected().then_else(  # TODO: clean up
-      self.source.output_thresholds,
+    sources_output_thresholds = self.sources.any_connected().then_else(
+      self.sources.intersection(lambda x: x.output_thresholds),
       RangeExpr.ALL * Volt
     )
     bidirs_output_thresholds = self.bidirs.any_connected().then_else(
       self.bidirs.intersection(lambda x: x.output_thresholds),
       RangeExpr.ALL * Volt
     )
-    single_output_thresholds = self.single_sources.any_connected().then_else(
-      self.single_sources.intersection(lambda x: x.output_thresholds),
-      RangeExpr.ALL * Volt
-    )
     self.assign(self.output_thresholds,
-                source_output_thresholds.intersect(
-                  bidirs_output_thresholds.intersect(
-                    single_output_thresholds)))
+                sources_output_thresholds.intersect(bidirs_output_thresholds))
 
     self.assign(self.input_thresholds,
       self.sinks.hull(lambda x: x.input_thresholds).hull(self.bidirs.hull(lambda x: x.input_thresholds)),
     )
     self.require(self.output_thresholds.contains(self.input_thresholds), "incompatible digital thresholds")
 
+    self.require(self.sources.any_connected() | (self.bidirs.length() > 0),
+                 "requires connected source or bidir")
+
+    # ensure both digital levels can be driven
     self.assign(self.pullup_capable,
                 self.bidirs.any(lambda x: x.pullup_capable) |
-                self.source.is_connected().then_else(self.source.pullup_capable,
-                                                     BoolExpr._to_expr_type(False)) |
-                self.single_sources.any(lambda x: x.pullup_capable))
+                self.sources.any(lambda x: x.pullup_capable))
     self.assign(self.pulldown_capable,
                 self.bidirs.any(lambda x: x.pulldown_capable) |
-                self.source.is_connected().then_else(self.source.pulldown_capable,
-                                                     BoolExpr._to_expr_type(False)) |
-                self.single_sources.any(lambda x: x.pulldown_capable))
-    self.assign(self._has_low_signal_driver,
-                self.single_sources.any_connected().then_else(
-                  self.single_sources.any(lambda x: x.low_signal_driver),
-                  BoolExpr._to_expr_type(False)
-                ))
+                self.sources.any(lambda x: x.pulldown_capable))
+    self.assign(self._has_low_signal_driver,  # assumed bidirs are true directional drivers
+                self.bidirs.any_connected() | self.sources.any(lambda x: x.low_signal_driver))
     self.assign(self._has_high_signal_driver,
-                self.single_sources.any_connected().then_else(
-                  self.single_sources.any(lambda x: x.high_signal_driver),
-                  BoolExpr._to_expr_type(False)
-                ))
-    self.require(self._has_low_signal_driver.implies(self.pullup_capable), "requires pullup capable connection")
-    self.require(self._has_high_signal_driver.implies(self.pulldown_capable), "requires pulldown capable connection")
+                self.bidirs.any_connected() | self.sources.any(lambda x: x.high_signal_driver))
+    self.require((~self._has_low_signal_driver).implies(self.pulldown_capable), "requires low driver or pulldown")
+    self.require((~self._has_high_signal_driver).implies(self.pullup_capable), "requires high driver or pullup")
 
-    only_single_source_driver = ~self.source.is_connected() & (self.bidirs.length() == 1) & \
-                                (self.single_sources.length() > 0)
-    self.assign(self._only_high_single_source_driver,
-                only_single_source_driver &
-                self.single_sources.all(lambda x: x.high_signal_driver) &
-                ~self.single_sources.all(lambda x: x.low_signal_driver))
-    self.assign(self._only_low_single_source_driver,
-                only_single_source_driver &
-                ~self.single_sources.all(lambda x: x.high_signal_driver) &
-                self.single_sources.all(lambda x: x.low_signal_driver))
+    # when multiple sources, ensure they all drive only one signal direction (eg, open drain)
+    self.require((self.sources.length() > 1).implies(
+      (self.sources.all(lambda x: x.low_signal_driver) and ~self.sources.any(lambda x: x.high_signal_driver))
+      or (self.sources.all(lambda x: x.high_signal_driver) and ~self.sources.any(lambda x: x.low_signal_driver))),
+      "conflicting source drivers")
 
 
 class DigitalBase(CircuitPort[DigitalLink]):
@@ -300,7 +276,9 @@ class DigitalSource(DigitalBase):
                current_limits: RangeLike = RangeExpr.ALL, *,
                output_thresholds: RangeLike = RangeExpr.ALL,
                pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False) -> None:
+               pulldown_capable: BoolLike = False,
+               high_driver: BoolLike = True,
+               low_driver: BoolLike = True) -> None:
     super().__init__()
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
@@ -308,6 +286,8 @@ class DigitalSource(DigitalBase):
 
     self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
     self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
+    self.high_driver: BoolExpr = self.Parameter(BoolExpr(high_driver))
+    self.low_driver: BoolExpr = self.Parameter(BoolExpr(low_driver))
 
   def as_voltage_source(self) -> VoltageSource:
     return self._convert(DigitalSourceAdapterVoltageSource())
@@ -464,14 +444,11 @@ class DigitalSingleSourceFake:
                pulldown_capable: BoolLike = False,
                low_signal_driver: BoolLike = False,
                high_signal_driver: BoolLike = False) -> DigitalSource:
-    self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
-    self.output_thresholds: RangeExpr = self.Parameter(RangeExpr(output_thresholds))
+    raise NotImplementedError  # TODO IMPLEMENT ME
+    return DigitalSource.empty()
 
-    self.pullup_capable = self.Parameter(BoolExpr(pullup_capable))
-    self.pulldown_capable = self.Parameter(BoolExpr(pulldown_capable))
-
-    self.low_signal_driver = self.Parameter(BoolExpr(low_signal_driver))
-    self.high_signal_driver = self.Parameter(BoolExpr(high_signal_driver))
+  def empty(self):
+    return DigitalSource.empty()
 
 
 DigitalSingleSource = DigitalSingleSourceFake()
