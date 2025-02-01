@@ -116,16 +116,16 @@ class DigitalLink(CircuitLink):
                 self.bidirs.any(lambda x: x.pulldown_capable) |
                 self.sources.any(lambda x: x.pulldown_capable))
     self.assign(self._has_low_signal_driver,  # assumed bidirs are true directional drivers
-                self.bidirs.any_connected() | self.sources.any(lambda x: x.low_signal_driver))
+                self.bidirs.any_connected() | self.sources.any(lambda x: x.low_driver))
     self.assign(self._has_high_signal_driver,
-                self.bidirs.any_connected() | self.sources.any(lambda x: x.high_signal_driver))
+                self.bidirs.any_connected() | self.sources.any(lambda x: x.high_driver))
     self.require((~self._has_low_signal_driver).implies(self.pulldown_capable), "requires low driver or pulldown")
     self.require((~self._has_high_signal_driver).implies(self.pullup_capable), "requires high driver or pullup")
 
     # when multiple sources, ensure they all drive only one signal direction (eg, open drain)
     self.require((self.sources.length() > 1).implies(
-      (self.sources.all(lambda x: x.low_signal_driver) and ~self.sources.any(lambda x: x.high_signal_driver))
-      or (self.sources.all(lambda x: x.high_signal_driver) and ~self.sources.any(lambda x: x.low_signal_driver))),
+      (self.sources.all(lambda x: x.low_driver) and ~self.sources.any(lambda x: x.high_driver))
+      or (self.sources.all(lambda x: x.high_driver) and ~self.sources.any(lambda x: x.low_driver))),
       "conflicting source drivers")
 
 

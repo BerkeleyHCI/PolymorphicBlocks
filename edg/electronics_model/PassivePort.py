@@ -92,22 +92,6 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
                                       pullup_capable=pullup_capable, pulldown_capable=pulldown_capable))
 
 
-class PassiveAdapterDigitalSingleSource(CircuitPortAdapter[DigitalSingleSource]):
-  # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
-  @init_in_parent
-  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
-               output_thresholds: RangeLike = RangeExpr.ALL, *,
-               pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False,
-               low_signal_driver: BoolLike = False,
-               high_signal_driver: BoolLike = False):
-    super().__init__()
-    self.src = self.Port(Passive())
-    self.dst = self.Port(DigitalSingleSource(voltage_out=voltage_out, output_thresholds=output_thresholds,
-                                             pullup_capable=pullup_capable, pulldown_capable=pulldown_capable,
-                                             low_signal_driver=low_signal_driver, high_signal_driver=high_signal_driver))
-
-
 class PassiveAdapterAnalogSource(CircuitPortAdapter[AnalogSource]):
   # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
   @init_in_parent
@@ -146,7 +130,6 @@ class Passive(CircuitPort[PassiveLink]):
     VoltageSink: PassiveAdapterVoltageSink,
     DigitalSink: PassiveAdapterDigitalSink,
     DigitalSource: PassiveAdapterDigitalSource,
-    DigitalSingleSource: PassiveAdapterDigitalSingleSource,
     DigitalBidir: PassiveAdapterDigitalBidir,
     AnalogSink: PassiveAdapterAnalogSink,
     AnalogSource: PassiveAdapterAnalogSource
