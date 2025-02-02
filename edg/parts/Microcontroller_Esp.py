@@ -58,8 +58,8 @@ class EspProgrammingTc2030(EspProgrammingAutoReset, EspProgrammingHeader):
     self.connect(self.uart.tx, self.conn.pins.request('4').adapt_to(DigitalSource()))
     self.connect(self.gnd, self.conn.pins.request('5').adapt_to(Ground()))
 
-    self.connect(self.en, self.conn.pins.request('6').adapt_to(DigitalSource()))  # RTS
-    self.connect(self.boot, self.conn.pins.request('2').adapt_to(DigitalSource()))  # CTS
+    self.connect(self.en, self.conn.pins.request('6').adapt_to(DigitalSource.low_from_supply(self.gnd)))  # RTS
+    self.connect(self.boot, self.conn.pins.request('2').adapt_to(DigitalSource.low_from_supply(self.gnd)))  # CTS
 
 
 @non_library
