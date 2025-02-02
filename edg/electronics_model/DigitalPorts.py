@@ -127,10 +127,9 @@ class DigitalLink(CircuitLink):
                  self._has_low_signal_driver.implies(self._has_high_signal_driver | self.pullup_capable), "requires high driver or pullup")
 
     # when multiple sources, ensure they all drive only one signal direction (eg, open drain)
-    # TODO IMPLEMENT ME WITH COUNT OPERATION
-    # self.require((self.sources.length() > 1).implies(
-    #   ~self.sources.any(lambda x: x.high_driver) | ~self.sources.any(lambda x: x.low_driver)),
-    #   "conflicting source drivers")
+    self.require((self.sources.count(lambda x: x.high_driver) > 1).implies(~self.sources.any(lambda x: x.low_driver)) &
+                 (self.sources.count(lambda x: x.low_driver) > 1).implies(~self.sources.any(lambda x: x.high_driver)),
+                 "conflicting source drivers")
 
 
 class DigitalBase(CircuitPort[DigitalLink]):
