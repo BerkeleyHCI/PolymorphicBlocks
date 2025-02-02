@@ -323,10 +323,8 @@ class DigitalSource(DigitalBase):
     return DigitalSource(
       voltage_out=neg.link().voltage,
       output_thresholds=(neg.link().voltage.upper(), float('inf')),
-      high_driver=False,
-      low_driver=True,
-      pullup_capable=False,
-      pulldown_capable=False
+      high_driver=False, low_driver=True,
+      pullup_capable=False, pulldown_capable=False
     )
 
   @staticmethod
@@ -334,10 +332,8 @@ class DigitalSource(DigitalBase):
     return DigitalSource(
       voltage_out=pos.link().voltage,
       output_thresholds=(-float('inf'), pos.link().voltage.lower()),
-      high_driver=True,
-      low_driver=False,
-      pullup_capable=False,
-      pulldown_capable=False
+      high_driver=True, low_driver=False,
+      pullup_capable=False, pulldown_capable=False
     )
 
   @staticmethod
@@ -345,10 +341,8 @@ class DigitalSource(DigitalBase):
     return DigitalSource(
       voltage_out=neg.link().voltage,
       output_thresholds=(neg.link().voltage.upper(), float('inf')),
-      high_driver=False,
-      low_driver=False,
-      pullup_capable=False,
-      pulldown_capable=True
+      high_driver=False, low_driver=False,
+      pullup_capable=False, pulldown_capable=True
     )
 
   @staticmethod
@@ -356,10 +350,8 @@ class DigitalSource(DigitalBase):
     return DigitalSource(
       voltage_out=pos.link().voltage,
       output_thresholds=(-float('inf'), pos.link().voltage.lower()),
-      high_driver=False,
-      low_driver=False,
-      pullup_capable=True,
-      pulldown_capable=False
+      high_driver=False, low_driver=False,
+      pullup_capable=True, pulldown_capable=False
     )
 
   def as_voltage_source(self) -> VoltageSource:
