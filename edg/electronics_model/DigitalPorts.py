@@ -319,18 +319,20 @@ class DigitalSource(DigitalBase):
     self._bridged_internal: BoolExpr = self.Parameter(BoolExpr(_bridged_internal))
 
   @staticmethod
-  def low_from_supply(neg: Port[VoltageLink]) -> DigitalSource:
+  def low_from_supply(neg: Port[VoltageLink], *, current_limits: RangeLike = RangeExpr.ALL) -> DigitalSource:
     return DigitalSource(
       voltage_out=neg.link().voltage,
+      current_limits=current_limits,
       output_thresholds=(neg.link().voltage.upper(), float('inf')),
       high_driver=False, low_driver=True,
       pullup_capable=False, pulldown_capable=False
     )
 
   @staticmethod
-  def high_from_supply(pos: Port[VoltageLink]) -> DigitalSource:
+  def high_from_supply(pos: Port[VoltageLink], *, current_limits: RangeLike = RangeExpr.ALL) -> DigitalSource:
     return DigitalSource(
       voltage_out=pos.link().voltage,
+      current_limits=current_limits,
       output_thresholds=(-float('inf'), pos.link().voltage.lower()),
       high_driver=True, low_driver=False,
       pullup_capable=False, pulldown_capable=False

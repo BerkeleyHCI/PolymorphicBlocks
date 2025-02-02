@@ -59,7 +59,7 @@ class Stm32l432Base_Device(IoControllerI2cTarget, IoControllerDac, IoControllerC
             input_threshold_factor=(0.3, 0.7),  # section 6.3.14, simplest for 1.62<Vdd<3.6
             pullup_capable=True, pulldown_capable=True
         )
-        self.nrst.init_from(dio_ft_model)
+        self.nrst.init_from(DigitalSink.from_bidir(dio_ft_model))
 
         adc_tt_model = AnalogSink.from_supply(
             self.gnd, self.pwr,

@@ -1,8 +1,7 @@
 from typing import *
 
 from ..core import *
-from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir, DigitalSingleSource, DigitalBidirBridge, \
-  DigitalSinkBridge
+from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir, DigitalBidirBridge, DigitalSinkBridge
 
 
 class I2cLink(Link):
@@ -42,8 +41,8 @@ class I2cPullupPort(Bundle[I2cLink]):
 
   def __init__(self) -> None:
     super().__init__()
-    self.scl = self.Port(DigitalSingleSource(pullup_capable=True))
-    self.sda = self.Port(DigitalSingleSource(pullup_capable=True))
+    self.scl = self.Port(DigitalSource(low_driver=False, high_driver=False, pullup_capable=True))
+    self.sda = self.Port(DigitalSource(low_driver=False, high_driver=False, pullup_capable=True))
 
 
 class I2cController(Bundle[I2cLink]):

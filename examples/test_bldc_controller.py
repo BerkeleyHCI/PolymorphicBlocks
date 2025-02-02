@@ -66,10 +66,10 @@ class BldcHallSensor(Connector, Block):
     self.gnd = self.Export(self.conn.pins.request('5').adapt_to(Ground()),
                            [Common])
 
-    self.phases = self.Port(Vector(DigitalSingleSource.empty()))
-    phase_model = DigitalSingleSource.low_from_supply(self.gnd)
+    self.phases = self.Port(Vector(DigitalSource.empty()))
+    phase_model = DigitalSource.low_from_supply(self.gnd)
     for (pin, name) in [('2', 'u'), ('3', 'v'), ('4', 'w')]:
-      phase = self.phases.append_elt(DigitalSingleSource.empty(), name)
+      phase = self.phases.append_elt(DigitalSource.empty(), name)
       self.require(phase.is_connected(), f"all phases {name} must be connected")
       self.connect(phase, self.conn.pins.request(pin).adapt_to(phase_model))
 

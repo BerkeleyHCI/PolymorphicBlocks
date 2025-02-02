@@ -1,7 +1,7 @@
 from typing import *
 
 from ..core import *
-from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir, DigitalSingleSource
+from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
 
 
 class SwdLink(Link):

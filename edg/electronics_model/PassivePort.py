@@ -6,7 +6,7 @@ from ..core import *
 from .GroundPort import Ground
 from .AnalogPort import AnalogSource, AnalogSink
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
-from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource
+from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
 from .VoltagePorts import CircuitPort, VoltageSource, VoltageSink
 
 

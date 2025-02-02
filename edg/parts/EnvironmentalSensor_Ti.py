@@ -66,7 +66,7 @@ class Tmp1075n_Device(InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBloc
             input_threshold_factor=(0.3, 0.7)
         )
         self.i2c = self.Port(I2cTarget(dio_model, addresses=ArrayIntExpr()))
-        self.alert = self.Port(DigitalSingleSource.low_from_supply(self.gnd), optional=True)
+        self.alert = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)
 
         self.addr_lsb = self.ArgParameter(addr_lsb)
         self.generator_param(self.addr_lsb)
