@@ -197,7 +197,11 @@ class DigitalSink(DigitalBase):
 
   @staticmethod
   def from_bidir(model: DigitalBidir) -> DigitalSink:
-    return DigitalSink(model.voltage_limits, model.current_draw, input_thresholds=model.input_thresholds)
+    model_is_empty = not model._get_initializers([])
+    if not model_is_empty:
+      return DigitalSink(model.voltage_limits, model.current_draw, input_thresholds=model.input_thresholds)
+    else:
+      return DigitalSink.empty()
 
   def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO, *,
