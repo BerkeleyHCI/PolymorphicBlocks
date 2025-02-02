@@ -18,8 +18,9 @@ class DigitalLink(CircuitLink):
   Directionality is modeled as signal dataflow.
   The types of ports are:
   - Source: can drive high and/or low (including push-pull, pull-up, and open-drain), but can't read.
+    Push-pull sources assumed not able to tri-state and cannot share the line with other push-pull drivers.
   - Sink: cannot drive, but can read.
-  - Bidir: can drive both high and low, and can read.
+  - Bidir: can drive both high and low, and can read. Can tri-state, and assumed ports are configured to not conflict.
 
   Sources can be modeled as high and/or low-side drivers. If not push-pull, an opposite-polarity pull is required.
   Pulls do not need a complementary driver and can be used to provide a default state.
@@ -108,7 +109,7 @@ class DigitalLink(CircuitLink):
     self.require(self.sources.any_connected() | (self.bidirs.length() > 0),
                  "requires connected source or bidir")
 
-    # ensure both digital levels can be driven
+    # ensure both digital levels can be driven (but pull-up or -down only connections are allowed)
     self.assign(self.pullup_capable,
                 self.bidirs.any(lambda x: x.pullup_capable) |
                 self.sources.any(lambda x: x.pullup_capable))
@@ -119,10 +120,11 @@ class DigitalLink(CircuitLink):
                 self.bidirs.any_connected() | self.sources.any(lambda x: x.low_driver))
     self.assign(self._has_high_signal_driver,
                 self.bidirs.any_connected() | self.sources.any(lambda x: x.high_driver))
+
     self.require(self.sinks.any(lambda x: x._bridged_internal) |
-                 (~self._has_low_signal_driver).implies(self.pulldown_capable), "requires low driver or pulldown")
+                 self._has_high_signal_driver.implies(self._has_low_signal_driver | self.pulldown_capable), "requires low driver or pulldown")
     self.require(self.sinks.any(lambda x: x._bridged_internal) |
-                 (~self._has_high_signal_driver).implies(self.pullup_capable), "requires high driver or pullup")
+                 self._has_low_signal_driver.implies(self._has_high_signal_driver | self.pullup_capable), "requires high driver or pullup")
 
     # when multiple sources, ensure they all drive only one signal direction (eg, open drain)
     # TODO IMPLEMENT ME WITH COUNT OPERATION
