@@ -94,13 +94,15 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
                output_thresholds: RangeLike = RangeExpr.ALL,
                *,
                pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False):
+               pulldown_capable: BoolLike = False,
+               _bridged_internal: BoolLike = False):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(DigitalBidir(voltage_limits=voltage_limits, current_draw=current_draw,
                                       voltage_out=voltage_out, current_limits=current_limits,
                                       input_thresholds=input_thresholds, output_thresholds=output_thresholds,
-                                      pullup_capable=pullup_capable, pulldown_capable=pulldown_capable))
+                                      pullup_capable=pullup_capable, pulldown_capable=pulldown_capable,
+                                      _bridged_internal=_bridged_internal))
 
 
 class PassiveAdapterAnalogSource(CircuitPortAdapter[AnalogSource]):
