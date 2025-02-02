@@ -58,8 +58,9 @@ class EspProgrammingTc2030(EspProgrammingAutoReset, EspProgrammingHeader):
     self.connect(self.uart.tx, self.conn.pins.request('4').adapt_to(DigitalSource()))
     self.connect(self.gnd, self.conn.pins.request('5').adapt_to(Ground()))
 
-    self.connect(self.en, self.conn.pins.request('6').adapt_to(DigitalSource.low_from_supply(self.gnd)))  # RTS
-    self.connect(self.boot, self.conn.pins.request('2').adapt_to(DigitalSource.low_from_supply(self.gnd)))  # CTS
+    # TODO: pulldown is a hack to prevent driver conflict warnings, this should be a active low (open drain) driver
+    self.connect(self.en, self.conn.pins.request('6').adapt_to(DigitalSource.pulldown_from_supply(self.gnd)))  # RTS
+    self.connect(self.boot, self.conn.pins.request('2').adapt_to(DigitalSource.pulldown_from_supply(self.gnd)))  # CTS
 
 
 @non_library
