@@ -51,11 +51,6 @@ class DigitalLink(CircuitLink):
     self._has_low_signal_driver = self.Parameter(BoolExpr())
     self._has_high_signal_driver = self.Parameter(BoolExpr())
 
-    # these are only used for defining bridges
-    # TODO can these be moved into the bridge only so they're not evaluated everywhere?
-    self._only_low_single_source_driver = self.Parameter(BoolExpr())
-    self._only_high_single_source_driver = self.Parameter(BoolExpr())
-
   def contents(self):
     super().contents()
 
@@ -111,20 +106,20 @@ class DigitalLink(CircuitLink):
 
     # ensure both digital levels can be driven (but pull-up or -down only connections are allowed)
     self.assign(self.pullup_capable,
-                self.bidirs.any(lambda x: x.pullup_capable) |
-                self.sources.any(lambda x: x.pullup_capable))
+                self.sources.any(lambda x: x.pullup_capable) |
+                self.sinks.any(lambda x: x.pullup_capable) |
+                self.bidirs.any(lambda x: x.pullup_capable))
     self.assign(self.pulldown_capable,
-                self.bidirs.any(lambda x: x.pulldown_capable) |
-                self.sources.any(lambda x: x.pulldown_capable))
+                self.sources.any(lambda x: x.pulldown_capable) |
+                self.sinks.any(lambda x: x.pulldown_capable) |
+                self.bidirs.any(lambda x: x.pulldown_capable))
     self.assign(self._has_low_signal_driver,  # assumed bidirs are true directional drivers
                 self.bidirs.any_connected() | self.sources.any(lambda x: x.low_driver))
     self.assign(self._has_high_signal_driver,
                 self.bidirs.any_connected() | self.sources.any(lambda x: x.high_driver))
 
-    self.require(self.sinks.any(lambda x: x._bridged_internal) |
-                 self._has_high_signal_driver.implies(self._has_low_signal_driver | self.pulldown_capable), "requires low driver or pulldown")
-    self.require(self.sinks.any(lambda x: x._bridged_internal) |
-                 self._has_low_signal_driver.implies(self._has_high_signal_driver | self.pullup_capable), "requires high driver or pullup")
+    self.require(self._has_high_signal_driver.implies(self._has_low_signal_driver | self.pulldown_capable), "requires low driver or pulldown")
+    self.require(self._has_low_signal_driver.implies(self._has_high_signal_driver | self.pullup_capable), "requires high driver or pullup")
 
     # when multiple sources, ensure they all drive only one signal direction (eg, open drain)
     self.require((self.sources.count(lambda x: x.high_driver) > 1).implies(~self.sources.any(lambda x: x.low_driver)) &
@@ -169,7 +164,9 @@ class DigitalSink(DigitalBase):
                   voltage_limit_tolerance: Optional[RangeLike] = None,
                   current_draw: RangeLike = RangeExpr.ZERO,
                   input_threshold_factor: Optional[RangeLike] = None,
-                  input_threshold_abs: Optional[RangeLike] = None) -> DigitalSink:
+                  input_threshold_abs: Optional[RangeLike] = None,
+                  pullup_capable: BoolLike = False,
+                  pulldown_capable: BoolLike = False) -> DigitalSink:
     supply_range = VoltageLink._supply_voltage_range(neg, pos)
     if voltage_limit_abs is not None:
       assert voltage_limit_tolerance is None
@@ -193,29 +190,32 @@ class DigitalSink(DigitalBase):
     return DigitalSink(  # TODO get rid of to_expr_type w/ dedicated Range conversion
       voltage_limits=voltage_limit,
       current_draw=current_draw,
-      input_thresholds=input_threshold
+      input_thresholds=input_threshold,
+      pullup_capable=pullup_capable,
+      pulldown_capable=pulldown_capable
     )
 
   @staticmethod
   def from_bidir(model: DigitalBidir) -> DigitalSink:
     model_is_empty = not model._get_initializers([])
     if not model_is_empty:
-      return DigitalSink(model.voltage_limits, model.current_draw, input_thresholds=model.input_thresholds)
+      return DigitalSink(model.voltage_limits, model.current_draw, input_thresholds=model.input_thresholds,
+                         pulldown_capable=model.pulldown_capable, pullup_capable=model.pullup_capable)
     else:
       return DigitalSink.empty()
 
   def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO, *,
                input_thresholds: RangeLike = RangeExpr.EMPTY,
-               _bridged_internal: BoolLike = False) -> None:
+               pullup_capable: BoolLike = False,
+               pulldown_capable: BoolLike = False) -> None:
     super().__init__()
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
     self.input_thresholds: RangeExpr = self.Parameter(RangeExpr(input_thresholds))
 
-    # internal subcircuits are not necessarily fully valid, e.g. may have open-drain inputs with pull-up
-    # so this marks this as a bridged port and to relax some checks that should be delegated to the top-level
-    self._bridged_internal = self.Parameter(BoolExpr(_bridged_internal))
+    self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
+    self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
 
 
 class DigitalSourceBridge(CircuitPortBridge):
@@ -233,7 +233,7 @@ class DigitalSourceBridge(CircuitPortBridge):
     self.inner_link = self.Port(DigitalSink(voltage_limits=RangeExpr.ALL,
                                             current_draw=RangeExpr(),
                                             input_thresholds=RangeExpr.EMPTY,
-                                            _bridged_internal=True))
+                                            pullup_capable=True, pulldown_capable=True))
 
   def contents(self) -> None:
     super().contents()

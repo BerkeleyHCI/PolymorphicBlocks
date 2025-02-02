@@ -69,12 +69,14 @@ class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
   def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO,
                input_thresholds: RangeLike = RangeExpr.EMPTY,
-               _bridged_internal: BoolLike = False):
+               pullup_capable: BoolLike = False,
+               pulldown_capable: BoolLike = False):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(DigitalSink(voltage_limits=voltage_limits, current_draw=current_draw,
                                      input_thresholds=input_thresholds,
-                                     _bridged_internal=_bridged_internal))
+                                     pullup_capable=pullup_capable,
+                                     pulldown_capable=pulldown_capable))
 
 
 class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
