@@ -145,10 +145,10 @@ class DigitalSinkBridge(CircuitPortBridge):
                                             current_draw=RangeExpr(),
                                             input_thresholds=RangeExpr()))
 
-    self.inner_link = self.Port(DigitalSource(current_limits=RangeExpr.ALL,  # magical port
-                                              voltage_out=RangeExpr.EMPTY,
-                                              output_thresholds=RangeExpr.ALL,
-                                              pullup_capable=True, pulldown_capable=True))
+    self.inner_link = self.Port(DigitalSource(current_limits=RangeExpr.ALL,
+                                              voltage_out=RangeExpr(),
+                                              output_thresholds=RangeExpr(),
+                                              pullup_capable=True, pulldown_capable=True))  # magical port
 
   def contents(self) -> None:
     super().contents()
@@ -156,6 +156,9 @@ class DigitalSinkBridge(CircuitPortBridge):
     self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
     self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
     self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
+
+    self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
+    self.assign(self.inner_link.output_thresholds, self.outer_port.link().output_thresholds)
 
 
 class DigitalSink(DigitalBase):
