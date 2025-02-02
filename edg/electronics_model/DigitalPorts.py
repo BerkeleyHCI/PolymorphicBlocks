@@ -119,8 +119,10 @@ class DigitalLink(CircuitLink):
                 self.bidirs.any_connected() | self.sources.any(lambda x: x.low_driver))
     self.assign(self._has_high_signal_driver,
                 self.bidirs.any_connected() | self.sources.any(lambda x: x.high_driver))
-    self.require((~self._has_low_signal_driver).implies(self.pulldown_capable), "requires low driver or pulldown")
-    self.require((~self._has_high_signal_driver).implies(self.pullup_capable), "requires high driver or pullup")
+    self.require(self.sinks.any(lambda x: x._bridged_internal) |
+                 (~self._has_low_signal_driver).implies(self.pulldown_capable), "requires low driver or pulldown")
+    self.require(self.sinks.any(lambda x: x._bridged_internal) |
+                 (~self._has_high_signal_driver).implies(self.pullup_capable), "requires high driver or pullup")
 
     # when multiple sources, ensure they all drive only one signal direction (eg, open drain)
     # TODO IMPLEMENT ME WITH COUNT OPERATION
@@ -199,11 +201,16 @@ class DigitalSink(DigitalBase):
 
   def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO, *,
-               input_thresholds: RangeLike = RangeExpr.EMPTY) -> None:
+               input_thresholds: RangeLike = RangeExpr.EMPTY,
+               _bridged_internal: BoolLike = False) -> None:
     super().__init__()
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
     self.input_thresholds: RangeExpr = self.Parameter(RangeExpr(input_thresholds))
+
+    # internal subcircuits are not necessarily fully valid, e.g. may have open-drain inputs with pull-up
+    # so this marks this as a bridged port and to relax some checks that should be delegated to the top-level
+    self._bridged_internal = self.Parameter(BoolExpr(_bridged_internal))
 
 
 class DigitalSourceBridge(CircuitPortBridge):
@@ -220,7 +227,8 @@ class DigitalSourceBridge(CircuitPortBridge):
     # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
     self.inner_link = self.Port(DigitalSink(voltage_limits=RangeExpr.ALL,
                                             current_draw=RangeExpr(),
-                                            input_thresholds=RangeExpr.EMPTY))
+                                            input_thresholds=RangeExpr.EMPTY,
+                                            _bridged_internal=True))
 
   def contents(self) -> None:
     super().contents()
@@ -279,19 +287,63 @@ class DigitalSource(DigitalBase):
   def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
                current_limits: RangeLike = RangeExpr.ALL, *,
                output_thresholds: RangeLike = RangeExpr.ALL,
-               pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False,
                high_driver: BoolLike = True,
-               low_driver: BoolLike = True) -> None:
+               low_driver: BoolLike = True,
+               pullup_capable: BoolLike = False,
+               pulldown_capable: BoolLike = False) -> None:
     super().__init__()
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
     self.output_thresholds: RangeExpr = self.Parameter(RangeExpr(output_thresholds))
 
-    self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
-    self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
     self.high_driver: BoolExpr = self.Parameter(BoolExpr(high_driver))
     self.low_driver: BoolExpr = self.Parameter(BoolExpr(low_driver))
+    self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
+    self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
+
+  @staticmethod
+  def low_from_supply(neg: Port[VoltageLink]) -> DigitalSource:
+    return DigitalSource(
+      voltage_out=neg.link().voltage,
+      output_thresholds=(neg.link().voltage.upper(), float('inf')),
+      high_driver=False,
+      low_driver=True,
+      pullup_capable=False,
+      pulldown_capable=False
+    )
+
+  @staticmethod
+  def high_from_supply(pos: Port[VoltageLink]) -> DigitalSource:
+    return DigitalSource(
+      voltage_out=pos.link().voltage,
+      output_thresholds=(-float('inf'), pos.link().voltage.lower()),
+      high_driver=True,
+      low_driver=False,
+      pullup_capable=False,
+      pulldown_capable=False
+    )
+
+  @staticmethod
+  def pulldown_from_supply(neg: Port[VoltageLink]) -> DigitalSource:
+    return DigitalSource(
+      voltage_out=neg.link().voltage,
+      output_thresholds=(neg.link().voltage.upper(), float('inf')),
+      high_driver=False,
+      low_driver=False,
+      pullup_capable=False,
+      pulldown_capable=True
+    )
+
+  @staticmethod
+  def pullup_from_supply(pos: Port[VoltageLink]) -> DigitalSource:
+    return DigitalSource(
+      voltage_out=pos.link().voltage,
+      output_thresholds=(-float('inf'), pos.link().voltage.lower()),
+      high_driver=False,
+      low_driver=False,
+      pullup_capable=True,
+      pulldown_capable=False
+    )
 
   def as_voltage_source(self) -> VoltageSource:
     return self._convert(DigitalSourceAdapterVoltageSource())
@@ -425,26 +477,18 @@ class DigitalSingleSourceFake:
   @staticmethod
   @deprecated("use DigitalSource.sink_from_supply")
   def low_from_supply(neg: Port[VoltageLink], is_pulldown: bool = False) -> DigitalSource:
-    return DigitalSource(
-      voltage_out=neg.link().voltage,
-      output_thresholds=(neg.link().voltage.upper(), float('inf')),
-      pulldown_capable=is_pulldown,
-      low_driver=not is_pulldown,
-      pullup_capable=False,
-      high_driver=False
-    )
+    if not is_pulldown:
+      return DigitalSource.low_from_supply(neg)
+    else:
+      return DigitalSource.pulldown_from_supply(neg)
 
   @staticmethod
   @deprecated("use DigitalSource.source_from_supply")
   def high_from_supply(pos: Port[VoltageLink], is_pullup: bool = False) -> DigitalSource:
-    return DigitalSource(
-      voltage_out=pos.link().voltage,
-      output_thresholds=(-float('inf'), pos.link().voltage.lower()),
-      pullup_capable=is_pullup,
-      high_driver=not is_pullup,
-      pulldown_capable=False,
-      low_driver=False
-    )
+    if not is_pullup:
+      return DigitalSource.high_from_supply(pos)
+    else:
+      return DigitalSource.pullup_from_supply(pos)
 
   def __call__(self, voltage_out: RangeLike = RangeExpr.ZERO,
                output_thresholds: RangeLike = RangeExpr.ALL, *,
