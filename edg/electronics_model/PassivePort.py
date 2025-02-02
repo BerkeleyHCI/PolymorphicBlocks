@@ -54,13 +54,15 @@ class PassiveAdapterDigitalSource(CircuitPortAdapter[DigitalSource]):
                pullup_capable: BoolLike = False,
                pulldown_capable: BoolLike = False,
                high_driver: BoolLike = True,
-               low_driver: BoolLike = True):
+               low_driver: BoolLike = True,
+               _bridged_internal: BoolLike = False):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(DigitalSource(voltage_out=voltage_out, current_limits=current_limits,
                                        output_thresholds=output_thresholds,
                                        pullup_capable=pullup_capable, pulldown_capable=pulldown_capable,
-                                       high_driver=high_driver, low_driver=low_driver))
+                                       high_driver=high_driver, low_driver=low_driver,
+                                       _bridged_internal=_bridged_internal))
 
 
 class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
@@ -70,13 +72,15 @@ class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
                current_draw: RangeLike = RangeExpr.ZERO,
                input_thresholds: RangeLike = RangeExpr.EMPTY,
                pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False):
+               pulldown_capable: BoolLike = False,
+               _bridged_internal: BoolLike = False):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(DigitalSink(voltage_limits=voltage_limits, current_draw=current_draw,
                                      input_thresholds=input_thresholds,
                                      pullup_capable=pullup_capable,
-                                     pulldown_capable=pulldown_capable))
+                                     pulldown_capable=pulldown_capable,
+                                     _bridged_internal=_bridged_internal))
 
 
 class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):

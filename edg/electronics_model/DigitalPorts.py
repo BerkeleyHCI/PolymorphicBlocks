@@ -118,8 +118,13 @@ class DigitalLink(CircuitLink):
     self.assign(self._has_high_signal_driver,
                 self.bidirs.any_connected() | self.sources.any(lambda x: x.high_driver))
 
-    self.require(self._has_high_signal_driver.implies(self._has_low_signal_driver | self.pulldown_capable), "requires low driver or pulldown")
-    self.require(self._has_low_signal_driver.implies(self._has_high_signal_driver | self.pullup_capable), "requires high driver or pullup")
+    is_bridged_internal = (self.sources.any(lambda x: x._bridged_internal) |
+                           self.sinks.any(lambda x: x._bridged_internal) |
+                           self.bidirs.any(lambda x: x._bridged_internal))
+    self.require(is_bridged_internal |
+                 self._has_high_signal_driver.implies(self._has_low_signal_driver | self.pulldown_capable), "requires low driver or pulldown")
+    self.require(is_bridged_internal |
+                 self._has_low_signal_driver.implies(self._has_high_signal_driver | self.pullup_capable), "requires high driver or pullup")
 
     # when multiple sources, ensure they all drive only one signal direction (eg, open drain)
     self.require((self.sources.count(lambda x: x.high_driver) > 1).implies(~self.sources.any(lambda x: x.low_driver)) &
@@ -142,7 +147,8 @@ class DigitalSinkBridge(CircuitPortBridge):
     self.inner_link = self.Port(DigitalSource(current_limits=RangeExpr.ALL,
                                               voltage_out=RangeExpr(),
                                               output_thresholds=RangeExpr(),
-                                              pullup_capable=True, pulldown_capable=True))  # magical port
+                                              pullup_capable=False, pulldown_capable=False,  # don't create a loop
+                                              _bridged_internal=True))
 
   def contents(self) -> None:
     super().contents()
@@ -208,7 +214,8 @@ class DigitalSink(DigitalBase):
                current_draw: RangeLike = RangeExpr.ZERO, *,
                input_thresholds: RangeLike = RangeExpr.EMPTY,
                pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False) -> None:
+               pulldown_capable: BoolLike = False,
+               _bridged_internal: BoolLike = False) -> None:
     super().__init__()
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
@@ -216,6 +223,7 @@ class DigitalSink(DigitalBase):
 
     self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
     self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
+    self._bridged_internal: BoolExpr = self.Parameter(BoolExpr(_bridged_internal))
 
 
 class DigitalSourceBridge(CircuitPortBridge):
@@ -233,7 +241,8 @@ class DigitalSourceBridge(CircuitPortBridge):
     self.inner_link = self.Port(DigitalSink(voltage_limits=RangeExpr.ALL,
                                             current_draw=RangeExpr(),
                                             input_thresholds=RangeExpr.EMPTY,
-                                            pullup_capable=True, pulldown_capable=True))
+                                            pullup_capable=False, pulldown_capable=False,  # don't create a loop
+                                            _bridged_internal=True))
 
   def contents(self) -> None:
     super().contents()
@@ -295,7 +304,8 @@ class DigitalSource(DigitalBase):
                high_driver: BoolLike = True,
                low_driver: BoolLike = True,
                pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False) -> None:
+               pulldown_capable: BoolLike = False,
+               _bridged_internal: BoolLike = False) -> None:
     super().__init__()
     self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
     self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
@@ -305,6 +315,8 @@ class DigitalSource(DigitalBase):
     self.low_driver: BoolExpr = self.Parameter(BoolExpr(low_driver))
     self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
     self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
+
+    self._bridged_internal: BoolExpr = self.Parameter(BoolExpr(_bridged_internal))
 
   @staticmethod
   def low_from_supply(neg: Port[VoltageLink]) -> DigitalSource:
@@ -361,12 +373,12 @@ class DigitalBidirBridge(CircuitPortBridge):
     self.outer_port = self.Port(DigitalBidir(voltage_out=RangeExpr(), current_draw=RangeExpr(),
                                              voltage_limits=RangeExpr(), current_limits=RangeExpr(),
                                              output_thresholds=RangeExpr(), input_thresholds=RangeExpr(),
-                                             # TODO see issue 58, how do we propagate this in both directions?
-                                             # pulldown_capable=BoolExpr(), pullup_capable=BoolExpr(),
+                                             pulldown_capable=BoolExpr(), pullup_capable=BoolExpr(),
                                              ))
     # TODO can we actually define something here? as a pseudoport, this doesn't have limits
     self.inner_link = self.Port(DigitalBidir(voltage_limits=RangeExpr.ALL, current_limits=RangeExpr.ALL,
-                                             pulldown_capable=BoolExpr(), pullup_capable=BoolExpr(),
+                                             pullup_capable=False, pulldown_capable=False,  # don't create a loop
+                                             _bridged_internal=True
                                              ))
 
   def contents(self) -> None:
@@ -379,16 +391,8 @@ class DigitalBidirBridge(CircuitPortBridge):
 
     self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
     self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
-
-    # TODO this is a hacktastic in that it's not bidirectional, but it serves the use case for the USB PD CC case
-    # TODO this is a bit hacky, but allows a externally disconnected port
-    self.assign(self.inner_link.pullup_capable, self.outer_port.is_connected().then_else(
-      self.outer_port.link().pullup_capable, BoolExpr._to_expr_type(False)))
-    self.assign(self.inner_link.pulldown_capable, self.outer_port.is_connected().then_else(
-      self.outer_port.link().pulldown_capable, BoolExpr._to_expr_type(False)))
-    # TODO see issue 58, how do we propagate this in both directions?
-    # self.assign(self.outer_port.pullup_capable, self.inner_link.link().pullup_capable)
-    # self.assign(self.outer_port.pulldown_capable, self.inner_link.link().pulldown_capable)
+    self.assign(self.outer_port.pullup_capable, self.inner_link.link().pullup_capable)
+    self.assign(self.outer_port.pulldown_capable, self.inner_link.link().pulldown_capable)
 
 
 class DigitalBidirNotConnected(InternalBlock, Block):
@@ -465,7 +469,8 @@ class DigitalBidir(DigitalBase):
                input_thresholds: RangeLike = RangeExpr.EMPTY,
                output_thresholds: RangeLike = RangeExpr.ALL,
                pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False) -> None:
+               pulldown_capable: BoolLike = False,
+               _bridged_internal: BoolLike = False) -> None:
     super().__init__()
     self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
     self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
@@ -476,6 +481,7 @@ class DigitalBidir(DigitalBase):
 
     self.pullup_capable: BoolExpr = self.Parameter(BoolExpr(pullup_capable))
     self.pulldown_capable: BoolExpr = self.Parameter(BoolExpr(pulldown_capable))
+    self._bridged_internal: BoolExpr = self.Parameter(BoolExpr(_bridged_internal))
 
 
 class DigitalSingleSourceFake:
