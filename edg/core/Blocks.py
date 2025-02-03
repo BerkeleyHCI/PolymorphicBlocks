@@ -87,8 +87,10 @@ class Connection():
       is_export = self._is_export()
       if is_export:
         (ext_port, int_port) = is_export
-        if ext_port._get_initializers([]):
-          raise UnconnectableError(f"Connected boundary port {ext_port._name_from(self.parent, allow_unknown=True)} may not have initializers")
+        initializers = ext_port._get_initializers([])
+        if initializers:
+          raise UnconnectableError(f"Connected boundary port {ext_port._name_from(self.parent, allow_unknown=True)} may not have initializers, "
+                                   f"got {', '.join(['.'.join(path) + '=' + str(value) for _, path, value in initializers])}")
         return  # is an export, not a connection
 
     # otherwise, is a link-mediated connection

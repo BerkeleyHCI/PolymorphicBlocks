@@ -22,7 +22,7 @@ class Fusb302b_Device(InternalSubcircuit, FootprintBlock, JlcPart):
       output_thresholds=(0.35, float('inf')) * Volt,
     )
     self.i2c = self.Port(I2cTarget(i2c_model, [0x22]))
-    self.int_n = self.Port(DigitalSingleSource.low_from_supply(self.gnd), optional=True)
+    self.int_n = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)
 
   def contents(self) -> None:
     self.footprint(

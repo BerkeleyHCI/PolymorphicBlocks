@@ -48,7 +48,7 @@ class PullupDelayRc(DigitalFilter, Block):
                                    voltage=self.pwr.link().voltage))
 
     self.connect(self.pwr, self.rc.input.adapt_to(VoltageSink()))
-    self.io = self.Export(self.rc.output.adapt_to(DigitalSingleSource.high_from_supply(self.pwr)), [Output])
+    self.io = self.Export(self.rc.output.adapt_to(DigitalSource.pullup_from_supply(self.pwr)), [Output])
     self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
 
   def connected(self, *, gnd: Optional[Port[VoltageLink]] = None, pwr: Optional[Port[VoltageLink]] = None,

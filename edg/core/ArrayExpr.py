@@ -115,6 +115,9 @@ class ArrayBoolExpr(ArrayExpr[BoolExpr, List[bool], ArrayBoolLike]):
   def all(self) -> BoolExpr:
     return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_and))
 
+  def count(self) -> IntExpr:
+    return IntExpr()._new_bind(UnarySetOpBinding(self, NumericOp.sum))
+
 
 ArrayIntLike = Union['ArrayIntExpr', Sequence[IntLike]]
 class ArrayIntExpr(ArrayExpr[IntExpr, List[int], ArrayIntLike]):

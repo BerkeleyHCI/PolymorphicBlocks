@@ -23,7 +23,7 @@ class Lsm6ds3trc_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.i2c = self.Port(I2cTarget(dio_model))
 
-        dout_model = DigitalSingleSource.low_from_supply(self.gnd)
+        dout_model = DigitalSource.low_from_supply(self.gnd)
         self.int1 = self.Port(dout_model, optional=True)
         self.int2 = self.Port(dout_model, optional=True)
 

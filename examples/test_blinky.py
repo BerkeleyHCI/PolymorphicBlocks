@@ -535,7 +535,7 @@ class BlinkyTestCase(unittest.TestCase):
     compile_board_inplace(TestBlinkyBasic)  # generate this netlist as a test
 
   def test_design_empty(self) -> None:
-    compile_board_inplace(TestBlinkyEmpty, False)
+    compile_board_inplace(TestBlinkyEmpty)
 
   def test_design_incomplete(self) -> None:
     with self.assertRaises(CompilerCheckError):
@@ -546,37 +546,37 @@ class BlinkyTestCase(unittest.TestCase):
       compile_board_inplace(TestBlinkyRegulated, False)
 
   def test_design_complete(self) -> None:
-    compile_board_inplace(TestBlinkyComplete, False)
+    compile_board_inplace(TestBlinkyComplete)
 
   def test_design_expnaded(self) -> None:
-    compile_board_inplace(TestBlinkyExpanded, False)
+    compile_board_inplace(TestBlinkyExpanded)
 
   def test_design_implicit(self) -> None:
-    compile_board_inplace(TestBlinkyImplicit, False)
+    compile_board_inplace(TestBlinkyImplicit)
 
   def test_design_chain(self) -> None:
     compile_board_inplace(TestBlinkyChain)  # generate this netlist as a test
 
   def test_design_micro(self) -> None:
-    compile_board_inplace(TestBlinkyMicro, False)
+    compile_board_inplace(TestBlinkyMicro)
 
   def test_design_library(self) -> None:
-    compile_board_inplace(TestBlinkyWithLibrary, False)
+    compile_board_inplace(TestBlinkyWithLibrary)
 
   def test_design_export(self) -> None:
-    compile_board_inplace(TestBlinkyWithLibraryExport, False)
+    compile_board_inplace(TestBlinkyWithLibraryExport)
 
   def test_design_array(self) -> None:
-    compile_board_inplace(TestBlinkyArray, False)
+    compile_board_inplace(TestBlinkyArray)
 
   def test_design_packed(self) -> None:
-    compile_board_inplace(TestBlinkyPacked, False)
+    compile_board_inplace(TestBlinkyPacked)
 
   def test_design_schematic_import(self) -> None:
-    compile_board_inplace(TestBlinkyWithSchematicImport, False)
+    compile_board_inplace(TestBlinkyWithSchematicImport)
 
   def test_design_schematic_import_modeled(self) -> None:
-    compile_board_inplace(TestBlinkyWithModeledSchematicImport, False)
+    compile_board_inplace(TestBlinkyWithModeledSchematicImport)
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ from ..core import *
 from .GroundPort import Ground
 from .AnalogPort import AnalogSource, AnalogSink
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
-from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource
+from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
 from .VoltagePorts import CircuitPort, VoltageSource, VoltageSink
 
 
@@ -52,12 +52,17 @@ class PassiveAdapterDigitalSource(CircuitPortAdapter[DigitalSource]):
                current_limits: RangeLike = RangeExpr.ALL,
                output_thresholds: RangeLike = RangeExpr.ALL,
                pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False):
+               pulldown_capable: BoolLike = False,
+               high_driver: BoolLike = True,
+               low_driver: BoolLike = True,
+               _bridged_internal: BoolLike = False):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(DigitalSource(voltage_out=voltage_out, current_limits=current_limits,
                                        output_thresholds=output_thresholds,
-                                       pullup_capable=pullup_capable, pulldown_capable=pulldown_capable))
+                                       pullup_capable=pullup_capable, pulldown_capable=pulldown_capable,
+                                       high_driver=high_driver, low_driver=low_driver,
+                                       _bridged_internal=_bridged_internal))
 
 
 class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
@@ -65,11 +70,17 @@ class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
   @init_in_parent
   def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO,
-               input_thresholds: RangeLike = RangeExpr.EMPTY):
+               input_thresholds: RangeLike = RangeExpr.EMPTY,
+               pullup_capable: BoolLike = False,
+               pulldown_capable: BoolLike = False,
+               _bridged_internal: BoolLike = False):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(DigitalSink(voltage_limits=voltage_limits, current_draw=current_draw,
-                                     input_thresholds=input_thresholds))
+                                     input_thresholds=input_thresholds,
+                                     pullup_capable=pullup_capable,
+                                     pulldown_capable=pulldown_capable,
+                                     _bridged_internal=_bridged_internal))
 
 
 class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
@@ -83,29 +94,15 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
                output_thresholds: RangeLike = RangeExpr.ALL,
                *,
                pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False):
+               pulldown_capable: BoolLike = False,
+               _bridged_internal: BoolLike = False):
     super().__init__()
     self.src = self.Port(Passive())
     self.dst = self.Port(DigitalBidir(voltage_limits=voltage_limits, current_draw=current_draw,
                                       voltage_out=voltage_out, current_limits=current_limits,
                                       input_thresholds=input_thresholds, output_thresholds=output_thresholds,
-                                      pullup_capable=pullup_capable, pulldown_capable=pulldown_capable))
-
-
-class PassiveAdapterDigitalSingleSource(CircuitPortAdapter[DigitalSingleSource]):
-  # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
-  @init_in_parent
-  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
-               output_thresholds: RangeLike = RangeExpr.ALL, *,
-               pullup_capable: BoolLike = False,
-               pulldown_capable: BoolLike = False,
-               low_signal_driver: BoolLike = False,
-               high_signal_driver: BoolLike = False):
-    super().__init__()
-    self.src = self.Port(Passive())
-    self.dst = self.Port(DigitalSingleSource(voltage_out=voltage_out, output_thresholds=output_thresholds,
-                                             pullup_capable=pullup_capable, pulldown_capable=pulldown_capable,
-                                             low_signal_driver=low_signal_driver, high_signal_driver=high_signal_driver))
+                                      pullup_capable=pullup_capable, pulldown_capable=pulldown_capable,
+                                      _bridged_internal=_bridged_internal))
 
 
 class PassiveAdapterAnalogSource(CircuitPortAdapter[AnalogSource]):
@@ -146,7 +143,6 @@ class Passive(CircuitPort[PassiveLink]):
     VoltageSink: PassiveAdapterVoltageSink,
     DigitalSink: PassiveAdapterDigitalSink,
     DigitalSource: PassiveAdapterDigitalSource,
-    DigitalSingleSource: PassiveAdapterDigitalSingleSource,
     DigitalBidir: PassiveAdapterDigitalBidir,
     AnalogSink: PassiveAdapterAnalogSink,
     AnalogSource: PassiveAdapterAnalogSource

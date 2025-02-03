@@ -29,7 +29,8 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions  TODO: FT IO, BOOT0 IO
       current_draw=(0, 0)*Amp,
-      input_threshold_abs=(0.8, 2)*Volt
+      input_threshold_abs=(0.8, 2)*Volt,
+      pullup_capable=True
     ), optional=True)  # note, internal pull-up resistor, 30-50 kOhm by Table 35
 
     # TODO need to pass through to pin mapper

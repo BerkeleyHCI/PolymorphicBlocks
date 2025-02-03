@@ -11,7 +11,7 @@ class CpuFanConnector(Connector, Block):
             voltage_limits=12*Volt(tol=0.05),
             current_draw=(0, 2.2)*Amp,  # section 2.1.2: 2.2A max for up to 2s during startup
         ), [Power])
-        self.sense = self.Port(DigitalSingleSource.low_from_supply(self.gnd))  # tolerant up to 12v
+        self.sense = self.Port(DigitalSource.low_from_supply(self.gnd))  # tolerant up to 12v
 
 
 @abstract_block_default(lambda: CpuFan4Pin)

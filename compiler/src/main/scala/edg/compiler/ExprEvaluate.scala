@@ -188,7 +188,16 @@ object ExprEvaluate {
         }
 
       case Op.RANGE => (lhs, rhs) match {
-          case (FloatPromotable(lhs), FloatPromotable(rhs)) => RangeValue(math.min(lhs, rhs), math.max(lhs, rhs))
+          case (FloatPromotable(lhs), FloatPromotable(rhs)) =>
+            if (lhs.isNaN && rhs.isNaN) { // here, NaN is treated as empty and dispreferred (instead of NaN prop)
+              RangeEmpty
+            } else if (lhs.isNaN) {
+              RangeValue(rhs, rhs)
+            } else if (rhs.isNaN) {
+              RangeValue(lhs, lhs)
+            } else {
+              RangeValue(math.min(lhs, rhs), math.max(lhs, rhs))
+            }
           case _ =>
             throw new ExprEvaluateException(s"Unknown binary operands types in $lhs ${binary.op} $rhs from $binary")
         }
@@ -259,6 +268,12 @@ object ExprEvaluate {
 
       case (Op.MIN, RangeValue(valMin, _)) => FloatValue(valMin)
       case (Op.MAX, RangeValue(_, valMax)) => FloatValue(valMax)
+
+      // TODO can we have stricter semantics to avoid min(RangeEmpty) and max(RangeEmpty)?
+      // This just NaNs out so at least it propagates
+      case (Op.MAX, RangeEmpty) => FloatValue(Float.NaN)
+      case (Op.MIN, RangeEmpty) => FloatValue(Float.NaN)
+
       case (Op.CENTER, RangeValue(valMin, valMax)) => FloatValue((valMin + valMax) / 2)
       case (Op.WIDTH, RangeValue(valMin, valMax)) => FloatValue(math.abs(valMax - valMin))
 
@@ -273,6 +288,7 @@ object ExprEvaluate {
       case (Op.SUM, ArrayValue.Empty(_)) => FloatValue(0) // TODO type needs to be dynamic
       case (Op.SUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.sum)
       case (Op.SUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.sum)
+      case (Op.SUM, ArrayValue.ExtractBoolean(vals)) => IntValue(vals.count(_ == true))
       case (Op.SUM, ArrayValue.UnpackRange(extracted)) => extracted match {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.sum, valMaxs.sum)
           case _ => RangeEmpty // TODO how should sum behave on empty ranges?
@@ -293,15 +309,6 @@ object ExprEvaluate {
 
       case (Op.MINIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.min)
       case (Op.MINIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.min)
-
-      // TODO this is definitely a hack in the absence of a proper range extractor
-      case (Op.MAXIMUM, RangeValue(lower, upper)) => FloatValue(upper)
-      case (Op.MINIMUM, RangeValue(lower, upper)) => FloatValue(lower)
-
-      // TODO can we have stricter semantics to avoid min(RangeEmpty) and max(RangeEmpty)?
-      // This just NaNs out so at least it propagates
-      case (Op.MAXIMUM, RangeEmpty) => FloatValue(Float.NaN)
-      case (Op.MINIMUM, RangeEmpty) => FloatValue(Float.NaN)
 
       // TODO this should be a user-level assertion instead of a compiler error
       case (Op.SET_EXTRACT, ArrayValue.Empty(_)) =>

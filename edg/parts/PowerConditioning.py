@@ -391,8 +391,8 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
     self.pwr_out = self.Port(VoltageSource.empty(), [Output], doc="Gate controlled power out")
     self.gnd = self.Port(Ground.empty(), [Common])
 
-    self.btn_out = self.Port(DigitalSingleSource.empty(), optional=True,
-                             doc="Allows the button state to be read independently of the control signal")
+    self.btn_out = self.Port(DigitalSource.empty(), optional=True,
+                             doc="Allows the button state to be read independently of the control signal. Open-drain.")
     self.btn_in = self.Port(DigitalBidir.empty(), doc="Should be connected to a button output. Do not connect IO")
     self.control = self.Port(DigitalSink.empty(), doc="external control to latch the power on")  # digital level control - gnd-referenced NFET gate
 
@@ -450,11 +450,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
                         ),
                         'control': DigitalSink(),  # TODO more modeling here?
                         'gnd': Ground(),
-                        'btn_out': DigitalSingleSource(
-                          voltage_out=self.gnd.link().voltage,
-                          output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
-                          low_signal_driver=True
-                        ),
+                        'btn_out': DigitalSource.low_from_supply(self.gnd),
                         'btn_in': DigitalBidir(
                           voltage_out=self.gnd.link().voltage,
                           output_thresholds=(self.gnd.link().voltage.upper(), float('inf')),
