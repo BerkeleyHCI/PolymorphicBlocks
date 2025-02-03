@@ -79,23 +79,13 @@ class DigitalLink(CircuitLink):
       self.sinks.sum(lambda x: x.current_draw) + self.bidirs.sum(lambda x: x.current_draw)
     )
     self.assign(self.current_limits,
-                self.sources.any_connected().then_else(
-                  self.sources.intersection(lambda x: x.current_limits),
-                  RangeExpr._to_expr_type(RangeExpr.ALL))
+                self.sources.intersection(lambda x: x.current_limits)
                 .intersect(self.bidirs.intersection(lambda x: x.current_limits)))
     self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
 
-    sources_output_thresholds = self.sources.any_connected().then_else(
-      self.sources.intersection(lambda x: x.output_thresholds),
-      RangeExpr.ALL * Volt
-    )
-    bidirs_output_thresholds = self.bidirs.any_connected().then_else(
-      self.bidirs.intersection(lambda x: x.output_thresholds),
-      RangeExpr.ALL * Volt
-    )
     self.assign(self.output_thresholds,
-                sources_output_thresholds.intersect(bidirs_output_thresholds))
-
+                self.sources.intersection(lambda x: x.output_thresholds)
+                .intersect(self.bidirs.intersection(lambda x: x.output_thresholds),))
     self.assign(self.input_thresholds,
       self.sinks.hull(lambda x: x.input_thresholds).hull(self.bidirs.hull(lambda x: x.input_thresholds)),
     )
