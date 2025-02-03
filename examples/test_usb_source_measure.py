@@ -563,7 +563,7 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.boost_rc, ), _ = self.chain(self.mcu.gpio.request('boost_pwm'), imp.Block(rc_model), self.conv.boost_pwm)
 
       # TODO: this should be a wrapper VoltageComparator with more precise tolerancing
-      self.conv_comp = imp.Block(Lmv331())
+      self.conv_comp = imp.Block(Comparator())
       (self.comp_ref, ), _ = self.chain(
         self.v3v3,
         imp.Block(VoltageDivider(output_voltage=1*Volt(tol=0.05),

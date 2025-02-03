@@ -19,7 +19,7 @@ class Vl53l0x_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_threshold_factor=(0.3, 0.7),
     )
     self.xshut = self.Port(DigitalSink.from_bidir(gpio_model))
-    self.gpio1 = self.Port(DigitalSingleSource.low_from_supply(self.vss), optional=True)
+    self.gpio1 = self.Port(DigitalSource.low_from_supply(self.vss), optional=True)
 
     # TODO: support addresses, the default is 0x29 though it's software remappable
     self.i2c = self.Port(I2cTarget(DigitalBidir.from_supply(
@@ -63,7 +63,7 @@ class Vl53l0x(DistanceSensor, Resettable, GeneratorBlock):
 
     self.i2c = self.Export(self.ic.i2c)
 
-    self.int = self.Port(DigitalSingleSource.empty(), optional=True,
+    self.int = self.Port(DigitalSource.empty(), optional=True,
                          doc="Interrupt output for new data available")
     self.generator_param(self.reset.is_connected(), self.int.is_connected())
 

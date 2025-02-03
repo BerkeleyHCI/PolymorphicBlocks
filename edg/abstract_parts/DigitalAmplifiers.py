@@ -115,7 +115,7 @@ class OpenDrainDriver(PowerSwitch, Block):
 
     self.gnd = self.Port(Ground.empty(), [Common])
     self.control = self.Port(DigitalSink.empty(), [Input])
-    self.output = self.Port(DigitalSingleSource.empty(), [Output])
+    self.output = self.Port(DigitalSource.empty(), [Output])
 
     self.max_rds = self.ArgParameter(max_rds)
     self.frequency = self.ArgParameter(frequency)
@@ -131,7 +131,7 @@ class OpenDrainDriver(PowerSwitch, Block):
       frequency=self.frequency,
       drive_current=self.control.link().current_limits
     ))
-    self.connect(self.drv.drain.adapt_to(DigitalSingleSource.low_from_supply(self.gnd
+    self.connect(self.drv.drain.adapt_to(DigitalSource.low_from_supply(self.gnd
     )), self.output)
     self.connect(self.drv.source.adapt_to(Ground()), self.gnd)
     self.connect(self.drv.gate.adapt_to(DigitalSink()),

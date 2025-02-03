@@ -14,7 +14,7 @@ class DomeButtonConnector(Connector, FootprintBlock):
     ))
     self.led_k = self.Port(Ground(), [Common])  # TODO should be agnostic to high / low sided drive
     self.sw2 = self.Port(Ground(), [Common])
-    self.sw1 = self.Port(DigitalSingleSource.low_from_supply(self.sw2))
+    self.sw1 = self.Port(DigitalSource.low_from_supply(self.sw2))
 
   def contents(self) -> None:
     super().contents()

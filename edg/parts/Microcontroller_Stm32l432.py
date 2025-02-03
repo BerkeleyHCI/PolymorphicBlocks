@@ -29,7 +29,7 @@ class Stm32l432Base_Device(IoControllerI2cTarget, IoControllerDac, IoControllerC
         self.swd = self.Port(SwdTargetPort.empty())
         self._io_ports.insert(0, self.swd)
 
-        self.nrst = self.Port(DigitalBidir.empty(), optional=True)  # internally pulled up
+        self.nrst = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
 
     def _system_pinmap(self) -> Dict[str, CircuitPort]:
         return VariantPinRemapper({  # Pin/peripheral resource definitions (section 4)
@@ -59,7 +59,7 @@ class Stm32l432Base_Device(IoControllerI2cTarget, IoControllerDac, IoControllerC
             input_threshold_factor=(0.3, 0.7),  # section 6.3.14, simplest for 1.62<Vdd<3.6
             pullup_capable=True, pulldown_capable=True
         )
-        self.nrst.init_from(dio_ft_model)
+        self.nrst.init_from(DigitalSink.from_bidir(dio_ft_model))
 
         adc_tt_model = AnalogSink.from_supply(
             self.gnd, self.pwr,

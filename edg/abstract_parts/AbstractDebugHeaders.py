@@ -17,7 +17,7 @@ class SwdCortexTargetConnectorReset(BlockInterfaceMixin[SwdCortexTargetConnector
   """Mixin for SWD connectors with adding the optional reset pin"""
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-    self.reset = self.Port(DigitalBidir.empty(), optional=True)  # can tri-state when not asserted
+    self.reset = self.Port(DigitalSource.empty(), optional=True)  # as open-drain
 
 
 class SwdCortexTargetConnectorSwo(BlockInterfaceMixin[SwdCortexTargetConnector]):

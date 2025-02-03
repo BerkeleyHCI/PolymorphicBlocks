@@ -38,7 +38,7 @@ python -m unittest discover
 
 Or, to run tests for a specific package (eg, `edg_core` in this command):
 ```
-python -m unittest discover -s edg_core -t .
+python -m unittest discover -s edg.core -t .
 ```
 
 Or, to run one specific test:

@@ -1,8 +1,7 @@
 from typing import *
 
 from ..core import *
-from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir, DigitalSingleSource, DigitalBidirBridge, \
-  DigitalSinkBridge
+from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir, DigitalBidirBridge, DigitalSinkBridge
 
 
 class I2cLink(Link):
@@ -12,21 +11,28 @@ class I2cLink(Link):
   def __init__(self) -> None:
     super().__init__()
 
-    self.pull = self.Port(I2cPullupPort(), optional=True)
     self.controller = self.Port(I2cController(DigitalBidir.empty()))
     self.targets = self.Port(Vector(I2cTarget(DigitalBidir.empty())))
 
+    # in concept we should only have one pullup, but optional handling on non-vector ports is a mess
+    # and this breaks where we have to create a bridge, since the internal link has a disconnected pull port
+    # so this structurally allows multiple pullups, but an assertion checks that there aren't multiple
+    self.pull = self.Port(Vector(I2cPullupPort().empty()), optional=True)
+
     self.addresses = self.Parameter(ArrayIntExpr(self.targets.flatten(lambda x: x.addresses)))
 
-    self.has_pull = self.Parameter(BoolExpr(self.pull.is_connected()))
+    self.has_pull = self.Parameter(BoolExpr(self.pull.any_connected()))
 
   def contents(self) -> None:
     super().contents()
-    self.require(self.pull.is_connected() | self.controller.has_pullup)
+    self.require(self.pull.any_connected() | self.controller.has_pullup)
+    self.require(self.pull.length() <= 1, "at most one pullup")
     self.require(self.addresses.all_unique(), "conflicting addresses on I2C bus")
-    self.scl = self.connect(self.pull.scl, self.controller.scl, self.targets.map_extract(lambda device: device.scl),
+    self.scl = self.connect(self.pull.map_extract(lambda device: device.scl),
+                            self.controller.scl, self.targets.map_extract(lambda device: device.scl),
                             flatten=True)
-    self.sda = self.connect(self.pull.sda, self.controller.sda, self.targets.map_extract(lambda device: device.sda),
+    self.sda = self.connect(self.pull.map_extract(lambda device: device.sda),
+                            self.controller.sda, self.targets.map_extract(lambda device: device.sda),
                             flatten=True)
 
 
@@ -35,8 +41,8 @@ class I2cPullupPort(Bundle[I2cLink]):
 
   def __init__(self) -> None:
     super().__init__()
-    self.scl = self.Port(DigitalSingleSource(pullup_capable=True))
-    self.sda = self.Port(DigitalSingleSource(pullup_capable=True))
+    self.scl = self.Port(DigitalSource(low_driver=False, high_driver=False, pullup_capable=True))
+    self.sda = self.Port(DigitalSource(low_driver=False, high_driver=False, pullup_capable=True))
 
 
 class I2cController(Bundle[I2cLink]):

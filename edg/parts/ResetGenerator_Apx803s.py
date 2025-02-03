@@ -10,7 +10,7 @@ class Apx803s_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
         self.vcc = self.Port(VoltageSink(
             voltage_limits=(1.0, 5.5)*Volt,
             current_draw=(10, 15)*uAmp))
-        self.nreset = self.Port(DigitalSingleSource.low_from_supply(self.gnd), [Output])
+        self.nreset = self.Port(DigitalSource.low_from_supply(self.gnd), [Output])
 
         self.reset_threshold = self.ArgParameter(reset_threshold)
         self.generator_param(self.reset_threshold)
