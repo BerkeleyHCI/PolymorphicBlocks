@@ -441,7 +441,7 @@ class UsbSourceMeasure(JlcBoardTop):
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
         # avoid excess capacitance on VBus
-        imp.Block(FetPrecharge(precharge_resistance=330*Ohm(tol=0.1), max_rds=0.1*Ohm)),
+        imp.Block(FetPrecharge(precharge_resistance=470*Ohm(tol=0.1), max_rds=0.1*Ohm)),
         imp.Block(DecouplingCapacitor(100*uFarad(tol=0.25))),
         imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30)*Volt,  # design for 0.5x - 1.5x conv ratio
                                                   frequency=500*kHertz(tol=0),
