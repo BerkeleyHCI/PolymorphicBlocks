@@ -420,3 +420,13 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
       })
 
     self.assign(self.actual_factor, 1 / self.r.actual_resistance / self.c.actual_capacitance)
+
+
+class NoninvertingSummingAmplifier(OpampApplication):
+  @staticmethod
+  def calculate_ratio(resistances: List[Range]) -> List[Range]:
+    """Calculates each input's contribution to the output, for 1x gain.
+    Based on https://www.electronicshub.org/summing-amplifier/, which calculates the voltage of each input
+    and uses superposition to combine them."""
+    return None
+
