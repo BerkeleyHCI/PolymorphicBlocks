@@ -422,11 +422,26 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
     self.assign(self.actual_factor, 1 / self.r.actual_resistance / self.c.actual_capacitance)
 
 
-class NoninvertingSummingAmplifier(OpampApplication):
-  @staticmethod
-  def calculate_ratio(resistances: List[Range]) -> List[Range]:
+class SummingAmplifier(OpampApplication):
+  @classmethod
+  def calculate_ratio(cls, resistances: List[Range]) -> List[Range]:
     """Calculates each input's contribution to the output, for 1x gain.
+    Non-inverting summing amplifier topology.
     Based on https://www.electronicshub.org/summing-amplifier/, which calculates the voltage of each input
     and uses superposition to combine them."""
-    return None
+    output = []
+    for i, resistance in enumerate(resistances):
+      others = resistances[:i] + resistances[i+1:]
 
+      # compute the two tolerance corners
+      # ratio is lowest when this resistance is lowest and other is lowest
+      other_lowest_parallel = 1 / sum([1 / other.lower for other in others])
+      ratio_lowest = other_lowest_parallel / (resistance.lower + other_lowest_parallel)
+
+      # ratio is highest when this resistance is highest and other is highest
+      other_highest_parallel = 1 / sum([1 / other.upper for other in others])
+      ratio_highest = other_highest_parallel / (resistance.lower + other_highest_parallel)
+
+      output.append(Range(ratio_lowest, ratio_highest))
+
+    return output
