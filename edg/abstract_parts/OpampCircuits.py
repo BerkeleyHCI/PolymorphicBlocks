@@ -431,15 +431,13 @@ class SummingAmplifier(OpampApplication):
     and uses superposition to combine them."""
     output = []
     for i, resistance in enumerate(resistances):
-      others = resistances[:i] + resistances[i+1:]
-
       # compute the two tolerance corners
-      # ratio is lowest when this resistance is lowest and other is lowest
+      others = resistances[:i] + resistances[i+1:]
       other_lowest_parallel = 1 / sum([1 / other.lower for other in others])
-      ratio_lowest = other_lowest_parallel / (resistance.lower + other_lowest_parallel)
-
-      # ratio is highest when this resistance is highest and other is highest
       other_highest_parallel = 1 / sum([1 / other.upper for other in others])
+      # ratio is lowest when this resistance is highest and other is lowest
+      ratio_lowest = other_lowest_parallel / (resistance.upper + other_lowest_parallel)
+      # ratio is highest when this resistance is lowest and other is highest
       ratio_highest = other_highest_parallel / (resistance.lower + other_highest_parallel)
 
       output.append(Range(ratio_lowest, ratio_highest))
