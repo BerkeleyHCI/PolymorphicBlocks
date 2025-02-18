@@ -1,5 +1,5 @@
 import unittest
-from typing import Mapping, Optional, Dict, List
+from typing import Mapping, Dict
 
 from edg.abstract_parts.ESeriesUtil import ESeriesRatioUtil
 from edg.abstract_parts.ResistiveDivider import DividerValues
@@ -418,9 +418,10 @@ class UsbSourceMeasure(JlcBoardTop):
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       # input filtering
-      (self.filt_vusb, self.prot_vusb, self.tp_vusb), _ = self.chain(
+      (self.filt_vusb, self.fuse_vusb, self.prot_vusb, self.tp_vusb), _ = self.chain(
         self.usb.pwr,
         self.Block(SeriesPowerFerriteBead()),
+        self.Block(SeriesPowerFuse(trip_current=(7, 8)*Amp)),
         imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # for parts commonality w/ the Vconv zener
         self.Block(VoltageTestPoint())
       )
