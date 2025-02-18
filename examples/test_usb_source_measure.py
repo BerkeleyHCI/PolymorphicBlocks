@@ -130,6 +130,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 
     self.assign(self.out_range, out_range)
 
+
 class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
   """Emitter follower circuit.
   """
@@ -208,27 +209,23 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
     self.connect(self.low_gate_ctl, self.low_gate.control.request())
 
 
-class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
-  """Not really a general error amplifier circuit, but a subcircuit that performs that function in
-  the context of this SMU analog feedback block.
+class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
+  """A noninverting summing amplifier with an optional diode gate (enforcing drive direction) and inline resistance
+  (to allow its output to be overridden by a stronger driver).
 
-  Consists of a resistive divider between the target and inverted sense signal, followed by
-  an opamp follower circuit that is limited by either a resistor, or diode (for source-/sink-only operation).
-
-  The target and sense signal should share a common reference ('zero') voltage, that is also the
-  reference fed into the following integrator stage.
-  When the measured signal is the same as the target, the sense input is equal-but-opposite from the
-  target signal (referenced to the common reference), so the divider output is at common.
-  Any deviation upsets this balance, which produces an error signal on the output.
+  Used as the error amplifier in SMU analog control block, the target is set with inverted polarity
+  (around the integrator reference). When the measured signal is at the target, the output (sum)
+  is the integrator reference, producing zero error. Otherwise, the error signal is proportional to the deviation.
 
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
-    return {'+': self.actual, '-': self.target, '3': self.output, 'V+': self.pwr, 'V-': self.gnd}
+    return {'M': self.actual, 'T': self.target, 'F': self.target_fine, '3': self.output, 'V+': self.pwr, 'V-': self.gnd}
 
   @init_in_parent
-  def __init__(self, diode_spec: StringLike, output_resistance: RangeLike, input_resistance: RangeLike, *,
+  def __init__(self, input_resistance: RangeLike = 0*Ohm(tol=0), *,
+               dir: StringLike = '', res: RangeLike = 0*Ohm(tol=0), fine_scale: FloatLike = 0,
                series: IntLike = 24, tolerance: FloatLike = 0.01):
     super().__init__()
 
@@ -236,15 +233,18 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.target = self.Port(AnalogSink.empty())
+    self.target_fine = self.Port(AnalogSink.empty(), optional=True)
     self.actual = self.Port(AnalogSink.empty())
     self.output = self.Port(AnalogSource.empty())
 
-    self.output_resistance = self.ArgParameter(output_resistance)
     self.input_resistance = self.ArgParameter(input_resistance)
-    self.diode_spec = self.ArgParameter(diode_spec)
+    self.dir = self.ArgParameter(dir)
+    self.res = self.ArgParameter(res)  # output side
+    self.fine_scale = self.ArgParameter(fine_scale)
     self.series = self.ArgParameter(series)
     self.tolerance = self.ArgParameter(tolerance)
-    self.generator_param(self.input_resistance, self.diode_spec, self.series, self.tolerance)
+    self.generator_param(self.input_resistance, self.res, self.dir, self.series, self.tolerance,
+                         self.target_fine.is_connected(), self.fine_scale)
 
   def generate(self) -> None:
     super().generate()
@@ -258,44 +258,44 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
     self.amp = self.Block(Opamp())
     self.rtop = self.Block(Resistor(resistance=Range.from_tolerance(top_resistance, self.get(self.tolerance))))
     self.rbot = self.Block(Resistor(resistance=Range.from_tolerance(bottom_resistance, self.get(self.tolerance))))
-    self.rout = self.Block(Resistor(resistance=self.output_resistance))
 
-    diode_spec = self.get(self.diode_spec)
-    if diode_spec:
+    output_impedance = self.amp.out.link().source_impedance
+    dir = self.get(self.dir)
+    if dir:
       self.diode = self.Block(Diode(  # TODO should be encoded as a voltage difference?
         reverse_voltage=self.amp.out.voltage_out,
         current=RangeExpr.ZERO,  # an approximation, current rating not significant here
         voltage_drop=(0, 0.5)*Volt  # arbitrary low threshold
       ))
-      # regardless of diode direction, the port model is the same on both ends
       amp_out_model = AnalogSink(
-        impedance=self.rout.actual_resistance + self.output.link().sink_impedance
+        impedance=self.output.link().sink_impedance
       )
-      rout_in_model = AnalogSource(
-        impedance=self.amp.out.link().source_impedance + self.rout.actual_resistance
-      )
-      if diode_spec == 'source':
-        nodes: Mapping[str, Optional[BasePort]] = {
-          'amp_out_node': self.diode.anode.adapt_to(amp_out_model),
-          'rout_in_node': self.diode.cathode.adapt_to(rout_in_model)
-        }
-      elif diode_spec == 'sink':
-        nodes = {
-          'amp_out_node': self.diode.cathode.adapt_to(amp_out_model),
-          'rout_in_node': self.diode.anode.adapt_to(rout_in_model)
-        }
+      if dir == 'source':
+        self.connect(self.amp.out, self.diode.anode.adapt_to(amp_out_model))
+        amp_out_node = self.diode.cathode
+      elif dir == 'sink':
+        self.connect(self.amp.out, self.diode.cathode.adapt_to(amp_out_model))
+        amp_out_node = self.diode.anode
       else:
-        raise ValueError(f"invalid diode spec '{diode_spec}', expected '', 'source', or 'sink'")
-    else:
-      nodes = {
-        'rout_in_node': self.amp.out,
-        'amp_out_node': None,  # must be marked as used, but don't want to double-connect to above
-      }
+        raise ValueError(f"invalid dir '{dir}', expected '', 'source', or 'sink'")
+
+    if self.get(self.res) != Range.exact(0):  # if resistor requested
+      assert not dir, "diode + output resistance not supported"
+      self.rout = self.Block(Resistor(resistance=self.res))
+      self.connect(self.amp.out, self.rout.a.adapt_to(AnalogSink(
+        impedance=self.rout.actual_resistance + self.output.link().sink_impedance
+      )))
+      amp_out_node = self.rout.b
+      output_impedance += self.rout.actual_resistance
+
+    self.connect(amp_out_node.adapt_to(AnalogSource(
+      impedance=output_impedance
+    )), self.output)
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
         conversions={
           'target': AnalogSink(
-            impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
+            impedance=self.rtop.actual_resistance + self.rbot.actual_resistance  # assumed dominates fine resistance
           ),
           'actual': AnalogSink(
             impedance=self.rtop.actual_resistance + self.rbot.actual_resistance
@@ -306,13 +306,16 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
             impedance=1 / (1 / self.rtop.actual_resistance + 1 / self.rbot.actual_resistance)
           ),
           'rbot.2': AnalogSink(),  # ideal, rtop.2 contains the parameter model
-          'rout.1': AnalogSink(),
-          'rout.2': AnalogSource(
-            voltage_out=self.amp.out.link().voltage,
-            signal_out=self.amp.out.link().voltage,
-            impedance=self.rout.actual_resistance
-          ),
-        }, nodes=nodes)
+        })
+
+    if self.get(self.target_fine.is_connected()):
+      assert self.get(self.fine_scale) != 0
+      self.rfine = self.Block(Resistor(resistance=Range.from_tolerance(top_resistance * self.get(self.fine_scale),
+                                                                       self.get(self.tolerance))))
+      self.connect(self.target_fine, self.rfine.a.adapt_to(AnalogSink(
+        impedance=self.rfine.actual_resistance  # assumed non-fine resistance dominates
+      )))
+      self.connect(self.rfine.b.adapt_to(AnalogSink()), self.amp.inp)
 
 
 class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
@@ -331,6 +334,7 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
     self.pwr_gate_neg = self.Port(Ground.empty())
 
     self.control_voltage = self.Port(AnalogSink.empty())
+    self.control_voltage_fine = self.Port(AnalogSink.empty())
     self.control_current_source = self.Port(AnalogSink.empty())
     self.control_current_sink = self.Port(AnalogSink.empty())
     self.high_gate_ctl = self.Port(DigitalSink.empty())
@@ -351,12 +355,10 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       locals={
         'err_volt': {
-          'output_resistance': 4.7*kOhm(tol=0.05),
-          'input_resistance': (10, 100)*kOhm
+          'input_resistance': (4.7, 47)*kOhm,
         },
         'err_current': {
-          'output_resistance': 1*Ohm(tol=0.05),
-          'input_resistance': (10, 100)*kOhm,
+          'input_resistance': (4.7, 47)*kOhm,
         },
         'int': {
           'factor': Range.from_tolerance(1 / 4.7e-6, 0.15),
@@ -653,6 +655,8 @@ class UsbSourceMeasure(JlcBoardTop):
         self.dac.pwr)
       (self.tp_cv, ), _ = self.chain(self.dac.out0, imp.Block(AnalogRfTestPoint('cv')),
                                      self.control.control_voltage)
+      (self.tp_cvf, ), _ = self.chain(self.dac.out3, imp.Block(AnalogRfTestPoint('cvf')),
+                                      self.control.control_voltage_fine)
       (self.tp_cisrc, ), _ = self.chain(self.dac.out1, imp.Block(AnalogRfTestPoint('cisrc')),
                                         self.control.control_current_sink)
       (self.tp_cisnk, ), _ = self.chain(self.dac.out2, imp.Block(AnalogRfTestPoint('cisnk')),

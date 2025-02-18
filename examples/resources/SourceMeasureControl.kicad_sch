@@ -319,6 +319,498 @@
 				)
 			)
 		)
+		(symbol "Opamp_1"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "err_volt"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "#GatedSummingAmplifier(res=4.7*kOhm(tol=0.01), **err_volt)"
+				(at -1.27 -10.16 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Opamp_1_0_1"
+				(polyline
+					(pts
+						(xy 5.08 0) (xy -5.08 5.08) (xy -5.08 -5.08) (xy 5.08 0)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "Opamp_1_1_1"
+				(pin input line
+					(at -7.62 2.54 0)
+					(length 2.54)
+					(name "F"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "0"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 5.08 0)
+					(length 2.54)
+					(name "T"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 -2.54 0)
+					(length 2.54)
+					(name "M"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -2.54 6.35 270)
+					(length 2.54)
+					(name "V+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -2.54 -6.35 90)
+					(length 2.54)
+					(name "V-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+		(symbol "Opamp_2"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "err_source"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "#GatedSummingAmplifier(gate='source', **err_current)"
+				(at -1.27 -10.16 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Opamp_2_0_1"
+				(polyline
+					(pts
+						(xy 5.08 0) (xy -5.08 5.08) (xy -5.08 -5.08) (xy 5.08 0)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "Opamp_2_1_1"
+				(pin input line
+					(at -7.62 2.54 0)
+					(length 2.54)
+					(name "T"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 -2.54 0)
+					(length 2.54)
+					(name "M"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -2.54 6.35 270)
+					(length 2.54)
+					(name "V+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -2.54 -6.35 90)
+					(length 2.54)
+					(name "V-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+		(symbol "Opamp_3"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "err_sink"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "#GatedSummingAmplifier(gate='sink', **err_current)"
+				(at -1.27 -10.16 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Opamp_3_0_1"
+				(polyline
+					(pts
+						(xy 5.08 0) (xy -5.08 5.08) (xy -5.08 -5.08) (xy 5.08 0)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "Opamp_3_1_1"
+				(pin input line
+					(at -7.62 2.54 0)
+					(length 2.54)
+					(name "T"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 -2.54 0)
+					(length 2.54)
+					(name "M"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -2.54 6.35 270)
+					(length 2.54)
+					(name "V+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -2.54 -6.35 90)
+					(length 2.54)
+					(name "V-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "R_2"
 			(pin_names
 				(offset 0)
@@ -2100,23 +2592,20 @@
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "U"
-				(at 3.81 3.175 0)
+			(property "Reference" "err_d"
+				(at 0 5.08 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left)
 				)
 			)
-			(property "Value" "Opamp"
-				(at 3.81 -3.175 0)
+			(property "Value" "#GatedSummingAmplifier(res=4.7*kOhm(tol=0.01), **err_volt)"
+				(at -1.27 -10.16 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left)
-					(hide yes)
 				)
 			)
 			(property "Footprint" ""
@@ -2164,7 +2653,7 @@
 				(pin input line
 					(at -7.62 2.54 0)
 					(length 2.54)
-					(name "+"
+					(name "T"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2182,7 +2671,7 @@
 				(pin input line
 					(at -7.62 -2.54 0)
 					(length 2.54)
-					(name "-"
+					(name "M"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2778,7 +3267,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 62.23) (xy 46.99 62.23)
+			(xy 41.91 67.31) (xy 46.99 67.31)
 		)
 		(stroke
 			(width 0)
@@ -2788,17 +3277,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 109.22) (xy 78.74 132.08)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "33c309f0-79fe-4fe5-9986-f30f21309535")
-	)
-	(wire
-		(pts
-			(xy 54.61 62.23) (xy 63.5 62.23)
+			(xy 54.61 67.31) (xy 63.5 67.31)
 		)
 		(stroke
 			(width 0)
@@ -2858,7 +3337,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 62.23) (xy 83.82 62.23)
+			(xy 78.74 67.31) (xy 83.82 67.31)
 		)
 		(stroke
 			(width 0)
@@ -2928,16 +3407,6 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 86.36) (xy 83.82 86.36)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "868aa904-9048-4ba0-8fca-2a16e23e504e")
-	)
-	(wire
-		(pts
 			(xy 163.83 127) (xy 163.83 135.89)
 		)
 		(stroke
@@ -2968,16 +3437,6 @@
 	)
 	(wire
 		(pts
-			(xy 83.82 109.22) (xy 78.74 109.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "971c401f-08b7-4686-ad30-c644d0d1fd30")
-	)
-	(wire
-		(pts
 			(xy 207.01 91.44) (xy 196.85 91.44)
 		)
 		(stroke
@@ -2988,7 +3447,7 @@
 	)
 	(wire
 		(pts
-			(xy 36.83 80.01) (xy 44.45 80.01)
+			(xy 36.83 124.46) (xy 44.45 124.46)
 		)
 		(stroke
 			(width 0)
@@ -2998,7 +3457,7 @@
 	)
 	(wire
 		(pts
-			(xy 36.83 95.25) (xy 44.45 95.25)
+			(xy 36.83 139.7) (xy 44.45 139.7)
 		)
 		(stroke
 			(width 0)
@@ -3008,7 +3467,7 @@
 	)
 	(wire
 		(pts
-			(xy 36.83 90.17) (xy 44.45 90.17)
+			(xy 36.83 134.62) (xy 44.45 134.62)
 		)
 		(stroke
 			(width 0)
@@ -3098,17 +3557,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 132.08) (xy 83.82 132.08)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cf4fbc41-8bc8-4550-a9ef-d40d93551c3d")
-	)
-	(wire
-		(pts
-			(xy 36.83 85.09) (xy 44.45 85.09)
+			(xy 36.83 129.54) (xy 44.45 129.54)
 		)
 		(stroke
 			(width 0)
@@ -3188,7 +3637,7 @@
 	)
 	(text "when off, drive gate\nto output so FETs off\non startup"
 		(exclude_from_sim no)
-		(at 62.23 52.07 0)
+		(at 63.246 57.15 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3231,7 +3680,7 @@
 		(uuid "6558b27a-0e56-4dc2-8953-d9562069d9ee")
 	)
 	(label "outa"
-		(at 26.67 64.77 180)
+		(at 26.67 69.85 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3253,7 +3702,7 @@
 		(uuid "927dc8db-aa68-43ab-9aa5-091d9e2f5b35")
 	)
 	(label "meas_v"
-		(at 78.74 86.36 180)
+		(at 83.82 91.44 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3275,7 +3724,7 @@
 		(uuid "a4b7fc8f-2472-4907-a919-b5756220e4cd")
 	)
 	(label "meas_i"
-		(at 78.74 109.22 180)
+		(at 83.82 114.3 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3283,10 +3732,10 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "a8b560f6-edaa-4d6d-a1d0-b383a316a202")
+		(uuid "a8c2efb9-0a96-4477-9482-bc0ae9e1fe0c")
 	)
 	(label "drive"
-		(at 26.67 59.69 180)
+		(at 26.67 64.77 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3307,9 +3756,20 @@
 		)
 		(uuid "cda9b249-f95f-45a4-bba9-440913ea3c5a")
 	)
+	(label "meas_i"
+		(at 83.82 137.16 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "ffcb217b-fc6e-4195-8b78-20587cf6ebab")
+	)
 	(global_label "ref_center"
 		(shape input)
-		(at 36.83 90.17 180)
+		(at 36.83 134.62 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3319,7 +3779,7 @@
 		)
 		(uuid "03d7647e-9c94-4299-9f3c-971c889809ba")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 24.9221 90.0906 0)
+			(at 24.9221 134.5406 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3353,7 +3813,7 @@
 	)
 	(global_label "gnd"
 		(shape input)
-		(at 36.83 95.25 180)
+		(at 36.83 139.7 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3363,7 +3823,7 @@
 		)
 		(uuid "0f76eac6-3ba4-42d7-941b-e527b5e17b03")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 30.9698 95.3294 0)
+			(at 30.9698 139.7794 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3375,7 +3835,7 @@
 	)
 	(global_label "control_current_sink"
 		(shape input)
-		(at 83.82 137.16 180)
+		(at 83.82 132.08 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3385,7 +3845,7 @@
 		)
 		(uuid "172968da-5ee4-41a6-92fa-9feb101235a2")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 62.1755 137.0806 0)
+			(at 62.1755 132.0006 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3408,6 +3868,28 @@
 		(uuid "50b4a1e8-1494-45c3-9d13-e0647dfc2b85")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 173.6244 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "control_voltage_fine"
+		(shape input)
+		(at 83.82 86.36 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "64533eed-0666-46cf-a5b3-2e5c0c2c5a23")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 61.7247 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3463,7 +3945,7 @@
 	)
 	(global_label "control_voltage"
 		(shape input)
-		(at 83.82 91.44 180)
+		(at 83.82 83.82 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3473,7 +3955,7 @@
 		)
 		(uuid "7fd1fd71-50a1-4a4d-b6ca-78853129f4f7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 66.8321 91.3606 0)
+			(at 66.8321 83.7406 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3507,7 +3989,7 @@
 	)
 	(global_label "pwr_gate_pos"
 		(shape input)
-		(at 31.75 55.88 180)
+		(at 31.75 60.96 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3517,7 +3999,7 @@
 		)
 		(uuid "847b5676-06be-47b1-8b3b-9d5e35c9a628")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 16.2049 55.88 0)
+			(at 16.2049 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3551,7 +4033,7 @@
 	)
 	(global_label "pwr_logic"
 		(shape input)
-		(at 36.83 85.09 180)
+		(at 36.83 129.54 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3561,7 +4043,7 @@
 		)
 		(uuid "9402f5a8-b8f9-4a80-baa2-07de079b55d6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 25.5269 85.0106 0)
+			(at 25.5269 129.4606 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3639,7 +4121,7 @@
 	)
 	(global_label "control_current_source"
 		(shape input)
-		(at 83.82 114.3 180)
+		(at 83.82 109.22 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3649,7 +4131,7 @@
 		)
 		(uuid "b599ede9-643d-4df2-872f-a21e993bb808")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 59.6959 114.2206 0)
+			(at 59.6959 109.1406 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3683,7 +4165,7 @@
 	)
 	(global_label "pwr_gate_neg"
 		(shape input)
-		(at 31.75 68.58 180)
+		(at 31.75 73.66 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3693,7 +4175,7 @@
 		)
 		(uuid "be1369e0-22fb-4b80-b312-3a5fcd0d8669")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 16.1444 68.58 0)
+			(at 16.1444 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3815,7 +4297,7 @@
 	)
 	(global_label "pwr"
 		(shape input)
-		(at 36.83 80.01 180)
+		(at 36.83 124.46 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3825,7 +4307,7 @@
 		)
 		(uuid "e897f81d-f33a-406e-91e8-9176cdc603c8")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 31.1512 79.9306 0)
+			(at 31.1512 124.3806 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3859,7 +4341,7 @@
 	)
 	(symbol
 		(lib_id "power:VDD")
-		(at 44.45 85.09 0)
+		(at 44.45 129.54 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3867,7 +4349,7 @@
 		(dnp no)
 		(uuid "04081b85-866d-4209-af54-5754de6790ef")
 		(property "Reference" "#PWR?"
-			(at 44.45 88.9 0)
+			(at 44.45 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3876,7 +4358,7 @@
 			)
 		)
 		(property "Value" "VDD"
-			(at 40.64 83.82 0)
+			(at 40.64 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3884,7 +4366,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 44.45 85.09 0)
+			(at 44.45 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3893,7 +4375,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 44.45 85.09 0)
+			(at 44.45 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3902,7 +4384,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 44.45 85.09 0)
+			(at 44.45 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3924,7 +4406,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:DifferentialAmplifier")
-		(at 34.29 62.23 0)
+		(at 34.29 67.31 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3932,7 +4414,7 @@
 		(dnp no)
 		(uuid "054a5f45-20ea-4ee3-8cae-c80668ea0a03")
 		(property "Reference" "dmeas"
-			(at 34.29 57.15 0)
+			(at 34.29 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3940,7 +4422,7 @@
 			)
 		)
 		(property "Value" "#DifferentialAmplifier(**vmeas)"
-			(at 34.29 73.66 0)
+			(at 34.29 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3948,7 +4430,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 34.29 62.23 0)
+			(at 34.29 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3957,7 +4439,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 34.29 62.23 0)
+			(at 34.29 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3966,7 +4448,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 34.29 62.23 0)
+			(at 34.29 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4409,7 +4891,7 @@
 	)
 	(symbol
 		(lib_id "power:+2V5")
-		(at 36.83 66.04 180)
+		(at 36.83 71.12 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4417,7 +4899,7 @@
 		(dnp no)
 		(uuid "1f91389a-a476-4386-9fa8-6e9999870138")
 		(property "Reference" "#PWR07"
-			(at 36.83 62.23 0)
+			(at 36.83 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4426,7 +4908,7 @@
 			)
 		)
 		(property "Value" "+2V5"
-			(at 40.64 67.31 0)
+			(at 40.64 72.39 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4434,7 +4916,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 36.83 66.04 0)
+			(at 36.83 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4443,7 +4925,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 36.83 66.04 0)
+			(at 36.83 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4452,7 +4934,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 36.83 66.04 0)
+			(at 36.83 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4818,7 +5300,7 @@
 	)
 	(symbol
 		(lib_id "power:VDD")
-		(at 68.58 55.88 0)
+		(at 68.58 60.96 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4826,7 +5308,7 @@
 		(dnp no)
 		(uuid "3ac37522-52e7-4c23-bc6c-b85c803136eb")
 		(property "Reference" "#PWR06"
-			(at 68.58 59.69 0)
+			(at 68.58 64.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4835,7 +5317,7 @@
 			)
 		)
 		(property "Value" "VDD"
-			(at 64.77 54.61 0)
+			(at 64.77 59.69 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4843,7 +5325,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 68.58 55.88 0)
+			(at 68.58 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4852,7 +5334,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 68.58 55.88 0)
+			(at 68.58 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4861,7 +5343,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 68.58 55.88 0)
+			(at 68.58 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5449,7 +5931,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 44.45 95.25 0)
+		(at 44.45 139.7 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5457,7 +5939,7 @@
 		(dnp no)
 		(uuid "5a9a37c1-d497-427e-bcfb-30d5fa456dae")
 		(property "Reference" "#PWR?"
-			(at 44.45 101.6 0)
+			(at 44.45 146.05 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5466,7 +5948,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 40.64 96.52 0)
+			(at 40.64 140.97 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5474,7 +5956,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 44.45 95.25 0)
+			(at 44.45 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5483,7 +5965,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 44.45 95.25 0)
+			(at 44.45 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5492,7 +5974,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 44.45 95.25 0)
+			(at 44.45 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5594,7 +6076,7 @@
 				)
 			)
 		)
-		(property "Value" "#ErrorAmplifier('', **err_volt)"
+		(property "Value" "#GatedSummingAmplifier(res=4.7*kOhm(tol=0.01), **err_volt)"
 			(at 90.17 74.93 0)
 			(effects
 				(font
@@ -5796,7 +6278,7 @@
 	)
 	(symbol
 		(lib_id "power:+2V5")
-		(at 44.45 90.17 0)
+		(at 44.45 134.62 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5804,7 +6286,7 @@
 		(dnp no)
 		(uuid "7321d4d8-84dc-4941-8cd2-7343f9fa49d4")
 		(property "Reference" "#PWR?"
-			(at 44.45 93.98 0)
+			(at 44.45 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5813,7 +6295,7 @@
 			)
 		)
 		(property "Value" "+2V5"
-			(at 40.64 88.9 0)
+			(at 40.64 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5821,7 +6303,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 44.45 90.17 0)
+			(at 44.45 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5830,7 +6312,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 44.45 90.17 0)
+			(at 44.45 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5839,7 +6321,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 44.45 90.17 0)
+			(at 44.45 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6055,6 +6537,7 @@
 		)
 	)
 	(symbol
+		(lib_name "Opamp_1")
 		(lib_id "edg_importable:Opamp")
 		(at 91.44 88.9 0)
 		(unit 1)
@@ -6071,7 +6554,7 @@
 				)
 			)
 		)
-		(property "Value" "#ErrorAmplifier('', **err_volt)"
+		(property "Value" "#GatedSummingAmplifier(res=4.7*kOhm(tol=0.01), fine_scale=1000, **err_volt)"
 			(at 90.17 99.06 0)
 			(effects
 				(font
@@ -6120,6 +6603,9 @@
 		)
 		(pin "5"
 			(uuid "63aafb65-2deb-4d0a-903e-ae52aae082e0")
+		)
+		(pin "0"
+			(uuid "68ca404b-5a34-4b2a-954a-ee6f12442f5b")
 		)
 		(instances
 			(project "SourceMeasureControl"
@@ -6264,7 +6750,7 @@
 	)
 	(symbol
 		(lib_id "power:VCC")
-		(at 44.45 80.01 0)
+		(at 44.45 124.46 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6272,7 +6758,7 @@
 		(dnp no)
 		(uuid "a21ef647-cd15-47f6-8bda-9ce1cda18071")
 		(property "Reference" "#PWR?"
-			(at 44.45 83.82 0)
+			(at 44.45 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6281,7 +6767,7 @@
 			)
 		)
 		(property "Value" "VCC"
-			(at 40.64 78.74 0)
+			(at 40.64 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6289,7 +6775,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 44.45 80.01 0)
+			(at 44.45 124.46 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6298,7 +6784,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 44.45 80.01 0)
+			(at 44.45 124.46 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6307,7 +6793,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 44.45 80.01 0)
+			(at 44.45 124.46 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6525,7 +7011,7 @@
 	(symbol
 		(lib_name "R_3")
 		(lib_id "Device:R")
-		(at 50.8 62.23 90)
+		(at 50.8 67.31 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6533,14 +7019,6 @@
 		(dnp no)
 		(uuid "c57301e3-76ed-4b68-9db9-d0549a9b1d3a")
 		(property "Reference" "dclamp"
-			(at 50.8 59.69 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "#AnalogClampResistor(**clamp)"
 			(at 50.8 64.77 90)
 			(effects
 				(font
@@ -6548,8 +7026,16 @@
 				)
 			)
 		)
+		(property "Value" "#AnalogClampResistor(**clamp)"
+			(at 50.8 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Footprint" ""
-			(at 50.8 64.008 90)
+			(at 50.8 69.088 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6558,7 +7044,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 50.8 62.23 0)
+			(at 50.8 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6567,7 +7053,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 50.8 62.23 0)
+			(at 50.8 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6821,7 +7307,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 68.58 68.58 0)
+		(at 68.58 73.66 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6829,7 +7315,7 @@
 		(dnp no)
 		(uuid "d9babed0-c23b-42d0-83f3-f6d4ebc6efc4")
 		(property "Reference" "#PWR09"
-			(at 68.58 74.93 0)
+			(at 68.58 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6838,7 +7324,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 64.77 69.85 0)
+			(at 64.77 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6846,7 +7332,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 68.58 68.58 0)
+			(at 68.58 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6855,7 +7341,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 68.58 68.58 0)
+			(at 68.58 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6864,7 +7350,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 68.58 68.58 0)
+			(at 68.58 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6951,7 +7437,7 @@
 	)
 	(symbol
 		(lib_id "power:+2V5")
-		(at 83.82 67.31 180)
+		(at 83.82 62.23 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6959,7 +7445,7 @@
 		(dnp no)
 		(uuid "e57dc2c6-384e-422e-a4bf-62921e95c09c")
 		(property "Reference" "#PWR010"
-			(at 83.82 63.5 0)
+			(at 87.63 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6968,7 +7454,7 @@
 			)
 		)
 		(property "Value" "+2V5"
-			(at 87.63 68.58 0)
+			(at 82.55 64.516 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6976,7 +7462,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 83.82 67.31 0)
+			(at 83.82 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6985,7 +7471,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 83.82 67.31 0)
+			(at 83.82 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6994,7 +7480,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 83.82 67.31 0)
+			(at 83.82 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7080,6 +7566,7 @@
 		)
 	)
 	(symbol
+		(lib_name "Opamp_3")
 		(lib_id "edg_importable:Opamp")
 		(at 91.44 134.62 0)
 		(unit 1)
@@ -7096,7 +7583,7 @@
 				)
 			)
 		)
-		(property "Value" "#ErrorAmplifier('sink', **err_current)"
+		(property "Value" "#GatedSummingAmplifier(dir='sink', **err_current)"
 			(at 90.17 144.78 0)
 			(effects
 				(font
@@ -7294,6 +7781,7 @@
 		)
 	)
 	(symbol
+		(lib_name "Opamp_2")
 		(lib_id "edg_importable:Opamp")
 		(at 91.44 111.76 0)
 		(unit 1)
@@ -7310,7 +7798,7 @@
 				)
 			)
 		)
-		(property "Value" "#ErrorAmplifier('source', **err_current)"
+		(property "Value" "#GatedSummingAmplifier(dir='source', **err_current)"
 			(at 90.17 121.92 0)
 			(effects
 				(font
@@ -7371,7 +7859,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:Follower")
-		(at 71.12 62.23 0)
+		(at 71.12 67.31 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7379,7 +7867,7 @@
 		(dnp no)
 		(uuid "f6293d94-c1fa-47cb-9373-b57a924afee1")
 		(property "Reference" "dbuf"
-			(at 71.12 57.15 0)
+			(at 71.12 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7387,7 +7875,7 @@
 			)
 		)
 		(property "Value" "#OpampFollower()"
-			(at 69.85 72.39 0)
+			(at 69.85 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7395,7 +7883,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 71.12 62.23 0)
+			(at 71.12 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7404,7 +7892,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 71.12 62.23 0)
+			(at 71.12 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7413,7 +7901,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 71.12 62.23 0)
+			(at 71.12 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
