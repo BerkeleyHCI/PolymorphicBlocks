@@ -857,7 +857,13 @@ class UsbSourceMeasure(JlcBoardTop):
         # these are since the auto-assigned parts are OOS
         (['control', 'isense', 'ranges[1]', 'isense', 'res', 'res', 'part'], "1206W4F220LT5E"),
         (['conv', 'boost_sw', 'low_fet', 'part'], "KIA50N03BD"),
-        (['prot_3v3', 'diode', 'part'], "1SMA4730AG")
+        (['prot_3v3', 'diode', 'part'], "1SMA4730AG"),
+
+        (['precharge', 'res', 'res', 'require_basic_part'], False),
+
+        # fudge the numbers a bit to avoid a ERC - the output of the IO expander will probably limit
+        (['control', 'isense', 'ranges[0]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010)),
+        (['control', 'isense', 'ranges[1]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010))
       ],
       class_values=[
         # (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015 is out of stock
