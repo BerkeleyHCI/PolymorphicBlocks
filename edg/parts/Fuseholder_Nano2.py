@@ -10,7 +10,7 @@ class Nano2Fuseholder(Fuse, JlcPart, FootprintBlock):
     def contents(self):
         super().contents()
         self.footprint(
-            'U', 'Fuse:Fuseholder_Littelfuse_Nano2_154x',
+            'F', 'Fuse:Fuseholder_Littelfuse_Nano2_154x',
             {
                 '1': self.a,
                 '2': self.b,
