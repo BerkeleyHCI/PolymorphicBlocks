@@ -1,4 +1,3 @@
-from ..core import RangeExpr
 from ..electronics_model import Volt, FootprintBlock
 from ..abstract_parts import Fuse
 from .JlcPart import JlcPart
@@ -21,6 +20,6 @@ class Nano2Fuseholder(Fuse, JlcPart, FootprintBlock):
         self.assign(self.lcsc_part, "C108518")
         self.assign(self.actual_basic_part, False)
 
-        self.assign(self.actual_trip_current, RangeExpr.EMPTY)  # assumed you can find the right fuse
-        self.assign(self.actual_hold_current, RangeExpr.EMPTY)
+        self.assign(self.actual_trip_current, self.trip_current)  # assumed you can find the right fuse
+        self.assign(self.actual_hold_current, self.hold_current)
         self.assign(self.actual_voltage_rating, (-125, 125)*Volt)

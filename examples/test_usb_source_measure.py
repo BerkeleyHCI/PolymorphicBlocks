@@ -426,15 +426,18 @@ class UsbSourceMeasure(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      self.vusb_sense = imp.Block(Ina219(10*mOhm(tol=0.05)))
+
       # input filtering
       (self.filt_vusb, self.fuse_vusb, self.prot_vusb, self.tp_vusb), _ = self.chain(
         self.usb.pwr,
         self.Block(SeriesPowerFerriteBead()),
         self.Block(SeriesPowerFuse(trip_current=(7, 8)*Amp)),
         imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # for parts commonality w/ the Vconv zener
-        self.Block(VoltageTestPoint())
+        self.Block(VoltageTestPoint()),
+        self.vusb_sense.sense_pos
       )
-      self.vusb = self.connect(self.filt_vusb.pwr_out)
+      self.vusb = self.connect(self.vusb_sense.sense_neg)
 
       # logic supplies
       (self.reg_v5, self.tp_v5, self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
@@ -449,11 +452,19 @@ class UsbSourceMeasure(JlcBoardTop):
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
-      (self.conv_inforce, self.precharge, self.cap_conv, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
+      self.connect(self.vusb_sense.pwr, self.v3v3)
+
+      self.convin_sense = imp.Block(Ina219(10*mOhm(tol=0.05)))
+      self.connect(self.convin_sense.pwr, self.v3v3)
+      (self.conv_inforce, self.precharge), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
         # avoid excess capacitance on VBus
         imp.Block(FetPrecharge(precharge_resistance=470*Ohm(tol=0.1), max_rds=0.1*Ohm)),
+        self.convin_sense.sense_pos
+      )
+      (self.cap_conv, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
+        self.convin_sense.sense_neg,
         imp.Block(DecouplingCapacitor(100*uFarad(tol=0.25))),
         imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30)*Volt,  # design for 0.5x - 1.5x conv ratio
                                                   frequency=500*kHertz(tol=0),
@@ -550,7 +561,8 @@ class UsbSourceMeasure(JlcBoardTop):
 
       int_i2c = self.mcu.i2c.request('int_i2c')
       self.i2c_tp = self.Block(I2cTestPoint('i2c')).connected(int_i2c)
-      (self.i2c_pull, ), _ = self.chain(int_i2c, imp.Block(I2cPullup()), self.pd.i2c)
+      (self.i2c_pull, ), _ = self.chain(int_i2c, imp.Block(I2cPullup()))
+      self.connect(int_i2c, self.pd.i2c, self.vusb_sense.i2c, self.convin_sense.i2c)
       self.connect(self.mcu.gpio.request('pd_int'), self.pd.int)
 
       self.oled = imp.Block(Er_Oled022_1())  # (probably) pin compatible w/ 2.4" ER-OLED024-2B; maybe ER-OLED015-2B
@@ -884,7 +896,9 @@ class UsbSourceMeasure(JlcBoardTop):
 
         # fudge the numbers a bit to avoid a ERC - the output of the IO expander will probably limit
         (['control', 'isense', 'ranges[0]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010)),
-        (['control', 'isense', 'ranges[1]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010))
+        (['control', 'isense', 'ranges[1]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010)),
+        (['vusb_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
+        (['convin_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
       ],
       class_values=[
         # (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015 is out of stock
