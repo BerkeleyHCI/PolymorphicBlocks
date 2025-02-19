@@ -217,11 +217,14 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
   (around the integrator reference). When the measured signal is at the target, the output (sum)
   is the integrator reference, producing zero error. Otherwise, the error signal is proportional to the deviation.
 
+  The sense_out line is upstream of this element and can be used to determine if a current limit amplifier is active.
+
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
-    return {'M': self.actual, 'T': self.target, 'F': self.target_fine, '3': self.output, 'V+': self.pwr, 'V-': self.gnd}
+    return {'M': self.actual, 'T': self.target, 'F': self.target_fine, '3': self.output, 'S': self.sense_out,
+            'V+': self.pwr, 'V-': self.gnd}
 
   @init_in_parent
   def __init__(self, input_resistance: RangeLike = 0*Ohm(tol=0), *,
@@ -236,6 +239,7 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
     self.target_fine = self.Port(AnalogSink.empty(), optional=True)
     self.actual = self.Port(AnalogSink.empty())
     self.output = self.Port(AnalogSource.empty())
+    self.sense_out = self.Port(AnalogSource.empty(), optional=True)
 
     self.input_resistance = self.ArgParameter(input_resistance)
     self.dir = self.ArgParameter(dir)
@@ -244,7 +248,7 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
     self.series = self.ArgParameter(series)
     self.tolerance = self.ArgParameter(tolerance)
     self.generator_param(self.input_resistance, self.res, self.dir, self.series, self.tolerance,
-                         self.target_fine.is_connected(), self.fine_scale)
+                         self.target_fine.is_connected(), self.sense_out.is_connected(), self.fine_scale)
 
   def generate(self) -> None:
     super().generate()
@@ -317,6 +321,9 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
       )))
       self.connect(self.rfine.b.adapt_to(AnalogSink()), self.amp.inp)
 
+    if self.get(self.sense_out.is_connected()):
+      self.connect(self.amp.out, self.sense_out)
+
 
 class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
   """Analog feedback circuit for the source-measure unit
@@ -345,6 +352,8 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
 
     self.measured_voltage = self.Port(AnalogSource.empty())
     self.measured_current = self.Port(AnalogSource.empty())
+    self.limit_source = self.Port(DigitalSource.empty())
+    self.limit_sink = self.Port(DigitalSource.empty())
 
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)
@@ -670,6 +679,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.adc.vref, self.vref)
       self.connect(self.adc.spi, self.mcu.spi.request('adc_spi'))
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
+      self.connect(self.adc.mclkin, self.mcu.gpio.request('adc_clk'))  # up to 20MHz output from LEDC peripheral
       (self.tp_vcen, self.vcen_rc, ), _ = self.chain(self.vcenter,
                                                      imp.Block(AnalogRfTestPoint('cen')),
                                                      imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),\
@@ -682,6 +692,12 @@ class UsbSourceMeasure(JlcBoardTop):
                                                  imp.Block(AnalogRfTestPoint('mv')),
                                                  imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),
                                                  self.adc.vins.request('2'))
+      (self.tp_lsrc, ), _ = self.chain(self.control.limit_source,
+                                       imp.Block(DigitalTestPoint('src')),
+                                       self.mcu.gpio.request('limit_source'))
+      (self.tp_lsnk, ), _ = self.chain(self.control.limit_sink,
+                                       imp.Block(DigitalTestPoint('snk')),
+                                       self.mcu.gpio.request('limit_sink'))
 
     self.outn = self.Block(BananaSafetyJack())
     self.outp = self.Block(BananaSafetyJack())

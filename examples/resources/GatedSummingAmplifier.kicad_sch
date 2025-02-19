@@ -320,6 +320,12 @@
 		(color 0 0 0 0)
 		(uuid "320e8fe9-0b15-4868-a78e-1fd87a114197")
 	)
+	(junction
+		(at 153.67 88.9)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "788f7647-44b2-4d18-97fe-9fbdb1dd57a9")
+	)
 	(wire
 		(pts
 			(xy 116.84 91.44) (xy 116.84 99.06)
@@ -342,6 +348,16 @@
 	)
 	(wire
 		(pts
+			(xy 134.62 88.9) (xy 135.89 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3bf36342-41f4-42dc-a4ef-28fd1889c101")
+	)
+	(wire
+		(pts
 			(xy 116.84 99.06) (xy 153.67 99.06)
 		)
 		(stroke
@@ -359,6 +375,16 @@
 			(type default)
 		)
 		(uuid "756a65ff-4b17-47cc-8317-4b2604a2623c")
+	)
+	(polyline
+		(pts
+			(xy 134.62 79.375) (xy 139.7 79.375)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "78096d73-2aee-4952-8578-d22f6b51e625")
 	)
 	(wire
 		(pts
@@ -390,6 +416,16 @@
 		)
 		(uuid "8b7686fd-c6ef-4508-b779-5e24426c44e9")
 	)
+	(polyline
+		(pts
+			(xy 134.62 88.9) (xy 134.62 79.375)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "93636b6a-9f88-4472-8641-20b920473684")
+	)
 	(wire
 		(pts
 			(xy 114.3 86.36) (xy 119.38 86.36)
@@ -420,6 +456,16 @@
 		)
 		(uuid "e895eac1-519e-46d0-af76-12557e38e9b7")
 	)
+	(wire
+		(pts
+			(xy 152.4 88.9) (xy 153.67 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "eb99b23a-6828-4e3f-93a0-f987da0504b8")
+	)
 	(rectangle
 		(start 138.43 87.63)
 		(end 149.86 90.17)
@@ -442,6 +488,17 @@
 			(justify left bottom)
 		)
 		(uuid "03b64ccc-7058-411b-94df-88efeebc5fcb")
+	)
+	(text "sense_out connected here"
+		(exclude_from_sim no)
+		(at 139.7 80.264 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "376d12e1-c955-4f17-8e94-4d8b68c2063c")
 	)
 	(text "Diode and/or resistor\ninserted in HDL"
 		(exclude_from_sim no)

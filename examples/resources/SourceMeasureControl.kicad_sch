@@ -511,7 +511,7 @@
 					)
 				)
 			)
-			(property "Value" "#GatedSummingAmplifier(gate='source', **err_current)"
+			(property "Value" "#GatedSummingAmplifier(dir='source', **err_current)"
 				(at -1.27 -10.16 0)
 				(effects
 					(font
@@ -651,6 +651,24 @@
 						)
 					)
 				)
+				(pin output line
+					(at 7.62 2.54 180)
+					(length 2.54)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 			)
 		)
 		(symbol "Opamp_3"
@@ -669,7 +687,7 @@
 					)
 				)
 			)
-			(property "Value" "#GatedSummingAmplifier(gate='sink', **err_current)"
+			(property "Value" "#GatedSummingAmplifier(dir='sink', **err_current)"
 				(at -1.27 -10.16 0)
 				(effects
 					(font
@@ -741,6 +759,185 @@
 					(at -7.62 -2.54 0)
 					(length 2.54)
 					(name "M"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -2.54 6.35 270)
+					(length 2.54)
+					(name "V+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -2.54 -6.35 90)
+					(length 2.54)
+					(name "V-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 2.54 180)
+					(length 2.54)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+		(symbol "Opamp_4"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 3.81 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "Opamp"
+				(at 3.81 -3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Opamp_4_0_1"
+				(polyline
+					(pts
+						(xy 5.08 0) (xy -5.08 5.08) (xy -5.08 -5.08) (xy 5.08 0)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "Opamp_4_1_1"
+				(pin input line
+					(at -7.62 2.54 0)
+					(length 2.54)
+					(name "+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 -2.54 0)
+					(length 2.54)
+					(name "-"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3200,20 +3397,22 @@
 		)
 	)
 	(junction
+		(at 104.14 134.62)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9711c1a6-f769-44d1-b467-274c92a2937b")
+	)
+	(junction
 		(at 256.54 127)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d827645c-d761-4bb4-a76e-8e6ed1a592c0")
 	)
-	(wire
-		(pts
-			(xy 101.6 93.98) (xy 104.14 93.98)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "03d18361-78b5-43ba-bbc0-3d316fb27bc6")
+	(junction
+		(at 101.6 111.76)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d9d0156d-3479-402d-8ffd-969dcfee1f21")
 	)
 	(wire
 		(pts
@@ -3227,7 +3426,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 91.44) (xy 104.14 91.44)
+			(xy 101.6 91.44) (xy 104.14 91.44)
 		)
 		(stroke
 			(width 0)
@@ -3244,6 +3443,16 @@
 			(type default)
 		)
 		(uuid "0eb869b4-9d7a-4975-839e-e7bfdf5d9f2b")
+	)
+	(wire
+		(pts
+			(xy 114.3 134.62) (xy 114.3 132.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "14565261-6785-4148-b70b-0c6ff643ee93")
 	)
 	(wire
 		(pts
@@ -3307,6 +3516,16 @@
 	)
 	(wire
 		(pts
+			(xy 99.06 132.08) (xy 106.68 132.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "40d1758e-f2dd-48b8-9c2b-acaf6ca84185")
+	)
+	(wire
+		(pts
 			(xy 217.17 106.68) (xy 226.06 106.68)
 		)
 		(stroke
@@ -3327,7 +3546,27 @@
 	)
 	(wire
 		(pts
-			(xy 101.6 93.98) (xy 101.6 134.62)
+			(xy 106.68 137.16) (xy 114.3 137.16)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "514c91c7-160d-44b4-8ab6-704f8a240b94")
+	)
+	(wire
+		(pts
+			(xy 106.68 132.08) (xy 106.68 137.16)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "52a5d133-84ef-4423-a9e3-71076e6d9b6a")
+	)
+	(wire
+		(pts
+			(xy 104.14 93.98) (xy 104.14 134.62)
 		)
 		(stroke
 			(width 0)
@@ -3457,6 +3696,16 @@
 	)
 	(wire
 		(pts
+			(xy 114.3 111.76) (xy 114.3 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a140f786-e338-4b8f-bce2-56d81691f518")
+	)
+	(wire
+		(pts
 			(xy 36.83 139.7) (xy 44.45 139.7)
 		)
 		(stroke
@@ -3474,6 +3723,16 @@
 			(type default)
 		)
 		(uuid "a5db4290-250e-4a5d-8b9c-ddce82e6d66e")
+	)
+	(wire
+		(pts
+			(xy 99.06 109.22) (xy 114.3 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b905e0f4-60e6-497f-b637-999e185b9245")
 	)
 	(wire
 		(pts
@@ -3547,6 +3806,26 @@
 	)
 	(wire
 		(pts
+			(xy 101.6 111.76) (xy 99.06 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c7a9b888-67c3-4423-8262-848e386b559d")
+	)
+	(wire
+		(pts
+			(xy 104.14 134.62) (xy 114.3 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c836632d-8beb-4fff-a8c8-9aeb13004cd5")
+	)
+	(wire
+		(pts
 			(xy 259.08 114.3) (xy 256.54 114.3)
 		)
 		(stroke
@@ -3564,6 +3843,16 @@
 			(type default)
 		)
 		(uuid "cfe3660f-26ca-4eda-aed8-2135e1f298e3")
+	)
+	(wire
+		(pts
+			(xy 101.6 111.76) (xy 114.3 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "db9f35fa-779c-46c6-8f38-37a0ce3f82c0")
 	)
 	(wire
 		(pts
@@ -3587,7 +3876,7 @@
 	)
 	(wire
 		(pts
-			(xy 101.6 134.62) (xy 99.06 134.62)
+			(xy 99.06 134.62) (xy 104.14 134.62)
 		)
 		(stroke
 			(width 0)
@@ -3607,7 +3896,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 111.76) (xy 99.06 91.44)
+			(xy 101.6 111.76) (xy 101.6 91.44)
 		)
 		(stroke
 			(width 0)
@@ -3965,6 +4254,28 @@
 			)
 		)
 	)
+	(global_label "limit_source"
+		(shape output)
+		(at 129.54 111.76 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8033cd55-5ff3-4a1f-b21c-d526516ee226")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 144.0761 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "high_gate_ctl"
 		(shape input)
 		(at 181.61 88.9 180)
@@ -4027,6 +4338,28 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "limit_sink"
+		(shape output)
+		(at 129.54 134.62 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "921e9e1a-e323-41c4-88ee-db1094dca0c7")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 141.5966 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -4823,6 +5156,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 119.38 118.11 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "16c4609d-4cda-417e-941f-522817ce17a7")
+		(property "Reference" "#PWR014"
+			(at 119.38 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 115.57 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 119.38 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 119.38 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 119.38 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a3a565a4-2f92-484d-8a3b-c506887ed50c")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR014")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 167.64 135.89 90)
 		(unit 1)
@@ -5152,6 +5550,136 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "#PWR?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:VDD")
+		(at 119.38 128.27 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2a7782e7-ccd7-494d-bb74-65b3c994ef07")
+		(property "Reference" "#PWR015"
+			(at 119.38 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VDD"
+			(at 116.586 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 119.38 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 119.38 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 119.38 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6136e1e6-cddf-4889-8199-2279a2f9693d")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR015")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 119.38 140.97 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2b124a3e-c8de-4aed-8cfa-7c7f2837ff82")
+		(property "Reference" "#PWR016"
+			(at 119.38 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 115.57 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 119.38 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 119.38 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 119.38 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "08824718-6862-4060-ab69-2c3de49bf5f5")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR016")
 					(unit 1)
 				)
 			)
@@ -6195,6 +6723,84 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "#PWR?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_name "Opamp_4")
+		(lib_id "edg_importable:Opamp")
+		(at 121.92 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "6a827a3b-ef34-4ac2-bff3-f4074bb69506")
+		(property "Reference" "comp_source"
+			(at 125.984 106.426 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "#Comparator()"
+			(at 119.38 117.856 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 121.92 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 121.92 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 121.92 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "21f0a899-e73d-4ae1-9a5b-86bee63f567a")
+		)
+		(pin "2"
+			(uuid "fd7f2183-fd76-4516-83ac-fb24bffd5e85")
+		)
+		(pin "4"
+			(uuid "802759fc-58ae-4766-ae2f-3da0b66363c3")
+		)
+		(pin "5"
+			(uuid "193c7ff9-6a96-4c07-8934-fbdda28a7ffb")
+		)
+		(pin "3"
+			(uuid "b51f0837-ec07-449b-941d-210fd6a74dc4")
+		)
+		(instances
+			(project ""
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "comp_source")
 					(unit 1)
 				)
 			)
@@ -7566,6 +8172,148 @@
 		)
 	)
 	(symbol
+		(lib_id "power:VDD")
+		(at 119.38 105.41 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ea0eee8f-625f-4de7-b579-33c607a40ca3")
+		(property "Reference" "#PWR08"
+			(at 119.38 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VDD"
+			(at 116.586 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 119.38 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 119.38 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 119.38 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fcd9aa7a-70ae-4ac4-b403-f20844e9da5a")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR08")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_name "Opamp_4")
+		(lib_id "edg_importable:Opamp")
+		(at 121.92 134.62 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ee23c85f-45ff-415b-ad08-70dda4a38768")
+		(property "Reference" "comp_sink"
+			(at 124.714 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "#Comparator()"
+			(at 126.492 140.716 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 121.92 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 121.92 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 121.92 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "83f11af1-e667-4e1f-a05e-f96655929392")
+		)
+		(pin "2"
+			(uuid "f3e91291-702d-4e6b-8c27-57746f093379")
+		)
+		(pin "4"
+			(uuid "f116aef2-be59-476c-9209-09d21968d9d4")
+		)
+		(pin "5"
+			(uuid "79005381-d7dd-4525-ac81-3aefcd1cfa91")
+		)
+		(pin "3"
+			(uuid "51ea4343-9863-4631-bad6-5d282cfec2cc")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "comp_sink")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_name "Opamp_3")
 		(lib_id "edg_importable:Opamp")
 		(at 91.44 134.62 0)
@@ -7632,6 +8380,9 @@
 		)
 		(pin "5"
 			(uuid "d5f67b70-b8cd-4766-a5ff-6513a39c8f1d")
+		)
+		(pin "7"
+			(uuid "03fbc02d-057f-4558-9214-1470bb4496b2")
 		)
 		(instances
 			(project "SourceMeasureControl"
@@ -7847,6 +8598,9 @@
 		)
 		(pin "5"
 			(uuid "57be10cc-55d9-4457-a9b7-6cdfbfe611e5")
+		)
+		(pin "7"
+			(uuid "120c9d68-fd55-49c7-a60e-0ff44ffdbbdb")
 		)
 		(instances
 			(project "SourceMeasureControl"
