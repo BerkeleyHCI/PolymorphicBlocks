@@ -426,7 +426,7 @@ class UsbSourceMeasure(JlcBoardTop):
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.vusb_sense = imp.Block(Ina219(10*mOhm(tol=0.05)))
+      self.vusb_sense = imp.Block(Ina219(10*mOhm(tol=0.01)))
 
       # input filtering
       (self.filt_vusb, self.fuse_vusb, self.prot_vusb, self.tp_vusb), _ = self.chain(
@@ -454,7 +454,7 @@ class UsbSourceMeasure(JlcBoardTop):
       # output power supplies
       self.connect(self.vusb_sense.pwr, self.v3v3)
 
-      self.convin_sense = imp.Block(Ina219(10*mOhm(tol=0.05)))
+      self.convin_sense = imp.Block(Ina219(10*mOhm(tol=0.01), addr_lsb=1))
       self.connect(self.convin_sense.pwr, self.v3v3)
       (self.conv_inforce, self.precharge), _ = self.chain(
         self.vusb,

@@ -2,10 +2,12 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, Block):
+class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock):
     @init_in_parent
-    def __init__(self):
+    def __init__(self, addr_lsb: IntLike):
         super().__init__()
+        self.addr_lsb = self.ArgParameter(addr_lsb)
+        self.generator_param(self.addr_lsb)
 
         self.vs = self.Port(VoltageSink(
             voltage_limits=(3, 5.5) * Volt,
@@ -13,7 +15,7 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, Block):
         ))
         self.gnd = self.Port(Ground())
 
-        self.i2c = self.Port(I2cTarget(DigitalBidir.empty(), addresses=[0x40]))
+        self.i2c = self.Port(I2cTarget(DigitalBidir.empty(), addresses=[0x40 + self.addr_lsb]))
         self.i2c.sda.init_from(DigitalBidir.from_supply(
             self.gnd, self.vs,
             voltage_limit_abs=(-0.3, 6.0) * Volt,
@@ -28,8 +30,28 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, Block):
         self.in_pos = self.Port(AnalogSink(voltage_limits=(-0.3, 26) * Volt))
         self.in_neg = self.Port(AnalogSink(voltage_limits=(-0.3, 26) * Volt))
 
-    def contents(self):
-        super().contents()
+    def generate(self):
+        super().generate()
+
+        sa1_pin, sa0_pin = {
+            0: (self.gnd, self.gnd),
+            1: (self.gnd, self.vs),
+            2: (self.gnd, self.i2c.sda),
+            3: (self.gnd, self.i2c.scl),
+            4: (self.vs, self.gnd),
+            5: (self.vs, self.vs),
+            6: (self.vs, self.i2c.sda),
+            7: (self.vs, self.i2c.scl),
+            8: (self.i2c.sda, self.gnd),
+            9: (self.i2c.sda, self.vs),
+            10: (self.i2c.sda, self.i2c.sda),
+            11: (self.i2c.sda, self.i2c.scl),
+            12: (self.i2c.scl, self.gnd),
+            13: (self.i2c.scl, self.vs),
+            14: (self.i2c.scl, self.i2c.sda),
+            15: (self.i2c.scl, self.i2c.scl),
+        }[self.get(self.addr_lsb)]
+
         self.footprint(
             'U', 'Package_TO_SOT_SMD:SOT-23-8',
             {
@@ -39,8 +61,8 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, Block):
                 '4': self.vs,
                 '5': self.i2c.scl,
                 '6': self.i2c.sda,
-                '7': self.gnd,  # TODO: make this address selectable, sa0 pin
-                '8': self.gnd  # TODO: make this address selectable, sa1 pin
+                '7': sa0_pin,
+                '8': sa1_pin,
             },
             mfr='Texas Instruments', part='INA219AIDCNR',
             datasheet='https://www.ti.com/lit/ds/symlink/ina219.pdf'
@@ -53,9 +75,9 @@ class Ina219(CurrentSensor, Block):
     """Current/voltage/power monitor with I2C interface"""
 
     @init_in_parent
-    def __init__(self, shunt_resistor: RangeLike = 2.0 * mOhm(tol=0.05)):
+    def __init__(self, shunt_resistor: RangeLike = 2.0 * mOhm(tol=0.05), *, addr_lsb: IntLike = 0):
         super().__init__()
-        self.ic = self.Block(Ina219_Device())
+        self.ic = self.Block(Ina219_Device(addr_lsb))
         self.pwr = self.Export(self.ic.vs, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c)
