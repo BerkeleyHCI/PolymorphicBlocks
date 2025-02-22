@@ -582,7 +582,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "(0, 6.3)*Volt)"
+		(property "Value1" "(0, 6.3)*Volt)"
 			(at 101.346 102.87 90)
 			(effects
 				(font
