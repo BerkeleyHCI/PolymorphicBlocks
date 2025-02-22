@@ -1,5 +1,5 @@
 from math import pi
-from typing import Optional, cast
+from typing import Optional, cast, Mapping
 
 from ..electronics_model import *
 from .AbstractResistor import Resistor
@@ -160,3 +160,54 @@ class LowPassRcDac(DigitalToAnalog, Block):
     )))
 
     self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
+
+
+class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock, GeneratorBlock):
+  """Analog-typed low-pass differential RC filter, with cutoff frequency specified at the -3dB (~70%) point.
+  Impedance is the single-ended resistor value."""
+  def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
+    assert symbol_name == 'edg_importable:DifferentialRC'
+    return {
+      '1': self.inp, '2': self.inn, '3': self.outp, '4': self.outn
+    }
+
+  @init_in_parent
+  def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
+    super().__init__()
+    self.inn = self.Port(AnalogSink.empty())
+    self.inp = self.Port(AnalogSink.empty())
+    self.outn = self.Port(AnalogSource.empty())
+    self.outp = self.Port(AnalogSource.empty())
+
+    self.impedance = self.ArgParameter(impedance)
+    self.cutoff_freq = self.ArgParameter(cutoff_freq)
+
+    self.generator_param(self.impedance, self.cutoff_freq)
+
+  def generate(self) -> None:
+    super().generate()
+
+    self.rp = self.Block(Resistor(resistance=self.impedance))
+    self.rn = self.Block(Resistor(resistance=self.impedance))
+    capacitance = Range.cancel_multiply(1 / (2 * pi * self.get(self.impedance)), 1 / self.get(self.cutoff_freq))
+    # capacitance is single-ended, halve it for differential
+    self.c = self.Block(Capacitor(capacitance=0.5*capacitance*Farad,
+                                  voltage=self.inp.link().voltage-self.inn.link().voltage))
+    self.connect(self.inp, self.rp.a.adapt_to(AnalogSink(
+      impedance=self.rp.actual_resistance + self.outp.link().sink_impedance,
+      current_draw=self.outp.link().current_drawn
+    )))
+    self.connect(self.inn, self.rn.a.adapt_to(AnalogSink(
+      impedance=self.rn.actual_resistance + self.outn.link().sink_impedance,
+      current_draw=self.outn.link().current_drawn
+    )))
+    self.connect(self.outp, self.rp.b.adapt_to(AnalogSource(
+      voltage_out=self.inp.link().voltage,
+      signal_out=self.inp.link().signal,
+      impedance=self.rp.actual_resistance + self.inp.link().source_impedance
+    )), self.c.pos.adapt_to(AnalogSink()))
+    self.connect(self.outn, self.rn.b.adapt_to(AnalogSource(
+      voltage_out=self.inn.link().voltage,
+      signal_out=self.inn.link().signal,
+      impedance=self.rn.actual_resistance + self.inn.link().source_impedance
+    )), self.c.neg.adapt_to(AnalogSink()))
