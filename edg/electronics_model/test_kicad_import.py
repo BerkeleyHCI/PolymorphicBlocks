@@ -49,6 +49,14 @@ class KiCadInlineBlock(KiCadSchematicBlock):
         self.import_kicad(self.file_path("resources", "test_kicad_import_inline.kicad_sch"))
 
 
+class KiCadInlineBlockBadMultiline(KiCadSchematicBlock):
+    """Schematic with bad multiline definition, starting before Value2"""
+    def __init__(self) -> None:
+        super().__init__()
+        self.PORT_A = self.Port(Passive())
+        self.import_kicad(self.file_path("resources", "test_kicad_import_inline_badmultiline.kicad_sch"))
+
+
 class KiCadInlineVarsBlock(KiCadSchematicBlock):
     """Block that has its implementation completely defined in KiCad, using inline Python that references
     local variables defined in the HDL."""
@@ -136,6 +144,10 @@ class KiCadImportProtoTestCase(unittest.TestCase):
 
     def test_inline_block(self):
         self.check_connectivity(KiCadInlineBlock)
+
+    def test_inline_badmultiline(self):
+        with self.assertRaises(AssertionError):
+            self.check_connectivity(KiCadInlineBlockBadMultiline)
 
     def test_inline_vars_block(self):
         self.check_connectivity(KiCadInlineVarsBlock)
