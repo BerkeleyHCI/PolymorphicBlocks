@@ -201,6 +201,7 @@ class KiCadSchematicBlock(Block):
                 value_suffixes = [int(name[5:]) for name in symbol.properties.keys()
                                   if name.startswith('Value') and len(name) > 5]
                 if len(value_suffixes):  # support fake-multiline values with Value2, Value3, ...
+                  assert min(value_suffixes) == 2, "additional Values must start at 2"
                   max_value = max(value_suffixes)
                   for suffix in range(2, max_value + 1):  # starts at Value2
                     assert f'Value{suffix}' in symbol.properties, f"missing Value{suffix} of Value{max_value}"
