@@ -197,6 +197,15 @@ class KiCadSchematicBlock(Block):
                 assert isinstance(block, KiCadImportableBlock), f"{symbol.refdes} not a KiCadImportableBlock"
             elif symbol.properties['Value'].startswith('#'):  # sub-block with inline Python in the value
                 inline_code = symbol.properties['Value'][1:]
+
+                value_suffixes = [int(name[5:]) for name in symbol.properties.keys()
+                                  if name.startswith('Value') and len(name) > 5]
+                if len(value_suffixes):  # support fake-multiline values with Value2, Value3, ...
+                  max_value = max(value_suffixes)
+                  for suffix in range(2, max_value + 1):  # starts at Value2
+                    assert f'Value{suffix}' in symbol.properties, f"missing Value{suffix} of Value{max_value}"
+                    inline_code += '\n' + symbol.properties[f'Value{suffix}']
+
                 # use the caller's globals, since this needs to reflect the caller's imports
                 block_model = eval(inline_code, inspect.stack()[1][0].f_globals, locals)
                 assert isinstance(block_model, KiCadImportableBlock),\
