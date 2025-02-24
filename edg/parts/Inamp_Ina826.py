@@ -54,12 +54,12 @@ class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Ina826(Block):
+class Ina826(GeneratorBlock):
   """Cost-effective instrumentation amplifier in SOIC-8, with gain 1-1000 set by single resistor.
   TODO: DiffAmp abstract class
   """
   @init_in_parent
-  def __init__(self, gain: RangeLike):
+  def __init__(self, gain: RangeLike = Range(0.98, 1.02)):
     super().__init__()
     self.ic = self.Block(Ina826_Device())
     self.gnd = self.Export(self.ic.vsn)
@@ -71,16 +71,20 @@ class Ina826(Block):
     self.out = self.Export(self.ic.out)
 
     self.gain = self.ArgParameter(gain)
+    self.generator_param(self.gain)
 
-  def contents(self):
-    super().contents()
+  def generate(self):
+    super().generate()
 
     # Datasheet section 8.1: decoupling caps placed as close to device pins as possible
     self.vdd_cap = self.Block(DecouplingCapacitor(
       capacitance=0.1*uFarad(tol=0.2),
     )).connected(self.gnd, self.pwr)
 
+    # gain error, lumped into the resistor gain
     self.require(self.gain.within(Range(1, 1000)))
-    self.rg = self.Block(Resistor(49400/(self.gain - 1)))  # TODO proper tolerancing
+    # note, worst case gain at +/- 0.04%
+    self.rg = self.Block(Resistor(Range.cancel_multiply(49.4*kOhm(tol=0.0004),
+                                                        1/(self.get(self.gain) - 1))))
     self.connect(self.rg.a, self.ic.rg2)
     self.connect(self.rg.b, self.ic.rg3)
