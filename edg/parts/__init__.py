@@ -40,6 +40,7 @@ from .Opamp_Opax197 import Opa197, Opa2197
 from .Opamp_Opax189 import Opa189, Opa2189
 from .Opamp_Opax333 import Opa2333
 from .Opamp_Lmv321 import Lmv321
+from .Inamp_Ina826 import Ina826
 from .CeramicResonator_Cstne import Cstne
 
 from .PassiveConnector_Header import PinHeader254, PinHeader254Vertical, PinHeader254Horizontal, PinSocket254
