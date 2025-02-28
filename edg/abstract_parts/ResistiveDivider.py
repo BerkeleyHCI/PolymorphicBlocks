@@ -58,10 +58,8 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
 class ResistiveDivider(InternalSubcircuit, KiCadImportableBlock, GeneratorBlock):
   """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
-    assert symbol_name == 'edg_importable:ResistiveDivider'
-    return {
-      '1': self.top, '2': self.bottom, '3': self.center
-    }
+    assert symbol_name == 'Device:VoltageDivider'
+    return {'1': self.top, '2': self.center, '3': self.bottom}
 
   @classmethod
   def divider_ratio(cls, rtop: RangeExpr, rbot: RangeExpr) -> RangeExpr:
@@ -144,10 +142,8 @@ class BaseVoltageDivider(KiCadImportableBlock, Block):
   ratio and impedance.
   Subclasses should define the ratio and impedance spec."""
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
-    assert symbol_name == 'edg_importable:ResistiveDivider'
-    return {
-      '1': self.input, '2': self.gnd, '3': self.output
-    }
+    assert symbol_name == 'Device:VoltageDivider'
+    return {'1': self.input, '2': self.output, '3': self.gnd}
 
   @init_in_parent
   def __init__(self, impedance: RangeLike) -> None:
@@ -249,10 +245,8 @@ class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
 class SignalDivider(Analog, KiCadImportableBlock, Block):
   """Specialization of ResistiveDivider for Analog signals"""
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
-    assert symbol_name == 'edg_importable:ResistiveDivider'
-    return {
-      '1': self.input, '2': self.gnd, '3': self.output
-    }
+    assert symbol_name == 'Device:VoltageDivider'
+    return {'1': self.input, '2': self.output, '3': self.gnd}
 
   @init_in_parent
   def __init__(self, ratio: RangeLike, impedance: RangeLike) -> None:
