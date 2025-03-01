@@ -13,7 +13,7 @@ class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     analog_in_model = AnalogSink.from_supply(
       self.vsn, self.vsp,
       voltage_limit_tolerance=(-2, 40)*Volt,  # Vs- - 40 to Vs+ + 40, but down to Vs- - 2 without clamping input res
-      signal_limit_tolerance=(0, -1)*Volt,
+      signal_limit_bound=(0*Volt, -1*Volt),
       impedance=2000*MOhm(tol=0)  # 20 GOhm typ differential
     )
     self.inp = self.Port(analog_in_model)
@@ -25,7 +25,7 @@ class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     ))
     self.out = self.Port(AnalogSource.from_supply(
       self.vsn, self.vsp,
-      signal_out_bound=(0.1, -0.15),
+      signal_out_bound=(0.1*Volt, -0.15*Volt),
       current_limits=(-16, 16)*mAmp,  # continuous to Vs/2
       impedance=100*Ohm(tol=0)  # no tolerance bounds given on datasheet; open-loop impedance
     ))

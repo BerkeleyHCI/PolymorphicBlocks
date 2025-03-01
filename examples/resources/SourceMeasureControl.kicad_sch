@@ -4754,7 +4754,7 @@
 				)
 			)
 		)
-		(property "Value" "#DifferentialAmplifier(**vmeas)"
+		(property "Value" "#DifferentialAmplifier("
 			(at 34.29 78.74 0)
 			(effects
 				(font
@@ -4787,6 +4787,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "ratio=Range.from_tolerance(1/24, 0.05),"
+			(at 34.29 81.026 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "input_impedance=220*kOhm(tol=0.05))"
+			(at 34.29 83.312 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"
@@ -4898,7 +4914,7 @@
 				)
 			)
 		)
-		(property "Value" "#DifferentialAmplifier(**vmeas)"
+		(property "Value" "#DifferentialAmplifier("
 			(at 233.68 138.43 0)
 			(effects
 				(font
@@ -4931,6 +4947,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "ratio=Range.from_tolerance(1/24, 0.05),"
+			(at 233.68 140.716 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "input_impedance=220*kOhm(tol=0.05))"
+			(at 233.68 143.002 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"
@@ -5702,7 +5734,7 @@
 				)
 			)
 		)
-		(property "Value" "#IntegratorInverting(**int)"
+		(property "Value" "#IntegratorInverting("
 			(at 146.05 101.6 0)
 			(effects
 				(font
@@ -5735,6 +5767,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "factor=Range.from_tolerance(1 / 4.7e-6, 0.15),"
+			(at 145.796 103.886 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "capacitance=1*nFarad(tol=0.1))"
+			(at 146.05 106.172 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"
@@ -6392,7 +6440,7 @@
 				)
 			)
 		)
-		(property "Value" "#EmitterFollower(**driver)"
+		(property "Value" "#EmitterFollower("
 			(at 187.96 101.6 0)
 			(effects
 				(font
@@ -6425,6 +6473,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "current=self.current,"
+			(at 189.23 103.886 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "rds_on=self.rds_on)"
+			(at 189.23 106.172 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"
@@ -6604,7 +6668,7 @@
 				)
 			)
 		)
-		(property "Value" "#GatedSummingAmplifier(res=4.7*kOhm(tol=0.01), **err_volt)"
+		(property "Value" "#GatedSummingAmplifier("
 			(at 90.17 74.93 0)
 			(effects
 				(font
@@ -6637,6 +6701,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "res=4.7*kOhm(tol=0.01),"
+			(at 91.44 77.216 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "input_resistance=(4.7, 47)*kOhm)"
+			(at 91.44 79.502 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"
@@ -6823,7 +6903,7 @@
 				)
 			)
 		)
-		(property "Value" "#Amplifier(**amp)"
+		(property "Value" "#Amplifier("
 			(at 167.64 101.6 0)
 			(effects
 				(font
@@ -6856,6 +6936,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "amplification=Range.from_tolerance(20, 0.05),"
+			(at 167.64 103.886 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "impedance=(1, 10)*kOhm)"
+			(at 167.64 106.172 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"
@@ -7160,7 +7256,7 @@
 				)
 			)
 		)
-		(property "Value" "#GatedSummingAmplifier(res=4.7*kOhm(tol=0.01), fine_scale=1000, **err_volt)"
+		(property "Value" "#GatedSummingAmplifier("
 			(at 90.17 99.06 0)
 			(effects
 				(font
@@ -7193,6 +7289,30 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "res=4.7*kOhm(tol=0.01),"
+			(at 91.44 101.346 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "fine_scale=1000,"
+			(at 91.44 103.632 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value4" "input_resistance=(4.7, 47)*kOhm)"
+			(at 91.44 105.918 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"
@@ -7700,7 +7820,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "#RangingCurrentSenseResistor(**isense)"
+		(property "Value" "#RangingCurrentSenseResistor("
 			(at 194.31 96.52 90)
 			(effects
 				(font
@@ -7734,6 +7854,46 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "resistances=["
+			(at 214.63 98.806 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "0.022*Ohm(tol=0.01), 0.22*Ohm(tol=0.01)"
+			(at 214.63 101.092 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value4" "], currents=["
+			(at 214.63 103.378 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value5" "(-3, 3)*Amp, (-300, 300)*mAmp"
+			(at 214.63 105.918 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value6" "])"
+			(at 214.63 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin ""
@@ -7849,7 +8009,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "#Ad8418a(**imeas)"
+		(property "Value" "#Ad8418a("
 			(at 233.68 115.57 0)
 			(effects
 				(font
@@ -7882,6 +8042,14 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "in_diff_range=RangeExpr())"
+			(at 233.68 117.856 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"
@@ -8331,7 +8499,7 @@
 				)
 			)
 		)
-		(property "Value" "#GatedSummingAmplifier(dir='sink', **err_current)"
+		(property "Value" "#GatedSummingAmplifier("
 			(at 90.17 144.78 0)
 			(effects
 				(font
@@ -8364,6 +8532,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "dir='sink',"
+			(at 91.186 146.812 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "input_resistance=(4.7, 47)*kOhm)"
+			(at 91.694 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"
@@ -8549,7 +8733,7 @@
 				)
 			)
 		)
-		(property "Value" "#GatedSummingAmplifier(dir='source', **err_current)"
+		(property "Value" "#GatedSummingAmplifier("
 			(at 90.17 121.92 0)
 			(effects
 				(font
@@ -8582,6 +8766,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "dir='source',"
+			(at 91.44 123.952 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "input_resistance=(4.7, 47)*kOhm)"
+			(at 91.44 125.984 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"

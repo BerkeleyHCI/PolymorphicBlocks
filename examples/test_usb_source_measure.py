@@ -363,41 +363,7 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       locals={
-        'err_volt': {
-          'input_resistance': (4.7, 47)*kOhm,
-        },
-        'err_current': {
-          'input_resistance': (4.7, 47)*kOhm,
-        },
-        'int': {
-          'factor': Range.from_tolerance(1 / 4.7e-6, 0.15),
-          'capacitance': 1*nFarad(tol=0.1),
-        },
-        'amp': {
-          'amplification': Range.from_tolerance(20, 0.05),
-          'impedance': (1, 10)*kOhm
-        },
-        'driver': {
-          'current': self.current,
-          'rds_on': self.rds_on
-        },
-        'isense': {
-          'resistances': [
-            0.022*Ohm(tol=0.01),
-            0.22*Ohm(tol=0.01),
-          ],
-          'currents': [
-            (-3, 3)*Amp,
-            (-300, 300)*mAmp
-          ]
-        },
-        'imeas': {
-          'in_diff_range': RangeExpr(),
-        },
-        'vmeas': {
-          'ratio': Range.from_tolerance(1/24, 0.05),
-          'input_impedance': 220*kOhm(tol=0.05)
-        },
+        'self': self,
         'clamp': {
           'clamp_current': (2.5, 5)*mAmp  # absolute maximum rating of ADC
         }
