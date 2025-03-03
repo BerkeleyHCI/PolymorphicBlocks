@@ -325,6 +325,31 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
       self.connect(self.amp.out, self.sense_out)
 
 
+class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
+  """JET-based current clamp, clamps to roughly 10mA while maintaining a relatively low non-clamping
+  impedance of ~100ohm. Max ~35V limited by JFET Vgs,max.
+  """
+  def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
+    assert symbol_name == 'edg_importable:Unk2'
+    return {'1': self.input, '2': self.output}
+
+  @init_in_parent
+  def __init__(self):
+    super().__init__()
+
+    self.input = self.Port(AnalogSink.empty(), [Power])
+    self.output = self.Port(AnalogSource.empty(), [Common])
+
+  def contents(self) -> None:
+    super().contents()
+
+    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+                      conversions={
+                        'input': AnalogSink(),
+                        'output': AnalogSource(),
+                      })
+
+
 class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
   """Analog feedback circuit for the source-measure unit
   """
