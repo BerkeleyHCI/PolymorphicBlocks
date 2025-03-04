@@ -3579,6 +3579,16 @@
 	)
 	(wire
 		(pts
+			(xy 190.5 133.35) (xy 190.5 124.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8935ce8b-82a6-4c07-af3f-bb4c51e5233d")
+	)
+	(wire
+		(pts
 			(xy 55.88 60.96) (xy 68.58 60.96)
 		)
 		(stroke
@@ -3636,6 +3646,16 @@
 			(type default)
 		)
 		(uuid "a5db4290-250e-4a5d-8b9c-ddce82e6d66e")
+	)
+	(wire
+		(pts
+			(xy 190.5 124.46) (xy 218.44 124.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b24c2e1f-2ef1-4ab4-9c01-f99d6edeea43")
 	)
 	(wire
 		(pts
@@ -3855,13 +3875,13 @@
 		(uuid "a2fe3dcc-f9d8-4f3f-8ee0-e8643692091c")
 	)
 	(label "drive"
-		(at 162.56 91.44 0)
+		(at 168.91 91.44 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "a4b7fc8f-2472-4907-a919-b5756220e4cd")
 	)
@@ -7554,7 +7574,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "VoltageDivider"
+		(property "Value" "#SignalDivider("
 			(at 184.15 134.6199 0)
 			(effects
 				(font
@@ -7588,6 +7608,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "ratio=(1/24)*Tol(tol=0.05),"
+			(at 186.69 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "impedance=(1, 10)*Ohm)"
+			(at 186.69 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "3"
