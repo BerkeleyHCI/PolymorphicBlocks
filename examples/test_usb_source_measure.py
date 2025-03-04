@@ -721,13 +721,8 @@ class UsbSourceMeasure(JlcBoardTop):
     self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
     self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
 
-    self.cd_amps = self.PackedBlock(Tlv9152())
-    self.pack(self.cd_amps.elements.request('0'), ['control', 'dbuf', 'amp'])
-    self.pack(self.cd_amps.elements.request('1'), ['control', 'err_d', 'amp'])
-
     self.cv_amps = self.PackedBlock(Tlv9152())
-    self.pack(self.cv_amps.elements.request('0'), ['control', 'vbuf', 'amp'])
-    self.pack(self.cv_amps.elements.request('1'), ['control', 'err_volt', 'amp'])
+    self.pack(self.cv_amps.elements.request('0'), ['control', 'err_volt', 'amp'])
 
     self.ci_amps = self.PackedBlock(Tlv9152())
     self.pack(self.ci_amps.elements.request('0'), ['control', 'err_sink', 'amp'])

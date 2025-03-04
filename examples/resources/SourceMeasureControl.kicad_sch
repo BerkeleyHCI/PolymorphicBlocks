@@ -7409,7 +7409,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "cd393e0e-9024-4e99-956b-60757db12acb")
-		(property "Reference" "dclamp1"
+		(property "Reference" "vclamp"
 			(at 240.03 124.714 90)
 			(effects
 				(font
@@ -7461,7 +7461,7 @@
 		(instances
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "dclamp1")
+					(reference "vclamp")
 					(unit 1)
 				)
 			)
