@@ -709,17 +709,17 @@ class UsbSourceMeasure(JlcBoardTop):
     )
 
   def multipack(self) -> None:
-    self.vimeas_amps = self.PackedBlock(Opa2189())
+    self.vimeas_amps = self.PackedBlock(Opa2189())  # low noise opamp
     self.pack(self.vimeas_amps.elements.request('1'), ['control', 'hvbuf', 'amp'])
-    self.pack(self.vimeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
+    # TODO unused opamp part - yes, this is cheaper than the single opamp part
 
-    # self.ampdmeas_amps = self.PackedBlock(Opa2171())
-    # self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
-    # self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
+    self.ampdmeas_amps = self.PackedBlock(Opa2171())  # general high voltage opamp
+    self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
+    self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
 
     self.cv_amps = self.PackedBlock(Tlv9152())
     self.pack(self.cv_amps.elements.request('0'), ['control', 'err_volt', 'amp'])
-    self.pack(self.cv_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
+    # TODO unused opamp part
 
     self.ci_amps = self.PackedBlock(Tlv9152())
     self.pack(self.ci_amps.elements.request('0'), ['control', 'err_sink', 'amp'])
