@@ -4935,7 +4935,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "ratio=Range.from_tolerance(1/24, 0.05),"
+		(property "Value2" "ratio=1/24*Ratio(tol=0.05),"
 			(at 48.26 74.676 0)
 			(effects
 				(font
@@ -5095,7 +5095,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "ratio=Range.from_tolerance(1/24, 0.05),"
+		(property "Value2" "ratio=1/24*Ratio(tol=0.05),"
 			(at 226.06 140.716 0)
 			(effects
 				(font
@@ -5874,7 +5874,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "factor=Range.from_tolerance(1 / 4.7e-6, 0.15),"
+		(property "Value2" "factor=1/4.7e-6*Ratio(tol=0.15),"
 			(at 113.03 103.886 0)
 			(effects
 				(font
@@ -6777,7 +6777,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "amplification=Range.from_tolerance(20, 0.05),"
+		(property "Value2" "amplification=20*Ratio(tol=0.05),"
 			(at 149.86 103.886 0)
 			(effects
 				(font
