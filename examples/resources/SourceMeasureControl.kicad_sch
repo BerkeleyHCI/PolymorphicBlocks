@@ -4172,23 +4172,13 @@
 	)
 	(wire
 		(pts
-			(xy 262.89 104.14) (xy 266.7 104.14)
+			(xy 260.35 104.14) (xy 264.16 104.14)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "bb65aed7-c221-40e1-9b3d-67da348fb593")
-	)
-	(wire
-		(pts
-			(xy 245.11 101.6) (xy 247.65 101.6)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bde32b51-0346-4430-a8d3-d4f1cbdf841b")
 	)
 	(wire
 		(pts
@@ -4292,7 +4282,7 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 106.68) (xy 247.65 106.68)
+			(xy 234.95 106.68) (xy 245.11 106.68)
 		)
 		(stroke
 			(width 0)
@@ -4302,7 +4292,7 @@
 	)
 	(wire
 		(pts
-			(xy 274.32 104.14) (xy 281.94 104.14)
+			(xy 271.78 104.14) (xy 279.4 104.14)
 		)
 		(stroke
 			(width 0)
@@ -4431,7 +4421,7 @@
 		(uuid "b7ba2f1b-f6f2-4ea1-9d21-a1e11476b841")
 	)
 	(label "meas_i"
-		(at 281.94 104.14 180)
+		(at 279.4 104.14 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4894,7 +4884,7 @@
 	)
 	(global_label "measured_current"
 		(shape output)
-		(at 281.94 104.14 0)
+		(at 279.4 104.14 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4904,7 +4894,7 @@
 		)
 		(uuid "fb446b17-b946-408e-9166-37bcf924cb5d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 301.226 104.0606 0)
+			(at 298.686 104.0606 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6364,7 +6354,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:Unk2")
-		(at 270.51 104.14 90)
+		(at 267.97 104.14 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6372,7 +6362,7 @@
 		(dnp no)
 		(uuid "4a2cf8bb-0619-44a8-8ddd-d99997adf2d5")
 		(property "Reference" "iclamp"
-			(at 270.51 101.854 90)
+			(at 267.97 101.854 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6380,7 +6370,7 @@
 			)
 		)
 		(property "Value" "#JfetCurrentClamp()"
-			(at 270.256 106.68 90)
+			(at 267.716 106.68 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6388,7 +6378,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 270.51 105.918 90)
+			(at 267.97 105.918 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6397,7 +6387,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 270.51 104.14 0)
+			(at 267.97 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6406,7 +6396,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 270.51 104.14 0)
+			(at 267.97 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6578,7 +6568,7 @@
 	)
 	(symbol
 		(lib_id "power:-3V3")
-		(at 252.73 110.49 180)
+		(at 250.19 110.49 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6586,7 +6576,7 @@
 		(dnp no)
 		(uuid "561c5822-ed9b-4ba9-852a-64234a0cd53f")
 		(property "Reference" "#PWR020"
-			(at 252.73 106.68 0)
+			(at 250.19 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6595,7 +6585,7 @@
 			)
 		)
 		(property "Value" "-3V3"
-			(at 252.73 110.49 0)
+			(at 250.19 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6604,7 +6594,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 252.73 110.49 0)
+			(at 250.19 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6613,7 +6603,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 252.73 110.49 0)
+			(at 250.19 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6622,7 +6612,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"-3V3\""
-			(at 252.73 110.49 0)
+			(at 250.19 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7700,7 +7690,7 @@
 	)
 	(symbol
 		(lib_id "power:+36V")
-		(at 252.73 97.79 0)
+		(at 250.19 97.79 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7708,7 +7698,7 @@
 		(dnp no)
 		(uuid "8e4512a0-eacd-4a76-8d60-9dbfe97f8083")
 		(property "Reference" "#PWR05"
-			(at 252.73 101.6 0)
+			(at 250.19 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7717,7 +7707,7 @@
 			)
 		)
 		(property "Value" "+36V"
-			(at 252.73 97.79 0)
+			(at 250.19 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7726,7 +7716,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 252.73 97.79 0)
+			(at 250.19 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7735,7 +7725,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 252.73 97.79 0)
+			(at 250.19 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7744,7 +7734,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+36V\""
-			(at 252.73 97.79 0)
+			(at 250.19 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8651,7 +8641,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:DifferentialAmplifier")
-		(at 255.27 104.14 0)
+		(at 252.73 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8659,7 +8649,7 @@
 		(dnp no)
 		(uuid "cff32c2d-33d5-4b97-b475-a64d002d0682")
 		(property "Reference" "imeas"
-			(at 254 100.33 0)
+			(at 251.46 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8668,7 +8658,7 @@
 			)
 		)
 		(property "Value" "#Ina826("
-			(at 255.27 115.57 0)
+			(at 252.73 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8676,7 +8666,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 255.27 104.14 0)
+			(at 252.73 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8685,7 +8675,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 255.27 104.14 0)
+			(at 252.73 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8694,7 +8684,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 255.27 104.14 0)
+			(at 252.73 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8703,7 +8693,7 @@
 			)
 		)
 		(property "Value2" "ratio=10*Ratio(tol=0.05))"
-			(at 255.27 117.856 0)
+			(at 252.73 117.856 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9023,7 +9013,7 @@
 	)
 	(symbol
 		(lib_id "power:+2V5")
-		(at 257.81 107.95 180)
+		(at 255.27 107.95 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9031,7 +9021,7 @@
 		(dnp no)
 		(uuid "e997660d-85fb-4a69-a8f8-a91052157a2b")
 		(property "Reference" "#PWR?"
-			(at 257.81 104.14 0)
+			(at 255.27 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9040,7 +9030,7 @@
 			)
 		)
 		(property "Value" "+2V5"
-			(at 261.62 109.22 0)
+			(at 259.08 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9048,7 +9038,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 257.81 107.95 0)
+			(at 255.27 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9057,7 +9047,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 257.81 107.95 0)
+			(at 255.27 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9066,7 +9056,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 257.81 107.95 0)
+			(at 255.27 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
