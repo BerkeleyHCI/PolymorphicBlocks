@@ -38,7 +38,8 @@ from .AbstractInductor import Inductor, TableInductor, SeriesPowerInductor
 from .AbstractFerriteBead import FerriteBead, FerriteBeadStandardFootprint, TableFerriteBead, SeriesPowerFerriteBead
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, VoltageSenseDivider
 from .ResistiveDivider import FeedbackVoltageDivider, SignalDivider
-from .PassiveFilters import LowPassRc, AnalogLowPassRc, DigitalLowPassRc, DigitalLowPassRcArray, LowPassRcDac, PullupDelayRc
+from .PassiveFilters import LowPassRc, AnalogLowPassRc, DigitalLowPassRc, DigitalLowPassRcArray, LowPassRcDac, \
+    PullupDelayRc, LowPassAnalogDifferentialRc
 from .RfNetworks import DiscreteRfWarning, LLowPassFilter, LHighPassFilter, LLowPassFilterWith2HNotch, PiLowPassFilter
 from .I2cPullup import I2cPullup
 from .LevelShifter import BidirectionaLevelShifter

@@ -2064,6 +2064,239 @@
 				)
 			)
 		)
+		(symbol "edg_importable:DifferentialRC"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "R"
+				(at 0 -8.128 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "DifferentialRC"
+				(at 0 -6.096 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 2.032 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 3.81 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "DifferentialRC_0_0"
+				(polyline
+					(pts
+						(xy 2.54 3.81) (xy 3.81 3.81)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 3.81 -3.81) (xy 2.54 -3.81)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "DifferentialRC_0_1"
+				(polyline
+					(pts
+						(xy 1.778 -0.762) (xy 5.842 -0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.778 0.762) (xy 5.842 0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start 2.54 -4.826)
+					(end -2.54 -2.794)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start 2.54 2.794)
+					(end -2.54 4.826)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "DifferentialRC_1_1"
+				(polyline
+					(pts
+						(xy 3.81 -1.27) (xy 3.81 -3.81)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 3.81 3.81) (xy 3.81 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin passive line
+					(at -3.81 3.81 0)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -3.81 -3.81 0)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 3.81 180)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -3.81 180)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "edg_importable:Follower"
 			(pin_numbers hide)
 			(pin_names
@@ -3369,16 +3602,6 @@
 	)
 	(wire
 		(pts
-			(xy 203.2 101.6) (xy 218.44 101.6)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0eb869b4-9d7a-4975-839e-e7bfdf5d9f2b")
-	)
-	(wire
-		(pts
 			(xy 76.2 144.78) (xy 76.2 142.24)
 		)
 		(stroke
@@ -3439,6 +3662,16 @@
 	)
 	(wire
 		(pts
+			(xy 250.19 99.06) (xy 250.19 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3f7d0918-5ec2-4acf-9ec1-08014f6c83cd")
+	)
+	(wire
+		(pts
 			(xy 129.54 127) (xy 139.7 127)
 		)
 		(stroke
@@ -3459,7 +3692,7 @@
 	)
 	(wire
 		(pts
-			(xy 209.55 106.68) (xy 218.44 106.68)
+			(xy 209.55 106.68) (xy 228.6 106.68)
 		)
 		(stroke
 			(width 0)
@@ -3556,6 +3789,16 @@
 			(type default)
 		)
 		(uuid "786f632b-0d7b-4b19-8b4a-1cf56910e188")
+	)
+	(wire
+		(pts
+			(xy 203.2 99.06) (xy 228.6 99.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7cfebcb3-feda-423a-ad8d-fb9d95d1c489")
 	)
 	(wire
 		(pts
@@ -3669,7 +3912,17 @@
 	)
 	(wire
 		(pts
-			(xy 233.68 104.14) (xy 251.46 104.14)
+			(xy 250.19 99.06) (xy 237.49 99.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ba913ea5-3d00-4d9c-9b83-cd8ea7347c8e")
+	)
+	(wire
+		(pts
+			(xy 267.97 104.14) (xy 285.75 104.14)
 		)
 		(stroke
 			(width 0)
@@ -3689,6 +3942,16 @@
 	)
 	(wire
 		(pts
+			(xy 250.19 101.6) (xy 252.73 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bde32b51-0346-4430-a8d3-d4f1cbdf841b")
+	)
+	(wire
+		(pts
 			(xy 233.68 127) (xy 236.22 127)
 		)
 		(stroke
@@ -3699,7 +3962,7 @@
 	)
 	(wire
 		(pts
-			(xy 203.2 97.79) (xy 203.2 101.6)
+			(xy 203.2 97.79) (xy 203.2 99.06)
 		)
 		(stroke
 			(width 0)
@@ -3796,6 +4059,16 @@
 			(type default)
 		)
 		(uuid "f147f540-bcb9-4261-95f9-f4bfe80f08e3")
+	)
+	(wire
+		(pts
+			(xy 237.49 106.68) (xy 252.73 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f55a6edc-1914-48c8-8551-5b3d0453221a")
 	)
 	(text "when off, drive gate\nto output so FETs off\non startup"
 		(exclude_from_sim no)
@@ -3908,7 +4181,7 @@
 		(uuid "b7ba2f1b-f6f2-4ea1-9d21-a1e11476b841")
 	)
 	(label "meas_i"
-		(at 251.46 104.14 180)
+		(at 285.75 104.14 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4525,7 +4798,7 @@
 	)
 	(global_label "measured_current"
 		(shape output)
-		(at 251.46 104.14 0)
+		(at 285.75 104.14 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4535,7 +4808,7 @@
 		)
 		(uuid "fb446b17-b946-408e-9166-37bcf924cb5d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 270.746 104.0606 0)
+			(at 305.036 104.0606 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4867,7 +5140,7 @@
 	)
 	(symbol
 		(lib_id "power:VDD")
-		(at 223.52 97.79 0)
+		(at 257.81 97.79 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4875,7 +5148,7 @@
 		(dnp no)
 		(uuid "08fb1203-f1f2-49e0-8805-e575bbb8ae5b")
 		(property "Reference" "#PWR05"
-			(at 223.52 101.6 0)
+			(at 257.81 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4884,7 +5157,7 @@
 			)
 		)
 		(property "Value" "VDD"
-			(at 219.71 96.52 0)
+			(at 254 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4892,7 +5165,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 223.52 97.79 0)
+			(at 257.81 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4901,7 +5174,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 223.52 97.79 0)
+			(at 257.81 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4910,7 +5183,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 223.52 97.79 0)
+			(at 257.81 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5780,6 +6053,95 @@
 		)
 	)
 	(symbol
+		(lib_id "edg_importable:DifferentialRC")
+		(at 232.41 102.87 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "47d6e852-ca03-42a3-9181-f7c5922980b3")
+		(property "Reference" "ifilt"
+			(at 232.41 96.774 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "#LowPassAnalogDifferentialRc("
+			(at 231.902 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 232.41 100.838 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 232.41 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 232.41 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value2" "impedance=100*Ohm(tol=.05),"
+			(at 232.41 111.506 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "cutoff_freq=(47, 470)*kHertz)"
+			(at 232.664 114.046 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e2a55b79-3eb0-466d-af85-67f9af673922")
+		)
+		(pin "3"
+			(uuid "0526f1b2-dae8-4b92-9553-a7b83833522b")
+		)
+		(pin "2"
+			(uuid "be764c8b-d8d9-4b4c-9c63-bde5e88b434f")
+		)
+		(pin "4"
+			(uuid "ea89bca0-d97e-4c7f-98df-1b33f62714fb")
+		)
+		(instances
+			(project ""
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "ifilt")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "edg_importable:Adapter")
 		(at 127 127 0)
 		(unit 1)
@@ -6539,7 +6901,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 186.69 144.145 90)
+			(at 190.5 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7018,7 +7380,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 223.52 110.49 0)
+		(at 257.81 110.49 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7026,7 +7388,7 @@
 		(dnp no)
 		(uuid "a35380fc-7154-4615-8adb-37410b91e37d")
 		(property "Reference" "#PWR?"
-			(at 223.52 116.84 0)
+			(at 257.81 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7035,7 +7397,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 219.71 111.76 0)
+			(at 254 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7043,7 +7405,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 223.52 110.49 0)
+			(at 257.81 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7052,7 +7414,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 223.52 110.49 0)
+			(at 257.81 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7061,7 +7423,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 223.52 110.49 0)
+			(at 257.81 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7469,7 +7831,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:DifferentialAmplifier")
-		(at 226.06 104.14 0)
+		(at 260.35 104.14 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7477,7 +7839,7 @@
 		(dnp no)
 		(uuid "cff32c2d-33d5-4b97-b475-a64d002d0682")
 		(property "Reference" "imeas"
-			(at 224.79 100.33 0)
+			(at 259.08 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7486,7 +7848,7 @@
 			)
 		)
 		(property "Value" "#Ad8418a("
-			(at 226.06 115.57 0)
+			(at 260.35 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7494,7 +7856,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 226.06 104.14 0)
+			(at 260.35 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7503,7 +7865,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 226.06 104.14 0)
+			(at 260.35 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7512,7 +7874,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 226.06 104.14 0)
+			(at 260.35 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7521,7 +7883,7 @@
 			)
 		)
 		(property "Value2" "in_diff_range=RangeExpr())"
-			(at 226.06 117.856 0)
+			(at 260.35 117.856 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7563,7 +7925,6 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "d8a9745e-5ed6-425f-95cc-b89b6c96a89f")
 		(property "Reference" "RN1"
 			(at 184.15 132.0799 0)
@@ -7575,12 +7936,11 @@
 			)
 		)
 		(property "Value" "#SignalDivider("
-			(at 184.15 134.6199 0)
+			(at 186.69 143.256 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
 			)
 		)
 		(property "Footprint" ""
@@ -7610,8 +7970,8 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "ratio=(1/24)*Tol(tol=0.05),"
-			(at 186.69 133.35 0)
+		(property "Value2" "ratio=(1/24)*Ratio(tol=0.05),"
+			(at 186.69 145.796 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7619,7 +7979,7 @@
 			)
 		)
 		(property "Value3" "impedance=(1, 10)*Ohm)"
-			(at 186.69 133.35 0)
+			(at 186.69 148.082 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7778,7 +8138,7 @@
 	)
 	(symbol
 		(lib_id "power:+2V5")
-		(at 228.6 107.95 180)
+		(at 262.89 107.95 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7786,7 +8146,7 @@
 		(dnp no)
 		(uuid "e997660d-85fb-4a69-a8f8-a91052157a2b")
 		(property "Reference" "#PWR?"
-			(at 228.6 104.14 0)
+			(at 262.89 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7795,7 +8155,7 @@
 			)
 		)
 		(property "Value" "+2V5"
-			(at 232.41 109.22 0)
+			(at 266.7 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7803,7 +8163,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 228.6 107.95 0)
+			(at 262.89 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7812,7 +8172,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 228.6 107.95 0)
+			(at 262.89 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7821,7 +8181,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 228.6 107.95 0)
+			(at 262.89 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)

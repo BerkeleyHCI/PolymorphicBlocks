@@ -42,7 +42,7 @@ MiBit = LiteralConstructor(1024*1024, 'bit')
 
 Watt = LiteralConstructor(1, 'W')
 
-Tol = LiteralConstructor(1, '')  # dimensionless with tolerance
+Ratio = LiteralConstructor(1, '')
 
 
 class UnitUtils:
