@@ -149,7 +149,7 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
     self.pwr_gate_pos = self.Port(VoltageSink.empty())
-    self.pwr_gate_neg = self.Port(VoltageSink.empty())
+    self.pwr_gate_neg = self.Port(Ground.empty())
     self.out = self.Port(VoltageSource.empty())
 
     self.control = self.Port(AnalogSink.empty())
