@@ -145,7 +145,7 @@ class Range:
   def __sub__(self, other: float) -> 'Range':
     # Range-range subtract semantics not defined
     if isinstance(other, (float, int)):
-      return Range(self.upper - other, self.lower - other)
+      return Range(self.lower - other, self.upper - other)
     else:
       return NotImplemented
 

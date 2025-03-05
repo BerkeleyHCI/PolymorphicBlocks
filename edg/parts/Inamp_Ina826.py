@@ -1,3 +1,5 @@
+from typing import Dict
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -54,24 +56,38 @@ class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.actual_basic_part, False)
 
 
-class Ina826(GeneratorBlock):
+class Ina826(KiCadImportableBlock, GeneratorBlock):
   """Cost-effective instrumentation amplifier in SOIC-8, with gain 1-1000 set by single resistor.
-  TODO: DiffAmp abstract class
+  TODO: DiffAmp / InAmp abstract class, which supports KiCadImportableBlock
   """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    mapping: Dict[str, Dict[str, BasePort]] = {
+      'Simulation_SPICE:OPAMP': {  # reference pin not supported
+        '+': self.input_positive, '-': self.input_negative, '3': self.output,
+        'V+': self.pwr, 'V-': self.gnd
+      },
+      'edg_importable:DifferentialAmplifier': {
+        '+': self.input_positive, '-': self.input_negative,
+        'R': self.output_reference, '3': self.output,
+        'V+': self.pwr, 'V-': self.gnd
+      }
+    }
+    return mapping[symbol_name]
+
   @init_in_parent
-  def __init__(self, gain: RangeLike = Range(0.98, 1.02)):
+  def __init__(self, ratio: RangeLike = 10*Ratio(tol=0.05)):
     super().__init__()
     self.ic = self.Block(Ina826_Device())
     self.gnd = self.Export(self.ic.vsn)
     self.pwr = self.Export(self.ic.vsp)
 
-    self.inn = self.Export(self.ic.inn)
-    self.inp = self.Export(self.ic.inp)
-    self.ref = self.Export(self.ic.ref)
-    self.out = self.Export(self.ic.out)
+    self.input_negative = self.Export(self.ic.inn)
+    self.input_positive = self.Export(self.ic.inp)
+    self.output_reference = self.Export(self.ic.ref)
+    self.output = self.Export(self.ic.out)
 
-    self.gain = self.ArgParameter(gain)
-    self.generator_param(self.gain)
+    self.ratio = self.ArgParameter(ratio)
+    self.generator_param(self.ratio)
 
   def generate(self):
     super().generate()
@@ -82,9 +98,10 @@ class Ina826(GeneratorBlock):
     )).connected(self.gnd, self.pwr)
 
     # gain error, lumped into the resistor gain
-    self.require(self.gain.within(Range(1, 1000)))
+    self.require(self.ratio.within(Range(1, 1000)))
     # note, worst case gain at +/- 0.04%
-    self.rg = self.Block(Resistor(Range.cancel_multiply(49.4*kOhm(tol=0.0004),
-                                                        1/(self.get(self.gain) - 1))))
+    # TODO use 49...*kOhm(tol=...), once cancel_multiply can support RangeExpr types
+    self.rg = self.Block(Resistor(Range.cancel_multiply(Range.from_tolerance(49.4e3, 0.0004),
+                                                        1/(self.get(self.ratio) - 1))))
     self.connect(self.rg.a, self.ic.rg2)
     self.connect(self.rg.b, self.ic.rg3)

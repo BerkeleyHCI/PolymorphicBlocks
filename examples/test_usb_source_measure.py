@@ -388,14 +388,8 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       locals={
-        'self': self,
-        'clamp': {
-          'clamp_current': (2.5, 5)*mAmp  # absolute maximum rating of ADC
-        }
+        'self': self
       })
-    self.imeas: Ad8418a  # schematic-defined
-    self.isense: RangingCurrentSenseResistor
-    self.assign(self.imeas.in_diff_range, self.isense.out_range)
 
 
 class UsbSourceMeasure(JlcBoardTop):
@@ -714,15 +708,16 @@ class UsbSourceMeasure(JlcBoardTop):
 
   def multipack(self) -> None:
     self.vimeas_amps = self.PackedBlock(Opa2189())
-    self.pack(self.vimeas_amps.elements.request('0'), ['control', 'vmeas', 'amp'])
     self.pack(self.vimeas_amps.elements.request('1'), ['control', 'hvbuf', 'amp'])
+    self.pack(self.vimeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
 
-    self.ampdmeas_amps = self.PackedBlock(Opa2171())
-    self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
-    self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
+    # self.ampdmeas_amps = self.PackedBlock(Opa2171())
+    # self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
+    # self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
 
     self.cv_amps = self.PackedBlock(Tlv9152())
     self.pack(self.cv_amps.elements.request('0'), ['control', 'err_volt', 'amp'])
+    self.pack(self.cv_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
 
     self.ci_amps = self.PackedBlock(Tlv9152())
     self.pack(self.ci_amps.elements.request('0'), ['control', 'err_sink', 'amp'])

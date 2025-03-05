@@ -4092,6 +4092,16 @@
 		)
 		(uuid "795eb628-568e-4a61-92d3-90e6ce6efd62")
 	)
+	(text "finite resistance for Rg"
+		(exclude_from_sim no)
+		(at 228.6 146.05 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "f310baca-b52f-40d5-850d-fa7d5c6b25ce")
+	)
 	(label "outa"
 		(at 218.44 124.46 180)
 		(fields_autoplaced yes)
@@ -5060,7 +5070,7 @@
 				)
 			)
 		)
-		(property "Value" "#DifferentialAmplifier("
+		(property "Value" "#Ina826("
 			(at 226.06 138.43 0)
 			(effects
 				(font
@@ -5095,16 +5105,8 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "ratio=1/24*Ratio(tol=0.05),"
+		(property "Value2" "ratio=(1.1, 1.25)*Ratio)"
 			(at 226.06 140.716 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value3" "input_impedance=220*kOhm(tol=0.05))"
-			(at 226.06 143.002 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7847,7 +7849,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "#Ad8418a("
+		(property "Value" "#Ina826("
 			(at 260.35 115.57 0)
 			(effects
 				(font
@@ -7882,7 +7884,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "in_diff_range=RangeExpr())"
+		(property "Value2" "ratio=10*Ratio(tol=0.05))"
 			(at 260.35 117.856 0)
 			(effects
 				(font
