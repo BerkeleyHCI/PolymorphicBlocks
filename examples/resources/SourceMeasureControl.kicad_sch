@@ -7273,7 +7273,7 @@
 				)
 			)
 		)
-		(property "Value3" "0.1*Ohm(tol=0.01), 1*Ohm(tol=0.01)"
+		(property "Value3" "0.1*Ohm(tol=0.01), 1.0*Ohm(tol=0.01)"
 			(at 207.01 101.092 90)
 			(effects
 				(font
