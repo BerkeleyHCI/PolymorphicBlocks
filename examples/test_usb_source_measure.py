@@ -138,7 +138,8 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
     assert symbol_name == 'edg_importable:Follower'  # this requires an schematic-modified symbol
     return {
       '1': self.control, '3': self.out, 'V+': self.pwr, 'V-': self.gnd,
-      'HG': self.high_gate_ctl, 'LG': self.low_gate_ctl, 'VG': self.pwr_gate_pos
+      'HG': self.high_gate_ctl, 'LG': self.low_gate_ctl,
+      'VG+': self.pwr_gate_pos, 'VG-': self.pwr_gate_neg
     }
 
   @init_in_parent
@@ -147,7 +148,8 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr_gate_pos = self.Port(VoltageSink.empty(), [Power])
+    self.pwr_gate_pos = self.Port(VoltageSink.empty())
+    self.pwr_gate_neg = self.Port(VoltageSink.empty())
     self.out = self.Port(VoltageSource.empty())
 
     self.control = self.Port(AnalogSink.empty())

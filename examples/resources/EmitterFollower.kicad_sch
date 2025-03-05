@@ -1520,7 +1520,7 @@
 			)
 		)
 	)
-	(global_label "gnd"
+	(global_label "pwr_gate_neg"
 		(shape input)
 		(at 87.63 113.03 180)
 		(fields_autoplaced yes)
@@ -1530,9 +1530,9 @@
 			)
 			(justify right)
 		)
-		(uuid "15126e4e-b3dc-43da-9fa5-aca7e50c9708")
+		(uuid "33000ca8-ad59-4f24-a20d-4b24d2c43d80")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 81.1978 113.03 0)
+			(at 71.945 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1652,7 +1652,7 @@
 			)
 		)
 	)
-	(global_label "gnd"
+	(global_label "pwr_gate_neg"
 		(shape input)
 		(at 87.63 87.63 180)
 		(fields_autoplaced yes)
@@ -1662,9 +1662,9 @@
 			)
 			(justify right)
 		)
-		(uuid "d2ac8e8c-e2a1-4785-b5cc-32a2b08fbe1a")
+		(uuid "be7648f2-15f1-499c-8b9c-51c511375892")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 81.1978 87.63 0)
+			(at 71.945 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1675,7 +1675,6 @@
 		)
 	)
 	(symbol
-		(lib_name "edg_importable:Mux2")
 		(lib_id "edg_importable:Mux2")
 		(at 88.9 82.55 0)
 		(mirror y)
@@ -2100,7 +2099,6 @@
 		)
 	)
 	(symbol
-		(lib_name "edg_importable:Mux2")
 		(lib_id "edg_importable:Mux2")
 		(at 88.9 107.95 0)
 		(mirror y)
