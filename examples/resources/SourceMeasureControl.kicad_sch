@@ -7263,7 +7263,7 @@
 			)
 		)
 		(property "Value2" "amplification=20*Ratio(tol=0.05),"
-			(at 149.86 103.886 0)
+			(at 144.78 103.886 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7271,7 +7271,7 @@
 			)
 		)
 		(property "Value3" "impedance=(1, 10)*kOhm)"
-			(at 149.86 106.172 0)
+			(at 144.78 106.172 0)
 			(effects
 				(font
 					(size 1.27 1.27)
