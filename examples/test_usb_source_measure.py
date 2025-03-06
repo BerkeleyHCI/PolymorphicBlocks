@@ -576,6 +576,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.ioe_ctl.io.request('low_gate_ctl'), self.control.low_gate_ctl)
       self.connect(self.ioe_ctl.io.request_vector('irange'), self.control.irange)
       self.connect(self.ioe_ctl.io.request_vector('off'), self.control.off)
+      self.connect(self.ioe_ctl.io.request('precharge'), self.precharge.control)
 
       rc_model = DigitalLowPassRc(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))
       (self.buck_rc, ), _ = self.chain(self.mcu.gpio.request('buck_pwm'), imp.Block(rc_model), self.conv.buck_pwm)
@@ -608,8 +609,7 @@ class UsbSourceMeasure(JlcBoardTop):
         self.conv_comp.out, imp.Block(PullupResistor(resistance=10*kOhm(tol=0.05))),
         self.conv_latch.nset
       )
-      self.connect(self.conv_latch.nq, self.conv.reset, self.mcu.gpio.request('conv_en_sense'))
-      self.connect(self.precharge.control, self.mcu.gpio.request('precharge_control'))
+      self.connect(self.conv_latch.nq, self.conv.reset, self.ioe_ctl.io.request('conv_en_sense'))
 
       (self.pass_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(0)))
       (self.conv_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(1)))
@@ -660,6 +660,13 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.mcu.gpio.request('fan'), self.fan_drv.control)
       self.fan = imp.Block(SourceMeasureFan())
       self.connect(self.fan.pwr, self.fan_drv.output)
+
+      (self.spk_drv, self.spk), _ = self.chain(
+        self.mcu.with_mixin(IoControllerI2s()).i2s.request('speaker'),
+        imp.Block(Max98357a()),
+        self.Block(Speaker())
+      )
+      self.connect(self.v5, self.spk_drv.pwr)
 
     # analog domain
     with self.implicit_connect(
@@ -767,6 +774,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'off_sw', 'device'], Nlas4157),  # 3v3 compatible unlike DG468
 
         (['cap_vusb', 'cap'], JlcAluminumCapacitor),
+
+        (['spk', 'conn'], JstPhKVertical)
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
@@ -783,9 +792,6 @@ class UsbSourceMeasure(JlcBoardTop):
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          # note: for ESP32-S3 compatibility: IO35/36/37 (pins 28-30) are used by PSRAM
-          # note: for ESP32-C6 compatibility: pin 34 (22 on dedicated -C6 pattern) is NC
-
           'enc_a=5',
           'enc_b=6',
           'enc_sw=4',
@@ -815,7 +821,7 @@ class UsbSourceMeasure(JlcBoardTop):
           'pd_int=21',
           'fan=19',
           'touch_duck=22',
-          'conv_en_sense=23',
+          # 'conv_en_sense=23',
 
           'led=_GPIO0_STRAP',
 
@@ -879,6 +885,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'isense', 'ranges[0]', 'isense', 'res', 'res', 'require_basic_part'], False),
         (['control', 'isense', 'ranges[1]', 'isense', 'res', 'res', 'footprint_spec'], ParamValue(['control', 'isense', 'ranges[0]', 'isense', 'res', 'res', 'footprint_spec'])),
         (['control', 'isense', 'ranges[1]', 'isense', 'res', 'res', 'require_basic_part'], False),
+        (['control', 'isense', 'ranges[2]', 'isense', 'res', 'res', 'footprint_spec'], ParamValue(['control', 'isense', 'ranges[0]', 'isense', 'res', 'res', 'footprint_spec'])),
+        (['control', 'isense', 'ranges[2]', 'isense', 'res', 'res', 'require_basic_part'], False),
 
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
         (['control', 'driver', 'high_fet', 'part_spec'], 'SQD50N10-8M9L_GE3'),
@@ -903,6 +911,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'isense', 'ranges[2]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010)),
         (['vusb_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
         (['convin_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
+
+        (['spk_drv', 'pwr', 'current_draw'], Range(6.0e-7, 0.25)),  # assume speakers will be pretty mild
       ],
       class_values=[
         # (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015 is out of stock
