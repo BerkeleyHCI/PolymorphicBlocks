@@ -4345,7 +4345,7 @@
 		(uuid "f310baca-b52f-40d5-850d-fa7d5c6b25ce")
 	)
 	(label "outa"
-		(at 218.44 124.46 180)
+		(at 186.69 127 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6378,7 +6378,7 @@
 				)
 			)
 		)
-		(property "Value" "#JfetCurrentClamp()"
+		(property "Value" "#JfetCurrentClamp("
 			(at 267.716 106.68 90)
 			(effects
 				(font
@@ -6411,6 +6411,22 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
+			)
+		)
+		(property "Value2" "model_voltage_clamp=(0, 3.3)*Volt,"
+			(at 267.97 108.966 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value3" "model_signal_clamp=(0, 3.3)*Volt)"
+			(at 267.97 111.252 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(pin "1"
@@ -6496,6 +6512,81 @@
 		)
 	)
 	(symbol
+		(lib_id "edg_importable:Unk2")
+		(at 72.39 60.96 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "52515003-ad9d-4f52-80ab-306fff415bb4")
+		(property "Reference" "dclamp"
+			(at 72.39 58.674 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "#JfetCurrentClamp("
+			(at 72.136 63.5 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 72.39 62.738 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 72.39 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 72.39 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value2" "model_voltage_clamp=(0, 3.3)*Volt)"
+			(at 72.39 65.786 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "766e2d9a-c2fc-4146-b6bd-463aedff4e27")
+		)
+		(pin "2"
+			(uuid "92bf7229-32aa-4843-a3a2-3381c6883863")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "dclamp")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "edg_importable:Mux2")
 		(at 88.9 91.44 0)
 		(mirror y)
@@ -6570,6 +6661,81 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "off_sw")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "edg_importable:Unk2")
+		(at 240.03 127 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "551cde7c-c7f1-4fac-bf71-f6e3e5f9b58a")
+		(property "Reference" "vclamp"
+			(at 240.03 124.714 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "#JfetCurrentClamp("
+			(at 239.776 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 240.03 128.778 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 240.03 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 240.03 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value2" "model_voltage_clamp=(0, 3.3)*Volt)"
+			(at 240.03 131.826 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9947225e-d35e-4c23-a0eb-34d7380d4938")
+		)
+		(pin "2"
+			(uuid "dbef2c65-3080-40c9-8c9c-ccf2b7bc7168")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "vclamp")
 					(unit 1)
 				)
 			)
@@ -8328,21 +8494,19 @@
 		(dnp no)
 		(uuid "c8e2bc64-773b-4483-aae9-1345b8292658")
 		(property "Reference" "isense"
-			(at 201.93 82.55 90)
+			(at 207.01 84.074 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
 		(property "Value" "#RangingCurrentSenseResistor("
-			(at 186.69 96.52 90)
+			(at 207.01 96.774 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
 		(property "Footprint" ""
@@ -8380,7 +8544,7 @@
 				)
 			)
 		)
-		(property "Value3" "0.1*Ohm(tol=0.01), 1.0*Ohm(tol=0.01)"
+		(property "Value3" "0.1*Ohm(tol=0.01), 1.0*Ohm(tol=0.01), 10*Ohm(tol=0.01)"
 			(at 207.01 101.092 90)
 			(effects
 				(font
@@ -8396,7 +8560,7 @@
 				)
 			)
 		)
-		(property "Value5" "(-3, 3)*Amp, (-300, 300)*mAmp"
+		(property "Value5" "(-3, 3)*Amp, (-300, 300)*mAmp, (-30, 30)*mAmp"
 			(at 207.01 105.918 90)
 			(effects
 				(font
@@ -8508,73 +8672,6 @@
 		)
 	)
 	(symbol
-		(lib_id "edg_importable:Unk2")
-		(at 240.03 127 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "cd393e0e-9024-4e99-956b-60757db12acb")
-		(property "Reference" "vclamp"
-			(at 240.03 124.714 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "#JfetCurrentClamp()"
-			(at 239.776 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 240.03 128.778 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 240.03 127 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 240.03 127 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "ec2d0317-cd22-4713-ad2a-f77e47bd202a")
-		)
-		(pin "2"
-			(uuid "9d9f8895-7c0e-4ee3-afe0-0eb237ac8027")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "vclamp")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "edg_importable:DifferentialAmplifier")
 		(at 252.73 104.14 0)
 		(unit 1)
@@ -8672,7 +8769,7 @@
 		(dnp no)
 		(uuid "d8a9745e-5ed6-425f-95cc-b89b6c96a89f")
 		(property "Reference" "vdiv"
-			(at 186.69 125.73 0)
+			(at 190.5 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8743,73 +8840,6 @@
 			(project ""
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "vdiv")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "edg_importable:Unk2")
-		(at 72.39 60.96 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "da4376bd-5530-4f99-802a-790fa53ed956")
-		(property "Reference" "dclamp"
-			(at 72.39 58.674 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "#JfetCurrentClamp()"
-			(at 72.136 63.5 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 72.39 62.738 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 72.39 60.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 72.39 60.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "040e9eaa-9b48-4ee7-8ef8-f6181680e3ba")
-		)
-		(pin "2"
-			(uuid "e4c11ed6-7c53-4448-9289-4fd74b82d704")
-		)
-		(instances
-			(project ""
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "dclamp")
 					(unit 1)
 				)
 			)

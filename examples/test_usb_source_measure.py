@@ -336,8 +336,11 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
     return {'1': self.input, '2': self.output}
 
   @init_in_parent
-  def __init__(self):
+  def __init__(self, model_voltage_clamp: RangeExpr, model_signal_clamp: RangeExpr = RangeExpr.ALL):
     super().__init__()
+
+    self.model_voltage_clamp = self.ArgParameter(model_voltage_clamp)
+    self.model_signal_clamp = self.ArgParameter(model_signal_clamp)
 
     self.input = self.Port(AnalogSink.empty(), [Power])
     self.output = self.Port(AnalogSource.empty(), [Common])
@@ -347,8 +350,13 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
                       conversions={
-                        'input': AnalogSink(),
-                        'output': AnalogSource(),
+                        'input': AnalogSink(current_draw=self.output.link().current_drawn,
+                                            impedance=self.output.link().sink_impedance),
+                        'output': AnalogSource(voltage_out=self.input.link().voltage.intersect(
+                                                               self.model_voltage_clamp),
+                                               signal_out=self.input.link().signal.intersect(
+                                                              self.model_signal_clamp),
+                                               impedance=self.input.link().source_impedance)
                       })
 
 
@@ -698,6 +706,17 @@ class UsbSourceMeasure(JlcBoardTop):
                                        imp.Block(DigitalTestPoint('snk')),
                                        self.mcu.gpio.request('limit_sink'))
 
+      self.dummy_amp_lv = imp.Block(OpampFollower())
+      self.connect(self.dummy_amp_lv.pwr, self.vanalog)
+      self.connect(self.dummy_amp_lv.input, self.ref_buf.output)
+      (self._dummy_amp_lv_snk, ), _ = self.chain(self.dummy_amp_lv.output, self.Block(DummyAnalogSink()))
+
+    self.dummy_amp_hv = self.Block(OpampFollower())
+    self.connect(self.dummy_amp_hv.pwr, self.vcontrol)
+    self.connect(self.dummy_amp_hv.gnd, self.vcontroln)
+    self.connect(self.dummy_amp_hv.input, self.ref_buf.output)
+    (self._dummy_amp_hv_snk, ), _ = self.chain(self.dummy_amp_hv.output, self.Block(DummyAnalogSink()))
+
     self.outn = self.Block(BananaSafetyJack())
     self.outp = self.Block(BananaSafetyJack())
     self.outd = self.Block(PinHeader254Horizontal(2))  # 2.54 output option
@@ -710,7 +729,8 @@ class UsbSourceMeasure(JlcBoardTop):
 
   def multipack(self) -> None:
     self.vimeas_amps = self.PackedBlock(Opa2189())  # low noise opamp
-    self.pack(self.vimeas_amps.elements.request('1'), ['control', 'hvbuf', 'amp'])
+    self.pack(self.vimeas_amps.elements.request('0'), ['control', 'hvbuf', 'amp'])
+    self.pack(self.vimeas_amps.elements.request('1'), ['dummy_amp_hv', 'amp'])
     # TODO unused opamp part - yes, this is cheaper than the single opamp part
 
     self.ampdmeas_amps = self.PackedBlock(Opa2171())  # general high voltage opamp
@@ -719,6 +739,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
     self.cv_amps = self.PackedBlock(Tlv9152())
     self.pack(self.cv_amps.elements.request('0'), ['control', 'err_volt', 'amp'])
+    self.pack(self.cv_amps.elements.request('1'), ['dummy_amp_lv', 'amp'])
     # TODO unused opamp part
 
     self.ci_amps = self.PackedBlock(Tlv9152())
@@ -879,6 +900,7 @@ class UsbSourceMeasure(JlcBoardTop):
         # fudge the numbers a bit to avoid a ERC - the output of the IO expander will probably limit
         (['control', 'isense', 'ranges[0]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010)),
         (['control', 'isense', 'ranges[1]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010)),
+        (['control', 'isense', 'ranges[2]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010)),
         (['vusb_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
         (['convin_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
       ],

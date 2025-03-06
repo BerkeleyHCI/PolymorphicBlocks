@@ -84,9 +84,10 @@ class Ina826(KiCadImportableBlock, GeneratorBlock):
     self.input_negative = self.Export(self.ic.inn)
     self.input_positive = self.Export(self.ic.inp)
     self.output_reference = self.Export(self.ic.ref)
-    self.output = self.Export(self.ic.out)
+    self.output = self.Port(AnalogSource.empty())
 
     self.ratio = self.ArgParameter(ratio)
+    self.actual_ratio = self.Parameter(RangeExpr())
     self.generator_param(self.ratio)
 
   def generate(self):
@@ -105,3 +106,14 @@ class Ina826(KiCadImportableBlock, GeneratorBlock):
                                                         1/(self.get(self.ratio) - 1))))
     self.connect(self.rg.a, self.ic.rg2)
     self.connect(self.rg.b, self.ic.rg3)
+
+    self.assign(self.actual_ratio, 1 + 49.4*kOhm(tol=0.0004) / self.rg.actual_resistance)
+    output_neg_signal = self.output_reference.is_connected().then_else(
+        self.output_reference.link().signal, self.gnd.link().voltage
+    )
+    input_diff_range = self.input_positive.link().signal - self.input_negative.link().signal
+    output_diff_range = input_diff_range * self.actual_ratio + output_neg_signal
+    self.forced = self.Block(ForcedAnalogSignal(self.ic.out.signal_out.intersect(output_diff_range)))
+
+    self.connect(self.forced.signal_in, self.ic.out)
+    self.connect(self.forced.signal_out, self.output)
