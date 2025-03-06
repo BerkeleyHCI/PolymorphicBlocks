@@ -3375,102 +3375,6 @@
 				)
 			)
 		)
-		(symbol "power:-3V3"
-			(power)
-			(pin_numbers hide)
-			(pin_names
-				(offset 0) hide)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "#PWR"
-				(at 0 -3.81 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Value" "-3V3"
-				(at 0 3.556 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Power symbol creates a global label with name \"-3V3\""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "global power"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "-3V3_0_0"
-				(pin power_in line
-					(at 0 0 90)
-					(length 0)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(symbol "-3V3_0_1"
-				(polyline
-					(pts
-						(xy 0 0) (xy 0 1.27) (xy 0.762 1.27) (xy 0 2.54) (xy -0.762 1.27) (xy 0 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-			)
-		)
 		(symbol "power:GND"
 			(power)
 			(pin_names
@@ -3791,6 +3695,114 @@
 					(at 0 0 90)
 					(length 0) hide
 					(name "VDD"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+		(symbol "power:VEE"
+			(power)
+			(pin_numbers hide)
+			(pin_names
+				(offset 0) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "VEE"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"VEE\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "VEE_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 1.27) (xy -0.762 1.27) (xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+			)
+			(symbol "VEE_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4970,6 +4982,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:VEE")
+		(at 69.85 43.18 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "04193df7-7038-4be5-a73d-a5b096de1b5f")
+		(property "Reference" "#PWR024"
+			(at 69.85 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VEE"
+			(at 67.056 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 69.85 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 69.85 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"VEE\""
+			(at 69.85 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "99791db0-77f1-4972-97c6-c89eaa0055cd")
+		)
+		(instances
+			(project ""
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR024")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "edg_importable:DifferentialAmplifier")
 		(at 48.26 60.96 0)
 		(unit 1)
@@ -5217,72 +5294,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+36V")
-		(at 142.24 85.09 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "0a05de60-7103-4073-a3b4-5f1cbaa05fd8")
-		(property "Reference" "#PWR02"
-			(at 142.24 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+36V"
-			(at 142.24 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 142.24 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 142.24 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+36V\""
-			(at 142.24 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "1f031421-00ce-4982-9eb2-68347498d5a2")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR02")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:+2V5")
 		(at 228.6 130.81 180)
 		(unit 1)
@@ -5413,6 +5424,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:VEE")
+		(at 173.99 133.35 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "15c2c8d0-50f0-4563-b3ab-453a54a1717f")
+		(property "Reference" "#PWR017"
+			(at 173.99 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VEE"
+			(at 171.196 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 173.99 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 173.99 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"VEE\""
+			(at 173.99 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "7deb9060-37e8-47dc-948c-12c02cf22c62")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR017")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 81.28 123.19 0)
 		(unit 1)
@@ -5478,81 +5554,15 @@
 		)
 	)
 	(symbol
-		(lib_id "power:-3V3")
-		(at 176.53 96.52 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "1e3dbc4d-3074-4bf8-9ea7-790ef02d1cff")
-		(property "Reference" "#PWR023"
-			(at 176.53 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "-3V3"
-			(at 176.53 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 176.53 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 176.53 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"-3V3\""
-			(at 176.53 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "5cb7c70b-0d52-48cd-a4eb-5e2d07653dac")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR023")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:-3V3")
+		(lib_id "power:VEE")
 		(at 45.72 67.31 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "1edf4474-eb8d-428a-b778-299781fdc14b")
-		(property "Reference" "#PWR022"
+		(uuid "18b78d62-eee3-409b-b564-ce294a8fe4c3")
+		(property "Reference" "#PWR021"
 			(at 45.72 63.5 0)
 			(effects
 				(font
@@ -5561,13 +5571,12 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "-3V3"
-			(at 45.72 67.31 0)
+		(property "Value" "VEE"
+			(at 42.926 68.58 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
 			)
 		)
 		(property "Footprint" ""
@@ -5588,7 +5597,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"-3V3\""
+		(property "Description" "Power symbol creates a global label with name \"VEE\""
 			(at 45.72 67.31 0)
 			(effects
 				(font
@@ -5598,12 +5607,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "be73d613-610d-483f-a24c-8fe15e030953")
+			(uuid "f6531b9e-3d0d-4762-ac22-c8b73448bbeb")
 		)
 		(instances
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR022")
+					(reference "#PWR021")
 					(unit 1)
 				)
 			)
@@ -6567,16 +6576,16 @@
 		)
 	)
 	(symbol
-		(lib_id "power:-3V3")
-		(at 250.19 110.49 180)
+		(lib_id "power:VCC")
+		(at 176.53 86.36 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "561c5822-ed9b-4ba9-852a-64234a0cd53f")
-		(property "Reference" "#PWR020"
-			(at 250.19 106.68 0)
+		(uuid "55e0a90e-afa5-4900-b9f0-600b4c9d928f")
+		(property "Reference" "#PWR026"
+			(at 176.53 90.17 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6584,17 +6593,16 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "-3V3"
-			(at 250.19 110.49 0)
+		(property "Value" "VCC"
+			(at 173.736 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
 			)
 		)
 		(property "Footprint" ""
-			(at 250.19 110.49 0)
+			(at 176.53 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6603,7 +6611,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 250.19 110.49 0)
+			(at 176.53 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6611,8 +6619,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"-3V3\""
-			(at 250.19 110.49 0)
+		(property "Description" ""
+			(at 176.53 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6621,12 +6629,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "57efe899-3c43-4705-a5e0-59d344225c5c")
+			(uuid "b9cbe314-ddbe-419f-b865-5024b120ff01")
 		)
 		(instances
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR020")
+					(reference "#PWR026")
 					(unit 1)
 				)
 			)
@@ -6865,6 +6873,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:VEE")
+		(at 223.52 133.35 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5e8fdb40-36d3-4f81-acd7-639238582c58")
+		(property "Reference" "#PWR019"
+			(at 223.52 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VEE"
+			(at 220.726 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 223.52 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 223.52 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"VEE\""
+			(at 223.52 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e0d7fed3-c90b-4ea3-b985-d36da2da876e")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR019")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:VDD")
 		(at 45.72 138.43 0)
 		(unit 1)
@@ -6924,72 +6997,6 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "#PWR?")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+36V")
-		(at 223.52 120.65 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "65030999-21ab-4808-b12c-86b7b5bc1543")
-		(property "Reference" "#PWR018"
-			(at 223.52 124.46 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+36V"
-			(at 223.52 120.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 223.52 120.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 223.52 120.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+36V\""
-			(at 223.52 120.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "7c4ab3d9-7807-4cb3-af3d-7e73d3e0cc09")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR018")
 					(unit 1)
 				)
 			)
@@ -7139,16 +7146,16 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+36V")
-		(at 173.99 120.65 0)
+		(lib_id "power:VEE")
+		(at 142.24 97.79 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "6b1e3989-9e36-4308-a79d-e02557c470d5")
-		(property "Reference" "#PWR012"
-			(at 173.99 124.46 0)
+		(uuid "6a8f4ede-14dd-4978-a93e-15d7fe54ccf4")
+		(property "Reference" "#PWR025"
+			(at 142.24 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7156,17 +7163,16 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+36V"
-			(at 173.99 120.65 0)
+		(property "Value" "VEE"
+			(at 139.446 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
 		(property "Footprint" ""
-			(at 173.99 120.65 0)
+			(at 142.24 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7175,7 +7181,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 173.99 120.65 0)
+			(at 142.24 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7183,8 +7189,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"+36V\""
-			(at 173.99 120.65 0)
+		(property "Description" "Power symbol creates a global label with name \"VEE\""
+			(at 142.24 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7193,12 +7199,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "d36a91ab-7826-4062-955d-a169a09e1668")
+			(uuid "5ee75841-8d57-4a3c-b487-5c84909838fe")
 		)
 		(instances
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR012")
+					(reference "#PWR025")
 					(unit 1)
 				)
 			)
@@ -7427,16 +7433,16 @@
 		)
 	)
 	(symbol
-		(lib_id "power:-3V3")
-		(at 173.99 133.35 180)
+		(lib_id "power:+36V")
+		(at 173.99 85.09 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "7ad6905a-63b4-4a9d-8805-af6fbc04cca2")
-		(property "Reference" "#PWR017"
-			(at 173.99 129.54 0)
+		(uuid "7bb99456-e761-427f-998b-b7a32b29779e")
+		(property "Reference" "#PWR06"
+			(at 173.99 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7444,17 +7450,16 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "-3V3"
-			(at 173.99 133.35 0)
+		(property "Value" "+36V"
+			(at 170.18 84.074 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
 			)
 		)
 		(property "Footprint" ""
-			(at 173.99 133.35 0)
+			(at 173.99 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7463,7 +7468,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 173.99 133.35 0)
+			(at 173.99 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7471,8 +7476,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"-3V3\""
-			(at 173.99 133.35 0)
+		(property "Description" "Power symbol creates a global label with name \"+36V\""
+			(at 173.99 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7481,12 +7486,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "d56db165-0948-441f-af70-0ff92bd8f1dc")
+			(uuid "fdf31b23-08af-4515-a1db-e7456a8ed4b1")
 		)
 		(instances
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR017")
+					(reference "#PWR06")
 					(unit 1)
 				)
 			)
@@ -7558,72 +7563,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+36V")
-		(at 45.72 54.61 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "7eb17d42-3aba-4eec-9e1f-5fb59878aa67")
-		(property "Reference" "#PWR021"
-			(at 45.72 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+36V"
-			(at 45.72 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 45.72 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 45.72 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+36V\""
-			(at 45.72 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "eb0b4474-408b-4483-9354-3fd9639b433d")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR021")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:+2V5")
 		(at 113.03 96.52 180)
 		(unit 1)
@@ -7683,72 +7622,6 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "#PWR?")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+36V")
-		(at 250.19 97.79 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "8e4512a0-eacd-4a76-8d60-9dbfe97f8083")
-		(property "Reference" "#PWR05"
-			(at 250.19 101.6 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+36V"
-			(at 250.19 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 250.19 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 250.19 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+36V\""
-			(at 250.19 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "a691f206-ece8-40ea-bc98-763d1a489e60")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR05")
 					(unit 1)
 				)
 			)
@@ -7853,72 +7726,6 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "err_volt")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:-3V3")
-		(at 223.52 133.35 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "9912b07f-23b3-4560-93ef-ed3db7c82030")
-		(property "Reference" "#PWR019"
-			(at 223.52 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "-3V3"
-			(at 223.52 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 223.52 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 223.52 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"-3V3\""
-			(at 223.52 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "67da601f-2a87-4a0f-810b-c1efd7273087")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR019")
 					(unit 1)
 				)
 			)
@@ -8058,7 +7865,7 @@
 	)
 	(symbol
 		(lib_id "power:VCC")
-		(at 45.72 27.94 0)
+		(at 69.85 27.94 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8066,7 +7873,7 @@
 		(dnp no)
 		(uuid "a21ef647-cd15-47f6-8bda-9ce1cda18071")
 		(property "Reference" "#PWR?"
-			(at 45.72 31.75 0)
+			(at 69.85 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8075,7 +7882,7 @@
 			)
 		)
 		(property "Value" "VCC"
-			(at 41.91 26.67 0)
+			(at 67.056 26.67 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8083,7 +7890,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 45.72 27.94 0)
+			(at 69.85 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8092,7 +7899,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 45.72 27.94 0)
+			(at 69.85 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8101,7 +7908,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 45.72 27.94 0)
+			(at 69.85 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8116,6 +7923,71 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "#PWR?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:VCC")
+		(at 223.52 120.65 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a52260d2-941d-438a-863a-02879d69fd2b")
+		(property "Reference" "#PWR018"
+			(at 223.52 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VCC"
+			(at 220.726 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 223.52 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 223.52 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 223.52 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "97d4c8b0-a22b-44c6-9406-995695122135")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR018")
 					(unit 1)
 				)
 			)
@@ -8187,6 +8059,136 @@
 		)
 	)
 	(symbol
+		(lib_id "power:VCC")
+		(at 173.99 120.65 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "af1f96ff-9522-4da1-bbba-47edc6f83ed9")
+		(property "Reference" "#PWR012"
+			(at 173.99 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VCC"
+			(at 171.196 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 173.99 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 173.99 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 173.99 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "279a6d46-28e6-4b70-8932-f692d079bdda")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR012")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:VCC")
+		(at 250.19 97.79 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "bbc72149-9a38-4fdc-872a-8d1919126046")
+		(property "Reference" "#PWR05"
+			(at 250.19 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VCC"
+			(at 247.396 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 250.19 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 250.19 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 250.19 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "49534dc2-8fd7-4f9f-99df-de8f9f7344b7")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR05")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 199.39 86.36 0)
 		(unit 1)
@@ -8252,83 +8254,16 @@
 		)
 	)
 	(symbol
-		(lib_id "power:-3V3")
-		(at 142.24 97.79 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "c238c4cd-58af-40fa-ae7a-4e8aab41c2b0")
-		(property "Reference" "#PWR011"
-			(at 142.24 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "-3V3"
-			(at 142.24 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 142.24 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 142.24 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"-3V3\""
-			(at 142.24 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "0c512c14-2e13-436e-b9f2-b558c6dad14f")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR011")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:+36V")
-		(at 69.85 27.94 0)
+		(at 45.72 27.94 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "c389cbc9-5ce2-413b-aa55-219e247928e5")
 		(property "Reference" "#PWR09"
-			(at 69.85 31.75 0)
+			(at 45.72 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8337,7 +8272,7 @@
 			)
 		)
 		(property "Value" "+36V"
-			(at 69.85 22.86 0)
+			(at 41.91 26.924 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8345,7 +8280,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 69.85 27.94 0)
+			(at 45.72 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8354,7 +8289,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 69.85 27.94 0)
+			(at 45.72 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8363,7 +8298,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+36V\""
-			(at 69.85 27.94 0)
+			(at 45.72 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8946,17 +8881,16 @@
 		)
 	)
 	(symbol
-		(lib_id "power:-3V3")
-		(at 69.85 43.18 180)
+		(lib_id "power:VCC")
+		(at 142.24 85.09 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "e11d1f07-60a2-47b2-87b0-48534fd06f3d")
-		(property "Reference" "#PWR010"
-			(at 69.85 39.37 0)
+		(uuid "df86f774-4eb6-4447-aba6-ce7e97721e0c")
+		(property "Reference" "#PWR022"
+			(at 142.24 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8964,8 +8898,8 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "-3V3"
-			(at 69.85 48.26 0)
+		(property "Value" "VCC"
+			(at 139.446 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8973,7 +8907,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 69.85 43.18 0)
+			(at 142.24 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8982,7 +8916,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 69.85 43.18 0)
+			(at 142.24 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8990,8 +8924,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"-3V3\""
-			(at 69.85 43.18 0)
+		(property "Description" ""
+			(at 142.24 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9000,12 +8934,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "04c4759c-513b-4a0c-9e09-6ee5ba18f3e1")
+			(uuid "2af6320a-6aa1-4bb8-ac1f-8a1ca77f39a3")
 		)
 		(instances
-			(project ""
+			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR010")
+					(reference "#PWR022")
 					(unit 1)
 				)
 			)
@@ -9136,6 +9070,71 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "#PWR08")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:VCC")
+		(at 45.72 54.61 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ec094cc4-734b-4c13-974d-cb7d116958ce")
+		(property "Reference" "#PWR010"
+			(at 45.72 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VCC"
+			(at 42.926 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 45.72 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 45.72 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 45.72 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "27337f64-7560-4c1f-88ba-8297a3220907")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR010")
 					(unit 1)
 				)
 			)
@@ -9315,71 +9314,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:VCC")
-		(at 173.99 85.09 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "f44d14dd-ed3f-4eac-936c-b697befc3f2e")
-		(property "Reference" "#PWR?"
-			(at 173.99 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "VCC"
-			(at 170.18 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 173.99 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 173.99 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 173.99 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "4dbd7fab-e87e-42f8-a45b-6dc53d1dead6")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR?")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_name "Opamp_2")
 		(lib_id "edg_importable:Opamp")
 		(at 48.26 116.84 0)
@@ -9476,6 +9410,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:VEE")
+		(at 176.53 96.52 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "fb6729d5-094f-40d3-8975-3fb022ae4c20")
+		(property "Reference" "#PWR023"
+			(at 176.53 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VEE"
+			(at 173.736 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 176.53 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 176.53 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"VEE\""
+			(at 176.53 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "0498b93c-0235-48ef-8edb-514f7bb7ac33")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR023")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 87.63 96.52 0)
 		(unit 1)
@@ -9541,16 +9540,16 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+36V")
-		(at 176.53 86.36 0)
+		(lib_id "power:VEE")
+		(at 250.19 110.49 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "ffda65dd-c157-4fec-b450-6e8ae40da961")
-		(property "Reference" "#PWR06"
-			(at 176.53 90.17 0)
+		(uuid "fc690c88-e768-4b5b-94c1-0afcfb34f805")
+		(property "Reference" "#PWR020"
+			(at 250.19 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9558,17 +9557,16 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+36V"
-			(at 176.53 86.36 0)
+		(property "Value" "VEE"
+			(at 247.396 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
 		(property "Footprint" ""
-			(at 176.53 86.36 0)
+			(at 250.19 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9577,7 +9575,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 176.53 86.36 0)
+			(at 250.19 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9585,8 +9583,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"+36V\""
-			(at 176.53 86.36 0)
+		(property "Description" "Power symbol creates a global label with name \"VEE\""
+			(at 250.19 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9595,12 +9593,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "6eb04d76-4a3f-4c38-8e0c-d6f690ce9cc8")
+			(uuid "7fd93136-8c3a-4e57-a10c-154085db8c8b")
 		)
 		(instances
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR06")
+					(reference "#PWR020")
 					(unit 1)
 				)
 			)
