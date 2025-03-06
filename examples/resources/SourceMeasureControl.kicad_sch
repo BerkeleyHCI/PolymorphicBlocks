@@ -8787,8 +8787,8 @@
 				)
 			)
 		)
-		(property "Value3" "impedance=(1, 10)*Ohm)"
-			(at 186.69 148.082 0)
+		(property "Value3" "impedance=(0.47, 4.7)*kOhm)"
+			(at 186.69 148.336 0)
 			(effects
 				(font
 					(size 1.27 1.27)
