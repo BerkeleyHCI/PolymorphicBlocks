@@ -3894,7 +3894,7 @@
 	)
 	(wire
 		(pts
-			(xy 147.32 127) (xy 168.91 127)
+			(xy 147.32 144.78) (xy 168.91 144.78)
 		)
 		(stroke
 			(width 0)
@@ -3904,7 +3904,7 @@
 	)
 	(wire
 		(pts
-			(xy 208.28 129.54) (xy 218.44 129.54)
+			(xy 208.28 147.32) (xy 218.44 147.32)
 		)
 		(stroke
 			(width 0)
@@ -3914,7 +3914,7 @@
 	)
 	(wire
 		(pts
-			(xy 243.84 127) (xy 251.46 127)
+			(xy 243.84 144.78) (xy 251.46 144.78)
 		)
 		(stroke
 			(width 0)
@@ -3924,7 +3924,7 @@
 	)
 	(wire
 		(pts
-			(xy 245.11 99.06) (xy 245.11 101.6)
+			(xy 229.87 111.76) (xy 229.87 114.3)
 		)
 		(stroke
 			(width 0)
@@ -3934,7 +3934,7 @@
 	)
 	(wire
 		(pts
-			(xy 129.54 127) (xy 139.7 127)
+			(xy 129.54 144.78) (xy 139.7 144.78)
 		)
 		(stroke
 			(width 0)
@@ -3954,7 +3954,7 @@
 	)
 	(wire
 		(pts
-			(xy 209.55 106.68) (xy 226.06 106.68)
+			(xy 209.55 119.38) (xy 210.82 119.38)
 		)
 		(stroke
 			(width 0)
@@ -4014,7 +4014,7 @@
 	)
 	(wire
 		(pts
-			(xy 184.15 127) (xy 186.69 127)
+			(xy 184.15 144.78) (xy 186.69 144.78)
 		)
 		(stroke
 			(width 0)
@@ -4024,7 +4024,7 @@
 	)
 	(wire
 		(pts
-			(xy 209.55 97.79) (xy 209.55 106.68)
+			(xy 209.55 97.79) (xy 209.55 119.38)
 		)
 		(stroke
 			(width 0)
@@ -4054,7 +4054,7 @@
 	)
 	(wire
 		(pts
-			(xy 203.2 99.06) (xy 226.06 99.06)
+			(xy 203.2 111.76) (xy 210.82 111.76)
 		)
 		(stroke
 			(width 0)
@@ -4084,7 +4084,7 @@
 	)
 	(wire
 		(pts
-			(xy 190.5 133.35) (xy 190.5 124.46)
+			(xy 190.5 151.13) (xy 190.5 142.24)
 		)
 		(stroke
 			(width 0)
@@ -4154,7 +4154,7 @@
 	)
 	(wire
 		(pts
-			(xy 190.5 124.46) (xy 218.44 124.46)
+			(xy 190.5 142.24) (xy 218.44 142.24)
 		)
 		(stroke
 			(width 0)
@@ -4174,7 +4174,7 @@
 	)
 	(wire
 		(pts
-			(xy 245.11 99.06) (xy 234.95 99.06)
+			(xy 229.87 111.76) (xy 219.71 111.76)
 		)
 		(stroke
 			(width 0)
@@ -4184,7 +4184,7 @@
 	)
 	(wire
 		(pts
-			(xy 260.35 104.14) (xy 264.16 104.14)
+			(xy 245.11 116.84) (xy 248.92 116.84)
 		)
 		(stroke
 			(width 0)
@@ -4194,7 +4194,7 @@
 	)
 	(wire
 		(pts
-			(xy 233.68 127) (xy 236.22 127)
+			(xy 233.68 144.78) (xy 236.22 144.78)
 		)
 		(stroke
 			(width 0)
@@ -4204,7 +4204,7 @@
 	)
 	(wire
 		(pts
-			(xy 203.2 97.79) (xy 203.2 99.06)
+			(xy 203.2 97.79) (xy 203.2 111.76)
 		)
 		(stroke
 			(width 0)
@@ -4294,7 +4294,7 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 106.68) (xy 245.11 106.68)
+			(xy 219.71 119.38) (xy 229.87 119.38)
 		)
 		(stroke
 			(width 0)
@@ -4304,7 +4304,7 @@
 	)
 	(wire
 		(pts
-			(xy 271.78 104.14) (xy 279.4 104.14)
+			(xy 256.54 116.84) (xy 264.16 116.84)
 		)
 		(stroke
 			(width 0)
@@ -4336,7 +4336,7 @@
 	)
 	(text "finite resistance for Rg"
 		(exclude_from_sim no)
-		(at 226.06 143.51 0)
+		(at 226.06 161.29 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4345,7 +4345,7 @@
 		(uuid "f310baca-b52f-40d5-850d-fa7d5c6b25ce")
 	)
 	(label "outa"
-		(at 186.69 127 180)
+		(at 186.69 144.78 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4378,7 +4378,7 @@
 		(uuid "709b30e8-2dce-45b7-b539-1a3bf0786253")
 	)
 	(label "meas_v"
-		(at 251.46 127 180)
+		(at 251.46 144.78 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4433,7 +4433,7 @@
 		(uuid "b7ba2f1b-f6f2-4ea1-9d21-a1e11476b841")
 	)
 	(label "meas_i"
-		(at 279.4 104.14 180)
+		(at 264.16 116.84 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4478,7 +4478,7 @@
 	)
 	(global_label "out"
 		(shape input)
-		(at 124.46 127 180)
+		(at 124.46 144.78 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4488,7 +4488,7 @@
 		)
 		(uuid "0bb0ba93-2aea-4362-8dea-b778769a9493")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 118.4511 127 0)
+			(at 118.4511 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4852,7 +4852,7 @@
 	)
 	(global_label "measured_voltage"
 		(shape output)
-		(at 251.46 127 0)
+		(at 251.46 144.78 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4862,7 +4862,7 @@
 		)
 		(uuid "e787b6d8-d42e-4a4d-901b-c85cf84f3df1")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 270.8669 126.9206 0)
+			(at 270.8669 144.7006 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4896,7 +4896,7 @@
 	)
 	(global_label "measured_current"
 		(shape output)
-		(at 279.4 104.14 0)
+		(at 264.16 116.84 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4906,7 +4906,7 @@
 		)
 		(uuid "fb446b17-b946-408e-9166-37bcf924cb5d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 298.686 104.0606 0)
+			(at 283.446 116.7606 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5208,7 +5208,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:DifferentialAmplifier")
-		(at 226.06 127 0)
+		(at 226.06 144.78 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5216,7 +5216,7 @@
 		(dnp no)
 		(uuid "08c6edf6-ce74-4d41-8657-866f757cdc8e")
 		(property "Reference" "vmeas"
-			(at 226.06 121.92 0)
+			(at 226.06 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5224,7 +5224,7 @@
 			)
 		)
 		(property "Value" "#Ina826("
-			(at 226.06 138.43 0)
+			(at 226.06 156.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5232,7 +5232,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 226.06 127 0)
+			(at 226.06 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5241,7 +5241,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 226.06 127 0)
+			(at 226.06 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5250,7 +5250,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 226.06 127 0)
+			(at 226.06 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5259,7 +5259,7 @@
 			)
 		)
 		(property "Value2" "ratio=(1.1, 1.25)*Ratio)"
-			(at 226.06 140.716 0)
+			(at 226.06 158.496 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5295,7 +5295,7 @@
 	)
 	(symbol
 		(lib_id "power:+2V5")
-		(at 228.6 130.81 180)
+		(at 228.6 148.59 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5303,7 +5303,7 @@
 		(dnp no)
 		(uuid "0d21fa73-9d27-4c85-9f31-9ecb2b899a96")
 		(property "Reference" "#PWR?"
-			(at 228.6 127 0)
+			(at 228.6 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5312,7 +5312,7 @@
 			)
 		)
 		(property "Value" "+2V5"
-			(at 232.41 132.08 0)
+			(at 232.41 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5320,7 +5320,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 228.6 130.81 0)
+			(at 228.6 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5329,7 +5329,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 228.6 130.81 0)
+			(at 228.6 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5338,7 +5338,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 228.6 130.81 0)
+			(at 228.6 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5425,7 +5425,7 @@
 	)
 	(symbol
 		(lib_id "power:VEE")
-		(at 173.99 133.35 180)
+		(at 173.99 151.13 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5433,7 +5433,7 @@
 		(dnp no)
 		(uuid "15c2c8d0-50f0-4563-b3ab-453a54a1717f")
 		(property "Reference" "#PWR017"
-			(at 173.99 129.54 0)
+			(at 173.99 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5442,7 +5442,7 @@
 			)
 		)
 		(property "Value" "VEE"
-			(at 171.196 134.62 0)
+			(at 171.196 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5450,7 +5450,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 173.99 133.35 0)
+			(at 173.99 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5459,7 +5459,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 173.99 133.35 0)
+			(at 173.99 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5468,7 +5468,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"VEE\""
-			(at 173.99 133.35 0)
+			(at 173.99 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5620,7 +5620,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 143.51 127 90)
+		(at 143.51 144.78 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5628,7 +5628,7 @@
 		(dnp no)
 		(uuid "1f4bbff8-b012-4e78-bce4-719e3fe88be5")
 		(property "Reference" "hvclamp"
-			(at 143.51 124.46 90)
+			(at 143.51 142.24 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5636,7 +5636,7 @@
 			)
 		)
 		(property "Value" "#AnalogClampResistor("
-			(at 143.51 129.794 90)
+			(at 143.51 147.574 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5644,7 +5644,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 143.51 128.778 90)
+			(at 143.51 146.558 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5653,7 +5653,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 143.51 127 0)
+			(at 143.51 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5662,7 +5662,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 143.51 127 0)
+			(at 143.51 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5671,7 +5671,7 @@
 			)
 		)
 		(property "Value2" "clamp_target=(0, 30)*Volt,"
-			(at 143.51 132.08 90)
+			(at 143.51 149.86 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5679,7 +5679,7 @@
 			)
 		)
 		(property "Value3" "protection_voltage=(0, 60)*Volt,"
-			(at 143.51 134.366 90)
+			(at 143.51 152.146 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5687,7 +5687,7 @@
 			)
 		)
 		(property "Value4" "zero_out=True)"
-			(at 143.51 136.652 90)
+			(at 143.51 154.432 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5776,7 +5776,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:Follower")
-		(at 176.53 127 0)
+		(at 176.53 144.78 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5784,7 +5784,7 @@
 		(dnp no)
 		(uuid "23962458-d4d7-4698-8df8-90a2469e2f4f")
 		(property "Reference" "hvbuf"
-			(at 176.53 121.92 0)
+			(at 176.53 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5792,7 +5792,7 @@
 			)
 		)
 		(property "Value" "#OpampFollower()"
-			(at 175.26 137.16 0)
+			(at 175.26 154.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5800,7 +5800,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 176.53 127 0)
+			(at 176.53 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5809,7 +5809,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 176.53 127 0)
+			(at 176.53 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5818,7 +5818,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 176.53 127 0)
+			(at 176.53 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6136,7 +6136,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 203.2 129.54 270)
+		(at 203.2 147.32 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6144,7 +6144,7 @@
 		(dnp no)
 		(uuid "3603342b-6abf-4c5d-a3ca-ac2392d2b291")
 		(property "Reference" "#PWR?"
-			(at 196.85 129.54 0)
+			(at 196.85 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6153,7 +6153,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 198.755 129.54 90)
+			(at 198.755 147.32 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6161,7 +6161,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 203.2 129.54 0)
+			(at 203.2 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6170,7 +6170,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 203.2 129.54 0)
+			(at 203.2 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6179,7 +6179,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 203.2 129.54 0)
+			(at 203.2 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6274,7 +6274,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:DifferentialRC")
-		(at 229.87 102.87 0)
+		(at 214.63 115.57 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6282,7 +6282,7 @@
 		(dnp no)
 		(uuid "47d6e852-ca03-42a3-9181-f7c5922980b3")
 		(property "Reference" "ifilt"
-			(at 229.87 96.774 0)
+			(at 214.63 109.474 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6290,7 +6290,7 @@
 			)
 		)
 		(property "Value" "#LowPassAnalogDifferentialRc("
-			(at 229.362 109.22 0)
+			(at 214.122 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6298,7 +6298,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 229.87 100.838 0)
+			(at 214.63 113.538 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6307,7 +6307,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 229.87 99.06 90)
+			(at 214.63 111.76 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6316,7 +6316,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 229.87 102.87 0)
+			(at 214.63 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6325,7 +6325,7 @@
 			)
 		)
 		(property "Value2" "impedance=100*Ohm(tol=.05),"
-			(at 229.87 111.506 0)
+			(at 214.63 124.206 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6333,7 +6333,7 @@
 			)
 		)
 		(property "Value3" "cutoff_freq=(47, 470)*kHertz)"
-			(at 230.124 114.046 0)
+			(at 214.884 126.746 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6363,7 +6363,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:Unk2")
-		(at 267.97 104.14 90)
+		(at 252.73 116.84 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6371,7 +6371,7 @@
 		(dnp no)
 		(uuid "4a2cf8bb-0619-44a8-8ddd-d99997adf2d5")
 		(property "Reference" "iclamp"
-			(at 267.97 101.854 90)
+			(at 252.73 114.554 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6379,7 +6379,7 @@
 			)
 		)
 		(property "Value" "#JfetCurrentClamp("
-			(at 267.716 106.68 90)
+			(at 252.476 119.38 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6387,7 +6387,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 267.97 105.918 90)
+			(at 252.73 118.618 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6396,7 +6396,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 267.97 104.14 0)
+			(at 252.73 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6405,7 +6405,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 267.97 104.14 0)
+			(at 252.73 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6414,7 +6414,7 @@
 			)
 		)
 		(property "Value2" "model_voltage_clamp=(0, 3.3)*Volt,"
-			(at 267.97 108.966 90)
+			(at 252.73 121.666 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6422,7 +6422,7 @@
 			)
 		)
 		(property "Value3" "model_signal_clamp=(0, 3.3)*Volt)"
-			(at 267.97 111.252 90)
+			(at 252.73 123.952 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6446,7 +6446,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:Adapter")
-		(at 127 127 0)
+		(at 127 144.78 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6454,7 +6454,7 @@
 		(dnp no)
 		(uuid "4b89a76e-7f94-456c-b15d-9cbfbdf5df9e")
 		(property "Reference" "out_adapter"
-			(at 127 123.19 0)
+			(at 127 140.97 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6462,7 +6462,7 @@
 			)
 		)
 		(property "Value" "#VoltageSinkAdapterAnalogSource()"
-			(at 127 125.222 0)
+			(at 127 143.002 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6470,7 +6470,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 127 127 0)
+			(at 127 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6479,7 +6479,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 127 127 0)
+			(at 127 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6488,7 +6488,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 127 127 0)
+			(at 127 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6668,7 +6668,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:Unk2")
-		(at 240.03 127 90)
+		(at 240.03 144.78 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6676,7 +6676,7 @@
 		(dnp no)
 		(uuid "551cde7c-c7f1-4fac-bf71-f6e3e5f9b58a")
 		(property "Reference" "vclamp"
-			(at 240.03 124.714 90)
+			(at 240.03 142.494 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6684,7 +6684,7 @@
 			)
 		)
 		(property "Value" "#JfetCurrentClamp("
-			(at 239.776 129.54 90)
+			(at 239.776 147.32 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6692,7 +6692,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 240.03 128.778 90)
+			(at 240.03 146.558 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6701,7 +6701,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 240.03 127 0)
+			(at 240.03 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6710,7 +6710,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 240.03 127 0)
+			(at 240.03 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6719,7 +6719,7 @@
 			)
 		)
 		(property "Value2" "model_voltage_clamp=(0, 3.3)*Volt)"
-			(at 240.03 131.826 90)
+			(at 240.03 149.606 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7040,7 +7040,7 @@
 	)
 	(symbol
 		(lib_id "power:VEE")
-		(at 223.52 133.35 180)
+		(at 223.52 151.13 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7048,7 +7048,7 @@
 		(dnp no)
 		(uuid "5e8fdb40-36d3-4f81-acd7-639238582c58")
 		(property "Reference" "#PWR019"
-			(at 223.52 129.54 0)
+			(at 223.52 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7057,7 +7057,7 @@
 			)
 		)
 		(property "Value" "VEE"
-			(at 220.726 134.62 0)
+			(at 220.726 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7065,7 +7065,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 223.52 133.35 0)
+			(at 223.52 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7074,7 +7074,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 223.52 133.35 0)
+			(at 223.52 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7083,7 +7083,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"VEE\""
-			(at 223.52 133.35 0)
+			(at 223.52 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7535,7 +7535,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 186.69 139.7 0)
+		(at 186.69 157.48 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7543,7 +7543,7 @@
 		(dnp no)
 		(uuid "776ffa95-5395-4d5e-a56c-2a55839cbe9c")
 		(property "Reference" "#PWR01"
-			(at 186.69 146.05 0)
+			(at 186.69 163.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7552,7 +7552,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 190.5 139.7 0)
+			(at 190.5 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7560,7 +7560,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 186.69 139.7 0)
+			(at 186.69 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7569,7 +7569,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 186.69 139.7 0)
+			(at 186.69 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7578,7 +7578,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 186.69 139.7 0)
+			(at 186.69 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7964,7 +7964,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:Adapter")
-		(at 205.74 129.54 0)
+		(at 205.74 147.32 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7972,7 +7972,7 @@
 		(dnp no)
 		(uuid "9f9bff03-bd8c-4f2b-b9cc-6e16ab31a28b")
 		(property "Reference" "gnd_adapter"
-			(at 205.74 126.238 0)
+			(at 205.74 144.018 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7980,7 +7980,7 @@
 			)
 		)
 		(property "Value" "#GroundAdapterAnalogSource()"
-			(at 205.74 128.016 0)
+			(at 205.74 145.796 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7988,7 +7988,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 205.74 129.54 0)
+			(at 205.74 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7997,7 +7997,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 205.74 129.54 0)
+			(at 205.74 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8006,7 +8006,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 205.74 129.54 0)
+			(at 205.74 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8096,7 +8096,7 @@
 	)
 	(symbol
 		(lib_id "power:VCC")
-		(at 223.52 120.65 0)
+		(at 223.52 138.43 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8104,7 +8104,7 @@
 		(dnp no)
 		(uuid "a52260d2-941d-438a-863a-02879d69fd2b")
 		(property "Reference" "#PWR018"
-			(at 223.52 124.46 0)
+			(at 223.52 142.24 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8113,7 +8113,7 @@
 			)
 		)
 		(property "Value" "VCC"
-			(at 220.726 119.38 0)
+			(at 220.726 137.16 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8121,7 +8121,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 223.52 120.65 0)
+			(at 223.52 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8130,7 +8130,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 223.52 120.65 0)
+			(at 223.52 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8139,7 +8139,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 223.52 120.65 0)
+			(at 223.52 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8226,7 +8226,7 @@
 	)
 	(symbol
 		(lib_id "power:VCC")
-		(at 173.99 120.65 0)
+		(at 173.99 138.43 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8234,7 +8234,7 @@
 		(dnp no)
 		(uuid "af1f96ff-9522-4da1-bbba-47edc6f83ed9")
 		(property "Reference" "#PWR012"
-			(at 173.99 124.46 0)
+			(at 173.99 142.24 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8243,7 +8243,7 @@
 			)
 		)
 		(property "Value" "VCC"
-			(at 171.196 119.38 0)
+			(at 171.196 137.16 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8251,7 +8251,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 173.99 120.65 0)
+			(at 173.99 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8260,7 +8260,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 173.99 120.65 0)
+			(at 173.99 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8269,7 +8269,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 173.99 120.65 0)
+			(at 173.99 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8291,7 +8291,7 @@
 	)
 	(symbol
 		(lib_id "power:VCC")
-		(at 250.19 97.79 0)
+		(at 234.95 110.49 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8299,7 +8299,7 @@
 		(dnp no)
 		(uuid "bbc72149-9a38-4fdc-872a-8d1919126046")
 		(property "Reference" "#PWR05"
-			(at 250.19 101.6 0)
+			(at 234.95 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8308,7 +8308,7 @@
 			)
 		)
 		(property "Value" "VCC"
-			(at 247.396 96.52 0)
+			(at 232.156 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8316,7 +8316,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 250.19 97.79 0)
+			(at 234.95 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8325,7 +8325,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 250.19 97.79 0)
+			(at 234.95 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8334,7 +8334,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 250.19 97.79 0)
+			(at 234.95 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8673,7 +8673,7 @@
 	)
 	(symbol
 		(lib_id "edg_importable:DifferentialAmplifier")
-		(at 252.73 104.14 0)
+		(at 237.49 116.84 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8681,7 +8681,7 @@
 		(dnp no)
 		(uuid "cff32c2d-33d5-4b97-b475-a64d002d0682")
 		(property "Reference" "imeas"
-			(at 251.46 100.33 0)
+			(at 236.22 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8690,7 +8690,7 @@
 			)
 		)
 		(property "Value" "#Ina826("
-			(at 252.73 115.57 0)
+			(at 237.49 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8698,7 +8698,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 252.73 104.14 0)
+			(at 237.49 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8707,7 +8707,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 252.73 104.14 0)
+			(at 237.49 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8716,7 +8716,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 252.73 104.14 0)
+			(at 237.49 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8725,7 +8725,7 @@
 			)
 		)
 		(property "Value2" "ratio=10*Ratio(tol=0.05))"
-			(at 252.73 117.856 0)
+			(at 237.49 130.556 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8761,7 +8761,7 @@
 	)
 	(symbol
 		(lib_id "Device:VoltageDivider")
-		(at 186.69 133.35 0)
+		(at 186.69 151.13 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8769,7 +8769,7 @@
 		(dnp no)
 		(uuid "d8a9745e-5ed6-425f-95cc-b89b6c96a89f")
 		(property "Reference" "vdiv"
-			(at 190.5 135.89 0)
+			(at 190.5 153.67 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8777,7 +8777,7 @@
 			)
 		)
 		(property "Value" "#SignalDivider("
-			(at 186.69 143.256 0)
+			(at 186.69 161.036 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8785,7 +8785,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 198.755 133.35 90)
+			(at 198.755 151.13 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8794,7 +8794,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 191.77 133.35 0)
+			(at 191.77 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8803,7 +8803,7 @@
 			)
 		)
 		(property "Description" "Voltage divider"
-			(at 186.69 133.35 0)
+			(at 186.69 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8812,7 +8812,7 @@
 			)
 		)
 		(property "Value2" "ratio=(1/24)*Ratio(tol=0.05),"
-			(at 186.69 145.796 0)
+			(at 186.69 163.576 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8820,7 +8820,7 @@
 			)
 		)
 		(property "Value3" "impedance=(0.47, 4.7)*kOhm)"
-			(at 186.69 148.336 0)
+			(at 186.69 166.116 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8977,7 +8977,7 @@
 	)
 	(symbol
 		(lib_id "power:+2V5")
-		(at 255.27 107.95 180)
+		(at 240.03 120.65 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8985,7 +8985,7 @@
 		(dnp no)
 		(uuid "e997660d-85fb-4a69-a8f8-a91052157a2b")
 		(property "Reference" "#PWR?"
-			(at 255.27 104.14 0)
+			(at 240.03 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8994,7 +8994,7 @@
 			)
 		)
 		(property "Value" "+2V5"
-			(at 259.08 109.22 0)
+			(at 243.84 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9002,7 +9002,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 255.27 107.95 0)
+			(at 240.03 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9011,7 +9011,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 255.27 107.95 0)
+			(at 240.03 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9020,7 +9020,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 255.27 107.95 0)
+			(at 240.03 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9571,7 +9571,7 @@
 	)
 	(symbol
 		(lib_id "power:VEE")
-		(at 250.19 110.49 180)
+		(at 234.95 123.19 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9579,7 +9579,7 @@
 		(dnp no)
 		(uuid "fc690c88-e768-4b5b-94c1-0afcfb34f805")
 		(property "Reference" "#PWR020"
-			(at 250.19 106.68 0)
+			(at 234.95 119.38 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9588,7 +9588,7 @@
 			)
 		)
 		(property "Value" "VEE"
-			(at 247.396 111.76 0)
+			(at 232.156 124.46 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9596,7 +9596,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 250.19 110.49 0)
+			(at 234.95 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9605,7 +9605,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 250.19 110.49 0)
+			(at 234.95 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9614,7 +9614,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"VEE\""
-			(at 250.19 110.49 0)
+			(at 234.95 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
