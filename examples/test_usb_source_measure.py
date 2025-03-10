@@ -336,7 +336,7 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
     return {'1': self.input, '2': self.output}
 
   @init_in_parent
-  def __init__(self, model_voltage_clamp: RangeExpr, model_signal_clamp: RangeExpr = RangeExpr.ALL):
+  def __init__(self, model_voltage_clamp: RangeLike, model_signal_clamp: RangeLike = RangeExpr.ALL):
     super().__init__()
 
     self.model_voltage_clamp = self.ArgParameter(model_voltage_clamp)
@@ -496,14 +496,12 @@ class UsbSourceMeasure(JlcBoardTop):
       )
       self.vref = self.connect(self.reg_vref.pwr_out)
 
-      (self.ref_div, self.ref_buf), _ = self.chain(
+      (self.ref_div, self.ref_buf, self.ref_cap), _ = self.chain(
         self.vref,
         imp.Block(VoltageDivider(output_voltage=1.65*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
-        imp.Block(OpampFollower())
+        imp.Block(OpampFollower()),
+        imp.Block(AnalogCapacitor(0.1*uFarad(tol=0.2)))
       )
-      self.ref_cap = self.Block(Capacitor(0.1*uFarad(tol=0.2), voltage=self.ref_div.output.link().voltage))
-      self.connect(self.ref_cap.neg.adapt_to(Ground()), self.gnd)
-      self.connect(self.ref_cap.pos.adapt_to(AnalogSink()), self.ref_div.output)
       self.connect(self.vanalog, self.ref_buf.pwr)
       self.vcenter = self.connect(self.ref_buf.output)
 
@@ -716,13 +714,13 @@ class UsbSourceMeasure(JlcBoardTop):
       self.dummy_amp_lv = imp.Block(OpampFollower())
       self.connect(self.dummy_amp_lv.pwr, self.vanalog)
       self.connect(self.dummy_amp_lv.input, self.ref_buf.output)
-      (self._dummy_amp_lv_snk, ), _ = self.chain(self.dummy_amp_lv.output, self.Block(DummyAnalogSink()))
+      (self.dummy_amp_lv_snk, ), _ = self.chain(self.dummy_amp_lv.output, self.Block(DummyAnalogSink()))
 
     self.dummy_amp_hv = self.Block(OpampFollower())
     self.connect(self.dummy_amp_hv.pwr, self.vcontrol)
     self.connect(self.dummy_amp_hv.gnd, self.vcontroln)
     self.connect(self.dummy_amp_hv.input, self.ref_buf.output)
-    (self._dummy_amp_hv_snk, ), _ = self.chain(self.dummy_amp_hv.output, self.Block(DummyAnalogSink()))
+    (self.dummy_amp_hv_snk, ), _ = self.chain(self.dummy_amp_hv.output, self.Block(DummyAnalogSink()))
 
     self.outn = self.Block(BananaSafetyJack())
     self.outp = self.Block(BananaSafetyJack())
@@ -733,6 +731,24 @@ class UsbSourceMeasure(JlcBoardTop):
       self.outp.port.adapt_to(VoltageSink(current_draw=OUTPUT_CURRENT_RATING)),
       self.outd.pins.request('2').adapt_to(VoltageSink())
     )
+
+    self.block_group = self.Metadata({
+      'pwr': 'usb, filt_vusb, fuse_vusb, prot_vusb, pd, vusb_sense, reg_v5, reg_3v3, prot_3v3',
+      'conv': 'conv_inforce, precharge, convin_sense, cap_conv, conv, conv_outforce, conv_sense, prot_conv, '
+              'conv_en_pull, conv_latch, conv_comp, comp_ref, comp_sense, comp_pull, buck_rc, boost_rc',
+      'analog': 'reg_analog, reg_vcontrol, reg_vcontroln, reg_vref, ref_div, ref_buf, ref_cap, vcen_rc, '
+                'dac_ferrite, dac, mv_rc, mi_rc, adc, control, '
+                'outn, outp, outd',
+      'mcu': 'mcu, led, touch_duck, ioe_ctl, usb_esd, i2c_pull, qwiic_pull, qwiic, dutio',
+      'sensing': 'conv_temp, pass_temp',
+      'ui': 'ioe_ui, enc, dir, rgb, reg_v12, oled, oled_rc, spk_drv, spk',
+      'tp': 'tp_vusb, tp_gnd, tp_3v3, tp_v5, tp_v12, tp_conv, tp_analog, tp_vcontrol, tp_vcontroln, tp_vref, tp_vcen, tp_lsrc, tp_lsnk, '
+            'i2c_tp',
+      'rf_tp': 'tp_cv, tp_cvf, tp_cisrc, tp_cisnk, tp_mv, tp_mi',
+      'packed_amps': 'vimeas_amps, ampdmeas_amps, cv_amps, ci_amps, cintref_amps',
+      'misc': 'fan_drv, fan, '
+              'jlc_th, dummy_amp_hv, dummy_amp_hv_snk, dummy_amp_lv, dummy_amp_lv_snk',
+    })
 
   def multipack(self) -> None:
     self.vimeas_amps = self.PackedBlock(Opa2189())  # low noise opamp

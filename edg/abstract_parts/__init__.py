@@ -33,7 +33,7 @@ from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor, AnalogC
 from .AbstractResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
 from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CeramicCapacitor, AluminumCapacitor, \
     CapacitorStandardFootprint, TableCapacitor, TableDeratingCapacitor
-from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor, CombinedCapacitor
+from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor, AnalogCapacitor, CombinedCapacitor
 from .AbstractInductor import Inductor, TableInductor, SeriesPowerInductor
 from .AbstractFerriteBead import FerriteBead, FerriteBeadStandardFootprint, TableFerriteBead, SeriesPowerFerriteBead
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, VoltageSenseDivider
