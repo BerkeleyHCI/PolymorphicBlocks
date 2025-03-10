@@ -143,7 +143,7 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
     }
 
   @init_in_parent
-  def __init__(self, current: RangeLike, rds_on: RangeLike):
+  def __init__(self, current: RangeLike, rds_on: RangeLike, gate_clamp_voltage: RangeLike):
     super().__init__()
 
     self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -158,11 +158,12 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
 
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)
+    self.gate_clamp_voltage = self.ArgParameter(gate_clamp_voltage)
 
   def contents(self) -> None:
     super().contents()
 
-    zener_model = ZenerDiode((8, 10)*Volt)
+    zener_model = ZenerDiode(self.gate_clamp_voltage)
     self.clamp1 = self.Block(zener_model)
     self.clamp2 = self.Block(zener_model)
 
@@ -181,6 +182,13 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
       rds_on=self.rds_on,
       gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
+    resistance = 2.2*kOhm(tol=0.05)
+    max_clamp_voltage = VoltageLink._supply_voltage_range(self.gnd, self.pwr).upper() - self.gate_clamp_voltage.lower()
+    self.res = self.Block(Resistor(
+      resistance=resistance,
+      power=(0, max_clamp_voltage * max_clamp_voltage / resistance.lower()),
+      voltage=(0, max_clamp_voltage)
+    ))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       conversions={

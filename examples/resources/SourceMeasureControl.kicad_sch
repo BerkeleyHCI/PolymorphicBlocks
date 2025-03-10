@@ -7120,8 +7120,16 @@
 				)
 			)
 		)
-		(property "Value3" "rds_on=self.rds_on)"
+		(property "Value3" "rds_on=self.rds_on,"
 			(at 176.53 103.632 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value4" "gate_clamp_voltage=(8, 10)*Volt)"
+			(at 176.53 105.918 0)
 			(effects
 				(font
 					(size 1.27 1.27)
