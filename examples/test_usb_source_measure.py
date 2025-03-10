@@ -790,6 +790,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'off_sw', 'device'], Nlas4157),  # 3v3 compatible unlike DG468
 
         (['cap_vusb', 'cap'], JlcAluminumCapacitor),
+        (['control', 'driver', 'cap_in1', 'cap'], JlcAluminumCapacitor),
 
         (['spk', 'conn'], JstPhKVertical)
       ],
@@ -875,6 +876,10 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
         (['conv', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.9),  # allow using a 35V cap
         (['conv', 'power_path', 'out_cap', 'cap', 'require_basic_part'], False),  # high volt caps are rare
+        (['control', 'driver', 'cap_in2', 'cap', 'voltage_rating_derating'], 0.9),
+        (['control', 'driver', 'cap_in2', 'cap', 'require_basic_part'], False),
+        (['control', 'driver', 'cap_in3', 'cap', 'voltage_rating_derating'], 0.9),
+        (['control', 'driver', 'cap_in3', 'cap', 'require_basic_part'], False),
         (['reg_vcontrol', 'cf', 'voltage_rating_derating'], 0.85),
         (['reg_vcontrol', 'cf', 'require_basic_part'], False),
         (['reg_vcontrol', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
