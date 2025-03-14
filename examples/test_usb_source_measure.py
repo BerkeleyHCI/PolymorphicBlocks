@@ -443,15 +443,18 @@ class UsbSourceMeasure(JlcBoardTop):
       self.vusb = self.connect(self.vusb_sense.sense_neg)
 
       # logic supplies
-      (self.reg_v5, self.tp_v5, self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
+      (self.reg_v5, self.tp_v5), _ = self.chain(
         self.vusb,
         imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
-        imp.Block(LinearRegulator(output_voltage=3.3*Volt(tol=0.05))),
+      )
+      self.v5 = self.connect(self.reg_v5.pwr_out)
+      (self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
+        self.vusb,
+        imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(ProtectionZenerDiode(voltage=(3.6, 4.5)*Volt)),
         self.Block(VoltageTestPoint())
       )
-      self.v5 = self.connect(self.reg_v5.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
       # output power supplies
@@ -521,8 +524,9 @@ class UsbSourceMeasure(JlcBoardTop):
       )
       self.vcontrol = self.connect(self.reg_vcontrol.pwr_out)
 
-      (self.reg_vcontroln, self.tp_vcontroln), _ = self.chain(
-        self.v3v3,
+      (self.filt_vcontroln, self.reg_vcontroln, self.tp_vcontroln), _ = self.chain(
+        self.vanalog,
+        self.Block(SeriesPowerFerriteBead()),
         imp.Block(Lm2664(output_ripple_limit=5*mVolt)),
         self.Block(VoltageTestPoint("vc-"))
       )
@@ -588,21 +592,9 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.buck_rc, ), _ = self.chain(self.mcu.gpio.request('buck_pwm'), imp.Block(rc_model), self.conv.buck_pwm)
       (self.boost_rc, ), _ = self.chain(self.mcu.gpio.request('boost_pwm'), imp.Block(rc_model), self.conv.boost_pwm)
 
-      # TODO: this should be a wrapper VoltageComparator with more precise tolerancing
-      self.conv_comp = imp.Block(Comparator())
-      (self.comp_ref, ), _ = self.chain(
-        self.v3v3,
-        imp.Block(VoltageDivider(output_voltage=1*Volt(tol=0.05),
-                                 impedance=(5, 50)*kOhm)),
-        self.conv_comp.inp
-      )
-      # full scale needs to be below the threshold so the trip point is above the modeled max
-      (self.comp_sense, ), _ = self.chain(
-        self.vconv,
-        imp.Block(VoltageSenseDivider(full_scale_voltage=0.90*Volt(tol=0.05),
-                                      impedance=(5, 50)*kOhm)),
-        self.conv_comp.inn
-      )
+      (self.conv_ovp, ), _ = self.chain(self.conv_outforce.pwr_out,
+                                        imp.Block(VoltageComparator(trip_voltage=(32, 36)*Volt)))
+      self.connect(self.conv_ovp.ref, self.vcenter)
 
       # TODO: should not allow simultaneous set and clr
       self.conv_latch = imp.Block(Sn74lvc1g74())
@@ -612,7 +604,7 @@ class UsbSourceMeasure(JlcBoardTop):
         self.conv_latch.nclr
       )
       (self.comp_pull, ), _ = self.chain(
-        self.conv_comp.out, imp.Block(PullupResistor(resistance=10*kOhm(tol=0.05))),
+        self.conv_ovp.output, imp.Block(PullupResistor(resistance=10*kOhm(tol=0.05))),
         self.conv_latch.nset
       )
       self.connect(self.conv_latch.nq, self.conv.reset, self.ioe_ctl.io.request('conv_en_sense'))
@@ -740,10 +732,10 @@ class UsbSourceMeasure(JlcBoardTop):
       self.outd.pins.request('2').adapt_to(VoltageSink())
     )
 
-    self.block_group = self.Metadata({
+    self._block_diagram_grouping = self.Metadata({
       'pwr': 'usb, filt_vusb, fuse_vusb, prot_vusb, pd, vusb_sense, reg_v5, reg_3v3, prot_3v3',
       'conv': 'conv_inforce, precharge, convin_sense, cap_conv, conv, conv_outforce, conv_sense, prot_conv, '
-              'conv_en_pull, conv_latch, conv_comp, comp_ref, comp_sense, comp_pull, buck_rc, boost_rc',
+              'conv_en_pull, conv_latch, conv_ovp, comp_pull, buck_rc, boost_rc',
       'analog': 'reg_analog, reg_vcontrol, reg_vcontroln, reg_vref, ref_div, ref_buf, ref_cap, vcen_rc, '
                 'dac_ferrite, dac, mv_rc, mi_rc, adc, control, '
                 'outn, outp, outd',
@@ -786,7 +778,7 @@ class UsbSourceMeasure(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32s3_Wroom_1),
         (['reg_v5'], Tps54202h),
-        (['reg_3v3'], Ldl1117),
+        (['reg_3v3'], Tps54202h),
         (['reg_v12'], Lm2733),
         (['reg_analog'], Ap2210),
         (['reg_vref'], Ref30xx),
