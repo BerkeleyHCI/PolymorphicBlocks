@@ -792,14 +792,16 @@ class UsbSourceMeasure(JlcBoardTop):
         (['cap_vusb', 'cap'], JlcAluminumCapacitor),
         (['control', 'driver', 'cap_in1', 'cap'], JlcAluminumCapacitor),
 
-        (['spk', 'conn'], JstPhKVertical)
+        (['spk', 'conn'], JstPhKVertical),
+
+        (['control', 'isense', 'ranges[0]', 'pwr_sw', 'ic'], Tlp3545a),  # higher current on 3A range
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
         (TagConnect, TagConnectNonLegged),  # really for initial flash / emergency upload only
         (Opamp, Tlv9061),  # higher precision opamps
         (AnalogSwitch, Dg468),
-        (SolidStateRelay, Tlp3545a),  # TODO lower range switches can be cheaper AQY282SX
+        (SolidStateRelay, Tlp170am),
         (BananaSafetyJack, Ct3151),
         (HalfBridgeDriver, Ncp3420),
         (DirectionSwitch, Skrh),
