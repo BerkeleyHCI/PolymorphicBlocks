@@ -742,9 +742,9 @@ class UsbSourceMeasure(JlcBoardTop):
       'mcu': 'mcu, led, touch_duck, ioe_ctl, usb_esd, i2c_pull, qwiic_pull, qwiic, dutio',
       'sensing': 'conv_temp, pass_temp',
       'ui': 'ioe_ui, enc, dir, rgb, reg_v12, oled, oled_rc, spk_drv, spk',
-      'tp': 'tp_vusb, tp_gnd, tp_3v3, tp_v5, tp_v12, tp_conv, tp_analog, tp_vcontrol, tp_vcontroln, tp_vref, tp_vcen, tp_lsrc, tp_lsnk, '
+      'tp': 'tp_vusb, tp_gnd, tp_3v3, tp_v5, tp_v12, tp_conv, tp_analog, tp_vcontrol, tp_vcontroln, tp_vref, tp_lsrc, tp_lsnk, '
             'i2c_tp',
-      'rf_tp': 'tp_cv, tp_cvf, tp_cisrc, tp_cisnk, tp_mv, tp_mi',
+      'rf_tp': 'tp_vcen, tp_cv, tp_cvf, tp_cisrc, tp_cisnk, tp_mv, tp_mi',
       'packed_amps': 'vimeas_amps, ampdmeas_amps, cv_amps, ci_amps, cintref_amps',
       'misc': 'fan_drv, fan, '
               'jlc_th, dummy_amp_hv, dummy_amp_hv_snk, dummy_amp_lv, dummy_amp_lv_snk',
