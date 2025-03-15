@@ -928,10 +928,10 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['precharge', 'res', 'res', 'require_basic_part'], False),
 
-        # fudge the numbers a bit to avoid a ERC - the output of the IO expander will probably limit
-        (['control', 'isense', 'ranges[0]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010)),
-        (['control', 'isense', 'ranges[1]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010)),
-        (['control', 'isense', 'ranges[2]', 'pwr_sw', 'signal', 'current_draw'], Range(0.0, 0.010)),
+        # reduce maximum SSR drive current to be within the IO expander limit
+        (['control', 'isense', 'ranges[0]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
+        (['control', 'isense', 'ranges[1]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
+        (['control', 'isense', 'ranges[2]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
         (['vusb_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
         (['convin_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
 
