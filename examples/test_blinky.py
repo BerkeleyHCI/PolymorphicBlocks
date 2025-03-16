@@ -17,6 +17,19 @@ class TestBlinkyEmpty(SimpleBoardTop):
   pass
 
 
+class TestBlinkyBasicBattery(SimpleBoardTop):
+  """The simplest cirucit, a microcontroller dev board with a LED, powered from a battery"""
+  def contents(self) -> None:
+    self.bat = self.Block(AaBatteryStack(3))
+    self.mcu = self.Block(Xiao_Rp2040())
+    self.led = self.Block(IndicatorLed())
+
+    self.connect(self.mcu.pwr_vin, self.bat.pwr)
+    self.connect(self.mcu.gnd, self.bat.gnd)
+    self.connect(self.led.signal, self.mcu.gpio.request())
+    self.connect(self.mcu.gnd, self.led.gnd)
+
+
 class TestBlinkyIncomplete(SimpleBoardTop):
   def contents(self) -> None:
     super().contents()
@@ -537,6 +550,9 @@ class BlinkyTestCase(unittest.TestCase):
   def test_design_empty(self) -> None:
     compile_board_inplace(TestBlinkyEmpty)
 
+  def test_design_battery(self) -> None:
+    compile_board_inplace(TestBlinkyBasicBattery)
+
   def test_design_incomplete(self) -> None:
     with self.assertRaises(CompilerCheckError):
       compile_board_inplace(TestBlinkyIncomplete, False)
@@ -577,15 +593,3 @@ class BlinkyTestCase(unittest.TestCase):
 
   def test_design_schematic_import_modeled(self) -> None:
     compile_board_inplace(TestBlinkyWithModeledSchematicImport)
-
-
-if __name__ == "__main__":
-  # this unit test can also be run as __main__ to test a non-unit-test environment
-  compile_board_inplace(TestBlinkyEmpty, False)
-  compile_board_inplace(TestBlinkyComplete, False)
-  compile_board_inplace(TestBlinkyWithLibrary, False)
-  compile_board_inplace(TestBlinkyWithLibraryExport, False)
-  compile_board_inplace(TestBlinkyArray, False)
-  compile_board_inplace(TestBlinkyPacked, False)
-  compile_board_inplace(TestBlinkyWithSchematicImport, False)
-  compile_board_inplace(TestBlinkyWithModeledSchematicImport, False)

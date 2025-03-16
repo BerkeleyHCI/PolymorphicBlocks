@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..abstract_parts import *
 
 
@@ -6,7 +8,7 @@ class Cr2032(Battery, FootprintBlock):
                actual_voltage: RangeLike = (2.0, 3.0)*Volt, **kwargs):
     super().__init__(voltage, *args, **kwargs)
     self.pwr.init_from(VoltageSource(
-      voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
+      voltage_out=self.gnd.link().voltage + actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
       current_limits=(0, 10)*mAmp,
     ))
     self.gnd.init_from(Ground())
@@ -32,7 +34,7 @@ class Li18650(Battery, FootprintBlock):
                actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs):
     super().__init__(voltage, *args, **kwargs)
     self.pwr.init_from(VoltageSource(
-      voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
+      voltage_out=self.gnd.link().voltage + actual_voltage,
       current_limits=(0, 2)*Amp,  # arbitrary assuming low capacity, 1 C discharge
     ))
     self.gnd.init_from(Ground())
@@ -51,17 +53,18 @@ class Li18650(Battery, FootprintBlock):
       mfr='Keystone', part='1042'
     )
 
-class AABattery(Battery, FootprintBlock):
-  """AA Alkaline battery"""
+
+class AaBattery(Battery, FootprintBlock):
+  """AA battery holder supporting alkaline and rechargeable chemistries."""
   @init_in_parent
-  def __init__(self, voltage: RangeLike = (1.3, 1.7)*Volt, *args,
-               actual_voltage: RangeLike = (1.3, 1.7)*Volt, **kwargs):
+  def __init__(self, voltage: RangeLike = (0.9, 1.6)*Volt, *args,
+               actual_voltage: RangeLike = (0.9, 1.6)*Volt, **kwargs):
     super().__init__(voltage, *args, **kwargs)
+    self.gnd.init_from(Ground())
     self.pwr.init_from(VoltageSource(
-      voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
+      voltage_out=self.gnd.link().voltage + actual_voltage,
       current_limits=(0, 1)*Amp,
     ))
-    self.gnd.init_from(Ground())
 
   def contents(self):
     super().contents()
@@ -76,3 +79,27 @@ class AABattery(Battery, FootprintBlock):
       },
       mfr='Keystone', part='2460'
     )
+
+
+class AaBatteryStack(Battery, GeneratorBlock):
+    """AA Alkaline battery stack that generates batteries in series"""
+    @init_in_parent
+    def __init__(self, count: IntLike = 1, *, cell_actual_voltage: RangeLike = (0.9, 1.6)*Volt):
+        super().__init__()
+        self.count = self.ArgParameter(count)
+        self.cell_actual_voltage = self.ArgParameter(cell_actual_voltage)
+        self.generator_param(self.count)
+
+    def generate(self):
+        super().generate()
+        prev_cell: Optional[AaBattery] = None
+        self.cell = ElementDict[AaBattery]()
+        for i in range(self.get(self.count)):
+          self.cell[i] = cell = self.Block(AaBattery(actual_voltage=self.cell_actual_voltage))
+          if prev_cell is None:  # direct connect to gnd
+            self.connect(self.gnd, cell.gnd)
+          else:
+            self.connect(prev_cell.pwr.as_ground(), cell.gnd)
+
+        assert prev_cell is not None, "must generate >=1 cell"
+        self.connect(self.pwr, prev_cell.pwr)

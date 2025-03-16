@@ -171,7 +171,7 @@ class Multimeter(JlcBoardTop):
     VOLTAGE_RATING = (0, 250) * Volt
 
     # also support LiIon AA batteries
-    self.bat = self.Block(AABattery(voltage=(1.1, 4.2)*Volt, actual_voltage=(1.1, 4.2)*Volt))
+    self.bat = self.Block(AaBattery(voltage=(1.1, 4.2) * Volt, actual_voltage=(1.1, 4.2) * Volt))
 
     # Data-only USB port, for example to connect to a computer that can't source USB PD
     # so the PD port can be connected to a dedicated power brick.
