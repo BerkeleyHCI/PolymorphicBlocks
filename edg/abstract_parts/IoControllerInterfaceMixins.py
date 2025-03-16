@@ -91,7 +91,7 @@ class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.pwr_out = self.Port(VoltageSource.empty(), optional=True,
-                                 doc="Power output port, typically of the device's Vdd or VddIO rail; must be used with gnd_out")
+                                 doc="Power output port, typically of the device's Vdd or VddIO rail at 3.3v")
 
 
 class IoControllerUsbOut(BlockInterfaceMixin[IoController]):
@@ -99,4 +99,12 @@ class IoControllerUsbOut(BlockInterfaceMixin[IoController]):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.vusb_out = self.Port(VoltageSource.empty(), optional=True,
-                                  doc="Power output port of the device's Vbus, typically 5v; must be used with gnd_out")
+                                  doc="Power output port of the device's Vbus, typically 5v")
+
+
+class IoControllerVin(BlockInterfaceMixin[IoController]):
+    """IO controller mixin that provides a >=5v input to the device, typically upstream of the Vbus-to-3.3 regulator."""
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.pwr_vin = self.Port(VoltageSink.empty(), optional=True,
+                                 doc="Power input pin, typically rated for 5v or a bit beyond.")

@@ -254,7 +254,7 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
         'gnd': Ground(),
       })
 
-  def connected_from(self, gnd: Optional[Port[VoltageLink]] = None, pwr_hi: Optional[Port[VoltageLink]] = None,
+  def connected_from(self, gnd: Optional[Port[GroundLink]] = None, pwr_hi: Optional[Port[VoltageLink]] = None,
                      pwr_lo: Optional[Port[VoltageLink]] = None) -> 'PriorityPowerOr':
     """Convenience function to connect ports, returning this object so it can still be given a name."""
     if gnd is not None:

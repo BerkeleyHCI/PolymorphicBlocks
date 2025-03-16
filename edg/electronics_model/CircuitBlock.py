@@ -9,7 +9,7 @@ from ..core.ConstraintExpr import Refable
 from .KiCadImportableBlock import KiCadImportableBlock
 
 
-CircuitLinkType = TypeVar('CircuitLinkType', bound=Link)
+CircuitLinkType = TypeVar('CircuitLinkType', bound=Link, covariant=True)
 class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
   """Electrical connection that represents a single port into a single copper net"""
   pass

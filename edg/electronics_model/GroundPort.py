@@ -95,7 +95,7 @@ class GroundAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
         ))
 
 
-class Ground(CircuitPort):
+class Ground(CircuitPort[GroundLink]):
     link_type = GroundLink
     bridge_type = GroundBridge
 
@@ -118,7 +118,7 @@ class Ground(CircuitPort):
         self.voltage_limits = self.Parameter(RangeExpr(voltage_limits))
 
 
-class GroundReference(CircuitPort):
+class GroundReference(CircuitPort[GroundLink]):
     link_type = GroundLink
 
     def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO) -> None:

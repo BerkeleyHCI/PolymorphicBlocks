@@ -309,7 +309,7 @@ class DigitalSource(DigitalBase):
     self._bridged_internal: BoolExpr = self.Parameter(BoolExpr(_bridged_internal))
 
   @staticmethod
-  def low_from_supply(neg: Port[VoltageLink], *, current_limits: RangeLike = RangeExpr.ALL) -> DigitalSource:
+  def low_from_supply(neg: Port[GroundLink], *, current_limits: RangeLike = RangeExpr.ALL) -> DigitalSource:
     return DigitalSource(
       voltage_out=neg.link().voltage,
       current_limits=current_limits,
@@ -329,7 +329,7 @@ class DigitalSource(DigitalBase):
     )
 
   @staticmethod
-  def pulldown_from_supply(neg: Port[VoltageLink]) -> DigitalSource:
+  def pulldown_from_supply(neg: Port[GroundLink]) -> DigitalSource:
     return DigitalSource(
       voltage_out=neg.link().voltage,
       output_thresholds=(neg.link().voltage.upper(), float('inf')),
@@ -471,7 +471,7 @@ class DigitalBidir(DigitalBase):
 class DigitalSingleSourceFake:
   @staticmethod
   @deprecated("use DigitalSource.sink_from_supply")
-  def low_from_supply(neg: Port[VoltageLink], is_pulldown: bool = False) -> DigitalSource:
+  def low_from_supply(neg: Port[GroundLink], is_pulldown: bool = False) -> DigitalSource:
     if not is_pulldown:
       return DigitalSource.low_from_supply(neg)
     else:
