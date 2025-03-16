@@ -50,7 +50,7 @@ class PullupDelayRc(DigitalFilter, Block):
     self.connect(self.pwr, self.rc.input.adapt_to(VoltageSink()))
     self.io = self.Export(self.rc.output.adapt_to(DigitalSource.pullup_from_supply(self.pwr)), [Output])
 
-  def connected(self, *, gnd: Optional[Port[VoltageLink]] = None, pwr: Optional[Port[VoltageLink]] = None,
+  def connected(self, *, gnd: Optional[Port[GroundLink]] = None, pwr: Optional[Port[VoltageLink]] = None,
                 io: Optional[Port[DigitalLink]] = None) -> 'PullupDelayRc':
     """Convenience function to connect both ports, returning this object so it can still be given a name."""
     if gnd is not None:
