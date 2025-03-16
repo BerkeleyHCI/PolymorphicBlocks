@@ -20,7 +20,7 @@ class TestBlinkyEmpty(SimpleBoardTop):
 class TestBlinkyBasicBattery(SimpleBoardTop):
   """The simplest cirucit, a microcontroller dev board with a LED, powered from a battery"""
   def contents(self) -> None:
-    self.bat = self.Block(AaBatteryStack(3))
+    self.bat = self.Block(AaBatteryStack(4))
     self.mcu = self.Block(Xiao_Rp2040())
     self.led = self.Block(IndicatorLed())
 

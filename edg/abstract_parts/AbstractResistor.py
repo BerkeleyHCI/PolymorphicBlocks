@@ -157,7 +157,7 @@ class PulldownResistor(DiscreteApplication):
       DigitalSource.pulldown_from_supply(self.gnd)
     ), [InOut])
 
-  def connected(self, gnd: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
+  def connected(self, gnd: Optional[Port[GroundLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
       'PulldownResistor':
     """Convenience function to connect both ports, returning this object so it can still be given a name."""
     if gnd is not None:

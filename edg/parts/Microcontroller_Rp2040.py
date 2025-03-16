@@ -432,6 +432,7 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, IoControllerVin, Rp2
 
     self.pwr_vin.init_from(VoltageSink(  # based on RS3236-3.3
       voltage_limits=(3.3*1.025 + 0.55, 7.5)*Volt,  # output * tolerance + dropout @ 300mA
+      current_draw=RangeExpr()
     ))
     self.vusb_out.init_from(VoltageSource(
       voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
@@ -447,7 +448,7 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, IoControllerVin, Rp2
     ))
     self.require(~self.pwr_out.is_connected() | ~self.pwr.is_connected(), "cannot use both 3.3v out and 3.3v in")
     self.assign(self.pwr_vin.current_draw, self.pwr_out.is_connected().then_else(  # prop output current draw
-      self.pwr_out.link().current_drawn, (0, 0)
+      self.pwr_out.link().current_drawn, (0, 0)*Amp
     ))
 
     self.generator_param(self.pwr.is_connected())

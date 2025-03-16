@@ -471,7 +471,7 @@ class DigitalBidir(DigitalBase):
 class DigitalSingleSourceFake:
   @staticmethod
   @deprecated("use DigitalSource.sink_from_supply")
-  def low_from_supply(neg: Port[VoltageLink], is_pulldown: bool = False) -> DigitalSource:
+  def low_from_supply(neg: Port[GroundLink], is_pulldown: bool = False) -> DigitalSource:
     if not is_pulldown:
       return DigitalSource.low_from_supply(neg)
     else:

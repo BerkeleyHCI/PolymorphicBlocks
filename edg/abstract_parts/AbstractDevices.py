@@ -17,6 +17,6 @@ class Battery(PowerSource):
     self.capacity = self.ArgParameter(capacity)
     self.actual_capacity = self.Parameter(RangeExpr())
 
-    self.require(self.pwr.voltage_out.within(voltage))
+    self.require(self.pwr.voltage_out.within(voltage + self.gnd.link().voltage))
     self.require(self.pwr.current_limits.contains(current))
     self.require(self.actual_capacity.upper() >= capacity)
