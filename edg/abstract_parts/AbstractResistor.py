@@ -126,12 +126,13 @@ class SeriesResistor(Resistor, GeneratorBlock):
   by distributing the load across multiple devices.
 
   Generally used as a refinement to break up a single (logical) resistor that is dissipating too much power
-  or has an excessive voltage across it."""
+  or has an excessive voltage across it. Accounts for tolerance stackup for power and voltage distribution
+  using specified (not actual) resistor tolerance - is a pessimistic calculation."""
   @init_in_parent
   def __init__(self, *args, count: IntLike = 2, **kwargs):
     super().__init__(*args, **kwargs)
     self.count = self.ArgParameter(count)
-    self.generator_param(self.count)
+    self.generator_param(self.count, self.resistance)
 
   def generate(self):
     super().generate()
@@ -141,10 +142,22 @@ class SeriesResistor(Resistor, GeneratorBlock):
     cumu_power_rating: RangeLike = Range.exact(0)
     cumu_voltage_rating: RangeLike = Range.exact(0)
     self.res = ElementDict[Resistor]()
+
+    # calculate tolerance stackup effects on R for worst-case power and voltage
+    resistance_range = self.get(self.resistance)
+    resistance_tol = (resistance_range.upper - resistance_range.lower) / 2 / resistance_range.center()
+    resistance_tol = min(0.05, resistance_tol)  # in practice there should be no >5% resistors
+    resistance_ratio_range = Range((1 - resistance_tol) / (count + resistance_tol * (count - 2)),
+                                   (1 + resistance_tol) / (count - resistance_tol * (count - 2)))
+
+    elt_resistance = self.resistance / self.count
+    elt_power = self.power * resistance_ratio_range
+    elt_voltage = self.voltage * resistance_ratio_range
+
     for i in range(count):
-      self.res[i] = res = self.Block(Resistor(resistance=self.resistance / self.count,
-                                              power=self.power / self.count,
-                                              voltage=self.voltage / self.count))
+      self.res[i] = res = self.Block(Resistor(resistance=elt_resistance,
+                                              power=elt_power,
+                                              voltage=elt_voltage))
       self.connect(last_port, res.a)
       cumu_resistance = cumu_resistance + res.actual_resistance
       cumu_power_rating = cumu_power_rating + res.actual_power_rating
