@@ -379,8 +379,8 @@ class SrLatchInverted(Block):
   def __init__(self):
     super().__init__()
     self.ic = self.Block(Sn74lvc2g02())
-    self.gnd = self.Export(self.ic.gnd)
-    self.pwr = self.Export(self.ic.pwr)
+    self.gnd = self.Export(self.ic.gnd, [Common])
+    self.pwr = self.Export(self.ic.pwr, [Power])
 
     self.set = self.Export(self.ic.in1a)  # any in1
     self.rst = self.Export(self.ic.in2a)  # any in2
