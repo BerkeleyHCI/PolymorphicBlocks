@@ -145,7 +145,7 @@ from .SpiMemory_93Lc import E93Lc_B
 from .UsbUart_Cp2102 import Cp2102
 from .UsbInterface_Ft232h import Ft232hl
 from .Logic_74Ahct import L74Ahct1g125
-from .Logic_74Lvc import Sn74lvc1g74
+from .Logic_74Lvc import Sn74lvc1g74, Sn74lvc2g02
 from .Rf_Sx1262 import Sx1262
 from .Rf_Pn7160 import Pn7160
 from .Comparator_Lmv331 import Lmv331

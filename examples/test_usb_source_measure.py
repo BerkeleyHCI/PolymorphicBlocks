@@ -368,6 +368,30 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
                       })
 
 
+class SrLatchInverted(Block):
+  """Set-reset latch with active-high set, active-high reset, set priority, and low output when set (high when idle).
+  This uses two NOR gates.
+  NOR1 handles set with priority, when any input is high, the output goes low.
+  Latching is done when NOR1 is low, which feeds into NOR2. If reset isn't asserted, both NOR2 inputs are low
+  and NOR2 output is high, which feeds back into a NOR1 input to keep NOR1 low.
+  NOR2 handles reset without priority, when the input goes high, its output goes low which clears the latch.
+  """
+  def __init__(self):
+    super().__init__()
+    self.ic = self.Block(Sn74lvc2g02())
+    self.gnd = self.Export(self.ic.gnd)
+    self.pwr = self.Export(self.ic.pwr)
+
+    self.set = self.Export(self.ic.in1a)  # any in1
+    self.rst = self.Export(self.ic.in2a)  # any in2
+    self.out = self.Export(self.ic.out1)
+
+  def contents(self):
+    super().contents()
+    self.connect(self.ic.out1, self.ic.in2b)
+    self.connect(self.ic.out2, self.ic.in1b)
+
+
 class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
   """Analog feedback circuit for the source-measure unit
   """
@@ -596,18 +620,17 @@ class UsbSourceMeasure(JlcBoardTop):
                                         imp.Block(VoltageComparator(trip_voltage=(32, 36)*Volt)))
       self.connect(self.conv_ovp.ref, self.vcenter)
 
-      # TODO: should not allow simultaneous set and clr
-      self.conv_latch = imp.Block(Sn74lvc1g74())
+      self.conv_latch = imp.Block(SrLatchInverted())
       (self.conv_en_pull, ), _ = self.chain(
         self.mcu.gpio.request('conv_en'),
-        imp.Block(PullupResistor(10*kOhm(tol=0.05))),
-        self.conv_latch.nclr
+        imp.Block(PulldownResistor(10*kOhm(tol=0.05))),
+        self.conv_latch.rst
       )
       (self.comp_pull, ), _ = self.chain(
         self.conv_ovp.output, imp.Block(PullupResistor(resistance=10*kOhm(tol=0.05))),
-        self.conv_latch.nset
+        self.conv_latch.set
       )
-      self.connect(self.conv_latch.nq, self.conv.reset, self.ioe_ctl.io.request('conv_en_sense'))
+      self.connect(self.conv_latch.out, self.conv.reset, self.ioe_ctl.io.request('conv_en_sense'))
 
       (self.pass_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(0)))
       (self.conv_temp, ), _ = self.chain(int_i2c, imp.Block(Tmp1075n(1)))
