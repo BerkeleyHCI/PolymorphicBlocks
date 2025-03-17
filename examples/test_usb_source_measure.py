@@ -935,7 +935,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'isense', 'ranges[2]', 'isense', 'res', 'res', 'footprint_spec'], ParamValue(['control', 'isense', 'ranges[0]', 'isense', 'res', 'res', 'footprint_spec'])),
         (['control', 'isense', 'ranges[2]', 'isense', 'res', 'res', 'require_basic_part'], False),
 
-        (['control', 'driver', 'res', 'count'], 4),
+        (['control', 'driver', 'res', 'count'], 3),
         (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
         (['control', 'driver', 'high_fet', 'part_spec'], 'SQD50N10-8M9L_GE3'),
         (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),

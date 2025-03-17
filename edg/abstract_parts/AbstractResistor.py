@@ -142,9 +142,9 @@ class SeriesResistor(Resistor, GeneratorBlock):
     cumu_voltage_rating: RangeLike = Range.exact(0)
     self.res = ElementDict[Resistor]()
     for i in range(count):
-      self.res[i] = res = self.Block(Resistor(self.resistance / self.count,
-                                              self.power / self.count,
-                                              self.voltage / self.count))
+      self.res[i] = res = self.Block(Resistor(resistance=self.resistance / self.count,
+                                              power=self.power / self.count,
+                                              voltage=self.voltage / self.count))
       self.connect(last_port, res.a)
       cumu_resistance = cumu_resistance + res.actual_resistance
       cumu_power_rating = cumu_power_rating + res.actual_power_rating
