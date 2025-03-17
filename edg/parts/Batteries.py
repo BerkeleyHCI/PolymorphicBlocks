@@ -103,7 +103,7 @@ class AaBatteryStack(Battery, GeneratorBlock):
           else:
             self.connect(prev_cell.pwr.as_ground(self.pwr.link().current_drawn), cell.gnd)
             prev_capacity_min = cell.actual_capacity.lower().min(prev_capacity_min)
-            prev_capacity_max=  cell.actual_capacity.upper().min(prev_capacity_max)
+            prev_capacity_max = cell.actual_capacity.upper().min(prev_capacity_max)
           prev_cell = cell
 
         assert prev_cell is not None, "must generate >=1 cell"

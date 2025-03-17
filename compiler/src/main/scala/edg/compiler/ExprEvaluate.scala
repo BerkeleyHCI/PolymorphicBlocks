@@ -262,7 +262,8 @@ object ExprEvaluate {
             RangeValue(1.0 / valMax, 1.0 / valMin)
           case RangeEmpty => RangeEmpty
           case FloatValue(opVal) => FloatValue(1.0 / opVal)
-          case IntValue(opVal) => IntValue(1 / opVal)
+          case IntValue(opVal) =>
+            FloatValue(1.0 / opVal.floatValue) // follow Python convention of division promoting to float
           case _ => throw new ExprEvaluateException(s"Unknown unary operand type in ${unary.op} ${`val`} from $unary")
         }
 
