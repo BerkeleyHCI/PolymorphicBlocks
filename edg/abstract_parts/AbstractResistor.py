@@ -121,6 +121,41 @@ class TableResistor(PartsTableSelector, Resistor):
     self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
 
 
+class SeriesResistor(Resistor, GeneratorBlock):
+  """Splits a resistor into equal resistors in series. Improves power and voltage ratings
+  by distributing the load across multiple devices.
+
+  Generally used as a refinement to break up a single (logical) resistor that is dissipating too much power
+  or has an excessive voltage across it."""
+  @init_in_parent
+  def __init__(self, *args, count: IntLike = 2, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.count = self.ArgParameter(count)
+    self.generator_param(self.count)
+
+  def generate(self):
+    super().generate()
+    count = self.get(self.count)
+    last_port = self.a
+    cumu_resistance: RangeLike = Range.exact(0)
+    cumu_power_rating: RangeLike = Range.exact(0)
+    cumu_voltage_rating: RangeLike = Range.exact(0)
+    self.res = ElementDict[Resistor]()
+    for i in range(count):
+      self.res[i] = res = self.Block(Resistor(self.resistance / self.count,
+                                              self.power / self.count,
+                                              self.voltage / self.count))
+      self.connect(last_port, res.a)
+      cumu_resistance = cumu_resistance + res.actual_resistance
+      cumu_power_rating = cumu_power_rating + res.actual_power_rating
+      cumu_voltage_rating = cumu_voltage_rating + res.actual_voltage_rating
+      last_port = res.b
+    self.connect(last_port, self.b)
+    self.assign(self.actual_resistance, cumu_resistance)
+    self.assign(self.actual_power_rating, cumu_power_rating)
+    self.assign(self.actual_voltage_rating, cumu_voltage_rating)
+
+
 class PullupResistor(DiscreteApplication):
   """Pull-up resistor with an VoltageSink for automatic implicit connect to a Power line."""
   @init_in_parent
