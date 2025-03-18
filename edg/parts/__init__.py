@@ -18,7 +18,7 @@ from .JlcBjt import JlcBjt
 from .JlcFet import JlcFet, JlcSwitchFet
 from .CustomDiode import CustomDiode
 from .CustomFet import CustomFet
-from .Batteries import Cr2032, Li18650, AABattery
+from .Batteries import Cr2032, Li18650, AaBattery, AaBatteryStack
 from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .RotaryEncoder_Alps import Ec11eWithSwitch, Ec11j15WithSwitch, Ec05e
 from .RotaryEncoder_Bourns import Pec11s

@@ -285,13 +285,16 @@ class IntExpr(NumLikeExpr[int, IntLike]):
 
 
 FloatLit = Union[float, int]
-FloatLike = Union['FloatExpr', float]
-class FloatExpr(NumLikeExpr[float, FloatLike]):
+FloatLike = Union['FloatExpr', float, int]
+class FloatExpr(NumLikeExpr[float, Union[FloatLike, IntExpr]]):
   @classmethod
-  def _to_expr_type(cls, input: FloatLike) -> FloatExpr:
+  def _to_expr_type(cls, input: Union[FloatLike, IntExpr]) -> FloatExpr:
     if isinstance(input, FloatExpr):
       assert input._is_bound()
       return input
+    elif isinstance(input, IntExpr):
+      assert input._is_bound() and input.binding is not None
+      return FloatExpr()._bind(input.binding)
     elif isinstance(input, int) or isinstance(input, float):
       return FloatExpr()._bind(FloatLiteralBinding(input))
     else:
@@ -316,7 +319,7 @@ class FloatExpr(NumLikeExpr[float, FloatLike]):
 
 
 RangeLike = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
-class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
+class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
   # Some range literals for defaults
   POSITIVE: Range = Range.from_lower(0.0)
   NEGATIVE: Range = Range.from_upper(0.0)
@@ -326,11 +329,11 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
   EMPTY = Range(float('NaN'), float('NaN'))  # special marker to define an empty range, which is subset-eq of any range
 
   @classmethod
-  def _to_expr_type(cls, input: Union[RangeLike, FloatLike]) -> RangeExpr:
+  def _to_expr_type(cls, input: Union[RangeLike, FloatLike, IntLike]) -> RangeExpr:
     if isinstance(input, RangeExpr):
       assert input._is_bound()
       return input
-    elif isinstance(input, (int, float, FloatExpr)):
+    elif isinstance(input, (int, float, FloatExpr, IntExpr)):
       expr = FloatExpr._to_expr_type(input)
       return RangeExpr()._bind(RangeBuilderBinding(expr, expr))
     elif isinstance(input, tuple) and isinstance(input[0], (int, float)) and isinstance(input[1], (int, float)):
@@ -390,7 +393,7 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
   def contains(self, item: Union[RangeLike, FloatLike]) -> BoolExpr:
     if isinstance(item, (RangeExpr, tuple, Range)):
       return RangeExpr._to_expr_type(item).within(self)
-    elif isinstance(item, (int, float, FloatExpr)):
+    elif isinstance(item, (int, float, FloatExpr, IntExpr)):
       return self._create_bool_op(FloatExpr._to_expr_type(item), self, OrdOp.within)
 
   def intersect(self, other: Union[RangeLike, FloatLike]) -> RangeExpr:
@@ -411,38 +414,38 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike]]):
   @classmethod
   def _create_range_float_binary_op(cls,
                                     lhs: RangeExpr,
-                                    rhs: Union[RangeExpr, FloatExpr],
+                                    rhs: Union[RangeExpr, IntExpr, FloatExpr],
                                     op: Union[NumericOp]) -> RangeExpr:
     """Creates a new expression that is the result of a binary operation on inputs"""
     if not isinstance(lhs, RangeExpr):
       raise TypeError(f"range mul and div lhs must be range type, "
                       f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}")
 
-    if not isinstance(rhs, (RangeExpr, FloatExpr)):
-      raise TypeError(f"range mul and div rhs must be range or float type, "
+    if not isinstance(rhs, (RangeExpr, FloatExpr, IntExpr)):
+      raise TypeError(f"range mul and div rhs must be range or float or int type, "
                       f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}")
 
     assert lhs._is_bound() and rhs._is_bound()
     return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
 
   # special option to allow range * float
-  def __mul__(self, rhs: Union[RangeLike, FloatLike]) -> RangeExpr:
+  def __mul__(self, rhs: Union[RangeLike, FloatLike, IntLike]) -> RangeExpr:
     if isinstance(rhs, (int, float)):  # TODO clean up w/ literal to expr pass, then type based on that
-      rhs_cast: Union[FloatExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
-    elif not isinstance(rhs, FloatExpr):
-      rhs_cast = self._to_expr_type(rhs)  # type: ignore
-    else:
+      rhs_cast: Union[FloatExpr, IntExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
+    elif isinstance(rhs, (FloatExpr, IntExpr)):
       rhs_cast = rhs
+    else:
+      rhs_cast = self._to_expr_type(rhs)  # type: ignore
     return self._create_range_float_binary_op(self, rhs_cast, NumericOp.mul)
 
   # special option to allow range / float
-  def __truediv__(self, rhs: Union[RangeLike, FloatLike]) -> RangeExpr:
+  def __truediv__(self, rhs: Union[RangeLike, FloatLike, IntLike]) -> RangeExpr:
     if isinstance(rhs, (int, float)):  # TODO clean up w/ literal to expr pass, then type based on that
-      rhs_cast: Union[FloatExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
-    elif not isinstance(rhs, FloatExpr):
-      rhs_cast = self._to_expr_type(rhs)  # type: ignore
-    else:
+      rhs_cast: Union[FloatExpr, IntExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
+    elif isinstance(rhs, (FloatExpr, IntExpr)):
       rhs_cast = rhs
+    else:
+      rhs_cast = self._to_expr_type(rhs)  # type: ignore
     return self * rhs_cast.__mul_inv__()
 
   def abs(self) -> RangeExpr:

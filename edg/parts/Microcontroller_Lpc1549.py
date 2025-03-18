@@ -328,7 +328,7 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.swd = self.Port(SwdPullPort(DigitalSingleSource.empty()), [InOut])
+    self.swd = self.Port(SwdPullPort(DigitalSource.empty()), [InOut])
 
   def contents(self):
     super().contents()

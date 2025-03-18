@@ -28,7 +28,7 @@ class Mcp4728_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
     )
     self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x60]))  # TODO 3LSBs EEPROM programmable
     self.ldac = self.Port(DigitalSink.from_bidir(dio_model), optional=True)
-    self.rdy = self.Port(DigitalSingleSource.low_from_supply(self.vss), optional=True)
+    self.rdy = self.Port(DigitalSource.low_from_supply(self.vss), optional=True)
 
     self.generator_param(self.ldac.is_connected())
 

@@ -105,7 +105,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0
   def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7)*Volt):
     super().__init__()
 
-    self.rows = self.Port(Vector(DigitalSingleSource.empty()))
+    self.rows = self.Port(Vector(DigitalSource.empty()))
     self.cols = self.Port(Vector(DigitalSink.empty()))
     self.voltage_drop = self.ArgParameter(voltage_drop)
 
@@ -117,7 +117,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0
     super().generate()
     row_ports = {}
     for row in range(self.get(self.nrows)):
-      row_ports[row] = self.rows.append_elt(DigitalSingleSource.empty(), str(row))
+      row_ports[row] = self.rows.append_elt(DigitalSource.empty(), str(row))
 
     self.sw = ElementDict[Switch]()
     self.d = ElementDict[Diode]()
@@ -137,10 +137,10 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0
         ))
         lowest_output = col_port.link().voltage.lower() + d.actual_voltage_drop.lower()
         highest_output = col_port.link().output_thresholds.lower() + d.actual_voltage_drop.upper()
-        self.connect(d.anode.adapt_to(DigitalSingleSource(
+        self.connect(d.anode.adapt_to(DigitalSource(
           voltage_out=(lowest_output, highest_output),
           output_thresholds=(highest_output, float('inf')),
-          low_signal_driver=True
+          low_driver=True, high_driver=False
         )), row_port)
         self.connect(d.cathode, sw.sw)
         self.connect(sw.com.adapt_to(col_port_model), col_port)

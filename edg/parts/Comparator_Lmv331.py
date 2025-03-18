@@ -19,7 +19,7 @@ class Lmv331_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.inn = self.Port(in_model)
         self.inp = self.Port(in_model)
-        out_model = DigitalSingleSource.low_from_supply(self.gnd)
+        out_model = DigitalSource.low_from_supply(self.gnd)
         self.out = self.Port(out_model)
 
     def contents(self) -> None:
@@ -39,20 +39,15 @@ class Lmv331_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.lcsc_part, 'C7976')
 
 
-class Lmv331(Interface, Block):
-    """General purpose comparator
-
-    TODO: should extend an abstract comparator interface, note output is open-drain"""
-    @init_in_parent
-    def __init__(self) -> None:
-        super().__init__()
-        self.ic = self.Block(Lmv331_Device())
-        self.pwr = self.Export(self.ic.vcc, [Power])
-        self.gnd = self.Export(self.ic.gnd, [Common])
-        self.inn = self.Export(self.ic.inn)
-        self.inp = self.Export(self.ic.inp)
-        self.out = self.Export(self.ic.out)
-
+class Lmv331(Comparator):
+    """General purpose comparator"""
     def contents(self) -> None:
         super().contents()
+        self.ic = self.Block(Lmv331_Device())
+        self.connect(self.ic.vcc, self.pwr)
+        self.connect(self.ic.gnd, self.gnd)
+        self.connect(self.ic.inn, self.inn)
+        self.connect(self.ic.inp, self.inp)
+        self.connect(self.ic.out, self.out)
+
         self.vdd_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)

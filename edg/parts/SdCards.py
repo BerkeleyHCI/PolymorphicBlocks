@@ -31,7 +31,7 @@ class SdSocket(SdCard, Connector, FootprintBlock):
     super().__init__()
 
     # TODO switch current rating not provided by datasheet, here's some probably sane default
-    sw_model = DigitalSingleSource.low_from_supply(self.gnd)  # current_limits=(0, 20)*mAmp
+    sw_model = DigitalSource.low_from_supply(self.gnd, current_limits=(-20, 0)*mAmp)
     self.cd = self.Port(sw_model, optional=True)
     self.wp = self.Port(sw_model, optional=True)
 

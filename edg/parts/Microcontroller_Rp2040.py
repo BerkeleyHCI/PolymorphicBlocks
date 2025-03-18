@@ -372,7 +372,8 @@ class Rp2040(Resettable, Rp2040_Interfaces, Microcontroller, IoControllerWithSwd
     return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()
 
 
-class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, Rp2040_Ios, IoController, GeneratorBlock, FootprintBlock):
+class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, IoControllerVin, Rp2040_Ios, IoController, GeneratorBlock,
+                  FootprintBlock):
   """RP2040 development board, a tiny development (21x17.5mm) daughterboard.
   Has an onboard USB connector, so this can also source power.
 
@@ -382,6 +383,7 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, Rp2040_Ios, IoContro
   The 'Seeed Studio XIAO Series Library' must have been added as a footprint library of the same name.
 
   Pinning data: https://www.seeedstudio.com/blog/wp-content/uploads/2022/08/Seeed-Studio-XIAO-Series-Package-and-PCB-Design.pdf
+  Internal data: https://files.seeedstudio.com/wiki/XIAO-RP2040/res/Seeed-Studio-XIAO-RP2040-v1.3.pdf
   """
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]] = {
     'VDD': '12',
@@ -411,8 +413,6 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, Rp2040_Ios, IoContro
 
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
-      self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
-      self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
       return VariantPinRemapper({
         'VDD': self.pwr,
         'GND': self.gnd,
@@ -430,13 +430,25 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, Rp2040_Ios, IoContro
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._iovdd_model())
 
+    self.pwr_vin.init_from(VoltageSink(  # based on RS3236-3.3
+      voltage_limits=(3.3*1.025 + 0.55, 7.5)*Volt,  # output * tolerance + dropout @ 300mA
+      current_draw=RangeExpr()
+    ))
     self.vusb_out.init_from(VoltageSource(
       voltage_out=UsbConnector.USB2_VOLTAGE_RANGE,
       current_limits=UsbConnector.USB2_CURRENT_LIMITS
     ))
+    self.require(~self.pwr_vin.is_connected() | ~self.vusb_out.is_connected(), "cannot use both VUsb out and VUsb in")
+    self.require((self.pwr_vin.is_connected() | self.vusb_out.is_connected()).implies(~self.pwr.is_connected()),
+                 "cannot use 3.3v input if VUsb used")
+
     self.pwr_out.init_from(VoltageSource(
       voltage_out=3.3*Volt(tol=0.05),  # tolerance is a guess
       current_limits=UsbConnector.USB2_CURRENT_LIMITS
+    ))
+    self.require(~self.pwr_out.is_connected() | ~self.pwr.is_connected(), "cannot use both 3.3v out and 3.3v in")
+    self.assign(self.pwr_vin.current_draw, self.pwr_out.is_connected().then_else(  # prop output current draw
+      self.pwr_out.link().current_drawn, (0, 0)*Amp
     ))
 
     self.generator_param(self.pwr.is_connected())

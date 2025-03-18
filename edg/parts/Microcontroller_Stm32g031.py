@@ -28,7 +28,7 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         self.swd = self.Port(SwdTargetPort.empty())
         self._io_ports.insert(0, self.swd)
 
-        self.nrst = self.Port(DigitalBidir.empty(), optional=True)  # internally pulled up
+        self.nrst = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
 
     def _system_pinmap(self) -> Dict[str, CircuitPort]:
         return VariantPinRemapper({  # Pin/peripheral resource definitions (section 4)
@@ -50,10 +50,9 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         )
         dio_fta_model = dio_ftea_model = dio_ftf_model = dio_ftfa_model = dio_ft_model
 
-        self.nrst.init_from(DigitalBidir.from_supply(  # specified differently than other pins
+        self.nrst.init_from(DigitalSink.from_supply(  # specified differently than other pins
             self.gnd, self.pwr,
             voltage_limit_abs=io_voltage_limit,  # assumed
-            current_limits=(-15, 15)*mAmp,  # Section 5.3.14, relaxed bounds for relaxed Vol/Voh
             input_threshold_factor=(0.3, 0.7),
             pullup_capable=True  # internal pullup
         ))

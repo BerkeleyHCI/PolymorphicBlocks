@@ -29,7 +29,7 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.nreset = self.Port(self.din_model)  # required to be driven, to clear fault conditions
         self.nsleep = self.Port(self.din_model)  # required, though can be tied high
-        self.nfault = self.Port(DigitalSingleSource.low_from_supply(self.gnd), optional=True)
+        self.nfault = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)
 
         self.pgnds = self.Port(Vector(Passive.empty()))
 

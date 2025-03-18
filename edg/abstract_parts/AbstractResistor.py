@@ -131,7 +131,7 @@ class PullupResistor(DiscreteApplication):
 
     self.pwr = self.Export(self.res.a.adapt_to(VoltageSink()), [Power])
     self.io = self.Export(self.res.b.adapt_to(
-      DigitalSingleSource.high_from_supply(self.pwr, is_pullup=True)
+      DigitalSource.pullup_from_supply(self.pwr)
     ), [InOut])
 
   def connected(self, pwr: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
@@ -154,10 +154,10 @@ class PulldownResistor(DiscreteApplication):
 
     self.gnd = self.Export(self.res.a.adapt_to(Ground()), [Common])
     self.io = self.Export(self.res.b.adapt_to(
-      DigitalSingleSource.low_from_supply(self.gnd, is_pulldown=True)
+      DigitalSource.pulldown_from_supply(self.gnd)
     ), [InOut])
 
-  def connected(self, gnd: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
+  def connected(self, gnd: Optional[Port[GroundLink]] = None, io: Optional[Port[DigitalLink]] = None) -> \
       'PulldownResistor':
     """Convenience function to connect both ports, returning this object so it can still be given a name."""
     if gnd is not None:
@@ -173,7 +173,7 @@ class PullupResistorArray(TypedTestPoint, GeneratorBlock):
   def __init__(self, resistance: RangeLike):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.io = self.Port(Vector(DigitalSingleSource.empty()), [InOut])
+    self.io = self.Port(Vector(DigitalSource.empty()), [InOut])
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 
@@ -183,7 +183,7 @@ class PullupResistorArray(TypedTestPoint, GeneratorBlock):
     for requested in self.get(self.io.requested()):
       res = self.res[requested] = self.Block(PullupResistor(self.resistance))
       self.connect(self.pwr, res.pwr)
-      self.connect(self.io.append_elt(DigitalSingleSource.empty(), requested), res.io)
+      self.connect(self.io.append_elt(DigitalSource.empty(), requested), res.io)
 
 
 class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
@@ -192,7 +192,7 @@ class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
   def __init__(self, resistance: RangeLike):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
-    self.io = self.Port(Vector(DigitalSingleSource.empty()), [InOut])
+    self.io = self.Port(Vector(DigitalSource.empty()), [InOut])
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 
@@ -202,7 +202,7 @@ class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
     for requested in self.get(self.io.requested()):
       res = self.res[requested] = self.Block(PulldownResistor(self.resistance))
       self.connect(self.gnd, res.gnd)
-      self.connect(self.io.append_elt(DigitalSingleSource.empty(), requested), res.io)
+      self.connect(self.io.append_elt(DigitalSource.empty(), requested), res.io)
 
 
 class SeriesPowerResistor(DiscreteApplication):

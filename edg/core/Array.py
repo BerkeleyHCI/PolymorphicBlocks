@@ -333,6 +333,10 @@ class Vector(BaseVector, Generic[VectorType]):
     param = self.validate_selector(BoolExpr, selector(self._elt_sample))
     return ArrayBoolExpr()._bind(MapExtractBinding(self, param)).all()
 
+  def count(self, selector: Callable[[VectorType], BoolExpr]) -> IntExpr:
+    param = self.validate_selector(BoolExpr, selector(self._elt_sample))
+    return ArrayBoolExpr()._bind(MapExtractBinding(self, param)).count()
+
   @overload
   def sum(self, selector: Callable[[VectorType], RangeExpr]) -> RangeExpr: ...
   @overload
