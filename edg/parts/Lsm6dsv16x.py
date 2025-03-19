@@ -1,31 +1,31 @@
-from ..abstract_parts import *
 from .JlcPart import JlcPart
+from ..abstract_parts import *
 
 
 class Lsm6dsv16x_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.vdd = self.Port(VoltageSink(
-            voltage_limits=(1.71, 3.6)*Volt,
-            current_draw=(2.6*uAmp, 0.65*mAmp)  # Values for low-power and high-performance modes
+            voltage_limits=(1.71, 3.6) * Volt,
+            current_draw=(2.6 * uAmp, 0.65 * mAmp)  # Values for low-power and high-performance modes
         ))
         self.vddio = self.Port(VoltageSink(
-            voltage_limits=(1.08, 3.6) *Volt # Extended range
+            voltage_limits=(1.08, 3.6) * Volt  # Extended range
         ))
         self.gnd = self.Port(Ground())
 
         dio_model = DigitalBidir.from_supply(
             self.gnd, self.vddio,
-            voltage_limit_abs=(-0.3*Volt, self.vddio.voltage_limits.upper()+0.3),
+            voltage_limit_abs=(-0.3 * Volt, self.vddio.voltage_limits.upper() + 0.3),
             # datasheet states abs volt to be [0.3, VDD_IO+0.3], likely a typo
-            current_limits=(-4, 4)*mAmp,
+            current_limits=(-4, 4) * mAmp,
             input_threshold_factor=(0.3, 0.7)
         )
         self.i2c = self.Port(I2cTarget(dio_model))
 
         dout_model = DigitalSource.low_from_supply(self.gnd)
-        self.int1 = self.Port(dout_model, optional=True, doc="can be configured as push-pull / open-drain")
-        self.int2 = self.Port(dout_model, optional=True, doc="can be configured as push-pull / open-drain")
+        self.int1 = self.Port(dout_model, optional=True)
+        self.int2 = self.Port(dout_model, optional=True)
 
         self.qvar1 = self.Port(Passive(), optional=True)
         self.qvar2 = self.Port(Passive(), optional=True)
@@ -55,10 +55,12 @@ class Lsm6dsv16x_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.lcsc_part, 'C5267406')
         self.assign(self.actual_basic_part, False)
 
+
 class Lsm6dsv16x(Accelerometer, Gyroscope, DefaultExportBlock):
     """Integrated High-edn smartphone 3d accelerometer (ranging over +/- 2/4/8/16 g) and 3d gyroscope
     (ranging over +/- 125/250/500/1000/2000 dps). Onboard sensor fusion for quaternion calculation.
     Supports external qvar for tap detections, etc."""
+
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Lsm6dsv16x_Device())
@@ -67,14 +69,15 @@ class Lsm6dsv16x(Accelerometer, Gyroscope, DefaultExportBlock):
         self.pwr_io = self.Export(self.ic.vddio, default=self.pwr, doc="IO supply voltage")
 
         self.i2c = self.Export(self.ic.i2c)
-        self.int1 = self.Export(self.ic.int1, optional=True, doc="Programmable interrupt")
-        self.int2 = self.Export(self.ic.int2, optional=True, doc="Programmable interrupt")
+        self.int1 = self.Export(self.ic.int1, optional=True,
+                                doc="Programmable interrupt. This can be configured as push-pull / open-drain.")
+        self.int2 = self.Export(self.ic.int2, optional=True,
+                                doc="Programmable interrupt. This can be configured as push-pull / open-drain.")
 
         self.qvar1 = self.Export(self.ic.qvar1, optional=True, doc="qvar input pin 1")
         self.qvar2 = self.Export(self.ic.qvar2, optional=True, doc="qvar input pin 2")
 
     def contents(self):
         super().contents()
-        self.vdd_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
-        self.vddio_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vddio)
-
+        self.vdd_cap = self.Block(DecouplingCapacitor(100 * nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
+        self.vddio_cap = self.Block(DecouplingCapacitor(100 * nFarad(tol=0.2))).connected(self.gnd, self.ic.vddio)
