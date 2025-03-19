@@ -7,7 +7,7 @@ class Lsm6dsv16x_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         super().__init__()
         self.vdd = self.Port(VoltageSink(
             voltage_limits=(1.71, 3.6)*Volt,
-            current_draw=(4*uAmp, 0.65*mAmp)  # Values for low-power and high-performance modes
+            current_draw=(2.6*uAmp, 0.65*mAmp)  # Values for low-power and high-performance modes
         ))
         self.vddio = self.Port(VoltageSink(
             voltage_limits=(1.08, 3.6) *Volt # Extended range
@@ -24,11 +24,11 @@ class Lsm6dsv16x_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.i2c = self.Port(I2cTarget(dio_model))
 
         dout_model = DigitalSource.low_from_supply(self.gnd)
-        self.int1 = self.Port(dout_model, optional=True)
-        self.int2 = self.Port(dout_model, optional=True)
+        self.int1 = self.Port(dout_model, optional=True, doc="can be configured as push-pull / open-drain")
+        self.int2 = self.Port(dout_model, optional=True, doc="can be configured as push-pull / open-drain")
 
-        qvar_model = DigitalSink(voltage_limits=(-0.46, 0.46)*Volt,
-                                 current_draw=(2.6, 15)*uAmp)
+        qvar_model = AnalogSink(voltage_limits=(-0.46, 0.46)*Volt,
+                                current_draw=(2.6, 15)*uAmp)
         self.qvar1 = self.Port(qvar_model, optional=True)
         self.qvar2 = self.Port(qvar_model, optional=True)
 
