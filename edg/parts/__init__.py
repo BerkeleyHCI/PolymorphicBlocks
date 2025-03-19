@@ -160,6 +160,7 @@ from .Bldc_Drv8313 import Drv8313
 from .StepperDriver_A4988 import A4988, PololuA4988
 
 from .Imu_Lsm6ds3trc import Lsm6ds3trc
+from .Lsm6dsv16x import Lsm6dsv16x
 from .Mag_Qmc5883l import Qmc5883l
 from .EnvironmentalSensor_Sensirion import Shtc3
 from .EnvironmentalSensor_Bme680 import Bme680
