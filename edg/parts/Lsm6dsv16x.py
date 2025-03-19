@@ -27,10 +27,8 @@ class Lsm6dsv16x_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.int1 = self.Port(dout_model, optional=True, doc="can be configured as push-pull / open-drain")
         self.int2 = self.Port(dout_model, optional=True, doc="can be configured as push-pull / open-drain")
 
-        qvar_model = AnalogSink(voltage_limits=(-0.46, 0.46)*Volt,
-                                current_draw=(2.6, 15)*uAmp)
-        self.qvar1 = self.Port(qvar_model, optional=True)
-        self.qvar2 = self.Port(qvar_model, optional=True)
+        self.qvar1 = self.Port(Passive(), optional=True)
+        self.qvar2 = self.Port(Passive(), optional=True)
 
     def contents(self) -> None:
         self.footprint(
