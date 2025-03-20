@@ -177,7 +177,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             'U', self.PACKAGE,
             self._make_pinning(),
             mfr='STMicroelectronics', part=self.PART,
-            datasheet='https://www.st.com/resource/en/datasheet/stm32g431.pdf'
+            datasheet='https://www.st.com/resource/en/datasheet/stm32g431kb.pdf'
         )
         self.assign(self.lcsc_part, self.LCSC_PART)
         self.assign(self.actual_basic_part, False)
