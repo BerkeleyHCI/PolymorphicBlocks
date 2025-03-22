@@ -125,7 +125,7 @@ class FetPrecharge(Block):
     TODO: calculate power rating needed for some capacitance instead of spec'ing for DC"""
     @init_in_parent
     def __init__(self, precharge_resistance: RangeLike = 100*Ohm(tol=0.1),
-                 pull_resistance: RangeLike = 10000*Ohm(tol=0.05),
+                 pull_resistance: RangeLike = 10*kOhm(tol=0.05),
                  max_rds: FloatLike = 1*Ohm):
         super().__init__()
         self.gnd = self.Port(Ground.empty(), [Common])
