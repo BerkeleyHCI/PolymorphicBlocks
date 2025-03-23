@@ -34,6 +34,7 @@ class BaseBoardTop(DesignTop):
         (Fpc050Bottom, HiroseFh12sh),
         (UsbEsdDiode, Tpd2e009),
         (CanEsdDiode, Pesd1can),
+        (Fuse, Nano2Fuseholder),
         (TestPoint, TeRc),
 
         (SwdCortexTargetConnector, SwdCortexTargetHeader),
