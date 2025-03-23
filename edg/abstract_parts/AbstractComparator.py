@@ -45,7 +45,7 @@ class VoltageComparator(GeneratorBlock):
         self.comp = self.Block(Comparator())
         self.gnd = self.Export(self.comp.gnd, [Common])
         self.pwr = self.Export(self.comp.pwr, [Power])
-        self.input = self.Port(VoltageSink.empty(), [Input])
+        self.input = self.Port(AnalogSink.empty(), [Input])
         self.output = self.Export(self.comp.out, [Output])
         self.ref = self.Port(AnalogSink.empty(), optional=True)
 
@@ -79,7 +79,7 @@ class VoltageComparator(GeneratorBlock):
             assumed_input_voltage=self.trip_voltage
         ))
         self.assign(self.actual_trip_voltage, self.comp_div.actual_input_voltage)
-        self.connect(self.comp_div.input, self.input)
+        self.connect(self.comp_div.input, self.input.as_voltage_source())
         self.connect(self.comp_div.gnd, self.gnd)
         if not self.get(self.invert):  # positive connection
             self.connect(self.comp.inp, self.comp_div.output)

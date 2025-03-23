@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import Optional, Tuple
 
 from ..core import *
-from .CircuitBlock import CircuitLink
+from .CircuitBlock import CircuitLink, CircuitPortAdapter
 from .GroundPort import GroundLink
-from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink
+from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink, VoltageSource
 
 
 class AnalogLink(CircuitLink):
@@ -53,6 +53,10 @@ class AnalogLink(CircuitLink):
 
 class AnalogBase(CircuitPort[AnalogLink]):
   link_type = AnalogLink
+
+  # these are here (instead of in AnalogSource) since the port may be on the other side of a bridge
+  def as_voltage_source(self) -> VoltageSource:
+    return self._convert(AnalogSourceAdapterVoltageSource())
 
 
 class AnalogSinkBridge(CircuitPortBridge):
@@ -167,6 +171,19 @@ class AnalogSink(AnalogBase):
     self.signal_limits = self.Parameter(RangeExpr(signal_limits))
     self.current_draw = self.Parameter(RangeExpr(current_draw))
     self.impedance = self.Parameter(RangeExpr(impedance))
+
+
+class AnalogSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
+  @init_in_parent
+  def __init__(self):
+    super().__init__()
+    self.src = self.Port(AnalogSink(  # otherwise ideal
+      current_draw=RangeExpr()
+    ))
+    self.dst = self.Port(VoltageSource(
+      voltage_out=(self.src.link().voltage.upper(), self.src.link().voltage.upper()),
+      current_limits=(-float('inf'), float('inf'))))
+    self.assign(self.src.current_draw, self.dst.link().current_drawn)
 
 
 class AnalogSource(AnalogBase):
