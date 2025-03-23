@@ -431,6 +431,9 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
       locals={
         'self': self
+      }, conversions={
+        'tvs_p.K': VoltageSink(),
+        'tvs_n.K': Ground(),
       })
 
 
@@ -886,7 +889,10 @@ class UsbSourceMeasure(JlcBoardTop):
         # allow the regulator to go into tracking mode
         (['reg_v5', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         (['reg_v5', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
+        # use the same inductor to reduce line items
+        (['reg_3v3', 'power_path', 'inductor', 'fp_part'], ParamValue(['reg_v5', 'power_path', 'inductor', 'fp_part'])),
         # JLC does not have frequency specs, must be checked TODO
+        (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['reg_v5', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['reg_v12', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
@@ -940,6 +946,12 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'driver', 'high_fet', 'part_spec'], 'SQD50N10-8M9L_GE3'),
         (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
         (['control', 'driver', 'low_fet', 'part_spec'], 'SQD50P06-15L_GE3'),  # has a 30V/4A SOA
+
+        (['control', 'ifilt', 'c', 'require_basic_part'], False),  # no 10nF caps in basic library for some reason
+
+        (['control', 'snub_r', 'res', 'footprint_spec'], ParamValue(['control', 'isense', 'ranges[0]', 'isense', 'res', 'res', 'footprint_spec'])),
+        (['control', 'snub_r', 'res', 'require_basic_part'], False),
+        (['control', 'snub_c', 'cap', 'require_basic_part'], False),
 
         (['prot_vusb', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
         (['prot_conv', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),

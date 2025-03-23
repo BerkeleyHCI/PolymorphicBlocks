@@ -5,6 +5,151 @@
 	(uuid "b55f6c44-5d5d-4524-bb86-893662f64598")
 	(paper "A4")
 	(lib_symbols
+		(symbol "D_Zener_1"
+			(pin_numbers hide)
+			(pin_names
+				(offset 1.016) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(at 0 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "D_Zener"
+				(at 0 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Zener diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "D_Zener_1_0_1"
+				(polyline
+					(pts
+						(xy 1.27 0) (xy -1.27 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 -1.27) (xy -1.27 1.27) (xy -0.762 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -1.27) (xy 1.27 1.27) (xy -1.27 0) (xy 1.27 -1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "D_Zener_1_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Device:C"
 			(pin_numbers hide)
 			(pin_names
@@ -4084,6 +4229,12 @@
 		(uuid "26597cb1-c830-4853-8663-81bd4ea55ab8")
 	)
 	(junction
+		(at 269.24 83.82)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "41220fc1-fbd1-47ab-ac5d-548ef4d10864")
+	)
+	(junction
 		(at 241.3 83.82)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4156,6 +4307,16 @@
 			(type default)
 		)
 		(uuid "1749678f-b92b-4d74-8954-1a0fd6e997ee")
+	)
+	(wire
+		(pts
+			(xy 269.24 83.82) (xy 276.86 83.82)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "195df6a7-2bed-4177-9610-390e2110f350")
 	)
 	(wire
 		(pts
@@ -4339,6 +4500,16 @@
 	)
 	(wire
 		(pts
+			(xy 241.3 83.82) (xy 269.24 83.82)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6cfee514-0566-41e7-9cb7-04515f95aad9")
+	)
+	(wire
+		(pts
 			(xy 152.4 88.9) (xy 168.91 88.9)
 		)
 		(stroke
@@ -4356,16 +4527,6 @@
 			(type default)
 		)
 		(uuid "70af13e3-8029-4d6c-93e6-9363f87eb6c9")
-	)
-	(wire
-		(pts
-			(xy 266.7 83.82) (xy 241.3 83.82)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "74d408fc-416a-481b-a858-42546da1cd8e")
 	)
 	(wire
 		(pts
@@ -4699,6 +4860,16 @@
 		)
 		(uuid "795eb628-568e-4a61-92d3-90e6ce6efd62")
 	)
+	(text "Low-leakage TVS diodes\nto minimize interference\nwith current measurement"
+		(exclude_from_sim no)
+		(at 266.7 76.2 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "b97213b8-5323-4d57-8c3a-bc626c22a404")
+	)
 	(text "finite resistance for Rg"
 		(exclude_from_sim no)
 		(at 226.06 158.75 0)
@@ -4953,7 +5124,7 @@
 	)
 	(global_label "out"
 		(shape output)
-		(at 266.7 83.82 0)
+		(at 276.86 83.82 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4963,7 +5134,7 @@
 		)
 		(uuid "74a581a7-fa8e-4d69-b8f9-0206b5619540")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 272.1369 83.8994 0)
+			(at 282.2969 83.8994 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5718,6 +5889,95 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "#PWR?")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_name "D_Zener_1")
+		(lib_id "Device:D_Zener")
+		(at 269.24 95.25 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "0f8dabfe-c3ed-4e0b-a994-5aac185d79b1")
+		(property "Reference" "tvs_n"
+			(at 271.78 93.9799 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "SMA6J5.0A"
+			(at 271.78 96.5199 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Diode_SMD:D_SMA"
+			(at 269.24 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 269.24 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 269.24 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "edg_blackbox" "KiCadJlcBlackbox"
+			(at 269.24 95.25 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCB Part #" "C2802054"
+			(at 269.24 95.25 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "e16da316-1103-4ce6-88b5-20f2b270953d")
+		)
+		(pin "1"
+			(uuid "fdd671ac-10f3-4ffc-a50b-9e988c4c71b4")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "tvs_n")
 					(unit 1)
 				)
 			)
@@ -9215,6 +9475,95 @@
 		)
 	)
 	(symbol
+		(lib_name "D_Zener_1")
+		(lib_id "Device:D_Zener")
+		(at 269.24 87.63 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "cb67cff2-9d8a-4b7d-9efe-c0dc4da7cb4d")
+		(property "Reference" "tvs_p"
+			(at 271.78 86.3599 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "SMA6J33A"
+			(at 271.78 88.8999 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Diode_SMD:D_SMA"
+			(at 269.24 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 269.24 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 269.24 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "edg_blackbox" "KiCadJlcBlackbox"
+			(at 269.24 87.63 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCB Part #" "C133679"
+			(at 269.24 87.63 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "fc30cfcf-209e-4adf-98ed-f313a2300144")
+		)
+		(pin "1"
+			(uuid "eb504e63-0a32-4984-9453-7c1182e35bd1")
+		)
+		(instances
+			(project ""
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "tvs_p")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 173.99 95.25 0)
 		(unit 1)
@@ -9643,6 +9992,71 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "#PWR022")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 269.24 99.06 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e1323c82-211b-49bd-ac50-7af2b02206fa")
+		(property "Reference" "#PWR02"
+			(at 269.24 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 265.43 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 269.24 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 269.24 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 269.24 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "05956670-34f7-4017-b0de-4af0b17ca229")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR02")
 					(unit 1)
 				)
 			)
