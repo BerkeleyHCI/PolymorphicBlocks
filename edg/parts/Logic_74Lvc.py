@@ -101,10 +101,10 @@ class Sn74lvc2g02_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.out1 = self.Port(dout_model, optional=True)
         self.out2 = self.Port(dout_model, optional=True)
 
-        self.require(self.out1.is_connected().implies(
-            self.in1a.is_connected() & self.in1b.is_connected()))
-        self.require(self.out2.is_connected().implies(
-            self.in2a.is_connected() & self.in2b.is_connected()))
+        self.require((self.out1.is_connected() == self.in1a.is_connected()) &
+                     (self.out1.is_connected() == self.in1b.is_connected()))
+        self.require((self.out2.is_connected() == self.in2a.is_connected()) &
+                     (self.out2.is_connected() == self.in2b.is_connected()))
 
     def contents(self) -> None:
         super().contents()
