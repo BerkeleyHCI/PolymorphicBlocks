@@ -175,14 +175,19 @@ class AnalogSource(AnalogBase):
   @staticmethod
   def from_supply(neg: Port[GroundLink], pos: Port[VoltageLink], *,
                   signal_out_bound: Optional[Tuple[FloatLike, FloatLike]] = None,
+                  signal_out_abs: Optional[RangeLike] = None,
                   current_limits: RangeLike = RangeExpr.ALL,
                   impedance: RangeLike = RangeExpr.ZERO):
     supply_range = VoltageLink._supply_voltage_range(neg, pos)
     if signal_out_bound is not None:
+      assert signal_out_abs is None
       # signal limit bounds specified as (lower bound added to limit, upper bound added to limit)
       # typically (positive, negative)
       signal_out: RangeLike = (supply_range.lower() + signal_out_bound[0],
                                supply_range.upper() + signal_out_bound[1])
+    elif signal_out_abs is not None:
+      assert signal_out_bound is None
+      signal_out_abs = signal_out_abs
     else:  # generic default
       signal_out = supply_range
 

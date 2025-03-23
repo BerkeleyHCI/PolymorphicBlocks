@@ -161,6 +161,8 @@ from .StepperDriver_A4988 import A4988, PololuA4988
 
 from .Imu_Lsm6ds3trc import Lsm6ds3trc
 from .Lsm6dsv16x import Lsm6dsv16x
+from .MagneticSensor_A1304 import A1304
+from .MagneticSwitch_Ah1806 import Ah1806
 from .Mag_Qmc5883l import Qmc5883l
 from .EnvironmentalSensor_Sensirion import Shtc3
 from .EnvironmentalSensor_Bme680 import Bme680

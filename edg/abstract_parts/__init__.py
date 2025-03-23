@@ -15,8 +15,8 @@ from .Categories import Interface, AnalogToDigital, DigitalToAnalog, SpeakerDriv
 from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver
 from .Categories import PowerSource, Connector, ProgrammingConnector
 from .Categories import HumanInterface, Display, Lcd, Oled, EInk, Light
-from .Categories import Sensor, CurrentSensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor, Microphone, \
-    Camera, LightSensor
+from .Categories import Sensor, CurrentSensor, Accelerometer, Gyroscope, MagneticSensor, MagneticSwitch, Magnetometer,\
+    DistanceSensor, Microphone, Camera, LightSensor
 from .Categories import EnvironmentalSensor, TemperatureSensor, HumiditySensor, PressureSensor, GasSensor
 from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, DeprecatedBlock, Mechanical
 from .Categories import MultipackDevice
