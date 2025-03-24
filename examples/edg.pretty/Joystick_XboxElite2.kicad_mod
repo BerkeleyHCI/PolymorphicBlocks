@@ -5,7 +5,7 @@
 	(layer "F.Cu")
 	(descr "Joystick compatible with those used in the XBox Elite 2 controller. Based on an aftermarket hall-effect joystick. Voltage polarity markings are shown, required for hall-effect sensors. Orientation based on how these devices are placed on the controller itself. Hole dimensions based on SKHH switches.")
 	(property "Reference" "U**"
-		(at 0 -7.5 0)
+		(at -10 -5.5 0)
 		(unlocked yes)
 		(layer "F.SilkS")
 		(uuid "dd2fc61a-0598-4c2c-a674-f1e5eafee2b8")
@@ -149,7 +149,27 @@
 		(uuid "7d6d1da6-f246-49de-9fd4-5187f6ca2e02")
 	)
 	(fp_line
-		(start 3.6 -6.7)
+		(start -3.1 -8.3)
+		(end -3.1 -6.7)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "2e92ddc6-32b4-42f0-8cf3-5f4517a1764e")
+	)
+	(fp_line
+		(start -3.1 -8.3)
+		(end 3.1 -8.3)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "4d5955e0-4b44-4fe7-a4b8-5cfbd38aa6bf")
+	)
+	(fp_line
+		(start -3.1 -6.7)
 		(end -3.6 -6.7)
 		(stroke
 			(width 0.1)
@@ -157,6 +177,26 @@
 		)
 		(layer "F.SilkS")
 		(uuid "5103797e-2df0-41e3-a330-c301c5f5111a")
+	)
+	(fp_line
+		(start 3.1 -8.3)
+		(end 3.1 -6.7)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "e526d8c4-03e6-445b-8f29-eedc7f4e9a48")
+	)
+	(fp_line
+		(start 3.6 -6.7)
+		(end 3.1 -6.7)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "cc88c7da-aeae-4810-b768-fe22de2727e6")
 	)
 	(fp_line
 		(start 4.9 10.1)
@@ -317,6 +357,36 @@
 		)
 		(layer "F.Fab")
 		(uuid "ad3a5971-e26e-4480-a295-89faf89599be")
+	)
+	(fp_line
+		(start -3 -8.2)
+		(end -3 -6.6)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "b0108789-e6a9-4400-a141-d4559e27e8c5")
+	)
+	(fp_line
+		(start -3 -8.2)
+		(end 3 -8.2)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "3c32454d-5c73-4a02-a6d1-a5e708366559")
+	)
+	(fp_line
+		(start 3 -8.2)
+		(end 3 -6.6)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "eb279a8a-9357-4424-bfcf-af70eb980339")
 	)
 	(fp_line
 		(start 4.8 10)
