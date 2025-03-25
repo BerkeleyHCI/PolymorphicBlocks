@@ -63,6 +63,8 @@ class IotRollerBlinds(JlcBoardTop):
         self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
 
+        # TODO blowy fuse on power in
+
         # POWER
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common]),
