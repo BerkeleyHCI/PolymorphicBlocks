@@ -6,22 +6,16 @@ from edg import *
 class IotRollerBlindsConnector(Block):
     def __init__(self):
         super().__init__()
-        self.gnd = self.Port(Ground())
-        self.pwr = self.Port(VoltageSink.from_gnd(self.gnd, voltage_limits=(4.5, 24)*Volt))
-        self.enca = self.Port(DigitalSource.low_from_supply(self.gnd))
-        self.encb = self.Port(DigitalSource.low_from_supply(self.gnd))
-        self.motor1 = self.Port(DigitalSink(current_draw=(0, 500)*mAmp))
-        self.motor2 = self.Port(DigitalSink(current_draw=(0, 500)*mAmp))
-
-    def contents(self) -> None:
-        super().contents()
         self.conn = self.Block(JstXhAHorizontal(length=6))
-        self.connect(self.conn.pins.request('1'), self.pwr)
-        self.connect(self.conn.pins.request('2'), self.enca)
-        self.connect(self.conn.pins.request('3'), self.encb)
-        self.connect(self.conn.pins.request('4'), self.gnd)
-        self.connect(self.conn.pins.request('5'), self.motor2)
-        self.connect(self.conn.pins.request('6'), self.motor1)
+        self.gnd = self.Export(self.conn.pins.request('4').adapt_to(Ground()))
+        self.pwr = self.Export(self.conn.pins.request('1').adapt_to(
+            VoltageSink.from_gnd(self.gnd, voltage_limits=(4.5, 24)*Volt)))
+
+        self.enca = self.Export(self.conn.pins.request('2').adapt_to(DigitalSource.low_from_supply(self.gnd)))
+        self.encb = self.Export(self.conn.pins.request('3').adapt_to(DigitalSource.low_from_supply(self.gnd)))
+
+        self.motor2 = self.Export(self.conn.pins.request('5').adapt_to(DigitalSink(current_draw=(0, 0.5)*Amp)))
+        self.motor1 = self.Export(self.conn.pins.request('6').adapt_to(DigitalSink(current_draw=(0, 0.5)*Amp)))
 
 
 class PowerInConnector(Connector):
@@ -121,7 +115,6 @@ class IotRollerBlinds(JlcBoardTop):
             instance_values=[
                 (['refdes_prefix'], 'F'),  # unique refdes for panelization
                 (['mcu', 'pin_assigns'], [
-                    'rgb=_GPIO2_STRAP_EXT_PU',  # force using the strapping pin, since we're out of IOs
                     'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),

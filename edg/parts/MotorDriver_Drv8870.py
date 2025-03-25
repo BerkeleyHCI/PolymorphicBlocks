@@ -60,7 +60,7 @@ class Drv8870_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, False)
 
 
-class Drv8870(BrushedMotorDriver, GeneratorBlock):
+class Drv8870(BrushedMotorDriver):
   """Brushed DC motor driver, 6.5-45v, PWM control, internally current limited using current sense and trip point"""
   @init_in_parent
   def __init__(self, current_trip: RangeLike = (2, 3)*Amp) -> None:
@@ -76,16 +76,12 @@ class Drv8870(BrushedMotorDriver, GeneratorBlock):
     self.out2 = self.Export(self.ic.out2)
 
     self.current_trip = self.ArgParameter(current_trip)
-    self.generator_param(self.current_trip, self.vref.link().voltage)
 
   def contents(self) -> None:
     super().contents()
     self.vm_cap0 = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.ic.vm)
     # the upper tolerable range of these caps is extended to allow search flexibility when voltage derating
     self.vm_cap1 = self.Block(DecouplingCapacitor((47*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
-
-  def generate(self) -> None:
-    super().generate()
-    self.isen_res = self.Block(SeriesPowerResistor(
-      resistance=Range.cancel_multiply(self.get(self.vref.link().voltage) / 10, 1 / self.get(self.current_trip))
+    self.isen_res = self.Block(SeriesPowerResistor(  # TODO use Range.cancel_multiple for proper tolerance prop
+      resistance=self.vref.link().voltage / 10 / self.current_trip
     )).connected(self.gnd.as_voltage_source(), self.ic.isen)

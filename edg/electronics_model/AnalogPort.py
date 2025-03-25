@@ -187,7 +187,7 @@ class AnalogSource(AnalogBase):
                                supply_range.upper() + signal_out_bound[1])
     elif signal_out_abs is not None:
       assert signal_out_bound is None
-      signal_out_abs = signal_out_abs
+      signal_out = signal_out_abs
     else:  # generic default
       signal_out = supply_range
 
