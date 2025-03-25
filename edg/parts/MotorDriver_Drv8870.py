@@ -67,7 +67,7 @@ class Drv8870(BrushedMotorDriver, GeneratorBlock):
     super().__init__()
     self.ic = self.Block(Drv8870_Device())
     self.gnd = self.Export(self.ic.gnd, [Common])
-    self.pwr = self.Export(self.ic.vm)
+    self.pwr = self.Export(self.ic.vm, [Power])
     self.vref = self.Export(self.ic.vref)
 
     self.in1 = self.Export(self.ic.in1)

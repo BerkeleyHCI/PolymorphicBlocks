@@ -3,10 +3,50 @@ import unittest
 from edg import *
 
 
+class IotRollerBlindsConnector(Block):
+    def __init__(self):
+        super().__init__()
+        self.gnd = self.Port(Ground())
+        self.pwr = self.Port(VoltageSink.from_gnd(self.gnd, voltage_limits=(4.5, 24)*Volt))
+        self.enca = self.Port(DigitalSource.low_from_supply(self.gnd))
+        self.encb = self.Port(DigitalSource.low_from_supply(self.gnd))
+        self.motor1 = self.Port(DigitalSink(current_draw=(0, 500)*mAmp))
+        self.motor2 = self.Port(DigitalSink(current_draw=(0, 500)*mAmp))
+
+    def contents(self) -> None:
+        super().contents()
+        self.conn = self.Block(JstXhAHorizontal(length=6))
+        self.connect(self.conn.pins.request('1'), self.pwr)
+        self.connect(self.conn.pins.request('2'), self.enca)
+        self.connect(self.conn.pins.request('3'), self.encb)
+        self.connect(self.conn.pins.request('4'), self.gnd)
+        self.connect(self.conn.pins.request('5'), self.motor2)
+        self.connect(self.conn.pins.request('6'), self.motor1)
+
+
+class PowerInConnector(Connector):
+    def __init__(self):
+        super().__init__()
+        self.conn = self.Block(JstPhKVertical())
+        self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
+        self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSource(
+            voltage_out=12*Volt(tol=0.2),
+            current_limits=(0, 1)*Amp,
+        )))
+
+
+class PowerOutConnector(Connector):
+    def __init__(self):
+        super().__init__()
+        self.conn = self.Block(JstPhKVertical())
+        self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
+        self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink()))
+
+
 class IotRollerBlinds(JlcBoardTop):
     """IoT roller blinds driver with up-to-20v input and ESP32-C3
 
-    Device has a 6-pin JST XH 2.54 connector, pinned as:
+    Device has a 6-pin JST XH 2.50 connector, pinned as:
     1 (dot) Vdd - UHS41 hall effect ICs, 4.5-24v
     2 enc a
     3 enc b
@@ -18,10 +58,13 @@ class IotRollerBlinds(JlcBoardTop):
     def contents(self) -> None:
         super().contents()
 
-        self.pwr = self.Block(PowerBarrelJack(voltage_out=12*Volt(tol=0.05), current_limits=(0, 5)*Amp))
+        self.pwr = self.Block(PowerInConnector())
+        self.pwr_out = self.Block(PowerOutConnector())
 
-        self.vin = self.connect(self.pwr.pwr)
-        self.gnd = self.connect(self.pwr.gnd)
+        self.conn = self.Block(IotRollerBlindsConnector())
+
+        self.vin = self.connect(self.pwr.pwr, self.pwr_out.pwr, self.conn.pwr)  # TODO conn should be cuttable
+        self.gnd = self.connect(self.pwr.gnd, self.pwr_out.gnd, self.conn.gnd)
 
         self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
@@ -30,16 +73,8 @@ class IotRollerBlinds(JlcBoardTop):
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            (self.reg_5v, self.tp_5v, self.prot_5v), _ = self.chain(
-                self.v12,
-                imp.Block(VoltageRegulator(output_voltage=4*Volt(tol=0.05))),
-                self.Block(VoltageTestPoint()),
-                imp.Block(ProtectionZenerDiode(voltage=(5.5, 6.8)*Volt))
-            )
-            self.v5 = self.connect(self.reg_5v.pwr_out)
-
             (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-                self.v5,
+                self.vin,
                 imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
@@ -57,56 +92,31 @@ class IotRollerBlinds(JlcBoardTop):
             # debugging LEDs
             (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))
 
-            self.enc = imp.Block(DigitalRotaryEncoder())
-            self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
-            self.connect(self.enc.b, self.mcu.gpio.request('enc_b'))
-            self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request('enc_sw'))
-
-            (self.v12_sense, ), _ = self.chain(
-                self.v12,
+            (self.vin_sense, ), _ = self.chain(
+                self.vin,
                 imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
-                self.mcu.adc.request('v12_sense')
+                self.mcu.adc.request('vin_sense')
             )
-
-        # 5V DOMAIN
-        with self.implicit_connect(
-                ImplicitConnect(self.v5, [Power]),
-                ImplicitConnect(self.gnd, [Common]),
-        ) as imp:
-            (self.rgb_ring, ), _ = self.chain(
-                self.mcu.gpio.request('rgb'),
-                imp.Block(NeopixelArray(RING_LEDS)))
+            self.connect(self.conn.enca, self.mcu.gpio.request('enca'))
+            self.connect(self.conn.encb, self.mcu.gpio.request('encb'))
 
         # 12V DOMAIN
-        self.fan = ElementDict[CpuFanConnector]()
-        self.fan_drv = ElementDict[HighSideSwitch]()
-        self.fan_sense = ElementDict[OpenDrainDriver]()
-        self.fan_ctl = ElementDict[OpenDrainDriver]()
-
         with self.implicit_connect(
-                ImplicitConnect(self.v12, [Power]),
+                ImplicitConnect(self.vin, [Power]),
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            for i in range(2):
-                fan = self.fan[i] = self.Block(CpuFanConnector())
-                fan_drv = self.fan_drv[i] = imp.Block(HighSideSwitch(pull_resistance=4.7*kOhm(tol=0.05), max_rds=0.3*Ohm))
-                self.connect(fan.pwr, fan_drv.output)
-                self.connect(fan.gnd, self.gnd)
-                self.connect(self.mcu.gpio.request(f'fan_drv_{i}'), fan_drv.control)
-
-                self.connect(fan.sense, self.mcu.gpio.request(f'fan_sense_{i}'))
-                (self.fan_ctl[i], ), _ = self.chain(
-                    self.mcu.gpio.request(f'fan_ctl_{i}'),
-                    imp.Block(OpenDrainDriver()),
-                    fan.with_mixin(CpuFanPwmControl()).control
-                )
+            self.drv = imp.Block(Drv8870(current_trip=500*mAmp(tol=0.1)))
+            self.connect(self.drv.vref, self.v3v3)
+            self.connect(self.mcu.gpio.request('motor1'), self.drv.in1)
+            self.connect(self.mcu.gpio.request('motor2'), self.drv.in2)
+            self.connect(self.drv.out1, self.conn.motor1)
+            self.connect(self.drv.out2, self.conn.motor2)
 
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[
                 (['mcu'], Esp32c3_Wroom02),
-                (['reg_5v'], Tps54202h),
-                (['reg_3v3'], Ap7215),
+                (['reg_3v3'], Tps54202h),
             ],
             instance_values=[
                 (['refdes_prefix'], 'F'),  # unique refdes for panelization
@@ -115,8 +125,8 @@ class IotRollerBlinds(JlcBoardTop):
                     'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),
-                (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
-                (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+                (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
+                (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),

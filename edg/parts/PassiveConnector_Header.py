@@ -52,6 +52,22 @@ class PinHeader127DualShrouded(FootprintPassiveConnector, JlcPart):
             "Generic", f"PinHeader1.27 Shrouded 2x{length//2}")
 
 
+class JstXhAVertical(FootprintPassiveConnector):
+  """JST B*B-XH-A series connector: 2.50mm shrouded and polarized, in vertical through-hole."""
+  allowed_pins = list(range(2, 16+1)) + [20]
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    return (f'Connector_JST:JST_XH_B{length}B-XH-A_1x{length:02d}_P2.50mm_Vertical',
+            "JST", f"B{length}B-XH-A")
+
+
+class JstXhAHorizontal(FootprintPassiveConnector):
+  """JST S*B-XH-A series connector: 2.50mm shrouded and polarized, in horizontal through-hole."""
+  allowed_pins = list(range(2, 16+1)) + [20]
+  def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
+    return (f'Connector_JST:JST_XH_S{length}B-XH-A_1x{length:02d}_P2.50mm_Vertical',
+            "JST", f"S{length}B-XH-A")
+
+
 class JstPhKVertical(FootprintPassiveConnector):
   """JST B*B-PH-K series connector: 2.00mm shrouded and polarized, in vertical through-hole."""
   allowed_pins = range(2, 16+1)
