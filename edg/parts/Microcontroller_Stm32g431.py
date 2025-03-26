@@ -1,13 +1,8 @@
 from typing import *
 
-from ..abstract_parts import *
 from .JlcPart import JlcPart
-from .Microcontroller_Stm32g031 import Stm32g031Base_Device, Stm32g031Base
-
-from typing import *
-
 from ..abstract_parts import *
-from .JlcPart import JlcPart
+
 
 @abstract_block
 class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerUsb, InternalSubcircuit,
@@ -26,8 +21,8 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
 
         # Power and ground
         self.pwr = self.Port(VoltageSink(
-            voltage_limits=(1.71, 3.6)*Volt,
-            current_draw=(0.001, 150.0)*mAmp    # table 15
+            voltage_limits=(1.71, 3.6) * Volt,
+            current_draw=(0.001, 150.0) * mAmp  # table 15
         ), [Power])
 
         self.gnd = self.Port(Ground(), [Common])
@@ -48,9 +43,10 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
 
     def _io_pinmap(self) -> PinMapUtil:
         input_range = self.gnd.link().voltage.hull(self.pwr.link().voltage)
-        io_voltage_limit = (input_range + (-0.3, 3.6)*Volt).intersect(self.gnd.link().voltage + (-0.3, 5.5)*Volt) # Section 5.3.1
+        io_voltage_limit = (input_range + (-0.3, 3.6) * Volt).intersect(
+            self.gnd.link().voltage + (-0.3, 5.5) * Volt)  # Section 5.3.1
         input_threshold_factor = (0.3, 0.7)  # Section 5.3.14
-        current_limits = (-20, 20)*mAmp     # Table 15
+        current_limits = (-20, 20) * mAmp  # Table 15
 
         dio_ft_model = DigitalBidir.from_supply(
             self.gnd, self.pwr,
@@ -62,19 +58,19 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         dio_tt_model = DigitalBidir.from_supply(
             self.gnd, self.pwr,
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # Table 19
-            current_draw=(0, 0)*Amp, current_limits=current_limits,
+            current_draw=(0, 0) * Amp, current_limits=current_limits,
             input_threshold_factor=input_threshold_factor,
             pullup_capable=True, pulldown_capable=True
         )
 
         # Pin definition, 4.10
         dio_fta_model = dio_ftca_model = dio_ftf_model = dio_ftfa_model = \
-                dio_ftfu_model = dio_ftfd_model = dio_ftda_model = dio_ftu_model = dio_ft_model
+            dio_ftfu_model = dio_ftfd_model = dio_ftda_model = dio_ftu_model = dio_ft_model
         dio_tta_model = dio_tt_model
 
         dio_ftc_model = DigitalBidir.from_supply(
             self.gnd, self.pwr,
-            voltage_limit_abs=(-0.3, 5.0)*Volt,
+            voltage_limit_abs=(-0.3, 5.0) * Volt,
             current_limits=current_limits,
             input_threshold_factor=input_threshold_factor,
             pullup_capable=True, pulldown_capable=True
@@ -84,12 +80,12 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             self.gnd, self.pwr,
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,
             signal_limit_tolerance=(0, 0),
-            impedance=(50, float('inf'))*kOhm   # TODO: this is maximum external input impedance, maybe restrictive
+            impedance=(50, float('inf')) * kOhm  # TODO: this is maximum external input impedance, maybe restrictive
         )
         dac_model = AnalogSource.from_supply(
             self.gnd, self.pwr,
             # signal_out_bound=(0.2*Volt, -0.2*Volt), signal_out_bound only applies when output buffer on
-            impedance=(9.6, 13.8)*kOhm # assumes buffer off
+            impedance=(9.6, 13.8) * kOhm  # assumes buffer off
         )
         self.nrst.init_from(DigitalSink.from_supply(  # specified differently than other pins
             self.gnd, self.pwr,
@@ -103,23 +99,23 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         i2c_model = I2cController(DigitalBidir.empty())
         i2c_target_model = I2cTarget(DigitalBidir.empty())
 
-        return PinMapUtil([ # for 32 pins only for now
-            PinResource('PF0', {'PF0': dio_ftfa_model, 'ADC1_IN10': adc_model}), # TODO remappable to OSC_IN
-            PinResource('PF1', {'PF1': dio_fta_model, 'ADC2_IN10': adc_model}), # TODO remappable to OSC_OUT
+        return PinMapUtil([  # for 32 pins only for now
+            PinResource('PF0', {'PF0': dio_ftfa_model, 'ADC1_IN10': adc_model}),  # TODO remappable to OSC_IN
+            PinResource('PF1', {'PF1': dio_fta_model, 'ADC2_IN10': adc_model}),  # TODO remappable to OSC_OUT
 
             PinResource('PA0', {'PA0': dio_tta_model, 'ADC12_IN1': adc_model}),
             PinResource('PA1', {'PA1': dio_tta_model, 'ADC12_IN2': adc_model}),
             PinResource('PA2', {'PA2': dio_tta_model, 'ADC1_IN3': adc_model}),
             PinResource('PA3', {'PA3': dio_tta_model, 'ADC1_IN4': adc_model}),
-            PinResource('PA4', {'PA4': dio_tta_model, 'ADC2_IN17': adc_model, 'DAC1_OUT1': dac_model }),
+            PinResource('PA4', {'PA4': dio_tta_model, 'ADC2_IN17': adc_model, 'DAC1_OUT1': dac_model}),
             PinResource('PA5', {'PA5': dio_tta_model, 'ADC2_IN13': adc_model, 'DAC1_OUT2': dac_model}),
             PinResource('PA6', {'PA6': dio_tta_model, 'ADC2_IN3': adc_model}),
             PinResource('PA7', {'PA7': dio_tta_model, 'ADC2_IN4': adc_model}),
             PinResource('PA8', {'PA8': dio_ftf_model}),
             PinResource('PA9', {'PA9': dio_ftfd_model}),
             PinResource('PA10', {'PA10': dio_ftda_model}),
-            PinResource('PA11', {'PA11': dio_ftu_model}),   # USB_DM
-            PinResource('PA12', {'PA12': dio_ftu_model}),   # USB_DP
+            PinResource('PA11', {'PA11': dio_ftu_model}),  # USB_DM
+            PinResource('PA12', {'PA12': dio_ftu_model}),  # USB_DP
             PinResource('PA13', {'PA13': dio_ftf_model}),
             PinResource('PA14', {'PA14': dio_ftf_model}),
             PinResource('PA15', {'PA15': dio_ftf_model}),
@@ -146,7 +142,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
                 'sck': ['PB13', 'PF1'], 'ws': ['PB12', 'PF0'], 'sd': ['PA11', 'PB15']
             }),
             PeripheralFixedResource('I2S3', I2sController(DigitalBidir.empty()), {
-                'sck': ['PB3',], 'ws': ['PA4', 'PA15'], 'sd': ['PB5']
+                'sck': ['PB3', ], 'ws': ['PA4', 'PA15'], 'sd': ['PB5']
             }),
             PeripheralFixedResource('USART1', uart_model, {
                 'tx': ['PA9', 'PB6'], 'rx': ['PA10', 'PB7']
@@ -200,10 +196,11 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         self.assign(self.lcsc_part, self.LCSC_PART)
         self.assign(self.actual_basic_part, False)
 
+
 class Stm32g431_G_Device(Stm32g431Base_Device):
     SYSTEM_PIN_REMAP = {
-        'Vdd': ['1', '15', '17'], #15 VDDA
-        'Vss': ['14', '16', '32'],#14 VSSA
+        'Vdd': ['1', '15', '17'],  # 15 VDDA
+        'Vss': ['14', '16', '32'],  # 14 VSSA
         'BOOT0': '31',
         'PG10-NRST': '4',
     }
@@ -235,7 +232,8 @@ class Stm32g431_G_Device(Stm32g431Base_Device):
     }
     PACKAGE = 'Package_DFN_QFN:UFQFPN-32-1EP_5x5mm_P0.5mm_EP3.5x3.5mm'
     PART = 'STM32G431KB'
-    LCSC_PART = 'C1341901' # STM32G431KBU3
+    LCSC_PART = 'C1341901'  # STM32G431KBU3
+
 
 @abstract_block
 class Stm32g431Base(Resettable, IoControllerI2cTarget, Microcontroller, IoControllerWithSwdTargetConnector,
@@ -265,12 +263,11 @@ class Stm32g431Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
             self.pwr_cap3 = imp.Block(DecouplingCapacitor(100 * nFarad(tol=0.2)))
             self.pwr_cap4 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
-
     def generate(self):
         super().generate()
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.nrst)  # otherwise NRST has internal pull-up
 
+
 class Stm32g431kb(Stm32g431Base):
     DEVICE = Stm32g431_G_Device
-
