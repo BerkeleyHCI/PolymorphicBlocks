@@ -210,7 +210,7 @@ class Stm32l432k_Device(Stm32l432Base_Device):
     }
     PACKAGE = 'Package_DFN_QFN:QFN-32-1EP_5x5mm_P0.5mm_EP3.45x3.45mm'
     PART = 'STM32L432Kxxx'
-    LCSC_PART = 'C94784'  # KBU6 variant
+    LCSC_PART = 'C1337280'  # KCU6 variant, maximum memory variant
 
 
 @abstract_block
