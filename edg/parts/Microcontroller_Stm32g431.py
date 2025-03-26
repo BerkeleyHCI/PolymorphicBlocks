@@ -184,6 +184,9 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             PeripheralFixedResource('USB', UsbDevicePort(DigitalBidir.empty()), {
                 'dm': ['PA11'], 'dp': ['PA12']
             }),
+            PeripheralFixedResource('USBCC', UsbCcPort(DigitalBidir.empty()), {
+                'cc1': ['PB6,'], 'cc2': ['PB4']
+            }),
         ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
     def generate(self) -> None:
@@ -236,7 +239,7 @@ class Stm32g431_G_Device(Stm32g431Base_Device):
 
 @abstract_block
 class Stm32g431Base(Resettable, IoControllerI2cTarget, Microcontroller, IoControllerWithSwdTargetConnector,
-                    IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
+                    IoControllerUsbCc, IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
     DEVICE: Type[Stm32g431Base_Device] = Stm32g431Base_Device
 
     def __init__(self, **kwargs):
