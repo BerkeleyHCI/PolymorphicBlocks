@@ -180,7 +180,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             PeripheralFixedResource('USB', UsbDevicePort(DigitalBidir.empty()), {
                 'dm': ['PA11'], 'dp': ['PA12']
             }),
-            PeripheralFixedResource('USBCC', UsbCcPort(DigitalBidir.empty()), {
+            PeripheralFixedResource('USBCC', UsbCcPort(pullup_capable=True), {
                 'cc1': ['PB6'], 'cc2': ['PB4']
             }),
         ]).remap_pins(self.RESOURCE_PIN_REMAP)
