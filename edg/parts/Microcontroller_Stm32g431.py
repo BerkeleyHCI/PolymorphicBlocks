@@ -5,7 +5,7 @@ from ..abstract_parts import *
 
 
 @abstract_block
-class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerUsb, InternalSubcircuit,
+class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerUsb, InternalSubcircuit, IoControllerUsbCc,
                            BaseIoControllerPinmapGenerator,
                            GeneratorBlock, JlcPart, FootprintBlock):
     PACKAGE: str  # package name for footprint(...)
@@ -237,7 +237,7 @@ class Stm32g431_G_Device(Stm32g431Base_Device):
 
 @abstract_block
 class Stm32g431Base(Resettable, IoControllerI2cTarget, Microcontroller, IoControllerWithSwdTargetConnector,
-                    IoControllerUsbCc, IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
+                    IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
     DEVICE: Type[Stm32g431Base_Device] = Stm32g431Base_Device
 
     def __init__(self, **kwargs):
