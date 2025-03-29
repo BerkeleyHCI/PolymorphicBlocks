@@ -6,7 +6,7 @@ from edg import *
 class IotRollerBlindsConnector(Block):
     def __init__(self):
         super().__init__()
-        self.conn = self.Block(JstXhAHorizontal(length=6))
+        self.conn = self.Block(JstXh(length=6))
         self.gnd = self.Export(self.conn.pins.request('4').adapt_to(Ground()))
         self.pwr = self.Export(self.conn.pins.request('1').adapt_to(
             VoltageSink.from_gnd(self.gnd, voltage_limits=(4.5, 24)*Volt)))
@@ -21,7 +21,7 @@ class IotRollerBlindsConnector(Block):
 class PowerInConnector(Connector):
     def __init__(self):
         super().__init__()
-        self.conn = self.Block(JstPhKVertical())
+        self.conn = self.Block(JstPh())
         self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
         self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSource(
             voltage_out=12*Volt(tol=0.2),
@@ -32,7 +32,7 @@ class PowerInConnector(Connector):
 class PowerOutConnector(Connector):
     def __init__(self):
         super().__init__()
-        self.conn = self.Block(JstPhKVertical())
+        self.conn = self.Block(JstPh())
         self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
         self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink()))
 
@@ -136,7 +136,7 @@ class IotRollerBlinds(JlcBoardTop):
 class MotorConnector(Block):
     def __init__(self):
         super().__init__()
-        self.conn = self.Block(JstPhKHorizontal(length=2))
+        self.conn = self.Block(Picoblade(length=2))
         self.motor1 = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink(current_draw=(0, 0.5)*Amp)))
         self.motor2 = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink(current_draw=(0, 0.5)*Amp)))
 
@@ -192,6 +192,15 @@ class IotCurtainRoller(JlcBoardTop):
             )
             (self.enca, ), _ = self.chain(imp.Block(Ah1806()), self.mcu.gpio.request('enca'))
             (self.encb, ), _ = self.chain(imp.Block(Ah1806()), self.mcu.gpio.request('encb'))
+
+            self.i2c = self.mcu.i2c.request('i2c')
+            (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
+                self.i2c,
+                imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
+            self.als = imp.Block(Bh1750())
+            self.connect(self.i2c, self.als.i2c)
+
+            (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
 
         # 12V DOMAIN
         with self.implicit_connect(
