@@ -22,7 +22,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         # Power and ground
         self.pwr = self.Port(VoltageSink(
             voltage_limits=(1.71, 3.6) * Volt,
-            current_draw=(14 * nAmp, 44.0 * mAmp)   # Table 32
+            current_draw=(14 * nAmp, 44.0 * mAmp)  # Table 32
         ), [Power])
 
         self.gnd = self.Port(Ground(), [Common])
@@ -84,7 +84,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         )
         dac_model = AnalogSource.from_supply(
             self.gnd, self.pwr,
-            signal_out_bound=(0.2*Volt, -0.2*Volt),     # signal_out_bound only applies when output buffer on
+            signal_out_bound=(0.2 * Volt, -0.2 * Volt),  # signal_out_bound only applies when output buffer on
             impedance=(9.6, 13.8) * kOhm  # assumes buffer off
         )
         self.nrst.init_from(DigitalSink.from_supply(  # specified differently than other pins
