@@ -22,7 +22,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         # Power and ground
         self.pwr = self.Port(VoltageSink(
             voltage_limits=(1.71, 3.6) * Volt,
-            current_draw=(0.001, 150.0) * mAmp  # table 15
+            current_draw=(14 * nAmp, 44.0 * mAmp)   # Table 32
         ), [Power])
 
         self.gnd = self.Port(Ground(), [Common])
@@ -84,7 +84,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         )
         dac_model = AnalogSource.from_supply(
             self.gnd, self.pwr,
-            # signal_out_bound=(0.2*Volt, -0.2*Volt), signal_out_bound only applies when output buffer on
+            signal_out_bound=(0.2*Volt, -0.2*Volt),     # signal_out_bound only applies when output buffer on
             impedance=(9.6, 13.8) * kOhm  # assumes buffer off
         )
         self.nrst.init_from(DigitalSink.from_supply(  # specified differently than other pins
@@ -142,7 +142,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
                 'sck': ['PB13', 'PF1'], 'ws': ['PB12', 'PF0'], 'sd': ['PA11', 'PB15']
             }),
             PeripheralFixedResource('I2S3', I2sController(DigitalBidir.empty()), {
-                'sck': ['PB3', ], 'ws': ['PA4', 'PA15'], 'sd': ['PB5']
+                'sck': ['PB3'], 'ws': ['PA4', 'PA15'], 'sd': ['PB5']
             }),
             PeripheralFixedResource('USART1', uart_model, {
                 'tx': ['PA9', 'PB6'], 'rx': ['PA10', 'PB7']
