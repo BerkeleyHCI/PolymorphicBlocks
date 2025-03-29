@@ -52,7 +52,12 @@ class PinHeader127DualShrouded(FootprintPassiveConnector, JlcPart):
             "Generic", f"PinHeader1.27 Shrouded 2x{length//2}")
 
 
-class JstXhAVertical(FootprintPassiveConnector):
+@abstract_block_default(lambda: JstXhAVertical)
+class JstXh(FootprintPassiveConnector):
+  """Abstract base class for JST XH 2.50mm shrouded and polarized headers."""
+
+
+class JstXhAVertical(JstXh):
   """JST B*B-XH-A series connector: 2.50mm shrouded and polarized, in vertical through-hole."""
   allowed_pins = list(range(2, 16+1)) + [20]
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
@@ -60,7 +65,7 @@ class JstXhAVertical(FootprintPassiveConnector):
             "JST", f"B{length}B-XH-A")
 
 
-class JstXhAHorizontal(FootprintPassiveConnector):
+class JstXhAHorizontal(JstXh):
   """JST S*B-XH-A series connector: 2.50mm shrouded and polarized, in horizontal through-hole."""
   allowed_pins = list(range(2, 16+1)) + [20]
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
@@ -68,7 +73,12 @@ class JstXhAHorizontal(FootprintPassiveConnector):
             "JST", f"S{length}B-XH-A")
 
 
-class JstPhKVertical(FootprintPassiveConnector):
+@abstract_block_default(lambda: JstPhKVertical)
+class JstPh(FootprintPassiveConnector):
+  """Abstract base class for JST PH 2.00mm shrouded and polarized headers."""
+
+
+class JstPhKVertical(JstPh):
   """JST B*B-PH-K series connector: 2.00mm shrouded and polarized, in vertical through-hole."""
   allowed_pins = range(2, 16+1)
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
@@ -77,7 +87,7 @@ class JstPhKVertical(FootprintPassiveConnector):
 
 
 """JST S*B-PH-K series connector: 2.00mm shrouded and polarized, in horizontal (right-angle) through-hole."""
-class JstPhKHorizontal(FootprintPassiveConnector, JlcPart):
+class JstPhKHorizontal(JstPh, JlcPart):
   allowed_pins = range(2, 16+1)
   PART_NUMBERS = {  # white colored, -S part suffix
     2: 'C173752',
@@ -103,7 +113,7 @@ class JstPhKHorizontal(FootprintPassiveConnector, JlcPart):
             "JST", f"S{length}B-PH-K")
 
 
-class JstPhSmVertical(FootprintPassiveConnector):
+class JstPhSmVertical(JstPh):
   """JST B*B-PH-SM4 series connector: 2.00mm shrouded and polarized, in vertical surface-mount."""
   allowed_pins = range(2, 16+1)
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
@@ -111,7 +121,7 @@ class JstPhSmVertical(FootprintPassiveConnector):
             "JST", f"B{length}B-PH-SM4-TB")
 
 
-class JstPhSmVerticalJlc(JstPhSmVertical, JlcPart):
+class JstPhSmVerticalJlc(JstPh, JlcPart):
   """JST PH connector in SMD, with JLC part numbers for what parts are stocked (JST or clones,
   since JLC's inventory of PH SMD connectors is pretty spotty)."""
   PART_NUMBERS = {  # in order of decreasing stock, on 2022-08-23

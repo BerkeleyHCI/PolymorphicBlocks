@@ -133,13 +133,102 @@ class IotRollerBlinds(JlcBoardTop):
         )
 
 
+class MotorConnector(Block):
+    def __init__(self):
+        super().__init__()
+        self.conn = self.Block(JstPhKHorizontal(length=2))
+        self.motor1 = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink(current_draw=(0, 0.5)*Amp)))
+        self.motor2 = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink(current_draw=(0, 0.5)*Amp)))
+
+
 class IotCurtainRoller(JlcBoardTop):
     """IoT curtain roller, drives a motor and has hall sensors integrated on the board, next to the motor.
     Motor: LS16PQQ-030  -183.5
     ~2.7v min starting voltage; 40mA open current, 200mA stall current @ 4.0v
+
+    Motor is a 2-pin PicoBlade 1.25mm connector, Molex_PicoBlade_53398-0271_1x02-1MP_P1.25mm_Vertical
     """
     def contents(self) -> None:
         super().contents()
+
+        self.pwr = self.Block(PowerInConnector())
+        self.pwr_out = self.Block(PowerOutConnector())
+
+        self.vin = self.connect(self.pwr.pwr, self.pwr_out.pwr)
+        self.gnd = self.connect(self.pwr.gnd, self.pwr_out.gnd)
+
+        self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
+        self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
+
+        # TODO blowy fuse on power in
+
+        # POWER
+        with self.implicit_connect(
+                ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
+                self.vin,
+                imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
+                self.Block(VoltageTestPoint()),
+                imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
+            )
+            self.v3v3 = self.connect(self.reg_3v3.pwr_out)
+
+        # 3V3 DOMAIN
+        with self.implicit_connect(
+                ImplicitConnect(self.v3v3, [Power]),
+                ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            self.mcu = imp.Block(IoController())
+            self.mcu.with_mixin(IoControllerWifi())
+
+            # debugging LEDs
+            (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))
+
+            (self.vin_sense, ), _ = self.chain(
+                self.vin,
+                imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+                self.mcu.adc.request('vin_sense')
+            )
+            (self.enca, ), _ = self.chain(imp.Block(Ah1806()), self.mcu.gpio.request('enca'))
+            (self.encb, ), _ = self.chain(imp.Block(Ah1806()), self.mcu.gpio.request('encb'))
+
+        # 12V DOMAIN
+        with self.implicit_connect(
+                ImplicitConnect(self.vin, [Power]),
+                ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            self.motor = self.Block(MotorConnector())
+            self.drv = imp.Block(Drv8870(current_trip=500*mAmp(tol=0.1)))
+            self.connect(self.drv.vref, self.v3v3)
+            self.connect(self.mcu.gpio.request('motor1'), self.drv.in1)
+            self.connect(self.mcu.gpio.request('motor2'), self.drv.in2)
+            self.connect(self.drv.out1, self.motor.motor1)
+            self.connect(self.drv.out2, self.motor.motor2)
+
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            instance_refinements=[
+                (['mcu'], Esp32c3_Wroom02),
+                (['reg_3v3'], Tps54202h),
+            ],
+            instance_values=[
+                (['refdes_prefix'], 'F'),  # unique refdes for panelization
+                (['mcu', 'pin_assigns'], [
+                    'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
+                ]),
+                (['mcu', 'programming'], 'uart-auto'),
+                (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
+                (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+            ],
+            class_refinements=[
+                (EspProgrammingHeader, EspProgrammingTc2030),
+                (TestPoint, CompactKeystone5015),
+            ],
+            class_values=[
+                (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
+            ]
+        )
 
 
 class IotRollerBlindsTestCase(unittest.TestCase):
