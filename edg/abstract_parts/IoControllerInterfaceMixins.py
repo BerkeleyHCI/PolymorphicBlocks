@@ -55,6 +55,14 @@ class IoControllerUsb(BlockInterfaceMixin[BaseIoController]):
     This WILL NOT WORK when used in .with_mixin, since this defines no fields."""
     pass
 
+class IoControllerUsbCc(BlockInterfaceMixin[BaseIoController]):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.cc = self.Port(Vector(UsbCcPort.empty()), optional=True,
+                             doc="Microcontroller USB Power delivery CC pins")
+        self.implementation(lambda base: base._io_ports.append(self.cc))
+
 
 class IoControllerI2s(BlockInterfaceMixin[BaseIoController]):
     def __init__(self, *args, **kwargs) -> None:
