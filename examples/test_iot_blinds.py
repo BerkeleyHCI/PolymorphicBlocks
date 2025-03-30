@@ -115,7 +115,7 @@ class IotRollerBlinds(JlcBoardTop):
                 (['reg_3v3'], Tps54202h),
             ],
             instance_values=[
-                (['refdes_prefix'], 'F'),  # unique refdes for panelization
+                (['refdes_prefix'], 'B'),  # unique refdes for panelization
                 (['mcu', 'pin_assigns'], [
                     'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
                 ]),
@@ -222,7 +222,7 @@ class IotCurtainRoller(JlcBoardTop):
                 (['reg_3v3'], Tps54202h),
             ],
             instance_values=[
-                (['refdes_prefix'], 'F'),  # unique refdes for panelization
+                (['refdes_prefix'], 'R'),  # unique refdes for panelization
                 (['mcu', 'pin_assigns'], [
                     'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
                 ]),
