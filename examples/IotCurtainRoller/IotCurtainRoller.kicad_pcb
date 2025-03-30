@@ -111,6 +111,17 @@
 		)
 	)
 	(net 0 "")
+	(gr_arc
+		(start 147 86)
+		(mid 148.414214 86.585786)
+		(end 149 88)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "007186e7-0bbe-473e-923f-4945e77f424f")
+	)
 	(gr_line
 		(start 80 112)
 		(end 80 114)
@@ -121,9 +132,20 @@
 		(layer "Edge.Cuts")
 		(uuid "00d47ed2-0be1-4eac-a5e2-420bebee08ab")
 	)
+	(gr_arc
+		(start 69 114)
+		(mid 67.585786 113.414214)
+		(end 67 112)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "01fe5c6c-1a29-4059-ae58-53cadef5aa26")
+	)
 	(gr_line
 		(start 124 114)
-		(end 149 114)
+		(end 147 114)
 		(stroke
 			(width 0.0381)
 			(type default)
@@ -152,8 +174,8 @@
 		(uuid "0c9e6a3f-fdc0-468b-9b11-f226f2f5cc9f")
 	)
 	(gr_line
-		(start 149 86)
-		(end 149 114)
+		(start 149 88)
+		(end 149 112)
 		(stroke
 			(width 0.0381)
 			(type default)
@@ -191,8 +213,19 @@
 		(layer "Edge.Cuts")
 		(uuid "36d0665a-17c0-4062-9027-d3977ba8c675")
 	)
+	(gr_arc
+		(start 149 112)
+		(mid 148.414214 113.414214)
+		(end 147 114)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "39424796-4958-4536-8387-dbd01a8bd2d0")
+	)
 	(gr_line
-		(start 69 86)
+		(start 69 88)
 		(end 69 100)
 		(stroke
 			(width 0.0381)
@@ -245,7 +278,7 @@
 	)
 	(gr_line
 		(start 67 107.211103)
-		(end 67 114)
+		(end 67 112)
 		(stroke
 			(width 0.0381)
 			(type default)
@@ -254,7 +287,7 @@
 		(uuid "55c7adf9-145e-457a-8144-0e53cd85211f")
 	)
 	(gr_line
-		(start 67 114)
+		(start 69 114)
 		(end 75.5 114)
 		(stroke
 			(width 0.0381)
@@ -305,6 +338,17 @@
 		)
 		(layer "Edge.Cuts")
 		(uuid "7a6c48ee-277e-490d-af73-2c8a1f064e0b")
+	)
+	(gr_arc
+		(start 69 88)
+		(mid 69.585786 86.585786)
+		(end 71 86)
+		(stroke
+			(width 0.0381)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "84b3a168-40ef-4510-b655-e33cf36dfe4a")
 	)
 	(gr_arc
 		(start 134 88)
@@ -381,7 +425,7 @@
 	)
 	(gr_line
 		(start 85.5 86)
-		(end 69 86)
+		(end 71 86)
 		(stroke
 			(width 0.0381)
 			(type default)
@@ -411,7 +455,7 @@
 		(uuid "d3f9783e-ef9e-436e-bd2b-c728de44e7c5")
 	)
 	(gr_line
-		(start 149 86)
+		(start 147 86)
 		(end 134 86)
 		(stroke
 			(width 0.0381)
