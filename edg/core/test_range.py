@@ -56,9 +56,9 @@ class RangeTestCase(unittest.TestCase):
     self.assertFalse(Range(-1, 2).intersects(Range(3, 4)))
     self.assertFalse(Range(-1, 2).intersects(Range(-3, -2)))
 
-  def test_cancel_property(self) -> None:
+  def test_shrink_property(self) -> None:
     range1 = Range(10, 20)
-    self.assertEqual(Range.cancel_multiply(range1, 1/range1), Range(1, 1))
+    self.assertEqual(Range.shrink_multiply(range1, 1/range1), Range(1, 1))
 
   def test_frequency(self) -> None:
     """Tests (back-)calculating C from target w and R - so tolerancing flows from R and C to w
@@ -66,7 +66,7 @@ class RangeTestCase(unittest.TestCase):
     R = Range(90, 110)
     C = Range.from_tolerance(1e-6, 0.05)
     w = 1 / (2 * math.pi * R * C)
-    solved = Range.cancel_multiply(1/(2*math.pi * R), 1/w)
+    solved = Range.shrink_multiply(1/(2 * math.pi * w), 1/R)
     self.assertTrue(math.isclose(C.lower, solved.lower))
     self.assertTrue(math.isclose(C.upper, solved.upper))
 

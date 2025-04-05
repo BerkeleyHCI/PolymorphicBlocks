@@ -68,8 +68,7 @@ class Al8861(LedDriverPwm, LedDriverSwitchingConverter, LedDriver, GeneratorBloc
 
         max_current = self.get(self.max_current)
         isense_ref = Range(0.096, 0.104)
-        self.rsense = self.Block(CurrentSenseResistor(resistance=Range.cancel_multiply(isense_ref,
-                                                                                       1/max_current),
+        self.rsense = self.Block(CurrentSenseResistor(resistance=Range.shrink_multiply(1/max_current, isense_ref),
                                                       sense_in_reqd=False))
         self.connect(self.rsense.pwr_in, self.pwr)
         self.connect(self.rsense.sense_out, self.ic.isense)

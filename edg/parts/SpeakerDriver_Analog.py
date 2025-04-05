@@ -158,14 +158,14 @@ class Tpa2005d1(SpeakerDriver, GeneratorBlock):
         )).connected(self.gnd, self.pwr)  # "charge reservoir" recommended cap per 11.1, 2.2-10uF (+20% tolerance)
 
         # Note, gain = 2 * (142k to 158k)/Ri, recommended gain < 20V/V
-        res_value = Range.cancel_multiply(2 * Range(142e3, 158e3), 1 / self.get(self.gain))
+        res_value = Range.shrink_multiply(1 / self.get(self.gain), 2 * Range(142e3, 158e3))
         in_res_model = Resistor(
             resistance=res_value
         )
         # TODO: the tolerance stackup here is pretty awful since it has a wide bound from the resistor spec
         # Instead, a better approach would be to select the resistor, THEN the capacitor (or a coupled RC selector)
         fc = Range(1, 20)  # arbitrary, right on the edge of audio frequency
-        cap_value = Range.cancel_multiply(1 / (2 * math.pi * res_value), 1 / fc)
+        cap_value = Range.shrink_multiply(1 / (2 * math.pi * fc), 1 / res_value)
         if cap_value.lower < 1e-6 * 0.8:  # account for 20% capacitor tolerance
             assert cap_value.upper >= 1e-6, f"input coupling cap {cap_value} below recommended 1uF, datasheet 10.2.2.2.1"
             cap_value.lower = 1e-6 * 0.8

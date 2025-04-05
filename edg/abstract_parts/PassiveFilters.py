@@ -27,7 +27,7 @@ class LowPassRc(AnalogFilter, GeneratorBlock):
 
     self.r = self.Block(Resistor(resistance=self.impedance))  # TODO maybe support power?
     # cutoff frequency is 1/(2 pi R C)
-    capacitance = Range.cancel_multiply(1 / (2 * pi * self.get(self.impedance)), 1 / self.get(self.cutoff_freq))
+    capacitance = Range.shrink_multiply(1 / (2 * pi * self.get(self.cutoff_freq)), 1 / self.get(self.impedance))
 
     self.c = self.Block(Capacitor(capacitance=capacitance*Farad, voltage=self.voltage))
     self.connect(self.input, self.r.a)
