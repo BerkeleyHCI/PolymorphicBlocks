@@ -66,9 +66,8 @@ class Al8861(LedDriverPwm, LedDriverSwitchingConverter, LedDriver, GeneratorBloc
 
         self.require(self.max_current.within((0, 1.5)*Amp))  # for MSOP and SOT89 packages
 
-        max_current = self.get(self.max_current)
         isense_ref = Range(0.096, 0.104)
-        self.rsense = self.Block(CurrentSenseResistor(resistance=(1/max_current).shrink_multiply(isense_ref),
+        self.rsense = self.Block(CurrentSenseResistor(resistance=(1/self.max_current).shrink_multiply(isense_ref),
                                                       sense_in_reqd=False))
         self.connect(self.rsense.pwr_in, self.pwr)
         self.connect(self.rsense.sense_out, self.ic.isense)

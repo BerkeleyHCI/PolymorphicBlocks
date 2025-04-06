@@ -348,7 +348,7 @@ class IntegratorValues(ESeriesRatioValue):
            self.capacitance.intersects(spec.capacitance)
 
 
-class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
+class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock):
   """Opamp integrator, outputs the negative integral of the input signal, relative to some reference signal.
   Will clip to the input voltage rails.
 
@@ -384,7 +384,6 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
 
     self.factor = self.ArgParameter(factor)  # output scale factor, 1/RC in units of 1/s
     self.capacitance = self.ArgParameter(capacitance)
-    self.generator_param(self.factor, self.capacitance)
 
     self.actual_factor = self.Parameter(RangeExpr())
 
@@ -399,7 +398,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
   def generate(self) -> None:
     super().generate()
 
-    self.r = self.Block(Resistor((1/self.get(self.factor)).shrink_multiply(1/self.get(self.capacitance))))
+    self.r = self.Block(Resistor((1/self.factor).shrink_multiply(1/self.capacitance)))
     self.c = self.Block(Capacitor(
       capacitance=self.capacitance,
       voltage=self.output.link().voltage

@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from functools import reduce
+from deprecated import deprecated
 from itertools import chain
 from typing import *
 
-from .. import edgir
 from .Binding import Binding, ParamBinding, BoolLiteralBinding, IntLiteralBinding, \
   FloatLiteralBinding, RangeLiteralBinding, StringLiteralBinding, RangeBuilderBinding, \
-  UnaryOpBinding, UnarySetOpBinding, BinaryOpBinding, BinarySetOpBinding, IfThenElseBinding
+  UnaryOpBinding, BinaryOpBinding, IfThenElseBinding
 from .Binding import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp
 from .Builder import builder
 from .Core import Refable
 from .IdentityDict import IdentityDict
 from .Range import Range
+from .. import edgir
 
 if TYPE_CHECKING:
   from .Ports import BasePort
@@ -362,13 +362,9 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
     return Range(pb.range.minimum.floating.val, pb.range.maximum.floating.val)
 
   @classmethod
+  @deprecated("Use shrink_multiply")
   def cancel_multiply(cls, input_side: RangeLike, output_side: RangeLike) -> RangeExpr:
-    """See Range.cancel_multiply"""
-    input_expr = cls._to_expr_type(input_side)
-    output_expr = cls._to_expr_type(output_side)
-    lower = input_expr.upper() * output_expr.lower()
-    upper = input_expr.lower() * output_expr.upper()
-    return cls._to_expr_type((lower, upper))  # rely on internally to check for non-empty range
+    return RangeExpr._to_expr_type(output_side).shrink_multiply(input_side)
 
   def __init__(self, initializer: Optional[RangeLike] = None) -> None:
     # must cast non-empty initializer type, because range supports wider initializers
