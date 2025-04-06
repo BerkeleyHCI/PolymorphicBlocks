@@ -448,6 +448,11 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
       rhs_cast = self._to_expr_type(rhs)  # type: ignore
     return self * rhs_cast.__mul_inv__()
 
+  def shrink_multiply(self, contributing: RangeLike) -> RangeExpr:
+    """RangeExpr version of Range.shrink_multiply.
+    See docs for Range.shrink_multiply."""
+    return RangeExpr._create_binary_op(self, self._to_expr_type(contributing), NumericOp.shrink_mul)
+
   def abs(self) -> RangeExpr:
     """Returns a RangeExpr that is the absolute value of this.
     Intuitively, this returns a range that contains the absolute value of every point in the input."""

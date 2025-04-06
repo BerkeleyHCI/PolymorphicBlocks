@@ -329,7 +329,7 @@ class IntegratorValues(ESeriesRatioValue):
   def initial_test_decades(self) -> Tuple[int, int]:
     """C is given per the spec, so we need factor = 1 / (R * C) => R = 1 / (factor * C)"""
     capacitance_decade = ceil(log10(self.capacitance.center()))
-    allowed_resistances = Range.shrink_multiply(1 / self.factor, 1 / self.capacitance)
+    allowed_resistances = (1 / self.factor).shrink_multiply(1 / self.capacitance)
     resistance_decade = ceil(log10(allowed_resistances.center()))
 
     return resistance_decade, capacitance_decade
@@ -399,7 +399,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
   def generate(self) -> None:
     super().generate()
 
-    self.r = self.Block(Resistor(Range.shrink_multiply(1/self.get(self.factor), 1/self.get(self.capacitance))))
+    self.r = self.Block(Resistor((1/self.get(self.factor)).shrink_multiply(1/self.get(self.capacitance))))
     self.c = self.Block(Capacitor(
       capacitance=self.capacitance,
       voltage=self.output.link().voltage

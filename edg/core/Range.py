@@ -11,26 +11,25 @@ class Range:
   @deprecated("Use shrink_multiply")
   def cancel_multiply(input_side: 'Range', output_side: 'Range') -> 'Range':
     """IMPORTANT - this has REVERSED arguments of shrink_multiply!"""
-    return Range.shrink_multiply(output_side, input_side)
+    return output_side.shrink_multiply(input_side)
 
-  @staticmethod
-  def shrink_multiply(target: 'Range', contributing: 'Range') -> 'Range':
+  def shrink_multiply(self, contributing: 'Range') -> 'Range':
     """
     A tolerance-shrinking multiply operation, used in calculating how much tolerance remains
     in a multiply expression, to reach a target tolerance given some contributing tolerance.
-    THIS MAY FAIL if the input tolerance is larger than the output tolerance
+    THIS MAY FAIL if the contributing tolerance is larger than the self (target) tolerance
     (so no result would satisfy the original equation).
 
     EXAMPLE: given the RC low pass filter equation R * C = 1 / (2 * pi * w),
     we want to find C (including available tolerance) given a target w (with specified tolerance),
     and some R (which eats into the tolerance budget from w)
 
-    C = shrink_multiply(1/(2 * pi * w), 1/R)
+    C = 1/(2 * pi * w).shrink_multiply(1/R)
 
     More detailed theory:
 
     This satisfies the property, for Range x:
-    shrink_multiply(x, 1/x) = Range(1, 1)
+    x.shrink_multiply(1/x) = Range(1, 1)
 
     Range multiplication is weird and 1/x * x does not cancel out, because it's tolerance-expanding.
     Using the RC frequency example, if we want instead solve for C given R and target w,
@@ -55,14 +54,14 @@ class Range:
      C_max]            1/R_max]    1/w_min]
 
     So that this function does is:
-    flip(contributing * flip(target))
+    flip(contributing * flip(self))
     """
-    assert isinstance(contributing, Range) and isinstance(target, Range)
+    assert isinstance(contributing, Range)
     assert contributing.lower >= 0 and contributing.upper >= 0, "TODO support negative values"
-    assert target.lower >= 0 and target.upper >= 0, "TODO support negative values"
-    lower = contributing.upper * target.lower
-    upper = contributing.lower * target.upper
-    assert lower <= upper, f"empty range in shrink-multiply {contributing} and {target}"
+    assert self.lower >= 0 and self.upper >= 0, "TODO support negative values"
+    lower = contributing.upper * self.lower
+    upper = contributing.lower * self.upper
+    assert lower <= upper, f"empty range in shrink-multiply {contributing} and {self}"
     return Range(lower, upper)
 
   @staticmethod

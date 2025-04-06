@@ -72,7 +72,7 @@ class Mcp73831(PowerConditioner, GeneratorBlock):
 
   def generate(self) -> None:
     super().generate()
-    resistance = Range.shrink_multiply(1 / self.get(self.charging_current), Range.from_tolerance(1000, 0.1))
+    resistance = (1 / self.get(self.charging_current)).shrink_multiply(Range.from_tolerance(1000, 0.1))
     self.prog_res = self.Block(Resistor(resistance))
     self.connect(self.prog_res.a, self.ic.prog)
     self.connect(self.prog_res.b.adapt_to(Ground()), self.gnd)
