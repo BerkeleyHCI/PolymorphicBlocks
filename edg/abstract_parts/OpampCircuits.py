@@ -395,9 +395,6 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.factor, "")
     )
 
-  def generate(self) -> None:
-    super().generate()
-
     self.r = self.Block(Resistor((1/self.factor).shrink_multiply(1/self.capacitance)))
     self.c = self.Block(Capacitor(
       capacitance=self.capacitance,
