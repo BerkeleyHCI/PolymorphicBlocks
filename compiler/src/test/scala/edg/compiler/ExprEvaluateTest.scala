@@ -6,6 +6,8 @@ import matchers.should.Matchers._
 import edg.wir.DesignPath
 import edg.ExprBuilder._
 
+import scala.math.Pi
+
 class ExprEvaluateTest extends AnyFlatSpec {
   behavior.of("ExprEvaluate")
 
@@ -52,6 +54,30 @@ class ExprEvaluateTest extends AnyFlatSpec {
     evalTest.map(
       ValueExpr.BinOp(Op.MIN, ValueExpr.Literal(3.0), ValueExpr.Literal(2.0))
     ) should equal(FloatValue(2.0))
+  }
+
+  it should "handle shrink multiply" in {
+    import edgir.expr.expr.BinaryExpr.Op
+    evalTest.map( // test x * 1/x = 1 property
+      ValueExpr.BinOp(
+        Op.SHRINK_MULT,
+        ValueExpr.Literal(10.0, 20.0),
+        ValueExpr.Literal(1.0 / 20, 1.0 / 10)
+      )) should equal(RangeValue(1.0, 1.0))
+    evalTest.map( // ... but with negative numbers
+      ValueExpr.BinOp(
+        Op.SHRINK_MULT,
+        ValueExpr.Literal(-20.0, -10.0),
+        ValueExpr.Literal(-1.0 / 10, -1.0 / 20)
+      )) should equal(RangeValue(1.0, 1.0))
+    val rcResult = evalTest.map( // test RC low pass filter, need to account for floating tolerance
+      ValueExpr.BinOp(
+        Op.SHRINK_MULT, // note, 2*pi and inverts flattened out, just becomes R*C
+        ValueExpr.Literal(90 * 1.0e-6 * 0.95, 110 * 1.0e-6 * 1.05),
+        ValueExpr.Literal(1.0 / 110, 1.0 / 90)
+      ))
+    rcResult.asInstanceOf[RangeValue].lower shouldBe ((1.0e-6f * 0.95f) +- 1.0e-12f)
+    rcResult.asInstanceOf[RangeValue].upper shouldBe ((1.0e-6f * 1.05f) +- 1.0e-12f)
   }
 
   it should "handle unary arithmetic ops" in {

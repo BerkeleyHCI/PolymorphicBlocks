@@ -39,6 +39,7 @@ class ExprToString() extends ValueExprMap[String] {
       def unapply(op: Op): Option[String] = op match {
         case Op.ADD => Some("+")
         case Op.MULT => Some("×")
+        case Op.SHRINK_MULT => Some("↓×")
         case Op.AND => Some("&&")
         case Op.OR => Some("||")
         case Op.XOR => Some("^")
@@ -59,7 +60,7 @@ class ExprToString() extends ValueExprMap[String] {
     }
     object PrefixOp {
       def unapply(op: Op): Option[String] = op match {
-        case Op.ADD | Op.MULT => None
+        case Op.ADD | Op.MULT | Op.SHRINK_MULT => None
         case Op.AND | Op.OR | Op.XOR | Op.IMPLIES | Op.EQ | Op.NEQ => None
         case Op.GT | Op.GTE | Op.LT | Op.LTE => None
         case Op.MAX => Some("max")

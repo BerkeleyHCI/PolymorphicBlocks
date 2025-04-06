@@ -23,7 +23,7 @@ class Range:
 
     EXAMPLE: given the RC low pass filter equation R * C = 1 / (2 * pi * w),
     we want to find C (including available tolerance) given a target w (with specified tolerance),
-    and some R (which eats into the tolerance budget for w)
+    and some R (which eats into the tolerance budget from w)
 
     C = shrink_multiply(1/(2 * pi * w), 1/R)
 
