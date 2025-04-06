@@ -163,8 +163,8 @@ class Tpa2005d1(SpeakerDriver, Block):
         )
         # TODO: the tolerance stackup here is pretty awful since it has a wide bound from the resistor spec
         # Instead, a better approach would be to select the resistor, THEN the capacitor (or a coupled RC selector)
-        fc = (1, 20)*kHertz  # arbitrary, right on the edge of audio frequency
-        cap_value = (1 / (2 * math.pi * fc / 1000)).shrink_multiply(1 / res_value)\
+        fc = (1, 20)*Hertz  # for highpass filter, arbitrary, 20Hz right on the edge of audio frequency
+        cap_value = (1 / (2 * math.pi * fc)).shrink_multiply(1 / res_value)\
             .intersect((1*0.8, float('inf'))*uFarad)  # recommended min 1uF input cap (+20% tol), datasheet 10.2.2.2.1
         in_cap_model = Capacitor(
             capacitance=cap_value,
