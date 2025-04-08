@@ -201,6 +201,8 @@ class BinaryExpr(google.protobuf.message.Message):
         '* Add :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n        :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n        '
         MULT: BinaryExpr._Op.ValueType
         'SUB = 11; // Use ADD and NEGATE instead\n\n        * Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n        :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n        '
+        SHRINK_MULT: BinaryExpr._Op.ValueType
+        'A shrinking multiply operation for two Range types. Not commutative.\n        See the documentation for shrink_multiply in the Python core HDL code for details.\n        '
         AND: BinaryExpr._Op.ValueType
         'DIV = 13; // Use MULT and INVERT instead\n\n        * And :: (lhs :: Bool, rhs :: Bool) -> Bool\n        '
         OR: BinaryExpr._Op.ValueType
@@ -241,6 +243,8 @@ class BinaryExpr(google.protobuf.message.Message):
     '* Add :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n    :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n    '
     MULT: BinaryExpr.Op.ValueType
     'SUB = 11; // Use ADD and NEGATE instead\n\n    * Mult :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n    :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n    :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n    '
+    SHRINK_MULT: BinaryExpr.Op.ValueType
+    'A shrinking multiply operation for two Range types. Not commutative.\n    See the documentation for shrink_multiply in the Python core HDL code for details.\n    '
     AND: BinaryExpr.Op.ValueType
     'DIV = 13; // Use MULT and INVERT instead\n\n    * And :: (lhs :: Bool, rhs :: Bool) -> Bool\n    '
     OR: BinaryExpr.Op.ValueType

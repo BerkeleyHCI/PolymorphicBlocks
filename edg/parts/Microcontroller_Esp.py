@@ -19,12 +19,24 @@ class EspProgrammingHeader(ProgrammingConnector):
 
 
 class EspProgrammingAutoReset(BlockInterfaceMixin[EspProgrammingHeader]):
-  """Mixin for ESP programming header with auto-reset and auto-boot pins"""
-  def __init__(self, *args, **kwargs) -> None:
+  """Mixin for ESP programming header with auto-reset and auto-boot pins.
+  By default, these are required to be connected (since it doesn't make sense to instantiate
+  this without connecting the additional pins to the micro), but can be disabled with parameters."""
+  @init_in_parent
+  def __init__(self, *args, require_auto_reset: BoolLike = True, **kwargs) -> None:
     super().__init__(*args, **kwargs)
 
     self.en = self.Port(DigitalSource.empty(), optional=True)  # effectively a reset pin
     self.boot = self.Port(DigitalSource.empty(), optional=True)  # IO0 on ESP32, IO9 on ESP32C3
+
+    self.require_auto_reset = self.ArgParameter(require_auto_reset)
+
+  def contents(self) -> None:
+    super().contents()
+    self.require(self.require_auto_reset.implies(self.en.is_connected() & self.boot.is_connected()),
+                 "auto-reset programming header without auto-reset pins connected, "
+                 "either connect by setting programming='uart-auto' or 'uart-auto-button' on the microcontroller "
+                 "or set require_auto_reset=False to disable this check")
 
 
 class EspProgrammingPinHeader254(EspProgrammingHeader):

@@ -7,7 +7,7 @@ from .AbstractCapacitor import Capacitor
 from .Categories import *
 
 
-class LowPassRc(AnalogFilter, GeneratorBlock):
+class LowPassRc(AnalogFilter, Block):
   """Passive-typed low-pass RC specified by the resistor value (impedance) and -3dB (~70%) cutoff frequency."""
   @init_in_parent
   def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike, voltage: RangeLike):
@@ -20,16 +20,13 @@ class LowPassRc(AnalogFilter, GeneratorBlock):
     self.cutoff_freq = self.ArgParameter(cutoff_freq)
     self.voltage = self.ArgParameter(voltage)
 
-    self.generator_param(self.impedance, self.cutoff_freq)
-
-  def generate(self) -> None:
-    super().generate()
+  def contents(self) -> None:
+    super().contents()
 
     self.r = self.Block(Resistor(resistance=self.impedance))  # TODO maybe support power?
-    # cutoff frequency is 1/(2 pi R C)
-    capacitance = Range.cancel_multiply(1 / (2 * pi * self.get(self.impedance)), 1 / self.get(self.cutoff_freq))
-
-    self.c = self.Block(Capacitor(capacitance=capacitance*Farad, voltage=self.voltage))
+    self.c = self.Block(Capacitor(  # cutoff frequency is 1/(2 pi R C)
+      capacitance=(1 / (2 * pi * self.cutoff_freq)).shrink_multiply(1 / self.impedance),
+      voltage=self.voltage))
     self.connect(self.input, self.r.a)
     self.connect(self.r.b, self.c.pos, self.output)  # TODO support negative voltages?
     self.connect(self.c.neg, self.gnd)

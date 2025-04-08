@@ -128,7 +128,7 @@ class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Tpa2005d1(SpeakerDriver, GeneratorBlock):
+class Tpa2005d1(SpeakerDriver, Block):
     """TPA2005D1 configured in single-ended input mode.
     Possible semi-pin-compatible with PAM8302AASCR (C113367), but which has internal resistor."""
     @init_in_parent
@@ -144,11 +144,10 @@ class Tpa2005d1(SpeakerDriver, GeneratorBlock):
         self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
         self.gain = self.ArgParameter(gain)
-        self.generator_param(self.gain)
 
-    def generate(self):
+    def contents(self):
         import math
-        super().generate()
+        super().contents()
 
         self.pwr_cap = self.Block(DecouplingCapacitor(
             capacitance=0.1*uFarad(tol=0.2),  # recommended Vcc cap per 11.1
@@ -158,30 +157,26 @@ class Tpa2005d1(SpeakerDriver, GeneratorBlock):
         )).connected(self.gnd, self.pwr)  # "charge reservoir" recommended cap per 11.1, 2.2-10uF (+20% tolerance)
 
         # Note, gain = 2 * (142k to 158k)/Ri, recommended gain < 20V/V
-        res_value = Range.cancel_multiply(2 * Range(142e3, 158e3), 1 / self.get(self.gain))
-        in_res_model = Resistor(
-            resistance=res_value
-        )
-        # TODO: the tolerance stackup here is pretty awful since it has a wide bound from the resistor spec
-        # Instead, a better approach would be to select the resistor, THEN the capacitor (or a coupled RC selector)
-        fc = Range(1, 20)  # arbitrary, right on the edge of audio frequency
-        cap_value = Range.cancel_multiply(1 / (2 * math.pi * res_value), 1 / fc)
-        if cap_value.lower < 1e-6 * 0.8:  # account for 20% capacitor tolerance
-            assert cap_value.upper >= 1e-6, f"input coupling cap {cap_value} below recommended 1uF, datasheet 10.2.2.2.1"
-            cap_value.lower = 1e-6 * 0.8
-        in_cap_model = Capacitor(
-            capacitance=cap_value,
-            voltage=self.sig.link().voltage
-        )
+        res_value = (1 / self.gain).shrink_multiply(2 * Range(142e3, 158e3))
+        in_res_model = Resistor(res_value)
+        fc = (1, 20)*Hertz  # for highpass filter, arbitrary, 20Hz right on the edge of audio frequency
 
-        self.inp_cap = self.Block(in_cap_model)
         self.inp_res = self.Block(in_res_model)
+        self.inp_cap = self.Block(Capacitor(
+            capacitance=(1 / (2 * math.pi * fc)).shrink_multiply(1 / self.inp_res.actual_resistance)
+                        .intersect((1*0.8, float('inf'))*uFarad),
+            voltage=self.sig.link().voltage
+        ))
         self.connect(self.sig, self.inp_cap.neg.adapt_to(AnalogSink()))
         self.connect(self.inp_cap.pos, self.inp_res.a)
         self.connect(self.inp_res.b.adapt_to(AnalogSource()), self.ic.inp)
 
-        self.inn_cap = self.Block(in_cap_model)
         self.inn_res = self.Block(in_res_model)
+        self.inn_cap = self.Block(Capacitor(
+            capacitance=(1 / (2 * math.pi * fc)).shrink_multiply(1 / self.inn_res.actual_resistance)
+            .intersect((1*0.8, float('inf'))*uFarad),
+            voltage=self.sig.link().voltage
+        ))
         self.connect(self.gnd, self.inn_cap.neg.adapt_to(Ground()))
         self.connect(self.inn_cap.pos, self.inn_res.a)
         self.connect(self.inn_res.b.adapt_to(AnalogSource()), self.ic.inn)
