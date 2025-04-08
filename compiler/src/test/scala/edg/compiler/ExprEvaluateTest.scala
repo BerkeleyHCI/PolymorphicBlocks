@@ -1,12 +1,10 @@
 package edg.compiler
 
+import edg.ExprBuilder._
+import edg.wir.DesignPath
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
-import matchers.should.Matchers._
-import edg.wir.DesignPath
-import edg.ExprBuilder._
-
-import scala.math.Pi
+import org.scalatest.matchers.should.Matchers._
 
 class ExprEvaluateTest extends AnyFlatSpec {
   behavior.of("ExprEvaluate")
@@ -274,8 +272,8 @@ class ExprEvaluateTest extends AnyFlatSpec {
   }
 
   it should "handle array unary set ops" in {
-    import edgir.expr.expr.UnarySetExpr.Op
     import edg.ExprBuilder.Literal
+    import edgir.expr.expr.UnarySetExpr.Op
     evalTest.map(
       ValueExpr.UnarySetOp(
         Op.FLATTEN,
@@ -301,8 +299,8 @@ class ExprEvaluateTest extends AnyFlatSpec {
   }
 
   it should "handle array-value (broadcast) ops" in {
-    import edgir.expr.expr.BinarySetExpr.Op
     import edg.ExprBuilder.Literal
+    import edgir.expr.expr.BinarySetExpr.Op
     evalTest.map(
       ValueExpr.BinSetOp(
         Op.ADD,
