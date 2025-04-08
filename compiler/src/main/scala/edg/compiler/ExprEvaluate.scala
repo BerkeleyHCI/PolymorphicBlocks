@@ -56,6 +56,21 @@ object ExprEvaluate {
           case _ =>
             throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
         }
+      case Op.SHRINK_MULT => (lhs, rhs) match {
+          case (RangeValue(targetMin, targetMax), RangeValue(contribMin, contribMax)) =>
+            val lower = contribMax * targetMin
+            val upper = contribMin * targetMax
+            if (lower > upper) { // TODO this should store a nonfatal error result instead of crashing on-the-spot
+              throw new ExprEvaluateException(s"Empty range result in $lhs ${binary.op} $rhs from $binary")
+            } else {
+              RangeValue(lower, upper)
+            }
+          case (RangeEmpty, RangeEmpty) => RangeEmpty
+          case (lhs: RangeValue, RangeEmpty) => RangeEmpty
+          case (RangeEmpty, rhs: RangeValue) => RangeEmpty
+          case _ =>
+            throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
+        }
 
       case Op.AND => (lhs, rhs) match {
           case (BooleanValue(lhs), BooleanValue(rhs)) => BooleanValue(lhs && rhs)
