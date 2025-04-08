@@ -158,27 +158,25 @@ class Tpa2005d1(SpeakerDriver, Block):
 
         # Note, gain = 2 * (142k to 158k)/Ri, recommended gain < 20V/V
         res_value = (1 / self.gain).shrink_multiply(2 * Range(142e3, 158e3))
-        in_res_model = Resistor(
-            resistance=res_value
-        )
-        # TODO: the tolerance stackup here is pretty awful since it has a wide bound from the resistor spec
-        # Instead, a better approach would be to select the resistor, THEN the capacitor (or a coupled RC selector)
+        in_res_model = Resistor(res_value)
         fc = (1, 20)*Hertz  # for highpass filter, arbitrary, 20Hz right on the edge of audio frequency
-        cap_value = (1 / (2 * math.pi * fc)).shrink_multiply(1 / res_value)\
-            .intersect((1*0.8, float('inf'))*uFarad)  # recommended min 1uF input cap (+20% tol), datasheet 10.2.2.2.1
-        in_cap_model = Capacitor(
-            capacitance=cap_value,
-            voltage=self.sig.link().voltage
-        )
 
-        self.inp_cap = self.Block(in_cap_model)
         self.inp_res = self.Block(in_res_model)
+        self.inp_cap = self.Block(Capacitor(
+            capacitance=(1 / (2 * math.pi * fc)).shrink_multiply(1 / self.inp_res.actual_resistance)
+                        .intersect((1*0.8, float('inf'))*uFarad),
+            voltage=self.sig.link().voltage
+        ))
         self.connect(self.sig, self.inp_cap.neg.adapt_to(AnalogSink()))
         self.connect(self.inp_cap.pos, self.inp_res.a)
         self.connect(self.inp_res.b.adapt_to(AnalogSource()), self.ic.inp)
 
-        self.inn_cap = self.Block(in_cap_model)
         self.inn_res = self.Block(in_res_model)
+        self.inn_cap = self.Block(Capacitor(
+            capacitance=(1 / (2 * math.pi * fc)).shrink_multiply(1 / self.inn_res.actual_resistance)
+            .intersect((1*0.8, float('inf'))*uFarad),
+            voltage=self.sig.link().voltage
+        ))
         self.connect(self.gnd, self.inn_cap.neg.adapt_to(Ground()))
         self.connect(self.inn_cap.pos, self.inn_res.a)
         self.connect(self.inn_res.b.adapt_to(AnalogSource()), self.ic.inn)
