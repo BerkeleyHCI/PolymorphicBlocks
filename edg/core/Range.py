@@ -26,6 +26,9 @@ class Range:
 
     C = 1/(2 * pi * w).shrink_multiply(1/R)
 
+    Prefer RangeExpr.shrink_multiply, unless you need to do additional operations on concrete values.
+
+
     More detailed theory:
 
     This satisfies the property, for Range x:
@@ -57,8 +60,6 @@ class Range:
     flip(contributing * flip(self))
     """
     assert isinstance(contributing, Range)
-    assert contributing.lower >= 0 and contributing.upper >= 0, "TODO support negative values"
-    assert self.lower >= 0 and self.upper >= 0, "TODO support negative values"
     lower = contributing.upper * self.lower
     upper = contributing.lower * self.upper
     assert lower <= upper, f"empty range in shrink-multiply {contributing} and {self}"
