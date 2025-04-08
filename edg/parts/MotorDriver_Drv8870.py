@@ -82,6 +82,6 @@ class Drv8870(BrushedMotorDriver):
     self.vm_cap0 = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.ic.vm)
     # the upper tolerable range of these caps is extended to allow search flexibility when voltage derating
     self.vm_cap1 = self.Block(DecouplingCapacitor((47*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
-    self.isen_res = self.Block(SeriesPowerResistor(  # TODO use Range.cancel_multiple for proper tolerance prop
-      resistance=self.vref.link().voltage / 10 / self.current_trip
+    self.isen_res = self.Block(SeriesPowerResistor(
+      (1 / (10 * self.current_trip)).shrink_multiply(self.vref.link().voltage)
     )).connected(self.gnd.as_voltage_source(), self.ic.isen)
