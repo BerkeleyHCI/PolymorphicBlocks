@@ -205,3 +205,8 @@ case class ArrayValue[T <: ExprValue](values: Seq[T]) extends ExprValue {
     s"[$valuesString]"
   }
 }
+
+case class ErrorValue(msg: String) extends ExprValue {
+  override def toLit: lit.ValueLit = Literal.Error(msg)
+  override def toStringValue: String = msg
+}

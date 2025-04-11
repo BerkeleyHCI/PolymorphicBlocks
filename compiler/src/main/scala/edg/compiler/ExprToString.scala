@@ -30,6 +30,7 @@ class ExprToString() extends ValueExprMap[String] {
       val arrayElts = array.elts.map(mapLiteral)
       s"[${arrayElts.mkString(", ")}]"
     case lit.ValueLit.Type.Struct(value) => "unsupported struct"
+    case lit.ValueLit.Type.Error(msg) => s"err($msg)"
     case lit.ValueLit.Type.Empty => "(empty)"
   }
 

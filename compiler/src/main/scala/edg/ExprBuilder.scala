@@ -137,6 +137,10 @@ object ExprBuilder {
         ))
       )
     }
+
+    def Error(msg: String): lit.ValueLit = {
+      lit.ValueLit(`type` = lit.ValueLit.Type.Error(msg))
+    }
   }
 
   private def localPathStepsNameOption(steps: Seq[ref.LocalStep]): Option[Seq[String]] = {

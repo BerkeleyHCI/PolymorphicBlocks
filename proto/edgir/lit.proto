@@ -51,6 +51,8 @@ message ValueLit {
     StructLit struct   = 9;
     RangeLit  range    = 10;
     ArrayLit  array    = 11;
+
+    string error = 126;  // represents an expr that evaluated to an error and stopped propagation
   }
 
   edgir.common.Metadata meta = 127;
