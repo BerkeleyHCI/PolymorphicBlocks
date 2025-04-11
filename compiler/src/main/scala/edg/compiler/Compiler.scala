@@ -117,7 +117,7 @@ class AssignNamer() {
 }
 
 object Compiler {
-  final val kExpectedProtoVersion = 6
+  final val kExpectedProtoVersion = 7
 }
 
 /** Compiler for a particular design, with an associated library to elaborate references from.
