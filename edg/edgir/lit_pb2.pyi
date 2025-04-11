@@ -161,6 +161,7 @@ class ValueLit(google.protobuf.message.Message):
     STRUCT_FIELD_NUMBER: builtins.int
     RANGE_FIELD_NUMBER: builtins.int
     ARRAY_FIELD_NUMBER: builtins.int
+    ERROR_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
 
     @property
@@ -190,20 +191,22 @@ class ValueLit(google.protobuf.message.Message):
     @property
     def array(self) -> global___ArrayLit:
         ...
+    error: builtins.str
+    'represents an expr that evaluated to an error and stopped propagation'
 
     @property
     def meta(self) -> edgir.common_pb2.Metadata:
         ...
 
-    def __init__(self, *, floating: global___FloatLit | None=..., integer: global___IntLit | None=..., boolean: global___BoolLit | None=..., text: global___TextLit | None=..., struct: global___StructLit | None=..., range: global___RangeLit | None=..., array: global___ArrayLit | None=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
+    def __init__(self, *, floating: global___FloatLit | None=..., integer: global___IntLit | None=..., boolean: global___BoolLit | None=..., text: global___TextLit | None=..., struct: global___StructLit | None=..., range: global___RangeLit | None=..., array: global___ArrayLit | None=..., error: builtins.str=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
         ...
 
-    def HasField(self, field_name: typing_extensions.Literal['array', b'array', 'boolean', b'boolean', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'struct', b'struct', 'text', b'text', 'type', b'type']) -> builtins.bool:
+    def HasField(self, field_name: typing_extensions.Literal['array', b'array', 'boolean', b'boolean', 'error', b'error', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'struct', b'struct', 'text', b'text', 'type', b'type']) -> builtins.bool:
         ...
 
-    def ClearField(self, field_name: typing_extensions.Literal['array', b'array', 'boolean', b'boolean', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'struct', b'struct', 'text', b'text', 'type', b'type']) -> None:
+    def ClearField(self, field_name: typing_extensions.Literal['array', b'array', 'boolean', b'boolean', 'error', b'error', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'struct', b'struct', 'text', b'text', 'type', b'type']) -> None:
         ...
 
-    def WhichOneof(self, oneof_group: typing_extensions.Literal['type', b'type']) -> typing_extensions.Literal['floating', 'integer', 'boolean', 'text', 'struct', 'range', 'array'] | None:
+    def WhichOneof(self, oneof_group: typing_extensions.Literal['type', b'type']) -> typing_extensions.Literal['floating', 'integer', 'boolean', 'text', 'struct', 'range', 'array', 'error'] | None:
         ...
 global___ValueLit = ValueLit
