@@ -41,6 +41,7 @@ object ExprValue {
       }
     case lit.ValueLit.Type.Array(arrayLiteral) =>
       ArrayValue(arrayLiteral.elts.map { lit => fromValueLit(lit) })
+    case lit.ValueLit.Type.Error(msg) => ErrorValue(msg)
     case _ => throw new IllegalArgumentException(s"Unknown literal $literal")
   }
 }
