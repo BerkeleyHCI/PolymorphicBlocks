@@ -207,11 +207,9 @@ class ConstProp() {
     } else {
       if (!forcedParams.contains(target)) {
         if (params.nodeDefinedAt(target)) { // TODO add propagated assign
-          //        paramSource.get(target).map { case (root, constrName, value) =>
-          //          CompilerError.OverAssignCause.Assign(target, root, constrName, value)
-          //        }.toSeq
+          val (prevRoot, prevConstr, _) = paramSource.get(target).getOrElse("?", "?", "")
           paramErrors.getOrElseUpdate(target, mutable.ListBuffer()).append(
-            ErrorValue(s"over-assign from $root.$constrName")
+            ErrorValue(s"over-assign from $root.$constrName, prev assigned from $prevRoot.$prevConstr")
           )
           return // first set "wins"
         }
