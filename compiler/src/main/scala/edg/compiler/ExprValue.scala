@@ -42,7 +42,6 @@ object ExprValue {
       }
     case lit.ValueLit.Type.Array(arrayLiteral) =>
       ArrayValue(arrayLiteral.elts.map { lit => fromValueLit(lit) })
-    case lit.ValueLit.Type.Error(msg) => ErrorValue(msg)
     case lit.ValueLit.Type.Empty | lit.ValueLit.Type.Struct(_) =>
       throw new IllegalArgumentException(s"unsupported literal $literal")
   }
@@ -209,7 +208,8 @@ case class ArrayValue[T <: ExprValue](values: Seq[T]) extends ExprValue {
   }
 }
 
+// a special value not in the IR that indicates and error
 case class ErrorValue(msg: String) extends ExprValue {
-  override def toLit: lit.ValueLit = Literal.Error(msg)
+  override def toLit: lit.ValueLit = throw new IllegalArgumentException("cannot convert error value to literal")
   override def toStringValue: String = msg
 }

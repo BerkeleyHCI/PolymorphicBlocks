@@ -262,7 +262,7 @@ class ConstProp() {
   }
 
   /** Returns the value of a parameter, or None if it does not have a value (yet?). Can be used to check if parameters
-    * are resolved yet by testing against None.
+    * are resolved yet by testing against None. Cannot return an ErrorValue
     */
   def getValue(param: IndirectDesignPath): Option[ExprValue] = {
     resolveConnectedLink(param) match {
