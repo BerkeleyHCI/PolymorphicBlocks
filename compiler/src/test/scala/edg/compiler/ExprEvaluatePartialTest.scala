@@ -1,9 +1,8 @@
 package edg.compiler
 
-import edgir.expr.expr
-import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
 import edg.ExprBuilder._
-import org.scalatest._
+import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
+import edgir.expr.expr
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
@@ -13,8 +12,6 @@ import org.scalatest.matchers.should.Matchers._
   */
 class ExprEvaluatePartialTest extends AnyFlatSpec {
   behavior.of("ExprEvaluatePartial")
-
-  import ConstPropImplicit._
 
   it should "handle basic expressions without references" in {
     val evalTest = new ExprEvaluatePartial(_ => None, DesignPath())
@@ -111,23 +108,18 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
   }
 
   it should "return a missing array before its components" in {
-    val constProp = new ConstProp()
-    val evalTest = new ExprEvaluatePartial(_ => None, DesignPath())
+    val emptyEvalTest = new ExprEvaluatePartial(_ => None, DesignPath())
     val mapExtractExpr = ValueExpr.MapExtract(Ref("container"), "inner")
 
-    evalTest.map(
+    emptyEvalTest.map(
       mapExtractExpr
     ) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "container" + IndirectStep.Elements)))
 
-    constProp.addDeclaration(DesignPath() + "container" + "0" + "inner", ValInit.Integer)
-    constProp.addDeclaration(DesignPath() + "container" + "1" + "inner", ValInit.Integer)
-    constProp.addDeclaration(DesignPath() + "container" + "2" + "inner", ValInit.Integer)
+    val containerRefs = Map(IndirectDesignPath() + "container" + IndirectStep.Elements ->
+      ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))))
+    val containerEvalTest = new ExprEvaluatePartial(containerRefs.get, DesignPath())
 
-    constProp.addAssignValue(
-      IndirectDesignPath() + "container" + IndirectStep.Elements,
-      ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))
-    )
-    evalTest.map(
+    containerEvalTest.map(
       mapExtractExpr
     ) should equal(ExprResult.Missing(Set(
       IndirectDesignPath() + "container" + "0" + "inner",
@@ -135,8 +127,13 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
       IndirectDesignPath() + "container" + "2" + "inner",
     )))
 
-    constProp.addAssignValue(IndirectDesignPath() + "container" + "1" + "inner", IntValue(1))
-    evalTest.map(
+    val allRefs = Map(
+      IndirectDesignPath() + "container" + IndirectStep.Elements ->
+        ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))),
+      IndirectDesignPath() + "container" + "1" + "inner" -> IntValue(2),
+    )
+    val allEvalTest = new ExprEvaluatePartial(allRefs.get, DesignPath())
+    allEvalTest.map(
       mapExtractExpr
     ) should equal(ExprResult.Missing(Set(
       IndirectDesignPath() + "container" + "0" + "inner",
@@ -146,7 +143,11 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
 
   it should "resolve arrays and reduction ops" in {
     val refs = Map(
-      IndirectDesignPath() + "container" + IndirectStep.Elements -> ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))),
+      IndirectDesignPath() + "container" + IndirectStep.Elements -> ArrayValue(Seq(
+        TextValue("0"),
+        TextValue("1"),
+        TextValue("2")
+      )),
       IndirectDesignPath() + "container" + "0" + "inner" -> IntValue(1),
       IndirectDesignPath() + "container" + "1" + "inner" -> IntValue(2),
       IndirectDesignPath() + "container" + "2" + "inner" -> IntValue(3),
