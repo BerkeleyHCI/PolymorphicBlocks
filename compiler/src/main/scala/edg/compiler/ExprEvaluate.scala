@@ -61,7 +61,7 @@ object ExprEvaluate {
             val lower = contribMax * targetMin
             val upper = contribMin * targetMax
             if (lower > upper) {
-              ErrorValue(s"shrink_mult($lhs, $rhs) produces empty range")
+              ErrorValue(s"shrink_mult($lhs, $rhs) produces empty range, target $lhs tighter tol than contrib $rhs")
             } else {
               RangeValue(lower, upper)
             }
@@ -350,7 +350,7 @@ object ExprEvaluate {
       case (Op.HULL, ArrayValue.UnpackRange(extracted)) => extracted match {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
           case ArrayValue.UnpackRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
-          case ArrayValue.UnpackRange.EmptyArray() => RangeEmpty  // TODO: should this be an error?
+          case ArrayValue.UnpackRange.EmptyArray() => RangeEmpty // TODO: should this be an error?
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
         }
       case (Op.HULL, ArrayValue.ExtractFloat(vals)) => RangeValue(vals.min, vals.max)
