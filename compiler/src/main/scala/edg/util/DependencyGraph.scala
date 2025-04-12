@@ -62,7 +62,17 @@ class DependencyGraph[KeyType, ValueType] {
   // Node must exist, or this will exception out
   def nodeMissing(node: KeyType): Set[KeyType] = deps(node).toSet
 
+  // Clears a node from ready without setting a value in the graph.
+  // Useful to stop propagation at some point, but without crashing.
+  // The node may be marked ready again by other sources.
+  def clearReadyNode(node: KeyType): Unit = {
+    require(ready.contains(node), s"attempt to clear ready node $node that is not ready")
+    ready -= node
+  }
+
   // Sets the value of a node. May not overwrite values.
+  // If stop is true, propagation will not continue:
+  // while the node will have a value, dependents will not be marked as ready
   def setValue(node: KeyType, value: ValueType): Unit = {
     require(!values.isDefinedAt(node), s"redefinition of $node (prior value ${values(node)}, new value $value)")
     deps.put(node, mutable.Set())

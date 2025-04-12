@@ -117,7 +117,7 @@ class AssignNamer() {
 }
 
 object Compiler {
-  final val kExpectedProtoVersion = 6
+  final val kExpectedProtoVersion = 7
 }
 
 /** Compiler for a particular design, with an associated library to elaborate references from.
@@ -1695,7 +1695,7 @@ class Compiler private (
   }
 
   def evaluateExpr(root: DesignPath, value: expr.ValueExpr): ExprResult = {
-    new ExprEvaluatePartial(constProp, root).map(value)
+    new ExprEvaluatePartial(constProp.getValue, root).map(value)
   }
 
   // Primarily used for unit tests, TODO clean up this API?
