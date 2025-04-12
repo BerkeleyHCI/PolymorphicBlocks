@@ -1695,7 +1695,7 @@ class Compiler private (
   }
 
   def evaluateExpr(root: DesignPath, value: expr.ValueExpr): ExprResult = {
-    new ExprEvaluatePartial(constProp, root).map(value)
+    new ExprEvaluatePartial(constProp.getValue, root).map(value)
   }
 
   // Primarily used for unit tests, TODO clean up this API?

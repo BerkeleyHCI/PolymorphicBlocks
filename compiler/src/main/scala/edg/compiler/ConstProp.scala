@@ -1,17 +1,16 @@
 package edg.compiler
 
-import scala.collection.mutable
-import scala.collection.Set
+import edg.ExprBuilder
+import edg.compiler.CompilerError.ExprError
+import edg.util.DependencyGraph
+import edg.wir._
 import edgir.expr.expr
 import edgir.init.init
-import edg.wir._
-import edg.util.{DependencyGraph, MutableBiMap}
-import edg.ExprBuilder
 import edgir.ref.ref.LocalPath
 
-case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: expr.ValueExpr)
+import scala.collection.{Set, mutable}
 
-case class OverassignRecord(assigns: mutable.Set[(DesignPath, String, expr.ValueExpr)] = mutable.Set())
+case class AssignRecord(target: IndirectDesignPath, root: DesignPath, value: expr.ValueExpr)
 
 sealed trait ConnectedLinkRecord // a record in the connected link directed graph
 object ConnectedLinkRecord {
@@ -53,21 +52,20 @@ class ConstProp() {
   // Params that have a forced/override value, so they arent over-assigned.
   private val forcedParams = mutable.Set[IndirectDesignPath]()
 
-  // Overassigns, for error tracking
-  // This only tracks overassigns that were discarded, not including assigns that took effect.
-  // Additional analysis is needed to get the full set of conflicting assigns.
-  private val discardOverassigns = mutable.HashMap[IndirectDesignPath, OverassignRecord]()
+  // Errors that were generated during the process of resolving parameters, including overassigns
+  // A value may or may not exist (and may or not have been propagated) in the param dependency graph
+  private val paramErrors = mutable.HashMap[IndirectDesignPath, mutable.ListBuffer[ErrorValue]]()
 
   def initFrom(that: ConstProp): Unit = {
     require(paramAssign.isEmpty && paramSource.isEmpty && paramTypes.isEmpty && forcedParams.isEmpty
-      && discardOverassigns.isEmpty)
+      && paramErrors.isEmpty)
     paramAssign.addAll(that.paramAssign)
     paramSource.addAll(that.paramSource)
     params.initFrom(that.params)
     paramTypes.addAll(that.paramTypes)
     connectedLink.initFrom(that.connectedLink)
     forcedParams.addAll(that.forcedParams)
-    discardOverassigns.addAll(that.discardOverassigns)
+    paramErrors.addAll(that.paramErrors)
   }
 
   //
@@ -120,9 +118,15 @@ class ConstProp() {
       }
       readyList.foreach { constrTarget =>
         val assign = paramAssign(constrTarget)
-        new ExprEvaluatePartial(this, assign.root).map(assign.value) match {
+        new ExprEvaluatePartial(getValue, assign.root).map(assign.value) match {
           case ExprResult.Result(result) =>
-            params.setValue(constrTarget, result)
+            result match {
+              case result @ ErrorValue(_) =>
+                paramErrors.getOrElseUpdate(constrTarget, mutable.ListBuffer()).append(result)
+                params.clearReadyNode(constrTarget)
+              case result => params.setValue(constrTarget, result)
+            }
+
             onParamSolved(constrTarget, result)
           case ExprResult.Missing(missing) => // account for CONNECTED_LINK prefix
             val missingCorrected = missing.map { path =>
@@ -202,9 +206,13 @@ class ConstProp() {
       params.addNode(target, Seq(), overwrite = true) // forced can overwrite other records
     } else {
       if (!forcedParams.contains(target)) {
-        if (params.nodeDefinedAt(target)) {
-          val record = discardOverassigns.getOrElseUpdate(target, OverassignRecord())
-          record.assigns.add(paramSourceRecord)
+        if (params.nodeDefinedAt(target)) { // TODO add propagated assign
+          //        paramSource.get(target).map { case (root, constrName, value) =>
+          //          CompilerError.OverAssignCause.Assign(target, root, constrName, value)
+          //        }.toSeq
+          paramErrors.getOrElseUpdate(target, mutable.ListBuffer()).append(
+            ErrorValue(s"over-assign from $root.$constrName")
+          )
           return // first set "wins"
         }
         params.addNode(target, Seq())
@@ -264,7 +272,6 @@ class ConstProp() {
 
   }
   def getValue(param: DesignPath): Option[ExprValue] = {
-    // TODO should this be an implicit conversion?
     getValue(param.asIndirect)
   }
 
@@ -282,20 +289,14 @@ class ConstProp() {
     * references.
     */
   def getUnsolved: Set[IndirectDesignPath] = {
-    paramTypes.keySet.toSet -- params.knownValueKeys
+    paramTypes.keySet.toSet -- params.knownValueKeys -- paramErrors.keys
   }
 
   def getAllSolved: Map[IndirectDesignPath, ExprValue] = params.toMap
 
-  def getErrors: Seq[CompilerError] = {
-    discardOverassigns.map { case (target, record) =>
-      val propagatedAssign = paramSource.get(target).map { case (root, constrName, value) =>
-        CompilerError.OverAssignCause.Assign(target, root, constrName, value)
-      }.toSeq
-      val discardedAssigns = record.assigns.map { case (root, constrName, value) =>
-        CompilerError.OverAssignCause.Assign(target, root, constrName, value)
-      }
-      CompilerError.OverAssign(target, propagatedAssign ++ discardedAssigns)
+  def getErrors: Seq[ExprError] = {
+    paramErrors.flatMap { case (target, errors) =>
+      errors.map(error => ExprError(target, error.msg))
     }.toSeq
   }
 }

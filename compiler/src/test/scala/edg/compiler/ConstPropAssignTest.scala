@@ -3,8 +3,9 @@ package edg.compiler
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
-import edg.wir.{IndirectDesignPath, DesignPath}
+import edg.wir.{DesignPath, IndirectDesignPath}
 import edg.ExprBuilder._
+import edg.compiler.CompilerError.ExprError
 import edg.compiler.IntValue
 
 class ConstPropAssignTest extends AnyFlatSpec {
@@ -181,7 +182,8 @@ class ConstPropAssignTest extends AnyFlatSpec {
       IndirectDesignPath() + "b",
       ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a")),
     )
-    constProp.getValue(IndirectDesignPath() + "a") should equal(Some(ErrorValue("error!")))
+    constProp.getValue(IndirectDesignPath() + "a") should equal(None)
     constProp.getValue(IndirectDesignPath() + "b") should equal(None)
+    constProp.getErrors should equal(Seq(ExprError(IndirectDesignPath() + "a", "error!")))
   }
 }

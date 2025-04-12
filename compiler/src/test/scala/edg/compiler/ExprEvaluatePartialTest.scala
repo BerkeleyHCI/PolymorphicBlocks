@@ -16,10 +16,8 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
 
   import ConstPropImplicit._
 
-  val emptyConstProp = new ConstProp()
-
   it should "handle basic expressions without references" in {
-    val evalTest = new ExprEvaluatePartial(emptyConstProp, DesignPath())
+    val evalTest = new ExprEvaluatePartial(_ => None, DesignPath())
 
     evalTest.map(
       ValueExpr.Literal(Literal.Integer(42))
@@ -41,7 +39,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
   }
 
   it should "report missing references" in {
-    val evalTest = new ExprEvaluatePartial(emptyConstProp, DesignPath())
+    val evalTest = new ExprEvaluatePartial(x => None, DesignPath())
 
     evalTest.map(
       ValueExpr.Ref("ref")
@@ -56,16 +54,12 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
   }
 
   it should "resolve references" in {
-    val constProp = new ConstProp()
-    val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
-
-    constProp.addDeclaration(DesignPath() + "ref", ValInit.Integer)
-    constProp.addDeclaration(DesignPath() + "ref1", ValInit.Integer)
-    constProp.addDeclaration(DesignPath() + "ref2", ValInit.Integer)
-
-    constProp.addAssignValue(IndirectDesignPath() + "ref", IntValue(0))
-    constProp.addAssignValue(IndirectDesignPath() + "ref1", IntValue(1))
-    constProp.addAssignValue(IndirectDesignPath() + "ref2", IntValue(2))
+    val refs = Map(
+      IndirectDesignPath() + "ref" -> IntValue(0),
+      IndirectDesignPath() + "ref1" -> IntValue(1),
+      IndirectDesignPath() + "ref2" -> IntValue(2),
+    )
+    val evalTest = new ExprEvaluatePartial(refs.get, DesignPath())
 
     evalTest.map(
       ValueExpr.Ref("ref")
@@ -77,11 +71,8 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
   }
 
   it should "report partially missing references" in {
-    val constProp = new ConstProp()
-    val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
-
-    constProp.addDeclaration(DesignPath() + "ref1", ValInit.Integer)
-    constProp.addAssignValue(IndirectDesignPath() + "ref1", IntValue(1))
+    val refs = Map(IndirectDesignPath() + "ref1" -> IntValue(1))
+    val evalTest = new ExprEvaluatePartial(refs.get, DesignPath())
 
     evalTest.map(
       ValueExpr.BinOp(expr.BinaryExpr.Op.ADD, ValueExpr.Ref("ref1"), ValueExpr.Ref("ref2"))
@@ -89,8 +80,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
   }
 
   it should "return missing condition refs, then branch refs" in {
-    val constProp = new ConstProp()
-    val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
+    val evalTestMissing = new ExprEvaluatePartial(_ => None, DesignPath())
 
     val iteExpr = ValueExpr.IfThenElse(ValueExpr.Ref("cond"), ValueExpr.Ref("ref1"), ValueExpr.Ref("ref2"))
     val negIteExpr = ValueExpr.IfThenElse(
@@ -99,21 +89,18 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
       ValueExpr.Ref("ref2")
     )
 
-    evalTest.map(iteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "cond")))
-    evalTest.map(negIteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "cond")))
+    evalTestMissing.map(iteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "cond")))
+    evalTestMissing.map(negIteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "cond")))
 
-    constProp.addDeclaration(DesignPath() + "cond", ValInit.Boolean)
-    constProp.addAssignValue(IndirectDesignPath() + "cond", BooleanValue(true))
+    val refs = Map(IndirectDesignPath() + "cond" -> BooleanValue(true))
+    val evalTest = new ExprEvaluatePartial(refs.get, DesignPath())
     evalTest.map(iteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "ref1")))
     evalTest.map(negIteExpr) should equal(ExprResult.Missing(Set(IndirectDesignPath() + "ref2")))
   }
 
   it should "resolve if-then-else with only the branch taken available" in {
-    val constProp = new ConstProp()
-    val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
-
-    constProp.addDeclaration(DesignPath() + "ref", ValInit.Integer)
-    constProp.addAssignValue(IndirectDesignPath() + "ref", IntValue(42))
+    val refs = Map(IndirectDesignPath() + "ref" -> IntValue(42))
+    val evalTest = new ExprEvaluatePartial(refs.get, DesignPath())
 
     evalTest.map(
       ValueExpr.IfThenElse(ValueExpr.Literal(true), ValueExpr.Ref("ref"), ValueExpr.Ref("bad"))
@@ -125,7 +112,7 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
 
   it should "return a missing array before its components" in {
     val constProp = new ConstProp()
-    val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
+    val evalTest = new ExprEvaluatePartial(_ => None, DesignPath())
     val mapExtractExpr = ValueExpr.MapExtract(Ref("container"), "inner")
 
     evalTest.map(
@@ -158,20 +145,13 @@ class ExprEvaluatePartialTest extends AnyFlatSpec {
   }
 
   it should "resolve arrays and reduction ops" in {
-    val constProp = new ConstProp()
-    val evalTest = new ExprEvaluatePartial(constProp, DesignPath())
-
-    constProp.addDeclaration(DesignPath() + "container" + "0" + "inner", ValInit.Integer)
-    constProp.addDeclaration(DesignPath() + "container" + "1" + "inner", ValInit.Integer)
-    constProp.addDeclaration(DesignPath() + "container" + "2" + "inner", ValInit.Integer)
-
-    constProp.addAssignValue(
-      IndirectDesignPath() + "container" + IndirectStep.Elements,
-      ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2")))
+    val refs = Map(
+      IndirectDesignPath() + "container" + IndirectStep.Elements -> ArrayValue(Seq(TextValue("0"), TextValue("1"), TextValue("2"))),
+      IndirectDesignPath() + "container" + "0" + "inner" -> IntValue(1),
+      IndirectDesignPath() + "container" + "1" + "inner" -> IntValue(2),
+      IndirectDesignPath() + "container" + "2" + "inner" -> IntValue(3),
     )
-    constProp.addAssignValue(IndirectDesignPath() + "container" + "0" + "inner", IntValue(1))
-    constProp.addAssignValue(IndirectDesignPath() + "container" + "1" + "inner", IntValue(2))
-    constProp.addAssignValue(IndirectDesignPath() + "container" + "2" + "inner", IntValue(3))
+    val evalTest = new ExprEvaluatePartial(refs.get, DesignPath())
 
     evalTest.map(
       ValueExpr.UnarySetOp(expr.UnarySetExpr.Op.SUM, ValueExpr.MapExtract(Ref("container"), "inner"))
