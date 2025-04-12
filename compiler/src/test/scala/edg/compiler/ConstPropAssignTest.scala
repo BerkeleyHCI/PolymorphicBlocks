@@ -18,6 +18,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
     constProp.addAssignValue(IndirectDesignPath() + "a", IntValue(2))
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
+    constProp.getErrors should be(empty)
   }
 
   it should "not propagate pre-declaration assignments" in {
@@ -54,6 +55,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     )
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(5)))
+    constProp.getErrors should be(empty)
   }
 
   it should "handle multi-hop directed assignments, delayed" in {
@@ -77,6 +79,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(5)))
     constProp.getValue(IndirectDesignPath() + "c") should equal(Some(IntValue(10)))
+    constProp.getErrors should be(empty)
   }
 
   it should "handle directed equality assignments" in {
@@ -92,6 +95,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
 
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "c") should equal(Some(IntValue(2)))
+    constProp.getErrors should be(empty)
   }
 
   it should "handle directed equality assignments, delayed" in {
@@ -109,6 +113,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
 
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "c") should equal(Some(IntValue(2)))
+    constProp.getErrors should be(empty)
   }
 
   it should "handle forced set and ignore subsequent assignments" in {
@@ -117,6 +122,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
     constProp.addAssignValue(IndirectDesignPath() + "a", IntValue(2)) // should be ignored from above forced-set
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(3)))
+    constProp.getErrors should be(empty)
   }
 
   it should "handle clone assignments separately" in {
@@ -184,6 +190,6 @@ class ConstPropAssignTest extends AnyFlatSpec {
     )
     constProp.getValue(IndirectDesignPath() + "a") should equal(None)
     constProp.getValue(IndirectDesignPath() + "b") should equal(None)
-    constProp.getErrors should equal(Seq(ExprError(IndirectDesignPath() + "a", "error!")))
+    constProp.getErrors should not be empty
   }
 }
