@@ -192,4 +192,24 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.getValue(IndirectDesignPath() + "b") should equal(None)
     constProp.getErrors should not be empty
   }
+
+  it should "not propagate generated ErrorValues" in {
+    import edgir.expr.expr.BinaryExpr.Op
+    val constProp = new ConstProp()
+    constProp.addDeclaration(DesignPath() + "x", ValInit.Range)
+    constProp.addDeclaration(DesignPath() + "a", ValInit.Range)
+    constProp.addDeclaration(DesignPath() + "b", ValInit.Range)
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "b",
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a")),
+    )
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "a",
+      ValueExpr.BinOp(Op.SHRINK_MULT, ValueExpr.Literal(1, 1), ValueExpr.Ref("x")),
+    )
+    constProp.addAssignValue(IndirectDesignPath() + "x", RangeValue(0, 2))
+    constProp.getValue(IndirectDesignPath() + "a") should equal(None)
+    constProp.getValue(IndirectDesignPath() + "b") should equal(None)
+    constProp.getErrors should not be empty
+  }
 }

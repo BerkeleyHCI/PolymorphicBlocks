@@ -20,7 +20,8 @@ object ExprValue {
     case init.ValInit.Val.Text(_) => classOf[TextValue]
     case init.ValInit.Val.Range(_) => classOf[RangeType]
     case init.ValInit.Val.Array(_) => classOf[ArrayValue[Nothing]]
-    case _ => throw new IllegalArgumentException(s"Unknown valinit $initObj")
+    case init.ValInit.Val.Empty | init.ValInit.Val.Set(_) | init.ValInit.Val.Struct(_) =>
+      throw new IllegalArgumentException(s"unsupported valInit $initObj")
   }
 
   def fromValueLit(literal: lit.ValueLit): ExprValue = literal.`type` match {
@@ -42,7 +43,8 @@ object ExprValue {
     case lit.ValueLit.Type.Array(arrayLiteral) =>
       ArrayValue(arrayLiteral.elts.map { lit => fromValueLit(lit) })
     case lit.ValueLit.Type.Error(msg) => ErrorValue(msg)
-    case _ => throw new IllegalArgumentException(s"Unknown literal $literal")
+    case lit.ValueLit.Type.Empty | lit.ValueLit.Type.Struct(_) =>
+      throw new IllegalArgumentException(s"unsupported literal $literal")
   }
 }
 

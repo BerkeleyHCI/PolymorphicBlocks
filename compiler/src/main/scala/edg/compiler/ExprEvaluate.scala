@@ -350,7 +350,8 @@ object ExprEvaluate {
       case (Op.HULL, ArrayValue.UnpackRange(extracted)) => extracted match {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
           case ArrayValue.UnpackRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
-          case _ => ErrorValue(f"hull($vals) is undefined")
+          case ArrayValue.UnpackRange.EmptyArray() => RangeEmpty  // TODO: should this be an error?
+          case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
         }
       case (Op.HULL, ArrayValue.ExtractFloat(vals)) => RangeValue(vals.min, vals.max)
 
