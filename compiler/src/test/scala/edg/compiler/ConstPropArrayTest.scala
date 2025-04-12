@@ -89,12 +89,11 @@ class ConstPropArrayTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     addArray(constProp, Seq(), 4, { i => ValueExpr.Literal(i + 2) }, Seq("ports"), Seq("param"))
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
-    an[ExprEvaluateException] should be thrownBy {
-      constProp.addAssignExpr(
-        IndirectDesignPath() + "reduce",
-        ValueExpr.UnarySetOp(Op.SET_EXTRACT, ValueExpr.MapExtract(Ref("ports"), "param"))
-      )
-    }
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "reduce",
+      ValueExpr.UnarySetOp(Op.SET_EXTRACT, ValueExpr.MapExtract(Ref("ports"), "param"))
+    )
+    constProp.getValue(IndirectDesignPath() + "reduce").get shouldBe a[ErrorValue]
   }
 
   it should "SetExtract for same values" in {
