@@ -27,6 +27,7 @@ class DependencyGraph[KeyType, ValueType] {
 
   // Adds a node in the graph. May only be called once per node.
   def addNode(node: KeyType, dependencies: Seq[KeyType], overwrite: Boolean = false): Unit = {
+    val dependenciesSet = dependencies.to(mutable.Set)
     deps.get(node) match {
       case Some(prevDeps) =>
         require(overwrite, s"reinsertion of dependency for node $node <- $dependencies without overwrite=true")
@@ -38,7 +39,7 @@ class DependencyGraph[KeyType, ValueType] {
       !values.isDefinedAt(node),
       s"reinsertion of dependency for node with value $node = ${values(node)} <- $dependencies"
     )
-    val remainingDeps = dependencies.filter(!values.contains(_)).to(mutable.Set)
+    val remainingDeps = dependenciesSet.filterInPlace(!values.contains(_))
 
     deps.put(node, remainingDeps)
     for (dependency <- remainingDeps) {

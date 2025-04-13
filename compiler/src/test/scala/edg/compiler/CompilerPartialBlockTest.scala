@@ -144,7 +144,7 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
           ElemBuilder.LibraryPath("sourceBlock"),
           1.0f / 6
         ),
-        Seq()
+        Set()
       )
     )
   }
@@ -164,7 +164,7 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
           ElemBuilder.LibraryPath("sourceBlock"),
           1.0f / 6
         ),
-        Seq()
+        Set()
       )
     )
   }
@@ -192,7 +192,7 @@ class CompilerPartialBlockTest extends AnyFlatSpec with CompilerTestUtil {
           ElemBuilder.LibraryPath("sourceBlock"),
           1.0f / 6
         ),
-        Seq()
+        Set()
       )
     )
 
