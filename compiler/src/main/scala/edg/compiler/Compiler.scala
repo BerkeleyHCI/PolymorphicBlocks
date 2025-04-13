@@ -1622,19 +1622,24 @@ class Compiler private (
   def compile(): schema.Design = {
     import edg.ElemBuilder
 
+    // to handle partial compilation, as records are processed they are checked against a match to partial
+    // if there is a match, they are added here to be ignored on subsequent passes
+    // this is rebuilt dynamically on each compile() invocation
+    val partialCompileIgnoredRecords = mutable.Set[ElaborateRecord]()
+
     // repeat as long as there is work ready, and all the ready work isn't marked to be ignored
     var readyList = Iterable[ElaborateRecord]()
     do {
-      // TODO
-      // TODO: fix clearReadyNode being stateful, need to unclear before forking
-      // TODO: is there a cleaner do while loop?
-      readyList = elaboratePending.getReady
+      // TODO this is kind of ugly and expensive in that it keeps filtering the ignored records
+      // ideally this should be done at the getReady side, but these also need to be restored
+      // when the compiler forks
+      readyList = elaboratePending.getReady.filter(!partialCompileIgnoredRecords.contains(_))
       readyList.foreach { elaborateRecord =>
         try {
           elaborateRecord match {
             case elaborateRecord @ ElaborateRecord.ExpandBlock(blockPath, blockClass, blockProgress) =>
               if (partial.blocks.contains(blockPath) || partial.classes.contains(blockClass)) {
-                elaboratePending.clearReadyNode(elaborateRecord)
+                partialCompileIgnoredRecords += elaborateRecord
               } else {
                 expandBlock(blockPath, blockProgress)
                 elaboratePending.setValue(elaborateRecord, None)
@@ -1651,7 +1656,7 @@ class Compiler private (
             case elaborateRecord @ ElaborateRecord.Parameter(root, rootClasses, postfix, param) =>
               val container = resolveBlock(root).asInstanceOf[wir.HasParams]
               if (paramMatchesPartial(root, rootClasses, postfix)) {
-                elaboratePending.clearReadyNode(elaborateRecord)
+                partialCompileIgnoredRecords += elaborateRecord
               } else {
                 constProp.addDeclaration(root ++ postfix, param)
                 elaboratePending.setValue(elaborateRecord, None)
