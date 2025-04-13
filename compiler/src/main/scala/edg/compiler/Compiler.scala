@@ -258,7 +258,7 @@ class Compiler private (
   // Returns all errors, by scanning the design tree for errors and adding errors accumulated through the compile
   // process
   def getErrors(): Seq[CompilerError] = {
-    val pendingErrors = elaboratePending.getMissingValue.map { missingNode =>
+    val pendingErrors = elaboratePending.getMissingValues.map { missingNode =>
       CompilerError.Unelaborated(missingNode, elaboratePending.nodeMissing(missingNode))
     }.toSeq
 

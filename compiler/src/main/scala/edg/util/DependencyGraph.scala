@@ -9,7 +9,7 @@ import scala.collection.mutable
 class DependencyGraph[KeyType, ValueType] {
   private val values = mutable.HashMap[KeyType, ValueType]()
   private val inverseDeps = mutable.HashMap[KeyType, mutable.ArrayBuffer[KeyType]]()
-  private val deps = mutable.HashMap[KeyType, mutable.Set[KeyType]]() // cache structure tracking undefined deps
+  private val deps = mutable.HashMap[KeyType, mutable.ArrayBuffer[KeyType]]() // cache structure tracking undefined deps
   private val ready = mutable.ArrayBuffer[KeyType]()
 
   // Copies data from another dependency graph into this one, like a shallow clone
@@ -31,14 +31,14 @@ class DependencyGraph[KeyType, ValueType] {
       case Some(prevDeps) =>
         require(overwrite, s"reinsertion of dependency for node $node <- $dependencies without overwrite=true")
         // TODO can this requirement be eliminated?
-        require(prevDeps.subsetOf(dependencies.toSet), "update of dependencies without being a superset of prior")
+        require(prevDeps.forall(dependencies.contains(_)), "update of dependencies without being a superset of prior")
       case None => // nothing if no previous dependencies
     }
     require(
       !values.isDefinedAt(node),
       s"reinsertion of dependency for node with value $node = ${values(node)} <- $dependencies"
     )
-    val remainingDeps = dependencies.filter(!values.contains(_)).to(mutable.Set)
+    val remainingDeps = dependencies.filter(!values.contains(_)).to(mutable.ArrayBuffer)
 
     deps.put(node, remainingDeps)
     for (dependency <- remainingDeps) {
@@ -60,7 +60,7 @@ class DependencyGraph[KeyType, ValueType] {
 
   // Returns missing dependencies for a node, or empty if the node is ready or has a value assigned
   // Node must exist, or this will exception out
-  def nodeMissing(node: KeyType): Set[KeyType] = deps(node).toSet
+  def nodeMissing(node: KeyType): Iterable[KeyType] = deps(node)
 
   // Clears a node from ready without setting a value in the graph.
   // Useful to stop propagation at some point, but without crashing.
@@ -75,16 +75,21 @@ class DependencyGraph[KeyType, ValueType] {
   // while the node will have a value, dependents will not be marked as ready
   def setValue(node: KeyType, value: ValueType): Unit = {
     require(!values.isDefinedAt(node), s"redefinition of $node (prior value ${values(node)}, new value $value)")
-    deps.put(node, mutable.Set())
+    deps.put(node, mutable.ArrayBuffer())
     values.put(node, value)
     if (ready.contains(node)) {
       ready -= node
     }
 
     // See if the update caused anything else to be ready
-    for (inverseDep <- inverseDeps.getOrElse(node, mutable.Set())) {
-      val remainingDeps = deps(inverseDep) -= node
+    for (inverseDep <- inverseDeps.getOrElse(node, mutable.ArrayBuffer())) {
+      val remainingDeps = deps(inverseDep)
+      remainingDeps.indexOf(node) match {
+        case nodeIndex if nodeIndex >= 0 => remainingDeps.remove(nodeIndex)
+        case _ =>
+      }
       if (remainingDeps.isEmpty && !values.isDefinedAt(inverseDep)) {
+        require(!ready.contains(inverseDep))
         ready += inverseDep
       }
     }
@@ -100,8 +105,8 @@ class DependencyGraph[KeyType, ValueType] {
   }
 
   // Returns all the KeyTypes that have no values. NOT a fast operation. Includes items in the ready list.
-  def getMissingValue: Set[KeyType] = {
-    deps.keySet.toSet -- values.keySet
+  def getMissingValues: Iterable[KeyType] = {
+    deps.keys.toSet -- values.keys
   }
 
   def knownValueKeys: Iterable[KeyType] = {

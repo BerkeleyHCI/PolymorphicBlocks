@@ -38,26 +38,26 @@ class DependencyGraphTest extends AnyFlatSpec {
     val dep = DependencyGraph[Int, Int]()
     dep.addNode(1, Seq(0))
     dep.getReady shouldBe empty
-    dep.nodeMissing(1) should equal(Set(0))
+    dep.nodeMissing(1) should equal(Seq(0))
     dep.setValue(0, 0)
     dep.getReady should equal(Seq(1))
-    dep.nodeMissing(1) should equal(Set())
+    dep.nodeMissing(1) should equal(Seq())
   }
 
   it should "track multiple dependencies, and add to ready when all set" in {
     val dep = DependencyGraph[Int, Int]()
     dep.addNode(3, Seq(0, 1, 2))
     dep.getReady shouldBe empty
-    dep.nodeMissing(3) should equal(Set(0, 1, 2))
+    dep.nodeMissing(3) should equal(Seq(0, 1, 2))
     dep.setValue(0, 0)
     dep.getReady shouldBe empty
-    dep.nodeMissing(3) should equal(Set(1, 2))
+    dep.nodeMissing(3) should equal(Seq(1, 2))
     dep.setValue(1, 0)
     dep.getReady shouldBe empty
-    dep.nodeMissing(3) should equal(Set(2))
+    dep.nodeMissing(3) should equal(Seq(2))
     dep.setValue(2, 0)
     dep.getReady should equal(Seq(3))
-    dep.nodeMissing(3) should equal(Set())
+    dep.nodeMissing(3) shouldBe empty
   }
 
   it should "track a chain of dependencies" in {
@@ -105,22 +105,22 @@ class DependencyGraphTest extends AnyFlatSpec {
 
   it should "return getMissing" in {
     val dep = DependencyGraph[Int, Int]()
-    dep.getMissingValue shouldBe empty
+    dep.getMissingValues shouldBe empty
     dep.addNode(1, Seq(0))
-    dep.getMissingValue should equal(Set(1))
+    dep.getMissingValues should equal(Set(1))
     dep.setValue(1, 1)
-    dep.getMissingValue shouldBe empty
+    dep.getMissingValues shouldBe empty
   }
 
   it should "return getMissing including ready nodes" in {
     val dep = DependencyGraph[Int, Int]()
-    dep.getMissingValue shouldBe empty
+    dep.getMissingValues shouldBe empty
     dep.addNode(1, Seq(0))
-    dep.getMissingValue should equal(Set(1))
+    dep.getMissingValues should equal(Set(1))
     dep.getReady shouldBe empty
     dep.setValue(0, 0)
     dep.getReady should equal(Seq(1))
-    dep.getMissingValue should equal(Set(1)) // test ready and missing
+    dep.getMissingValues should equal(Set(1)) // test ready and missing
   }
 
   it should "prevent reinsertion of a node" in {
@@ -193,16 +193,16 @@ class DependencyGraphTest extends AnyFlatSpec {
     val dep2 = DependencyGraph[Int, Int]()
     dep2.initFrom(dep1)
     dep2.getReady shouldBe empty
-    dep2.nodeMissing(1) should equal(Set(0))
+    dep2.nodeMissing(1) should equal(Seq(0))
 
     dep1.setValue(0, 0)
     dep1.getReady should equal(Seq(1))
-    dep1.nodeMissing(1) should equal(Set())
+    dep1.nodeMissing(1) shouldBe empty
     dep2.getReady shouldBe empty
-    dep2.nodeMissing(1) should equal(Set(0))
+    dep2.nodeMissing(1) should equal(Seq(0))
 
     dep2.setValue(0, 0)
     dep2.getReady should equal(Seq(1))
-    dep2.nodeMissing(1) should equal(Set())
+    dep2.nodeMissing(1) shouldBe empty
   }
 }
