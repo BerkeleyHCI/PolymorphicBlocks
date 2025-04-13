@@ -96,7 +96,7 @@ class DependencyGraph[KeyType, ValueType] {
 
   // Returns all the KeyTypes that don't have values and have satisfied dependencies.
   def getReady: Iterable[KeyType] = {
-    ready.toSeq
+    ready
   }
 
   // Returns all the KeyTypes that have no values. NOT a fast operation. Includes items in the ready list.

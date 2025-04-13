@@ -15,7 +15,7 @@ class DependencyGraphTest extends AnyFlatSpec {
   it should "indicate a node with no dependencies is ready" in {
     val dep = DependencyGraph[Int, Int]()
     dep.addNode(1, Seq())
-    dep.getReady should equal(Seq(1))
+    dep.getReady should equal(Set(1))
   }
 
   it should "clear ready when value is set" in {
@@ -40,7 +40,7 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.getReady shouldBe empty
     dep.nodeMissing(1) should equal(Set(0))
     dep.setValue(0, 0)
-    dep.getReady should equal(Seq(1))
+    dep.getReady should equal(Set(1))
     dep.nodeMissing(1) shouldBe empty
   }
 
@@ -56,7 +56,7 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.getReady shouldBe empty
     dep.nodeMissing(3) should equal(Set(2))
     dep.setValue(2, 0)
-    dep.getReady should equal(Seq(3))
+    dep.getReady should equal(Set(3))
     dep.nodeMissing(3) shouldBe empty
   }
 
@@ -67,11 +67,11 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.addNode(3, Seq(2))
     dep.getReady shouldBe empty
     dep.setValue(0, 0)
-    dep.getReady should equal(Seq(1))
+    dep.getReady should equal(Set(1))
     dep.setValue(1, 0)
-    dep.getReady should equal(Seq(2))
+    dep.getReady should equal(Set(2))
     dep.setValue(2, 0)
-    dep.getReady should equal(Seq(3))
+    dep.getReady should equal(Set(3))
   }
 
   it should "track a chain of dependencies, inserted in reverse order" in {
@@ -81,11 +81,11 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.addNode(1, Seq(0))
     dep.getReady shouldBe empty
     dep.setValue(0, 0)
-    dep.getReady should equal(Seq(1))
+    dep.getReady should equal(Set(1))
     dep.setValue(1, 0)
-    dep.getReady should equal(Seq(2))
+    dep.getReady should equal(Set(2))
     dep.setValue(2, 0)
-    dep.getReady should equal(Seq(3))
+    dep.getReady should equal(Set(3))
   }
 
   it should "not include value set in ready" in {
@@ -119,7 +119,7 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.getMissingValues should equal(Set(1))
     dep.getReady shouldBe empty
     dep.setValue(0, 0)
-    dep.getReady should equal(Seq(1))
+    dep.getReady should equal(Set(1))
     dep.getMissingValues should equal(Set(1)) // test ready and missing
   }
 
@@ -161,10 +161,10 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.setValue(1, 1)
     dep.getReady shouldBe empty
     dep.setValue(2, 2)
-    dep.getReady should equal(Seq(10))
+    dep.getReady should equal(Set(10))
 
     dep.addNode(10, Seq(1, 2), overwrite = true) // should be a nop
-    dep.getReady should equal(Seq(10))
+    dep.getReady should equal(Set(10))
 
     dep.addNode(10, Seq(3), overwrite = true)
     dep.getReady shouldBe empty // should no longer be ready
@@ -196,13 +196,13 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep2.nodeMissing(1) should equal(Set(0))
 
     dep1.setValue(0, 0)
-    dep1.getReady should equal(Seq(1))
+    dep1.getReady should equal(Set(1))
     dep1.nodeMissing(1) shouldBe empty
     dep2.getReady shouldBe empty
     dep2.nodeMissing(1) should equal(Set(0))
 
     dep2.setValue(0, 0)
-    dep2.getReady should equal(Seq(1))
+    dep2.getReady should equal(Set(1))
     dep2.nodeMissing(1) shouldBe empty
   }
 }
