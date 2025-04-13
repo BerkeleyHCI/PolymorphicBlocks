@@ -5,6 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
 import edg.wir.{DesignPath, IndirectDesignPath, IndirectStep}
 import edg.ExprBuilder._
+import edg.compiler.CompilerError.ExprError
 
 class ConstPropArrayTest extends AnyFlatSpec {
   behavior.of("ConstProp with array paths")
@@ -89,12 +90,12 @@ class ConstPropArrayTest extends AnyFlatSpec {
     val constProp = new ConstProp()
     addArray(constProp, Seq(), 4, { i => ValueExpr.Literal(i + 2) }, Seq("ports"), Seq("param"))
     constProp.addDeclaration(DesignPath() + "reduce", ValInit.Integer)
-    an[ExprEvaluateException] should be thrownBy {
-      constProp.addAssignExpr(
-        IndirectDesignPath() + "reduce",
-        ValueExpr.UnarySetOp(Op.SET_EXTRACT, ValueExpr.MapExtract(Ref("ports"), "param"))
-      )
-    }
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "reduce",
+      ValueExpr.UnarySetOp(Op.SET_EXTRACT, ValueExpr.MapExtract(Ref("ports"), "param"))
+    )
+    constProp.getValue(IndirectDesignPath() + "reduce") should equal(None)
+    constProp.getErrors should not be empty
   }
 
   it should "SetExtract for same values" in {

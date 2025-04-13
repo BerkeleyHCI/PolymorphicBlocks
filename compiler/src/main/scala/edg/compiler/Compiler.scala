@@ -117,7 +117,7 @@ class AssignNamer() {
 }
 
 object Compiler {
-  final val kExpectedProtoVersion = 6
+  final val kExpectedProtoVersion = 7
 }
 
 /** Compiler for a particular design, with an associated library to elaborate references from.
@@ -258,7 +258,7 @@ class Compiler private (
   // Returns all errors, by scanning the design tree for errors and adding errors accumulated through the compile
   // process
   def getErrors(): Seq[CompilerError] = {
-    val pendingErrors = elaboratePending.getMissingValue.map { missingNode =>
+    val pendingErrors = elaboratePending.getMissingValues.map { missingNode =>
       CompilerError.Unelaborated(missingNode, elaboratePending.nodeMissing(missingNode))
     }.toSeq
 
@@ -1628,15 +1628,18 @@ class Compiler private (
     val partialCompileIgnoredRecords = mutable.Set[ElaborateRecord]()
 
     // repeat as long as there is work ready, and all the ready work isn't marked to be ignored
-    var readyList = Set[ElaborateRecord]()
+    var readyList = Iterable[ElaborateRecord]()
     do {
-      readyList = elaboratePending.getReady -- partialCompileIgnoredRecords
+      // TODO this is kind of ugly and expensive in that it keeps filtering the ignored records
+      // ideally this should be done at the getReady side, but these also need to be restored
+      // when the compiler forks
+      readyList = elaboratePending.getReady.filter(!partialCompileIgnoredRecords.contains(_))
       readyList.foreach { elaborateRecord =>
         try {
           elaborateRecord match {
             case elaborateRecord @ ElaborateRecord.ExpandBlock(blockPath, blockClass, blockProgress) =>
               if (partial.blocks.contains(blockPath) || partial.classes.contains(blockClass)) {
-                partialCompileIgnoredRecords.add(elaborateRecord)
+                partialCompileIgnoredRecords += elaborateRecord
               } else {
                 expandBlock(blockPath, blockProgress)
                 elaboratePending.setValue(elaborateRecord, None)
@@ -1653,7 +1656,7 @@ class Compiler private (
             case elaborateRecord @ ElaborateRecord.Parameter(root, rootClasses, postfix, param) =>
               val container = resolveBlock(root).asInstanceOf[wir.HasParams]
               if (paramMatchesPartial(root, rootClasses, postfix)) {
-                partialCompileIgnoredRecords.add(elaborateRecord)
+                partialCompileIgnoredRecords += elaborateRecord
               } else {
                 constProp.addDeclaration(root ++ postfix, param)
                 elaboratePending.setValue(elaborateRecord, None)
@@ -1695,7 +1698,7 @@ class Compiler private (
   }
 
   def evaluateExpr(root: DesignPath, value: expr.ValueExpr): ExprResult = {
-    new ExprEvaluatePartial(constProp, root).map(value)
+    new ExprEvaluatePartial(constProp.getValue, root).map(value)
   }
 
   // Primarily used for unit tests, TODO clean up this API?
