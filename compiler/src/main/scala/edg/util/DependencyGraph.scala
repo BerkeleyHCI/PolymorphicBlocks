@@ -9,8 +9,8 @@ import scala.collection.mutable
 class DependencyGraph[KeyType, ValueType] {
   private val values = mutable.HashMap[KeyType, ValueType]()
   private val inverseDeps = mutable.HashMap[KeyType, mutable.ArrayBuffer[KeyType]]()
-  private val deps = mutable.HashMap[KeyType, mutable.ArrayBuffer[KeyType]]() // cache structure tracking undefined deps
-  private val ready = mutable.ArrayBuffer[KeyType]()
+  private val deps = mutable.HashMap[KeyType, mutable.Set[KeyType]]() // cache structure tracking undefined deps
+  private val ready = mutable.Set[KeyType]()
 
   // Copies data from another dependency graph into this one, like a shallow clone
   def initFrom(that: DependencyGraph[KeyType, ValueType]): Unit = {
@@ -38,7 +38,7 @@ class DependencyGraph[KeyType, ValueType] {
       !values.isDefinedAt(node),
       s"reinsertion of dependency for node with value $node = ${values(node)} <- $dependencies"
     )
-    val remainingDeps = dependencies.filter(!values.contains(_)).to(mutable.ArrayBuffer)
+    val remainingDeps = dependencies.filter(!values.contains(_)).to(mutable.Set)
 
     deps.put(node, remainingDeps)
     for (dependency <- remainingDeps) {
@@ -75,18 +75,15 @@ class DependencyGraph[KeyType, ValueType] {
   // while the node will have a value, dependents will not be marked as ready
   def setValue(node: KeyType, value: ValueType): Unit = {
     require(!values.isDefinedAt(node), s"redefinition of $node (prior value ${values(node)}, new value $value)")
-    deps.put(node, mutable.ArrayBuffer())
+    deps.put(node, mutable.Set())
     values.put(node, value)
-    while (ready.contains(node)) {
-      ready -= node
-    }
+    ready -= node
 
     // See if the update caused anything else to be ready
     for (inverseDep <- inverseDeps.getOrElse(node, mutable.ArrayBuffer())) {
       val remainingDeps = deps(inverseDep)
       remainingDeps -= node
       if (remainingDeps.isEmpty && !values.isDefinedAt(inverseDep)) {
-        require(!ready.contains(inverseDep))
         ready += inverseDep
       }
     }
