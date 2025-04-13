@@ -41,7 +41,7 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.nodeMissing(1) should equal(Set(0))
     dep.setValue(0, 0)
     dep.getReady should equal(Set(1))
-    dep.nodeMissing(1) should equal(Set())
+    dep.nodeMissing(1) shouldBe empty
   }
 
   it should "track multiple dependencies, and add to ready when all set" in {
@@ -57,7 +57,7 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.nodeMissing(3) should equal(Set(2))
     dep.setValue(2, 0)
     dep.getReady should equal(Set(3))
-    dep.nodeMissing(3) should equal(Set())
+    dep.nodeMissing(3) shouldBe empty
   }
 
   it should "track a chain of dependencies" in {
@@ -105,22 +105,22 @@ class DependencyGraphTest extends AnyFlatSpec {
 
   it should "return getMissing" in {
     val dep = DependencyGraph[Int, Int]()
-    dep.getMissingValue shouldBe empty
+    dep.getMissingValues shouldBe empty
     dep.addNode(1, Seq(0))
-    dep.getMissingValue should equal(Set(1))
+    dep.getMissingValues should equal(Set(1))
     dep.setValue(1, 1)
-    dep.getMissingValue shouldBe empty
+    dep.getMissingValues shouldBe empty
   }
 
   it should "return getMissing including ready nodes" in {
     val dep = DependencyGraph[Int, Int]()
-    dep.getMissingValue shouldBe empty
+    dep.getMissingValues shouldBe empty
     dep.addNode(1, Seq(0))
-    dep.getMissingValue should equal(Set(1))
-    dep.getReady should equal(Set())
+    dep.getMissingValues should equal(Set(1))
+    dep.getReady shouldBe empty
     dep.setValue(0, 0)
     dep.getReady should equal(Set(1))
-    dep.getMissingValue should equal(Set(1)) // test ready and missing
+    dep.getMissingValues should equal(Set(1)) // test ready and missing
   }
 
   it should "prevent reinsertion of a node" in {
@@ -154,12 +154,12 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.addNode(10, Seq(0))
     dep.addNode(10, Seq(0, 1), overwrite = true)
     dep.setValue(0, 0)
-    dep.getReady should equal(Set()) // should still be blocked on 1
+    dep.getReady shouldBe empty // should still be blocked on 1
 
     dep.addNode(10, Seq(1, 2), overwrite = true) // 0 should no longer be required
 
     dep.setValue(1, 1)
-    dep.getReady should equal(Set())
+    dep.getReady shouldBe empty
     dep.setValue(2, 2)
     dep.getReady should equal(Set(10))
 
@@ -167,7 +167,7 @@ class DependencyGraphTest extends AnyFlatSpec {
     dep.getReady should equal(Set(10))
 
     dep.addNode(10, Seq(3), overwrite = true)
-    dep.getReady should equal(Set()) // should no longer be ready
+    dep.getReady shouldBe empty // should no longer be ready
   }
 
   it should "return nodeDefinedAt and valueDefinedAt for dependencies" in {
@@ -197,12 +197,12 @@ class DependencyGraphTest extends AnyFlatSpec {
 
     dep1.setValue(0, 0)
     dep1.getReady should equal(Set(1))
-    dep1.nodeMissing(1) should equal(Set())
+    dep1.nodeMissing(1) shouldBe empty
     dep2.getReady shouldBe empty
     dep2.nodeMissing(1) should equal(Set(0))
 
     dep2.setValue(0, 0)
     dep2.getReady should equal(Set(1))
-    dep2.nodeMissing(1) should equal(Set())
+    dep2.nodeMissing(1) shouldBe empty
   }
 }

@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import *
 
 from .. import edgir
-from .Binding import EqOp, ArrayBinding
+from .Binding import EqOp, ArrayBinding, UnarySetOpBinding, BinarySetOpBinding
 from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, RangeExpr, RangeLike, \
   BoolExpr, BoolLike, StringLike, \
-  NumericOp, BoolOp, RangeSetOp, Binding, UnarySetOpBinding, BinarySetOpBinding, StringExpr, IntExpr
+  NumericOp, BoolOp, RangeSetOp, Binding, StringExpr, IntExpr
 from .Core import Refable
 from .IdentityDict import IdentityDict
 from .Ports import BasePort

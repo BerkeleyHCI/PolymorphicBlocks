@@ -54,7 +54,7 @@ class TestFakeSpiPeripheral(FootprintBlock):
     )
 
 
-class TestSpiCircuit(Block):
+class TestSpiCircuit(DesignTop):
   def contents(self) -> None:
     super().contents()
 
@@ -85,7 +85,7 @@ class TestFakeUartBlock(FootprintBlock):
     )
 
 
-class TestUartCircuit(Block):
+class TestUartCircuit(DesignTop):
   def contents(self) -> None:
     super().contents()
 
@@ -113,7 +113,7 @@ class TestFakeCanBlock(FootprintBlock):
     )
 
 
-class TestCanCircuit(Block):
+class TestCanCircuit(DesignTop):
   def contents(self) -> None:
     super().contents()
 

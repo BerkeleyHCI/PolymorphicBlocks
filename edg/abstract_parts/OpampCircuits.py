@@ -313,42 +313,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
     self.assign(self.actual_ratio, self.rf.actual_resistance / self.r1.actual_resistance)
 
 
-class IntegratorValues(ESeriesRatioValue):
-  def __init__(self, factor: Range, capacitance: Range):
-    self.factor = factor  # output scale factor, 1/RC in units of 1/s
-    self.capacitance = capacitance  # value of the capacitor
-
-  @staticmethod
-  def from_resistors(r1_range: Range, r2_range: Range) -> 'IntegratorValues':
-    """r1 is the input resistor and r2 is the capacitor."""
-    return IntegratorValues(
-      1 / (r1_range * r2_range),
-      r2_range
-    )
-
-  def initial_test_decades(self) -> Tuple[int, int]:
-    """C is given per the spec, so we need factor = 1 / (R * C) => R = 1 / (factor * C)"""
-    capacitance_decade = ceil(log10(self.capacitance.center()))
-    allowed_resistances = Range.cancel_multiply(1 / self.capacitance, 1 / self.factor)
-    resistance_decade = ceil(log10(allowed_resistances.center()))
-
-    return resistance_decade, capacitance_decade
-
-  def distance_to(self, spec: 'IntegratorValues') -> List[float]:
-    if self.factor in spec.factor and self.capacitance in spec.capacitance:
-      return []
-    else:
-      return [
-        abs(self.factor.center() - spec.factor.center()),
-        abs(self.capacitance.center() - spec.capacitance.center())
-      ]
-
-  def intersects(self, spec: 'IntegratorValues') -> bool:
-    return self.factor.intersects(spec.factor) and \
-           self.capacitance.intersects(spec.capacitance)
-
-
-class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
+class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock):
   """Opamp integrator, outputs the negative integral of the input signal, relative to some reference signal.
   Will clip to the input voltage rails.
 
@@ -384,7 +349,6 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
 
     self.factor = self.ArgParameter(factor)  # output scale factor, 1/RC in units of 1/s
     self.capacitance = self.ArgParameter(capacitance)
-    self.generator_param(self.factor, self.capacitance)
 
     self.actual_factor = self.Parameter(RangeExpr())
 
@@ -396,10 +360,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.factor, "")
     )
 
-  def generate(self) -> None:
-    super().generate()
-
-    self.r = self.Block(Resistor(Range.cancel_multiply(1/self.get(self.capacitance), 1/self.get(self.factor))))
+    self.r = self.Block(Resistor((1/self.factor).shrink_multiply(1/self.capacitance)))
     self.c = self.Block(Capacitor(
       capacitance=self.capacitance,
       voltage=self.output.link().voltage

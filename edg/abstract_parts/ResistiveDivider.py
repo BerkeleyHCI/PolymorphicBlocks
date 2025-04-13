@@ -180,14 +180,8 @@ class VoltageDivider(Analog, BaseVoltageDivider):
   @init_in_parent
   def __init__(self, *, output_voltage: RangeLike, impedance: RangeLike) -> None:
     super().__init__(impedance=impedance)
-
     self.output_voltage = self.ArgParameter(output_voltage)
-
-    ratio_lower = self.output_voltage.lower() / self.input.link().voltage.lower()
-    ratio_upper = self.output_voltage.upper() / self.input.link().voltage.upper()
-    self.require(ratio_lower <= ratio_upper,
-                   "can't generate divider to create output voltage of tighter tolerance than input voltage")
-    self.assign(self.ratio, (ratio_lower, ratio_upper))
+    self.assign(self.ratio, self.output_voltage.shrink_multiply(1/self.input.link().voltage))
 
 
 class VoltageSenseDivider(Analog, BaseVoltageDivider):
@@ -201,14 +195,8 @@ class VoltageSenseDivider(Analog, BaseVoltageDivider):
   @init_in_parent
   def __init__(self, *, full_scale_voltage: RangeLike, impedance: RangeLike) -> None:
     super().__init__(impedance=impedance)
-
     self.full_scale_voltage = self.ArgParameter(full_scale_voltage)
-
-    ratio_lower = self.full_scale_voltage.lower() / self.input.link().voltage.upper()
-    ratio_upper = self.full_scale_voltage.upper() / self.input.link().voltage.upper()
-    self.require(ratio_lower <= ratio_upper,
-                 "can't generate divider to create output voltage of tighter tolerance than input voltage")
-    self.assign(self.ratio, (ratio_lower, ratio_upper))
+    self.assign(self.ratio, self.full_scale_voltage / self.input.link().voltage.upper())
 
 
 class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
@@ -221,10 +209,7 @@ class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
 
     self.output_voltage = self.ArgParameter(output_voltage)
     self.assumed_input_voltage = self.ArgParameter(assumed_input_voltage)
-    self.actual_input_voltage = self.Parameter(RangeExpr(
-      (self.output_voltage.lower() / self.actual_ratio.upper(),
-       self.output_voltage.upper() / self.actual_ratio.lower())
-    ))
+    self.actual_input_voltage = self.Parameter(RangeExpr())
 
   def contents(self) -> None:
     super().contents()
@@ -235,11 +220,8 @@ class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
       "\n<b>impedance:</b> ", DescriptionString.FormatUnits(self.actual_impedance, "Ω"),
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.impedance, "Ω"))
 
-    ratio_lower = self.output_voltage.upper() / self.assumed_input_voltage.upper()
-    ratio_upper = self.output_voltage.lower() / self.assumed_input_voltage.lower()
-    self.require(ratio_lower <= ratio_upper,
-                 "can't generate feedback divider with input voltage of tighter tolerance than output voltage")
-    self.assign(self.ratio, (ratio_lower, ratio_upper))
+    self.assign(self.ratio, (1/self.assumed_input_voltage).shrink_multiply(self.output_voltage))
+    self.assign(self.actual_input_voltage, self.output_voltage / self.actual_ratio)
 
 
 class SignalDivider(Analog, KiCadImportableBlock, Block):

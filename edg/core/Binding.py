@@ -29,6 +29,7 @@ class NumericOp(Enum):
   # Multiplicative
   mul = auto()
   invert = auto()
+  shrink_mul = auto()
 
 class BoolOp(Enum):
   op_and = auto()
@@ -316,6 +317,7 @@ class BinaryOpBinding(Binding):
       # Numeric
       NumericOp.add: edgir.BinaryExpr.ADD,
       NumericOp.mul: edgir.BinaryExpr.MULT,
+      NumericOp.shrink_mul: edgir.BinaryExpr.SHRINK_MULT,
       # Boolean
       BoolOp.op_and: edgir.BinaryExpr.AND,
       BoolOp.op_or: edgir.BinaryExpr.OR,

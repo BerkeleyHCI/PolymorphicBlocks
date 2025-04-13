@@ -16,7 +16,8 @@ object ExprResult {
   * missing set may increase as more parameters are solved, because some expressions have dynamic references. For
   * example, if-then-else additionally depends on either true or false subexprs once the condition is known.
   */
-class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMap[ExprResult] {
+class ExprEvaluatePartial(refResolver: IndirectDesignPath => Option[ExprValue], root: DesignPath)
+    extends ValueExprMap[ExprResult] {
   override def mapLiteral(literal: lit.ValueLit): ExprResult =
     ExprResult.Result(ExprEvaluate.evalLiteral(literal))
 
@@ -126,11 +127,11 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
     val container = mapExtract.getContainer.expr.ref.getOrElse( // TODO restrict allowed types in proto
       throw new ExprEvaluateException(s"Non-ref container type in mapExtract $mapExtract"))
     val containerPath = root ++ container
-    refs.getValue(containerPath.asIndirect + IndirectStep.Elements) match {
+    refResolver(containerPath.asIndirect + IndirectStep.Elements) match {
       case Some(paramValue) =>
         val eltsVals = ArrayValue.ExtractText(paramValue).map { elt =>
           val eltPath = containerPath.asIndirect + elt ++ mapExtract.getPath
-          refs.getValue(eltPath) match {
+          refResolver(eltPath) match {
             case Some(value) => ExprResult.Result(value)
             case None => ExprResult.Missing(Set(eltPath))
           }
@@ -151,7 +152,7 @@ class ExprEvaluatePartial(refs: ConstProp, root: DesignPath) extends ValueExprMa
 
   override def mapRef(path: ref.LocalPath): ExprResult = {
     val refPath = root.asIndirect ++ path
-    refs.getValue(refPath) match {
+    refResolver(refPath) match {
       case Some(value) => ExprResult.Result(value)
       case None => ExprResult.Missing(Set(refPath))
     }

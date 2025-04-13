@@ -97,7 +97,7 @@ from .UsbBitBang import UsbBitBang
 from .IoController import BaseIoController, IoController, IoControllerPowerRequired, BaseIoControllerPinmapGenerator
 from .IoControllerExportable import BaseIoControllerExportable
 from .IoControllerInterfaceMixins import IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerTouchDriver,\
-    IoControllerDac, IoControllerCan, IoControllerUsb, IoControllerI2s, IoControllerDvp8
+    IoControllerDac, IoControllerCan, IoControllerUsb, IoControllerI2s, IoControllerDvp8, IoControllerUsbCc
 from .IoControllerInterfaceMixins import IoControllerPowerOut, IoControllerUsbOut, IoControllerVin
 from .IoControllerInterfaceMixins import IoControllerWifi, IoControllerBluetooth, IoControllerBle
 from .IoControllerProgramming import IoControllerWithSwdTargetConnector
