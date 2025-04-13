@@ -68,6 +68,41 @@ class Fuse(DiscreteComponent, HasStandardFootprint):
                  "operating voltage not within rating")
 
 
+class SeriesPowerFuse(Protection):
+  """Series fuse for power applications"""
+  FUSE_TYPE = Fuse
+
+  @init_in_parent
+  def __init__(self, trip_current: RangeLike) -> None:
+    super().__init__()
+
+    self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
+
+    self.fuse = self.Block(self.FUSE_TYPE(
+      trip_current=trip_current,
+      hold_current=(self.pwr_out.link().current_drawn.upper(), float('inf')),
+      voltage=self.pwr_in.link().voltage
+    ))
+    self.connect(self.pwr_in, self.fuse.a.adapt_to(VoltageSink(
+      voltage_limits=self.fuse.actual_voltage_rating,  # TODO: eventually needs a ground ref
+      current_draw=self.pwr_out.link().current_drawn
+    )))
+    self.connect(self.pwr_out, self.fuse.b.adapt_to(VoltageSource(
+      voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
+      current_limits=(0, self.fuse.actual_hold_current.lower())
+    )))
+
+  def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
+          'SeriesPowerFuse':
+    """Convenience function to connect both ports, returning this object so it can still be given a name."""
+    if pwr_in is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_in)
+    if pwr_out is not None:
+      cast(Block, builder.get_enclosing_block()).connect(pwr_out, self.pwr_out)
+    return self
+
+
 @abstract_block
 class PptcFuse(Fuse):
   """PPTC self-resetting fuse"""
@@ -97,34 +132,5 @@ class TableFuse(PartsTableSelector, Fuse):
     self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
 
 
-class SeriesPowerPptcFuse(Protection):
-  """Series fuse for power applications"""
-  @init_in_parent
-  def __init__(self, trip_current: RangeLike) -> None:
-    super().__init__()
-
-    self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
-    self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
-
-    self.fuse = self.Block(PptcFuse(
-      trip_current=trip_current,
-      hold_current=(self.pwr_out.link().current_drawn.upper(), float('inf')),
-      voltage=self.pwr_in.link().voltage
-    ))
-    self.connect(self.pwr_in, self.fuse.a.adapt_to(VoltageSink(
-      voltage_limits=self.fuse.actual_voltage_rating,  # TODO: eventually needs a ground ref
-      current_draw=self.pwr_out.link().current_drawn
-    )))
-    self.connect(self.pwr_out, self.fuse.b.adapt_to(VoltageSource(
-      voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
-      current_limits=(0, self.fuse.actual_hold_current.lower())
-    )))
-
-  def connected(self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None) -> \
-      'SeriesPowerPptcFuse':
-    """Convenience function to connect both ports, returning this object so it can still be given a name."""
-    if pwr_in is not None:
-      cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_in)
-    if pwr_out is not None:
-      cast(Block, builder.get_enclosing_block()).connect(pwr_out, self.pwr_out)
-    return self
+class SeriesPowerPptcFuse(SeriesPowerFuse):
+  FUSE_TYPE = PptcFuse

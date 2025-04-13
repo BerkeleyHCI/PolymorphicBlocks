@@ -336,6 +336,33 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     return self
 
 
+class AnalogCapacitor(DiscreteApplication, KiCadImportableBlock):
+  """Capacitor attached to an analog line, that presents as an open model-wise.
+  """
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
+    return {'1': self.io, '2': self.gnd}
+
+  @init_in_parent
+  def __init__(self, capacitance: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
+    super().__init__()
+
+    self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
+    self.gnd = self.Export(self.cap.neg.adapt_to(Ground()), [Common])
+    self.io = self.Export(self.cap.pos.adapt_to(AnalogSink()), [InOut])  # ideal open port
+
+    self.assign(self.cap.voltage, self.io.link().voltage - self.gnd.link().voltage)
+
+  def connected(self, gnd: Optional[Port[GroundLink]] = None, io: Optional[Port[AnalogLink]] = None) -> \
+          'AnalogCapacitor':
+    """Convenience function to connect both ports, returning this object so it can still be given a name."""
+    if gnd is not None:
+      cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+    if io is not None:
+      cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+    return self
+
+
 class CombinedCapacitorElement(Capacitor):  # to avoid an abstract part error
   def contents(self):
     super().contents()
