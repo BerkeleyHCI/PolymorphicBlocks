@@ -13,7 +13,7 @@ sealed trait CompilerError {
 }
 
 object CompilerError {
-  case class Unelaborated(record: ElaborateRecord, missing: Set[ElaborateRecord]) extends CompilerError {
+  case class Unelaborated(record: ElaborateRecord, missing: Iterable[ElaborateRecord]) extends CompilerError {
     // These errors may be redundant with below, but provides dependency data
     override def toString: String = s"Unelaborated missing dependencies $record:\n" +
       s"${missing.map(x => s"- $x").mkString("\n")}"
@@ -165,7 +165,7 @@ object CompilerError {
       root: DesignPath,
       constrName: String,
       value: expr.ValueExpr,
-      missing: Set[IndirectDesignPath]
+      missing: Iterable[IndirectDesignPath]
   ) extends AssertionError {
     override def toString: String =
       s"Unevaluated assertion: $root.$constrName: missing ${missing.mkString(", ")} in ${ExprToString.apply(value)}"

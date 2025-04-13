@@ -42,6 +42,7 @@ class ConstProp() {
   // Assign statements are added to the dependency graph only when arrays are ready
   // This is the authoritative source for the state of any param - in the graph (and its dependencies), or value solved
   // CONNECTED_LINK has an empty value but indicates that the path was resolved in that data structure
+  // NAME has an empty value but indicates declaration (existence in paramTypes)
   private val params = DependencyGraph[IndirectDesignPath, ExprValue]()
   // Parameter types are used to track declared parameters
   // Undeclared parameters cannot have values set, but can be forced (though the value is not effective until declared)
@@ -106,16 +107,9 @@ class ConstProp() {
       connectedLink.setValue(ready, DesignPath())
     }
 
-    var readyList = Set[IndirectDesignPath]()
+    var readyList = Iterable[IndirectDesignPath]()
     do {
-      // ignore params where we haven't seen the decl yet, to allow forced-assign when the block is expanded
-      // TODO support this for all params, including indirect ones (eg, name)
-      readyList = params.getReady.filter { elt =>
-        DesignPath.fromIndirectOption(elt) match {
-          case Some(elt) => paramTypes.keySet.contains(elt.asIndirect)
-          case None => true
-        }
-      }
+      readyList = params.getReady
       readyList.foreach { constrTarget =>
         val assign = paramAssign(constrTarget)
         new ExprEvaluatePartial(getValue, assign.root).map(assign.value) match {
@@ -165,6 +159,7 @@ class ConstProp() {
       case _ => throw new NotImplementedError(s"Unknown param declaration / init $decl")
     }
     paramTypes.put(target.asIndirect, paramType)
+    params.setValue(target.asIndirect + IndirectStep.Name, BooleanValue(false)) // dummy value
     update()
   }
 
@@ -196,6 +191,11 @@ class ConstProp() {
     require(target.splitConnectedLink.isEmpty, "cannot set CONNECTED_LINK")
     val paramSourceRecord = (root, constrName, targetExpr)
 
+    // ignore params where we haven't seen the decl yet, to allow forced-assign when the block is expanded
+    val paramTypesDep = DesignPath.fromIndirectOption(target) match {
+      case Some(path) => Seq(path.asIndirect + IndirectStep.Name)
+      case None => Seq() // has indirect step, no direct decl
+    }
     if (forced) {
       require(!forcedParams.contains(target), s"attempt to re-force $target")
       forcedParams.add(target)
@@ -203,7 +203,7 @@ class ConstProp() {
         !params.valueDefinedAt(target),
         s"forced value must be set before value is resolved, prior ${paramSource(target)}"
       )
-      params.addNode(target, Seq(), overwrite = true) // forced can overwrite other records
+      params.addNode(target, paramTypesDep, overwrite = true) // forced can overwrite other records
     } else {
       if (!forcedParams.contains(target)) {
         if (params.nodeDefinedAt(target)) { // TODO add propagated assign
@@ -213,7 +213,7 @@ class ConstProp() {
           )
           return // first set "wins"
         }
-        params.addNode(target, Seq())
+        params.addNode(target, paramTypesDep)
       } else {
         return // ignored - param was forced, discard the new assign
       }
