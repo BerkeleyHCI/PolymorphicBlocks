@@ -46,10 +46,10 @@ class DependencyGraph[KeyType, ValueType] {
     }
 
     if (overwrite && ready.contains(node)) {
-      ready.remove(ready.indexOf(node))
+      ready -= node
     }
     if (remainingDeps.isEmpty && !values.isDefinedAt(node)) {
-      ready.append(node)
+      ready += node
     }
   }
 
@@ -77,17 +77,14 @@ class DependencyGraph[KeyType, ValueType] {
     require(!values.isDefinedAt(node), s"redefinition of $node (prior value ${values(node)}, new value $value)")
     deps.put(node, mutable.ArrayBuffer())
     values.put(node, value)
-    if (ready.contains(node)) {
+    while (ready.contains(node)) {
       ready -= node
     }
 
     // See if the update caused anything else to be ready
     for (inverseDep <- inverseDeps.getOrElse(node, mutable.ArrayBuffer())) {
       val remainingDeps = deps(inverseDep)
-      remainingDeps.indexOf(node) match {
-        case nodeIndex if nodeIndex >= 0 => remainingDeps.remove(nodeIndex)
-        case _ =>
-      }
+      remainingDeps -= node
       if (remainingDeps.isEmpty && !values.isDefinedAt(inverseDep)) {
         require(!ready.contains(inverseDep))
         ready += inverseDep
