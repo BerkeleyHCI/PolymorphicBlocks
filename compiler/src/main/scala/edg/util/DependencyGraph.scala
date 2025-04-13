@@ -8,7 +8,7 @@ import scala.collection.mutable
   */
 class DependencyGraph[KeyType, ValueType] {
   private val values = mutable.HashMap[KeyType, ValueType]()
-  private val inverseDeps = mutable.HashMap[KeyType, mutable.Set[KeyType]]()
+  private val inverseDeps = mutable.HashMap[KeyType, mutable.ArrayBuffer[KeyType]]()
   private val deps = mutable.HashMap[KeyType, mutable.Set[KeyType]]() // cache structure tracking undefined deps
   private val ready = mutable.ArrayBuffer[KeyType]()
 
@@ -38,18 +38,18 @@ class DependencyGraph[KeyType, ValueType] {
       !values.isDefinedAt(node),
       s"reinsertion of dependency for node with value $node = ${values(node)} <- $dependencies"
     )
-    val remainingDeps = (dependencies.toSet -- values.keySet).to(mutable.Set)
+    val remainingDeps = dependencies.filter(!values.contains(_)).to(mutable.Set)
 
     deps.put(node, remainingDeps)
     for (dependency <- remainingDeps) {
-      inverseDeps.getOrElseUpdate(dependency, mutable.Set()) += node
+      inverseDeps.getOrElseUpdate(dependency, mutable.ArrayBuffer()) += node
     }
 
     if (overwrite && ready.contains(node)) {
-      ready -= node
+      ready.remove(ready.indexOf(node))
     }
     if (remainingDeps.isEmpty && !values.isDefinedAt(node)) {
-      ready += node
+      ready.append(node)
     }
   }
 
