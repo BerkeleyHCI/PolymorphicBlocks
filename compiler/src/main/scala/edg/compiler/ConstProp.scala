@@ -106,7 +106,7 @@ class ConstProp() {
       connectedLink.setValue(ready, DesignPath())
     }
 
-    var readyList = Set[IndirectDesignPath]()
+    var readyList = Iterable[IndirectDesignPath]()
     do {
       // ignore params where we haven't seen the decl yet, to allow forced-assign when the block is expanded
       // TODO support this for all params, including indirect ones (eg, name)

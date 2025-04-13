@@ -1622,21 +1622,19 @@ class Compiler private (
   def compile(): schema.Design = {
     import edg.ElemBuilder
 
-    // to handle partial compilation, as records are processed they are checked against a match to partial
-    // if there is a match, they are added here to be ignored on subsequent passes
-    // this is rebuilt dynamically on each compile() invocation
-    val partialCompileIgnoredRecords = mutable.Set[ElaborateRecord]()
-
     // repeat as long as there is work ready, and all the ready work isn't marked to be ignored
-    var readyList = Set[ElaborateRecord]()
+    var readyList = Iterable[ElaborateRecord]()
     do {
-      readyList = elaboratePending.getReady -- partialCompileIgnoredRecords
+      // TODO
+      // TODO: fix clearReadyNode being stateful, need to unclear before forking
+      // TODO: is there a cleaner do while loop?
+      readyList = elaboratePending.getReady
       readyList.foreach { elaborateRecord =>
         try {
           elaborateRecord match {
             case elaborateRecord @ ElaborateRecord.ExpandBlock(blockPath, blockClass, blockProgress) =>
               if (partial.blocks.contains(blockPath) || partial.classes.contains(blockClass)) {
-                partialCompileIgnoredRecords.add(elaborateRecord)
+                elaboratePending.clearReadyNode(elaborateRecord)
               } else {
                 expandBlock(blockPath, blockProgress)
                 elaboratePending.setValue(elaborateRecord, None)
@@ -1653,7 +1651,7 @@ class Compiler private (
             case elaborateRecord @ ElaborateRecord.Parameter(root, rootClasses, postfix, param) =>
               val container = resolveBlock(root).asInstanceOf[wir.HasParams]
               if (paramMatchesPartial(root, rootClasses, postfix)) {
-                partialCompileIgnoredRecords.add(elaborateRecord)
+                elaboratePending.clearReadyNode(elaborateRecord)
               } else {
                 constProp.addDeclaration(root ++ postfix, param)
                 elaboratePending.setValue(elaborateRecord, None)

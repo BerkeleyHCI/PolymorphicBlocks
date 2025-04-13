@@ -10,7 +10,7 @@ class DependencyGraph[KeyType, ValueType] {
   private val values = mutable.HashMap[KeyType, ValueType]()
   private val inverseDeps = mutable.HashMap[KeyType, mutable.Set[KeyType]]()
   private val deps = mutable.HashMap[KeyType, mutable.Set[KeyType]]() // cache structure tracking undefined deps
-  private val ready = mutable.Set[KeyType]()
+  private val ready = mutable.ArrayBuffer[KeyType]()
 
   // Copies data from another dependency graph into this one, like a shallow clone
   def initFrom(that: DependencyGraph[KeyType, ValueType]): Unit = {
@@ -95,8 +95,8 @@ class DependencyGraph[KeyType, ValueType] {
   }
 
   // Returns all the KeyTypes that don't have values and have satisfied dependencies.
-  def getReady: Set[KeyType] = {
-    ready.toSet
+  def getReady: Iterable[KeyType] = {
+    ready.toSeq
   }
 
   // Returns all the KeyTypes that have no values. NOT a fast operation. Includes items in the ready list.
