@@ -131,7 +131,9 @@ class IotRollerBlinds(JlcBoardTop):
                 (['mcu', 'programming'], 'uart-auto'),
                 (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
                 (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+                (['drv', 'isen_res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
                 (['drv', 'isen_res', 'res', 'require_basic_part'], False),
+
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
@@ -246,6 +248,7 @@ class IotCurtainRoller(JlcBoardTop):
                 (['mcu', 'programming'], 'uart-auto'),
                 (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
                 (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+                (['drv', 'isen_res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
                 (['drv', 'isen_res', 'res', 'require_basic_part'], False),
             ],
             class_refinements=[
