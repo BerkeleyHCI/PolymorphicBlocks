@@ -93,6 +93,7 @@ from .IoExpander_Pcf8574 import Pcf8574
 from .IoExpander_Pca9554 import Pca9554
 
 from .Connectors import PowerBarrelJack, Pj_102ah, Pj_036ah, LipoConnector, QwiicTarget
+from .Fuseholder_Nano2 import Nano2Fuseholder
 from .FanConnector import CpuFanConnector, CpuFanPwmControl
 from .CanBlocks import Pesd1can
 from .UsbPorts import UsbAReceptacle, UsbCReceptacle, UsbAPlugPads, UsbMicroBReceptacle

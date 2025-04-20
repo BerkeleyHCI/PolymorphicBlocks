@@ -57,18 +57,21 @@ class IotRollerBlinds(JlcBoardTop):
 
         self.conn = self.Block(IotRollerBlindsConnector())
 
-        self.vin = self.connect(self.pwr.pwr, self.pwr_out.pwr, self.conn.pwr)  # TODO conn should be cuttable
+        self.vin_raw = self.connect(self.pwr.pwr, self.pwr_out.pwr, self.conn.pwr)  # TODO conn should be cuttable
         self.gnd = self.connect(self.pwr.gnd, self.pwr_out.gnd, self.conn.gnd)
 
-        self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
-
-        # TODO blowy fuse on power in
 
         # POWER
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
+            (self.fuse, self.tp_vin), _ = self.chain(
+                self.vin_raw,
+                self.Block(SeriesPowerFuse(trip_current=(500, 1000)*mAmp)),
+                self.Block(VoltageTestPoint()),
+            )
+            self.vin = self.connect(self.fuse.pwr_out)
             (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
                 self.vin,
                 imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
@@ -154,18 +157,21 @@ class IotCurtainRoller(JlcBoardTop):
         self.pwr = self.Block(PowerInConnector())
         self.pwr_out = self.Block(PowerOutConnector())
 
-        self.vin = self.connect(self.pwr.pwr, self.pwr_out.pwr)
+        self.vin_raw = self.connect(self.pwr.pwr, self.pwr_out.pwr)
         self.gnd = self.connect(self.pwr.gnd, self.pwr_out.gnd)
 
-        self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
-
-        # TODO blowy fuse on power in
 
         # POWER
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
+            (self.fuse, self.tp_vin), _ = self.chain(
+                self.vin_raw,
+                self.Block(SeriesPowerFuse(trip_current=(300, 600)*mAmp)),
+                self.Block(VoltageTestPoint()),
+            )
+            self.vin = self.connect(self.fuse.pwr_out)
             (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
                 self.vin,
                 imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),

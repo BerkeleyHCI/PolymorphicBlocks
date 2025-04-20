@@ -74,7 +74,7 @@ from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPower
 from .PowerCircuits import HalfBridge, FetHalfBridge, HalfBridgeIndependent, HalfBridgePwm, FetHalfBridgeIndependent,\
     FetHalfBridgePwmReset
 from .AbstractLedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
-from .AbstractFuse import Fuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
+from .AbstractFuse import Fuse, SeriesPowerFuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
 from .AbstractOscillator import Oscillator, TableOscillator
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConnectorReset, \
