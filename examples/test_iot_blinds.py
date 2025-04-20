@@ -99,6 +99,11 @@ class IotRollerBlinds(JlcBoardTop):
             self.connect(self.conn.enca, self.mcu.gpio.request('enca'))
             self.connect(self.conn.encb, self.mcu.gpio.request('encb'))
 
+            # generic expansion
+            (self.qwiic_pull, self.qwiic, ), _ = self.chain(self.mcu.i2c.request('qwiic'),
+                                                            imp.Block(I2cPullup()),
+                                                            imp.Block(QwiicTarget()))
+
         # 12V DOMAIN
         with self.implicit_connect(
                 ImplicitConnect(self.vin, [Power]),
@@ -116,6 +121,7 @@ class IotRollerBlinds(JlcBoardTop):
             instance_refinements=[
                 (['mcu'], Esp32c3_Wroom02),
                 (['reg_3v3'], Tps54202h),
+                (['drv', 'vm_cap1', 'cap'], AluminumCapacitor),
             ],
             instance_values=[
                 (['refdes_prefix'], 'B'),  # unique refdes for panelization
@@ -125,6 +131,7 @@ class IotRollerBlinds(JlcBoardTop):
                 (['mcu', 'programming'], 'uart-auto'),
                 (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
                 (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+                (['drv', 'isen_res', 'res', 'require_basic_part'], False),
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
@@ -208,6 +215,9 @@ class IotCurtainRoller(JlcBoardTop):
 
             (self.sw, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw'))
 
+            # generic expansion
+            (self.qwiic, ), _ = self.chain(self.i2c, imp.Block(QwiicTarget()))
+
         # 12V DOMAIN
         with self.implicit_connect(
                 ImplicitConnect(self.vin, [Power]),
@@ -226,6 +236,7 @@ class IotCurtainRoller(JlcBoardTop):
             instance_refinements=[
                 (['mcu'], Esp32c3_Wroom02),
                 (['reg_3v3'], Tps54202h),
+                (['drv', 'vm_cap1', 'cap'], AluminumCapacitor),
             ],
             instance_values=[
                 (['refdes_prefix'], 'R'),  # unique refdes for panelization
@@ -235,6 +246,7 @@ class IotCurtainRoller(JlcBoardTop):
                 (['mcu', 'programming'], 'uart-auto'),
                 (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
                 (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+                (['drv', 'isen_res', 'res', 'require_basic_part'], False),
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),

@@ -78,6 +78,7 @@ class JlcTopRefinements(BaseBoardTop):
         (Resistor, JlcResistor),
         (Capacitor, JlcCapacitor),
         (Inductor, JlcInductor),
+        (AluminumCapacitor, JlcAluminumCapacitor),
         (FerriteBead, JlcFerriteBead),
         (PptcFuse, JlcPptcFuse),
         (ResistorArray, JlcResistorArray),
