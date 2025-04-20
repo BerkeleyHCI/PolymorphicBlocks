@@ -113,8 +113,8 @@ class IotRollerBlinds(JlcBoardTop):
             self.connect(self.drv.vref, self.v3v3)
             self.connect(self.mcu.gpio.request('motor1'), self.drv.in1)
             self.connect(self.mcu.gpio.request('motor2'), self.drv.in2)
-            self.connect(self.drv.out1, self.conn.motor1)
-            self.connect(self.drv.out2, self.conn.motor2)
+            self.connect(self.drv.out1, self.conn.motor2)
+            self.connect(self.drv.out2, self.conn.motor1)
 
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
