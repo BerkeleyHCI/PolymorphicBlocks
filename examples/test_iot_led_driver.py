@@ -52,9 +52,8 @@ class IotLedDriver(JlcBoardTop):
       (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
         self.i2c,
         imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
-      self.als = imp.Block(Bh1750())
       self.tof = imp.Block(Vl53l0x())
-      self.connect(self.i2c, self.als.i2c, self.tof.i2c)
+      self.connect(self.i2c, self.tof.i2c)
 
     # Vin DOMAIN
     self.led_drv = ElementDict[LedDriver]()
@@ -64,8 +63,8 @@ class IotLedDriver(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       for i in range(4):
-        led_drv = self.led_drv[i] = imp.Block(LedDriver(max_current=700*mAmp(tol=0.1)))
-        led_drv.with_mixin(LedDriverSwitchingConverter(ripple_limit=500*mAmp))
+        led_drv = self.led_drv[i] = imp.Block(LedDriver(max_current=600*mAmp(tol=0.1)))
+        led_drv.with_mixin(LedDriverSwitchingConverter(ripple_limit=600*mAmp))
         self.connect(self.mcu.gpio.request(f'led_pwm_{i}'), led_drv.with_mixin(LedDriverPwm()).pwm)
 
         led_conn = self.led_conn[i] = self.Block(JstPhKHorizontal(2))
@@ -110,7 +109,7 @@ class IotLedDriver(JlcBoardTop):
         (['led_drv[1]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[2]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[3]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
-        (['led_drv[0]', 'ind', 'part'], "SWPA6045S680MT"),
+        # (['led_drv[0]', 'ind', 'part'], "SWPA6045S680MT"),
         (['led_drv[0]', 'ind', 'manual_frequency_rating'], Range(0, 6.4e6)),
         (['led_drv[1]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
         (['led_drv[1]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
@@ -126,6 +125,7 @@ class IotLedDriver(JlcBoardTop):
       ],
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
+        (SelectorArea, ['footprint_area'], Range.from_lower(1.5)),  # at least 0402
       ]
     )
 
