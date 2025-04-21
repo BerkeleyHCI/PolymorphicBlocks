@@ -117,6 +117,12 @@ class IotRollerBlinds(JlcBoardTop):
             self.connect(self.drv.out1, self.conn.motor2)
             self.connect(self.drv.out2, self.conn.motor1)
 
+        self._block_diagram_grouping = self.Metadata({
+            'pwr': 'pwr, pwr_out, tp_gnd, fuse, tp_vin, reg_3v3, prot_3v3, tp_3v3, vin_sense',
+            'mcu': 'mcu, ledr, als, qwiic, qwiic_pull',
+            'app': 'conn, drv',
+        })
+
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[
@@ -240,6 +246,12 @@ class IotCurtainRoller(JlcBoardTop):
             self.connect(self.mcu.gpio.request('motor2'), self.drv.in2)
             self.connect(self.drv.out1, self.motor.motor1)
             self.connect(self.drv.out2, self.motor.motor2)
+
+        self._block_diagram_grouping = self.Metadata({
+            'pwr': 'pwr, pwr_out, fuse, tp_vin, reg_3v3, prot_3v3, vin_sense',
+            'mcu': 'mcu, ledr, i2c_pull, als, qwiic',
+            'app': 'motor, drv, enca, encb',
+        })
 
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
