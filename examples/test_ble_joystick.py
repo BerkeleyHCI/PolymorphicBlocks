@@ -76,7 +76,7 @@ class BleJoystick(JlcBoardTop):
         return super().refinements() + Refinements(
             instance_refinements=[
                 (['mcu'], Esp32c3_Wroom02),
-                (['reg_3v3'], Ldl1117),
+                (['reg_3v3'], Ap7215),
             ],
             instance_values=[
                 (['refdes_prefix'], 'J'),  # unique refdes for panelization
