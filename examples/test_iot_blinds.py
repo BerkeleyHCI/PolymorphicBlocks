@@ -225,7 +225,7 @@ class IotCurtainRoller(JlcBoardTop):
             self.i2c = self.mcu.i2c.request('i2c')
             (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
                 self.i2c,
-                imp.Block(I2cPullup()), imp.Block(I2cTestPoint()))
+                imp.Block(I2cPullup()), imp.Block(I2cTestPoint('i2c')))
             self.als = imp.Block(Bh1750())
             self.connect(self.i2c, self.als.i2c)
 
