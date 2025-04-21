@@ -264,6 +264,14 @@ class IotCurtainRoller(JlcBoardTop):
                 (['refdes_prefix'], 'R'),  # unique refdes for panelization
                 (['mcu', 'pin_assigns'], [
                     'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
+                    'vin_sense=4',
+                    'motor1=14',
+                    'motor2=15',
+                    'enca=13',
+                    'encb=10',
+                    'i2c.sda=5',
+                    'i2c.scl=6',
+                    'sw=3',
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),
                 (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
