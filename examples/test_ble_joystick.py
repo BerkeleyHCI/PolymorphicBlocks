@@ -9,7 +9,10 @@ class BleJoystick(JlcBoardTop):
     def contents(self) -> None:
         super().contents()
 
-        self.pwr = self.Block(LipoConnector())
+        # really should operate down to ~3.3v,
+        # this forces the model to allow the LDO to go into tracking
+        self.pwr = self.Block(LipoConnector(voltage=(4.0, 4.2)*Volt,
+                                            actual_voltage=(4.0, 4.2)*Volt))
 
         self.vbat = self.connect(self.pwr.pwr)
         self.gnd = self.connect(self.pwr.gnd)
@@ -43,15 +46,21 @@ class BleJoystick(JlcBoardTop):
             self.mcu.with_mixin(IoControllerWifi())
 
             self.stick = imp.Block(XboxElite2Joystick())
-            self.connect(self.stick.ax1, self.mcu.adc.request('ax1'))
-            self.connect(self.stick.ax2, self.mcu.adc.request('ax2'))
+            (self.ax1_div, ), _ = self.chain(self.stick.ax1,
+                                             imp.Block(SignalDivider(ratio=(0.45, 0.55), impedance=(1, 10)*kOhm)),
+                                             self.mcu.adc.request('ax1'))
+            (self.ax2_div, ), _ = self.chain(self.stick.ax2,
+                                             imp.Block(SignalDivider(ratio=(0.45, 0.55), impedance=(1, 10)*kOhm)),
+                                             self.mcu.adc.request('ax2'))
 
             self.connect(self.stick.sw, self.gate.btn_in)
             self.connect(self.gate.btn_out, self.mcu.gpio.request('sw'))
             self.connect(self.mcu.gpio.request('gate_ctl'), self.gate.control)
 
             self.trig = imp.Block(A1304())
-            self.connect(self.trig.out, self.mcu.adc.request('trig'))
+            (self.trig_div, ), _ = self.chain(self.trig.out,
+                                              imp.Block(SignalDivider(ratio=(0.45, 0.55), impedance=(1, 10)*kOhm)),
+                                              self.mcu.adc.request('trig'))
 
             # debugging LEDs
             (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))
