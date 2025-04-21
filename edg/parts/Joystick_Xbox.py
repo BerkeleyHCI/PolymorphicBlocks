@@ -1,4 +1,4 @@
-from  ..abstract_parts import *
+from ..abstract_parts import *
 
 
 class XboxElite2Joystick(FootprintBlock):
@@ -10,7 +10,7 @@ class XboxElite2Joystick(FootprintBlock):
         self.pwr = self.Port(VoltageSink(
             voltage_limits=(3.0, 3.6)*Volt,  # assumed, for hall effect sensors
             current_draw=(0, 4)*mAmp  # assumed, for hall effect sensors
-        ))
+        ), [Power])
         self.sw = self.Port(DigitalSource.low_from_supply(self.gnd))
         self.ax1 = self.Port(AnalogSource.from_supply(self.gnd, self.pwr))
         self.ax2 = self.Port(AnalogSource.from_supply(self.gnd, self.pwr))
