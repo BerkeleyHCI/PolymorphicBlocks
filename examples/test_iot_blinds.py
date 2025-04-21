@@ -57,7 +57,7 @@ class IotRollerBlinds(JlcBoardTop):
 
         self.conn = self.Block(IotRollerBlindsConnector())
 
-        self.vin_raw = self.connect(self.pwr.pwr, self.pwr_out.pwr, self.conn.pwr)  # TODO conn should be cuttable
+        self.vin_raw = self.connect(self.pwr.pwr, self.pwr_out.pwr)
         self.gnd = self.connect(self.pwr.gnd, self.pwr_out.gnd, self.conn.gnd)
 
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
@@ -71,7 +71,8 @@ class IotRollerBlinds(JlcBoardTop):
                 self.Block(SeriesPowerFuse(trip_current=(500, 1000)*mAmp)),
                 self.Block(VoltageTestPoint()),
             )
-            self.vin = self.connect(self.fuse.pwr_out)
+            self.vin = self.connect(self.fuse.pwr_out, self.conn.pwr)
+
             (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
                 self.vin,
                 imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
@@ -127,6 +128,13 @@ class IotRollerBlinds(JlcBoardTop):
                 (['refdes_prefix'], 'B'),  # unique refdes for panelization
                 (['mcu', 'pin_assigns'], [
                     'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
+                    'vin_sense=4',
+                    'motor1=15',
+                    'motor2=14',
+                    'enca=13',
+                    'encb=10',
+                    'qwiic.sda=6',
+                    'qwiic.scl=5',
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),
                 (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
