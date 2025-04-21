@@ -11,14 +11,15 @@ class BleJoystick(JlcBoardTop):
 
         # really should operate down to ~3.3v,
         # this forces the model to allow the LDO to go into tracking
-        self.pwr = self.Block(LipoConnector(voltage=(4.0, 4.2)*Volt,
+        self.bat = self.Block(LipoConnector(voltage=(4.0, 4.2)*Volt,
                                             actual_voltage=(4.0, 4.2)*Volt))
+        self.usb = self.Block(UsbCReceptacle())
 
-        self.vbat = self.connect(self.pwr.pwr)
-        self.gnd = self.connect(self.pwr.gnd)
+        self.vbat = self.connect(self.bat.pwr)
+        self.gnd = self.connect(self.bat.gnd, self.usb.gnd)
 
-        self.tp_bat = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
-        self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
+        self.tp_bat = self.Block(VoltageTestPoint()).connected(self.bat.pwr)
+        self.tp_gnd = self.Block(GroundTestPoint()).connected(self.bat.gnd)
 
         # POWER
         with self.implicit_connect(
@@ -36,6 +37,9 @@ class BleJoystick(JlcBoardTop):
             self.vbat_sense_gate = imp.Block(HighSideSwitch())
             self.connect(self.vbat_sense_gate.pwr, self.vbat)
 
+            self.chg = imp.Block(Mcp73831(charging_current=200*mAmp(tol=0.2)))
+            self.connect(self.usb.pwr, self.chg.pwr)
+            self.connect(self.chg.pwr_bat, self.bat.chg)
 
         # 3V3 DOMAIN
         with self.implicit_connect(
@@ -100,6 +104,7 @@ class BleJoystick(JlcBoardTop):
                 (PassiveConnector, JstPhKHorizontal),
             ],
             class_values=[
+                (SelectorArea, ['footprint_area'], Range.from_lower(1.5)),  # at least 0402
                 (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
             ]
         )
