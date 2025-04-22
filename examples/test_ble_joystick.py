@@ -66,6 +66,11 @@ class BleJoystick(JlcBoardTop):
                                               imp.Block(SignalDivider(ratio=(0.45, 0.55), impedance=(1, 10)*kOhm)),
                                               self.mcu.adc.request('trig'))
 
+            self.sw = ElementDict()
+            for i in range(3):
+                sw = self.sw[i] = imp.Block(DigitalSwitch())
+                self.connect(sw.out, self.mcu.gpio.request(f'sw{i}'))
+
             # debugging LEDs
             (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))
 
@@ -81,30 +86,38 @@ class BleJoystick(JlcBoardTop):
             instance_refinements=[
                 (['mcu'], Esp32c3_Wroom02),
                 (['reg_3v3'], Ap7215),
+                (['sw[0]', 'package'], SmtSwitch),
+                (['sw[1]', 'package'], SmtSwitch),
+                (['sw[2]', 'package'], SmtSwitch),
+                (['mcu', 'boot', 'package'], SmtSwitch),
             ],
             instance_values=[
                 (['refdes_prefix'], 'J'),  # unique refdes for panelization
                 (['mcu', 'pin_assigns'], [
                     'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
-                    # 'vin_sense=4',
-                    # 'motor1=15',
-                    # 'motor2=14',
-                    # 'enca=13',
-                    # 'encb=10',
-                    # 'qwiic.sda=6',
-                    # 'qwiic.scl=5',
+                    # note, only ADC pins are IO0/1/3/4/5 (pins 18/17/15/3/4)
+                    'ax1=3',
+                    'ax2=15',
+                    'trig=17',
+                    'vbat_sense=18',
+                    'vbat_sense_gate=14',
+                    'gate_ctl=5',
+                    'sw=4',  # joystick
+                    'sw0=10',  # membranes
+                    'sw1=13',
+                    'sw2=6',
                 ]),
-                (['mcu', 'programming'], 'uart-auto'),
+                (['mcu', 'programming'], 'uart-auto-button'),
 
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
-                (TagConnect, TagConnectNonLegged),
                 (TestPoint, CompactKeystone5015),
                 (PassiveConnector, JstPhKVertical),
             ],
             class_values=[
                 (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
+                (SmtSwitch, ['fp_footprint'], "project:MembraneSwitch_4mm")
             ]
         )
 
