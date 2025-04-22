@@ -101,10 +101,9 @@ class BleJoystick(JlcBoardTop):
                 (EspProgrammingHeader, EspProgrammingTc2030),
                 (TagConnect, TagConnectNonLegged),
                 (TestPoint, CompactKeystone5015),
-                (PassiveConnector, JstPhKHorizontal),
+                (PassiveConnector, JstPhKVertical),
             ],
             class_values=[
-                (SelectorArea, ['footprint_area'], Range.from_lower(1.5)),  # at least 0402
                 (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
             ]
         )
