@@ -4,6 +4,28 @@ from edg import *
 from .test_high_switch import CalSolCanConnectorRa
 
 
+class Obd2Connector(FootprintBlock):
+  """OBD2 dongle-side (not car-side) connector"""
+  def __init__(self) -> None:
+    super().__init__()
+    self.gnd = self.Port(Ground())
+    self.pwr = self.Port(VoltageSource(voltage_out=12*Volt(tol=0.2)))
+
+    self.can = self.Port(CanDiffPort())
+
+  def contents(self) -> None:
+    super().contents()
+    self.footprint(
+      'U', 'project:J1962',
+      {
+        '6': self.can.canh,
+        '14': self.can.canl,
+        '5': self.gnd,  # note, 4 is chassis gnd
+        '16': self.pwr,  # battery voltage
+      },
+    )
+
+
 class CanAdapter(BoardTop):
   def contents(self) -> None:
     super().contents()

@@ -66,7 +66,7 @@ class BleJoystick(JlcBoardTop):
                                               imp.Block(SignalDivider(ratio=(0.45, 0.55), impedance=(1, 10)*kOhm)),
                                               self.mcu.adc.request('trig'))
 
-            self.sw = ElementDict()
+            self.sw = ElementDict[DigitalSwitch]()
             for i in range(3):
                 sw = self.sw[i] = imp.Block(DigitalSwitch())
                 self.connect(sw.out, self.mcu.gpio.request(f'sw{i}'))
