@@ -8,7 +8,7 @@ class Obd2Connector(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground())
-    self.pwr = self.Port(VoltageSource(voltage_out=12*Volt(tol=0.2)))
+    self.pwr = self.Port(VoltageSource(voltage_out=(12, 26)*Volt))
 
     self.can = self.Port(CanDiffPort())
 
@@ -57,8 +57,8 @@ class CanAdapter(BoardTop):
 
       # debugging LEDs
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('ledr'))
-      (self.ledg, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Green)), self.mcu.gpio.request('ledg'))
-      (self.ledw, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.White)), self.mcu.gpio.request('ledw'))
+      (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
+      (self.ledw, ), _ = self.chain(imp.Block(IndicatorLed(Led.White)), self.mcu.gpio.request('ledw'))
 
       (self.vobd_sense, ), _ = self.chain(
         self.vobd,
@@ -69,15 +69,15 @@ class CanAdapter(BoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32s3_Wroom_1),
+        (['mcu'], Esp32c3_Wroom02),
         (['reg_3v3'], Tps54202h),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [
-          'ledr=_GPIO0_STRAP',  # force using the strapping / boot mode pin
+          'ledr=_GPIO9_STRAP',  # force using the strapping / boot mode pin
         ]),
         (['mcu', 'programming'], 'uart-auto'),
-        (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
+        # (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
       ],
       class_refinements=[
