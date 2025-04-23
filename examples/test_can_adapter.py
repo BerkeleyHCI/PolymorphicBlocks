@@ -73,11 +73,17 @@ class CanAdapter(BoardTop):
         (['reg_3v3'], Tps54202h),
       ],
       instance_values=[
+        (['refdes_prefix'], 'O'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
           'ledr=_GPIO9_STRAP',  # force using the strapping / boot mode pin
+          'ledg=13',
+          'ledw=14',
+          'can.txd=6',
+          'can.rxd=5',
+          'vobd_sense=4',
+
         ]),
         (['mcu', 'programming'], 'uart-auto'),
-        # (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
       ],
       class_refinements=[
