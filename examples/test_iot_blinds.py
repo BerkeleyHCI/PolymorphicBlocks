@@ -24,7 +24,7 @@ class PowerInConnector(Connector):
         self.conn = self.Block(JstPh())
         self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
         self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSource(
-            voltage_out=12*Volt(tol=0.2),
+            voltage_out=(10, 24)*Volt,
             current_limits=(0, 1)*Amp,
         )))
 
@@ -147,7 +147,8 @@ class IotRollerBlinds(JlcBoardTop):
                 (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
                 (['drv', 'isen_res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
                 (['drv', 'isen_res', 'res', 'require_basic_part'], False),
-                (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.08))  # to get a 1210-size inductor
+                (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.08)),  # to get a 1210-size inductor
+                (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 1.0),
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
@@ -242,7 +243,7 @@ class IotCurtainRoller(JlcBoardTop):
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             self.motor = self.Block(MotorConnector())
-            self.drv = imp.Block(Drv8870(current_trip=500*mAmp(tol=0.1)))
+            self.drv = imp.Block(Drv8870(current_trip=150*mAmp(tol=0.1)))
             self.connect(self.drv.vref, self.v3v3)
             self.connect(self.mcu.gpio.request('motor1'), self.drv.in1)
             self.connect(self.mcu.gpio.request('motor2'), self.drv.in2)
@@ -279,8 +280,8 @@ class IotCurtainRoller(JlcBoardTop):
                 (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
                 (['drv', 'isen_res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
                 (['drv', 'isen_res', 'res', 'require_basic_part'], False),
-                (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.08)),
-                (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.5)  # to get a 1210-size inductor
+                (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.08)),  # to get a 1210-size inductor
+                (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 1.0),
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
