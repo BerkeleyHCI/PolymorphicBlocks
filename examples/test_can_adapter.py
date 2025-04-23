@@ -8,7 +8,7 @@ class Obd2Connector(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground())
-    self.pwr = self.Port(VoltageSource(voltage_out=(12, 26)*Volt))
+    self.pwr = self.Port(VoltageSource(voltage_out=(10, 24)*Volt))
 
     self.can = self.Port(CanDiffPort())
 
@@ -25,23 +25,23 @@ class Obd2Connector(FootprintBlock):
     )
 
 
-class CanAdapter(BoardTop):
+class CanAdapter(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
     self.obd = self.Block(Obd2Connector())
-
-    self.vobd = self.connect(self.obd.pwr)
     self.gnd = self.connect(self.obd.gnd)
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.reg_3v3, self.prot_3v3), _ = self.chain(
-        self.vobd,
+      (self.ferrite, self.reg_3v3, self.prot_3v3), _ = self.chain(
+        self.obd.pwr,
+        self.Block(SeriesPowerFerriteBead()),
         imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
       )
+      self.vobd = self.connect(self.ferrite.pwr_out)
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
     with self.implicit_connect(
@@ -85,6 +85,7 @@ class CanAdapter(BoardTop):
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+        (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 1.0),
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
