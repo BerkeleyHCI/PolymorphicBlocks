@@ -143,11 +143,10 @@ class IotRollerBlinds(JlcBoardTop):
                     'qwiic.scl=5',
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),
-                (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
                 (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
                 (['drv', 'isen_res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
                 (['drv', 'isen_res', 'res', 'require_basic_part'], False),
-
+                (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.08))  # to get a 1210-size inductor
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
@@ -274,10 +273,10 @@ class IotCurtainRoller(JlcBoardTop):
                     'sw=3',
                 ]),
                 (['mcu', 'programming'], 'uart-auto'),
-                (['reg_3v3', 'power_path', 'inductor', 'part'], "NR5040T220M"),
                 (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
                 (['drv', 'isen_res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
                 (['drv', 'isen_res', 'res', 'require_basic_part'], False),
+                (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.08))  # to get a 1210-size inductor
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
