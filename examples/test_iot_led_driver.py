@@ -3,36 +3,34 @@ import unittest
 from edg import *
 
 
+class PowerInConnector(Connector):
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(JstPh())
+    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSource(
+      voltage_out=(10, 24)*Volt,
+      current_limits=(0, 5)*Amp,
+    )))
+
+
 class IotLedDriver(JlcBoardTop):
   """Multichannel IoT high-power external LED driver with a 12v barrel jack input.
   """
   def contents(self) -> None:
     super().contents()
 
-    RING_LEDS = 18  # number of RGBs for the ring indicator
-
-    self.pwr = self.Block(PowerBarrelJack(voltage_out=12*Volt(tol=0.05), current_limits=(0, 5)*Amp))
+    self.pwr = self.Block(PowerInConnector())
 
     self.v12 = self.connect(self.pwr.pwr)
     self.gnd = self.connect(self.pwr.gnd)
-
-    self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
-    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
 
     # POWER
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.reg_5v, self.tp_5v, self.prot_5v), _ = self.chain(
-        self.v12,
-        imp.Block(VoltageRegulator(output_voltage=4*Volt(tol=0.05))),
-        self.Block(VoltageTestPoint()),
-        imp.Block(ProtectionZenerDiode(voltage=(5.5, 6.8)*Volt))
-      )
-      self.v5 = self.connect(self.reg_5v.pwr_out)
-
       (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-        self.v5,
+        self.v12,
         imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
@@ -50,25 +48,11 @@ class IotLedDriver(JlcBoardTop):
       # debugging LEDs
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
 
-      self.enc = imp.Block(DigitalRotaryEncoder())
-      self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
-      self.connect(self.enc.b, self.mcu.gpio.request('enc_b'))
-      self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request('enc_sw'))
-
       (self.v12_sense, ), _ = self.chain(
         self.v12,
         imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
         self.mcu.adc.request('v12_sense')
       )
-
-    # 5V DOMAIN
-    with self.implicit_connect(
-            ImplicitConnect(self.v5, [Power]),
-            ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      (self.rgb_ring, ), _ = self.chain(
-        self.mcu.gpio.request('rgb'),
-        imp.Block(NeopixelArray(RING_LEDS)))
 
     # 12V DOMAIN
     self.led_drv = ElementDict[LedDriver]()
@@ -96,13 +80,8 @@ class IotLedDriver(JlcBoardTop):
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32s3_Wroom_1),
-        (['reg_5v'], Tps54202h),
-        (['reg_3v3'], Ldl1117),
-        (['led_drv[0]'], Al8861),
-        (['led_drv[1]'], Al8861),
-        (['led_drv[2]'], Al8861),
-        (['led_drv[3]'], Al8861),
+        (['mcu'], Esp32c3),
+        (['reg_3v3'], Tps54202h),
       ],
       instance_values=[
         (['refdes_prefix'], 'L'),  # unique refdes for panelization
@@ -111,20 +90,19 @@ class IotLedDriver(JlcBoardTop):
           # https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf
           # note: pin 34 NC, GPIO8 (pin 10) is strapping and should be PUR
           # bottom row doesn't exist
-          'v12_sense=4',
-          'enc_a=8',
-          'enc_b=7',
-          'enc_sw=6',
-          'rgb=5',
-          'ledr=14',
-          'led_pwm_0=39',
-          'led_pwm_1=38',
-          'led_pwm_2=35',
-          'led_pwm_3=33',
+          # 'v12_sense=4',
+          # 'enc_a=8',
+          # 'enc_b=7',
+          # 'enc_sw=6',
+          # 'rgb=5',
+          # 'ledr=14',
+          # 'led_pwm_0=39',
+          # 'led_pwm_1=38',
+          # 'led_pwm_2=35',
+          # 'led_pwm_3=33',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
-        (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
-        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+        (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
 
         (['led_drv[0]', 'diode_voltage_drop'], Range(0, 0.5)),
         (['led_drv[1]', 'diode_voltage_drop'], ParamValue(['led_drv[0]', 'diode_voltage_drop'])),
@@ -135,7 +113,7 @@ class IotLedDriver(JlcBoardTop):
         (['led_drv[1]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[2]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[3]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
-        (['led_drv[0]', 'ind', 'part'], "SWPA6045S680MT"),
+        # (['led_drv[0]', 'ind', 'part'], "SWPA6045S680MT"),
         (['led_drv[0]', 'ind', 'manual_frequency_rating'], Range(0, 6.4e6)),
         (['led_drv[1]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
         (['led_drv[1]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
@@ -153,6 +131,7 @@ class IotLedDriver(JlcBoardTop):
         (TagConnect, TagConnectNonLegged),
       ],
       class_values=[
+        (SelectorArea, ['footprint_area'], Range.from_lower(1.5)),  # at least 0402
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
       ]
     )
