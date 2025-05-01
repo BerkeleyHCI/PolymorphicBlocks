@@ -71,6 +71,7 @@ from .BuckConverter_Custom import CustomSyncBuckConverterIndependent
 from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverterPwm
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr, SoftPowerGate, SoftPowerSwitch, PmosReverseProtection, PmosChargerReverseProtection
 from .LedDriver_Al8861 import Al8861
+from .LedDriver_Tps92200 import Tps92200
 from .ResetGenerator_Apx803s import Apx803s
 from .BootstrapVoltageAdder import BootstrapVoltageAdder
 

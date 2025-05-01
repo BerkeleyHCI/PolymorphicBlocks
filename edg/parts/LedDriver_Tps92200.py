@@ -10,7 +10,7 @@ class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.gnd = self.Port(Ground(), [Common])
         self.vin = self.Port(VoltageSink(
             voltage_limits=(4, 30)*Volt,  # note, UVLO at 3.5-3.9v
-            current_draw=(0.055, 0.55)*mAmp,  # shutdown typ to quiescent typ
+            current_draw=(0.001, 1)*mAmp,  # shutdown typ (Vdim=0) to operating max
         ), [Power])
 
         self.dim = self.Port(DigitalSink.from_supply(
@@ -23,18 +23,10 @@ class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             voltage_limit_abs=(-0.1, 6)*Volt
         ))
 
-        self.sw = self.Port(Passive())
+        self.sw = self.Port(VoltageSource())
         self.boot = self.Port(Passive())
 
-        # self.vset_pwm = self.Port(DigitalSink(
-        #     voltage_limits=(0, 5)*Volt,
-        #     input_thresholds=(0.2, 0.25)*Volt
-        # ), optional=True)
-        #
-        # self.peak_output_current = self.ArgParameter(peak_output_current)
-
     def contents(self):
-        # self.require(self.peak_output_current < 2*Amp)
         self.footprint(
             'U', 'Package_TO_SOT_SMD:SOT-23-6',
             {
@@ -52,63 +44,58 @@ class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Tps92200(LedDriverPwm, LedDriverSwitchingConverter, LedDriver, GeneratorBlock):
+class Tps92200(LedDriverPwm, LedDriver, GeneratorBlock):
     """TPS92200 buck 4-30V 1.5A 1 MHz LED driver and 150nS min on-time.
     This is the -D2 variant, with PWM input for 1-100% range as a 20-200kHz digital signal"""
     @init_in_parent
-    def __init__(self, diode_voltage_drop: RangeLike = Range.all()):
+    def __init__(self, led_voltage: RangeLike = (1, 4)*Volt, *,
+                 input_ripple_limit: FloatLike = 0.2*Volt,  # from 8.2 example application
+                 output_ripple_limit: FloatLike = 0.08*Volt,  # 20mA ripple @ ~4ohm
+                 ripple_current_factor: RangeLike = (0.2, 0.5)) -> None:
         super().__init__()
 
         self.ic = self.Block(Tps92200_Device(FloatExpr()))
-        # self.connect(self.pwr, self.ic.vin)
-        # self.connect(self.gnd, self.ic.gnd)
-        #
-        # self.generator_param(self.max_current)
-        # self.diode_voltage_drop = self.ArgParameter(diode_voltage_drop)
-        #
-        # self.generator_param(self.pwm.is_connected())
-        #
-        # self.actual_ripple = self.Parameter(RangeExpr())
+        self.connect(self.gnd, self.ic.gnd)
+        self.connect(self.pwr, self.ic.vin)
+        self.connect(self.pwm, self.ic.dim)
+        self.require(self.pwm.is_connected())  # DIM does not appear to have a internal pull
+
+        self.led_voltage = self.ArgParameter(led_voltage)
+        self.input_ripple_limit = self.ArgParameter(input_ripple_limit)
+        self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
+        self.ripple_current_factor = self.ArgParameter(ripple_current_factor)
 
     def generate(self):
         super().contents()
 
-        # self.require(self.max_current.within((0, 1.5)*Amp))  # for MSOP and SOT89 packages
-        #
-        # isense_ref = Range(0.096, 0.104)
-        # self.rsense = self.Block(CurrentSenseResistor(resistance=(1/self.max_current).shrink_multiply(isense_ref),
-        #                                               sense_in_reqd=False))
-        # self.connect(self.rsense.pwr_in, self.pwr)
-        # self.connect(self.rsense.sense_out, self.ic.isense)
-        # self.connect(self.rsense.pwr_out, self.leda.adapt_to(VoltageSink(current_draw=self.max_current)))
-        #
-        # self.pwr_cap = self.Block(DecouplingCapacitor((4.7*0.8, 10*1.2)*uFarad))\
-        #     .connected(self.gnd, self.pwr)  # "commonly used values""
-        #
-        # peak_current = isense_ref / self.rsense.actual_resistance + (0, self.ripple_limit / 2)
-        # self.assign(self.ic.peak_output_current, peak_current.upper())
-        #
-        # # minimum switch on time = 500ns, recommended maximum switch off time = 250kHz @ 75% = 30us
-        # min_inductance = self.pwr.link().voltage.upper() * (1.5*uSecond) / self.ripple_limit
-        #
-        # self.ind = self.Block(Inductor(
-        #     inductance=(min_inductance, float('inf')),
-        #     current=peak_current,
-        #     frequency=(0.25, 1)*MHertz
-        # ))
-        # # recommended inductance between 33 and 100uH, accounting for ~20% tolerance
-        # self.require(self.ind.actual_inductance.within((33*0.8, 100*1.2)*uHenry))
-        # self.assign(self.actual_ripple, self.pwr.link().voltage * (1.5*uSecond) / self.ind.actual_inductance)
-        #
-        # self.diode = self.Block(Diode(
-        #     reverse_voltage=self.pwr.link().voltage,
-        #     current=peak_current,
-        #     voltage_drop=self.diode_voltage_drop,
-        #     reverse_recovery_time=(0, 500)*nSecond,  # arbitrary for 'fast'
-        # ))
-        # self.connect(self.ind.a, self.ledk)
-        # self.connect(self.ind.b, self.ic.lx, self.diode.anode)
-        # self.connect(self.diode.cathode.adapt_to(VoltageSink()), self.pwr)
-        #
-        # if self.get(self.pwm.is_connected()):
-        #     self.connect(self.pwm, self.ic.vset_pwm)
+        with self.implicit_connect(
+                ImplicitConnect(self.pwr, [Power]),
+                ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            self.cap = imp.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))
+
+            self.boot_cap = self.Block(Capacitor(capacitance=0.1*uFarad(tol=0.2), voltage=(0, 7) * Volt))
+            self.connect(self.boot_cap.neg.adapt_to(VoltageSink()), self.ic.sw)
+            self.connect(self.boot_cap.pos, self.ic.boot)
+
+            isense_ref = Range(0.096, 0.102)
+            self.rsense = self.Block(CurrentSenseResistor(resistance=(1/self.max_current).shrink_multiply(isense_ref),
+                                                          sense_in_reqd=False))
+            self.connect(self.rsense.sense_out, self.ic.fb)
+            self.connect(self.rsense.pwr_out, self.ledk.adapt_to(VoltageSink(current_draw=self.max_current)))
+            self.connect(self.rsense.pwr_in, self.gnd.as_voltage_source())
+
+            frequency = (0.8, 1.2)*MHertz
+            self.power_path = imp.Block(BuckConverterPowerPath(
+                self.pwr.link().voltage, self.led_voltage, frequency,
+                self.max_current, (0, 1.5)*Amp,
+                inductor_current_ripple=BuckConverter._calculate_ripple(
+                    self.max_current,
+                    self.ripple_current_factor,
+                    rated_current=1.5*Amp),
+                input_voltage_ripple=self.input_ripple_limit,
+                output_voltage_ripple=self.output_ripple_limit,
+                dutycycle_limit=(0, 0.99)
+            ))
+            self.connect(self.power_path.pwr_out, self.leda.adapt_to(VoltageSink(current_draw=self.max_current)))
+            self.connect(self.power_path.switch, self.ic.sw)
