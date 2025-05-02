@@ -86,16 +86,8 @@ class IotLedDriver(JlcBoardTop):
       instance_values=[
         (['refdes_prefix'], 'L'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          # also designed to be compatible w/ ESP32C6
-          # https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf
-          # note: pin 34 NC, GPIO8 (pin 10) is strapping and should be PUR
-          # bottom row doesn't exist
+          'ledr=_GPIO9_STRAP',  # force using the strapping / boot mode pin
           # 'v12_sense=4',
-          # 'enc_a=8',
-          # 'enc_b=7',
-          # 'enc_sw=6',
-          # 'rgb=5',
-          # 'ledr=14',
           # 'led_pwm_0=39',
           # 'led_pwm_1=38',
           # 'led_pwm_2=35',
