@@ -9,7 +9,7 @@ class PowerInConnector(Connector):
     self.conn = self.Block(JstPh())
     self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
     self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSource(
-      voltage_out=(10, 24)*Volt,
+      voltage_out=(10, 16)*Volt,
       current_limits=(0, 5)*Amp,
     )))
 
@@ -53,6 +53,15 @@ class IotLedDriver(JlcBoardTop):
         imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
         self.mcu.adc.request('v12_sense')
       )
+
+      self.i2c = self.mcu.i2c.request('qwiic')
+
+      # generic expansion
+      (self.qwiic_pull, self.qwiic, ), _ = self.chain(self.i2c,
+                                                      imp.Block(I2cPullup()),
+                                                      imp.Block(QwiicTarget()))
+      self.tof = imp.Block(Vl53l0x())
+      self.connect(self.tof.i2c, self.i2c)
 
     # 12V DOMAIN
     self.led_drv = ElementDict[LedDriver]()
@@ -113,7 +122,7 @@ class IotLedDriver(JlcBoardTop):
         (['led_drv[2]', 'power_path', 'inductor', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'])),
         (['led_drv[3]', 'power_path', 'inductor', 'part'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'part'])),
         (['led_drv[3]', 'power_path', 'inductor', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'])),
-        (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.98),  # use a 1206 25 oe 35v part
+        (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.80),  # use a 1206 25 oe 35v part
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
