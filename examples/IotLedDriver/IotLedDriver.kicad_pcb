@@ -566,16 +566,16 @@
 			)
 		)
 	)
-	(footprint "Inductor_SMD:L_Sunlord_SWPA4030S"
+	(footprint "Inductor_SMD:L_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "0a693028-3e9c-4b44-9192-82ec6ee02026")
 		(at 108.485281 114.142136 -45)
-		(descr "Inductor, Sunlord, SWPA4030S, 4.0x4.0x3.0mm, https://www.sunlordinc.com/UploadFiles/PDF_Cat/20120704094224784.pdf")
-		(tags "Inductor swpa")
+		(descr "Inductor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: http://www.tortai-tech.com/upload/download/2011102023233369053.pdf), generated with kicad-footprint-generator")
+		(tags "inductor")
 		(property "Reference" "reg_3v3.power_path.inductor"
-			(at 0 -3 -45)
+			(at 0 -2.279999 -45)
 			(layer "F.SilkS")
-			(uuid "2466b78e-431d-49b3-96f6-ee4043ab4a9d")
+			(uuid "49d60d76-32b0-4aa4-adaf-1c3be11c28cf")
 			(effects
 				(font
 					(size 1 1)
@@ -583,10 +583,10 @@
 				)
 			)
 		)
-		(property "Value" "840mA 33uH ±20% 429m? SMD Power Inductors ROHS"
-			(at 0 3 -45)
+		(property "Value" "620mA 22uH ±10% 270m? 1210 Inductors (SMD) ROHS"
+			(at 0 2.279999 -45)
 			(layer "F.Fab")
-			(uuid "22ab258f-0d7d-45e2-ba94-c54096b721ee")
+			(uuid "ab5716b6-28f8-4f86-8cc6-3c27b44886ce")
 			(effects
 				(font
 					(size 1 1)
@@ -596,9 +596,10 @@
 		)
 		(property "Footprint" ""
 			(at 0 0 -45)
+			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "77bc34a0-cfbe-4edf-affe-f71e15b7d355")
+			(uuid "4743d278-0b63-4674-80ce-dda5b44d0675")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -608,9 +609,10 @@
 		)
 		(property "Datasheet" ""
 			(at 0 0 -45)
+			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "2d5f3c77-dbe2-4444-a9cc-073043f4ec63")
+			(uuid "d5fe78c1-845c-481a-a583-bd5a016c1cc9")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -620,9 +622,10 @@
 		)
 		(property "Description" ""
 			(at 0 0 -45)
+			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "66da7302-4fe4-467e-aef0-5fd62961b712")
+			(uuid "a9e7174c-ef04-47a3-abee-8a5476c692cf")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -635,171 +638,133 @@
 		(sheetfile "edg.abstract_parts.AbstractPowerConverters.BuckConverterPowerPath")
 		(attr smd)
 		(fp_line
-			(start -2.26 2.26)
-			(end -2.26 2.11)
+			(start -0.602064 1.36)
+			(end 0.602064 1.36)
 			(stroke
 				(width 0.12)
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "85a3618f-b45e-42be-89ec-1fdfba7d6912")
+			(uuid "e2af993f-0239-4ad9-a3b9-e79c0f1778b0")
 		)
 		(fp_line
-			(start -2.26 2.26)
-			(end 2.26 2.26)
+			(start -0.602064 -1.36)
+			(end 0.602064 -1.36)
 			(stroke
 				(width 0.12)
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "9028f81b-4a9d-4249-baec-3e83d2ee7610")
+			(uuid "efe2c8a7-4416-483c-ba7d-eca228202dc9")
 		)
 		(fp_line
-			(start -2.26 -2.26)
-			(end -2.26 -2.11)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "336e74cf-fc3d-4071-aa87-4277c1ddd02d")
-		)
-		(fp_line
-			(start -2.26 -2.26)
-			(end 2.26 -2.26)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "63a067c5-acbc-4772-b35c-6b887490bc4d")
-		)
-		(fp_line
-			(start 2.26 2.26)
-			(end 2.26 2.11)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "01d4f7e7-4642-443c-b38c-d15233772e75")
-		)
-		(fp_line
-			(start 2.26 -2.26)
-			(end 2.26 -2.11)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "2d88d0b1-89e2-4410-ac4a-2f97517993fa")
-		)
-		(fp_line
-			(start -2.3 2.25)
-			(end 2.3 2.25)
+			(start -2.28 1.58)
+			(end -2.28 -1.58)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "8a70112f-bf7e-41fa-a24e-74d3e25fc0a8")
+			(uuid "131710ca-98b8-41b0-88aa-7e3793d51931")
 		)
 		(fp_line
-			(start -2.3 -2.25)
-			(end -2.3 2.25)
+			(start -2.28 -1.58)
+			(end 2.28 -1.58)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "1a1b246b-b85f-4783-b7c6-52f071ec9b3b")
+			(uuid "9866e703-f59b-4424-b8e7-58c7dcc7e779")
 		)
 		(fp_line
-			(start 2.3 2.25)
-			(end 2.3 -2.25)
+			(start 2.28 1.58)
+			(end -2.28 1.58)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "ccce1107-6f9e-47f2-a777-4843c65c1e3b")
+			(uuid "d3daad4f-f703-417b-80d5-2ebe19320fb7")
 		)
 		(fp_line
-			(start 2.3 -2.25)
-			(end -2.3 -2.25)
+			(start 2.28 -1.58)
+			(end 2.28 1.58)
 			(stroke
 				(width 0.05)
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "fadda7a1-74f7-4cd3-8c03-07c001e7f8e3")
+			(uuid "74439a0a-f42d-472c-98e5-b914a94e9093")
 		)
 		(fp_line
-			(start -2 2)
-			(end 2 2)
+			(start -1.6 1.25)
+			(end -1.6 -1.25)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "09c41b0c-ace3-4994-8b42-4b0b364c162b")
+			(uuid "7412dfd1-014d-47da-98f8-a38390b351dc")
 		)
 		(fp_line
-			(start -2 -2)
-			(end -2 2)
+			(start -1.6 -1.25)
+			(end 1.6 -1.25)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "a4b3fa68-ca20-4d5b-9bfe-6d3559c63c22")
+			(uuid "8e1ec7cb-2dc0-431c-a039-53e6951fa079")
 		)
 		(fp_line
-			(start 2 2)
-			(end 2 -2)
+			(start 1.6 1.25)
+			(end -1.6 1.25)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "5ed1dcb8-c0f0-4541-a1c6-6e162ae30f3d")
+			(uuid "1af5370d-7a8b-40e4-9668-9a918bd6ea05")
 		)
 		(fp_line
-			(start 2 -2)
-			(end -2 -2)
+			(start 1.6 -1.25)
+			(end 1.6 1.25)
 			(stroke
 				(width 0.1)
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "be7437d8-34e6-4608-9c3e-8ce87e26ab2a")
+			(uuid "a0a06202-b837-4f3c-8ca0-94d71c783f91")
 		)
 		(fp_text user "${REFERENCE}"
 			(at 0 0 -45)
 			(layer "F.Fab")
-			(uuid "f034b1a0-ba39-45bf-98d8-75245524a697")
+			(uuid "ac7d1473-286e-4f07-b029-3041d63234a2")
 			(effects
 				(font
-					(size 0.5 0.5)
-					(thickness 0.075)
+					(size 0.8 0.8)
+					(thickness 0.12)
 				)
 			)
 		)
-		(pad "1" smd rect
-			(at -1.5 0 315)
-			(size 1.1 3.7)
+		(pad "1" smd roundrect
+			(at -1.399999 0 315)
+			(size 1.25 2.65)
 			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.2)
 			(net 14 "Lreg_3v3.boot_cap.neg")
-			(uuid "79495419-f8e5-4b19-8310-c3a5b11c47ea")
+			(uuid "c8a25acf-d8f7-43de-a806-903c688139fb")
 		)
-		(pad "2" smd rect
-			(at 1.5 0 315)
-			(size 1.1 3.7)
+		(pad "2" smd roundrect
+			(at 1.399999 0 315)
+			(size 1.25 2.65)
 			(layers "F.Cu" "F.Paste" "F.Mask")
+			(roundrect_rratio 0.2)
 			(net 1 "Lv3v3")
-			(uuid "b1767a39-e1b0-4cea-8895-2d2cc6e5a3a6")
+			(uuid "8769f446-dc3f-402c-9fd3-48e62536a1cd")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Inductor_SMD.3dshapes/L_Sunlord_SWPA4030S.wrl"
+		(model "${KICAD8_3DMODEL_DIR}/Inductor_SMD.3dshapes/L_1210_3225Metric.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -4140,7 +4105,7 @@
 				)
 			)
 		)
-		(property "Value" "±1% 1/16W Thick Film Resistors 50V ±100ppm/? -55?~+155? 68k? 0402 Chip Resistor - Surface Mount ROHS"
+		(property "Value" "±1% 1/16W Thick Film Resistors 50V ±100ppm/? -55?~+155? 56k? 0402 Chip Resistor - Surface Mount ROHS"
 			(at 0 1.17 180)
 			(layer "F.Fab")
 			(uuid "65c67f30-2e66-40d7-81a5-6b5ed538d327")
@@ -15260,7 +15225,7 @@
 				)
 			)
 		)
-		(property "Value" "25V 22uF X5R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
+		(property "Value" "50V 10uF X5R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
 			(at 0 1.850001 45)
 			(layer "F.Fab")
 			(uuid "95525d5c-42d1-44da-9c28-adf5c6842349")
