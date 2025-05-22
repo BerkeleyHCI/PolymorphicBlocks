@@ -123,7 +123,10 @@ class IotLedDriver(JlcBoardTop):
         (['led_drv[3]', 'power_path', 'inductor', 'part'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'part'])),
         (['led_drv[3]', 'power_path', 'inductor', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'])),
         (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.80),  # use a 1206 25 oe 35v part
-        (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.04))  # use 1210 inductor
+        (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.04)),  # use 1210 inductor
+        (['mcu', 'pi', 'c1', 'footprint_area'], Range(4.0, float('inf'))),  # use 0603 consistently since that's what's available
+        (['mcu', 'pi', 'c2', 'footprint_area'], Range(4.0, float('inf'))),
+        (['mcu', 'pi', 'l', 'footprint_area'], Range(4.0, float('inf')))
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
