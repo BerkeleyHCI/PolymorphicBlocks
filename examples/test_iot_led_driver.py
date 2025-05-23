@@ -6,11 +6,11 @@ from edg import *
 class PowerInConnector(Connector):
   def __init__(self):
     super().__init__()
-    self.conn = self.Block(JstPh())
+    self.conn = self.Block(JstShSmHorizontal())
     self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
     self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSource(
       voltage_out=(10, 16)*Volt,
-      current_limits=(0, 5)*Amp,
+      current_limits=(0, 3)*Amp,
     )))
 
 
@@ -20,10 +20,12 @@ class IotLedDriver(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
+    # no connectors to save space, just solder to one of the SMD pads
     self.pwr = self.Block(PowerInConnector())
-
-    self.v12 = self.connect(self.pwr.pwr)
     self.gnd = self.connect(self.pwr.gnd)
+    self.v12 = self.connect(self.pwr.pwr)
+    self.tp_v12 = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
+    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
 
     # POWER
     with self.implicit_connect(
@@ -54,37 +56,34 @@ class IotLedDriver(JlcBoardTop):
         self.mcu.adc.request('v12_sense')
       )
 
-      self.i2c = self.mcu.i2c.request('qwiic')
-
       # generic expansion
-      (self.qwiic_pull, self.qwiic, ), _ = self.chain(self.i2c,
-                                                      imp.Block(I2cPullup()),
-                                                      imp.Block(QwiicTarget()))
+      (self.qwiic_i2c, self.qwiic_pull, self.qwiic), _ = self.chain(
+        self.Block(I2cControllerBitBang()).connected_from(
+          self.mcu.gpio.request('qwiic_scl'), self.mcu.gpio.request('qwiic_sda'),
+        ),
+        imp.Block(I2cPullup()),
+        imp.Block(QwiicTarget()))
+
       self.tof = imp.Block(Vl53l0x())
-      self.connect(self.tof.i2c, self.i2c)
+      self.tof_pull = imp.Block(I2cPullup())
+      self.connect(self.mcu.i2c.request('tof'), self.tof_pull.i2c, self.tof.i2c)
 
     # 12V DOMAIN
     self.led_drv = ElementDict[LedDriver]()
+    self.led_sink = ElementDict[DummyPassive]()
     with self.implicit_connect(
             ImplicitConnect(self.v12, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       for i in range(4):
         led_drv = self.led_drv[i] = imp.Block(LedDriver(max_current=700*mAmp(tol=0.1)))
-        # led_drv.with_mixin(LedDriverSwitchingConverter(ripple_limit=500*mAmp))
         self.connect(self.mcu.gpio.request(f'led_pwm_{i}'), led_drv.with_mixin(LedDriverPwm()).pwm)
 
-    self.led_conn = self.Block(JstPhKHorizontal(2))
-    self.connect(self.led_drv[0].leda, self.led_conn.pins.request('1'))
-    self.connect(self.led_drv[0].ledk, self.led_conn.pins.request('2'))
-
-    self.rgb_conn = self.Block(JstPhKHorizontal(6))
-    self.connect(self.led_drv[1].leda, self.rgb_conn.pins.request('1'))
-    self.connect(self.led_drv[1].ledk, self.rgb_conn.pins.request('2'))
-    self.connect(self.led_drv[2].leda, self.rgb_conn.pins.request('3'))
-    self.connect(self.led_drv[2].ledk, self.rgb_conn.pins.request('4'))
-    self.connect(self.led_drv[3].leda, self.rgb_conn.pins.request('5'))
-    self.connect(self.led_drv[3].ledk, self.rgb_conn.pins.request('6'))
+        # no connectors to save space, just solder to one of the SMD pads
+        leda_sink = self.led_sink[i*2] = imp.Block(DummyPassive())
+        self.connect(led_drv.leda, leda_sink.io)
+        ledk_sink = self.led_sink[i*2+1] = imp.Block(DummyPassive())
+        self.connect(led_drv.ledk, ledk_sink.io)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
