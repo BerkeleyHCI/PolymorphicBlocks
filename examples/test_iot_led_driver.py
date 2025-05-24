@@ -14,6 +14,20 @@ class PowerInConnector(Connector):
     )))
 
 
+class AntennaOption(Antenna):
+  """Selectable option of antennas by DNPing one of them"""
+  def contents(self):
+    with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+    ) as imp:
+      self.ant_a = imp.Block(Antenna(frequency=self.frequency, impedance=self.impedance, power=self.power))
+      self.ant_b = imp.Block(Antenna(frequency=self.frequency, impedance=self.impedance, power=self.power))
+      self.connect(self.a, self.ant_a.a, self.ant_b.a)
+      self.assign(self.actual_power_rating, self.ant_a.actual_power_rating.intersect(self.ant_b.actual_power_rating))
+      self.assign(self.actual_frequency_rating, self.ant_a.actual_frequency_rating.intersect(self.ant_b.actual_frequency_rating))
+      self.assign(self.actual_impedance, self.ant_a.actual_impedance.intersect(self.ant_b.actual_impedance))
+
+
 class IotLedDriver(JlcBoardTop):
   """Multichannel IoT high-power external LED driver with a 12v barrel jack input.
   """
@@ -56,13 +70,20 @@ class IotLedDriver(JlcBoardTop):
         self.mcu.adc.request('v12_sense')
       )
 
-      # generic expansion
-      (self.qwiic_i2c, self.qwiic_pull, self.qwiic), _ = self.chain(
+      # generic expansion - for qwiic or an encoder w/ button
+      self.qwiic = self.Block(QwiicTarget())
+      self.connect(self.qwiic.gnd, self.gnd)
+      # DNP the resistor to use the pin as the encoder pushbutton pin
+      (self.qwiic_pwr_res, ), _ = self.chain(
+        imp.Block(SeriesPowerResistor(0*Ohm(tol=0))),
+        self.qwiic.pwr)
+      self.connect(self.qwiic.pwr.as_digital_source(), self.mcu.gpio.request('qwiic_pwr'))  # as sense line
+      (self.qwiic_i2c, self.qwiic_pull), _ = self.chain(
         self.Block(I2cControllerBitBang()).connected_from(
           self.mcu.gpio.request('qwiic_scl'), self.mcu.gpio.request('qwiic_sda'),
         ),
         imp.Block(I2cPullup()),
-        imp.Block(QwiicTarget()))
+        self.qwiic.i2c)
 
       self.tof = imp.Block(Vl53l0x())
       self.tof_pull = imp.Block(I2cPullup())
@@ -90,6 +111,8 @@ class IotLedDriver(JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32c3),
         (['reg_3v3'], Tps54202h),
+        (['mcu', 'ant'], AntennaOption),
+        (['mcu', 'ant', 'ant_b'], RfConnectorAntenna),
       ],
       instance_values=[
         (['refdes_prefix'], 'L'),  # unique refdes for panelization
@@ -132,6 +155,7 @@ class IotLedDriver(JlcBoardTop):
         (PowerBarrelJack, Pj_036ah),
         (Neopixel, Sk6805_Ec15),
         (LedDriver, Tps92200),
+        (RfConnector, UflConnector),
         (TestPoint, CompactKeystone5015),
         (TagConnect, TagConnectNonLegged),
       ],
