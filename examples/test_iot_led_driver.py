@@ -118,11 +118,16 @@ class IotLedDriver(JlcBoardTop):
         (['refdes_prefix'], 'L'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
           'ledr=_GPIO9_STRAP',  # force using the strapping / boot mode pin
-          # 'v12_sense=4',
-          # 'led_pwm_0=39',
-          # 'led_pwm_1=38',
-          # 'led_pwm_2=35',
-          # 'led_pwm_3=33',
+          'qwiic_scl=25',
+          'qwiic_sda=26',
+          'qwiic_pwr=16',
+          'tof.sda=13',
+          'tof.scl=12',
+          'led_pwm_0=5',
+          'led_pwm_1=8',
+          'led_pwm_2=9',
+          'led_pwm_3=10',
+          'v12_sense=4',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
