@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Optional
+from typing import Optional, NamedTuple, Generic, TypeVar, Union
 from ..electronics_model import *
 from .Categories import *
 from .AbstractCapacitor import DecouplingCapacitor
@@ -189,6 +189,7 @@ class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
     self.reset.init_from(DigitalSink())
 
 
+ParamRangeType = TypeVar('ParamRangeType', bound=Union[RangeExpr, Range])
 class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a switching buck converter.
 
@@ -203,6 +204,38 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   http://www.onmyphd.com/?p=voltage.regulators.buck.step.down.converter
     Very detailed analysis including component sizing, operating modes, calculating losses
   """
+
+  class Parameters(NamedTuple):
+    dutycycle: Range
+    inductance: Range
+    input_capacitance: Range
+    output_capacitance: Range
+
+    inductor_peak_current: Range  # based on the worst case input spec
+
+  @classmethod
+  def calculate_parameters(cls, input_voltage: Range, output_voltage: Range, frequency: Range, output_current: Range,
+                           inductor_current_ripple: Range, input_voltage_ripple: float, output_voltage_ripple: float,
+                           efficiency: Range = Range(0.9, 1.0), dutycycle_limit: Range = Range(0.1, 0.9)) -> 'BuckConverterPowerPath.Parameters':
+    dutycycle = output_voltage / input_voltage / efficiency
+
+    # actual numbers to be used in calculations, accounting for tracking behavior
+    effective_dutycycle = dutycycle.bound_to(dutycycle_limit)
+
+    # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
+    # this range must be constructed manually to not double-count the tolerance stackup of the voltages
+    inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                      (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
+
+    inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                      (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
+
+    input_capacitance = Range.from_lower(output_current.upper * cls.max_d_inverse_d(effective_dutycycle) /
+                                         (frequency.lower * input_voltage_ripple))
+
+    output_capacitance = Range.from_lower(inductor_current_ripple.upper /
+                                          (8 * frequency.lower * output_voltage_ripple))
+
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
                output_current: RangeLike, current_limits: RangeLike, inductor_current_ripple: RangeLike, *,
