@@ -352,7 +352,7 @@ class FloatExpr(NumLikeExpr[float, Union[FloatLike, IntExpr]]):
 
 RangeLike = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
 class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
-  _CASTABLE_TYPES = (float, int, FloatExpr, IntExpr, Range)
+  _CASTABLE_TYPES = (float, int, FloatExpr, IntExpr, Range, tuple)
 
   # Some range literals for defaults
   POSITIVE: Range = Range.from_lower(0.0)
