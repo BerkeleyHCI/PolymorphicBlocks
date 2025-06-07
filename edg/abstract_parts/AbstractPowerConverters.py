@@ -224,7 +224,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     effective_dutycycle = dutycycle.bound_to(dutycycle_limit)
 
     # TODO different equation for DCM operation
-    inductor_peak_current = Range(max(0, output_current.lower - inductor_current_ripple.upper / 2),
+    inductor_peak_currents = Range(max(0, output_current.lower - inductor_current_ripple.upper / 2),
       output_current.upper + inductor_current_ripple.upper / 2)
 
     # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
@@ -242,8 +242,8 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     return cls.Values(dutycycle=dutycycle, inductance=Range(inductance_min, inductance_max),
                       input_capacitance=input_capacitance, output_capacitance=output_capacitance,
-                      inductor_peak_current=inductor_peak_current,
-                      tracking=dutycycle == effective_dutycycle)
+                      inductor_peak_currents=inductor_peak_currents,
+                      tracking=dutycycle != effective_dutycycle)
 
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
@@ -304,8 +304,9 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   def generate(self) -> None:
     super().generate()
     values = self.calculate_parameters(self.get(self.input_voltage), self.get(self.output_voltage),
-                                       self.get(self.frequency), self.get(self.input_voltage_ripple),
-                                       self.get(self.output_voltage_ripple),
+                                       self.get(self.frequency), self.get(self.output_current),
+                                       self.get(self.inductor_current_ripple),
+                                       self.get(self.input_voltage_ripple), self.get(self.output_voltage_ripple),
                                        efficiency=self.get(self.efficiency),
                                        dutycycle_limit=self.get(self.dutycycle_limit))
 
@@ -348,7 +349,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     # expand out the equation to avoid double-counting tolerance
     actual_peak_ripple = (self.output_voltage.lower() * (self.input_voltage.upper() - self.output_voltage.lower()) /
-                          (self.inductor.actual_inductance * self.frequency.lower() * self.input_voltage.upper()))
+                          (self.inductor.actual_inductance.lower() * self.frequency.lower() * self.input_voltage.upper()))
     self.assign(self.actual_inductor_current_ripple, actual_peak_ripple / self.inductor_scale)
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
