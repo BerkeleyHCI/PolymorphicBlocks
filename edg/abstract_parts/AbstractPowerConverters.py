@@ -228,19 +228,16 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       output_current.upper + inductor_current_ripple.upper / 2)
 
     # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
-    # this range must be constructed manually to not double-count the tolerance stackup of the voltages
-    inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                      (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
-    inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                      (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
+    # worst-case input/output voltages and frequency is used to avoid double-counting tolerances as ranges
+    inductance = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                  (inductor_current_ripple * frequency.lower * input_voltage.upper))
 
     input_capacitance = Range.from_lower(output_current.upper * cls.max_d_inverse_d(effective_dutycycle) /
                                          (frequency.lower * input_voltage_ripple))
-
     output_capacitance = Range.from_lower(inductor_current_ripple.upper /
                                           (8 * frequency.lower * output_voltage_ripple))
 
-    return cls.Values(dutycycle=dutycycle, inductance=Range(inductance_min, inductance_max),
+    return cls.Values(dutycycle=dutycycle, inductance=inductance,
                       input_capacitance=input_capacitance, output_capacitance=output_capacitance,
                       inductor_peak_currents=inductor_peak_currents,
                       tracking=dutycycle != effective_dutycycle)
@@ -309,35 +306,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                                        self.get(self.input_voltage_ripple), self.get(self.output_voltage_ripple),
                                        efficiency=self.get(self.efficiency),
                                        dutycycle_limit=self.get(self.dutycycle_limit))
-
-    # input_voltage = self.get(self.input_voltage)
-    # output_voltage = self.get(self.output_voltage)
-    # frequency = self.get(self.frequency)
-    # output_current = self.get(self.output_current)
-    # inductor_current_ripple = self.get(self.inductor_current_ripple)
-    # input_voltage_ripple = self.get(self.input_voltage_ripple)
-    # output_voltage_ripple = self.get(self.output_voltage_ripple)
-    #
-    # dutycycle = output_voltage / input_voltage / self.get(self.efficiency)
-    # self.assign(self.actual_dutycycle, dutycycle)
-    # if these are violated, these generally mean that the converter will start tracking the input
-    # these can (maybe?) be waived if tracking (plus losses) is acceptable
-    # self.require(self.actual_dutycycle.within(self.dutycycle_limit), "dutycycle outside limit")
-    # these are actual numbers to be used in calculations, accounting for tracking behavior
-    # effective_dutycycle = dutycycle.bound_to(self.get(self.dutycycle_limit))
-
     self.require(not values.tracking, "dutycycle outside limit")
-
-    # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
-    # this range must be constructed manually to not double-count the tolerance stackup of the voltages
-    # inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-    #                   (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
-    # if inductor_current_ripple.lower == 0:  # basically infinite inductance
-    #   inductance_max = float('inf')
-    # else:
-    #   inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-    #                     (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
-    # inductor_spec_peak_current = output_current.upper + inductor_current_ripple.upper / 2
 
     # TODO maximum current depends on the inductance, but this just uses a worst-case value for simplicity
     # TODO ideally the inductor selector would take a function that can account for this coupled equation
