@@ -174,7 +174,8 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
 
 class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
   """FCML power path that accounts for inductor scaling behavior
-  TODO: this basically completely duplicates BuckConverterPowerPath, but adds a scaling factor that doesn't exist there
+  TODO: Is there a way to unify this with BuckConverterPowerPath?
+  This basically completely duplicates it, but adds a scaling factor that doesn't exist there
   """
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,

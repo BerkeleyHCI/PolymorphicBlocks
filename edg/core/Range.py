@@ -152,7 +152,8 @@ class Range:
 
   def intersect(self, other: 'Range') -> 'Range':
     # TODO make behavior more consistent w/ compiler and returning empty that props as a unit
-    assert self.intersects(other), "Cannot intersect ranges that do not intersect"
+    if not self.intersects(other):
+      raise ValueError("cannot intersect ranges that do not intersect")
     return Range(max(self.lower, other.lower), min(self.upper, other.upper))
 
   def __add__(self, other: Union['Range', float]) -> 'Range':
