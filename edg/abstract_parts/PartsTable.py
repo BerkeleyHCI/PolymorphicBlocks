@@ -152,3 +152,45 @@ class PartsTable:
     if not self.rows:
       raise IndexError(err)
     return self.rows[0]
+
+
+class ExperimentalUserFnPartsTable(PartsTable):
+  """A PartsTable that can take in a user-defined function for filtering and (possibly) other operations.
+  These functions are serialized to a string by an internal name (cannot execute arbitrary code,
+  bounded to defined functions in the codebase), and some arguments can be serialized with the name
+  (think partial(...)).
+  Functions must be pre-registered using the @ExperimentalUserFnPartsTable.user_fn(...) decorator,
+  non-pre-registered functions will not be available.
+
+  This is intended to support searches on parts tables that are cross-coupled across multiple parameters,
+  but still restricted to within on table (e.g., no cross-optimizing RC filters).
+
+  EXPERIMENTAL - subject to change without notice."""
+
+  _FN_SERIALIZATION_SEPARATOR = ";"
+
+  _user_fns: Dict[str, Callable[..., PartsTable]] = {}
+  _fn_name_dict: Dict[Callable[..., PartsTable], str] = {}
+
+  @staticmethod
+  def user_fn(fn: Callable[..., PartsTable]) -> Callable[..., PartsTable]:
+    """Decorator to register a user function that can be used in ExperimentalUserFnPartsTable."""
+    if fn.__name__ in ExperimentalUserFnPartsTable._user_fns or fn in ExperimentalUserFnPartsTable._fn_name_dict:
+        raise ValueError(f"Function {fn.__name__} already registered.")
+    ExperimentalUserFnPartsTable._user_fns[fn.__name__] = fn
+    ExperimentalUserFnPartsTable._fn_name_dict[fn] = fn.__name__
+    return fn
+
+  @classmethod
+  def serialize_fn(cls, fn: Callable[..., PartsTable]) -> str:
+    """Serializes a user function to a string."""
+    if fn not in cls._fn_name_dict:
+      raise ValueError(f"Function {fn} not registered.")
+    return cls._fn_name_dict[fn]
+
+  @classmethod
+  def deserialize_fn(cls, fn_name: str) -> Callable[..., PartsTable]:
+    """Deserializes a user function from a string."""
+    if fn_name not in cls._user_fns:
+      raise ValueError(f"Function {fn_name} not registered.")
+    return cls._user_fns[fn_name]

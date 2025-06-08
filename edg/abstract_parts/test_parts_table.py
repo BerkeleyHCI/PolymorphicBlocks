@@ -75,3 +75,15 @@ class PartsTableTest(unittest.TestCase):
 
   def test_first(self) -> None:
     self.assertEqual(self.table.first().value, {'header1': '1', 'header2': 'foo', 'header3': '9'})
+
+
+class UserFnPartsTableTest(unittest.TestCase):
+  @staticmethod
+  @ExperimentalUserFnPartsTable.user_fn
+  def user_fn_false() -> bool:
+    return False
+
+  def test_serialize_deserialize(self) -> None:
+    print(ExperimentalUserFnPartsTable.serialize_fn(self.user_fn_false))
+    self.assertEqual(ExperimentalUserFnPartsTable.deserialize_fn(
+      ExperimentalUserFnPartsTable.serialize_fn(self.user_fn_false))(), False)
