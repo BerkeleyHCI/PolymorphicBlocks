@@ -608,7 +608,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.inductor = self.Block(Inductor(
       inductance=buck_values.inductance.intersect(boost_values.inductance) * Henry,
-      current=buck_values.inductor_peak_currents.hull(buck_values.inductor_peak_currents),
+      current=buck_values.inductor_peak_currents.hull(boost_values.inductor_peak_currents),
       frequency=self.frequency
     ))
 
@@ -620,7 +620,9 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.assign(self.actual_inductor_current_ripple, buck_actual_ripple.hull(boost_actual_ripple))
 
     self.connect(self.switch_in, self.inductor.a)
-    dc_current_range = self.output_current / (1 - boost_values.effective_dutycycle.upper)  # DC range at worst case boost
+
+    # full range across all modes
+    dc_current_range = self.output_current / Range(1, (1 - boost_values.effective_dutycycle.upper))
     self.assign(self.actual_inductor_current, dc_current_range + (self.actual_inductor_current_ripple.upper() / 2))
     self.connect(self.switch_out, self.inductor.b)
     self.assign(self.actual_avg_current_rating, (0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
