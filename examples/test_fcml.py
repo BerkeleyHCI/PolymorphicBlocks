@@ -172,6 +172,88 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
       })
 
 
+class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
+  """FCML power path that accounts for inductor scaling behavior
+  TODO: Is there a way to unify this with BuckConverterPowerPath?
+  This basically completely duplicates it, but adds a scaling factor that doesn't exist there
+  """
+  @init_in_parent
+  def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
+               output_current: RangeLike, current_limits: RangeLike, inductor_current_ripple: RangeLike, *,
+               input_voltage_ripple: FloatLike,
+               output_voltage_ripple: FloatLike,
+               efficiency: RangeLike = (0.9, 1.0),  # from TI reference
+               dutycycle_limit: RangeLike = (0.1, 0.9),
+               inductor_scale: FloatLike = 1.0):  # arbitrary
+    super().__init__()
+
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models the input cap only
+    self.pwr_out = self.Port(VoltageSource.empty())  # models the output cap and inductor power source
+    self.switch = self.Port(VoltageSink.empty())  # current draw defined as average
+    self.gnd = self.Port(Ground.empty(), [Common])
+
+    self.input_voltage = self.ArgParameter(input_voltage)
+    self.output_voltage = self.ArgParameter(output_voltage)
+    self.frequency = self.ArgParameter(frequency)
+    self.output_current = self.ArgParameter(output_current)
+    self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
+    self.efficiency = self.ArgParameter(efficiency)
+    self.input_voltage_ripple = self.ArgParameter(input_voltage_ripple)
+    self.output_voltage_ripple = self.ArgParameter(output_voltage_ripple)
+    self.dutycycle_limit = self.ArgParameter(dutycycle_limit)
+    self.generator_param(self.input_voltage, self.output_voltage, self.frequency, self.output_current,
+                         self.inductor_current_ripple, self.efficiency,
+                         self.input_voltage_ripple, self.output_voltage_ripple, self.dutycycle_limit)
+
+    self.current_limits = self.ArgParameter(current_limits)
+    self.inductor_scale = self.ArgParameter(inductor_scale)
+
+    self.actual_dutycycle = self.Parameter(RangeExpr())
+    self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
+
+  def generate(self) -> None:
+    super().generate()
+    values = BuckConverterPowerPath.calculate_parameters(
+      self.get(self.input_voltage), self.get(self.output_voltage),
+      self.get(self.frequency), self.get(self.output_current), self.get(self.inductor_current_ripple),
+      self.get(self.input_voltage_ripple), self.get(self.output_voltage_ripple),
+      efficiency=self.get(self.efficiency), dutycycle_limit=self.get(self.dutycycle_limit))
+    self.assign(self.actual_dutycycle, values.dutycycle)
+    self.require(values.dutycycle == values.effective_dutycycle, "dutycycle outside limit")
+
+    # TODO maximum current depends on the inductance, but this just uses a worst-case value for simplicity
+    # TODO ideally the inductor selector would take a function that can account for this coupled equation
+    self.inductor = self.Block(Inductor(
+      inductance=values.inductance*Henry / self.inductor_scale,
+      current=values.inductor_peak_currents,
+      frequency=self.frequency
+    ))
+
+    # expand out the equation to avoid double-counting tolerance
+    actual_peak_ripple = (self.output_voltage.lower() * (self.input_voltage.upper() - self.output_voltage.lower()) /
+                          (self.inductor.actual_inductance * self.frequency.lower() * self.input_voltage.upper()))
+    self.assign(self.actual_inductor_current_ripple, actual_peak_ripple / self.inductor_scale)
+
+    self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
+      voltage_limits=RangeExpr.ALL,
+      current_draw=self.pwr_out.link().current_drawn * values.dutycycle
+    )))
+    self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
+      voltage_out=self.output_voltage,
+      current_limits=(0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
+                      (self.actual_inductor_current_ripple.upper() / 2))
+    )))
+
+    self.in_cap = self.Block(DecouplingCapacitor(
+      capacitance=values.input_capacitance * Farad,
+      exact_capacitance=True
+    )).connected(self.gnd, self.pwr_in)
+    self.out_cap = self.Block(DecouplingCapacitor(
+      capacitance=values.output_capacitance * Farad,
+      exact_capacitance=True
+    )).connected(self.gnd, self.pwr_out)
+
+
 class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
   """Flying capacitor multilevel buck converter. Trades more switches for smaller inductor size:
   for number of levels N, inductor value is reduced by a factor of (N-1)^2.
@@ -214,7 +296,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     super().generate()
     levels = self.get(self.levels)
     assert levels >= 2, "levels must be 2 or more"
-    self.power_path = self.Block(BuckConverterPowerPath(
+    self.power_path = self.Block(FcmlPowerPath(
       self.pwr_in.link().voltage, self.pwr_in.link().voltage * self.get(self.ratios), self.frequency,
       self.pwr_out.link().current_drawn, Range.all(),  # TODO add current limits from FETs
       inductor_current_ripple=self.inductor_current_ripple,

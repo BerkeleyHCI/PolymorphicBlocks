@@ -173,6 +173,8 @@ NumLikeCastable = TypeVar('NumLikeCastable')  # should include the self type
 class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedType, NumLikeCastable]):
   """Trait for numeric-like expressions, providing common arithmetic operations"""
 
+  _CASTABLE_TYPES: Tuple[Type[NumLikeCastable], ...]  # NumLikeCastable for use in ininstance(), excluding self-cls
+
   @classmethod
   @abstractmethod
   def _to_expr_type(cls: Type[NumLikeSelfType],
@@ -209,28 +211,44 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
     return self._create_unary_op(self, NumericOp.invert)
 
   def __add__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self, self._to_expr_type(rhs), NumericOp.add)
+    if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
+      return self._create_binary_op(self, self._to_expr_type(rhs), NumericOp.add)
+    return NotImplemented
 
   def __radd__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self._to_expr_type(lhs), self, NumericOp.add)
+    if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
+      return self._create_binary_op(self._to_expr_type(lhs), self, NumericOp.add)
+    return NotImplemented
 
   def __sub__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    return self.__add__(self._to_expr_type(rhs).__neg__())
+    if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
+      return self.__add__(self._to_expr_type(rhs).__neg__())
+    return NotImplemented
 
   def __rsub__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    return self.__neg__().__radd__(self._to_expr_type(lhs))
+    if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
+      return self.__neg__().__radd__(self._to_expr_type(lhs))
+    return NotImplemented
 
   def __mul__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self, self._to_expr_type(rhs), NumericOp.mul)
+    if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
+      return self._create_binary_op(self, self._to_expr_type(rhs), NumericOp.mul)
+    return NotImplemented
 
   def __rmul__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    return self._create_binary_op(self._to_expr_type(lhs), self, NumericOp.mul)
+    if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
+      return self._create_binary_op(self._to_expr_type(lhs), self, NumericOp.mul)
+    return NotImplemented
 
   def __truediv__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    return self.__mul__(self._to_expr_type(rhs).__mul_inv__())
+    if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
+      return self.__mul__(self._to_expr_type(rhs).__mul_inv__())
+    return NotImplemented
 
   def __rtruediv__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    return self.__mul_inv__().__mul__(self._to_expr_type(lhs))
+    if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
+      return self.__mul_inv__().__mul__(self._to_expr_type(lhs))
+    return NotImplemented
 
   @classmethod
   def _create_bool_op(cls,
@@ -245,23 +263,35 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
     return BoolExpr()._bind(BinaryOpBinding(lhs, rhs, op))
 
   def __ne__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
-    return self._create_bool_op(self, self._to_expr_type(other), EqOp.ne)
+    if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
+      return self._create_bool_op(self, self._to_expr_type(other), EqOp.ne)
+    return NotImplemented
 
   def __gt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
-    return self._create_bool_op(self, self._to_expr_type(other), OrdOp.gt)
+    if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
+      return self._create_bool_op(self, self._to_expr_type(other), OrdOp.gt)
+    return NotImplemented
 
   def __ge__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
-    return self._create_bool_op(self, self._to_expr_type(other), OrdOp.ge)
+    if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
+      return self._create_bool_op(self, self._to_expr_type(other), OrdOp.ge)
+    return NotImplemented
 
   def __lt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
-    return self._create_bool_op(self, self._to_expr_type(other), OrdOp.lt)
+    if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
+      return self._create_bool_op(self, self._to_expr_type(other), OrdOp.lt)
+    return NotImplemented
 
   def __le__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
-    return self._create_bool_op(self, self._to_expr_type(other), OrdOp.le)
+    if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
+      return self._create_bool_op(self, self._to_expr_type(other), OrdOp.le)
+    return NotImplemented
 
 
 IntLike = Union['IntExpr', int]
 class IntExpr(NumLikeExpr[int, IntLike]):
+  _CASTABLE_TYPES = (int, )
+
   @classmethod
   def _to_expr_type(cls, input: IntLike) -> IntExpr:
     if isinstance(input, IntExpr):
@@ -287,6 +317,8 @@ class IntExpr(NumLikeExpr[int, IntLike]):
 FloatLit = Union[float, int]
 FloatLike = Union['FloatExpr', float, int]
 class FloatExpr(NumLikeExpr[float, Union[FloatLike, IntExpr]]):
+  _CASTABLE_TYPES = (float, int)
+
   @classmethod
   def _to_expr_type(cls, input: Union[FloatLike, IntExpr]) -> FloatExpr:
     if isinstance(input, FloatExpr):
@@ -320,6 +352,9 @@ class FloatExpr(NumLikeExpr[float, Union[FloatLike, IntExpr]]):
 
 RangeLike = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
 class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
+  # mypy doesn't like the unbounded tuple
+  _CASTABLE_TYPES = (float, int, FloatExpr, IntExpr, Range, tuple)  # type: ignore
+
   # Some range literals for defaults
   POSITIVE: Range = Range.from_lower(0.0)
   NEGATIVE: Range = Range.from_upper(0.0)
@@ -423,26 +458,6 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
 
     assert lhs._is_bound() and rhs._is_bound()
     return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
-
-  # special option to allow range * float
-  def __mul__(self, rhs: Union[RangeLike, FloatLike, IntLike]) -> RangeExpr:
-    if isinstance(rhs, (int, float)):  # TODO clean up w/ literal to expr pass, then type based on that
-      rhs_cast: Union[FloatExpr, IntExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
-    elif isinstance(rhs, (FloatExpr, IntExpr)):
-      rhs_cast = rhs
-    else:
-      rhs_cast = self._to_expr_type(rhs)  # type: ignore
-    return self._create_range_float_binary_op(self, rhs_cast, NumericOp.mul)
-
-  # special option to allow range / float
-  def __truediv__(self, rhs: Union[RangeLike, FloatLike, IntLike]) -> RangeExpr:
-    if isinstance(rhs, (int, float)):  # TODO clean up w/ literal to expr pass, then type based on that
-      rhs_cast: Union[FloatExpr, IntExpr, RangeExpr] = FloatExpr._to_expr_type(rhs)
-    elif isinstance(rhs, (FloatExpr, IntExpr)):
-      rhs_cast = rhs
-    else:
-      rhs_cast = self._to_expr_type(rhs)  # type: ignore
-    return self * rhs_cast.__mul_inv__()
 
   def shrink_multiply(self, contributing: RangeLike) -> RangeExpr:
     """RangeExpr version of Range.shrink_multiply.
