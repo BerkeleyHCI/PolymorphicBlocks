@@ -408,7 +408,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
     # worst-case input/output voltages and frequency is used to avoid double-counting tolerances as ranges
     inductance = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
-                  (inductor_current_ripple * frequency.lower * output_voltage.lower))
+                  (inductor_current_ripple * frequency.lower * output_voltage.upper))
 
     # Capacitor equation Q = CV => i = C dv/dt => for constant current, i * t = C dV => dV = i * t / C
     # C = i * t / dV => C = i / (f * dV)
