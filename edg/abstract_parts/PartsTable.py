@@ -4,12 +4,11 @@ import csv
 import itertools
 import sys
 from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
-  cast
+  cast, Tuple, Sequence, Protocol
 
-if sys.version_info[1] < 8:
-  from typing_extensions import Protocol
-else:
-  from typing import Protocol
+from typing_extensions import ParamSpec
+
+from ..core import Range
 
 
 # from https://stackoverflow.com/questions/47965083/comparable-types-with-mypy
@@ -154,6 +153,19 @@ class PartsTable:
     return self.rows[0]
 
 
+UserFnMetaParams = ParamSpec('UserFnMetaParams')
+# UserFnParams = ParamSpec('UserFnParams')
+# UserFnReturnType = TypeVar('UserFnReturnType', covariant=True)
+# UserFnType = Callable[[], UserFnReturnType]
+UserFnType = TypeVar('UserFnType', bound=Callable, covariant=True)
+class UserFnSerialiable(Protocol[UserFnMetaParams, UserFnType]):
+  """A protocol that marks functions as usable in deserialize, that they have been registered."""
+  _is_serializable: None  # guard attribute
+
+  def __call__(self, *args: UserFnMetaParams.args) -> UserFnType: ...
+  __name__: str
+
+
 class ExperimentalUserFnPartsTable(PartsTable):
   """A PartsTable that can take in a user-defined function for filtering and (possibly) other operations.
   These functions are serialized to a string by an internal name (cannot execute arbitrary code,
@@ -169,28 +181,63 @@ class ExperimentalUserFnPartsTable(PartsTable):
 
   _FN_SERIALIZATION_SEPARATOR = ";"
 
-  _user_fns: Dict[str, Callable[..., PartsTable]] = {}
-  _fn_name_dict: Dict[Callable[..., PartsTable], str] = {}
+  _user_fns: Dict[str, Tuple[Callable, Sequence[Type]]] = {}  # name -> fn, [arg types]
+  _fn_name_dict: Dict[Callable, str] = {}
 
   @staticmethod
-  def user_fn(fn: Callable[..., PartsTable]) -> Callable[..., PartsTable]:
-    """Decorator to register a user function that can be used in ExperimentalUserFnPartsTable."""
-    if fn.__name__ in ExperimentalUserFnPartsTable._user_fns or fn in ExperimentalUserFnPartsTable._fn_name_dict:
-        raise ValueError(f"Function {fn.__name__} already registered.")
-    ExperimentalUserFnPartsTable._user_fns[fn.__name__] = fn
-    ExperimentalUserFnPartsTable._fn_name_dict[fn] = fn.__name__
-    return fn
+  def user_fn(param_types: Sequence[Type] = []) -> Callable[[Callable[UserFnMetaParams, UserFnType]],
+      UserFnSerialiable[UserFnMetaParams, UserFnType]]:
+    def decorator(fn: Callable[UserFnMetaParams, UserFnType]) -> UserFnSerialiable[UserFnMetaParams, UserFnType]:
+      """Decorator to register a user function that can be used in ExperimentalUserFnPartsTable."""
+      if fn.__name__ in ExperimentalUserFnPartsTable._user_fns or fn in ExperimentalUserFnPartsTable._fn_name_dict:
+          raise ValueError(f"Function {fn.__name__} already registered.")
+      ExperimentalUserFnPartsTable._user_fns[fn.__name__] = (fn, param_types)
+      ExperimentalUserFnPartsTable._fn_name_dict[fn] = fn.__name__
+      return fn  # type: ignore
+    return decorator
 
   @classmethod
-  def serialize_fn(cls, fn: Callable[..., PartsTable]) -> str:
+  def serialize_fn(cls, fn: UserFnSerialiable[UserFnMetaParams, UserFnType],
+                   *args: UserFnMetaParams.args, **kwargs: UserFnMetaParams.kwargs) -> str:
     """Serializes a user function to a string."""
+    assert not kwargs, "kwargs not supported in serialization"
     if fn not in cls._fn_name_dict:
       raise ValueError(f"Function {fn} not registered.")
-    return cls._fn_name_dict[fn]
+    fn_ctor, fn_argtypes = cls._user_fns[fn.__name__]
+    def serialize_arg(tpe: Type, val: Any) -> str:
+      assert isinstance(val, tpe), f"in serialize {val}, expected {tpe}, got {type(val)}"
+      if tpe is bool:
+        return str(val)
+      elif tpe is int:
+        return str(val)
+      elif tpe is float:
+        return str(val)
+      elif tpe is Range:
+        return f"({val.lower},{val.upper})"
+      else:
+        raise TypeError(f"cannot serialize type {tpe} in user function serialization")
+    serialized_args = [serialize_arg(tpe, arg) for tpe, arg in zip(fn_argtypes, args)]
+    return cls._FN_SERIALIZATION_SEPARATOR.join([fn.__name__] + serialized_args)
 
   @classmethod
-  def deserialize_fn(cls, fn_name: str) -> Callable[..., PartsTable]:
+  def deserialize_fn(cls, serialized: str) -> Callable:
     """Deserializes a user function from a string."""
-    if fn_name not in cls._user_fns:
-      raise ValueError(f"Function {fn_name} not registered.")
-    return cls._user_fns[fn_name]
+    split = serialized.split(cls._FN_SERIALIZATION_SEPARATOR)
+    if split[0] not in cls._user_fns:
+      raise ValueError(f"Function {serialized} not registered.")
+    fn_ctor, fn_argtypes = cls._user_fns[split[0]]
+    assert len(split) == len(fn_argtypes) + 1
+    def deserialize_arg(tpe: Type, val: str) -> Any:
+      if tpe is bool:
+        return val == 'True'
+      elif tpe is int:
+        return int(val)
+      elif tpe is float:
+        return float(val)
+      elif tpe is Range:
+        parts = val[1:-1].split(",")
+        return Range(float(parts[0]), float(parts[1]))
+      else:
+        raise TypeError(f"cannot deserialize type {tpe} in user function serialization")
+    deserialized_args = [deserialize_arg(tpe, arg) for tpe, arg in zip(fn_argtypes, split[1:])]
+    return fn_ctor(*deserialized_args)
