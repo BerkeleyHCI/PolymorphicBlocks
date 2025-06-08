@@ -189,7 +189,6 @@ class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
     self.reset.init_from(DigitalSink())
 
 
-ParamRangeType = TypeVar('ParamRangeType', bound=Union[RangeExpr, Range])
 class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a switching buck converter.
 
@@ -246,8 +245,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                input_voltage_ripple: FloatLike,
                output_voltage_ripple: FloatLike,
                efficiency: RangeLike = (0.9, 1.0),  # from TI reference
-               dutycycle_limit: RangeLike = (0.1, 0.9),
-               inductor_scale: FloatLike = 1.0):  # arbitrary
+               dutycycle_limit: RangeLike = (0.1, 0.9)):
     super().__init__()
 
     self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models the input cap only
@@ -269,7 +267,6 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                          self.input_voltage_ripple, self.output_voltage_ripple, self.dutycycle_limit)
 
     self.current_limits = self.ArgParameter(current_limits)
-    self.inductor_scale = self.ArgParameter(inductor_scale)
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
@@ -310,7 +307,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     # TODO maximum current depends on the inductance, but this just uses a worst-case value for simplicity
     # TODO ideally the inductor selector would take a function that can account for this coupled equation
     self.inductor = self.Block(Inductor(
-      inductance=values.inductance*Henry / self.inductor_scale,
+      inductance=values.inductance*Henry,
       current=values.inductor_peak_currents,
       frequency=self.frequency
     ))
@@ -318,7 +315,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     # expand out the equation to avoid double-counting tolerance
     actual_peak_ripple = (self.output_voltage.lower() * (self.input_voltage.upper() - self.output_voltage.lower()) /
                           (self.inductor.actual_inductance * self.frequency.lower() * self.input_voltage.upper()))
-    self.assign(self.actual_inductor_current_ripple, actual_peak_ripple / self.inductor_scale)
+    self.assign(self.actual_inductor_current_ripple, actual_peak_ripple)
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
