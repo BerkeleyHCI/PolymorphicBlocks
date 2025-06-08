@@ -173,7 +173,7 @@ NumLikeCastable = TypeVar('NumLikeCastable')  # should include the self type
 class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedType, NumLikeCastable]):
   """Trait for numeric-like expressions, providing common arithmetic operations"""
 
-  _CASTABLE_TYPES: Tuple[Type[NumLikeCastable]] = ()  # NumLikeCastable for use in ininstance(), excluding self-cls
+  _CASTABLE_TYPES: Tuple[Type[NumLikeCastable], ...]  # NumLikeCastable for use in ininstance(), excluding self-cls
 
   @classmethod
   @abstractmethod
@@ -226,7 +226,7 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
     return NotImplemented
 
   def __rsub__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
+    if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
       return self.__neg__().__radd__(self._to_expr_type(lhs))
     return NotImplemented
 
@@ -290,7 +290,7 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
 
 IntLike = Union['IntExpr', int]
 class IntExpr(NumLikeExpr[int, IntLike]):
-  _CASTABLE_TYPES = (int)
+  _CASTABLE_TYPES = (int, )
 
   @classmethod
   def _to_expr_type(cls, input: IntLike) -> IntExpr:
@@ -352,7 +352,8 @@ class FloatExpr(NumLikeExpr[float, Union[FloatLike, IntExpr]]):
 
 RangeLike = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
 class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
-  _CASTABLE_TYPES = (float, int, FloatExpr, IntExpr, Range, tuple)
+  # mypy doesn't like the unbounded tuple
+  _CASTABLE_TYPES = (float, int, FloatExpr, IntExpr, Range, tuple)  # type: ignore
 
   # Some range literals for defaults
   POSITIVE: Range = Range.from_lower(0.0)
