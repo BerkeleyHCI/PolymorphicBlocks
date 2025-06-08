@@ -575,9 +575,6 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                          self.inductor_current_ripple, self.current_limits, self.efficiency,
                          self.input_voltage_ripple, self.output_voltage_ripple)
 
-    # TODO, this is a hack and should be replaced by the actual peak current
-    self.inductor_spec_peak_current = self.Parameter(FloatExpr())
-
     self.actual_buck_dutycycle = self.Parameter(RangeExpr())  # possible actual duty cycle in buck mode
     self.actual_boost_dutycycle = self.Parameter(RangeExpr())  # possible actual duty cycle in boost mode
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
@@ -596,76 +593,44 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
   def generate(self) -> None:
     super().generate()
-    input_voltage = self.get(self.input_voltage)
-    output_voltage = self.get(self.output_voltage)
-    frequency = self.get(self.frequency)
-    output_current = self.get(self.output_current)
-    inductor_current_ripple = self.get(self.inductor_current_ripple)
-    input_voltage_ripple = self.get(self.input_voltage_ripple)
-    output_voltage_ripple = self.get(self.output_voltage_ripple)
+    buck_values = BuckConverterPowerPath.calculate_parameters(
+      self.get(self.input_voltage), self.get(self.output_voltage),
+      self.get(self.frequency), self.get(self.output_current),
+      self.get(self.inductor_current_ripple), self.get(self.input_voltage_ripple), self.get(self.output_voltage_ripple),
+      efficiency=self.get(self.efficiency), dutycycle_limit=Range(0, 1))
+    boost_values = BoostConverterPowerPath.calculate_parameters(
+      self.get(self.input_voltage), self.get(self.output_voltage),
+      self.get(self.frequency), self.get(self.output_current),
+      self.get(self.inductor_current_ripple), self.get(self.input_voltage_ripple), self.get(self.output_voltage_ripple),
+      efficiency=self.get(self.efficiency), dutycycle_limit=Range(0, 1))
+    self.assign(self.actual_buck_dutycycle, buck_values.effective_dutycycle)
+    self.assign(self.actual_boost_dutycycle, boost_values.effective_dutycycle)
 
-    # clip each mode's duty cycle to that mode's operating range
-    buck_dutycycle = (output_voltage / input_voltage / self.get(self.efficiency)).bound_to(Range(-float('inf'), 1))
-    self.assign(self.actual_buck_dutycycle, buck_dutycycle)
-    boost_dutycycle = (1 - input_voltage / output_voltage * self.get(self.efficiency)).bound_to(Range(0, float('inf')))
-    self.assign(self.actual_boost_dutycycle, boost_dutycycle)
-
-    # Calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
-    # This range must be constructed manually to not double-count the tolerance stackup of the voltages
-    buck_inductance_min = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                           (inductor_current_ripple.upper * frequency.lower * input_voltage.upper))
-    if inductor_current_ripple.lower == 0:  # basically infinite inductance
-      buck_inductance_max = float('inf')
-    else:
-      buck_inductance_max = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                             (inductor_current_ripple.lower * frequency.lower * input_voltage.upper))
-    min_current = max(0, output_current.lower - inductor_current_ripple.upper / 2)  # applies to both modes
-    buck_peak_current = output_current.upper + inductor_current_ripple.upper / 2
-    boost_inductance_min = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
-                            (inductor_current_ripple.upper * frequency.lower * output_voltage.lower))
-    if inductor_current_ripple.lower == 0:  # basically infinite inductance
-      boost_inductance_max = float('inf')
-    else:
-      boost_inductance_max = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
-                              (inductor_current_ripple.lower * frequency.lower * output_voltage.lower))
-    boost_peak_current = output_current.upper / (1 - boost_dutycycle.upper) + inductor_current_ripple.upper / 2
-    inductor_spec_peak_current = max(buck_peak_current, boost_peak_current)
-    self.assign(self.inductor_spec_peak_current, inductor_spec_peak_current)
-
-    # take intersection of buck and boost inductances, and hopefully they overlap
-    inductance_min = max(buck_inductance_min, boost_inductance_min)
-    inductance_max = min(buck_inductance_max, boost_inductance_max)
     self.inductor = self.Block(Inductor(
-      inductance=(inductance_min, inductance_max)*Henry,
-      current=(0, inductor_spec_peak_current),
-      frequency=frequency*Hertz
+      inductance=buck_values.inductance.intersect(boost_values.inductance) * Henry,
+      current=buck_values.inductor_peak_currents.hull(buck_values.inductor_peak_currents),
+      frequency=self.frequency
     ))
 
-    buck_actual_ripple = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                          (self.inductor.actual_inductance * frequency.lower * input_voltage.upper))
-    boost_actual_ripple = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
-                           (self.inductor.actual_inductance * frequency.lower * output_voltage.lower))
+    # TODO deduplciate w/ ripple code in buck and boost converters
+    buck_actual_ripple = (self.output_voltage.lower() * (self.input_voltage.upper() - self.output_voltage.lower()) /
+                          (self.inductor.actual_inductance * self.frequency.lower() * self.input_voltage.upper()))
+    boost_actual_ripple = (self.input_voltage.lower() * (self.output_voltage.upper() - self.input_voltage.lower()) /
+                           (self.inductor.actual_inductance * self.frequency.lower() * self.output_voltage.lower()))
     self.assign(self.actual_inductor_current_ripple, buck_actual_ripple.hull(boost_actual_ripple))
 
     self.connect(self.switch_in, self.inductor.a)
-    self.assign(self.actual_inductor_current, (min_current, inductor_spec_peak_current))  # peak currents
+    dc_current_range = self.output_current / (1 - boost_values.effective_dutycycle.upper)  # DC range at worst case boost
+    self.assign(self.actual_inductor_current, dc_current_range + (self.actual_inductor_current_ripple.upper() / 2))
     self.connect(self.switch_out, self.inductor.b)
     self.assign(self.actual_avg_current_rating, (0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
                                                  (self.actual_inductor_current_ripple.upper() / 2)))
 
-    input_buck_min_cap = (output_current.upper * BuckConverterPowerPath.max_d_inverse_d(buck_dutycycle) /
-                          (frequency.lower * input_voltage_ripple))
-    input_boost_min_cap = ((output_current.upper / (1 - boost_dutycycle.upper)) /
-                           (frequency.lower * input_voltage_ripple))
     self.in_cap = self.Block(DecouplingCapacitor(
-      capacitance=Range.from_lower(max(input_buck_min_cap, input_boost_min_cap))*Farad,
+      capacitance=buck_values.input_capacitance.intersect(boost_values.input_capacitance) * Farad,
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_in)
-
-    # calculated with steady-state ripple
-    output_buck_min_cap = inductor_current_ripple.upper / (8 * frequency.lower * output_voltage_ripple)
-    output_boost_min_cap = output_current.upper * boost_dutycycle.upper / (frequency.lower * output_voltage_ripple)
     self.out_cap = self.Block(DecouplingCapacitor(
-      capacitance=Range.from_lower(max(output_buck_min_cap, output_boost_min_cap))*Farad,
+      capacitance=buck_values.output_capacitance.intersect(boost_values.output_capacitance) * Farad,
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_out)

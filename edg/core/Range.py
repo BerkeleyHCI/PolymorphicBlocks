@@ -144,8 +144,16 @@ class Range:
     else:
       return NotImplemented
 
+  def hull(self, other: 'Range') -> 'Range':
+    return Range(min(self.lower, other.lower), max(self.upper, other.upper))
+
   def intersects(self, other: 'Range') -> bool:
     return (self.upper >= other.lower) and (self.lower <= other.upper)
+
+  def intersect(self, other: 'Range') -> 'Range':
+    # TODO make behavior more consistent w/ compiler and returning empty that props as a unit
+    assert self.intersects(other), "Cannot intersect ranges that do not intersect"
+    return Range(max(self.lower, other.lower), min(self.upper, other.upper))
 
   def __add__(self, other: Union['Range', float]) -> 'Range':
     if isinstance(other, Range):
