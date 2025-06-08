@@ -619,7 +619,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.connect(self.switch_in, self.inductor.a)
 
     # full range across all modes
-    dc_current_range = self.output_current / Range(1, (1 - boost_values.effective_dutycycle.upper))
+    dc_current_range = self.output_current / Range((1 - boost_values.effective_dutycycle.upper), 1)
     self.assign(self.actual_inductor_current, dc_current_range + (self.actual_inductor_current_ripple.upper() / 2))
     self.connect(self.switch_out, self.inductor.b)
     self.assign(self.actual_avg_current_rating, (0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -

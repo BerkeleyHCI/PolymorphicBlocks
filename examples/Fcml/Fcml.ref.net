@@ -279,7 +279,7 @@
   (value "4.1A 4.7uH ±30% 23.4mΩ SMD,8x8x4.2mm Power Inductors ROHS")
   (footprint "Inductor_SMD:L_Taiyo-Yuden_NR-80xx")
   (property (name "Sheetname") (value "power_path"))
-  (property (name "Sheetfile") (value "edg.abstract_parts.AbstractPowerConverters.BuckConverterPowerPath"))
+  (property (name "Sheetfile") (value "examples.test_fcml.FcmlPowerPath"))
   (property (name "edg_path") (value "conv.power_path.inductor"))
   (property (name "edg_short_path") (value "conv.power_path.inductor"))
   (property (name "edg_refdes") (value "L2"))
