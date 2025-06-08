@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import itertools
-import sys
 from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
   cast, Tuple, Sequence, Protocol
 
