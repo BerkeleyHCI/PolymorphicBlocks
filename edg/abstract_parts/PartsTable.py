@@ -153,9 +153,6 @@ class PartsTable:
 
 
 UserFnMetaParams = ParamSpec('UserFnMetaParams')
-# UserFnParams = ParamSpec('UserFnParams')
-# UserFnReturnType = TypeVar('UserFnReturnType', covariant=True)
-# UserFnType = Callable[[], UserFnReturnType]
 UserFnType = TypeVar('UserFnType', bound=Callable, covariant=True)
 class UserFnSerialiable(Protocol[UserFnMetaParams, UserFnType]):
   """A protocol that marks functions as usable in deserialize, that they have been registered."""
