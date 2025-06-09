@@ -596,7 +596,8 @@ class LiteralConstructor:
       return FloatExpr._to_expr_type(other * self.scale)
     elif isinstance(other, Range):
       return RangeExpr._to_expr_type(other * self.scale)
-    elif isinstance(other, tuple) and isinstance(other[0], (int, float)) and isinstance(other[1], (int, float)):
-      return RangeExpr._to_expr_type(Range(other[0], other[1]) * self.scale)
+    elif isinstance(other, tuple) and isinstance(other[0], (int, float, IntExpr, FloatExpr)) \
+            and isinstance(other[1], (int, float, IntExpr, FloatExpr)):
+      return RangeExpr._to_expr_type((other[0] * self.scale, other[1] * self.scale))
     else:
       raise TypeError(f"expected Float or Range Literal, got {other} of type {type(other)}")

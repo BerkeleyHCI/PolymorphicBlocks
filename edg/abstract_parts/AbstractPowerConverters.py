@@ -212,9 +212,11 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     input_capacitance: Range
     output_capacitance: Range
 
+    inductance_scale: float  # divide this by inductance to get the inductor ripple current
+    output_capacitance_scale: float  # multiply inductor ripple by this to get required output capacitance
+
     inductor_peak_currents: Range  # based on the worst case input spec
     effective_dutycycle: Range  # duty cycle adjusted for tracking behavior
-    serialized_inductor_filter: str
 
   # TODO new concept
   # EITHER:
@@ -241,15 +243,14 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     input_capacitance = Range.from_lower(output_current.upper * cls._d_inverse_d(effective_dutycycle).upper /
                                          (frequency.lower * input_voltage_ripple))
-    output_capacitance = Range.from_lower(inductor_current_ripple.upper /
-                                          (8 * frequency.lower * output_voltage_ripple))
+    output_capacitance_scale = 1 / (8 * frequency.lower * output_voltage_ripple)
+    output_capacitance = Range.from_lower(inductor_current_ripple.upper * output_capacitance_scale)
 
     return cls.Values(dutycycle=dutycycle, inductance=inductance,
                       input_capacitance=input_capacitance, output_capacitance=output_capacitance,
+                      inductance_scale=inductance_scale, output_capacitance_scale=output_capacitance_scale,
                       inductor_peak_currents=inductor_peak_currents,
-                      effective_dutycycle=effective_dutycycle,
-                      serialized_inductor_filter=ExperimentalUserFnPartsTable.serialize_fn(
-                        cls._buck_inductor_filter, output_current.upper, inductance_scale))
+                      effective_dutycycle=effective_dutycycle)
 
   @staticmethod
   def _d_inverse_d(d_range: Range) -> Range:
@@ -271,7 +272,6 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     def filter_fn(row: PartsTableRow) -> bool:
       ripple = max_ripple_scaler / row[TableInductor.INDUCTANCE]
       max_current_pp = Range.exact(max_avg_current) + ripple / 2
-      print(f"{(ripple / max_avg_current).center():.2g} {max_current_pp.center():.4g} <= {row[TableInductor.INDUCTANCE].center():.4g} {row[TableInductor.CURRENT_RATING].center():.4g}")
       return max_current_pp.fuzzy_in(row[TableInductor.CURRENT_RATING])
     return filter_fn
 
@@ -329,18 +329,16 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.require(values.dutycycle == values.effective_dutycycle, "dutycycle outside limit")
 
     self.inductor = self.Block(Inductor(
-      # inductance=values.inductance*Henry,
+      inductance=values.inductance*Henry,
       # current=values.inductor_peak_currents,
-      inductance=Range.all(),
+      # inductance=Range.all(),
       current=Range.exact(0),
       frequency=self.frequency,
-      experimental_filter_fn=values.serialized_inductor_filter
+      experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
+        self._buck_inductor_filter, self.get(self.output_current).upper, values.inductance_scale)
     ))
 
-    # expand out the equation to avoid double-counting tolerance
-    actual_peak_ripple = (self.output_voltage.lower() * (self.input_voltage.upper() - self.output_voltage.lower()) /
-                          (self.inductor.actual_inductance * self.frequency.lower() * self.input_voltage.upper()))
-    self.assign(self.actual_inductor_current_ripple, actual_peak_ripple)
+    self.assign(self.actual_inductor_current_ripple, values.inductance_scale / self.inductor.actual_inductance)
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
@@ -357,7 +355,8 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_in)
     self.out_cap = self.Block(DecouplingCapacitor(
-      capacitance=values.output_capacitance * Farad,
+      capacitance=(values.output_capacitance_scale * self.actual_inductor_current_ripple.upper(),
+                   float('inf')) * Farad,
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_out)
 
