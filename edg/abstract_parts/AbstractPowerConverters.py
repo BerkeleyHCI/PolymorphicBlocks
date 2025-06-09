@@ -1,10 +1,12 @@
 from abc import abstractmethod
-from typing import Optional, NamedTuple, Generic, TypeVar, Union
-from ..electronics_model import *
-from .Categories import *
+from typing import Optional, NamedTuple
+
 from .AbstractCapacitor import DecouplingCapacitor
-from .AbstractInductor import Inductor
+from .AbstractInductor import Inductor, TableInductor
+from .Categories import *
+from .PartsTable import PartsTableRow, ExperimentalUserFnPartsTable
 from .Resettable import Resettable
+from ..electronics_model import *
 
 
 @abstract_block_default(lambda: IdealVoltageRegulator)
@@ -212,6 +214,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     inductor_peak_currents: Range  # based on the worst case input spec
     effective_dutycycle: Range  # duty cycle adjusted for tracking behavior
+    serialized_inductor_filter: str
 
   @classmethod
   def calculate_parameters(cls, input_voltage: Range, output_voltage: Range, frequency: Range, output_current: Range,
@@ -226,10 +229,12 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
     # worst-case input/output voltages and frequency is used to avoid double-counting tolerances as ranges
-    inductance = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
-                  (inductor_current_ripple * frequency.lower * input_voltage.upper))
+    # TODO IMPORTANT THIS IS AT A MAX AT Vout=1/2 Vin
+    inductance_scale = (output_voltage.lower * (input_voltage.upper - output_voltage.lower) /
+                        (frequency.lower * input_voltage.upper))
+    inductance = inductance_scale / inductor_current_ripple
 
-    input_capacitance = Range.from_lower(output_current.upper * cls.max_d_inverse_d(effective_dutycycle) /
+    input_capacitance = Range.from_lower(output_current.upper * cls.d_inverse_d_range(effective_dutycycle).upper /
                                          (frequency.lower * input_voltage_ripple))
     output_capacitance = Range.from_lower(inductor_current_ripple.upper /
                                           (8 * frequency.lower * output_voltage_ripple))
@@ -237,7 +242,22 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     return cls.Values(dutycycle=dutycycle, inductance=inductance,
                       input_capacitance=input_capacitance, output_capacitance=output_capacitance,
                       inductor_peak_currents=inductor_peak_currents,
-                      effective_dutycycle= effective_dutycycle)
+                      effective_dutycycle=effective_dutycycle,
+                      serialized_inductor_filter=ExperimentalUserFnPartsTable.serialize_fn(
+                        cls.buck_inductor_filter, output_current.upper, inductance_scale))
+
+  @staticmethod
+  @ExperimentalUserFnPartsTable.user_fn([float, float])
+  def buck_inductor_filter(max_avg_current: float, max_ripple_scaler: float):
+    """Applies further filtering to inductors using the trade-off between inductance and peak-peak current.
+    max_avg_current is the maximum average current (not accounting for ripple) seem by the inductor
+    max_ripple_scaler is the scaling factor from 1/L to ripple, Vo/(Vi-Vo)/fs/Vi"""
+    def filter_fn(row: PartsTableRow) -> bool:
+      ripple = max_ripple_scaler / row[TableInductor.INDUCTANCE]
+      max_current_pp = Range.exact(max_avg_current) + ripple / 2
+      print(f"{(ripple / max_avg_current).center():.2g} {max_current_pp.center():.4g} <= {row[TableInductor.INDUCTANCE].center():.4g} {row[TableInductor.CURRENT_RATING].center():.4g}")
+      return max_current_pp.fuzzy_in(row[TableInductor.CURRENT_RATING])
+    return filter_fn
 
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
@@ -282,16 +302,15 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     )
 
   @staticmethod
-  def max_d_inverse_d(d_range: Range) -> float:
+  def d_inverse_d_range(d_range: Range) -> Range:
     """Some power calculations require the maximum of D*(1-D), which has a maximum at D=0.5"""
-    if 0.5 in d_range:
-      return 0.5 * (1 - 0.5)
-    elif d_range.lower > 0.5:
-      return d_range.lower * (1 - d_range.lower)
-    elif d_range.upper < 0.5:
-      return d_range.upper * (1 - d_range.upper)
+    # can't use range ops since they will double-count the tolerance of D, so calculate endpoints separately
+    range_endpoints = [d_range.lower * (1 - d_range.lower), d_range.upper * (1 - d_range.upper)]
+    raw_range = Range(min(range_endpoints), max(range_endpoints))
+    if 0.5 in d_range:  # the function has a maximum at 0.5
+      return raw_range.hull(Range.exact(0.5 * (1 - 0.5)))
     else:
-      raise Exception(f"unexpected D range {d_range}")
+      return raw_range
 
   def generate(self) -> None:
     super().generate()
@@ -304,12 +323,13 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.assign(self.actual_dutycycle, values.dutycycle)
     self.require(values.dutycycle == values.effective_dutycycle, "dutycycle outside limit")
 
-    # TODO maximum current depends on the inductance, but this just uses a worst-case value for simplicity
-    # TODO ideally the inductor selector would take a function that can account for this coupled equation
     self.inductor = self.Block(Inductor(
-      inductance=values.inductance*Henry,
-      current=values.inductor_peak_currents,
-      frequency=self.frequency
+      # inductance=values.inductance*Henry,
+      # current=values.inductor_peak_currents,
+      inductance=Range.all(),
+      current=Range.exact(0),
+      frequency=self.frequency,
+      experimental_filter_fn=values.serialized_inductor_filter
     ))
 
     # expand out the equation to avoid double-counting tolerance
