@@ -6,7 +6,7 @@ from ..core import Range
 
 class BuckConverterCalculationTest(unittest.TestCase):
     def test_buck_converter(self):
-        values_ref = BuckConverterPowerPath.calculate_parameters(
+        values_ref = BuckConverterPowerPath._calculate_parameters(
             Range.exact(5), Range.exact(2.5), Range.exact(100e3), Range.exact(1),
             Range.exact(0.1), 0.01, 0.001,
             efficiency=Range.exact(1)
@@ -16,7 +16,7 @@ class BuckConverterCalculationTest(unittest.TestCase):
         self.assertEqual(values_ref.inductance, Range.exact(125e-6))
 
         # test that component values are calculated for worst-case conversion
-        values = BuckConverterPowerPath.calculate_parameters(
+        values = BuckConverterPowerPath._calculate_parameters(
             Range(4, 5), Range(2.5, 4), Range.exact(100e3), Range.exact(1),
             Range.exact(0.1), 0.01, 0.001,
             efficiency=Range.exact(1)
@@ -27,7 +27,7 @@ class BuckConverterCalculationTest(unittest.TestCase):
 
     def test_buck_converter_example(self):
         # using the example from https://passive-components.eu/buck-converter-design-and-calculation/
-        values = BuckConverterPowerPath.calculate_parameters(
+        values = BuckConverterPowerPath._calculate_parameters(
             Range.exact(12 + 0.4), Range.exact(3.3 + 0.4), Range.exact(500e3), Range.exact(1),
             Range.exact(0.35), 1, 0.0165,
             efficiency=Range.exact(1)
@@ -36,7 +36,7 @@ class BuckConverterCalculationTest(unittest.TestCase):
         self.assertAlmostEqual(values.inductance.upper, 14.8e-6, places=7)
 
         # the example uses a ripple current of 0.346 for the rest of the calculations
-        values = BuckConverterPowerPath.calculate_parameters(
+        values = BuckConverterPowerPath._calculate_parameters(
             Range.exact(12 + 0.4), Range.exact(3.3 + 0.4), Range.exact(500e3), Range.exact(1),
             Range.exact(0.346), 1, 0.0165,
             efficiency=Range.exact(1)

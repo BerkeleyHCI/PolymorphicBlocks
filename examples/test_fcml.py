@@ -213,7 +213,7 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
 
   def generate(self) -> None:
     super().generate()
-    values = BuckConverterPowerPath.calculate_parameters(
+    values = BuckConverterPowerPath._calculate_parameters(
       self.get(self.input_voltage), self.get(self.output_voltage),
       self.get(self.frequency), self.get(self.output_current), self.get(self.inductor_current_ripple),
       self.get(self.input_voltage_ripple), self.get(self.output_voltage_ripple),
