@@ -212,7 +212,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     input_capacitance: Range
     output_capacitance: Range
 
-    inductance_scale: float  # divide this by inductance to get the inductor ripple current
+    ripple_scale: float  # divide this by inductance to get the inductor ripple current
     output_capacitance_scale: float  # multiply inductor ripple by this to get required output capacitance
 
     inductor_peak_currents: Range  # based on the worst case input spec
@@ -238,6 +238,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
     # worst-case input/output voltages and frequency is used to avoid double-counting tolerances as ranges
+    # note, the same formula calculates ripple-from-inductance and inductance-from-ripple
     inductance_scale = input_voltage.upper * cls._d_inverse_d(dutycycle).upper / frequency.lower
     inductance = inductance_scale / inductor_current_ripple
 
@@ -248,7 +249,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     return cls.Values(dutycycle=dutycycle, inductance=inductance,
                       input_capacitance=input_capacitance, output_capacitance=output_capacitance,
-                      inductance_scale=inductance_scale, output_capacitance_scale=output_capacitance_scale,
+                      ripple_scale=inductance_scale, output_capacitance_scale=output_capacitance_scale,
                       inductor_peak_currents=inductor_peak_currents,
                       effective_dutycycle=effective_dutycycle)
 
@@ -265,12 +266,12 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
   @staticmethod
   @ExperimentalUserFnPartsTable.user_fn([float, float])
-  def _buck_inductor_filter(max_avg_current: float, max_ripple_scaler: float):
+  def _buck_inductor_filter(max_avg_current: float, ripple_scale: float):
     """Applies further filtering to inductors using the trade-off between inductance and peak-peak current.
     max_avg_current is the maximum average current (not accounting for ripple) seem by the inductor
-    max_ripple_scaler is the scaling factor from 1/L to ripple, Vo/(Vi-Vo)/fs/Vi"""
+    ripple_scale is the scaling factor from 1/L to ripple, Vo/(Vi-Vo)/fs/Vi"""
     def filter_fn(row: PartsTableRow) -> bool:
-      ripple = max_ripple_scaler / row[TableInductor.INDUCTANCE]
+      ripple = ripple_scale / row[TableInductor.INDUCTANCE]
       max_current_pp = Range.exact(max_avg_current) + ripple / 2
       return max_current_pp.fuzzy_in(row[TableInductor.CURRENT_RATING])
     return filter_fn
@@ -335,10 +336,10 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       current=Range.exact(0),
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
-        self._buck_inductor_filter, self.get(self.output_current).upper, values.inductance_scale)
+        self._buck_inductor_filter, self.get(self.output_current).upper, values.ripple_scale)
     ))
 
-    self.assign(self.actual_inductor_current_ripple, values.inductance_scale / self.inductor.actual_inductance)
+    self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance)
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
