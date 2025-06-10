@@ -7,8 +7,8 @@ from .Microcontroller_Esp import HasEspProgramming
 
 
 @non_library
-class Esp32c3_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerI2s, IoControllerWifi,
-                         IoControllerBle, BaseIoController):
+class Esp32c3_Interfaces(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerCan, IoControllerI2s,
+                         IoControllerWifi, IoControllerBle, BaseIoController):
   """Defines base interfaces for ESP32C3 microcontrollers"""
 
 
@@ -83,6 +83,7 @@ class Esp32c3_Ios(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator):
       PeripheralAnyResource('SPI2', spi_model),
       PeripheralAnyResource('SPI2_P', spi_peripheral_model),  # TODO shared resource w/ SPI controller
       PeripheralAnyResource('I2S', I2sController.empty()),
+      PeripheralAnyResource('TWAI', CanControllerPort.empty()),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
 
