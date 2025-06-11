@@ -244,8 +244,7 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
       current_draw=self.pwr_out.link().current_drawn * values.dutycycle
     )))
     inductor_current_limits = self.inductor.actual_current_rating - (self.actual_inductor_current_ripple.upper() / 2)
-    sw_current_limits = (self.sw_current_limits.upper() > 0).then_else(self.sw_current_limits,
-                                                                       RangeExpr._to_expr_type(Range.all()))
+    sw_current_limits = (self.sw_current_limits.upper() > 0).then_else(self.sw_current_limits, Range.all())
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
       current_limits=inductor_current_limits.intersect(sw_current_limits)

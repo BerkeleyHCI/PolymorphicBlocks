@@ -26,6 +26,8 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   """Base class for constraint expressions. Basically a container for operations.
   Actual meaning is held in the Binding.
   """
+  _CASTABLE_TYPES: Tuple[Type[CastableType], ...]  # for use in ininstance(), excluding self-cls
+
   def __repr__(self) -> str:
     if self.binding is not None and self.initializer is not None:
       return f"{super().__repr__()}({self.binding})={self.initializer}"
@@ -101,6 +103,9 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
 BoolLike = Union[bool, 'BoolExpr']
 class BoolExpr(ConstraintExpr[bool, BoolLike]):
   """Boolean expression, can be used as a constraint"""
+
+  _CASTABLE_TYPES = (bool, )
+
   @classmethod
   def _to_expr_type(cls, input: BoolLike) -> BoolExpr:
     if isinstance(input, BoolExpr):
@@ -159,11 +164,21 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
   def __invert__(self) -> BoolExpr:
     return self._new_bind(UnaryOpBinding(self, BoolOp.op_not))
 
-
   IteType = TypeVar('IteType', bound=ConstraintExpr)
-  def then_else(self, then_val: IteType, else_val: IteType) -> IteType:
-    assert isinstance(then_val, type(else_val)) and isinstance(else_val, type(then_val)), \
-        f"if-then-else results must be of same type, got then={then_val}, else={else_val}"
+  @overload
+  def then_else(self, then_val: IteType, else_val: IteType) -> IteType: ...  # optional stronger-typed version
+  @overload
+  def then_else(self, then_val: IteType, else_val: CastableType) -> IteType: ...  # weaker versions
+  @overload
+  def then_else(self, then_val: CastableType, else_val: IteType) -> IteType: ...  # weaker versions
+
+  def then_else(self, then_val: Any, else_val: Any) -> ConstraintExpr:
+    if isinstance(then_val, ConstraintExpr):
+      else_val = then_val._to_expr_type(else_val)
+    elif isinstance(else_val, ConstraintExpr):
+      then_val = else_val._to_expr_type(then_val)
+    else:
+      raise ValueError("either then_val or else_val must be ConstraintExpr, TODO support dual-casting")
     assert self._is_bound() and then_val._is_bound() and else_val._is_bound()
     return then_val._new_bind(IfThenElseBinding(self, then_val, else_val))
 
@@ -172,8 +187,6 @@ NumLikeSelfType = TypeVar('NumLikeSelfType', bound='NumLikeExpr')
 NumLikeCastable = TypeVar('NumLikeCastable')  # should include the self type
 class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedType, NumLikeCastable]):
   """Trait for numeric-like expressions, providing common arithmetic operations"""
-
-  _CASTABLE_TYPES: Tuple[Type[NumLikeCastable], ...]  # NumLikeCastable for use in ininstance(), excluding self-cls
 
   @classmethod
   @abstractmethod
@@ -479,6 +492,9 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
 StringLike = Union['StringExpr', str]
 class StringExpr(ConstraintExpr[str, StringLike]):
   """String expression, can be used as a constraint"""
+
+  _CASTABLE_TYPES = (str, )
+
   @classmethod
   def _to_expr_type(cls, input: StringLike) -> StringExpr:
     if isinstance(input, StringExpr):
