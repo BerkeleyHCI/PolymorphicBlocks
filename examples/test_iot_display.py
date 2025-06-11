@@ -179,7 +179,7 @@ class IotDisplay(JlcBoardTop):
         ]),
         (['mcu', 'programming'], 'uart-auto-button'),
 
-        (['reg_3v3', 'power_path', 'inductor', 'part'], "SWPA4030S330MT"),
+        (['reg_3v3', 'power_path', 'inductor', 'part'], "SWPA4030S330MT"),  # peg to part selection
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 10e6)),
         (['reg_3v3', 'fb', 'impedance'], Range(20000.0, 100000.0)),
         (['epd', 'boost', 'sense', 'require_basic_part'], False),  # 3R is not a basic part

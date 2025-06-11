@@ -242,8 +242,9 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     # worst-case input/output voltages and frequency is used to avoid double-counting tolerances as ranges
     # note, the same formula calculates ripple-from-inductance and inductance-from-ripple
     inductance_scale = input_voltage.upper * cls._d_inverse_d(dutycycle).upper / frequency.lower
-    inductance = inductance_scale / (output_current * ripple_ratio)
-    inductance = inductance.intersect(inductance_scale / (current_limits.upper * backstop_ripple_ratio))  # light-load
+    inductance = inductance_scale / (current_limits.upper * backstop_ripple_ratio)  # backstop for light-load
+    if ripple_ratio.upper < float('inf'):
+      inductance = inductance.intersect(inductance_scale / (output_current * ripple_ratio))
 
     input_capacitance = Range.from_lower(output_current.upper * cls._d_inverse_d(effective_dutycycle).upper /
                                          (frequency.lower * input_voltage_ripple))
@@ -366,7 +367,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_in)
     self.out_cap = self.Block(DecouplingCapacitor(
-      capacitance=RangeExpr(Range.exact(float('inf'))).hull(
+      capacitance=(Range.exact(float('inf')) * Farad).hull(
         (values.output_capacitance_scale * self.actual_inductor_current_ripple.upper())),
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_out)
@@ -670,7 +671,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_in)
     self.out_cap = self.Block(DecouplingCapacitor(
-      capacitance=RangeExpr(Range.exact(float('inf'))).hull(
+      capacitance=(Range.exact(float('inf')) * Farad).hull(
         (buck_values.output_capacitance_scale * self.actual_inductor_current_ripple.upper())),
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_out)
