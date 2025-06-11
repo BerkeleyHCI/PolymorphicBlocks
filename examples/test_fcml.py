@@ -226,8 +226,6 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
     self.assign(self.actual_dutycycle, values.dutycycle)
     self.require(values.dutycycle == values.effective_dutycycle, "dutycycle outside limit")
 
-    # TODO maximum current depends on the inductance, but this just uses a worst-case value for simplicity
-    # TODO ideally the inductor selector would take a function that can account for this coupled equation
     self.inductor = self.Block(Inductor(
       inductance=values.inductance*Henry / self.inductor_scale,
       current=values.inductor_peak_currents,
@@ -244,7 +242,9 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
       current_draw=self.pwr_out.link().current_drawn * values.dutycycle
     )))
     inductor_current_limits = self.inductor.actual_current_rating - (self.actual_inductor_current_ripple.upper() / 2)
-    sw_current_limits = (self.sw_current_limits.upper() > 0).then_else(self.sw_current_limits, Range.all())
+    sw_current_limits = (self.sw_current_limits.upper() > 0).then_else(
+      self.sw_current_limits - (self.actual_inductor_current_ripple.upper() / 2),
+      Range.all())
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
       current_limits=inductor_current_limits.intersect(sw_current_limits)

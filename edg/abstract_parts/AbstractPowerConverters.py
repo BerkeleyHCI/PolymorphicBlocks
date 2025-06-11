@@ -226,7 +226,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                             sw_current_limits: Range, ripple_ratio: Range,
                             input_voltage_ripple: float, output_voltage_ripple: float,
                             efficiency: Range = Range(0.9, 1.0), dutycycle_limit: Range = Range(0.1, 0.9),
-                            backstop_ripple_ratio=Range(0.1, 0.5)) -> 'BuckConverterPowerPath.Values':
+                            backstop_ripple_ratio=Range(0.1, 0.55)) -> 'BuckConverterPowerPath.Values':
     """Calculates parameters for the buck converter power path.
     Here, the ripple_ratio (at the output_current) is optional and may be set to Range.all(),
     allowing the inductor selector to optimize the inductor by trading off inductance and max current.
@@ -365,7 +365,9 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       current_draw=self.pwr_out.link().current_drawn * values.dutycycle
     )))
     inductor_current_limits = self.inductor.actual_current_rating - (self.actual_inductor_current_ripple.upper() / 2)
-    sw_current_limits = (self.sw_current_limits.upper() > 0).then_else(self.sw_current_limits, Range.all())
+    sw_current_limits = (self.sw_current_limits.upper() > 0).then_else(
+      self.sw_current_limits - (self.actual_inductor_current_ripple.upper() / 2),
+      Range.all())
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
       current_limits=inductor_current_limits.intersect(sw_current_limits)
