@@ -25,7 +25,7 @@ class CustomSyncBuckConverterIndependent(DiscreteBoostConverter):
         self.assign(self.actual_frequency, self.frequency)
         self.power_path = self.Block(BuckConverterPowerPath(
             self.pwr_in.link().voltage, self.output_voltage, self.actual_frequency,
-            self.pwr_out.link().current_drawn, Range.all(),  # TODO model current limits from FETs
+            self.pwr_out.link().current_drawn, Range.exact(0),
             input_voltage_ripple=self.input_ripple_limit,
             output_voltage_ripple=self.output_ripple_limit,
             ripple_ratio=self.ripple_current_factor,

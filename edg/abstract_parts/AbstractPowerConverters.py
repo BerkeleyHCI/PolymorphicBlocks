@@ -223,17 +223,19 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
   @classmethod
   def _calculate_parameters(cls, input_voltage: Range, output_voltage: Range, frequency: Range, output_current: Range,
-                            current_limits: Range, ripple_ratio: Range,
+                            sw_current_limits: Range, ripple_ratio: Range,
                             input_voltage_ripple: float, output_voltage_ripple: float,
                             efficiency: Range = Range(0.9, 1.0), dutycycle_limit: Range = Range(0.1, 0.9),
                             backstop_ripple_ratio=Range(0.1, 0.5)) -> 'BuckConverterPowerPath.Values':
     """Calculates parameters for the buck converter power path.
-    If ripple ratio is not explicitly specified (allowing the inductor selector more latitude to optimize),
-    applies two heuristics:
-    - The device current limit is used to calculate a backstop ripple limit of 0.5 @ Imax (rule of thumb).
-    - Enforces CCM up by ripple limit of 2.0 down to 0.2 * Imax, below is considered very-light-load.
-    Otherwise, ripple ratio is applied to the upper bound of the output current.
-    allowing the inductor selector to optimize the inductance-current tradeoff across a wider range of ripple currents.
+    Here, the ripple_ratio (at the output_current) is optional and may be set to Range.all(),
+    allowing the inductor selector to optimize the inductor by trading off inductance and max current.
+    The inductance is bounded by two values here:
+    - the ripple_ratio at output_current (if ripple_ratio > inf), or
+    - the backstop_ripple_ratio at sw_current_limits (if sw_current_limits is not zero)
+    This heuristic is meant to blend the typical rules-of-thumb for buck converter ripple ratio
+    with the ability to optimize inductors, while supporting light-load operation (where the
+    inductance goes to the moon - backstop of ripple-ratio of 0.5 @ Imax) in a unified framework.
     """
     dutycycle = output_voltage / input_voltage / efficiency
     effective_dutycycle = dutycycle.bound_to(dutycycle_limit)  # account for tracking behavior
@@ -242,9 +244,13 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     # worst-case input/output voltages and frequency is used to avoid double-counting tolerances as ranges
     # note, the same formula calculates ripple-from-inductance and inductance-from-ripple
     inductance_scale = input_voltage.upper * cls._d_inverse_d(dutycycle).upper / frequency.lower
-    inductance = inductance_scale / (current_limits.upper * backstop_ripple_ratio)  # backstop for light-load
+    inductance = Range.all()
+    if sw_current_limits.upper > 0:  # backstop for light-load
+      inductance = inductance.intersect(inductance_scale / (sw_current_limits.upper * backstop_ripple_ratio))
     if ripple_ratio.upper < float('inf'):
-      inductance = inductance.intersect(inductance_scale / (output_current * ripple_ratio))
+      assert ripple_ratio.lower > 0, f"invalid non-inf ripple ratio {ripple_ratio}"
+      inductance = inductance.intersect(inductance_scale / (output_current.upper * ripple_ratio))
+    assert inductance.upper < float('inf'), 'neither ripple_ratio nor backstop sw_current_limits given'
 
     input_capacitance = Range.from_lower(output_current.upper * cls._d_inverse_d(effective_dutycycle).upper /
                                          (frequency.lower * input_voltage_ripple))
@@ -252,7 +258,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     # these are static worst-case estimates for the range of specified ripple currents
     # mainly used for unit testing
-    inductor_current_ripple = output_current * ripple_ratio
+    inductor_current_ripple = output_current * ripple_ratio.intersect(backstop_ripple_ratio)
     inductor_peak_currents = Range(max(0, output_current.lower - inductor_current_ripple.upper / 2),
                                    max(output_current.upper + inductor_current_ripple.upper / 2,
                                        inductor_current_ripple.upper))
@@ -289,7 +295,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
-               output_current: RangeLike, current_limits: RangeLike, *,
+               output_current: RangeLike, sw_current_limits: RangeLike, *,
                input_voltage_ripple: FloatLike,
                output_voltage_ripple: FloatLike,
                efficiency: RangeLike = (0.9, 1.0),  # from TI reference
@@ -306,7 +312,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.output_voltage = self.ArgParameter(output_voltage)
     self.frequency = self.ArgParameter(frequency)
     self.output_current = self.ArgParameter(output_current)
-    self.current_limits = self.ArgParameter(current_limits)
+    self.sw_current_limits = self.ArgParameter(sw_current_limits)
 
     self.efficiency = self.ArgParameter(efficiency)
     self.input_voltage_ripple = self.ArgParameter(input_voltage_ripple)
@@ -315,7 +321,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.ripple_ratio = self.ArgParameter(ripple_ratio)  # only used to force a ripple ratio at the actual currents
 
     self.generator_param(self.input_voltage, self.output_voltage, self.frequency, self.output_current,
-                         self.current_limits, self.input_voltage_ripple, self.output_voltage_ripple,
+                         self.sw_current_limits, self.input_voltage_ripple, self.output_voltage_ripple,
                          self.efficiency, self.dutycycle_limit, self.ripple_ratio)
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
@@ -335,7 +341,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     super().generate()
     values = self._calculate_parameters(self.get(self.input_voltage), self.get(self.output_voltage),
                                         self.get(self.frequency), self.get(self.output_current),
-                                        self.get(self.current_limits), self.get(self.ripple_ratio),
+                                        self.get(self.sw_current_limits), self.get(self.ripple_ratio),
                                         self.get(self.input_voltage_ripple), self.get(self.output_voltage_ripple),
                                         efficiency=self.get(self.efficiency),
                                         dutycycle_limit=self.get(self.dutycycle_limit))
@@ -356,10 +362,12 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       voltage_limits=RangeExpr.ALL,
       current_draw=self.pwr_out.link().current_drawn * values.dutycycle
     )))
+    inductor_current_limits = self.inductor.actual_current_rating - (self.actual_inductor_current_ripple.upper() / 2)
+    sw_current_limits = (self.sw_current_limits.upper() > 0).then_else(self.sw_current_limits,
+                                                                       RangeExpr._to_expr_type(Range.all()))
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
-      current_limits=(0, self.current_limits.intersect(self.inductor.actual_current_rating).upper() -
-                      (self.actual_inductor_current_ripple.upper() / 2))
+      current_limits=inductor_current_limits.intersect(sw_current_limits)
     )))
 
     self.in_cap = self.Block(DecouplingCapacitor(
