@@ -246,7 +246,9 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     inductance_scale = input_voltage.upper * cls._d_inverse_d(dutycycle).upper / frequency.lower
     inductance = Range.all()
     if sw_current_limits.upper > 0:  # backstop for light-load
-      inductance = inductance.intersect(inductance_scale / (sw_current_limits.upper * backstop_ripple_ratio))
+      # since limits are defined in terms of the switch current which should have ripple factored in already,
+      # assume a safe-ish 0.25 ripple ratio was specified and unapply that before applying the backstop ratio
+      inductance = inductance.intersect(inductance_scale / (sw_current_limits.upper / 1.25 * backstop_ripple_ratio))
     if ripple_ratio.upper < float('inf'):
       assert ripple_ratio.lower > 0, f"invalid non-inf ripple ratio {ripple_ratio}"
       inductance = inductance.intersect(inductance_scale / (output_current.upper * ripple_ratio))
