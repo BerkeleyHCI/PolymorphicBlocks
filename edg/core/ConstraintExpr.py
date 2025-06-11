@@ -164,15 +164,17 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
   def __invert__(self) -> BoolExpr:
     return self._new_bind(UnaryOpBinding(self, BoolOp.op_not))
 
+  # does not seem possible to restrict type-params of type vars pre-Python3.12
+  # so where a single cast is needed we're stuck with Any
   IteType = TypeVar('IteType', bound=ConstraintExpr)
   @overload
-  def then_else(self, then_val: IteType, else_val: IteType) -> IteType: ...  # optional stronger-typed version
+  def then_else(self, then_val: IteType, else_val: IteType) -> IteType: ...  # optional strongest-typed version
   @overload
-  def then_else(self, then_val: IteType, else_val: CastableType) -> IteType: ...  # weaker versions
+  def then_else(self, then_val: IteType, else_val: Any) -> IteType: ...
   @overload
-  def then_else(self, then_val: CastableType, else_val: IteType) -> IteType: ...  # weaker versions
+  def then_else(self, then_val: Any, else_val: IteType) -> IteType: ...
 
-  def then_else(self, then_val: Any, else_val: Any) -> ConstraintExpr:
+  def then_else(self, then_val: Any, else_val: Any) -> ConstraintExpr:  # type: ignore
     if isinstance(then_val, ConstraintExpr):
       else_val = then_val._to_expr_type(else_val)
     elif isinstance(else_val, ConstraintExpr):
