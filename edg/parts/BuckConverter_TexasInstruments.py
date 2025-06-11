@@ -72,11 +72,9 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
       self.power_path = imp.Block(BuckConverterPowerPath(
         self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.actual_frequency,
         self.pwr_out.link().current_drawn, (0, 1.2)*Amp,
-        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
-                                                       self.ripple_current_factor,
-                                                       rated_current=1.2*Amp),
         input_voltage_ripple=self.input_ripple_limit,
         output_voltage_ripple=self.output_ripple_limit,
+        ripple_ratio=self.ripple_current_factor
       ))
       # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
       # and then the power path can generate
@@ -158,11 +156,9 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
       self.power_path = imp.Block(BuckConverterPowerPath(
         self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.actual_frequency,
         self.pwr_out.link().current_drawn, (0, 2)*Amp,
-        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
-                                                       self.ripple_current_factor,
-                                                       rated_current=2*Amp),
         input_voltage_ripple=self.input_ripple_limit,
         output_voltage_ripple=self.output_ripple_limit,
+        ripple_ratio=self.ripple_current_factor
       ))
       # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
       # and then the power path can generate

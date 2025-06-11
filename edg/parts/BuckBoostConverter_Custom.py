@@ -44,11 +44,9 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
     self.power_path = self.Block(BuckBoostConverterPowerPath(
       self.pwr_in.link().voltage, self.output_voltage, self.actual_frequency,
       self.pwr_out.link().current_drawn, Range.all(),  # TODO model current limits from FETs
-      inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
-                                                     self.ripple_current_factor,
-                                                     rated_current=self.pwr_out.link().current_drawn.upper()),
       input_voltage_ripple=self.input_ripple_limit,
-      output_voltage_ripple=self.output_ripple_limit
+      output_voltage_ripple=self.output_ripple_limit,
+      ripple_ratio=self.ripple_current_factor,
     ))
     self.connect(self.power_path.pwr_in, self.pwr_in)
     self.connect(self.power_path.pwr_out, self.pwr_out)

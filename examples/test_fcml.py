@@ -2,6 +2,7 @@ import unittest
 from typing import Optional, Dict
 
 from edg import *
+from edg.abstract_parts.PartsTable import ExperimentalUserFnPartsTable
 
 
 class PowerOutConnector(Connector, Block):
@@ -179,11 +180,12 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
   """
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
-               output_current: RangeLike, current_limits: RangeLike, inductor_current_ripple: RangeLike, *,
+               output_current: RangeLike, current_limits: RangeLike, *,
                input_voltage_ripple: FloatLike,
                output_voltage_ripple: FloatLike,
                efficiency: RangeLike = (0.9, 1.0),  # from TI reference
                dutycycle_limit: RangeLike = (0.1, 0.9),
+               ripple_ratio: RangeLike = Range.all(),
                inductor_scale: FloatLike = 1.0):  # arbitrary
     super().__init__()
 
@@ -196,17 +198,18 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
     self.output_voltage = self.ArgParameter(output_voltage)
     self.frequency = self.ArgParameter(frequency)
     self.output_current = self.ArgParameter(output_current)
-    self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
+    self.current_limits = self.ArgParameter(current_limits)
+
     self.efficiency = self.ArgParameter(efficiency)
     self.input_voltage_ripple = self.ArgParameter(input_voltage_ripple)
     self.output_voltage_ripple = self.ArgParameter(output_voltage_ripple)
     self.dutycycle_limit = self.ArgParameter(dutycycle_limit)
-    self.generator_param(self.input_voltage, self.output_voltage, self.frequency, self.output_current,
-                         self.inductor_current_ripple, self.efficiency,
-                         self.input_voltage_ripple, self.output_voltage_ripple, self.dutycycle_limit)
-
-    self.current_limits = self.ArgParameter(current_limits)
+    self.ripple_ratio = self.ArgParameter(ripple_ratio)  # only used to force a ripple ratio at the actual currents
     self.inductor_scale = self.ArgParameter(inductor_scale)
+
+    self.generator_param(self.input_voltage, self.output_voltage, self.frequency, self.output_current,
+                         self.current_limits, self.input_voltage_ripple, self.output_voltage_ripple,
+                         self.efficiency, self.dutycycle_limit, self.ripple_ratio, self.inductor_scale)
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
@@ -215,9 +218,11 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
     super().generate()
     values = BuckConverterPowerPath._calculate_parameters(
       self.get(self.input_voltage), self.get(self.output_voltage),
-      self.get(self.frequency), self.get(self.output_current), self.get(self.inductor_current_ripple),
+      self.get(self.frequency), self.get(self.output_current),
+      self.get(self.current_limits), self.get(self.ripple_ratio),
       self.get(self.input_voltage_ripple), self.get(self.output_voltage_ripple),
-      efficiency=self.get(self.efficiency), dutycycle_limit=self.get(self.dutycycle_limit))
+      efficiency=self.get(self.efficiency),
+      dutycycle_limit=self.get(self.dutycycle_limit))
     self.assign(self.actual_dutycycle, values.dutycycle)
     self.require(values.dutycycle == values.effective_dutycycle, "dutycycle outside limit")
 
@@ -226,13 +231,13 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
     self.inductor = self.Block(Inductor(
       inductance=values.inductance*Henry / self.inductor_scale,
       current=values.inductor_peak_currents,
-      frequency=self.frequency
+      frequency=self.frequency,
+      experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
+        BuckConverterPowerPath._buck_inductor_filter, self.get(self.output_current).upper,
+        values.ripple_scale / self.get(self.inductor_scale))
     ))
 
-    # expand out the equation to avoid double-counting tolerance
-    actual_peak_ripple = (self.output_voltage.lower() * (self.input_voltage.upper() - self.output_voltage.lower()) /
-                          (self.inductor.actual_inductance * self.frequency.lower() * self.input_voltage.upper()))
-    self.assign(self.actual_inductor_current_ripple, actual_peak_ripple / self.inductor_scale)
+    self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance / self.inductor_scale)
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
@@ -249,7 +254,8 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_in)
     self.out_cap = self.Block(DecouplingCapacitor(
-      capacitance=values.output_capacitance * Farad,
+      capacitance=RangeExpr(Range.exact(float('inf'))).hull(
+        (values.output_capacitance_scale * self.actual_inductor_current_ripple.upper())),
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_out)
 
@@ -274,7 +280,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
   """
   @init_in_parent
   def __init__(self, levels: IntLike, ratios: RangeLike, frequency: RangeLike, *,
-               inductor_current_ripple: RangeLike, fet_rds: RangeLike = (0, 0.1)*Ohm):
+               ripple_current_factor: RangeLike, fet_rds: RangeLike = (0, 0.1)*Ohm):
     super().__init__()
     self.pwr_in = self.Port(VoltageSink.empty())
     self.pwr_out = self.Port(VoltageSource.empty())
@@ -285,7 +291,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     self.pwms = self.Port(Vector(DigitalSink.empty()))
 
     self.frequency = self.ArgParameter(frequency)
-    self.inductor_current_ripple = self.ArgParameter(inductor_current_ripple)
+    self.ripple_current_factor = self.ArgParameter(ripple_current_factor)
     self.fet_rds = self.ArgParameter(fet_rds)
 
     self.levels = self.ArgParameter(levels)
@@ -299,9 +305,9 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     self.power_path = self.Block(FcmlPowerPath(
       self.pwr_in.link().voltage, self.pwr_in.link().voltage * self.get(self.ratios), self.frequency,
       self.pwr_out.link().current_drawn, Range.all(),  # TODO add current limits from FETs
-      inductor_current_ripple=self.inductor_current_ripple,
       input_voltage_ripple=250*mVolt,
       output_voltage_ripple=25*mVolt,  # TODO plumb through to user config
+      ripple_ratio=self.ripple_current_factor,
       dutycycle_limit=(0, 1),
       inductor_scale=(levels - 1)**2
     ))
@@ -383,8 +389,7 @@ class Fcml(JlcBoardTop):
 
       self.conv = imp.Block(DiscreteMutlilevelBuckConverter(
         4, (0.15, 0.5), 100*kHertz(tol=0),
-        inductor_current_ripple=(0.1, 1)*Amp,
-        fet_rds=(0, 0.010)*Ohm
+        ripple_current_factor=(0.1, 0.4), fet_rds=(0, 0.010)*Ohm
       ))
       self.conv_out = imp.Block(PowerOutConnector((0, 3)*Amp))
       self.connect(self.conv.pwr_in, self.conv_in.pwr)
