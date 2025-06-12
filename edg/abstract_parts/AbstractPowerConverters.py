@@ -242,8 +242,18 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
     # worst-case input/output voltages and frequency is used to avoid double-counting tolerances as ranges
+    # note, for buck converter, L = (Vin - Vout) * D / (f * Iripple) = Vout (Vin - Vout) / (Iripple * f * Vin)
+    # this is at a maximum at Vin,max, and on that curve with a critical point at Vout = Vin,max / 2
     # note, the same formula calculates ripple-from-inductance and inductance-from-ripple
-    inductance_scale = input_voltage.upper * cls._d_inverse_d(dutycycle).upper / frequency.lower
+    inductance_scale_candidates = [
+      output_voltage.lower * (input_voltage.upper - output_voltage.lower) / input_voltage.upper,
+      output_voltage.upper * (input_voltage.upper - output_voltage.upper) / input_voltage.upper,
+    ]
+    if input_voltage.upper / 2 in output_voltage:
+      inductance_scale_candidates.append(
+        input_voltage.upper/2 * (input_voltage.upper - input_voltage.upper/2) / input_voltage.upper)
+    inductance_scale = max(inductance_scale_candidates) / frequency.lower
+
     inductance = Range.all()
     if sw_current_limits.upper > 0:  # backstop for light-load
       # since limits are defined in terms of the switch current which should have ripple factored in already,
@@ -451,8 +461,17 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
     # worst-case input/output voltages and frequency is used to avoid double-counting tolerances as ranges
-    inductance = (input_voltage.lower * (output_voltage.upper - input_voltage.lower) /
-                  (inductor_current_ripple * frequency.lower * output_voltage.upper))
+    # note, for boost converter, L = Vin * D / (f * Iripple) = Vin (Vout - Vin) / (Iripple * f * Vout)
+    # this is at a maximum at Vout,max, and on that curve with a critical point at Vin = Vout,max / 2
+    inductance_scale_candidates = [
+      input_voltage.lower * (output_voltage.upper - input_voltage.lower) / output_voltage.upper,
+      input_voltage.upper * (output_voltage.upper - input_voltage.upper) / output_voltage.upper,
+    ]
+    if output_voltage.upper / 2 in input_voltage:
+      inductance_scale_candidates.append(
+        output_voltage.upper/2 * (output_voltage.upper - output_voltage.upper/2) / output_voltage.upper)
+    inductance_scale = max(inductance_scale_candidates) / frequency.lower
+    inductance = inductance_scale / inductor_current_ripple
 
     # Capacitor equation Q = CV => i = C dv/dt => for constant current, i * t = C dV => dV = i * t / C
     # C = i * t / dV => C = i / (f * dV)

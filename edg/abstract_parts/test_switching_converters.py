@@ -4,7 +4,7 @@ from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPower
 from ..core import Range
 
 
-class BuckConverterCalculationTest(unittest.TestCase):
+class SwitchingConverterCalculationTest(unittest.TestCase):
     def test_buck_converter(self):
         values_ref = BuckConverterPowerPath._calculate_parameters(
             Range.exact(5), Range.exact(2.5), Range.exact(100e3), Range.exact(1),
