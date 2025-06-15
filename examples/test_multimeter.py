@@ -1,5 +1,5 @@
 import unittest
-from typing import List, Dict
+from typing import Dict
 
 from edg import *
 
