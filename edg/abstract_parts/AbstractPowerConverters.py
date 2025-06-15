@@ -300,15 +300,15 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       return raw_range
 
   @staticmethod
-  @ExperimentalUserFnPartsTable.user_fn([float, float])
-  def _buck_inductor_filter(max_avg_current: float, ripple_scale: float):
+  @ExperimentalUserFnPartsTable.user_fn([float, float, float])
+  def _buck_inductor_filter(max_avg_current: float, ripple_scale: float, min_ripple: float):
     """Applies further filtering to inductors using the trade-off between inductance and peak-peak current.
     max_avg_current is the maximum average current (not accounting for ripple) seem by the inductor
     ripple_scale is the scaling factor from 1/L to ripple, Vo/(Vi-Vo)/fs/Vi"""
     def filter_fn(row: PartsTableRow) -> bool:
-      ripple = ripple_scale / row[TableInductor.INDUCTANCE]
-      max_current_pp = Range.exact(max_avg_current) + ripple / 2
-      return max_current_pp.fuzzy_in(row[TableInductor.CURRENT_RATING])
+      ripple_current = max(ripple_scale / row[TableInductor.INDUCTANCE].lower, min_ripple)
+      max_current_pp = max_avg_current + ripple_current / 2
+      return max_current_pp in row[TableInductor.CURRENT_RATING]
     return filter_fn
 
   @staticmethod
@@ -380,7 +380,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       current=self.output_current,  # min-bound only, the real filter happens in the filter_fn
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
-        self._buck_inductor_filter, values.inductor_avg_current.upper, values.ripple_scale)
+        self._buck_inductor_filter, values.inductor_avg_current.upper, values.ripple_scale, values.min_ripple)
     ))
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance)
 
@@ -399,7 +399,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     )).connected(self.gnd, self.pwr_in)
     self.out_cap = self.Block(DecouplingCapacitor(
       capacitance=(Range.exact(float('inf')) * Farad).hull(
-        (values.output_capacitance_scale * self.actual_inductor_current_ripple.upper())),
+        (values.output_capacitance_scale * self.actual_inductor_current_ripple.upper().max(values.min_ripple))),
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_out)
 
@@ -573,7 +573,8 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       current=values.inductor_peak_currents,  # min-bound only, the real filter happens in the filter_fn
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
-        BuckConverterPowerPath._buck_inductor_filter, values.inductor_avg_current.upper, values.ripple_scale)
+        BuckConverterPowerPath._buck_inductor_filter,
+        values.inductor_avg_current.upper, values.ripple_scale, values.min_ripple)
     ))
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance)
 
@@ -700,13 +701,15 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     combined_ripple_scale = max(buck_values.ripple_scale, boost_values.ripple_scale)
     combined_inductor_avg_current = boost_values.inductor_avg_current.hull(boost_values.inductor_avg_current)
+    combined_min_ripple = max(buck_values.min_ripple, boost_values.min_ripple)
 
     self.inductor = self.Block(Inductor(
       inductance=buck_values.inductance.intersect(boost_values.inductance) * Henry,
       current=buck_values.inductor_peak_currents.hull(boost_values.inductor_peak_currents),
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
-        BuckConverterPowerPath._buck_inductor_filter, combined_inductor_avg_current.upper, combined_ripple_scale)
+        BuckConverterPowerPath._buck_inductor_filter,
+        combined_inductor_avg_current.upper, combined_ripple_scale, combined_min_ripple)
     ))
     self.connect(self.switch_in, self.inductor.a)
     self.connect(self.switch_out, self.inductor.b)

@@ -231,8 +231,8 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
       current=values.inductor_peak_currents,
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
-        BuckConverterPowerPath._buck_inductor_filter, self.get(self.output_current).upper,
-        values.ripple_scale / self.get(self.inductor_scale))
+        BuckConverterPowerPath._buck_inductor_filter, values.inductor_avg_current.upper,
+        values.ripple_scale / self.get(self.inductor_scale), values.min_ripple)
     ))
 
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance / self.inductor_scale)
