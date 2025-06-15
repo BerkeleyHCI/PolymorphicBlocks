@@ -197,14 +197,14 @@ class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
 class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a switching buck converter.
 
-  Main assumptions in component sizing:
-  - Operating only in continuous mode, TODO: also consider boundary and discontinuous mode
-  - TODO: account for capacitor ESR?
+  This uses the continuous conduction mode (CCM) equations to calculate component sizes.
+  DCM is not explicitly calculated since it requires additional parameters like minimum on-time.
+  The limit_ripple_ratio provides some broadly sane values for light-load / DCM operation.
+  This also ignores higher-order component behavior like capacitor ESR.
 
   Useful resources:
   https://www.ti.com/lit/an/slva477b/slva477b.pdf
     Component sizing in continuous mode
-    Listed references go into more detail
   http://www.onmyphd.com/?p=voltage.regulators.buck.step.down.converter
     Very detailed analysis including component sizing, operating modes, calculating losses
   """
@@ -431,14 +431,14 @@ class IdealBoostConverter(Resettable, DiscreteBoostConverter, IdealModel):
 class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a synchronous boost converter.
 
-  Main assumptions in component sizing
-  - Operating only in continuous mode, TODO: also consider boundary and discontinuous mode
-  - TODO: account for capacitor ESR?
+  This uses the continuous conduction mode (CCM) equations to calculate component sizes.
+  DCM is not explicitly calculated since it requires additional parameters like minimum on-time.
+  The limit_ripple_ratio provides some broadly sane values for light-load / DCM operation.
+  This also ignores higher-order component behavior like capacitor ESR.
 
   Useful resources:
   https://www.ti.com/lit/an/slva372c/slva372c.pdf
     Component sizing in continuous mode
-    Listed references go into more detail
   http://www.simonbramble.co.uk/dc_dc_converter_design/boost_converter/boost_converter_design.htm
     Detailed analysis of converter with discrete FET and diode
   """
