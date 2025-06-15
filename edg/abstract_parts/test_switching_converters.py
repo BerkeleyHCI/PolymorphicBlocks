@@ -69,7 +69,7 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
         # using the example from https://passive-components.eu/boost-converter-design-and-calculation/
         values = BoostConverterPowerPath.calculate_parameters(
             Range.exact(5), Range.exact(12 + 0.4), Range.exact(500e3), Range.exact(0.5),
-            Range.exact(1), Range.exact(0.35), 1, 1,
+            Range.exact(2), Range.exact(0.35), 1, 1,
             efficiency=Range.exact(1)
         )
         self.assertAlmostEqual(values.dutycycle.upper, 0.597, places=3)
@@ -79,7 +79,7 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
         # the example continues with a normalized inductance of 15uH
         values = BoostConverterPowerPath.calculate_parameters(
             Range.exact(5), Range.exact(12 + 0.4), Range.exact(500e3), Range.exact(0.5),
-            Range.exact(1), Range.exact(0.321), 0.01, 0.06,
+            Range.exact(2), Range.exact(0.321), 0.01, 0.06,
             efficiency=Range.exact(1)
         )
         self.assertAlmostEqual(values.dutycycle.upper, 0.597, places=3)
