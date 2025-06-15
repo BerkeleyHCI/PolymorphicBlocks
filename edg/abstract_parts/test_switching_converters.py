@@ -45,7 +45,7 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
         self.assertAlmostEqual(values.output_capacitance.lower, 5.24e-6, places=7)
 
     def test_boost_converter(self):
-        values_ref = BoostConverterPowerPath.calculate_parameters(
+        values_ref = BoostConverterPowerPath._calculate_parameters(
             Range.exact(5), Range.exact(10), Range.exact(100e3), Range.exact(0.5),
             Range.exact(1), Range.exact(0.4), 0.01, 0.001,
             efficiency=Range.exact(1)
@@ -56,7 +56,7 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
         self.assertEqual(values_ref.inductor_avg_current, Range.exact(1))
 
         # test that component values are calculated for worst-case conversion
-        values = BoostConverterPowerPath.calculate_parameters(
+        values = BoostConverterPowerPath._calculate_parameters(
             Range(5, 8), Range(7, 10), Range.exact(100e3), Range.exact(0.5),
             Range.exact(1), Range.exact(0.4), 0.01, 0.001,
             efficiency=Range.exact(1)
@@ -67,7 +67,7 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
 
     def test_boost_converter_example(self):
         # using the example from https://passive-components.eu/boost-converter-design-and-calculation/
-        values = BoostConverterPowerPath.calculate_parameters(
+        values = BoostConverterPowerPath._calculate_parameters(
             Range.exact(5), Range.exact(12 + 0.4), Range.exact(500e3), Range.exact(0.5),
             Range.exact(2), Range.exact(0.35), 1, 1,
             efficiency=Range.exact(1)
@@ -77,7 +77,7 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
         self.assertAlmostEqual(values.inductor_avg_current.upper, 1.24, places=2)
 
         # the example continues with a normalized inductance of 15uH
-        values = BoostConverterPowerPath.calculate_parameters(
+        values = BoostConverterPowerPath._calculate_parameters(
             Range.exact(5), Range.exact(12 + 0.4), Range.exact(500e3), Range.exact(0.5),
             Range.exact(2), Range.exact(0.321), 0.01, 0.06,
             efficiency=Range.exact(1)

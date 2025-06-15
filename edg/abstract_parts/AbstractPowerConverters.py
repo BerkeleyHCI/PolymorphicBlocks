@@ -197,11 +197,6 @@ class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
 class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a switching buck converter.
 
-  This uses the continuous conduction mode (CCM) equations to calculate component sizes.
-  DCM is not explicitly calculated since it requires additional parameters like minimum on-time.
-  The limit_ripple_ratio provides some broadly sane values for light-load / DCM operation.
-  This also ignores higher-order component behavior like capacitor ESR.
-
   Useful resources:
   https://www.ti.com/lit/an/slva477b/slva477b.pdf
     Component sizing in continuous mode
@@ -228,14 +223,19 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                             efficiency: Range = Range(0.9, 1.0), dutycycle_limit: Range = Range(0.1, 0.9),
                             limit_ripple_ratio: Range = Range(0.1, 0.5)) -> 'BuckConverterPowerPath.Values':
     """Calculates parameters for the buck converter power path.
-    Here, the ripple_ratio (at the output_current) is optional and may be set to Range.all(),
-    allowing the inductor selector to optimize the inductor by trading off inductance and max current.
-    The inductance is bounded by two values here:
-    - the ripple_ratio at output_current (if ripple_ratio > inf), or
-    - the limit_ripple_ratio at sw_current_limits (if sw_current_limits is not zero)
-    This heuristic is meant to blend the typical rules-of-thumb for buck converter ripple ratio
-    with the ability to optimize inductors, while supporting light-load operation (where the
-    inductance otherwise goes to the moon without a limit) in a unified framework.
+
+    This uses the continuous conduction mode (CCM) equations to calculate component sizes.
+    DCM is not explicitly calculated since it requires additional parameters like minimum on-time.
+    The limit_ripple_ratio provides some broadly sane values for light-load / DCM operation.
+    This also ignores higher-order component behavior like capacitor ESR.
+
+    The ripple_ratio is optional and may be set to Range.all(), allowing the inductor selector
+    to optimize the inductor by trading off inductance and max current.
+
+    Values for component selections are bounded by:
+    - the ripple_ratio at output_current (if ripple_ratio < inf), and
+    - the limit_ripple_ratio at sw_current_limits (if sw_current_limits is not zero), as a fallback
+      for light-load conditions (where otherwise current goes to zero and inductance goes to the moon)
     """
     dutycycle = output_voltage / input_voltage / efficiency
     effective_dutycycle = dutycycle.bound_to(dutycycle_limit)  # account for tracking behavior
@@ -431,11 +431,6 @@ class IdealBoostConverter(Resettable, DiscreteBoostConverter, IdealModel):
 class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   """A helper block to generate the power path (inductors, capacitors) for a synchronous boost converter.
 
-  This uses the continuous conduction mode (CCM) equations to calculate component sizes.
-  DCM is not explicitly calculated since it requires additional parameters like minimum on-time.
-  The limit_ripple_ratio provides some broadly sane values for light-load / DCM operation.
-  This also ignores higher-order component behavior like capacitor ESR.
-
   Useful resources:
   https://www.ti.com/lit/an/slva372c/slva372c.pdf
     Component sizing in continuous mode
@@ -456,11 +451,12 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     effective_dutycycle: Range
 
   @classmethod
-  def calculate_parameters(cls, input_voltage: Range, output_voltage: Range, frequency: Range, output_current: Range,
-                           sw_current_limits: Range, ripple_ratio: Range,
-                           input_voltage_ripple: float, output_voltage_ripple: float,
-                           efficiency: Range = Range(0.8, 1.0), dutycycle_limit: Range = Range(0.1, 0.9),
-                           limit_ripple_ratio: Range = Range(0.1, 0.5)) -> 'BoostConverterPowerPath.Values':
+  def _calculate_parameters(cls, input_voltage: Range, output_voltage: Range, frequency: Range, output_current: Range,
+                            sw_current_limits: Range, ripple_ratio: Range,
+                            input_voltage_ripple: float, output_voltage_ripple: float,
+                            efficiency: Range = Range(0.8, 1.0), dutycycle_limit: Range = Range(0.1, 0.9),
+                            limit_ripple_ratio: Range = Range(0.1, 0.5)) -> 'BoostConverterPowerPath.Values':
+    """See BuckConverterPowerPath._calculate_parameters, this performs a similar function."""
     dutycycle = 1 - input_voltage / output_voltage * efficiency
     effective_dutycycle = dutycycle.bound_to(dutycycle_limit)  # account for tracking behavior
     inductor_avg_current = output_current * (output_voltage / input_voltage)
@@ -556,12 +552,12 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
   def generate(self) -> None:
     super().generate()
-    values = self.calculate_parameters(self.get(self.input_voltage), self.get(self.output_voltage),
-                                       self.get(self.frequency), self.get(self.output_current),
-                                       self.get(self.sw_current_limits), self.get(self.ripple_ratio),
-                                       self.get(self.input_voltage_ripple), self.get(self.output_voltage_ripple),
-                                       efficiency=self.get(self.efficiency),
-                                       dutycycle_limit=self.get(self.dutycycle_limit))
+    values = self._calculate_parameters(self.get(self.input_voltage), self.get(self.output_voltage),
+                                        self.get(self.frequency), self.get(self.output_current),
+                                        self.get(self.sw_current_limits), self.get(self.ripple_ratio),
+                                        self.get(self.input_voltage_ripple), self.get(self.output_voltage_ripple),
+                                        efficiency=self.get(self.efficiency),
+                                        dutycycle_limit=self.get(self.dutycycle_limit))
     self.assign(self.actual_dutycycle, values.dutycycle)
     self.require(values.dutycycle == values.effective_dutycycle, "dutycycle outside limit")
 
@@ -687,7 +683,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       self.get(self.sw_current_limits), self.get(self.ripple_ratio),
       self.get(self.input_voltage_ripple), self.get(self.output_voltage_ripple),
       efficiency=self.get(self.efficiency), dutycycle_limit=Range(0, 1))
-    boost_values = BoostConverterPowerPath.calculate_parameters(
+    boost_values = BoostConverterPowerPath._calculate_parameters(
       self.get(self.input_voltage), self.get(self.output_voltage),
       self.get(self.frequency), self.get(self.output_current),
       self.get(self.sw_current_limits), self.get(self.ripple_ratio),
