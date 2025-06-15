@@ -382,7 +382,6 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance)
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
-      voltage_limits=RangeExpr.ALL,
       current_draw=self.pwr_out.link().current_drawn * values.dutycycle
     )))
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
@@ -573,7 +572,6 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance)
 
     self.connect(self.pwr_in, self.inductor.a.adapt_to(VoltageSink(
-      voltage_limits=RangeExpr.ALL,
       current_draw=self.pwr_out.link().current_drawn / (1 - values.dutycycle)
     )))
     self.connect(self.switch, self.inductor.b.adapt_to(VoltageSource(
