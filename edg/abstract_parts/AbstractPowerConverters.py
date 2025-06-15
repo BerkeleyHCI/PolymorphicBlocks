@@ -210,6 +210,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     input_capacitance: Range
     output_capacitance: Range
 
+    inductor_avg_current: Range
     ripple_scale: float  # divide this by inductance to get the inductor ripple current
     output_capacitance_scale: float  # multiply inductor ripple by this to get required output capacitance
 
@@ -279,6 +280,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     return cls.Values(dutycycle=dutycycle, inductance=inductance,
                       input_capacitance=input_capacitance, output_capacitance=output_capacitance,
+                      inductor_avg_current=output_current,
                       ripple_scale=inductance_scale, output_capacitance_scale=output_capacitance_scale,
                       inductor_peak_currents=inductor_peak_currents,
                       effective_dutycycle=effective_dutycycle)
@@ -375,7 +377,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       current=self.output_current,  # min-bound only, the real filter happens in the filter_fn
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
-        self._buck_inductor_filter, self.get(self.output_current).upper, values.ripple_scale)
+        self._buck_inductor_filter, values.inductor_avg_current, values.ripple_scale)
     ))
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance)
 
@@ -444,8 +446,8 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     input_capacitance: Range
     output_capacitance: Range
 
-    ripple_scale: float  # divide this by inductance to get the inductor ripple current
     inductor_avg_current: Range
+    ripple_scale: float  # divide this by inductance to get the inductor ripple current
 
     inductor_peak_currents: Range  # based on the worst case input spec, for unit testing
     effective_dutycycle: Range
