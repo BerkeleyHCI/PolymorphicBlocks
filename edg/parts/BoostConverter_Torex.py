@@ -3,11 +3,11 @@ from ..abstract_parts import *
 
 class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
   parts_output_voltage_current = [  # from Table 2, Vout and Ilim
-    ('18', Range(1.764, 1.836), Range(0.96, 2.30)),
-    ('25', Range(2.450, 2.550), Range(1.19, 2.30)),
-    ('30', Range(2.940, 3.060), Range(0.96, 2.30)),
-    ('33', Range(3.234, 3.366), Range(0.98, 2.30)),
-    ('50', Range(4.900, 5.100), Range(1.07, 2.30)),
+    ('18', Range(1.764, 1.836), Range(0, 0.96)),  # typ, min not given
+    ('25', Range(2.450, 2.550), Range(0, 1.19)),  # typ, min not given
+    ('30', Range(2.940, 3.060), Range(0, 0.96)),  # typ, min not given
+    ('33', Range(3.234, 3.366), Range(0, 0.98)),
+    ('50', Range(4.900, 5.100), Range(0, 1.07)),
   ]
   parts_frequency = [  # fosc
     ('C', Range(1.02e6, 1.38e6)),  # 1.2MHz
@@ -89,9 +89,6 @@ class Xc9142(Resettable, DiscreteBoostConverter, GeneratorBlock):
       self.power_path = imp.Block(BoostConverterPowerPath(
         self.pwr_in.link().voltage, self.ic.vout.voltage_out, self.actual_frequency,
         self.pwr_out.link().current_drawn, self.ic.actual_current_limit,
-        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
-                                                       self.ripple_current_factor,
-                                                       rated_current=self.ic.actual_current_limit.lower()),
         input_voltage_ripple=self.input_ripple_limit,
         output_voltage_ripple=self.output_ripple_limit
       ))

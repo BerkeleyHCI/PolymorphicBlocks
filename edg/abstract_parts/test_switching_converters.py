@@ -46,18 +46,19 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
 
     def test_boost_converter(self):
         values_ref = BoostConverterPowerPath.calculate_parameters(
-            Range.exact(5), Range.exact(10), Range.exact(100e3), Range.exact(1),
-            Range.exact(0.1), 0.01, 0.001,
+            Range.exact(5), Range.exact(10), Range.exact(100e3), Range.exact(0.5),
+            Range.exact(1), Range.exact(0.4), 0.01, 0.001,
             efficiency=Range.exact(1)
         )
         self.assertEqual(values_ref.dutycycle, Range.exact(0.5))
         # validated against https://www.omnicalculator.com/physics/boost-converter
-        self.assertEqual(values_ref.inductance, Range.exact(250e-6))
+        self.assertEqual(values_ref.inductance, Range.exact(62.5e-6))
+        self.assertEqual(values_ref.inductor_avg_current, Range.exact(1))
 
         # test that component values are calculated for worst-case conversion
         values = BoostConverterPowerPath.calculate_parameters(
-            Range(5, 8), Range(7, 10), Range.exact(100e3), Range.exact(1),
-            Range.exact(0.1), 0.01, 0.001,
+            Range(5, 8), Range(7, 10), Range.exact(100e3), Range.exact(0.5),
+            Range.exact(1), Range.exact(0.4), 0.01, 0.001,
             efficiency=Range.exact(1)
         )
         self.assertEqual(values_ref.inductance, values.inductance)
@@ -66,19 +67,19 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
 
     def test_boost_converter_example(self):
         # using the example from https://passive-components.eu/boost-converter-design-and-calculation/
-        # 0.4342A ripple current from .35 factor in example converted in output current terms
         values = BoostConverterPowerPath.calculate_parameters(
             Range.exact(5), Range.exact(12 + 0.4), Range.exact(500e3), Range.exact(0.5),
-            Range.exact(0.4342), 1, 1,
+            Range.exact(1), Range.exact(0.35), 1, 1,
             efficiency=Range.exact(1)
         )
         self.assertAlmostEqual(values.dutycycle.upper, 0.597, places=3)
         self.assertAlmostEqual(values.inductance.upper, 13.75e-6, places=7)
+        self.assertAlmostEqual(values.inductor_avg_current.upper, 1.24, places=2)
 
         # the example continues with a normalized inductance of 15uH
         values = BoostConverterPowerPath.calculate_parameters(
             Range.exact(5), Range.exact(12 + 0.4), Range.exact(500e3), Range.exact(0.5),
-            Range.exact(.4342*13.75/15), 0.01, 0.06,
+            Range.exact(1), Range.exact(0.321), 0.01, 0.06,
             efficiency=Range.exact(1)
         )
         self.assertAlmostEqual(values.dutycycle.upper, 0.597, places=3)
