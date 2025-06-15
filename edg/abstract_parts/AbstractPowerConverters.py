@@ -261,6 +261,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       inductance = inductance.intersect(inductance_scale / (sw_current_limits.upper / 1.25 * backstop_ripple_ratio))
     if ripple_ratio.upper < float('inf'):
       assert ripple_ratio.lower > 0, f"invalid non-inf ripple ratio {ripple_ratio}"
+
       inductance = inductance.intersect(inductance_scale / (output_current.upper * ripple_ratio))
     assert inductance.upper < float('inf'), 'neither ripple_ratio nor backstop sw_current_limits given'
 
@@ -693,22 +694,19 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.assign(self.actual_buck_dutycycle, buck_values.effective_dutycycle)
     self.assign(self.actual_boost_dutycycle, boost_values.effective_dutycycle)
 
+    combined_ripple_scale = max(buck_values.ripple_scale, boost_values.ripple_scale)
+    combined_inductor_avg_current = max(self.get(self.output_current).upper, boost_values.inductor_avg_current.upper)
+
     self.inductor = self.Block(Inductor(
       inductance=buck_values.inductance.intersect(boost_values.inductance) * Henry,
       current=buck_values.inductor_peak_currents.hull(boost_values.inductor_peak_currents),
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
-        BuckConverterPowerPath._buck_inductor_filter, self.get(self.output_current).upper, buck_values.ripple_scale)
+        BuckConverterPowerPath._buck_inductor_filter, combined_inductor_avg_current, combined_ripple_scale)
     ))
 
-    # TODO deduplciate w/ ripple code in buck and boost converters
-    buck_actual_ripple = (self.output_voltage.lower() * (self.input_voltage.upper() - self.output_voltage.lower()) /
-                          (self.inductor.actual_inductance * self.frequency.lower() * self.input_voltage.upper()))
-    boost_actual_ripple = (self.input_voltage.lower() * (self.output_voltage.upper() - self.input_voltage.lower()) /
-                           (self.inductor.actual_inductance * self.frequency.lower() * self.output_voltage.lower()))
-    self.assign(self.actual_inductor_current_ripple, buck_actual_ripple.hull(boost_actual_ripple))
-
     self.connect(self.switch_in, self.inductor.a)
+    self.assign(self.actual_inductor_current_ripple, combined_ripple_scale / self.inductor.actual_inductance)
 
     # full range across all modes
     dc_current_range = self.output_current / Range((1 - boost_values.effective_dutycycle.upper), 1)
