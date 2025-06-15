@@ -235,7 +235,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     - the limit_ripple_ratio at sw_current_limits (if sw_current_limits is not zero)
     This heuristic is meant to blend the typical rules-of-thumb for buck converter ripple ratio
     with the ability to optimize inductors, while supporting light-load operation (where the
-    inductance goes to the moon - backstop of ripple-ratio of 0.5 @ Imax) in a unified framework.
+    inductance otherwise goes to the moon without a limit) in a unified framework.
     """
     dutycycle = output_voltage / input_voltage / efficiency
     effective_dutycycle = dutycycle.bound_to(dutycycle_limit)  # account for tracking behavior
@@ -255,15 +255,15 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     inductance_scale = max(inductance_scale_candidates) / frequency.lower
 
     inductance = Range.all()
-    if sw_current_limits.upper > 0:  # backstop for light-load
+    if sw_current_limits.upper > 0:  # fallback for light-load
       # since limits are defined in terms of the switch current which should have ripple factored in already,
-      # assume a safe-ish 0.25 ripple ratio was specified and unapply that before applying the backstop ratio
+      # assume a safe-ish 0.25 ripple ratio was specified and unapply that before applying the limit ratio
       inductance = inductance.intersect(inductance_scale / (sw_current_limits.upper / 1.25 * limit_ripple_ratio))
     if ripple_ratio.upper < float('inf'):
       assert ripple_ratio.lower > 0, f"invalid non-inf ripple ratio {ripple_ratio}"
 
       inductance = inductance.intersect(inductance_scale / (output_current.upper * ripple_ratio))
-    assert inductance.upper < float('inf'), 'neither ripple_ratio nor backstop sw_current_limits given'
+    assert inductance.upper < float('inf'), 'neither ripple_ratio nor fallback sw_current_limits given'
 
     input_capacitance = Range.from_lower(output_current.upper * cls._d_inverse_d(effective_dutycycle).upper /
                                          (frequency.lower * input_voltage_ripple))
@@ -479,14 +479,14 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     inductance_scale = max(inductance_scale_candidates) / frequency.lower
 
     inductance = Range.all()
-    if sw_current_limits.upper > 0:  # backstop for light-load
+    if sw_current_limits.upper > 0:  # fallback for light-load
       # since limits are defined in terms of the switch current which should have ripple factored in already,
-      # assume a safe-ish 0.25 ripple ratio was specified and unapply that before applying the backstop ratio
+      # assume a safe-ish 0.25 ripple ratio was specified and unapply that before applying the limit ratio
       inductance = inductance.intersect(inductance_scale / (sw_current_limits.upper / 1.25 * limit_ripple_ratio))
     if ripple_ratio.upper < float('inf'):
       assert ripple_ratio.lower > 0, f"invalid non-inf ripple ratio {ripple_ratio}"
       inductance = inductance.intersect(inductance_scale / (inductor_avg_current.upper * ripple_ratio))
-    assert inductance.upper < float('inf'), 'neither ripple_ratio nor backstop sw_current_limits given'
+    assert inductance.upper < float('inf'), 'neither ripple_ratio nor fallback sw_current_limits given'
 
     inductor_current_ripple = inductor_avg_current * ripple_ratio.intersect(limit_ripple_ratio)
     inductor_peak_currents = Range(max(0, inductor_current_ripple.lower - inductor_current_ripple.upper / 2),
