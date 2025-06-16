@@ -232,7 +232,7 @@ class ExperimentalUserFnPartsTable(PartsTable):
         return float(val)
       elif tpe is Range:
         parts = val[1:-1].split(",")
-        return Range(float(parts[0]), float(parts[1]))
+        return Range(float(parts[0]), float(parts[1]))  # type: ignore
       else:
         raise TypeError(f"cannot deserialize type {tpe} in user function serialization")
     deserialized_args = [deserialize_arg(tpe, arg) for tpe, arg in zip(fn_argtypes, split[1:])]
