@@ -71,14 +71,12 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
     self.connect(self.buck_sw.pwr_logic, self.pwr_logic)
     self.connect(self.buck_sw.with_mixin(HalfBridgePwm()).pwm_ctl, self.buck_pwm)
     self.connect(self.buck_sw.with_mixin(Resettable()).reset, self.reset)
-    (self.pwr_in_forced, ), _ = self.chain(  # use average draw instead of peak for external draw specs
+    (self.pwr_in_force, ), _ = self.chain(  # use average draw for power input draw
       self.pwr_in,
-      self.Block(ForcedVoltageCurrentDraw(self.pwr_out.link().current_drawn *
-                                          self.output_voltage / self.pwr_in.link().voltage /
-                                          self.power_path.efficiency)),
+      self.Block(ForcedVoltageCurrentDraw(self.power_path.switch_in.current_draw)),
       self.buck_sw.pwr
     )
-    (self._sw_in_force, ), _ = self.chain(  # current draw used to size FETs, size for peak current
+    (self.sw_in_force, ), _ = self.chain(  # current draw used to size FETs, size for peak current
       self.buck_sw.out,
       self.Block(ForcedVoltageCurrentDraw(self.power_path.actual_inductor_current_peak)),
       self.power_path.switch_in
@@ -89,14 +87,14 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
     self.connect(self.boost_sw.pwr_logic, self.pwr_logic)
     self.connect(self.boost_sw.with_mixin(HalfBridgePwm()).pwm_ctl, self.boost_pwm)
     self.connect(self.boost_sw.with_mixin(Resettable()).reset, self.reset)
-    (self.boost_pwr_conn, ), _ = self.chain(
+    (self.pwr_out_force, ), _ = self.chain(  # use average output limits for power out limits
       self.boost_sw.pwr,
       self.Block(VoltageSinkConnector(self.output_voltage,
                                       Range.all(),  # unused, port actually in reverse
                                       self.power_path.switch_out.current_limits)),
       self.pwr_out
     )
-    (self._sw_out_force, ), _ = self.chain(  # current draw used to size FETs, size for peak current
+    (self.sw_out_force, ), _ = self.chain(  # current draw used to size FETs, size for peak current
       self.power_path.switch_out,
       self.Block(VoltageSourceConnector(Range.exact(0),
                                         self.power_path.actual_inductor_current_peak)),

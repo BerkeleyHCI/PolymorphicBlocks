@@ -362,6 +362,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
+    self.actual_inductor_current_peak = self.Parameter(RangeExpr())
 
   def contents(self):
     super().contents()
@@ -392,9 +393,11 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
         self._buck_inductor_filter, values.inductor_avg_current.upper, values.ripple_scale, values.min_ripple)
     ))
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance)
+    self.assign(self.actual_inductor_current_peak,
+                values.inductor_avg_current + self.actual_inductor_current_ripple / 2)
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
-      current_draw=values.inductor_avg_current
+      current_draw=self.output_current * values.effective_dutycycle
     )))
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
@@ -553,6 +556,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.actual_dutycycle = self.Parameter(RangeExpr())
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
+    self.actual_inductor_current_peak = self.Parameter(RangeExpr())
 
   def contents(self):
     super().contents()
@@ -584,6 +588,8 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
         values.inductor_avg_current.upper, values.ripple_scale, values.min_ripple)
     ))
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance)
+    self.assign(self.actual_inductor_current_peak,
+                values.inductor_avg_current + self.actual_inductor_current_ripple / 2)
 
     self.connect(self.pwr_in, self.inductor.a.adapt_to(VoltageSink(
       current_draw=values.inductor_avg_current
