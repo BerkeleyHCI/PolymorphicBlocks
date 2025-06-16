@@ -25,6 +25,7 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
   @init_in_parent
   def __init__(self, *args,
                frequency: RangeLike = (100, 1000)*kHertz,
+               ripple_ratio: RangeLike = (0.2, 0.5),
                voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 1.0)*Ohm,
                **kwargs):
     super().__init__(*args, **kwargs)
@@ -34,6 +35,7 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
     self.boost_pwm = self.Port(DigitalSink.empty())
 
     self.frequency = self.ArgParameter(frequency)
+    self.ripple_ratio = self.ArgParameter(ripple_ratio)
     self.voltage_drop = self.ArgParameter(voltage_drop)
     self.rds_on = self.ArgParameter(rds_on)
 
@@ -43,12 +45,10 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
     self.assign(self.actual_frequency, self.frequency)
     self.power_path = self.Block(BuckBoostConverterPowerPath(
       self.pwr_in.link().voltage, self.output_voltage, self.actual_frequency,
-      self.pwr_out.link().current_drawn, Range.all(),  # TODO model current limits from FETs
-      inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
-                                                     self.ripple_current_factor,
-                                                     rated_current=self.pwr_out.link().current_drawn.upper()),
+      self.pwr_out.link().current_drawn, Range.exact(0),
       input_voltage_ripple=self.input_ripple_limit,
-      output_voltage_ripple=self.output_ripple_limit
+      output_voltage_ripple=self.output_ripple_limit,
+      ripple_ratio=self.ripple_ratio,
     ))
     self.connect(self.power_path.pwr_in, self.pwr_in)
     self.connect(self.power_path.pwr_out, self.pwr_out)
