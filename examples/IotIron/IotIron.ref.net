@@ -1366,7 +1366,7 @@
 (net (code 54) (name "Iledr.res.a")
   (node (ref IR10) (pin 1))
   (node (ref ID2) (pin 1)))
-(net (code 55) (name "Iconv.sw_force")
+(net (code 55) (name "Iconv.sw_out_force")
   (node (ref IQ1) (pin 5))
   (node (ref IQ1) (pin 6))
   (node (ref IQ1) (pin 7))
