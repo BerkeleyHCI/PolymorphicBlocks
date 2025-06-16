@@ -394,7 +394,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance)
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
-      current_draw=self.pwr_out.link().current_drawn * values.effective_dutycycle
+      current_draw=values.inductor_avg_current
     )))
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
@@ -586,13 +586,13 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance)
 
     self.connect(self.pwr_in, self.inductor.a.adapt_to(VoltageSink(
-      current_draw=self.pwr_out.link().current_drawn / (1 - values.dutycycle)
+      current_draw=values.inductor_avg_current
     )))
     self.connect(self.switch, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
       current_limits=BuckConverterPowerPath._ilim_expr(self.inductor.actual_current_rating, self.sw_current_limits,
                                                        self.actual_inductor_current_ripple)
-                     / (1 - values.effective_dutycycle)
+                     * (1 - values.effective_dutycycle.upper)
     )))
 
     self.in_cap = self.Block(DecouplingCapacitor(
@@ -714,13 +714,18 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
         BuckConverterPowerPath._buck_inductor_filter,
         combined_inductor_avg_current.upper, combined_ripple_scale, combined_min_ripple)
     ))
-    self.connect(self.switch_in, self.inductor.a)
-    self.connect(self.switch_out, self.inductor.b)
+    self.connect(self.switch_in, self.inductor.a.adapt_to(VoltageSink(
+      current_draw=combined_inductor_avg_current
+    )))
+    self.connect(self.switch_out, self.inductor.b.adapt_to(VoltageSource(
+      voltage_out=self.output_voltage,
+      current_limits=BuckConverterPowerPath._ilim_expr(self.inductor.actual_current_rating, self.sw_current_limits,
+                                                       self.actual_inductor_current_ripple)
+                     * (1 - boost_values.effective_dutycycle.upper)
+    )))
     self.assign(self.actual_inductor_current_ripple, combined_ripple_scale / self.inductor.actual_inductance)
-    self.assign(self.actual_avg_current_rating,
-                BuckConverterPowerPath._ilim_expr(self.inductor.actual_current_rating, self.sw_current_limits,
-                                                  self.actual_inductor_current_ripple))
-    self.assign(self.actual_inductor_current, combined_inductor_avg_current + self.actual_inductor_current_ripple / 2)
+    self.assign(self.actual_inductor_current_peak,
+                combined_inductor_avg_current + self.actual_inductor_current_ripple / 2)
 
     self.in_cap = self.Block(DecouplingCapacitor(
       capacitance=buck_values.input_capacitance.intersect(boost_values.input_capacitance) * Farad,
