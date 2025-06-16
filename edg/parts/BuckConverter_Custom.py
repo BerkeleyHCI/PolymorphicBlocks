@@ -36,7 +36,7 @@ class CustomSyncBuckConverterIndependent(DiscreteBoostConverter):
         self.connect(self.power_path.pwr_out, self.pwr_out)
         self.connect(self.power_path.gnd, self.gnd)
 
-        self.sw = self.Block(FetHalfBridge(frequency=self.frequency))
+        self.sw = self.Block(FetHalfBridge(frequency=self.frequency, fet_rds=self.rds_on))
         self.connect(self.sw.gnd, self.gnd)
         (self.sw_in_force, ), _ = self.chain(  # use average current draw for boundary ports
             self.pwr_in,

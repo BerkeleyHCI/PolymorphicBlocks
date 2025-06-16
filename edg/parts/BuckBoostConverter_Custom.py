@@ -26,7 +26,7 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
   def __init__(self, *args,
                frequency: RangeLike = (100, 1000)*kHertz,
                ripple_ratio: RangeLike = (0.2, 0.5),
-               voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 1.0)*Ohm,
+               rds_on: RangeLike = (0, 1.0)*Ohm,
                **kwargs):
     super().__init__(*args, **kwargs)
 
@@ -36,7 +36,6 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
 
     self.frequency = self.ArgParameter(frequency)
     self.ripple_ratio = self.ArgParameter(ripple_ratio)
-    self.voltage_drop = self.ArgParameter(voltage_drop)
     self.rds_on = self.ArgParameter(rds_on)
 
   def contents(self):
@@ -54,7 +53,7 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
     self.connect(self.power_path.pwr_out, self.pwr_out)
     self.connect(self.power_path.gnd, self.gnd)
 
-    self.buck_sw = self.Block(FetHalfBridge(frequency=self.frequency))
+    self.buck_sw = self.Block(FetHalfBridge(frequency=self.frequency, fet_rds=self.rds_on))
     self.connect(self.buck_sw.gnd, self.gnd)
     self.connect(self.buck_sw.pwr_logic, self.pwr_logic)
     self.connect(self.buck_sw.with_mixin(HalfBridgePwm()).pwm_ctl, self.buck_pwm)
@@ -71,7 +70,7 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
       self.power_path.switch_in.adapt_to(VoltageSink(current_draw=self.power_path.actual_inductor_current))
     )
 
-    self.boost_sw = self.Block(FetHalfBridge(frequency=self.frequency))
+    self.boost_sw = self.Block(FetHalfBridge(frequency=self.frequency, fet_rds=self.rds_on))
     self.connect(self.boost_sw.gnd, self.gnd)
     self.connect(self.boost_sw.pwr_logic, self.pwr_logic)
     self.connect(self.boost_sw.with_mixin(HalfBridgePwm()).pwm_ctl, self.boost_pwm)

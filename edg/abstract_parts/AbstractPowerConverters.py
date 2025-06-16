@@ -337,9 +337,11 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                ripple_ratio: RangeLike = Range.all()):
     super().__init__()
 
-    self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models the input cap only
-    self.pwr_out = self.Port(VoltageSource.empty())  # models the output cap and inductor power source
-    self.switch = self.Port(VoltageSink.empty())  # current draw defined as average
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # no modeling, input cap only
+    self.pwr_out = self.Port(VoltageSource.empty())  # models max output avg. current
+    # technically VoltageSink is the wrong model, but this is used to pass the current draw to the chip
+    # (and its input pin) without need the top-level to explicitly pass a parameter to the chip
+    self.switch = self.Port(VoltageSink.empty())  # models input / inductor avg. current draw
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.input_voltage = self.ArgParameter(input_voltage)
@@ -392,12 +394,12 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance)
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
-      current_draw=self.pwr_out.link().current_drawn * values.dutycycle
+      current_draw=self.pwr_out.link().current_drawn * values.effective_dutycycle
     )))
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
       current_limits=self._ilim_expr(self.inductor.actual_current_rating, self.sw_current_limits,
-                                     self.actual_inductor_current_ripple)
+                                     self.actual_inductor_current_ripple) * self.efficiency
     )))
 
     self.in_cap = self.Block(DecouplingCapacitor(
@@ -521,16 +523,16 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
                output_current: RangeLike, sw_current_limits: RangeLike, *,
-               input_voltage_ripple: FloatLike = 75*mVolt,
-               output_voltage_ripple: FloatLike = 25*mVolt,
+               input_voltage_ripple: FloatLike,
+               output_voltage_ripple: FloatLike,
                efficiency: RangeLike = (0.8, 1.0),  # from TI reference
                dutycycle_limit: RangeLike = (0.1, 0.9),  # arbitrary
                ripple_ratio: RangeLike = Range.all()):
     super().__init__()
 
-    self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models input cap and inductor power draw
-    self.pwr_out = self.Port(VoltageSink.empty())  # only used for the output cap
-    self.switch = self.Port(VoltageSource.empty())  # current draw defined as average
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # models input / inductor avg. current draw
+    self.pwr_out = self.Port(VoltageSink.empty())  # no modeling, output cap only
+    self.switch = self.Port(VoltageSource.empty())  # models maximum output avg. current
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.input_voltage = self.ArgParameter(input_voltage)
@@ -590,7 +592,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       voltage_out=self.output_voltage,
       current_limits=BuckConverterPowerPath._ilim_expr(self.inductor.actual_current_rating, self.sw_current_limits,
                                                        self.actual_inductor_current_ripple)
-                     * self.input_voltage / self.output_voltage
+                     / (1 - values.effective_dutycycle)
     )))
 
     self.in_cap = self.Block(DecouplingCapacitor(
@@ -647,10 +649,10 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                ripple_ratio: RangeLike = Range.all()):
     super().__init__()
 
-    self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # connected to the input cap, models input current
-    self.switch_in = self.Port(Passive.empty())  # models input high and low switch current draws
-    self.switch_out = self.Port(Passive.empty())  # models output high and low switch current draws
-    self.pwr_out = self.Port(VoltageSink.empty())  # only used for the output cap
+    self.pwr_in = self.Port(VoltageSink.empty(), [Power])  # no modeling, input cap only
+    self.switch_in = self.Port(VoltageSink.empty())  # models input / inductor avg. current draw
+    self.switch_out = self.Port(VoltageSource.empty())  # models maximum output avg. current
+    self.pwr_out = self.Port(VoltageSink.empty())  # no modeling, output cap only
     self.gnd = self.Port(Ground.empty(), [Common])
 
     self.input_voltage = self.ArgParameter(input_voltage)
@@ -671,8 +673,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.actual_buck_dutycycle = self.Parameter(RangeExpr())  # possible actual duty cycle in buck mode
     self.actual_boost_dutycycle = self.Parameter(RangeExpr())  # possible actual duty cycle in boost mode
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
-    self.actual_inductor_current = self.Parameter(RangeExpr())  # inductor current accounting for ripple (upper is peak)
-    self.actual_avg_current_rating = self.Parameter(RangeExpr())  # determined by inductor rating excl. ripple
+    self.actual_inductor_current_peak = self.Parameter(RangeExpr())  # inductor current accounting for ripple (upper is peak)
 
   def contents(self):
     super().contents()
