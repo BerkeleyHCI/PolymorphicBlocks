@@ -607,8 +607,6 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 @abstract_block_default(lambda: IdealVoltageRegulator)
 class BuckBoostConverter(SwitchingVoltageRegulator):
   """Step-up or switch-down switching converter"""
-  def __init__(self, *args, **kwargs) -> None:
-    super().__init__(*args, **kwargs)
 
 
 @abstract_block_default(lambda: IdealVoltageRegulator)
