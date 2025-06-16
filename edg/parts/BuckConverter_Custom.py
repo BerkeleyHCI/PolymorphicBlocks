@@ -10,13 +10,14 @@ class CustomSyncBuckConverterIndependent(DiscreteBoostConverter):
                  ripple_current_factor: RangeLike = (0.2, 0.5),
                  voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 1.0)*Ohm,
                  **kwargs):
-        super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.pwr_logic = self.Port(VoltageSink.empty())
         self.pwm_low = self.Port(DigitalSink.empty())
         self.pwm_high = self.Port(DigitalSink.empty())
 
         self.frequency = self.ArgParameter(frequency)
+        self.ripple_current_factor = self.ArgParameter(ripple_current_factor)
         self.voltage_drop = self.ArgParameter(voltage_drop)
         self.rds_on = self.ArgParameter(rds_on)
 

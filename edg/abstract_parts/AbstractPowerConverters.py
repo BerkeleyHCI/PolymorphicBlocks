@@ -154,13 +154,11 @@ class SwitchingVoltageRegulator(VoltageRegulator):
   def __init__(self, *args,
                input_ripple_limit: FloatLike = 75 * mVolt,
                output_ripple_limit: FloatLike = 25 * mVolt,
-               ripple_current_factor: RangeLike = Range.all(),  # unspecified, let the optimizer figure this out
                **kwargs) -> None:
     """https://www.ti.com/lit/an/slta055/slta055.pdf: recommends 75mV for maximum peak-peak ripple voltage
     """
     super().__init__(*args, **kwargs)
 
-    self.ripple_current_factor = self.ArgParameter(ripple_current_factor)
     self.input_ripple_limit = self.ArgParameter(input_ripple_limit)
     self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
 

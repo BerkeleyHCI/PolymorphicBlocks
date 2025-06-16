@@ -74,7 +74,6 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
         self.pwr_out.link().current_drawn, (0, 1.2)*Amp,  # output current limit, switch limit not given
         input_voltage_ripple=self.input_ripple_limit,
         output_voltage_ripple=self.output_ripple_limit,
-        ripple_ratio=self.ripple_current_factor
       ))
       # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
       # and then the power path can generate
@@ -158,7 +157,6 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
         self.pwr_out.link().current_drawn, (0, 2.5)*Amp,
         input_voltage_ripple=self.input_ripple_limit,
         output_voltage_ripple=self.output_ripple_limit,
-        ripple_ratio=self.ripple_current_factor
       ))
       # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
       # and then the power path can generate
