@@ -158,7 +158,7 @@ class UserFnSerialiable(Protocol[UserFnMetaParams, UserFnType]):
   """A protocol that marks functions as usable in deserialize, that they have been registered."""
   _is_serializable: None  # guard attribute
 
-  def __call__(self, *args: UserFnMetaParams.args) -> UserFnType: ...
+  def __call__(self, *args: UserFnMetaParams.args, **kwargs: UserFnMetaParams.kwargs) -> UserFnType: ...
   __name__: str
 
 
