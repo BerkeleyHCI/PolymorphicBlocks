@@ -228,26 +228,22 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.inductor = self.Block(Inductor(
       inductance=values.inductance*Henry / self.inductor_scale,
-      current=values.inductor_peak_currents,
+      current=values.inductor_avg_current,
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
         BuckConverterPowerPath._buck_inductor_filter, values.inductor_avg_current.upper,
         values.ripple_scale / self.get(self.inductor_scale), values.min_ripple)
     ))
-
     self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance / self.inductor_scale)
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
       current_draw=self.pwr_out.link().current_drawn * values.dutycycle
     )))
-    inductor_current_limits = self.inductor.actual_current_rating - (self.actual_inductor_current_ripple.upper() / 2)
-    sw_current_limits = (self.sw_current_limits.upper() > 0).then_else(
-      self.sw_current_limits - (self.actual_inductor_current_ripple.upper() / 2),
-      Range.all())
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
-      current_limits=inductor_current_limits.intersect(sw_current_limits)
+      current_limits=BuckConverterPowerPath._ilim_expr(self.inductor.actual_current_rating, self.sw_current_limits,
+                                                       self.actual_inductor_current_ripple)
     )))
 
     self.in_cap = self.Block(DecouplingCapacitor(
@@ -256,7 +252,7 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
     )).connected(self.gnd, self.pwr_in)
     self.out_cap = self.Block(DecouplingCapacitor(
       capacitance=(Range.exact(float('inf')) * Farad).hull(
-        (values.output_capacitance_scale * self.actual_inductor_current_ripple.upper())),
+        (values.output_capacitance_scale * self.actual_inductor_current_ripple.upper().max(values.min_ripple))),
       exact_capacitance=True
     )).connected(self.gnd, self.pwr_out)
 

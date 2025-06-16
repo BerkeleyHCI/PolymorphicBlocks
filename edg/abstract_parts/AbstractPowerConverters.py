@@ -204,6 +204,25 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     Very detailed analysis including component sizing, operating modes, calculating losses
   """
 
+  @staticmethod
+  def _d_inverse_d(d_range: Range) -> Range:
+    """Some power calculations require the maximum of D*(1-D), which has a maximum at D=0.5"""
+    # can't use range ops since they will double-count the tolerance of D, so calculate endpoints separately
+    range_endpoints = [d_range.lower * (1 - d_range.lower), d_range.upper * (1 - d_range.upper)]
+    raw_range = Range(min(range_endpoints), max(range_endpoints))
+    if 0.5 in d_range:  # the function has a maximum at 0.5
+      return raw_range.hull(Range.exact(0.5 * (1 - 0.5)))
+    else:
+      return raw_range
+
+  @staticmethod
+  def _ripple_current_from_sw_current(sw_current: float, ripple_ratio: Range) -> Range:
+    """Calculates the ripple current from a total switch current and ripple ratio."""
+    return Range(  # separate range parts to avoid double-counting tolerances
+      sw_current / (1 + ripple_ratio.lower) * ripple_ratio.lower,
+      sw_current / (1 + ripple_ratio.upper) * ripple_ratio.upper
+    )
+
   class Values(NamedTuple):
     dutycycle: Range
     inductance: Range
@@ -259,10 +278,9 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     inductance = Range.all()
     min_ripple = 0.0
     if sw_current_limits.upper > 0:  # fallback for light-load
-      # since limits are defined in terms of the switch current which should have ripple factored in already,
-      # assume a safe-ish 0.25 ripple ratio was specified and unapply that before applying the limit ratio
-      inductance = inductance.intersect(inductance_scale / (sw_current_limits.upper / 1.25 * limit_ripple_ratio))
-      min_ripple = sw_current_limits.upper / 1.25 * limit_ripple_ratio.lower
+      ripple_current = cls._ripple_current_from_sw_current(sw_current_limits.upper, limit_ripple_ratio)
+      inductance = inductance.intersect(inductance_scale / ripple_current)
+      min_ripple = ripple_current.lower
     if ripple_ratio.upper < float('inf'):
       assert ripple_ratio.lower > 0, f"invalid non-inf ripple ratio {ripple_ratio}"
 
@@ -283,28 +301,19 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     return cls.Values(dutycycle=dutycycle, inductance=inductance,
                       input_capacitance=input_capacitance, output_capacitance=output_capacitance,
-                      inductor_avg_current=output_current, ripple_scale=inductance_scale, min_ripple=min_ripple,
+                      inductor_avg_current=output_current / efficiency,
+                      ripple_scale=inductance_scale, min_ripple=min_ripple,
                       output_capacitance_scale=output_capacitance_scale,
                       inductor_peak_currents=inductor_peak_currents,
                       effective_dutycycle=effective_dutycycle)
 
   @staticmethod
-  def _d_inverse_d(d_range: Range) -> Range:
-    """Some power calculations require the maximum of D*(1-D), which has a maximum at D=0.5"""
-    # can't use range ops since they will double-count the tolerance of D, so calculate endpoints separately
-    range_endpoints = [d_range.lower * (1 - d_range.lower), d_range.upper * (1 - d_range.upper)]
-    raw_range = Range(min(range_endpoints), max(range_endpoints))
-    if 0.5 in d_range:  # the function has a maximum at 0.5
-      return raw_range.hull(Range.exact(0.5 * (1 - 0.5)))
-    else:
-      return raw_range
-
-  @staticmethod
   @ExperimentalUserFnPartsTable.user_fn([float, float, float])
   def _buck_inductor_filter(max_avg_current: float, ripple_scale: float, min_ripple: float):
     """Applies further filtering to inductors using the trade-off between inductance and peak-peak current.
-    max_avg_current is the maximum average current (not accounting for ripple) seem by the inductor
-    ripple_scale is the scaling factor from 1/L to ripple, Vo/(Vi-Vo)/fs/Vi"""
+    max_avg_current is the maximum average current (not accounting for ripple) seen by the inductor
+    ripple_scale is the scaling factor from 1/L to ripple
+    This structure also works for boost converters, which would have its ripple_scale calculated differently."""
     def filter_fn(row: PartsTableRow) -> bool:
       ripple_current = max(ripple_scale / row[TableInductor.INDUCTANCE].lower, min_ripple)
       max_current_pp = max_avg_current + ripple_current / 2
@@ -377,7 +386,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.inductor = self.Block(Inductor(
       inductance=values.inductance * Henry,
-      current=self.output_current,  # min-bound only, the real filter happens in the filter_fn
+      current=values.inductor_avg_current,  # min-bound only, the real filter happens in the filter_fn
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
         self._buck_inductor_filter, values.inductor_avg_current.upper, values.ripple_scale, values.min_ripple)
@@ -389,8 +398,8 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     )))
     self.connect(self.pwr_out, self.inductor.b.adapt_to(VoltageSource(
       voltage_out=self.output_voltage,
-      current_limits=BuckConverterPowerPath._ilim_expr(self.inductor.actual_current_rating, self.sw_current_limits,
-                                                       self.actual_inductor_current_ripple)
+      current_limits=self._ilim_expr(self.inductor.actual_current_rating, self.sw_current_limits,
+                                     self.actual_inductor_current_ripple)
     )))
 
     self.in_cap = self.Block(DecouplingCapacitor(
@@ -407,9 +416,8 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 @abstract_block_default(lambda: IdealBoostConverter)
 class BoostConverter(SwitchingVoltageRegulator):
   """Step-up switching converter"""
-  def __init__(self, *args, ripple_current_factor: RangeLike = (0.2, 0.5), **kwargs) -> None:
-    # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
-    super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
     self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
 
 
@@ -464,7 +472,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     """See BuckConverterPowerPath._calculate_parameters, this performs a similar function."""
     dutycycle = 1 - input_voltage / output_voltage * efficiency
     effective_dutycycle = dutycycle.bound_to(dutycycle_limit)  # account for tracking behavior
-    inductor_avg_current = output_current * (output_voltage / input_voltage)
+    inductor_avg_current = output_current / (1 - effective_dutycycle)
 
     # calculate minimum inductance based on worst case values (operating range corners producing maximum inductance)
     # worst-case input/output voltages and frequency is used to avoid double-counting tolerances as ranges
@@ -482,10 +490,9 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     inductance = Range.all()
     min_ripple = 0.0
     if sw_current_limits.upper > 0:  # fallback for light-load
-      # since limits are defined in terms of the switch current which should have ripple factored in already,
-      # assume a safe-ish 0.25 ripple ratio was specified and unapply that before applying the limit ratio
-      inductance = inductance.intersect(inductance_scale / (sw_current_limits.upper / 1.25 * limit_ripple_ratio))
-      min_ripple = sw_current_limits.upper / 1.25 * limit_ripple_ratio.lower
+      ripple_current = BuckConverterPowerPath._ripple_current_from_sw_current(sw_current_limits.upper, limit_ripple_ratio)
+      inductance = inductance.intersect(inductance_scale / ripple_current)
+      min_ripple = ripple_current.lower
     if ripple_ratio.upper < float('inf'):
       assert ripple_ratio.lower > 0, f"invalid non-inf ripple ratio {ripple_ratio}"
       inductance = inductance.intersect(inductance_scale / (inductor_avg_current.upper * ripple_ratio))
@@ -570,7 +577,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.inductor = self.Block(Inductor(
       inductance=values.inductance * Henry,
-      current=values.inductor_peak_currents,  # min-bound only, the real filter happens in the filter_fn
+      current=values.inductor_avg_current,  # min-bound only, the real filter happens in the filter_fn
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
         BuckConverterPowerPath._buck_inductor_filter,
@@ -602,9 +609,8 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 @abstract_block_default(lambda: IdealVoltageRegulator)
 class BuckBoostConverter(SwitchingVoltageRegulator):
   """Step-up or switch-down switching converter"""
-  def __init__(self, *args, ripple_current_factor: RangeLike = (0.2, 0.5), **kwargs) -> None:
-    # TODO default ripple is very heuristic, intended 0.3-0.4, loosely adjusted for inductor tolerance
-    super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
+  def __init__(self, *args, **kwargs) -> None:
+    super().__init__(*args, **kwargs)
 
 
 @abstract_block_default(lambda: IdealVoltageRegulator)
@@ -705,7 +711,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
     self.inductor = self.Block(Inductor(
       inductance=buck_values.inductance.intersect(boost_values.inductance) * Henry,
-      current=buck_values.inductor_peak_currents.hull(boost_values.inductor_peak_currents),
+      current=buck_values.inductor_avg_current.hull(boost_values.inductor_avg_current),
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
         BuckConverterPowerPath._buck_inductor_filter,
