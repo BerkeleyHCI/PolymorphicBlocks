@@ -277,7 +277,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
   """
   @init_in_parent
   def __init__(self, levels: IntLike, ratios: RangeLike, frequency: RangeLike, *,
-               ripple_current_factor: RangeLike, fet_rds: RangeLike = (0, 0.1)*Ohm):
+               ripple_current_factor: RangeLike = (0.2, 0.5), fet_rds: RangeLike = (0, 0.1)*Ohm):
     super().__init__()
     self.pwr_in = self.Port(VoltageSink.empty())
     self.pwr_out = self.Port(VoltageSource.empty())

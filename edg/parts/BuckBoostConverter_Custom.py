@@ -25,9 +25,10 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
   @init_in_parent
   def __init__(self, *args,
                frequency: RangeLike = (100, 1000)*kHertz,
+               ripple_current_factor: RangeLike = (0.2, 0.5),
                voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 1.0)*Ohm,
                **kwargs):
-    super().__init__(*args, **kwargs)
+    super().__init__(*args, ripple_current_factor=ripple_current_factor, **kwargs)
 
     self.pwr_logic = self.Port(VoltageSink.empty())
     self.buck_pwm = self.Port(DigitalSink.empty())
