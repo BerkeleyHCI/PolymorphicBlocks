@@ -216,6 +216,7 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
 
   def generate(self) -> None:
     super().generate()
+    inductor_scale = self.get(self.inductor_scale)
     values = BuckConverterPowerPath._calculate_parameters(
       self.get(self.input_voltage), self.get(self.output_voltage),
       self.get(self.frequency), self.get(self.output_current),
@@ -227,14 +228,14 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
     self.require(values.dutycycle == values.effective_dutycycle, "dutycycle outside limit")
 
     self.inductor = self.Block(Inductor(
-      inductance=values.inductance*Henry / self.inductor_scale,
+      inductance=(values.inductance / inductor_scale) * Henry,
       current=values.inductor_avg_current,
       frequency=self.frequency,
       experimental_filter_fn=ExperimentalUserFnPartsTable.serialize_fn(
         BuckConverterPowerPath._buck_inductor_filter, values.inductor_avg_current.upper,
-        values.ripple_scale / self.get(self.inductor_scale), values.min_ripple)
+        values.ripple_scale / inductor_scale, values.min_ripple)
     ))
-    self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance / self.inductor_scale)
+    self.assign(self.actual_inductor_current_ripple, values.ripple_scale / self.inductor.actual_inductance / inductor_scale)
 
     self.connect(self.switch, self.inductor.a.adapt_to(VoltageSink(
       voltage_limits=RangeExpr.ALL,
@@ -277,7 +278,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
   """
   @init_in_parent
   def __init__(self, levels: IntLike, ratios: RangeLike, frequency: RangeLike, *,
-               ripple_current_factor: RangeLike = (0.2, 0.5), fet_rds: RangeLike = (0, 0.1)*Ohm):
+               ripple_ratio: RangeLike = (0.2, 0.5), fet_rds: RangeLike = (0, 0.1)*Ohm):
     super().__init__()
     self.pwr_in = self.Port(VoltageSink.empty())
     self.pwr_out = self.Port(VoltageSource.empty())
@@ -288,7 +289,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     self.pwms = self.Port(Vector(DigitalSink.empty()))
 
     self.frequency = self.ArgParameter(frequency)
-    self.ripple_current_factor = self.ArgParameter(ripple_current_factor)
+    self.ripple_ratio = self.ArgParameter(ripple_ratio)
     self.fet_rds = self.ArgParameter(fet_rds)
 
     self.levels = self.ArgParameter(levels)
@@ -304,7 +305,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
       self.pwr_out.link().current_drawn, Range.exact(0),
       input_voltage_ripple=250*mVolt,
       output_voltage_ripple=25*mVolt,  # TODO plumb through to user config
-      ripple_ratio=self.ripple_current_factor,
+      ripple_ratio=self.ripple_ratio,
       dutycycle_limit=(0, 1),
       inductor_scale=(levels - 1)**2
     ))
@@ -386,7 +387,7 @@ class Fcml(JlcBoardTop):
 
       self.conv = imp.Block(DiscreteMutlilevelBuckConverter(
         4, (0.15, 0.5), 100*kHertz(tol=0),
-        ripple_current_factor=(0.1, 0.4), fet_rds=(0, 0.010)*Ohm
+        ripple_ratio=(0.1, 0.4), fet_rds=(0, 0.010)*Ohm
       ))
       self.conv_out = imp.Block(PowerOutConnector((0, 3)*Amp))
       self.connect(self.conv.pwr_in, self.conv_in.pwr)
