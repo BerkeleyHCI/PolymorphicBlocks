@@ -15,8 +15,8 @@ from .Categories import Interface, AnalogToDigital, DigitalToAnalog, SpeakerDriv
 from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver
 from .Categories import PowerSource, Connector, ProgrammingConnector
 from .Categories import HumanInterface, Display, Lcd, Oled, EInk, Light
-from .Categories import Sensor, CurrentSensor, Accelerometer, Gyroscope, Magnetometer, DistanceSensor, Microphone, \
-    Camera, LightSensor
+from .Categories import Sensor, CurrentSensor, Accelerometer, Gyroscope, MagneticSensor, MagneticSwitch, Magnetometer,\
+    DistanceSensor, Microphone, Camera, LightSensor
 from .Categories import EnvironmentalSensor, TemperatureSensor, HumiditySensor, PressureSensor, GasSensor
 from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSubcircuit, DeprecatedBlock, Mechanical
 from .Categories import MultipackDevice
@@ -74,7 +74,7 @@ from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPower
 from .PowerCircuits import HalfBridge, FetHalfBridge, HalfBridgeIndependent, HalfBridgePwm, FetHalfBridgeIndependent,\
     FetHalfBridgePwmReset
 from .AbstractLedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
-from .AbstractFuse import Fuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
+from .AbstractFuse import Fuse, SeriesPowerFuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
 from .AbstractOscillator import Oscillator, TableOscillator
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConnectorReset, \
@@ -92,6 +92,7 @@ from .GateDrivers import HalfBridgeDriver, HalfBridgeDriverIndependent, HalfBrid
 from .DigitalIsolator import DigitalIsolator
 from .I2cPullup import I2cPullup
 from .UsbBitBang import UsbBitBang
+from .I2cBitBang import I2cControllerBitBang
 
 from .IoController import BaseIoController, IoController, IoControllerPowerRequired, BaseIoControllerPinmapGenerator
 from .IoControllerExportable import BaseIoControllerExportable
