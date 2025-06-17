@@ -1,7 +1,10 @@
 import unittest
 
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath
-from ..core import Range
+from ..electronics_model import *
+from .AbstractInductor import Inductor
+from .AbstractCapacitor import Capacitor
+from .DummyDevices import DummyVoltageSource, DummyVoltageSink, DummyGround
 
 
 class SwitchingConverterCalculationTest(unittest.TestCase):
@@ -87,3 +90,88 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
         self.assertAlmostEqual(values.inductor_peak_currents.upper, 1.44, places=2)
         # the example calculation output is wrong, this is the correct result of the formula
         self.assertAlmostEqual(values.output_capacitance.lower, 9.95e-6, places=7)
+
+
+class TestCapacitor(Capacitor):
+    def contents(self):
+        super().contents()
+        self.assign(self.actual_capacitance, self.capacitance)
+        self.assign(self.actual_voltage_rating, Range.all())
+
+
+class TestInductor(Inductor):
+    def contents(self):
+        super().contents()
+        self.assign(self.actual_inductance, self.inductance)
+        self.assign(self.actual_current_rating, (0, 1.5)*Amp)
+        self.assign(self.actual_frequency_rating, Range.all())
+
+
+class BuckPowerPathTestTop(DesignTop):
+    def __init__(self):
+        super().__init__()
+        self.dut = self.Block(BuckConverterPowerPath(
+            input_voltage=Range(4, 6), output_voltage=(2, 3),
+            frequency= Range.exact(100e3), output_current=Range(0.2, 1),
+            sw_current_limits=Range(0, 2),
+            input_voltage_ripple=75*mVolt, output_voltage_ripple=25*mVolt,
+        ))
+        (self.pwr_in, ), _ = self.chain(self.Block(DummyVoltageSource()), self.dut.pwr_in)
+        (self.switch, ), _ = self.chain(self.Block(DummyVoltageSource()), self.dut.switch)
+        (self.pwr_out, ), _ = self.chain(self.Block(DummyVoltageSink()), self.dut.pwr_out)
+        (self.gnd, ), _ = self.chain(self.Block(DummyGround()), self.dut.gnd)
+
+        self.require(self.dut.actual_dutycycle.contains(Range(0.334, 0.832)))
+        self.require(self.dut.actual_inductor_current_ripple.contains(Range(0.433, 0.478)))
+        self.require(self.dut.pwr_out.current_limits.contains(Range(0.0, 1.260)))
+        self.require(self.dut.switch.current_draw.contains(Range(0.067, 0.832)))
+
+    def refinements(self) -> Refinements:
+        return Refinements(
+            class_refinements=[
+                (Capacitor, TestCapacitor),
+                (Inductor, TestInductor),
+            ],
+            instance_values=[
+                (['dut', 'inductor', 'actual_inductance'], Range.from_tolerance(33e-6, 0.05))
+            ]
+        )
+
+
+class BoostPowerPathTestTop(DesignTop):
+    def __init__(self):
+        super().__init__()
+        self.dut = self.Block(BoostConverterPowerPath(
+            input_voltage=Range(4, 6), output_voltage=(10, 14),
+            frequency=Range.exact(200e3), output_current=Range(0.2, 0.5),
+            sw_current_limits=Range(0, 2),
+            input_voltage_ripple=75*mVolt, output_voltage_ripple=25*mVolt,
+        ))
+        (self.pwr_in, ), _ = self.chain(self.Block(DummyVoltageSource()), self.dut.pwr_in)
+        (self.pwr_out, ), _ = self.chain(self.Block(DummyVoltageSource()), self.dut.pwr_out)
+        (self.switch, ), _ = self.chain(self.Block(DummyVoltageSink()), self.dut.switch)
+        (self.gnd, ), _ = self.chain(self.Block(DummyGround()), self.dut.gnd)
+
+        self.require(self.dut.actual_dutycycle.contains(Range(0.4, 0.771)))
+        self.require(self.dut.actual_inductor_current_ripple.contains(Range(0.495, 0.546)))
+        self.require(self.dut.pwr_in.current_draw.contains(Range(0.334, 2.185)))
+        self.require(self.dut.switch.current_limits.contains(Range(0.0, 0.280)))
+
+    def refinements(self) -> Refinements:
+        return Refinements(
+            class_refinements=[
+                (Capacitor, TestCapacitor),
+                (Inductor, TestInductor),
+            ],
+            instance_values=[
+                (['dut', 'inductor', 'actual_inductance'], Range.from_tolerance(33e-6, 0.05))
+            ]
+        )
+
+
+class PowerPathBlockTest(unittest.TestCase):
+    def test_buck_power_path(self) -> None:
+        ScalaCompiler.compile(BuckPowerPathTestTop)
+
+    def test_boost_power_path(self) -> None:
+        ScalaCompiler.compile(BoostPowerPathTestTop)
