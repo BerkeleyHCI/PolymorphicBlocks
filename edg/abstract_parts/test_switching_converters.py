@@ -155,7 +155,7 @@ class BoostPowerPathTestTop(DesignTop):
         self.require(self.dut.actual_dutycycle.contains(Range(0.4, 0.771)))
         self.require(self.dut.actual_inductor_current_ripple.contains(Range(0.495, 0.546)))
         self.require(self.dut.pwr_in.current_draw.contains(Range(0.334, 2.185)))
-        self.require(self.dut.switch.current_limits.contains(Range(0.0, 1)))
+        self.require(self.dut.switch.current_limits.contains(Range(0.0, 0.280)))
 
     def refinements(self) -> Refinements:
         return Refinements(
