@@ -325,7 +325,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     iout_limit_inductor = inductor_ilim - (inductor_iripple.upper() / 2)
     iout_limit_sw = (sw_ilim.upper() > 0).then_else(
       sw_ilim - (inductor_iripple.upper() / 2), Range.all())
-    return iout_limit_inductor.intersect(iout_limit_sw)
+    return iout_limit_inductor.intersect(iout_limit_sw).intersect(Range.from_lower(0))
 
   @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,

@@ -33,7 +33,6 @@ class CustomSyncBuckConverterIndependent(DiscreteBoostConverter):
             ripple_ratio=self.ripple_ratio
         ))
         self.connect(self.power_path.pwr_in, self.pwr_in)
-        self.connect(self.power_path.pwr_out, self.pwr_out)
         self.connect(self.power_path.gnd, self.gnd)
 
         self.sw = self.Block(FetHalfBridge(frequency=self.frequency, fet_rds=self.rds_on))
@@ -50,3 +49,11 @@ class CustomSyncBuckConverterIndependent(DiscreteBoostConverter):
             self.sw.out,  # current draw used to size FETs, size for peak current
             self.Block(ForcedVoltageCurrentDraw(self.power_path.actual_inductor_current_peak)),
             self.power_path.switch)
+        (self.pwr_out_force, ), _ = self.chain(
+            self.power_path.pwr_out,
+            self.Block(ForcedVoltageCurrentLimit(self.power_path.pwr_out.current_limits.intersect(
+                self.sw.actual_current_limits - self.power_path.actual_inductor_current_ripple.upper() / 2).intersect(
+                Range.from_lower(0)
+            ))),
+            self.pwr_out
+        )

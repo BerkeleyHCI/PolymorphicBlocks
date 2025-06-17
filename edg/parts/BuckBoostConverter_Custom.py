@@ -87,11 +87,14 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
     self.connect(self.boost_sw.pwr_logic, self.pwr_logic)
     self.connect(self.boost_sw.with_mixin(HalfBridgePwm()).pwm_ctl, self.boost_pwm)
     self.connect(self.boost_sw.with_mixin(Resettable()).reset, self.reset)
+    sw_current_limits = self.buck_sw.actual_current_limits.intersect(self.boost_sw.actual_current_limits)
     (self.pwr_out_force, ), _ = self.chain(  # use average output limits for power out limits
       self.boost_sw.pwr,
       self.Block(VoltageSinkConnector(self.output_voltage,
                                       Range.all(),  # unused, port actually in reverse
-                                      self.power_path.switch_out.current_limits)),
+                                      self.power_path.switch_out.current_limits.intersect(
+                                        sw_current_limits - self.power_path.actual_inductor_current_ripple.upper() / 2
+                                      ).intersect(Range.from_lower(0)))),
       self.pwr_out
     )
     (self.sw_out_force, ), _ = self.chain(  # current draw used to size FETs, size for peak current
