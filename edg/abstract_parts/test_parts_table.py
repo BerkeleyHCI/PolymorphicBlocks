@@ -75,3 +75,49 @@ class PartsTableTest(unittest.TestCase):
 
   def test_first(self) -> None:
     self.assertEqual(self.table.first().value, {'header1': '1', 'header2': 'foo', 'header3': '9'})
+
+
+class UserFnPartsTableTest(unittest.TestCase):
+  @staticmethod
+  @ExperimentalUserFnPartsTable.user_fn()
+  def user_fn_false() -> Callable[[], bool]:
+    def inner() -> bool:
+      return False
+    return inner
+
+  @staticmethod
+  @ExperimentalUserFnPartsTable.user_fn([bool])
+  def user_fn_bool_pass(meta_arg: bool) -> Callable[[], bool]:
+    def inner() -> bool:
+      return meta_arg
+    return inner
+
+  @staticmethod
+  @ExperimentalUserFnPartsTable.user_fn([float])
+  def user_fn_float_pass(meta_arg: float) -> Callable[[], float]:
+    def inner() -> float:
+      return meta_arg
+    return inner
+
+  @staticmethod
+  def user_fn_unserialized() -> Callable[[], None]:
+    def inner() -> None:
+      return None
+    return inner
+
+  def test_serialize_deserialize(self) -> None:
+    self.assertEqual(ExperimentalUserFnPartsTable.serialize_fn(self.user_fn_false), 'user_fn_false')
+    self.assertEqual(ExperimentalUserFnPartsTable.deserialize_fn(
+      ExperimentalUserFnPartsTable.serialize_fn(self.user_fn_false))(), False)
+
+    self.assertEqual(ExperimentalUserFnPartsTable.serialize_fn(self.user_fn_bool_pass, False),
+                     'user_fn_bool_pass;False')
+    self.assertEqual(ExperimentalUserFnPartsTable.deserialize_fn(
+      ExperimentalUserFnPartsTable.serialize_fn(self.user_fn_bool_pass, False))(), False)
+    self.assertEqual(ExperimentalUserFnPartsTable.deserialize_fn(
+      ExperimentalUserFnPartsTable.serialize_fn(self.user_fn_bool_pass, True))(), True)
+
+    self.assertEqual(ExperimentalUserFnPartsTable.serialize_fn(self.user_fn_float_pass, 0.42),
+                     'user_fn_float_pass;0.42')
+    self.assertEqual(ExperimentalUserFnPartsTable.deserialize_fn(
+      ExperimentalUserFnPartsTable.serialize_fn(self.user_fn_float_pass, 0.42))(), 0.42)

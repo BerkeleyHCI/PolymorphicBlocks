@@ -106,6 +106,25 @@ class ForcedVoltageCurrentDraw(DummyDevice, NetBlock):
     ), [Output])
 
 
+class ForcedVoltageCurrentLimit(DummyDevice, NetBlock):
+  """Forces some output current limit, which should be tighter than the input's actual current draw."""
+  @init_in_parent
+  def __init__(self, forced_current_limit: RangeLike) -> None:
+    super().__init__()
+
+    self.pwr_in = self.Port(VoltageSink(
+      current_draw=RangeExpr(),
+      voltage_limits=RangeExpr.ALL
+    ), [Input])
+
+    self.pwr_out = self.Port(VoltageSource(
+      voltage_out=self.pwr_in.link().voltage,
+      current_limits=forced_current_limit
+    ), [Output])
+
+    self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+
+
 class ForcedVoltage(DummyDevice, NetBlock):
   """Forces some voltage on the output regardless of the input's actual voltage.
   Current draw is passed through unchanged."""

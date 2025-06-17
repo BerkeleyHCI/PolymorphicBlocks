@@ -47,7 +47,7 @@ class RangeTestCase(unittest.TestCase):
 
     self.assertEqual(Range(1, 5).center(), 3)
 
-  def test_intersect(self) -> None:
+  def test_intersects(self) -> None:
     self.assertTrue(Range(-1, 2).intersects(Range(2, 3)))
     self.assertTrue(Range(-1, 2).intersects(Range(0, 3)))
     self.assertTrue(Range(-1, 2).intersects(Range(-2, -1)))
@@ -55,6 +55,22 @@ class RangeTestCase(unittest.TestCase):
     self.assertTrue(Range(-1, 2).intersects(Range(0, 1)))
     self.assertFalse(Range(-1, 2).intersects(Range(3, 4)))
     self.assertFalse(Range(-1, 2).intersects(Range(-3, -2)))
+
+  def test_intersect(self):
+    self.assertEqual(Range(-1, 2).intersect(Range(2, 3)), Range(2, 2))
+    self.assertEqual(Range(-1, 2).intersect(Range(0, 3)), Range(0, 2))
+    self.assertEqual(Range(-1, 2).intersect(Range(-2, -1)), Range(-1, -1))
+    self.assertEqual(Range(-1, 2).intersect(Range(-2, 0)), Range(-1, 0))
+    self.assertEqual(Range(-1, 2).intersect(Range(0, 1)), Range(0, 1))
+    with self.assertRaises(ValueError):
+      Range(-1, 2).intersect(Range(3, 4))
+
+  def test_hull(self):
+    self.assertEqual(Range(-1, 2).hull(Range(2, 3)), Range(-1, 3))
+    self.assertEqual(Range(-1, 2).hull(Range(0, 3)), Range(-1, 3))
+    self.assertEqual(Range(-1, 2).hull(Range(-2, -1)), Range(-2, 2))
+    self.assertEqual(Range(-1, 2).hull(Range(-2, 0)), Range(-2, 2))
+    self.assertEqual(Range(-1, 2).hull(Range(0, 1)), Range(-1, 2))
 
   def test_shrink_property(self) -> None:
     range1 = Range(10, 20)

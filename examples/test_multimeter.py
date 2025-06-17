@@ -1,5 +1,5 @@
 import unittest
-from typing import List, Dict
+from typing import Dict
 
 from edg import *
 
@@ -369,7 +369,6 @@ class Multimeter(JlcBoardTop):
         ]),
         (['mcu', 'swd_swo_pin'], 'P1.00'),
         (['reg_5v', 'power_path', 'dutycycle_limit'], Range(float('-inf'), float('inf'))),  # allow the regulator to go into tracking mode
-        (['reg_5v', 'ripple_current_factor'], Range(0.75, 1.0)),  # smaller inductor
         (['reg_5v', 'fb', 'div', 'series'], 12),  # JLC has limited resistors
         (['measure', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),  # beefy input resistor
         (['measure', 'res', 'fp_mfr'], 'Bourns Inc.'),

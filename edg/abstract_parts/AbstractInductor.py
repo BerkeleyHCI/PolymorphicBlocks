@@ -1,7 +1,7 @@
 from typing import Dict, Optional, cast
 
 from ..electronics_model import *
-from .PartsTable import PartsTableColumn, PartsTableRow
+from .PartsTable import PartsTableColumn, PartsTableRow, ExperimentalUserFnPartsTable
 from .PartsTablePart import PartsTableSelector
 from .Categories import *
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
@@ -94,7 +94,9 @@ class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
   def __init__(self, inductance: RangeLike,
                current: RangeLike = RangeExpr.ZERO,
                frequency: RangeLike = RangeExpr.ZERO,
-               resistance_dc: RangeLike = (0, 1)*Ohm  # generic sane choice?
+               resistance_dc: RangeLike = (0, 1)*Ohm,  # generic sane choice?
+               *,
+               experimental_filter_fn: StringLike = ""
                ) -> None:
     super().__init__()
 
@@ -105,6 +107,7 @@ class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
     self.current = self.ArgParameter(current)  # defined as operating current range, non-directioned
     self.frequency = self.ArgParameter(frequency)  # defined as operating frequency range
     self.resistance_dc = self.ArgParameter(resistance_dc)
+    self.experimental_filter_fn = self.ArgParameter(experimental_filter_fn)
 
     self.actual_inductance = self.Parameter(RangeExpr())
     self.actual_current_rating = self.Parameter(RangeExpr())
@@ -136,15 +139,23 @@ class TableInductor(PartsTableSelector, Inductor):
   @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
-    self.generator_param(self.inductance, self.current, self.frequency, self.resistance_dc)
+    self.generator_param(self.inductance, self.current, self.frequency, self.resistance_dc,
+                         self.experimental_filter_fn)
 
   def _row_filter(self, row: PartsTableRow) -> bool:
     # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
+    filter_fn_str = self.get(self.experimental_filter_fn)
+    if filter_fn_str:
+      filter_fn = ExperimentalUserFnPartsTable.deserialize_fn(filter_fn_str)
+    else:
+      filter_fn = None
+
     return super()._row_filter(row) and \
       row[self.INDUCTANCE].fuzzy_in(self.get(self.inductance)) and \
       self.get(self.current).fuzzy_in(row[self.CURRENT_RATING]) and \
       row[self.DC_RESISTANCE].fuzzy_in(self.get(self.resistance_dc)) and \
-      self.get(self.frequency).fuzzy_in(row[self.FREQUENCY_RATING])
+      self.get(self.frequency).fuzzy_in(row[self.FREQUENCY_RATING]) and\
+      (filter_fn is None or filter_fn(row))
 
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
