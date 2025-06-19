@@ -97,7 +97,7 @@ class IotLedDriver(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       for i in range(4):
-        led_drv = self.led_drv[i] = imp.Block(LedDriver(max_current=700*mAmp(tol=0.1)))
+        led_drv = self.led_drv[i] = imp.Block(LedDriver(max_current=750*mAmp(tol=0.1)))
         self.connect(self.mcu.gpio.request(f'led_pwm_{i}'), led_drv.with_mixin(LedDriverPwm()).pwm)
 
         # no connectors to save space, just solder to one of the SMD pads
@@ -113,6 +113,7 @@ class IotLedDriver(JlcBoardTop):
         (['reg_3v3'], Tps54202h),
         (['mcu', 'ant'], AntennaOption),
         (['mcu', 'ant', 'ant_b'], RfConnectorAntenna),
+        (['mcu', 'pi', 'l'], JlcInductor),  # breaks on JlcParts
       ],
       instance_values=[
         (['refdes_prefix'], 'L'),  # unique refdes for panelization
@@ -150,10 +151,12 @@ class IotLedDriver(JlcBoardTop):
         (['led_drv[3]', 'power_path', 'inductor', 'part'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'part'])),
         (['led_drv[3]', 'power_path', 'inductor', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'])),
         (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.80),  # use a 1206 25 oe 35v part
-        (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.04)),  # use 1210 inductor
+        (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.08)),  # use 1210 inductor
         (['mcu', 'pi', 'c1', 'footprint_area'], Range(4.0, float('inf'))),  # use 0603 consistently since that's what's available
         (['mcu', 'pi', 'c2', 'footprint_area'], Range(4.0, float('inf'))),
-        (['mcu', 'pi', 'l', 'footprint_area'], Range(4.0, float('inf')))
+        (['mcu', 'pi', 'l', 'footprint_area'], Range(4.0, float('inf'))),
+        # (['led_drv[0]', 'power_path', 'ripple_ratio'], Range(0.1, 2)),
+        # (['led_drv[0]', 'power_path', 'sw_current_limits'], Range(0.0, 3))
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),

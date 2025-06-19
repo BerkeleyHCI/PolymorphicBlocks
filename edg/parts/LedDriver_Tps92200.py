@@ -50,8 +50,7 @@ class Tps92200(LedDriverPwm, LedDriver, GeneratorBlock):
     @init_in_parent
     def __init__(self, led_voltage: RangeLike = (1, 4)*Volt, *,
                  input_ripple_limit: FloatLike = 0.2*Volt,  # from 8.2 example application
-                 output_ripple_limit: FloatLike = 0.01*Volt,
-                 ripple_current_factor: RangeLike = (0.2, 0.5)) -> None:
+                 output_ripple_limit: FloatLike = 0.01*Volt) -> None:
         super().__init__()
 
         self.ic = self.Block(Tps92200_Device(FloatExpr()))
@@ -63,7 +62,6 @@ class Tps92200(LedDriverPwm, LedDriver, GeneratorBlock):
         self.led_voltage = self.ArgParameter(led_voltage)
         self.input_ripple_limit = self.ArgParameter(input_ripple_limit)
         self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
-        self.ripple_current_factor = self.ArgParameter(ripple_current_factor)
 
     def generate(self):
         super().contents()
@@ -85,17 +83,15 @@ class Tps92200(LedDriverPwm, LedDriver, GeneratorBlock):
             self.connect(self.rsense.pwr_out, self.ledk.adapt_to(VoltageSink(current_draw=self.max_current)))
             self.connect(self.rsense.pwr_in, self.gnd.as_voltage_source())
 
+            self.require(self.pwr.current_draw.within((0, 1.5)*Amp))  # continuous current rating
             frequency = (0.8, 1.2)*MHertz
             self.power_path = imp.Block(BuckConverterPowerPath(
                 self.pwr.link().voltage, self.led_voltage, frequency,
-                self.max_current, (0, 1.5)*Amp,
-                inductor_current_ripple=BuckConverter._calculate_ripple(
-                    self.max_current,
-                    self.ripple_current_factor,
-                    rated_current=1.5*Amp),
+                self.max_current, (0, 2.4)*Amp,  # lower of switch source limits
                 input_voltage_ripple=self.input_ripple_limit,
                 output_voltage_ripple=self.output_ripple_limit,
                 dutycycle_limit=(0, 0.99)
             ))
             self.connect(self.power_path.pwr_out, self.leda.adapt_to(VoltageSink(current_draw=self.max_current)))
             self.connect(self.power_path.switch, self.ic.sw)
+            self.require(self.power_path.actual_inductor_current_ripple.lower() > 0.3*Amp)  # minimum for stability
