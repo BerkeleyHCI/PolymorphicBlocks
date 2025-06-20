@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import RootModel, BaseModel
 import os
@@ -22,4 +22,8 @@ class FootprintDataTable:
     if cls._table is None:
       with open(os.path.join(os.path.dirname(__file__), "resources", "kicad_footprints.json"), 'r') as f:
         cls._table = FootprintJson.model_validate_json(f.read())
-    return cls._table.root.get(footprint) or float('inf')
+    elt = cls._table.root.get(footprint)
+    if elt is None:
+      return float('inf')
+    else:
+      return elt.area
