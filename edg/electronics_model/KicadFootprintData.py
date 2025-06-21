@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from pydantic import RootModel, BaseModel
 import os
@@ -17,13 +17,26 @@ class FootprintDataTable:
   _table: Optional[FootprintJson] = None
 
   @classmethod
-  def area_of(cls, footprint: str) -> float:
-    """Returns the area of a footprint, returning infinity if unavailable"""
+  def _get_table(cls) -> FootprintJson:
     if cls._table is None:
       with open(os.path.join(os.path.dirname(__file__), "resources", "kicad_footprints.json"), 'r') as f:
         cls._table = FootprintJson.model_validate_json(f.read())
-    elt = cls._table.root.get(footprint)
+    return cls._table
+
+  @classmethod
+  def area_of(cls, footprint: str) -> float:
+    """Returns the area of a footprint, returning infinity if unavailable"""
+    elt = cls._get_table().root.get(footprint)
     if elt is None:
       return float('inf')
     else:
       return elt.area
+
+  @classmethod
+  def bbox_of(cls, footprint: str) -> Optional[Tuple[float, float, float, float]]:
+    """Returns the bounding box of a footprint, returning None if unavailable"""
+    elt = cls._get_table().root.get(footprint)
+    if elt is None:
+      return None
+    else:
+      return tuple(elt.bbox)  # type: ignore

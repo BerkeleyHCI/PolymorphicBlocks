@@ -1,11 +1,30 @@
 import importlib
 import inspect
-from typing import List, Tuple, NamedTuple, Dict
+from typing import List, Tuple, NamedTuple, Dict, Union
 
 from .. import edgir
+from .KicadFootprintData import FootprintDataTable
 from ..core import *
 from .NetlistGenerator import NetlistTransform, NetBlock, Netlist
 from .SvgPcbTemplateBlock import SvgPcbTemplateBlock
+
+
+class PlacedBlock(NamedTuple):
+    """A placement of a hierarchical block, including the coordinates of its immediate elements.
+    Elements are placed in local space, with (0, 0) as the origin and elements moved as a group.
+    Elements are indexed by name."""
+    elts: Dict[str, Tuple[Union['PlacedBlock', TransformUtil.Path], Tuple[float, float]]]  # name -> elt, (x, y)
+    height: float
+    width: float
+
+
+def arrange_netlist(netlist: Netlist) -> PlacedBlock:
+    # create list of blocks by path
+
+    def arrange_hierarchy(root: TransformUtil.Path) -> PlacedBlock:
+        pass
+
+
 
 
 class SvgPcbGeneratedBlock(NamedTuple):
@@ -85,14 +104,25 @@ class SvgPcbBackend(BaseBackend):
             f"const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.path)} = {block.fn_name}(pt(0, 0))"
             for block in svgpcb_blocks
         ]
-        other_block_instantiations = [
-            f"""\
+
+        x_pos = 0
+        y_pos = 0
+
+        # note, dimensions in inches
+        other_block_instantiations = []
+        for block in other_blocks:
+            block_code = f"""\
 const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(block.footprint)}, {{
-  translate: pt(0, 0), rotate: 0,
+  translate: pt({x_pos:.3f}, {y_pos:.3f}), rotate: 0,
   id: '{SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)}'
 }})"""
-            for block in other_blocks
-        ]
+            other_block_instantiations.append(block_code)
+            block_bbox = FootprintDataTable.bbox_of(block.footprint)
+            if block_bbox is not None:
+                width_mm = (block_bbox[2] - block_bbox[0])
+            else:
+                width_mm = 1
+            x_pos += width_mm * 0.0393701
 
         return SvgPcbCompilerResult(
             [block.svgpcb_code for block in svgpcb_blocks],

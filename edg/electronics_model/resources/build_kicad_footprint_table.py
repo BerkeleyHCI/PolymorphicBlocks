@@ -7,7 +7,16 @@ from typing import Dict, List, Tuple, Any, Optional
 import sexpdata  # type: ignore
 from pydantic import RootModel, BaseModel
 
-KICAD_FP_DIRECTORIES = ["C:/Program Files/KiCad/8.0/share/kicad/footprints"]
+KICAD_FP_DIRECTORIES = [
+    "C:/Program Files/KiCad/8.0/share/kicad/footprints",
+
+    # for net-weaver-compiler
+    # os.path.join(os.path.dirname(__file__), "..", "..", "..", "examples"),
+    # os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "footprints", "kicad-footprints"),
+    # os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "footprints", "kiswitch", "library", "footprints"),
+    # # note, requires Seeed Studio XIAO Series Library folder to be renamed w/ .pretty extension
+    # os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "footprints", "OPL_Kicad_Library"),
+]
 OUTPUT_FILE = "kicad_footprints.json"
 
 
@@ -66,14 +75,14 @@ def sexp_list_find_all(container: list, key: str) -> List[List[Any]]:
 
 def calculate_area(fp_contents: str) -> Optional[float]:
     fp_top: List[Any] = sexpdata.loads(fp_contents)
-    assert isinstance(fp_top[0], sexpdata.Symbol) and fp_top[0].value() == 'footprint'
+    assert isinstance(fp_top[0], sexpdata.Symbol) and fp_top[0].value() in ('footprint', 'module')
 
     # gather all expressions with type fp_line and layer F.CrtYd, and parse XYs
     fp_lines: List[Line] = []
     for fp_line_elt in sexp_list_find_all(fp_top, 'fp_line'):
         layers = sexp_list_find_all(fp_line_elt, 'layer')
         assert len(layers) == 1
-        if layers[0][1] != 'F.CrtYd':
+        if not (layers[0][1] == 'F.CrtYd' or (isinstance(layers[0][1], sexpdata.Symbol) and layers[0][1].value() == 'F.CrtYd')):
             continue
         start = sexp_list_find_all(fp_line_elt, 'start')
         end = sexp_list_find_all(fp_line_elt, 'end')
@@ -89,17 +98,13 @@ def calculate_area(fp_contents: str) -> Optional[float]:
 
 def calculate_bbox(fp_contents: str) -> Optional[Tuple[float, float, float, float]]:  # x_min, y_min, x_max, y_max
     fp_top: List[Any] = sexpdata.loads(fp_contents)
-    assert isinstance(fp_top[0], sexpdata.Symbol) and fp_top[0].value() == 'footprint'
+    assert isinstance(fp_top[0], sexpdata.Symbol) and fp_top[0].value() in ('footprint', 'module')
 
     min_x = min_y = float('inf')
     max_x = max_y = float('-inf')
 
     # gather all expressions with type fp_line and layer F.CrtYd, and parse XYs
     for fp_line_elt in sexp_list_find_all(fp_top, 'fp_line'):
-        layers = sexp_list_find_all(fp_line_elt, 'layer')
-        assert len(layers) == 1
-        if layers[0][1] != 'F.CrtYd':
-            continue
         start = sexp_list_find_all(fp_line_elt, 'start')
         end = sexp_list_find_all(fp_line_elt, 'end')
         assert len(start) == 1 and len(end) == 1 and len(start[0]) == 3 and len(end[0]) == 3
@@ -125,26 +130,31 @@ class FootprintJson(RootModel):  # script relpath imports are weird so this is d
 if __name__ == "__main__":
     fp_data_dict: Dict[str, FootprintData] = {}
     for kicad_dir in KICAD_FP_DIRECTORIES:
-        for dir, subdirs, _ in os.walk(kicad_dir):
-            for subdir in subdirs:
-                lib_name = subdir.split('.pretty')[0]
-                for subdir, _, files in os.walk(os.path.join(dir, subdir)):
-                    for file in files:
-                        fp_filename = file.split('.kicad_mod')[0]
-                        with open(os.path.join(subdir, file)) as f:
-                            fp_data = f.read()
-                        fp_area = calculate_area(fp_data)
-                        fp_bbox = calculate_bbox(fp_data)
+        for subdir in os.listdir(kicad_dir):
+            if not subdir.endswith('.pretty') or not os.path.isdir(os.path.join(kicad_dir, subdir)):
+                continue
+            lib_name = subdir.split('.pretty')[0]
+            for file in os.listdir(os.path.join(kicad_dir, subdir)):
+                if not file.endswith('.kicad_mod'):
+                    continue
+                fp_filename = file.split('.kicad_mod')[0]
 
-                        if fp_area is not None and fp_bbox is not None:
-                            fp_name = lib_name + ":" + fp_filename
-                            fp_data_dict[fp_name] = FootprintData(
-                                area=fp_area,
-                                bbox=fp_bbox
-                            )
-                            print(f"  {fp_name} -> {fp_area:.3g}, {fp_bbox}")
-                        else:
-                            print(f"skip {fp_name}")
+                with open(os.path.join(kicad_dir, subdir, file)) as f:
+                    fp_data = f.read()
+                fp_area = calculate_area(fp_data)
+                fp_bbox = calculate_bbox(fp_data)
+                if fp_area is None and fp_bbox is not None:
+                    fp_area = (fp_bbox[2] - fp_bbox[0]) * (fp_bbox[3] - fp_bbox[1])
+
+                fp_name = lib_name + ":" + fp_filename
+                if fp_area is not None and fp_bbox is not None:
+                    fp_data_dict[fp_name] = FootprintData(
+                        area=fp_area,
+                        bbox=fp_bbox
+                    )
+                    print(f"  {fp_name} -> {fp_area:.3g}, {fp_bbox}")
+                else:
+                    print(f"skip {fp_name} {fp_area} {fp_bbox}")
     json = FootprintJson(fp_data_dict)
     with open(OUTPUT_FILE, 'w') as f:
         f.write(json.model_dump_json(indent=2))
