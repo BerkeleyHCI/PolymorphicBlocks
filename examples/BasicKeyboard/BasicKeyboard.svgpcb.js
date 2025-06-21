@@ -70,6 +70,6 @@ function SwitchMatrix_2_3_sw(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0.25, 
 
 const sw = SwitchMatrix_2_3_sw(pt(0, 0))
 const mcu = board.add(XIAO_Generic_Hybrid_14P_2_54_21X17_8MM, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(0.350, 0.000), rotate: 0,
   id: 'mcu'
 })

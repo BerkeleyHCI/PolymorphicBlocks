@@ -132,86 +132,86 @@ function CharlieplexedLedMatrix_5_6_matrix(xy, colSpacing=1, rowSpacing=1) {
 
 const matrix = CharlieplexedLedMatrix_5_6_matrix(pt(0, 0))
 const jlc_th_th1 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(0.000, 0.000), rotate: 0,
   id: 'jlc_th_th1'
 })
 const jlc_th_th2 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(0.100, 0.000), rotate: 0,
   id: 'jlc_th_th2'
 })
 const jlc_th_th3 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(0.200, 0.000), rotate: 0,
   id: 'jlc_th_th3'
 })
 const usb_conn = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(0.509, 0.000), rotate: 0,
   id: 'usb_conn'
 })
 const usb_cc_pull_cc1_res = board.add(R_0603_1608Metric, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(0.877, 0.000), rotate: 0,
   id: 'usb_cc_pull_cc1_res'
 })
 const usb_cc_pull_cc2_res = board.add(R_0603_1608Metric, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(1.094, 0.000), rotate: 0,
   id: 'usb_cc_pull_cc2_res'
 })
 const tp_vusb_tp = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(1.337, 0.000), rotate: 0,
   id: 'tp_vusb_tp'
 })
 const tp_gnd_tp = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(1.606, 0.000), rotate: 0,
   id: 'tp_gnd_tp'
 })
 const reg_3v3_ic = board.add(SOT_223_3_TabPin2, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(1.964, 0.000), rotate: 0,
   id: 'reg_3v3_ic'
 })
 const reg_3v3_in_cap_cap = board.add(C_0603_1608Metric, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(2.295, 0.000), rotate: 0,
   id: 'reg_3v3_in_cap_cap'
 })
 const reg_3v3_out_cap_cap = board.add(C_0805_2012Metric, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(2.520, 0.000), rotate: 0,
   id: 'reg_3v3_out_cap_cap'
 })
 const tp_3v3_tp = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(2.772, 0.000), rotate: 0,
   id: 'tp_3v3_tp'
 })
 const prot_3v3_diode = board.add(D_SOD_323, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(3.020, 0.000), rotate: 0,
   id: 'prot_3v3_diode'
 })
 const mcu_ic = board.add(ESP_WROOM_02, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(3.744, 0.000), rotate: 0,
   id: 'mcu_ic'
 })
 const mcu_vcc_cap0_cap = board.add(C_0805_2012Metric, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(4.472, 0.000), rotate: 0,
   id: 'mcu_vcc_cap0_cap'
 })
 const mcu_vcc_cap1_cap = board.add(C_0603_1608Metric, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(4.697, 0.000), rotate: 0,
   id: 'mcu_vcc_cap1_cap'
 })
 const mcu_prog_conn = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(4.926, 0.000), rotate: 0,
   id: 'mcu_prog_conn'
 })
 const mcu_boot_package = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(5.265, 0.000), rotate: 0,
   id: 'mcu_boot_package'
 })
 const mcu_en_pull_rc_r = board.add(R_0603_1608Metric, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(5.590, 0.000), rotate: 0,
   id: 'mcu_en_pull_rc_r'
 })
 const mcu_en_pull_rc_c = board.add(C_0603_1608Metric, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(5.807, 0.000), rotate: 0,
   id: 'mcu_en_pull_rc_c'
 })
 const sw1_package = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(0, 0), rotate: 0,
+  translate: pt(6.132, 0.000), rotate: 0,
   id: 'sw1_package'
 })
