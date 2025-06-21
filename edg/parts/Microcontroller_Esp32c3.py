@@ -486,7 +486,7 @@ class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoCont
     super().generate()
 
     self.footprint(
-      'U', 'Seeed Studio XIAO Series Library:XIAO-Generic-Hybrid-14P-2.54-21X17.8MM',
+      'U', 'Seeed Studio XIAO Series Library:XIAO-ESP32C3-SMD',
       self._make_pinning(),
       mfr='', part='XIAO ESP32C3',
       datasheet='https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html'

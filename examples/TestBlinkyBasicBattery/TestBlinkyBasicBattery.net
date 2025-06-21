@@ -46,7 +46,7 @@
   (tstamps "0aba028c"))
 (comp (ref "mcu")
   (value "XIAO RP2040")
-  (footprint "Seeed Studio XIAO Series Library:XIAO-Generic-Hybrid-14P-2.54-21X17.8MM")
+  (footprint "Seeed Studio XIAO Series Library:XIAO-RP2040-SMD")
   (property (name "Sheetname") (value ""))
   (property (name "Sheetfile") (value ""))
   (property (name "edg_path") (value "mcu"))
