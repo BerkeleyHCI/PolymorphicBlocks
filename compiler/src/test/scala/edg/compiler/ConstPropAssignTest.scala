@@ -3,8 +3,9 @@ package edg.compiler
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import matchers.should.Matchers._
-import edg.wir.{IndirectDesignPath, DesignPath}
+import edg.wir.{DesignPath, IndirectDesignPath}
 import edg.ExprBuilder._
+import edg.compiler.CompilerError.ExprError
 import edg.compiler.IntValue
 
 class ConstPropAssignTest extends AnyFlatSpec {
@@ -17,6 +18,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
     constProp.addAssignValue(IndirectDesignPath() + "a", IntValue(2))
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
+    constProp.getErrors should be(empty)
   }
 
   it should "not propagate pre-declaration assignments" in {
@@ -53,6 +55,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     )
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(5)))
+    constProp.getErrors should be(empty)
   }
 
   it should "handle multi-hop directed assignments, delayed" in {
@@ -76,6 +79,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(5)))
     constProp.getValue(IndirectDesignPath() + "c") should equal(Some(IntValue(10)))
+    constProp.getErrors should be(empty)
   }
 
   it should "handle directed equality assignments" in {
@@ -91,6 +95,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
 
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "c") should equal(Some(IntValue(2)))
+    constProp.getErrors should be(empty)
   }
 
   it should "handle directed equality assignments, delayed" in {
@@ -108,6 +113,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
 
     constProp.getValue(IndirectDesignPath() + "b") should equal(Some(IntValue(2)))
     constProp.getValue(IndirectDesignPath() + "c") should equal(Some(IntValue(2)))
+    constProp.getErrors should be(empty)
   }
 
   it should "handle forced set and ignore subsequent assignments" in {
@@ -116,6 +122,7 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp.addDeclaration(DesignPath() + "a", ValInit.Integer)
     constProp.addAssignValue(IndirectDesignPath() + "a", IntValue(2)) // should be ignored from above forced-set
     constProp.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(3)))
+    constProp.getErrors should be(empty)
   }
 
   it should "handle clone assignments separately" in {
@@ -169,5 +176,25 @@ class ConstPropAssignTest extends AnyFlatSpec {
     constProp2.addAssignValue(IndirectDesignPath() + "a", IntValue(3), DesignPath(), "forced", forced = true)
     constProp2.addDeclaration(DesignPath() + "a", ValInit.Integer)
     constProp2.getValue(IndirectDesignPath() + "a") should equal(Some(IntValue(3)))
+  }
+
+  it should "not propagate generated ErrorValues" in {
+    import edgir.expr.expr.BinaryExpr.Op
+    val constProp = new ConstProp()
+    constProp.addDeclaration(DesignPath() + "x", ValInit.Range)
+    constProp.addDeclaration(DesignPath() + "a", ValInit.Range)
+    constProp.addDeclaration(DesignPath() + "b", ValInit.Range)
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "b",
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(3), ValueExpr.Ref("a")),
+    )
+    constProp.addAssignExpr(
+      IndirectDesignPath() + "a",
+      ValueExpr.BinOp(Op.SHRINK_MULT, ValueExpr.Literal(1, 1), ValueExpr.Ref("x")),
+    )
+    constProp.addAssignValue(IndirectDesignPath() + "x", RangeValue(0, 2))
+    constProp.getValue(IndirectDesignPath() + "a") should equal(None)
+    constProp.getValue(IndirectDesignPath() + "b") should equal(None)
+    constProp.getErrors should not be empty
   }
 }

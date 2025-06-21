@@ -47,7 +47,7 @@ class RangeTestCase(unittest.TestCase):
 
     self.assertEqual(Range(1, 5).center(), 3)
 
-  def test_intersect(self) -> None:
+  def test_intersects(self) -> None:
     self.assertTrue(Range(-1, 2).intersects(Range(2, 3)))
     self.assertTrue(Range(-1, 2).intersects(Range(0, 3)))
     self.assertTrue(Range(-1, 2).intersects(Range(-2, -1)))
@@ -56,9 +56,25 @@ class RangeTestCase(unittest.TestCase):
     self.assertFalse(Range(-1, 2).intersects(Range(3, 4)))
     self.assertFalse(Range(-1, 2).intersects(Range(-3, -2)))
 
-  def test_cancel_property(self) -> None:
+  def test_intersect(self):
+    self.assertEqual(Range(-1, 2).intersect(Range(2, 3)), Range(2, 2))
+    self.assertEqual(Range(-1, 2).intersect(Range(0, 3)), Range(0, 2))
+    self.assertEqual(Range(-1, 2).intersect(Range(-2, -1)), Range(-1, -1))
+    self.assertEqual(Range(-1, 2).intersect(Range(-2, 0)), Range(-1, 0))
+    self.assertEqual(Range(-1, 2).intersect(Range(0, 1)), Range(0, 1))
+    with self.assertRaises(ValueError):
+      Range(-1, 2).intersect(Range(3, 4))
+
+  def test_hull(self):
+    self.assertEqual(Range(-1, 2).hull(Range(2, 3)), Range(-1, 3))
+    self.assertEqual(Range(-1, 2).hull(Range(0, 3)), Range(-1, 3))
+    self.assertEqual(Range(-1, 2).hull(Range(-2, -1)), Range(-2, 2))
+    self.assertEqual(Range(-1, 2).hull(Range(-2, 0)), Range(-2, 2))
+    self.assertEqual(Range(-1, 2).hull(Range(0, 1)), Range(-1, 2))
+
+  def test_shrink_property(self) -> None:
     range1 = Range(10, 20)
-    self.assertEqual(Range.cancel_multiply(range1, 1/range1), Range(1, 1))
+    self.assertEqual(range1.shrink_multiply(1/range1), Range(1, 1))
 
   def test_frequency(self) -> None:
     """Tests (back-)calculating C from target w and R - so tolerancing flows from R and C to w
@@ -66,7 +82,7 @@ class RangeTestCase(unittest.TestCase):
     R = Range(90, 110)
     C = Range.from_tolerance(1e-6, 0.05)
     w = 1 / (2 * math.pi * R * C)
-    solved = Range.cancel_multiply(1/(2*math.pi * R), 1/w)
+    solved = (1/(2 * math.pi * w)).shrink_multiply(1/R)
     self.assertTrue(math.isclose(C.lower, solved.lower))
     self.assertTrue(math.isclose(C.upper, solved.upper))
 

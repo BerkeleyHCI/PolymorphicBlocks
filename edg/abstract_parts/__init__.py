@@ -96,7 +96,7 @@ from .UsbBitBang import UsbBitBang
 from .IoController import BaseIoController, IoController, IoControllerPowerRequired, BaseIoControllerPinmapGenerator
 from .IoControllerExportable import BaseIoControllerExportable
 from .IoControllerInterfaceMixins import IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerTouchDriver,\
-    IoControllerDac, IoControllerCan, IoControllerUsb, IoControllerI2s, IoControllerDvp8
+    IoControllerDac, IoControllerCan, IoControllerUsb, IoControllerI2s, IoControllerDvp8, IoControllerUsbCc
 from .IoControllerInterfaceMixins import IoControllerPowerOut, IoControllerUsbOut, IoControllerVin
 from .IoControllerInterfaceMixins import IoControllerWifi, IoControllerBluetooth, IoControllerBle
 from .IoControllerProgramming import IoControllerWithSwdTargetConnector
@@ -107,8 +107,8 @@ from .VariantPinRemapper import VariantPinRemapper
 
 from .DummyDevices import DummyPassive, DummyGround, DummyVoltageSource, DummyVoltageSink, DummyDigitalSink, \
     DummyAnalogSource, DummyAnalogSink
-from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltage, ForcedVoltageCurrent, ForcedAnalogVoltage,\
-    ForcedAnalogSignal, ForcedDigitalSinkCurrentDraw
+from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltageCurrentLimit, ForcedVoltage, ForcedVoltageCurrent, \
+    ForcedAnalogVoltage, ForcedAnalogSignal, ForcedDigitalSinkCurrentDraw
 from .MergedBlocks import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource, MergedSpiController
 
 from .Nonstrict3v3Compatible import Nonstrict3v3Compatible

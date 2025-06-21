@@ -237,21 +237,21 @@ const spk_drv_bulk_cap_cap = board.add(C_0805_2012Metric, {
   translate: pt(0, 0), rotate: 0,
   id: 'spk_drv_bulk_cap_cap'
 })
-const spk_drv_inp_cap = board.add(C_0603_1608Metric, {
-  translate: pt(0, 0), rotate: 0,
-  id: 'spk_drv_inp_cap'
-})
 const spk_drv_inp_res = board.add(R_0603_1608Metric, {
   translate: pt(0, 0), rotate: 0,
   id: 'spk_drv_inp_res'
 })
-const spk_drv_inn_cap = board.add(C_0603_1608Metric, {
+const spk_drv_inp_cap = board.add(C_0603_1608Metric, {
   translate: pt(0, 0), rotate: 0,
-  id: 'spk_drv_inn_cap'
+  id: 'spk_drv_inp_cap'
 })
 const spk_drv_inn_res = board.add(R_0603_1608Metric, {
   translate: pt(0, 0), rotate: 0,
   id: 'spk_drv_inn_res'
+})
+const spk_drv_inn_cap = board.add(C_0603_1608Metric, {
+  translate: pt(0, 0), rotate: 0,
+  id: 'spk_drv_inn_cap'
 })
 const spk_conn = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
   translate: pt(0, 0), rotate: 0,

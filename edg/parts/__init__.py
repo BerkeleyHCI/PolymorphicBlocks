@@ -77,6 +77,7 @@ from .Microcontroller_Lpc1549 import Lpc1549_48, Lpc1549_64
 from .Microcontroller_Stm32f103 import Stm32f103_48
 from .Microcontroller_Stm32f303 import Nucleo_F303k8
 from .Microcontroller_Stm32g031 import Stm32g031_G
+from .Microcontroller_Stm32g431 import Stm32g431kb
 from .Microcontroller_Stm32l432 import Stm32l432k
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2, Feather_Nrf52840
 from .Microcontroller_Esp import EspProgrammingHeader, EspProgrammingAutoReset, EspProgrammingPinHeader254, EspProgrammingTc2030
@@ -114,6 +115,7 @@ from .RfModules import Xbee_S3b, BlueSmirf
 from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, Sk6812_Side_A, NeopixelArray, NeopixelArrayCircular
 from .Lcd_Qt096t_if09 import Qt096t_if09
 from .Lcd_Ch280qv10_Ct import Ch280qv10_Ct
+from .Lcd_Er_Tft1_28_3 import Er_Tft_128_3
 from .Oled_Er_Oled_091_3 import Er_Oled_091_3
 from .Oled_Er_Oled_096_1_1 import Er_Oled_096_1_1
 from .Oled_Er_Oled_096_1c import Er_Oled_096_1c
@@ -159,6 +161,7 @@ from .Bldc_Drv8313 import Drv8313
 from .StepperDriver_A4988 import A4988, PololuA4988
 
 from .Imu_Lsm6ds3trc import Lsm6ds3trc
+from .Lsm6dsv16x import Lsm6dsv16x
 from .Mag_Qmc5883l import Qmc5883l
 from .EnvironmentalSensor_Sensirion import Shtc3
 from .EnvironmentalSensor_Bme680 import Bme680

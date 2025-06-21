@@ -1,22 +1,42 @@
 import math
 from typing import Tuple, Union
+from deprecated import deprecated
 
 
 class Range:
   """A range type that indicates a range of values and provides utility functions. Immutable.
-   Ends are treated as inclusive (closed).
-   """
-
+  Ends are treated as inclusive (closed).
+  """
   @staticmethod
+  @deprecated("Use shrink_multiply")
   def cancel_multiply(input_side: 'Range', output_side: 'Range') -> 'Range':
+    """IMPORTANT - this has REVERSED arguments of shrink_multiply!"""
+    return output_side.shrink_multiply(input_side)
+
+  def shrink_multiply(self, contributing: 'Range') -> 'Range':
     """
+    A tolerance-shrinking multiply operation, used in calculating how much tolerance remains
+    in a multiply expression, to reach a target tolerance given some contributing tolerance.
+    THIS MAY FAIL if the contributing tolerance is larger than the self (target) tolerance
+    (so no result would satisfy the original equation).
+
+    EXAMPLE: given the RC low pass filter equation R * C = 1 / (2 * pi * w),
+    we want to find C (including available tolerance) given a target w (with specified tolerance),
+    and some R (which eats into the tolerance budget from w)
+
+    C = 1/(2 * pi * w).shrink_multiply(1/R)
+
+    Prefer RangeExpr.shrink_multiply, unless you need to do additional operations on concrete values.
+
+
+    More detailed theory:
+
     This satisfies the property, for Range x:
-    cancel_multiply(x, 1/x) = Range(1, 1)
+    x.shrink_multiply(1/x) = Range(1, 1)
 
     Range multiplication is weird and 1/x * x does not cancel out, because it's tolerance-expanding.
-    Using the RC frequency example, w = 1/(2 pi R C), which solves for the output and tolerances of w
-    given R and C (with tolerances), if we want instead solve for C given R and target w,
-    we can't simply do C = 1/(2 pi R w) - which would be tolerance-expanding from R and w to C.
+    Using the RC frequency example, if we want instead solve for C given R and target w,
+    we can't simply do C = 1/(2 * pi * R * w) - which would be tolerance-expanding from R and w to C.
 
     To understand why, it helps to break ranges into tuples:
 
@@ -37,19 +57,12 @@ class Range:
      C_max]            1/R_max]    1/w_min]
 
     So that this function does is:
-    flip(input_side * flip(output_side))
-    and the above would be expressed as:
-    C = cancel_multiply(1/(2*pi*R), 1/w)
-
-    THIS MAY FAIL if the input tolerance is larger than the output tolerance
-    (so no result would satisfy the original equation).
+    flip(contributing * flip(self))
     """
-    assert isinstance(input_side, Range) and isinstance(output_side, Range)
-    assert input_side.lower >= 0 and input_side.upper >= 0, "TODO support negative values"
-    assert output_side.lower >= 0 and output_side.upper >= 0, "TODO support negative values"
-    lower = input_side.upper * output_side.lower
-    upper = input_side.lower * output_side.upper
-    assert lower <= upper, f"empty range in cancel-multiply {input_side} and {output_side}"
+    assert isinstance(contributing, Range)
+    lower = contributing.upper * self.lower
+    upper = contributing.lower * self.upper
+    assert lower <= upper, f"empty range in shrink-multiply {contributing} and {self}"
     return Range(lower, upper)
 
   @staticmethod
@@ -131,8 +144,17 @@ class Range:
     else:
       return NotImplemented
 
+  def hull(self, other: 'Range') -> 'Range':
+    return Range(min(self.lower, other.lower), max(self.upper, other.upper))
+
   def intersects(self, other: 'Range') -> bool:
     return (self.upper >= other.lower) and (self.lower <= other.upper)
+
+  def intersect(self, other: 'Range') -> 'Range':
+    # TODO make behavior more consistent w/ compiler and returning empty that props as a unit
+    if not self.intersects(other):
+      raise ValueError("cannot intersect ranges that do not intersect")
+    return Range(max(self.lower, other.lower), min(self.upper, other.upper))
 
   def __add__(self, other: Union['Range', float]) -> 'Range':
     if isinstance(other, Range):

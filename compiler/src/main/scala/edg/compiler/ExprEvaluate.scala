@@ -56,6 +56,21 @@ object ExprEvaluate {
           case _ =>
             throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
         }
+      case Op.SHRINK_MULT => (lhs, rhs) match {
+          case (RangeValue(targetMin, targetMax), RangeValue(contribMin, contribMax)) =>
+            val lower = contribMax * targetMin
+            val upper = contribMin * targetMax
+            if (lower > upper) {
+              ErrorValue(s"shrink_mult($lhs, $rhs) produces empty range, target $lhs tighter tol than contrib $rhs")
+            } else {
+              RangeValue(lower, upper)
+            }
+          case (RangeEmpty, RangeEmpty) => RangeEmpty
+          case (lhs: RangeValue, RangeEmpty) => RangeEmpty
+          case (RangeEmpty, rhs: RangeValue) => RangeEmpty
+          case _ =>
+            throw new ExprEvaluateException(s"Unknown binary operand types in $lhs ${binary.op} $rhs from $binary")
+        }
 
       case Op.AND => (lhs, rhs) match {
           case (BooleanValue(lhs), BooleanValue(rhs)) => BooleanValue(lhs && rhs)
@@ -262,17 +277,16 @@ object ExprEvaluate {
             RangeValue(1.0 / valMax, 1.0 / valMin)
           case RangeEmpty => RangeEmpty
           case FloatValue(opVal) => FloatValue(1.0 / opVal)
-          case IntValue(opVal) => IntValue(1 / opVal)
+          case IntValue(opVal) =>
+            FloatValue(1.0 / opVal.floatValue) // follow Python convention of division promoting to float
           case _ => throw new ExprEvaluateException(s"Unknown unary operand type in ${unary.op} ${`val`} from $unary")
         }
 
       case (Op.MIN, RangeValue(valMin, _)) => FloatValue(valMin)
       case (Op.MAX, RangeValue(_, valMax)) => FloatValue(valMax)
 
-      // TODO can we have stricter semantics to avoid min(RangeEmpty) and max(RangeEmpty)?
-      // This just NaNs out so at least it propagates
-      case (Op.MAX, RangeEmpty) => FloatValue(Float.NaN)
-      case (Op.MIN, RangeEmpty) => FloatValue(Float.NaN)
+      case (Op.MAX, RangeEmpty) => ErrorValue("max(RangeEmpty) is undefined")
+      case (Op.MIN, RangeEmpty) => ErrorValue("min(RangeEmpty) is undefined")
 
       case (Op.CENTER, RangeValue(valMin, valMax)) => FloatValue((valMin + valMax) / 2)
       case (Op.WIDTH, RangeValue(valMin, valMax)) => FloatValue(math.abs(valMax - valMin))
@@ -291,7 +305,7 @@ object ExprEvaluate {
       case (Op.SUM, ArrayValue.ExtractBoolean(vals)) => IntValue(vals.count(_ == true))
       case (Op.SUM, ArrayValue.UnpackRange(extracted)) => extracted match {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.sum, valMaxs.sum)
-          case _ => RangeEmpty // TODO how should sum behave on empty ranges?
+          case _ => ErrorValue("unpack_range(empty) is undefined")
         }
 
       case (Op.ALL_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
@@ -310,13 +324,11 @@ object ExprEvaluate {
       case (Op.MINIMUM, ArrayValue.ExtractFloat(vals)) => FloatValue(vals.min)
       case (Op.MINIMUM, ArrayValue.ExtractInt(vals)) => IntValue(vals.min)
 
-      // TODO this should be a user-level assertion instead of a compiler error
-      case (Op.SET_EXTRACT, ArrayValue.Empty(_)) =>
-        throw new ExprEvaluateException(s"SetExtract with empty values from $unarySet")
+      case (Op.SET_EXTRACT, ArrayValue.Empty(_)) => ErrorValue("set_extract(empty) is undefined")
       case (Op.SET_EXTRACT, ArrayValue(vals)) => if (vals.forall(_ == vals.head)) {
           vals.head
         } else {
-          throw new ExprEvaluateException(s"SetExtract with non-equal values $vals from $unarySet")
+          ErrorValue(f"set_extract($vals) with non-equal values")
         }
 
       // Any empty value means the expression result is empty
@@ -326,19 +338,20 @@ object ExprEvaluate {
             if (maxMin <= minMax) {
               RangeValue(maxMin, minMax)
             } else { // does not intersect, null set
-              RangeEmpty
+              ErrorValue(f"intersection($extracted) produces empty set")
             }
           // The implicit initial value of intersect is the full range
           // TODO are these good semantics?
           case ArrayValue.UnpackRange.EmptyArray() => RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
-          case _ => RangeEmpty
+          case _ => ErrorValue(f"intersection($vals) is undefined")
         }
 
       // Any value is used (empty effectively discarded)
       case (Op.HULL, ArrayValue.UnpackRange(extracted)) => extracted match {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
           case ArrayValue.UnpackRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
-          case _ => RangeEmpty
+          case ArrayValue.UnpackRange.EmptyArray() => RangeEmpty // TODO: should this be an error?
+          case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
         }
       case (Op.HULL, ArrayValue.ExtractFloat(vals)) => RangeValue(vals.min, vals.max)
 
@@ -381,7 +394,7 @@ object ExprEvaluate {
     case (FloatPromotable(lhs), FloatPromotable(rhs)) => if (lhs <= rhs) {
         RangeValue(lhs, rhs)
       } else {
-        throw new ExprEvaluateException(s"Range with min $minimum not <= max $maximum from $range")
+        ErrorValue(s"range($minimum, $maximum) is malformed, $minimum > $maximum")
       }
     case _ => throw new ExprEvaluateException(s"Unknown range operands types $minimum $maximum from $range")
   }

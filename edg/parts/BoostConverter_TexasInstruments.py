@@ -222,18 +222,14 @@ class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
       self.power_path = imp.Block(BoostConverterPowerPath(
         self.pwr_in.link().voltage, self.fb.actual_input_voltage, self.actual_frequency,
         self.pwr_out.link().current_drawn, (0, 1)*Amp,
-        inductor_current_ripple=self._calculate_ripple(self.pwr_out.link().current_drawn,
-                                                       self.ripple_current_factor,
-                                                       rated_current=0.5*Amp),
         input_voltage_ripple=self.input_ripple_limit,
-        output_voltage_ripple=self.output_ripple_limit
+        output_voltage_ripple=self.output_ripple_limit,
       ))
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
 
       self.cf = self.Block(Capacitor(  # arbitrary 15% target tolerance for zero location
-        capacitance=RangeExpr.cancel_multiply(1/(2 * math.pi * self.fb.actual_rtop),
-                                              1/(8000*Ohm(tol=0.15))),
+        capacitance=(1/(8000*Ohm(tol=0.15))).shrink_multiply(1/(2 * math.pi * self.fb.actual_rtop)),
         voltage=self.pwr_out.voltage_out
       ))
       self.connect(self.cf.neg.adapt_to(AnalogSink()), self.ic.fb)

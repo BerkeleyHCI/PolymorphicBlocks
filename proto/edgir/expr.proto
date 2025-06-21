@@ -175,6 +175,10 @@ message BinaryExpr {
      */
     MULT = 12;
 
+    // A shrinking multiply operation for two Range types. Not commutative.
+    // See the documentation for shrink_multiply in the Python core HDL code for details.
+    SHRINK_MULT = 55;
+
     /** Div :: Numeric a => (lhs ::       a, rhs ::       a) -> a
             :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a
             :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a

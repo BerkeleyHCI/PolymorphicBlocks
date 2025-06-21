@@ -123,7 +123,6 @@ class IotLedDriver(JlcBoardTop):
           'led_pwm_3=33',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
-        (['reg_5v', 'power_path', 'inductor', 'part'], "NR5040T220M"),
         (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
 
         (['led_drv[0]', 'diode_voltage_drop'], Range(0, 0.5)),
