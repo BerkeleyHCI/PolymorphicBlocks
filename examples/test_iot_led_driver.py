@@ -28,7 +28,10 @@ class AntennaOption(Antenna):
       self.assign(self.actual_impedance, self.ant_a.actual_impedance.intersect(self.ant_b.actual_impedance))
 
 
-class IotLedDriver(JlcBoardTop):
+# TODO JLC Parts use env var
+# Swiotching power converters expose limit ratio, get to 4.7uH
+# (layout) merge ANT and UFL
+class IotLedDriver(JlcPartsRefinements, JlcBoardTop):
   """Multichannel IoT high-power external LED driver with a 12v barrel jack input.
   """
   def contents(self) -> None:
@@ -114,6 +117,7 @@ class IotLedDriver(JlcBoardTop):
         (['mcu', 'ant'], AntennaOption),
         (['mcu', 'ant', 'ant_b'], RfConnectorAntenna),
         (['mcu', 'pi', 'l'], JlcInductor),  # breaks on JlcParts
+        (['mcu', 'pi', 'c2'], JlcCapacitor),  # breaks on JlcParts
       ],
       instance_values=[
         (['refdes_prefix'], 'L'),  # unique refdes for panelization
