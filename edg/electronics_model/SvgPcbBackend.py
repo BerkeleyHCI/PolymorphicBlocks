@@ -111,18 +111,22 @@ class SvgPcbBackend(BaseBackend):
         # note, dimensions in inches
         other_block_instantiations = []
         for block in other_blocks:
+            block_bbox = FootprintDataTable.bbox_of(block.footprint)
+
+            if block_bbox is not None:
+                x_pos += -block_bbox[0] / 25.4
+
             block_code = f"""\
 const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(block.footprint)}, {{
   translate: pt({x_pos:.3f}, {y_pos:.3f}), rotate: 0,
   id: '{SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)}'
 }})"""
             other_block_instantiations.append(block_code)
-            block_bbox = FootprintDataTable.bbox_of(block.footprint)
+
             if block_bbox is not None:
-                width_mm = (block_bbox[2] - block_bbox[0])
-            else:
-                width_mm = 1
-            x_pos += width_mm * 0.0393701
+                x_pos += block_bbox[2] / 25.4
+
+            x_pos += 0.1  # boundary
 
         return SvgPcbCompilerResult(
             [block.svgpcb_code for block in svgpcb_blocks],
