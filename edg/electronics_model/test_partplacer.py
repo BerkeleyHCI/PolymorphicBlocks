@@ -24,4 +24,9 @@ class PartPlacerTestCase(unittest.TestCase):
             nets=[]
         )
         arranged = arrange_netlist(netlist)
-        print(arranged)
+        self.assertAlmostEqual(arranged.elts["U1"][1][0], 5.15, places=2)
+        self.assertAlmostEqual(arranged.elts["U1"][1][1], 5.15, places=2)
+        self.assertAlmostEqual(arranged.elts["R1"][1][0], 12.78, places=2)
+        self.assertAlmostEqual(arranged.elts["R1"][1][1], 0.73, places=2)
+        self.assertAlmostEqual(arranged.elts["R2"][1][0], 12.78, places=2)
+        self.assertAlmostEqual(arranged.elts["R2"][1][1], 3.19, places=2)

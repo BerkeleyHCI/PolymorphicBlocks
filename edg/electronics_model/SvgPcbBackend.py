@@ -1,5 +1,6 @@
 import importlib
 import inspect
+import math
 from typing import List, Tuple, NamedTuple, Dict, Union, Set
 
 from .. import edgir
@@ -19,6 +20,9 @@ class PlacedBlock(NamedTuple):
 
 
 def arrange_netlist(netlist: Netlist) -> PlacedBlock:
+    FOOTPRINT_BORDER = 1  # mm
+    BLOCK_BORDER = 2  # mm
+
     # create list of blocks by path
     block_subblocks: Dict[Tuple[str, ...], Set[str]] = {}
     block_footprints: Dict[Tuple[str, ...], List[NetBlock]] = {}
@@ -29,22 +33,64 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
             block_subblocks.setdefault(tuple(containing_path[:i]), set()).add(containing_path[i])
 
     def arrange_hierarchy(root: Tuple[str, ...]) -> PlacedBlock:
-        sub_placed: List[Tuple[float, Union[PlacedBlock, str]]] = []  # (area, PlacedBlock or footprint name)
+        """Recursively arranges the immediate components of a hierarchy, treating each element
+        as a bounding box rectangle, and trying to maintain some aspect ratio."""
+        # TODO don't count borders as part of a block's width / height
+        ASPECT_RATIO = 16 / 9
+
+        sub_placed: List[Tuple[str, float, float, Union[PlacedBlock, NetBlock]]] = []  # (name, width, height, PlacedBlock or footprint)
         for subblock in block_subblocks.get(root, set()):
             subplaced = arrange_hierarchy(root + (subblock,))
-            sub_placed.append((subplaced.width * subplaced.height, subplaced))
+            sub_placed.append((subblock, subplaced.width + BLOCK_BORDER, subplaced.height + BLOCK_BORDER, subplaced))
 
         for footprint in block_footprints.get(root, []):
-            # bbox = FootprintDataTable.bbox_of(footprint.footprint)
-            area = FootprintDataTable.area_of(footprint.footprint)
-            # bbox[2] - bbox[0], bbox[3] - bbox[1]
-            sub_placed.append((area, footprint.full_path.blocks[-1]))
-            
-        print(sub_placed)
+            bbox = FootprintDataTable.bbox_of(footprint.footprint)
+            width = bbox[2] - bbox[0] + FOOTPRINT_BORDER
+            height = bbox[3] - bbox[1] + FOOTPRINT_BORDER
+            sub_placed.append((footprint.full_path.blocks[-1], width, height, footprint))
+
+        total_area = sum(width * height for _, width, height, _ in sub_placed)
+        max_width = math.sqrt(total_area * ASPECT_RATIO)
+
+        y_pos = 0
+        x_max = 0
+        y_max = 0
+        # track the y limits and y position of the prior elements
+        x_stack: List[Tuple[float, float, float]] = []  # [(x pos of next, y pos, y limit)]
+        elts: Dict[str, Tuple[Union[PlacedBlock, TransformUtil.Path], Tuple[float, float]]] = {}
+        for name, width, height, entry in sorted(sub_placed, key=lambda x: -x[2]):  # by height
+            if not x_stack:
+                next_y = y_pos
+            else:
+                next_y = x_stack[-1][1]  # y position of the next element
+
+            while True:  # advance rows as needed
+                if not x_stack:
+                    break
+                if x_stack[-1][0] + width > max_width:  # out of X space, advance a row
+                    _, _, next_y = x_stack.pop()
+                if next_y + height > x_stack[-1][2]:  # out of Y space, advance a row
+                    _, _, next_y = x_stack.pop()
+                break
+
+            if not x_stack:
+                next_x = 0
+            else:
+                next_x = x_stack[-1][0]
+
+            if isinstance(entry, PlacedBlock):  # assumed (0, 0) at top left
+                elts[name] = (entry, (next_x, next_y))
+            elif isinstance(entry, NetBlock):  # account for footprint origin
+                bbox = FootprintDataTable.bbox_of(entry.footprint)
+                elts[name] = (entry.full_path, (next_x - bbox[0], next_y - bbox[1]))
+            x_stack.append((next_x + width, next_y, next_y + height))
+            x_max = max(x_max, next_x + width)
+            y_max = max(y_max, next_y + height)
+        return PlacedBlock(
+            elts=elts, height=x_max, width=y_max
+        )
 
     return arrange_hierarchy(())
-    print(block_footprints[()])
-
 
 
 class SvgPcbGeneratedBlock(NamedTuple):
