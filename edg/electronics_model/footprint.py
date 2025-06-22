@@ -73,7 +73,7 @@ def gen_block_prop_sheetfile(block_path: List[edgir.LibraryPath]) -> str:
     value = ""
   return f'(property (name "Sheetfile") (value "{value}"))'
 
-def gen_block_prop_edg(block: NetBlock, refdes_mode: RefdesMode) -> str:
+def gen_block_prop_edg(block: NetBlock) -> str:
   return f'(property (name "edg_path") (value "{".".join(block.full_path.to_tuple())}"))\n' +\
       f'  (property (name "edg_short_path") (value "{".".join(block.path)}"))\n' + \
       f'  (property (name "edg_refdes") (value "{block.refdes}"))\n' + \
@@ -101,7 +101,7 @@ def block_exp(blocks: List[NetBlock], refdes_mode: RefdesMode) -> str:
                       "  " + gen_block_footprint(block.footprint) + '\n' + \
                       "  " + gen_block_prop_sheetname(block.path) + '\n' + \
                       "  " + gen_block_prop_sheetfile(block.class_path) + '\n' + \
-                      "  " + gen_block_prop_edg(block, refdes_mode) + '\n' + \
+                      "  " + gen_block_prop_edg(block) + '\n' + \
                       "  " + gen_block_sheetpath(block.path[:-1]) + '\n' + \
                       "  " + gen_block_tstamp(block.path)
         return result + ')'

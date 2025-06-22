@@ -18,7 +18,7 @@ class NetlistBackend(BaseBackend):
     elif refdes_mode_arg == 'refdesPathNameValue':
       refdes_mode = kicad.RefdesMode.PathnameAsValue
     else:
-      raise ValueError(f"Invalid valueMode value {refdes_mode_arg}")
+      raise ValueError(f"Invalid RefdesMode value {refdes_mode_arg}")
 
     netlist = NetlistTransform(design).run()
     netlist_string = kicad.generate_netlist(netlist, refdes_mode)
