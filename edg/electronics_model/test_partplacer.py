@@ -1,8 +1,8 @@
 import unittest
 
-from . import *
+from . import TransformUtil
 from .NetlistGenerator import Netlist, NetBlock
-from .SvgPcbBackend import arrange_netlist
+from .SvgPcbBackend import arrange_netlist, flatten_packed_block, PlacedBlock
 
 
 class PartPlacerTestCase(unittest.TestCase):
@@ -56,6 +56,7 @@ class PartPlacerTestCase(unittest.TestCase):
 
         self.assertAlmostEqual(arranged.elts['A'][1][0], 0, places=2)
         self.assertAlmostEqual(arranged.elts['A'][1][1], 0, places=2)
+        assert isinstance(arranged.elts['A'][0], PlacedBlock)
         self.assertAlmostEqual(arranged.elts['A'][0].elts["U1"][1][0], 5.15, places=2)
         self.assertAlmostEqual(arranged.elts['A'][0].elts["U1"][1][1], 5.15, places=2)
         self.assertAlmostEqual(arranged.elts['A'][0].elts["R1"][1][0], 12.78, places=2)
@@ -65,5 +66,14 @@ class PartPlacerTestCase(unittest.TestCase):
 
         self.assertAlmostEqual(arranged.elts['B'][1][0], 0, places=2)
         self.assertAlmostEqual(arranged.elts['B'][1][1], 13.3, places=2)
+        assert isinstance(arranged.elts['B'][0], PlacedBlock)
         self.assertAlmostEqual(arranged.elts['B'][0].elts["R3"][1][0], 1.48, places=2)
         self.assertAlmostEqual(arranged.elts['B'][0].elts["R3"][1][1], 0.73, places=2)
+
+        flattened = flatten_packed_block(arranged)
+        self.assertAlmostEqual(flattened[TransformUtil.Path.empty().append_block('A').append_block('U1')][0], 5.15, places=2)
+        self.assertAlmostEqual(flattened[TransformUtil.Path.empty().append_block('A').append_block('U1')][1], 5.15, places=2)
+        self.assertAlmostEqual(flattened[TransformUtil.Path.empty().append_block('A').append_block('R1')][0], 12.78, places=2)
+        self.assertAlmostEqual(flattened[TransformUtil.Path.empty().append_block('A').append_block('R1')][1], 0.73, places=2)
+        self.assertAlmostEqual(flattened[TransformUtil.Path.empty().append_block('B').append_block('R3')][0], 1.48, places=2)
+        self.assertAlmostEqual(flattened[TransformUtil.Path.empty().append_block('B').append_block('R3')][1], 14.03, places=2)

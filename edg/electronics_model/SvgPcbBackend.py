@@ -44,7 +44,7 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
             sub_placed.append((subblock, subplaced.width + BLOCK_BORDER, subplaced.height + BLOCK_BORDER, subplaced))
 
         for footprint in block_footprints.get(root, []):
-            bbox = FootprintDataTable.bbox_of(footprint.footprint)
+            bbox = FootprintDataTable.bbox_of(footprint.footprint) or (1, 1, 1, 1)
             width = bbox[2] - bbox[0] + FOOTPRINT_BORDER
             height = bbox[3] - bbox[1] + FOOTPRINT_BORDER
             sub_placed.append((footprint.full_path.blocks[-1], width, height, footprint))
@@ -52,9 +52,9 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
         total_area = sum(width * height for _, width, height, _ in sub_placed)
         max_width = math.sqrt(total_area * ASPECT_RATIO)
 
-        y_pos = 0
-        x_max = 0
-        y_max = 0
+        y_pos = 0.0
+        x_max = 0.0
+        y_max = 0.0
         # track the y limits and y position of the prior elements
         x_stack: List[Tuple[float, float, float]] = []  # [(x pos of next, y pos, y limit)]
         elts: Dict[str, Tuple[Union[PlacedBlock, TransformUtil.Path], Tuple[float, float]]] = {}
@@ -76,14 +76,14 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
                 break
 
             if not x_stack:
-                next_x = 0
+                next_x = 0.0
             else:
                 next_x = x_stack[-1][0]
 
             if isinstance(entry, PlacedBlock):  # assumed (0, 0) at top left
                 elts[name] = (entry, (next_x, next_y))
             elif isinstance(entry, NetBlock):  # account for footprint origin
-                bbox = FootprintDataTable.bbox_of(entry.footprint)
+                bbox = FootprintDataTable.bbox_of(entry.footprint) or (0, 0, 0, 0)
                 elts[name] = (entry.full_path, (next_x - bbox[0], next_y - bbox[1]))
             x_stack.append((next_x + width, next_y, next_y + height))
             x_max = max(x_max, next_x + width)
@@ -92,6 +92,21 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
             elts=elts, width=x_max, height=y_max
         )
     return arrange_hierarchy(())
+
+
+def flatten_packed_block(block: PlacedBlock) -> Dict[TransformUtil.Path, Tuple[float, float]]:
+    """Flatten a packed_block to a dict of individual components."""
+    flattened: Dict[TransformUtil.Path, Tuple[float, float]] = {}
+    def walk_group(block: PlacedBlock, x_pos: float, y_pos: float) -> None:
+        for _, (elt, (elt_x, elt_y)) in block.elts.items():
+            if isinstance(elt, PlacedBlock):
+                walk_group(elt, x_pos + elt_x, y_pos + elt_y)
+            elif isinstance(elt, TransformUtil.Path):
+                flattened[elt] = (x_pos + elt_x, y_pos + elt_y)
+            else:
+                raise TypeError
+    walk_group(block, 0, 0)
+    return flattened
 
 
 class SvgPcbGeneratedBlock(NamedTuple):
@@ -167,33 +182,23 @@ class SvgPcbBackend(BaseBackend):
         netlist = NetlistTransform(design).run()
         other_blocks = filter_blocks_by_pathname(netlist.blocks, svgpcb_block_prefixes)
 
+        pos_dict = flatten_packed_block(arrange_netlist(netlist))
+
         svgpcb_block_instantiations = [
             f"const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.path)} = {block.fn_name}(pt(0, 0))"
             for block in svgpcb_blocks
         ]
 
-        x_pos = 0
-        y_pos = 0
-
         # note, dimensions in inches
         other_block_instantiations = []
         for block in other_blocks:
-            block_bbox = FootprintDataTable.bbox_of(block.footprint)
-
-            if block_bbox is not None:
-                x_pos += -block_bbox[0] / 25.4
-
+            x_pos, y_pos = pos_dict.get(block.full_path, (0, 0))
             block_code = f"""\
 const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(block.footprint)}, {{
   translate: pt({x_pos:.3f}, {y_pos:.3f}), rotate: 0,
   id: '{SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)}'
 }})"""
             other_block_instantiations.append(block_code)
-
-            if block_bbox is not None:
-                x_pos += block_bbox[2] / 25.4
-
-            x_pos += 0.1  # boundary
 
         return SvgPcbCompilerResult(
             [block.svgpcb_code for block in svgpcb_blocks],
