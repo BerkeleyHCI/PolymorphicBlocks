@@ -457,7 +457,7 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, IoControllerVin, Rp2
     super().generate()
 
     self.footprint(
-      'U', 'Seeed Studio XIAO Series Library:XIAO-Generic-Hybrid-14P-2.54-21X17.8MM',
+      'U', 'Seeed Studio XIAO Series Library:XIAO-RP2040-SMD',
       self._make_pinning(),
       mfr='', part='XIAO RP2040',
       datasheet='https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html'
