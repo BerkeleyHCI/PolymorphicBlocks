@@ -170,6 +170,15 @@
       14.4
     ]
   },
+  "edg:Lcd_Er_Tft1_28_3_Outline": {
+    "area": 154.24,
+    "bbox": [
+      -4.75,
+      21.25,
+      3.25,
+      40.53
+    ]
+  },
   "edg:Lcd_Qt096t_if09_Outline": {
     "area": 688.844,
     "bbox": [
@@ -121796,49 +121805,175 @@
       19.05
     ]
   },
-  "Seeed Studio XIAO Series Library:XIAO-ESP32C3-14P-2.54-21X17.8MM": {
-    "area": 399.2287418,
+  "Seeed Studio XIAO Series Library:XIAO-Add-On": {
+    "area": 372.5799,
     "bbox": [
-      -8.9,
-      -11.92403,
-      8.9,
-      10.504551
+      -8.89,
+      -10.541,
+      8.89,
+      10.414
     ]
   },
-  "Seeed Studio XIAO Series Library:XIAO-Generic-Hybrid-14P-2.54-21X17.8MM": {
-    "area": 399.2287418,
+  "Seeed Studio XIAO Series Library:XIAO-ESP32C3-DIP": {
+    "area": 399.4277,
     "bbox": [
-      -8.9,
-      -11.92403,
-      8.9,
-      10.504551
+      -9.01,
+      -12.051,
+      8.77,
+      10.414
     ]
   },
-  "Seeed Studio XIAO Series Library:XIAO-Generic-Thruhole-14P-2.54-21X17.8MM": {
-    "area": 399.2287418,
+  "Seeed Studio XIAO Series Library:XIAO-ESP32C3-SMD": {
+    "area": 399.4277,
     "bbox": [
-      -8.9,
-      -11.92403,
-      8.9,
-      10.504551
+      -8.835,
+      -12.007,
+      8.945,
+      10.458
     ]
   },
-  "Seeed Studio XIAO Series Library:XIAO-nRF52840-Sense-14P-2.54-21X17.8MM": {
-    "area": 399.2287418,
+  "Seeed Studio XIAO Series Library:XIAO-ESP32C6-DIP": {
+    "area": 399.4277,
     "bbox": [
-      -8.9,
-      -11.92403,
-      8.9,
-      10.504551
+      -8.935,
+      -12.051,
+      8.845,
+      10.414
     ]
   },
-  "Seeed Studio XIAO Series Library:XIAO-SAMD21-RP2040-14P-2.54-21X17.8MM (Seeeduino XIAO)": {
-    "area": 399.2287418,
+  "Seeed Studio XIAO Series Library:XIAO-ESP32C6-SMD": {
+    "area": 399.4277,
     "bbox": [
-      -8.9,
-      -11.92403,
-      8.9,
-      10.504551
+      -9.1166,
+      -12.0255,
+      8.6634,
+      10.4395
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-ESP32S3-DIP": {
+    "area": 399.4277,
+    "bbox": [
+      -8.89,
+      -12.051,
+      8.89,
+      10.414
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-ESP32S3-SMD": {
+    "area": 399.4277,
+    "bbox": [
+      -8.896364,
+      -12.0,
+      8.883636,
+      10.465
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-MG24-DIP": {
+    "area": 409.02911336000005,
+    "bbox": [
+      -10.414,
+      -8.89,
+      12.591012,
+      8.89
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-MG24-SMD": {
+    "area": 409.08245336000004,
+    "bbox": [
+      -10.414,
+      -8.89,
+      12.594012,
+      8.89
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-nRF52840-DIP": {
+    "area": 399.4277,
+    "bbox": [
+      -8.89,
+      -12.051,
+      8.89,
+      10.414
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-nRF52840-SMD": {
+    "area": 399.4277,
+    "bbox": [
+      -8.945,
+      -12.047,
+      8.835,
+      10.418
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-RA4M1-DIP": {
+    "area": 409.08245336000004,
+    "bbox": [
+      -8.890994,
+      -12.594012,
+      8.889006,
+      10.414
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-RA4M1-SMD": {
+    "area": 409.28690799628805,
+    "bbox": [
+      -8.812512,
+      -12.599024,
+      8.9725,
+      10.414
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-RP2040-DIP": {
+    "area": 397.64970000000005,
+    "bbox": [
+      -8.89,
+      -11.951,
+      8.89,
+      10.414
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-RP2040-SMD": {
+    "area": 397.6497,
+    "bbox": [
+      -8.835,
+      -11.947,
+      8.945,
+      10.418
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-RP2350-DIP": {
+    "area": 409.02911336000005,
+    "bbox": [
+      -8.890994,
+      -12.527512,
+      8.889006,
+      10.4775
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-RP2350-SMD": {
+    "area": 409.08245336000004,
+    "bbox": [
+      -8.8075,
+      -12.594012,
+      8.9725,
+      10.414
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-SAMD21-DIP": {
+    "area": 399.4277,
+    "bbox": [
+      -8.99,
+      -11.9885,
+      8.79,
+      10.4765
+    ]
+  },
+  "Seeed Studio XIAO Series Library:XIAO-SAMD21-SMD": {
+    "area": 399.42769999999996,
+    "bbox": [
+      0.001,
+      -22.5473,
+      17.781,
+      -0.0823
     ]
   }
 }

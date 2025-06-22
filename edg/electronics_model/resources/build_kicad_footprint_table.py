@@ -8,14 +8,14 @@ import sexpdata  # type: ignore
 from pydantic import RootModel, BaseModel
 
 KICAD_FP_DIRECTORIES = [
-    "C:/Program Files/KiCad/8.0/share/kicad/footprints",
+    # "C:/Program Files/KiCad/8.0/share/kicad/footprints",
 
     # for net-weaver-compiler
-    # os.path.join(os.path.dirname(__file__), "..", "..", "..", "examples"),
-    # os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "footprints", "kicad-footprints"),
-    # os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "footprints", "kiswitch", "library", "footprints"),
-    # # note, requires Seeed Studio XIAO Series Library folder to be renamed w/ .pretty extension
-    # os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "footprints", "OPL_Kicad_Library"),
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "examples"),
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "footprints", "kicad-footprints"),
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "footprints", "kiswitch", "library", "footprints"),
+    # note, requires Seeed Studio XIAO Series Library folder to be renamed w/ .pretty extension
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "footprints", "OPL_Kicad_Library"),
 ]
 OUTPUT_FILE = "kicad_footprints.json"
 
