@@ -20,12 +20,30 @@ class PlacedBlock(NamedTuple):
 
 def arrange_netlist(netlist: Netlist) -> PlacedBlock:
     # create list of blocks by path
-    block_subblocks: Dict[TransformUtil.Path, Set[str]] = {}
-    block_footprints: Dict[TransformUtil.Path, List[NetBlock]] = {}
+    block_subblocks: Dict[Tuple[str, ...], Set[str]] = {}
+    block_footprints: Dict[Tuple[str, ...], List[NetBlock]] = {}
+    for block in netlist.blocks:
+        containing_path = block.full_path.blocks[:-1]
+        block_footprints.setdefault(containing_path, []).append(block)
+        for i in range(len(containing_path) - 1):
+            block_subblocks.setdefault(tuple(containing_path[:i]), set()).add(containing_path[i])
 
-    def arrange_hierarchy(root: TransformUtil.Path) -> PlacedBlock:
-        pass
+    def arrange_hierarchy(root: Tuple[str, ...]) -> PlacedBlock:
+        sub_placed: List[Tuple[float, Union[PlacedBlock, str]]] = []  # (area, PlacedBlock or footprint name)
+        for subblock in block_subblocks.get(root, set()):
+            subplaced = arrange_hierarchy(root + (subblock,))
+            sub_placed.append((subplaced.width * subplaced.height, subplaced))
 
+        for footprint in block_footprints.get(root, []):
+            # bbox = FootprintDataTable.bbox_of(footprint.footprint)
+            area = FootprintDataTable.area_of(footprint.footprint)
+            # bbox[2] - bbox[0], bbox[3] - bbox[1]
+            sub_placed.append((area, footprint.full_path.blocks[-1]))
+            
+        print(sub_placed)
+
+    return arrange_hierarchy(())
+    print(block_footprints[()])
 
 
 
