@@ -1,6 +1,6 @@
 import importlib
 import inspect
-from typing import List, Tuple, NamedTuple, Dict, Union
+from typing import List, Tuple, NamedTuple, Dict, Union, Set
 
 from .. import edgir
 from .KicadFootprintData import FootprintDataTable
@@ -20,6 +20,8 @@ class PlacedBlock(NamedTuple):
 
 def arrange_netlist(netlist: Netlist) -> PlacedBlock:
     # create list of blocks by path
+    block_subblocks: Dict[TransformUtil.Path, Set[str]] = {}
+    block_footprints: Dict[TransformUtil.Path, List[NetBlock]] = {}
 
     def arrange_hierarchy(root: TransformUtil.Path) -> PlacedBlock:
         pass
