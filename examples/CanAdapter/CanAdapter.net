@@ -10,7 +10,6 @@
   (property (name "edg_refdes") (value "J1"))
   (property (name "edg_part") (value "COM-15111 (Sparkfun)"))
   (property (name "edg_value") (value "COM-15111"))
-
   (sheetpath (names "/usb/") (tstamps "/02aa014b/"))
   (tstamps "042701af"))
 (comp (ref "R1")
@@ -23,7 +22,6 @@
   (property (name "edg_refdes") (value "R1"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "5.1k, 1%, 0.1 W"))
-
   (sheetpath (names "/usb/cc_pull/") (tstamps "/02aa014b/0b4c02e3/"))
   (tstamps "022300f8"))
 (comp (ref "R2")
@@ -36,7 +34,6 @@
   (property (name "edg_refdes") (value "R2"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "5.1k, 1%, 0.1 W"))
-
   (sheetpath (names "/usb/cc_pull/") (tstamps "/02aa014b/0b4c02e3/"))
   (tstamps "022400f9"))
 (comp (ref "U1")
@@ -49,7 +46,6 @@
   (property (name "edg_refdes") (value "U1"))
   (property (name "edg_part") (value "AP2204K-3.3 (Diodes Incorporated)"))
   (property (name "edg_value") (value "AP2204K-3.3"))
-
   (sheetpath (names "/usb_reg/") (tstamps "/0bd902e8/"))
   (tstamps "013700cd"))
 (comp (ref "C1")
@@ -62,7 +58,6 @@
   (property (name "edg_refdes") (value "C1"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1uF"))
-
   (sheetpath (names "/usb_reg/") (tstamps "/0bd902e8/"))
   (tstamps "0879026b"))
 (comp (ref "C2")
@@ -75,7 +70,6 @@
   (property (name "edg_refdes") (value "C2"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "2.2uF"))
-
   (sheetpath (names "/usb_reg/") (tstamps "/0bd902e8/"))
   (tstamps "0be902ec"))
 (comp (ref "J2")
@@ -88,7 +82,6 @@
   (property (name "edg_refdes") (value "J2"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value ""))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "02ae014f"))
 (comp (ref "U2")
@@ -101,7 +94,6 @@
   (property (name "edg_refdes") (value "U2"))
   (property (name "edg_part") (value "LPC1549JBD48 (NXP)"))
   (property (name "edg_value") (value "LPC1549JBD48"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "013700cd"))
 (comp (ref "R3")
@@ -114,7 +106,6 @@
   (property (name "edg_refdes") (value "R3"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/mcu/swd_pull/") (tstamps "/02850146/0f77036b/"))
   (tstamps "068d0227"))
 (comp (ref "R4")
@@ -127,7 +118,6 @@
   (property (name "edg_refdes") (value "R4"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/mcu/swd_pull/") (tstamps "/02850146/0f77036b/"))
   (tstamps "068c0225"))
 (comp (ref "C3")
@@ -140,7 +130,6 @@
   (property (name "edg_refdes") (value "C3"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168703d5"))
 (comp (ref "C4")
@@ -153,7 +142,6 @@
   (property (name "edg_refdes") (value "C4"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168903d6"))
 (comp (ref "C5")
@@ -166,7 +154,6 @@
   (property (name "edg_refdes") (value "C5"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168b03d7"))
 (comp (ref "C6")
@@ -179,7 +166,6 @@
   (property (name "edg_refdes") (value "C6"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168d03d8"))
 (comp (ref "C7")
@@ -192,7 +178,6 @@
   (property (name "edg_refdes") (value "C7"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168f03d9"))
 (comp (ref "C8")
@@ -205,7 +190,6 @@
   (property (name "edg_refdes") (value "C8"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "169103da"))
 (comp (ref "C9")
@@ -218,7 +202,6 @@
   (property (name "edg_refdes") (value "C9"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "0ec70341"))
 (comp (ref "C10")
@@ -231,7 +214,6 @@
   (property (name "edg_refdes") (value "C10"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "1ae90436"))
 (comp (ref "C11")
@@ -244,7 +226,6 @@
   (property (name "edg_refdes") (value "C11"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10uF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "1aeb0437"))
 (comp (ref "C12")
@@ -257,7 +238,6 @@
   (property (name "edg_refdes") (value "C12"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "1aac042f"))
 (comp (ref "C13")
@@ -270,7 +250,6 @@
   (property (name "edg_refdes") (value "C13"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "1aae0430"))
 (comp (ref "C14")
@@ -283,7 +262,6 @@
   (property (name "edg_refdes") (value "C14"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10uF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "1ab00431"))
 (comp (ref "X1")
@@ -296,7 +274,6 @@
   (property (name "edg_refdes") (value "X1"))
   (property (name "edg_part") (value "X322512MSB4SI (Yangxing Tech)"))
   (property (name "edg_value") (value "12MHz SMD Crystal Resonator 20pF ±10ppm ±30ppm -40℃~+85℃ SMD3225-4P Crystals ROHS"))
-
   (sheetpath (names "/mcu/crystal/") (tstamps "/02850146/0c1b0303/"))
   (tstamps "0b4e02cd"))
 (comp (ref "C15")
@@ -309,7 +286,6 @@
   (property (name "edg_refdes") (value "C15"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "22pF"))
-
   (sheetpath (names "/mcu/crystal/") (tstamps "/02850146/0c1b0303/"))
   (tstamps "05e701f5"))
 (comp (ref "C16")
@@ -322,7 +298,6 @@
   (property (name "edg_refdes") (value "C16"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "22pF"))
-
   (sheetpath (names "/mcu/crystal/") (tstamps "/02850146/0c1b0303/"))
   (tstamps "05e801f6"))
 (comp (ref "U3")
@@ -335,7 +310,6 @@
   (property (name "edg_refdes") (value "U3"))
   (property (name "edg_part") (value "TPD2E009 (Texas Instruments)"))
   (property (name "edg_value") (value "TPD2E009"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "0bcb02e6"))
 (comp (ref "U4")
@@ -348,7 +322,6 @@
   (property (name "edg_refdes") (value "U4"))
   (property (name "edg_part") (value "ISO1050DUB (Texas Instruments)"))
   (property (name "edg_value") (value "ISO1050DUB"))
-
   (sheetpath (names "/xcvr/") (tstamps "/046b01c4/"))
   (tstamps "013700cd"))
 (comp (ref "C17")
@@ -361,7 +334,6 @@
   (property (name "edg_refdes") (value "C17"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/xcvr/") (tstamps "/046b01c4/"))
   (tstamps "125a03a2"))
 (comp (ref "C18")
@@ -374,7 +346,6 @@
   (property (name "edg_refdes") (value "C18"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/xcvr/") (tstamps "/046b01c4/"))
   (tstamps "0aff02c6"))
 (comp (ref "SW1")
@@ -387,7 +358,6 @@
   (property (name "edg_refdes") (value "SW1"))
   (property (name "edg_part") (value "EVQ-P7C01P"))
   (property (name "edg_value") (value "EVQ-P7C01P"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "092e0294"))
 (comp (ref "SW2")
@@ -400,7 +370,6 @@
   (property (name "edg_refdes") (value "SW2"))
   (property (name "edg_part") (value "EVQ-P7C01P"))
   (property (name "edg_value") (value "EVQ-P7C01P"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "08e0027c"))
 (comp (ref "J3")
@@ -413,7 +382,6 @@
   (property (name "edg_refdes") (value "J3"))
   (property (name "edg_part") (value "FH12-8S-0.5SH (Hirose)"))
   (property (name "edg_value") (value "FH12-8S-0.5SH"))
-
   (sheetpath (names "/lcd/") (tstamps "/02710134/"))
   (tstamps "08950271"))
 (comp (ref "R5")
@@ -426,7 +394,6 @@
   (property (name "edg_refdes") (value "R5"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100, 1%, 0.1 W"))
-
   (sheetpath (names "/lcd/") (tstamps "/02710134/"))
   (tstamps "0b5c02df"))
 (comp (ref "C19")
@@ -439,7 +406,6 @@
   (property (name "edg_refdes") (value "C19"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1uF"))
-
   (sheetpath (names "/lcd/") (tstamps "/02710134/"))
   (tstamps "0b6402d2"))
 (comp (ref "D1")
@@ -452,7 +418,6 @@
   (property (name "edg_refdes") (value "D1"))
   (property (name "edg_part") (value "EAST1616RGBB2 (Everlight Electronics Co Ltd)"))
   (property (name "edg_value") (value "EAST1616RGBB2"))
-
   (sheetpath (names "/rgb_usb/") (tstamps "/0b9c02e5/"))
   (tstamps "0b4e02cd"))
 (comp (ref "R6")
@@ -465,7 +430,6 @@
   (property (name "edg_refdes") (value "R6"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb_usb/") (tstamps "/0b9c02e5/"))
   (tstamps "0b8602e5"))
 (comp (ref "R7")
@@ -478,7 +442,6 @@
   (property (name "edg_refdes") (value "R7"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb_usb/") (tstamps "/0b9c02e5/"))
   (tstamps "128e03bb"))
 (comp (ref "R8")
@@ -491,7 +454,6 @@
   (property (name "edg_refdes") (value "R8"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb_usb/") (tstamps "/0b9c02e5/"))
   (tstamps "0ed20352"))
 (comp (ref "D2")
@@ -504,7 +466,6 @@
   (property (name "edg_refdes") (value "D2"))
   (property (name "edg_part") (value "EAST1616RGBB2 (Everlight Electronics Co Ltd)"))
   (property (name "edg_value") (value "EAST1616RGBB2"))
-
   (sheetpath (names "/rgb_can/") (tstamps "/0b4e02cd/"))
   (tstamps "0b4e02cd"))
 (comp (ref "R9")
@@ -517,7 +478,6 @@
   (property (name "edg_refdes") (value "R9"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb_can/") (tstamps "/0b4e02cd/"))
   (tstamps "0b8602e5"))
 (comp (ref "R10")
@@ -530,7 +490,6 @@
   (property (name "edg_refdes") (value "R10"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb_can/") (tstamps "/0b4e02cd/"))
   (tstamps "128e03bb"))
 (comp (ref "R11")
@@ -543,7 +502,6 @@
   (property (name "edg_refdes") (value "R11"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb_can/") (tstamps "/0b4e02cd/"))
   (tstamps "0ed20352"))
 (comp (ref "J4")
@@ -556,7 +514,6 @@
   (property (name "edg_refdes") (value "J4"))
   (property (name "edg_part") (value "5023520500 (Molex)"))
   (property (name "edg_value") (value "5023520500"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "025c0133"))
 (comp (ref "U5")
@@ -569,7 +526,6 @@
   (property (name "edg_refdes") (value "U5"))
   (property (name "edg_part") (value "AP2204K-5.0 (Diodes Incorporated)"))
   (property (name "edg_value") (value "AP2204K-5.0"))
-
   (sheetpath (names "/can_reg/") (tstamps "/0b2b02d0/"))
   (tstamps "013700cd"))
 (comp (ref "C20")
@@ -582,7 +538,6 @@
   (property (name "edg_refdes") (value "C20"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1uF"))
-
   (sheetpath (names "/can_reg/") (tstamps "/0b2b02d0/"))
   (tstamps "0879026b"))
 (comp (ref "C21")
@@ -595,7 +550,6 @@
   (property (name "edg_refdes") (value "C21"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "2.2uF"))
-
   (sheetpath (names "/can_reg/") (tstamps "/0b2b02d0/"))
   (tstamps "0be902ec"))
 (comp (ref "D3")
@@ -608,7 +562,6 @@
   (property (name "edg_refdes") (value "D3"))
   (property (name "edg_part") (value "LED"))
   (property (name "edg_value") (value "LED"))
-
   (sheetpath (names "/led_can/") (tstamps "/0b2202c7/"))
   (tstamps "0b4e02cd"))
 (comp (ref "R12")
@@ -621,7 +574,6 @@
   (property (name "edg_refdes") (value "R12"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/led_can/") (tstamps "/0b2202c7/"))
   (tstamps "0296014b"))
 (comp (ref "U6")
@@ -634,7 +586,6 @@
   (property (name "edg_refdes") (value "U6"))
   (property (name "edg_part") (value "PESD1CAN,215"))
   (property (name "edg_value") (value "PESD1CAN,215"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "0b1d02ce")))
 (nets

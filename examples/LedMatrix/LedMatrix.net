@@ -10,7 +10,6 @@
   (property (name "edg_refdes") (value "H1"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value ""))
-
   (sheetpath (names "/jlc_th/") (tstamps "/08970275/"))
   (tstamps "0260010e"))
 (comp (ref "H2")
@@ -23,7 +22,6 @@
   (property (name "edg_refdes") (value "H2"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value ""))
-
   (sheetpath (names "/jlc_th/") (tstamps "/08970275/"))
   (tstamps "0261010f"))
 (comp (ref "H3")
@@ -36,7 +34,6 @@
   (property (name "edg_refdes") (value "H3"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value ""))
-
   (sheetpath (names "/jlc_th/") (tstamps "/08970275/"))
   (tstamps "02620110"))
 (comp (ref "J1")
@@ -49,7 +46,6 @@
   (property (name "edg_refdes") (value "J1"))
   (property (name "edg_part") (value "COM-15111 (Sparkfun)"))
   (property (name "edg_value") (value "COM-15111"))
-
   (sheetpath (names "/usb/") (tstamps "/02aa014b/"))
   (tstamps "042701af"))
 (comp (ref "R1")
@@ -62,7 +58,6 @@
   (property (name "edg_refdes") (value "R1"))
   (property (name "edg_part") (value "0603WAF5101T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 5.1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/usb/cc_pull/") (tstamps "/02aa014b/0b4c02e3/"))
   (tstamps "022300f8"))
 (comp (ref "R2")
@@ -75,7 +70,6 @@
   (property (name "edg_refdes") (value "R2"))
   (property (name "edg_part") (value "0603WAF5101T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 5.1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/usb/cc_pull/") (tstamps "/02aa014b/0b4c02e3/"))
   (tstamps "022400f9"))
 (comp (ref "TP1")
@@ -88,7 +82,6 @@
   (property (name "edg_refdes") (value "TP1"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "vusb"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "0c2d0304"))
 (comp (ref "TP2")
@@ -101,7 +94,6 @@
   (property (name "edg_refdes") (value "TP2"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "gnd"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "08df027d"))
 (comp (ref "U1")
@@ -114,7 +106,6 @@
   (property (name "edg_refdes") (value "U1"))
   (property (name "edg_part") (value "LDL1117S33R (STMicroelectronics)"))
   (property (name "edg_value") (value "LDL1117S33R"))
-
   (sheetpath (names "/reg_3v3/") (tstamps "/0aba027a/"))
   (tstamps "013700cd"))
 (comp (ref "C1")
@@ -127,7 +118,6 @@
   (property (name "edg_refdes") (value "C1"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/reg_3v3/") (tstamps "/0aba027a/"))
   (tstamps "0879026b"))
 (comp (ref "C2")
@@ -140,7 +130,6 @@
   (property (name "edg_refdes") (value "C2"))
   (property (name "edg_part") (value "CL21A475KAQNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "25V 4.7uF X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/reg_3v3/") (tstamps "/0aba027a/"))
   (tstamps "0be902ec"))
 (comp (ref "TP3")
@@ -153,7 +142,6 @@
   (property (name "edg_refdes") (value "TP3"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "v3v3"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "08220220"))
 (comp (ref "D1")
@@ -166,7 +154,6 @@
   (property (name "edg_refdes") (value "D1"))
   (property (name "edg_part") (value "BZT52B3V6S (SMC(Sangdest Microelectronicstronic (Nanjing)))"))
   (property (name "edg_value") (value "5μA@1V 90Ω Single 3.53V~3.67V 200mW 3.6V SOD-323 Zener Diodes ROHS"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "0eb80301"))
 (comp (ref "U2")
@@ -179,7 +166,6 @@
   (property (name "edg_refdes") (value "U2"))
   (property (name "edg_part") (value "ESP32-C3-WROOM-02 (Espressif Systems)"))
   (property (name "edg_value") (value "ESP32-C3-WROOM-02"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "013700cd"))
 (comp (ref "C3")
@@ -192,7 +178,6 @@
   (property (name "edg_refdes") (value "C3"))
   (property (name "edg_part") (value "CL21A106KAYNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "0e590300"))
 (comp (ref "C4")
@@ -205,7 +190,6 @@
   (property (name "edg_refdes") (value "C4"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "0e5a0301"))
 (comp (ref "J2")
@@ -218,7 +202,6 @@
   (property (name "edg_refdes") (value "J2"))
   (property (name "edg_part") (value "PinHeader2.54 1x4 (Generic)"))
   (property (name "edg_value") (value "PinHeader2.54 1x4"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "045f01b9"))
 (comp (ref "SW1")
@@ -231,7 +214,6 @@
   (property (name "edg_refdes") (value "SW1"))
   (property (name "edg_part") (value "5.1mm switch"))
   (property (name "edg_value") (value "5.1mm switch"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "042b01b5"))
 (comp (ref "R3")
@@ -244,7 +226,6 @@
   (property (name "edg_refdes") (value "R3"))
   (property (name "edg_part") (value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 10kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/mcu/en_pull/") (tstamps "/02850146/0b9c02f0/"))
   (tstamps "00730073"))
 (comp (ref "C5")
@@ -257,7 +238,6 @@
   (property (name "edg_refdes") (value "C5"))
   (property (name "edg_part") (value "CL10A105KB8NNNC (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/en_pull/") (tstamps "/02850146/0b9c02f0/"))
   (tstamps "00640064"))
 (comp (ref "SW2")
@@ -270,7 +250,6 @@
   (property (name "edg_refdes") (value "SW2"))
   (property (name "edg_part") (value "5.1mm switch"))
   (property (name "edg_value") (value "5.1mm switch"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "027b011c"))
 (comp (ref "R4")
@@ -283,7 +262,6 @@
   (property (name "edg_refdes") (value "R4"))
   (property (name "edg_part") (value "0603WAF8200T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 820Ω 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "08450233"))
 (comp (ref "D2")
@@ -296,7 +274,6 @@
   (property (name "edg_refdes") (value "D2"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0ce402ad"))
 (comp (ref "D3")
@@ -309,7 +286,6 @@
   (property (name "edg_refdes") (value "D3"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0ce802ae"))
 (comp (ref "D4")
@@ -322,7 +298,6 @@
   (property (name "edg_refdes") (value "D4"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cec02af"))
 (comp (ref "D5")
@@ -335,7 +310,6 @@
   (property (name "edg_refdes") (value "D5"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf002b0"))
 (comp (ref "D6")
@@ -348,7 +322,6 @@
   (property (name "edg_refdes") (value "D6"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf402b1"))
 (comp (ref "D7")
@@ -361,7 +334,6 @@
   (property (name "edg_refdes") (value "D7"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf802b2"))
 (comp (ref "R5")
@@ -374,7 +346,6 @@
   (property (name "edg_refdes") (value "R5"))
   (property (name "edg_part") (value "0603WAF8200T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 820Ω 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "08470234"))
 (comp (ref "D8")
@@ -387,7 +358,6 @@
   (property (name "edg_refdes") (value "D8"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0ce602ae"))
 (comp (ref "D9")
@@ -400,7 +370,6 @@
   (property (name "edg_refdes") (value "D9"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cea02af"))
 (comp (ref "D10")
@@ -413,7 +382,6 @@
   (property (name "edg_refdes") (value "D10"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cee02b0"))
 (comp (ref "D11")
@@ -426,7 +394,6 @@
   (property (name "edg_refdes") (value "D11"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf202b1"))
 (comp (ref "D12")
@@ -439,7 +406,6 @@
   (property (name "edg_refdes") (value "D12"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf602b2"))
 (comp (ref "D13")
@@ -452,7 +418,6 @@
   (property (name "edg_refdes") (value "D13"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cfa02b3"))
 (comp (ref "R6")
@@ -465,7 +430,6 @@
   (property (name "edg_refdes") (value "R6"))
   (property (name "edg_part") (value "0603WAF8200T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 820Ω 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "08490235"))
 (comp (ref "D14")
@@ -478,7 +442,6 @@
   (property (name "edg_refdes") (value "D14"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0ce802af"))
 (comp (ref "D15")
@@ -491,7 +454,6 @@
   (property (name "edg_refdes") (value "D15"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cec02b0"))
 (comp (ref "D16")
@@ -504,7 +466,6 @@
   (property (name "edg_refdes") (value "D16"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf002b1"))
 (comp (ref "D17")
@@ -517,7 +478,6 @@
   (property (name "edg_refdes") (value "D17"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf402b2"))
 (comp (ref "D18")
@@ -530,7 +490,6 @@
   (property (name "edg_refdes") (value "D18"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf802b3"))
 (comp (ref "D19")
@@ -543,7 +502,6 @@
   (property (name "edg_refdes") (value "D19"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cfc02b4"))
 (comp (ref "R7")
@@ -556,7 +514,6 @@
   (property (name "edg_refdes") (value "R7"))
   (property (name "edg_part") (value "0603WAF8200T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 820Ω 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "084b0236"))
 (comp (ref "D20")
@@ -569,7 +526,6 @@
   (property (name "edg_refdes") (value "D20"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cea02b0"))
 (comp (ref "D21")
@@ -582,7 +538,6 @@
   (property (name "edg_refdes") (value "D21"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cee02b1"))
 (comp (ref "D22")
@@ -595,7 +550,6 @@
   (property (name "edg_refdes") (value "D22"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf202b2"))
 (comp (ref "D23")
@@ -608,7 +562,6 @@
   (property (name "edg_refdes") (value "D23"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf602b3"))
 (comp (ref "D24")
@@ -621,7 +574,6 @@
   (property (name "edg_refdes") (value "D24"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cfa02b4"))
 (comp (ref "D25")
@@ -634,7 +586,6 @@
   (property (name "edg_refdes") (value "D25"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cfe02b5"))
 (comp (ref "R8")
@@ -647,7 +598,6 @@
   (property (name "edg_refdes") (value "R8"))
   (property (name "edg_part") (value "0603WAF8200T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 820Ω 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "084d0237"))
 (comp (ref "D26")
@@ -660,7 +610,6 @@
   (property (name "edg_refdes") (value "D26"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cec02b1"))
 (comp (ref "D27")
@@ -673,7 +622,6 @@
   (property (name "edg_refdes") (value "D27"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf002b2"))
 (comp (ref "D28")
@@ -686,7 +634,6 @@
   (property (name "edg_refdes") (value "D28"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf402b3"))
 (comp (ref "D29")
@@ -699,7 +646,6 @@
   (property (name "edg_refdes") (value "D29"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cf802b4"))
 (comp (ref "D30")
@@ -712,7 +658,6 @@
   (property (name "edg_refdes") (value "D30"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0cfc02b5"))
 (comp (ref "D31")
@@ -725,7 +670,6 @@
   (property (name "edg_refdes") (value "D31"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/matrix/") (tstamps "/08e90296/"))
   (tstamps "0d0002b6")))
 (nets

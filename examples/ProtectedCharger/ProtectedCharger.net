@@ -10,7 +10,6 @@
   (property (name "edg_refdes") (value "H1"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value ""))
-
   (sheetpath (names "/jlc_th/") (tstamps "/08970275/"))
   (tstamps "0260010e"))
 (comp (ref "H2")
@@ -23,7 +22,6 @@
   (property (name "edg_refdes") (value "H2"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value ""))
-
   (sheetpath (names "/jlc_th/") (tstamps "/08970275/"))
   (tstamps "0261010f"))
 (comp (ref "H3")
@@ -36,7 +34,6 @@
   (property (name "edg_refdes") (value "H3"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value ""))
-
   (sheetpath (names "/jlc_th/") (tstamps "/08970275/"))
   (tstamps "02620110"))
 (comp (ref "J1")
@@ -49,7 +46,6 @@
   (property (name "edg_refdes") (value "J1"))
   (property (name "edg_part") (value "COM-15111 (Sparkfun)"))
   (property (name "edg_value") (value "COM-15111"))
-
   (sheetpath (names "/usb/") (tstamps "/02aa014b/"))
   (tstamps "042701af"))
 (comp (ref "R1")
@@ -62,7 +58,6 @@
   (property (name "edg_refdes") (value "R1"))
   (property (name "edg_part") (value "0603WAF5101T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 5.1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/usb/cc_pull/") (tstamps "/02aa014b/0b4c02e3/"))
   (tstamps "022300f8"))
 (comp (ref "R2")
@@ -75,7 +70,6 @@
   (property (name "edg_refdes") (value "R2"))
   (property (name "edg_part") (value "0603WAF5101T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 5.1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/usb/cc_pull/") (tstamps "/02aa014b/0b4c02e3/"))
   (tstamps "022400f9"))
 (comp (ref "J2")
@@ -88,7 +82,6 @@
   (property (name "edg_refdes") (value "J2"))
   (property (name "edg_part") (value "S2B-PH-K (JST)"))
   (property (name "edg_value") (value "S2B-PH-K"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "040b01ac"))
 (comp (ref "TP1")
@@ -101,7 +94,6 @@
   (property (name "edg_refdes") (value "TP1"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "gnd"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "08df027d"))
 (comp (ref "TP2")
@@ -114,7 +106,6 @@
   (property (name "edg_refdes") (value "TP2"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "_batt_pwr_link"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "015a00e5"))
 (comp (ref "R3")
@@ -127,7 +118,6 @@
   (property (name "edg_refdes") (value "R3"))
   (property (name "edg_part") (value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 100kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/pmos/") (tstamps "/045c01c0/"))
   (tstamps "011700a4"))
 (comp (ref "R4")
@@ -140,7 +130,6 @@
   (property (name "edg_refdes") (value "R4"))
   (property (name "edg_part") (value "0603WAF1003T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 100kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/pmos/") (tstamps "/045c01c0/"))
   (tstamps "011800a5"))
 (comp (ref "Q1")
@@ -153,7 +142,6 @@
   (property (name "edg_refdes") (value "Q1"))
   (property (name "edg_part") (value "AO3401A (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 4A 44mΩ@10V,4.3A 1.4W 1.3V@250μA P Channel SOT-23-3L MOSFETs ROHS"))
-
   (sheetpath (names "/pmos/") (tstamps "/045c01c0/"))
   (tstamps "025b010f"))
 (comp (ref "Q2")
@@ -166,7 +154,6 @@
   (property (name "edg_refdes") (value "Q2"))
   (property (name "edg_part") (value "AO3401A (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 4A 44mΩ@10V,4.3A 1.4W 1.3V@250μA P Channel SOT-23-3L MOSFETs ROHS"))
-
   (sheetpath (names "/pmos/") (tstamps "/045c01c0/"))
   (tstamps "025c0110"))
 (comp (ref "U1")
@@ -179,7 +166,6 @@
   (property (name "edg_refdes") (value "U1"))
   (property (name "edg_part") (value "MCP73831T-2ACI/OT (Microchip Technology)"))
   (property (name "edg_value") (value "MCP73831T-2ACI/OT"))
-
   (sheetpath (names "/charger/") (tstamps "/0b4a02dd/"))
   (tstamps "013700cd"))
 (comp (ref "C1")
@@ -192,7 +178,6 @@
   (property (name "edg_refdes") (value "C1"))
   (property (name "edg_part") (value "CL21A475KAQNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "25V 4.7uF X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/charger/") (tstamps "/0b4a02dd/"))
   (tstamps "0b6402d2"))
 (comp (ref "C2")
@@ -205,7 +190,6 @@
   (property (name "edg_refdes") (value "C2"))
   (property (name "edg_part") (value "CL21A475KAQNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "25V 4.7uF X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/charger/") (tstamps "/0b4a02dd/"))
   (tstamps "0ec70341"))
 (comp (ref "R5")
@@ -218,7 +202,6 @@
   (property (name "edg_refdes") (value "R5"))
   (property (name "edg_part") (value "0603WAF4991T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 4.99kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/charger/") (tstamps "/0b4a02dd/"))
   (tstamps "0f520362"))
 (comp (ref "D1")
@@ -231,7 +214,6 @@
   (property (name "edg_refdes") (value "D1"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/charge_led/") (tstamps "/160703ff/"))
   (tstamps "0b4e02cd"))
 (comp (ref "R6")
@@ -244,7 +226,6 @@
   (property (name "edg_refdes") (value "R6"))
   (property (name "edg_part") (value "0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/charge_led/") (tstamps "/160703ff/"))
   (tstamps "0296014b"))
 (comp (ref "Q3")
@@ -257,7 +238,6 @@
   (property (name "edg_refdes") (value "Q3"))
   (property (name "edg_part") (value "AO3401A (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 4A 44mΩ@10V,4.3A 1.4W 1.3V@250μA P Channel SOT-23-3L MOSFETs ROHS"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "131a03bf"))
 (comp (ref "J3")
@@ -270,7 +250,6 @@
   (property (name "edg_refdes") (value "J3"))
   (property (name "edg_part") (value "S3B-PH-K (JST)"))
   (property (name "edg_value") (value "S3B-PH-K"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "0f9a0373")))
 (nets

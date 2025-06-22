@@ -10,7 +10,6 @@
   (property (name "edg_refdes") (value "U1"))
   (property (name "edg_part") (value "XIAO RP2040"))
   (property (name "edg_value") (value "XIAO RP2040"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "02850146"))
 (comp (ref "SW1")
@@ -23,7 +22,6 @@
   (property (name "edg_refdes") (value "SW1"))
   (property (name "edg_part") (value "PG151101S11 (Kailh)"))
   (property (name "edg_value") (value "PG151101S11"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "09be022f"))
 (comp (ref "D1")
@@ -36,7 +34,6 @@
   (property (name "edg_refdes") (value "D1"))
   (property (name "edg_part") (value "1N5819WS (Guangdong Hottech)"))
   (property (name "edg_value") (value "40V 600mV@1A 1A SOD-323 Schottky Barrier Diodes (SBD) ROHS"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "062601a9"))
 (comp (ref "SW2")
@@ -49,7 +46,6 @@
   (property (name "edg_refdes") (value "SW2"))
   (property (name "edg_part") (value "PG151101S11 (Kailh)"))
   (property (name "edg_value") (value "PG151101S11"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "09c00230"))
 (comp (ref "D2")
@@ -62,7 +58,6 @@
   (property (name "edg_refdes") (value "D2"))
   (property (name "edg_part") (value "1N5819WS (Guangdong Hottech)"))
   (property (name "edg_value") (value "40V 600mV@1A 1A SOD-323 Schottky Barrier Diodes (SBD) ROHS"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "062801aa"))
 (comp (ref "SW3")
@@ -75,7 +70,6 @@
   (property (name "edg_refdes") (value "SW3"))
   (property (name "edg_part") (value "PG151101S11 (Kailh)"))
   (property (name "edg_value") (value "PG151101S11"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "09c20231"))
 (comp (ref "D3")
@@ -88,7 +82,6 @@
   (property (name "edg_refdes") (value "D3"))
   (property (name "edg_part") (value "1N5819WS (Guangdong Hottech)"))
   (property (name "edg_value") (value "40V 600mV@1A 1A SOD-323 Schottky Barrier Diodes (SBD) ROHS"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "062a01ab"))
 (comp (ref "SW4")
@@ -101,7 +94,6 @@
   (property (name "edg_refdes") (value "SW4"))
   (property (name "edg_part") (value "PG151101S11 (Kailh)"))
   (property (name "edg_value") (value "PG151101S11"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "09c20230"))
 (comp (ref "D4")
@@ -114,7 +106,6 @@
   (property (name "edg_refdes") (value "D4"))
   (property (name "edg_part") (value "1N5819WS (Guangdong Hottech)"))
   (property (name "edg_value") (value "40V 600mV@1A 1A SOD-323 Schottky Barrier Diodes (SBD) ROHS"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "062a01aa"))
 (comp (ref "SW5")
@@ -127,7 +118,6 @@
   (property (name "edg_refdes") (value "SW5"))
   (property (name "edg_part") (value "PG151101S11 (Kailh)"))
   (property (name "edg_value") (value "PG151101S11"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "09c40231"))
 (comp (ref "D5")
@@ -140,7 +130,6 @@
   (property (name "edg_refdes") (value "D5"))
   (property (name "edg_part") (value "1N5819WS (Guangdong Hottech)"))
   (property (name "edg_value") (value "40V 600mV@1A 1A SOD-323 Schottky Barrier Diodes (SBD) ROHS"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "062c01ab"))
 (comp (ref "SW6")
@@ -153,7 +142,6 @@
   (property (name "edg_refdes") (value "SW6"))
   (property (name "edg_part") (value "PG151101S11 (Kailh)"))
   (property (name "edg_value") (value "PG151101S11"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "09c60232"))
 (comp (ref "D6")
@@ -166,7 +154,6 @@
   (property (name "edg_refdes") (value "D6"))
   (property (name "edg_part") (value "1N5819WS (Guangdong Hottech)"))
   (property (name "edg_value") (value "40V 600mV@1A 1A SOD-323 Schottky Barrier Diodes (SBD) ROHS"))
-
   (sheetpath (names "/sw/") (tstamps "/015f00eb/"))
   (tstamps "062e01ac")))
 (nets
