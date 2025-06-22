@@ -31,7 +31,7 @@ class PartPlacerTestCase(unittest.TestCase):
         self.assertAlmostEqual(arranged.elts["R2"][1][0], 12.78, places=2)
         self.assertAlmostEqual(arranged.elts["R2"][1][1], 3.19, places=2)
 
-    def test_placement_hier(self):
+    def test_placement_hierarchical(self):
         u1 = NetBlock(
             footprint="Package_QFP:LQFP-48-1EP_7x7mm_P0.5mm_EP3.6x3.6mm", refdes="U1", part="", value="",
             full_path=TransformUtil.Path.empty().append_block('A').append_block("U1"), path=[], class_path=[]
@@ -67,4 +67,3 @@ class PartPlacerTestCase(unittest.TestCase):
         self.assertAlmostEqual(arranged.elts['B'][1][1], 13.3, places=2)
         self.assertAlmostEqual(arranged.elts['B'][0].elts["R3"][1][0], 1.48, places=2)
         self.assertAlmostEqual(arranged.elts['B'][0].elts["R3"][1][1], 0.73, places=2)
-        
