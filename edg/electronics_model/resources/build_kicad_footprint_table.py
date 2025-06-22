@@ -120,7 +120,7 @@ def calculate_bbox(fp_contents: str) -> Optional[Tuple[float, float, float, floa
 
 class FootprintData(BaseModel):
     area: float
-    bbox: List[float]  # [x_min, y_min, x_max, y_max]
+    bbox: Tuple[float, float, float, float]  # [x_min, y_min, x_max, y_max]
 
 
 class FootprintJson(RootModel):  # script relpath imports are weird so this is duplicated here
