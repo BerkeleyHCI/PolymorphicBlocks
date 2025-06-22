@@ -29,7 +29,7 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
     for block in netlist.blocks:
         containing_path = block.full_path.blocks[:-1]
         block_footprints.setdefault(containing_path, []).append(block)
-        for i in range(len(containing_path) - 1):
+        for i in range(len(containing_path)):
             block_subblocks.setdefault(tuple(containing_path[:i]), set()).add(containing_path[i])
 
     def arrange_hierarchy(root: Tuple[str, ...]) -> PlacedBlock:
@@ -69,8 +69,10 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
                     break
                 if x_stack[-1][0] + width > max_width:  # out of X space, advance a row
                     _, _, next_y = x_stack.pop()
+                    continue
                 if next_y + height > x_stack[-1][2]:  # out of Y space, advance a row
                     _, _, next_y = x_stack.pop()
+                    continue
                 break
 
             if not x_stack:
@@ -87,9 +89,8 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
             x_max = max(x_max, next_x + width)
             y_max = max(y_max, next_y + height)
         return PlacedBlock(
-            elts=elts, height=x_max, width=y_max
+            elts=elts, width=x_max, height=y_max
         )
-
     return arrange_hierarchy(())
 
 

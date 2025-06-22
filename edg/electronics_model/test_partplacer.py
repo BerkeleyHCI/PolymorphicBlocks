@@ -30,3 +30,41 @@ class PartPlacerTestCase(unittest.TestCase):
         self.assertAlmostEqual(arranged.elts["R1"][1][1], 0.73, places=2)
         self.assertAlmostEqual(arranged.elts["R2"][1][0], 12.78, places=2)
         self.assertAlmostEqual(arranged.elts["R2"][1][1], 3.19, places=2)
+
+    def test_placement_hier(self):
+        u1 = NetBlock(
+            footprint="Package_QFP:LQFP-48-1EP_7x7mm_P0.5mm_EP3.6x3.6mm", refdes="U1", part="", value="",
+            full_path=TransformUtil.Path.empty().append_block('A').append_block("U1"), path=[], class_path=[]
+        )
+        r1 = NetBlock(
+            footprint="Resistor_SMD:R_0603_1608Metric", refdes="R1", part="", value="",
+            full_path=TransformUtil.Path.empty().append_block('A').append_block("R1"), path=[], class_path=[]
+        )
+        r2 = NetBlock(
+            footprint="Resistor_SMD:R_0603_1608Metric", refdes="R2", part="", value="",
+            full_path=TransformUtil.Path.empty().append_block('A').append_block("R2"), path=[], class_path=[]
+        )
+        r3 = NetBlock(
+            footprint="Resistor_SMD:R_0603_1608Metric", refdes="R3", part="", value="",
+            full_path=TransformUtil.Path.empty().append_block('B').append_block("R3"), path=[], class_path=[]
+        )
+        netlist = Netlist(
+            blocks=[u1, r1, r2, r3],
+            nets=[]
+        )
+        arranged = arrange_netlist(netlist)
+
+        self.assertAlmostEqual(arranged.elts['A'][1][0], 0, places=2)
+        self.assertAlmostEqual(arranged.elts['A'][1][1], 0, places=2)
+        self.assertAlmostEqual(arranged.elts['A'][0].elts["U1"][1][0], 5.15, places=2)
+        self.assertAlmostEqual(arranged.elts['A'][0].elts["U1"][1][1], 5.15, places=2)
+        self.assertAlmostEqual(arranged.elts['A'][0].elts["R1"][1][0], 12.78, places=2)
+        self.assertAlmostEqual(arranged.elts['A'][0].elts["R1"][1][1], 0.73, places=2)
+        self.assertAlmostEqual(arranged.elts['A'][0].elts["R2"][1][0], 12.78, places=2)
+        self.assertAlmostEqual(arranged.elts['A'][0].elts["R2"][1][1], 3.19, places=2)
+
+        self.assertAlmostEqual(arranged.elts['B'][1][0], 0, places=2)
+        self.assertAlmostEqual(arranged.elts['B'][1][1], 13.3, places=2)
+        self.assertAlmostEqual(arranged.elts['B'][0].elts["R3"][1][0], 1.48, places=2)
+        self.assertAlmostEqual(arranged.elts['B'][0].elts["R3"][1][1], 0.73, places=2)
+        
