@@ -10,7 +10,6 @@
   (property (name "edg_refdes") (value "U1"))
   (property (name "edg_part") (value "2460 (Keystone)"))
   (property (name "edg_value") (value "2460"))
-
   (sheetpath (names "/bat/") (tstamps "/025f0138/"))
   (tstamps "0ab40289"))
 (comp (ref "U2")
@@ -23,7 +22,6 @@
   (property (name "edg_refdes") (value "U2"))
   (property (name "edg_part") (value "2460 (Keystone)"))
   (property (name "edg_value") (value "2460"))
-
   (sheetpath (names "/bat/") (tstamps "/025f0138/"))
   (tstamps "0ab6028a"))
 (comp (ref "U3")
@@ -36,7 +34,6 @@
   (property (name "edg_refdes") (value "U3"))
   (property (name "edg_part") (value "2460 (Keystone)"))
   (property (name "edg_value") (value "2460"))
-
   (sheetpath (names "/bat/") (tstamps "/025f0138/"))
   (tstamps "0ab8028b"))
 (comp (ref "U4")
@@ -49,7 +46,6 @@
   (property (name "edg_refdes") (value "U4"))
   (property (name "edg_part") (value "2460 (Keystone)"))
   (property (name "edg_value") (value "2460"))
-
   (sheetpath (names "/bat/") (tstamps "/025f0138/"))
   (tstamps "0aba028c"))
 (comp (ref "U5")
@@ -62,7 +58,6 @@
   (property (name "edg_refdes") (value "U5"))
   (property (name "edg_part") (value "XIAO RP2040"))
   (property (name "edg_value") (value "XIAO RP2040"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "02850146"))
 (comp (ref "D1")
@@ -75,7 +70,6 @@
   (property (name "edg_refdes") (value "D1"))
   (property (name "edg_part") (value "KT-0603R (Hubei KENTO Elec)"))
   (property (name "edg_value") (value "Red 615~630nm 1.9~2.2V 0603 Light Emitting Diodes (LED) RoHS"))
-
   (sheetpath (names "/led/") (tstamps "/02750136/"))
   (tstamps "0b4e02cd"))
 (comp (ref "R1")
@@ -88,7 +82,6 @@
   (property (name "edg_refdes") (value "R1"))
   (property (name "edg_part") (value "0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/led/") (tstamps "/02750136/"))
   (tstamps "0296014b")))
 (nets

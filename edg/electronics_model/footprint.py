@@ -78,7 +78,7 @@ def gen_block_prop_edg(block: NetBlock) -> str:
       f'  (property (name "edg_short_path") (value "{".".join(block.path)}"))\n' + \
       f'  (property (name "edg_refdes") (value "{block.refdes}"))\n' + \
       f'  (property (name "edg_part") (value "{block.part}"))\n' + \
-      f'  (property (name "edg_value") (value "{block.value}"))\n'
+      f'  (property (name "edg_value") (value "{block.value}"))'
 
 def block_exp(blocks: List[NetBlock], refdes_mode: RefdesMode) -> str:
         """Given a dictionary of block_names (strings) as keys and Blocks (namedtuples) as corresponding values

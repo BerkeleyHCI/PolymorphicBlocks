@@ -10,7 +10,6 @@
   (property (name "edg_refdes") (value "J1"))
   (property (name "edg_part") (value "5600200320 (Molex)"))
   (property (name "edg_value") (value "5600200320"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "0f730367"))
 (comp (ref "U1")
@@ -23,7 +22,6 @@
   (property (name "edg_refdes") (value "U1"))
   (property (name "edg_part") (value "TPS561201 (Texas Instruments)"))
   (property (name "edg_value") (value "TPS561201"))
-
   (sheetpath (names "/pwr/") (tstamps "/02b3015a/"))
   (tstamps "013700cd"))
 (comp (ref "R1")
@@ -36,7 +34,6 @@
   (property (name "edg_refdes") (value "R1"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "33k, 1%, 0.1 W"))
-
   (sheetpath (names "/pwr/fb/") (tstamps "/02b3015a/013000c9/"))
   (tstamps "0c0c02fd"))
 (comp (ref "R2")
@@ -49,7 +46,6 @@
   (property (name "edg_refdes") (value "R2"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/pwr/fb/") (tstamps "/02b3015a/013000c9/"))
   (tstamps "175b043f"))
 (comp (ref "C1")
@@ -62,7 +58,6 @@
   (property (name "edg_refdes") (value "C1"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/pwr/") (tstamps "/02b3015a/"))
   (tstamps "11ed0398"))
 (comp (ref "C2")
@@ -75,7 +70,6 @@
   (property (name "edg_refdes") (value "C2"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/pwr/") (tstamps "/02b3015a/"))
   (tstamps "0f330353"))
 (comp (ref "L1")
@@ -88,7 +82,6 @@
   (property (name "edg_refdes") (value "L1"))
   (property (name "edg_part") (value "MGFL2012F220MT-LF (microgate)"))
   (property (name "edg_value") (value "300mA 22uH ±20% 700mΩ 0805 Inductors (SMD) ROHS"))
-
   (sheetpath (names "/pwr/power_path/") (tstamps "/02b3015a/1786043a/"))
   (tstamps "0f2b0369"))
 (comp (ref "C3")
@@ -101,7 +94,6 @@
   (property (name "edg_refdes") (value "C3"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1uF"))
-
   (sheetpath (names "/pwr/power_path/") (tstamps "/02b3015a/1786043a/"))
   (tstamps "0879026b"))
 (comp (ref "C4")
@@ -114,7 +106,6 @@
   (property (name "edg_refdes") (value "C4"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10uF"))
-
   (sheetpath (names "/pwr/power_path/") (tstamps "/02b3015a/1786043a/"))
   (tstamps "0be902ec"))
 (comp (ref "J2")
@@ -127,7 +118,6 @@
   (property (name "edg_refdes") (value "J2"))
   (property (name "edg_part") (value "PinHeader1.27 Shrouded 2x5 (Generic)"))
   (property (name "edg_value") (value "PinHeader1.27 Shrouded 2x5"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "02ae014f"))
 (comp (ref "U2")
@@ -140,7 +130,6 @@
   (property (name "edg_refdes") (value "U2"))
   (property (name "edg_part") (value "LPC1549JBD48 (NXP)"))
   (property (name "edg_value") (value "LPC1549JBD48"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "013700cd"))
 (comp (ref "R3")
@@ -153,7 +142,6 @@
   (property (name "edg_refdes") (value "R3"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/mcu/swd_pull/") (tstamps "/02850146/0f77036b/"))
   (tstamps "068d0227"))
 (comp (ref "R4")
@@ -166,7 +154,6 @@
   (property (name "edg_refdes") (value "R4"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/mcu/swd_pull/") (tstamps "/02850146/0f77036b/"))
   (tstamps "068c0225"))
 (comp (ref "C5")
@@ -179,7 +166,6 @@
   (property (name "edg_refdes") (value "C5"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168703d5"))
 (comp (ref "C6")
@@ -192,7 +178,6 @@
   (property (name "edg_refdes") (value "C6"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168903d6"))
 (comp (ref "C7")
@@ -205,7 +190,6 @@
   (property (name "edg_refdes") (value "C7"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168b03d7"))
 (comp (ref "C8")
@@ -218,7 +202,6 @@
   (property (name "edg_refdes") (value "C8"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168d03d8"))
 (comp (ref "C9")
@@ -231,7 +214,6 @@
   (property (name "edg_refdes") (value "C9"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168f03d9"))
 (comp (ref "C10")
@@ -244,7 +226,6 @@
   (property (name "edg_refdes") (value "C10"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "169103da"))
 (comp (ref "C11")
@@ -257,7 +238,6 @@
   (property (name "edg_refdes") (value "C11"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "0ec70341"))
 (comp (ref "C12")
@@ -270,7 +250,6 @@
   (property (name "edg_refdes") (value "C12"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "1ae90436"))
 (comp (ref "C13")
@@ -283,7 +262,6 @@
   (property (name "edg_refdes") (value "C13"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10uF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "1aeb0437"))
 (comp (ref "C14")
@@ -296,7 +274,6 @@
   (property (name "edg_refdes") (value "C14"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "1aac042f"))
 (comp (ref "C15")
@@ -309,7 +286,6 @@
   (property (name "edg_refdes") (value "C15"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "1aae0430"))
 (comp (ref "C16")
@@ -322,7 +298,6 @@
   (property (name "edg_refdes") (value "C16"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10uF"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "1ab00431"))
 (comp (ref "X1")
@@ -335,7 +310,6 @@
   (property (name "edg_refdes") (value "X1"))
   (property (name "edg_part") (value "X322512MSB4SI (Yangxing Tech)"))
   (property (name "edg_value") (value "12MHz SMD Crystal Resonator 20pF ±10ppm ±30ppm -40℃~+85℃ SMD3225-4P Crystals ROHS"))
-
   (sheetpath (names "/mcu/crystal/") (tstamps "/02850146/0c1b0303/"))
   (tstamps "0b4e02cd"))
 (comp (ref "C17")
@@ -348,7 +322,6 @@
   (property (name "edg_refdes") (value "C17"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "22pF"))
-
   (sheetpath (names "/mcu/crystal/") (tstamps "/02850146/0c1b0303/"))
   (tstamps "05e701f5"))
 (comp (ref "C18")
@@ -361,7 +334,6 @@
   (property (name "edg_refdes") (value "C18"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "22pF"))
-
   (sheetpath (names "/mcu/crystal/") (tstamps "/02850146/0c1b0303/"))
   (tstamps "05e801f6"))
 (comp (ref "J3")
@@ -374,7 +346,6 @@
   (property (name "edg_refdes") (value "J3"))
   (property (name "edg_part") (value "5600200520 (Molex)"))
   (property (name "edg_value") (value "5600200520"))
-
   (sheetpath (names "/can/") (tstamps "/025c0133/"))
   (tstamps "042701af"))
 (comp (ref "F1")
@@ -387,7 +358,6 @@
   (property (name "edg_refdes") (value "F1"))
   (property (name "edg_part") (value "0ZCM0005FF2G"))
   (property (name "edg_value") (value "0ZCM0005FF2G"))
-
   (sheetpath (names "/can/") (tstamps "/025c0133/"))
   (tstamps "0e780345"))
 (comp (ref "U3")
@@ -400,7 +370,6 @@
   (property (name "edg_refdes") (value "U3"))
   (property (name "edg_part") (value "AP2204K-5.0 (Diodes Incorporated)"))
   (property (name "edg_value") (value "AP2204K-5.0"))
-
   (sheetpath (names "/can/reg/") (tstamps "/025c0133/028a013f/"))
   (tstamps "013700cd"))
 (comp (ref "C19")
@@ -413,7 +382,6 @@
   (property (name "edg_refdes") (value "C19"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1uF"))
-
   (sheetpath (names "/can/reg/") (tstamps "/025c0133/028a013f/"))
   (tstamps "0879026b"))
 (comp (ref "C20")
@@ -426,7 +394,6 @@
   (property (name "edg_refdes") (value "C20"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "2.2uF"))
-
   (sheetpath (names "/can/reg/") (tstamps "/025c0133/028a013f/"))
   (tstamps "0be902ec"))
 (comp (ref "U4")
@@ -439,7 +406,6 @@
   (property (name "edg_refdes") (value "U4"))
   (property (name "edg_part") (value "PESD1CAN,215"))
   (property (name "edg_value") (value "PESD1CAN,215"))
-
   (sheetpath (names "/can/") (tstamps "/025c0133/"))
   (tstamps "027c013d"))
 (comp (ref "U5")
@@ -452,7 +418,6 @@
   (property (name "edg_refdes") (value "U5"))
   (property (name "edg_part") (value "ISO1050DUB (Texas Instruments)"))
   (property (name "edg_value") (value "ISO1050DUB"))
-
   (sheetpath (names "/can/transceiver/") (tstamps "/025c0133/1c0604a7/"))
   (tstamps "013700cd"))
 (comp (ref "C21")
@@ -465,7 +430,6 @@
   (property (name "edg_refdes") (value "C21"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/can/transceiver/") (tstamps "/025c0133/1c0604a7/"))
   (tstamps "125a03a2"))
 (comp (ref "C22")
@@ -478,7 +442,6 @@
   (property (name "edg_refdes") (value "C22"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "100nF"))
-
   (sheetpath (names "/can/transceiver/") (tstamps "/025c0133/1c0604a7/"))
   (tstamps "0aff02c6"))
 (comp (ref "R5")
@@ -491,7 +454,6 @@
   (property (name "edg_refdes") (value "R5"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "3.3k, 1%, 0.1 W"))
-
   (sheetpath (names "/vsense/") (tstamps "/09320295/"))
   (tstamps "0c0c02fd"))
 (comp (ref "R6")
@@ -504,7 +466,6 @@
   (property (name "edg_refdes") (value "R6"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1.1k, 1%, 0.1 W"))
-
   (sheetpath (names "/vsense/") (tstamps "/09320295/"))
   (tstamps "175b043f"))
 (comp (ref "D1")
@@ -517,7 +478,6 @@
   (property (name "edg_refdes") (value "D1"))
   (property (name "edg_part") (value "EAST1616RGBB2 (Everlight Electronics Co Ltd)"))
   (property (name "edg_value") (value "EAST1616RGBB2"))
-
   (sheetpath (names "/rgb1/") (tstamps "/03f6016d/"))
   (tstamps "0b4e02cd"))
 (comp (ref "R7")
@@ -530,7 +490,6 @@
   (property (name "edg_refdes") (value "R7"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb1/") (tstamps "/03f6016d/"))
   (tstamps "0b8602e5"))
 (comp (ref "R8")
@@ -543,7 +502,6 @@
   (property (name "edg_refdes") (value "R8"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb1/") (tstamps "/03f6016d/"))
   (tstamps "128e03bb"))
 (comp (ref "R9")
@@ -556,7 +514,6 @@
   (property (name "edg_refdes") (value "R9"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb1/") (tstamps "/03f6016d/"))
   (tstamps "0ed20352"))
 (comp (ref "D2")
@@ -569,7 +526,6 @@
   (property (name "edg_refdes") (value "D2"))
   (property (name "edg_part") (value "EAST1616RGBB2 (Everlight Electronics Co Ltd)"))
   (property (name "edg_value") (value "EAST1616RGBB2"))
-
   (sheetpath (names "/rgb2/") (tstamps "/03f7016e/"))
   (tstamps "0b4e02cd"))
 (comp (ref "R10")
@@ -582,7 +538,6 @@
   (property (name "edg_refdes") (value "R10"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb2/") (tstamps "/03f7016e/"))
   (tstamps "0b8602e5"))
 (comp (ref "R11")
@@ -595,7 +550,6 @@
   (property (name "edg_refdes") (value "R11"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb2/") (tstamps "/03f7016e/"))
   (tstamps "128e03bb"))
 (comp (ref "R12")
@@ -608,7 +562,6 @@
   (property (name "edg_refdes") (value "R12"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "1k, 1%, 0.1 W"))
-
   (sheetpath (names "/rgb2/") (tstamps "/03f7016e/"))
   (tstamps "0ed20352"))
 (comp (ref "J4")
@@ -621,7 +574,6 @@
   (property (name "edg_refdes") (value "J4"))
   (property (name "edg_part") (value "5600200420 (Molex)"))
   (property (name "edg_value") (value "5600200420"))
-
   (sheetpath (names "/light[0]/") (tstamps "/0e570301/"))
   (tstamps "042701af"))
 (comp (ref "Q1")
@@ -634,7 +586,6 @@
   (property (name "edg_refdes") (value "Q1"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[0]/drv[0]/") (tstamps "/0e570301/083e0235/"))
   (tstamps "029c0148"))
 (comp (ref "R13")
@@ -647,7 +598,6 @@
   (property (name "edg_refdes") (value "R13"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[0]/drv[0]/") (tstamps "/0e570301/083e0235/"))
   (tstamps "046701be"))
 (comp (ref "Q2")
@@ -660,7 +610,6 @@
   (property (name "edg_refdes") (value "Q2"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[0]/drv[0]/") (tstamps "/0e570301/083e0235/"))
   (tstamps "0289014d"))
 (comp (ref "Q3")
@@ -673,7 +622,6 @@
   (property (name "edg_refdes") (value "Q3"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[0]/drv[1]/") (tstamps "/0e570301/08400236/"))
   (tstamps "029c0148"))
 (comp (ref "R14")
@@ -686,7 +634,6 @@
   (property (name "edg_refdes") (value "R14"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[0]/drv[1]/") (tstamps "/0e570301/08400236/"))
   (tstamps "046701be"))
 (comp (ref "Q4")
@@ -699,7 +646,6 @@
   (property (name "edg_refdes") (value "Q4"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[0]/drv[1]/") (tstamps "/0e570301/08400236/"))
   (tstamps "0289014d"))
 (comp (ref "J5")
@@ -712,7 +658,6 @@
   (property (name "edg_refdes") (value "J5"))
   (property (name "edg_part") (value "5600200420 (Molex)"))
   (property (name "edg_value") (value "5600200420"))
-
   (sheetpath (names "/light[1]/") (tstamps "/0e590302/"))
   (tstamps "042701af"))
 (comp (ref "Q5")
@@ -725,7 +670,6 @@
   (property (name "edg_refdes") (value "Q5"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[1]/drv[0]/") (tstamps "/0e590302/083e0235/"))
   (tstamps "029c0148"))
 (comp (ref "R15")
@@ -738,7 +682,6 @@
   (property (name "edg_refdes") (value "R15"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[1]/drv[0]/") (tstamps "/0e590302/083e0235/"))
   (tstamps "046701be"))
 (comp (ref "Q6")
@@ -751,7 +694,6 @@
   (property (name "edg_refdes") (value "Q6"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[1]/drv[0]/") (tstamps "/0e590302/083e0235/"))
   (tstamps "0289014d"))
 (comp (ref "Q7")
@@ -764,7 +706,6 @@
   (property (name "edg_refdes") (value "Q7"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[1]/drv[1]/") (tstamps "/0e590302/08400236/"))
   (tstamps "029c0148"))
 (comp (ref "R16")
@@ -777,7 +718,6 @@
   (property (name "edg_refdes") (value "R16"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[1]/drv[1]/") (tstamps "/0e590302/08400236/"))
   (tstamps "046701be"))
 (comp (ref "Q8")
@@ -790,7 +730,6 @@
   (property (name "edg_refdes") (value "Q8"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[1]/drv[1]/") (tstamps "/0e590302/08400236/"))
   (tstamps "0289014d"))
 (comp (ref "J6")
@@ -803,7 +742,6 @@
   (property (name "edg_refdes") (value "J6"))
   (property (name "edg_part") (value "5600200420 (Molex)"))
   (property (name "edg_value") (value "5600200420"))
-
   (sheetpath (names "/light[2]/") (tstamps "/0e5b0303/"))
   (tstamps "042701af"))
 (comp (ref "Q9")
@@ -816,7 +754,6 @@
   (property (name "edg_refdes") (value "Q9"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[2]/drv[0]/") (tstamps "/0e5b0303/083e0235/"))
   (tstamps "029c0148"))
 (comp (ref "R17")
@@ -829,7 +766,6 @@
   (property (name "edg_refdes") (value "R17"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[2]/drv[0]/") (tstamps "/0e5b0303/083e0235/"))
   (tstamps "046701be"))
 (comp (ref "Q10")
@@ -842,7 +778,6 @@
   (property (name "edg_refdes") (value "Q10"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[2]/drv[0]/") (tstamps "/0e5b0303/083e0235/"))
   (tstamps "0289014d"))
 (comp (ref "Q11")
@@ -855,7 +790,6 @@
   (property (name "edg_refdes") (value "Q11"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[2]/drv[1]/") (tstamps "/0e5b0303/08400236/"))
   (tstamps "029c0148"))
 (comp (ref "R18")
@@ -868,7 +802,6 @@
   (property (name "edg_refdes") (value "R18"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[2]/drv[1]/") (tstamps "/0e5b0303/08400236/"))
   (tstamps "046701be"))
 (comp (ref "Q12")
@@ -881,7 +814,6 @@
   (property (name "edg_refdes") (value "Q12"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[2]/drv[1]/") (tstamps "/0e5b0303/08400236/"))
   (tstamps "0289014d"))
 (comp (ref "J7")
@@ -894,7 +826,6 @@
   (property (name "edg_refdes") (value "J7"))
   (property (name "edg_part") (value "5600200420 (Molex)"))
   (property (name "edg_value") (value "5600200420"))
-
   (sheetpath (names "/light[3]/") (tstamps "/0e5d0304/"))
   (tstamps "042701af"))
 (comp (ref "Q13")
@@ -907,7 +838,6 @@
   (property (name "edg_refdes") (value "Q13"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[3]/drv[0]/") (tstamps "/0e5d0304/083e0235/"))
   (tstamps "029c0148"))
 (comp (ref "R19")
@@ -920,7 +850,6 @@
   (property (name "edg_refdes") (value "R19"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[3]/drv[0]/") (tstamps "/0e5d0304/083e0235/"))
   (tstamps "046701be"))
 (comp (ref "Q14")
@@ -933,7 +862,6 @@
   (property (name "edg_refdes") (value "Q14"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[3]/drv[0]/") (tstamps "/0e5d0304/083e0235/"))
   (tstamps "0289014d"))
 (comp (ref "Q15")
@@ -946,7 +874,6 @@
   (property (name "edg_refdes") (value "Q15"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[3]/drv[1]/") (tstamps "/0e5d0304/08400236/"))
   (tstamps "029c0148"))
 (comp (ref "R20")
@@ -959,7 +886,6 @@
   (property (name "edg_refdes") (value "R20"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[3]/drv[1]/") (tstamps "/0e5d0304/08400236/"))
   (tstamps "046701be"))
 (comp (ref "Q16")
@@ -972,7 +898,6 @@
   (property (name "edg_refdes") (value "Q16"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[3]/drv[1]/") (tstamps "/0e5d0304/08400236/"))
   (tstamps "0289014d"))
 (comp (ref "J8")
@@ -985,7 +910,6 @@
   (property (name "edg_refdes") (value "J8"))
   (property (name "edg_part") (value "5600200420 (Molex)"))
   (property (name "edg_value") (value "5600200420"))
-
   (sheetpath (names "/light[4]/") (tstamps "/0e5f0305/"))
   (tstamps "042701af"))
 (comp (ref "Q17")
@@ -998,7 +922,6 @@
   (property (name "edg_refdes") (value "Q17"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[4]/drv[0]/") (tstamps "/0e5f0305/083e0235/"))
   (tstamps "029c0148"))
 (comp (ref "R21")
@@ -1011,7 +934,6 @@
   (property (name "edg_refdes") (value "R21"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[4]/drv[0]/") (tstamps "/0e5f0305/083e0235/"))
   (tstamps "046701be"))
 (comp (ref "Q18")
@@ -1024,7 +946,6 @@
   (property (name "edg_refdes") (value "Q18"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[4]/drv[0]/") (tstamps "/0e5f0305/083e0235/"))
   (tstamps "0289014d"))
 (comp (ref "Q19")
@@ -1037,7 +958,6 @@
   (property (name "edg_refdes") (value "Q19"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[4]/drv[1]/") (tstamps "/0e5f0305/08400236/"))
   (tstamps "029c0148"))
 (comp (ref "R22")
@@ -1050,7 +970,6 @@
   (property (name "edg_refdes") (value "R22"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[4]/drv[1]/") (tstamps "/0e5f0305/08400236/"))
   (tstamps "046701be"))
 (comp (ref "Q20")
@@ -1063,7 +982,6 @@
   (property (name "edg_refdes") (value "Q20"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[4]/drv[1]/") (tstamps "/0e5f0305/08400236/"))
   (tstamps "0289014d"))
 (comp (ref "J9")
@@ -1076,7 +994,6 @@
   (property (name "edg_refdes") (value "J9"))
   (property (name "edg_part") (value "5600200420 (Molex)"))
   (property (name "edg_value") (value "5600200420"))
-
   (sheetpath (names "/light[5]/") (tstamps "/0e610306/"))
   (tstamps "042701af"))
 (comp (ref "Q21")
@@ -1089,7 +1006,6 @@
   (property (name "edg_refdes") (value "Q21"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[5]/drv[0]/") (tstamps "/0e610306/083e0235/"))
   (tstamps "029c0148"))
 (comp (ref "R23")
@@ -1102,7 +1018,6 @@
   (property (name "edg_refdes") (value "R23"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[5]/drv[0]/") (tstamps "/0e610306/083e0235/"))
   (tstamps "046701be"))
 (comp (ref "Q22")
@@ -1115,7 +1030,6 @@
   (property (name "edg_refdes") (value "Q22"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[5]/drv[0]/") (tstamps "/0e610306/083e0235/"))
   (tstamps "0289014d"))
 (comp (ref "Q23")
@@ -1128,7 +1042,6 @@
   (property (name "edg_refdes") (value "Q23"))
   (property (name "edg_part") (value "2N7002 (Changjiang Electronics Tech (CJ))"))
   (property (name "edg_value") (value "60V 115mA 200mW 7.5Ω@10V,500mA 2.5V@250μA N Channel SOT-23(SOT-23-3) MOSFETs ROHS"))
-
   (sheetpath (names "/light[5]/drv[1]/") (tstamps "/0e610306/08400236/"))
   (tstamps "029c0148"))
 (comp (ref "R24")
@@ -1141,7 +1054,6 @@
   (property (name "edg_refdes") (value "R24"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value "10k, 1%, 0.1 W"))
-
   (sheetpath (names "/light[5]/drv[1]/") (tstamps "/0e610306/08400236/"))
   (tstamps "046701be"))
 (comp (ref "Q24")
@@ -1154,7 +1066,6 @@
   (property (name "edg_refdes") (value "Q24"))
   (property (name "edg_part") (value "AOD403 (Alpha & Omega Semicon)"))
   (property (name "edg_value") (value "30V 15A 6mΩ@20V,20A 2.5W 3.5V@250μA P Channel TO-252-2(DPAK) MOSFETs ROHS"))
-
   (sheetpath (names "/light[5]/drv[1]/") (tstamps "/0e610306/08400236/"))
   (tstamps "0289014d")))
 (nets

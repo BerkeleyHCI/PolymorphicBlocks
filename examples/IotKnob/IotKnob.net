@@ -10,7 +10,6 @@
   (property (name "edg_refdes") (value "KH1"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value ""))
-
   (sheetpath (names "/jlc_th/") (tstamps "/08970275/"))
   (tstamps "0260010e"))
 (comp (ref "KH2")
@@ -23,7 +22,6 @@
   (property (name "edg_refdes") (value "KH2"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value ""))
-
   (sheetpath (names "/jlc_th/") (tstamps "/08970275/"))
   (tstamps "0261010f"))
 (comp (ref "KH3")
@@ -36,7 +34,6 @@
   (property (name "edg_refdes") (value "KH3"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value ""))
-
   (sheetpath (names "/jlc_th/") (tstamps "/08970275/"))
   (tstamps "02620110"))
 (comp (ref "KJ1")
@@ -49,7 +46,6 @@
   (property (name "edg_refdes") (value "KJ1"))
   (property (name "edg_part") (value "COM-15111 (Sparkfun)"))
   (property (name "edg_value") (value "COM-15111"))
-
   (sheetpath (names "/usb/") (tstamps "/02aa014b/"))
   (tstamps "042701af"))
 (comp (ref "KR1")
@@ -62,7 +58,6 @@
   (property (name "edg_refdes") (value "KR1"))
   (property (name "edg_part") (value "0603WAF5101T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 5.1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/usb/cc_pull/") (tstamps "/02aa014b/0b4c02e3/"))
   (tstamps "022300f8"))
 (comp (ref "KR2")
@@ -75,7 +70,6 @@
   (property (name "edg_refdes") (value "KR2"))
   (property (name "edg_part") (value "0603WAF5101T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 5.1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/usb/cc_pull/") (tstamps "/02aa014b/0b4c02e3/"))
   (tstamps "022400f9"))
 (comp (ref "KTP1")
@@ -88,7 +82,6 @@
   (property (name "edg_refdes") (value "KTP1"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "vusb"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "091a029d"))
 (comp (ref "KTP2")
@@ -101,7 +94,6 @@
   (property (name "edg_refdes") (value "KTP2"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "gnd"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "08df027d"))
 (comp (ref "KU1")
@@ -114,7 +106,6 @@
   (property (name "edg_refdes") (value "KU1"))
   (property (name "edg_part") (value "LDL1117S33R (STMicroelectronics)"))
   (property (name "edg_value") (value "LDL1117S33R"))
-
   (sheetpath (names "/reg_3v3/") (tstamps "/0aba027a/"))
   (tstamps "013700cd"))
 (comp (ref "KC1")
@@ -127,7 +118,6 @@
   (property (name "edg_refdes") (value "KC1"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/reg_3v3/") (tstamps "/0aba027a/"))
   (tstamps "0879026b"))
 (comp (ref "KC2")
@@ -140,7 +130,6 @@
   (property (name "edg_refdes") (value "KC2"))
   (property (name "edg_part") (value "CL21A475KAQNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "25V 4.7uF X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/reg_3v3/") (tstamps "/0aba027a/"))
   (tstamps "0be902ec"))
 (comp (ref "KTP3")
@@ -153,7 +142,6 @@
   (property (name "edg_refdes") (value "KTP3"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "v3v3"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "08220220"))
 (comp (ref "KD1")
@@ -166,7 +154,6 @@
   (property (name "edg_refdes") (value "KD1"))
   (property (name "edg_part") (value "BZT52B3V6S (SMC(Sangdest Microelectronicstronic (Nanjing)))"))
   (property (name "edg_value") (value "5μA@1V 90Ω Single 3.53V~3.67V 200mW 3.6V SOD-323 Zener Diodes ROHS"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "0eb80301"))
 (comp (ref "KU2")
@@ -179,7 +166,6 @@
   (property (name "edg_refdes") (value "KU2"))
   (property (name "edg_part") (value "ESP32-S3-WROOM-1-N16R8 (Espressif Systems)"))
   (property (name "edg_value") (value "ESP32-S3-WROOM-1-N16R8"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "013700cd"))
 (comp (ref "KC3")
@@ -192,7 +178,6 @@
   (property (name "edg_refdes") (value "KC3"))
   (property (name "edg_part") (value "CL31A226KPHNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "10V 22uF X5R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "0e590300"))
 (comp (ref "KC4")
@@ -205,7 +190,6 @@
   (property (name "edg_refdes") (value "KC4"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "0e5a0301"))
 (comp (ref "KJ2")
@@ -218,7 +202,6 @@
   (property (name "edg_refdes") (value "KJ2"))
   (property (name "edg_part") (value ""))
   (property (name "edg_value") (value ""))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "045f01b9"))
 (comp (ref "KR3")
@@ -231,7 +214,6 @@
   (property (name "edg_refdes") (value "KR3"))
   (property (name "edg_part") (value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 10kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/mcu/en_pull/") (tstamps "/02850146/0b9c02f0/"))
   (tstamps "00730073"))
 (comp (ref "KC5")
@@ -244,7 +226,6 @@
   (property (name "edg_refdes") (value "KC5"))
   (property (name "edg_part") (value "CL10A105KB8NNNC (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/en_pull/") (tstamps "/02850146/0b9c02f0/"))
   (tstamps "00640064"))
 (comp (ref "KR4")
@@ -257,7 +238,6 @@
   (property (name "edg_refdes") (value "KR4"))
   (property (name "edg_part") (value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 4.7kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/i2c_pull/") (tstamps "/0d3e031b/"))
   (tstamps "0ba902ec"))
 (comp (ref "KR5")
@@ -270,7 +250,6 @@
   (property (name "edg_refdes") (value "KR5"))
   (property (name "edg_part") (value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 4.7kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/i2c_pull/") (tstamps "/0d3e031b/"))
   (tstamps "0b7802e2"))
 (comp (ref "KTP4")
@@ -283,7 +262,6 @@
   (property (name "edg_refdes") (value "KTP4"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "i2c_chain_0.scl"))
-
   (sheetpath (names "/i2c_tp/") (tstamps "/07770242/"))
   (tstamps "08f50286"))
 (comp (ref "KTP5")
@@ -296,7 +274,6 @@
   (property (name "edg_refdes") (value "KTP5"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "i2c_chain_0.sda"))
-
   (sheetpath (names "/i2c_tp/") (tstamps "/07770242/"))
   (tstamps "08ec027c"))
 (comp (ref "KU3")
@@ -309,7 +286,6 @@
   (property (name "edg_refdes") (value "KU3"))
   (property (name "edg_part") (value "PESD5V0X1BT (Nexperia)"))
   (property (name "edg_value") (value "PESD5V0X1BT"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "0bcb02e6"))
 (comp (ref "KD2")
@@ -322,7 +298,6 @@
   (property (name "edg_refdes") (value "KD2"))
   (property (name "edg_part") (value "KT-0603R (Hubei KENTO Elec)"))
   (property (name "edg_value") (value "Red 615~630nm 1.9~2.2V 0603 Light Emitting Diodes (LED) RoHS"))
-
   (sheetpath (names "/ledr/") (tstamps "/041d01a8/"))
   (tstamps "0b4e02cd"))
 (comp (ref "KR6")
@@ -335,7 +310,6 @@
   (property (name "edg_refdes") (value "KR6"))
   (property (name "edg_part") (value "0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/ledr/") (tstamps "/041d01a8/"))
   (tstamps "0296014b"))
 (comp (ref "KD3")
@@ -348,7 +322,6 @@
   (property (name "edg_refdes") (value "KD3"))
   (property (name "edg_part") (value "19-213/Y2C-CQ2R2L/3T(CY) (Everlight Elec)"))
   (property (name "edg_value") (value "20mA 180mcd 2.3V 591nm Colorless transparence -40℃~+85℃ 585.5nm~591.5nm yellow 120° 60mW 0603 Light Emitting Diodes (LED) ROHS"))
-
   (sheetpath (names "/ledy/") (tstamps "/042401af/"))
   (tstamps "0b4e02cd"))
 (comp (ref "KR7")
@@ -361,7 +334,6 @@
   (property (name "edg_refdes") (value "KR7"))
   (property (name "edg_part") (value "0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/ledy/") (tstamps "/042401af/"))
   (tstamps "0296014b"))
 (comp (ref "KSW1")
@@ -374,7 +346,6 @@
   (property (name "edg_refdes") (value "KSW1"))
   (property (name "edg_part") (value "EC11J1525402 (Alps Alpine)"))
   (property (name "edg_value") (value "EC11J1525402"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "02710137"))
 (comp (ref "KSW2")
@@ -387,7 +358,6 @@
   (property (name "edg_refdes") (value "KSW2"))
   (property (name "edg_part") (value "5.1mm switch"))
   (property (name "edg_value") (value "5.1mm switch"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "05ee01d3"))
 (comp (ref "KSW3")
@@ -400,7 +370,6 @@
   (property (name "edg_refdes") (value "KSW3"))
   (property (name "edg_part") (value "5.1mm switch"))
   (property (name "edg_value") (value "5.1mm switch"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "05f001d4"))
 (comp (ref "KSW4")
@@ -413,7 +382,6 @@
   (property (name "edg_refdes") (value "KSW4"))
   (property (name "edg_part") (value "5.1mm switch"))
   (property (name "edg_value") (value "5.1mm switch"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "05f201d5"))
 (comp (ref "KSW5")
@@ -426,7 +394,6 @@
   (property (name "edg_refdes") (value "KSW5"))
   (property (name "edg_part") (value "5.1mm switch"))
   (property (name "edg_value") (value "5.1mm switch"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "05f401d6"))
 (comp (ref "KSW6")
@@ -439,7 +406,6 @@
   (property (name "edg_refdes") (value "KSW6"))
   (property (name "edg_part") (value "5.1mm switch"))
   (property (name "edg_value") (value "5.1mm switch"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "05f601d7"))
 (comp (ref "KSW7")
@@ -452,7 +418,6 @@
   (property (name "edg_refdes") (value "KSW7"))
   (property (name "edg_part") (value "5.1mm switch"))
   (property (name "edg_value") (value "5.1mm switch"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "05f801d8"))
 (comp (ref "KU4")
@@ -465,7 +430,6 @@
   (property (name "edg_refdes") (value "KU4"))
   (property (name "edg_part") (value "BH1750 (Rohm Semiconductor)"))
   (property (name "edg_value") (value "BH1750"))
-
   (sheetpath (names "/als/") (tstamps "/02710141/"))
   (tstamps "013700cd"))
 (comp (ref "KC6")
@@ -478,7 +442,6 @@
   (property (name "edg_refdes") (value "KC6"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/als/") (tstamps "/02710141/"))
   (tstamps "0b5902d0"))
 (comp (ref "KR8")
@@ -491,7 +454,6 @@
   (property (name "edg_refdes") (value "KR8"))
   (property (name "edg_part") (value "0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/als/") (tstamps "/02710141/"))
   (tstamps "0ba302ed"))
 (comp (ref "KC7")
@@ -504,7 +466,6 @@
   (property (name "edg_refdes") (value "KC7"))
   (property (name "edg_part") (value "CL10A105KB8NNNC (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/als/") (tstamps "/02710141/"))
   (tstamps "0b6b02d7"))
 (comp (ref "KU5")
@@ -517,7 +478,6 @@
   (property (name "edg_refdes") (value "KU5"))
   (property (name "edg_part") (value "VL53L0X (STMicroelectronics)"))
   (property (name "edg_value") (value "VL53L0X"))
-
   (sheetpath (names "/dist/") (tstamps "/042901b5/"))
   (tstamps "013700cd"))
 (comp (ref "KC8")
@@ -530,7 +490,6 @@
   (property (name "edg_refdes") (value "KC8"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/dist/") (tstamps "/042901b5/"))
   (tstamps "15a803ba"))
 (comp (ref "KC9")
@@ -543,7 +502,6 @@
   (property (name "edg_refdes") (value "KC9"))
   (property (name "edg_part") (value "CL21A475KAQNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "25V 4.7uF X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/dist/") (tstamps "/042901b5/"))
   (tstamps "15aa03bb"))
 (comp (ref "KU6")
@@ -556,7 +514,6 @@
   (property (name "edg_refdes") (value "KU6"))
   (property (name "edg_part") (value "SHTC3 (Sensirion AG)"))
   (property (name "edg_value") (value "SHTC3"))
-
   (sheetpath (names "/env/") (tstamps "/0284014a/"))
   (tstamps "013700cd"))
 (comp (ref "KC10")
@@ -569,7 +526,6 @@
   (property (name "edg_refdes") (value "KC10"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/env/") (tstamps "/0284014a/"))
   (tstamps "0b6402d2"))
 (comp (ref "KJ3")
@@ -582,7 +538,6 @@
   (property (name "edg_refdes") (value "KJ3"))
   (property (name "edg_part") (value "AFC01-S30FC*-00 (Jushuo)"))
   (property (name "edg_value") (value "AFC01-S30FC*-00"))
-
   (sheetpath (names "/oled/") (tstamps "/043201a5/"))
   (tstamps "08950271"))
 (comp (ref "KU7")
@@ -595,7 +550,6 @@
   (property (name "edg_refdes") (value "KU7"))
   (property (name "edg_part") (value "ER-OLED-0.96-1.1 (EastRising)"))
   (property (name "edg_value") (value "ER-OLED-0.96-1.1"))
-
   (sheetpath (names "/oled/") (tstamps "/043201a5/"))
   (tstamps "02710134"))
 (comp (ref "KC11")
@@ -608,7 +562,6 @@
   (property (name "edg_refdes") (value "KC11"))
   (property (name "edg_part") (value "CL10A105KB8NNNC (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/oled/") (tstamps "/043201a5/"))
   (tstamps "07240228"))
 (comp (ref "KC12")
@@ -621,7 +574,6 @@
   (property (name "edg_refdes") (value "KC12"))
   (property (name "edg_part") (value "CL10A105KB8NNNC (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/oled/") (tstamps "/043201a5/"))
   (tstamps "07290229"))
 (comp (ref "KR9")
@@ -634,7 +586,6 @@
   (property (name "edg_refdes") (value "KR9"))
   (property (name "edg_part") (value "0603WAF3903T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 390kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/oled/") (tstamps "/043201a5/"))
   (tstamps "0ed90350"))
 (comp (ref "KC13")
@@ -647,7 +598,6 @@
   (property (name "edg_refdes") (value "KC13"))
   (property (name "edg_part") (value "CL21A475KAQNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "25V 4.7uF X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/oled/") (tstamps "/043201a5/"))
   (tstamps "12bd03b1"))
 (comp (ref "KC14")
@@ -660,7 +610,6 @@
   (property (name "edg_refdes") (value "KC14"))
   (property (name "edg_part") (value "CL10A105KB8NNNC (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/oled/") (tstamps "/043201a5/"))
   (tstamps "0e670303"))
 (comp (ref "KC15")
@@ -673,7 +622,6 @@
   (property (name "edg_refdes") (value "KC15"))
   (property (name "edg_part") (value "CL10A105KB8NNNC (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/oled/") (tstamps "/043201a5/"))
   (tstamps "0ec70341"))
 (comp (ref "KC16")
@@ -686,7 +634,6 @@
   (property (name "edg_refdes") (value "KC16"))
   (property (name "edg_part") (value "CL21A475KAQNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "25V 4.7uF X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/oled/") (tstamps "/043201a5/"))
   (tstamps "0b5902d0"))
 (comp (ref "KU8")
@@ -699,7 +646,6 @@
   (property (name "edg_refdes") (value "KU8"))
   (property (name "edg_part") (value "74AHCT1G125W5-7 (Diodes Incorporated)"))
   (property (name "edg_value") (value "74AHCT1G125W5-7"))
-
   (sheetpath (names "/rgb_shift/") (tstamps "/128503b9/"))
   (tstamps "013700cd"))
 (comp (ref "KC17")
@@ -712,7 +658,6 @@
   (property (name "edg_refdes") (value "KC17"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/rgb_shift/") (tstamps "/128503b9/"))
   (tstamps "0b6402d2"))
 (comp (ref "KTP6")
@@ -725,7 +670,6 @@
   (property (name "edg_refdes") (value "KTP6"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "_rgb_shift_output_link"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "08b2027f"))
 (comp (ref "KD4")
@@ -738,7 +682,6 @@
   (property (name "edg_refdes") (value "KD4"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_knob/") (tstamps "/0ec60345/"))
   (tstamps "07e5021e"))
 (comp (ref "KD5")
@@ -751,7 +694,6 @@
   (property (name "edg_refdes") (value "KD5"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_knob/") (tstamps "/0ec60345/"))
   (tstamps "07e7021f"))
 (comp (ref "KD6")
@@ -764,7 +706,6 @@
   (property (name "edg_refdes") (value "KD6"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_knob/") (tstamps "/0ec60345/"))
   (tstamps "07e90220"))
 (comp (ref "KD7")
@@ -777,7 +718,6 @@
   (property (name "edg_refdes") (value "KD7"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_knob/") (tstamps "/0ec60345/"))
   (tstamps "07eb0221"))
 (comp (ref "KD8")
@@ -790,7 +730,6 @@
   (property (name "edg_refdes") (value "KD8"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "07e5021e"))
 (comp (ref "KD9")
@@ -803,7 +742,6 @@
   (property (name "edg_refdes") (value "KD9"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "07e7021f"))
 (comp (ref "KD10")
@@ -816,7 +754,6 @@
   (property (name "edg_refdes") (value "KD10"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "07e90220"))
 (comp (ref "KD11")
@@ -829,7 +766,6 @@
   (property (name "edg_refdes") (value "KD11"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "07eb0221"))
 (comp (ref "KD12")
@@ -842,7 +778,6 @@
   (property (name "edg_refdes") (value "KD12"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "07ed0222"))
 (comp (ref "KD13")
@@ -855,7 +790,6 @@
   (property (name "edg_refdes") (value "KD13"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "07ef0223"))
 (comp (ref "KD14")
@@ -868,7 +802,6 @@
   (property (name "edg_refdes") (value "KD14"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "07f10224"))
 (comp (ref "KD15")
@@ -881,7 +814,6 @@
   (property (name "edg_refdes") (value "KD15"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "07f30225"))
 (comp (ref "KD16")
@@ -894,7 +826,6 @@
   (property (name "edg_refdes") (value "KD16"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "07f50226"))
 (comp (ref "KD17")
@@ -907,7 +838,6 @@
   (property (name "edg_refdes") (value "KD17"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "07f70227"))
 (comp (ref "KD18")
@@ -920,7 +850,6 @@
   (property (name "edg_refdes") (value "KD18"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a09024f"))
 (comp (ref "KD19")
@@ -933,7 +862,6 @@
   (property (name "edg_refdes") (value "KD19"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a0b0250"))
 (comp (ref "KD20")
@@ -946,7 +874,6 @@
   (property (name "edg_refdes") (value "KD20"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a0d0251"))
 (comp (ref "KD21")
@@ -959,7 +886,6 @@
   (property (name "edg_refdes") (value "KD21"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a0f0252"))
 (comp (ref "KD22")
@@ -972,7 +898,6 @@
   (property (name "edg_refdes") (value "KD22"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a110253"))
 (comp (ref "KD23")
@@ -985,7 +910,6 @@
   (property (name "edg_refdes") (value "KD23"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a130254"))
 (comp (ref "KD24")
@@ -998,7 +922,6 @@
   (property (name "edg_refdes") (value "KD24"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a150255"))
 (comp (ref "KD25")
@@ -1011,7 +934,6 @@
   (property (name "edg_refdes") (value "KD25"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a170256"))
 (comp (ref "KD26")
@@ -1024,7 +946,6 @@
   (property (name "edg_refdes") (value "KD26"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a190257"))
 (comp (ref "KD27")
@@ -1037,7 +958,6 @@
   (property (name "edg_refdes") (value "KD27"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a1b0258"))
 (comp (ref "KD28")
@@ -1050,7 +970,6 @@
   (property (name "edg_refdes") (value "KD28"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a0c0250"))
 (comp (ref "KD29")
@@ -1063,7 +982,6 @@
   (property (name "edg_refdes") (value "KD29"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a0e0251"))
 (comp (ref "KD30")
@@ -1076,7 +994,6 @@
   (property (name "edg_refdes") (value "KD30"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a100252"))
 (comp (ref "KD31")
@@ -1089,7 +1006,6 @@
   (property (name "edg_refdes") (value "KD31"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_ring/") (tstamps "/0ed6034b/"))
   (tstamps "0a120253"))
 (comp (ref "KD32")
@@ -1102,7 +1018,6 @@
   (property (name "edg_refdes") (value "KD32"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_sw/") (tstamps "/08b70285/"))
   (tstamps "07e5021e"))
 (comp (ref "KD33")
@@ -1115,7 +1030,6 @@
   (property (name "edg_refdes") (value "KD33"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_sw/") (tstamps "/08b70285/"))
   (tstamps "07e7021f"))
 (comp (ref "KD34")
@@ -1128,7 +1042,6 @@
   (property (name "edg_refdes") (value "KD34"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_sw/") (tstamps "/08b70285/"))
   (tstamps "07e90220"))
 (comp (ref "KD35")
@@ -1141,7 +1054,6 @@
   (property (name "edg_refdes") (value "KD35"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_sw/") (tstamps "/08b70285/"))
   (tstamps "07eb0221"))
 (comp (ref "KD36")
@@ -1154,7 +1066,6 @@
   (property (name "edg_refdes") (value "KD36"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_sw/") (tstamps "/08b70285/"))
   (tstamps "07ed0222"))
 (comp (ref "KD37")
@@ -1167,7 +1078,6 @@
   (property (name "edg_refdes") (value "KD37"))
   (property (name "edg_part") (value "SK6805-EC15 (Opsco Optoelectronics)"))
   (property (name "edg_value") (value "SK6805-EC15"))
-
   (sheetpath (names "/rgb_sw/") (tstamps "/08b70285/"))
   (tstamps "07ef0223"))
 (comp (ref "KR10")
@@ -1180,7 +1090,6 @@
   (property (name "edg_refdes") (value "KR10"))
   (property (name "edg_part") (value "0603WAF4701T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 4.7kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "0ac002c7"))
 (comp (ref "KR11")
@@ -1193,7 +1102,6 @@
   (property (name "edg_refdes") (value "KR11"))
   (property (name "edg_part") (value "0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/spk_dac/") (tstamps "/0bb002d6/"))
   (tstamps "00730073"))
 (comp (ref "KC18")
@@ -1206,7 +1114,6 @@
   (property (name "edg_refdes") (value "KC18"))
   (property (name "edg_part") (value "CL10B473KB8NNNC (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "50V 47nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/spk_dac/") (tstamps "/0bb002d6/"))
   (tstamps "00640064"))
 (comp (ref "KTP7")
@@ -1219,7 +1126,6 @@
   (property (name "edg_refdes") (value "KTP7"))
   (property (name "edg_part") (value "5015 (Keystone)"))
   (property (name "edg_value") (value "_spk_dac_output_link"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "09090292"))
 (comp (ref "KU9")
@@ -1232,7 +1138,6 @@
   (property (name "edg_refdes") (value "KU9"))
   (property (name "edg_part") (value "PAM8302AASCR (Diodes Incorporated)"))
   (property (name "edg_value") (value "PAM8302AASCR"))
-
   (sheetpath (names "/spk_drv/") (tstamps "/0be502fa/"))
   (tstamps "013700cd"))
 (comp (ref "KC19")
@@ -1245,7 +1150,6 @@
   (property (name "edg_refdes") (value "KC19"))
   (property (name "edg_part") (value "CL10A105KB8NNNC (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/spk_drv/") (tstamps "/0be502fa/"))
   (tstamps "0f0f031d"))
 (comp (ref "KC20")
@@ -1258,7 +1162,6 @@
   (property (name "edg_refdes") (value "KC20"))
   (property (name "edg_part") (value "CL21A106KAYNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/spk_drv/") (tstamps "/0be502fa/"))
   (tstamps "0f10031e"))
 (comp (ref "KC21")
@@ -1271,7 +1174,6 @@
   (property (name "edg_refdes") (value "KC21"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/spk_drv/") (tstamps "/0be502fa/"))
   (tstamps "0b8102db"))
 (comp (ref "KC22")
@@ -1284,7 +1186,6 @@
   (property (name "edg_refdes") (value "KC22"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/spk_drv/") (tstamps "/0be502fa/"))
   (tstamps "0b7702d9"))
 (comp (ref "KJ4")
@@ -1297,7 +1198,6 @@
   (property (name "edg_refdes") (value "KJ4"))
   (property (name "edg_part") (value "B2B-PH-K (JST)"))
   (property (name "edg_value") (value "B2B-PH-K"))
-
   (sheetpath (names "/") (tstamps "/"))
   (tstamps "02a7014f"))
 (comp (ref "KR12")
@@ -1310,7 +1210,6 @@
   (property (name "edg_refdes") (value "KR12"))
   (property (name "edg_part") (value "0603WAF1502T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 15kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/v5v_sense/") (tstamps "/11b3039f/"))
   (tstamps "0c0c02fd"))
 (comp (ref "KR13")
@@ -1323,7 +1222,6 @@
   (property (name "edg_refdes") (value "KR13"))
   (property (name "edg_part") (value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 10kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/v5v_sense/") (tstamps "/11b3039f/"))
   (tstamps "175b043f")))
 (nets

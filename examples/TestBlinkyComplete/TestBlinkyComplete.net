@@ -10,7 +10,6 @@
   (property (name "edg_refdes") (value "J1"))
   (property (name "edg_part") (value "COM-15111 (Sparkfun)"))
   (property (name "edg_value") (value "COM-15111"))
-
   (sheetpath (names "/usb/") (tstamps "/02aa014b/"))
   (tstamps "042701af"))
 (comp (ref "R1")
@@ -23,7 +22,6 @@
   (property (name "edg_refdes") (value "R1"))
   (property (name "edg_part") (value "0603WAF5101T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 5.1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/usb/cc_pull/") (tstamps "/02aa014b/0b4c02e3/"))
   (tstamps "022300f8"))
 (comp (ref "R2")
@@ -36,7 +34,6 @@
   (property (name "edg_refdes") (value "R2"))
   (property (name "edg_part") (value "0603WAF5101T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 5.1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/usb/cc_pull/") (tstamps "/02aa014b/0b4c02e3/"))
   (tstamps "022400f9"))
 (comp (ref "U1")
@@ -49,7 +46,6 @@
   (property (name "edg_refdes") (value "U1"))
   (property (name "edg_part") (value "TPS561201 (Texas Instruments)"))
   (property (name "edg_value") (value "TPS561201"))
-
   (sheetpath (names "/reg/") (tstamps "/028a013f/"))
   (tstamps "013700cd"))
 (comp (ref "R3")
@@ -62,7 +58,6 @@
   (property (name "edg_refdes") (value "R3"))
   (property (name "edg_part") (value "0603WAF3302T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 33kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/reg/fb/") (tstamps "/028a013f/013000c9/"))
   (tstamps "0c0c02fd"))
 (comp (ref "R4")
@@ -75,7 +70,6 @@
   (property (name "edg_refdes") (value "R4"))
   (property (name "edg_part") (value "0603WAF1002T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 10kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/reg/fb/") (tstamps "/028a013f/013000c9/"))
   (tstamps "175b043f"))
 (comp (ref "C1")
@@ -88,7 +82,6 @@
   (property (name "edg_refdes") (value "C1"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/reg/") (tstamps "/028a013f/"))
   (tstamps "11ed0398"))
 (comp (ref "C2")
@@ -101,7 +94,6 @@
   (property (name "edg_refdes") (value "C2"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/reg/") (tstamps "/028a013f/"))
   (tstamps "0f330353"))
 (comp (ref "L1")
@@ -114,7 +106,6 @@
   (property (name "edg_refdes") (value "L1"))
   (property (name "edg_part") (value "MGFL1608F6R8MT-LF (microgate)"))
   (property (name "edg_value") (value "400mA 6.8uH ±20% 530mΩ 0603 Inductors (SMD) ROHS"))
-
   (sheetpath (names "/reg/power_path/") (tstamps "/028a013f/1786043a/"))
   (tstamps "0f2b0369"))
 (comp (ref "C3")
@@ -127,7 +118,6 @@
   (property (name "edg_refdes") (value "C3"))
   (property (name "edg_part") (value "CL10A105KB8NNNC (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/reg/power_path/") (tstamps "/028a013f/1786043a/"))
   (tstamps "0879026b"))
 (comp (ref "C4")
@@ -140,7 +130,6 @@
   (property (name "edg_refdes") (value "C4"))
   (property (name "edg_part") (value "CL21A475KAQNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "25V 4.7uF X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/reg/power_path/") (tstamps "/028a013f/1786043a/"))
   (tstamps "0be902ec"))
 (comp (ref "J2")
@@ -153,7 +142,6 @@
   (property (name "edg_refdes") (value "J2"))
   (property (name "edg_part") (value "PinHeader1.27 Shrouded 2x5 (Generic)"))
   (property (name "edg_value") (value "PinHeader1.27 Shrouded 2x5"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "02ae014f"))
 (comp (ref "U2")
@@ -166,7 +154,6 @@
   (property (name "edg_refdes") (value "U2"))
   (property (name "edg_part") (value "STM32F103xxT6 (STMicroelectronics)"))
   (property (name "edg_value") (value "STM32F103xxT6"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "013700cd"))
 (comp (ref "C5")
@@ -179,7 +166,6 @@
   (property (name "edg_refdes") (value "C5"))
   (property (name "edg_part") (value "CL21A475KAQNNNE (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "25V 4.7uF X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168703d5"))
 (comp (ref "C6")
@@ -192,7 +178,6 @@
   (property (name "edg_refdes") (value "C6"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168903d6"))
 (comp (ref "C7")
@@ -205,7 +190,6 @@
   (property (name "edg_refdes") (value "C7"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168b03d7"))
 (comp (ref "C8")
@@ -218,7 +202,6 @@
   (property (name "edg_refdes") (value "C8"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))
   (property (name "edg_value") (value "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "168d03d8"))
 (comp (ref "C9")
@@ -231,7 +214,6 @@
   (property (name "edg_refdes") (value "C9"))
   (property (name "edg_part") (value "0603B103K500NT (FH(Guangdong Fenghua Advanced Tech))"))
   (property (name "edg_value") (value "50V 10nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "15dc03c2"))
 (comp (ref "C10")
@@ -244,7 +226,6 @@
   (property (name "edg_refdes") (value "C10"))
   (property (name "edg_part") (value "CL10A105KB8NNNC (Samsung Electro-Mechanics)"))
   (property (name "edg_value") (value "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"))
-
   (sheetpath (names "/mcu/") (tstamps "/02850146/"))
   (tstamps "15dd03c3"))
 (comp (ref "D1")
@@ -257,7 +238,6 @@
   (property (name "edg_refdes") (value "D1"))
   (property (name "edg_part") (value "KT-0603R (Hubei KENTO Elec)"))
   (property (name "edg_value") (value "Red 615~630nm 1.9~2.2V 0603 Light Emitting Diodes (LED) RoHS"))
-
   (sheetpath (names "/led/") (tstamps "/02750136/"))
   (tstamps "0b4e02cd"))
 (comp (ref "R5")
@@ -270,7 +250,6 @@
   (property (name "edg_refdes") (value "R5"))
   (property (name "edg_part") (value "0603WAF1001T5E (UNI-ROYAL(Uniroyal Elec))"))
   (property (name "edg_value") (value "±1% 1/10W Thick Film Resistors 75V ±100ppm/℃ -55℃~+155℃ 1kΩ 0603 Chip Resistor - Surface Mount ROHS"))
-
   (sheetpath (names "/led/") (tstamps "/02750136/"))
   (tstamps "0296014b")))
 (nets
