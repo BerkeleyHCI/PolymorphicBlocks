@@ -26,12 +26,18 @@ def arrange_blocks(blocks: List[NetBlock],
 
     # create list of blocks by path
     block_subblocks: Dict[Tuple[str, ...], Set[str]] = {}
-    block_footprints: Dict[Tuple[str, ...], List[NetBlock]] = {}
+    block_footprints: Dict[Tuple[str, ...], List[Union[NetBlock, Tuple[float, float, float, float]]]] = {}
 
     # for here, we only group one level deep
     for block in blocks:
         containing_path = block.full_path.blocks[0:min(len(block.full_path.blocks) - 1, 1)]
         block_footprints.setdefault(containing_path, []).append(block)
+        for i in range(len(containing_path)):
+            block_subblocks.setdefault(tuple(containing_path[:i]), set()).add(containing_path[i])
+
+    for path, bbox in additional_blocks:
+        containing_path = path.blocks[0:min(len(path.blocks) - 1, 1)]
+        block_footprints.setdefault(containing_path, []).append(bbox)
         for i in range(len(containing_path)):
             block_subblocks.setdefault(tuple(containing_path[:i]), set()).add(containing_path[i])
 
@@ -47,11 +53,19 @@ def arrange_blocks(blocks: List[NetBlock],
             sub_placed.append((subblock, subplaced.width + BLOCK_BORDER, subplaced.height + BLOCK_BORDER, subplaced))
 
         for footprint in block_footprints.get(root, []):
-            bbox = FootprintDataTable.bbox_of(footprint.footprint) or (1, 1, 1, 1)
+            if isinstance(footprint, NetBlock):
+                bbox = FootprintDataTable.bbox_of(footprint.footprint) or (1, 1, 1, 1)
+                key = footprint.refdes
+                entry = footprint
+            elif isinstance(footprint, tuple):
+                bbox = footprint
+                key =
+            else:
+                raise TypeError()
             width = bbox[2] - bbox[0] + FOOTPRINT_BORDER
             height = bbox[3] - bbox[1] + FOOTPRINT_BORDER
             # use refdes as key so it's globally unique, for when this is run with blocks grouped together
-            sub_placed.append((footprint.refdes, width, height, footprint))
+            sub_placed.append((key, width, height, entry))
 
         total_area = sum(width * height for _, width, height, _ in sub_placed)
         max_width = math.sqrt(total_area * ASPECT_RATIO)
@@ -181,12 +195,13 @@ class SvgPcbBackend(BaseBackend):
         arranged_blocks = arrange_blocks(other_blocks, svgpcb_block_bboxes)
         pos_dict = flatten_packed_block(arranged_blocks)
 
-        svgpcb_block_instantiations = [
-            f"const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.path)} = {block.fn_name}(pt(0, 0))"
-            for block in svgpcb_blocks
-        ]
+        # note, dimensions in inches, divide by 25.4 to convert from mm
+        svgpcb_block_instantiations = []
+        for block in svgpcb_blocks:
+            x_pos, y_pos = pos_dict.get(block.path, (0, 0))  # in mm, need to convert to in below
+            block_code = f"const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.path)} = {block.fn_name}(pt({x_pos/25.4:.3f}, {y_pos/25.4:.3f}))"
+            svgpcb_block_instantiations.append(block_code)
 
-        # note, dimensions in inches
         other_block_instantiations = []
         for block in other_blocks:
             x_pos, y_pos = pos_dict.get(block.full_path, (0, 0))  # in mm, need to convert to in below
