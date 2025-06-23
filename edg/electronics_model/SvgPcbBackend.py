@@ -185,9 +185,9 @@ class SvgPcbBackend(BaseBackend):
         for block in other_blocks:
             x_pos, y_pos = pos_dict.get(block.full_path, (0, 0))  # in mm, need to convert to in below
             block_code = f"""\
-const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(block.footprint)}, {{
+const {block.refdes} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(block.footprint)}, {{
   translate: pt({x_pos/25.4:.3f}, {y_pos/25.4:.3f}), rotate: 0,
-  id: '{SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)}'
+  id: '{block.refdes}'
 }})"""
             other_block_instantiations.append(block_code)
 
