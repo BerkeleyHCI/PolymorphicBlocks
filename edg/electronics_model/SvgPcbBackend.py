@@ -211,7 +211,7 @@ const outline = path(
   ["fillet", filletRadius, [xMax, yMax]],
   ["fillet", filletRadius, [xMax, yMin]],
   ["fillet", filletRadius, [xMin, yMin]],
-  ["fillet", filletRadius, [xMin, yMax]], 
+  ["fillet", filletRadius, [xMin, yMax]],
   [(xMin+xMax/2), yMax],
 );
 board.addShape("outline", outline);
