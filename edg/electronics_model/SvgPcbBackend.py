@@ -196,10 +196,7 @@ const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)} = board.
         full_code = f"""\
 const board = new PCB();
 
-{NEWLINE.join(svgpcb_block_instantiations)}
-
-
-{NEWLINE.join(other_block_instantiations)}
+{NEWLINE.join(svgpcb_block_instantiations + other_block_instantiations)}
 
 const limit0 = pt(-{2/25.4}, -{2/25.4});
 const limit1 = pt({arranged_blocks.width/25.4}, {arranged_blocks.height/25.4});
@@ -213,7 +210,7 @@ const outline = path(
   [(xMin+xMax/2), yMax],
   ["fillet", filletRadius, [xMax, yMax]],
   ["fillet", filletRadius, [xMax, yMin]],
-  ["fillet", filletRadius, [xMin, yMin]], 
+  ["fillet", filletRadius, [xMin, yMin]],
   ["fillet", filletRadius, [xMin, yMax]], 
   [(xMin+xMax/2), yMax],
 );
@@ -239,7 +236,7 @@ renderPCB({{
   mmPerUnit: 25.4
 }})
 
-// TODO FNS HERE
+{NEWLINE.join([block.svgpcb_code for block in svgpcb_blocks])}
 """
 
         return full_code
