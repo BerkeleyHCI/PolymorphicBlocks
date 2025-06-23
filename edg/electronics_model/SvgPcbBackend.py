@@ -49,6 +49,7 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
             bbox = FootprintDataTable.bbox_of(footprint.footprint) or (1, 1, 1, 1)
             width = bbox[2] - bbox[0] + FOOTPRINT_BORDER
             height = bbox[3] - bbox[1] + FOOTPRINT_BORDER
+            # use refdes as key so it's globally unique, for when this is run with blocks grouped together
             sub_placed.append((footprint.refdes, width, height, footprint))
 
         total_area = sum(width * height for _, width, height, _ in sub_placed)
@@ -148,26 +149,15 @@ class SvgPcbTransform(TransformUtil.Transform):
         return self._svgpcb_blocks
 
 
-class SvgPcbCompilerResult(NamedTuple):
-    functions: list[str]
-    instantiations: list[str]
-
-
 class SvgPcbBackend(BaseBackend):
     def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]:
         netlist = NetlistTransform(design).run()
         result = self._generate(design, netlist)
-        if result.functions:  # pack layout templates into a file
-            svgpcb_str = ""
-            svgpcb_str += "\n".join(result.functions)
-            svgpcb_str += "\n" + "\n".join(result.instantiations)
-            return [
-                (edgir.LocalPath(), svgpcb_str)
-            ]
-        else:
-            return []  # no layout templates, ignore
+        return [
+            (edgir.LocalPath(), result)
+        ]
 
-    def _generate(self, design: CompiledDesign, netlist: Netlist) -> SvgPcbCompilerResult:
+    def _generate(self, design: CompiledDesign, netlist: Netlist) -> str:
         """Generates SVBPCB fragments as a structured result"""
         def block_matches_prefixes(block: NetBlock, prefixes: List[Tuple[str, ...]]):
             for prefix in prefixes:
@@ -183,8 +173,8 @@ class SvgPcbBackend(BaseBackend):
         svgpcb_block_prefixes = [block.path.to_tuple() for block in svgpcb_blocks]
         netlist = NetlistTransform(design).run()
         other_blocks = filter_blocks_by_pathname(netlist.blocks, svgpcb_block_prefixes)
-
-        pos_dict = flatten_packed_block(arrange_netlist(netlist))
+        arranged_blocks = arrange_netlist(netlist)
+        pos_dict = flatten_packed_block(arranged_blocks)
 
         svgpcb_block_instantiations = [
             f"const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.path)} = {block.fn_name}(pt(0, 0))"
@@ -202,7 +192,54 @@ const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)} = board.
 }})"""
             other_block_instantiations.append(block_code)
 
-        return SvgPcbCompilerResult(
-            [block.svgpcb_code for block in svgpcb_blocks],
-            svgpcb_block_instantiations + other_block_instantiations
-        )
+        NEWLINE = '\n'
+        full_code = f"""\
+const board = new PCB();
+
+{NEWLINE.join(svgpcb_block_instantiations)}
+
+
+{NEWLINE.join(other_block_instantiations)}
+
+const limit0 = pt(-{2/25.4}, -{2/25.4});
+const limit1 = pt({arranged_blocks.width/25.4}, {arranged_blocks.height/25.4});
+const xMin = Math.min(limit0[0], limit1[0]);
+const xMax = Math.max(limit0[0], limit1[0]);
+const yMin = Math.min(limit0[1], limit1[1]);
+const yMax = Math.max(limit0[1], limit1[1]);
+
+const filletRadius = 0.1;
+const outline = path(
+  [(xMin+xMax/2), yMax],
+  ["fillet", filletRadius, [xMax, yMax]],
+  ["fillet", filletRadius, [xMax, yMin]],
+  ["fillet", filletRadius, [xMin, yMin]], 
+  ["fillet", filletRadius, [xMin, yMax]], 
+  [(xMin+xMax/2), yMax],
+);
+board.addShape("outline", outline);
+
+renderPCB({{
+  pcb: board,
+  layerColors: {{
+    "F.Paste": "#000000ff",
+    "F.Mask": "#000000ff",
+    "B.Mask": "#000000ff",
+    "componentLabels": "#00e5e5e5",
+    "outline": "#002d00ff",
+    "padLabels": "#ffff99e5",
+    "B.Cu": "#ef4e4eff",
+    "F.Cu": "#ff8c00cc",
+  }},
+  limits: {{
+    x: [xMin, xMax],
+    y: [yMin, yMax]
+  }},
+  background: "#00000000",
+  mmPerUnit: 25.4
+}})
+
+// TODO FNS HERE
+"""
+
+        return full_code
