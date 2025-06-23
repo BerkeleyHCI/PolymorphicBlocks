@@ -55,15 +55,14 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
         total_area = sum(width * height for _, width, height, _ in sub_placed)
         max_width = math.sqrt(total_area * ASPECT_RATIO)
 
-        y_pos = 0.0
         x_max = 0.0
         y_max = 0.0
         # track the y limits and y position of the prior elements
         x_stack: List[Tuple[float, float, float]] = []  # [(x pos of next, y pos, y limit)]
         elts: Dict[str, Tuple[Union[PlacedBlock, TransformUtil.Path], Tuple[float, float]]] = {}
         for name, width, height, entry in sorted(sub_placed, key=lambda x: -x[2]):  # by height
-            if not x_stack:
-                next_y = y_pos
+            if not x_stack:  # only on first component
+                next_y = 0
             else:
                 next_y = x_stack[-1][1]  # y position of the next element
 
