@@ -69,19 +69,19 @@ function SwitchMatrix_2_3_sw(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0.25, 
       index = yIndex * ncols + xIndex + 1
 
       buttonPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * yIndex]
-      obj.footprints[`sw[${xIndex},${yIndex}]`] = button = board.add(
+      obj.footprints[`SW{1 + xIndex * nrows + yIndex}`] = button = board.add(
         SW_Hotswap_Kailh_MX,
         {
           translate: buttonPos, rotate: 0,
-          id: `sw_sw_${xIndex}_${yIndex}_`
+          id: `SW{1 + xIndex * nrows + yIndex}`
         })
 
       diodePos = [buttonPos[0] + diodeOffset[0], buttonPos[1] + diodeOffset[1]]
-      obj[`d[${xIndex},${yIndex}]`] = diode = board.add(
+      obj[`D{1 + xIndex * nrows + yIndex}`] = diode = board.add(
         D_SOD_323,
         {
           translate: diodePos, rotate: 90,
-          id: `sw_d_${xIndex}_${yIndex}_`
+          id: `D{1 + xIndex * nrows + yIndex}`
         })
 
       // create stub wire for button -> column common line

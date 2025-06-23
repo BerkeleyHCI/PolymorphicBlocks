@@ -19,7 +19,6 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
 
     design_filename = os.path.join(target_dir, f'{target_name}.edg')
     netlist_filename = os.path.join(target_dir, f'{target_name}.net')
-    netlist_refdes_filename = os.path.join(target_dir, f'{target_name}.ref.net')
     bom_filename = os.path.join(target_dir, f'{target_name}.csv')
     svgpcb_filename = os.path.join(target_dir, f'{target_name}.svgpcb.js')
 
@@ -27,8 +26,6 @@ def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]
       os.remove(design_filename)
     with suppress(FileNotFoundError):
       os.remove(netlist_filename)
-    with suppress(FileNotFoundError):
-      os.remove(netlist_refdes_filename)
     with suppress(FileNotFoundError):
       os.remove(bom_filename)
     with suppress(FileNotFoundError):

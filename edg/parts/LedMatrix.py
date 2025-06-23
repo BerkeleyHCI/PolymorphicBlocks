@@ -15,13 +15,15 @@ class CharlieplexedLedMatrix(Light, GeneratorBlock, SvgPcbTemplateBlock):
   def _svgpcb_template(self) -> str:
     led_block = self._svgpcb_footprint_block_path_of(['led[0_0]'])
     res_block = self._svgpcb_footprint_block_path_of(['res[0]'])
+    led_reftype, led_refnum = self._svgpcb_refdes_of(['led[0_0]'])
+    res_reftype, res_refnum = self._svgpcb_refdes_of(['res[0]'])
     assert led_block is not None and res_block is not None
     led_footprint = self._svgpcb_footprint_of(led_block)
-    led_a_pin = self._svgpcb_pin_of(['led[0_0]'], ['a'], led_block)
-    led_k_pin = self._svgpcb_pin_of(['led[0_0]'], ['k'], led_block)
+    led_a_pin = self._svgpcb_pin_of(['led[0_0]'], ['a'])
+    led_k_pin = self._svgpcb_pin_of(['led[0_0]'], ['k'])
     res_footprint = self._svgpcb_footprint_of(res_block)
-    res_a_pin = self._svgpcb_pin_of(['res[0]'], ['a'], res_block)
-    res_b_pin = self._svgpcb_pin_of(['res[0]'], ['b'], res_block)
+    res_a_pin = self._svgpcb_pin_of(['res[0]'], ['a'])
+    res_b_pin = self._svgpcb_pin_of(['res[0]'], ['b'])
     assert all([pin is not None for pin in [led_a_pin, led_k_pin, res_a_pin, res_b_pin]])
 
     return f"""\
@@ -51,9 +53,9 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1) {{
 
     for (let xIndex=0; xIndex < kXCount; xIndex++) {{
       ledPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * yIndex]
-      obj.footprints[`led[${{yIndex}}_${{xIndex}}]`] = led = board.add({led_footprint}, {{
+      obj.footprints[`{led_reftype}${{{led_refnum} + yIndex + xIndex * kXCount}}`] = led = board.add({led_footprint}, {{
         translate: ledPos,
-        id: `{self._svgpcb_pathname()}_led_${{yIndex}}_${{xIndex}}_`
+        id: `{led_reftype}${{{led_refnum} + yIndex + xIndex * kXCount}}`
       }})
       rowLeds.push(led)
 
@@ -98,9 +100,9 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1) {{
   allResistors = []
   for (let xIndex=0; xIndex < kXCount; xIndex++) {{
     const resPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * kYCount]
-    obj.footprints[`res[${{xIndex + 1}}]`] = res = board.add({res_footprint}, {{
+    obj.footprints[`{res_reftype}${{{res_refnum} + xIndex + 1}}`] = res = board.add({res_footprint}, {{
       translate: resPos,
-      id: `{self._svgpcb_pathname()}_res_${{xIndex + 1}}_`
+      id: `{res_reftype}${{{res_refnum} + xIndex + 1}}`
     }})
     allResistors.push(res)
 

@@ -20,13 +20,15 @@ class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
   def _svgpcb_template(self) -> str:
     switch_block = self._svgpcb_footprint_block_path_of(['sw[0,0]'])
     diode_block = self._svgpcb_footprint_block_path_of(['d[0,0]'])
+    switch_reftype, switch_refnum = self._svgpcb_refdes_of(['sw[0,0]'])
+    diode_reftype, diode_refnum = self._svgpcb_refdes_of(['d[0,0]'])
     assert switch_block is not None and diode_block is not None
     switch_footprint = self._svgpcb_footprint_of(switch_block)
-    switch_sw_pin = self._svgpcb_pin_of(['sw[0,0]'], ['sw'], switch_block)
-    switch_com_pin = self._svgpcb_pin_of(['sw[0,0]'], ['com'], switch_block)
+    switch_sw_pin = self._svgpcb_pin_of(['sw[0,0]'], ['sw'])
+    switch_com_pin = self._svgpcb_pin_of(['sw[0,0]'], ['com'])
     diode_footprint = self._svgpcb_footprint_of(diode_block)
-    diode_a_pin = self._svgpcb_pin_of(['d[0,0]'], ['anode'], diode_block)
-    diode_k_pin = self._svgpcb_pin_of(['d[0,0]'], ['cathode'], diode_block)
+    diode_a_pin = self._svgpcb_pin_of(['d[0,0]'], ['anode'])
+    diode_k_pin = self._svgpcb_pin_of(['d[0,0]'], ['cathode'])
     assert all([pin is not None for pin in [switch_sw_pin, switch_com_pin, diode_a_pin, diode_k_pin]])
 
     return f"""\
@@ -55,19 +57,19 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0
       index = yIndex * ncols + xIndex + 1
 
       buttonPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * yIndex]
-      obj.footprints[`sw[${{xIndex}},${{yIndex}}]`] = button = board.add(
+      obj.footprints[`{switch_reftype}${{{switch_refnum} + xIndex * nrows + yIndex}}`] = button = board.add(
         {switch_footprint},
         {{
           translate: buttonPos, rotate: 0,
-          id: `{self._svgpcb_pathname()}_sw_${{xIndex}}_${{yIndex}}_`
+          id: `{switch_reftype}${{{switch_refnum} + xIndex * nrows + yIndex}}`
         }})
 
       diodePos = [buttonPos[0] + diodeOffset[0], buttonPos[1] + diodeOffset[1]]
-      obj[`d[${{xIndex}},${{yIndex}}]`] = diode = board.add(
+      obj[`{diode_reftype}${{{diode_refnum} + xIndex * nrows + yIndex}}`] = diode = board.add(
         {diode_footprint},
         {{
           translate: diodePos, rotate: 90,
-          id: `{self._svgpcb_pathname()}_d_${{xIndex}}_${{yIndex}}_`
+          id: `{diode_reftype}${{{diode_refnum} + xIndex * nrows + yIndex}}`
         }})
 
       // create stub wire for button -> column common line
