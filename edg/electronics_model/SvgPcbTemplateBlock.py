@@ -33,7 +33,15 @@ class SvgPcbTemplateBlock(Block):
         """Infrastructure method, returns the pathname for this Block as a JS-code-friendly string."""
         return self._svgpcb_pathname_to_svgpcb(self._svgpcb_pathname_data)
 
-    def _svgpcb_get(self, param: ConstraintExpr[Any, Any]) -> Optional[str]:
+    def _svgpcb_get(self, param: ConstraintExpr[Any, Any]) -> Any:
+        """Infrastructure method, returns the value of the ConstraintExpr. Asserts out if the value isn't available"""
+        param_path = self._svgpcb_ref_map.get(param, None)
+        assert param_path is not None
+        param_val = self._svgpcb_design.get_value(param_path)
+        assert param_val is not None:
+        return param_val
+
+    def _svgpcb_get_js(self, param: ConstraintExpr[Any, Any]) -> Optional[str]:
         """Infrastructure method, returns the value of the ConstraintExpr as a JS literal.
         Ranges are mapped to a two-element list."""
         param_path = self._svgpcb_ref_map.get(param, None)

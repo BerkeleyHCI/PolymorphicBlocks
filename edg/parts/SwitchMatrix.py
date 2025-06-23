@@ -15,7 +15,7 @@ class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
   Diode anodes are attached to the rows, while cathodes go through each switch to the cols.
   """
   def _svgpcb_fn_name_adds(self) -> Optional[str]:
-    return f"{self._svgpcb_get(self.ncols)}_{self._svgpcb_get(self.nrows)}"
+    return f"{self._svgpcb_get_js(self.ncols)}_{self._svgpcb_get_js(self.nrows)}"
 
   def _svgpcb_template(self) -> str:
     switch_block = self._svgpcb_footprint_block_path_of(['sw[0,0]'])
@@ -34,8 +34,8 @@ class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
     return f"""\
 function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0.25, 0]) {{
   // Circuit generator params
-  const ncols = {self._svgpcb_get(self.ncols)}
-  const nrows = {self._svgpcb_get(self.nrows)}
+  const ncols = {self._svgpcb_get_js(self.ncols)}
+  const nrows = {self._svgpcb_get_js(self.nrows)}
 
   // Global params
   const traceSize = 0.015
