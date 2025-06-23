@@ -114,7 +114,7 @@ class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):
     def select_package(nominal_capacitance: float, voltage: Range) -> Optional[str]:
       package_options = [spec for spec in self.PACKAGE_SPECS
                          if (not footprint or spec.name == footprint) and
-                         (Range.exact(FootprintAreaTable.area_of(spec.name)).fuzzy_in(self.get(self.footprint_area)))]
+                         (Range.exact(self._footprint_area(spec.name)).fuzzy_in(self.get(self.footprint_area)))]
 
       for package in package_options:
         if package.max >= nominal_capacitance:

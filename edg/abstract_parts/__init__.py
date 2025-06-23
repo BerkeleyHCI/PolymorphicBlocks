@@ -22,7 +22,7 @@ from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSub
 from .Categories import MultipackDevice
 
 from .ESeriesUtil import ESeriesUtil
-from .SelectorArea import SelectorArea, PartsTableAreaSelector, FootprintAreaTable
+from .SelectorArea import SelectorArea, PartsTableAreaSelector
 
 from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack, RfConnector, RfConnectorTestPoint, RfConnectorAntenna,\

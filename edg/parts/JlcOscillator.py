@@ -96,7 +96,7 @@ class JlcOscillator(TableOscillator, JlcTableSelector):
       return new_cols
 
     return cls._jlc_table().map_new_columns(parse_row).sort_by(  # TODO dedup w/ JlcTableSelector._row_sort_by
-      lambda row: [row[cls.BASIC_PART_HEADER], FootprintAreaTable.area_of(row[cls.KICAD_FOOTPRINT]), row[cls.COST]]
+      lambda row: [row[cls.BASIC_PART_HEADER], cls._row_area(row), row[cls.COST]]
     )
 
   def _row_generate(self, row: PartsTableRow) -> None:
