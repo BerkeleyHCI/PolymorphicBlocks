@@ -49,7 +49,7 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
             bbox = FootprintDataTable.bbox_of(footprint.footprint) or (1, 1, 1, 1)
             width = bbox[2] - bbox[0] + FOOTPRINT_BORDER
             height = bbox[3] - bbox[1] + FOOTPRINT_BORDER
-            sub_placed.append((footprint.full_path.blocks[-1], width, height, footprint))
+            sub_placed.append((footprint.refdes, width, height, footprint))
 
         total_area = sum(width * height for _, width, height, _ in sub_placed)
         max_width = math.sqrt(total_area * ASPECT_RATIO)

@@ -53,7 +53,7 @@ class PartPlacerTestCase(unittest.TestCase):
             nets=[]
         )
         arranged = arrange_netlist(netlist)
-        
+
         self.assertAlmostEqual(arranged.elts['A'][1][0], 0, places=2)
         self.assertAlmostEqual(arranged.elts['A'][1][1], 0, places=2)
         assert isinstance(arranged.elts['A'][0], PlacedBlock)
