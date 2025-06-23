@@ -19,7 +19,8 @@ class PlacedBlock(NamedTuple):
     width: float
 
 
-def arrange_netlist(netlist: Netlist) -> PlacedBlock:
+def arrange_blocks(blocks: List[NetBlock],
+                   additional_blocks: List[Tuple[TransformUtil.Path, Tuple[float, float, float, float]]] = []) -> PlacedBlock:
     FOOTPRINT_BORDER = 1  # mm
     BLOCK_BORDER = 2  # mm
 
@@ -28,7 +29,7 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
     block_footprints: Dict[Tuple[str, ...], List[NetBlock]] = {}
 
     # for here, we only group one level deep
-    for block in netlist.blocks:
+    for block in blocks:
         containing_path = block.full_path.blocks[0:min(len(block.full_path.blocks) - 1, 1)]
         block_footprints.setdefault(containing_path, []).append(block)
         for i in range(len(containing_path)):
@@ -115,6 +116,7 @@ class SvgPcbGeneratedBlock(NamedTuple):
     path: TransformUtil.Path
     fn_name: str
     svgpcb_code: str
+    bbox: Tuple[float, float, float, float]
 
 
 class SvgPcbTransform(TransformUtil.Transform):
@@ -138,7 +140,7 @@ class SvgPcbTransform(TransformUtil.Transform):
             generator_obj = cls()
             generator_obj._svgpcb_init(context.path, self.design, self.netlist)
             self._svgpcb_blocks.append(SvgPcbGeneratedBlock(
-                context.path, generator_obj._svgpcb_fn_name(), generator_obj._svgpcb_template()
+                context.path, generator_obj._svgpcb_fn_name(), generator_obj._svgpcb_template(), generator_obj._svgpcb_bbox()
             ))
         else:
             pass
@@ -168,11 +170,15 @@ class SvgPcbBackend(BaseBackend):
             return [block for block in blocks
                     if not block_matches_prefixes(block, exclude_prefixes)]
 
+        # handle blocks with svgpcb templates
         svgpcb_blocks = SvgPcbTransform(design, netlist).run()
-        svgpcb_block_prefixes = [block.path.to_tuple() for block in svgpcb_blocks]
+        svgpcb_block_bboxes = [(block.path, block.bbox) for block in svgpcb_blocks]
+
+        # handle footprints
         netlist = NetlistTransform(design).run()
+        svgpcb_block_prefixes = [block.path.to_tuple() for block in svgpcb_blocks]
         other_blocks = filter_blocks_by_pathname(netlist.blocks, svgpcb_block_prefixes)
-        arranged_blocks = arrange_netlist(netlist)
+        arranged_blocks = arrange_blocks(other_blocks, svgpcb_block_bboxes)
         pos_dict = flatten_packed_block(arranged_blocks)
 
         svgpcb_block_instantiations = [

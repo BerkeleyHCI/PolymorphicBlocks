@@ -1,8 +1,8 @@
 import unittest
 
 from . import TransformUtil
-from .NetlistGenerator import Netlist, NetBlock
-from .SvgPcbBackend import arrange_netlist, flatten_packed_block, PlacedBlock
+from .NetlistGenerator import NetBlock
+from .SvgPcbBackend import arrange_blocks, flatten_packed_block, PlacedBlock
 
 
 class PartPlacerTestCase(unittest.TestCase):
@@ -19,11 +19,7 @@ class PartPlacerTestCase(unittest.TestCase):
             footprint="Resistor_SMD:R_0603_1608Metric", refdes="R2", part="", value="",
             full_path=TransformUtil.Path.empty().append_block("R2"), path=[], class_path=[]
         )
-        netlist = Netlist(
-            blocks=[u1, r1, r2],
-            nets=[]
-        )
-        arranged = arrange_netlist(netlist)
+        arranged = arrange_blocks([u1, r1, r2])
         self.assertAlmostEqual(arranged.elts["U1"][1][0], 5.15, places=2)
         self.assertAlmostEqual(arranged.elts["U1"][1][1], 5.15, places=2)
         self.assertAlmostEqual(arranged.elts["R1"][1][0], 12.78, places=2)
@@ -48,11 +44,7 @@ class PartPlacerTestCase(unittest.TestCase):
             footprint="Resistor_SMD:R_0603_1608Metric", refdes="R3", part="", value="",
             full_path=TransformUtil.Path.empty().append_block('B').append_block("R3"), path=[], class_path=[]
         )
-        netlist = Netlist(
-            blocks=[u1, r1, r2, r3],
-            nets=[]
-        )
-        arranged = arrange_netlist(netlist)
+        arranged = arrange_blocks([u1, r1, r2, r3])
 
         self.assertAlmostEqual(arranged.elts['A'][1][0], 0, places=2)
         self.assertAlmostEqual(arranged.elts['A'][1][1], 0, places=2)

@@ -38,7 +38,7 @@ class SvgPcbTemplateBlock(Block):
         param_path = self._svgpcb_ref_map.get(param, None)
         assert param_path is not None
         param_val = self._svgpcb_design.get_value(param_path)
-        assert param_val is not None:
+        assert param_val is not None
         return param_val
 
     def _svgpcb_get_js(self, param: ConstraintExpr[Any, Any]) -> Optional[str]:
