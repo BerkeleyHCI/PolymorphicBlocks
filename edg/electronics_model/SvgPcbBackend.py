@@ -62,7 +62,7 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
         elts: Dict[str, Tuple[Union[PlacedBlock, TransformUtil.Path], Tuple[float, float]]] = {}
         for name, width, height, entry in sorted(sub_placed, key=lambda x: -x[2]):  # by height
             if not x_stack:  # only on first component
-                next_y = 0
+                next_y = 0.0
             else:
                 next_y = x_stack[-1][1]  # y position of the next element
 
