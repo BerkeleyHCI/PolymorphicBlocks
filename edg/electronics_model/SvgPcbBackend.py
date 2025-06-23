@@ -26,8 +26,10 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
     # create list of blocks by path
     block_subblocks: Dict[Tuple[str, ...], Set[str]] = {}
     block_footprints: Dict[Tuple[str, ...], List[NetBlock]] = {}
+
+    # for here, we only group one level deep
     for block in netlist.blocks:
-        containing_path = block.full_path.blocks[:-1]
+        containing_path = block.full_path.blocks[0:min(len(block.full_path.blocks) - 1, 1)]
         block_footprints.setdefault(containing_path, []).append(block)
         for i in range(len(containing_path)):
             block_subblocks.setdefault(tuple(containing_path[:i]), set()).add(containing_path[i])
@@ -82,9 +84,9 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
 
             if isinstance(entry, PlacedBlock):  # assumed (0, 0) at top left
                 elts[name] = (entry, (next_x, next_y))
-            elif isinstance(entry, NetBlock):  # account for footprint origin
+            elif isinstance(entry, NetBlock):  # account for footprint origin, flipping y-axis
                 bbox = FootprintDataTable.bbox_of(entry.footprint) or (0, 0, 0, 0)
-                elts[name] = (entry.full_path, (next_x - bbox[0], next_y - bbox[1]))
+                elts[name] = (entry.full_path, (next_x - bbox[0], next_y + bbox[3]))
             x_stack.append((next_x + width, next_y, next_y + height))
             x_max = max(x_max, next_x + width)
             y_max = max(y_max, next_y + height)
