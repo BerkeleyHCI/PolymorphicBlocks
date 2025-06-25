@@ -314,4 +314,4 @@ function {self._svgpcb_fn_name()}(xy, rot=90, radius=1, startAngle=0, endAngle=3
 """
 
     def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
-        return -1.0, -1.0, 1.0, 1.0
+        return -25.4 - 1.0, -25.4 - 1.0, 25.4 + 1.0, 25.4 + 1.0
