@@ -1,4 +1,4 @@
-from typing import Optional, Any, List
+from typing import Optional, Any, List, Tuple
 
 from abc import abstractmethod
 from ..core import *
@@ -33,26 +33,38 @@ class SvgPcbTemplateBlock(Block):
         """Infrastructure method, returns the pathname for this Block as a JS-code-friendly string."""
         return self._svgpcb_pathname_to_svgpcb(self._svgpcb_pathname_data)
 
-    def _svgpcb_get(self, param: ConstraintExpr[Any, Any]) -> Optional[str]:
-        """Infrastructure method, returns the value of the ConstraintExpr as a JS literal.
-        Ranges are mapped to a two-element list."""
+    def _svgpcb_get(self, param: ConstraintExpr[Any, Any]) -> Any:
+        """Infrastructure method, returns the value of the ConstraintExpr. Asserts out if the value isn't available"""
         param_path = self._svgpcb_ref_map.get(param, None)
-        if param_path is None:
-            return None
+        assert param_path is not None
         param_val = self._svgpcb_design.get_value(param_path)
-        if param_val is None:
-            return None
-        # TODO structure the output to be JS-friendly
-        return str(param_val)
+        assert param_val is not None
+        return param_val
 
-    def _svgpcb_footprint_block_path_of(self, block_ref: List[str]) -> Optional[TransformUtil.Path]:
-        """Infrastructure method, given the name of a container block, returns the block path of the footprint block
-        if there is exactly one. Otherwise, returns None."""
+    def _svgpcb_refdes_of(self, block_ref: List[str]) -> Tuple[str, int]:
+        """Returns the refdes of a block, as a tuple of prefix and number,
+        or crashes if the block is not valid."""
         block_path = self._svgpcb_pathname_data.append_block(*block_ref)
         candidate_blocks = [block for block in self._svgpcb_netlist.blocks
                             if block.full_path.startswith(block_path)]
-        if len(candidate_blocks) != 1:
-            return None
+        assert len(candidate_blocks) == 1
+        refdes = candidate_blocks[0].refdes
+        assert isinstance(refdes, str)
+        assert refdes is not None
+        for i in reversed(range(len(refdes))):  # split between letter and numeric parts
+            if refdes[i].isalpha():
+                if i == len(refdes) - 1:
+                    return refdes, -1  # fallback if no numeric portion
+                return refdes[:i+1], int(refdes[i+1:])
+        return "", int(refdes)
+
+    def _svgpcb_footprint_block_path_of(self, block_ref: List[str]) -> TransformUtil.Path:
+        """Infrastructure method, given the name of a container block, returns the block path of the footprint block.
+        Asserts there is exactly one."""
+        block_path = self._svgpcb_pathname_data.append_block(*block_ref)
+        candidate_blocks = [block for block in self._svgpcb_netlist.blocks
+                            if block.full_path.startswith(block_path)]
+        assert len(candidate_blocks) == 1
         return candidate_blocks[0].full_path
 
     def _svgpcb_footprint_of(self, path: TransformUtil.Path) -> str:
@@ -63,18 +75,17 @@ class SvgPcbTemplateBlock(Block):
         assert len(candidate_blocks) == 1
         return self._svgpcb_footprint_to_svgpcb(candidate_blocks[0].footprint)
 
-    def _svgpcb_pin_of(self, block_ref: List[str], pin_ref: List[str], footprint_path: TransformUtil.Path) -> Optional[str]:
+    def _svgpcb_pin_of(self, block_ref: List[str], pin_ref: List[str]) -> str:
         """Infrastructure method, given a footprint path from _svgpcb_footprint_block_path_of and a port that should
-        be connected to one of its pins, returns the footprint pin that the port is connected to, if any."""
-        port_path = self._svgpcb_pathname_data.append_block(*block_ref).append_port(*pin_ref)
+        be connected to one of its pins, returns the footprint pin that the port is connected to."""
+        footprint_path = self._svgpcb_footprint_block_path_of(block_ref)
+        port_path = footprint_path.append_port(*pin_ref)
         candidate_nets = [net for net in self._svgpcb_netlist.nets
                           if port_path in net.ports]
-        if len(candidate_nets) != 1:
-            return None
+        assert len(candidate_nets) == 1
         candidate_pins = [pin for pin in candidate_nets[0].pins
                           if pin.block_path == footprint_path]
-        if len(candidate_pins) != 1:
-            return None
+        assert len(candidate_pins) == 1
         return candidate_pins[0].pin_name
 
     def _svgpcb_fn_name_adds(self) -> Optional[str]:
@@ -89,6 +100,10 @@ class SvgPcbTemplateBlock(Block):
             return f"""{self.__class__.__name__}_{optional_adds}_{self._svgpcb_pathname()}"""
         else:
             return f"""{self.__class__.__name__}_{self._svgpcb_pathname()}"""
+
+    def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
+        """Returns the bounding box (xmin, ymin, xmax, ymax) in mm of the svgpcb layout with default parameters."""
+        return 0.0, 0.0, 1.0, 1.0
 
     @abstractmethod
     def _svgpcb_template(self) -> str:

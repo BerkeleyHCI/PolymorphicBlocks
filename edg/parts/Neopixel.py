@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 from ..abstract_parts import *
 from .JlcPart import JlcPart
@@ -191,12 +191,13 @@ class NeopixelArrayCircular(NeopixelArray, SvgPcbTemplateBlock):
 
     def _svgpcb_template(self) -> str:
         led_block = self._svgpcb_footprint_block_path_of(['led[0]'])
+        led_reftype, led_refnum = self._svgpcb_refdes_of(['led[0]'])
         assert led_block is not None
         led_footprint = self._svgpcb_footprint_of(led_block)
-        led_vdd_pin = self._svgpcb_pin_of(['led[0]'], ['vdd'], led_block)
-        led_gnd_pin = self._svgpcb_pin_of(['led[0]'], ['gnd'], led_block)
-        led_din_pin = self._svgpcb_pin_of(['led[0]'], ['din'], led_block)
-        led_dout_pin = self._svgpcb_pin_of(['led[0]'], ['dout'], led_block)
+        led_vdd_pin = self._svgpcb_pin_of(['led[0]'], ['vdd'])
+        led_gnd_pin = self._svgpcb_pin_of(['led[0]'], ['gnd'])
+        led_din_pin = self._svgpcb_pin_of(['led[0]'], ['din'])
+        led_dout_pin = self._svgpcb_pin_of(['led[0]'], ['dout'])
         assert all([pin is not None for pin in [led_vdd_pin, led_gnd_pin, led_din_pin, led_dout_pin]])
 
         return f"""\
@@ -269,10 +270,10 @@ function {self._svgpcb_fn_name()}(xy, rot=90, radius=1, startAngle=0, endAngle=3
   for (i=0; i<kCount; i++) {{
     const angle = startAngle + incrAngle * i
     const origin = pAdd(xy, vRotate([radius, 0], angle))
-    obj.footprints[`led[${{i}}]`] = led = board.add({led_footprint}, {{
+    obj.footprints[`{led_reftype}${{{led_refnum} + i}}`] = led = board.add({led_footprint}, {{
       translate: origin,
       rotate: angle + rot,
-      id: `{self._svgpcb_pathname()}_led_${{i}}_`
+      id: `{led_reftype}${{{led_refnum} + i}}`
     }})
 
     const gndOrigin = pAdd(xy, vRotate([radius - powerRadiusOffset, 0], angle))
@@ -311,3 +312,6 @@ function {self._svgpcb_fn_name()}(xy, rot=90, radius=1, startAngle=0, endAngle=3
   return obj
 }}
 """
+
+    def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
+        return -25.4 - 1.0, -25.4 - 1.0, 25.4 + 1.0, 25.4 + 1.0
