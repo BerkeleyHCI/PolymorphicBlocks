@@ -187,7 +187,7 @@ class NeopixelArray(Light, GeneratorBlock):
 class NeopixelArrayCircular(NeopixelArray, SvgPcbTemplateBlock):
     """An array of Neopixels, with a circular layout template"""
     def _svgpcb_fn_name_adds(self) -> Optional[str]:
-        return f"{self._svgpcb_get_js(self.count)}"
+        return f"{self._svgpcb_get(self.count)}"
 
     def _svgpcb_template(self) -> str:
         led_block = self._svgpcb_footprint_block_path_of(['led[0]'])
@@ -202,7 +202,7 @@ class NeopixelArrayCircular(NeopixelArray, SvgPcbTemplateBlock):
 
         return f"""\
 function {self._svgpcb_fn_name()}(xy, rot=90, radius=1, startAngle=0, endAngle=360, powerRadiusOffset=0.2) {{
-  const kCount = {self._svgpcb_get_js(self.count)}
+  const kCount = {self._svgpcb_get(self.count)}
 
   // Global params
   const traceWidth = 0.015

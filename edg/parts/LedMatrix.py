@@ -10,7 +10,7 @@ class CharlieplexedLedMatrix(Light, GeneratorBlock, SvgPcbTemplateBlock):
   A generalization of https://en.wikipedia.org/wiki/Charlieplexing#/media/File:3-pin_Charlieplexing_matrix_with_common_resistors.svg
   """
   def _svgpcb_fn_name_adds(self) -> Optional[str]:
-    return f"{self._svgpcb_get_js(self.ncols)}_{self._svgpcb_get_js(self.nrows)}"
+    return f"{self._svgpcb_get(self.ncols)}_{self._svgpcb_get(self.nrows)}"
 
   def _svgpcb_template(self) -> str:
     led_block = self._svgpcb_footprint_block_path_of(['led[0_0]'])
@@ -28,8 +28,8 @@ class CharlieplexedLedMatrix(Light, GeneratorBlock, SvgPcbTemplateBlock):
 
     return f"""\
 function {self._svgpcb_fn_name()}(xy, colSpacing=0.2, rowSpacing=0.2) {{
-  const kXCount = {self._svgpcb_get_js(self.ncols)}  // number of columns (x dimension)
-  const kYCount = {self._svgpcb_get_js(self.nrows)}  // number of rows (y dimension)
+  const kXCount = {self._svgpcb_get(self.ncols)}  // number of columns (x dimension)
+  const kYCount = {self._svgpcb_get(self.nrows)}  // number of rows (y dimension)
 
   // Global params
   const traceSize = 0.015
