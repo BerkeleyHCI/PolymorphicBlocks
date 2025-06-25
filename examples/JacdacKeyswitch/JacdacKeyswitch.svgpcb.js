@@ -1,153 +1,213 @@
 const board = new PCB();
 
-const jlc_th_th1 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th1
+const H1 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(0.862, 1.038), rotate: 0,
-  id: 'jlc_th_th1'
+  id: 'H1'
 })
-const jlc_th_th2 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th2
+const H2 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(0.902, 1.038), rotate: 0,
-  id: 'jlc_th_th2'
+  id: 'H2'
 })
-const jlc_th_th3 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th3
+const H3 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(0.862, 1.078), rotate: 0,
-  id: 'jlc_th_th3'
+  id: 'H3'
 })
-const edge_conn = board.add(JD_PEC_02_Prerouted_recessed, {
+// edge.conn
+const EC1 = board.add(JD_PEC_02_Prerouted_recessed, {
   translate: pt(0.113, 0.883), rotate: 0,
-  id: 'edge_conn'
+  id: 'EC1'
 })
-const edge_status_led_package = board.add(LED_0603_1608Metric, {
+// edge.status_led.package
+const D1 = board.add(LED_0603_1608Metric, {
   translate: pt(0.058, 0.718), rotate: 0,
-  id: 'edge_status_led_package'
+  id: 'D1'
 })
-const edge_status_led_res = board.add(R_0603_1608Metric, {
+// edge.status_led.res
+const R1 = board.add(R_0603_1608Metric, {
   translate: pt(0.058, 0.815), rotate: 0,
-  id: 'edge_status_led_res'
+  id: 'R1'
 })
-const edge_tvs_jd_pwr_diode = board.add(D_0402_1005Metric, {
+// edge.tvs_jd_pwr.diode
+const D2 = board.add(D_0402_1005Metric, {
   translate: pt(0.193, 0.805), rotate: 0,
-  id: 'edge_tvs_jd_pwr_diode'
+  id: 'D2'
 })
-const edge_tvs_jd_data_diode = board.add(D_0402_1005Metric, {
+// edge.tvs_jd_data.diode
+const D3 = board.add(D_0402_1005Metric, {
   translate: pt(0.037, 0.902), rotate: 0,
-  id: 'edge_tvs_jd_data_diode'
+  id: 'D3'
 })
-const jd_mh1 = board.add(jacdac_hole_DATA_notched_MH1, {
+// jd_mh1
+const MH1 = board.add(jacdac_hole_DATA_notched_MH1, {
   translate: pt(1.020, 1.038), rotate: 0,
-  id: 'jd_mh1'
+  id: 'MH1'
 })
-const jd_mh2 = board.add(jacdac_hole_GND_MH2, {
+// jd_mh2
+const MH2 = board.add(jacdac_hole_GND_MH2, {
   translate: pt(1.059, 1.038), rotate: 0,
-  id: 'jd_mh2'
+  id: 'MH2'
 })
-const jd_mh3 = board.add(jacdac_hole_PWR_MH3, {
+// jd_mh3
+const MH3 = board.add(jacdac_hole_PWR_MH3, {
   translate: pt(1.098, 1.038), rotate: 0,
-  id: 'jd_mh3'
+  id: 'MH3'
 })
-const jd_mh4 = board.add(jacdac_hole_GND_MH4, {
+// jd_mh4
+const MH4 = board.add(jacdac_hole_GND_MH4, {
   translate: pt(1.138, 1.038), rotate: 0,
-  id: 'jd_mh4'
+  id: 'MH4'
 })
-const edge2_conn = board.add(JD_PEC_02_Prerouted_recessed, {
+// edge2.conn
+const EC2 = board.add(JD_PEC_02_Prerouted_recessed, {
   translate: pt(0.460, 0.883), rotate: 0,
-  id: 'edge2_conn'
+  id: 'EC2'
 })
-const edge2_status_led_package = board.add(LED_0603_1608Metric, {
+// edge2.status_led.package
+const D4 = board.add(LED_0603_1608Metric, {
   translate: pt(0.406, 0.718), rotate: 0,
-  id: 'edge2_status_led_package'
+  id: 'D4'
 })
-const edge2_status_led_res = board.add(R_0603_1608Metric, {
+// edge2.status_led.res
+const R2 = board.add(R_0603_1608Metric, {
   translate: pt(0.406, 0.815), rotate: 0,
-  id: 'edge2_status_led_res'
+  id: 'R2'
 })
-const edge2_tvs_jd_pwr_diode = board.add(D_0402_1005Metric, {
+// edge2.tvs_jd_pwr.diode
+const D5 = board.add(D_0402_1005Metric, {
   translate: pt(0.540, 0.805), rotate: 0,
-  id: 'edge2_tvs_jd_pwr_diode'
+  id: 'D5'
 })
-const edge2_tvs_jd_data_diode = board.add(D_0402_1005Metric, {
+// edge2.tvs_jd_data.diode
+const D6 = board.add(D_0402_1005Metric, {
   translate: pt(0.384, 0.902), rotate: 0,
-  id: 'edge2_tvs_jd_data_diode'
+  id: 'D6'
 })
-const tp_gnd_tp = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0.659, 1.091), rotate: 0,
-  id: 'tp_gnd_tp'
-})
-const tp_jd_pwr_tp = board.add(TestPoint_Keystone_5015_Micro_Minature, {
+// tp_gnd.tp
+const TP1 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
   translate: pt(0.085, 1.091), rotate: 0,
-  id: 'tp_jd_pwr_tp'
+  id: 'TP1'
 })
-const reg_3v3_ic = board.add(SOT_23_5, {
-  translate: pt(0.775, 0.756), rotate: 0,
-  id: 'reg_3v3_ic'
-})
-const reg_3v3_in_cap_cap = board.add(C_0603_1608Metric, {
-  translate: pt(0.753, 0.891), rotate: 0,
-  id: 'reg_3v3_in_cap_cap'
-})
-const reg_3v3_out_cap_cap = board.add(C_0603_1608Metric, {
-  translate: pt(0.909, 0.891), rotate: 0,
-  id: 'reg_3v3_out_cap_cap'
-})
-const tp_3v3_tp = board.add(TestPoint_Keystone_5015_Micro_Minature, {
+// tp_jd_pwr.tp
+const TP2 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
   translate: pt(0.372, 1.091), rotate: 0,
-  id: 'tp_3v3_tp'
+  id: 'TP2'
 })
-const mcu_swd_conn = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
+// reg_3v3.ic
+const U1 = board.add(SOT_23_5, {
+  translate: pt(0.775, 0.756), rotate: 0,
+  id: 'U1'
+})
+// reg_3v3.in_cap.cap
+const C1 = board.add(C_0603_1608Metric, {
+  translate: pt(0.753, 0.891), rotate: 0,
+  id: 'C1'
+})
+// reg_3v3.out_cap.cap
+const C2 = board.add(C_0603_1608Metric, {
+  translate: pt(0.909, 0.891), rotate: 0,
+  id: 'C2'
+})
+// tp_3v3.tp
+const TP3 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
+  translate: pt(0.659, 1.091), rotate: 0,
+  id: 'TP3'
+})
+// mcu.swd.conn
+const J1 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
   translate: pt(0.870, 0.325), rotate: 0,
-  id: 'mcu_swd_conn'
+  id: 'J1'
 })
-const mcu_ic = board.add(QFN_28_4x4mm_P0_5mm, {
+// mcu.ic
+const U2 = board.add(QFN_28_4x4mm_P0_5mm, {
   translate: pt(0.836, 0.104), rotate: 0,
-  id: 'mcu_ic'
+  id: 'U2'
 })
-const mcu_pwr_cap0_cap = board.add(C_0805_2012Metric, {
+// mcu.pwr_cap0.cap
+const C3 = board.add(C_0805_2012Metric, {
   translate: pt(1.114, 0.285), rotate: 0,
-  id: 'mcu_pwr_cap0_cap'
+  id: 'C3'
 })
-const mcu_pwr_cap1_cap = board.add(C_0603_1608Metric, {
+// mcu.pwr_cap1.cap
+const C4 = board.add(C_0603_1608Metric, {
   translate: pt(0.791, 0.472), rotate: 0,
-  id: 'mcu_pwr_cap1_cap'
+  id: 'C4'
 })
-const sw_package = board.add(SW_Hotswap_Kailh_MX, {
+// sw.package
+const SW1 = board.add(SW_Hotswap_Kailh_MX, {
   translate: pt(0.307, 0.285), rotate: 0,
-  id: 'sw_package'
+  id: 'SW1'
 })
-const rgb_package = board.add(LED_LiteOn_LTST_C19HE1WT, {
+// rgb.package
+const D7 = board.add(LED_LiteOn_LTST_C19HE1WT, {
   translate: pt(1.126, 0.744), rotate: 0,
-  id: 'rgb_package'
+  id: 'D7'
 })
-const rgb_red_res = board.add(R_0603_1608Metric, {
+// rgb.red_res
+const R3 = board.add(R_0603_1608Metric, {
   translate: pt(1.265, 0.718), rotate: 0,
-  id: 'rgb_red_res'
+  id: 'R3'
 })
-const rgb_green_res = board.add(R_0603_1608Metric, {
+// rgb.green_res
+const R4 = board.add(R_0603_1608Metric, {
   translate: pt(1.143, 0.867), rotate: 0,
-  id: 'rgb_green_res'
+  id: 'R4'
 })
-const rgb_blue_res = board.add(R_0603_1608Metric, {
+// rgb.blue_res
+const R5 = board.add(R_0603_1608Metric, {
   translate: pt(1.299, 0.867), rotate: 0,
-  id: 'rgb_blue_res'
+  id: 'R5'
 })
-const jd_if_ferrite = board.add(L_0603_1608Metric, {
+// jd_if.ferrite
+const FB1 = board.add(L_0603_1608Metric, {
   translate: pt(1.357, 0.143), rotate: 0,
-  id: 'jd_if_ferrite'
+  id: 'FB1'
 })
-const jd_if_rc_r = board.add(R_0603_1608Metric, {
+// jd_if.rc.r
+const R6 = board.add(R_0603_1608Metric, {
   translate: pt(1.513, 0.143), rotate: 0,
-  id: 'jd_if_rc_r'
+  id: 'R6'
 })
-const jd_if_rc_c = board.add(C_0603_1608Metric, {
+// jd_if.rc.c
+const C5 = board.add(C_0603_1608Metric, {
   translate: pt(1.357, 0.240), rotate: 0,
-  id: 'jd_if_rc_c'
+  id: 'C5'
 })
-const jd_if_clamp_hi = board.add(D_SOD_323, {
+// jd_if.clamp_hi
+const D8 = board.add(D_SOD_323, {
   translate: pt(1.363, 0.037), rotate: 0,
-  id: 'jd_if_clamp_hi'
+  id: 'D8'
 })
-const jd_if_clamp_lo = board.add(D_SOD_323, {
+// jd_if.clamp_lo
+const D9 = board.add(D_SOD_323, {
   translate: pt(1.528, 0.037), rotate: 0,
-  id: 'jd_if_clamp_lo'
+  id: 'D9'
 })
+
+board.setNetlist([
+  {name: "jd_data.jd_data", pads: [["MH1", "MH1"], ["EC1", "1"], ["EC2", "1"], ["FB1", "1"], ["D3", "1"], ["D6", "1"]]},
+  {name: "jd_pwr", pads: [["MH3", "MH3"], ["EC1", "3"], ["EC2", "3"], ["TP2", "1"], ["U1", "1"], ["D2", "1"], ["U1", "3"], ["D5", "1"], ["C1", "1"]]},
+  {name: "gnd", pads: [["MH2", "MH2"], ["MH4", "MH4"], ["EC1", "2"], ["EC2", "2"], ["TP1", "1"], ["U1", "2"], ["U2", "4"], ["SW1", "2"], ["R1", "2"], ["D2", "2"], ["D3", "2"], ["D9", "2"], ["R2", "2"], ["D5", "2"], ["D6", "2"], ["C1", "2"], ["C2", "2"], ["J1", "5"], ["C3", "2"], ["C4", "2"], ["C5", "2"]]},
+  {name: "jd_status", pads: [["U2", "1"], ["D1", "2"], ["D4", "2"]]},
+  {name: "v3v3", pads: [["U1", "5"], ["TP3", "1"], ["U2", "3"], ["D7", "2"], ["D8", "1"], ["C2", "1"], ["J1", "1"], ["C3", "1"], ["C4", "1"]]},
+  {name: "sw.out", pads: [["U2", "19"], ["SW1", "1"]]},
+  {name: "rgb.signals.red", pads: [["U2", "16"], ["R3", "2"]]},
+  {name: "rgb.signals.green", pads: [["U2", "17"], ["R4", "2"]]},
+  {name: "rgb.signals.blue", pads: [["U2", "15"], ["R5", "2"]]},
+  {name: "jd_if.signal", pads: [["U2", "26"], ["D8", "2"], ["D9", "1"], ["R6", "1"]]},
+  {name: "edge.status_led.res.a", pads: [["R1", "1"], ["D1", "1"]]},
+  {name: "edge2.status_led.res.a", pads: [["R2", "1"], ["D4", "1"]]},
+  {name: "mcu.swd_node.swdio", pads: [["U2", "20"], ["J1", "2"]]},
+  {name: "mcu.swd_node.swclk", pads: [["U2", "21"], ["J1", "4"]]},
+  {name: "mcu.reset_node", pads: [["U2", "5"], ["J1", "3"]]},
+  {name: "mcu.swd.swo", pads: [["J1", "6"]]},
+  {name: "rgb.red_res.a", pads: [["R3", "1"], ["D7", "3"]]},
+  {name: "rgb.green_res.a", pads: [["R4", "1"], ["D7", "4"]]},
+  {name: "rgb.blue_res.a", pads: [["R5", "1"], ["D7", "1"]]},
+  {name: "jd_if.ferrite.b", pads: [["FB1", "2"], ["R6", "2"], ["C5", "1"]]}
+])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
 const limit1 = pt(1.709448818897638, 1.2625984251968505);

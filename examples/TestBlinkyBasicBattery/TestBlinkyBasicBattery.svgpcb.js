@@ -1,33 +1,52 @@
 const board = new PCB();
 
-const bat_cell_0_ = board.add(BatteryHolder_Keystone_2460_1xAA, {
+// bat.cell[0]
+const U1 = board.add(BatteryHolder_Keystone_2460_1xAA, {
   translate: pt(0.108, 0.343), rotate: 0,
-  id: 'bat_cell_0_'
+  id: 'U1'
 })
-const bat_cell_1_ = board.add(BatteryHolder_Keystone_2460_1xAA, {
+// bat.cell[1]
+const U2 = board.add(BatteryHolder_Keystone_2460_1xAA, {
   translate: pt(0.108, 1.067), rotate: 0,
-  id: 'bat_cell_1_'
+  id: 'U2'
 })
-const bat_cell_2_ = board.add(BatteryHolder_Keystone_2460_1xAA, {
+// bat.cell[2]
+const U3 = board.add(BatteryHolder_Keystone_2460_1xAA, {
   translate: pt(0.108, 1.791), rotate: 0,
-  id: 'bat_cell_2_'
+  id: 'U3'
 })
-const bat_cell_3_ = board.add(BatteryHolder_Keystone_2460_1xAA, {
+// bat.cell[3]
+const U4 = board.add(BatteryHolder_Keystone_2460_1xAA, {
   translate: pt(0.108, 2.516), rotate: 0,
-  id: 'bat_cell_3_'
+  id: 'U4'
 })
-const mcu = board.add(XIAO_RP2040_SMD, {
+// mcu
+const U5 = board.add(XIAO_RP2040_SMD, {
   translate: pt(2.730, 0.410), rotate: 0,
-  id: 'mcu'
+  id: 'U5'
 })
-const led_package = board.add(LED_0603_1608Metric, {
+// led.package
+const D1 = board.add(LED_0603_1608Metric, {
   translate: pt(3.180, 0.029), rotate: 0,
-  id: 'led_package'
+  id: 'D1'
 })
-const led_res = board.add(R_0603_1608Metric, {
+// led.res
+const R1 = board.add(R_0603_1608Metric, {
   translate: pt(3.180, 0.126), rotate: 0,
-  id: 'led_res'
+  id: 'R1'
 })
+
+board.setNetlist([
+  {name: "mcu.pwr_vin", pads: [["U4", "1"]]},
+  {name: "mcu.gnd", pads: [["U5", "13"], ["U1", "2"], ["R1", "2"]]},
+  {name: "led.signal", pads: [["U5", "7"], ["D1", "2"]]},
+  {name: "bat.cell[0].pwr", pads: [["U1", "1"], ["U2", "2"]]},
+  {name: "bat.cell[1].pwr", pads: [["U2", "1"], ["U3", "2"]]},
+  {name: "bat.cell[2].pwr", pads: [["U3", "1"], ["U4", "2"]]},
+  {name: "mcu.pwr_out", pads: [["U5", "12"]]},
+  {name: "mcu.vusb_out", pads: [["U5", "14"]]},
+  {name: "led.res.a", pads: [["R1", "1"], ["D1", "1"]]}
+])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
 const limit1 = pt(3.356102362204725, 2.9763779527559056);

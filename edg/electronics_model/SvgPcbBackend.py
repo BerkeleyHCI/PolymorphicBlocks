@@ -14,25 +14,41 @@ class PlacedBlock(NamedTuple):
     """A placement of a hierarchical block, including the coordinates of its immediate elements.
     Elements are placed in local space, with (0, 0) as the origin and elements moved as a group.
     Elements are indexed by name."""
-    elts: Dict[str, Tuple[Union['PlacedBlock', TransformUtil.Path], Tuple[float, float]]]  # name -> elt, (x, y)
+    elts: List[Tuple[Union['PlacedBlock', TransformUtil.Path], Tuple[float, float]]]  # name -> elt, (x, y)
     height: float
     width: float
 
 
-def arrange_netlist(netlist: Netlist) -> PlacedBlock:
+class BlackBoxBlock(NamedTuple):
+    path: TransformUtil.Path
+    bbox: Tuple[float, float, float, float]
+
+
+def arrange_blocks(blocks: List[NetBlock],
+                   additional_blocks: List[BlackBoxBlock] = []) -> PlacedBlock:
     FOOTPRINT_BORDER = 1  # mm
     BLOCK_BORDER = 2  # mm
 
     # create list of blocks by path
-    block_subblocks: Dict[Tuple[str, ...], Set[str]] = {}
-    block_footprints: Dict[Tuple[str, ...], List[NetBlock]] = {}
+    block_subblocks: Dict[Tuple[str, ...], List[str]] = {}  # list to maintain sortedness
+    block_footprints: Dict[Tuple[str, ...], List[Union[NetBlock, BlackBoxBlock]]] = {}
 
     # for here, we only group one level deep
-    for block in netlist.blocks:
+    for block in blocks:
         containing_path = block.full_path.blocks[0:min(len(block.full_path.blocks) - 1, 1)]
         block_footprints.setdefault(containing_path, []).append(block)
         for i in range(len(containing_path)):
-            block_subblocks.setdefault(tuple(containing_path[:i]), set()).add(containing_path[i])
+            subblocks_list = block_subblocks.setdefault(tuple(containing_path[:i]), list())
+            if containing_path[i] not in subblocks_list:
+                subblocks_list.append(containing_path[i])
+
+    for blackbox in additional_blocks:
+        containing_path = blackbox.path.blocks[0:min(len(blackbox.path.blocks) - 1, 1)]
+        block_footprints.setdefault(containing_path, []).append(blackbox)
+        for i in range(len(containing_path)):
+            subblocks_list = block_subblocks.setdefault(tuple(containing_path[:i]), list())
+            if containing_path[i] not in subblocks_list:
+                subblocks_list.append(containing_path[i])
 
     def arrange_hierarchy(root: Tuple[str, ...]) -> PlacedBlock:
         """Recursively arranges the immediate components of a hierarchy, treating each element
@@ -40,27 +56,34 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
         # TODO don't count borders as part of a block's width / height
         ASPECT_RATIO = 16 / 9
 
-        sub_placed: List[Tuple[str, float, float, Union[PlacedBlock, NetBlock]]] = []  # (name, width, height, PlacedBlock or footprint)
-        for subblock in block_subblocks.get(root, set()):
+        sub_placed: List[Tuple[float, float, Union[PlacedBlock, NetBlock, BlackBoxBlock]]] = []  # (width, height, entry)
+        for subblock in block_subblocks.get(root, list()):
             subplaced = arrange_hierarchy(root + (subblock,))
-            sub_placed.append((subblock, subplaced.width + BLOCK_BORDER, subplaced.height + BLOCK_BORDER, subplaced))
+            sub_placed.append((subplaced.width + BLOCK_BORDER, subplaced.height + BLOCK_BORDER, subplaced))
 
         for footprint in block_footprints.get(root, []):
-            bbox = FootprintDataTable.bbox_of(footprint.footprint) or (1, 1, 1, 1)
+            if isinstance(footprint, NetBlock):
+                bbox = FootprintDataTable.bbox_of(footprint.footprint) or (1, 1, 1, 1)
+                entry: Union[PlacedBlock, NetBlock, BlackBoxBlock] = footprint
+            elif isinstance(footprint, BlackBoxBlock):
+                bbox = footprint.bbox
+                entry = footprint
+            else:
+                raise TypeError()
             width = bbox[2] - bbox[0] + FOOTPRINT_BORDER
             height = bbox[3] - bbox[1] + FOOTPRINT_BORDER
             # use refdes as key so it's globally unique, for when this is run with blocks grouped together
-            sub_placed.append((footprint.refdes, width, height, footprint))
+            sub_placed.append((width, height, entry))
 
-        total_area = sum(width * height for _, width, height, _ in sub_placed)
+        total_area = sum(width * height for width, height, _ in sub_placed)
         max_width = math.sqrt(total_area * ASPECT_RATIO)
 
         x_max = 0.0
         y_max = 0.0
         # track the y limits and y position of the prior elements
         x_stack: List[Tuple[float, float, float]] = []  # [(x pos of next, y pos, y limit)]
-        elts: Dict[str, Tuple[Union[PlacedBlock, TransformUtil.Path], Tuple[float, float]]] = {}
-        for name, width, height, entry in sorted(sub_placed, key=lambda x: -x[2]):  # by height
+        elts: List[Tuple[Union[PlacedBlock, TransformUtil.Path], Tuple[float, float]]] = []
+        for width, height, entry in sorted(sub_placed, key=lambda x: -x[1]):  # by height
             if not x_stack:  # only on first component
                 next_y = 0.0
             else:
@@ -83,10 +106,13 @@ def arrange_netlist(netlist: Netlist) -> PlacedBlock:
                 next_x = x_stack[-1][0]
 
             if isinstance(entry, PlacedBlock):  # assumed (0, 0) at top left
-                elts[name] = (entry, (next_x, next_y))
+                elts.append((entry, (next_x, next_y)))
             elif isinstance(entry, NetBlock):  # account for footprint origin, flipping y-axis
                 bbox = FootprintDataTable.bbox_of(entry.footprint) or (0, 0, 0, 0)
-                elts[name] = (entry.full_path, (next_x - bbox[0], next_y + bbox[3]))
+                elts.append((entry.full_path, (next_x - bbox[0], next_y + bbox[3])))
+            elif isinstance(entry, BlackBoxBlock):  # account for footprint origin, flipping y-axis
+                bbox = entry.bbox
+                elts.append((entry.path, (next_x - bbox[0], next_y - bbox[0])))
             x_stack.append((next_x + width, next_y, next_y + height))
             x_max = max(x_max, next_x + width)
             y_max = max(y_max, next_y + height)
@@ -100,7 +126,7 @@ def flatten_packed_block(block: PlacedBlock) -> Dict[TransformUtil.Path, Tuple[f
     """Flatten a packed_block to a dict of individual components."""
     flattened: Dict[TransformUtil.Path, Tuple[float, float]] = {}
     def walk_group(block: PlacedBlock, x_pos: float, y_pos: float) -> None:
-        for _, (elt, (elt_x, elt_y)) in block.elts.items():
+        for elt, (elt_x, elt_y) in block.elts:
             if isinstance(elt, PlacedBlock):
                 walk_group(elt, x_pos + elt_x, y_pos + elt_y)
             elif isinstance(elt, TransformUtil.Path):
@@ -115,6 +141,7 @@ class SvgPcbGeneratedBlock(NamedTuple):
     path: TransformUtil.Path
     fn_name: str
     svgpcb_code: str
+    bbox: Tuple[float, float, float, float]
 
 
 class SvgPcbTransform(TransformUtil.Transform):
@@ -138,7 +165,7 @@ class SvgPcbTransform(TransformUtil.Transform):
             generator_obj = cls()
             generator_obj._svgpcb_init(context.path, self.design, self.netlist)
             self._svgpcb_blocks.append(SvgPcbGeneratedBlock(
-                context.path, generator_obj._svgpcb_fn_name(), generator_obj._svgpcb_template()
+                context.path, generator_obj._svgpcb_fn_name(), generator_obj._svgpcb_template(), generator_obj._svgpcb_bbox()
             ))
         else:
             pass
@@ -168,34 +195,50 @@ class SvgPcbBackend(BaseBackend):
             return [block for block in blocks
                     if not block_matches_prefixes(block, exclude_prefixes)]
 
+        # handle blocks with svgpcb templates
         svgpcb_blocks = SvgPcbTransform(design, netlist).run()
-        svgpcb_block_prefixes = [block.path.to_tuple() for block in svgpcb_blocks]
+        svgpcb_block_bboxes = [BlackBoxBlock(block.path, block.bbox) for block in svgpcb_blocks]
+
+        # handle footprints
         netlist = NetlistTransform(design).run()
+        svgpcb_block_prefixes = [block.path.to_tuple() for block in svgpcb_blocks]
         other_blocks = filter_blocks_by_pathname(netlist.blocks, svgpcb_block_prefixes)
-        arranged_blocks = arrange_netlist(netlist)
+        arranged_blocks = arrange_blocks(other_blocks, svgpcb_block_bboxes)
         pos_dict = flatten_packed_block(arranged_blocks)
 
-        svgpcb_block_instantiations = [
-            f"const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.path)} = {block.fn_name}(pt(0, 0))"
-            for block in svgpcb_blocks
-        ]
+        # note, dimensions in inches, divide by 25.4 to convert from mm
+        svgpcb_block_instantiations = []
+        for svgpcb_block in svgpcb_blocks:
+            x_pos, y_pos = pos_dict.get(svgpcb_block.path, (0, 0))  # in mm, need to convert to in below
+            block_code = f"const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(svgpcb_block.path)} = {svgpcb_block.fn_name}(pt({x_pos/25.4:.3f}, {y_pos/25.4:.3f}))"
+            svgpcb_block_instantiations.append(block_code)
 
-        # note, dimensions in inches
         other_block_instantiations = []
-        for block in other_blocks:
-            x_pos, y_pos = pos_dict.get(block.full_path, (0, 0))  # in mm, need to convert to in below
+        for net_block in other_blocks:
+            x_pos, y_pos = pos_dict.get(net_block.full_path, (0, 0))  # in mm, need to convert to in below
             block_code = f"""\
-const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(block.footprint)}, {{
+// {net_block.full_path}
+const {net_block.refdes} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(net_block.footprint)}, {{
   translate: pt({x_pos/25.4:.3f}, {y_pos/25.4:.3f}), rotate: 0,
-  id: '{SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.full_path)}'
+  id: '{net_block.refdes}'
 }})"""
             other_block_instantiations.append(block_code)
+
+        net_blocks_by_path = {net_block.full_path: net_block for net_block in netlist.blocks}
+        netlist_code_entries = []
+        for net in netlist.nets:
+            pads_code = [f"""["{net_blocks_by_path[pin.block_path].refdes}", "{pin.pin_name}"]""" for pin in net.pins]
+            netlist_code_entries.append(f"""{{name: "{net.name}", pads: [{', '.join(pads_code)}]}}""")
 
         NEWLINE = '\n'
         full_code = f"""\
 const board = new PCB();
 
 {NEWLINE.join(svgpcb_block_instantiations + other_block_instantiations)}
+
+board.setNetlist([
+  {("," + NEWLINE + "  ").join(netlist_code_entries)}
+])
 
 const limit0 = pt(-{2/25.4}, -{2/25.4});
 const limit1 = pt({arranged_blocks.width/25.4}, {arranged_blocks.height/25.4});

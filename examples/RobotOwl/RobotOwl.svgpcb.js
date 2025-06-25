@@ -1,197 +1,282 @@
 const board = new PCB();
 
-const jlc_th_th1 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th1
+const H1 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(4.146, 2.762), rotate: 0,
-  id: 'jlc_th_th1'
+  id: 'H1'
 })
-const jlc_th_th2 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th2
+const H2 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(4.185, 2.762), rotate: 0,
-  id: 'jlc_th_th2'
+  id: 'H2'
 })
-const jlc_th_th3 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th3
+const H3 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(4.146, 2.801), rotate: 0,
-  id: 'jlc_th_th3'
+  id: 'H3'
 })
-const mcu = board.add(Freenove_ESP32S3_WROOM_Expansion, {
+// mcu
+const U1 = board.add(Freenove_ESP32S3_WROOM_Expansion, {
   translate: pt(0.160, 1.960), rotate: 0,
-  id: 'mcu'
+  id: 'U1'
 })
-const tp_gnd_tp = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.727, 2.799), rotate: 0,
-  id: 'tp_gnd_tp'
-})
-const tp_usb_tp = board.add(TestPoint_TE_RCT_0805, {
+// tp_gnd.tp
+const TP1 = board.add(TestPoint_TE_RCT_0805, {
   translate: pt(2.976, 2.799), rotate: 0,
-  id: 'tp_usb_tp'
+  id: 'TP1'
 })
-const tp_3v3_tp = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.477, 2.799), rotate: 0,
-  id: 'tp_3v3_tp'
-})
-const reg_12v_ic = board.add(SOT_23_5, {
-  translate: pt(1.467, 2.363), rotate: 0,
-  id: 'reg_12v_ic'
-})
-const reg_12v_fb_div_top_res = board.add(R_0603_1608Metric, {
-  translate: pt(1.444, 2.615), rotate: 0,
-  id: 'reg_12v_fb_div_top_res'
-})
-const reg_12v_fb_div_bottom_res = board.add(R_0603_1608Metric, {
-  translate: pt(1.600, 2.615), rotate: 0,
-  id: 'reg_12v_fb_div_bottom_res'
-})
-const reg_12v_power_path_inductor = board.add(L_1210_3225Metric, {
-  translate: pt(1.676, 2.359), rotate: 0,
-  id: 'reg_12v_power_path_inductor'
-})
-const reg_12v_power_path_in_cap_cap = board.add(C_0805_2012Metric, {
-  translate: pt(1.453, 2.508), rotate: 0,
-  id: 'reg_12v_power_path_in_cap_cap'
-})
-const reg_12v_power_path_out_cap_cap = board.add(C_0805_2012Metric, {
-  translate: pt(1.626, 2.508), rotate: 0,
-  id: 'reg_12v_power_path_out_cap_cap'
-})
-const reg_12v_rect = board.add(D_SOD_323, {
-  translate: pt(1.796, 2.507), rotate: 0,
-  id: 'reg_12v_rect'
-})
-const tp_12v_tp = board.add(TestPoint_TE_RCT_0805, {
+// tp_usb.tp
+const TP2 = board.add(TestPoint_TE_RCT_0805, {
   translate: pt(3.226, 2.799), rotate: 0,
-  id: 'tp_12v_tp'
+  id: 'TP2'
 })
-const mic_ic = board.add(Knowles_LGA_5_3_5x2_65mm, {
+// tp_3v3.tp
+const TP3 = board.add(TestPoint_TE_RCT_0805, {
+  translate: pt(3.477, 2.799), rotate: 0,
+  id: 'TP3'
+})
+// reg_12v.ic
+const U2 = board.add(SOT_23_5, {
+  translate: pt(1.467, 2.363), rotate: 0,
+  id: 'U2'
+})
+// reg_12v.fb.div.top_res
+const R1 = board.add(R_0603_1608Metric, {
+  translate: pt(1.444, 2.615), rotate: 0,
+  id: 'R1'
+})
+// reg_12v.fb.div.bottom_res
+const R2 = board.add(R_0603_1608Metric, {
+  translate: pt(1.600, 2.615), rotate: 0,
+  id: 'R2'
+})
+// reg_12v.power_path.inductor
+const L1 = board.add(L_1210_3225Metric, {
+  translate: pt(1.676, 2.359), rotate: 0,
+  id: 'L1'
+})
+// reg_12v.power_path.in_cap.cap
+const C1 = board.add(C_0805_2012Metric, {
+  translate: pt(1.453, 2.508), rotate: 0,
+  id: 'C1'
+})
+// reg_12v.power_path.out_cap.cap
+const C2 = board.add(C_0805_2012Metric, {
+  translate: pt(1.626, 2.508), rotate: 0,
+  id: 'C2'
+})
+// reg_12v.rect
+const D1 = board.add(D_SOD_323, {
+  translate: pt(1.796, 2.507), rotate: 0,
+  id: 'D1'
+})
+// tp_12v.tp
+const TP4 = board.add(TestPoint_TE_RCT_0805, {
+  translate: pt(3.727, 2.799), rotate: 0,
+  id: 'TP4'
+})
+// mic.ic
+const U3 = board.add(Knowles_LGA_5_3_5x2_65mm, {
   translate: pt(1.448, 2.841), rotate: 0,
-  id: 'mic_ic'
+  id: 'U3'
 })
-const mic_pwr_cap_cap = board.add(C_0603_1608Metric, {
+// mic.pwr_cap.cap
+const C3 = board.add(C_0603_1608Metric, {
   translate: pt(1.444, 2.987), rotate: 0,
-  id: 'mic_pwr_cap_cap'
+  id: 'C3'
 })
-const photodiode_r = board.add(R_0603_1608Metric, {
+// photodiode.r
+const R3 = board.add(R_0603_1608Metric, {
   translate: pt(3.848, 2.542), rotate: 0,
-  id: 'photodiode_r'
+  id: 'R3'
 })
-const photodiode_pd = board.add(Osram_BPW34S_SMD, {
+// photodiode.pd
+const D2 = board.add(Osram_BPW34S_SMD, {
   translate: pt(3.947, 2.385), rotate: 0,
-  id: 'photodiode_pd'
+  id: 'D2'
 })
-const oled22_device_conn = board.add(Hirose_FH12_24S_0_5SH_1x24_1MP_P0_50mm_Horizontal, {
+// oled22.device.conn
+const J1 = board.add(Hirose_FH12_24S_0_5SH_1x24_1MP_P0_50mm_Horizontal, {
   translate: pt(1.715, 1.577), rotate: 0,
-  id: 'oled22_device_conn'
+  id: 'J1'
 })
-const oled22_lcd = board.add(Lcd_Er_Oled022_1_Outline, {
+// oled22.lcd
+const U4 = board.add(Lcd_Er_Oled022_1_Outline, {
   translate: pt(2.580, 0.607), rotate: 0,
-  id: 'oled22_lcd'
+  id: 'U4'
 })
-const oled22_iref_res = board.add(R_0603_1608Metric, {
+// oled22.iref_res
+const R4 = board.add(R_0603_1608Metric, {
   translate: pt(2.736, 1.413), rotate: 0,
-  id: 'oled22_iref_res'
+  id: 'R4'
 })
-const oled22_vcomh_cap_cap = board.add(C_1206_3216Metric, {
+// oled22.vcomh_cap.cap
+const C4 = board.add(C_1206_3216Metric, {
   translate: pt(2.202, 1.430), rotate: 0,
-  id: 'oled22_vcomh_cap_cap'
+  id: 'C4'
 })
-const oled22_vdd_cap1_cap = board.add(C_0603_1608Metric, {
+// oled22.vdd_cap1.cap
+const C5 = board.add(C_0603_1608Metric, {
   translate: pt(2.892, 1.413), rotate: 0,
-  id: 'oled22_vdd_cap1_cap'
+  id: 'C5'
 })
-const oled22_vdd_cap2_cap = board.add(C_0805_2012Metric, {
+// oled22.vdd_cap2.cap
+const C6 = board.add(C_0805_2012Metric, {
   translate: pt(2.398, 1.423), rotate: 0,
-  id: 'oled22_vdd_cap2_cap'
+  id: 'C6'
 })
-const oled22_vcc_cap1_cap = board.add(C_0603_1608Metric, {
+// oled22.vcc_cap1.cap
+const C7 = board.add(C_0603_1608Metric, {
   translate: pt(3.048, 1.413), rotate: 0,
-  id: 'oled22_vcc_cap1_cap'
+  id: 'C7'
 })
-const oled22_vcc_cap2_cap = board.add(C_0805_2012Metric, {
+// oled22.vcc_cap2.cap
+const C8 = board.add(C_0805_2012Metric, {
   translate: pt(2.572, 1.423), rotate: 0,
-  id: 'oled22_vcc_cap2_cap'
+  id: 'C8'
 })
-const oled_rst_ic = board.add(SOT_23, {
+// oled_rst.ic
+const U5 = board.add(SOT_23, {
   translate: pt(2.716, 2.829), rotate: 0,
-  id: 'oled_rst_ic'
+  id: 'U5'
 })
-const oled_pull_res = board.add(R_0603_1608Metric, {
+// oled_pull.res
+const R5 = board.add(R_0603_1608Metric, {
   translate: pt(3.970, 2.791), rotate: 0,
-  id: 'oled_pull_res'
+  id: 'R5'
 })
-const spk_drv_ic = board.add(Maxim_WLP_9_1_595x1_415_Layout3x3_P0_4mm_Ball0_27mm_Pad0_25mm_NSMD, {
+// spk_drv.ic
+const U6 = board.add(Maxim_WLP_9_1_595x1_415_Layout3x3_P0_4mm_Ball0_27mm_Pad0_25mm_NSMD, {
   translate: pt(1.699, 2.829), rotate: 0,
-  id: 'spk_drv_ic'
+  id: 'U6'
 })
-const spk_drv_pwr_cap0_cap = board.add(C_0603_1608Metric, {
+// spk_drv.pwr_cap0.cap
+const C9 = board.add(C_0603_1608Metric, {
   translate: pt(1.860, 2.964), rotate: 0,
-  id: 'spk_drv_pwr_cap0_cap'
+  id: 'C9'
 })
-const spk_drv_pwr_cap1_cap = board.add(C_0805_2012Metric, {
+// spk_drv.pwr_cap1.cap
+const C10 = board.add(C_0805_2012Metric, {
   translate: pt(1.695, 2.974), rotate: 0,
-  id: 'spk_drv_pwr_cap1_cap'
+  id: 'C10'
 })
-const spk_conn = board.add(PinHeader_1x02_P2_54mm_Horizontal, {
+// spk.conn
+const J2 = board.add(PinHeader_1x02_P2_54mm_Horizontal, {
   translate: pt(2.107, 2.933), rotate: 0,
-  id: 'spk_conn'
+  id: 'J2'
 })
-const servo_0__conn = board.add(PinHeader_1x03_P2_54mm_Horizontal, {
-  translate: pt(3.256, 2.566), rotate: 0,
-  id: 'servo_0__conn'
-})
-const servo_1__conn = board.add(PinHeader_1x03_P2_54mm_Horizontal, {
-  translate: pt(2.652, 2.566), rotate: 0,
-  id: 'servo_1__conn'
-})
-const ws2812bArray_led_0_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(0.144, 2.405), rotate: 0,
-  id: 'ws2812bArray_led_0_'
-})
-const ws2812bArray_led_1_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(0.470, 2.405), rotate: 0,
-  id: 'ws2812bArray_led_1_'
-})
-const ws2812bArray_led_2_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(0.797, 2.405), rotate: 0,
-  id: 'ws2812bArray_led_2_'
-})
-const ws2812bArray_led_3_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(1.124, 2.405), rotate: 0,
-  id: 'ws2812bArray_led_3_'
-})
-const ws2812bArray_led_4_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(0.144, 2.661), rotate: 0,
-  id: 'ws2812bArray_led_4_'
-})
-const ws2812bArray_led_5_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(0.470, 2.661), rotate: 0,
-  id: 'ws2812bArray_led_5_'
-})
-const ws2812bArray_led_6_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(0.797, 2.661), rotate: 0,
-  id: 'ws2812bArray_led_6_'
-})
-const ws2812bArray_led_7_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(1.124, 2.661), rotate: 0,
-  id: 'ws2812bArray_led_7_'
-})
-const ws2812bArray_led_8_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(0.144, 2.917), rotate: 0,
-  id: 'ws2812bArray_led_8_'
-})
-const ws2812bArray_led_9_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(0.470, 2.917), rotate: 0,
-  id: 'ws2812bArray_led_9_'
-})
-const ws2812bArray_led_10_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(0.797, 2.917), rotate: 0,
-  id: 'ws2812bArray_led_10_'
-})
-const ws2812bArray_led_11_ = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
-  translate: pt(1.124, 2.917), rotate: 0,
-  id: 'ws2812bArray_led_11_'
-})
-const extNeopixels_conn = board.add(PinHeader_1x03_P2_54mm_Horizontal, {
+// servo[0].conn
+const J3 = board.add(PinHeader_1x03_P2_54mm_Horizontal, {
   translate: pt(2.048, 2.566), rotate: 0,
-  id: 'extNeopixels_conn'
+  id: 'J3'
 })
+// servo[1].conn
+const J4 = board.add(PinHeader_1x03_P2_54mm_Horizontal, {
+  translate: pt(2.652, 2.566), rotate: 0,
+  id: 'J4'
+})
+// ws2812bArray.led[0]
+const D3 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(0.144, 2.405), rotate: 0,
+  id: 'D3'
+})
+// ws2812bArray.led[1]
+const D4 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(0.470, 2.405), rotate: 0,
+  id: 'D4'
+})
+// ws2812bArray.led[2]
+const D5 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(0.797, 2.405), rotate: 0,
+  id: 'D5'
+})
+// ws2812bArray.led[3]
+const D6 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(1.124, 2.405), rotate: 0,
+  id: 'D6'
+})
+// ws2812bArray.led[4]
+const D7 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(0.144, 2.661), rotate: 0,
+  id: 'D7'
+})
+// ws2812bArray.led[5]
+const D8 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(0.470, 2.661), rotate: 0,
+  id: 'D8'
+})
+// ws2812bArray.led[6]
+const D9 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(0.797, 2.661), rotate: 0,
+  id: 'D9'
+})
+// ws2812bArray.led[7]
+const D10 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(1.124, 2.661), rotate: 0,
+  id: 'D10'
+})
+// ws2812bArray.led[8]
+const D11 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(0.144, 2.917), rotate: 0,
+  id: 'D11'
+})
+// ws2812bArray.led[9]
+const D12 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(0.470, 2.917), rotate: 0,
+  id: 'D12'
+})
+// ws2812bArray.led[10]
+const D13 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(0.797, 2.917), rotate: 0,
+  id: 'D13'
+})
+// ws2812bArray.led[11]
+const D14 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
+  translate: pt(1.124, 2.917), rotate: 0,
+  id: 'D14'
+})
+// extNeopixels.conn
+const J5 = board.add(PinHeader_1x03_P2_54mm_Horizontal, {
+  translate: pt(3.256, 2.566), rotate: 0,
+  id: 'J5'
+})
+
+board.setNetlist([
+  {name: "gnd", pads: [["U1", "21"], ["U5", "1"], ["TP1", "1"], ["U2", "2"], ["U3", "3"], ["D2", "2"], ["U6", "C2"], ["J3", "3"], ["J4", "3"], ["D3", "3"], ["D4", "3"], ["D5", "3"], ["D6", "3"], ["D7", "3"], ["D8", "3"], ["D9", "3"], ["D10", "3"], ["D11", "3"], ["D12", "3"], ["D13", "3"], ["D14", "3"], ["J5", "3"], ["U3", "2"], ["R4", "2"], ["C3", "2"], ["J1", "3"], ["J1", "1"], ["J1", "24"], ["J1", "2"], ["J1", "12"], ["J1", "11"], ["J1", "16"], ["J1", "17"], ["J1", "18"], ["J1", "19"], ["J1", "20"], ["C4", "2"], ["C5", "2"], ["C6", "2"], ["C7", "2"], ["C8", "2"], ["C9", "2"], ["C10", "2"], ["R2", "2"], ["J1", "7"], ["J1", "10"], ["J1", "8"], ["C1", "2"], ["C2", "2"]]},
+  {name: "vusb", pads: [["U1", "20"], ["TP2", "1"], ["U2", "5"], ["U6", "A1"], ["U6", "A2"], ["J3", "2"], ["J4", "2"], ["D3", "1"], ["D4", "1"], ["D5", "1"], ["D6", "1"], ["D7", "1"], ["D8", "1"], ["D9", "1"], ["D10", "1"], ["D11", "1"], ["D12", "1"], ["D13", "1"], ["D14", "1"], ["J5", "1"], ["U2", "4"], ["C9", "1"], ["C10", "1"], ["L1", "1"], ["C1", "1"]]},
+  {name: "v3v3", pads: [["U1", "1"], ["U5", "3"], ["TP3", "1"], ["U3", "5"], ["R3", "1"], ["R5", "1"], ["C3", "1"], ["J1", "5"], ["C5", "1"], ["C6", "1"], ["J1", "6"]]},
+  {name: "v12", pads: [["TP4", "1"], ["D1", "1"], ["R1", "1"], ["C2", "1"], ["J1", "23"], ["C7", "1"], ["C8", "1"]]},
+  {name: "mic.clk", pads: [["U3", "4"], ["U1", "12"]]},
+  {name: "mic.data", pads: [["U3", "1"], ["U1", "19"]]},
+  {name: "photodiode.out", pads: [["U1", "38"], ["R3", "2"], ["D2", "1"]]},
+  {name: "oled22.i2c.scl", pads: [["U1", "4"], ["J1", "13"]]},
+  {name: "oled22.i2c.sda", pads: [["U1", "3"], ["J1", "14"], ["J1", "15"]]},
+  {name: "oled_rst.nreset", pads: [["U5", "2"], ["R5", "2"], ["J1", "9"]]},
+  {name: "spk_drv.i2s.sck", pads: [["U1", "35"], ["U6", "C1"]]},
+  {name: "spk_drv.i2s.ws", pads: [["U1", "37"], ["U6", "C3"]]},
+  {name: "spk_drv.i2s.sd", pads: [["U1", "36"], ["U6", "B1"]]},
+  {name: "spk_drv.out.a", pads: [["U6", "A3"], ["J2", "1"]]},
+  {name: "spk_drv.out.b", pads: [["U6", "B3"], ["J2", "2"]]},
+  {name: "servo[0].pwm", pads: [["U1", "25"], ["J3", "1"]]},
+  {name: "servo[1].pwm", pads: [["U1", "24"], ["J4", "1"]]},
+  {name: "ws2812bArray.din", pads: [["U1", "26"], ["D3", "4"]]},
+  {name: "ws2812bArray.dout", pads: [["D14", "2"], ["J5", "2"]]},
+  {name: "reg_12v.fb.output", pads: [["U2", "3"], ["R1", "2"], ["R2", "1"]]},
+  {name: "reg_12v.power_path.switch", pads: [["U2", "1"], ["L1", "2"], ["D1", "2"]]},
+  {name: "oled22.iref_res.a", pads: [["R4", "1"], ["J1", "21"]]},
+  {name: "oled22.device.vcomh", pads: [["J1", "22"], ["C4", "1"]]},
+  {name: "ws2812bArray.led[0].dout", pads: [["D3", "2"], ["D4", "4"]]},
+  {name: "ws2812bArray.led[1].dout", pads: [["D4", "2"], ["D5", "4"]]},
+  {name: "ws2812bArray.led[2].dout", pads: [["D5", "2"], ["D6", "4"]]},
+  {name: "ws2812bArray.led[3].dout", pads: [["D6", "2"], ["D7", "4"]]},
+  {name: "ws2812bArray.led[4].dout", pads: [["D7", "2"], ["D8", "4"]]},
+  {name: "ws2812bArray.led[5].dout", pads: [["D8", "2"], ["D9", "4"]]},
+  {name: "ws2812bArray.led[6].dout", pads: [["D9", "2"], ["D10", "4"]]},
+  {name: "ws2812bArray.led[7].dout", pads: [["D10", "2"], ["D11", "4"]]},
+  {name: "ws2812bArray.led[8].dout", pads: [["D11", "2"], ["D12", "4"]]},
+  {name: "ws2812bArray.led[9].dout", pads: [["D12", "2"], ["D13", "4"]]},
+  {name: "ws2812bArray.led[10].dout", pads: [["D13", "2"], ["D14", "4"]]}
+])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
 const limit1 = pt(4.303543307086614, 3.142913385826772);

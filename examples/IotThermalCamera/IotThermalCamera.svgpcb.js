@@ -1,217 +1,319 @@
 const board = new PCB();
 
-const jlc_th_th1 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th1
+const TH1 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(1.421, 2.307), rotate: 0,
-  id: 'jlc_th_th1'
+  id: 'TH1'
 })
-const jlc_th_th2 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th2
+const TH2 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(1.460, 2.307), rotate: 0,
-  id: 'jlc_th_th2'
+  id: 'TH2'
 })
-const jlc_th_th3 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th3
+const TH3 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(1.421, 2.346), rotate: 0,
-  id: 'jlc_th_th3'
+  id: 'TH3'
 })
-const usb_conn = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
+// usb.conn
+const TJ1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
   translate: pt(0.209, 1.905), rotate: 0,
-  id: 'usb_conn'
+  id: 'TJ1'
 })
-const usb_cc_pull_cc1_res = board.add(R_0603_1608Metric, {
+// usb.cc_pull.cc1.res
+const TR1 = board.add(R_0603_1608Metric, {
   translate: pt(0.058, 2.160), rotate: 0,
-  id: 'usb_cc_pull_cc1_res'
+  id: 'TR1'
 })
-const usb_cc_pull_cc2_res = board.add(R_0603_1608Metric, {
+// usb.cc_pull.cc2.res
+const TR2 = board.add(R_0603_1608Metric, {
   translate: pt(0.214, 2.160), rotate: 0,
-  id: 'usb_cc_pull_cc2_res'
+  id: 'TR2'
 })
-const tp_gnd_tp = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.811, 2.344), rotate: 0,
-  id: 'tp_gnd_tp'
-})
-const choke_fb = board.add(L_0603_1608Metric, {
-  translate: pt(1.054, 2.335), rotate: 0,
-  id: 'choke_fb'
-})
-const tp_pwr_tp = board.add(TestPoint_TE_RCT_0805, {
+// tp_gnd.tp
+const TTP1 = board.add(TestPoint_TE_RCT_0805, {
   translate: pt(0.066, 2.344), rotate: 0,
-  id: 'tp_pwr_tp'
+  id: 'TTP1'
 })
-const reg_3v3_ic = board.add(SOT_23_6, {
+// choke.fb
+const TFB1 = board.add(L_0603_1608Metric, {
+  translate: pt(1.054, 2.335), rotate: 0,
+  id: 'TFB1'
+})
+// tp_pwr.tp
+const TTP2 = board.add(TestPoint_TE_RCT_0805, {
+  translate: pt(0.317, 2.344), rotate: 0,
+  id: 'TTP2'
+})
+// reg_3v3.ic
+const TU1 = board.add(SOT_23_6, {
   translate: pt(2.841, 0.746), rotate: 0,
-  id: 'reg_3v3_ic'
+  id: 'TU1'
 })
-const reg_3v3_fb_div_top_res = board.add(R_0603_1608Metric, {
+// reg_3v3.fb.div.top_res
+const TR3 = board.add(R_0603_1608Metric, {
   translate: pt(2.945, 0.926), rotate: 0,
-  id: 'reg_3v3_fb_div_top_res'
+  id: 'TR3'
 })
-const reg_3v3_fb_div_bottom_res = board.add(R_0603_1608Metric, {
+// reg_3v3.fb.div.bottom_res
+const TR4 = board.add(R_0603_1608Metric, {
   translate: pt(2.598, 1.042), rotate: 0,
-  id: 'reg_3v3_fb_div_bottom_res'
+  id: 'TR4'
 })
-const reg_3v3_hf_in_cap_cap = board.add(C_0603_1608Metric, {
+// reg_3v3.hf_in_cap.cap
+const TC1 = board.add(C_0603_1608Metric, {
   translate: pt(2.754, 1.042), rotate: 0,
-  id: 'reg_3v3_hf_in_cap_cap'
+  id: 'TC1'
 })
-const reg_3v3_boot_cap = board.add(C_0603_1608Metric, {
+// reg_3v3.boot_cap
+const TC2 = board.add(C_0603_1608Metric, {
   translate: pt(2.910, 1.042), rotate: 0,
-  id: 'reg_3v3_boot_cap'
+  id: 'TC2'
 })
-const reg_3v3_power_path_inductor = board.add(L_Sunlord_SWPA4030S, {
+// reg_3v3.power_path.inductor
+const TL1 = board.add(L_Sunlord_SWPA4030S, {
   translate: pt(2.631, 0.769), rotate: 0,
-  id: 'reg_3v3_power_path_inductor'
+  id: 'TL1'
 })
-const reg_3v3_power_path_in_cap_cap = board.add(C_0805_2012Metric, {
+// reg_3v3.power_path.in_cap.cap
+const TC3 = board.add(C_0805_2012Metric, {
   translate: pt(2.607, 0.935), rotate: 0,
-  id: 'reg_3v3_power_path_in_cap_cap'
+  id: 'TC3'
 })
-const reg_3v3_power_path_out_cap_cap = board.add(C_0805_2012Metric, {
+// reg_3v3.power_path.out_cap.cap
+const TC4 = board.add(C_0805_2012Metric, {
   translate: pt(2.780, 0.935), rotate: 0,
-  id: 'reg_3v3_power_path_out_cap_cap'
+  id: 'TC4'
 })
-const reg_3v3_en_res = board.add(R_0603_1608Metric, {
+// reg_3v3.en_res
+const TR5 = board.add(R_0603_1608Metric, {
   translate: pt(2.598, 1.139), rotate: 0,
-  id: 'reg_3v3_en_res'
+  id: 'TR5'
 })
-const tp_3v3_tp = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.561, 2.344), rotate: 0,
-  id: 'tp_3v3_tp'
+// tp_3v3.tp
+const TTP3 = board.add(TestPoint_TE_RCT_0805, {
+  translate: pt(0.567, 2.344), rotate: 0,
+  id: 'TTP3'
 })
-const prot_3v3_diode = board.add(D_SOD_323, {
-  translate: pt(0.314, 2.344), rotate: 0,
-  id: 'prot_3v3_diode'
+// prot_3v3.diode
+const TD1 = board.add(D_SOD_323, {
+  translate: pt(0.815, 2.344), rotate: 0,
+  id: 'TD1'
 })
-const reg_3v0_ic = board.add(SOT_23_5, {
-  translate: pt(2.243, 1.807), rotate: 0,
-  id: 'reg_3v0_ic'
-})
-const reg_3v0_in_cap_cap = board.add(C_0603_1608Metric, {
-  translate: pt(2.220, 1.942), rotate: 0,
-  id: 'reg_3v0_in_cap_cap'
-})
-const reg_3v0_out_cap_cap = board.add(C_0603_1608Metric, {
-  translate: pt(2.376, 1.942), rotate: 0,
-  id: 'reg_3v0_out_cap_cap'
-})
-const reg_2v8_ic = board.add(SOT_23_5, {
-  translate: pt(1.852, 1.807), rotate: 0,
-  id: 'reg_2v8_ic'
-})
-const reg_2v8_in_cap_cap = board.add(C_0603_1608Metric, {
-  translate: pt(1.830, 1.942), rotate: 0,
-  id: 'reg_2v8_in_cap_cap'
-})
-const reg_2v8_out_cap_cap = board.add(C_0603_1608Metric, {
-  translate: pt(1.986, 1.942), rotate: 0,
-  id: 'reg_2v8_out_cap_cap'
-})
-const reg_1v2_ic = board.add(SOT_23_5, {
+// reg_3v0.ic
+const TU2 = board.add(SOT_23_5, {
   translate: pt(1.462, 1.807), rotate: 0,
-  id: 'reg_1v2_ic'
+  id: 'TU2'
 })
-const reg_1v2_in_cap_cap = board.add(C_0603_1608Metric, {
+// reg_3v0.in_cap.cap
+const TC5 = board.add(C_0603_1608Metric, {
   translate: pt(1.439, 1.942), rotate: 0,
-  id: 'reg_1v2_in_cap_cap'
+  id: 'TC5'
 })
-const reg_1v2_out_cap_cap = board.add(C_0603_1608Metric, {
+// reg_3v0.out_cap.cap
+const TC6 = board.add(C_0603_1608Metric, {
   translate: pt(1.595, 1.942), rotate: 0,
-  id: 'reg_1v2_out_cap_cap'
+  id: 'TC6'
 })
-const mcu_ic = board.add(ESP32_S3_WROOM_1, {
+// reg_2v8.ic
+const TU3 = board.add(SOT_23_5, {
+  translate: pt(1.852, 1.807), rotate: 0,
+  id: 'TU3'
+})
+// reg_2v8.in_cap.cap
+const TC7 = board.add(C_0603_1608Metric, {
+  translate: pt(1.830, 1.942), rotate: 0,
+  id: 'TC7'
+})
+// reg_2v8.out_cap.cap
+const TC8 = board.add(C_0603_1608Metric, {
+  translate: pt(1.986, 1.942), rotate: 0,
+  id: 'TC8'
+})
+// reg_1v2.ic
+const TU4 = board.add(SOT_23_5, {
+  translate: pt(2.243, 1.807), rotate: 0,
+  id: 'TU4'
+})
+// reg_1v2.in_cap.cap
+const TC9 = board.add(C_0603_1608Metric, {
+  translate: pt(2.220, 1.942), rotate: 0,
+  id: 'TC9'
+})
+// reg_1v2.out_cap.cap
+const TC10 = board.add(C_0603_1608Metric, {
+  translate: pt(2.376, 1.942), rotate: 0,
+  id: 'TC10'
+})
+// mcu.ic
+const TU5 = board.add(ESP32_S3_WROOM_1, {
   translate: pt(0.945, 0.530), rotate: 0,
-  id: 'mcu_ic'
+  id: 'TU5'
 })
-const mcu_vcc_cap0_cap = board.add(C_1206_3216Metric, {
+// mcu.vcc_cap0.cap
+const TC11 = board.add(C_1206_3216Metric, {
   translate: pt(2.020, 0.419), rotate: 0,
-  id: 'mcu_vcc_cap0_cap'
+  id: 'TC11'
 })
-const mcu_vcc_cap1_cap = board.add(C_0603_1608Metric, {
+// mcu.vcc_cap1.cap
+const TC12 = board.add(C_0603_1608Metric, {
   translate: pt(2.208, 0.403), rotate: 0,
-  id: 'mcu_vcc_cap1_cap'
+  id: 'TC12'
 })
-const mcu_prog_conn = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
+// mcu.prog.conn
+const TJ2 = board.add(Tag_Connect_TC2030_IDC_FP_2x03_P1_27mm_Vertical, {
   translate: pt(2.096, 0.167), rotate: 0,
-  id: 'mcu_prog_conn'
+  id: 'TJ2'
 })
-const mcu_en_pull_rc_r = board.add(R_0603_1608Metric, {
+// mcu.en_pull.rc.r
+const TR6 = board.add(R_0603_1608Metric, {
   translate: pt(2.364, 0.403), rotate: 0,
-  id: 'mcu_en_pull_rc_r'
+  id: 'TR6'
 })
-const mcu_en_pull_rc_c = board.add(C_0603_1608Metric, {
+// mcu.en_pull.rc.c
+const TC13 = board.add(C_0603_1608Metric, {
   translate: pt(1.987, 0.533), rotate: 0,
-  id: 'mcu_en_pull_rc_c'
+  id: 'TC13'
 })
-const usb_esd = board.add(SOT_23, {
+// usb_esd
+const TU6 = board.add(SOT_23, {
   translate: pt(1.306, 2.374), rotate: 0,
-  id: 'usb_esd'
+  id: 'TU6'
 })
-const i2c_pull_scl_res_res = board.add(R_0603_1608Metric, {
+// i2c_pull.scl_res.res
+const TR7 = board.add(R_0603_1608Metric, {
   translate: pt(3.096, 1.769), rotate: 0,
-  id: 'i2c_pull_scl_res_res'
+  id: 'TR7'
 })
-const i2c_pull_sda_res_res = board.add(R_0603_1608Metric, {
+// i2c_pull.sda_res.res
+const TR8 = board.add(R_0603_1608Metric, {
   translate: pt(3.096, 1.866), rotate: 0,
-  id: 'i2c_pull_sda_res_res'
+  id: 'TR8'
 })
-const i2c_tp_tp_scl_tp = board.add(TestPoint_TE_RCT_0805, {
+// i2c_tp.tp_scl.tp
+const TTP4 = board.add(TestPoint_TE_RCT_0805, {
   translate: pt(2.619, 1.778), rotate: 0,
-  id: 'i2c_tp_tp_scl_tp'
+  id: 'TTP4'
 })
-const i2c_tp_tp_sda_tp = board.add(TestPoint_TE_RCT_0805, {
+// i2c_tp.tp_sda.tp
+const TTP5 = board.add(TestPoint_TE_RCT_0805, {
   translate: pt(2.619, 1.892), rotate: 0,
-  id: 'i2c_tp_tp_sda_tp'
+  id: 'TTP5'
 })
-const touch_duck = board.add(Symbol_DucklingSolid, {
+// touch_duck
+const TU7 = board.add(Symbol_DucklingSolid, {
   translate: pt(1.578, 2.307), rotate: 0,
-  id: 'touch_duck'
+  id: 'TU7'
 })
-const ledr_package = board.add(LED_0603_1608Metric, {
+// ledr.package
+const TD2 = board.add(LED_0603_1608Metric, {
   translate: pt(2.862, 1.769), rotate: 0,
-  id: 'ledr_package'
+  id: 'TD2'
 })
-const ledr_res = board.add(R_0603_1608Metric, {
+// ledr.res
+const TR9 = board.add(R_0603_1608Metric, {
   translate: pt(2.861, 1.866), rotate: 0,
-  id: 'ledr_res'
+  id: 'TR9'
 })
-const cam_device_conn_conn = board.add(TE_2_1734839_4_1x24_1MP_P0_5mm_Horizontal, {
+// cam.device.conn.conn
+const TJ3 = board.add(TE_2_1734839_4_1x24_1MP_P0_5mm_Horizontal, {
   translate: pt(0.900, 1.907), rotate: 0,
-  id: 'cam_device_conn_conn'
+  id: 'TJ3'
 })
-const cam_dovdd_cap_cap = board.add(C_0603_1608Metric, {
+// cam.dovdd_cap.cap
+const TC14 = board.add(C_0603_1608Metric, {
   translate: pt(0.595, 2.070), rotate: 0,
-  id: 'cam_dovdd_cap_cap'
+  id: 'TC14'
 })
-const cam_reset_cap = board.add(C_0603_1608Metric, {
+// cam.reset_cap
+const TC15 = board.add(C_0603_1608Metric, {
   translate: pt(0.751, 2.070), rotate: 0,
-  id: 'cam_reset_cap'
+  id: 'TC15'
 })
-const cam_pclk_cap = board.add(C_0603_1608Metric, {
+// cam.pclk_cap
+const TC16 = board.add(C_0603_1608Metric, {
   translate: pt(0.907, 2.070), rotate: 0,
-  id: 'cam_pclk_cap'
+  id: 'TC16'
 })
-const flir_ic = board.add(Molex_1050281001, {
+// flir.ic
+const TU8 = board.add(Molex_1050281001, {
   translate: pt(2.772, 0.232), rotate: 0,
-  id: 'flir_ic'
+  id: 'TU8'
 })
-const flir_vddc_cap_cap = board.add(C_0603_1608Metric, {
+// flir.vddc_cap.cap
+const TC17 = board.add(C_0603_1608Metric, {
   translate: pt(3.102, 0.202), rotate: 0,
-  id: 'flir_vddc_cap_cap'
+  id: 'TC17'
 })
-const flir_vddio_cap_cap = board.add(C_0603_1608Metric, {
+// flir.vddio_cap.cap
+const TC18 = board.add(C_0603_1608Metric, {
   translate: pt(3.102, 0.299), rotate: 0,
-  id: 'flir_vddio_cap_cap'
+  id: 'TC18'
 })
-const flir_vdd_cap_cap = board.add(C_0603_1608Metric, {
+// flir.vdd_cap.cap
+const TC19 = board.add(C_0603_1608Metric, {
   translate: pt(3.102, 0.396), rotate: 0,
-  id: 'flir_vdd_cap_cap'
+  id: 'TC19'
 })
-const flir_mclk_device = board.add(Crystal_SMD_3225_4Pin_3_2x2_5mm, {
+// flir.mclk.device
+const TX1 = board.add(Crystal_SMD_3225_4Pin_3_2x2_5mm, {
   translate: pt(3.127, 0.067), rotate: 0,
-  id: 'flir_mclk_device'
+  id: 'TX1'
 })
-const flir_mclk_cap_cap = board.add(C_0603_1608Metric, {
+// flir.mclk.cap.cap
+const TC20 = board.add(C_0603_1608Metric, {
   translate: pt(2.598, 0.533), rotate: 0,
-  id: 'flir_mclk_cap_cap'
+  id: 'TC20'
 })
+
+board.setNetlist([
+  {name: "Tgnd", pads: [["TU6", "3"], ["TJ1", "A1"], ["TJ1", "B12"], ["TJ1", "B1"], ["TJ1", "A12"], ["TTP1", "1"], ["TU1", "1"], ["TD1", "2"], ["TU2", "2"], ["TU3", "2"], ["TU4", "2"], ["TU5", "1"], ["TU5", "40"], ["TU5", "41"], ["TR9", "2"], ["TU8", "1"], ["TU8", "6"], ["TU8", "8"], ["TU8", "9"], ["TU8", "10"], ["TU8", "15"], ["TU8", "18"], ["TU8", "20"], ["TU8", "25"], ["TU8", "27"], ["TU8", "30"], ["TU8", "33"], ["TJ1", "S1"], ["TC15", "2"], ["TC16", "2"], ["TC1", "2"], ["TC5", "2"], ["TC6", "2"], ["TC7", "2"], ["TC8", "2"], ["TC9", "2"], ["TC10", "2"], ["TC11", "2"], ["TC12", "2"], ["TJ2", "5"], ["TC14", "2"], ["TC17", "2"], ["TC18", "2"], ["TC19", "2"], ["TX1", "2"], ["TR4", "2"], ["TC13", "2"], ["TJ3", "15"], ["TJ3", "2"], ["TR1", "1"], ["TR2", "1"], ["TC3", "2"], ["TC4", "2"], ["TJ3", "8"], ["TC20", "2"]]},
+  {name: "Tpwr", pads: [["TFB1", "2"], ["TTP2", "1"], ["TU1", "3"], ["TR5", "1"], ["TC1", "1"], ["TC3", "1"]]},
+  {name: "Tv3v3", pads: [["TTP3", "1"], ["TD1", "1"], ["TU2", "1"], ["TU3", "1"], ["TU4", "1"], ["TU5", "2"], ["TR3", "1"], ["TU2", "3"], ["TU3", "3"], ["TU4", "3"], ["TC5", "1"], ["TC7", "1"], ["TC9", "1"], ["TC11", "1"], ["TC12", "1"], ["TJ2", "1"], ["TR7", "1"], ["TR8", "1"], ["TR6", "1"], ["TL1", "2"], ["TC4", "1"]]},
+  {name: "Tv3v0", pads: [["TU2", "5"], ["TU8", "16"], ["TC6", "1"], ["TC14", "1"], ["TC18", "1"], ["TX1", "1"], ["TX1", "4"], ["TJ3", "11"], ["TC20", "1"]]},
+  {name: "Tv2v8", pads: [["TU3", "5"], ["TU8", "19"], ["TJ3", "4"], ["TC8", "1"], ["TC19", "1"]]},
+  {name: "Tv1v2", pads: [["TU4", "5"], ["TU8", "7"], ["TJ3", "10"], ["TC10", "1"], ["TC17", "1"]]},
+  {name: "Tusb.pwr", pads: [["TJ1", "A4"], ["TJ1", "B9"], ["TJ1", "B4"], ["TJ1", "A9"], ["TFB1", "1"]]},
+  {name: "Tusb_chain_0.d_P", pads: [["TJ1", "A6"], ["TJ1", "B6"], ["TU6", "2"], ["TU5", "14"]]},
+  {name: "Tusb_chain_0.d_N", pads: [["TJ1", "A7"], ["TJ1", "B7"], ["TU6", "1"], ["TU5", "13"]]},
+  {name: "Ti2c_chain_0.scl", pads: [["TU5", "32"], ["TU8", "21"], ["TR7", "2"], ["TTP4", "1"], ["TJ3", "5"]]},
+  {name: "Ti2c_chain_0.sda", pads: [["TU5", "31"], ["TU8", "22"], ["TR8", "2"], ["TJ3", "3"], ["TTP5", "1"]]},
+  {name: "Ttouch_duck.pad", pads: [["TU5", "6"], ["TU7", "1"]]},
+  {name: "Tmcu.program_boot_node", pads: [["TD2", "2"], ["TU5", "27"], ["TJ2", "2"]]},
+  {name: "Tcam.dvp8.xclk", pads: [["TU5", "21"], ["TJ3", "13"]]},
+  {name: "Tcam.dvp8.pclk", pads: [["TU5", "19"], ["TC16", "1"], ["TJ3", "17"]]},
+  {name: "Tcam.dvp8.href", pads: [["TU5", "24"], ["TJ3", "9"]]},
+  {name: "Tcam.dvp8.vsync", pads: [["TU5", "25"], ["TJ3", "7"]]},
+  {name: "Tcam.dvp8.y0", pads: [["TU5", "18"], ["TJ3", "19"]]},
+  {name: "Tcam.dvp8.y1", pads: [["TU5", "17"], ["TJ3", "21"]]},
+  {name: "Tcam.dvp8.y2", pads: [["TU5", "11"], ["TJ3", "22"]]},
+  {name: "Tcam.dvp8.y3", pads: [["TU5", "10"], ["TJ3", "20"]]},
+  {name: "Tcam.dvp8.y4", pads: [["TU5", "12"], ["TJ3", "18"]]},
+  {name: "Tcam.dvp8.y5", pads: [["TU5", "15"], ["TJ3", "16"]]},
+  {name: "Tcam.dvp8.y6", pads: [["TU5", "20"], ["TJ3", "14"]]},
+  {name: "Tcam.dvp8.y7", pads: [["TU5", "22"], ["TJ3", "12"]]},
+  {name: "Tcam.reset", pads: [["TU5", "23"], ["TC15", "1"], ["TJ3", "6"]]},
+  {name: "Tflir.spi.sck", pads: [["TU8", "13"], ["TU5", "39"]]},
+  {name: "Tflir.spi.mosi", pads: [["TU8", "11"], ["TU5", "5"]]},
+  {name: "Tflir.spi.miso", pads: [["TU8", "12"], ["TU5", "4"]]},
+  {name: "Tflir.reset", pads: [["TU8", "24"], ["TU5", "34"]]},
+  {name: "Tflir.shutdown", pads: [["TU8", "23"], ["TU5", "33"]]},
+  {name: "Tflir.cs", pads: [["TU8", "14"], ["TU5", "38"]]},
+  {name: "Tflir.vsync", pads: [["TU8", "2"], ["TU5", "7"]]},
+  {name: "Tusb.conn.cc.cc1", pads: [["TJ1", "A5"], ["TR1", "2"]]},
+  {name: "Tusb.conn.cc.cc2", pads: [["TJ1", "B5"], ["TR2", "2"]]},
+  {name: "Treg_3v3.fb.output", pads: [["TU1", "4"], ["TR3", "2"], ["TR4", "1"]]},
+  {name: "Treg_3v3.boot_cap.neg", pads: [["TC2", "2"], ["TU1", "2"], ["TL1", "1"]]},
+  {name: "Treg_3v3.boot_cap.pos", pads: [["TC2", "1"], ["TU1", "6"]]},
+  {name: "Treg_3v3.en_res.b", pads: [["TR5", "2"], ["TU1", "5"]]},
+  {name: "Tmcu.program_uart_node.a_tx", pads: [["TU5", "37"], ["TJ2", "3"]]},
+  {name: "Tmcu.program_uart_node.b_tx", pads: [["TU5", "36"], ["TJ2", "4"]]},
+  {name: "Tmcu.program_en_node", pads: [["TU5", "3"], ["TJ2", "6"], ["TR6", "2"], ["TC13", "1"]]},
+  {name: "Tledr.res.a", pads: [["TR9", "1"], ["TD2", "1"]]},
+  {name: "Tcam.device.y.0", pads: [["TJ3", "24"]]},
+  {name: "Tcam.device.y.1", pads: [["TJ3", "23"]]},
+  {name: "Tflir.mclk.out", pads: [["TX1", "3"], ["TU8", "26"]]}
+])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
 const limit1 = pt(3.327559055118111, 2.4996062992125987);

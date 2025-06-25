@@ -1,73 +1,114 @@
 const board = new PCB();
 
-const jlc_th_th1 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th1
+const H1 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(0.728, 0.561), rotate: 0,
-  id: 'jlc_th_th1'
+  id: 'H1'
 })
-const jlc_th_th2 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th2
+const H2 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(0.768, 0.561), rotate: 0,
-  id: 'jlc_th_th2'
+  id: 'H2'
 })
-const jlc_th_th3 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th3
+const H3 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(0.728, 0.601), rotate: 0,
-  id: 'jlc_th_th3'
+  id: 'H3'
 })
-const usb = board.add(USB_A_Pads, {
+// usb
+const J1 = board.add(USB_A_Pads, {
   translate: pt(0.630, 0.463), rotate: 0,
-  id: 'usb'
+  id: 'J1'
 })
-const reg_3v3_ic = board.add(UDFN_4_1EP_1x1mm_P0_65mm_EP0_48x0_48mm, {
+// reg_3v3.ic
+const U1 = board.add(UDFN_4_1EP_1x1mm_P0_65mm_EP0_48x0_48mm, {
   translate: pt(0.339, 0.591), rotate: 0,
-  id: 'reg_3v3_ic'
+  id: 'U1'
 })
-const reg_3v3_in_cap_cap = board.add(C_0402_1005Metric, {
+// reg_3v3.in_cap.cap
+const C1 = board.add(C_0402_1005Metric, {
   translate: pt(0.340, 0.678), rotate: 0,
-  id: 'reg_3v3_in_cap_cap'
+  id: 'C1'
 })
-const mcu_swd_conn = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
+// mcu.swd.conn
+const J2 = board.add(Tag_Connect_TC2030_IDC_NL_2x03_P1_27mm_Vertical, {
   translate: pt(0.138, 0.365), rotate: 0,
-  id: 'mcu_swd_conn'
+  id: 'J2'
 })
-const mcu_ic = board.add(QFN_32_1EP_5x5mm_P0_5mm_EP3_45x3_45mm, {
+// mcu.ic
+const U2 = board.add(QFN_32_1EP_5x5mm_P0_5mm_EP3_45x3_45mm, {
   translate: pt(0.123, 0.123), rotate: 0,
-  id: 'mcu_ic'
+  id: 'U2'
 })
-const rgb_package = board.add(LED_Lumex_SML_LX0404SIUPGUSB, {
+// rgb.package
+const D1 = board.add(LED_Lumex_SML_LX0404SIUPGUSB, {
   translate: pt(0.035, 0.597), rotate: 0,
-  id: 'rgb_package'
+  id: 'D1'
 })
-const rgb_red_res = board.add(R_0402_1005Metric, {
+// rgb.red_res
+const R1 = board.add(R_0402_1005Metric, {
   translate: pt(0.147, 0.580), rotate: 0,
-  id: 'rgb_red_res'
+  id: 'R1'
 })
-const rgb_green_res = board.add(R_0402_1005Metric, {
+// rgb.green_res
+const R2 = board.add(R_0402_1005Metric, {
   translate: pt(0.037, 0.690), rotate: 0,
-  id: 'rgb_green_res'
+  id: 'R2'
 })
-const rgb_blue_res = board.add(R_0402_1005Metric, {
+// rgb.blue_res
+const R3 = board.add(R_0402_1005Metric, {
   translate: pt(0.149, 0.690), rotate: 0,
-  id: 'rgb_blue_res'
+  id: 'R3'
 })
-const ts1_res = board.add(R_0402_1005Metric, {
+// ts1.res
+const R4 = board.add(R_0402_1005Metric, {
   translate: pt(0.922, 0.580), rotate: 0,
-  id: 'ts1_res'
+  id: 'R4'
 })
-const ts2_res = board.add(R_0402_1005Metric, {
+// ts2.res
+const R5 = board.add(R_0402_1005Metric, {
   translate: pt(0.037, 0.845), rotate: 0,
-  id: 'ts2_res'
+  id: 'R5'
 })
-const tss_cap = board.add(C_0402_1005Metric, {
-  translate: pt(0.417, 0.845), rotate: 0,
-  id: 'tss_cap'
-})
-const packed_mcu_vdda_cap_cap = board.add(C_0402_1005Metric, {
+// tss.cap
+const C2 = board.add(C_0402_1005Metric, {
   translate: pt(0.227, 0.845), rotate: 0,
-  id: 'packed_mcu_vdda_cap_cap'
+  id: 'C2'
 })
-const packed_mcu_vdd1_cap_cap = board.add(C_0603_1608Metric, {
+// packed_mcu_vdda_cap.cap
+const C3 = board.add(C_0402_1005Metric, {
+  translate: pt(0.417, 0.845), rotate: 0,
+  id: 'C3'
+})
+// packed_mcu_vdd1_cap.cap
+const C4 = board.add(C_0603_1608Metric, {
   translate: pt(0.552, 0.590), rotate: 0,
-  id: 'packed_mcu_vdd1_cap_cap'
+  id: 'C4'
 })
+
+board.setNetlist([
+  {name: "gnd", pads: [["J1", "4"], ["U1", "2"], ["U1", "5"], ["U2", "16"], ["U2", "32"], ["U2", "33"], ["C2", "2"], ["U2", "15"], ["U2", "3"], ["C1", "2"], ["J2", "5"], ["C4", "2"], ["C3", "2"]]},
+  {name: "v3v3", pads: [["U1", "1"], ["U2", "17"], ["U2", "1"], ["U2", "5"], ["D1", "1"], ["J2", "1"], ["C4", "1"], ["C3", "1"]]},
+  {name: "usb.pwr", pads: [["J1", "1"], ["U1", "4"], ["U1", "3"], ["C1", "1"]]},
+  {name: "usb.usb.dp", pads: [["U2", "22"], ["J1", "3"]]},
+  {name: "usb.usb.dm", pads: [["U2", "21"], ["J1", "2"]]},
+  {name: "rgb.signals.red", pads: [["U2", "7"], ["R1", "2"]]},
+  {name: "rgb.signals.green", pads: [["U2", "8"], ["R2", "2"]]},
+  {name: "rgb.signals.blue", pads: [["U2", "9"], ["R3", "2"]]},
+  {name: "ts1.io", pads: [["U2", "27"], ["R4", "1"]]},
+  {name: "ts2.io", pads: [["U2", "28"], ["R5", "1"]]},
+  {name: "tss.io", pads: [["U2", "29"], ["C2", "1"]]},
+  {name: "mcu.swd_node.swdio", pads: [["U2", "23"], ["J2", "2"]]},
+  {name: "mcu.swd_node.swclk", pads: [["U2", "24"], ["J2", "4"]]},
+  {name: "mcu.swd.reset", pads: [["J2", "3"]]},
+  {name: "mcu.swd.swo", pads: [["J2", "6"]]},
+  {name: "mcu.ic.nrst", pads: [["U2", "4"]]},
+  {name: "rgb.red_res.a", pads: [["R1", "1"], ["D1", "2"]]},
+  {name: "rgb.green_res.a", pads: [["R2", "1"], ["D1", "3"]]},
+  {name: "rgb.blue_res.a", pads: [["R3", "1"], ["D1", "4"]]},
+  {name: "ts1.res.b", pads: [["R4", "2"]]},
+  {name: "ts2.res.b", pads: [["R5", "2"]]}
+])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
 const limit1 = pt(1.0771653543307087, 0.9818897637795276);
