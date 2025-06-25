@@ -2,6 +2,10 @@ const board = new PCB();
 
 
 
+board.setNetlist([
+  
+])
+
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
 const limit1 = pt(0.0, 0.0);
 const xMin = Math.min(limit0[0], limit1[0]);

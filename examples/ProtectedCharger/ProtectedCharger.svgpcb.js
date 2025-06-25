@@ -1,89 +1,126 @@
 const board = new PCB();
 
-const jlc_th_th1 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th1
+const H1 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(0.501, 0.935), rotate: 0,
-  id: 'jlc_th_th1'
+  id: 'H1'
 })
-const jlc_th_th2 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th2
+const H2 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(0.540, 0.935), rotate: 0,
-  id: 'jlc_th_th2'
+  id: 'H2'
 })
-const jlc_th_th3 = board.add(JlcToolingHole_1_152mm, {
+// jlc_th.th3
+const H3 = board.add(JlcToolingHole_1_152mm, {
   translate: pt(0.501, 0.974), rotate: 0,
-  id: 'jlc_th_th3'
+  id: 'H3'
 })
-const usb_conn = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
+// usb.conn
+const J1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
   translate: pt(0.209, 0.165), rotate: 0,
-  id: 'usb_conn'
+  id: 'J1'
 })
-const usb_cc_pull_cc1_res = board.add(R_0603_1608Metric, {
+// usb.cc_pull.cc1.res
+const R1 = board.add(R_0603_1608Metric, {
   translate: pt(0.058, 0.420), rotate: 0,
-  id: 'usb_cc_pull_cc1_res'
+  id: 'R1'
 })
-const usb_cc_pull_cc2_res = board.add(R_0603_1608Metric, {
+// usb.cc_pull.cc2.res
+const R2 = board.add(R_0603_1608Metric, {
   translate: pt(0.214, 0.420), rotate: 0,
-  id: 'usb_cc_pull_cc2_res'
+  id: 'R2'
 })
-const batt_conn = board.add(JST_PH_S2B_PH_K_1x02_P2_00mm_Horizontal, {
+// batt.conn
+const J2 = board.add(JST_PH_S2B_PH_K_1x02_P2_00mm_Horizontal, {
   translate: pt(0.633, 0.266), rotate: 0,
-  id: 'batt_conn'
+  id: 'J2'
 })
-const tp_gnd_tp = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.317, 0.972), rotate: 0,
-  id: 'tp_gnd_tp'
-})
-const tp_tp = board.add(TestPoint_TE_RCT_0805, {
+// tp_gnd.tp
+const TP1 = board.add(TestPoint_TE_RCT_0805, {
   translate: pt(0.066, 0.972), rotate: 0,
-  id: 'tp_tp'
+  id: 'TP1'
 })
-const pmos_r1 = board.add(R_0603_1608Metric, {
+// tp.tp
+const TP2 = board.add(TestPoint_TE_RCT_0805, {
+  translate: pt(0.317, 0.972), rotate: 0,
+  id: 'TP2'
+})
+// pmos.r1
+const R3 = board.add(R_0603_1608Metric, {
   translate: pt(0.511, 0.769), rotate: 0,
-  id: 'pmos_r1'
+  id: 'R3'
 })
-const pmos_r2 = board.add(R_0603_1608Metric, {
+// pmos.r2
+const R4 = board.add(R_0603_1608Metric, {
   translate: pt(0.667, 0.769), rotate: 0,
-  id: 'pmos_r2'
+  id: 'R4'
 })
-const pmos_mp1 = board.add(SOT_23, {
+// pmos.mp1
+const Q1 = board.add(SOT_23, {
   translate: pt(0.528, 0.633), rotate: 0,
-  id: 'pmos_mp1'
+  id: 'Q1'
 })
-const pmos_mp2 = board.add(SOT_23, {
+// pmos.mp2
+const Q2 = board.add(SOT_23, {
   translate: pt(0.719, 0.633), rotate: 0,
-  id: 'pmos_mp2'
+  id: 'Q2'
 })
-const charger_ic = board.add(SOT_23_5, {
+// charger.ic
+const U1 = board.add(SOT_23_5, {
   translate: pt(0.081, 0.633), rotate: 0,
-  id: 'charger_ic'
+  id: 'U1'
 })
-const charger_vdd_cap_cap = board.add(C_0805_2012Metric, {
+// charger.vdd_cap.cap
+const C1 = board.add(C_0805_2012Metric, {
   translate: pt(0.268, 0.605), rotate: 0,
-  id: 'charger_vdd_cap_cap'
+  id: 'C1'
 })
-const charger_vbat_cap_cap = board.add(C_0805_2012Metric, {
+// charger.vbat_cap.cap
+const C2 = board.add(C_0805_2012Metric, {
   translate: pt(0.067, 0.778), rotate: 0,
-  id: 'charger_vbat_cap_cap'
+  id: 'C2'
 })
-const charger_prog_res = board.add(R_0603_1608Metric, {
+// charger.prog_res
+const R5 = board.add(R_0603_1608Metric, {
   translate: pt(0.231, 0.769), rotate: 0,
-  id: 'charger_prog_res'
+  id: 'R5'
 })
-const charge_led_package = board.add(LED_0603_1608Metric, {
+// charge_led.package
+const D1 = board.add(LED_0603_1608Metric, {
   translate: pt(0.971, 0.595), rotate: 0,
-  id: 'charge_led_package'
+  id: 'D1'
 })
-const charge_led_res = board.add(R_0603_1608Metric, {
+// charge_led.res
+const R6 = board.add(R_0603_1608Metric, {
   translate: pt(0.971, 0.693), rotate: 0,
-  id: 'charge_led_res'
+  id: 'R6'
 })
-const pmos_load_fet = board.add(SOT_23, {
+// pmos_load.fet
+const Q3 = board.add(SOT_23, {
   translate: pt(1.223, 0.633), rotate: 0,
-  id: 'pmos_load_fet'
+  id: 'Q3'
 })
-const pwr_pins = board.add(JST_PH_S3B_PH_K_1x03_P2_00mm_Horizontal, {
+// pwr_pins
+const J3 = board.add(JST_PH_S3B_PH_K_1x03_P2_00mm_Horizontal, {
   translate: pt(1.023, 0.266), rotate: 0,
-  id: 'pwr_pins'
+  id: 'J3'
 })
+
+board.setNetlist([
+  {name: "vusb", pads: [["J1", "A4"], ["J1", "B9"], ["J1", "B4"], ["J1", "A9"], ["U1", "4"], ["D1", "2"], ["C1", "1"]]},
+  {name: "gnd", pads: [["J1", "A1"], ["J1", "B12"], ["J1", "B1"], ["J1", "A12"], ["J3", "1"], ["J3", "3"], ["J2", "1"], ["TP1", "1"], ["R3", "2"], ["U1", "2"], ["Q3", "1"], ["J1", "S1"], ["R5", "2"], ["C1", "2"], ["C2", "2"], ["R1", "1"], ["R2", "1"]]},
+  {name: "batt.pwr", pads: [["J2", "2"], ["TP2", "1"], ["R4", "2"], ["Q1", "1"], ["Q2", "3"]]},
+  {name: "charger.pwr_bat", pads: [["U1", "3"], ["Q1", "2"], ["Q2", "2"], ["R4", "1"], ["C2", "1"], ["Q3", "3"]]},
+  {name: "charge_led.signal", pads: [["U1", "1"], ["R6", "2"]]},
+  {name: "pmos_load.pwr_out", pads: [["J3", "2"], ["Q3", "2"]]},
+  {name: "usb.usb.dp", pads: [["J1", "A6"], ["J1", "B6"]]},
+  {name: "usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"]]},
+  {name: "usb.conn.cc.cc1", pads: [["J1", "A5"], ["R1", "2"]]},
+  {name: "usb.conn.cc.cc2", pads: [["J1", "B5"], ["R2", "2"]]},
+  {name: "pmos.r1.a", pads: [["R3", "1"], ["Q1", "3"], ["Q2", "1"]]},
+  {name: "charger.prog_res.a", pads: [["R5", "1"], ["U1", "5"]]},
+  {name: "charge_led.res.a", pads: [["R6", "1"], ["D1", "1"]]}
+])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
 const limit1 = pt(1.416732283464567, 1.1279527559055118);

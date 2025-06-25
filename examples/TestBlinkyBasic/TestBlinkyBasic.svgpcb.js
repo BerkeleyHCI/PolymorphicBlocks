@@ -1,17 +1,28 @@
 const board = new PCB();
 
-const mcu = board.add(Nucleo32, {
+// mcu
+const U1 = board.add(Nucleo32, {
   translate: pt(0.365, 0.990), rotate: 0,
-  id: 'mcu'
+  id: 'U1'
 })
-const led_package = board.add(LED_0603_1608Metric, {
+// led.package
+const D1 = board.add(LED_0603_1608Metric, {
   translate: pt(0.828, 0.029), rotate: 0,
-  id: 'led_package'
+  id: 'D1'
 })
-const led_res = board.add(R_0603_1608Metric, {
+// led.res
+const R1 = board.add(R_0603_1608Metric, {
   translate: pt(0.828, 0.126), rotate: 0,
-  id: 'led_res'
+  id: 'R1'
 })
+
+board.setNetlist([
+  {name: "led.signal", pads: [["U1", "10"], ["D1", "2"]]},
+  {name: "mcu.gnd", pads: [["U1", "4"], ["U1", "17"], ["R1", "2"]]},
+  {name: "mcu.pwr_out", pads: [["U1", "29"]]},
+  {name: "mcu.vusb_out", pads: [["U1", "19"]]},
+  {name: "led.res.a", pads: [["R1", "1"], ["D1", "1"]]}
+])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
 const limit1 = pt(1.0041338582677166, 2.0192913385826774);
