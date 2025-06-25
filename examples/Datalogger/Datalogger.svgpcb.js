@@ -272,17 +272,17 @@ const R10 = board.add(R_0603_1608Metric, {
 })
 // xbee.ic
 const U9 = board.add(XBEE, {
-  translate: pt(1.641, 2.453), rotate: 0,
+  translate: pt(1.172, 2.453), rotate: 0,
   id: 'U9'
 })
 // xbee.vdd_cap_0.cap
 const C27 = board.add(C_0603_1608Metric, {
-  translate: pt(1.544, 2.385), rotate: 0,
+  translate: pt(1.074, 2.385), rotate: 0,
   id: 'C27'
 })
 // xbee.vdd_cap_1.cap
 const C28 = board.add(C_0603_1608Metric, {
-  translate: pt(1.544, 2.482), rotate: 0,
+  translate: pt(1.074, 2.482), rotate: 0,
   id: 'C28'
 })
 // xbee_assoc.package
@@ -422,62 +422,62 @@ const U12 = board.add(PinHeader_1x06_P2_54mm_Vertical, {
 })
 // rgb1.package
 const D6 = board.add(LED_LiteOn_LTST_C19HE1WT, {
-  translate: pt(0.041, 2.411), rotate: 0,
+  translate: pt(3.258, 1.758), rotate: 0,
   id: 'D6'
 })
 // rgb1.red_res
 const R14 = board.add(R_0603_1608Metric, {
-  translate: pt(0.180, 2.385), rotate: 0,
+  translate: pt(3.397, 1.731), rotate: 0,
   id: 'R14'
 })
 // rgb1.green_res
 const R15 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 2.535), rotate: 0,
+  translate: pt(3.275, 1.881), rotate: 0,
   id: 'R15'
 })
 // rgb1.blue_res
 const R16 = board.add(R_0603_1608Metric, {
-  translate: pt(0.214, 2.535), rotate: 0,
+  translate: pt(3.431, 1.881), rotate: 0,
   id: 'R16'
 })
 // rgb2.package
 const D7 = board.add(LED_LiteOn_LTST_C19HE1WT, {
-  translate: pt(0.432, 2.411), rotate: 0,
+  translate: pt(0.041, 2.411), rotate: 0,
   id: 'D7'
 })
 // rgb2.red_res
 const R17 = board.add(R_0603_1608Metric, {
-  translate: pt(0.571, 2.385), rotate: 0,
+  translate: pt(0.180, 2.385), rotate: 0,
   id: 'R17'
 })
 // rgb2.green_res
 const R18 = board.add(R_0603_1608Metric, {
-  translate: pt(0.449, 2.535), rotate: 0,
+  translate: pt(0.058, 2.535), rotate: 0,
   id: 'R18'
 })
 // rgb2.blue_res
 const R19 = board.add(R_0603_1608Metric, {
-  translate: pt(0.605, 2.535), rotate: 0,
+  translate: pt(0.214, 2.535), rotate: 0,
   id: 'R19'
 })
 // rgb3.package
 const D8 = board.add(LED_LiteOn_LTST_C19HE1WT, {
-  translate: pt(3.258, 1.758), rotate: 0,
+  translate: pt(0.432, 2.411), rotate: 0,
   id: 'D8'
 })
 // rgb3.red_res
 const R20 = board.add(R_0603_1608Metric, {
-  translate: pt(3.397, 1.731), rotate: 0,
+  translate: pt(0.571, 2.385), rotate: 0,
   id: 'R20'
 })
 // rgb3.green_res
 const R21 = board.add(R_0603_1608Metric, {
-  translate: pt(3.275, 1.881), rotate: 0,
+  translate: pt(0.449, 2.535), rotate: 0,
   id: 'R21'
 })
 // rgb3.blue_res
 const R22 = board.add(R_0603_1608Metric, {
-  translate: pt(3.431, 1.881), rotate: 0,
+  translate: pt(0.605, 2.535), rotate: 0,
   id: 'R22'
 })
 // sw1.package
@@ -502,32 +502,32 @@ const R24 = board.add(R_0603_1608Metric, {
 })
 // v12sense.div.top_res
 const R25 = board.add(R_0603_1608Metric, {
-  translate: pt(1.818, 2.385), rotate: 0,
+  translate: pt(1.348, 2.385), rotate: 0,
   id: 'R25'
 })
 // v12sense.div.bottom_res
 const R26 = board.add(R_0603_1608Metric, {
-  translate: pt(1.818, 2.482), rotate: 0,
+  translate: pt(1.348, 2.482), rotate: 0,
   id: 'R26'
 })
 // v5sense.div.top_res
 const R27 = board.add(R_0603_1608Metric, {
-  translate: pt(1.309, 2.385), rotate: 0,
+  translate: pt(1.583, 2.385), rotate: 0,
   id: 'R27'
 })
 // v5sense.div.bottom_res
 const R28 = board.add(R_0603_1608Metric, {
-  translate: pt(1.309, 2.482), rotate: 0,
+  translate: pt(1.583, 2.482), rotate: 0,
   id: 'R28'
 })
 // vscsense.div.top_res
 const R29 = board.add(R_0603_1608Metric, {
-  translate: pt(1.074, 2.385), rotate: 0,
+  translate: pt(1.818, 2.385), rotate: 0,
   id: 'R29'
 })
 // vscsense.div.bottom_res
 const R30 = board.add(R_0603_1608Metric, {
-  translate: pt(1.074, 2.482), rotate: 0,
+  translate: pt(1.818, 2.482), rotate: 0,
   id: 'R30'
 })
 

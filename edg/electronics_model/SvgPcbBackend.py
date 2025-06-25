@@ -30,7 +30,7 @@ def arrange_blocks(blocks: List[NetBlock],
     BLOCK_BORDER = 2  # mm
 
     # create list of blocks by path
-    block_subblocks: Dict[Tuple[str, ...], Set[str]] = {}
+    block_subblocks: Dict[Tuple[str, ...], List[str]] = {}  # list to maintain sortedness
     block_footprints: Dict[Tuple[str, ...], List[Union[NetBlock, BlackBoxBlock]]] = {}
 
     # for here, we only group one level deep
@@ -38,13 +38,17 @@ def arrange_blocks(blocks: List[NetBlock],
         containing_path = block.full_path.blocks[0:min(len(block.full_path.blocks) - 1, 1)]
         block_footprints.setdefault(containing_path, []).append(block)
         for i in range(len(containing_path)):
-            block_subblocks.setdefault(tuple(containing_path[:i]), set()).add(containing_path[i])
+            subblocks_list = block_subblocks.setdefault(tuple(containing_path[:i]), list())
+            if containing_path[i] not in subblocks_list:
+                subblocks_list.append(containing_path[i])
 
     for blackbox in additional_blocks:
         containing_path = blackbox.path.blocks[0:min(len(blackbox.path.blocks) - 1, 1)]
         block_footprints.setdefault(containing_path, []).append(blackbox)
         for i in range(len(containing_path)):
-            block_subblocks.setdefault(tuple(containing_path[:i]), set()).add(containing_path[i])
+            subblocks_list = block_subblocks.setdefault(tuple(containing_path[:i]), list())
+            if containing_path[i] not in subblocks_list:
+                subblocks_list.append(containing_path[i])
 
     def arrange_hierarchy(root: Tuple[str, ...]) -> PlacedBlock:
         """Recursively arranges the immediate components of a hierarchy, treating each element
@@ -53,7 +57,7 @@ def arrange_blocks(blocks: List[NetBlock],
         ASPECT_RATIO = 16 / 9
 
         sub_placed: List[Tuple[float, float, Union[PlacedBlock, NetBlock, BlackBoxBlock]]] = []  # (width, height, entry)
-        for subblock in block_subblocks.get(root, set()):
+        for subblock in block_subblocks.get(root, list()):
             subplaced = arrange_hierarchy(root + (subblock,))
             sub_placed.append((subplaced.width + BLOCK_BORDER, subplaced.height + BLOCK_BORDER, subplaced))
 

@@ -102,12 +102,12 @@ const SW1 = board.add(SW_SPST_SKQG_WithoutStem, {
 })
 // led[0].package
 const D1 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.058, 1.212), rotate: 0,
+  translate: pt(1.058, 0.766), rotate: 0,
   id: 'D1'
 })
 // led[0].res
 const R5 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 1.309), rotate: 0,
+  translate: pt(1.057, 0.863), rotate: 0,
   id: 'R5'
 })
 // led[1].package
@@ -122,12 +122,12 @@ const R6 = board.add(R_0603_1608Metric, {
 })
 // led[2].package
 const D3 = board.add(LED_0603_1608Metric, {
-  translate: pt(1.058, 0.766), rotate: 0,
+  translate: pt(0.058, 1.212), rotate: 0,
   id: 'D3'
 })
 // led[2].res
 const R7 = board.add(R_0603_1608Metric, {
-  translate: pt(1.057, 0.863), rotate: 0,
+  translate: pt(0.058, 1.309), rotate: 0,
   id: 'R7'
 })
 // led[3].package

@@ -172,42 +172,42 @@ const C19 = board.add(C_0603_1608Metric, {
 })
 // rgb_usb.package
 const D1 = board.add(LED_LiteOn_LTST_C19HE1WT, {
-  translate: pt(0.432, 1.512), rotate: 0,
+  translate: pt(0.041, 1.512), rotate: 0,
   id: 'D1'
 })
 // rgb_usb.red_res
 const R6 = board.add(R_0603_1608Metric, {
-  translate: pt(0.571, 1.486), rotate: 0,
+  translate: pt(0.180, 1.486), rotate: 0,
   id: 'R6'
 })
 // rgb_usb.green_res
 const R7 = board.add(R_0603_1608Metric, {
-  translate: pt(0.449, 1.635), rotate: 0,
+  translate: pt(0.058, 1.635), rotate: 0,
   id: 'R7'
 })
 // rgb_usb.blue_res
 const R8 = board.add(R_0603_1608Metric, {
-  translate: pt(0.605, 1.635), rotate: 0,
+  translate: pt(0.214, 1.635), rotate: 0,
   id: 'R8'
 })
 // rgb_can.package
 const D2 = board.add(LED_LiteOn_LTST_C19HE1WT, {
-  translate: pt(0.041, 1.512), rotate: 0,
+  translate: pt(0.432, 1.512), rotate: 0,
   id: 'D2'
 })
 // rgb_can.red_res
 const R9 = board.add(R_0603_1608Metric, {
-  translate: pt(0.180, 1.486), rotate: 0,
+  translate: pt(0.571, 1.486), rotate: 0,
   id: 'R9'
 })
 // rgb_can.green_res
 const R10 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 1.635), rotate: 0,
+  translate: pt(0.449, 1.635), rotate: 0,
   id: 'R10'
 })
 // rgb_can.blue_res
 const R11 = board.add(R_0603_1608Metric, {
-  translate: pt(0.214, 1.635), rotate: 0,
+  translate: pt(0.605, 1.635), rotate: 0,
   id: 'R11'
 })
 // can
