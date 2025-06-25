@@ -1,9 +1,16 @@
 import zlib  # for deterministic hash
+from enum import Enum, auto
 from typing import List
 
-from .. import edgir
-from ..core import TransformUtil
 from .NetlistGenerator import Netlist, NetBlock, Net
+from .. import edgir
+
+
+class RefdesMode(Enum):
+    PathnameAsValue = auto()  # conventional refdes w/ pathname as value, except for TPs
+    Conventional = auto()  # conventional refdes only, value passed through
+    Pathname = auto()  # pathname as refdes, value passed through
+
 
 
 ###############################################################################################################################################################################################
@@ -17,17 +24,24 @@ def gen_header() -> str:
 
 """2. Generating Blocks"""
 
-def block_name(block: NetBlock, refdes_pathname: bool) -> str:
-    if refdes_pathname:
+def block_name(block: NetBlock, refdes_mode: RefdesMode) -> str:
+    if refdes_mode == RefdesMode.Pathname:
         return '.'.join(block.path)
     else:
-        return block.refdes
+        return block.refdes  # default is conventional refdes
 
 def gen_block_comp(block_name: str) -> str:
     return f'(comp (ref "{block_name}")'
 
-def gen_block_value(block_value: str) -> str:
-    return f'(value "{block_value}")'
+def gen_block_value(block: NetBlock, refdes_mode: RefdesMode) -> str:
+    if refdes_mode == RefdesMode.PathnameAsValue:
+        if block.refdes.startswith('TP'):  # test points keep their value
+            return f'(value "{block.value}")'
+        else:
+            pathname = '.'.join(block.path)
+            return f'(value "{pathname}")'
+    else:
+        return f'(value "{block.value}")'
 
 def gen_block_footprint(block_footprint: str) -> str:
     return f'(footprint "{block_footprint}")'
@@ -59,19 +73,14 @@ def gen_block_prop_sheetfile(block_path: List[edgir.LibraryPath]) -> str:
     value = ""
   return f'(property (name "Sheetfile") (value "{value}"))'
 
-def gen_block_prop_path(block_path: TransformUtil.Path) -> str:
-  return f'(property (name "edg_path") (value "{".".join(block_path.to_tuple())}"))'
+def gen_block_prop_edg(block: NetBlock) -> str:
+  return f'(property (name "edg_path") (value "{".".join(block.full_path.to_tuple())}"))\n' +\
+      f'  (property (name "edg_short_path") (value "{".".join(block.path)}"))\n' + \
+      f'  (property (name "edg_refdes") (value "{block.refdes}"))\n' + \
+      f'  (property (name "edg_part") (value "{block.part}"))\n' + \
+      f'  (property (name "edg_value") (value "{block.value}"))'
 
-def gen_block_prop_shortpath(block_path: List[str]) -> str:
-  return f'(property (name "edg_short_path") (value "{".".join(block_path)}"))'
-
-def gen_block_prop_refdes(refdes: str) -> str:
-  return f'(property (name "edg_refdes") (value "{refdes}"))'
-
-def gen_block_prop_part(part: str) -> str:
-  return f'(property (name "edg_part") (value "{part}"))'
-
-def block_exp(blocks: List[NetBlock], refdes_pathname: bool) -> str:
+def block_exp(blocks: List[NetBlock], refdes_mode: RefdesMode) -> str:
         """Given a dictionary of block_names (strings) as keys and Blocks (namedtuples) as corresponding values
 
         Example:
@@ -87,15 +96,12 @@ def block_exp(blocks: List[NetBlock], refdes_pathname: bool) -> str:
         """
         result = '(components' 
         for block in blocks:
-            result += '\n' + gen_block_comp(block_name(block, refdes_pathname)) + '\n' +\
-                      "  " + gen_block_value(block.value) + '\n' + \
+            result += '\n' + gen_block_comp(block_name(block, refdes_mode)) + '\n' +\
+                      "  " + gen_block_value(block, refdes_mode) + '\n' + \
                       "  " + gen_block_footprint(block.footprint) + '\n' + \
                       "  " + gen_block_prop_sheetname(block.path) + '\n' + \
                       "  " + gen_block_prop_sheetfile(block.class_path) + '\n' + \
-                      "  " + gen_block_prop_path(block.full_path) + '\n' + \
-                      "  " + gen_block_prop_shortpath(block.path) + '\n' + \
-                      "  " + gen_block_prop_refdes(block.refdes) + '\n' + \
-                      "  " + gen_block_prop_part(block.part) + '\n' + \
+                      "  " + gen_block_prop_edg(block) + '\n' + \
                       "  " + gen_block_sheetpath(block.path[:-1]) + '\n' + \
                       "  " + gen_block_tstamp(block.path)
         return result + ')'
@@ -110,7 +116,7 @@ def gen_net_header(net_count: int, net_name: str) -> str:
 def gen_net_pin(block_name: str, pin_name: str) -> str:
     return "(node (ref {}) (pin {}))".format(block_name, pin_name)
 
-def net_exp(nets: List[Net], blocks: List[NetBlock], refdes_pathname: bool) -> str:
+def net_exp(nets: List[Net], blocks: List[NetBlock], refdes_mode: RefdesMode) -> str:
         """Given a dictionary of net names (strings) as keys and a list of connected Pins (namedtuples) as corresponding values
 
         Example:
@@ -130,7 +136,7 @@ def net_exp(nets: List[Net], blocks: List[NetBlock], refdes_pathname: bool) -> s
         for i, net in enumerate(nets):
             result += '\n' + gen_net_header(i + 1, net.name)
             for pin in net.pins:
-                result += '\n  ' + gen_net_pin(block_name(block_dict[pin.block_path], refdes_pathname), pin.pin_name)
+                result += '\n  ' + gen_net_pin(block_name(block_dict[pin.block_path], refdes_mode), pin.pin_name)
             result += ')'
         return result + ')'
 
@@ -139,6 +145,6 @@ def net_exp(nets: List[Net], blocks: List[NetBlock], refdes_pathname: bool) -> s
 """4. Generate Full Netlist"""
 
 
-def generate_netlist(netlist: Netlist, refdes_pathname: bool) -> str:
-    return gen_header() + '\n' + block_exp(netlist.blocks, refdes_pathname) + '\n' \
-        + net_exp(netlist.nets, netlist.blocks, refdes_pathname) + '\n' + ')'
+def generate_netlist(netlist: Netlist, refdes_mode: RefdesMode) -> str:
+    return gen_header() + '\n' + block_exp(netlist.blocks, refdes_mode) + '\n' \
+        + net_exp(netlist.nets, netlist.blocks, refdes_mode) + '\n' + ')'

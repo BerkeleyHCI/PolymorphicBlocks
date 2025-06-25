@@ -811,7 +811,7 @@ Good luck with building PCBs!
 
 
 ## Defining Library Parts
-Continue to [the next part of the tutorial](getting_started_library.md) on defining a library Block with a KiCad schematic.
+Continue to [the next part of the tutorial](getting_started_schimport.md) on defining a library Block with a KiCad schematic.
 
 ### Additional Resources
 If you want to some more complex examples of boards designed in this HDL, check out:

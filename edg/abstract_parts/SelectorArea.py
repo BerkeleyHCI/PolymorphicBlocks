@@ -1,27 +1,6 @@
-from typing import Optional
-
-from pydantic import RootModel
-import os
-
 from ..electronics_model import *
 from .PartsTable import PartsTableRow
 from .PartsTablePart import PartsTableFootprintFilter, PartsTablePart
-
-
-class FootprintJson(RootModel):  # script relpath imports are weird so this is duplicated here
-  root: dict[str, float]  # footprint name -> area
-
-
-class FootprintAreaTable:
-  _table: Optional[FootprintJson] = None
-
-  @classmethod
-  def area_of(cls, footprint: str) -> float:
-    """Returns the area of a footprint, returning infinity if unavailable"""
-    if cls._table is None:
-      with open(os.path.join(os.path.dirname(__file__), "resources", "kicad_footprints.json"), 'r') as f:
-        cls._table = FootprintJson.model_validate_json(f.read())
-    return cls._table.root.get(footprint) or float('inf')
 
 
 @abstract_block
@@ -44,6 +23,10 @@ class SelectorArea(PartsTablePart):
     super().__init__(*args, **kwargs)
     self.footprint_area = self.ArgParameter(footprint_area)
 
+  @classmethod
+  def _footprint_area(cls, footprint_name: str) -> float:
+    return FootprintDataTable.area_of(footprint_name)
+
 
 @non_library
 class PartsTableAreaSelector(PartsTableFootprintFilter, SelectorArea):
@@ -54,4 +37,9 @@ class PartsTableAreaSelector(PartsTableFootprintFilter, SelectorArea):
 
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
-      (Range.exact(FootprintAreaTable.area_of(row[self.KICAD_FOOTPRINT])).fuzzy_in(self.get(self.footprint_area)))
+      (Range.exact(FootprintDataTable.area_of(row[self.KICAD_FOOTPRINT])).fuzzy_in(self.get(self.footprint_area)))
+
+  @classmethod
+  def _row_area(cls, row: PartsTableRow) -> float:
+    """Returns the area of the part in the row, for use in sorting."""
+    return FootprintDataTable.area_of(row[cls.KICAD_FOOTPRINT])

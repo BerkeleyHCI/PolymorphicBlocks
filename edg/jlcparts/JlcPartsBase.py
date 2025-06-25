@@ -160,7 +160,7 @@ class JlcPartsBase(JlcPart, PartsTableAreaSelector, PartsTableFootprintFilter):
 
     @classmethod
     def _row_sort_by(cls, row: PartsTableRow) -> Any:
-        return [not row[cls.BASIC_PART_COL], FootprintAreaTable.area_of(row[cls.KICAD_FOOTPRINT]), row[cls.COST_COL]]
+        return [not row[cls.BASIC_PART_COL], cls._row_area(row), row[cls.COST_COL]]
 
     def _row_generate(self, row: PartsTableRow) -> None:
         super()._row_generate(row)

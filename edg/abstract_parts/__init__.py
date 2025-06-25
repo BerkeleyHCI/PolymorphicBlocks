@@ -22,7 +22,7 @@ from .Categories import Label, Testing, TypedJumper, TypedTestPoint, InternalSub
 from .Categories import MultipackDevice
 
 from .ESeriesUtil import ESeriesUtil
-from .SelectorArea import SelectorArea, PartsTableAreaSelector, FootprintAreaTable
+from .SelectorArea import SelectorArea, PartsTableAreaSelector
 
 from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack, RfConnector, RfConnectorTestPoint, RfConnectorAntenna,\
@@ -108,8 +108,8 @@ from .VariantPinRemapper import VariantPinRemapper
 
 from .DummyDevices import DummyPassive, DummyGround, DummyVoltageSource, DummyVoltageSink, DummyDigitalSink, \
     DummyAnalogSource, DummyAnalogSink
-from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltage, ForcedVoltageCurrent, ForcedAnalogVoltage,\
-    ForcedAnalogSignal, ForcedDigitalSinkCurrentDraw
+from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltageCurrentLimit, ForcedVoltage, ForcedVoltageCurrent, \
+    ForcedAnalogVoltage, ForcedAnalogSignal, ForcedDigitalSinkCurrentDraw
 from .MergedBlocks import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource, MergedSpiController
 
 from .Nonstrict3v3Compatible import Nonstrict3v3Compatible

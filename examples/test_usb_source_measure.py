@@ -501,7 +501,7 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(DecouplingCapacitor(100*uFarad(tol=0.25))),
         imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30)*Volt,  # design for 0.5x - 1.5x conv ratio
                                                   frequency=500*kHertz(tol=0),
-                                                  ripple_current_factor=(0.01, 0.9),
+                                                  ripple_ratio=(0.01, 0.9),
                                                   input_ripple_limit=250*mVolt,
                                                   output_ripple_limit=(25*(7/9))*mVolt  # fill out the row of caps
                                                   )),

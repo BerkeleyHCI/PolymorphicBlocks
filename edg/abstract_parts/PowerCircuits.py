@@ -49,6 +49,8 @@ class FetHalfBridge(HalfBridge):
         self.fet_rds = self.ArgParameter(fet_rds)
         self.gate_res = self.ArgParameter(gate_res)
 
+        self.actual_current_limits = self.Parameter(RangeExpr())
+
     def contents(self):
         super().contents()
         self.driver = self.Block(HalfBridgeDriver(has_boot_diode=True))
@@ -96,6 +98,9 @@ class FetHalfBridge(HalfBridge):
             voltage_out=self.pwr.link().voltage)),
             self.out)
         self.connect(self.out.as_ground((0, 0)*Amp), self.driver.high_gnd)  # TODO model driver current
+
+        self.assign(self.actual_current_limits, self.low_fet.actual_drain_current_rating.intersect(
+            self.high_fet.actual_drain_current_rating))
 
 
 class FetHalfBridgeIndependent(FetHalfBridge, HalfBridgeIndependent):

@@ -233,9 +233,7 @@ class IotIron(JlcBoardTop):
         # these will be enforced by the firmware control mechanism
         # (['conv', 'pwr_in', 'current_draw'], Range(0, 3)),  # max 3A input draw
         # force JLC frequency spec
-        (['conv', 'power_path', 'inductor', 'part'], 'SLF12565T-150M4R2-PF'),
         (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 1e6)),  # from charts, inductance constant up to 1MHz
-        (['reg_3v3', 'power_path', 'inductor', 'part'], 'SWPA5040S220MT'),
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 11e6)),
 
         (['reg_gate', 'ic', 'actual_dropout'], Range.exact(0)),  # allow tracking
