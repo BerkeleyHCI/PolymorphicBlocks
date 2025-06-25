@@ -102,7 +102,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.2, rowSpacing=0.2) {{
     const resPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * kYCount]
     obj.footprints[`{res_reftype}${{{res_refnum} + xIndex + 1}}`] = res = board.add({res_footprint}, {{
       translate: resPos,
-      id: `{res_reftype}${{{res_refnum} + xIndex + 1}}`
+      id: `{res_reftype}${{{res_refnum} + xIndex}}`
     }})
     allResistors.push(res)
 
