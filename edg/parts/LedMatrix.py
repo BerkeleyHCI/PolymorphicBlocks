@@ -53,9 +53,9 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.2, rowSpacing=0.2) {{
 
     for (let xIndex=0; xIndex < kXCount; xIndex++) {{
       ledPos = [xy[0] + colSpacing * xIndex, xy[1] + rowSpacing * yIndex]
-      obj.footprints[`{led_reftype}${{{led_refnum} + yIndex + xIndex * kXCount}}`] = led = board.add({led_footprint}, {{
+      obj.footprints[`{led_reftype}${{{led_refnum} + yIndex + xIndex * kYCount}}`] = led = board.add({led_footprint}, {{
         translate: ledPos,
-        id: `{led_reftype}${{{led_refnum} + yIndex + xIndex * kXCount}}`
+        id: `{led_reftype}${{{led_refnum} + yIndex + xIndex * kYCount}}`
       }})
       rowLeds.push(led)
 

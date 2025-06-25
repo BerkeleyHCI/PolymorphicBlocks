@@ -108,7 +108,7 @@ def arrange_blocks(blocks: List[NetBlock],
                 elts.append((entry.full_path, (next_x - bbox[0], next_y + bbox[3])))
             elif isinstance(entry, BlackBoxBlock):  # account for footprint origin, flipping y-axis
                 bbox = entry.bbox
-                elts.append((entry.path, (next_x - bbox[0], next_y + bbox[3])))
+                elts.append((entry.path, (next_x - bbox[0], next_y - bbox[0])))
             x_stack.append((next_x + width, next_y, next_y + height))
             x_max = max(x_max, next_x + width)
             y_max = max(y_max, next_y + height)
@@ -213,7 +213,7 @@ class SvgPcbBackend(BaseBackend):
         for net_block in other_blocks:
             x_pos, y_pos = pos_dict.get(net_block.full_path, (0, 0))  # in mm, need to convert to in below
             block_code = f"""\
-// {net_block.path}
+// {net_block.full_path}
 const {net_block.refdes} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(net_block.footprint)}, {{
   translate: pt({x_pos/25.4:.3f}, {y_pos/25.4:.3f}), rotate: 0,
   id: '{net_block.refdes}'
