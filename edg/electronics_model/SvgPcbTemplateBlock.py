@@ -57,8 +57,10 @@ class SvgPcbTemplateBlock(Block):
         """Returns the refdes of a block, as a tuple of prefix and number,
         or crashes if the block is not valid."""
         footprint_path = self._svgpcb_footprint_block_path_of(block_ref)
+        assert footprint_path is not None
         refdes_path = footprint_path.append_param('fp_refdes')
         refdes = self._svgpcb_design.get_value(refdes_path.to_local_path())
+        assert isinstance(refdes, str)
         assert refdes is not None
         for i in reversed(range(len(refdes))):
             if refdes[i].isalpha():
@@ -89,6 +91,7 @@ class SvgPcbTemplateBlock(Block):
         """Infrastructure method, given a footprint path from _svgpcb_footprint_block_path_of and a port that should
         be connected to one of its pins, returns the footprint pin that the port is connected to, if any."""
         footprint_path = self._svgpcb_footprint_block_path_of(block_ref)
+        assert footprint_path is not None
         port_path = footprint_path.append_port(*pin_ref)
         candidate_nets = [net for net in self._svgpcb_netlist.nets
                           if port_path in net.ports]

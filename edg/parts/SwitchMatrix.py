@@ -1,4 +1,4 @@
-from typing import cast, Optional
+from typing import cast, Optional, Tuple
 
 from ..abstract_parts import *
 
@@ -32,7 +32,7 @@ class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
     assert all([pin is not None for pin in [switch_sw_pin, switch_com_pin, diode_a_pin, diode_k_pin]])
 
     return f"""\
-function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0.25, 0]) {{
+function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffset=[0.25, 0]) {{
   // Circuit generator params
   const ncols = {self._svgpcb_get_js(self.ncols)}
   const nrows = {self._svgpcb_get_js(self.nrows)}
@@ -102,6 +102,9 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=1, rowSpacing=1, diodeOffset=[0
   return obj
 }}
 """
+
+  def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
+    return 0.0, 0.0, self._svgpcb_get(self.ncols) * 0.5 * 25.4, (self._svgpcb_get(self.nrows) + 1) * .5 * 25.4
 
   @init_in_parent
   def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7)*Volt):
