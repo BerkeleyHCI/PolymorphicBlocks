@@ -14,7 +14,7 @@ class PlacedBlock(NamedTuple):
     """A placement of a hierarchical block, including the coordinates of its immediate elements.
     Elements are placed in local space, with (0, 0) as the origin and elements moved as a group.
     Elements are indexed by name."""
-    elts: Dict[str, Tuple[Union['PlacedBlock', TransformUtil.Path], Tuple[float, float]]]  # name -> elt, (x, y)
+    elts: List[Tuple[Union['PlacedBlock', TransformUtil.Path], Tuple[float, float]]]  # name -> elt, (x, y)
     height: float
     width: float
 
@@ -47,35 +47,34 @@ def arrange_blocks(blocks: List[NetBlock],
         # TODO don't count borders as part of a block's width / height
         ASPECT_RATIO = 16 / 9
 
-        sub_placed: List[Tuple[str, float, float, Union[PlacedBlock, NetBlock]]] = []  # (name, width, height, PlacedBlock or footprint)
+        sub_placed: List[Tuple[float, float, Union[PlacedBlock, NetBlock]]] = []  # (width, height, PlacedBlock or footprint)
         for subblock in block_subblocks.get(root, set()):
             subplaced = arrange_hierarchy(root + (subblock,))
-            sub_placed.append((subblock, subplaced.width + BLOCK_BORDER, subplaced.height + BLOCK_BORDER, subplaced))
+            sub_placed.append((subplaced.width + BLOCK_BORDER, subplaced.height + BLOCK_BORDER, subplaced))
 
         for footprint in block_footprints.get(root, []):
             if isinstance(footprint, NetBlock):
                 bbox = FootprintDataTable.bbox_of(footprint.footprint) or (1, 1, 1, 1)
-                key = footprint.refdes
                 entry = footprint
             elif isinstance(footprint, tuple):
                 bbox = footprint
-                key =
+                # key =
             else:
                 raise TypeError()
             width = bbox[2] - bbox[0] + FOOTPRINT_BORDER
             height = bbox[3] - bbox[1] + FOOTPRINT_BORDER
             # use refdes as key so it's globally unique, for when this is run with blocks grouped together
-            sub_placed.append((key, width, height, entry))
+            sub_placed.append((width, height, entry))
 
-        total_area = sum(width * height for _, width, height, _ in sub_placed)
+        total_area = sum(width * height for width, height, _ in sub_placed)
         max_width = math.sqrt(total_area * ASPECT_RATIO)
 
         x_max = 0.0
         y_max = 0.0
         # track the y limits and y position of the prior elements
         x_stack: List[Tuple[float, float, float]] = []  # [(x pos of next, y pos, y limit)]
-        elts: Dict[str, Tuple[Union[PlacedBlock, TransformUtil.Path], Tuple[float, float]]] = {}
-        for name, width, height, entry in sorted(sub_placed, key=lambda x: -x[2]):  # by height
+        elts: List[Tuple[Union[PlacedBlock, TransformUtil.Path], Tuple[float, float]]] = []
+        for width, height, entry in sorted(sub_placed, key=lambda x: -x[1]):  # by height
             if not x_stack:  # only on first component
                 next_y = 0.0
             else:
@@ -98,10 +97,10 @@ def arrange_blocks(blocks: List[NetBlock],
                 next_x = x_stack[-1][0]
 
             if isinstance(entry, PlacedBlock):  # assumed (0, 0) at top left
-                elts[name] = (entry, (next_x, next_y))
+                elts.append((entry, (next_x, next_y)))
             elif isinstance(entry, NetBlock):  # account for footprint origin, flipping y-axis
                 bbox = FootprintDataTable.bbox_of(entry.footprint) or (0, 0, 0, 0)
-                elts[name] = (entry.full_path, (next_x - bbox[0], next_y + bbox[3]))
+                elts.append((entry.full_path, (next_x - bbox[0], next_y + bbox[3])))
             x_stack.append((next_x + width, next_y, next_y + height))
             x_max = max(x_max, next_x + width)
             y_max = max(y_max, next_y + height)
@@ -115,7 +114,7 @@ def flatten_packed_block(block: PlacedBlock) -> Dict[TransformUtil.Path, Tuple[f
     """Flatten a packed_block to a dict of individual components."""
     flattened: Dict[TransformUtil.Path, Tuple[float, float]] = {}
     def walk_group(block: PlacedBlock, x_pos: float, y_pos: float) -> None:
-        for _, (elt, (elt_x, elt_y)) in block.elts.items():
+        for elt, (elt_x, elt_y) in block.elts:
             if isinstance(elt, PlacedBlock):
                 walk_group(elt, x_pos + elt_x, y_pos + elt_y)
             elif isinstance(elt, TransformUtil.Path):
