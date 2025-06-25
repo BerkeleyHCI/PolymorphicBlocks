@@ -17,27 +17,27 @@ const H3 = board.add(JlcToolingHole_1_152mm, {
 })
 // edge.conn
 const EC1 = board.add(JD_PEC_02_Prerouted_recessed, {
-  translate: pt(0.460, 0.883), rotate: 0,
+  translate: pt(0.113, 0.883), rotate: 0,
   id: 'EC1'
 })
 // edge.status_led.package
 const D1 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.406, 0.718), rotate: 0,
+  translate: pt(0.058, 0.718), rotate: 0,
   id: 'D1'
 })
 // edge.status_led.res
 const R1 = board.add(R_0603_1608Metric, {
-  translate: pt(0.406, 0.815), rotate: 0,
+  translate: pt(0.058, 0.815), rotate: 0,
   id: 'R1'
 })
 // edge.tvs_jd_pwr.diode
 const D2 = board.add(D_0402_1005Metric, {
-  translate: pt(0.540, 0.805), rotate: 0,
+  translate: pt(0.193, 0.805), rotate: 0,
   id: 'D2'
 })
 // edge.tvs_jd_data.diode
 const D3 = board.add(D_0402_1005Metric, {
-  translate: pt(0.384, 0.902), rotate: 0,
+  translate: pt(0.037, 0.902), rotate: 0,
   id: 'D3'
 })
 // jd_mh1
@@ -62,27 +62,27 @@ const MH4 = board.add(jacdac_hole_GND_MH4, {
 })
 // edge2.conn
 const EC2 = board.add(JD_PEC_02_Prerouted_recessed, {
-  translate: pt(0.113, 0.883), rotate: 0,
+  translate: pt(0.460, 0.883), rotate: 0,
   id: 'EC2'
 })
 // edge2.status_led.package
 const D4 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.058, 0.718), rotate: 0,
+  translate: pt(0.406, 0.718), rotate: 0,
   id: 'D4'
 })
 // edge2.status_led.res
 const R2 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 0.815), rotate: 0,
+  translate: pt(0.406, 0.815), rotate: 0,
   id: 'R2'
 })
 // edge2.tvs_jd_pwr.diode
 const D5 = board.add(D_0402_1005Metric, {
-  translate: pt(0.193, 0.805), rotate: 0,
+  translate: pt(0.540, 0.805), rotate: 0,
   id: 'D5'
 })
 // edge2.tvs_jd_data.diode
 const D6 = board.add(D_0402_1005Metric, {
-  translate: pt(0.037, 0.902), rotate: 0,
+  translate: pt(0.384, 0.902), rotate: 0,
   id: 'D6'
 })
 // tp_gnd.tp
@@ -92,7 +92,7 @@ const TP1 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
 })
 // tp_jd_pwr.tp
 const TP2 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0.659, 1.091), rotate: 0,
+  translate: pt(0.372, 1.091), rotate: 0,
   id: 'TP2'
 })
 // reg_3v3.ic
@@ -112,7 +112,7 @@ const C2 = board.add(C_0603_1608Metric, {
 })
 // tp_3v3.tp
 const TP3 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0.372, 1.091), rotate: 0,
+  translate: pt(0.659, 1.091), rotate: 0,
   id: 'TP3'
 })
 // mcu.swd.conn

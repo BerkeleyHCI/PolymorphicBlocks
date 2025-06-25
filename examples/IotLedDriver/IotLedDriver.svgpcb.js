@@ -22,12 +22,12 @@ const LJ1 = board.add(BarrelJack_CUI_PJ_036AH_SMT_Horizontal, {
 })
 // tp_pwr.tp
 const LTP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.402, 2.444), rotate: 0,
+  translate: pt(2.151, 2.444), rotate: 0,
   id: 'LTP1'
 })
 // tp_gnd.tp
 const LTP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.162, 2.444), rotate: 0,
+  translate: pt(1.901, 2.444), rotate: 0,
   id: 'LTP2'
 })
 // reg_5v.ic
@@ -77,12 +77,12 @@ const LR3 = board.add(R_0603_1608Metric, {
 })
 // tp_5v.tp
 const LTP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.151, 2.444), rotate: 0,
+  translate: pt(2.402, 2.444), rotate: 0,
   id: 'LTP3'
 })
 // prot_5v.diode
 const LD1 = board.add(D_SOD_323, {
-  translate: pt(1.904, 2.444), rotate: 0,
+  translate: pt(1.654, 2.444), rotate: 0,
   id: 'LD1'
 })
 // reg_3v3.ic
@@ -102,12 +102,12 @@ const LC6 = board.add(C_0805_2012Metric, {
 })
 // tp_3v3.tp
 const LTP4 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.412, 2.444), rotate: 0,
+  translate: pt(1.406, 2.444), rotate: 0,
   id: 'LTP4'
 })
 // prot_3v3.diode
 const LD2 = board.add(D_SOD_323, {
-  translate: pt(1.660, 2.444), rotate: 0,
+  translate: pt(1.159, 2.444), rotate: 0,
   id: 'LD2'
 })
 // mcu.ic
@@ -257,52 +257,52 @@ const LD21 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
 })
 // led_drv[0].ic
 const LU4 = board.add(MSOP_8_1EP_3x3mm_P0_65mm_EP1_68x1_88mm_ThermalVias, {
-  translate: pt(1.197, 2.105), rotate: 0,
+  translate: pt(3.247, 1.172), rotate: 0,
   id: 'LU4'
 })
 // led_drv[0].rsense.res.res
 const LR8 = board.add(R_0603_1608Metric, {
-  translate: pt(1.298, 2.242), rotate: 0,
+  translate: pt(3.348, 1.309), rotate: 0,
   id: 'LR8'
 })
 // led_drv[0].pwr_cap.cap
 const LC10 = board.add(C_0805_2012Metric, {
-  translate: pt(1.426, 2.075), rotate: 0,
+  translate: pt(3.476, 1.142), rotate: 0,
   id: 'LC10'
 })
 // led_drv[0].ind
 const LL2 = board.add(L_Sunlord_SWPA6045S, {
-  translate: pt(1.206, 1.869), rotate: 0,
+  translate: pt(3.256, 0.935), rotate: 0,
   id: 'LL2'
 })
 // led_drv[0].diode
 const LD22 = board.add(D_SOD_323, {
-  translate: pt(1.137, 2.251), rotate: 0,
+  translate: pt(3.188, 1.318), rotate: 0,
   id: 'LD22'
 })
 // led_drv[1].ic
 const LU5 = board.add(MSOP_8_1EP_3x3mm_P0_65mm_EP1_68x1_88mm_ThermalVias, {
-  translate: pt(3.247, 1.172), rotate: 0,
+  translate: pt(1.197, 2.105), rotate: 0,
   id: 'LU5'
 })
 // led_drv[1].rsense.res.res
 const LR9 = board.add(R_0603_1608Metric, {
-  translate: pt(3.348, 1.309), rotate: 0,
+  translate: pt(1.298, 2.242), rotate: 0,
   id: 'LR9'
 })
 // led_drv[1].pwr_cap.cap
 const LC11 = board.add(C_0805_2012Metric, {
-  translate: pt(3.476, 1.142), rotate: 0,
+  translate: pt(1.426, 2.075), rotate: 0,
   id: 'LC11'
 })
 // led_drv[1].ind
 const LL3 = board.add(L_Sunlord_SWPA6045S, {
-  translate: pt(3.256, 0.935), rotate: 0,
+  translate: pt(1.206, 1.869), rotate: 0,
   id: 'LL3'
 })
 // led_drv[1].diode
 const LD23 = board.add(D_SOD_323, {
-  translate: pt(3.188, 1.318), rotate: 0,
+  translate: pt(1.137, 2.251), rotate: 0,
   id: 'LD23'
 })
 // led_drv[2].ic

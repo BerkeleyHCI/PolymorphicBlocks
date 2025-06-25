@@ -7,62 +7,62 @@ const RJ1 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
 })
 // servos[0].conn
 const RJ2 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(0.591, 2.944), rotate: 0,
+  translate: pt(2.305, 2.110), rotate: 0,
   id: 'RJ2'
 })
 // servos[1].conn
 const RJ3 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(2.045, 2.110), rotate: 0,
+  translate: pt(4.124, 2.110), rotate: 0,
   id: 'RJ3'
 })
 // servos[2].conn
 const RJ4 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(0.071, 2.944), rotate: 0,
+  translate: pt(3.604, 2.110), rotate: 0,
   id: 'RJ4'
 })
 // servos[3].conn
 const RJ5 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(0.331, 2.944), rotate: 0,
+  translate: pt(3.864, 2.110), rotate: 0,
   id: 'RJ5'
 })
 // servos[4].conn
 const RJ6 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(3.864, 2.110), rotate: 0,
+  translate: pt(0.331, 2.944), rotate: 0,
   id: 'RJ6'
 })
 // servos[5].conn
 const RJ7 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(4.124, 2.110), rotate: 0,
+  translate: pt(3.344, 2.110), rotate: 0,
   id: 'RJ7'
 })
 // servos[6].conn
 const RJ8 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(2.305, 2.110), rotate: 0,
+  translate: pt(2.045, 2.110), rotate: 0,
   id: 'RJ8'
 })
 // servos[7].conn
 const RJ9 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(3.344, 2.110), rotate: 0,
+  translate: pt(3.084, 2.110), rotate: 0,
   id: 'RJ9'
 })
 // servos[8].conn
 const RJ10 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(2.565, 2.110), rotate: 0,
+  translate: pt(0.071, 2.944), rotate: 0,
   id: 'RJ10'
 })
 // servos[9].conn
 const RJ11 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(0.850, 2.944), rotate: 0,
+  translate: pt(2.565, 2.110), rotate: 0,
   id: 'RJ11'
 })
 // servos[10].conn
 const RJ12 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(3.084, 2.110), rotate: 0,
+  translate: pt(1.785, 2.110), rotate: 0,
   id: 'RJ12'
 })
 // servos[11].conn
 const RJ13 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(1.785, 2.110), rotate: 0,
+  translate: pt(2.824, 2.110), rotate: 0,
   id: 'RJ13'
 })
 // imu.ic
@@ -82,12 +82,12 @@ const RC2 = board.add(C_0603_1608Metric, {
 })
 // servos_cam[0].conn
 const RJ14 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(2.824, 2.110), rotate: 0,
+  translate: pt(0.850, 2.944), rotate: 0,
   id: 'RJ14'
 })
 // servos_cam[1].conn
 const RJ15 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(3.604, 2.110), rotate: 0,
+  translate: pt(0.591, 2.944), rotate: 0,
   id: 'RJ15'
 })
 // jlc_th.th1
@@ -107,12 +107,12 @@ const RH3 = board.add(JlcToolingHole_1_152mm, {
 })
 // tp_vbatt.tp
 const RTP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.552, 3.170), rotate: 0,
+  translate: pt(1.801, 3.170), rotate: 0,
   id: 'RTP1'
 })
 // tp_gnd.tp
 const RTP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.801, 3.170), rotate: 0,
+  translate: pt(2.302, 3.170), rotate: 0,
   id: 'RTP2'
 })
 // reg_3v3.ic
@@ -132,7 +132,7 @@ const RC4 = board.add(C_0603_1608Metric, {
 })
 // tp_3v3.tp
 const RTP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.302, 3.170), rotate: 0,
+  translate: pt(2.552, 3.170), rotate: 0,
   id: 'RTP3'
 })
 // reg_14v.ic
@@ -377,22 +377,22 @@ const RTP6 = board.add(TestPoint_TE_RCT_0805, {
 })
 // led.package
 const RD2 = board.add(LED_0603_1608Metric, {
-  translate: pt(1.089, 3.162), rotate: 0,
+  translate: pt(1.324, 3.162), rotate: 0,
   id: 'RD2'
 })
 // led.res
 const RR6 = board.add(R_0603_1608Metric, {
-  translate: pt(1.089, 3.259), rotate: 0,
+  translate: pt(1.324, 3.259), rotate: 0,
   id: 'RR6'
 })
 // servo_led.package
 const RD3 = board.add(LED_0603_1608Metric, {
-  translate: pt(1.324, 3.162), rotate: 0,
+  translate: pt(1.089, 3.162), rotate: 0,
   id: 'RD3'
 })
 // servo_led.res
 const RR7 = board.add(R_0603_1608Metric, {
-  translate: pt(1.324, 3.259), rotate: 0,
+  translate: pt(1.089, 3.259), rotate: 0,
   id: 'RR7'
 })
 // test_led.led[0].package

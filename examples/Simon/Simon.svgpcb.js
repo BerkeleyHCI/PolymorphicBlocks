@@ -67,7 +67,7 @@ const SW1 = board.add(SW_Push_SPST_NO_Alps_SKRK, {
 })
 // sw_pull.res
 const R6 = board.add(R_0603_1608Metric, {
-  translate: pt(0.828, 1.590), rotate: 0,
+  translate: pt(1.297, 1.590), rotate: 0,
   id: 'R6'
 })
 // btn[0]
@@ -77,7 +77,7 @@ const J2 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
 })
 // btn_pull[0].res
 const R7 = board.add(R_0603_1608Metric, {
-  translate: pt(1.062, 1.590), rotate: 0,
+  translate: pt(1.531, 1.590), rotate: 0,
   id: 'R7'
 })
 // btn[1]
@@ -87,7 +87,7 @@ const J3 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
 })
 // btn_pull[1].res
 const R8 = board.add(R_0603_1608Metric, {
-  translate: pt(2.508, 1.163), rotate: 0,
+  translate: pt(1.062, 1.590), rotate: 0,
   id: 'R8'
 })
 // btn[2]
@@ -97,7 +97,7 @@ const J4 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
 })
 // btn_pull[2].res
 const R9 = board.add(R_0603_1608Metric, {
-  translate: pt(1.297, 1.590), rotate: 0,
+  translate: pt(0.828, 1.590), rotate: 0,
   id: 'R9'
 })
 // btn[3]
@@ -107,7 +107,7 @@ const J5 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
 })
 // btn_pull[3].res
 const R10 = board.add(R_0603_1608Metric, {
-  translate: pt(1.531, 1.590), rotate: 0,
+  translate: pt(2.508, 1.163), rotate: 0,
   id: 'R10'
 })
 // pwr.ic
@@ -147,62 +147,62 @@ const D2 = board.add(D_SOD_323, {
 })
 // btn_drv[0].pre
 const Q1 = board.add(SOT_23, {
-  translate: pt(1.400, 0.382), rotate: 0,
+  translate: pt(0.845, 0.382), rotate: 0,
   id: 'Q1'
 })
 // btn_drv[0].pull
 const R13 = board.add(R_0603_1608Metric, {
-  translate: pt(1.573, 0.344), rotate: 0,
+  translate: pt(1.018, 0.344), rotate: 0,
   id: 'R13'
 })
 // btn_drv[0].drv
 const Q2 = board.add(TO_252_2, {
-  translate: pt(1.576, 0.138), rotate: 0,
+  translate: pt(1.021, 0.138), rotate: 0,
   id: 'Q2'
 })
 // btn_drv[1].pre
 const Q3 = board.add(SOT_23, {
-  translate: pt(0.845, 0.382), rotate: 0,
+  translate: pt(1.955, 0.382), rotate: 0,
   id: 'Q3'
 })
 // btn_drv[1].pull
 const R14 = board.add(R_0603_1608Metric, {
-  translate: pt(1.018, 0.344), rotate: 0,
+  translate: pt(2.128, 0.344), rotate: 0,
   id: 'R14'
 })
 // btn_drv[1].drv
 const Q4 = board.add(TO_252_2, {
-  translate: pt(1.021, 0.138), rotate: 0,
+  translate: pt(2.131, 0.138), rotate: 0,
   id: 'Q4'
 })
 // btn_drv[2].pre
 const Q5 = board.add(SOT_23, {
-  translate: pt(0.845, 0.949), rotate: 0,
+  translate: pt(1.400, 0.382), rotate: 0,
   id: 'Q5'
 })
 // btn_drv[2].pull
 const R15 = board.add(R_0603_1608Metric, {
-  translate: pt(1.018, 0.911), rotate: 0,
+  translate: pt(1.573, 0.344), rotate: 0,
   id: 'R15'
 })
 // btn_drv[2].drv
 const Q6 = board.add(TO_252_2, {
-  translate: pt(1.021, 0.705), rotate: 0,
+  translate: pt(1.576, 0.138), rotate: 0,
   id: 'Q6'
 })
 // btn_drv[3].pre
 const Q7 = board.add(SOT_23, {
-  translate: pt(1.955, 0.382), rotate: 0,
+  translate: pt(0.845, 0.949), rotate: 0,
   id: 'Q7'
 })
 // btn_drv[3].pull
 const R16 = board.add(R_0603_1608Metric, {
-  translate: pt(2.128, 0.344), rotate: 0,
+  translate: pt(1.018, 0.911), rotate: 0,
   id: 'R16'
 })
 // btn_drv[3].drv
 const Q8 = board.add(TO_252_2, {
-  translate: pt(2.131, 0.138), rotate: 0,
+  translate: pt(1.021, 0.705), rotate: 0,
   id: 'Q8'
 })
 

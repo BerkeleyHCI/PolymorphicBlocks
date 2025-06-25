@@ -37,7 +37,7 @@ const J2 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
 })
 // tp_gnd.tp
 const TP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.509, 3.406), rotate: 0,
+  translate: pt(4.004, 3.406), rotate: 0,
   id: 'TP1'
 })
 // fuse.fuse
@@ -87,7 +87,7 @@ const D3 = board.add(D_SMA, {
 })
 // tp_batt.tp
 const TP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(4.254, 3.406), rotate: 0,
+  translate: pt(3.753, 3.406), rotate: 0,
   id: 'TP2'
 })
 // pwr_or.pdr
@@ -122,12 +122,12 @@ const C2 = board.add(C_0805_2012Metric, {
 })
 // prot_3v3.diode
 const D5 = board.add(D_SOD_323, {
-  translate: pt(3.756, 3.406), rotate: 0,
+  translate: pt(3.506, 3.406), rotate: 0,
   id: 'D5'
 })
 // tp_3v3.tp
 const TP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(4.004, 3.406), rotate: 0,
+  translate: pt(4.254, 3.406), rotate: 0,
   id: 'TP3'
 })
 // charger.ic
@@ -152,12 +152,12 @@ const R6 = board.add(R_0603_1608Metric, {
 })
 // charge_led.package
 const D6 = board.add(LED_0603_1608Metric, {
-  translate: pt(2.105, 3.397), rotate: 0,
+  translate: pt(1.870, 3.397), rotate: 0,
   id: 'D6'
 })
 // charge_led.res
 const R7 = board.add(R_0603_1608Metric, {
-  translate: pt(2.105, 3.494), rotate: 0,
+  translate: pt(1.870, 3.494), rotate: 0,
   id: 'R7'
 })
 // mcu.ic
@@ -202,12 +202,12 @@ const U4 = board.add(SOT_23, {
 })
 // led.package
 const D7 = board.add(LED_0603_1608Metric, {
-  translate: pt(1.870, 3.397), rotate: 0,
+  translate: pt(2.105, 3.397), rotate: 0,
   id: 'D7'
 })
 // led.res
 const R9 = board.add(R_0603_1608Metric, {
-  translate: pt(1.870, 3.494), rotate: 0,
+  translate: pt(2.105, 3.494), rotate: 0,
   id: 'R9'
 })
 // tof.elt[0]
@@ -232,12 +232,12 @@ const J7 = board.add(PinSocket_1x06_P2_54mm_Vertical, {
 })
 // i2c_pull.scl_res.res
 const R10 = board.add(R_0603_1608Metric, {
-  translate: pt(2.574, 3.397), rotate: 0,
+  translate: pt(2.340, 3.397), rotate: 0,
   id: 'R10'
 })
 // i2c_pull.sda_res.res
 const R11 = board.add(R_0603_1608Metric, {
-  translate: pt(2.574, 3.494), rotate: 0,
+  translate: pt(2.340, 3.494), rotate: 0,
   id: 'R11'
 })
 // i2c_tp.tp_scl.tp
@@ -362,17 +362,17 @@ const C19 = board.add(C_0805_2012Metric, {
 })
 // batt_sense.div.top_res
 const R16 = board.add(R_0603_1608Metric, {
-  translate: pt(2.340, 3.397), rotate: 0,
+  translate: pt(2.574, 3.397), rotate: 0,
   id: 'R16'
 })
 // batt_sense.div.bottom_res
 const R17 = board.add(R_0603_1608Metric, {
-  translate: pt(2.340, 3.494), rotate: 0,
+  translate: pt(2.574, 3.494), rotate: 0,
   id: 'R17'
 })
 // servo[0].conn
 const J9 = board.add(PinHeader_1x03_P2_54mm_Vertical, {
-  translate: pt(2.146, 3.112), rotate: 0,
+  translate: pt(1.886, 3.112), rotate: 0,
   id: 'J9'
 })
 // servo[1].conn
@@ -382,7 +382,7 @@ const J10 = board.add(PinHeader_1x03_P2_54mm_Vertical, {
 })
 // servo[2].conn
 const J11 = board.add(PinHeader_1x03_P2_54mm_Vertical, {
-  translate: pt(1.886, 3.112), rotate: 0,
+  translate: pt(2.146, 3.112), rotate: 0,
   id: 'J11'
 })
 // servo[3].conn

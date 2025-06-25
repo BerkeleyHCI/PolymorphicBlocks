@@ -17,17 +17,17 @@ const R2 = board.add(R_0603_1608Metric, {
 })
 // usb_reg.ic
 const U1 = board.add(SOT_23_5, {
-  translate: pt(1.541, 0.957), rotate: 0,
+  translate: pt(1.133, 0.957), rotate: 0,
   id: 'U1'
 })
 // usb_reg.in_cap.cap
 const C1 = board.add(C_0603_1608Metric, {
-  translate: pt(1.692, 1.093), rotate: 0,
+  translate: pt(1.284, 1.093), rotate: 0,
   id: 'C1'
 })
 // usb_reg.out_cap.cap
 const C2 = board.add(C_0805_2012Metric, {
-  translate: pt(1.528, 1.102), rotate: 0,
+  translate: pt(1.120, 1.102), rotate: 0,
   id: 'C2'
 })
 // mcu.swd.conn
@@ -172,42 +172,42 @@ const C19 = board.add(C_0603_1608Metric, {
 })
 // rgb_usb.package
 const D1 = board.add(LED_LiteOn_LTST_C19HE1WT, {
-  translate: pt(0.041, 1.512), rotate: 0,
+  translate: pt(0.432, 1.512), rotate: 0,
   id: 'D1'
 })
 // rgb_usb.red_res
 const R6 = board.add(R_0603_1608Metric, {
-  translate: pt(0.180, 1.486), rotate: 0,
+  translate: pt(0.571, 1.486), rotate: 0,
   id: 'R6'
 })
 // rgb_usb.green_res
 const R7 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 1.635), rotate: 0,
+  translate: pt(0.449, 1.635), rotate: 0,
   id: 'R7'
 })
 // rgb_usb.blue_res
 const R8 = board.add(R_0603_1608Metric, {
-  translate: pt(0.214, 1.635), rotate: 0,
+  translate: pt(0.605, 1.635), rotate: 0,
   id: 'R8'
 })
 // rgb_can.package
 const D2 = board.add(LED_LiteOn_LTST_C19HE1WT, {
-  translate: pt(0.432, 1.512), rotate: 0,
+  translate: pt(0.041, 1.512), rotate: 0,
   id: 'D2'
 })
 // rgb_can.red_res
 const R9 = board.add(R_0603_1608Metric, {
-  translate: pt(0.571, 1.486), rotate: 0,
+  translate: pt(0.180, 1.486), rotate: 0,
   id: 'R9'
 })
 // rgb_can.green_res
 const R10 = board.add(R_0603_1608Metric, {
-  translate: pt(0.449, 1.635), rotate: 0,
+  translate: pt(0.058, 1.635), rotate: 0,
   id: 'R10'
 })
 // rgb_can.blue_res
 const R11 = board.add(R_0603_1608Metric, {
-  translate: pt(0.605, 1.635), rotate: 0,
+  translate: pt(0.214, 1.635), rotate: 0,
   id: 'R11'
 })
 // can
@@ -217,17 +217,17 @@ const J4 = board.add(Molex_DuraClik_502352_1x05_P2_00mm_Horizontal, {
 })
 // can_reg.ic
 const U5 = board.add(SOT_23_5, {
-  translate: pt(1.133, 0.957), rotate: 0,
+  translate: pt(1.541, 0.957), rotate: 0,
   id: 'U5'
 })
 // can_reg.in_cap.cap
 const C20 = board.add(C_0603_1608Metric, {
-  translate: pt(1.284, 1.093), rotate: 0,
+  translate: pt(1.692, 1.093), rotate: 0,
   id: 'C20'
 })
 // can_reg.out_cap.cap
 const C21 = board.add(C_0805_2012Metric, {
-  translate: pt(1.120, 1.102), rotate: 0,
+  translate: pt(1.528, 1.102), rotate: 0,
   id: 'C21'
 })
 // led_can.package

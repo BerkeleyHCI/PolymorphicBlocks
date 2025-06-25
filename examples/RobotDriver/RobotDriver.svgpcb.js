@@ -17,7 +17,7 @@ const H3 = board.add(JlcToolingHole_1_152mm, {
 })
 // batt.conn
 const J1 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
-  translate: pt(2.004, 2.719), rotate: 0,
+  translate: pt(3.642, 2.719), rotate: 0,
   id: 'J1'
 })
 // isense.sense.res.res
@@ -57,12 +57,12 @@ const R5 = board.add(R_0603_1608Metric, {
 })
 // tp_vbatt.tp
 const TP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.328, 3.077), rotate: 0,
+  translate: pt(1.576, 3.077), rotate: 0,
   id: 'TP1'
 })
 // tp_gnd.tp
 const TP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.332, 3.077), rotate: 0,
+  translate: pt(2.077, 3.077), rotate: 0,
   id: 'TP2'
 })
 // reg_3v3.ic
@@ -97,12 +97,12 @@ const C3 = board.add(C_0805_2012Metric, {
 })
 // tp_3v3.tp
 const TP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.833, 3.077), rotate: 0,
+  translate: pt(2.328, 3.077), rotate: 0,
   id: 'TP3'
 })
 // prot_3v3.diode
 const D1 = board.add(D_SOD_323, {
-  translate: pt(2.080, 3.077), rotate: 0,
+  translate: pt(1.329, 3.077), rotate: 0,
   id: 'D1'
 })
 // mcu.ic
@@ -272,7 +272,7 @@ const D5 = board.add(LED_0603_1608Metric, {
 })
 // spk_tp.tp
 const TP6 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.582, 3.077), rotate: 0,
+  translate: pt(1.827, 3.077), rotate: 0,
   id: 'TP6'
 })
 // spk_drv.ic
@@ -312,7 +312,7 @@ const C20 = board.add(C_0603_1608Metric, {
 })
 // spk.conn
 const J7 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
-  translate: pt(2.394, 2.719), rotate: 0,
+  translate: pt(3.252, 2.719), rotate: 0,
   id: 'J7'
 })
 // ws2812bArray.led[0]
@@ -342,7 +342,7 @@ const D10 = board.add(LED_WS2812B_PLCC4_5_0x5_0mm_P3_2mm, {
 })
 // led_pixel.conn
 const J8 = board.add(JST_PH_B3B_PH_K_1x03_P2_00mm_Vertical, {
-  translate: pt(3.563, 2.719), rotate: 0,
+  translate: pt(2.784, 2.719), rotate: 0,
   id: 'J8'
 })
 // motor_driver1.ic
@@ -367,12 +367,12 @@ const C23 = board.add(C_0603_1608Metric, {
 })
 // m1_a.conn
 const J9 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
-  translate: pt(1.615, 2.719), rotate: 0,
+  translate: pt(2.394, 2.719), rotate: 0,
   id: 'J9'
 })
 // m1_b.conn
 const J10 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
-  translate: pt(2.784, 2.719), rotate: 0,
+  translate: pt(1.615, 2.719), rotate: 0,
   id: 'J10'
 })
 // motor_driver2.ic
@@ -397,7 +397,7 @@ const C26 = board.add(C_0603_1608Metric, {
 })
 // m2_a.conn
 const J11 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
-  translate: pt(3.174, 2.719), rotate: 0,
+  translate: pt(2.004, 2.719), rotate: 0,
   id: 'J11'
 })
 // m2_b.conn

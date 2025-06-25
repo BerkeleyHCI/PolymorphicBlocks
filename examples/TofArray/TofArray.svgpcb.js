@@ -37,12 +37,12 @@ const J2 = board.add(Molex_SL_171971_0005_1x05_P2_54mm_Vertical, {
 })
 // tp_vusb.tp
 const TP1 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0.947, 1.735), rotate: 0,
+  translate: pt(2.172, 1.365), rotate: 0,
   id: 'TP1'
 })
 // tp_gnd.tp
 const TP2 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0.085, 1.735), rotate: 0,
+  translate: pt(0.659, 1.735), rotate: 0,
   id: 'TP2'
 })
 // reg_3v3.ic
@@ -62,7 +62,7 @@ const C2 = board.add(C_0805_2012Metric, {
 })
 // tp_3v3.tp
 const TP3 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0.659, 1.735), rotate: 0,
+  translate: pt(0.947, 1.735), rotate: 0,
   id: 'TP3'
 })
 // prot_3v3.diode
@@ -287,7 +287,7 @@ const U10 = board.add(SOT_23, {
 })
 // tp_spk.tp
 const TP8 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0.372, 1.735), rotate: 0,
+  translate: pt(0.085, 1.735), rotate: 0,
   id: 'TP8'
 })
 // spk_dac.rc.r
@@ -302,7 +302,7 @@ const C22 = board.add(C_0603_1608Metric, {
 })
 // tp_spk_in.tp
 const TP9 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(2.172, 1.365), rotate: 0,
+  translate: pt(0.372, 1.735), rotate: 0,
   id: 'TP9'
 })
 // spk_drv.ic

@@ -3,17 +3,17 @@ const board = new PCB();
 const sw = SwitchMatrix_2_3_sw(pt(0.039, 0.039))
 // jlc_th.th1
 const DH1 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(1.737, 3.240), rotate: 0,
+  translate: pt(1.743, 3.240), rotate: 0,
   id: 'DH1'
 })
 // jlc_th.th2
 const DH2 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(1.776, 3.240), rotate: 0,
+  translate: pt(1.782, 3.240), rotate: 0,
   id: 'DH2'
 })
 // jlc_th.th3
 const DH3 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(1.737, 3.280), rotate: 0,
+  translate: pt(1.743, 3.280), rotate: 0,
   id: 'DH3'
 })
 // conn.conn
@@ -43,17 +43,17 @@ const DR2 = board.add(R_0603_1608Metric, {
 })
 // tp_gnd.tp
 const DTP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.545, 2.760), rotate: 0,
+  translate: pt(0.817, 3.278), rotate: 0,
   id: 'DTP1'
 })
 // choke.fb
 const DFB1 = board.add(L_0805_2012Metric, {
-  translate: pt(1.315, 3.274), rotate: 0,
+  translate: pt(1.321, 3.274), rotate: 0,
   id: 'DFB1'
 })
 // tp_pwr.tp
 const DTP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.317, 3.278), rotate: 0,
+  translate: pt(0.567, 3.278), rotate: 0,
   id: 'DTP2'
 })
 // reg_3v3.ic
@@ -73,12 +73,12 @@ const DC2 = board.add(C_0805_2012Metric, {
 })
 // tp_3v3.tp
 const DTP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.567, 3.278), rotate: 0,
+  translate: pt(1.068, 3.278), rotate: 0,
   id: 'DTP3'
 })
 // prot_3v3.diode
 const DD1 = board.add(D_SOD_323, {
-  translate: pt(0.815, 3.278), rotate: 0,
+  translate: pt(3.542, 2.760), rotate: 0,
   id: 'DD1'
 })
 // mcu.ic
@@ -178,7 +178,7 @@ const DR7 = board.add(R_0603_1608Metric, {
 })
 // io8_pu.res
 const DR8 = board.add(R_0603_1608Metric, {
-  translate: pt(1.560, 3.269), rotate: 0,
+  translate: pt(1.566, 3.269), rotate: 0,
   id: 'DR8'
 })
 // spk_dac.rc.r
@@ -193,7 +193,7 @@ const DC12 = board.add(C_0603_1608Metric, {
 })
 // spk_tp.tp
 const DTP4 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.066, 3.278), rotate: 0,
+  translate: pt(0.317, 3.278), rotate: 0,
   id: 'DTP4'
 })
 // spk_drv.ic
@@ -248,7 +248,7 @@ const DR12 = board.add(R_0603_1608Metric, {
 })
 // npx_tp.tp
 const DTP5 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.062, 3.278), rotate: 0,
+  translate: pt(0.066, 3.278), rotate: 0,
   id: 'DTP5'
 })
 // npx.led[0]
@@ -336,7 +336,7 @@ board.setNetlist([
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(3.729330708661417, 3.4330708661417324);
+const limit1 = pt(3.7234251968503935, 3.4330708661417324);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);

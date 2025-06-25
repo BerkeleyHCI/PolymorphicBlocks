@@ -37,32 +37,32 @@ const SD1 = board.add(D_SOD_323, {
 })
 // usb_reg.ic
 const SU1 = board.add(SOT_23_5, {
-  translate: pt(0.730, 0.858), rotate: 0,
+  translate: pt(1.093, 0.858), rotate: 0,
   id: 'SU1'
 })
 // usb_reg.in_cap.cap
 const SC1 = board.add(C_0402_1005Metric, {
-  translate: pt(0.859, 0.983), rotate: 0,
+  translate: pt(1.222, 0.983), rotate: 0,
   id: 'SC1'
 })
 // usb_reg.out_cap.cap
 const SC2 = board.add(C_0805_2012Metric, {
-  translate: pt(0.717, 1.003), rotate: 0,
+  translate: pt(1.080, 1.003), rotate: 0,
   id: 'SC2'
 })
 // target_reg.ic
 const SU2 = board.add(SOT_23_5, {
-  translate: pt(1.093, 0.858), rotate: 0,
+  translate: pt(0.730, 0.858), rotate: 0,
   id: 'SU2'
 })
 // target_reg.in_cap.cap
 const SC3 = board.add(C_0402_1005Metric, {
-  translate: pt(1.222, 0.983), rotate: 0,
+  translate: pt(0.859, 0.983), rotate: 0,
   id: 'SC3'
 })
 // target_reg.out_cap.cap
 const SC4 = board.add(C_0805_2012Metric, {
-  translate: pt(1.080, 1.003), rotate: 0,
+  translate: pt(0.717, 1.003), rotate: 0,
   id: 'SC4'
 })
 // mcu.swd.conn
@@ -162,22 +162,22 @@ const SU6 = board.add(SOT_23, {
 })
 // led_tgt.package
 const SD2 = board.add(LED_0603_1608Metric, {
-  translate: pt(1.669, 0.820), rotate: 0,
+  translate: pt(1.434, 0.820), rotate: 0,
   id: 'SD2'
 })
 // led_tgt.res
 const SR5 = board.add(R_0402_1005Metric, {
-  translate: pt(1.647, 0.907), rotate: 0,
+  translate: pt(1.412, 0.907), rotate: 0,
   id: 'SR5'
 })
 // led_usb.package
 const SD3 = board.add(LED_0603_1608Metric, {
-  translate: pt(1.434, 0.820), rotate: 0,
+  translate: pt(0.058, 1.290), rotate: 0,
   id: 'SD3'
 })
 // led_usb.res
 const SR6 = board.add(R_0402_1005Metric, {
-  translate: pt(1.412, 0.907), rotate: 0,
+  translate: pt(0.037, 1.377), rotate: 0,
   id: 'SR6'
 })
 // en_pull.res
@@ -192,12 +192,12 @@ const SJ3 = board.add(PinHeader_2x03_P2_54mm_EdgeInline, {
 })
 // led_target.package
 const SD4 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.058, 1.290), rotate: 0,
+  translate: pt(1.669, 0.820), rotate: 0,
   id: 'SD4'
 })
 // led_target.res
 const SR8 = board.add(R_0402_1005Metric, {
-  translate: pt(0.037, 1.377), rotate: 0,
+  translate: pt(1.647, 0.907), rotate: 0,
   id: 'SR8'
 })
 // target_sense.div.top_res

@@ -62,12 +62,12 @@ const R3 = board.add(R_0402_1005Metric, {
 })
 // ts1.res
 const R4 = board.add(R_0402_1005Metric, {
-  translate: pt(0.037, 0.845), rotate: 0,
+  translate: pt(0.922, 0.580), rotate: 0,
   id: 'R4'
 })
 // ts2.res
 const R5 = board.add(R_0402_1005Metric, {
-  translate: pt(0.922, 0.580), rotate: 0,
+  translate: pt(0.037, 0.845), rotate: 0,
   id: 'R5'
 })
 // tss.cap

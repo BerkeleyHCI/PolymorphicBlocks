@@ -32,7 +32,7 @@ const TR2 = board.add(R_0603_1608Metric, {
 })
 // tp_gnd.tp
 const TTP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.066, 2.344), rotate: 0,
+  translate: pt(0.311, 2.344), rotate: 0,
   id: 'TTP1'
 })
 // choke.fb
@@ -42,7 +42,7 @@ const TFB1 = board.add(L_0603_1608Metric, {
 })
 // tp_pwr.tp
 const TTP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.811, 2.344), rotate: 0,
+  translate: pt(0.561, 2.344), rotate: 0,
   id: 'TTP2'
 })
 // reg_3v3.ic
@@ -92,42 +92,42 @@ const TR5 = board.add(R_0603_1608Metric, {
 })
 // tp_3v3.tp
 const TTP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.317, 2.344), rotate: 0,
+  translate: pt(0.811, 2.344), rotate: 0,
   id: 'TTP3'
 })
 // prot_3v3.diode
 const TD1 = board.add(D_SOD_323, {
-  translate: pt(0.564, 2.344), rotate: 0,
+  translate: pt(0.063, 2.344), rotate: 0,
   id: 'TD1'
 })
 // reg_3v0.ic
 const TU2 = board.add(SOT_23_5, {
-  translate: pt(2.243, 1.807), rotate: 0,
+  translate: pt(1.852, 1.807), rotate: 0,
   id: 'TU2'
 })
 // reg_3v0.in_cap.cap
 const TC5 = board.add(C_0603_1608Metric, {
-  translate: pt(2.220, 1.942), rotate: 0,
+  translate: pt(1.830, 1.942), rotate: 0,
   id: 'TC5'
 })
 // reg_3v0.out_cap.cap
 const TC6 = board.add(C_0603_1608Metric, {
-  translate: pt(2.376, 1.942), rotate: 0,
+  translate: pt(1.986, 1.942), rotate: 0,
   id: 'TC6'
 })
 // reg_2v8.ic
 const TU3 = board.add(SOT_23_5, {
-  translate: pt(1.852, 1.807), rotate: 0,
+  translate: pt(2.243, 1.807), rotate: 0,
   id: 'TU3'
 })
 // reg_2v8.in_cap.cap
 const TC7 = board.add(C_0603_1608Metric, {
-  translate: pt(1.830, 1.942), rotate: 0,
+  translate: pt(2.220, 1.942), rotate: 0,
   id: 'TC7'
 })
 // reg_2v8.out_cap.cap
 const TC8 = board.add(C_0603_1608Metric, {
-  translate: pt(1.986, 1.942), rotate: 0,
+  translate: pt(2.376, 1.942), rotate: 0,
   id: 'TC8'
 })
 // reg_1v2.ic

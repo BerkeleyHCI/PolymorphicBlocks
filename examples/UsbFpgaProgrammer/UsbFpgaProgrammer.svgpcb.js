@@ -152,32 +152,32 @@ const FU3 = board.add(SOT_23, {
 })
 // led0.package
 const FD2 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.985, 0.843), rotate: 0,
+  translate: pt(0.515, 0.843), rotate: 0,
   id: 'FD2'
 })
 // led0.res
 const FR6 = board.add(R_0603_1608Metric, {
-  translate: pt(0.985, 0.940), rotate: 0,
+  translate: pt(0.515, 0.940), rotate: 0,
   id: 'FR6'
 })
 // led1.package
 const FD3 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.515, 0.843), rotate: 0,
+  translate: pt(0.750, 0.843), rotate: 0,
   id: 'FD3'
 })
 // led1.res
 const FR7 = board.add(R_0603_1608Metric, {
-  translate: pt(0.515, 0.940), rotate: 0,
+  translate: pt(0.750, 0.940), rotate: 0,
   id: 'FR7'
 })
 // led2.package
 const FD4 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.750, 0.843), rotate: 0,
+  translate: pt(0.985, 0.843), rotate: 0,
   id: 'FD4'
 })
 // led2.res
 const FR8 = board.add(R_0603_1608Metric, {
-  translate: pt(0.750, 0.940), rotate: 0,
+  translate: pt(0.985, 0.940), rotate: 0,
   id: 'FR8'
 })
 // out.conn

@@ -22,7 +22,7 @@ const U1 = board.add(Freenove_ESP32S3_WROOM_Expansion, {
 })
 // tp_gnd.tp
 const TP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.976, 2.799), rotate: 0,
+  translate: pt(3.226, 2.799), rotate: 0,
   id: 'TP1'
 })
 // tp_usb.tp
@@ -32,7 +32,7 @@ const TP2 = board.add(TestPoint_TE_RCT_0805, {
 })
 // tp_3v3.tp
 const TP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.226, 2.799), rotate: 0,
+  translate: pt(3.727, 2.799), rotate: 0,
   id: 'TP3'
 })
 // reg_12v.ic
@@ -72,7 +72,7 @@ const D1 = board.add(D_SOD_323, {
 })
 // tp_12v.tp
 const TP4 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.727, 2.799), rotate: 0,
+  translate: pt(2.976, 2.799), rotate: 0,
   id: 'TP4'
 })
 // mic.ic

@@ -112,22 +112,22 @@ const R5 = board.add(R_0603_1608Metric, {
 })
 // led[1].package
 const D2 = board.add(LED_0603_1608Metric, {
-  translate: pt(1.058, 0.766), rotate: 0,
+  translate: pt(1.293, 0.766), rotate: 0,
   id: 'D2'
 })
 // led[1].res
 const R6 = board.add(R_0603_1608Metric, {
-  translate: pt(1.057, 0.863), rotate: 0,
+  translate: pt(1.292, 0.863), rotate: 0,
   id: 'R6'
 })
 // led[2].package
 const D3 = board.add(LED_0603_1608Metric, {
-  translate: pt(1.293, 0.766), rotate: 0,
+  translate: pt(1.058, 0.766), rotate: 0,
   id: 'D3'
 })
 // led[2].res
 const R7 = board.add(R_0603_1608Metric, {
-  translate: pt(1.292, 0.863), rotate: 0,
+  translate: pt(1.057, 0.863), rotate: 0,
   id: 'R7'
 })
 // led[3].package

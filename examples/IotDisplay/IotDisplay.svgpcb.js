@@ -27,17 +27,17 @@ const J2 = board.add(JST_PH_S2B_PH_K_1x02_P2_00mm_Horizontal, {
 })
 // tp_pwr.tp
 const TP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.876, 2.247), rotate: 0,
+  translate: pt(2.126, 2.247), rotate: 0,
   id: 'TP1'
 })
 // tp_gnd.tp
 const TP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.124, 2.247), rotate: 0,
+  translate: pt(1.876, 2.247), rotate: 0,
   id: 'TP2'
 })
 // vbat_prot.fet
 const Q1 = board.add(SOT_23, {
-  translate: pt(0.614, 2.277), rotate: 0,
+  translate: pt(0.345, 2.277), rotate: 0,
   id: 'Q1'
 })
 // reg_3v3.ic
@@ -87,7 +87,7 @@ const R3 = board.add(R_0603_1608Metric, {
 })
 // tp_3v3.tp
 const TP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.126, 2.247), rotate: 0,
+  translate: pt(2.627, 2.247), rotate: 0,
   id: 'TP3'
 })
 // vbat_sense_gate.pre
@@ -147,32 +147,32 @@ const U3 = board.add(SOT_23, {
 })
 // ledr.package
 const D1 = board.add(LED_0603_1608Metric, {
-  translate: pt(3.318, 1.769), rotate: 0,
+  translate: pt(3.083, 1.769), rotate: 0,
   id: 'D1'
 })
 // ledr.res
 const R6 = board.add(R_0603_1608Metric, {
-  translate: pt(3.318, 1.866), rotate: 0,
+  translate: pt(3.083, 1.866), rotate: 0,
   id: 'R6'
 })
 // ledg.package
 const D2 = board.add(LED_0603_1608Metric, {
-  translate: pt(2.848, 1.769), rotate: 0,
+  translate: pt(3.318, 1.769), rotate: 0,
   id: 'D2'
 })
 // ledg.res
 const R7 = board.add(R_0603_1608Metric, {
-  translate: pt(2.848, 1.866), rotate: 0,
+  translate: pt(3.318, 1.866), rotate: 0,
   id: 'R7'
 })
 // ledb.package
 const D3 = board.add(LED_0603_1608Metric, {
-  translate: pt(3.083, 1.769), rotate: 0,
+  translate: pt(2.848, 1.769), rotate: 0,
   id: 'D3'
 })
 // ledb.res
 const R8 = board.add(R_0603_1608Metric, {
-  translate: pt(3.083, 1.866), rotate: 0,
+  translate: pt(2.848, 1.866), rotate: 0,
   id: 'R8'
 })
 // sw.package
@@ -202,12 +202,12 @@ const U5 = board.add(Symbol_LemurSolid, {
 })
 // epd_gate.drv
 const Q4 = board.add(SOT_23, {
-  translate: pt(0.345, 2.277), rotate: 0,
+  translate: pt(0.076, 2.277), rotate: 0,
   id: 'Q4'
 })
 // mem_gate.drv
 const Q5 = board.add(SOT_23, {
-  translate: pt(0.076, 2.277), rotate: 0,
+  translate: pt(0.614, 2.277), rotate: 0,
   id: 'Q5'
 })
 // epd.device.conn.conn
@@ -307,37 +307,37 @@ const R12 = board.add(R_0603_1608Metric, {
 })
 // tp_epd.tp_sck.tp
 const TP4 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.902, 1.778), rotate: 0,
+  translate: pt(2.153, 1.778), rotate: 0,
   id: 'TP4'
 })
 // tp_epd.tp_mosi.tp
 const TP5 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.902, 1.892), rotate: 0,
+  translate: pt(2.153, 1.892), rotate: 0,
   id: 'TP5'
 })
 // tp_epd.tp_miso.tp
 const TP6 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.902, 2.006), rotate: 0,
+  translate: pt(2.153, 2.006), rotate: 0,
   id: 'TP6'
 })
 // tp_erst.tp
 const TP7 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.625, 2.247), rotate: 0,
+  translate: pt(1.375, 2.247), rotate: 0,
   id: 'TP7'
 })
 // tp_dc.tp
 const TP8 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.627, 2.247), rotate: 0,
+  translate: pt(0.874, 2.247), rotate: 0,
   id: 'TP8'
 })
 // tp_epd_cs.tp
 const TP9 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.874, 2.247), rotate: 0,
+  translate: pt(1.625, 2.247), rotate: 0,
   id: 'TP9'
 })
 // tp_busy.tp
 const TP10 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.375, 2.247), rotate: 0,
+  translate: pt(2.376, 2.247), rotate: 0,
   id: 'TP10'
 })
 // sd
@@ -357,22 +357,22 @@ const C19 = board.add(C_0603_1608Metric, {
 })
 // tp_sd.tp_sck.tp
 const TP11 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.153, 1.778), rotate: 0,
+  translate: pt(1.902, 1.778), rotate: 0,
   id: 'TP11'
 })
 // tp_sd.tp_mosi.tp
 const TP12 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.153, 1.892), rotate: 0,
+  translate: pt(1.902, 1.892), rotate: 0,
   id: 'TP12'
 })
 // tp_sd.tp_miso.tp
 const TP13 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.153, 2.006), rotate: 0,
+  translate: pt(1.902, 2.006), rotate: 0,
   id: 'TP13'
 })
 // tp_sd_cs.tp
 const TP14 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.376, 2.247), rotate: 0,
+  translate: pt(1.124, 2.247), rotate: 0,
   id: 'TP14'
 })
 

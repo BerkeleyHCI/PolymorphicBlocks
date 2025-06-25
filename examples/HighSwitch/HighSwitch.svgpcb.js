@@ -272,37 +272,37 @@ const Q4 = board.add(TO_252_2, {
 })
 // light[1].conn
 const J5 = board.add(Molex_DuraClik_vert_4pin, {
-  translate: pt(0.502, 0.630), rotate: 0,
+  translate: pt(0.502, 1.512), rotate: 0,
   id: 'J5'
 })
 // light[1].drv[0].pre
 const Q5 = board.add(SOT_23, {
-  translate: pt(0.552, 0.382), rotate: 0,
+  translate: pt(0.552, 1.264), rotate: 0,
   id: 'Q5'
 })
 // light[1].drv[0].pull
 const R15 = board.add(R_0603_1608Metric, {
-  translate: pt(0.249, 0.659), rotate: 0,
+  translate: pt(0.249, 1.541), rotate: 0,
   id: 'R15'
 })
 // light[1].drv[0].drv
 const Q6 = board.add(TO_252_2, {
-  translate: pt(0.252, 0.138), rotate: 0,
+  translate: pt(0.252, 1.020), rotate: 0,
   id: 'Q6'
 })
 // light[1].drv[1].pre
 const Q7 = board.add(SOT_23, {
-  translate: pt(0.076, 0.697), rotate: 0,
+  translate: pt(0.076, 1.579), rotate: 0,
   id: 'Q7'
 })
 // light[1].drv[1].pull
 const R16 = board.add(R_0603_1608Metric, {
-  translate: pt(0.405, 0.659), rotate: 0,
+  translate: pt(0.405, 1.541), rotate: 0,
   id: 'R16'
 })
 // light[1].drv[1].drv
 const Q8 = board.add(TO_252_2, {
-  translate: pt(0.252, 0.453), rotate: 0,
+  translate: pt(0.252, 1.335), rotate: 0,
   id: 'Q8'
 })
 // light[2].conn
@@ -412,37 +412,37 @@ const Q20 = board.add(TO_252_2, {
 })
 // light[5].conn
 const J9 = board.add(Molex_DuraClik_vert_4pin, {
-  translate: pt(0.502, 1.512), rotate: 0,
+  translate: pt(0.502, 0.630), rotate: 0,
   id: 'J9'
 })
 // light[5].drv[0].pre
 const Q21 = board.add(SOT_23, {
-  translate: pt(0.552, 1.264), rotate: 0,
+  translate: pt(0.552, 0.382), rotate: 0,
   id: 'Q21'
 })
 // light[5].drv[0].pull
 const R23 = board.add(R_0603_1608Metric, {
-  translate: pt(0.249, 1.541), rotate: 0,
+  translate: pt(0.249, 0.659), rotate: 0,
   id: 'R23'
 })
 // light[5].drv[0].drv
 const Q22 = board.add(TO_252_2, {
-  translate: pt(0.252, 1.020), rotate: 0,
+  translate: pt(0.252, 0.138), rotate: 0,
   id: 'Q22'
 })
 // light[5].drv[1].pre
 const Q23 = board.add(SOT_23, {
-  translate: pt(0.076, 1.579), rotate: 0,
+  translate: pt(0.076, 0.697), rotate: 0,
   id: 'Q23'
 })
 // light[5].drv[1].pull
 const R24 = board.add(R_0603_1608Metric, {
-  translate: pt(0.405, 1.541), rotate: 0,
+  translate: pt(0.405, 0.659), rotate: 0,
   id: 'R24'
 })
 // light[5].drv[1].drv
 const Q24 = board.add(TO_252_2, {
-  translate: pt(0.252, 1.335), rotate: 0,
+  translate: pt(0.252, 0.453), rotate: 0,
   id: 'Q24'
 })
 

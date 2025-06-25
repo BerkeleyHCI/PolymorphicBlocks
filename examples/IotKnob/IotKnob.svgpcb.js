@@ -35,12 +35,12 @@ const KR2 = board.add(R_0603_1608Metric, {
 })
 // tp_pwr.tp
 const KTP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.567, 3.896), rotate: 0,
+  translate: pt(1.062, 3.896), rotate: 0,
   id: 'KTP1'
 })
 // tp_gnd.tp
 const KTP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.066, 3.896), rotate: 0,
+  translate: pt(0.811, 3.896), rotate: 0,
   id: 'KTP2'
 })
 // reg_3v3.ic
@@ -60,12 +60,12 @@ const KC2 = board.add(C_0805_2012Metric, {
 })
 // tp_3v3.tp
 const KTP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.817, 3.896), rotate: 0,
+  translate: pt(1.312, 3.896), rotate: 0,
   id: 'KTP3'
 })
 // prot_3v3.diode
 const KD1 = board.add(D_SOD_323, {
-  translate: pt(1.065, 3.896), rotate: 0,
+  translate: pt(0.063, 3.896), rotate: 0,
   id: 'KD1'
 })
 // mcu.ic
@@ -150,17 +150,17 @@ const KSW1 = board.add(RotaryEncoder_Alps_EC11J15_Switch, {
 })
 // sw[0].package
 const KSW2 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(5.455, 3.037), rotate: 0,
+  translate: pt(5.002, 3.037), rotate: 0,
   id: 'KSW2'
 })
 // sw[1].package
 const KSW3 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(3.613, 3.520), rotate: 0,
+  translate: pt(2.707, 3.520), rotate: 0,
   id: 'KSW3'
 })
 // sw[2].package
 const KSW4 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(5.002, 3.037), rotate: 0,
+  translate: pt(3.613, 3.520), rotate: 0,
   id: 'KSW4'
 })
 // sw[3].package
@@ -170,7 +170,7 @@ const KSW5 = board.add(SW_SPST_SKQG_WithoutStem, {
 })
 // sw[4].package
 const KSW6 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(2.707, 3.520), rotate: 0,
+  translate: pt(5.455, 3.037), rotate: 0,
   id: 'KSW6'
 })
 // sw[5].package
@@ -280,7 +280,7 @@ const KC17 = board.add(C_0603_1608Metric, {
 })
 // rgb_tp.tp
 const KTP6 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.312, 3.896), rotate: 0,
+  translate: pt(0.311, 3.896), rotate: 0,
   id: 'KTP6'
 })
 // io8_pur.res
@@ -300,7 +300,7 @@ const KC18 = board.add(C_0603_1608Metric, {
 })
 // spk_tp.tp
 const KTP7 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.317, 3.896), rotate: 0,
+  translate: pt(0.561, 3.896), rotate: 0,
   id: 'KTP7'
 })
 // spk_drv.ic

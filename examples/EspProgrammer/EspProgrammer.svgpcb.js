@@ -102,22 +102,22 @@ const UR4 = board.add(R_0402_1005Metric, {
 })
 // led.package
 const UD2 = board.add(LED_0603_1608Metric, {
-  translate: pt(1.259, 0.788), rotate: 0,
+  translate: pt(0.058, 1.227), rotate: 0,
   id: 'UD2'
 })
 // led.res
 const UR5 = board.add(R_0402_1005Metric, {
-  translate: pt(1.237, 0.875), rotate: 0,
+  translate: pt(0.037, 1.314), rotate: 0,
   id: 'UR5'
 })
 // led_en.package
 const UD3 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.058, 1.227), rotate: 0,
+  translate: pt(1.259, 0.788), rotate: 0,
   id: 'UD3'
 })
 // led_en.res
 const UR6 = board.add(R_0402_1005Metric, {
-  translate: pt(0.037, 1.314), rotate: 0,
+  translate: pt(1.237, 0.875), rotate: 0,
   id: 'UR6'
 })
 

@@ -32,17 +32,17 @@ const LR2 = board.add(R_0603_1608Metric, {
 })
 // tp_gnd.tp
 const LTP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.525, 2.634), rotate: 0,
+  translate: pt(2.270, 2.634), rotate: 0,
   id: 'LTP1'
 })
 // choke.fb
 const LFB1 = board.add(L_0603_1608Metric, {
-  translate: pt(3.264, 2.626), rotate: 0,
+  translate: pt(3.733, 2.626), rotate: 0,
   id: 'LFB1'
 })
 // tp_pwr.tp
 const LTP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.026, 2.634), rotate: 0,
+  translate: pt(2.521, 2.634), rotate: 0,
   id: 'LTP2'
 })
 // reg_3v3.ic
@@ -62,12 +62,12 @@ const LC2 = board.add(C_0805_2012Metric, {
 })
 // tp_3v3.tp
 const LTP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.276, 2.634), rotate: 0,
+  translate: pt(3.021, 2.634), rotate: 0,
   id: 'LTP3'
 })
 // prot_3v3.diode
 const LD1 = board.add(D_SOD_323, {
-  translate: pt(2.524, 2.634), rotate: 0,
+  translate: pt(1.272, 2.634), rotate: 0,
   id: 'LD1'
 })
 // mcu.ic
@@ -112,32 +112,32 @@ const LU3 = board.add(SOT_23, {
 })
 // ledr.package
 const LD2 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.528, 2.626), rotate: 0,
+  translate: pt(0.293, 2.626), rotate: 0,
   id: 'LD2'
 })
 // ledr.res
 const LR4 = board.add(R_0603_1608Metric, {
-  translate: pt(0.528, 2.723), rotate: 0,
+  translate: pt(0.293, 2.723), rotate: 0,
   id: 'LR4'
 })
 // ledg.package
 const LD3 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.058, 2.626), rotate: 0,
+  translate: pt(0.528, 2.626), rotate: 0,
   id: 'LD3'
 })
 // ledg.res
 const LR5 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 2.723), rotate: 0,
+  translate: pt(0.528, 2.723), rotate: 0,
   id: 'LR5'
 })
 // ledb.package
 const LD4 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.293, 2.626), rotate: 0,
+  translate: pt(0.058, 2.626), rotate: 0,
   id: 'LD4'
 })
 // ledb.res
 const LR6 = board.add(R_0603_1608Metric, {
-  translate: pt(0.293, 2.723), rotate: 0,
+  translate: pt(0.058, 2.723), rotate: 0,
   id: 'LR6'
 })
 // lora.ic
@@ -282,22 +282,22 @@ const LTP6 = board.add(TestPoint_TE_RCT_0805, {
 })
 // tp_lora_cs.tp
 const LTP7 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.021, 2.634), rotate: 0,
+  translate: pt(1.769, 2.634), rotate: 0,
   id: 'LTP7'
 })
 // tp_lora_rst.tp
 const LTP8 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.771, 2.634), rotate: 0,
+  translate: pt(2.020, 2.634), rotate: 0,
   id: 'LTP8'
 })
 // tp_lora_dio.tp
 const LTP9 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.775, 2.634), rotate: 0,
+  translate: pt(2.771, 2.634), rotate: 0,
   id: 'LTP9'
 })
 // tp_lora_busy.tp
 const LTP10 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.275, 2.634), rotate: 0,
+  translate: pt(1.519, 2.634), rotate: 0,
   id: 'LTP10'
 })
 // i2c_pull.scl_res.res
@@ -372,7 +372,7 @@ const LU7 = board.add(SOT_23, {
 })
 // oled_pull.res
 const LR12 = board.add(R_0603_1608Metric, {
-  translate: pt(3.733, 2.626), rotate: 0,
+  translate: pt(3.264, 2.626), rotate: 0,
   id: 'LR12'
 })
 // sd

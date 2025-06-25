@@ -17,47 +17,47 @@ const H3 = board.add(JlcToolingHole_1_152mm, {
 })
 // usb_mcu.conn
 const J1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
-  translate: pt(1.237, 1.501), rotate: 0,
+  translate: pt(1.774, 1.501), rotate: 0,
   id: 'J1'
 })
 // usb_mcu.cc_pull.cc1.res
 const R1 = board.add(R_0603_1608Metric, {
-  translate: pt(1.086, 1.756), rotate: 0,
+  translate: pt(1.623, 1.756), rotate: 0,
   id: 'R1'
 })
 // usb_mcu.cc_pull.cc2.res
 const R2 = board.add(R_0603_1608Metric, {
-  translate: pt(1.242, 1.756), rotate: 0,
+  translate: pt(1.779, 1.756), rotate: 0,
   id: 'R2'
 })
 // usb_fpga.conn
 const J2 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
-  translate: pt(1.774, 1.501), rotate: 0,
+  translate: pt(1.237, 1.501), rotate: 0,
   id: 'J2'
 })
 // usb_fpga.cc_pull.cc1.res
 const R3 = board.add(R_0603_1608Metric, {
-  translate: pt(1.623, 1.756), rotate: 0,
+  translate: pt(1.086, 1.756), rotate: 0,
   id: 'R3'
 })
 // usb_fpga.cc_pull.cc2.res
 const R4 = board.add(R_0603_1608Metric, {
-  translate: pt(1.779, 1.756), rotate: 0,
+  translate: pt(1.242, 1.756), rotate: 0,
   id: 'R4'
 })
 // conv_in.conn
 const J3 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
-  translate: pt(2.986, 2.365), rotate: 0,
+  translate: pt(2.596, 2.365), rotate: 0,
   id: 'J3'
 })
 // tp_vusb.tp
 const TP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.783, 2.740), rotate: 0,
+  translate: pt(0.780, 2.740), rotate: 0,
   id: 'TP1'
 })
 // tp_gnd.tp
 const TP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.036, 2.740), rotate: 0,
+  translate: pt(2.533, 2.740), rotate: 0,
   id: 'TP2'
 })
 // reg_3v3.ic
@@ -77,12 +77,12 @@ const C2 = board.add(C_0805_2012Metric, {
 })
 // tp_3v3.tp
 const TP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.537, 2.740), rotate: 0,
+  translate: pt(3.033, 2.740), rotate: 0,
   id: 'TP3'
 })
 // prot_3v3.diode
 const D1 = board.add(D_SOD_323, {
-  translate: pt(1.785, 2.740), rotate: 0,
+  translate: pt(0.533, 2.740), rotate: 0,
   id: 'D1'
 })
 // reg_vgate.ic
@@ -122,7 +122,7 @@ const D2 = board.add(D_SOD_323, {
 })
 // tp_vgate.tp
 const TP4 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.287, 2.740), rotate: 0,
+  translate: pt(1.281, 2.740), rotate: 0,
   id: 'TP4'
 })
 // conv.power_path.inductor
@@ -407,7 +407,7 @@ const D7 = board.add(D_SOD_323, {
 })
 // conv_out.conn
 const J4 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
-  translate: pt(2.596, 2.365), rotate: 0,
+  translate: pt(2.986, 2.365), rotate: 0,
   id: 'J4'
 })
 // tp_conv_out.tp
@@ -417,7 +417,7 @@ const TP5 = board.add(TestPoint_TE_RCT_0805, {
 })
 // tp_conv_gnd.tp
 const TP6 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.786, 2.740), rotate: 0,
+  translate: pt(1.531, 2.740), rotate: 0,
   id: 'TP6'
 })
 // fpga.ic
@@ -532,7 +532,7 @@ const C46 = board.add(C_0603_1608Metric, {
 })
 // fpga_sw.package
 const SW1 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(2.214, 2.348), rotate: 0,
+  translate: pt(1.761, 2.348), rotate: 0,
   id: 'SW1'
 })
 // fpga_led.led[0].package
@@ -697,7 +697,7 @@ const C60 = board.add(C_0603_1608Metric, {
 })
 // mcu_sw.package
 const SW2 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(1.761, 2.348), rotate: 0,
+  translate: pt(2.214, 2.348), rotate: 0,
   id: 'SW2'
 })
 // mcu_leds.led[0].package
@@ -747,22 +747,22 @@ const U16 = board.add(SOT_23, {
 })
 // tp_fpga[0].tp
 const TP7 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.032, 2.740), rotate: 0,
+  translate: pt(2.783, 2.740), rotate: 0,
   id: 'TP7'
 })
 // tp_fpga[1].tp
 const TP8 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.033, 2.740), rotate: 0,
+  translate: pt(2.032, 2.740), rotate: 0,
   id: 'TP8'
 })
 // tp_fpga[2].tp
 const TP9 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.535, 2.740), rotate: 0,
+  translate: pt(1.781, 2.740), rotate: 0,
   id: 'TP9'
 })
 // tp_fpga[3].tp
 const TP10 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.533, 2.740), rotate: 0,
+  translate: pt(1.030, 2.740), rotate: 0,
   id: 'TP10'
 })
 // pwm_filter.tp[0L].tp

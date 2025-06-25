@@ -267,7 +267,7 @@ const J5 = board.add(SD_Kyocera_145638009511859+, {
 })
 // cd_pull.res
 const R10 = board.add(R_0603_1608Metric, {
-  translate: pt(2.956, 2.385), rotate: 0,
+  translate: pt(2.721, 2.385), rotate: 0,
   id: 'R10'
 })
 // xbee.ic
@@ -482,17 +482,17 @@ const R22 = board.add(R_0603_1608Metric, {
 })
 // sw1.package
 const SW1 = board.add(SW_Push_SPST_NO_Alps_SKRK, {
-  translate: pt(2.437, 2.423), rotate: 0,
+  translate: pt(2.102, 2.423), rotate: 0,
   id: 'SW1'
 })
 // sw1_pull.res
 const R23 = board.add(R_0603_1608Metric, {
-  translate: pt(2.721, 2.385), rotate: 0,
+  translate: pt(2.956, 2.385), rotate: 0,
   id: 'R23'
 })
 // sw2.package
 const SW2 = board.add(SW_Push_SPST_NO_Alps_SKRK, {
-  translate: pt(2.102, 2.423), rotate: 0,
+  translate: pt(2.437, 2.423), rotate: 0,
   id: 'SW2'
 })
 // sw2_pull.res
@@ -512,22 +512,22 @@ const R26 = board.add(R_0603_1608Metric, {
 })
 // v5sense.div.top_res
 const R27 = board.add(R_0603_1608Metric, {
-  translate: pt(1.074, 2.385), rotate: 0,
+  translate: pt(1.309, 2.385), rotate: 0,
   id: 'R27'
 })
 // v5sense.div.bottom_res
 const R28 = board.add(R_0603_1608Metric, {
-  translate: pt(1.074, 2.482), rotate: 0,
+  translate: pt(1.309, 2.482), rotate: 0,
   id: 'R28'
 })
 // vscsense.div.top_res
 const R29 = board.add(R_0603_1608Metric, {
-  translate: pt(1.309, 2.385), rotate: 0,
+  translate: pt(1.074, 2.385), rotate: 0,
   id: 'R29'
 })
 // vscsense.div.bottom_res
 const R30 = board.add(R_0603_1608Metric, {
-  translate: pt(1.309, 2.482), rotate: 0,
+  translate: pt(1.074, 2.482), rotate: 0,
   id: 'R30'
 })
 

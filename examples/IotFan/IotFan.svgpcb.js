@@ -2,17 +2,17 @@ const board = new PCB();
 
 // jlc_th.th1
 const FH1 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0.745, 1.742), rotate: 0,
+  translate: pt(0.751, 1.742), rotate: 0,
   id: 'FH1'
 })
 // jlc_th.th2
 const FH2 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0.785, 1.742), rotate: 0,
+  translate: pt(0.791, 1.742), rotate: 0,
   id: 'FH2'
 })
 // jlc_th.th3
 const FH3 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0.745, 1.781), rotate: 0,
+  translate: pt(0.751, 1.781), rotate: 0,
   id: 'FH3'
 })
 // pwr
@@ -22,12 +22,12 @@ const FJ1 = board.add(BarrelJack_CUI_PJ_036AH_SMT_Horizontal, {
 })
 // tp_pwr.tp
 const FTP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.561, 1.779), rotate: 0,
+  translate: pt(0.317, 1.779), rotate: 0,
   id: 'FTP1'
 })
 // tp_gnd.tp
 const FTP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.027, 1.464), rotate: 0,
+  translate: pt(0.066, 1.779), rotate: 0,
   id: 'FTP2'
 })
 // reg_5v.ic
@@ -77,12 +77,12 @@ const FR3 = board.add(R_0603_1608Metric, {
 })
 // tp_5v.tp
 const FTP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(0.311, 1.779), rotate: 0,
+  translate: pt(0.567, 1.779), rotate: 0,
   id: 'FTP3'
 })
 // prot_5v.diode
 const FD1 = board.add(D_SOD_323, {
-  translate: pt(0.063, 1.779), rotate: 0,
+  translate: pt(2.519, 1.464), rotate: 0,
   id: 'FD1'
 })
 // reg_3v3.ic
@@ -102,12 +102,12 @@ const FC6 = board.add(C_0603_1608Metric, {
 })
 // tp_3v3.tp
 const FTP4 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.277, 1.464), rotate: 0,
+  translate: pt(2.271, 1.464), rotate: 0,
   id: 'FTP4'
 })
 // prot_3v3.diode
 const FD2 = board.add(D_SOD_323, {
-  translate: pt(2.525, 1.464), rotate: 0,
+  translate: pt(2.024, 1.464), rotate: 0,
   id: 'FD2'
 })
 // mcu.ic
@@ -433,7 +433,7 @@ board.setNetlist([
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(2.7061023622047244, 1.9346456692913387);
+const limit1 = pt(2.7001968503937013, 1.9346456692913387);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);

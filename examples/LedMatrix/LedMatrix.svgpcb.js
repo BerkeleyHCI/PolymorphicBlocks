@@ -33,12 +33,12 @@ const R2 = board.add(R_0603_1608Metric, {
 })
 // tp_vusb.tp
 const TP1 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(2.114, 1.571), rotate: 0,
+  translate: pt(1.539, 1.571), rotate: 0,
   id: 'TP1'
 })
 // tp_gnd.tp
 const TP2 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(1.539, 1.571), rotate: 0,
+  translate: pt(1.826, 1.571), rotate: 0,
   id: 'TP2'
 })
 // reg_3v3.ic
@@ -58,7 +58,7 @@ const C2 = board.add(C_0805_2012Metric, {
 })
 // tp_3v3.tp
 const TP3 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(1.826, 1.571), rotate: 0,
+  translate: pt(2.114, 1.571), rotate: 0,
   id: 'TP3'
 })
 // prot_3v3.diode

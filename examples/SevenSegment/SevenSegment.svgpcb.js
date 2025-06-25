@@ -22,12 +22,12 @@ const CJ1 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
 })
 // tp_pwr.tp
 const CTP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.316, 2.130), rotate: 0,
+  translate: pt(2.811, 2.130), rotate: 0,
   id: 'CTP1'
 })
 // tp_gnd.tp
 const CTP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(1.816, 2.130), rotate: 0,
+  translate: pt(2.561, 2.130), rotate: 0,
   id: 'CTP2'
 })
 // reg_3v3.ic
@@ -47,12 +47,12 @@ const CC2 = board.add(C_0805_2012Metric, {
 })
 // tp_3v3.tp
 const CTP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.567, 2.130), rotate: 0,
+  translate: pt(3.062, 2.130), rotate: 0,
   id: 'CTP3'
 })
 // prot_3v3.diode
 const CD1 = board.add(D_SOD_323, {
-  translate: pt(2.814, 2.130), rotate: 0,
+  translate: pt(1.813, 2.130), rotate: 0,
   id: 'CD1'
 })
 // mcu.ic
@@ -87,47 +87,47 @@ const CC5 = board.add(C_0603_1608Metric, {
 })
 // ledr.package
 const CD2 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.869, 2.122), rotate: 0,
+  translate: pt(0.634, 2.122), rotate: 0,
   id: 'CD2'
 })
 // ledr.res
 const CR2 = board.add(R_0603_1608Metric, {
-  translate: pt(0.869, 2.219), rotate: 0,
+  translate: pt(0.634, 2.219), rotate: 0,
   id: 'CR2'
 })
 // ledg.package
 const CD3 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.399, 2.122), rotate: 0,
+  translate: pt(0.869, 2.122), rotate: 0,
   id: 'CD3'
 })
 // ledg.res
 const CR3 = board.add(R_0603_1608Metric, {
-  translate: pt(0.399, 2.219), rotate: 0,
+  translate: pt(0.869, 2.219), rotate: 0,
   id: 'CR3'
 })
 // ledb.package
 const CD4 = board.add(LED_0603_1608Metric, {
-  translate: pt(0.634, 2.122), rotate: 0,
+  translate: pt(0.399, 2.122), rotate: 0,
   id: 'CD4'
 })
 // ledb.res
 const CR4 = board.add(R_0603_1608Metric, {
-  translate: pt(0.634, 2.219), rotate: 0,
+  translate: pt(0.399, 2.219), rotate: 0,
   id: 'CR4'
 })
 // sw[0].package
 const CSW1 = board.add(SW_Push_1P1T_MP_NO_Horizontal_Alps_SKRTLAE010, {
-  translate: pt(2.958, 1.831), rotate: 0,
+  translate: pt(2.617, 1.831), rotate: 0,
   id: 'CSW1'
 })
 // sw[1].package
 const CSW2 = board.add(SW_Push_1P1T_MP_NO_Horizontal_Alps_SKRTLAE010, {
-  translate: pt(0.111, 2.183), rotate: 0,
+  translate: pt(2.958, 1.831), rotate: 0,
   id: 'CSW2'
 })
 // sw[2].package
 const CSW3 = board.add(SW_Push_1P1T_MP_NO_Horizontal_Alps_SKRTLAE010, {
-  translate: pt(2.617, 1.831), rotate: 0,
+  translate: pt(0.111, 2.183), rotate: 0,
   id: 'CSW3'
 })
 // sw[3].package
@@ -202,77 +202,77 @@ const CC10 = board.add(C_0603_1608Metric, {
 })
 // rgb_tp.tp
 const CTP6 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.062, 2.130), rotate: 0,
+  translate: pt(2.060, 2.130), rotate: 0,
   id: 'CTP6'
 })
 // digit[0].led[0]
 const CD5 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.131, 0.039), rotate: 0,
+  translate: pt(2.580, 0.591), rotate: 0,
   id: 'CD5'
 })
 // digit[0].led[1]
 const CD6 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.249, 0.039), rotate: 0,
+  translate: pt(2.698, 0.591), rotate: 0,
   id: 'CD6'
 })
 // digit[0].led[2]
 const CD7 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.367, 0.039), rotate: 0,
+  translate: pt(2.816, 0.591), rotate: 0,
   id: 'CD7'
 })
 // digit[0].led[3]
 const CD8 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.485, 0.039), rotate: 0,
+  translate: pt(2.934, 0.591), rotate: 0,
   id: 'CD8'
 })
 // digit[0].led[4]
 const CD9 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.131, 0.157), rotate: 0,
+  translate: pt(2.580, 0.709), rotate: 0,
   id: 'CD9'
 })
 // digit[0].led[5]
 const CD10 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.249, 0.157), rotate: 0,
+  translate: pt(2.698, 0.709), rotate: 0,
   id: 'CD10'
 })
 // digit[0].led[6]
 const CD11 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.367, 0.157), rotate: 0,
+  translate: pt(2.816, 0.709), rotate: 0,
   id: 'CD11'
 })
 // digit[0].led[7]
 const CD12 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.485, 0.157), rotate: 0,
+  translate: pt(2.934, 0.709), rotate: 0,
   id: 'CD12'
 })
 // digit[0].led[8]
 const CD13 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.131, 0.276), rotate: 0,
+  translate: pt(2.580, 0.827), rotate: 0,
   id: 'CD13'
 })
 // digit[0].led[9]
 const CD14 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.249, 0.276), rotate: 0,
+  translate: pt(2.698, 0.827), rotate: 0,
   id: 'CD14'
 })
 // digit[0].led[10]
 const CD15 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.367, 0.276), rotate: 0,
+  translate: pt(2.816, 0.827), rotate: 0,
   id: 'CD15'
 })
 // digit[0].led[11]
 const CD16 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.485, 0.276), rotate: 0,
+  translate: pt(2.934, 0.827), rotate: 0,
   id: 'CD16'
 })
 // digit[0].led[12]
 const CD17 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.131, 0.394), rotate: 0,
+  translate: pt(2.580, 0.945), rotate: 0,
   id: 'CD17'
 })
 // digit[0].led[13]
 const CD18 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(3.249, 0.394), rotate: 0,
+  translate: pt(2.698, 0.945), rotate: 0,
   id: 'CD18'
 })
 // digit[1].led[0]
@@ -417,92 +417,92 @@ const CD46 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
 })
 // digit[3].led[0]
 const CD47 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.580, 0.591), rotate: 0,
+  translate: pt(3.131, 0.039), rotate: 0,
   id: 'CD47'
 })
 // digit[3].led[1]
 const CD48 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.698, 0.591), rotate: 0,
+  translate: pt(3.249, 0.039), rotate: 0,
   id: 'CD48'
 })
 // digit[3].led[2]
 const CD49 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.816, 0.591), rotate: 0,
+  translate: pt(3.367, 0.039), rotate: 0,
   id: 'CD49'
 })
 // digit[3].led[3]
 const CD50 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.934, 0.591), rotate: 0,
+  translate: pt(3.485, 0.039), rotate: 0,
   id: 'CD50'
 })
 // digit[3].led[4]
 const CD51 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.580, 0.709), rotate: 0,
+  translate: pt(3.131, 0.157), rotate: 0,
   id: 'CD51'
 })
 // digit[3].led[5]
 const CD52 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.698, 0.709), rotate: 0,
+  translate: pt(3.249, 0.157), rotate: 0,
   id: 'CD52'
 })
 // digit[3].led[6]
 const CD53 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.816, 0.709), rotate: 0,
+  translate: pt(3.367, 0.157), rotate: 0,
   id: 'CD53'
 })
 // digit[3].led[7]
 const CD54 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.934, 0.709), rotate: 0,
+  translate: pt(3.485, 0.157), rotate: 0,
   id: 'CD54'
 })
 // digit[3].led[8]
 const CD55 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.580, 0.827), rotate: 0,
+  translate: pt(3.131, 0.276), rotate: 0,
   id: 'CD55'
 })
 // digit[3].led[9]
 const CD56 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.698, 0.827), rotate: 0,
+  translate: pt(3.249, 0.276), rotate: 0,
   id: 'CD56'
 })
 // digit[3].led[10]
 const CD57 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.816, 0.827), rotate: 0,
+  translate: pt(3.367, 0.276), rotate: 0,
   id: 'CD57'
 })
 // digit[3].led[11]
 const CD58 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.934, 0.827), rotate: 0,
+  translate: pt(3.485, 0.276), rotate: 0,
   id: 'CD58'
 })
 // digit[3].led[12]
 const CD59 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.580, 0.945), rotate: 0,
+  translate: pt(3.131, 0.394), rotate: 0,
   id: 'CD59'
 })
 // digit[3].led[13]
 const CD60 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(2.698, 0.945), rotate: 0,
+  translate: pt(3.249, 0.394), rotate: 0,
   id: 'CD60'
 })
 // center.led[0]
 const CD61 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(1.489, 1.780), rotate: 0,
+  translate: pt(1.686, 1.780), rotate: 0,
   id: 'CD61'
 })
 // center.led[1]
 const CD62 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(1.489, 1.898), rotate: 0,
+  translate: pt(1.686, 1.898), rotate: 0,
   id: 'CD62'
 })
 // meta.led[0]
 const CD63 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(1.686, 1.780), rotate: 0,
+  translate: pt(1.489, 1.780), rotate: 0,
   id: 'CD63'
 })
 // meta.led[1]
 const CD64 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(1.686, 1.898), rotate: 0,
+  translate: pt(1.489, 1.898), rotate: 0,
   id: 'CD64'
 })
 // spk_dac.rc.r
@@ -517,7 +517,7 @@ const CC11 = board.add(C_0603_1608Metric, {
 })
 // spk_tp.tp
 const CTP7 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.066, 2.130), rotate: 0,
+  translate: pt(2.310, 2.130), rotate: 0,
   id: 'CTP7'
 })
 // spk_drv.ic

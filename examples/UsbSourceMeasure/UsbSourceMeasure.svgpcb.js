@@ -22,7 +22,7 @@ const J1 = board.add(USB_C_Receptacle_XKB_U262_16XN_4BVC11, {
 })
 // tp_gnd.tp
 const TP1 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.506, 4.603), rotate: 0,
+  translate: pt(4.259, 4.603), rotate: 0,
   id: 'TP1'
 })
 // filt_vusb.fb
@@ -37,12 +37,12 @@ const C1 = board.add(CP_Elec_8x10, {
 })
 // prot_vusb.diode
 const D1 = board.add(D_SMA, {
-  translate: pt(0.842, 4.635), rotate: 0,
+  translate: pt(1.630, 4.635), rotate: 0,
   id: 'D1'
 })
 // tp_vusb.tp
 const TP2 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(4.008, 4.603), rotate: 0,
+  translate: pt(2.256, 4.603), rotate: 0,
   id: 'TP2'
 })
 // reg_v5.ic
@@ -92,7 +92,7 @@ const R3 = board.add(R_0603_1608Metric, {
 })
 // tp_v5.tp
 const TP3 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.507, 4.603), rotate: 0,
+  translate: pt(3.758, 4.603), rotate: 0,
   id: 'TP3'
 })
 // reg_3v3.ic
@@ -112,12 +112,12 @@ const C7 = board.add(C_0805_2012Metric, {
 })
 // prot_3v3.diode
 const D2 = board.add(D_SMA, {
-  translate: pt(1.630, 4.635), rotate: 0,
+  translate: pt(0.842, 4.635), rotate: 0,
   id: 'D2'
 })
 // tp_3v3.tp
 const TP4 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.756, 4.603), rotate: 0,
+  translate: pt(4.509, 4.603), rotate: 0,
   id: 'TP4'
 })
 // conv.power_path.inductor
@@ -272,52 +272,52 @@ const D5 = board.add(D_SMA, {
 })
 // tp_conv.tp
 const TP5 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.257, 4.603), rotate: 0,
+  translate: pt(3.507, 4.603), rotate: 0,
   id: 'TP5'
 })
 // reg_v12.ic
 const U5 = board.add(SOT_23_5, {
-  translate: pt(4.904, 3.182), rotate: 0,
+  translate: pt(5.460, 3.182), rotate: 0,
   id: 'U5'
 })
 // reg_v12.fb.div.top_res
 const R8 = board.add(R_0603_1608Metric, {
-  translate: pt(5.224, 3.317), rotate: 0,
+  translate: pt(5.781, 3.317), rotate: 0,
   id: 'R8'
 })
 // reg_v12.fb.div.bottom_res
 const R9 = board.add(R_0603_1608Metric, {
-  translate: pt(4.881, 3.431), rotate: 0,
+  translate: pt(5.438, 3.431), rotate: 0,
   id: 'R9'
 })
 // reg_v12.power_path.inductor
 const L3 = board.add(L_0805_2012Metric, {
-  translate: pt(5.058, 3.322), rotate: 0,
+  translate: pt(5.614, 3.322), rotate: 0,
   id: 'L3'
 })
 // reg_v12.power_path.in_cap.cap
 const C24 = board.add(C_0805_2012Metric, {
-  translate: pt(5.091, 3.154), rotate: 0,
+  translate: pt(5.647, 3.154), rotate: 0,
   id: 'C24'
 })
 // reg_v12.power_path.out_cap.cap
 const C25 = board.add(C_0603_1608Metric, {
-  translate: pt(5.037, 3.431), rotate: 0,
+  translate: pt(5.594, 3.431), rotate: 0,
   id: 'C25'
 })
 // reg_v12.cf
 const C26 = board.add(C_0603_1608Metric, {
-  translate: pt(5.193, 3.431), rotate: 0,
+  translate: pt(5.750, 3.431), rotate: 0,
   id: 'C26'
 })
 // reg_v12.rect
 const D6 = board.add(D_SOD_323, {
-  translate: pt(4.887, 3.326), rotate: 0,
+  translate: pt(5.443, 3.326), rotate: 0,
   id: 'D6'
 })
 // tp_v12.tp
 const TP6 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(4.509, 4.603), rotate: 0,
+  translate: pt(3.007, 4.603), rotate: 0,
   id: 'TP6'
 })
 // reg_analog.ic
@@ -337,7 +337,7 @@ const C28 = board.add(C_1206_3216Metric, {
 })
 // tp_analog.tp
 const TP7 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.758, 4.603), rotate: 0,
+  translate: pt(2.756, 4.603), rotate: 0,
   id: 'TP7'
 })
 // reg_vref.ic
@@ -352,17 +352,17 @@ const C29 = board.add(C_0603_1608Metric, {
 })
 // tp_vref.tp
 const TP8 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(2.256, 4.603), rotate: 0,
+  translate: pt(4.008, 4.603), rotate: 0,
   id: 'TP8'
 })
 // ref_div.div.top_res
 const R10 = board.add(R_0603_1608Metric, {
-  translate: pt(4.455, 4.213), rotate: 0,
+  translate: pt(5.394, 4.213), rotate: 0,
   id: 'R10'
 })
 // ref_div.div.bottom_res
 const R11 = board.add(R_0603_1608Metric, {
-  translate: pt(4.455, 4.309), rotate: 0,
+  translate: pt(5.394, 4.309), rotate: 0,
   id: 'R11'
 })
 // ref_cap
@@ -372,47 +372,47 @@ const C30 = board.add(C_0603_1608Metric, {
 })
 // reg_vcontrol.ic
 const U8 = board.add(SOT_23_5, {
-  translate: pt(5.481, 3.182), rotate: 0,
+  translate: pt(4.904, 3.182), rotate: 0,
   id: 'U8'
 })
 // reg_vcontrol.fb.div.top_res
 const R12 = board.add(R_0603_1608Metric, {
-  translate: pt(5.625, 3.317), rotate: 0,
+  translate: pt(5.047, 3.317), rotate: 0,
   id: 'R12'
 })
 // reg_vcontrol.fb.div.bottom_res
 const R13 = board.add(R_0603_1608Metric, {
-  translate: pt(5.781, 3.317), rotate: 0,
+  translate: pt(5.203, 3.317), rotate: 0,
   id: 'R13'
 })
 // reg_vcontrol.power_path.inductor
 const L4 = board.add(L_0603_1608Metric, {
-  translate: pt(5.459, 3.431), rotate: 0,
+  translate: pt(4.881, 3.431), rotate: 0,
   id: 'L4'
 })
 // reg_vcontrol.power_path.in_cap.cap
 const C31 = board.add(C_0603_1608Metric, {
-  translate: pt(5.615, 3.431), rotate: 0,
+  translate: pt(5.037, 3.431), rotate: 0,
   id: 'C31'
 })
 // reg_vcontrol.power_path.out_cap.cap
 const C32 = board.add(C_0805_2012Metric, {
-  translate: pt(5.669, 3.154), rotate: 0,
+  translate: pt(5.091, 3.154), rotate: 0,
   id: 'C32'
 })
 // reg_vcontrol.cf
 const C33 = board.add(C_0603_1608Metric, {
-  translate: pt(5.771, 3.431), rotate: 0,
+  translate: pt(5.193, 3.431), rotate: 0,
   id: 'C33'
 })
 // reg_vcontrol.rect
 const D7 = board.add(D_SOD_323, {
-  translate: pt(5.464, 3.326), rotate: 0,
+  translate: pt(4.887, 3.326), rotate: 0,
   id: 'D7'
 })
 // tp_vcontrol.tp
 const TP9 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(4.259, 4.603), rotate: 0,
+  translate: pt(3.257, 4.603), rotate: 0,
   id: 'TP9'
 })
 // reg_vcontroln.ic
@@ -437,7 +437,7 @@ const C36 = board.add(C_1206_3216Metric, {
 })
 // tp_vcontroln.tp
 const TP10 = board.add(TestPoint_TE_RCT_0805, {
-  translate: pt(3.007, 4.603), rotate: 0,
+  translate: pt(2.506, 4.603), rotate: 0,
   id: 'TP10'
 })
 // control.dmeas.r1
@@ -762,12 +762,12 @@ const TP12 = board.add(TestPoint_TE_RCT_0805, {
 })
 // i2c_pull.scl_res.res
 const R49 = board.add(R_0603_1608Metric, {
-  translate: pt(0.528, 4.594), rotate: 0,
+  translate: pt(0.058, 4.594), rotate: 0,
   id: 'R49'
 })
 // i2c_pull.sda_res.res
 const R50 = board.add(R_0603_1608Metric, {
-  translate: pt(0.528, 4.691), rotate: 0,
+  translate: pt(0.058, 4.691), rotate: 0,
   id: 'R50'
 })
 // oled.device.conn
@@ -812,22 +812,22 @@ const C51 = board.add(C_0805_2012Metric, {
 })
 // buck_rc.rc.r
 const R52 = board.add(R_0603_1608Metric, {
-  translate: pt(4.924, 4.213), rotate: 0,
+  translate: pt(5.863, 4.213), rotate: 0,
   id: 'R52'
 })
 // buck_rc.rc.c
 const C52 = board.add(C_0603_1608Metric, {
-  translate: pt(4.924, 4.309), rotate: 0,
+  translate: pt(5.863, 4.309), rotate: 0,
   id: 'C52'
 })
 // boost_rc.rc.r
 const R53 = board.add(R_0603_1608Metric, {
-  translate: pt(0.293, 4.594), rotate: 0,
+  translate: pt(5.628, 4.213), rotate: 0,
   id: 'R53'
 })
 // boost_rc.rc.c
 const C53 = board.add(C_0603_1608Metric, {
-  translate: pt(0.293, 4.691), rotate: 0,
+  translate: pt(5.628, 4.309), rotate: 0,
   id: 'C53'
 })
 // conv_comp.ic
@@ -842,22 +842,22 @@ const C54 = board.add(C_0603_1608Metric, {
 })
 // comp_ref.div.top_res
 const R54 = board.add(R_0603_1608Metric, {
-  translate: pt(4.690, 4.213), rotate: 0,
+  translate: pt(0.293, 4.594), rotate: 0,
   id: 'R54'
 })
 // comp_ref.div.bottom_res
 const R55 = board.add(R_0603_1608Metric, {
-  translate: pt(4.690, 4.309), rotate: 0,
+  translate: pt(0.293, 4.691), rotate: 0,
   id: 'R55'
 })
 // comp_sense.div.top_res
 const R56 = board.add(R_0603_1608Metric, {
-  translate: pt(5.863, 4.213), rotate: 0,
+  translate: pt(4.690, 4.213), rotate: 0,
   id: 'R56'
 })
 // comp_sense.div.bottom_res
 const R57 = board.add(R_0603_1608Metric, {
-  translate: pt(5.863, 4.309), rotate: 0,
+  translate: pt(4.690, 4.309), rotate: 0,
   id: 'R57'
 })
 // conv_latch.ic
@@ -882,32 +882,32 @@ const R59 = board.add(R_0603_1608Metric, {
 })
 // pass_temp.ic
 const U22 = board.add(SOT_563, {
-  translate: pt(3.220, 4.227), rotate: 0,
+  translate: pt(3.455, 4.227), rotate: 0,
   id: 'U22'
 })
 // pass_temp.vdd_cap.cap
 const C56 = board.add(C_0603_1608Metric, {
-  translate: pt(3.225, 4.339), rotate: 0,
+  translate: pt(3.460, 4.339), rotate: 0,
   id: 'C56'
 })
 // conv_temp.ic
 const U23 = board.add(SOT_563, {
-  translate: pt(3.455, 4.227), rotate: 0,
+  translate: pt(3.220, 4.227), rotate: 0,
   id: 'U23'
 })
 // conv_temp.vdd_cap.cap
 const C57 = board.add(C_0603_1608Metric, {
-  translate: pt(3.460, 4.339), rotate: 0,
+  translate: pt(3.225, 4.339), rotate: 0,
   id: 'C57'
 })
 // conv_sense.div.top_res
 const R60 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 4.594), rotate: 0,
+  translate: pt(4.455, 4.213), rotate: 0,
   id: 'R60'
 })
 // conv_sense.div.bottom_res
 const R61 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 4.691), rotate: 0,
+  translate: pt(4.455, 4.309), rotate: 0,
   id: 'R61'
 })
 // ioe.ic
@@ -1032,32 +1032,32 @@ const FB2 = board.add(L_0603_1608Metric, {
 })
 // tp_cv.conn
 const J7 = board.add(U_FL_Hirose_U_FL_R_SMT_1_Vertical, {
-  translate: pt(5.970, 3.824), rotate: 0,
+  translate: pt(5.396, 3.824), rotate: 0,
   id: 'J7'
 })
 // tp_cv.res
 const R68 = board.add(R_0603_1608Metric, {
-  translate: pt(5.949, 3.990), rotate: 0,
+  translate: pt(5.374, 3.990), rotate: 0,
   id: 'R68'
 })
 // tp_cisrc.conn
 const J8 = board.add(U_FL_Hirose_U_FL_R_SMT_1_Vertical, {
-  translate: pt(4.533, 3.824), rotate: 0,
+  translate: pt(5.108, 3.824), rotate: 0,
   id: 'J8'
 })
 // tp_cisrc.res
 const R69 = board.add(R_0603_1608Metric, {
-  translate: pt(4.512, 3.990), rotate: 0,
+  translate: pt(5.087, 3.990), rotate: 0,
   id: 'R69'
 })
 // tp_cisnk.conn
 const J9 = board.add(U_FL_Hirose_U_FL_R_SMT_1_Vertical, {
-  translate: pt(5.396, 3.824), rotate: 0,
+  translate: pt(4.533, 3.824), rotate: 0,
   id: 'J9'
 })
 // tp_cisnk.res
 const R70 = board.add(R_0603_1608Metric, {
-  translate: pt(5.374, 3.990), rotate: 0,
+  translate: pt(4.512, 3.990), rotate: 0,
   id: 'R70'
 })
 // adc.ic
@@ -1102,12 +1102,12 @@ const C68 = board.add(C_0805_2012Metric, {
 })
 // tp_vcen.conn
 const J10 = board.add(U_FL_Hirose_U_FL_R_SMT_1_Vertical, {
-  translate: pt(5.108, 3.824), rotate: 0,
+  translate: pt(5.683, 3.824), rotate: 0,
   id: 'J10'
 })
 // tp_vcen.res
 const R73 = board.add(R_0603_1608Metric, {
-  translate: pt(5.087, 3.990), rotate: 0,
+  translate: pt(5.662, 3.990), rotate: 0,
   id: 'R73'
 })
 // vcen_rc.rc.r
@@ -1122,42 +1122,42 @@ const C69 = board.add(C_0603_1608Metric, {
 })
 // tp_mi.conn
 const J11 = board.add(U_FL_Hirose_U_FL_R_SMT_1_Vertical, {
-  translate: pt(5.683, 3.824), rotate: 0,
+  translate: pt(4.821, 3.824), rotate: 0,
   id: 'J11'
 })
 // tp_mi.res
 const R75 = board.add(R_0603_1608Metric, {
-  translate: pt(5.662, 3.990), rotate: 0,
+  translate: pt(4.800, 3.990), rotate: 0,
   id: 'R75'
 })
 // mi_rc.rc.r
 const R76 = board.add(R_0603_1608Metric, {
-  translate: pt(5.394, 4.213), rotate: 0,
+  translate: pt(4.924, 4.213), rotate: 0,
   id: 'R76'
 })
 // mi_rc.rc.c
 const C70 = board.add(C_0603_1608Metric, {
-  translate: pt(5.394, 4.309), rotate: 0,
+  translate: pt(4.924, 4.309), rotate: 0,
   id: 'C70'
 })
 // tp_mv.conn
 const J12 = board.add(U_FL_Hirose_U_FL_R_SMT_1_Vertical, {
-  translate: pt(4.821, 3.824), rotate: 0,
+  translate: pt(5.970, 3.824), rotate: 0,
   id: 'J12'
 })
 // tp_mv.res
 const R77 = board.add(R_0603_1608Metric, {
-  translate: pt(4.800, 3.990), rotate: 0,
+  translate: pt(5.949, 3.990), rotate: 0,
   id: 'R77'
 })
 // mv_rc.rc.r
 const R78 = board.add(R_0603_1608Metric, {
-  translate: pt(5.628, 4.213), rotate: 0,
+  translate: pt(0.528, 4.594), rotate: 0,
   id: 'R78'
 })
 // mv_rc.rc.c
 const C71 = board.add(C_0603_1608Metric, {
-  translate: pt(5.628, 4.309), rotate: 0,
+  translate: pt(0.528, 4.691), rotate: 0,
   id: 'C71'
 })
 // outn
@@ -1177,52 +1177,52 @@ const J15 = board.add(PinHeader_1x02_P2_54mm_Horizontal, {
 })
 // vimeas_amps.ic
 const U28 = board.add(SOIC_8_3_9x4_9mm_P1_27mm, {
-  translate: pt(1.296, 3.831), rotate: 0,
+  translate: pt(1.706, 3.831), rotate: 0,
   id: 'U28'
 })
 // vimeas_amps.vdd_cap.cap
 const C72 = board.add(C_0805_2012Metric, {
-  translate: pt(1.218, 4.016), rotate: 0,
+  translate: pt(1.627, 4.016), rotate: 0,
   id: 'C72'
 })
 // ampdmeas_amps.ic
 const U29 = board.add(SOIC_8_3_9x4_9mm_P1_27mm, {
-  translate: pt(1.706, 3.831), rotate: 0,
+  translate: pt(1.296, 3.831), rotate: 0,
   id: 'U29'
 })
 // ampdmeas_amps.vdd_cap.cap
 const C73 = board.add(C_0805_2012Metric, {
-  translate: pt(1.627, 4.016), rotate: 0,
+  translate: pt(1.218, 4.016), rotate: 0,
   id: 'C73'
 })
 // cd_amps.ic
 const U30 = board.add(SOIC_8_3_9x4_9mm_P1_27mm, {
-  translate: pt(3.765, 3.831), rotate: 0,
+  translate: pt(2.537, 3.831), rotate: 0,
   id: 'U30'
 })
 // cd_amps.vdd_cap.cap
 const C74 = board.add(C_0603_1608Metric, {
-  translate: pt(3.678, 4.006), rotate: 0,
+  translate: pt(2.449, 4.006), rotate: 0,
   id: 'C74'
 })
 // cv_amps.ic
 const U31 = board.add(SOIC_8_3_9x4_9mm_P1_27mm, {
-  translate: pt(2.537, 3.831), rotate: 0,
+  translate: pt(2.946, 3.831), rotate: 0,
   id: 'U31'
 })
 // cv_amps.vdd_cap.cap
 const C75 = board.add(C_0603_1608Metric, {
-  translate: pt(2.449, 4.006), rotate: 0,
+  translate: pt(2.859, 4.006), rotate: 0,
   id: 'C75'
 })
 // ci_amps.ic
 const U32 = board.add(SOIC_8_3_9x4_9mm_P1_27mm, {
-  translate: pt(2.946, 3.831), rotate: 0,
+  translate: pt(3.765, 3.831), rotate: 0,
   id: 'U32'
 })
 // ci_amps.vdd_cap.cap
 const C76 = board.add(C_0603_1608Metric, {
-  translate: pt(2.859, 4.006), rotate: 0,
+  translate: pt(3.678, 4.006), rotate: 0,
   id: 'C76'
 })
 // cintref_amps.ic

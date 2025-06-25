@@ -97,7 +97,7 @@ const R5 = board.add(R_0603_1608Metric, {
 })
 // tp_5v.tp
 const TP1 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(1.704, 2.611), rotate: 0,
+  translate: pt(0.554, 2.611), rotate: 0,
   id: 'TP1'
 })
 // prot_5v.diode
@@ -122,37 +122,37 @@ const C4 = board.add(C_0603_1608Metric, {
 })
 // tp_3v3.tp
 const TP2 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0.841, 2.611), rotate: 0,
+  translate: pt(1.704, 2.611), rotate: 0,
   id: 'TP2'
 })
 // prot_3v3.diode
 const D4 = board.add(D_SOD_323, {
-  translate: pt(2.541, 2.595), rotate: 0,
+  translate: pt(2.297, 2.595), rotate: 0,
   id: 'D4'
 })
 // reg_analog.ic
 const U4 = board.add(SOT_23_5, {
-  translate: pt(0.640, 2.276), rotate: 0,
+  translate: pt(0.081, 2.276), rotate: 0,
   id: 'U4'
 })
 // reg_analog.in_cap.cap
 const C5 = board.add(C_0603_1608Metric, {
-  translate: pt(0.617, 2.411), rotate: 0,
+  translate: pt(0.058, 2.411), rotate: 0,
   id: 'C5'
 })
 // reg_analog.out_cap.cap
 const C6 = board.add(C_0603_1608Metric, {
-  translate: pt(0.773, 2.411), rotate: 0,
+  translate: pt(0.214, 2.411), rotate: 0,
   id: 'C6'
 })
 // tp_analog.tp
 const TP3 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(1.416, 2.611), rotate: 0,
+  translate: pt(1.129, 2.611), rotate: 0,
   id: 'TP3'
 })
 // prot_analog.diode
 const D5 = board.add(D_SOD_323, {
-  translate: pt(2.297, 2.595), rotate: 0,
+  translate: pt(2.541, 2.595), rotate: 0,
   id: 'D5'
 })
 // mcu.ic
@@ -187,12 +187,12 @@ const C8 = board.add(C_0805_2012Metric, {
 })
 // vbatsense.div.top_res
 const R8 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 2.586), rotate: 0,
+  translate: pt(0.293, 2.586), rotate: 0,
   id: 'R8'
 })
 // vbatsense.div.bottom_res
 const R9 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 2.683), rotate: 0,
+  translate: pt(0.293, 2.683), rotate: 0,
   id: 'R9'
 })
 // usb_esd
@@ -222,12 +222,12 @@ const R12 = board.add(R_0603_1608Metric, {
 })
 // sw1.package
 const SW2 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(1.960, 2.321), rotate: 0,
+  translate: pt(1.507, 2.321), rotate: 0,
   id: 'SW2'
 })
 // sw2.package
 const SW3 = board.add(SW_SPST_SKQG_WithoutStem, {
-  translate: pt(1.507, 2.321), rotate: 0,
+  translate: pt(1.960, 2.321), rotate: 0,
   id: 'SW3'
 })
 // lcd.device.conn
@@ -247,17 +247,17 @@ const C9 = board.add(C_0603_1608Metric, {
 })
 // spk_dac.rc.r
 const R14 = board.add(R_0603_1608Metric, {
-  translate: pt(0.293, 2.586), rotate: 0,
+  translate: pt(0.058, 2.586), rotate: 0,
   id: 'R14'
 })
 // spk_dac.rc.c
 const C10 = board.add(C_0603_1608Metric, {
-  translate: pt(0.293, 2.683), rotate: 0,
+  translate: pt(0.058, 2.683), rotate: 0,
   id: 'C10'
 })
 // spk_tp.tp
 const TP4 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(0.554, 2.611), rotate: 0,
+  translate: pt(1.416, 2.611), rotate: 0,
   id: 'TP4'
 })
 // spk_drv.ic
@@ -312,12 +312,12 @@ const R18 = board.add(R_0603_1608Metric, {
 })
 // ref_buf.amp.ic
 const U8 = board.add(SOT_23_6, {
-  translate: pt(0.360, 2.276), rotate: 0,
+  translate: pt(0.471, 2.276), rotate: 0,
   id: 'U8'
 })
 // ref_buf.amp.vdd_cap.cap
 const C15 = board.add(C_0603_1608Metric, {
-  translate: pt(0.338, 2.411), rotate: 0,
+  translate: pt(0.449, 2.411), rotate: 0,
   id: 'C15'
 })
 // inn
@@ -392,17 +392,17 @@ const R22 = board.add(R_0603_1608Metric, {
 })
 // measure_buffer.amp.ic
 const U13 = board.add(SOT_23_6, {
-  translate: pt(0.081, 2.276), rotate: 0,
+  translate: pt(0.751, 2.276), rotate: 0,
   id: 'U13'
 })
 // measure_buffer.amp.vdd_cap.cap
 const C20 = board.add(C_0603_1608Metric, {
-  translate: pt(0.058, 2.411), rotate: 0,
+  translate: pt(0.728, 2.411), rotate: 0,
   id: 'C20'
 })
 // tp_measure.tp
 const TP5 = board.add(TestPoint_Keystone_5015_Micro_Minature, {
-  translate: pt(1.129, 2.611), rotate: 0,
+  translate: pt(0.841, 2.611), rotate: 0,
   id: 'TP5'
 })
 // adc.ic
