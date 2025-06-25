@@ -150,7 +150,7 @@ class SeriesResistor(Resistor, GeneratorBlock):
     resistance_ratio_range = Range((1 - resistance_tol) / (count + resistance_tol * (count - 2)),
                                    (1 + resistance_tol) / (count - resistance_tol * (count - 2)))
 
-    elt_resistance = self.resistance / self.count
+    elt_resistance = resistance_range / count
     elt_power = self.power * resistance_ratio_range
     elt_voltage = self.voltage * resistance_ratio_range
 
