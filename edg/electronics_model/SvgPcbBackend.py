@@ -224,7 +224,7 @@ const {net_block.refdes} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_s
         netlist_code_entries = []
         for net in netlist.nets:
             pads_code = [f"""["{net_blocks_by_path[pin.block_path].refdes}", "{pin.pin_name}"]""" for pin in net.pins]
-            netlist_code_entries.append(f"""  {{name: "{net.name}", pads: [{', '.join(pads_code)}]}}""")
+            netlist_code_entries.append(f"""{{name: "{net.name}", pads: [{', '.join(pads_code)}]}}""")
 
         NEWLINE = '\n'
         full_code = f"""\
@@ -233,7 +233,7 @@ const board = new PCB();
 {NEWLINE.join(svgpcb_block_instantiations + other_block_instantiations)}
 
 board.setNetlist([
-{NEWLINE.join(netlist_code_entries)}
+  {("," + NEWLINE + "  ").join(netlist_code_entries)}
 ])
 
 const limit0 = pt(-{2/25.4}, -{2/25.4});
