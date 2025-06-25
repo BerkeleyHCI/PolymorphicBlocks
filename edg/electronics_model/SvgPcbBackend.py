@@ -19,14 +19,19 @@ class PlacedBlock(NamedTuple):
     width: float
 
 
+class BlackBoxBlock(NamedTuple):
+    path: TransformUtil.Path
+    bbox: Tuple[float, float, float, float]
+
+
 def arrange_blocks(blocks: List[NetBlock],
-                   additional_blocks: List[Tuple[TransformUtil.Path, Tuple[float, float, float, float]]] = []) -> PlacedBlock:
+                   additional_blocks: List[BlackBoxBlock] = []) -> PlacedBlock:
     FOOTPRINT_BORDER = 1  # mm
     BLOCK_BORDER = 2  # mm
 
     # create list of blocks by path
     block_subblocks: Dict[Tuple[str, ...], Set[str]] = {}
-    block_footprints: Dict[Tuple[str, ...], List[Union[NetBlock, Tuple[float, float, float, float]]]] = {}
+    block_footprints: Dict[Tuple[str, ...], List[Union[NetBlock, BlackBoxBlock]]] = {}
 
     # for here, we only group one level deep
     for block in blocks:
@@ -35,9 +40,9 @@ def arrange_blocks(blocks: List[NetBlock],
         for i in range(len(containing_path)):
             block_subblocks.setdefault(tuple(containing_path[:i]), set()).add(containing_path[i])
 
-    for path, bbox in additional_blocks:
-        containing_path = path.blocks[0:min(len(path.blocks) - 1, 1)]
-        block_footprints.setdefault(containing_path, []).append(bbox)
+    for blackbox in additional_blocks:
+        containing_path = blackbox.path.blocks[0:min(len(blackbox.path.blocks) - 1, 1)]
+        block_footprints.setdefault(containing_path, []).append(blackbox)
         for i in range(len(containing_path)):
             block_subblocks.setdefault(tuple(containing_path[:i]), set()).add(containing_path[i])
 
@@ -47,7 +52,7 @@ def arrange_blocks(blocks: List[NetBlock],
         # TODO don't count borders as part of a block's width / height
         ASPECT_RATIO = 16 / 9
 
-        sub_placed: List[Tuple[float, float, Union[PlacedBlock, NetBlock]]] = []  # (width, height, PlacedBlock or footprint)
+        sub_placed: List[Tuple[float, float, Union[PlacedBlock, NetBlock, BlackBoxBlock]]] = []  # (width, height, entry)
         for subblock in block_subblocks.get(root, set()):
             subplaced = arrange_hierarchy(root + (subblock,))
             sub_placed.append((subplaced.width + BLOCK_BORDER, subplaced.height + BLOCK_BORDER, subplaced))
@@ -55,10 +60,10 @@ def arrange_blocks(blocks: List[NetBlock],
         for footprint in block_footprints.get(root, []):
             if isinstance(footprint, NetBlock):
                 bbox = FootprintDataTable.bbox_of(footprint.footprint) or (1, 1, 1, 1)
+                entry: Union[PlacedBlock, NetBlock, BlackBoxBlock] = footprint
+            elif isinstance(footprint, BlackBoxBlock):
+                bbox = footprint.bbox
                 entry = footprint
-            elif isinstance(footprint, tuple):
-                bbox = footprint
-                # key =
             else:
                 raise TypeError()
             width = bbox[2] - bbox[0] + FOOTPRINT_BORDER
@@ -101,6 +106,9 @@ def arrange_blocks(blocks: List[NetBlock],
             elif isinstance(entry, NetBlock):  # account for footprint origin, flipping y-axis
                 bbox = FootprintDataTable.bbox_of(entry.footprint) or (0, 0, 0, 0)
                 elts.append((entry.full_path, (next_x - bbox[0], next_y + bbox[3])))
+            elif isinstance(entry, BlackBoxBlock):  # account for footprint origin, flipping y-axis
+                bbox = entry.bbox
+                elts.append((entry.path, (next_x - bbox[0], next_y + bbox[3])))
             x_stack.append((next_x + width, next_y, next_y + height))
             x_max = max(x_max, next_x + width)
             y_max = max(y_max, next_y + height)
@@ -185,7 +193,7 @@ class SvgPcbBackend(BaseBackend):
 
         # handle blocks with svgpcb templates
         svgpcb_blocks = SvgPcbTransform(design, netlist).run()
-        svgpcb_block_bboxes = [(block.path, block.bbox) for block in svgpcb_blocks]
+        svgpcb_block_bboxes = [BlackBoxBlock(block.path, block.bbox) for block in svgpcb_blocks]
 
         # handle footprints
         netlist = NetlistTransform(design).run()
@@ -196,18 +204,19 @@ class SvgPcbBackend(BaseBackend):
 
         # note, dimensions in inches, divide by 25.4 to convert from mm
         svgpcb_block_instantiations = []
-        for block in svgpcb_blocks:
-            x_pos, y_pos = pos_dict.get(block.path, (0, 0))  # in mm, need to convert to in below
-            block_code = f"const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(block.path)} = {block.fn_name}(pt({x_pos/25.4:.3f}, {y_pos/25.4:.3f}))"
+        for svgpcb_block in svgpcb_blocks:
+            x_pos, y_pos = pos_dict.get(svgpcb_block.path, (0, 0))  # in mm, need to convert to in below
+            block_code = f"const {SvgPcbTemplateBlock._svgpcb_pathname_to_svgpcb(svgpcb_block.path)} = {svgpcb_block.fn_name}(pt({x_pos/25.4:.3f}, {y_pos/25.4:.3f}))"
             svgpcb_block_instantiations.append(block_code)
 
         other_block_instantiations = []
-        for block in other_blocks:
-            x_pos, y_pos = pos_dict.get(block.full_path, (0, 0))  # in mm, need to convert to in below
+        for net_block in other_blocks:
+            x_pos, y_pos = pos_dict.get(net_block.full_path, (0, 0))  # in mm, need to convert to in below
             block_code = f"""\
-const {block.refdes} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(block.footprint)}, {{
+// {net_block.path}
+const {net_block.refdes} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_svgpcb(net_block.footprint)}, {{
   translate: pt({x_pos/25.4:.3f}, {y_pos/25.4:.3f}), rotate: 0,
-  id: '{block.refdes}'
+  id: '{net_block.refdes}'
 }})"""
             other_block_instantiations.append(block_code)
 
