@@ -13,9 +13,9 @@ MIN_GRID = 1.27
 
 
 TestCastType = TypeVar('TestCastType')
-def test_cast(x: Any, type: Type[TestCastType]) -> TestCastType:
+def test_cast(x: Any, tpe: Type[TestCastType]) -> TestCastType:
   """Combination of (dynamic) isinstance test and static typing cast."""
-  assert isinstance(x, type)
+  assert isinstance(x, tpe), f"got {x} of type {type(x)}, expected {tpe}"
   return x
 
 def extract_only(x: List[TestCastType]) -> TestCastType:
