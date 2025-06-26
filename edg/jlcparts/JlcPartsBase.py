@@ -118,14 +118,19 @@ class JlcPartsBase(JlcPart, PartsTableAreaSelector, PartsTableFootprintFilter):
     @classmethod
     def _parse_table(cls) -> PartsTable:
         """Parses the file to a PartsTable"""
-        assert cls._config_parts_root_dir is not None, "must configure_root_dir with jlcparts data folder"
+        jlcparts_dir = os.environ.get("JLCPARTS_DIR")
+        if jlcparts_dir is None:
+            jlcparts_dir = cls._config_parts_root_dir
+        assert jlcparts_dir is not None, "no jlcparts data directory specified, either "\
+                                         "set JLCPARTS_DIR environment variable or call JlcPartsBase.config_root_dir "\
+                                         "with jlcparts data folder"
 
         rows: List[PartsTableRow] = []
 
         for filename in cls._JLC_PARTS_FILE_NAMES:
-            with gzip.open(os.path.join(cls._config_parts_root_dir, filename + kTableFilenamePostfix), 'r') as f:
+            with gzip.open(os.path.join(jlcparts_dir, filename + kTableFilenamePostfix), 'r') as f:
                 data = JlcPartsFile.model_validate_json(f.read())
-            with open(os.path.join(cls._config_parts_root_dir, filename + kStockFilenamePostfix), 'r') as f:
+            with open(os.path.join(jlcparts_dir, filename + kStockFilenamePostfix), 'r') as f:
                 stocking = JlcPartsStockFile.model_validate_json(f.read())
 
             lcsc_index = data.jlcpart_schema.index("lcsc")
