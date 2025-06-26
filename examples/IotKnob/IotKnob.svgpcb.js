@@ -464,7 +464,7 @@ renderPCB({
   mmPerUnit: 25.4
 })
 
-function NeopixelArrayCircular_4_rgb_knob(xy, rot=90, radius=1, startAngle=0, endAngle=360, powerRadiusOffset=0.2) {
+function NeopixelArrayCircular_4_rgb_knob(xy, rot=270, radius=1, startAngle=0, endAngle=360, powerRadiusOffset=0.2) {
   const kCount = 4
 
   // Global params
@@ -575,7 +575,7 @@ function NeopixelArrayCircular_4_rgb_knob(xy, rot=90, radius=1, startAngle=0, en
   return obj
 }
 
-function NeopixelArrayCircular_24_rgb_ring(xy, rot=90, radius=1, startAngle=0, endAngle=360, powerRadiusOffset=0.2) {
+function NeopixelArrayCircular_24_rgb_ring(xy, rot=270, radius=1, startAngle=0, endAngle=360, powerRadiusOffset=0.2) {
   const kCount = 24
 
   // Global params
@@ -686,7 +686,7 @@ function NeopixelArrayCircular_24_rgb_ring(xy, rot=90, radius=1, startAngle=0, e
   return obj
 }
 
-function NeopixelArrayCircular_6_rgb_sw(xy, rot=90, radius=1, startAngle=0, endAngle=360, powerRadiusOffset=0.2) {
+function NeopixelArrayCircular_6_rgb_sw(xy, rot=270, radius=1, startAngle=0, endAngle=360, powerRadiusOffset=0.2) {
   const kCount = 6
 
   // Global params
