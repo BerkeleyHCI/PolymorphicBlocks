@@ -7,7 +7,7 @@ from .PartsTablePart import PartsTableSelector
 @abstract_block
 class Antenna(Interface, Block):
   @init_in_parent
-  def __init__(self, frequency: RangeLike, impedance: RangeLike = Range.all(), power: RangeLike = (0, 0*Watt)):
+  def __init__(self, frequency: RangeLike, impedance: RangeLike = Range.all(), power: RangeLike = (0, 0)*Watt):
     super().__init__()
 
     self.frequency = self.ArgParameter(frequency)
