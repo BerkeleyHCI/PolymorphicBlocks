@@ -9,7 +9,7 @@ class IotRollerBlindsConnector(Block):
         self.conn = self.Block(JstXh(length=6))
         self.gnd = self.Export(self.conn.pins.request('4').adapt_to(Ground()))
         self.pwr = self.Export(self.conn.pins.request('1').adapt_to(
-            VoltageSink.from_gnd(self.gnd, voltage_limits=(4.5, 24)*Volt)))
+            VoltageSink.from_gnd(self.gnd, voltage_limits=(4.5, 25)*Volt)))
 
         self.enca = self.Export(self.conn.pins.request('2').adapt_to(DigitalSource.low_from_supply(self.gnd)))
         self.encb = self.Export(self.conn.pins.request('3').adapt_to(DigitalSource.low_from_supply(self.gnd)))
@@ -24,7 +24,7 @@ class PowerInConnector(Connector):
         self.conn = self.Block(JstPh())
         self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
         self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSource(
-            voltage_out=(10, 24)*Volt,
+            voltage_out=(10, 25)*Volt,
             current_limits=(0, 1)*Amp,
         )))
 
@@ -147,8 +147,9 @@ class IotRollerBlinds(JlcBoardTop):
                 (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
                 (['drv', 'isen_res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
                 (['drv', 'isen_res', 'res', 'require_basic_part'], False),
-                (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.08)),  # to get a 1210-size inductor
                 (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 1.0),
+                # 15uH inductors are more common
+                (['reg_3v3', 'power_path', 'inductor', 'inductance'], Range.from_tolerance(15e-6, 0.2))
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),
@@ -280,8 +281,9 @@ class IotCurtainRoller(JlcBoardTop):
                 (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
                 (['drv', 'isen_res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
                 (['drv', 'isen_res', 'res', 'require_basic_part'], False),
-                (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.08)),  # to get a 1210-size inductor
                 (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 1.0),
+                # 15uH inductors are more common
+                (['reg_3v3', 'power_path', 'inductor', 'inductance'], Range.from_tolerance(15e-6, 0.2))
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),

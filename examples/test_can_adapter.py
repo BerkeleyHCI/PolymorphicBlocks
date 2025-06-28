@@ -8,7 +8,7 @@ class Obd2Connector(FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground())
-    self.pwr = self.Port(VoltageSource(voltage_out=(10, 24)*Volt))
+    self.pwr = self.Port(VoltageSource(voltage_out=(10, 25)*Volt))
 
     self.can = self.Port(CanDiffPort())
 
@@ -86,6 +86,7 @@ class CanAdapter(JlcBoardTop):
         (['mcu', 'programming'], 'uart-auto'),
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
         (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 1.0),
+        (['reg_3v3', 'power_path', 'inductor', 'footprint_spec'], "Inductor_SMD:L_1210_3225Metric")
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
