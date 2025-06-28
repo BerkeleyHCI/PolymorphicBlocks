@@ -140,7 +140,7 @@
 		(descr "SOD-323")
 		(tags "SOD-323")
 		(property "Reference" "OD1"
-			(at -2 0 360)
+			(at -2 0 0)
 			(layer "F.SilkS")
 			(uuid "19908115-9b2e-495d-afad-75879940528d")
 			(effects
@@ -150,7 +150,7 @@
 				)
 			)
 		)
-		(property "Value" "5?A@1V 90? Single 3.53V~3.67V 200mW 3.6V SOD-323 Zener Diodes ROHS"
+		(property "Value" "prot_3v3"
 			(at 0.1 1.9 90)
 			(layer "F.Fab")
 			(uuid "2091c9dc-635f-44ec-94d9-43692162f100")
@@ -428,7 +428,7 @@
 				)
 			)
 		)
-		(property "Value" "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
+		(property "Value" "reg_3v3.boot_cap"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "a379e380-5aac-4258-8f5f-981bf630a4aa")
@@ -638,7 +638,7 @@
 				)
 			)
 		)
-		(property "Value" "200mA 1 450m? 600?@100MHz ±25% 0603 Ferrite Beads ROHS"
+		(property "Value" "ferrite"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "643d0215-74a0-4ab2-b127-2eb69ebe57da")
@@ -836,7 +836,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "OR4"
-			(at -3 0 360)
+			(at -3 0 0)
 			(layer "F.SilkS")
 			(uuid "cf215bf8-f3d3-490e-adff-4371d3272101")
 			(effects
@@ -846,7 +846,7 @@
 				)
 			)
 		)
-		(property "Value" "±1% 1/10W Thick Film Resistors 75V ±100ppm/? -55?~+155? 10k? 0603 Chip Resistor - Surface Mount ROHS"
+		(property "Value" "mcu.en_pull.r"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "05a35d25-ba6a-4169-aa6c-e411ec6002f7")
@@ -1056,7 +1056,7 @@
 				)
 			)
 		)
-		(property "Value" "ESP32-C3-WROOM-02"
+		(property "Value" "mcu.ic"
 			(at 0 8.33 90)
 			(layer "F.Fab")
 			(uuid "d4608f38-fce4-42f6-8f76-1ad47b1510ff")
@@ -1732,7 +1732,7 @@
 				)
 			)
 		)
-		(property "Value" "White 0603 Light Emitting Diodes (LED) RoHS"
+		(property "Value" "ledw.package"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "47ea8ebd-e45d-4df8-aa9f-eb3ef84181ce")
@@ -1962,7 +1962,7 @@
 				)
 			)
 		)
-		(property "Value" "20mA 285mcd 3.3V 518nm Colorless transparence -40?~+85? 520nm~535nm Emerald 120° 110mW 0603 Light Emitting Diodes (LED) ROHS"
+		(property "Value" "ledg.package"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "7eb45117-84e5-4d30-b2fa-73838165ac1d")
@@ -2182,7 +2182,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "OC4"
-			(at 0 -1.5 360)
+			(at 0 -1.5 0)
 			(layer "F.SilkS")
 			(uuid "0f2d16b5-32c0-4dbd-b980-cf983e7977ec")
 			(effects
@@ -2192,8 +2192,8 @@
 				)
 			)
 		)
-		(property "Value" "X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
-			(at 0 1.68 360)
+		(property "Value" "reg_3v3.power_path.out_cap"
+			(at 0 1.68 0)
 			(layer "F.Fab")
 			(uuid "bdc4a257-47cc-4a4f-8885-67c16ab6b8b8")
 			(effects
@@ -2347,7 +2347,7 @@
 			(uuid "1eeb3b6e-9a5d-4d34-9878-39c2cd7025ff")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "4b34ec2c-b47f-4f07-a363-c5956d4b1df1")
 			(effects
@@ -2402,7 +2402,7 @@
 				)
 			)
 		)
-		(property "Value" "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
+		(property "Value" "reg_3v3.hf_in_cap"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "b9d3a219-079f-4576-ab96-0465dc7dcba4")
@@ -2612,7 +2612,7 @@
 				)
 			)
 		)
-		(property "Value" "±1% 1/10W Thick Film Resistors 75V ±100ppm/? -55?~+155? 91k? 0603 Chip Resistor - Surface Mount ROHS"
+		(property "Value" "vobd_sense.top_res"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "0636b5ff-598b-4f60-88b4-5a5bcdb0218b")
@@ -2822,7 +2822,7 @@
 				)
 			)
 		)
-		(property "Value" "25V 22uF X5R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
+		(property "Value" "reg_3v3.power_path.in_cap"
 			(at 0 1.85 90)
 			(layer "F.Fab")
 			(uuid "ddeb6530-d715-4282-831b-425030da04b3")
@@ -3032,7 +3032,7 @@
 				)
 			)
 		)
-		(property "Value" "±1% 1/10W Thick Film Resistors 75V ±100ppm/? -55?~+155? 1k? 0603 Chip Resistor - Surface Mount ROHS"
+		(property "Value" "ledr.res"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "371c45e4-fbf1-46c1-a166-c4230c2670db")
@@ -3242,7 +3242,7 @@
 				)
 			)
 		)
-		(property "Value" "±1% 1/10W Thick Film Resistors 75V ±100ppm/? -55?~+155? 10k? 0603 Chip Resistor - Surface Mount ROHS"
+		(property "Value" "vobd_sense.bottom_res"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "35df6480-23fd-4c04-908b-08fb7ad44d1c")
@@ -3451,7 +3451,7 @@
 				)
 			)
 		)
-		(property "Value" ""
+		(property "Value" "jlc_th.th3"
 			(at 0 -2 0)
 			(layer "F.Fab")
 			(uuid "a5f19e1b-1690-4962-85a0-6a829ea0ca7d")
@@ -3550,7 +3550,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "OC6"
-			(at -2 0 360)
+			(at -2 0 0)
 			(layer "F.SilkS")
 			(uuid "67529825-b580-409a-a6b5-db06f6a4be28")
 			(effects
@@ -3560,7 +3560,7 @@
 				)
 			)
 		)
-		(property "Value" "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
+		(property "Value" "mcu.vcc_cap1"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "73856568-e7ca-435d-b842-485c111121ea")
@@ -3770,7 +3770,7 @@
 				)
 			)
 		)
-		(property "Value" "50V 100nF X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
+		(property "Value" "can.vdd_cap"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "f86c2149-e1f1-4bed-914c-0013bd998d75")
@@ -3980,7 +3980,7 @@
 				)
 			)
 		)
-		(property "Value" "SN65HVD230DR"
+		(property "Value" "can.ic"
 			(at 0 3.4 90)
 			(layer "F.Fab")
 			(uuid "a0a75a0a-f560-4634-8603-627fa2986416")
@@ -4279,7 +4279,7 @@
 				)
 			)
 		)
-		(property "Value" "±1% 1/10W Thick Film Resistors 75V ±100ppm/? -55?~+155? 1.5k? 0603 Chip Resistor - Surface Mount ROHS"
+		(property "Value" "reg_3v3.fb.bottom_res"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "616bae51-30bd-4d18-a8a9-6c3669e98cd8")
@@ -4489,7 +4489,7 @@
 				)
 			)
 		)
-		(property "Value" "TPS54202H"
+		(property "Value" "reg_3v3.ic"
 			(at 0 2.4 90)
 			(layer "F.Fab")
 			(uuid "4f63a908-5942-4d57-ae4f-9b41a5eef679")
@@ -4773,7 +4773,7 @@
 				)
 			)
 		)
-		(property "Value" "620mA 22uH ±10% 270m? 1210 Inductors (SMD) ROHS"
+		(property "Value" "reg_3v3.power_path.inductor"
 			(at 0 2.28 0)
 			(layer "F.Fab")
 			(uuid "65a85552-27f6-461d-81b3-ca89b2d647ad")
@@ -4983,7 +4983,7 @@
 				)
 			)
 		)
-		(property "Value" "X5R 25V ±10% 10uF 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
+		(property "Value" "mcu.vcc_cap0"
 			(at 0 1.68 90)
 			(layer "F.Fab")
 			(uuid "131d42ff-a495-4ff5-b1bf-387a0f7f3fd3")
@@ -5193,7 +5193,7 @@
 				)
 			)
 		)
-		(property "Value" "50V 1uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
+		(property "Value" "mcu.en_pull.c"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "44c62cfc-f579-4284-97e1-cc4b2af939f8")
@@ -5403,7 +5403,7 @@
 				)
 			)
 		)
-		(property "Value" "±1% 1/10W Thick Film Resistors 75V ±100ppm/? -55?~+155? 510k? 0603 Chip Resistor - Surface Mount ROHS"
+		(property "Value" "reg_3v3.en_res"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "17dacca1-2bd5-4642-9b10-7f00210c2968")
@@ -5613,7 +5613,7 @@
 				)
 			)
 		)
-		(property "Value" "±1% 1/10W Thick Film Resistors 75V ±100ppm/? -55?~+155? 1k? 0603 Chip Resistor - Surface Mount ROHS"
+		(property "Value" "ledw.res"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "07358e4b-346b-43b3-8570-c1aade8effc1")
@@ -5822,7 +5822,7 @@
 				)
 			)
 		)
-		(property "Value" ""
+		(property "Value" "jlc_th.th1"
 			(at 0 -2 0)
 			(layer "F.Fab")
 			(uuid "3d4e23f5-b4be-418d-8979-9b1d55924a27")
@@ -5931,7 +5931,7 @@
 				)
 			)
 		)
-		(property "Value" "Red 615~630nm 1.9~2.2V 0603 Light Emitting Diodes (LED) RoHS"
+		(property "Value" "ledr.package"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "8b5febc1-584c-4a0b-bf98-2b5d2635a091")
@@ -6161,7 +6161,7 @@
 				)
 			)
 		)
-		(property "Value" ""
+		(property "Value" "mcu.prog"
 			(at 0 -2.3 90)
 			(layer "F.Fab")
 			(uuid "e3b48032-7769-438f-bcb9-064385e46db4")
@@ -6405,7 +6405,7 @@
 				)
 			)
 		)
-		(property "Value" ""
+		(property "Value" "jlc_th.th2"
 			(at 0 -2 0)
 			(layer "F.Fab")
 			(uuid "d54645f2-a210-46ad-accf-482b8fa698be")
@@ -6514,7 +6514,7 @@
 				)
 			)
 		)
-		(property "Value" "±1% 1/10W Thick Film Resistors 75V ±100ppm/? -55?~+155? 6.8k? 0603 Chip Resistor - Surface Mount ROHS"
+		(property "Value" "reg_3v3.fb.top_res"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "50acff4f-25cc-427a-b723-422eaa438cc3")
@@ -6724,7 +6724,7 @@
 				)
 			)
 		)
-		(property "Value" "±1% 1/10W Thick Film Resistors 75V ±100ppm/? -55?~+155? 1k? 0603 Chip Resistor - Surface Mount ROHS"
+		(property "Value" "ledg.res"
 			(at 0 1.43 90)
 			(layer "F.Fab")
 			(uuid "aa818ad3-2ed0-4ef7-9a04-d4fde9ecdc07")
@@ -6934,7 +6934,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" ""
+		(property "Value" "obd"
 			(at 0 -2 0)
 			(unlocked yes)
 			(layer "B.Fab")
