@@ -258,7 +258,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "IotCurtainRoller.kicad_pro",
+    "filename": "IotCurtainCrawler.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -305,7 +305,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "IotCurtainRoller.net",
+      "netlist": "IotCurtainCrawler.net",
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "",

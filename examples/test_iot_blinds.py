@@ -169,8 +169,8 @@ class MotorConnector(Block):
         self.motor2 = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink(current_draw=(0, 0.5)*Amp)))
 
 
-class IotCurtainRoller(JlcBoardTop):
-    """IoT curtain roller, drives a motor and has hall sensors integrated on the board, next to the motor.
+class IotCurtainCrawler(JlcBoardTop):
+    """IoT curtain crawler, drives a motor and has hall sensors integrated on the board, next to the motor.
     Motor: LS16PQQ-030  -183.5
     ~2.7v min starting voltage; 40mA open current, 200mA stall current @ 4.0v
 
@@ -300,6 +300,6 @@ class IotRollerBlindsTestCase(unittest.TestCase):
         compile_board_inplace(IotRollerBlinds)
 
 
-class IotCurtainRollerTestCase(unittest.TestCase):
+class IotCurtainCrawlerTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(IotCurtainRoller)
+        compile_board_inplace(IotCurtainCrawler)

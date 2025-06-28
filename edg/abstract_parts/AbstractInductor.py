@@ -143,7 +143,6 @@ class TableInductor(PartsTableSelector, Inductor):
                          self.experimental_filter_fn)
 
   def _row_filter(self, row: PartsTableRow) -> bool:
-    # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
     filter_fn_str = self.get(self.experimental_filter_fn)
     if filter_fn_str:
       filter_fn = ExperimentalUserFnPartsTable.deserialize_fn(filter_fn_str)
