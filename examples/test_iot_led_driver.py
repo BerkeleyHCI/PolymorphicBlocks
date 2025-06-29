@@ -143,6 +143,10 @@ class IotLedDriver(JlcPartsRefinements, JlcBoardTop):
         (['mcu', 'pi', 'c1', 'footprint_area'], Range(4.0, float('inf'))),  # use 0603 consistently since that's what's available
         (['mcu', 'pi', 'c2', 'footprint_area'], Range(4.0, float('inf'))),
         (['mcu', 'pi', 'l', 'footprint_area'], Range(4.0, float('inf'))),
+        (['reg_3v3', 'fb', 'div', 'top_res', 'footprint_area'], Range(4.0, float('inf'))),
+        (['reg_3v3', 'fb', 'div', 'bottom_res', 'footprint_area'], Range(4.0, float('inf'))),
+        (['v12_sense', 'div', 'top_res', 'footprint_area'], Range(4.0, float('inf'))),
+        (['v12_sense', 'div', 'bottom_res', 'footprint_area'], Range(4.0, float('inf'))),
         (['reg_3v3', 'en_res', 'resistance'], Range(100e3, 1e6)),  # wider selection of resistors
       ],
       class_refinements=[
