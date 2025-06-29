@@ -14,20 +14,6 @@ class PowerInConnector(Connector):
     )))
 
 
-class AntennaOption(Antenna):
-  """Selectable option of antennas by DNPing one of them"""
-  def contents(self):
-    with self.implicit_connect(
-            ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.ant_a = imp.Block(Antenna(frequency=self.frequency, impedance=self.impedance, power=self.power))
-      self.ant_b = imp.Block(Antenna(frequency=self.frequency, impedance=self.impedance, power=self.power))
-      self.connect(self.a, self.ant_a.a, self.ant_b.a)
-      self.assign(self.actual_power_rating, self.ant_a.actual_power_rating.intersect(self.ant_b.actual_power_rating))
-      self.assign(self.actual_frequency_rating, self.ant_a.actual_frequency_rating.intersect(self.ant_b.actual_frequency_rating))
-      self.assign(self.actual_impedance, self.ant_a.actual_impedance.intersect(self.ant_b.actual_impedance))
-
-
 class IotLedDriver(JlcPartsRefinements, JlcBoardTop):
   """Multichannel IoT high-power external LED driver with a 12v barrel jack input.
   """
@@ -111,8 +97,6 @@ class IotLedDriver(JlcPartsRefinements, JlcBoardTop):
       instance_refinements=[
         (['mcu'], Esp32c3),
         (['reg_3v3'], Tps54202h),
-        (['mcu', 'ant'], AntennaOption),
-        (['mcu', 'ant', 'ant_b'], RfConnectorAntenna),
         (['mcu', 'pi', 'l'], JlcInductor),  # breaks on JlcParts
         (['mcu', 'pi', 'c2'], JlcCapacitor),  # breaks on JlcParts
       ],
@@ -143,12 +127,15 @@ class IotLedDriver(JlcPartsRefinements, JlcBoardTop):
         (['led_drv[1]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[2]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[3]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
-        # (['led_drv[0]', 'ind', 'part'], "SWPA6045S680MT"),
+        (['led_drv[0]', 'power_path', 'inductor', 'inductance'], Range(4.7e-6 * .8, 1.72e-5)),
         (['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 6.4e6)),
+        (['led_drv[1]', 'power_path', 'inductor', 'inductance'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'inductance'])),
         (['led_drv[1]', 'power_path', 'inductor', 'part'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'part'])),
         (['led_drv[1]', 'power_path', 'inductor', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'])),
+        (['led_drv[2]', 'power_path', 'inductor', 'inductance'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'inductance'])),
         (['led_drv[2]', 'power_path', 'inductor', 'part'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'part'])),
         (['led_drv[2]', 'power_path', 'inductor', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'])),
+        (['led_drv[3]', 'power_path', 'inductor', 'inductance'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'inductance'])),
         (['led_drv[3]', 'power_path', 'inductor', 'part'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'part'])),
         (['led_drv[3]', 'power_path', 'inductor', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'])),
         (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.80),  # use a 1206 25 oe 35v part
@@ -156,7 +143,7 @@ class IotLedDriver(JlcPartsRefinements, JlcBoardTop):
         (['mcu', 'pi', 'c1', 'footprint_area'], Range(4.0, float('inf'))),  # use 0603 consistently since that's what's available
         (['mcu', 'pi', 'c2', 'footprint_area'], Range(4.0, float('inf'))),
         (['mcu', 'pi', 'l', 'footprint_area'], Range(4.0, float('inf'))),
-        (['led_drv[0]', 'power_path', 'inductor', 'inductance'], Range(4.7e-6 * .8, 1.72e-5))
+        (['reg_3v3', 'en_res', 'resistance'], Range(100e3, 1e6)),  # wider selection of resistors
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
