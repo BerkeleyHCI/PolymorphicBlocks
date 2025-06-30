@@ -19,6 +19,7 @@ class BleJoystick(JlcBoardTop):
         self.gnd = self.connect(self.bat.gnd, self.usb.gnd)
 
         self.tp_bat = self.Block(VoltageTestPoint()).connected(self.bat.pwr)
+        self.tp_usb = self.Block(VoltageTestPoint()).connected(self.usb.pwr)
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.bat.gnd)
 
         # POWER
@@ -49,6 +50,10 @@ class BleJoystick(JlcBoardTop):
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
             )
             self.v3v3 = self.connect(self.reg_3v3.pwr_out)
+
+            self.fake_ntc = imp.Block(VoltageDivider(output_voltage=(1.5, 2)*Volt, impedance=(10, 100)*kOhm))
+            self.connect(self.mp2722.vrntc, self.fake_ntc.input)
+            self.connect(self.fake_ntc.output, self.mp2722.ntc1)  # TODO actual NTC
 
             # self.vbat_sense_gate = imp.Block(HighSideSwitch())
             # self.connect(self.vbat_sense_gate.pwr, self.vbat)

@@ -46,8 +46,11 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                                              input_threshold_abs=(0.4, 1.3)*Volt)
         self.rst = self.Port(DigitalSink.from_bidir(dio_model), optional=True)  # 200k internal pullup, float if unused
         self.int = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)
-        self.vrntc = self.Port(Passive())
-        self.ntc1 = self.Port(Passive())
+        self.vrntc = self.Port(VoltageSource(
+            voltage_out=self.vcc.voltage_out,
+            current_limits=(0, 5)*mAmp
+        ))
+        self.ntc1 = self.Port(AnalogSink())  # required, doesn't seem to be any way to disable
         self.stat = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)  # requires 10k pullup
         self.pg = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)  # requires 10k pullup
 
@@ -110,6 +113,9 @@ class Mp2722(DiscreteBuckConverter):
         self.connect(self.pwr_out, self.ic.sys)  # direct output of the buck converter
 
         self.batt = self.Export(self.ic.batt)
+
+        self.vrntc = self.Export(self.ic.vrntc)
+        self.ntc1 = self.Export(self.ic.ntc1)
 
         # RST isn't a traditional reset pin, but used for eg exiting shipping mode,
         # so this does not use the Resettable base interface
