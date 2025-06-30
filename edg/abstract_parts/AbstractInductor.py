@@ -1,4 +1,4 @@
-from typing import Dict, Optional, cast
+from typing import Dict, Optional, cast, Any
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, ExperimentalUserFnPartsTable
@@ -143,7 +143,6 @@ class TableInductor(PartsTableSelector, Inductor):
                          self.experimental_filter_fn)
 
   def _row_filter(self, row: PartsTableRow) -> bool:
-    # TODO eliminate arbitrary DCR limit in favor of exposing max DCR to upper levels
     filter_fn_str = self.get(self.experimental_filter_fn)
     if filter_fn_str:
       filter_fn = ExperimentalUserFnPartsTable.deserialize_fn(filter_fn_str)
@@ -163,6 +162,10 @@ class TableInductor(PartsTableSelector, Inductor):
     self.assign(self.actual_current_rating, row[self.CURRENT_RATING])
     self.assign(self.actual_frequency_rating, row[self.FREQUENCY_RATING])
     self.assign(self.actual_resistance_dc, row[self.DC_RESISTANCE])
+
+  @classmethod
+  def _row_sort_by(cls, row: PartsTableRow) -> Any:
+    return row[cls.DC_RESISTANCE].center()
 
 
 class SeriesPowerInductor(DiscreteApplication):

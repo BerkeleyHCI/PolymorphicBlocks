@@ -310,6 +310,7 @@ class DigitalSource(DigitalBase):
 
   @staticmethod
   def low_from_supply(neg: Port[GroundLink], *, current_limits: RangeLike = RangeExpr.ALL) -> DigitalSource:
+    """Sink-only digital source, eg open-drain output"""
     return DigitalSource(
       voltage_out=neg.link().voltage,
       current_limits=current_limits,
@@ -320,6 +321,7 @@ class DigitalSource(DigitalBase):
 
   @staticmethod
   def high_from_supply(pos: Port[VoltageLink], *, current_limits: RangeLike = RangeExpr.ALL) -> DigitalSource:
+    """Source-only digital source"""
     return DigitalSource(
       voltage_out=pos.link().voltage,
       current_limits=current_limits,
