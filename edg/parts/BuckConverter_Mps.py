@@ -161,8 +161,3 @@ class Mp2722(DiscreteBuckConverter):
                                                 self.Block(ForcedVoltage(vsys_range)),
                                                 self.pwr_out)
             self.connect(self.power_path.switch, self.ic.sw)
-
-    def generate(self):
-        super().generate()
-        if self.get(self.reset.is_connected()):
-            self.connect(self.rst, self.ic.rst)
