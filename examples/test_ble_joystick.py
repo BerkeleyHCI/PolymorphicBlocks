@@ -13,7 +13,7 @@ class BleJoystick(JlcBoardTop):
         # this forces the model to allow the LDO to go into tracking
         self.bat = self.Block(LipoConnector(voltage=(4.0, 4.2)*Volt,
                                             actual_voltage=(4.0, 4.2)*Volt))
-        self.usb = self.Block(UsbCReceptacle())
+        self.usb = self.Block(UsbCReceptacle(current_limits=(0, 1)*Amp))
 
         self.vbat = self.connect(self.bat.pwr)
         self.gnd = self.connect(self.bat.gnd, self.usb.gnd)
@@ -37,7 +37,8 @@ class BleJoystick(JlcBoardTop):
             # self.connect(self.usb.pwr, self.chg.pwr)
             # self.connect(self.chg.pwr_bat, self.bat.chg)
 
-            self.mp2722 = imp.Block(Mp2722(charging_current=200*mAmp(tol=0.2)))
+            self.mp2722 = imp.Block(Mp2722(output_voltage=(3.7, 4.35)*Volt,
+                                           charging_current=200*mAmp(tol=0.2)))
             self.connect(self.mp2722.pwr_in, self.usb.pwr)
             self.connect(self.mp2722.batt, self.vbat)
             self.connect(self.mp2722.cc, self.usb.cc)
@@ -94,7 +95,11 @@ class BleJoystick(JlcBoardTop):
                 self.mcu.adc.request('vbat_sense')
             )
 
-            self.connect(self.mp2722.i2c, self.mcu.i2c.request())
+            (self.i2c_pull, ), _ = self.chain(
+                self.mcu.i2c.request(),
+                imp.Block(I2cPullup()),
+                self.mp2722.i2c
+            )
 
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
@@ -123,7 +128,9 @@ class BleJoystick(JlcBoardTop):
                     'sw2=6',
                 ]),
                 (['mcu', 'programming'], 'uart-auto-button'),
-
+                (['mp2722', 'power_path', 'dutycycle_limit'], Range(0.1, 1)),  # allow tracking
+                (['mp2722', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0.0, 10e6)),
+                (['mp2722', 'power_path', 'inductor', 'footprint_spec'], "Inductor_SMD:L_1210_3225Metric")
             ],
             class_refinements=[
                 (EspProgrammingHeader, EspProgrammingTc2030),

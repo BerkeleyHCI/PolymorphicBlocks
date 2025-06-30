@@ -151,7 +151,7 @@ class Mp2722(DiscreteBuckConverter):
 
             self.power_path = imp.Block(BuckConverterPowerPath(
                 self.pwr_in.link().voltage, vsys_range, self.actual_frequency,
-                self.pwr_out.link().current_drawn, (0, 3.2)*Amp,
+                self.pwr_out.link().current_drawn + self.ic.sys.link().current_drawn, (0, 3.2)*Amp,
                 input_voltage_ripple=self.input_ripple_limit,
                 output_voltage_ripple=self.output_ripple_limit
             ))
