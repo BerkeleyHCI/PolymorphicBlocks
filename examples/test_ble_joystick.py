@@ -25,21 +25,32 @@ class BleJoystick(JlcBoardTop):
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            (self.gate, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-                self.vbat,
-                imp.Block(SoftPowerGate()),
+            # (self.gate, self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
+            #     self.vbat,
+            #     imp.Block(SoftPowerGate()),
+            #     imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
+            #     self.Block(VoltageTestPoint()),
+            #     imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
+            # )
+
+            # self.chg = imp.Block(Mcp73831(charging_current=200*mAmp(tol=0.2)))
+            # self.connect(self.usb.pwr, self.chg.pwr)
+            # self.connect(self.chg.pwr_bat, self.bat.chg)
+
+            self.mp2722 = imp.Block(Mp2722(charging_current=200*mAmp(tol=0.2)))
+            self.connect(self.mp2722.pwr_in, self.usb.pwr)
+            self.connect(self.mp2722.batt, self.vbat)
+            self.connect(self.mp2722.cc, self.usb.cc)
+            (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
+                self.mp2722.pwr_out,
                 imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
                 self.Block(VoltageTestPoint()),
                 imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
             )
             self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-            self.vbat_sense_gate = imp.Block(HighSideSwitch())
-            self.connect(self.vbat_sense_gate.pwr, self.vbat)
-
-            self.chg = imp.Block(Mcp73831(charging_current=200*mAmp(tol=0.2)))
-            self.connect(self.usb.pwr, self.chg.pwr)
-            self.connect(self.chg.pwr_bat, self.bat.chg)
+            # self.vbat_sense_gate = imp.Block(HighSideSwitch())
+            # self.connect(self.vbat_sense_gate.pwr, self.vbat)
 
         # 3V3 DOMAIN
         with self.implicit_connect(
@@ -57,9 +68,10 @@ class BleJoystick(JlcBoardTop):
                                              imp.Block(SignalDivider(ratio=(0.45, 0.55), impedance=(1, 10)*kOhm)),
                                              self.mcu.adc.request('ax2'))
 
-            self.connect(self.stick.sw, self.gate.btn_in)
-            self.connect(self.gate.btn_out, self.mcu.gpio.request('sw'))
-            self.connect(self.mcu.gpio.request('gate_ctl'), self.gate.control)
+            # self.connect(self.stick.sw, self.gate.btn_in)
+            # self.connect(self.gate.btn_out, self.mcu.gpio.request('sw'))
+            # self.connect(self.mcu.gpio.request('gate_ctl'), self.gate.control)
+            self.connect(self.stick.sw, self.mcu.gpio.request('sw'))
 
             self.trig = imp.Block(A1304())
             (self.trig_div, ), _ = self.chain(self.trig.out,
@@ -74,12 +86,15 @@ class BleJoystick(JlcBoardTop):
             # debugging LEDs
             (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('led'))
 
-            self.connect(self.vbat_sense_gate.control, self.mcu.gpio.request('vbat_sense_gate'))
+            # self.connect(self.vbat_sense_gate.control, self.mcu.gpio.request('vbat_sense_gate'))
             (self.vbat_sense, ), _ = self.chain(
-                self.vbat_sense_gate.output,
+                # self.vbat_sense_gate.output,
+                self.vbat,
                 imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
                 self.mcu.adc.request('vbat_sense')
             )
+
+            self.connect(self.mp2722.i2c, self.mcu.i2c.request())
 
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
@@ -100,8 +115,8 @@ class BleJoystick(JlcBoardTop):
                     'ax2=15',
                     'trig=17',
                     'vbat_sense=18',
-                    'vbat_sense_gate=14',
-                    'gate_ctl=5',
+                    # 'vbat_sense_gate=14',
+                    # 'gate_ctl=5',
                     'sw=4',  # joystick
                     'sw0=10',  # membranes
                     'sw1=13',

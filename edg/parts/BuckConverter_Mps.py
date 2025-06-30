@@ -155,6 +155,7 @@ class Mp2722(DiscreteBuckConverter):
                 input_voltage_ripple=self.input_ripple_limit,
                 output_voltage_ripple=self.output_ripple_limit
             ))
+            self.connect(self.power_path.pwr_in, self.pwr_in)
             # ForcedVoltage needed to provide a voltage value so current downstream can be calculated
             # and then the power path can generate
             (self.forced_out, ), _ = self.chain(self.power_path.pwr_out,
