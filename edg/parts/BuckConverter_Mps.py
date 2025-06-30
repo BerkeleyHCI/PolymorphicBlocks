@@ -44,7 +44,7 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         dio_model = DigitalBidir.from_supply(self.gnd, self.vcc,
                                              voltage_limit_abs=(-0.3, 5)*Volt,
                                              input_threshold_abs=(0.4, 1.3)*Volt)
-        self.rst = self.Port(DigitalSink.from_bidir(dio_model), optional=True)  # 200k internal pullup, float if unused
+        self.rst = self.Port(dio_model, optional=True)  # 200k internal pullup, float if unused
         self.int = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)
         self.vrntc = self.Port(VoltageSource(
             voltage_out=self.vcc.voltage_out,

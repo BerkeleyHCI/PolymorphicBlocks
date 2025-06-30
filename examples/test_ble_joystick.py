@@ -16,6 +16,7 @@ class BleJoystick(JlcBoardTop):
         self.usb = self.Block(UsbCReceptacle(current_limits=(0, 1)*Amp))
 
         self.vbat = self.connect(self.bat.pwr)
+        self.vusb = self.connect(self.usb.pwr)
         self.gnd = self.connect(self.bat.gnd, self.usb.gnd)
 
         self.tp_bat = self.Block(VoltageTestPoint()).connected(self.bat.pwr)
@@ -77,7 +78,7 @@ class BleJoystick(JlcBoardTop):
             # self.connect(self.stick.sw, self.gate.btn_in)
             # self.connect(self.gate.btn_out, self.mcu.gpio.request('sw'))
             # self.connect(self.mcu.gpio.request('gate_ctl'), self.gate.control)
-            self.connect(self.stick.sw, self.mcu.gpio.request('sw'))
+            self.connect(self.stick.sw, self.mcu.gpio.request('sw'), self.mp2722.rst)
 
             self.trig = imp.Block(A1304())
             (self.trig_div, ), _ = self.chain(self.trig.out,
@@ -101,7 +102,7 @@ class BleJoystick(JlcBoardTop):
             )
 
             (self.i2c_pull, ), _ = self.chain(
-                self.mcu.i2c.request(),
+                self.mcu.i2c.request('i2c'),
                 imp.Block(I2cPullup()),
                 self.mp2722.i2c
             )
@@ -127,7 +128,9 @@ class BleJoystick(JlcBoardTop):
                     'vbat_sense=18',
                     # 'vbat_sense_gate=14',
                     # 'gate_ctl=5',
-                    'sw=4',  # joystick
+                    'i2c.scl=4',
+                    'i2c.sda=14',
+                    'sw=5',  # joystick
                     'sw0=10',  # membranes
                     'sw1=13',
                     'sw2=6',
