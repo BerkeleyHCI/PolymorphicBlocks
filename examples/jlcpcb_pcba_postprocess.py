@@ -1,12 +1,16 @@
 import argparse
 import csv
 import math
-from typing import Dict, Tuple
+import os
+from typing import Dict, Tuple, Optional
 
 parser = argparse.ArgumentParser(description='Post-process KiCad BoM and position files to be compatible with JLC.')
 parser.add_argument('file_path_prefix', type=str,
                     help='Path prefix to the part data, without the .csv or -top-post.csv postfix, ' +
                          'for example LedMatrix/gerbers/LedMatrix')
+parser.add_argument('--merge_boms', type=str, nargs='*',
+                    help="BoM CSVs to merge, for panelization. " +
+                         "If specified, replaces the BoM CSV in the file_path_prefix.")
 args = parser.parse_args()
 
 
@@ -176,6 +180,21 @@ if __name__ == '__main__':
       return elt
 
   refdes_lcsc_map: Dict[str, str] = {}  # refdes -> LCSC part number
+
+  if args.merge_boms:
+    if os.path.exists(f'{args.file_path_prefix}.csv'):  # remove previous one to avoid confusion
+      os.remove(f'{args.file_path_prefix}.csv')
+    with open(f'{args.file_path_prefix}.csv', 'w', newline='') as bom_out:
+      merged_csv_out: Optional[csv.DictWriter] = None
+      for input_bom_file in args.merge_boms:
+        with open(input_bom_file, 'r', newline='') as bom_in:
+          csv_dict_in = csv.DictReader(bom_in)
+          if merged_csv_out is None:
+            assert csv_dict_in.fieldnames is not None
+            merged_csv_out = csv.DictWriter(bom_out, fieldnames=csv_dict_in.fieldnames)
+            merged_csv_out.writeheader()
+          for row_dict in csv_dict_in:
+            merged_csv_out.writerow(row_dict)
 
   # while we don't need to modify this file, we do need the JLC P/N to refdes map
   # to apply the rotations, since that data isn't in the placement file
