@@ -43,6 +43,8 @@ PART_ROTATIONS = {
   'C70285': 180,  # SN74LVC1G74DCUR
   'C2651906': 0,  # DG468
   'C840095': 0,  # LM2664 SOT-23-6
+  'C2858491': 270,  # ESP32-C3H4 - seems really broken
+  'C2865497': 0,  # TPS92200D2DDCR SOT-23-6
 
   'C2962219': -90,  # 2x5 1.27mm header shrouded
   'C126830': 90,  # "SOT-23" USB ESD protector
