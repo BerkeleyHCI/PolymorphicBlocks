@@ -64,7 +64,9 @@
           "width": 0.16
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        "items_not_allowed|150071000|111750000|243f8055-85fd-4d62-bec4-49490a7e4364|00000000-0000-0000-0000-000000000000"
+      ],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
