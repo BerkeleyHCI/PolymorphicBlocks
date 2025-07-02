@@ -37,7 +37,7 @@ const FU1 = board.add(SOT_23_6, {
 })
 // reg_5v.fb.div.top_res
 const FR1 = board.add(R_0603_1608Metric, {
-  translate: pt(0.452, 1.053), rotate: 0,
+  translate: pt(0.499, 1.053), rotate: 0,
   id: 'FR1'
 })
 // reg_5v.fb.div.bottom_res
@@ -66,8 +66,8 @@ const FC3 = board.add(C_1206_3216Metric, {
   id: 'FC3'
 })
 // reg_5v.power_path.out_cap.cap
-const FC4 = board.add(C_0805_2012Metric, {
-  translate: pt(0.287, 1.063), rotate: 0,
+const FC4 = board.add(C_1206_3216Metric, {
+  translate: pt(0.311, 1.070), rotate: 0,
   id: 'FC4'
 })
 // reg_5v.en_res
@@ -87,17 +87,17 @@ const FD1 = board.add(D_SOD_323, {
 })
 // reg_3v3.ic
 const FU2 = board.add(SOT_89_3, {
-  translate: pt(2.260, 0.906), rotate: 0,
+  translate: pt(2.307, 0.906), rotate: 0,
   id: 'FU2'
 })
 // reg_3v3.in_cap.cap
 const FC5 = board.add(C_0603_1608Metric, {
-  translate: pt(2.206, 1.072), rotate: 0,
+  translate: pt(2.254, 1.072), rotate: 0,
   id: 'FC5'
 })
 // reg_3v3.out_cap.cap
 const FC6 = board.add(C_0603_1608Metric, {
-  translate: pt(2.362, 1.072), rotate: 0,
+  translate: pt(2.409, 1.072), rotate: 0,
   id: 'FC6'
 })
 // tp_3v3.tp
@@ -237,92 +237,92 @@ const FR7 = board.add(R_0603_1608Metric, {
 })
 // rgb_ring.led[0]
 const FD4 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.668, 0.846), rotate: 0,
+  translate: pt(0.715, 0.846), rotate: 0,
   id: 'FD4'
 })
 // rgb_ring.led[1]
 const FD5 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.786, 0.846), rotate: 0,
+  translate: pt(0.833, 0.846), rotate: 0,
   id: 'FD5'
 })
 // rgb_ring.led[2]
 const FD6 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.904, 0.846), rotate: 0,
+  translate: pt(0.951, 0.846), rotate: 0,
   id: 'FD6'
 })
 // rgb_ring.led[3]
 const FD7 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(1.022, 0.846), rotate: 0,
+  translate: pt(1.069, 0.846), rotate: 0,
   id: 'FD7'
 })
 // rgb_ring.led[4]
 const FD8 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(1.140, 0.846), rotate: 0,
+  translate: pt(1.187, 0.846), rotate: 0,
   id: 'FD8'
 })
 // rgb_ring.led[5]
 const FD9 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.668, 0.965), rotate: 0,
+  translate: pt(0.715, 0.965), rotate: 0,
   id: 'FD9'
 })
 // rgb_ring.led[6]
 const FD10 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.786, 0.965), rotate: 0,
+  translate: pt(0.833, 0.965), rotate: 0,
   id: 'FD10'
 })
 // rgb_ring.led[7]
 const FD11 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.904, 0.965), rotate: 0,
+  translate: pt(0.951, 0.965), rotate: 0,
   id: 'FD11'
 })
 // rgb_ring.led[8]
 const FD12 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(1.022, 0.965), rotate: 0,
+  translate: pt(1.069, 0.965), rotate: 0,
   id: 'FD12'
 })
 // rgb_ring.led[9]
 const FD13 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(1.140, 0.965), rotate: 0,
+  translate: pt(1.187, 0.965), rotate: 0,
   id: 'FD13'
 })
 // rgb_ring.led[10]
 const FD14 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.668, 1.083), rotate: 0,
+  translate: pt(0.715, 1.083), rotate: 0,
   id: 'FD14'
 })
 // rgb_ring.led[11]
 const FD15 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.786, 1.083), rotate: 0,
+  translate: pt(0.833, 1.083), rotate: 0,
   id: 'FD15'
 })
 // rgb_ring.led[12]
 const FD16 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.904, 1.083), rotate: 0,
+  translate: pt(0.951, 1.083), rotate: 0,
   id: 'FD16'
 })
 // rgb_ring.led[13]
 const FD17 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(1.022, 1.083), rotate: 0,
+  translate: pt(1.069, 1.083), rotate: 0,
   id: 'FD17'
 })
 // rgb_ring.led[14]
 const FD18 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(1.140, 1.083), rotate: 0,
+  translate: pt(1.187, 1.083), rotate: 0,
   id: 'FD18'
 })
 // rgb_ring.led[15]
 const FD19 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.668, 1.201), rotate: 0,
+  translate: pt(0.715, 1.201), rotate: 0,
   id: 'FD19'
 })
 // rgb_ring.led[16]
 const FD20 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.786, 1.201), rotate: 0,
+  translate: pt(0.833, 1.201), rotate: 0,
   id: 'FD20'
 })
 // rgb_ring.led[17]
 const FD21 = board.add(LED_SK6812_EC15_1_5x1_5mm, {
-  translate: pt(0.904, 1.201), rotate: 0,
+  translate: pt(0.951, 1.201), rotate: 0,
   id: 'FD21'
 })
 // fan[0]
@@ -332,17 +332,17 @@ const FJ3 = board.add(FanPinHeader_1x04_P2_54mm_Vertical, {
 })
 // fan_drv[0].pre
 const FQ1 = board.add(SOT_23, {
-  translate: pt(1.373, 1.126), rotate: 0,
+  translate: pt(1.420, 1.126), rotate: 0,
   id: 'FQ1'
 })
 // fan_drv[0].pull
 const FR8 = board.add(R_0603_1608Metric, {
-  translate: pt(1.546, 1.088), rotate: 0,
+  translate: pt(1.594, 1.088), rotate: 0,
   id: 'FR8'
 })
 // fan_drv[0].drv
 const FQ2 = board.add(SOIC_8_3_9x4_9mm_P1_27mm, {
-  translate: pt(1.443, 0.913), rotate: 0,
+  translate: pt(1.491, 0.913), rotate: 0,
   id: 'FQ2'
 })
 // fan_ctl[0].drv
@@ -357,17 +357,17 @@ const FJ4 = board.add(FanPinHeader_1x04_P2_54mm_Vertical, {
 })
 // fan_drv[1].pre
 const FQ4 = board.add(SOT_23, {
-  translate: pt(1.798, 1.126), rotate: 0,
+  translate: pt(1.846, 1.126), rotate: 0,
   id: 'FQ4'
 })
 // fan_drv[1].pull
 const FR9 = board.add(R_0603_1608Metric, {
-  translate: pt(1.972, 1.088), rotate: 0,
+  translate: pt(2.019, 1.088), rotate: 0,
   id: 'FR9'
 })
 // fan_drv[1].drv
 const FQ5 = board.add(SOIC_8_3_9x4_9mm_P1_27mm, {
-  translate: pt(1.869, 0.913), rotate: 0,
+  translate: pt(1.916, 0.913), rotate: 0,
   id: 'FQ5'
 })
 // fan_ctl[1].drv

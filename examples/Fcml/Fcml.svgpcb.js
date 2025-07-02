@@ -101,7 +101,7 @@ const R6 = board.add(R_0603_1608Metric, {
   id: 'R6'
 })
 // reg_vgate.power_path.inductor
-const L1 = board.add(L_Sunlord_SWPA3012S, {
+const L1 = board.add(L_Sunlord_SWPA3015S, {
   translate: pt(2.637, 1.406), rotate: 0,
   id: 'L1'
 })

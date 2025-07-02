@@ -238,7 +238,19 @@ class LightSensor(Sensor):
 
 
 @abstract_block
-class Magnetometer(Sensor):
+class MagneticSensor(Sensor):
+  pass
+
+
+@abstract_block
+class MagneticSwitch(MagneticSensor):
+  """A switch that is activated by a magnetic field, including omnipolar and bipolar devices."""
+  pass
+
+
+@abstract_block
+class Magnetometer(MagneticSensor):
+  """Linear response magnetic field sensor, potentially with multiple axes"""
   pass
 
 

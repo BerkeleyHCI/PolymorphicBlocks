@@ -4,7 +4,7 @@ from ..parts.JlcInductor import JlcInductor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsInductor(TableInductor, PartsTableSelectorFootprint, JlcPartsBase):
+class JlcPartsInductor(PartsTableSelectorFootprint, JlcPartsBase, TableInductor):
     _JLC_PARTS_FILE_NAMES = [
         "InductorsakaCoilsakaTransformersPower_Inductors",
         "InductorsakaCoilsakaTransformersInductors__SMD_",

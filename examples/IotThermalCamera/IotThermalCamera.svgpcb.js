@@ -52,22 +52,22 @@ const TU1 = board.add(SOT_23_6, {
 })
 // reg_3v3.fb.div.top_res
 const TR3 = board.add(R_0603_1608Metric, {
-  translate: pt(2.945, 0.926), rotate: 0,
+  translate: pt(2.992, 0.926), rotate: 0,
   id: 'TR3'
 })
 // reg_3v3.fb.div.bottom_res
 const TR4 = board.add(R_0603_1608Metric, {
-  translate: pt(2.598, 1.042), rotate: 0,
+  translate: pt(2.598, 1.056), rotate: 0,
   id: 'TR4'
 })
 // reg_3v3.hf_in_cap.cap
 const TC1 = board.add(C_0603_1608Metric, {
-  translate: pt(2.754, 1.042), rotate: 0,
+  translate: pt(2.754, 1.056), rotate: 0,
   id: 'TC1'
 })
 // reg_3v3.boot_cap
 const TC2 = board.add(C_0603_1608Metric, {
-  translate: pt(2.910, 1.042), rotate: 0,
+  translate: pt(2.910, 1.056), rotate: 0,
   id: 'TC2'
 })
 // reg_3v3.power_path.inductor
@@ -77,17 +77,17 @@ const TL1 = board.add(L_Sunlord_SWPA4030S, {
 })
 // reg_3v3.power_path.in_cap.cap
 const TC3 = board.add(C_0805_2012Metric, {
-  translate: pt(2.607, 0.935), rotate: 0,
+  translate: pt(2.828, 0.935), rotate: 0,
   id: 'TC3'
 })
 // reg_3v3.power_path.out_cap.cap
-const TC4 = board.add(C_0805_2012Metric, {
-  translate: pt(2.780, 0.935), rotate: 0,
+const TC4 = board.add(C_1206_3216Metric, {
+  translate: pt(2.631, 0.942), rotate: 0,
   id: 'TC4'
 })
 // reg_3v3.en_res
 const TR5 = board.add(R_0603_1608Metric, {
-  translate: pt(2.598, 1.139), rotate: 0,
+  translate: pt(2.598, 1.152), rotate: 0,
   id: 'TR5'
 })
 // tp_3v3.tp

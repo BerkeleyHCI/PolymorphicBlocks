@@ -91,7 +91,7 @@ class JlcTableBase(PartsTableBase):
 class JlcTableSelector(PartsTableAreaSelector, PartsTableFootprintFilter, JlcPart, JlcTableBase):
   @classmethod
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
-    return [row[cls.BASIC_PART_HEADER], cls._row_area(row), row[cls.COST]]
+    return [row[cls.BASIC_PART_HEADER], cls._row_area(row), super()._row_sort_by(row), row[cls.COST]]
 
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
