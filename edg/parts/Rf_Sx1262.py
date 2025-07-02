@@ -247,7 +247,7 @@ class Sx1262(Resettable, DiscreteRfWarning, Block):
         with self.implicit_connect(
                 ImplicitConnect(self.gnd, [Common])
         ) as imp:
-            self.xtal = imp.Block(Crystal(30*MHertz(tol=30e-6)))  # 30ppm for LoRaWAN systems
+            self.xtal = imp.Block(Crystal(32*MHertz(tol=30e-6)))  # 30ppm for LoRaWAN systems
             self.connect(self.xtal.crystal, self.ic.xtal)
 
             self.vreg_cap = imp.Block(DecouplingCapacitor(470*nFarad(tol=0.2))).connected(pwr=self.ic.vreg)
