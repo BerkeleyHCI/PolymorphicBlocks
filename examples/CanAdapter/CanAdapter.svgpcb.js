@@ -2,77 +2,77 @@ const board = new PCB();
 
 // jlc_th.th1
 const OH1 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0.479, 1.702), rotate: 0,
+  translate: pt(0.479, 1.698), rotate: 0,
   id: 'OH1'
 })
 // jlc_th.th2
 const OH2 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0.519, 1.702), rotate: 0,
+  translate: pt(0.519, 1.698), rotate: 0,
   id: 'OH2'
 })
 // jlc_th.th3
 const OH3 = board.add(JlcToolingHole_1_152mm, {
-  translate: pt(0.479, 1.742), rotate: 0,
+  translate: pt(0.479, 1.737), rotate: 0,
   id: 'OH3'
 })
 // obd
 const OU1 = board.add(J1962, {
-  translate: pt(0.637, 1.702), rotate: 0,
+  translate: pt(0.637, 1.698), rotate: 0,
   id: 'OU1'
 })
 // ferrite.fb
 const OFB1 = board.add(L_0603_1608Metric, {
-  translate: pt(0.303, 1.731), rotate: 0,
+  translate: pt(0.303, 1.726), rotate: 0,
   id: 'OFB1'
 })
 // reg_3v3.ic
 const OU2 = board.add(SOT_23_6, {
-  translate: pt(0.262, 1.189), rotate: 0,
+  translate: pt(0.081, 1.189), rotate: 0,
   id: 'OU2'
 })
 // reg_3v3.fb.div.top_res
 const OR1 = board.add(R_0603_1608Metric, {
-  translate: pt(0.452, 1.329), rotate: 0,
+  translate: pt(0.452, 1.324), rotate: 0,
   id: 'OR1'
 })
 // reg_3v3.fb.div.bottom_res
 const OR2 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 1.459), rotate: 0,
+  translate: pt(0.058, 1.454), rotate: 0,
   id: 'OR2'
 })
 // reg_3v3.hf_in_cap.cap
 const OC1 = board.add(C_0603_1608Metric, {
-  translate: pt(0.214, 1.459), rotate: 0,
+  translate: pt(0.214, 1.454), rotate: 0,
   id: 'OC1'
 })
 // reg_3v3.boot_cap
 const OC2 = board.add(C_0603_1608Metric, {
-  translate: pt(0.370, 1.459), rotate: 0,
+  translate: pt(0.370, 1.454), rotate: 0,
   id: 'OC2'
 })
 // reg_3v3.power_path.inductor
-const OL1 = board.add(L_Sunlord_SWPA3015S, {
-  translate: pt(0.071, 1.191), rotate: 0,
+const OL1 = board.add(L_1210_3225Metric, {
+  translate: pt(0.291, 1.184), rotate: 0,
   id: 'OL1'
 })
 // reg_3v3.power_path.in_cap.cap
 const OC3 = board.add(C_1206_3216Metric, {
-  translate: pt(0.091, 1.345), rotate: 0,
+  translate: pt(0.091, 1.341), rotate: 0,
   id: 'OC3'
 })
 // reg_3v3.power_path.out_cap.cap
 const OC4 = board.add(C_0805_2012Metric, {
-  translate: pt(0.287, 1.339), rotate: 0,
+  translate: pt(0.287, 1.334), rotate: 0,
   id: 'OC4'
 })
 // reg_3v3.en_res
 const OR3 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 1.556), rotate: 0,
+  translate: pt(0.058, 1.551), rotate: 0,
   id: 'OR3'
 })
 // prot_3v3.diode
 const OD1 = board.add(D_SOD_323, {
-  translate: pt(0.063, 1.740), rotate: 0,
+  translate: pt(0.063, 1.735), rotate: 0,
   id: 'OD1'
 })
 // mcu.ic
@@ -182,7 +182,7 @@ board.setNetlist([
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(1.9769685039370084, 1.8952755905511809);
+const limit1 = pt(1.9769685039370084, 1.8905511811023625);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);

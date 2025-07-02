@@ -14,7 +14,9 @@ class PowerInConnector(Connector):
     )))
 
 
-class IotLedDriver(JlcPartsRefinements, JlcBoardTop):
+# note, sent to fabrication with JlcPartsRefinements
+# JlcBoardTop used here for repeatable builds
+class IotLedDriver(JlcBoardTop):
   """Multichannel IoT high-power external LED driver with a 12v barrel jack input.
   """
   def contents(self) -> None:
