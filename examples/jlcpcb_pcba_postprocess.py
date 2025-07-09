@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(description='Post-process KiCad BoM and positio
 parser.add_argument('file_path_prefix', type=str,
                     help='Path prefix to the part data, without the .csv or -top-post.csv postfix, ' +
                          'for example LedMatrix/gerbers/LedMatrix')
-parser.add_argument('--merge_boms', type=str, nargs='*',
+parser.add_argument('--merge-boms', type=str, nargs='*',
                     help="BoM CSVs to merge, for panelization. " +
                          "If specified, replaces the BoM CSV in the file_path_prefix.")
 args = parser.parse_args()
