@@ -3,36 +3,38 @@ import unittest
 from edg import *
 
 
+class PowerInConnector(Connector):
+  def __init__(self):
+    super().__init__()
+    self.conn = self.Block(JstShSmHorizontal())
+    self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
+    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSource(
+      voltage_out=(10, 16)*Volt,
+      current_limits=(0, 3)*Amp,
+    )))
+
+
+# note, sent to fabrication with JlcPartsRefinements
+# JlcBoardTop used here for repeatable builds
 class IotLedDriver(JlcBoardTop):
   """Multichannel IoT high-power external LED driver with a 12v barrel jack input.
   """
   def contents(self) -> None:
     super().contents()
 
-    RING_LEDS = 18  # number of RGBs for the ring indicator
-
-    self.pwr = self.Block(PowerBarrelJack(voltage_out=12*Volt(tol=0.05), current_limits=(0, 5)*Amp))
-
-    self.v12 = self.connect(self.pwr.pwr)
+    # no connectors to save space, just solder to one of the SMD pads
+    self.pwr = self.Block(PowerInConnector())
     self.gnd = self.connect(self.pwr.gnd)
-
-    self.tp_pwr = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
+    self.v12 = self.connect(self.pwr.pwr)
+    self.tp_v12 = self.Block(VoltageTestPoint()).connected(self.pwr.pwr)
     self.tp_gnd = self.Block(GroundTestPoint()).connected(self.pwr.gnd)
 
     # POWER
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.reg_5v, self.tp_5v, self.prot_5v), _ = self.chain(
-        self.v12,
-        imp.Block(VoltageRegulator(output_voltage=4*Volt(tol=0.05))),
-        self.Block(VoltageTestPoint()),
-        imp.Block(ProtectionZenerDiode(voltage=(5.5, 6.8)*Volt))
-      )
-      self.v5 = self.connect(self.reg_5v.pwr_out)
-
       (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-        self.v5,
+        self.v12,
         imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
         imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
@@ -50,80 +52,73 @@ class IotLedDriver(JlcBoardTop):
       # debugging LEDs
       (self.ledr, ), _ = self.chain(imp.Block(IndicatorLed(Led.Red)), self.mcu.gpio.request('ledr'))
 
-      self.enc = imp.Block(DigitalRotaryEncoder())
-      self.connect(self.enc.a, self.mcu.gpio.request('enc_a'))
-      self.connect(self.enc.b, self.mcu.gpio.request('enc_b'))
-      self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request('enc_sw'))
-
       (self.v12_sense, ), _ = self.chain(
         self.v12,
         imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
         self.mcu.adc.request('v12_sense')
       )
 
-    # 5V DOMAIN
-    with self.implicit_connect(
-            ImplicitConnect(self.v5, [Power]),
-            ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      (self.rgb_ring, ), _ = self.chain(
-        self.mcu.gpio.request('rgb'),
-        imp.Block(NeopixelArray(RING_LEDS)))
+      # generic expansion - for qwiic or an encoder w/ button
+      self.qwiic = self.Block(QwiicTarget())
+      self.connect(self.qwiic.gnd, self.gnd)
+      # DNP the resistor to use the pin as the encoder pushbutton pin
+      (self.qwiic_pwr_res, ), _ = self.chain(
+        imp.Block(SeriesPowerResistor(0*Ohm(tol=0))),
+        self.qwiic.pwr)
+      self.connect(self.qwiic.pwr.as_digital_source(), self.mcu.gpio.request('qwiic_pwr'))  # as sense line
+      (self.qwiic_i2c, self.qwiic_pull), _ = self.chain(
+        self.Block(I2cControllerBitBang()).connected_from(
+          self.mcu.gpio.request('qwiic_scl'), self.mcu.gpio.request('qwiic_sda'),
+        ),
+        imp.Block(I2cPullup()),
+        self.qwiic.i2c)
+
+      self.tof = imp.Block(Vl53l0x())
+      self.tof_pull = imp.Block(I2cPullup())
+      self.connect(self.mcu.i2c.request('tof'), self.tof_pull.i2c, self.tof.i2c)
 
     # 12V DOMAIN
     self.led_drv = ElementDict[LedDriver]()
+    self.led_sink = ElementDict[DummyPassive]()
     with self.implicit_connect(
             ImplicitConnect(self.v12, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       for i in range(4):
-        led_drv = self.led_drv[i] = imp.Block(LedDriver(max_current=700*mAmp(tol=0.1)))
-        led_drv.with_mixin(LedDriverSwitchingConverter(ripple_limit=500*mAmp))
+        led_drv = self.led_drv[i] = imp.Block(LedDriver(max_current=750*mAmp(tol=0.1)))
         self.connect(self.mcu.gpio.request(f'led_pwm_{i}'), led_drv.with_mixin(LedDriverPwm()).pwm)
 
-    self.led_conn = self.Block(JstPhKHorizontal(2))
-    self.connect(self.led_drv[0].leda, self.led_conn.pins.request('1'))
-    self.connect(self.led_drv[0].ledk, self.led_conn.pins.request('2'))
-
-    self.rgb_conn = self.Block(JstPhKHorizontal(6))
-    self.connect(self.led_drv[1].leda, self.rgb_conn.pins.request('1'))
-    self.connect(self.led_drv[1].ledk, self.rgb_conn.pins.request('2'))
-    self.connect(self.led_drv[2].leda, self.rgb_conn.pins.request('3'))
-    self.connect(self.led_drv[2].ledk, self.rgb_conn.pins.request('4'))
-    self.connect(self.led_drv[3].leda, self.rgb_conn.pins.request('5'))
-    self.connect(self.led_drv[3].ledk, self.rgb_conn.pins.request('6'))
+        # no connectors to save space, just solder to one of the SMD pads
+        leda_sink = self.led_sink[i*2] = imp.Block(DummyPassive())
+        self.connect(led_drv.leda, leda_sink.io)
+        ledk_sink = self.led_sink[i*2+1] = imp.Block(DummyPassive())
+        self.connect(led_drv.ledk, ledk_sink.io)
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Esp32s3_Wroom_1),
-        (['reg_5v'], Tps54202h),
-        (['reg_3v3'], Ldl1117),
-        (['led_drv[0]'], Al8861),
-        (['led_drv[1]'], Al8861),
-        (['led_drv[2]'], Al8861),
-        (['led_drv[3]'], Al8861),
+        (['mcu'], Esp32c3),
+        (['reg_3v3'], Tps54202h),
+        (['mcu', 'pi', 'l'], JlcInductor),  # breaks on JlcParts
+        (['mcu', 'pi', 'c2'], JlcCapacitor),  # breaks on JlcParts
       ],
       instance_values=[
         (['refdes_prefix'], 'L'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          # also designed to be compatible w/ ESP32C6
-          # https://www.espressif.com/sites/default/files/documentation/esp32-c6-wroom-1_wroom-1u_datasheet_en.pdf
-          # note: pin 34 NC, GPIO8 (pin 10) is strapping and should be PUR
-          # bottom row doesn't exist
+          'ledr=_GPIO9_STRAP',  # force using the strapping / boot mode pin
+          'qwiic_scl=25',
+          'qwiic_sda=26',
+          'qwiic_pwr=16',
+          'tof.sda=13',
+          'tof.scl=12',
+          'led_pwm_0=5',
+          'led_pwm_1=8',
+          'led_pwm_2=9',
+          'led_pwm_3=10',
           'v12_sense=4',
-          'enc_a=8',
-          'enc_b=7',
-          'enc_sw=6',
-          'rgb=5',
-          'ledr=14',
-          'led_pwm_0=39',
-          'led_pwm_1=38',
-          'led_pwm_2=35',
-          'led_pwm_3=33',
         ]),
         (['mcu', 'programming'], 'uart-auto'),
-        (['reg_5v', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+        (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
 
         (['led_drv[0]', 'diode_voltage_drop'], Range(0, 0.5)),
         (['led_drv[1]', 'diode_voltage_drop'], ParamValue(['led_drv[0]', 'diode_voltage_drop'])),
@@ -134,24 +129,39 @@ class IotLedDriver(JlcBoardTop):
         (['led_drv[1]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[2]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
         (['led_drv[3]', 'rsense', 'res', 'res', 'require_basic_part'], ParamValue(['led_drv[0]', 'rsense', 'res', 'res', 'require_basic_part'])),
-        (['led_drv[0]', 'ind', 'part'], "SWPA6045S680MT"),
-        (['led_drv[0]', 'ind', 'manual_frequency_rating'], Range(0, 6.4e6)),
-        (['led_drv[1]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
-        (['led_drv[1]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
-        (['led_drv[2]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
-        (['led_drv[2]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
-        (['led_drv[3]', 'ind', 'part'], ParamValue(['led_drv[0]', 'ind', 'part'])),
-        (['led_drv[3]', 'ind', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'ind', 'manual_frequency_rating'])),
+        (['led_drv[0]', 'power_path', 'inductor', 'inductance'], Range(4.7e-6 * .8, 1.72e-5)),
+        (['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 6.4e6)),
+        (['led_drv[1]', 'power_path', 'inductor', 'inductance'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'inductance'])),
+        (['led_drv[1]', 'power_path', 'inductor', 'part'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'part'])),
+        (['led_drv[1]', 'power_path', 'inductor', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'])),
+        (['led_drv[2]', 'power_path', 'inductor', 'inductance'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'inductance'])),
+        (['led_drv[2]', 'power_path', 'inductor', 'part'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'part'])),
+        (['led_drv[2]', 'power_path', 'inductor', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'])),
+        (['led_drv[3]', 'power_path', 'inductor', 'inductance'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'inductance'])),
+        (['led_drv[3]', 'power_path', 'inductor', 'part'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'part'])),
+        (['led_drv[3]', 'power_path', 'inductor', 'manual_frequency_rating'], ParamValue(['led_drv[0]', 'power_path', 'inductor', 'manual_frequency_rating'])),
+        (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.80),  # use a 1206 25 oe 35v part
+        (['qwiic', 'pwr', 'current_draw'], Range(0.0, 0.08)),  # use 1210 inductor
+        (['mcu', 'pi', 'c1', 'footprint_area'], Range(4.0, float('inf'))),  # use 0603 consistently since that's what's available
+        (['mcu', 'pi', 'c2', 'footprint_area'], Range(4.0, float('inf'))),
+        (['mcu', 'pi', 'l', 'footprint_area'], Range(4.0, float('inf'))),
+        (['reg_3v3', 'fb', 'div', 'top_res', 'footprint_area'], Range(4.0, float('inf'))),
+        (['reg_3v3', 'fb', 'div', 'bottom_res', 'footprint_area'], Range(4.0, float('inf'))),
+        (['v12_sense', 'div', 'top_res', 'footprint_area'], Range(4.0, float('inf'))),
+        (['v12_sense', 'div', 'bottom_res', 'footprint_area'], Range(4.0, float('inf'))),
+        (['reg_3v3', 'en_res', 'resistance'], Range(100e3, 1e6)),  # wider selection of resistors
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
         (PowerBarrelJack, Pj_036ah),
         (Neopixel, Sk6805_Ec15),
-        (LedDriver, Al8861),
+        (LedDriver, Tps92200),
+        (RfConnector, UflConnector),
         (TestPoint, CompactKeystone5015),
         (TagConnect, TagConnectNonLegged),
       ],
       class_values=[
+        (SelectorArea, ['footprint_area'], Range.from_lower(1.5)),  # at least 0402
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015, which is actually in stock
       ]
     )

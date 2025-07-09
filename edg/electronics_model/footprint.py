@@ -35,7 +35,7 @@ def gen_block_comp(block_name: str) -> str:
 
 def gen_block_value(block: NetBlock, refdes_mode: RefdesMode) -> str:
     if refdes_mode == RefdesMode.PathnameAsValue:
-        if block.refdes.startswith('TP'):  # test points keep their value
+        if 'TP' in block.refdes:  # test points keep their value
             return f'(value "{block.value}")'
         else:
             pathname = '.'.join(block.path)
