@@ -104,7 +104,7 @@
   (property (name "edg_path") (value "mp2722.ic"))
   (property (name "edg_short_path") (value "mp2722.ic"))
   (property (name "edg_refdes") (value "JU1"))
-  (property (name "edg_part") (value "MP2722GRH-0000-P (Texas Instruments)"))
+  (property (name "edg_part") (value "MP2722GRH-0000-P (Monolithic Power Systems Inc.)"))
   (property (name "edg_value") (value "MP2722GRH-0000-P"))
   (sheetpath (names "/mp2722/") (tstamps "/06c701ab/"))
   (tstamps "013700cd"))

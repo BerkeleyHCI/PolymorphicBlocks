@@ -13,7 +13,7 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             current_limits=(0, 5)*Amp  # up to 5A charge / system current
         ))  # internal switch specs not defined, only bulk current limit defined
         self.vin = self.Port(VoltageSink(
-            voltage_limits=(3.9, 16)*Volt,  # abs max up to 26v, UV threshold up to 3.45
+            voltage_limits=(3.9, 26)*Volt,  # abs max up to 26v, UV threshold up to 3.45
             current_draw=self.sw.link().current_drawn  # TODO quiescent current
         ), [Power])
         self.pmid = self.Port(VoltageSource(
@@ -89,7 +89,7 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                 '9': self.pg,
                 '11': self.stat,
             },
-            mfr='Texas Instruments', part='MP2722GRH-0000-P',
+            mfr='Monolithic Power Systems Inc.', part='MP2722GRH-0000-P',
             datasheet='https://www.monolithicpower.com/en/documentview/productdocument/index/version/2/document_type/Datasheet/lang/en/sku/MP2722GRH/document_id/10035/'
         )
         self.assign(self.lcsc_part, 'C20099550')
@@ -135,7 +135,6 @@ class Mp2722(DiscreteBuckConverter):
 
         # TODO only allow subset of frequencies, based on SW_FREQ table
         self.require(self.frequency.within((630, 1680)*kHertz))
-        self.frequency.upper() - self.frequency.center()
         self.assign(self.actual_frequency, self.frequency)
 
         self.connect(self.ic.batt, self.ic.battsns)  # TODO allow remote sense

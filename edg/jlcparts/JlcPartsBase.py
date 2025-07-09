@@ -95,7 +95,7 @@ class JlcPartsBase(JlcPart, PartsTableAreaSelector, PartsTableFootprintFilter):
         CapacitorsMultilayer_Ceramic_Capacitors_MLCC___SMDakaSMT.json.gz
         This setting is on a JlcPartsBase-wide basis."""
         assert JlcPartsBase._config_parts_root_dir is None, \
-            f"attempted to reassign configure_root_dir, was {JlcPartsBase._config_parts_root_dir}, new {root_dir}"
+            f"attempted to reassign config_root_dir, was {JlcPartsBase._config_parts_root_dir}, new {root_dir}"
         JlcPartsBase._config_parts_root_dir = root_dir
 
     _JLC_PARTS_FILE_NAMES: ClassVar[List[str]]  # set by subclass
