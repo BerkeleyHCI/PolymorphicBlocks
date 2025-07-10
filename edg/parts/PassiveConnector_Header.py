@@ -121,7 +121,7 @@ class JstPhSmVertical(JstPh):
             "JST", f"B{length}B-PH-SM4-TB")
 
 
-class JstPhSmVerticalJlc(JstPh, JlcPart):
+class JstPhSmVerticalJlc(JlcPart, JstPhSmVertical):
   """JST PH connector in SMD, with JLC part numbers for what parts are stocked (JST or clones,
   since JLC's inventory of PH SMD connectors is pretty spotty)."""
   PART_NUMBERS = {  # in order of decreasing stock, on 2022-08-23

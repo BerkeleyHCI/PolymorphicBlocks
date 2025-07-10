@@ -1,5 +1,7 @@
 from typing import Optional, cast
 
+from deprecated import deprecated
+
 from ..electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -132,5 +134,6 @@ class TableFuse(PartsTableSelector, Fuse):
     self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
 
 
+@deprecated("Use SeriesPowerFuse and a top-level refinement to specify a PPTC fuse")
 class SeriesPowerPptcFuse(SeriesPowerFuse):
   FUSE_TYPE = PptcFuse

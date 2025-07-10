@@ -1,7 +1,7 @@
 from ..abstract_parts import *
 
 
-class XboxElite2Joystick(FootprintBlock):
+class XboxElite2Joystick(FootprintBlock, HumanInterface):
     """Joystick assembly (X/Y analog axes + switch) from the XBox Elite 2 controller.
     Proper polarity for compatibility with hall effect sensors."""
     def __init__(self):

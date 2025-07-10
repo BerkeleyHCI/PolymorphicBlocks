@@ -9,7 +9,7 @@ from .Categories import DummyDevice
 from .Categories import DiscreteComponent, DiscreteSemiconductor, PassiveComponent
 from .Categories import DiscreteApplication
 from .Categories import Analog, OpampApplication
-from .Categories import Filter, AnalogFilter, DigitalFilter
+from .Categories import Filter, AnalogFilter, RfFilter, DigitalFilter
 from .Categories import Microcontroller, Fpga, Memory, RealtimeClock, Radiofrequency
 from .Categories import Interface, AnalogToDigital, DigitalToAnalog, SpeakerDriver, IoExpander, BitBangAdapter
 from .Categories import PowerConditioner, PowerSwitch, MotorDriver, BrushedMotorDriver, BldcDriver

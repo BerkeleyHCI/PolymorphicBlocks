@@ -31,7 +31,7 @@ class A1304_Device(InternalBlock, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class A1304(MagneticSwitch, Block):
+class A1304(Magnetometer, Block):
     """Linear hall-effect sensor with analog output, sometimes used in game controllers as trigger detectors.
     Typ 4 mV / Gauss with full scale range of +/-375 Gauss."""
     def __init__(self):
