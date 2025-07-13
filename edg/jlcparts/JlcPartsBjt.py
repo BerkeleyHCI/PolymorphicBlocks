@@ -4,7 +4,7 @@ from ..parts.JlcBjt import JlcBjt
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsBjt(TableBjt, PartsTableSelectorFootprint, JlcPartsBase):
+class JlcPartsBjt(PartsTableSelectorFootprint, JlcPartsBase, TableBjt):
     _JLC_PARTS_FILE_NAMES = ["TransistorsBipolar_Transistors___BJT"]
     _CHANNEL_MAP = {
         'NPN': 'NPN',

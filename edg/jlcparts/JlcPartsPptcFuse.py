@@ -4,7 +4,7 @@ from ..parts.JlcPptcFuse import JlcPptcFuse
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsPptcFuse(TableFuse, PptcFuse, PartsTableSelectorFootprint, JlcPartsBase):
+class JlcPartsPptcFuse(PartsTableSelectorFootprint, JlcPartsBase, TableFuse, PptcFuse):
     _JLC_PARTS_FILE_NAMES = ["Circuit_ProtectionResettable_Fuses"]
 
     @classmethod

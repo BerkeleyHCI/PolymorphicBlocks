@@ -4,7 +4,7 @@ from ..parts.JlcCapacitor import JlcCapacitor, JlcDummyCapacitor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, PartsTableSelectorFootprint, JlcPartsBase):
+class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapacitor, CeramicCapacitor):
     _JLC_PARTS_FILE_NAMES = ["CapacitorsMultilayer_Ceramic_Capacitors_MLCC___SMDakaSMT"]
 
     @init_in_parent
@@ -63,6 +63,15 @@ class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, PartsTableSelectorF
     def _row_sort_by(cls, row: PartsTableRow) -> Any:
         return [row[cls.PARALLEL_COUNT], super(JlcPartsMlcc, cls)._row_sort_by(row)]
 
+    def _row_generate(self, row: PartsTableRow) -> None:
+        # see comment in TableCapacitor._row_generate for why this needs to be here
+        if row[self.PARALLEL_COUNT] == 1:
+            super()._row_generate(row)  # creates the footprint
+        else:
+            TableCapacitor._row_generate(self, row)  # skips creating the footprint in PartsTableSelectorFootprint
+            self.assign(self.actual_basic_part, True)  # dummy value
+            self._make_parallel_footprints(row)
+
     def _make_parallel_footprints(self, row: PartsTableRow) -> None:
         cap_model = JlcDummyCapacitor(set_lcsc_part=row[self.LCSC_COL],
                                       set_basic_part=row[self.BASIC_PART_COL],
@@ -76,9 +85,6 @@ class JlcPartsMlcc(TableDeratingCapacitor, CeramicCapacitor, PartsTableSelectorF
             self.c[i] = self.Block(cap_model)
             self.connect(self.c[i].pos, self.pos)
             self.connect(self.c[i].neg, self.neg)
-
-        self.assign(self.lcsc_part, row[self.LCSC_COL])
-        self.assign(self.actual_basic_part, row[self.BASIC_PART_COL])
 
 
 lambda: JlcPartsMlcc()  # ensure class is instantiable (non-abstract)

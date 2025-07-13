@@ -105,6 +105,7 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
     return [row[cls.PARALLEL_COUNT], super(JlcCapacitor, cls)._row_sort_by(row)]
 
   def _row_generate(self, row: PartsTableRow) -> None:
+    # see comment in TableCapacitor._row_generate for why this needs to be here
     if row[self.PARALLEL_COUNT] == 1:
       super()._row_generate(row)  # creates the footprint
     else:
