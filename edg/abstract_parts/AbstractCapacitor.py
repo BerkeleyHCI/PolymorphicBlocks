@@ -264,6 +264,8 @@ class TableDeratingCapacitor(TableCapacitor):
     ))
 
   def _row_generate(self, row: PartsTableRow) -> None:
+    """This one is weird. Because this is the last in the class order, this is called last.
+    So the top subclass needs explicit logic to handle parallel capacitors."""
     super()._row_generate(row)
     if row[self.PARALLEL_COUNT] == 1:
       self.assign(self.actual_derated_capacitance, row[self.DERATED_CAPACITANCE])
