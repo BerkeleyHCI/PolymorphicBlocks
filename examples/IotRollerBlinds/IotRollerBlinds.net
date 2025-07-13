@@ -537,7 +537,7 @@
   (node (ref BU2) (pin 8))
   (node (ref BJ4) (pin 2)))
 (net (code 7) (name "Bvin_sense.output")
-  (node (ref BU2) (pin 4))
+  (node (ref BU2) (pin 3))
   (node (ref BR6) (pin 2))
   (node (ref BR7) (pin 1)))
 (net (code 8) (name "Bconn.enca")

@@ -168,7 +168,7 @@ board.setNetlist([
   {name: "Omcu.program_boot_node", pads: [["OR5", "2"], ["OU3", "8"], ["OJ1", "2"]]},
   {name: "Oledg.signal", pads: [["OU3", "13"], ["OD3", "2"]]},
   {name: "Oledw.signal", pads: [["OU3", "14"], ["OD4", "2"]]},
-  {name: "Ovobd_sense.output", pads: [["OU3", "4"], ["OR8", "2"], ["OR9", "1"]]},
+  {name: "Ovobd_sense.output", pads: [["OU3", "3"], ["OR8", "2"], ["OR9", "1"]]},
   {name: "Oreg_3v3.fb.output", pads: [["OU2", "4"], ["OR1", "2"], ["OR2", "1"]]},
   {name: "Oreg_3v3.boot_cap.neg", pads: [["OC2", "2"], ["OU2", "2"], ["OL1", "1"]]},
   {name: "Oreg_3v3.boot_cap.pos", pads: [["OC2", "1"], ["OU2", "6"]]},

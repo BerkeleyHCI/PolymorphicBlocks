@@ -28,7 +28,7 @@ class CalSolCanBlock(Block):
     self.conn = self.Block(CalSolCanConnector())
     self.connect(self.can, self.conn.differential)
 
-    self.can_fuse = self.Block(SeriesPowerPptcFuse(150 * mAmp(tol=0.1)))
+    self.can_fuse = self.Block(SeriesPowerFuse(150 * mAmp(tol=0.1)))
     self.connect(self.conn.pwr, self.can_fuse.pwr_in)
 
     with self.implicit_connect(
@@ -352,7 +352,7 @@ class HighSwitch(BoardTop):
         (['light[5]', 'drv[1]', 'drv', 'footprint_spec'], ParamValue(['light[0]', 'drv[0]', 'drv', 'footprint_spec'])),
       ],
       class_refinements=[
-        (PptcFuse, CanFuse)
+        (Fuse, CanFuse)
       ],
     )
 
