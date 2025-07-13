@@ -80,11 +80,11 @@ class JlcBaseFet(JlcTableSelector):
     return cls._jlc_table().map_new_columns(parse_row)
 
 
-class JlcFet(TableFet, PartsTableSelectorFootprint, JlcBaseFet):
+class JlcFet(PartsTableSelectorFootprint, JlcBaseFet, TableFet):
   pass
 
 
-class JlcSwitchFet(TableSwitchFet, PartsTableSelectorFootprint, JlcBaseFet):
+class JlcSwitchFet(PartsTableSelectorFootprint, JlcBaseFet, TableSwitchFet):
   @init_in_parent
   def __init__(self, *args, manual_gate_charge: RangeLike = RangeExpr.ZERO, **kwargs):
     super().__init__(*args, **kwargs)
