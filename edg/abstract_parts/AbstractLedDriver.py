@@ -1,4 +1,5 @@
 from ..abstract_parts import *
+from deprecated import deprecated
 
 
 @abstract_block
@@ -18,6 +19,7 @@ class LedDriver(PowerConditioner, Interface):
         self.max_current = self.ArgParameter(max_current)
 
 
+@deprecated("ripple should be an internal parameter")
 class LedDriverSwitchingConverter(BlockInterfaceMixin[LedDriver]):
     """LED driver mixin indicating that the LED driver is a switching converter and with a peak-peak ripple limit."""
     @init_in_parent
