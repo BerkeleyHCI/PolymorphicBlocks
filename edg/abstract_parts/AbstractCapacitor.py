@@ -264,15 +264,14 @@ class TableDeratingCapacitor(TableCapacitor):
     ))
 
   def _row_generate(self, row: PartsTableRow) -> None:
+    super()._row_generate(row)
     if row[self.PARALLEL_COUNT] == 1:
-      super()._row_generate(row)  # creates the footprint
       self.assign(self.actual_derated_capacitance, row[self.DERATED_CAPACITANCE])
     else:
       self.assign(self.actual_part, f"{row[self.PARALLEL_COUNT]}x {row[self.PART_NUMBER_COL]}")
       self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
       self.assign(self.actual_capacitance, row[self.PARALLEL_CAPACITANCE])
       self.assign(self.actual_derated_capacitance, row[self.PARALLEL_DERATED_CAPACITANCE])
-      self._make_parallel_footprints(row)
 
   @abstractmethod
   def _make_parallel_footprints(self, row: PartsTableRow) -> None:

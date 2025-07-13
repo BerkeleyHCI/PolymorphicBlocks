@@ -104,6 +104,14 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return [row[cls.PARALLEL_COUNT], super(JlcCapacitor, cls)._row_sort_by(row)]
 
+  def _row_generate(self, row: PartsTableRow) -> None:
+    if row[self.PARALLEL_COUNT] == 1:
+      super()._row_generate(row)  # creates the footprint
+    else:
+      TableCapacitor._row_generate(self, row)  # skips creating the footprint in PartsTableSelectorFootprint
+      self.assign(self.actual_basic_part, True)  # dummy value
+      self._make_parallel_footprints(row)
+
   def _make_parallel_footprints(self, row: PartsTableRow) -> None:
     cap_model = JlcDummyCapacitor(set_lcsc_part=row[self.LCSC_PART_HEADER],
                                   set_basic_part=row[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE,
