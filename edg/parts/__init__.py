@@ -20,6 +20,7 @@ from .CustomDiode import CustomDiode
 from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AaBattery, AaBatteryStack
 from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
+from .Joystick_Xbox import XboxElite2Joystick
 from .RotaryEncoder_Alps import Ec11eWithSwitch, Ec11j15WithSwitch, Ec05e
 from .RotaryEncoder_Bourns import Pec11s
 from .DirectionSwitch_Alps import Skrh
@@ -46,8 +47,8 @@ from .CeramicResonator_Cstne import Cstne
 from .PassiveConnector_Header import PinHeader254, PinHeader254Vertical, PinHeader254Horizontal, PinSocket254
 from .PassiveConnector_Header import PinHeader254DualShroudedInline
 from .PassiveConnector_Header import PinHeader127DualShrouded
-from .PassiveConnector_Header import JstPhKVertical, JstPhSmVertical, JstPhKHorizontal, JstPhSmVerticalJlc, \
-    JstShSmHorizontal, MolexSl
+from .PassiveConnector_Header import JstXh, JstXhAHorizontal, JstXhAVertical, JstPh, JstPhKVertical, JstPhSmVertical,\
+    JstPhKHorizontal, JstPhSmVerticalJlc, JstShSmHorizontal, MolexSl, Picoblade, Picoblade53398, Picoblade53261
 from .PassiveConnector_Fpc import Fpc030, Fpc030Top, Fpc030Bottom, Fpc030TopBottom, HiroseFh35cshw
 from .PassiveConnector_Fpc import Fpc050, Fpc050Top, Fpc050Bottom, Fpc050BottomFlip, HiroseFh12sh, Afc01, Afc07Top, Te1734839
 from .PassiveConnector_TagConnect import TagConnect, TagConnectLegged, TagConnectNonLegged
@@ -61,6 +62,7 @@ from .SdCards import SdCard, SdSocket, MicroSdSocket, Dm3btDsfPejs, Molex1040310
 from .LinearRegulators import Ld1117, Ldl1117, Ap2204k, Ap7215, Xc6206p, Xc6209, Ap2210, Lp5907, Tlv757p, L78l
 from .VoltageReferences import Ref30xx
 from .BuckConverter_TexasInstruments import Tps561201, Tps54202h
+from .BuckConverter_Mps import Mp2722
 from .BuckConverter_Ap3418 import Ap3418
 from .BoostConverter_AnalogDevices import Ltc3429
 from .BoostConverter_DiodesInc import Ap3012
@@ -71,6 +73,7 @@ from .BuckConverter_Custom import CustomSyncBuckConverterIndependent
 from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverterPwm
 from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr, SoftPowerGate, SoftPowerSwitch, PmosReverseProtection, PmosChargerReverseProtection
 from .LedDriver_Al8861 import Al8861
+from .LedDriver_Tps92200 import Tps92200
 from .ResetGenerator_Apx803s import Apx803s
 from .BootstrapVoltageAdder import BootstrapVoltageAdder
 
@@ -159,11 +162,14 @@ from .Mechanicals import MountingHole, MountingHole_M2_5, MountingHole_M3, Mount
 
 from .MotorDriver_L293dd import L293dd
 from .MotorDriver_Drv8833 import Drv8833
+from .MotorDriver_Drv8870 import Drv8870
 from .Bldc_Drv8313 import Drv8313
 from .StepperDriver_A4988 import A4988, PololuA4988
 
 from .Imu_Lsm6ds3trc import Lsm6ds3trc
 from .Lsm6dsv16x import Lsm6dsv16x
+from .MagneticSensor_A1304 import A1304
+from .MagneticSwitch_Ah1806 import Ah1806
 from .Mag_Qmc5883l import Qmc5883l
 from .EnvironmentalSensor_Sensirion import Shtc3
 from .EnvironmentalSensor_Bme680 import Bme680

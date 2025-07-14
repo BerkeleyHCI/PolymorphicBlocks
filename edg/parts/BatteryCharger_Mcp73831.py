@@ -18,7 +18,7 @@ class Mcp73831_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.stat = self.Port(DigitalSource.from_supply(
       self.vss, self.vdd,
       current_limits=(-25, 35)*mAmp
-    ))
+    ), optional=True)
     self.vbat = self.Port(VoltageSource(
       voltage_out=(4.168, 4.232)*Volt,  # -2 variant
       current_limits=self.actual_charging_current.hull(0 * Amp(tol=0))
@@ -54,7 +54,7 @@ class Mcp73831(PowerConditioner, Block):
     self.pwr_bat = self.Export(self.ic.vbat, [Output])
     self.pwr = self.Export(self.ic.vdd, [Input, Power])
     self.gnd = self.Export(self.ic.vss, [Common])
-    self.stat = self.Export(self.ic.stat)  # hi-Z when not charging, low when charging, high when done
+    self.stat = self.Export(self.ic.stat, optional=True)  # hi-Z when not charging, low when charging, high when done
 
     self.charging_current = self.ArgParameter(charging_current)
 

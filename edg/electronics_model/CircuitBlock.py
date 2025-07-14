@@ -91,6 +91,7 @@ class FootprintBlock(Block):
       self.assign(self.fp_datasheet, '')
 
 
+@non_library
 class WrapperFootprintBlock(FootprintBlock):
   """Block that has a footprint and optional internal contents, but the netlister ignores internal components.
   Useful for, for example, a breakout board where the modelling details are provided by internal chip blocks,

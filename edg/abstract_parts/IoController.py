@@ -8,6 +8,7 @@ from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
 from .Categories import ProgrammableController
 
 
+@non_library
 @abstract_block
 class BaseIoController(PinMappable, Block):
   """An abstract IO controller block, that takes power input and provides a grab-bag of common IOs.

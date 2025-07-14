@@ -47,7 +47,7 @@ const U1 = board.add(SOT_23_6, {
 })
 // reg_3v3.fb.div.top_res
 const R1 = board.add(R_0603_1608Metric, {
-  translate: pt(3.570, 1.131), rotate: 0,
+  translate: pt(3.617, 1.131), rotate: 0,
   id: 'R1'
 })
 // reg_3v3.fb.div.bottom_res
@@ -76,8 +76,8 @@ const C3 = board.add(C_1206_3216Metric, {
   id: 'C3'
 })
 // reg_3v3.power_path.out_cap.cap
-const C4 = board.add(C_0805_2012Metric, {
-  translate: pt(3.406, 1.141), rotate: 0,
+const C4 = board.add(C_1206_3216Metric, {
+  translate: pt(3.429, 1.147), rotate: 0,
   id: 'C4'
 })
 // reg_3v3.en_res
@@ -438,7 +438,7 @@ board.setNetlist([
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(3.746456692913387, 2.4618110236220474);
+const limit1 = pt(3.7937007874015753, 2.4618110236220474);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);

@@ -201,7 +201,7 @@ class NeopixelArrayCircular(NeopixelArray, SvgPcbTemplateBlock):
         assert all([pin is not None for pin in [led_vdd_pin, led_gnd_pin, led_din_pin, led_dout_pin]])
 
         return f"""\
-function {self._svgpcb_fn_name()}(xy, rot=90, radius=1, startAngle=0, endAngle=360, powerRadiusOffset=0.2) {{
+function {self._svgpcb_fn_name()}(xy, rot=270, radius=1, startAngle=0, endAngle=360, powerRadiusOffset=0.2) {{
   const kCount = {self._svgpcb_get(self.count)}
 
   // Global params

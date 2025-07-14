@@ -4,7 +4,7 @@ from ..parts.JlcLed import JlcLed
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsLed(TableLed, PartsTableSelectorFootprint, JlcPartsBase):
+class JlcPartsLed(PartsTableSelectorFootprint, JlcPartsBase, TableLed):
     _JLC_PARTS_FILE_NAMES = [
         "OptoelectronicsLight_Emitting_Diodes__LED_",
         "OptoelectronicsLED_Indication___Discrete",

@@ -11,7 +11,7 @@ from .JlcPart import JlcPart
 # TODO: maybe have a RfPort / DifferentialRfPort bidirectional type modeling impedances
 # TODO: use actual component values in calculations, to account for tolerance stackup
 
-class NfcAntenna(FootprintBlock, GeneratorBlock):
+class NfcAntenna(FootprintBlock, GeneratorBlock, Interface):
     """NFC antenna, also calculates the complex impedance from series-LRC parameters.
     In this model, the L and R are in series, and the C is in parallel with the LR stack.
     As in https://www.nxp.com/docs/en/application-note/AN13219.pdf
@@ -54,7 +54,7 @@ class NfcAntenna(FootprintBlock, GeneratorBlock):
         self.footprint('ANT', self.ant_footprint, {'1': self.ant1, '2': self.ant2})
 
 
-class NfcAntennaDampening(GeneratorBlock):
+class NfcAntennaDampening(InternalSubcircuit, GeneratorBlock):
     """Differential antenna dampening circuit, two inline resistors to achieve some target Q
     """
     @classmethod
@@ -94,7 +94,7 @@ class NfcAntennaDampening(GeneratorBlock):
         self.assign(self.z_imag, self.ant_x)
 
 
-class DifferentialLcLowpassFilter(GeneratorBlock):
+class DifferentialLcLowpassFilter(GeneratorBlock, RfFilter):
     """Differential LC lowpass filter, commonly used as an EMC filter in the NFC analog frontend
     Input resistance is used to calculate the output impedance"""
     @classmethod
@@ -145,7 +145,7 @@ class DifferentialLcLowpassFilter(GeneratorBlock):
         self.assign(self.z_imag, impedance.imag)
 
 
-class DifferentialLLowPassFilter(GeneratorBlock):
+class DifferentialLLowPassFilter(GeneratorBlock, RfFilter):
     @classmethod
     def _calculate_se_values(cls, freq: float, z1: complex, z2: complex) -> Tuple[float, float]:
         # calculate single-ended values from single-ended filter
@@ -191,7 +191,7 @@ class DifferentialLLowPassFilter(GeneratorBlock):
         self.connect(self.cp1.neg.adapt_to(Ground()), self.cp2.neg.adapt_to(Ground()), self.gnd)
 
 
-class Pn7160RxFilter(Block):
+class Pn7160RxFilter(InternalSubcircuit, Block):
     @init_in_parent
     def __init__(self, resistance: RangeLike, capacitance: RangeLike, voltage: RangeLike):
         super().__init__()
@@ -219,7 +219,7 @@ class Pn7160RxFilter(Block):
         self.connect(self.crx2.neg, self.out2)
 
 
-class Pn7160_Device(FootprintBlock, JlcPart):
+class Pn7160_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.vss = self.Port(Ground(), [Common])

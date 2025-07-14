@@ -5,7 +5,7 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart, JlcTableSelector
 
 
-class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, PartsTableSelectorFootprint, JlcTableSelector):
+class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingCapacitor, CeramicCapacitor):
   PACKAGE_FOOTPRINT_MAP = {
     '0201': 'Capacitor_SMD:C_0201_0603Metric',
     '0402': 'Capacitor_SMD:C_0402_1005Metric',
@@ -104,6 +104,15 @@ class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, PartsTableSelectorF
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return [row[cls.PARALLEL_COUNT], super(JlcCapacitor, cls)._row_sort_by(row)]
 
+  def _row_generate(self, row: PartsTableRow) -> None:
+    # see comment in TableCapacitor._row_generate for why this needs to be here
+    if row[self.PARALLEL_COUNT] == 1:
+      super()._row_generate(row)  # creates the footprint
+    else:
+      TableCapacitor._row_generate(self, row)  # skips creating the footprint in PartsTableSelectorFootprint
+      self.assign(self.actual_basic_part, True)  # dummy value
+      self._make_parallel_footprints(row)
+
   def _make_parallel_footprints(self, row: PartsTableRow) -> None:
     cap_model = JlcDummyCapacitor(set_lcsc_part=row[self.LCSC_PART_HEADER],
                                   set_basic_part=row[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE,
@@ -118,18 +127,16 @@ class JlcCapacitor(TableDeratingCapacitor, CeramicCapacitor, PartsTableSelectorF
       self.connect(self.c[i].pos, self.pos)
       self.connect(self.c[i].neg, self.neg)
 
-    self.assign(self.lcsc_part, row[self.LCSC_PART_HEADER])
-    self.assign(self.actual_basic_part, row[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE)
 
-
-class JlcDummyCapacitor(DummyCapacitorFootprint, JlcPart):
+class JlcDummyCapacitor(JlcPart, DummyCapacitorFootprint):
   """Dummy capacitor that additionally has JLC part fields
   """
   @init_in_parent
   def __init__(self, set_lcsc_part: StringLike = "", set_basic_part: BoolLike = False,
                footprint: StringLike = "", manufacturer: StringLike = "",
                part_number: StringLike = "", value: StringLike = "", *args, **kwargs) -> None:
-    super().__init__(footprint, manufacturer, part_number, value, *args, **kwargs)
+    super().__init__(footprint=footprint, manufacturer=manufacturer, part_number=part_number,
+                     value=value, *args, **kwargs)
 
     self.assign(self.lcsc_part, set_lcsc_part)
     self.assign(self.actual_basic_part, set_basic_part)

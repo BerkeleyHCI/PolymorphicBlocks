@@ -1,104 +1,101 @@
 import unittest
 
 from edg import *
-from .test_high_switch import CalSolCanConnectorRa
 
 
-class CanAdapter(BoardTop):
+class Obd2Connector(FootprintBlock):
+  """OBD2 dongle-side (not car-side) connector"""
+  def __init__(self) -> None:
+    super().__init__()
+    self.gnd = self.Port(Ground())
+    self.pwr = self.Port(VoltageSource(voltage_out=(10, 25)*Volt))
+
+    self.can = self.Port(CanDiffPort())
+
+  def contents(self) -> None:
+    super().contents()
+    self.footprint(
+      'U', 'project:J1962',
+      {
+        '6': self.can.canh,
+        '14': self.can.canl,
+        '5': self.gnd,  # note, 4 is chassis gnd
+        '16': self.pwr,  # battery voltage
+      },
+    )
+
+
+class CanAdapter(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
-    # USB Domain
-    self.usb = self.Block(UsbCReceptacle())
-
-    self.vusb = self.connect(self.usb.pwr)
-    self.gnd = self.connect(self.usb.gnd)
+    self.obd = self.Block(Obd2Connector())
+    self.gnd = self.connect(self.obd.gnd)
 
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      (self.usb_reg, ), _ = self.chain(
-        self.usb.pwr,
-        imp.Block(LinearRegulator(3.3*Volt(tol=0.05)))
+      (self.ferrite, self.reg_3v3, self.prot_3v3), _ = self.chain(
+        self.obd.pwr,
+        self.Block(SeriesPowerFerriteBead()),
+        imp.Block(VoltageRegulator(output_voltage=3.3*Volt(tol=0.05))),
+        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
       )
-
-    self.v3v3 = self.connect(self.usb_reg.pwr_out)
+      self.vobd = self.connect(self.ferrite.pwr_out)
+      self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
         ImplicitConnect(self.gnd, [Common]),
     ) as imp:
       self.mcu = imp.Block(IoController())
+      self.mcu.with_mixin(IoControllerWifi())
 
-      # this uses the legacy / simple (non-mixin) USB and CAN IO style
-      (self.usb_esd, ), _ = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.mcu.usb.request())
-      (self.xcvr, ), self.can_chain = self.chain(self.mcu.can.request('can'), imp.Block(Iso1050dub()))
+      self.can = imp.Block(CanTransceiver())
+      self.connect(self.can.can, self.obd.can)
+      self.connect(self.can.controller, self.mcu.with_mixin(IoControllerCan()).can.request('can'))
 
-      (self.sw_usb, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw_usb'))
-      (self.sw_can, ), _ = self.chain(imp.Block(DigitalSwitch()), self.mcu.gpio.request('sw_can'))
+      # debugging LEDs
+      (self.ledr, ), _ = self.chain(imp.Block(IndicatorSinkLed(Led.Red)), self.mcu.gpio.request('ledr'))
+      (self.ledg, ), _ = self.chain(imp.Block(IndicatorLed(Led.Green)), self.mcu.gpio.request('ledg'))
+      (self.ledw, ), _ = self.chain(imp.Block(IndicatorLed(Led.White)), self.mcu.gpio.request('ledw'))
 
-      self.lcd = imp.Block(Qt096t_if09())
-
-      self.rgb_usb = imp.Block(IndicatorSinkRgbLed())
-      self.rgb_can = imp.Block(IndicatorSinkRgbLed())
-
-    self.connect(self.mcu.gpio.request('lcd_led'), self.lcd.led)
-    self.connect(self.mcu.gpio.request('lcd_reset'), self.lcd.reset)
-    self.connect(self.mcu.gpio.request('lcd_rs'), self.lcd.rs)
-    self.connect(self.mcu.spi.request('lcd_spi'), self.lcd.spi)  # MISO unused
-    self.connect(self.mcu.gpio.request('lcd_cs'), self.lcd.cs)
-
-    self.connect(self.mcu.gpio.request_vector('rgb_usb'), self.rgb_usb.signals)
-    self.connect(self.mcu.gpio.request_vector('rgb_can'), self.rgb_can.signals)
-
-    # Isolated CAN Domain
-    self.can = self.Block(CalSolCanConnectorRa())
-    self.can_vcan = self.connect(self.can.pwr)
-    self.can_gnd = self.connect(self.can.gnd)
-
-    with self.implicit_connect(
-        ImplicitConnect(self.can_gnd, [Common]),
-    ) as imp:
-      (self.can_reg, self.led_can), _ = self.chain(self.can_vcan,
-                                                   imp.Block(LinearRegulator(5.0*Volt(tol=0.05))),
-                                                   imp.Block(VoltageIndicatorLed()))
-      (self.can_esd, ), _ = self.chain(self.xcvr.can, imp.Block(CanEsdDiode()), self.can.differential)
-
-    self.can_v5v = self.connect(self.can_reg.pwr_out, self.xcvr.can_pwr)
-    self.connect(self.can_gnd, self.xcvr.can_gnd)
+      (self.vobd_sense, ), _ = self.chain(
+        self.vobd,
+        imp.Block(VoltageSenseDivider(full_scale_voltage=2.2*Volt(tol=0.1), impedance=(1, 10)*kOhm)),
+        self.mcu.adc.request('vobd_sense')
+      )
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
-        (['mcu'], Lpc1549_48),
-        (['mcu', 'swd'], SwdCortexTargetTc2050),
-        (['mcu', 'swd', 'conn'], TagConnectNonLegged),
-        (['sw_usb', 'package'], SmtSwitchRa),
-        (['sw_can', 'package'], SmtSwitchRa),
-        (['usb_reg'], Ap2204k),
-        (['can_reg'], Ap2204k),
+        (['mcu'], Esp32c3_Wroom02),
+        (['reg_3v3'], Tps54202h),
       ],
       instance_values=[
+        (['refdes_prefix'], 'O'),  # unique refdes for panelization
         (['mcu', 'pin_assigns'], [
-          'can.txd=8',
-          'can.rxd=12',
-          'sw_usb=28',
-          'sw_can=48',
-          'lcd_led=23',
-          'lcd_reset=13',
-          'lcd_rs=15',
-          'lcd_spi.sck=21',
-          'lcd_spi.mosi=18',
-          'lcd_spi.miso=NC',
-          'lcd_cs=22',
-          'rgb_usb_red=2',
-          'rgb_usb_green=1',
-          'rgb_usb_blue=3',
-          'rgb_can_red=6',
-          'rgb_can_green=4',
-          'rgb_can_blue=7',
+          'ledr=_GPIO9_STRAP',  # force using the strapping / boot mode pin
+          'ledg=13',
+          'ledw=14',
+          'can.txd=6',
+          'can.rxd=5',
+          'vobd_sense=3',  # 4 as sent to fabrication before ADC2 removed from model, blue-wire to 3
+
         ]),
-        (['mcu', 'swd_swo_pin'], 'PIO0_8'),
+        (['mcu', 'programming'], 'uart-auto'),
+        (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range(0, 9e6)),
+        (['reg_3v3', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 1.0),
+        (['reg_3v3', 'power_path', 'inductor', 'footprint_spec'], "Inductor_SMD:L_1210_3225Metric")
+      ],
+      class_refinements=[
+        (EspProgrammingHeader, EspProgrammingTc2030),
+        (TagConnect, TagConnectNonLegged),
+        (CanTransceiver, Sn65hvd230),
+        (TestPoint, CompactKeystone5015),
+      ],
+      class_values=[
+        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
       ]
     )
 

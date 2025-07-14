@@ -4,7 +4,7 @@ from ..parts.JlcDiode import JlcDiode
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsDiode(TableDiode, PartsTableSelectorFootprint, JlcPartsBase):
+class JlcPartsDiode(PartsTableSelectorFootprint, JlcPartsBase, TableDiode):
     _JLC_PARTS_FILE_NAMES = [
         "DiodesSchottky_Barrier_Diodes__SBD_",
         "DiodesDiodes___Fast_Recovery_Rectifiers",

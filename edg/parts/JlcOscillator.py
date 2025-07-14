@@ -60,7 +60,7 @@ class Sg8101ce_Device(Sg8101_Base_Device):
   FOOTPRINT = 'Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm'  # doesn't perfectly match datasheet recommended geometry
 
 
-class JlcOscillator(TableOscillator, JlcTableSelector):
+class JlcOscillator(JlcTableSelector, TableOscillator):
   SERIES_DEVICE_MAP = {
     'SG-8101CG': Sg8101cg_Device,
     'SG-8101CE': Sg8101ce_Device,
