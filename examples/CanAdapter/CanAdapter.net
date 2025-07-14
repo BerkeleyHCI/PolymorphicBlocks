@@ -441,7 +441,7 @@
   (node (ref OU3) (pin 14))
   (node (ref OD4) (pin 2)))
 (net (code 12) (name "Ovobd_sense.output")
-  (node (ref OU3) (pin 4))
+  (node (ref OU3) (pin 3))
   (node (ref OR8) (pin 2))
   (node (ref OR9) (pin 1)))
 (net (code 13) (name "Oreg_3v3.fb.output")

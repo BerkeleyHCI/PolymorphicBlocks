@@ -56,7 +56,7 @@ class LLowPassFilter:
             PiLowPassFilter._reactance_to_capacitance(freq, xp)
 
 
-class LLowPassFilterWith2HNotch(AnalogFilter, GeneratorBlock):
+class LLowPassFilterWith2HNotch(GeneratorBlock, RfFilter):
     """L filter for impedance matching for RF with an overlaid second-harmonic LC notch filter.
     The target reactance is given by the L filter.
     Then, the L and C values are from the simultaneous solution of:
@@ -143,7 +143,7 @@ class LHighPassFilter:
             PiLowPassFilter._reactance_to_capacitance(freq, net_xs - xs2)
 
 
-class PiLowPassFilter(AnalogFilter, GeneratorBlock):
+class PiLowPassFilter(GeneratorBlock, RfFilter):
     """Passive-typed pi impedance matching network.
     Based on equations from https://www.silabs.com/documents/public/application-notes/an1275-imp-match-for-network-arch.pdf
     and also referencing https://www.electronicdesign.com/technologies/communications/article/21801154/back-to-basics-impedance-matching-part-3

@@ -47,7 +47,7 @@ class PcbBot(JlcBoardTop):
     ) as imp:
       (self.fuse, self.gate, self.prot_batt, self.tp_batt), _ = self.chain(
         self.batt.pwr,
-        imp.Block(SeriesPowerPptcFuse((2, 4)*Amp)),
+        imp.Block(SeriesPowerFuse((2, 4)*Amp)),
         imp.Block(SoftPowerSwitch()),
         imp.Block(ProtectionZenerDiode(voltage=(4.5, 6.0)*Volt)),
         self.Block(VoltageTestPoint()))
@@ -174,7 +174,7 @@ class PcbBot(JlcBoardTop):
         (['reg_1v2'], Xc6206p),
         (['rgb', 'package'], ThtRgbLed),
         (['npx_key'], Sk6812Mini_E),
-
+        (['fuse', 'fuse'], PptcFuse),
       ],
       instance_values=[
         (['mcu', 'pin_assigns'], [

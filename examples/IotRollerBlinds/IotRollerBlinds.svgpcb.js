@@ -203,7 +203,7 @@ board.setNetlist([
   {name: "Bv3v3", pads: [["BU3", "4"], ["BTP3", "1"], ["BD1", "1"], ["BU2", "1"], ["BD2", "2"], ["BJ5", "2"], ["BR1", "1"], ["BU2", "7"], ["BU2", "16"], ["BC6", "1"], ["BC7", "1"], ["BJ4", "1"], ["BR8", "1"], ["BR9", "1"], ["BR4", "1"], ["BL1", "2"], ["BC5", "1"]]},
   {name: "Bfuse.pwr_out", pads: [["BF1", "2"], ["BFB1", "1"]]},
   {name: "Bmcu.program_boot_node", pads: [["BR5", "2"], ["BU2", "8"], ["BJ4", "2"]]},
-  {name: "Bvin_sense.output", pads: [["BU2", "4"], ["BR6", "2"], ["BR7", "1"]]},
+  {name: "Bvin_sense.output", pads: [["BU2", "3"], ["BR6", "2"], ["BR7", "1"]]},
   {name: "Bconn.enca", pads: [["BU2", "13"], ["BJ3", "2"]]},
   {name: "Bconn.encb", pads: [["BU2", "10"], ["BJ3", "3"]]},
   {name: "Bqwiic_pull.i2c.scl", pads: [["BU2", "5"], ["BR8", "2"], ["BJ5", "4"]]},

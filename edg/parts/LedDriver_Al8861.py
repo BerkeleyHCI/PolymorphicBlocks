@@ -64,6 +64,7 @@ class Al8861(LedDriverPwm, LedDriverSwitchingConverter, LedDriver, GeneratorBloc
     def generate(self):
         super().contents()
 
+        # TODO replace with BuckConverterPowerPath, though the 33uH minimum inductance is very high
         self.require(self.max_current.within((0, 1.5)*Amp))  # for MSOP and SOT89 packages
 
         isense_ref = Range(0.096, 0.104)

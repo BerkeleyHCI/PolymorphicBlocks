@@ -33,6 +33,12 @@ class AnalogFilter(Filter):
 
 
 @abstract_block
+class RfFilter(AnalogFilter):
+  """RF signal conditioning subcircuit."""
+  pass
+
+
+@abstract_block
 class DigitalFilter(Filter):
   """Digital signal conditioning block."""
   pass

@@ -19,9 +19,9 @@ class Ah1806_Device(InternalBlock, FootprintBlock, JlcPart):
         self.footprint(
             'U', 'Package_TO_SOT_SMD:SOT-23',
             {
-                '1': self.vdd,
-                '2': self.gnd,
-                '3': self.output,
+                '1': self.vdd,  # note, kicad pin numbers differs from datasheet pin numbers
+                '3': self.gnd,
+                '2': self.output,
             },
             mfr="Diodes Incorporated", part='AH1806-W-7',
             datasheet='https://www.diodes.com/assets/Datasheets/AH1806.pdf')

@@ -1,9 +1,10 @@
 from typing import Mapping
 
+from ..abstract_parts import Analog
 from ..electronics_model import *
 
 
-class Comparator(KiCadInstantiableBlock, Block):
+class Comparator(KiCadInstantiableBlock, Analog):
     """Abstract comparator interface, output goes high when inp > inn."""
     def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
         assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')

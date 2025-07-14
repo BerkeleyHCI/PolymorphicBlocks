@@ -80,7 +80,7 @@ class CanAdapter(JlcBoardTop):
           'ledw=14',
           'can.txd=6',
           'can.rxd=5',
-          'vobd_sense=4',
+          'vobd_sense=3',  # 4 as sent to fabrication before ADC2 removed from model, blue-wire to 3
 
         ]),
         (['mcu', 'programming'], 'uart-auto'),

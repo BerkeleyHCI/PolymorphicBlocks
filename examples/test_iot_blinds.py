@@ -135,7 +135,7 @@ class IotRollerBlinds(JlcBoardTop):
                 (['refdes_prefix'], 'B'),  # unique refdes for panelization
                 (['mcu', 'pin_assigns'], [
                     'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
-                    'vin_sense=4',
+                    'vin_sense=3',  # 4 as sent to fabrication before ADC2 removed from model, blue-wire to 3
                     'motor1=15',
                     'motor2=14',
                     'enca=13',
@@ -268,7 +268,7 @@ class IotCurtainCrawler(JlcBoardTop):
                 (['refdes_prefix'], 'R'),  # unique refdes for panelization
                 (['mcu', 'pin_assigns'], [
                     'led=_GPIO9_STRAP',  # force using the strapping / boot mode pin
-                    'vin_sense=4',
+                    'vin_sense=17',  # 4 as sent to fabrication before ADC2 removed from model, blue-wire to 17
                     'motor1=14',
                     'motor2=15',
                     'enca=13',

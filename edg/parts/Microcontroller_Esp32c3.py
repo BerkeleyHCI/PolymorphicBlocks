@@ -60,7 +60,7 @@ class Esp32c3_Ios(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator):
       # PinResource('GPIO2', {'GPIO2': dio_model, 'ADC1_CH2': adc_model}),  # boot pin, non-allocatable
       PinResource('GPIO3', {'GPIO3': dio_model, 'ADC1_CH3': adc_model}),
       PinResource('MTMS', {'GPIO4': dio_model, 'ADC1_CH4': adc_model}),
-      PinResource('MTDI', {'GPIO5': dio_model, 'ADC2_CH0': adc_model}),
+      PinResource('MTDI', {'GPIO5': dio_model}),  # also ADC2_CH0, but unusable with WiFi
       PinResource('MTCK', {'GPIO6': dio_model}),
       PinResource('MTDO', {'GPIO7': dio_model}),
       # PinResource('GPIO8', {'GPIO8': dio_model}),  # boot pin, non-allocatable

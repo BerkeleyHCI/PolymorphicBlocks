@@ -4,7 +4,7 @@ from ..parts.JlcFerriteBead import JlcFerriteBead
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 
 
-class JlcPartsFerriteBead(TableFerriteBead, PartsTableSelectorFootprint, JlcPartsBase):
+class JlcPartsFerriteBead(PartsTableSelectorFootprint, JlcPartsBase, TableFerriteBead):
     _JLC_PARTS_FILE_NAMES = ["FiltersakaEMI_OptimizationFerrite_Beads"]
 
     @classmethod

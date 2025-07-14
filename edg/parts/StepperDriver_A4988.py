@@ -205,7 +205,7 @@ class A4988(BrushedMotorDriver, GeneratorBlock):
       self.connect(self.pwr_logic.as_digital_source(), self.ic.sleep)
 
 
-class PololuA4988(WrapperFootprintBlock, GeneratorBlock):
+class PololuA4988(BrushedMotorDriver, WrapperFootprintBlock, GeneratorBlock):
   """Pololu breakout board for the A4988 stepper driver. Adjustable current limit with onboard trimpot."""
   @init_in_parent
   def __init__(self, step_resolution: IntLike = 16):
