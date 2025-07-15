@@ -159,7 +159,7 @@ class LowPassRcDac(DigitalToAnalog, Block):
     self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
 
 
-class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock, GeneratorBlock):
+class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock):
   """Analog-typed low-pass differential RC filter, with cutoff frequency specified at the -3dB (~70%) point.
   Impedance is the single-ended resistor value."""
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
@@ -179,16 +179,14 @@ class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock, GeneratorB
     self.impedance = self.ArgParameter(impedance)
     self.cutoff_freq = self.ArgParameter(cutoff_freq)
 
-    self.generator_param(self.impedance, self.cutoff_freq)
-
-  def generate(self) -> None:
-    super().generate()
+  def contents(self) -> None:
+    super().contents()
 
     self.rp = self.Block(Resistor(resistance=self.impedance))
     self.rn = self.Block(Resistor(resistance=self.impedance))
-    capacitance = Range.cancel_multiply(1 / (2 * pi * self.get(self.impedance)), 1 / self.get(self.cutoff_freq))
+    capacitance = (1 / self.cutoff_freq).shrink_multiply(1 / (2 * pi * self.impedance))
     # capacitance is single-ended, halve it for differential
-    self.c = self.Block(Capacitor(capacitance=0.5*capacitance*Farad,
+    self.c = self.Block(Capacitor(capacitance=0.5*capacitance,
                                   voltage=self.inp.link().voltage-self.inn.link().voltage))
     self.connect(self.inp, self.rp.a.adapt_to(AnalogSink(
       impedance=self.rp.actual_resistance + self.outp.link().sink_impedance,

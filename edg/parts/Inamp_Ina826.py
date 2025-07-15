@@ -101,9 +101,7 @@ class Ina826(KiCadImportableBlock, GeneratorBlock):
     # gain error, lumped into the resistor gain
     self.require(self.ratio.within(Range(1, 1000)))
     # note, worst case gain at +/- 0.04%
-    # TODO use 49...*kOhm(tol=...), once cancel_multiply can support RangeExpr types
-    self.rg = self.Block(Resistor(Range.cancel_multiply(Range.from_tolerance(49.4e3, 0.0004),
-                                                        1/(self.get(self.ratio) - 1))))
+    self.rg = self.Block(Resistor((1/(self.ratio - 1)).shrink_multiply(49.4*kOhm(tol=0.0004))))
     self.connect(self.rg.a, self.ic.rg2)
     self.connect(self.rg.b, self.ic.rg3)
 
