@@ -58,6 +58,8 @@ class Nlas4157(AnalogSwitch):
   def contents(self):
     super().contents()
 
+    self.require(~self.control_gnd.is_connected(), "device does not support control ground")
+
     self.ic = self.Block(Nlas4157_Device())
     self.connect(self.pwr, self.ic.vcc)
     self.connect(self.gnd, self.ic.gnd)

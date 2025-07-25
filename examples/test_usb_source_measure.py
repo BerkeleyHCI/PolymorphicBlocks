@@ -217,6 +217,7 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
     self.connect(self.high_gate_ctl, self.high_gate.control.request())
     self.low_gate: AnalogMuxer
     self.connect(self.low_gate_ctl, self.low_gate.control.request())
+    self.connect(self.gnd, self.high_gate.control_gnd, self.low_gate.control_gnd)
 
 
 class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, GeneratorBlock):
