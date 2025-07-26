@@ -24,3 +24,26 @@ class Tlp3545a(SolidStateRelay, FootprintBlock):
       mfr='Toshiba', part='TLP3545A(TP1,F',
       datasheet='https://toshiba.semicon-storage.com/info/docget.jsp?did=60318&prodName=TLP3545A'
     )
+
+
+class Tlp170am(SolidStateRelay, FootprintBlock):
+  def contents(self):
+    super().contents()
+    self.assign(self.led_forward_voltage, (1.1, 1.4)*Volt)  # 1.27 nominal
+    self.assign(self.led_current_limit, (2, 30)*mAmp)
+    self.assign(self.led_current_recommendation, (2, 25)*mAmp)  # typ=2mA
+    self.assign(self.load_voltage_limit, (-48, 48)*Volt)  # recommended, up to 60 max
+    self.assign(self.load_current_limit, (-700, 700)*mAmp)
+    self.assign(self.load_resistance, (0.15, 0.30)*Ohm)
+
+    self.footprint(
+      'U', 'Package_SO:SO-4_4.4x3.6mm_P2.54mm',  # package outline by just a tad (0.15mm)
+      {
+        '1': self.leda,
+        '2': self.ledk,
+        '3': self.feta,
+        '4': self.fetb,
+      },
+      mfr='Toshiba', part='TLP170AM(TPL,E',
+      datasheet='https://toshiba.semicon-storage.com/info/TLP170AM_datasheet_en_20210524.pdf?did=69016&prodName=TLP170AM'
+    )
