@@ -16140,7 +16140,7 @@
 	(footprint "Resistor_SMD:R_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "37500c26-d565-4ff6-a890-d59db4d6e432")
-		(at 278 35 180)
+		(at 278 34 180)
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R56"
@@ -21762,7 +21762,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "465deed6-80be-4a7d-81a3-077d348e5064")
-		(at 283 28.73)
+		(at 283 27.73)
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J17"
@@ -25755,7 +25755,7 @@
 	(footprint "Connector:CalTest_CT3151"
 		(layer "F.Cu")
 		(uuid "4c3e762d-b6c7-45e4-8ee2-d4d33d0168a6")
-		(at 288 23 180)
+		(at 288 22 180)
 		(descr "Right-angle standard banana jack, http://www.caltestelectronics.com/images/attachments/P315100rH_drawing.pdf")
 		(tags "banana jack horizontal")
 		(property "Reference" "J15"
@@ -48584,7 +48584,7 @@
 	(footprint "Connector:CalTest_CT3151"
 		(layer "F.Cu")
 		(uuid "93ca1119-1d09-43e5-b8bb-408b3abf603f")
-		(at 288 42 180)
+		(at 288 41 180)
 		(descr "Right-angle standard banana jack, http://www.caltestelectronics.com/images/attachments/P315100rH_drawing.pdf")
 		(tags "banana jack horizontal")
 		(property "Reference" "J16"
@@ -52494,7 +52494,7 @@
 	(footprint "Diode_SMD:D_SMA"
 		(layer "F.Cu")
 		(uuid "9d0292d5-2235-4d13-80a3-5b4bf9a81522")
-		(at 276 28 180)
+		(at 276 27 180)
 		(descr "Diode SMA (DO-214AC)")
 		(tags "Diode SMA (DO-214AC)")
 		(property "Reference" "tvs_n1"
@@ -59279,7 +59279,7 @@
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")
 		(uuid "b06ee268-7c74-4e79-8627-5f4f3c0b1aad")
-		(at 278 25)
+		(at 278 24)
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "C61"
@@ -67484,7 +67484,7 @@
 	(footprint "Diode_SMD:D_SMA"
 		(layer "F.Cu")
 		(uuid "c43d08b1-bb9f-4016-bde7-dc3efd7a2b6f")
-		(at 276 32 180)
+		(at 276 31 180)
 		(descr "Diode SMA (DO-214AC)")
 		(tags "Diode SMA (DO-214AC)")
 		(property "Reference" "tvs_p1"
@@ -88758,7 +88758,7 @@
 		(uuid "d3201241-bece-4093-a01d-06e6b2d89060")
 	)
 	(gr_text "GND"
-		(at 222.5 99 0)
+		(at 285 25 0)
 		(layer "F.SilkS")
 		(uuid "18b7498b-c099-4210-be89-bcfbc028260e")
 		(effects
@@ -88831,7 +88831,7 @@
 		)
 	)
 	(gr_text "OUT+"
-		(at 222.5 105 0)
+		(at 285 33 0)
 		(layer "F.SilkS")
 		(uuid "97a01fc6-6f4d-4d0d-aa30-7e4b97f5db5a")
 		(effects
@@ -106266,40 +106266,40 @@
 		(uuid "9bd13e84-345e-4186-bc5d-081d765d71c9")
 	)
 	(segment
-		(start 277.175 35)
-		(end 277.175 34.175)
+		(start 277.175 34)
+		(end 277.175 33.175)
 		(width 0.5)
 		(layer "F.Cu")
 		(net 162)
 		(uuid "1f1988a1-abe2-4b67-b1cc-0496ade93050")
 	)
 	(segment
-		(start 277.225 25.775)
-		(end 277.225 25)
+		(start 277.225 24.775)
+		(end 277.225 24)
 		(width 0.5)
 		(layer "F.Cu")
 		(net 162)
 		(uuid "7719391d-f431-45a2-a229-8877061f9919")
 	)
 	(segment
-		(start 277.175 34.175)
-		(end 276 33)
+		(start 277.175 33.175)
+		(end 276 32)
 		(width 0.5)
 		(layer "F.Cu")
 		(net 162)
 		(uuid "7f4b2fde-00fe-4494-8ef7-18b7df972092")
 	)
 	(segment
-		(start 276 33)
-		(end 276 27)
+		(start 276 32)
+		(end 276 26)
 		(width 0.5)
 		(layer "F.Cu")
 		(net 162)
 		(uuid "89c62dad-393b-4f24-a6ca-31a79a7e7590")
 	)
 	(segment
-		(start 276 27)
-		(end 277.225 25.775)
+		(start 276 26)
+		(end 277.225 24.775)
 		(width 0.5)
 		(layer "F.Cu")
 		(net 162)
@@ -107018,8 +107018,8 @@
 		(uuid "fa703d9d-f43e-46e5-8fac-c447bae08717")
 	)
 	(segment
-		(start 274 28)
-		(end 274 32)
+		(start 274 27)
+		(end 274 31)
 		(width 1)
 		(layer "F.Cu")
 		(net 191)
@@ -107745,16 +107745,6 @@
 		(members "2ef4f5c5-420d-4e93-83d4-60fdaa879e30" "848ecea4-af38-4622-851d-400b1576c7d0"
 			"84e10bb4-7cd6-4466-82c2-b3383f92b32e" "be66c109-4612-47d7-812a-e762579bf998"
 			"c09305cc-7206-4289-9445-67e13ad24758"
-		)
-	)
-	(group ""
-		(uuid "caa3e717-84de-460c-8630-47d349963e30")
-		(members "170a30c9-c569-4aad-be3b-4a0196c2632e" "1f1988a1-abe2-4b67-b1cc-0496ade93050"
-			"37500c26-d565-4ff6-a890-d59db4d6e432" "7719391d-f431-45a2-a229-8877061f9919"
-			"7f4b2fde-00fe-4494-8ef7-18b7df972092" "89c62dad-393b-4f24-a6ca-31a79a7e7590"
-			"9d0292d5-2235-4d13-80a3-5b4bf9a81522" "a7fcdc26-28f3-400d-b00e-bc62c06a9f82"
-			"ac625163-d2bf-45c7-a6a0-5325e1ef871a" "b06ee268-7c74-4e79-8627-5f4f3c0b1aad"
-			"c43d08b1-bb9f-4016-bde7-dc3efd7a2b6f"
 		)
 	)
 	(group ""
@@ -108628,6 +108618,17 @@
 			"fc38725a-7bec-407c-a7c8-5966e222c961" "fca6af32-a391-45eb-a927-78953eb5dd96"
 			"fdeebb83-0aaf-4460-b9cc-f0f218b947ed" "ffa218c2-aa48-4c25-815e-5dd59501970d"
 			"fffdff13-5fe2-4682-8bd5-0e8c3f048307"
+		)
+	)
+	(group ""
+		(uuid "fc6efb64-ad72-4ec6-8d09-85838c1c45ad")
+		(members "170a30c9-c569-4aad-be3b-4a0196c2632e" "18b7498b-c099-4210-be89-bcfbc028260e"
+			"1f1988a1-abe2-4b67-b1cc-0496ade93050" "37500c26-d565-4ff6-a890-d59db4d6e432"
+			"7719391d-f431-45a2-a229-8877061f9919" "7f4b2fde-00fe-4494-8ef7-18b7df972092"
+			"89c62dad-393b-4f24-a6ca-31a79a7e7590" "97a01fc6-6f4d-4d0d-aa30-7e4b97f5db5a"
+			"9d0292d5-2235-4d13-80a3-5b4bf9a81522" "a7fcdc26-28f3-400d-b00e-bc62c06a9f82"
+			"ac625163-d2bf-45c7-a6a0-5325e1ef871a" "b06ee268-7c74-4e79-8627-5f4f3c0b1aad"
+			"c43d08b1-bb9f-4016-bde7-dc3efd7a2b6f"
 		)
 	)
 )
