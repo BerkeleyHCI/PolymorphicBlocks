@@ -497,8 +497,10 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(FetPrecharge(precharge_resistance=470*Ohm(tol=0.1), max_rds=0.1*Ohm)),
         self.convin_sense.sense_pos
       )
+      self.vusb_pre = self.connect(self.convin_sense.sense_neg)  # vusb post-precharge
+
       (self.cap_conv, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
-        self.convin_sense.sense_neg,
+        self.vusb_pre,
         imp.Block(DecouplingCapacitor(100*uFarad(tol=0.25))),
         imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30)*Volt,  # design for 0.5x - 1.5x conv ratio
                                                   frequency=500*kHertz(tol=0),

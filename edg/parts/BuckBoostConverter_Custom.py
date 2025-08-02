@@ -76,6 +76,7 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
       self.Block(ForcedVoltageCurrentDraw(self.power_path.switch_in.current_draw)),
       self.buck_sw.pwr
     )
+    self.l1 = self.connect(self.power_path.switch_in)  # give the node a name
     (self.sw_in_force, ), _ = self.chain(  # current draw used to size FETs, size for peak current
       self.buck_sw.out,
       self.Block(ForcedVoltageCurrentDraw(self.power_path.actual_inductor_current_peak)),
@@ -97,6 +98,7 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
                                       ).intersect(Range.from_lower(0)))),
       self.pwr_out
     )
+    self.l2 = self.connect(self.power_path.switch_out)  # give the node a name
     (self.sw_out_force, ), _ = self.chain(  # current draw used to size FETs, size for peak current
       self.power_path.switch_out,
       self.Block(VoltageSourceConnector(Range.exact(0),
