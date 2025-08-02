@@ -22,6 +22,7 @@ class AnalogSwitch(Interface, KiCadImportableBlock, Block):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
 
+    self.control_gnd = self.Port(Ground.empty(), optional=True)  # optional separate ground for control signal
     self.control = self.Port(Vector(DigitalSink.empty()))  # length source
 
     self.com = self.Port(Passive.empty())
@@ -41,7 +42,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
   def __init__(self, switch_size: IntLike = 0):
     super().__init__()
     self.switch_size = self.ArgParameter(switch_size)
-    self.generator_param(self.switch_size, self.inputs.requested())
+    self.generator_param(self.switch_size, self.inputs.requested(), self.control_gnd.is_connected())
 
   def generate(self):
     import math
@@ -73,6 +74,8 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
         all_switches.append(sw)
         self.connect(sw.pwr, self.pwr)
         self.connect(sw.gnd, self.gnd)
+        if self.control_gnd.is_connected():
+            self.connect(sw.control_gnd, self.control_gnd)
 
         for sw_port_i in range(switch_size):
           port_i = sw_i * switch_size + sw_port_i
@@ -116,6 +119,8 @@ class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
     self.device = self.Block(AnalogSwitch())
     self.pwr = self.Export(self.device.pwr, [Power])
     self.gnd = self.Export(self.device.gnd, [Common])
+
+    self.control_gnd = self.Port(Ground.empty(), optional=True)  # optional separate ground for control signal
     self.control = self.Export(self.device.control)
 
     self.inputs = self.Port(Vector(AnalogSink.empty()))
@@ -126,7 +131,7 @@ class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
       impedance=self.device.analog_on_resistance + self.inputs.hull(lambda x: x.link().source_impedance)
     )))
 
-    self.generator_param(self.inputs.requested())
+    self.generator_param(self.inputs.requested(), self.control_gnd.is_connected())
 
   def generate(self):
     super().generate()
@@ -139,6 +144,8 @@ class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
           current_draw=self.out.link().current_drawn,
           impedance=self.out.link().sink_impedance + self.device.analog_on_resistance
         )))
+      if self.get(self.control_gnd.is_connected()):
+        self.connect(self.control_gnd, self.device.control_gnd)
 
   def mux_to(self, inputs: Optional[List[Port[AnalogLink]]] = None,
              output: Optional[Port[AnalogLink]] = None) -> 'AnalogMuxer':
