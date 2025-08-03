@@ -34,7 +34,8 @@ class Ah1806(MagneticSwitch, Block):
     """Micropower omnipolar hall-effect switch, open-drain (external pullup required)
     Typ. 30 gauss (15-45 tolerance range) operation (turn-on) point
     and 20 G (10-40 tolerance range) release point.
-    0.1% duty cycle, period of 75ms (typ)."""
+    0.1% duty cycle, period of 75ms (typ).
+    Pin-compatible with some others in the AH18xx series and DRV5032, which have different trip characteristics"""
     def __init__(self):
         super().__init__()
         self.ic = self.Block(Ah1806_Device())
