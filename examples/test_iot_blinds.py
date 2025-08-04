@@ -249,7 +249,7 @@ class IotCurtainCrawler(JlcBoardTop):
                 ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             self.motor = self.Block(MotorConnector())
-            self.drv = imp.Block(Drv8870(current_trip=150*mAmp(tol=0.1)))
+            self.drv = imp.Block(Drv8870(current_trip=550*mAmp(tol=0.1)))
             self.connect(self.drv.vref, self.v3v3)
             self.connect(self.mcu.gpio.request('motor1'), self.drv.in1)
             self.connect(self.mcu.gpio.request('motor2'), self.drv.in2)
