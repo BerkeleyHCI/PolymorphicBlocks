@@ -733,12 +733,8 @@ class UsbSourceMeasure(JlcBoardTop):
                                                  imp.Block(AnalogRfTestPoint('mv')),
                                                  imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),
                                                  self.adc.vins.request('2'))
-      (self.tp_lsrc, ), _ = self.chain(self.control.limit_source,
-                                       imp.Block(DigitalTestPoint('src')),
-                                       self.mcu.gpio.request('limit_source'))
-      (self.tp_lsnk, ), _ = self.chain(self.control.limit_sink,
-                                       imp.Block(DigitalTestPoint('snk')),
-                                       self.mcu.gpio.request('limit_sink'))
+      self.connect(self.control.limit_source, self.mcu.gpio.request('limit_source'))
+      self.connect(self.control.limit_sink, self.mcu.gpio.request('limit_sink'))
 
       self.dummy_amp_lv = imp.Block(OpampFollower())
       self.connect(self.dummy_amp_lv.pwr, self.vanalog)
