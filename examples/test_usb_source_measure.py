@@ -506,7 +506,7 @@ class UsbSourceMeasure(JlcBoardTop):
                                                   frequency=500*kHertz(tol=0),
                                                   ripple_ratio=(0.01, 0.9),
                                                   input_ripple_limit=250*mVolt,
-                                                  output_ripple_limit=(25*(7/9))*mVolt  # fill out the row of caps
+                                                  output_ripple_limit=(25*(7/8))*mVolt  # fill out the row of caps
                                                   )),
         imp.Block(ForcedVoltage((2, 30)*Volt)),  # at least 2v to allow current sensor to work
         imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # zener shunt in case the boost converter goes crazy
