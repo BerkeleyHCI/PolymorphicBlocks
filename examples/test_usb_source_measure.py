@@ -423,6 +423,9 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
     self.limit_source = self.Port(DigitalSource.empty())
     self.limit_sink = self.Port(DigitalSource.empty())
 
+    self.tp_err = self.Port(AnalogSource.empty(), optional=True)
+    self.tp_int = self.Port(AnalogSource.empty(), optional=True)
+
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)
 
@@ -578,6 +581,9 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.vcontroln, self.control.pwr_gate_neg)
       self.connect(self.vcontrol, self.control.pwr_gate_pos)
 
+      (self.tp_err, ), _ = self.chain(self.control.tp_err, imp.Block(AnalogCoaxTestPoint('err')))
+      (self.tp_int, ), _ = self.chain(self.control.tp_int, imp.Block(AnalogCoaxTestPoint('int')))
+
     # logic domain
     with self.implicit_connect(
         ImplicitConnect(self.v3v3, [Power]),
@@ -704,14 +710,10 @@ class UsbSourceMeasure(JlcBoardTop):
         self.vref,
         imp.Block(SeriesPowerFerriteBead(Range.from_lower(1000))),
         self.dac.pwr)
-      (self.tp_cv, ), _ = self.chain(self.dac.out0, imp.Block(AnalogRfTestPoint('cv')),
-                                     self.control.control_voltage)
-      (self.tp_cvf, ), _ = self.chain(self.dac.out3, imp.Block(AnalogRfTestPoint('cvf')),
-                                      self.control.control_voltage_fine)
-      (self.tp_cisrc, ), _ = self.chain(self.dac.out1, imp.Block(AnalogRfTestPoint('cisrc')),
-                                        self.control.control_current_sink)
-      (self.tp_cisnk, ), _ = self.chain(self.dac.out2, imp.Block(AnalogRfTestPoint('cisnk')),
-                                        self.control.control_current_source)
+      self.connect(self.dac.out0, self.control.control_voltage)
+      self.connect(self.dac.out3, self.control.control_voltage_fine)
+      self.connect(self.dac.out1, self.control.control_current_sink)
+      self.connect(self.dac.out2, self.control.control_current_source)
       self.connect(self.dac.i2c, int_i2c)
 
       self.adc = imp.Block(Mcp3561())
@@ -722,15 +724,15 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.adc.cs, self.mcu.gpio.request('adc_cs'))
       self.connect(self.adc.mclkin, self.mcu.gpio.request('adc_clk'))  # up to 20MHz output from LEDC peripheral
       (self.tp_vcen, self.vcen_rc, ), _ = self.chain(self.vcenter,
-                                                     imp.Block(AnalogRfTestPoint('cen')),
-                                                     imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),\
+                                                     imp.Block(AnalogCoaxTestPoint('cen')),
+                                                     imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))), \
                                                      self.adc.vins.request('0'))
       (self.tp_mi, self.mi_rc, ), _ = self.chain(self.control.measured_current,
-                                                 imp.Block(AnalogRfTestPoint('mi')),
+                                                 imp.Block(AnalogCoaxTestPoint('mi')),
                                                  imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),
                                                  self.adc.vins.request('1'))
       (self.tp_mv, self.mv_rc, ), _ = self.chain(self.control.measured_voltage,
-                                                 imp.Block(AnalogRfTestPoint('mv')),
+                                                 imp.Block(AnalogCoaxTestPoint('mv')),
                                                  imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),
                                                  self.adc.vins.request('2'))
       self.connect(self.control.limit_source, self.mcu.gpio.request('limit_source'))

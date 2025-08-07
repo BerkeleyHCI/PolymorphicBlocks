@@ -4241,6 +4241,12 @@
 		(uuid "6967b092-4799-4843-b664-2b427fba725a")
 	)
 	(junction
+		(at 127 88.9)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "706fb66a-604a-4be2-bf65-1957728a6e2c")
+	)
+	(junction
 		(at 190.5 147.32)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4258,9 +4264,15 @@
 		(color 0 0 0 0)
 		(uuid "d9d0156d-3479-402d-8ffd-969dcfee1f21")
 	)
+	(junction
+		(at 101.6 88.9)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ef10af52-59c7-479e-be5f-7fb045624487")
+	)
 	(wire
 		(pts
-			(xy 93.98 88.9) (xy 105.41 88.9)
+			(xy 93.98 88.9) (xy 101.6 88.9)
 		)
 		(stroke
 			(width 0)
@@ -4280,7 +4292,7 @@
 	)
 	(wire
 		(pts
-			(xy 120.65 88.9) (xy 137.16 88.9)
+			(xy 120.65 88.9) (xy 127 88.9)
 		)
 		(stroke
 			(width 0)
@@ -4570,6 +4582,16 @@
 	)
 	(wire
 		(pts
+			(xy 127 88.9) (xy 137.16 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7e1b1f72-94e9-4af0-baaf-0ce6166264b3")
+	)
+	(wire
+		(pts
 			(xy 190.5 148.59) (xy 190.5 147.32)
 		)
 		(stroke
@@ -4740,6 +4762,16 @@
 	)
 	(wire
 		(pts
+			(xy 101.6 88.9) (xy 105.41 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c9873ef2-aedc-4577-bf61-147cc5cc503f")
+	)
+	(wire
+		(pts
 			(xy 38.1 30.48) (xy 45.72 30.48)
 		)
 		(stroke
@@ -4747,6 +4779,26 @@
 			(type default)
 		)
 		(uuid "cfe3660f-26ca-4eda-aed8-2135e1f298e3")
+	)
+	(wire
+		(pts
+			(xy 101.6 83.82) (xy 101.6 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d16d6f7f-1ec1-446a-8b50-a4ae511391af")
+	)
+	(wire
+		(pts
+			(xy 127 83.82) (xy 127 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5166fa2-ef43-4350-8384-c94d0013a746")
 	)
 	(wire
 		(pts
@@ -5078,6 +5130,28 @@
 			)
 		)
 	)
+	(global_label "tp_err"
+		(shape output)
+		(at 101.6 83.82 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "51470f72-319b-40cb-8d73-d106d00c0e72")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 110.0885 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "control_voltage_fine"
 		(shape input)
 		(at 40.64 83.82 180)
@@ -5272,6 +5346,28 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "tp_int"
+		(shape output)
+		(at 127 83.82 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9f92bc1b-d52d-4a0d-8963-437ccf0c7a82")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 135.307 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)

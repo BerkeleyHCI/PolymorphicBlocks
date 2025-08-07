@@ -253,12 +253,11 @@ class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
       self.connect(self.io.append_elt(DigitalSource.empty(), requested), res.io)
 
 
-class SeriesPowerResistor(DiscreteApplication, KiCadInstantiableBlock):
+class SeriesPowerResistor(DiscreteApplication, KiCadImportableBlock):
   """Series resistor for power applications"""
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Device:R', 'Device:R_Small')
     return {'1': self.pwr_in, '2': self.pwr_out}
-
 
   @init_in_parent
   def __init__(self, resistance: RangeLike) -> None:
