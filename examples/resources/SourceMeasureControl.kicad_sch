@@ -4332,16 +4332,6 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 58.42) (xy 81.28 58.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "23c87e09-2e5e-4446-96d4-0ee4eebad2f1")
-	)
-	(wire
-		(pts
 			(xy 186.69 154.94) (xy 195.58 154.94)
 		)
 		(stroke
@@ -4602,7 +4592,7 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 58.42) (xy 68.58 58.42)
+			(xy 55.88 58.42) (xy 81.28 58.42)
 		)
 		(stroke
 			(width 0)
@@ -4880,6 +4870,17 @@
 		)
 		(uuid "ff60e0dd-6dc8-495e-9e19-e268f29160cb")
 	)
+	(text "smaller ratio to keep the opamp input\nmostly within the 3.3v rail limits"
+		(exclude_from_sim no)
+		(at 63.754 63.5 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "27a2e0ea-ad3f-4d2c-a0e7-b00292ac3438")
+	)
 	(text "Divider GND should be close to outn"
 		(exclude_from_sim no)
 		(at 186.69 167.64 0)
@@ -4892,7 +4893,7 @@
 	)
 	(text "when off, drive gate\nto output so FETs off\non startup"
 		(exclude_from_sim no)
-		(at 64.008 54.864 0)
+		(at 64.008 58.166 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5730,7 +5731,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "ratio=1/24*Ratio(tol=0.05),"
+		(property "Value2" "ratio=1/60*Ratio(tol=0.05),"
 			(at 48.26 72.136 0)
 			(effects
 				(font
@@ -6269,71 +6270,6 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "#PWR014")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:VEE")
-		(at 45.72 64.77 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "18b78d62-eee3-409b-b564-ce294a8fe4c3")
-		(property "Reference" "#PWR021"
-			(at 45.72 60.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "VEE"
-			(at 42.926 66.04 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 45.72 64.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 45.72 64.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"VEE\""
-			(at 45.72 64.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "f6531b9e-3d0d-4762-ac22-c8b73448bbeb")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR021")
 					(unit 1)
 				)
 			)
@@ -7449,81 +7385,6 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "out_adapter")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "edg_importable:Unk2")
-		(at 72.39 58.42 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "52515003-ad9d-4f52-80ab-306fff415bb4")
-		(property "Reference" "dclamp"
-			(at 72.39 56.134 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "#JfetCurrentClamp("
-			(at 72.136 60.96 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 72.39 60.198 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 72.39 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 72.39 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value2" "model_voltage_clamp=(0, 3.3)*Volt)"
-			(at 72.39 63.246 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "766e2d9a-c2fc-4146-b6bd-463aedff4e27")
-		)
-		(pin "2"
-			(uuid "92bf7229-32aa-4843-a3a2-3381c6883863")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "dclamp")
 					(unit 1)
 				)
 			)
@@ -8758,6 +8619,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 45.72 64.77 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "90c55c86-a686-4cda-8bf7-fcf17580c66f")
+		(property "Reference" "#PWR021"
+			(at 45.72 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 41.91 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 45.72 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 45.72 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 45.72 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "37003a7c-dbf2-48d8-b3e7-69845af37ad0")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR021")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_name "Opamp_1")
 		(lib_id "edg_importable:Opamp")
 		(at 48.26 86.36 0)
@@ -8856,6 +8782,71 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "err_volt")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:VDD")
+		(at 45.72 52.07 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "97f052eb-9f69-448e-9b52-a3d72cbb9f92")
+		(property "Reference" "#PWR010"
+			(at 45.72 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VDD"
+			(at 41.91 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 45.72 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 45.72 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 45.72 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c6b6ac2b-3abd-4e0a-b657-5bb2724d2dee")
+		)
+		(instances
+			(project "SourceMeasureControl"
+				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
+					(reference "#PWR010")
 					(unit 1)
 				)
 			)
@@ -10283,71 +10274,6 @@
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
 					(reference "#PWR08")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:VCC")
-		(at 45.72 52.07 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "ec094cc4-734b-4c13-974d-cb7d116958ce")
-		(property "Reference" "#PWR010"
-			(at 45.72 55.88 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "VCC"
-			(at 42.926 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 45.72 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 45.72 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 45.72 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "27337f64-7560-4c1f-88ba-8297a3220907")
-		)
-		(instances
-			(project "SourceMeasureControl"
-				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "#PWR010")
 					(unit 1)
 				)
 			)

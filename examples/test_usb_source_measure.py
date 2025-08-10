@@ -738,17 +738,6 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.control.limit_source, self.mcu.gpio.request('limit_source'))
       self.connect(self.control.limit_sink, self.mcu.gpio.request('limit_sink'))
 
-      self.dummy_amp_lv = imp.Block(OpampFollower())
-      self.connect(self.dummy_amp_lv.pwr, self.vanalog)
-      self.connect(self.dummy_amp_lv.input, self.ref_buf.output)
-      (self.dummy_amp_lv_snk, ), _ = self.chain(self.dummy_amp_lv.output, self.Block(DummyAnalogSink()))
-
-    self.dummy_amp_hv = self.Block(OpampFollower())
-    self.connect(self.dummy_amp_hv.pwr, self.vcontrol)
-    self.connect(self.dummy_amp_hv.gnd, self.vcontroln)
-    self.connect(self.dummy_amp_hv.input, self.ref_buf.output)
-    (self.dummy_amp_hv_snk, ), _ = self.chain(self.dummy_amp_hv.output, self.Block(DummyAnalogSink()))
-
     self.outn = self.Block(BananaSafetyJack())
     self.outp = self.Block(BananaSafetyJack())
     self.outd = self.Block(PinHeader254Horizontal(2))  # 2.54 output option
@@ -773,24 +762,17 @@ class UsbSourceMeasure(JlcBoardTop):
             'i2c_tp',
       'rf_tp': 'tp_vcen, tp_cv, tp_cvf, tp_cisrc, tp_cisnk, tp_mv, tp_mi',
       'packed_amps': 'vimeas_amps, ampdmeas_amps, cv_amps, ci_amps, cintref_amps',
-      'misc': 'fan_drv, fan, '
-              'jlc_th, dummy_amp_hv, dummy_amp_hv_snk, dummy_amp_lv, dummy_amp_lv_snk',
+      'misc': 'fan_drv, fan, jlc_th',
     })
 
   def multipack(self) -> None:
     self.vimeas_amps = self.PackedBlock(Opa2189())  # low noise opamp
     self.pack(self.vimeas_amps.elements.request('0'), ['control', 'hvbuf', 'amp'])
-    self.pack(self.vimeas_amps.elements.request('1'), ['dummy_amp_hv', 'amp'])
-    # TODO unused opamp part - yes, this is cheaper than the single opamp part
-
-    self.ampdmeas_amps = self.PackedBlock(Opa2171())  # general high voltage opamp
-    self.pack(self.ampdmeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
-    self.pack(self.ampdmeas_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
+    self.pack(self.vimeas_amps.elements.request('1'), ['control', 'amp', 'amp'])
 
     self.cv_amps = self.PackedBlock(Tlv9152())
     self.pack(self.cv_amps.elements.request('0'), ['control', 'err_volt', 'amp'])
-    self.pack(self.cv_amps.elements.request('1'), ['dummy_amp_lv', 'amp'])
-    # TODO unused opamp part
+    self.pack(self.cv_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
 
     self.ci_amps = self.PackedBlock(Tlv9152())
     self.pack(self.ci_amps.elements.request('0'), ['control', 'err_sink', 'amp'])
