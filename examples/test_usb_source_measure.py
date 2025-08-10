@@ -540,14 +540,16 @@ class UsbSourceMeasure(JlcBoardTop):
       )
       self.vref = self.connect(self.reg_vref.pwr_out)
 
-      (self.ref_div, self.ref_buf, self.ref_cap), _ = self.chain(
+      (self.ref_div, self.ref_buf, self.ref_rc), _ = self.chain(
         self.vref,
         imp.Block(VoltageDivider(output_voltage=1.65*Volt(tol=0.05), impedance=(10, 100)*kOhm)),
         imp.Block(OpampFollower()),
-        imp.Block(AnalogCapacitor(0.1*uFarad(tol=0.2)))
+        # opamp outputs generally not stable under capacitive loading and requires an isolation series resistor
+        # 4.7 tries to balance low output impedance and some level of isolation
+        imp.Block(AnalogLowPassRc(4.7*Ohm(tol=0.05), 1*MHertz(tol=0.25))),
       )
       self.connect(self.vanalog, self.ref_buf.pwr)
-      self.vcenter = self.connect(self.ref_buf.output)
+      self.vcenter = self.connect(self.ref_rc.output)
 
       (self.reg_vcontrol, self.tp_vcontrol), _ = self.chain(
         self.v5,
@@ -725,7 +727,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.adc.mclkin, self.mcu.gpio.request('adc_clk'))  # up to 20MHz output from LEDC peripheral
       (self.tp_vcen, self.vcen_rc, ), _ = self.chain(self.vcenter,
                                                      imp.Block(AnalogCoaxTestPoint('cen')),
-                                                     imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))), \
+                                                     imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),
                                                      self.adc.vins.request('0'))
       (self.tp_mi, self.mi_rc, ), _ = self.chain(self.control.measured_current,
                                                  imp.Block(AnalogCoaxTestPoint('mi')),
@@ -771,8 +773,8 @@ class UsbSourceMeasure(JlcBoardTop):
     self.pack(self.vimeas_amps.elements.request('1'), ['control', 'amp', 'amp'])
 
     self.cv_amps = self.PackedBlock(Tlv9152())
-    self.pack(self.cv_amps.elements.request('0'), ['control', 'err_volt', 'amp'])
-    self.pack(self.cv_amps.elements.request('1'), ['control', 'dmeas', 'amp'])
+    self.pack(self.cv_amps.elements.request('0'), ['ref_buf', 'amp'])  # place the reference more centrally
+    self.pack(self.cv_amps.elements.request('1'), ['control', 'err_volt', 'amp'])
 
     self.ci_amps = self.PackedBlock(Tlv9152())
     self.pack(self.ci_amps.elements.request('0'), ['control', 'err_sink', 'amp'])
@@ -780,7 +782,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
     self.cintref_amps = self.PackedBlock(Tlv9152())
     self.pack(self.cintref_amps.elements.request('0'), ['control', 'int', 'amp'])
-    self.pack(self.cintref_amps.elements.request('1'), ['ref_buf', 'amp'])
+    self.pack(self.cintref_amps.elements.request('1'), ['control', 'dmeas', 'amp'])  # this path matters much less
 
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
