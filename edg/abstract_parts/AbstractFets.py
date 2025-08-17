@@ -45,6 +45,15 @@ class FetStandardFootprint(StandardFootprint['Fet']):
       '4': block.gate,
       '5': block.drain,
     },
+    (
+      'Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp',
+      'Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown',
+      'Package_TO_SOT_THT:TO-220-3_Vertical',
+    ): lambda block: {
+      '1': block.gate,
+      '2': block.drain,
+      '3': block.source,
+    },
   }
 
 

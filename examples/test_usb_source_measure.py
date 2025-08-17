@@ -928,10 +928,10 @@ class UsbSourceMeasure(JlcBoardTop):
         (['control', 'isense', 'ranges[2]', 'isense', 'res', 'res', 'require_basic_part'], False),
 
         (['control', 'driver', 'res', 'count'], 3),
-        (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['control', 'driver', 'high_fet', 'part_spec'], 'SQD50N10-8M9L_GE3'),
-        (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_TO_SOT_SMD:TO-252-2'),
-        (['control', 'driver', 'low_fet', 'part_spec'], 'SQD50P06-15L_GE3'),  # has a 30V/4A SOA
+        (['control', 'driver', 'high_fet', 'footprint_spec'], 'Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp'),
+        (['control', 'driver', 'high_fet', 'part_spec'], 'IRF540N'),
+        (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp'),
+        (['control', 'driver', 'low_fet', 'part_spec'], 'IRF9540'),  # has a 30V/4A SOA
 
         (['control', 'ifilt', 'c', 'require_basic_part'], False),  # no 10nF caps in basic library for some reason
 
