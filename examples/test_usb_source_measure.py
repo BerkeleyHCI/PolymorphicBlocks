@@ -769,8 +769,8 @@ class UsbSourceMeasure(JlcBoardTop):
 
   def multipack(self) -> None:
     self.vimeas_amps = self.PackedBlock(Opa2189())  # low noise opamp
-    self.pack(self.vimeas_amps.elements.request('0'), ['control', 'hvbuf', 'amp'])
-    self.pack(self.vimeas_amps.elements.request('1'), ['control', 'amp', 'amp'])
+    self.pack(self.vimeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
+    self.pack(self.vimeas_amps.elements.request('1'), ['control', 'hvbuf', 'amp'])
 
     self.cv_amps = self.PackedBlock(Tlv9152())
     self.pack(self.cv_amps.elements.request('0'), ['ref_buf', 'amp'])  # place the reference more centrally
