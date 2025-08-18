@@ -129,9 +129,9 @@ class FetPrecharge(Block):
 
     TODO: calculate power rating needed for some capacitance instead of spec'ing for DC"""
     @init_in_parent
-    def __init__(self, precharge_resistance: RangeLike = 100*Ohm(tol=0.1),
+    def __init__(self, *, precharge_resistance: RangeLike = 100*Ohm(tol=0.1),
                  pull_resistance: RangeLike = 10*kOhm(tol=0.05),
-                 max_rds: FloatLike = 1*Ohm):
+                 max_rds: FloatLike = 1*Ohm, clamp_voltage: RangeLike = RangeExpr.ZERO):
         super().__init__()
         self.gnd = self.Port(Ground.empty(), [Common])
         self.pwr_in = self.Port(VoltageSink.empty(), [Input, Power])
@@ -141,12 +141,13 @@ class FetPrecharge(Block):
         self.precharge_resistance = self.ArgParameter(precharge_resistance)
         self.pull_resistance = self.ArgParameter(pull_resistance)
         self.max_rds = self.ArgParameter(max_rds)
+        self.clamp_voltage = self.ArgParameter(clamp_voltage)
 
     def contents(self):
         super().contents()
 
         self.switch = self.Block(HighSideSwitch(
-            pull_resistance=self.pull_resistance, max_rds=self.max_rds))
+            pull_resistance=self.pull_resistance, max_rds=self.max_rds, clamp_voltage=self.clamp_voltage))
         self.connect(self.switch.gnd, self.gnd)
         self.connect(self.switch.pwr, self.pwr_in)
         self.connect(self.switch.control, self.control)

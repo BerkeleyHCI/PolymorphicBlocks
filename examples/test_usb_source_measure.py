@@ -497,7 +497,9 @@ class UsbSourceMeasure(JlcBoardTop):
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
         # avoid excess capacitance on VBus
-        imp.Block(FetPrecharge(precharge_resistance=470*Ohm(tol=0.1), max_rds=0.1*Ohm)),
+        # note, 20V is the Vgs,max of many FETs, so this clamps slightly below while not clamping (and drawing power)
+        # at the 15v PD step
+        imp.Block(FetPrecharge(precharge_resistance=470*Ohm(tol=0.1), max_rds=0.1*Ohm, clamp_voltage=(15, 18)*Volt)),
         self.convin_sense.sense_pos
       )
       self.vusb_pre = self.connect(self.convin_sense.sense_neg)  # vusb post-precharge
@@ -622,7 +624,6 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.ioe_ctl.i2c, int_i2c)
       self.connect(self.ioe_ctl.io.request('high_gate_ctl'), self.control.high_gate_ctl)
       self.connect(self.ioe_ctl.io.request('low_gate_ctl'), self.control.low_gate_ctl)
-      self.connect(self.ioe_ctl.io.request_vector('irange'), self.control.irange)
       self.connect(self.ioe_ctl.io.request_vector('off'), self.control.off)
       self.connect(self.ioe_ctl.io.request('precharge'), self.precharge.control)
 
@@ -636,7 +637,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
       self.conv_latch = imp.Block(SrLatchInverted())
       (self.conv_en_pull, ), _ = self.chain(
-        self.mcu.gpio.request('conv_en'),
+        self.ioe_ctl.io.request('conv_en'),
         imp.Block(PulldownResistor(10*kOhm(tol=0.05))),
         self.conv_latch.rst
       )
@@ -667,9 +668,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.dir.c, self.ioe_ui.io.request('dir_c'))
       self.connect(self.dir.d, self.ioe_ui.io.request('dir_d'))
       self.connect(self.dir.with_mixin(DigitalDirectionSwitchCenter()).center, self.ioe_ui.io.request('dir_cen'))
-
-      self.rgb = imp.Block(IndicatorSinkRgbLed())
-      self.connect(self.ioe_ui.io.request_vector('rgb'), self.rgb.signals)
+      self.connect(self.ioe_ui.io.request_vector('irange'), self.control.irange)
 
       # expansion ports
       (self.qwiic_pull, self.qwiic, ), _ = self.chain(self.mcu.i2c.request('qwiic'),
@@ -688,12 +687,19 @@ class UsbSourceMeasure(JlcBoardTop):
 
     # 5v domain
     with self.implicit_connect(
+            ImplicitConnect(self.v5, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
+      self.rgbs = imp.Block(NeopixelArray(4+1+1))  # 4 for encoder, 1 for output, 1 for USB
+      (self.rgb_shift, ), _ = self.chain(
+        self.mcu.gpio.request('rgb'),
+        imp.Block(L74Ahct1g125()),
+        self.rgbs.din)
+
       self.fan_drv = imp.Block(HighSideSwitch())
-      self.connect(self.v5, self.fan_drv.pwr)
       self.connect(self.mcu.gpio.request('fan'), self.fan_drv.control)
-      self.fan = imp.Block(SourceMeasureFan())
+      self.fan = self.Block(SourceMeasureFan())
+      self.connect(self.fan.gnd, self.gnd)
       self.connect(self.fan.pwr, self.fan_drv.output)
 
       (self.spk_drv, self.spk), _ = self.chain(
@@ -701,7 +707,6 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(Max98357a()),
         self.Block(Speaker())
       )
-      self.connect(self.v5, self.spk_drv.pwr)
 
     # analog domain
     with self.implicit_connect(
@@ -820,6 +825,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (DirectionSwitch, Skrh),
         (TestPoint, CompactKeystone5015),
         (RotaryEncoder, Pec11s),
+        (Neopixel, Sk6805_Ec15),
         (RfConnector, UflConnector),
       ],
       instance_values=[
@@ -841,7 +847,6 @@ class UsbSourceMeasure(JlcBoardTop):
           # 'off_0=31',
 
           'buck_pwm=35',
-          'conv_en=33',
           'boost_pwm=32',
           'vconv_sense=18',  # needs ADC
 
@@ -866,10 +871,6 @@ class UsbSourceMeasure(JlcBoardTop):
           'dir_a=5',
           'dir_b=6',
           'dir_d=7',
-
-          'rgb_blue=10',
-          'rgb_red=11',
-          'rgb_green=12',
         ]),
 
         # allow the regulator to go into tracking mode
