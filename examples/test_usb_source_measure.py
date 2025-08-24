@@ -463,10 +463,10 @@ class UsbSourceMeasure(JlcBoardTop):
       self.vusb_sense = imp.Block(Ina219(10*mOhm(tol=0.01)))
 
       # input filtering
-      (self.filt_vusb, self.fuse_vusb, self.prot_vusb, self.tp_vusb), _ = self.chain(
+      (self.fuse_vusb, self.filt_vusb, self.prot_vusb, self.tp_vusb), _ = self.chain(
         self.usb.pwr,
-        self.Block(SeriesPowerFerriteBead()),
         self.Block(SeriesPowerFuse(trip_current=(7, 8)*Amp)),
+        self.Block(SeriesPowerFerriteBead()),
         imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # for parts commonality w/ the Vconv zener
         self.Block(VoltageTestPoint()),
         self.vusb_sense.sense_pos
@@ -812,7 +812,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['spk', 'conn'], JstPhKVertical),
 
         (['control', 'isense', 'ranges[0]', 'pwr_sw', 'ic'], Tlp3545a),  # higher current on 3A range
-        (['control', 'driver', 'res'] , SeriesResistor),
+        (['control', 'driver', 'res'], SeriesResistor),
+        (['oled', 'device', 'conn'], Fpc050BottomFlip),  # more compact connector, double-fold the FPC ribbon
       ],
       class_refinements=[
         (EspProgrammingHeader, EspProgrammingTc2030),
