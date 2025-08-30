@@ -463,15 +463,15 @@ class UsbSourceMeasure(JlcBoardTop):
       self.vusb_sense = imp.Block(Ina219(10*mOhm(tol=0.01)))
 
       # input filtering
-      (self.fuse_vusb, self.filt_vusb, self.prot_vusb, self.tp_vusb), _ = self.chain(
+      (self.fuse_vusb, self.filt_vusb, self.prot_vusb), _ = self.chain(
         self.usb.pwr,
         self.Block(SeriesPowerFuse(trip_current=(7, 8)*Amp)),
         self.Block(SeriesPowerFerriteBead()),
         imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # for parts commonality w/ the Vconv zener
-        self.Block(VoltageTestPoint()),
         self.vusb_sense.sense_pos
       )
       self.vusb = self.connect(self.vusb_sense.sense_neg)
+      self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.vusb)
 
       # logic supplies
       (self.reg_v5, self.tp_v5), _ = self.chain(
@@ -520,10 +520,9 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.conv.pwr_logic, self.v5)
       self.vconv = self.connect(self.conv_outforce.pwr_out)
 
-      (self.reg_v12, self.tp_v12), _ = self.chain(
+      (self.reg_v12, ), _ = self.chain(
         self.v5,
         imp.Block(BoostConverter(output_voltage=12.5*Volt(tol=0.04))),  # limits of the OLED
-        self.Block(VoltageTestPoint("v12"))
       )
       self.v12 = self.connect(self.reg_v12.pwr_out)
 
