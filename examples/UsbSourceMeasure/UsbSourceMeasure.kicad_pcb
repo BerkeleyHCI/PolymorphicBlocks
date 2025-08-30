@@ -85653,20 +85653,20 @@
 		(uuid "1455d6da-7d36-4338-a08d-e9af4c2641a2")
 	)
 	(segment
+		(start 55 40)
+		(end 53.525 40)
+		(width 0.25)
+		(layer "F.Cu")
+		(net 1)
+		(uuid "1493ceab-90dd-48a6-aac7-426aa514f9b9")
+	)
+	(segment
 		(start 109.225 19.725)
 		(end 109.225 19)
 		(width 0.25)
 		(layer "F.Cu")
 		(net 1)
 		(uuid "153e0612-ae32-4943-9654-57112aec9208")
-	)
-	(segment
-		(start 52.5 40)
-		(end 53.525 40)
-		(width 0.25)
-		(layer "F.Cu")
-		(net 1)
-		(uuid "163a3177-642c-4b04-86d1-42daa19d5df6")
 	)
 	(segment
 		(start 129.1375 12.675)
@@ -85813,6 +85813,14 @@
 		(uuid "253d77f9-2fcd-4e7b-ab7e-67da851d5fd0")
 	)
 	(segment
+		(start 45 64)
+		(end 43.525 64)
+		(width 0.25)
+		(layer "F.Cu")
+		(net 1)
+		(uuid "25492837-6684-4975-93ad-d4822275a0b8")
+	)
+	(segment
 		(start 208.25 35)
 		(end 208.75 35.5)
 		(width 0.25)
@@ -85931,14 +85939,6 @@
 		(layer "F.Cu")
 		(net 1)
 		(uuid "32216f22-a01d-44b5-99d0-659a1c0be9a0")
-	)
-	(segment
-		(start 52.5 39)
-		(end 52.525 39)
-		(width 0.25)
-		(layer "F.Cu")
-		(net 1)
-		(uuid "3238bd9a-cd08-458c-af8f-b41b7f40ce65")
 	)
 	(segment
 		(start 208 44.225)
@@ -86499,14 +86499,6 @@
 		(layer "F.Cu")
 		(net 1)
 		(uuid "6cf3deee-6c8b-4bcb-8eac-081de980b398")
-	)
-	(segment
-		(start 52.5 41)
-		(end 52.525 41)
-		(width 0.25)
-		(layer "F.Cu")
-		(net 1)
-		(uuid "6d3449dc-f06e-470d-9307-7424e096f3e3")
 	)
 	(segment
 		(start 172.8625 36.275)
@@ -87141,6 +87133,14 @@
 		(uuid "a7314219-aec6-4275-af88-480b174ae59c")
 	)
 	(segment
+		(start 45 63)
+		(end 45 64)
+		(width 0.25)
+		(layer "F.Cu")
+		(net 1)
+		(uuid "a92bfbd7-954a-4b12-a1cb-caa56879171e")
+	)
+	(segment
 		(start 272.825 45.175)
 		(end 273 45)
 		(width 0.25)
@@ -87219,14 +87219,6 @@
 		(layer "F.Cu")
 		(net 1)
 		(uuid "b2e2e0e8-e6f1-4fef-89e1-ef7e7e01153f")
-	)
-	(segment
-		(start 44 64)
-		(end 43.525 64)
-		(width 0.25)
-		(layer "F.Cu")
-		(net 1)
-		(uuid "b3bb664f-ee47-45af-90a3-216abe9f1363")
 	)
 	(segment
 		(start 147.25 54.4375)
@@ -87693,14 +87685,6 @@
 		(uuid "db747d2d-d1dd-4e40-bd96-aaabb7d9f054")
 	)
 	(segment
-		(start 52.5 39)
-		(end 52.5 41)
-		(width 0.25)
-		(layer "F.Cu")
-		(net 1)
-		(uuid "dc00cec8-7703-40c1-b06c-7a5226f3df8e")
-	)
-	(segment
 		(start 171 11.504226)
 		(end 171 13.175)
 		(width 0.25)
@@ -87989,6 +87973,14 @@
 		(uuid "f2e3a229-9331-401d-ba63-1aa1b3b2f2ed")
 	)
 	(segment
+		(start 55 39)
+		(end 55 40)
+		(width 0.25)
+		(layer "F.Cu")
+		(net 1)
+		(uuid "f33e8032-d587-4c37-b9dc-1b4e3152899a")
+	)
+	(segment
 		(start 145.25 26)
 		(end 145 25.75)
 		(width 0.25)
@@ -88270,7 +88262,7 @@
 		(uuid "3a09148c-04b7-407a-b279-19c10b7a6714")
 	)
 	(via
-		(at 52.5 40)
+		(at 55 40)
 		(size 0.7)
 		(drill 0.3)
 		(layers "F.Cu" "B.Cu")
@@ -88930,14 +88922,6 @@
 		(uuid "c8721cbd-a066-4868-a2c0-185cc44d8805")
 	)
 	(via
-		(at 52.5 41)
-		(size 0.7)
-		(drill 0.3)
-		(layers "F.Cu" "B.Cu")
-		(net 1)
-		(uuid "c9b8cc02-25c6-4f56-b9c4-d570e8cab854")
-	)
-	(via
 		(at 129 15)
 		(size 0.7)
 		(drill 0.3)
@@ -89010,7 +88994,7 @@
 		(uuid "de455919-5071-4f4e-874c-916d6343a355")
 	)
 	(via
-		(at 52.5 39)
+		(at 55 39)
 		(size 0.7)
 		(drill 0.3)
 		(layers "F.Cu" "B.Cu")
@@ -105029,19 +105013,18 @@
 			"0f4260ff-290d-4010-bcce-fb6176192b61" "107fb489-1ac7-4056-bebb-f68e123e802c"
 			"1081c628-6bdd-4de1-b8b4-73fcf9da0fe8" "109d45b9-1139-401c-9f88-24ff2d3f9322"
 			"1129734f-1564-436b-abf0-b07d34d3b2fb" "125cd569-2c42-424a-b207-62708eab48f1"
-			"14b00ed5-f6a2-43a1-af93-6c9748a061cc" "163a3177-642c-4b04-86d1-42daa19d5df6"
+			"1493ceab-90dd-48a6-aac7-426aa514f9b9" "14b00ed5-f6a2-43a1-af93-6c9748a061cc"
 			"1f43d3f6-5812-427a-8343-f3e097ecef03" "205a87ef-9ec6-41f9-b193-e06fd920f052"
 			"208c803b-25cf-4c96-a536-2e635e7b6055" "214f1d17-0074-416d-aec0-9159076de735"
 			"223d4bca-2eb9-4c98-b645-be603a2c47ad" "2409f15f-9420-4627-a43a-2a94a8bc09e9"
 			"26ba8b42-23af-4855-be53-249704ce7737" "2bc39224-afc4-43fe-87fb-a3858359e6d3"
-			"3238bd9a-cd08-458c-af8f-b41b7f40ce65" "3c0948fd-8100-435b-843a-171a4f0078dc"
-			"3cc3907e-c4d4-4fe5-af52-f3de1c6a8b27" "3ded1476-48c3-48f0-ba72-550f7b3092a1"
-			"43957a48-67db-4f22-9af0-e3de8f336215" "461019a1-32d2-4543-ac40-9134594ca68e"
-			"4d857f15-a8f8-414b-bbe3-e857759681fe" "4f1e50e7-bd78-4e8c-a582-3741b57040d2"
-			"50e6f83f-f754-44ce-86c0-e76acad092ee" "5cd055ab-60fd-4a2d-8e0a-ee217a0ce041"
-			"5d6e68d3-5ee0-4ed7-910a-f108c28fb946" "62b6650f-bee1-45fe-a65d-866bead04111"
-			"639a164e-3014-4025-8d4a-479865f26184" "68f4b47a-b7ff-4e33-957c-a08a3e33d7d9"
-			"6a17b642-3cab-4c91-9e98-a0cd1d8c4617" "6d3449dc-f06e-470d-9307-7424e096f3e3"
+			"3c0948fd-8100-435b-843a-171a4f0078dc" "3cc3907e-c4d4-4fe5-af52-f3de1c6a8b27"
+			"3ded1476-48c3-48f0-ba72-550f7b3092a1" "43957a48-67db-4f22-9af0-e3de8f336215"
+			"461019a1-32d2-4543-ac40-9134594ca68e" "4d857f15-a8f8-414b-bbe3-e857759681fe"
+			"4f1e50e7-bd78-4e8c-a582-3741b57040d2" "50e6f83f-f754-44ce-86c0-e76acad092ee"
+			"5cd055ab-60fd-4a2d-8e0a-ee217a0ce041" "5d6e68d3-5ee0-4ed7-910a-f108c28fb946"
+			"62b6650f-bee1-45fe-a65d-866bead04111" "639a164e-3014-4025-8d4a-479865f26184"
+			"68f4b47a-b7ff-4e33-957c-a08a3e33d7d9" "6a17b642-3cab-4c91-9e98-a0cd1d8c4617"
 			"7059ed29-a8ec-4f50-b6c2-616d0735728a" "73f71875-c844-4c08-94c6-bb4206748cfc"
 			"7d011567-7bd0-41ff-8161-0bd3107df5e8" "7f7a6be6-70d9-4dcb-ac4f-ae2d8e348bd1"
 			"7ff900f5-3ee9-46a5-a552-caa20131e0b5" "8465d79a-c869-42b5-b2e9-4423e95c98b6"
@@ -105058,15 +105041,14 @@
 			"b22ed86b-a412-4d50-b66a-566cd4e23208" "b7c88d48-436a-4b69-9077-f996175429ee"
 			"b7d0f004-97ae-45a8-9888-be2d7903a913" "b830fae8-d879-451b-98f9-b107797d7a19"
 			"b917aafb-1bdb-450f-88fc-7ba4f38a9e38" "bf835949-8819-41cf-bea9-e50c6dec2fea"
-			"c6ff9224-c43b-4a71-8df1-fad2aa0a68fb" "c9b8cc02-25c6-4f56-b9c4-d570e8cab854"
-			"cbb89391-db3b-46bc-a155-4325edf5670d" "cc3dfc90-9bf6-429b-a030-8b2b05c0a25e"
-			"ce0b41ac-aef3-452e-8a14-6ac1f711afcf" "d1b84658-ce74-456f-87ef-74e1629ee00c"
-			"d58d7b5b-17bb-4161-8c51-c937aab921c5" "dc00cec8-7703-40c1-b06c-7a5226f3df8e"
+			"c6ff9224-c43b-4a71-8df1-fad2aa0a68fb" "cbb89391-db3b-46bc-a155-4325edf5670d"
+			"cc3dfc90-9bf6-429b-a030-8b2b05c0a25e" "ce0b41ac-aef3-452e-8a14-6ac1f711afcf"
+			"d1b84658-ce74-456f-87ef-74e1629ee00c" "d58d7b5b-17bb-4161-8c51-c937aab921c5"
 			"df1b5fce-46a9-4eb8-bf1a-008585502c4c" "e0698254-bc5a-41cf-abe8-e6ec473a7064"
 			"e4e1abb0-1972-47f5-bbe2-8d5bc9658e00" "e9502033-63cd-4860-8765-7a9ae9a00f03"
 			"e9512c77-3d2e-4a3e-bd3c-f96ebf0668d0" "ea3a3e35-5ff4-4e14-9974-0cc0f4241cfc"
 			"eab3adcd-d6e5-4a64-943a-50ad7d1f276e" "f16addf0-7bba-4e46-8e6f-2a75cea30ee2"
-			"f9fe8d9e-02c2-4e8f-9bac-97b8f695e518"
+			"f33e8032-d587-4c37-b9dc-1b4e3152899a" "f9fe8d9e-02c2-4e8f-9bac-97b8f695e518"
 		)
 	)
 	(group ""
@@ -105432,46 +105414,46 @@
 		(uuid "be07e750-4b8c-4325-9519-ae51eedddaba")
 		(members "0eb6e2cb-94af-4933-b672-3bce807433a0" "129d0f5a-fddd-4e23-a22b-4f2d05037dd8"
 			"17a5bc50-7610-4915-8243-2ad43e33fadb" "1f1d3915-28b3-4071-bcc8-2f3bb2d4fc67"
-			"2423bdee-0cbd-44ad-9944-b4fad004286e" "257630a5-bccd-40d0-82c6-050fcf2c2a67"
-			"28c6e104-99a4-46ad-94c6-8fd8f0843497" "2b03ea47-cff6-4f2c-a0fe-e0b1bedd5c4e"
-			"2c16a0e6-87b2-4e5d-b4eb-2c8547451d3a" "2cd39dd9-397b-4ebe-b245-bce602bda09e"
-			"2d9ef744-e960-4c95-b317-be6d6bd4c68d" "3014294a-ff5f-4a8e-a845-8ae65d6e3348"
-			"31180fc4-29e2-440b-bcaa-9b417aa55aab" "33b78859-f7af-4010-b7e2-e29739ebd089"
-			"3555126e-8699-48f3-b1b9-15e240f275c1" "3669e60e-e86e-402b-8a5b-4e94ba50018e"
-			"3f9eca6d-3fbd-4628-81a2-85d54415c0c5" "4098e3cc-893a-4862-b568-acc5a4c72787"
-			"43e768a4-488a-4c28-99fc-e41d8a0f7c22" "4434e0a0-0d8d-455d-8436-354515eabdbc"
-			"45d499f6-94aa-4864-996d-687923a31466" "48fae5c4-7bc4-4805-b650-06be5a9179bf"
-			"4a6533b3-71f5-475f-8a83-64a1c4606ed7" "4ac4a6c2-0861-4be7-94ff-9d9dec22808e"
-			"4d5e4e88-65d5-4d5e-b867-120104399647" "4dbc5082-4503-4c94-a20c-0ffb806e8fcb"
-			"4e391aff-f520-4caa-a6fa-1be65f0b29d6" "4efdc393-311f-41cd-9714-4cd3d3fa6232"
-			"565cbd20-79c2-409e-8fb4-fc01dd8796f5" "59954aa8-a625-4ce3-b856-e576ad9a256b"
-			"5abf532e-ea27-4795-94c7-c772eaf4a5c0" "661315e8-4cbb-4f3b-b393-1106b618aba3"
-			"690a8edc-b478-4ae1-9ac0-810546b7900d" "6ba81502-5ea0-4d46-9601-d56b6360e410"
-			"6f3b1069-82f5-4f6c-b870-c4cd490c05e4" "721bccaf-d44c-416e-9b37-9b04ca6170ad"
-			"7a7ff387-77b2-4b27-803c-4a4391d12243" "7f01d7b0-db74-4192-a909-cb9fdce33c8c"
-			"7f216a05-7690-4d75-b08a-1c719aa608ef" "8483bafe-72fb-47ec-b017-1f1b0c3cd30c"
-			"857c561d-8586-4c72-8349-aa7f27cc43f9" "8625ee04-7d60-4284-8ba5-c64bec5e9e0d"
-			"875f3614-d8f9-4438-b0c8-a7b70b8de11b" "8a655b76-e20b-4800-87ae-fe9c9e658b81"
-			"8be9a831-5b90-4e77-8937-bd55fad997a2" "912949ea-2205-409d-b973-286fb9a1c97b"
-			"948de821-71cd-4a00-8a8b-857bcc61c768" "9b16f575-5337-4f47-a391-96d62e9f2e61"
-			"9b3be115-dfdd-443e-b4d0-e709ce072cec" "9c85e397-4320-4ffb-aa37-fe40f5e89a21"
-			"9ea92ff4-f3f7-4a5e-996f-ecae2d0c51a2" "a1b284a9-2867-4538-ac92-237b84044e37"
-			"a791c004-7639-44fc-90ab-f7180d9de712" "a8d3c052-a640-4407-bc16-3d74b5be79d7"
-			"b1d26b4d-18e8-4033-a20c-8693a0ed48ef" "b3bb664f-ee47-45af-90a3-216abe9f1363"
-			"b84179db-e32b-4f58-8583-f4d9c74f2b81" "beb061f1-0049-4dd1-9127-a2c9b5909092"
-			"c1228c8f-527c-4280-ab1e-19c1b0074799" "c2afa2d3-b147-4cf6-a399-eecbf2dbebf1"
-			"c67a77ff-64de-4bc5-b44f-b8d946a63d2b" "ccc7083e-e73d-4c24-9d54-70ecc604818c"
-			"d043349a-40c3-4bcc-840d-679b9e45602d" "d1293553-7466-4536-bee0-fe035bbaa232"
-			"d4c91be6-7ac7-4b08-982a-21b96ea3ba3b" "d75192e9-7be6-430f-8bd9-dd88ba384037"
-			"d7e12c42-0b25-400f-979c-8ed424d31d07" "db747d2d-d1dd-4e40-bd96-aaabb7d9f054"
-			"dcde9cbb-4811-4b83-8aba-1a733196ec05" "dd57ad27-f354-4aab-bb26-ea1c12533a0b"
-			"de893e7c-028e-4acb-afa2-8556df37cf7d" "e27f69bf-c634-4d58-aa77-44eb0a0c7a75"
-			"e768c9f7-40fc-4d36-b0bf-6ad3218f06ba" "e78f286f-abbc-49ad-bb11-511285c110e7"
-			"e8a7ff4f-c306-40d0-833b-8cabcc728de6" "f1392b31-5ee7-41ca-a455-6336e135c232"
-			"f28c0589-31c8-489c-8f4e-77a1f88dab15" "f6a2c292-3990-458b-afd6-05b088b0634e"
-			"f8d8b25f-d293-4f6d-99f4-59af58bab087" "fa69eace-2133-4eb9-b3d0-51bf7f3a6acf"
-			"fce60cc0-355f-4c77-aaac-308d05228475" "fd6b9ac9-ed7e-4434-a844-3f5652a443bf"
-			"ff16b081-d3b7-433d-9ddf-7c0bc2e9963d"
+			"2423bdee-0cbd-44ad-9944-b4fad004286e" "25492837-6684-4975-93ad-d4822275a0b8"
+			"257630a5-bccd-40d0-82c6-050fcf2c2a67" "28c6e104-99a4-46ad-94c6-8fd8f0843497"
+			"2b03ea47-cff6-4f2c-a0fe-e0b1bedd5c4e" "2c16a0e6-87b2-4e5d-b4eb-2c8547451d3a"
+			"2cd39dd9-397b-4ebe-b245-bce602bda09e" "2d9ef744-e960-4c95-b317-be6d6bd4c68d"
+			"3014294a-ff5f-4a8e-a845-8ae65d6e3348" "31180fc4-29e2-440b-bcaa-9b417aa55aab"
+			"33b78859-f7af-4010-b7e2-e29739ebd089" "3555126e-8699-48f3-b1b9-15e240f275c1"
+			"3669e60e-e86e-402b-8a5b-4e94ba50018e" "3f9eca6d-3fbd-4628-81a2-85d54415c0c5"
+			"4098e3cc-893a-4862-b568-acc5a4c72787" "43e768a4-488a-4c28-99fc-e41d8a0f7c22"
+			"4434e0a0-0d8d-455d-8436-354515eabdbc" "45d499f6-94aa-4864-996d-687923a31466"
+			"48fae5c4-7bc4-4805-b650-06be5a9179bf" "4a6533b3-71f5-475f-8a83-64a1c4606ed7"
+			"4ac4a6c2-0861-4be7-94ff-9d9dec22808e" "4d5e4e88-65d5-4d5e-b867-120104399647"
+			"4dbc5082-4503-4c94-a20c-0ffb806e8fcb" "4e391aff-f520-4caa-a6fa-1be65f0b29d6"
+			"4efdc393-311f-41cd-9714-4cd3d3fa6232" "565cbd20-79c2-409e-8fb4-fc01dd8796f5"
+			"59954aa8-a625-4ce3-b856-e576ad9a256b" "5abf532e-ea27-4795-94c7-c772eaf4a5c0"
+			"661315e8-4cbb-4f3b-b393-1106b618aba3" "690a8edc-b478-4ae1-9ac0-810546b7900d"
+			"6ba81502-5ea0-4d46-9601-d56b6360e410" "6f3b1069-82f5-4f6c-b870-c4cd490c05e4"
+			"721bccaf-d44c-416e-9b37-9b04ca6170ad" "7a7ff387-77b2-4b27-803c-4a4391d12243"
+			"7f01d7b0-db74-4192-a909-cb9fdce33c8c" "7f216a05-7690-4d75-b08a-1c719aa608ef"
+			"8483bafe-72fb-47ec-b017-1f1b0c3cd30c" "857c561d-8586-4c72-8349-aa7f27cc43f9"
+			"8625ee04-7d60-4284-8ba5-c64bec5e9e0d" "875f3614-d8f9-4438-b0c8-a7b70b8de11b"
+			"8a655b76-e20b-4800-87ae-fe9c9e658b81" "8be9a831-5b90-4e77-8937-bd55fad997a2"
+			"912949ea-2205-409d-b973-286fb9a1c97b" "948de821-71cd-4a00-8a8b-857bcc61c768"
+			"9b16f575-5337-4f47-a391-96d62e9f2e61" "9b3be115-dfdd-443e-b4d0-e709ce072cec"
+			"9c85e397-4320-4ffb-aa37-fe40f5e89a21" "9ea92ff4-f3f7-4a5e-996f-ecae2d0c51a2"
+			"a1b284a9-2867-4538-ac92-237b84044e37" "a791c004-7639-44fc-90ab-f7180d9de712"
+			"a8d3c052-a640-4407-bc16-3d74b5be79d7" "a92bfbd7-954a-4b12-a1cb-caa56879171e"
+			"b1d26b4d-18e8-4033-a20c-8693a0ed48ef" "b84179db-e32b-4f58-8583-f4d9c74f2b81"
+			"beb061f1-0049-4dd1-9127-a2c9b5909092" "c1228c8f-527c-4280-ab1e-19c1b0074799"
+			"c2afa2d3-b147-4cf6-a399-eecbf2dbebf1" "c67a77ff-64de-4bc5-b44f-b8d946a63d2b"
+			"ccc7083e-e73d-4c24-9d54-70ecc604818c" "d043349a-40c3-4bcc-840d-679b9e45602d"
+			"d1293553-7466-4536-bee0-fe035bbaa232" "d4c91be6-7ac7-4b08-982a-21b96ea3ba3b"
+			"d75192e9-7be6-430f-8bd9-dd88ba384037" "d7e12c42-0b25-400f-979c-8ed424d31d07"
+			"db747d2d-d1dd-4e40-bd96-aaabb7d9f054" "dcde9cbb-4811-4b83-8aba-1a733196ec05"
+			"dd57ad27-f354-4aab-bb26-ea1c12533a0b" "de893e7c-028e-4acb-afa2-8556df37cf7d"
+			"e27f69bf-c634-4d58-aa77-44eb0a0c7a75" "e768c9f7-40fc-4d36-b0bf-6ad3218f06ba"
+			"e78f286f-abbc-49ad-bb11-511285c110e7" "e8a7ff4f-c306-40d0-833b-8cabcc728de6"
+			"f1392b31-5ee7-41ca-a455-6336e135c232" "f28c0589-31c8-489c-8f4e-77a1f88dab15"
+			"f6a2c292-3990-458b-afd6-05b088b0634e" "f8d8b25f-d293-4f6d-99f4-59af58bab087"
+			"fa69eace-2133-4eb9-b3d0-51bf7f3a6acf" "fce60cc0-355f-4c77-aaac-308d05228475"
+			"fd6b9ac9-ed7e-4434-a844-3f5652a443bf" "ff16b081-d3b7-433d-9ddf-7c0bc2e9963d"
 		)
 	)
 	(group ""
