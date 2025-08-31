@@ -934,7 +934,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c3693d33-43df-4ec5-a70f-fea37a52c7d6")
-		(property "Reference" "cgd"
+		(property "Reference" "cap_gd"
 			(at 143.51 92.0749 0)
 			(effects
 				(font
@@ -988,7 +988,7 @@
 		(instances
 			(project ""
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "cgd")
+					(reference "cap_gd")
 					(unit 1)
 				)
 			)
@@ -1004,7 +1004,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ddb65cef-bb62-4169-b7b1-b45af4566831")
-		(property "Reference" "cgs"
+		(property "Reference" "cap_gs"
 			(at 124.46 92.0749 0)
 			(effects
 				(font
@@ -1058,7 +1058,7 @@
 		(instances
 			(project "RampLimiter"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "cgs")
+					(reference "cap_gs")
 					(unit 1)
 				)
 			)
