@@ -1,7 +1,7 @@
 from typing import NamedTuple, Dict, Optional
 import math
 
-from ..abstract_parts import *
+from edg.abstract_parts import *
 
 
 class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):

@@ -19,5 +19,7 @@ class RampLimiterTest(unittest.TestCase):
   def test_opamp_amplifier(self) -> None:
     compiled = ScalaCompiler.compile(RampLimiterTestTop, refinements=Refinements(
       class_refinements=[
+        (Resistor, GenericChipResistor),
+        (Capacitor, GenericMlcc),
       ]
     ))

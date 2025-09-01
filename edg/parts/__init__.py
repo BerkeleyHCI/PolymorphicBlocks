@@ -3,10 +3,8 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart
 from .JlcBlackbox import KiCadJlcBlackbox
 
-from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
 from .JlcResistor import JlcResistor
 from .JlcResistorArray import JlcResistorArray
-from .GenericCapacitor import GenericMlcc
 from .JlcCapacitor import JlcCapacitor
 from .JlcElectrolyticCapacitor import JlcAluminumCapacitor
 from .JlcInductor import JlcInductor

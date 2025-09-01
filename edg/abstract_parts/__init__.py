@@ -106,6 +106,9 @@ from .PinMappable import PinMappable, PinMapUtil
 from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 from .VariantPinRemapper import VariantPinRemapper
 
+from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
+from .GenericCapacitor import GenericMlcc
+
 from .DummyDevices import DummyPassive, DummyGround, DummyVoltageSource, DummyVoltageSink, DummyDigitalSink, \
     DummyAnalogSource, DummyAnalogSink
 from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltageCurrentLimit, ForcedVoltage, ForcedVoltageCurrent, \

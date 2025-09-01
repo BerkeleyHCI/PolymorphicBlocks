@@ -1,6 +1,6 @@
 import unittest
 
-from .GenericCapacitor import *
+from edg.abstract_parts.GenericCapacitor import *
 
 
 class CapacitorGenericTestTop(Block):

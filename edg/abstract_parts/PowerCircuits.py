@@ -4,7 +4,7 @@ from .AbstractResistor import Resistor
 from .AbstractFets import SwitchFet, Fet
 from .AbstractCapacitor import Capacitor
 from .GateDrivers import HalfBridgeDriver, HalfBridgeDriverIndependent, HalfBridgeDriverPwm
-from .ResistiveDivider import VoltageDivider
+from .ResistiveDivider import VoltageDivider, ResistiveDivider
 from .Categories import PowerConditioner
 
 
@@ -192,7 +192,7 @@ class RampLimiter(KiCadSchematicBlock):
             # capacitance=self.cgd,  # TODO calculate capacitive divider params
             voltage=(0 * Volt(tol=0)).hull(self.pwr_in.link().voltage)
         ))
-        self.div = self.Block(VoltageDivider(output_voltage=self.target_vgs
+        self.div = self.Block(ResistiveDivider(ratio=self.target_vgs.shrink_multiply(1/self.pwr_in.link().voltage)
                                              # TODO specify impedance
                                              ))
         self.ctl_fet = self.Block(SwitchFet.NFet(
@@ -206,5 +206,9 @@ class RampLimiter(KiCadSchematicBlock):
         self.import_kicad(
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
+                'pwr_in': VoltageSink(),
+                'pwr_out': VoltageSource(),
+                'control': DigitalSink(),
+                'gnd': Ground(),
             })
 

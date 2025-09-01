@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from ..abstract_parts import *
+from edg.abstract_parts import *
 
 
 @non_library
