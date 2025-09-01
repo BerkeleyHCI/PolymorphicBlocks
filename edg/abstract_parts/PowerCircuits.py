@@ -152,6 +152,9 @@ class RampLimiter(KiCadSchematicBlock):
 
     References: https://www.ti.com/lit/an/slva156/slva156.pdf, https://www.ti.com/lit/an/slyt096/slyt096.pdf,
                 https://youtu.be/bOka13RtOXM
+
+    Additional more complex circuits
+    https://electronics.stackexchange.com/questions/294061/p-channel-mosfet-inrush-current-limiting
     """
     @init_in_parent
     def __init__(self, *, cgd: RangeLike = 10*nFarad(tol=0.5), target_ramp: RangeLike = 1000*Volt(tol=0.25),
@@ -161,6 +164,7 @@ class RampLimiter(KiCadSchematicBlock):
         self.gnd = self.Port(Ground.empty(), [Common])
         self.pwr_in = self.Port(VoltageSink.empty(), [Input])
         self.pwr_out = self.Port(VoltageSource.empty(), [Output])
+        self.control = self.Port(DigitalSink.empty())
 
         self.cgd = self.ArgParameter(cgd)
         self.target_ramp = self.ArgParameter(target_ramp)
@@ -170,14 +174,14 @@ class RampLimiter(KiCadSchematicBlock):
     def contents(self):
         super().contents()
 
-        pwr_voltage = self.pwr.link().voltage
+        pwr_voltage = self.pwr_in.link().voltage
         self.drv = self.Block(Fet.PFet(
             drain_voltage=pwr_voltage,
             drain_current=self.pwr_out.link().current_drawn,
             gate_voltage=(0 * Volt(tol=0)).hull(self.target_vgs.upper()),
+            gate_threshold_voltage=self.target_vgs,
             rds_on=(0, self.max_rds),
             power=(0, 0) * Watt  # TODO size for through current at Rds,on
-            # TODO add Vgs,th spec
         ))
 
         self.cap_gd = self.Block(Capacitor(
@@ -188,5 +192,19 @@ class RampLimiter(KiCadSchematicBlock):
             # capacitance=self.cgd,  # TODO calculate capacitive divider params
             voltage=(0 * Volt(tol=0)).hull(self.pwr_in.link().voltage)
         ))
-        self.div = self.Block(VoltageDivider(output_voltage=self.target_vgs,
-                                             impedance=...))
+        self.div = self.Block(VoltageDivider(output_voltage=self.target_vgs
+                                             # TODO specify impedance
+                                             ))
+        self.ctl_fet = self.Block(SwitchFet.NFet(
+            drain_voltage=pwr_voltage,
+            drain_current=(0, 1),  # TODO
+            gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper()),
+            rds_on=(0, 1),  # TODO size on turnon time
+            drive_current=self.control.link().current_limits  # TODO this is kind of a max drive current
+        ))
+
+        self.import_kicad(
+            self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+            conversions={
+            })
+

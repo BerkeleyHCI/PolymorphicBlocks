@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from math import log10, ceil
-from typing import List, Tuple
+from typing import List, Tuple, Mapping
 
 from ..electronics_model import *
 from . import Analog, Resistor
@@ -55,8 +55,12 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
            self.parallel_impedance.intersects(spec.parallel_impedance)
 
 
-class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
+class ResistiveDivider(InternalSubcircuit, KiCadImportableBlock, GeneratorBlock):
   """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
+  def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
+    assert symbol_name == 'Device:VoltageDivider'
+    return {'1': self.top, '2': self.center, '3': self.bottom}
+
   @classmethod
   def divider_ratio(cls, rtop: RangeExpr, rbot: RangeExpr) -> RangeExpr:
     """Calculates the output voltage of a resistive divider given the input voltages and resistances."""
@@ -131,12 +135,16 @@ class ResistiveDivider(InternalSubcircuit, GeneratorBlock):
 
 
 @non_library
-class BaseVoltageDivider(Block):
+class BaseVoltageDivider(KiCadImportableBlock):
   """Base class that defines a resistive divider that takes in a voltage source and ground, and outputs
   an analog constant-voltage signal.
   The actual output voltage is defined as a ratio of the input voltage, and the divider is specified by
   ratio and impedance.
   Subclasses should define the ratio and impedance spec."""
+  def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
+    assert symbol_name == 'Device:VoltageDivider'
+    return {'1': self.input, '2': self.output, '3': self.gnd}
+
   @init_in_parent
   def __init__(self, impedance: RangeLike) -> None:
     super().__init__()
@@ -218,6 +226,10 @@ class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
 
 class SignalDivider(Analog, Block):
   """Specialization of ResistiveDivider for Analog signals"""
+  def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
+    assert symbol_name == 'Device:VoltageDivider'
+    return {'1': self.input, '2': self.output, '3': self.gnd}
+
   @init_in_parent
   def __init__(self, ratio: RangeLike, impedance: RangeLike) -> None:
     super().__init__()
