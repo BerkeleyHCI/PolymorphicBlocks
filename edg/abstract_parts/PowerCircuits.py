@@ -125,7 +125,7 @@ class FetHalfBridgePwmReset(FetHalfBridge, HalfBridgePwm, Resettable, GeneratorB
 class RampLimiter(KiCadSchematicBlock):
     """PMOS-based ramp limiter that roughly targets a constant-dV/dt ramp.
     The cgd should be specified to swamp (10x+) the parasitic Cgd of the FET to get more controlled parameters.
-    The target ramp rate is in volts/second, and for a capacitive load this can be calulated from a target current with
+    The target ramp rate is in volts/second, and for a capacitive load this can be calculated from a target current with
       I = C * dV/dt  => dV/dt = I / C
     The actual ramp rate will vary substantially, the values calculated are based on many assertions.
 
@@ -149,7 +149,7 @@ class RampLimiter(KiCadSchematicBlock):
 
     Note that Vgs,th is an approximate parameter and the ramp current is likely larger than the Vgs,th current.
     Vgs also may rise during the ramp, meaning some current goes into charging Cgs.
-    
+
     References: https://www.ti.com/lit/an/slva156/slva156.pdf, https://www.ti.com/lit/an/slyt096/slyt096.pdf,
                 https://youtu.be/bOka13RtOXM
     """
@@ -165,6 +165,7 @@ class RampLimiter(KiCadSchematicBlock):
         self.cgd = self.ArgParameter(cgd)
         self.target_ramp = self.ArgParameter(target_ramp)
         self.target_vgs = self.ArgParameter(target_vgs)
+        self.max_rds = self.ArgParameter(max_rds)
 
     def contents(self):
         super().contents()
