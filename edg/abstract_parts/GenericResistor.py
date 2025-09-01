@@ -1,6 +1,9 @@
 from typing import List, Tuple
 
-from edg.abstract_parts import *
+from ..electronics_model import *
+from .AbstractResistor import Resistor
+from .ESeriesUtil import ESeriesUtil
+from .SelectorArea import SelectorArea
 
 
 @non_library

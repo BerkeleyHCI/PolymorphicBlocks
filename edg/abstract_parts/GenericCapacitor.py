@@ -1,7 +1,10 @@
 from typing import NamedTuple, Dict, Optional
 import math
 
-from edg.abstract_parts import *
+from ..electronics_model import *
+from .AbstractCapacitor import Capacitor, DummyCapacitorFootprint
+from .SelectorArea import SelectorArea
+from .ESeriesUtil import ESeriesUtil
 
 
 class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):

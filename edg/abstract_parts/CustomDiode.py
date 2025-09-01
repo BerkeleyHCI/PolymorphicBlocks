@@ -1,4 +1,5 @@
-from ..abstract_parts import *
+from ..electronics_model import *
+from .AbstractDiodes import Diode
 
 
 class CustomDiode(Diode, FootprintBlock, GeneratorBlock):

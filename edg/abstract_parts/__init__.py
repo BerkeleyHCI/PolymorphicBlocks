@@ -106,6 +106,8 @@ from .PinMappable import PinMappable, PinMapUtil
 from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 from .VariantPinRemapper import VariantPinRemapper
 
+from .CustomDiode import CustomDiode
+from .CustomFet import CustomFet
 from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
 from .GenericCapacitor import GenericMlcc
 

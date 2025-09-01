@@ -14,8 +14,6 @@ from .JlcLed import JlcLed
 from .JlcDiode import JlcDiode, JlcZenerDiode
 from .JlcBjt import JlcBjt
 from .JlcFet import JlcFet, JlcSwitchFet
-from .CustomDiode import CustomDiode
-from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AaBattery, AaBatteryStack
 from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .Joystick_Xbox import XboxElite2Joystick

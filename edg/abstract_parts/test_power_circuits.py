@@ -21,5 +21,7 @@ class RampLimiterTest(unittest.TestCase):
       class_refinements=[
         (Resistor, GenericChipResistor),
         (Capacitor, GenericMlcc),
+        (Fet, CustomFet),
+        (SwitchFet, CustomFet),
       ]
     ))
