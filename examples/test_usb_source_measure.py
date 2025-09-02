@@ -811,7 +811,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['spk', 'conn'], JstPhKVertical),
 
         (['control', 'isense', 'ranges[0]', 'pwr_sw', 'ic'], Tlp3545a),  # higher current on 3A range
-        (['control', 'driver', 'res'], SeriesResistor),
+        (['control', 'driver', 'res'], SeriesResistor),  # needed for high power within a basic part
         (['oled', 'device', 'conn'], Fpc050BottomFlip),  # more compact connector, double-fold the FPC ribbon
       ],
       class_refinements=[
