@@ -45,6 +45,18 @@ class DummyVoltageSink(DummyDevice):
     self.current_limits = self.Parameter(RangeExpr(self.pwr.link().current_limits))
 
 
+class DummyDigitalSource(DummyDevice):
+  @init_in_parent
+  def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
+               current_limits: RangeLike = RangeExpr.ALL) -> None:
+    super().__init__()
+
+    self.io = self.Port(DigitalSource(
+      voltage_out=voltage_out,
+      current_limits=current_limits
+    ), [InOut])
+
+
 class DummyDigitalSink(DummyDevice):
   @init_in_parent
   def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL,

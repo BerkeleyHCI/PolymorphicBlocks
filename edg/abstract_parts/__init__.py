@@ -111,8 +111,8 @@ from .CustomFet import CustomFet
 from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
 from .GenericCapacitor import GenericMlcc
 
-from .DummyDevices import DummyPassive, DummyGround, DummyVoltageSource, DummyVoltageSink, DummyDigitalSink, \
-    DummyAnalogSource, DummyAnalogSink
+from .DummyDevices import DummyPassive, DummyGround, DummyVoltageSource, DummyVoltageSink, DummyDigitalSource, \
+    DummyDigitalSink, DummyAnalogSource, DummyAnalogSink
 from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltageCurrentLimit, ForcedVoltage, ForcedVoltageCurrent, \
     ForcedAnalogVoltage, ForcedAnalogSignal, ForcedDigitalSinkCurrentDraw
 from .MergedBlocks import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource, MergedSpiController

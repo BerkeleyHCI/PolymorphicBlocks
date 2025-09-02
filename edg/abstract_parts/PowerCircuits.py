@@ -158,7 +158,8 @@ class RampLimiter(KiCadSchematicBlock):
     """
     @init_in_parent
     def __init__(self, *, cgd: RangeLike = 10*nFarad(tol=0.5), target_ramp: RangeLike = 1000*Volt(tol=0.25),
-                 target_vgs: RangeLike = (2.0, 3.0)*Volt, max_rds: FloatLike = 1*Ohm):
+                 target_vgs: RangeLike = (2.0, 3.0)*Volt, max_rds: FloatLike = 1*Ohm,
+                 _cdiv_vgs_factor: RangeLike = (0.02, 0.5)):
         super().__init__()
 
         self.gnd = self.Port(Ground.empty(), [Common])
@@ -170,6 +171,7 @@ class RampLimiter(KiCadSchematicBlock):
         self.target_ramp = self.ArgParameter(target_ramp)
         self.target_vgs = self.ArgParameter(target_vgs)
         self.max_rds = self.ArgParameter(max_rds)
+        self._cdiv_vgs_factor = self.ArgParameter(_cdiv_vgs_factor)
 
     def contents(self):
         super().contents()
@@ -188,26 +190,37 @@ class RampLimiter(KiCadSchematicBlock):
             capacitance=self.cgd,
             voltage=(0 * Volt(tol=0)).hull(self.pwr_in.link().voltage)
         ))
+        # treat Cgs and Cgd as a capacitive divider with Cgs on the bottom
         self.cap_gs = self.Block(Capacitor(
-            # capacitance=self.cgd,  # TODO calculate capacitive divider params
+            capacitance=(
+                    (1/(self.drv.actual_gate_drive.lower()*self._cdiv_vgs_factor)).shrink_multiply(self.pwr_in.link().voltage) - 1
+            ).shrink_multiply(
+                self.cap_gd.actual_capacitance
+            ),
             voltage=(0 * Volt(tol=0)).hull(self.pwr_in.link().voltage)
         ))
-        self.div = self.Block(ResistiveDivider(ratio=self.target_vgs.shrink_multiply(1/self.pwr_in.link().voltage)
-                                             # TODO specify impedance
-                                             ))
+        # dV/dt over a capacitor is I / C => I = Cgd * dV/dt
+        # then calculate to get the target I: Vgs,th = I * Reff => Reff = Vgs,th / I = Vgs,th / (Cgd * dV/dt)
+        # we assume Vgs,th is exact, and only contributing sources come from elsewhere
+        self.div = self.Block(ResistiveDivider(ratio=self.target_vgs.shrink_multiply(1/self.pwr_in.link().voltage),
+                                               impedance=(1 / self.target_ramp).shrink_multiply(self.drv.actual_gate_drive.lower() / (self.cap_gd.actual_capacitance))
+                                               ))
+        div_current_draw = (self.pwr_in.link().voltage/self.div.actual_impedance).hull(0)
         self.ctl_fet = self.Block(SwitchFet.NFet(
             drain_voltage=pwr_voltage,
-            drain_current=(0, 1),  # TODO
-            gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper()),
-            rds_on=(0, 1),  # TODO size on turnon time
-            drive_current=self.control.link().current_limits  # TODO this is kind of a max drive current
+            drain_current=div_current_draw,
+            gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
         ))
 
         self.import_kicad(
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
-                'pwr_in': VoltageSink(),
-                'pwr_out': VoltageSource(),
+                'pwr_in': VoltageSink(
+                    current_draw=self.pwr_out.link().current_drawn + div_current_draw
+                ),
+                'pwr_out': VoltageSource(
+                    voltage_out=self.pwr_in.link().voltage
+                ),
                 'control': DigitalSink(),
                 'gnd': Ground(),
             })
