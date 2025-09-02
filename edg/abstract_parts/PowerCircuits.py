@@ -134,6 +134,9 @@ class RampLimiter(KiCadSchematicBlock):
 
     A capacitive divider with Cgs will be generated so the target initial Vgs at less than half the FET Vgs,th
     (targeting half Vgs,th at Vin,max).
+    TODO: is this right?
+
+    TODO: allow control to be optional, eliminating the NMOS with a short
 
     HOW THIS WORKS:
     When the input voltage rises, the capacitive divider of Cgs, Cgd brings the gate to a subthreshold voltage.
