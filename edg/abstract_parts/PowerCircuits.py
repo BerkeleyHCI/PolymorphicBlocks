@@ -160,8 +160,8 @@ class RampLimiter(KiCadSchematicBlock):
     """
     @init_in_parent
     def __init__(self, *, cgd: RangeLike = 10*nFarad(tol=0.5), target_ramp: RangeLike = 1000*Volt(tol=0.25),
-                 target_vgs: RangeLike = (2.0, 3.0)*Volt, max_rds: FloatLike = 1*Ohm,
-                 _cdiv_vgs_factor: RangeLike = (0.02, 0.5)):
+                 target_vgs: RangeLike = (4, 10)*Volt, max_rds: FloatLike = 1*Ohm,
+                 _cdiv_vgs_factor: RangeLike = (0.05, 0.75)):
         super().__init__()
 
         self.gnd = self.Port(Ground.empty(), [Common])
@@ -183,9 +183,8 @@ class RampLimiter(KiCadSchematicBlock):
             drain_voltage=pwr_voltage,
             drain_current=self.pwr_out.link().current_drawn,
             gate_voltage=(0 * Volt(tol=0)).hull(self.target_vgs.upper()),
-            gate_threshold_voltage=self.target_vgs,
-            rds_on=(0, self.max_rds),
-            power=(0, 0) * Watt  # TODO size for through current at Rds,on
+            gate_threshold_voltage=(0 * Volt(tol=0)).hull(self.target_vgs.lower()),
+            rds_on=(0, self.max_rds)
         ))
 
         self.cap_gd = self.Block(Capacitor(

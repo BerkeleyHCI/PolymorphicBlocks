@@ -193,7 +193,7 @@ class SwitchFet(Fet):
 
 
   @init_in_parent
-  def __init__(self, *, frequency: RangeLike = 0*Hertz(tol=0), drive_current: RangeLike, **kwargs) -> None:
+  def __init__(self, *, frequency: RangeLike = 0*Hertz(tol=0), drive_current: RangeLike = Range.all(), **kwargs) -> None:
     super().__init__(**kwargs)
 
     self.frequency = self.ArgParameter(frequency)
