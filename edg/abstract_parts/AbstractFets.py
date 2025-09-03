@@ -53,6 +53,12 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   """Base class for untyped MOSFETs
   Drain voltage, drain current, and gate voltages are positive (absolute).
 
+  The gate voltage is only checked against maximum ratings.
+  Optionally, the gate threshold voltage can also be specified.
+
+  The actual gate drive voltage is specified as (threshold voltage, gate drive voltage), where the top end of that
+  is either the voltage at Rds,on or the specified driving voltage level.
+
   MOSFET equations
   - https://inst.eecs.berkeley.edu/~ee105/fa05/handouts/discussions/Discussion5.pdf (cutoff/linear/saturation regions)
 
@@ -81,7 +87,8 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
 
   @init_in_parent
   def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike, *,
-               gate_voltage: RangeLike = (0, 0), rds_on: RangeLike = Range.all(),
+               gate_voltage: RangeLike = (0, 0), gate_threshold_voltage: RangeLike = Range.all(),
+               rds_on: RangeLike = Range.all(),
                gate_charge: RangeLike = Range.all(), power: RangeLike = Range.exact(0),
                channel: StringLike = StringExpr()) -> None:
     super().__init__()
@@ -93,6 +100,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
     self.drain_voltage = self.ArgParameter(drain_voltage)
     self.drain_current = self.ArgParameter(drain_current)
     self.gate_voltage = self.ArgParameter(gate_voltage)
+    self.gate_threshold_voltage = self.ArgParameter(gate_threshold_voltage)
     self.rds_on = self.ArgParameter(rds_on)
     self.gate_charge = self.ArgParameter(gate_charge)
     self.power = self.ArgParameter(power)
@@ -142,8 +150,8 @@ class TableFet(PartsTableSelector, BaseTableFet):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator_param(self.drain_voltage, self.drain_current, self.gate_voltage, self.rds_on, self.gate_charge,
-                         self.power, self.channel)
+    self.generator_param(self.drain_voltage, self.drain_current, self.gate_voltage, self.gate_threshold_voltage,
+                         self.rds_on, self.gate_charge, self.power, self.channel)
 
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
@@ -151,6 +159,7 @@ class TableFet(PartsTableSelector, BaseTableFet):
       self.get(self.drain_voltage).fuzzy_in(row[self.VDS_RATING]) and \
       self.get(self.drain_current).fuzzy_in(row[self.IDS_RATING]) and \
       self.get(self.gate_voltage).fuzzy_in(row[self.VGS_RATING]) and \
+      (row[self.VGS_DRIVE].lower in self.get(self.gate_threshold_voltage)) and \
       row[self.RDS_ON].fuzzy_in(self.get(self.rds_on)) and \
       row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])
@@ -184,7 +193,7 @@ class SwitchFet(Fet):
 
 
   @init_in_parent
-  def __init__(self, frequency: RangeLike, drive_current: RangeLike, **kwargs) -> None:
+  def __init__(self, *, frequency: RangeLike = 0*Hertz(tol=0), drive_current: RangeLike = Range.all(), **kwargs) -> None:
     super().__init__(**kwargs)
 
     self.frequency = self.ArgParameter(frequency)
@@ -200,8 +209,9 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
   @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.generator_param(self.frequency, self.drain_voltage, self.drain_current, self.gate_voltage, self.rds_on,
-                         self.gate_charge, self.power, self.channel, self.drive_current)
+    self.generator_param(self.frequency, self.drain_voltage, self.drain_current,
+                         self.gate_voltage, self.gate_threshold_voltage,
+                         self.rds_on, self.gate_charge, self.power, self.channel, self.drive_current)
 
     self.actual_static_power = self.Parameter(RangeExpr())
     self.actual_switching_power = self.Parameter(RangeExpr())
@@ -213,6 +223,7 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
       self.get(self.drain_voltage).fuzzy_in(row[self.VDS_RATING]) and \
       self.get(self.drain_current).fuzzy_in(row[self.IDS_RATING]) and \
       self.get(self.gate_voltage).fuzzy_in(row[self.VGS_RATING]) and \
+      (row[self.VGS_DRIVE].lower in self.get(self.gate_threshold_voltage)) and \
       row[self.RDS_ON].fuzzy_in(self.get(self.rds_on)) and \
       row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])

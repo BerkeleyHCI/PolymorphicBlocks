@@ -3,10 +3,8 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart
 from .JlcBlackbox import KiCadJlcBlackbox
 
-from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
 from .JlcResistor import JlcResistor
 from .JlcResistorArray import JlcResistorArray
-from .GenericCapacitor import GenericMlcc
 from .JlcCapacitor import JlcCapacitor
 from .JlcElectrolyticCapacitor import JlcAluminumCapacitor
 from .JlcInductor import JlcInductor
@@ -16,8 +14,6 @@ from .JlcLed import JlcLed
 from .JlcDiode import JlcDiode, JlcZenerDiode
 from .JlcBjt import JlcBjt
 from .JlcFet import JlcFet, JlcSwitchFet
-from .CustomDiode import CustomDiode
-from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AaBattery, AaBatteryStack
 from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .Joystick_Xbox import XboxElite2Joystick

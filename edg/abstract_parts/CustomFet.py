@@ -1,7 +1,8 @@
-from ..abstract_parts import *
+from ..electronics_model import *
+from .AbstractFets import SwitchFet
 
 
-class CustomFet(Fet, FootprintBlock, GeneratorBlock):
+class CustomFet(SwitchFet, FootprintBlock, GeneratorBlock):
   @init_in_parent
   def __init__(self, *args, footprint_spec: StringLike = "",
                manufacturer_spec: StringLike = "", part_spec: StringLike = "", **kwargs):

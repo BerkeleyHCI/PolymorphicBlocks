@@ -1,6 +1,6 @@
 import unittest
 
-from .GenericCapacitor import *
+from . import *
 
 
 class CapacitorGenericTestTop(Block):
