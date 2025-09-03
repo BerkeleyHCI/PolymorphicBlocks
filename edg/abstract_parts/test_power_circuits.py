@@ -32,4 +32,4 @@ class RampLimiterTestTop(DesignTop):
 
 class RampLimiterTest(unittest.TestCase):
   def test_ramp_limiter(self) -> None:
-    compiled = ScalaCompiler.compile(RampLimiterTestTop)
+    ScalaCompiler.compile(RampLimiterTestTop)

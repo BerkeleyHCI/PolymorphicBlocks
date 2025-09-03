@@ -134,7 +134,6 @@ class RampLimiter(KiCadSchematicBlock):
 
     A capacitive divider with Cgs will be generated so the target initial Vgs at less than half the FET Vgs,th
     (targeting half Vgs,th at Vin,max).
-    TODO: is this right?
 
     TODO: allow control to be optional, eliminating the NMOS with a short
 
@@ -180,7 +179,7 @@ class RampLimiter(KiCadSchematicBlock):
         super().contents()
 
         pwr_voltage = self.pwr_in.link().voltage
-        self.drv = self.Block(Fet.PFet(
+        self.drv = self.Block(SwitchFet.PFet(
             drain_voltage=pwr_voltage,
             drain_current=self.pwr_out.link().current_drawn,
             gate_voltage=(0 * Volt(tol=0)).hull(self.target_vgs.upper()),
