@@ -73,7 +73,7 @@ from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRe
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
 from .PowerCircuits import HalfBridge, FetHalfBridge, HalfBridgeIndependent, HalfBridgePwm, FetHalfBridgeIndependent,\
-    FetHalfBridgePwmReset, FetPrecharge
+    FetHalfBridgePwmReset, RampLimiter, FetPrecharge
 from .AbstractLedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
 from .AbstractFuse import Fuse, SeriesPowerFuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator
@@ -107,8 +107,13 @@ from .PinMappable import PinMappable, PinMapUtil
 from .PinMappable import PinResource, PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource
 from .VariantPinRemapper import VariantPinRemapper
 
-from .DummyDevices import DummyPassive, DummyGround, DummyVoltageSource, DummyVoltageSink, DummyDigitalSink, \
-    DummyAnalogSource, DummyAnalogSink
+from .CustomDiode import CustomDiode
+from .CustomFet import CustomFet
+from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
+from .GenericCapacitor import GenericMlcc
+
+from .DummyDevices import DummyPassive, DummyGround, DummyVoltageSource, DummyVoltageSink, DummyDigitalSource, \
+    DummyDigitalSink, DummyAnalogSource, DummyAnalogSink
 from .DummyDevices import ForcedVoltageCurrentDraw, ForcedVoltageCurrentLimit, ForcedVoltage, ForcedVoltageCurrent, \
     ForcedAnalogVoltage, ForcedAnalogSignal, ForcedDigitalSinkCurrentDraw
 from .MergedBlocks import MergedVoltageSource, MergedDigitalSource, MergedAnalogSource, MergedSpiController

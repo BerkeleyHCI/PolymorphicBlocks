@@ -26,6 +26,27 @@ class JlcBaseFet(JlcTableSelector):
     'SOIC-8_3.9x4.9x1.27P': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
     'SOP-8': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
     'SOP-8_3.9x4.9x1.27P': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
+
+    'PowerPAK SO-8_EP_5.2x6.2x1.27P': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'POWERPAK-SO-8': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PowerPAK-SO-8': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PowerPAKSO-8L': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PowerPAKSO-8': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'DFN5X6-8': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'DFN5x6': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'DFN-8_5x6x1.27P': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'DFN-8(5x6)': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'DFN5X6-8L': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PDFN5x6': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PDFN5x6-8': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PDFN5x6-8L': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PDFN5X6-8L': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PQFN 5X6': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PQFN5x6-8': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PQFN-8(4.9x5.8)': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PQFN-8(5x6)': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PRPAK5x6': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PRPAK5x6-8L': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
   }
 
   DESCRIPTION_PARSERS: List[DescriptionParser] = [

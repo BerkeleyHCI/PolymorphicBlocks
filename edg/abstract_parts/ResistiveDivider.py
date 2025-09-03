@@ -135,7 +135,7 @@ class ResistiveDivider(InternalSubcircuit, KiCadImportableBlock, GeneratorBlock)
 
 
 @non_library
-class BaseVoltageDivider(KiCadImportableBlock, Block):
+class BaseVoltageDivider(KiCadImportableBlock):
   """Base class that defines a resistive divider that takes in a voltage source and ground, and outputs
   an analog constant-voltage signal.
   The actual output voltage is defined as a ratio of the input voltage, and the divider is specified by

@@ -1,6 +1,6 @@
 import unittest
 
-from .GenericResistor import *
+from . import *
 
 
 class ResistorTestTop(Block):

@@ -175,6 +175,8 @@ class IotCurtainCrawler(JlcBoardTop):
     ~2.7v min starting voltage; 40mA open current, 200mA stall current @ 4.0v
 
     Motor is a 2-pin PicoBlade 1.25mm connector, Molex_PicoBlade_53398-0271_1x02-1MP_P1.25mm_Vertical
+
+    Hall sensor is SOT-23 type, marked "6201"
     """
     def contents(self) -> None:
         super().contents()
