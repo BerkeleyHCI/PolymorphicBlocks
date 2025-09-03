@@ -38,7 +38,10 @@ class FetStandardFootprint(StandardFootprint['Fet']):
       '7': block.drain,
       '8': block.drain,
     },
-    'Package_SO:PowerPAK_SO-8_Single': lambda block: {
+    (
+      'Package_SO:PowerPAK_SO-8_Single',
+      'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    ): lambda block: {
       '1': block.source,
       '2': block.source,
       '3': block.source,
