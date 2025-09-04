@@ -493,16 +493,13 @@ class UsbSourceMeasure(JlcBoardTop):
 
       self.convin_sense = imp.Block(Ina219(10*mOhm(tol=0.01), addr_lsb=4))
       self.connect(self.convin_sense.pwr, self.v3v3)
-      (self.conv_inforce, self.precharge), _ = self.chain(
+      (self.conv_inforce, self.ramp), _ = self.chain(
         self.vusb,
         imp.Block(ForcedVoltage(20*Volt(tol=0))),
-        # avoid excess capacitance on VBus
-        # note, 20V is the Vgs,max of many FETs, so this clamps slightly below while not clamping (and drawing power)
-        # at the 15v PD step
-        imp.Block(FetPrecharge(precharge_resistance=470*Ohm(tol=0.1), max_rds=0.1*Ohm, clamp_voltage=(15, 18)*Volt)),
+        imp.Block(RampLimiter()),  # avoid excess capacitance on VBus which may cause the PD source to reset
         self.convin_sense.sense_pos
       )
-      self.vusb_pre = self.connect(self.convin_sense.sense_neg)  # vusb post-precharge
+      self.vusb_pre = self.connect(self.convin_sense.sense_neg)  # vusb post-ramp
 
       (self.cap_conv, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
         self.vusb_pre,
@@ -510,7 +507,7 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30)*Volt,  # design for 0.5x - 1.5x conv ratio
                                                   frequency=500*kHertz(tol=0),
                                                   ripple_ratio=(0.01, 0.9),
-                                                  input_ripple_limit=250*mVolt,
+                                                  input_ripple_limit=100*mVolt,
                                                   output_ripple_limit=(25*(7/8))*mVolt  # fill out the row of caps
                                                   )),
         imp.Block(ForcedVoltage((2, 30)*Volt)),  # at least 2v to allow current sensor to work
@@ -624,7 +621,7 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.ioe_ctl.io.request('high_gate_ctl'), self.control.high_gate_ctl)
       self.connect(self.ioe_ctl.io.request('low_gate_ctl'), self.control.low_gate_ctl)
       self.connect(self.ioe_ctl.io.request_vector('off'), self.control.off)
-      self.connect(self.ioe_ctl.io.request('precharge'), self.precharge.control)
+      self.connect(self.ioe_ctl.io.request('ramp'), self.ramp.control)
 
       rc_model = DigitalLowPassRc(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))
       (self.buck_rc, ), _ = self.chain(self.mcu.gpio.request('buck_pwm'), imp.Block(rc_model), self.conv.buck_pwm)
@@ -756,7 +753,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
     self._block_diagram_grouping = self.Metadata({
       'pwr': 'usb, filt_vusb, fuse_vusb, prot_vusb, pd, vusb_sense, reg_v5, reg_3v3, prot_3v3',
-      'conv': 'conv_inforce, precharge, convin_sense, cap_conv, conv, conv_outforce, conv_sense, prot_conv, '
+      'conv': 'conv_inforce, ramp, convin_sense, cap_conv, conv, conv_outforce, conv_sense, prot_conv, '
               'conv_en_pull, conv_latch, conv_ovp, comp_pull, buck_rc, boost_rc',
       'analog': 'reg_analog, reg_vcontrol, reg_vcontroln, reg_vref, ref_div, ref_buf, ref_cap, vcen_rc, '
                 'dac_ferrite, dac, mv_rc, mi_rc, adc, control, '
@@ -877,13 +874,17 @@ class UsbSourceMeasure(JlcBoardTop):
         (['reg_v5', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         (['reg_v5', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
         # use the same inductor to reduce line items
-        (['reg_3v3', 'power_path', 'inductor', 'fp_part'], ParamValue(['reg_v5', 'power_path', 'inductor', 'fp_part'])),
+        (['reg_3v3', 'power_path', 'inductor', 'part'], ParamValue(['reg_v5', 'power_path', 'inductor', 'actual_part'])),
         # JLC does not have frequency specs, must be checked TODO
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['reg_v5', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['reg_v12', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['conv', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['reg_vcontrol', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
+        (['vusb_sense', 'Rs', 'res', 'res', 'footprint_spec'], "Resistor_SMD:R_1206_3216Metric"),
+        (['convin_sense', 'Rs', 'res', 'res', 'footprint_spec'], ParamValue(['vusb_sense', 'Rs', 'res', 'res', 'footprint_spec'])),
+
+        (['ramp', 'drv', 'footprint_spec'], 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic'),
 
         # ignore derating on 20v - it's really broken =(
         (['reg_v5', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
@@ -908,14 +909,15 @@ class UsbSourceMeasure(JlcBoardTop):
         )),  # TODO model is broken for unknown reasons
         (['boot', 'c_fly_pos', 'voltage_rating_derating'], 0.85),
         (['boot', 'c_fly_neg', 'voltage_rating_derating'], 0.85),
-        (['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'], Range.exact(100e-9)),  # reasonable worst case estimate
-        (['conv', 'buck_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
-        (['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
-        (['conv', 'boost_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
+        (['conv', 'boost_sw', 'low_fet', 'footprint_spec'], 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic'),
         # require all FETs to be the same; note boost must elaborate first
         (['conv', 'buck_sw', 'low_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
         (['conv', 'buck_sw', 'high_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
         (['conv', 'boost_sw', 'high_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
+        (['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'], Range.exact(100e-9)),  # reasonable worst case estimate
+        (['conv', 'boost_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'])),
+        (['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'], ParamValue(['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'])),
+        (['conv', 'buck_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'])),
         (['conv', 'buck_sw', 'gate_res'], Range.from_tolerance(10, 0.05)),
         (['conv', 'boost_sw', 'gate_res'], ParamValue(['conv', 'buck_sw', 'gate_res'])),
 
@@ -945,12 +947,6 @@ class UsbSourceMeasure(JlcBoardTop):
         (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
 
         (['oled', 'iref_res', 'require_basic_part'], False),
-
-        # these are since the auto-assigned parts are OOS
-        (['conv', 'boost_sw', 'low_fet', 'part'], "KIA50N03BD"),
-        (['prot_3v3', 'diode', 'part'], "1SMA4730AG"),
-
-        (['precharge', 'res', 'res', 'require_basic_part'], False),
 
         # reduce maximum SSR drive current to be within the IO expander limit
         (['control', 'isense', 'ranges[0]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
