@@ -120,15 +120,15 @@ class AnalogTestPoint(BaseTypedTestPoint, Block):
     return self
 
 
-class AnalogRfTestPoint(BaseRfTestPoint, Block):
-  """Test point with a AnalogSink port and 50-ohm matching resistor."""
+class AnalogCoaxTestPoint(BaseRfTestPoint, Block):
+  """Test point with a AnalogSink port and using a coax connector with shielding connected to gnd.
+  No impedance matching, this is intended for lower frequency signals where the wavelength would be
+  much longer than the test lead length"""
   def __init__(self, *args):
     super().__init__(*args)
-    self.res = self.Block(Resistor(50*Ohm(tol=0.05)))
-    self.io = self.Export(self.res.a.adapt_to(AnalogSink()), [InOut])
-    self.connect(self.res.b, self.conn.sig)
+    self.io = self.Export(self.conn.sig.adapt_to(AnalogSink()), [InOut])
 
-  def connected(self, io: Port[AnalogLink]) -> 'AnalogRfTestPoint':
+  def connected(self, io: Port[AnalogLink]) -> 'AnalogCoaxTestPoint':
     cast(Block, builder.get_enclosing_block()).connect(io, self.io)
     return self
 

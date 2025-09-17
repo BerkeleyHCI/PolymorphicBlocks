@@ -42,6 +42,8 @@ MiBit = LiteralConstructor(1024*1024, 'bit')
 
 Watt = LiteralConstructor(1, 'W')
 
+Ratio = LiteralConstructor(1, '')
+
 
 class UnitUtils:
   PREFIXES_POW3_HIGH = ['k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
