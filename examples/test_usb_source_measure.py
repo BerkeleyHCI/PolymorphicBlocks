@@ -948,6 +948,7 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['oled', 'iref_res', 'require_basic_part'], False),
 
+        (['control', 'isense', 'ranges[0]', 'pwr_sw', 'ic', 'swap'], True),  # better pinning
         # reduce maximum SSR drive current to be within the IO expander limit
         (['control', 'isense', 'ranges[0]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
         (['control', 'isense', 'ranges[1]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
@@ -955,7 +956,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['vusb_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
         (['convin_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
 
-        (['spk_drv', 'pwr', 'current_draw'], Range(6.0e-7, 0.25)),  # assume speakers will be pretty mild
+        (['spk_drv', 'pwr', 'current_draw'], Range(6.0e-7, 0.25)),
+        # assume speakers will be pretty mild
       ],
       class_values=[
         # (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015 is out of stock
