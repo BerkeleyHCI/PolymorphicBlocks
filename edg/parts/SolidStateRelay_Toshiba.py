@@ -1,15 +1,9 @@
 from ..abstract_parts import *
 
 
-class Tlp3545a(SolidStateRelay, FootprintBlock, GeneratorBlock):
-  @init_in_parent
-  def __init__(self, *args, swap: BoolLike = False, **kwargs):
-    super().__init__(*args, **kwargs)
-    self.swap = self.ArgParameter(swap)
-    self.generator_param(self.swap)
-
-  def generate(self):
-    super().generate()
+class Tlp3545a(SolidStateRelay, FootprintBlock):
+  def contents(self):
+    super().contents()
     self.assign(self.led_forward_voltage, (1.50, 1.80)*Volt)
     self.assign(self.led_current_limit, (5, 30)*mAmp)
     self.assign(self.led_current_recommendation, (5, 25)*mAmp)  # typ=10mA
@@ -23,24 +17,18 @@ class Tlp3545a(SolidStateRelay, FootprintBlock, GeneratorBlock):
         '1': self.leda,
         '2': self.ledk,
         # '3': nc,
-        '4': self.feta if not self.get(self.swap) else self.fetb,  # 'A' connection
+        '4': self.feta,  # 'A' connection
         # '5': source - common
-        '6': self.fetb if not self.get(self.swap) else self.feta,
+        '6': self.fetb,
       },
       mfr='Toshiba', part='TLP3545A(TP1,F',
       datasheet='https://toshiba.semicon-storage.com/info/docget.jsp?did=60318&prodName=TLP3545A'
     )
 
 
-class Tlp170am(SolidStateRelay, FootprintBlock, GeneratorBlock):
-  @init_in_parent
-  def __init__(self, *args, swap: BoolLike = False, **kwargs):
-    super().__init__(*args, **kwargs)
-    self.swap = self.ArgParameter(swap)
-    self.generator_param(self.swap)
-
-  def generate(self):
-    super().generate()
+class Tlp170am(SolidStateRelay, FootprintBlock):
+  def contents(self):
+    super().contents()
     self.assign(self.led_forward_voltage, (1.1, 1.4)*Volt)  # 1.27 nominal
     self.assign(self.led_current_limit, (2, 30)*mAmp)
     self.assign(self.led_current_recommendation, (2, 25)*mAmp)  # typ=2mA
@@ -53,8 +41,8 @@ class Tlp170am(SolidStateRelay, FootprintBlock, GeneratorBlock):
       {
         '1': self.leda,
         '2': self.ledk,
-        '3': self.feta if not self.get(self.swap) else self.fetb,
-        '4': self.fetb if not self.get(self.swap) else self.feta,
+        '3': self.feta,
+        '4': self.fetb,
       },
       mfr='Toshiba', part='TLP170AM(TPL,E',
       datasheet='https://toshiba.semicon-storage.com/info/TLP170AM_datasheet_en_20210524.pdf?did=69016&prodName=TLP170AM'
