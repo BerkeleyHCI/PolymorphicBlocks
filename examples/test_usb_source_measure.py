@@ -628,8 +628,7 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.boost_rc, ), _ = self.chain(self.mcu.gpio.request('boost_pwm'), imp.Block(rc_model), self.conv.boost_pwm)
 
       (self.conv_ovp, ), _ = self.chain(self.conv_outforce.pwr_out.as_analog_source(),
-                                        imp.Block(VoltageComparator(trip_voltage=(32, 36)*Volt)))
-      self.connect(self.conv_ovp.ref, self.vcenter)
+                                        imp.Block(VoltageComparator(trip_voltage=(30, 40)*Volt)))
 
       self.conv_latch = imp.Block(SrLatchInverted())
       (self.conv_en_pull, ), _ = self.chain(
