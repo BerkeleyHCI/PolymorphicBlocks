@@ -462,7 +462,7 @@ class UsbSourceMeasure(JlcBoardTop):
     ) as imp:
       self.vusb_sense = imp.Block(Ina219(10*mOhm(tol=0.01)))
 
-      # input filtering
+      # input filtering and protection
       (self.fuse_vusb, self.filt_vusb, self.prot_vusb), _ = self.chain(
         self.usb.pwr,
         self.Block(SeriesPowerFuse(trip_current=(7, 8)*Amp)),
@@ -473,37 +473,44 @@ class UsbSourceMeasure(JlcBoardTop):
       self.vusb = self.connect(self.vusb_sense.sense_neg)
       self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.vusb)
 
+      (self.ramp, self.cap_conv), _ = self.chain(
+        self.vusb,
+        imp.Block(RampLimiter()),  # avoid excess capacitance on VBus which may cause the PD source to reset
+        imp.Block(DecouplingCapacitor(100*uFarad(tol=0.25))),
+      )
+      self.vusb_ramp = self.connect(self.ramp.pwr_out)  # vusb post-ramp
+
       # logic supplies
       (self.reg_v5, self.tp_v5), _ = self.chain(
-        self.vusb,
+        self.vusb_ramp,  # non-critical power supply downstream of ramp limiter
         imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
         self.Block(VoltageTestPoint()),
       )
       self.v5 = self.connect(self.reg_v5.pwr_out)
+
       (self.reg_3v3, self.prot_3v3, self.tp_3v3), _ = self.chain(
-        self.vusb,
+        self.vusb,  # upstream of ramp limiter, required for bootstrapping
         imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
         imp.Block(ProtectionZenerDiode(voltage=(3.6, 4.5)*Volt)),
         self.Block(VoltageTestPoint())
       )
       self.v3v3 = self.connect(self.reg_3v3.pwr_out)
-
-      # output power supplies
       self.connect(self.vusb_sense.pwr, self.v3v3)
 
+      (self.reg_v12, ), _ = self.chain(
+        self.v5,
+        imp.Block(BoostConverter(output_voltage=12.5*Volt(tol=0.04))),  # limits of the OLED
+      )
+      self.v12 = self.connect(self.reg_v12.pwr_out)
+
+      # output power supplies
       self.convin_sense = imp.Block(Ina219(10*mOhm(tol=0.01), addr_lsb=4))
       self.connect(self.convin_sense.pwr, self.v3v3)
-      (self.conv_inforce, self.ramp), _ = self.chain(
-        self.vusb,
-        imp.Block(ForcedVoltage(20*Volt(tol=0))),
-        imp.Block(RampLimiter()),  # avoid excess capacitance on VBus which may cause the PD source to reset
-        self.convin_sense.sense_pos
-      )
-      self.vusb_pre = self.connect(self.convin_sense.sense_neg)  # vusb post-ramp
-
-      (self.cap_conv, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
-        self.vusb_pre,
-        imp.Block(DecouplingCapacitor(100*uFarad(tol=0.25))),
+      self.connect(self.vusb_ramp, self.convin_sense.sense_pos)
+      self.vconvin = self.connect(self.convin_sense.sense_neg)
+      (self.conv_inforce, self.conv, self.conv_outforce, self.prot_conv, self.tp_conv), _ = self.chain(
+        self.vconvin,
+        imp.Block(ForcedVoltage(20*Volt(tol=0))),  # assumed input voltage to target buck-boost ratios
         imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30)*Volt,  # design for 0.5x - 1.5x conv ratio
                                                   frequency=500*kHertz(tol=0),
                                                   ripple_ratio=(0.01, 0.9),
@@ -516,12 +523,6 @@ class UsbSourceMeasure(JlcBoardTop):
       )
       self.connect(self.conv.pwr_logic, self.v5)
       self.vconv = self.connect(self.conv_outforce.pwr_out)
-
-      (self.reg_v12, ), _ = self.chain(
-        self.v5,
-        imp.Block(BoostConverter(output_voltage=12.5*Volt(tol=0.04))),  # limits of the OLED
-      )
-      self.v12 = self.connect(self.reg_v12.pwr_out)
 
       # analog supplies
       (self.reg_analog, self.tp_analog), _ = self.chain(
