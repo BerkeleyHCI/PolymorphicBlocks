@@ -828,14 +828,23 @@ class UsbSourceMeasure(JlcBoardTop):
       instance_values=[
         (['mcu', 'pin_assigns'], [
           # left side
+          'speaker.sd=4',
+          'speaker.sck=5',
+          'speaker.ws=6',
+          'int_i2c.sda=7',
+          'int_i2c.scl=8',
+          'pd_int=9',
+          'buck_pwm=10',
+          'boost_pwm=11',
+          'vconv_sense=12',
 
           # bottom side
-          'pd_int=15',
-          'adc_cs=17',
-          'adc_spi.sck=18',
-          'adc_spi.mosi=19',
-          'adc_spi.miso=20',
-          'adc_clk=21',
+          'adc_cs=15',
+          'adc_spi.sck=17',
+          'adc_spi.mosi=18',
+          'adc_spi.miso=19',
+          'adc_clk=20',
+          'touch_duck=21',
           'limit_source=22',
           'limit_sink=23',
           'dut0=24',
