@@ -619,8 +619,8 @@ class UsbSourceMeasure(JlcBoardTop):
       # expander for low-speed control signals
       self.ioe_ctl = imp.Block(Pca9554())
       self.connect(self.ioe_ctl.i2c, int_i2c)
-      self.connect(self.ioe_ctl.io.request('high_gate_ctl'), self.control.high_gate_ctl)
-      self.connect(self.ioe_ctl.io.request('low_gate_ctl'), self.control.low_gate_ctl)
+      self.connect(self.ioe_ctl.io.request('high_gate'), self.control.high_gate_ctl)
+      self.connect(self.ioe_ctl.io.request('low_gate'), self.control.low_gate_ctl)
       self.connect(self.ioe_ctl.io.request_vector('off'), self.control.off)
       self.connect(self.ioe_ctl.io.request('ramp'), self.ramp.control)
 
@@ -826,6 +826,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (RfConnector, UflConnector),
       ],
       instance_values=[
+        (['mcu', 'programming'], 'uart-auto'),
         (['mcu', 'pin_assigns'], [
           # left side
           'speaker.sd=4',
@@ -859,19 +860,28 @@ class UsbSourceMeasure(JlcBoardTop):
           'qwiic.sda=38',
           'qwiic.scl=39',
 
-          # 'touch_duck=22',
-
           'led=_GPIO0_STRAP',
-
         ]),
-        (['mcu', 'programming'], 'uart-auto'),
 
-        (['ioe', 'pin_assigns'], [
-          'dir_c=9',
-          'dir_cen=4',
-          'dir_a=5',
-          'dir_b=6',
+        (['ioe_ui', 'pin_assigns'], [
+          'dir_a=4',
+          'dir_cen=5',
+          'dir_c=6',
           'dir_d=7',
+          'dir_b=12',
+          'irange_1=9',
+          'irange_2=10',
+          'irange_0=11',
+        ]),
+
+        (['ioe_ctl', 'pin_assigns'], [
+          'ramp=4',
+          'conv_en=6',
+          'conv_en_sense=7',
+
+          'low_gate=12',
+          'high_gate=11',
+          'off_0=9',
         ]),
 
         # allow the regulator to go into tracking mode
