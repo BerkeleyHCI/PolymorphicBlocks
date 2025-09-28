@@ -33000,7 +33000,7 @@
 	(footprint "edg:Symbol_HiLabSolid"
 		(layer "F.Cu")
 		(uuid "5cff4f76-ab54-407b-82a9-228d26a90f50")
-		(at 113.02468 35.147114)
+		(at 113.02468 40.147114)
 		(descr "Converted using: svg2mod hilab.svg --force F.Cu -P -p 2 -c --factor 0.08115236356")
 		(tags "svg2mod")
 		(property "Reference" "SYM2"
@@ -72180,7 +72180,7 @@
 	(footprint "edg:Symbol_DucklingSolid"
 		(layer "F.Cu")
 		(uuid "d94da1f5-fcd1-43e6-a2a7-0d0b946b09f8")
-		(at 113 40)
+		(at 113.02468 35.147114)
 		(descr "Converted using: svg2mod DucklingSolid.svg --force F.Cu -P -p 2 -c --factor 0.1")
 		(tags "svg2mod")
 		(property "Reference" "U35"
@@ -106577,7 +106577,7 @@
 		(uuid "4964de79-34cd-427e-b2d8-833c427e0003")
 	)
 	(via
-		(at 113.525 38.55)
+		(at 113.54968 33.697114)
 		(size 0.7)
 		(drill 0.3)
 		(layers "F.Cu" "B.Cu")
@@ -106593,12 +106593,12 @@
 		(uuid "d04cc7c8-91c8-476c-bc9a-82a5f8c9652b")
 	)
 	(segment
-		(start 113.525 38.55)
-		(end 118.55 38.55)
+		(start 113.697114 33.697114)
+		(end 126 46)
 		(width 0.25)
 		(layer "B.Cu")
 		(net 138)
-		(uuid "3170be8f-cdc1-4cb7-9180-1dc61ce55a8e")
+		(uuid "45ee3efb-8d0a-4c36-9932-38e7edce8a10")
 	)
 	(segment
 		(start 159 46)
@@ -106606,15 +106606,15 @@
 		(width 0.25)
 		(layer "B.Cu")
 		(net 138)
-		(uuid "835583f8-1054-487e-82ee-132083fbf0f8")
+		(uuid "4a173840-eaae-476f-bd34-0b11ccefe7d7")
 	)
 	(segment
-		(start 118.55 38.55)
-		(end 126 46)
+		(start 113.54968 33.697114)
+		(end 113.697114 33.697114)
 		(width 0.25)
 		(layer "B.Cu")
 		(net 138)
-		(uuid "ed1d43b7-f8fd-4759-bcf5-efe5b7cd4c8f")
+		(uuid "4c25c02e-322d-4053-9709-c70acad9dbab")
 	)
 	(segment
 		(start 126 46)
@@ -106622,7 +106622,15 @@
 		(width 0.25)
 		(layer "B.Cu")
 		(net 138)
-		(uuid "f65a6e31-1643-4ee1-a210-766dffaaba6d")
+		(uuid "f245241b-d1a5-477e-9a14-1fdc9e31c4d2")
+	)
+	(segment
+		(start 113.525 33.721794)
+		(end 113.54968 33.697114)
+		(width 0.25)
+		(layer "B.Cu")
+		(net 138)
+		(uuid "f75e6f5f-2faf-4d95-a49d-82df405cca17")
 	)
 	(segment
 		(start 228.5 42)
