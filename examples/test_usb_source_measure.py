@@ -714,9 +714,9 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(SeriesPowerFerriteBead(Range.from_lower(1000))),
         self.dac.pwr)
       self.connect(self.dac.out0, self.control.control_voltage)
-      self.connect(self.dac.out3, self.control.control_voltage_fine)
+      self.connect(self.dac.out2, self.control.control_voltage_fine)
       self.connect(self.dac.out1, self.control.control_current_sink)
-      self.connect(self.dac.out2, self.control.control_current_source)
+      self.connect(self.dac.out3, self.control.control_current_source)
       self.connect(self.dac.i2c, int_i2c)
 
       self.adc = imp.Block(Mcp3561())
@@ -729,15 +729,15 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.tp_vcen, self.vcen_rc, ), _ = self.chain(self.vcenter,
                                                      imp.Block(AnalogCoaxTestPoint('cen')),
                                                      imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),
-                                                     self.adc.vins.request('0'))
+                                                     self.adc.vins.request('2'))
+      (self.tp_mv, self.mv_rc, ), _ = self.chain(self.control.measured_voltage,
+                                                 imp.Block(AnalogCoaxTestPoint('mv')),
+                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),
+                                                 self.adc.vins.request('0'))
       (self.tp_mi, self.mi_rc, ), _ = self.chain(self.control.measured_current,
                                                  imp.Block(AnalogCoaxTestPoint('mi')),
                                                  imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),
                                                  self.adc.vins.request('1'))
-      (self.tp_mv, self.mv_rc, ), _ = self.chain(self.control.measured_voltage,
-                                                 imp.Block(AnalogCoaxTestPoint('mv')),
-                                                 imp.Block(AnalogLowPassRc(1*kOhm(tol=0.05), 16*kHertz(tol=0.25))),
-                                                 self.adc.vins.request('2'))
       self.connect(self.control.limit_source, self.mcu.gpio.request('limit_source'))
       self.connect(self.control.limit_sink, self.mcu.gpio.request('limit_sink'))
 
