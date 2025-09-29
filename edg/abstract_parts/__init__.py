@@ -29,7 +29,7 @@ from .AbstractConnector import BananaJack, BananaSafetyJack, RfConnector, RfConn
     UflConnector, SmaConnector, SmaMConnector, SmaFConnector
 from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor, SeriesResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
-from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor, AnalogClampResistor
+from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor, AnalogClampResistor, DigitalClampResistor
 from .AbstractResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
 from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CeramicCapacitor, AluminumCapacitor, \
     CapacitorStandardFootprint, TableCapacitor, TableDeratingCapacitor

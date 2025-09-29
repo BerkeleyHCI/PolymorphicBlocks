@@ -622,7 +622,8 @@ class UsbSourceMeasure(JlcBoardTop):
       self.connect(self.ioe_ctl.io.request('high_gate'), self.control.high_gate_ctl)
       self.connect(self.ioe_ctl.io.request('low_gate'), self.control.low_gate_ctl)
       self.connect(self.ioe_ctl.io.request_vector('off'), self.control.off)
-      self.connect(self.ioe_ctl.io.request('ramp'), self.ramp.control)
+      (self.ramp_pull, ), _ = self.chain(self.ioe_ctl.io.request('ramp'), imp.Block(PulldownResistor(10*kOhm(tol=0.05))),
+                                         self.ramp.control)
 
       rc_model = DigitalLowPassRc(150*Ohm(tol=0.05), 7*MHertz(tol=0.2))
       (self.buck_rc, ), _ = self.chain(self.mcu.gpio.request('buck_pwm'), imp.Block(rc_model), self.conv.buck_pwm)
@@ -672,8 +673,12 @@ class UsbSourceMeasure(JlcBoardTop):
                                                       imp.Block(QwiicTarget()))
 
       self.dutio = imp.Block(SourceMeasureDutConnector())
-      self.connect(self.mcu.gpio.request('dut0'), self.dutio.io0)
-      self.connect(self.mcu.gpio.request('dut1'), self.dutio.io1)
+      (self.dut0_clamp, ), _ = self.chain(self.dutio.io0,
+                                          self.Block(DigitalClampResistor(protection_voltage=(0, 30)*Volt)),
+                                          self.mcu.gpio.request('dut0'))
+      (self.dut1_clamp, ), _ = self.chain(self.dutio.io1,
+                                          self.Block(DigitalClampResistor(protection_voltage=(0, 30)*Volt)),
+                                          self.mcu.gpio.request('dut1'))
 
       mcu_touch = self.mcu.with_mixin(IoControllerTouchDriver())
       (self.touch_duck, ), _ = self.chain(
@@ -692,6 +697,7 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(L74Ahct1g125()),
         self.rgbs.din)
 
+      self.fan_cap = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2)))
       self.fan_drv = imp.Block(HighSideSwitch())
       self.connect(self.mcu.gpio.request('fan'), self.fan_drv.control)
       self.fan = self.Block(SourceMeasureFan())
