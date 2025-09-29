@@ -471,7 +471,6 @@ class UsbSourceMeasure(JlcBoardTop):
         self.vusb_sense.sense_pos
       )
       self.vusb = self.connect(self.vusb_sense.sense_neg)
-      self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.vusb)
 
       (self.ramp, self.cap_conv), _ = self.chain(
         self.vusb,
@@ -479,6 +478,7 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(DecouplingCapacitor(100*uFarad(tol=0.25))),
       )
       self.vusb_ramp = self.connect(self.ramp.pwr_out)  # vusb post-ramp
+      self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.vusb_ramp)
 
       # logic supplies
       (self.reg_v5, self.tp_v5), _ = self.chain(
