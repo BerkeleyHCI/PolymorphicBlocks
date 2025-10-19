@@ -102,7 +102,7 @@ class E2154fs091(EInk):
       drain_voltage=(0, 30)*Volt,
       drain_current=(0, 0.8)*Amp,  # assumed, from inductor rating
       gate_voltage=(3, 16)*Volt,  # assumed, from capacitor ratings  # TODO use pwr voltage instead of hardcoding
-      rds_on=(0, 85)*mOhm, gate_charge=(0, float('inf')),
+      rds_on=(0, 85)*mOhm,
       power=(0, 0.2)*Watt  # about 4x resistive loss @ 0.8A, 85mOhm; we don't know the switch frequency or drive current
     ))
     self.boost_ind = self.Block(Inductor(

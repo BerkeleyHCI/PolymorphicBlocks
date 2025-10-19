@@ -191,8 +191,7 @@ class JacdacDataInterface(JacdacSubcircuit, Block):
         signal_level = self.signal.link().voltage
         self.rc = self.Block(LowPassRc(impedance=220*Ohm(tol=0.05), cutoff_freq=22*MHertz(tol=0.12),
                                        voltage=signal_level))
-        clamp_diode_model = Diode(reverse_voltage=(0, signal_level.upper()),
-                                  current=(0, 0))
+        clamp_diode_model = Diode(reverse_voltage=(0, signal_level.upper()), current=(0, 0)*Amp)
         self.clamp_hi = self.Block(clamp_diode_model)
         self.clamp_lo = self.Block(clamp_diode_model)
 

@@ -8,7 +8,6 @@ class ResistorTestTop(Block):
     super().__init__()
     self.dut = self.Block(GenericChipResistor(
       resistance=1 * kOhm(tol=0.1),
-      power=(0, 0)*Watt
     ))
     (self.dummya, ), _ = self.chain(self.dut.a, self.Block(DummyPassive()))
     (self.dummyb, ), _ = self.chain(self.dut.b, self.Block(DummyPassive()))
@@ -30,7 +29,6 @@ class NonE12ResistorTestTop(Block):
     super().__init__()
     self.dut = self.Block(GenericChipResistor(
       resistance=8.06 * kOhm(tol=0.01),
-      power=(0, 0)*Watt
     ))
     (self.dummya, ), _ = self.chain(self.dut.a, self.Block(DummyPassive()))
     (self.dummyb, ), _ = self.chain(self.dut.b, self.Block(DummyPassive()))

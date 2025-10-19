@@ -13,7 +13,6 @@ class Sn65hvd230_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.controller = self.Port(CanTransceiverPort(DigitalBidir(
       voltage_limits=(-0.5 * Volt, self.vcc.link().voltage.lower() + 0.5 * Volt),
       voltage_out=(0 * Volt, self.vcc.link().voltage.lower()),
-      current_draw=(0, 0),
       current_limits=(-8, 8) * mAmp,  # driver pin actually -40-48mA
       input_thresholds=(0.8, 2) * Volt,
       output_thresholds=(0 * Volt, self.vcc.link().voltage.lower())

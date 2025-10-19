@@ -6,9 +6,9 @@ from .JlcPart import DescriptionParser, JlcTableSelector
 
 
 @non_library
-class FetFallbackGateCharge(BaseTableFet):
+class FetFallbackGateCharge(PartsTableSelector, BaseTableFet):
   """A TableFet that allows a fallback gate charge if not specified in the table.
-  Unspecified entries must be parsed as Range.all(), which will be substituted with the fallback
+  Unspecified entries must be Range.all(), which will be substituted with the fallback
   value in per-Block post-processing."""
   @init_in_parent
   def __init__(self, *args, fallback_gate_charge: RangeLike = Range.from_tolerance(3000e-9, 0), **kwargs):
@@ -100,7 +100,7 @@ class JlcBaseFet(JlcTableSelector):
                                  PartParserUtil.parse_value(match.group(5), 'V')),
        TableFet.RDS_ON: Range.exact(PartParserUtil.parse_value(match.group(4), 'Ω')),
        TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(3), 'W')),
-       TableFet.GATE_CHARGE: Range.all(),  # placeholder for unspecified
+       TableFet.GATE_CHARGE: Range.all(),  # unspecified
      }),
     # some are more detailed
     (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A.* ([PN]) Channel.* (\S+C)@\S+V.* MOSFETs.*"),
@@ -130,7 +130,7 @@ class JlcBaseFet(JlcTableSelector):
                                  PartParserUtil.parse_value(match.group(4), 'V')),
        TableFet.RDS_ON: Range.exact(PartParserUtil.parse_value(match.group(3), 'Ω')),
        TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(5), 'W')),
-       TableFet.GATE_CHARGE: Range.all(),  # placeholder for unspecified
+       TableFet.GATE_CHARGE: Range.all(),  # unspecified
      }),
   ]
 
@@ -151,6 +151,9 @@ class JlcBaseFet(JlcTableSelector):
     'AO4435': 18e-9,  # @ Vgs=-10
     'AO4419': 19e-9,  # @ Vgs=4.5
     'AO4264E': 14.5e-9,  # @ Vgs=10
+    'AO4485': 42e-9,  # @ Vgs=10
+    'AO4459': 9.2e-9,  # @ Vgs=10
+    'AO4468': 15e-9,  # @ Vgs=10
   }
 
   @classmethod

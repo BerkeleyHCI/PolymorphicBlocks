@@ -32,7 +32,6 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Generat
       self.gnd, pwr,
       voltage_limit_tolerance=(-0.3, 0.3) * Volt,
       current_limits=(-6, 6)*mAmp,  # minimum current, high drive, Vdd>2.7
-      current_draw=(0, 0)*Amp,
       input_threshold_factor=(0.3, 0.7),
       pullup_capable=True, pulldown_capable=True,
     )

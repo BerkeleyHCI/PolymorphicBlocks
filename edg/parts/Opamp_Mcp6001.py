@@ -15,7 +15,6 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       voltage_limit_tolerance=(-1.0, 1.0)*Volt,  # absolute maximum ratings
       signal_limit_bound=(0.3*Volt, -0.3*Volt),  # common-mode input range
       impedance=1e13*Ohm(tol=0),  # no tolerance bounds given on datasheet
-      current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)
