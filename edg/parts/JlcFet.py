@@ -134,8 +134,8 @@ class JlcBaseFet(JlcTableSelector):
       if new_cols is None:
         return None
 
-      if new_cols[cls.GATE_CHARGE] == Range.all() and row[cls.PART_NUMBER_COL] in cls.SUPPLEMENTAL_QC:
-        new_cols[cls.GATE_CHARGE] = Range.exact(cls.SUPPLEMENTAL_QC[row[cls.PART_NUMBER_COL]])
+      if new_cols[TableFet.GATE_CHARGE] == Range.all() and row[cls.PART_NUMBER_COL] in cls.SUPPLEMENTAL_QC:
+        new_cols[TableFet.GATE_CHARGE] = Range.exact(cls.SUPPLEMENTAL_QC[row[cls.PART_NUMBER_COL]])
 
       new_cols[cls.KICAD_FOOTPRINT] = footprint
       new_cols.update(cls._parse_jlcpcb_common(row))
@@ -153,10 +153,10 @@ class JlcBaseFet(JlcTableSelector):
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     fallback_gate_charge = self.get(self.fallback_gate_charge)
     def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if row[self.GATE_CHARGE] == Range.all():
-        return {self.GATE_CHARGE: fallback_gate_charge}
+      if row[TableFet.GATE_CHARGE] == Range.all():
+        return {TableFet.GATE_CHARGE: fallback_gate_charge}
       else:
-        return {self.GATE_CHARGE: row[self.GATE_CHARGE]}
+        return {TableFet.GATE_CHARGE: row[TableFet.GATE_CHARGE]}
 
     # must run before TableFet power calculations
     return super()._table_postprocess(table.map_new_columns(process_row, overwrite=True))
