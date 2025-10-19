@@ -135,6 +135,7 @@ class JlcBaseFet(JlcTableSelector):
   ]
 
   SUPPLEMENTAL_QC = {  # mfr part number to typ Qc @ max Vgs (if multiple specified)
+    # QFN-8 devices
     'IRFH7440TRPBF': 92e-9,  # @ Vgs=10
     'BSC028N06NSATMA1': 37e-9,  # @ Vgs=0...10V
     'BSC057N08NS3G': 42e-9,  # @ Vgs=0...10V
@@ -143,6 +144,13 @@ class JlcBaseFet(JlcTableSelector):
     'SIR876ADP-T1-GE3': 32.8e-9,  # @ Vgs=10
     'SI7336ADP-T1-E3': 36e-9,  # @ Vgs=4.5
     'SIR470DP-T1-GE3': 102e-9,  # @ Vgs=10
+
+    # SOIC-8 devices, top 5 stock in the static parts table
+    'AO4406A': 14e-9,  # @ Vgs=10
+    'IRF8313TRPBF': 6.0e-9,  # @ Vgs=4.5
+    'AO4435': 18e-9,  # @ Vgs=-10
+    'AO4419': 19e-9,  # @ Vgs=4.5
+    'AO4264E': 14.5e-9,  # @ Vgs=10
   }
 
   @classmethod
