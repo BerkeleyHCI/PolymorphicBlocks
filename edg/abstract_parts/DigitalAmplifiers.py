@@ -49,8 +49,6 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
       drain_current=(0, pull_current_max),
       gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper()),
       rds_on=(0, low_amp_rds_max),  # TODO size on turnon time
-      gate_charge=(0, float('inf')),  # TODO size on turnon time
-      power=(0, 0) * Watt,
       frequency=self.frequency,
       drive_current=self.control.link().current_limits  # TODO this is kind of a max drive current
     ))
@@ -71,8 +69,6 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
       drain_current=self.output.link().current_drawn,
       gate_voltage=pass_gate_voltage,
       rds_on=(0, self.max_rds),
-      gate_charge=(0, float('inf')),  # TODO size on turnon time
-      power=(0, 0) * Watt,
       frequency=self.frequency,
       drive_current=(-1 * pwr_voltage.lower() / pull_resistance.upper(),
                      pwr_voltage.lower() / low_amp_rds_max)  # TODO simultaneously solve both FETs

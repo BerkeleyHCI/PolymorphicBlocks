@@ -33,35 +33,35 @@ class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, Bas
     dio_tc_model = DigitalBidir.from_supply(
       self.gnd, vdd,
       voltage_limit_abs=(-0.3, 0.3) * Volt,  # Table 19
-      current_draw=(0, 0)*Amp, current_limits=current_limits,
+      current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tc_switch_model = DigitalBidir.from_supply(
       self.gnd, vdd,
       voltage_limit_abs=(-0.3, 0.3) * Volt,  # Table 19
-      current_draw=(0, 0)*Amp, current_limits=(-3, 0),  # Table 13, note 1, can sink 3 mA and should not source current
+      current_limits=(-3, 0),  # Table 13, note 1, can sink 3 mA and should not source current
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tt_model = DigitalBidir.from_supply(
       self.gnd, vdd,
       voltage_limit_abs=(-0.3, 3.6) * Volt,  # Table 19
-      current_draw=(0, 0)*Amp, current_limits=current_limits,
+      current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_tta_model = DigitalBidir.from_supply(
       self.gnd, vdd,
       voltage_limit_abs=(-0.3 * Volt, vdda.link().voltage.lower() + 0.3 * Volt),  # Table 19
-      current_draw=(0, 0)*Amp, current_limits=current_limits,
+      current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
     dio_ft_model = DigitalBidir.from_supply(
       self.gnd, vdd,
       voltage_limit_abs=(-0.3, 5.5) * Volt,  # Table 19
-      current_draw=(0, 0)*Amp, current_limits=current_limits,
+      current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )
@@ -69,7 +69,7 @@ class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, Bas
     dio_boot0_model = DigitalBidir.from_supply(
       self.gnd, vdd,
       voltage_limit_abs=(-0.3, 5.5) * Volt,  # Table 19
-      current_draw=(0, 0)*Amp, current_limits=current_limits,
+      current_limits=current_limits,
       input_threshold_factor=input_threshold_factor,
       pullup_capable=True, pulldown_capable=True
     )

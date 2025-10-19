@@ -239,8 +239,6 @@ class IotIron(JlcBoardTop):
         (['reg_gate', 'ic', 'actual_dropout'], Range.exact(0)),  # allow tracking
 
         (['conv', 'sw', 'high_fet', 'part'], ParamValue(['conv', 'sw', 'low_fet', 'part'])),
-        (['conv', 'sw', 'low_fet', 'manual_gate_charge'], Range.exact(100e-9)),  # reasonable worst case estimate
-        (['conv', 'sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'sw', 'low_fet', 'manual_gate_charge'])),
       ],
       class_refinements=[
         (HalfBridgeDriver, Ucc27282),

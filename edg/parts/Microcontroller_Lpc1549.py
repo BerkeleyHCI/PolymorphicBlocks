@@ -61,7 +61,6 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
     dio_5v_model = DigitalBidir.from_supply(
       self.gnd, self.pwr,
       voltage_limit_abs=(0, 5) * Volt,
-      current_draw=(0, 0) * Amp,
       current_limits=(-50, 45) * mAmp,
       input_threshold_factor=(0.3, 0.7),
       pullup_capable=True, pulldown_capable=True
@@ -69,7 +68,6 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
     dio_non5v_model = DigitalBidir.from_supply(  # only used when overlapped w/ DAC PIO0_12
       self.gnd, self.pwr,  # up to VddA
       voltage_limit_tolerance=(0, 0) * Volt,
-      current_draw=(0, 0) * Amp,
       current_limits=(-50, 45) * mAmp,
       input_threshold_factor=(0.3, 0.7),
       pullup_capable=True, pulldown_capable=True
@@ -77,7 +75,6 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
     dio_highcurrrent_model = DigitalBidir.from_supply(  # only used for PIO0_24
       self.gnd, self.pwr,
       voltage_limit_abs=(0, 5) * Volt,
-      current_draw=(0, 0) * Amp,
       current_limits=(-50, 20) * mAmp,  # TODO: 12mA when Vdd < 2.7V
       input_threshold_factor=(0.3, 0.7),
       pullup_capable=True, pulldown_capable=True

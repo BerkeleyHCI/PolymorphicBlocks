@@ -58,7 +58,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         dio_tt_model = DigitalBidir.from_supply(
             self.gnd, self.pwr,
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,  # Table 19
-            current_draw=(0, 0) * Amp, current_limits=current_limits,
+            current_limits=current_limits,
             input_threshold_factor=input_threshold_factor,
             pullup_capable=True, pulldown_capable=True
         )

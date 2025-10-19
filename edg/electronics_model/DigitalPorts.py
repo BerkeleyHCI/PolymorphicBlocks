@@ -252,8 +252,8 @@ class DigitalSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
       current_draw=RangeExpr()
     ))
     self.dst = self.Port(VoltageSource(
-      voltage_out=(self.src.link().output_thresholds.upper(), self.src.link().voltage.upper()),
-      current_limits=(-float('inf'), float('inf'))))
+      voltage_out=(self.src.link().output_thresholds.upper(), self.src.link().voltage.upper())
+    ))
     self.assign(self.src.current_draw, self.dst.link().current_drawn)
 
 

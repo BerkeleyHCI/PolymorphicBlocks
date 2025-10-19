@@ -28,8 +28,6 @@ class PmosHighSideSwitch(PowerSwitch):
       drain_current=self.output.link().current_drawn,
       gate_voltage=self.control.link().voltage - self.pwr.link().voltage,  # TODO needs to be diff from pwr.voltage
       rds_on=(0, self.max_rds),
-      gate_charge=(0, float('inf')),  # TODO size on turnon time
-      power=(0, 0) * Watt,
       frequency=self.frequency,
       drive_current=self.control.link().current_limits  # TODO this is kind of a max drive current
     ))

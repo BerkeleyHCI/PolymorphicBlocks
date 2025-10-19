@@ -173,14 +173,12 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
       drain_current=self.current,
       gate_voltage=gate_voltage,
       rds_on=self.rds_on,
-      gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
     self.low_fet = self.Block(Fet.PFet(
       drain_voltage=self.pwr.link().voltage,
       drain_current=self.current,
       gate_voltage=gate_voltage,
       rds_on=self.rds_on,
-      gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
     resistance = 2.2*kOhm(tol=0.05)
     max_clamp_voltage = VoltageLink._supply_voltage_range(self.gnd, self.pwr).upper() - self.gate_clamp_voltage.lower()

@@ -81,11 +81,9 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
     postprocessed_table = self._table_postprocess(matching_table)
     postprocessed_table = postprocessed_table.sort_by(self._row_sort_by)
     self.assign(self.matching_parts, postprocessed_table.map(lambda row: row[self.PART_NUMBER_COL]))
-    if len(postprocessed_table) > 0:
-      selected_row = postprocessed_table.first()
-      self._row_generate(selected_row)
-    else:  # if no matching part, generate a parameter error instead of crashing
-      self.require(False, "no matching part")
+    assert len(postprocessed_table) > 0, "no matching part"  # crash to make generator failures more obvious
+    selected_row = postprocessed_table.first()
+    self._row_generate(selected_row)
 
 
 @abstract_block

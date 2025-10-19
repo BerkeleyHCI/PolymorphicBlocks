@@ -67,14 +67,12 @@ class BufferedSupply(PowerConditioner):
         drain_voltage=(0, max_in_voltage), drain_current=(0, max_charge_current),
         gate_voltage=(self.pwr.link().voltage.lower(), max_in_voltage),
         rds_on=(0, 0.5)*Ohm,  # TODO kind of arbitrary
-        gate_charge=(0, float('inf')),
         power=(0, max_in_voltage * max_charge_current)
       ))
       self.connect(self.fet.source, self.sense.b)
 
       self.diode = self.Block(Diode(
         reverse_voltage=(0, max_in_voltage), current=self.charging_current, voltage_drop=self.voltage_drop,
-        reverse_recovery_time=(0, float('inf'))
       ))
       self.connect(self.diode.anode.adapt_to(VoltageSink()),
                    self.fet.drain.adapt_to(VoltageSource(
@@ -140,8 +138,7 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
       self.pwr_in,
       self.diode.cathode.adapt_to(VoltageSource(
         voltage_out=(self.pwr_in_diode.link().voltage.lower() - self.diode.voltage_drop.upper(),
-                     self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower()),
-        current_limits=(-float('inf'), float('inf'))
+                     self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower())
       ))
     )
     self.connect(self.merge.pwr_out, self.pwr_out)
@@ -175,21 +172,17 @@ class DiodePowerMerge(PowerConditioner, Block):
     self.merge = self.Block(MergedVoltageSource()).connected_from(
       self.diode1.cathode.adapt_to(VoltageSource(
         voltage_out=(self.pwr_in1.link().voltage.lower() - self.diode1.voltage_drop.upper(),
-                     self.pwr_in1.link().voltage.upper()),
-        current_limits=(-float('inf'), float('inf'))
+                     self.pwr_in1.link().voltage.upper())
       )),
       self.diode2.cathode.adapt_to(VoltageSource(
         voltage_out=(self.pwr_in2.link().voltage.lower() - self.diode2.voltage_drop.upper(),
-                     self.pwr_in2.link().voltage.upper()),
-        current_limits=(-float('inf'), float('inf'))
+                     self.pwr_in2.link().voltage.upper())
       ))
     )
     self.connect(self.diode1.anode.adapt_to(VoltageSink(
-      voltage_limits=(-float('inf'), float('inf')),
       current_draw=self.pwr_out.link().current_drawn
     )), self.pwr_in1)
     self.connect(self.diode2.anode.adapt_to(VoltageSink(
-      voltage_limits=(-float('inf'), float('inf')),
       current_draw=self.pwr_out.link().current_drawn
     )), self.pwr_in2)
 

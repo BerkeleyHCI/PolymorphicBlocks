@@ -8,7 +8,10 @@ class JlcPartsBaseFet(JlcPartsBase, BaseTableFet):
     _JLC_PARTS_FILE_NAMES = ["TransistorsMOSFETs"]
     _CHANNEL_MAP = {
         'N Channel': 'N',
+        '1 N-channel': 'N',
+        '1 N-Channel': 'N',
         'P Channel': 'P',
+        '1 Piece P-Channel': 'P',
     }
 
     @classmethod
@@ -39,14 +42,18 @@ class JlcPartsBaseFet(JlcPartsBase, BaseTableFet):
                 input_capacitance: Optional[float] = attributes.get("Input capacitance (ciss@vds)", float, sub='capacity')
             except (KeyError, TypeError):
                 input_capacitance = None
+
             try:  # not specified for most parts apparently
-                gate_charge = attributes.get("Total gate charge (qg@vgs)", float, sub='charge')
+                gate_charge: Optional[float] = attributes.get("Total gate charge (qg@vgs)", float, sub='charge')
             except (KeyError, TypeError):
                 if input_capacitance is not None:  # not strictly correct but kind of a guesstimate
                     gate_charge = input_capacitance * vgs_for_ids
                 else:
-                    gate_charge = 3000e-9  # very pessimistic upper bound
-            row_dict[cls.GATE_CHARGE] = Range.exact(gate_charge)
+                    gate_charge = None
+            if gate_charge is not None:
+                row_dict[cls.GATE_CHARGE] = Range.exact(gate_charge)
+            else:
+                row_dict[cls.GATE_CHARGE] = Range.all()
 
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
@@ -58,23 +65,7 @@ class JlcPartsFet(PartsTableSelectorFootprint, JlcPartsBaseFet, TableFet):
 
 
 class JlcPartsSwitchFet(PartsTableSelectorFootprint, JlcPartsBaseFet, TableSwitchFet):
-    @init_in_parent
-    def __init__(self, *args, manual_gate_charge: RangeLike = RangeExpr.ZERO, **kwargs):
-        super().__init__(*args, **kwargs)
-        # allow the user to specify a gate charge
-        self.manual_gate_charge = self.ArgParameter(manual_gate_charge)
-        self.generator_param(self.manual_gate_charge)
-
-    def _table_postprocess(self, table: PartsTable) -> PartsTable:
-        manual_gate_charge = self.get(self.manual_gate_charge)
-        def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-            return {self.GATE_CHARGE: manual_gate_charge}
-
-        # must run before TableFet power calculations
-        if not manual_gate_charge == Range.exact(0):
-            table = table.map_new_columns(process_row, overwrite=True)
-
-        return super()._table_postprocess(table)
+    pass
 
 
 lambda: JlcPartsFet(), JlcPartsSwitchFet()  # ensure class is instantiable (non-abstract)
