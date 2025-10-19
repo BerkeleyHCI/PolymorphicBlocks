@@ -110,6 +110,17 @@ class JlcBaseFet(JlcTableSelector):
      }),
   ]
 
+  SUPPLEMENTAL_QC = {  # mfr part number to typ Qc @ max Vgs (if multiple specified)
+    'IRFH7440TRPBF': 92e-9,  # @ Vgs=10
+    'BSC028N06NSATMA1': 37e-9,  # @ Vgs=0...10V
+    'BSC057N08NS3G': 42-9,  # @ Vgs=0...10V
+    'BSC093N04LSG': 18e-9,  # @ Vgs=0...10V
+    'BSC160N10NS3G': 19e-9,  # @ Vgs=0...10V
+    'SIR876ADP-T1-GE3': 32.8e-9,  # @ Vgs=10
+    'SI7336ADP-T1-E3': 36e-9,  # @ Vgs=4.5
+    'SIR470DP-T1-GE3': 102e-9,  # @ Vgs=10
+  }
+
   @classmethod
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -122,6 +133,9 @@ class JlcBaseFet(JlcTableSelector):
       new_cols = cls.parse_full_description(row[cls.DESCRIPTION_COL], cls.DESCRIPTION_PARSERS)
       if new_cols is None:
         return None
+
+      if new_cols[cls.GATE_CHARGE] == Range.all() and row[cls.PART_NUMBER_COL] in cls.SUPPLEMENTAL_QC:
+        new_cols[cls.GATE_CHARGE] = Range.exact(cls.SUPPLEMENTAL_QC[row[cls.PART_NUMBER_COL]])
 
       new_cols[cls.KICAD_FOOTPRINT] = footprint
       new_cols.update(cls._parse_jlcpcb_common(row))
