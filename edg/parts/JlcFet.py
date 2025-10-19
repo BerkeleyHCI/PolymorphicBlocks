@@ -64,7 +64,7 @@ class JlcBaseFet(JlcTableSelector):
   }
 
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
-    (re.compile("(\S+V) (\S+A) (\S+W) (\S+Ω)@(\S+V),\S+A (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
+    (re.compile("(\S+V) (\S+A) (\S+W) (\S+Ω)@(\S+V),\S+A (\S+V)@\S+A.* ([PN]) Channel.* MOSFETs.*"),
      lambda match: {
        TableFet.CHANNEL: match.group(7),
        TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
@@ -76,10 +76,10 @@ class JlcBaseFet(JlcTableSelector):
                                  PartParserUtil.parse_value(match.group(5), 'V')),
        TableFet.RDS_ON: Range.exact(PartParserUtil.parse_value(match.group(4), 'Ω')),
        TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(3), 'W')),
-       TableFet.GATE_CHARGE: Range.zero_to_upper(3000e-9),  # not specified, pessimistic upper bound
+       TableFet.GATE_CHARGE: Range.all(),  # placeholder for unspecified
      }),
     # Some of them have the power entry later, for whatever reason
-    (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A ([PN]) Channel .* MOSFETs.*"),
+    (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A.* ([PN]) Channel.* (\S+C)@\S+V.* MOSFETs.*"),
      lambda match: {
        TableFet.CHANNEL: match.group(7),
        TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
@@ -91,8 +91,9 @@ class JlcBaseFet(JlcTableSelector):
                                  PartParserUtil.parse_value(match.group(4), 'V')),
        TableFet.RDS_ON: Range.exact(PartParserUtil.parse_value(match.group(3), 'Ω')),
        TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(5), 'W')),
-       TableFet.GATE_CHARGE: Range.zero_to_upper(3000e-9),  # not specified, pessimistic upper bound
+       TableFet.GATE_CHARGE: Range.exact(PartParserUtil.parse_value(match.group(8), 'C')),
      }),
+
   ]
 
   @classmethod
@@ -114,29 +115,33 @@ class JlcBaseFet(JlcTableSelector):
 
     return cls._jlc_table().map_new_columns(parse_row)
 
+  @init_in_parent
+  def __init__(self, *args, fallback_gate_charge: RangeLike = Range.from_tolerance(3000e-9, 0), **kwargs):
+    super().__init__(*args, **kwargs)
+    # allow the user to specify a gate charge
+    self.fallback_gate_charge = self.ArgParameter(fallback_gate_charge)
+    self.generator_param(self.fallback_gate_charge)
+
+  def _table_postprocess(self, table: PartsTable) -> PartsTable:
+    fallback_gate_charge = self.get(self.fallback_gate_charge)
+    def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      if row[self.GATE_CHARGE] == Range.all():
+        print("fallback gate charge for part", row[self.PART_NUMBER_COL])
+        return {self.GATE_CHARGE: fallback_gate_charge}
+      else:
+        print(f"ok Qg part {row[self.PART_NUMBER_COL]} = {row[self.GATE_CHARGE]}")
+        return None
+
+    # must run before TableFet power calculations
+    return super()._table_postprocess(table.map_new_columns(process_row, overwrite=True))
+
 
 class JlcFet(PartsTableSelectorFootprint, JlcBaseFet, TableFet):
   pass
 
 
 class JlcSwitchFet(PartsTableSelectorFootprint, JlcBaseFet, TableSwitchFet):
-  @init_in_parent
-  def __init__(self, *args, manual_gate_charge: RangeLike = RangeExpr.ZERO, **kwargs):
-    super().__init__(*args, **kwargs)
-    # allow the user to specify a gate charge
-    self.manual_gate_charge = self.ArgParameter(manual_gate_charge)
-    self.generator_param(self.manual_gate_charge)
-
-  def _table_postprocess(self, table: PartsTable) -> PartsTable:
-    manual_gate_charge = self.get(self.manual_gate_charge)
-    def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      return {self.GATE_CHARGE: manual_gate_charge}
-
-    # must run before TableFet power calculations
-    if not manual_gate_charge == Range.exact(0):
-      table = table.map_new_columns(process_row, overwrite=True)
-
-    return super()._table_postprocess(table)
+  pass
 
 
 lambda: JlcFet, JlcSwitchFet()  # ensure class is instantiable (non-abstract)

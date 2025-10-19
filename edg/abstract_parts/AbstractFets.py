@@ -1,7 +1,7 @@
 from typing import Optional, Any, Dict
 
 from ..electronics_model import *
-from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
+from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable, ExperimentalUserFnPartsTable
 from .PartsTablePart import PartsTableSelector
 from .Categories import *
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
@@ -88,12 +88,22 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   def PFet(*args, **kwargs) -> 'Fet':
     return Fet(*args, **kwargs, channel='P')
 
+  @staticmethod
+  @ExperimentalUserFnPartsTable.user_fn([])
+  def _sort_qgrdson():
+    """Sort function that sorts by a common rule-of-thumb (but not always useful) MOSFET figure-of-merit,
+    Qg * Rds."""
+    def sort_fn(row: PartsTableRow) -> float:
+      pass
+    return sort_fn
+
   @init_in_parent
   def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike, *,
                gate_voltage: RangeLike = (0, 0), gate_threshold_voltage: RangeLike = Range.all(),
                rds_on: RangeLike = Range.all(),
                gate_charge: RangeLike = Range.all(), power: RangeLike = Range.exact(0),
-               channel: StringLike = StringExpr()) -> None:
+               channel: StringLike = StringExpr(),
+               experimental_sort_fn: StringLike = "") -> None:
     super().__init__()
 
     self.source = self.Port(Passive.empty())
@@ -108,6 +118,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
     self.gate_charge = self.ArgParameter(gate_charge)
     self.power = self.ArgParameter(power)
     self.channel = self.ArgParameter(channel)
+    self.experimental_sort_fn = self.ArgParameter(experimental_sort_fn)
 
     self.actual_drain_voltage_rating = self.Parameter(RangeExpr())
     self.actual_drain_current_rating = self.Parameter(RangeExpr())
@@ -250,6 +261,8 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
       new_cols[self.SWITCHING_POWER] = (rise_time + fall_time) * (drain_current * drain_voltage) * frequency
 
       new_cols[self.TOTAL_POWER] = new_cols[self.STATIC_POWER] + new_cols[self.SWITCHING_POWER]
+
+      return new_cols
 
       if new_cols[self.TOTAL_POWER].fuzzy_in(row[self.POWER_RATING]):
         return new_cols
