@@ -17,7 +17,6 @@ class Iso1050dub_Device(InternalSubcircuit, FootprintBlock):
     self.controller = self.Port(CanTransceiverPort(DigitalBidir(
       voltage_limits=(-0.5 * Volt, self.vcc1.link().voltage.lower() + 0.5 * Volt),
       voltage_out=(0 * Volt, self.vcc1.link().voltage.lower()),
-      current_draw=(0, 0),  # TODO actually an unspecified default
       current_limits=(-5, 5) * uAmp,
       input_thresholds=(0.8, 2) * Volt,
       output_thresholds=(0 * Volt, self.vcc1.link().voltage.lower())

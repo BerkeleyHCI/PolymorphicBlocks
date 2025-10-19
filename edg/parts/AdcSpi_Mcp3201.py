@@ -23,7 +23,6 @@ class Mcp3201_Device(InternalSubcircuit, FootprintBlock):
     dio_model = DigitalBidir.from_supply(
       self.vss, self.vdd,
       voltage_limit_tolerance=(-0.6, 0.6)*Volt,
-      current_draw=(0, 0),  # leakage current not modeled
       input_threshold_factor=(0.3, 0.7)
     )
     # Datasheet section 6.2, minimum clock speed

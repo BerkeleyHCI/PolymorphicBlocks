@@ -46,7 +46,6 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
       gnd, vccio,
       voltage_limit_tolerance=(-0.3, 0.2) * Volt,  # table 4.13
       current_limits=(-8, 8)*mAmp,  # for LVCMOS 3.3 (least restrictive)
-      current_draw=(0, 0)*Amp,
       input_threshold_abs=(0.8, 2.0),  # most restrictive, for LVCMOS 3.3
       pullup_capable=True, pulldown_capable=False,
     )

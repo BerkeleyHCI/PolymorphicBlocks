@@ -165,14 +165,12 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
       drain_current=self.current,
       gate_voltage=gate_voltage,
       rds_on=self.rds_on,
-      gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
     self.low_fet = self.Block(Fet.PFet(
       drain_voltage=self.pwr.link().voltage,
       drain_current=self.current,
       gate_voltage=gate_voltage,
       rds_on=self.rds_on,
-      gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
@@ -799,10 +797,6 @@ class UsbSourceMeasure(JlcBoardTop):
         )),  # TODO model is broken for unknown reasons
         (['boot', 'c_fly_pos', 'voltage_rating_derating'], 0.85),
         (['boot', 'c_fly_neg', 'voltage_rating_derating'], 0.85),
-        (['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'], Range.exact(100e-9)),  # reasonable worst case estimate
-        (['conv', 'buck_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
-        (['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
-        (['conv', 'boost_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'])),
         # require all FETs to be the same; note boost must elaborate first
         (['conv', 'buck_sw', 'low_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
         (['conv', 'buck_sw', 'high_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),

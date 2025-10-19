@@ -17,7 +17,6 @@ class Xbee_S3b_Device(InternalSubcircuit, FootprintBlock):
     digital_model = DigitalBidir.from_supply(
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # TODO speculative deafult
-      current_draw=(0, 0),  # TODO actually an unspecified default
       current_limits=(-2, 2) * mAmp,
       input_threshold_factor=(0.3, 0.7),
       output_threshold_factor=(0.05, 0.95)
@@ -89,7 +88,6 @@ class BlueSmirf(Interface, Radiofrequency, FootprintBlock):
 
     self.pwr = self.Port(VoltageSink(
       voltage_limits=(3, 6) * Volt,  # TODO added a -10% tolerance on the low side so things still work - technically out of spec
-      current_draw=(0, 0),  # TODO actually an unspecified default
     ), [Power])
     self.gnd = self.Port(Ground(), [Common])
 
@@ -97,7 +95,6 @@ class BlueSmirf(Interface, Radiofrequency, FootprintBlock):
       pos=self.pwr, neg=self.gnd,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # TODO actually an unspecified default
       # TODO other parameters given the logic conversion circuit
-      current_draw=(0, 0),  # TODO actually an unspecified default
       input_threshold_factor=(0.5, 0.5)  # TODO completely wild relaxed unrealistic guess
     )
 

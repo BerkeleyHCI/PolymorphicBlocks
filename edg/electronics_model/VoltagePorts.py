@@ -176,7 +176,6 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
 
     super().__init__()
     self.src = self.Port(VoltageSink(
-      voltage_limits=(-float('inf'), float('inf'))*Volt,
       current_draw=RangeExpr()
     ))
     self.dst = self.Port(AnalogSource(

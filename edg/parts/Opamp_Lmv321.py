@@ -14,7 +14,6 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
       self.vss, self.vcc,
       voltage_limit_abs=(-0.2, 5.7),
       signal_limit_bound=(0, -1.0*Volt),  # assumed, from Vcc = 2.7v and 5v tables
-      current_draw=(0, 0)*pAmp  # TODO: should bias current be modeled here?
     )
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)

@@ -28,7 +28,6 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
     self.nrst = self.Port(DigitalSink.from_supply(
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions  TODO: FT IO, BOOT0 IO
-      current_draw=(0, 0)*Amp,
       input_threshold_abs=(0.8, 2)*Volt,
       pullup_capable=True
     ), optional=True)  # note, internal pull-up resistor, 30-50 kOhm by Table 35
@@ -62,21 +61,21 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
     dio_ft_model = DigitalBidir.from_supply(
       self.gnd, self.pwr,
       voltage_limit_abs=(-0.3, 5.2) * Volt,  # Table 5.3.1, general operating conditions, TODO relaxed for Vdd>2v
-      current_draw=(0, 0)*Amp, current_limits=(-20, 20)*mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
+      current_limits=(-20, 20)*mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
       input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
       pullup_capable=True, pulldown_capable=True
     )
     dio_std_model = DigitalBidir.from_supply(
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions
-      current_draw=(0, 0)*Amp, current_limits=(-20, 20)*mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
+      current_limits=(-20, 20)*mAmp,  # Section 5.3.13 Output driving current, TODO loose with relaxed VOL/VOH
       input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
       pullup_capable=True, pulldown_capable=True,
     )
     dio_pc_13_14_15_model = DigitalBidir.from_supply(
       self.gnd, self.pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,  # Table 5.3.1, general operating conditions
-      current_draw=(0, 0)*Amp, current_limits=(-3, 3)*mAmp,  # Section 5.3.13 Output driving current
+      current_limits=(-3, 3)*mAmp,  # Section 5.3.13 Output driving current
       input_threshold_factor=(0.35, 0.65),  # TODO relaxed (but more complex) bounds available
       pullup_capable=True, pulldown_capable=True,
     )

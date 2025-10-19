@@ -103,7 +103,10 @@ class PartsTable:
 
   def map_new_columns(self, fn: Callable[[PartsTableRow], Optional[Dict[PartsTableColumn[Any], Any]]],
                       overwrite: bool = False) -> PartsTable:
-    """Creates a new table (deep copy) with additional rows."""
+    """Creates a new table (deep copy) with additional rows.
+    All entries must have the same keys.
+    Specify overwrite=True to overwrite an existing row. To preserve the existing value (no-op), return it.
+    Return None to drop the row."""
     new_rows: List[PartsTableRow] = []
     first_keys: Optional[KeysView] = None
     for row in self.rows:

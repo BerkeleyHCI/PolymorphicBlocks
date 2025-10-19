@@ -11,7 +11,6 @@ class Mcp4921_Device(InternalSubcircuit, FootprintBlock):
 
     self.vref = self.Port(VoltageSink(
       voltage_limits=(0.04*Volt, self.vdd.link().voltage.lower() - 0.04),
-      current_draw=(0, 0)  # input current not specified
     ))
     self.vout = self.Port(AnalogSource.from_supply(
       self.vss, self.vref,
@@ -23,7 +22,6 @@ class Mcp4921_Device(InternalSubcircuit, FootprintBlock):
     dio_model = DigitalBidir.from_supply(
       self.vss, self.vdd,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,
-      current_draw=(0, 0),  # leakage current not modeled
       current_limits=(-25, 25)*mAmp,
       input_threshold_factor=(0.2, 0.7)
     )

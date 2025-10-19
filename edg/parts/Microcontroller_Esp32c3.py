@@ -33,7 +33,6 @@ class Esp32c3_Ios(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator):
       self.gnd, pwr,
       voltage_limit_tolerance=(-0.3, 0.3)*Volt,
       current_limits=(-28, 40)*mAmp,
-      current_draw=(0, 0)*Amp,
       input_threshold_factor=(0.25, 0.75),
       pullup_capable=True, pulldown_capable=True,
     )

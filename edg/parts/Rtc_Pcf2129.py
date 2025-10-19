@@ -18,7 +18,6 @@ class Pcf2129_Device(InternalSubcircuit, FootprintBlock):
 
     dio_model = DigitalBidir(
       voltage_limits=(-0.5, self.pwr.link().voltage.lower() + 0.5),
-      current_draw=(0, 0),
       voltage_out=(0, self.pwr.link().voltage.lower()),
       current_limits=(-1, 1) * mAmp,  # TODO higher sink current on SDA/nCE
       input_thresholds=(0.25 * self.pwr.link().voltage.upper(),

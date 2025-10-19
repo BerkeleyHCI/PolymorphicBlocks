@@ -13,7 +13,6 @@ class Drv8870_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.vref = self.Port(VoltageSink.from_gnd(
       self.gnd,
       voltage_limits=(0.3, 5)*Volt,  # operational from 0-0.3v, but degraded accuracy
-      current_draw=(0, 0)*Amp
     ))
 
     din_model = DigitalSink.from_supply(
