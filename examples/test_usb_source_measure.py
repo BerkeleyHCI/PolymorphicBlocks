@@ -928,6 +928,7 @@ class UsbSourceMeasure(JlcBoardTop):
         (['boot', 'c_fly_pos', 'voltage_rating_derating'], 0.85),
         (['boot', 'c_fly_neg', 'voltage_rating_derating'], 0.85),
         (['conv', 'boost_sw', 'low_fet', 'footprint_spec'], 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic'),
+        (['conv', 'boost_sw', 'low_fet', 'part'], "BSC093N04LSG"),  # lower total power
         # require all FETs to be the same; note boost must elaborate first
         (['conv', 'buck_sw', 'low_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
         (['conv', 'buck_sw', 'high_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
@@ -936,8 +937,8 @@ class UsbSourceMeasure(JlcBoardTop):
         (['conv', 'boost_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'])),
         (['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'], ParamValue(['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'])),
         (['conv', 'buck_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'])),
-        (['conv', 'buck_sw', 'gate_res'], Range.from_tolerance(10, 0.05)),
-        (['conv', 'boost_sw', 'gate_res'], ParamValue(['conv', 'buck_sw', 'gate_res'])),
+        (['conv', 'boost_sw', 'gate_res'], Range.from_tolerance(4.7, 0.05)),
+        (['conv', 'buck_sw', 'gate_res'], ParamValue(['conv', 'boost_sw', 'gate_res'])),
 
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
 
