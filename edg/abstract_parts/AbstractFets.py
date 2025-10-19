@@ -262,8 +262,6 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
 
       new_cols[self.TOTAL_POWER] = new_cols[self.STATIC_POWER] + new_cols[self.SWITCHING_POWER]
 
-      return new_cols
-
       if new_cols[self.TOTAL_POWER].fuzzy_in(row[self.POWER_RATING]):
         return new_cols
       else:
