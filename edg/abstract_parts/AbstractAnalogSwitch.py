@@ -74,7 +74,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
         all_switches.append(sw)
         self.connect(sw.pwr, self.pwr)
         self.connect(sw.gnd, self.gnd)
-        if self.control_gnd.is_connected():
+        if self.get(self.control_gnd.is_connected()):
             self.connect(sw.control_gnd, self.control_gnd)
 
         for sw_port_i in range(switch_size):
