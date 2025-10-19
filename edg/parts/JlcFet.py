@@ -5,6 +5,30 @@ from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
 
+@non_library
+class FetFallbackGateCharge(BaseTableFet):
+  """A TableFet that allows a fallback gate charge if not specified in the table.
+  Unspecified entries must be parsed as Range.all(), which will be substituted with the fallback
+  value in per-Block post-processing."""
+  @init_in_parent
+  def __init__(self, *args, fallback_gate_charge: RangeLike = Range.from_tolerance(3000e-9, 0), **kwargs):
+    super().__init__(*args, **kwargs)
+    # allow the user to specify a gate charge
+    self.fallback_gate_charge = self.ArgParameter(fallback_gate_charge)
+    self.generator_param(self.fallback_gate_charge)
+
+  def _table_postprocess(self, table: PartsTable) -> PartsTable:
+    fallback_gate_charge = self.get(self.fallback_gate_charge)
+    def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+      if row[TableFet.GATE_CHARGE] == Range.all():
+        return {TableFet.GATE_CHARGE: fallback_gate_charge}
+      else:
+        return {TableFet.GATE_CHARGE: row[TableFet.GATE_CHARGE]}
+
+    # must run before TableFet power calculations
+    return super()._table_postprocess(table.map_new_columns(process_row, overwrite=True))
+
+
 class JlcBaseFet(JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
     'SOT-23': 'Package_TO_SOT_SMD:SOT-23',
@@ -143,30 +167,12 @@ class JlcBaseFet(JlcTableSelector):
 
     return cls._jlc_table().map_new_columns(parse_row)
 
-  @init_in_parent
-  def __init__(self, *args, fallback_gate_charge: RangeLike = Range.from_tolerance(3000e-9, 0), **kwargs):
-    super().__init__(*args, **kwargs)
-    # allow the user to specify a gate charge
-    self.fallback_gate_charge = self.ArgParameter(fallback_gate_charge)
-    self.generator_param(self.fallback_gate_charge)
 
-  def _table_postprocess(self, table: PartsTable) -> PartsTable:
-    fallback_gate_charge = self.get(self.fallback_gate_charge)
-    def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if row[TableFet.GATE_CHARGE] == Range.all():
-        return {TableFet.GATE_CHARGE: fallback_gate_charge}
-      else:
-        return {TableFet.GATE_CHARGE: row[TableFet.GATE_CHARGE]}
-
-    # must run before TableFet power calculations
-    return super()._table_postprocess(table.map_new_columns(process_row, overwrite=True))
-
-
-class JlcFet(PartsTableSelectorFootprint, JlcBaseFet, TableFet):
+class JlcFet(PartsTableSelectorFootprint, JlcBaseFet, FetFallbackGateCharge, TableFet):
   pass
 
 
-class JlcSwitchFet(PartsTableSelectorFootprint, JlcBaseFet, TableSwitchFet):
+class JlcSwitchFet(PartsTableSelectorFootprint, JlcBaseFet, FetFallbackGateCharge, TableSwitchFet):
   pass
 
 
