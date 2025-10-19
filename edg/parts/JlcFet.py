@@ -155,10 +155,14 @@ class JlcBaseFet(JlcTableSelector):
     'AO4459': 9.2e-9,  # @ Vgs=10
     'AO4468': 15e-9,  # @ Vgs=10
     'IRF7458TRPBF': 39e-9,  # @ Vgs=10
-
     'AO4407A': 30e-9,  # @ Vgs=10
 
     # DPAK devices
+    'IRLR024NTRPBF': 15e-9,  # @ Vgs=5
+    'AOD413A': 16.2e-9,  # @ Vgs=-10
+    'IRLR8726TRPBF': 15e-9,  # @ Vgs=4.5
+    'IRLR8726TRLPBF': 15e-9,  # @ Vgs=4.5
+    'IRFR5410TRPBF': 58e-9,  # @ Vgs=-10
     'KIA50N03BD': 25e-9,  # @ Vgs=10
   }
 
