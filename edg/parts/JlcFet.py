@@ -88,11 +88,7 @@ class JlcBaseFet(JlcTableSelector):
   }
 
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
-<<<<<<< HEAD
-    (re.compile("(\S+V) (\S+A) (\S+W) (\S+Ω)@(\S+V),\S+A (\S+V)@\S+A .*([PN]) Channel .* MOSFETs.*"),
-=======
     (re.compile("(\S+V) (\S+A) (\S+W) (\S+Ω)@(\S+V),\S+A (\S+V)@\S+A.* ([PN]) Channel.* MOSFETs.*"),
->>>>>>> master
      lambda match: {
        TableFet.CHANNEL: match.group(7),
        TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
@@ -106,13 +102,8 @@ class JlcBaseFet(JlcTableSelector):
        TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(3), 'W')),
        TableFet.GATE_CHARGE: Range.all(),  # unspecified
      }),
-<<<<<<< HEAD
-    # Some of them have the power entry later, for whatever reason
-    (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A .*([PN]) Channel .* MOSFETs.*"),
-=======
     # some are more detailed
     (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A.* ([PN]) Channel.* (\S+C)@\S+V.* MOSFETs.*"),
->>>>>>> master
      lambda match: {
        TableFet.CHANNEL: match.group(7),
        TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
