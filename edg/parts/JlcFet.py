@@ -78,7 +78,7 @@ class JlcBaseFet(JlcTableSelector):
        TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(3), 'W')),
        TableFet.GATE_CHARGE: Range.all(),  # placeholder for unspecified
      }),
-    # Some of them have the power entry later, for whatever reason
+    # some are more detailed
     (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A.* ([PN]) Channel.* (\S+C)@\S+V.* MOSFETs.*"),
      lambda match: {
        TableFet.CHANNEL: match.group(7),
@@ -91,9 +91,23 @@ class JlcBaseFet(JlcTableSelector):
                                  PartParserUtil.parse_value(match.group(4), 'V')),
        TableFet.RDS_ON: Range.exact(PartParserUtil.parse_value(match.group(3), 'Ω')),
        TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(5), 'W')),
-       TableFet.GATE_CHARGE: Range.exact(PartParserUtil.parse_value(match.group(8), 'C')),
+       TableFet.GATE_CHARGE: Range.exact(PartParserUtil.parse_value(match.group(8), 'C'))
      }),
-
+    # many still don't have the gate charge
+    (re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A.* ([PN]) Channel.* MOSFETs.*"),
+     lambda match: {
+       TableFet.CHANNEL: match.group(7),
+       TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), 'V')),
+       TableFet.IDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'A')),
+       # Vgs isn't specified, so the Ron@Vgs is used as a lower bound; assumed symmetric
+       TableFet.VGS_RATING: Range.from_abs_tolerance(0,
+                                                     PartParserUtil.parse_value(match.group(4), 'V')),
+       TableFet.VGS_DRIVE: Range(PartParserUtil.parse_value(match.group(6), 'V'),
+                                 PartParserUtil.parse_value(match.group(4), 'V')),
+       TableFet.RDS_ON: Range.exact(PartParserUtil.parse_value(match.group(3), 'Ω')),
+       TableFet.POWER_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(5), 'W')),
+       TableFet.GATE_CHARGE: Range.all(),  # placeholder for unspecified
+     }),
   ]
 
   @classmethod
@@ -126,11 +140,9 @@ class JlcBaseFet(JlcTableSelector):
     fallback_gate_charge = self.get(self.fallback_gate_charge)
     def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row[self.GATE_CHARGE] == Range.all():
-        print("fallback gate charge for part", row[self.PART_NUMBER_COL])
         return {self.GATE_CHARGE: fallback_gate_charge}
       else:
-        print(f"ok Qg part {row[self.PART_NUMBER_COL]} = {row[self.GATE_CHARGE]}")
-        return None
+        return {self.GATE_CHARGE: row[self.GATE_CHARGE]}
 
     # must run before TableFet power calculations
     return super()._table_postprocess(table.map_new_columns(process_row, overwrite=True))

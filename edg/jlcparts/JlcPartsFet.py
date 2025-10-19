@@ -70,7 +70,7 @@ class JlcPartsBaseFet(JlcPartsBase, BaseTableFet):
             if math.isnan(row[self.GATE_CHARGE].lower):
                 return {self.GATE_CHARGE: fallback_gate_charge}
             else:
-                return None
+                return {self.GATE_CHARGE: row[self.GATE_CHARGE]}
 
         # must run before TableFet power calculations
         return super()._table_postprocess(table.map_new_columns(process_row, overwrite=True))
