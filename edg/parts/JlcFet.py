@@ -113,7 +113,7 @@ class JlcBaseFet(JlcTableSelector):
   SUPPLEMENTAL_QC = {  # mfr part number to typ Qc @ max Vgs (if multiple specified)
     'IRFH7440TRPBF': 92e-9,  # @ Vgs=10
     'BSC028N06NSATMA1': 37e-9,  # @ Vgs=0...10V
-    'BSC057N08NS3G': 42-9,  # @ Vgs=0...10V
+    'BSC057N08NS3G': 42e-9,  # @ Vgs=0...10V
     'BSC093N04LSG': 18e-9,  # @ Vgs=0...10V
     'BSC160N10NS3G': 19e-9,  # @ Vgs=0...10V
     'SIR876ADP-T1-GE3': 32.8e-9,  # @ Vgs=10
