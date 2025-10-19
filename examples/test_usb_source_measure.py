@@ -165,14 +165,12 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
       drain_current=self.current,
       gate_voltage=gate_voltage,
       rds_on=self.rds_on,
-      gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
     self.low_fet = self.Block(Fet.PFet(
       drain_voltage=self.pwr.link().voltage,
       drain_current=self.current,
       gate_voltage=gate_voltage,
       rds_on=self.rds_on,
-      gate_charge=RangeExpr.ALL,  # don't care, it's analog not switching
       power=self.pwr.link().voltage * self.current))
 
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
