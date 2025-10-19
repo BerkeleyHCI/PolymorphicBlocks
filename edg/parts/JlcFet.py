@@ -7,22 +7,29 @@ from .JlcPart import DescriptionParser, JlcTableSelector
 
 class JlcBaseFet(JlcTableSelector):
   PACKAGE_FOOTPRINT_MAP = {
+    'SOT-23': 'Package_TO_SOT_SMD:SOT-23',
     'SOT23-3': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3': 'Package_TO_SOT_SMD:SOT-23',
     'SOT-23-3L': 'Package_TO_SOT_SMD:SOT-23',
 
     'SOT-323': 'Package_TO_SOT_SMD:SOT-323_SC-70',
+    'SOT-323(SC-80)': 'Package_TO_SOT_SMD:SOT-323_SC-70',
     'SOT-323-3': 'Package_TO_SOT_SMD:SOT-323_SC-70',
     'SC-70-3': 'Package_TO_SOT_SMD:SOT-323_SC-70',
 
     'TO-252': 'Package_TO_SOT_SMD:TO-252-2',  # aka DPak
     'TO-252-2': 'Package_TO_SOT_SMD:TO-252-2',
+    'TO-252(DPAK)': 'Package_TO_SOT_SMD:TO-252-2',
+    'DPAK': 'Package_TO_SOT_SMD:TO-252-2',
+    'TO-252-2(DPAK)': 'Package_TO_SOT_SMD:TO-252-2',
     'TO-263-2': 'Package_TO_SOT_SMD:TO-263-2',  # aka D2Pak
+    'D2PAK': 'Package_TO_SOT_SMD:TO-263-2',
 
     'SOT-223': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
     'SOT-223-3': 'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
 
     'SO-8': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
+    'SOIC-8': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
     'SOIC-8_3.9x4.9x1.27P': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
     'SOP-8': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
     'SOP-8_3.9x4.9x1.27P': 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
@@ -47,6 +54,13 @@ class JlcBaseFet(JlcTableSelector):
     'PQFN-8(5x6)': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
     'PRPAK5x6': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
     'PRPAK5x6-8L': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PG-TDSON-8_EP_5.2x6.2x1.27P': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+
+    'TDSON-8-EP(5x6)': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PDFN-8(5x6)': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'DFN-8-EP(6.1x5.2)': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'DFN-8(4.9x5.8)': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    'PDFN-8(5.8x4.9)': 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
   }
 
   DESCRIPTION_PARSERS: List[DescriptionParser] = [

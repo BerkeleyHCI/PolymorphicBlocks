@@ -8,7 +8,10 @@ class JlcPartsBaseFet(JlcPartsBase, BaseTableFet):
     _JLC_PARTS_FILE_NAMES = ["TransistorsMOSFETs"]
     _CHANNEL_MAP = {
         'N Channel': 'N',
+        '1 N-channel': 'N',
+        '1 N-Channel': 'N',
         'P Channel': 'P',
+        '1 Piece P-Channel': 'P',
     }
 
     @classmethod
