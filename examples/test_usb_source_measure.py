@@ -512,8 +512,8 @@ class UsbSourceMeasure(JlcBoardTop):
         imp.Block(CustomSyncBuckBoostConverterPwm(output_voltage=(15, 30)*Volt,  # design for 0.5x - 1.5x conv ratio
                                                   frequency=500*kHertz(tol=0),
                                                   ripple_ratio=(0.01, 0.9),
-                                                  input_ripple_limit=100*mVolt,
-                                                  output_ripple_limit=(25*(7/9))*mVolt  # fill empty space with caps
+                                                  input_ripple_limit=(100*(6/7))*mVolt,  # fill empty space with caps
+                                                  output_ripple_limit=(25*(7/8))*mVolt  # fill empty space with caps
                                                   )),
         imp.Block(ForcedVoltage((2, 30)*Volt)),  # at least 2v to allow current sensor to work
         imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # zener shunt in case the boost converter goes crazy
