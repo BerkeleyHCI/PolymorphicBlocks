@@ -6002,7 +6002,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0f8dabfe-c3ed-4e0b-a994-5aac185d79b1")
-		(property "Reference" "tvs_n"
+		(property "Reference" "Q2"
 			(at 271.78 93.9799 90)
 			(effects
 				(font
@@ -6074,7 +6074,7 @@
 		(instances
 			(project "SourceMeasureControl"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "tvs_n")
+					(reference "Q2")
 					(unit 1)
 				)
 			)
@@ -9572,7 +9572,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cb67cff2-9d8a-4b7d-9efe-c0dc4da7cb4d")
-		(property "Reference" "tvs_p"
+		(property "Reference" "Q1"
 			(at 271.78 86.3599 90)
 			(effects
 				(font
@@ -9644,7 +9644,7 @@
 		(instances
 			(project ""
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "tvs_p")
+					(reference "Q1")
 					(unit 1)
 				)
 			)
