@@ -109,7 +109,7 @@ class Sn74lvc2g02_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def contents(self) -> None:
         super().contents()
         self.footprint(
-            'U', 'Package_SO:VSSOP-8_2.4x2.1mm_P0.5mm',
+            'U', 'Package_SO:VSSOP-8_2.3x2mm_P0.5mm',
             {
                 '1': self.in1a,
                 '2': self.in1b,
