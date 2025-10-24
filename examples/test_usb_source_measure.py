@@ -805,7 +805,6 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['control', 'off_sw', 'device'], Nlas4157),  # 3v3 compatible unlike DG468
 
-        (['cap_vusb', 'cap'], JlcAluminumCapacitor),
         (['cap_conv', 'cap'], JlcAluminumCapacitor),
         (['control', 'driver', 'cap_in1', 'cap'], JlcAluminumCapacitor),
 

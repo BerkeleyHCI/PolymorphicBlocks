@@ -433,7 +433,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "15792100-5d62-4eb8-9f5d-4552036fbcb7")
-		(property "Reference" "jfet1"
+		(property "Reference" "Q1"
 			(at 115.57 130.81 90)
 			(effects
 				(font
@@ -509,7 +509,7 @@
 		(instances
 			(project ""
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "jfet1")
+					(reference "Q1")
 					(unit 1)
 				)
 			)
@@ -525,7 +525,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "294d5457-d76b-4a34-b205-f36b5d04525f")
-		(property "Reference" "jfet2"
+		(property "Reference" "Q2"
 			(at 138.43 120.65 90)
 			(effects
 				(font
@@ -601,7 +601,7 @@
 		(instances
 			(project "JfetCurrentClamp"
 				(path "/b55f6c44-5d5d-4524-bb86-893662f64598"
-					(reference "jfet2")
+					(reference "Q2")
 					(unit 1)
 				)
 			)
