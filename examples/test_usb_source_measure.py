@@ -903,6 +903,9 @@ class UsbSourceMeasure(JlcBoardTop):
 
         (['ramp', 'drv', 'footprint_spec'], 'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic'),
 
+        # less aggressive derating for smaller part
+        (['control', 'driver', 'cap_in1', 'cap', 'voltage_rating_derating'], 0.8),
+
         # ignore derating on 20v - it's really broken =(
         (['reg_v5', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
         (['reg_v5', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
