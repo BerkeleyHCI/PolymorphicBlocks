@@ -2553,7 +2553,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "100*uFarad(tol=0.2))"
+		(property "Value2" "47*uFarad(tol=0.2))"
 			(at 136.144 83.566 0)
 			(effects
 				(font

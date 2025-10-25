@@ -439,7 +439,10 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
       })
 
 
-class UsbSourceMeasure(JlcBoardTop):
+# JlcPartsRefinements are used in production since the old parts table
+# list many parts that are no longer basic.
+class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
+# class UsbSourceMeasure(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
@@ -473,7 +476,7 @@ class UsbSourceMeasure(JlcBoardTop):
       (self.ramp, self.cap_conv), _ = self.chain(
         self.vusb,
         imp.Block(RampLimiter()),  # avoid excess capacitance on VBus which may cause the PD source to reset
-        imp.Block(DecouplingCapacitor(100*uFarad(tol=0.25))),
+        imp.Block(DecouplingCapacitor(47*uFarad(tol=0.25))),
       )
       self.vusb_ramp = self.connect(self.ramp.pwr_out)  # vusb post-ramp
       self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.vusb_ramp)
