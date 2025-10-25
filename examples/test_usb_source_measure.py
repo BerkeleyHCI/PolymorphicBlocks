@@ -692,11 +692,10 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
             ImplicitConnect(self.v5, [Power]),
             ImplicitConnect(self.gnd, [Common]),
     ) as imp:
-      self.rgbs = imp.Block(NeopixelArray(4+1+1))  # 4 for encoder, 1 for output, 1 for USB
-      (self.rgb_shift, ), _ = self.chain(
+      (self.rgbs, ), _ = self.chain(
         self.mcu.gpio.request('rgb'),
-        imp.Block(L74Ahct1g125()),
-        self.rgbs.din)
+        imp.Block(NeopixelArray(4+1+1))  # 4 for encoder, 1 for output, 1 for USB
+      )
 
       self.fan_cap = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2)))
       self.fan_drv = imp.Block(HighSideSwitch())
@@ -828,7 +827,7 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (DirectionSwitch, Skrh),
         (TestPoint, CompactKeystone5015),
         (RotaryEncoder, Pec11s),
-        (Neopixel, Sk6805_Ec15),
+        (Neopixel, Ws2812c_2020),
         (RfConnector, UflConnector),
       ],
       instance_values=[

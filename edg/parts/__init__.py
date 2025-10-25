@@ -113,7 +113,8 @@ from .DacI2c_Mcp4728 import Mcp4728
 
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
-from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, Sk6812_Side_A, NeopixelArray, NeopixelArrayCircular
+from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, Ws2812c_2020, Sk6812_Side_A, \
+    NeopixelArray, NeopixelArrayCircular
 from .Lcd_Qt096t_if09 import Qt096t_if09
 from .Lcd_Ch280qv10_Ct import Ch280qv10_Ct
 from .Lcd_Er_Tft1_28_3 import Er_Tft_128_3
