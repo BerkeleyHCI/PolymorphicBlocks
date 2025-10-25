@@ -50,7 +50,7 @@ class Nlas4157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class Nlas4157(AnalogSwitch):
-  """NLAS4157 2:1 analog switch, 1ohm Ron, in SOT-363.
+  """NLAS4157 2:1 analog switch, 1ohm Ron, in SOT-363. OBSOLETE.
   Pin compatible with:
   - TS5A3159: 5v tolerant, 1 ohm
   - TS5A3160: 5v tolerant, 1 ohm

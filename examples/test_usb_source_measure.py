@@ -479,7 +479,7 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         imp.Block(DecouplingCapacitor(47*uFarad(tol=0.25))),
       )
       self.vusb_ramp = self.connect(self.ramp.pwr_out)  # vusb post-ramp
-      self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.vusb_ramp)
+      self.tp_vusb = self.Block(VoltageTestPoint()).connected(self.ramp.pwr_out)
 
       # logic supplies
       (self.reg_v5, self.tp_v5), _ = self.chain(
@@ -516,7 +516,7 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
                                                   frequency=500*kHertz(tol=0),
                                                   ripple_ratio=(0.01, 0.9),
                                                   input_ripple_limit=(100*(6/7))*mVolt,  # fill empty space with caps
-                                                  output_ripple_limit=(25*(6/8))*mVolt  # fill empty space with caps
+                                                  output_ripple_limit=(25*(7/8))*mVolt  # fill empty space with caps
                                                   )),
         imp.Block(ForcedVoltage((2, 30)*Volt)),  # at least 2v to allow current sensor to work
         imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # zener shunt in case the boost converter goes crazy
@@ -805,7 +805,7 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['control', 'driver', 'low_fet'], CustomFet),
         (['control', 'driver', 'high_fet'], CustomFet),
 
-        (['control', 'off_sw', 'device'], Nlas4157),  # 3v3 compatible unlike DG468
+        (['control', 'off_sw', 'device'], Sn74lvc1g3157),
 
         (['cap_conv', 'cap'], JlcAluminumCapacitor),
         (['control', 'driver', 'cap_in1', 'cap'], JlcAluminumCapacitor),
@@ -829,6 +829,7 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (RotaryEncoder, Pec11s),
         (Neopixel, Ws2812c_2020),
         (RfConnector, UflConnector),
+        (UsbEsdDiode, Pgb102st23),  # in stock
       ],
       instance_values=[
         (['mcu', 'programming'], 'uart-auto'),
@@ -979,14 +980,19 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['convin_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
 
         (['spk_drv', 'pwr', 'current_draw'], Range(6.0e-7, 0.25)),  # assume speakers will be pretty mild
+
+        # out of stock / unassembleable parts
+        (['conv', 'power_path', 'out_cap', 'cap', 'part'], "C3216X5R1V226MTJ00E")
       ],
       class_values=[
-        # (CompactKeystone5015, ['lcsc_part'], 'C5199798'),  # RH-5015 is out of stock
+        (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
 
         (Mcp3561, ['ic', 'ch', '0', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
         (Mcp3561, ['ic', 'ch', '1', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
         (Mcp3561, ['ic', 'ch', '2', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
         (Mcp3561, ['ic', 'ch', '3', 'impedance'], Range(260e3, 510e3)),  # GAIN=1 or lower
+
+        (Ws2812c_2020, ['device', 'lcsc_part'], 'C3646929'),  # similar device suitable for economic assembly
       ]
     )
 

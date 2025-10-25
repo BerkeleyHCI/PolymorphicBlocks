@@ -129,6 +129,7 @@ from .EInk_Er_Epd027_2 import Er_Epd027_2
 from .EInk_WaveshareDriver import Waveshare_Epd
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
 from .SolidStateRelay_Toshiba import Tlp3545a, Tlp170am
+from .AnalogSwitch_7400 import Sn74lvc1g3157
 from .AnalogSwitch_Nlas4157 import Nlas4157
 from .AnalogSwitch_Dg468 import Dg468
 from .CanTransceiver_Iso1050 import Iso1050dub
