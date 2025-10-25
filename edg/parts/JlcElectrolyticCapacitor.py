@@ -7,6 +7,7 @@ from .JlcPart import DescriptionParser, JlcTableSelector
 
 class JlcAluminumCapacitor(PartsTableSelectorFootprint, JlcTableSelector, TableCapacitor, AluminumCapacitor):
   DESCRIPTION_PARSERS: List[DescriptionParser] = [
+    # the negative match prevents the dimension substring from partially eaten
     (re.compile(".* (\S+F).* (\S+V).* (±\S+%).*[^\d\.]([\d\.]+x[\d\.]+)mm Aluminum Electrolytic Capacitors.*"),
      lambda match: {  # discard the HF impedance parameter
        TableCapacitor.NOMINAL_CAPACITANCE: PartParserUtil.parse_value(match.group(1), 'F'),
