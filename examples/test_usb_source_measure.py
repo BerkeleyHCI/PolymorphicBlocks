@@ -434,8 +434,8 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
       locals={
         'self': self
       }, conversions={
-        'Q1.K': VoltageSink(),  # tvs_p
-        'Q2.K': Ground(),  # tvs_n
+        'tvs_p.K': VoltageSink(),
+        'tvs_n.K': Ground(),
       })
 
 

@@ -497,6 +497,15 @@
 				(hide yes)
 			)
 		)
+		(property "Refdes Prefix" "Q"
+			(at 115.57 124.46 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "624cb3ba-a8aa-43f3-bad4-0245d448ef05")
 		)
@@ -581,6 +590,15 @@
 			)
 		)
 		(property "JLCPCB Part #" "C258195"
+			(at 138.43 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Refdes Prefix" "Q"
 			(at 138.43 129.54 90)
 			(effects
 				(font
