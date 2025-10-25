@@ -47,7 +47,7 @@ class SourceMeasureRangingCell(Interface, KiCadSchematicBlock):
 
   def contents(self):
     super().contents()
-    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+    self.import_kicad(self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),
                       locals={
                         'clamp': {
                           'clamp_current': (2.5, 25)*mAmp,
@@ -188,7 +188,7 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
       voltage=(0, max_clamp_voltage)
     ))
 
-    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+    self.import_kicad(self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),
       conversions={
         'low_fet.D': Ground(),
         'high_fet.D': VoltageSink(
@@ -305,7 +305,7 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
       impedance=output_impedance
     )), self.output)
 
-    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+    self.import_kicad(self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),
         conversions={
           'target': AnalogSink(
             impedance=self.rtop.actual_resistance + self.rbot.actual_resistance  # assumed dominates fine resistance
@@ -355,7 +355,7 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
   def contents(self) -> None:
     super().contents()
 
-    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+    self.import_kicad(self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),
                       conversions={
                         'input': AnalogSink(current_draw=self.output.link().current_drawn,
                                             impedance=self.output.link().sink_impedance),
@@ -430,7 +430,7 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
   def contents(self):
     super().contents()
 
-    self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+    self.import_kicad(self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),
       locals={
         'self': self
       }, conversions={
