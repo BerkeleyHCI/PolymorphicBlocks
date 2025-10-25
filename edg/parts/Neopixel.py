@@ -89,7 +89,8 @@ class Sk6812Mini_E(Neopixel, FootprintBlock):
 
 
 class Sk6805_Ec15(Neopixel, JlcPart, FootprintBlock):
-    """SK6805-EC15 Neopixel RGB LED in 1.5x1.5 (0606)."""
+    """SK6805-EC15 Neopixel RGB LED in 1.5x1.5 (0606).
+    No longer allowed for JLC economic assembly."""
     def __init__(self) -> None:
         super().__init__()
         self.vdd.init_from(VoltageSink(
@@ -120,6 +121,41 @@ class Sk6805_Ec15(Neopixel, JlcPart, FootprintBlock):
             datasheet='https://cdn-shop.adafruit.com/product-files/4492/Datasheet.pdf'
         )
         self.assign(self.lcsc_part, 'C2890035')
+        self.assign(self.actual_basic_part, False)
+
+
+class Ws2812c_2020(Neopixel, JlcPart, FootprintBlock):
+    """WS2812C low-power Neopixel RGB LED in 2.0x2.0. 3.3v logic-level signal compatible."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.vdd.init_from(VoltageSink(
+            voltage_limits=(3.7, 5.3) * Volt,
+            current_draw=(0.001, 0.001 + 5*3) * mAmp,  # 1 uA static + up to 5mA/ch
+        ))
+        self.gnd.init_from(Ground())
+        self.din.init_from(DigitalSink.from_supply(
+            self.gnd, self.vdd,
+            voltage_limit_tolerance=(-0.3, 0.7),
+            input_threshold_abs=(0.7, 2.7),
+        ))
+        self.dout.init_from(DigitalSource.from_supply(
+            self.gnd, self.vdd,
+            current_limits=0*mAmp(tol=0),
+        ))
+
+    def contents(self) -> None:
+        self.footprint(
+            'D', 'LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm',
+            {
+                '1': self.dout,
+                '2': self.gnd,
+                '3': self.din,
+                '4': self.vdd,
+            },
+            mfr='Worldsemi', part='WS2812C-2020-V1',
+            datasheet='https://cdn.sparkfun.com/assets/e/1/0/f/b/WS2812C-2020_V1.2_EN_19112716191654.pdf'
+        )
+        self.assign(self.lcsc_part, 'C2976072')  # note, -V1 version
         self.assign(self.actual_basic_part, False)
 
 
