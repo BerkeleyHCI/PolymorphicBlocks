@@ -180,7 +180,7 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
       gate_voltage=gate_voltage,
       rds_on=self.rds_on,
       power=self.pwr.link().voltage * self.current))
-    resistance = 2.2*kOhm(tol=0.05)
+    resistance = 3.0*kOhm(tol=0.05)  # 3 x 1k in series
     max_clamp_voltage = VoltageLink._supply_voltage_range(self.gnd, self.pwr).upper() - self.gate_clamp_voltage.lower()
     self.res = self.Block(Resistor(
       resistance=resistance,
@@ -450,9 +450,8 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
     OUTPUT_CURRENT_RATING = (0, 3)*Amp
 
     # USB PD port that supplies power to the load
-    # TODO the transistor is only rated at Vgs=+/-20V
     # USB PD can't actually do 8 A, but this suppresses the error and we can software-limit current draw
-    self.usb = self.Block(UsbCReceptacle(voltage_out=(9, 20)*Volt, current_limits=(0, 8)*Amp))
+    self.usb = self.Block(UsbCReceptacle(voltage_out=(5, 20)*Volt, current_limits=(0, 8)*Amp))
 
     self.gnd = self.connect(self.usb.gnd)
     self.tp_gnd = self.Block(GroundTestPoint()).connected(self.usb.gnd)
@@ -475,7 +474,9 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
 
       (self.ramp, self.cap_conv), _ = self.chain(
         self.vusb,
-        imp.Block(RampLimiter()),  # avoid excess capacitance on VBus which may cause the PD source to reset
+        imp.Block(RampLimiter(
+          target_vgs=(3.7, 19)*Volt
+        )),  # avoid excess capacitance on VBus which may cause the PD source to reset
         imp.Block(DecouplingCapacitor(47*uFarad(tol=0.25))),
       )
       self.vusb_ramp = self.connect(self.ramp.pwr_out)  # vusb post-ramp
@@ -484,7 +485,7 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
       # logic supplies
       (self.reg_v5, self.tp_v5), _ = self.chain(
         self.vusb_ramp,  # non-critical power supply downstream of ramp limiter
-        imp.Block(BuckConverter(output_voltage=5.0*Volt(tol=0.05))),
+        imp.Block(BuckConverter(output_voltage=5*Volt(tol=0.05))),  # min set by gate drivers
         self.Block(VoltageTestPoint()),
       )
       self.v5 = self.connect(self.reg_v5.pwr_out)
@@ -500,7 +501,7 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
 
       (self.reg_v12, ), _ = self.chain(
         self.v5,
-        imp.Block(BoostConverter(output_voltage=12.5*Volt(tol=0.04))),  # limits of the OLED
+        imp.Block(BoostConverter(output_voltage=(12, 13)*Volt)),  # limits of the OLED
       )
       self.v12 = self.connect(self.reg_v12.pwr_out)
 
@@ -893,8 +894,7 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         # allow the regulator to go into tracking mode
         (['reg_v5', 'power_path', 'dutycycle_limit'], Range(0, float('inf'))),
         (['reg_v5', 'power_path', 'inductor_current_ripple'], Range(0.01, 0.5)),  # trade higher Imax for lower L
-        # use the same inductor to reduce line items
-        (['reg_3v3', 'power_path', 'inductor', 'part'], ParamValue(['reg_v5', 'power_path', 'inductor', 'actual_part'])),
+
         # JLC does not have frequency specs, must be checked TODO
         (['reg_3v3', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
         (['reg_v5', 'power_path', 'inductor', 'manual_frequency_rating'], Range.all()),
@@ -947,11 +947,8 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
 
         (['control', 'int_link', 'sink_impedance'], RangeExpr.INF),  # waive impedance check for integrator in
 
-        # (['control', 'isense', 'ranges[0]', 'isense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_1206_3216Metric'),
         (['control', 'isense', 'ranges[0]', 'isense', 'res', 'res', 'require_basic_part'], False),
-        (['control', 'isense', 'ranges[1]', 'isense', 'res', 'res', 'footprint_spec'], ParamValue(['control', 'isense', 'ranges[0]', 'isense', 'res', 'res', 'footprint_spec'])),
         (['control', 'isense', 'ranges[1]', 'isense', 'res', 'res', 'require_basic_part'], False),
-        (['control', 'isense', 'ranges[2]', 'isense', 'res', 'res', 'footprint_spec'], ParamValue(['control', 'isense', 'ranges[0]', 'isense', 'res', 'res', 'footprint_spec'])),
         (['control', 'isense', 'ranges[2]', 'isense', 'res', 'res', 'require_basic_part'], False),
 
         (['control', 'driver', 'res', 'count'], 3),
@@ -970,8 +967,6 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['prot_conv', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
         (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
 
-        (['oled', 'iref_res', 'require_basic_part'], False),
-
         # reduce maximum SSR drive current to be within the IO expander limit
         (['control', 'isense', 'ranges[0]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
         (['control', 'isense', 'ranges[1]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
@@ -981,8 +976,20 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
 
         (['spk_drv', 'pwr', 'current_draw'], Range(6.0e-7, 0.25)),  # assume speakers will be pretty mild
 
+        # user more basic parts
+        # note, can't limit 5v reg and 12v reg feedback series, no overlap w/ downstream part supply voltages
+        (['ramp', 'div', 'series'], 6),
+        (['oled', 'iref_res', 'resistance'], Range.from_tolerance(1e6, 0.05)),  # use 1M resistor, up from 910k
+        (['ramp', 'drv', 'gate_voltage'], Range(0.0, 10.0)),  # gate max isn't parsed, but typically up to 20v
+
+        # reduce line items
+        (['convin_sense', 'Rs', 'res', 'res', 'part'], ParamValue(['vusb_sense', 'Rs', 'res', 'res', 'part'])),
+        (['reg_3v3', 'power_path', 'inductor', 'part'], ParamValue(['reg_v5', 'power_path', 'inductor', 'actual_part'])),
+        (['reg_vcontrol', 'power_path', 'inductor', 'part'], ParamValue(['reg_v12', 'power_path', 'inductor', 'actual_part'])),
+        (['filt_vcontroln', 'fb', 'part'], ParamValue(['dac_ferrite', 'fb', 'actual_part'])),
+
         # out of stock / unassembleable parts
-        (['conv', 'power_path', 'out_cap', 'cap', 'part'], "C3216X5R1V226MTJ00E")
+        (['conv', 'power_path', 'out_cap', 'cap', 'part'], "C3216X5R1V226MTJ00E"),
       ],
       class_values=[
         (CompactKeystone5015, ['lcsc_part'], 'C5199798'),
