@@ -124,24 +124,23 @@ class Sk6805_Ec15(Neopixel, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Ws2812c_2020(Neopixel, JlcPart, FootprintBlock):
-    """WS2812C low-power Neopixel RGB LED in 2.0x2.0. 3.3v logic-level signal compatible."""
+class Ws2812c_2020_Device(JlcPart, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.vdd.init_from(VoltageSink(
+        self.vdd = self.Port(VoltageSink(
             voltage_limits=(3.7, 5.3) * Volt,
             current_draw=(0.001, 0.001 + 5*3) * mAmp,  # 1 uA static + up to 5mA/ch
         ))
-        self.gnd.init_from(Ground())
-        self.din.init_from(DigitalSink.from_supply(
+        self.gnd = self.Port(Ground())
+        self.din = self.Port(DigitalSink.from_supply(
             self.gnd, self.vdd,
             voltage_limit_tolerance=(-0.3, 0.7),
             input_threshold_abs=(0.7, 2.7),
         ))
-        self.dout.init_from(DigitalSource.from_supply(
+        self.dout = self.Port(DigitalSource.from_supply(
             self.gnd, self.vdd,
             current_limits=0*mAmp(tol=0),
-        ))
+        ), optional=True)
 
     def contents(self) -> None:
         self.footprint(
@@ -157,6 +156,18 @@ class Ws2812c_2020(Neopixel, JlcPart, FootprintBlock):
         )
         self.assign(self.lcsc_part, 'C2976072')  # note, -V1 version
         self.assign(self.actual_basic_part, False)
+
+
+class Ws2812c_2020(Neopixel):
+    """WS2812C low-power Neopixel RGB LED in 2.0x2.0. 3.3v logic-level signal compatible."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.device = self.Block(Ws2812c_2020_Device())
+        self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))
+        self.connect(self.gnd, self.device.gnd, self.cap.gnd)
+        self.connect(self.vdd, self.device.vdd, self.cap.pwr)
+        self.connect(self.din, self.device.din)
+        self.connect(self.dout, self.device.dout)
 
 
 class Sk6812_Side_A(Neopixel, FootprintBlock):
