@@ -232,22 +232,22 @@ const RJ5 = board.add(Molex_PicoBlade_53398_0271_1x02_1MP_P1_25mm_Vertical, {
 })
 // drv.ic
 const RU6 = board.add(HSOP_8_1EP_3_9x4_9mm_P1_27mm_EP2_41x3_1mm, {
-  translate: pt(1.740, 0.492), rotate: 0,
+  translate: pt(1.740, 0.425), rotate: 0,
   id: 'RU6'
 })
 // drv.vm_cap0.cap
 const RC13 = board.add(C_0603_1608Metric, {
-  translate: pt(2.202, 0.415), rotate: 0,
+  translate: pt(1.983, 0.475), rotate: 0,
   id: 'RC13'
 })
 // drv.vm_cap1.cap
-const RC14 = board.add(CP_Elec_8x10, {
-  translate: pt(1.811, 0.173), rotate: 0,
+const RC14 = board.add(CP_Elec_6_3x7_7, {
+  translate: pt(1.780, 0.140), rotate: 0,
   id: 'RC14'
 })
 // drv.isen_res.res
 const RR11 = board.add(R_1206_3216Metric, {
-  translate: pt(2.015, 0.430), rotate: 0,
+  translate: pt(2.015, 0.363), rotate: 0,
   id: 'RR11'
 })
 
