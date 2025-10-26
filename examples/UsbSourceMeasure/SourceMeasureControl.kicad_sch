@@ -6011,7 +6011,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "SMA6J5.0A"
+		(property "Value" "SMA6J5.0A-TR"
 			(at 271.78 96.5199 90)
 			(effects
 				(font
@@ -9590,7 +9590,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "SMA6J33A"
+		(property "Value" "SMA6J33A-TR"
 			(at 271.78 88.8999 90)
 			(effects
 				(font

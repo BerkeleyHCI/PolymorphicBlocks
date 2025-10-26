@@ -467,7 +467,7 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         self.usb.pwr,
         self.Block(SeriesPowerFuse(trip_current=(7, 8)*Amp)),
         self.Block(SeriesPowerFerriteBead()),
-        imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # for parts commonality w/ the Vconv zener
+        imp.Block(ProtectionZenerDiode(voltage=(32, 40)*Volt)),  # for parts commonality w/ the Vconv zener
         self.vusb_sense.sense_pos
       )
       self.vusb = self.connect(self.vusb_sense.sense_neg)
@@ -520,7 +520,7 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
                                                   output_ripple_limit=(25*(7/8))*mVolt  # fill empty space with caps
                                                   )),
         imp.Block(ForcedVoltage((2, 30)*Volt)),  # at least 2v to allow current sensor to work
-        imp.Block(ProtectionZenerDiode(voltage=(32, 38)*Volt)),  # zener shunt in case the boost converter goes crazy
+        imp.Block(ProtectionZenerDiode(voltage=(32, 40)*Volt)),  # zener shunt in case the boost converter goes crazy
         self.Block(VoltageTestPoint())
       )
       self.connect(self.conv.pwr_logic, self.v5)
@@ -913,7 +913,6 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['reg_v5', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
         (['reg_v5', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['reg_v12', 'cf', 'voltage_rating_derating'], 0.85),
-        (['reg_v12', 'cf', 'require_basic_part'], False),
         (['conv', 'power_path', 'in_cap', 'cap', 'exact_capacitance'], False),
         (['conv', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
@@ -924,7 +923,6 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['control', 'driver', 'cap_in3', 'cap', 'voltage_rating_derating'], 0.9),
         (['control', 'driver', 'cap_in3', 'cap', 'require_basic_part'], False),
         (['reg_vcontrol', 'cf', 'voltage_rating_derating'], 0.85),
-        (['reg_vcontrol', 'cf', 'require_basic_part'], False),
         (['reg_vcontrol', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
         (['reg_vcontrol', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'boost_sw', 'high_fet', 'gate_voltage'], ParamValue(
@@ -938,10 +936,6 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['conv', 'buck_sw', 'low_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
         (['conv', 'buck_sw', 'high_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
         (['conv', 'boost_sw', 'high_fet', 'part'], ParamValue(['conv', 'boost_sw', 'low_fet', 'actual_part'])),
-        (['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'], Range.exact(100e-9)),  # reasonable worst case estimate
-        (['conv', 'boost_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'])),
-        (['conv', 'buck_sw', 'low_fet', 'manual_gate_charge'], ParamValue(['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'])),
-        (['conv', 'buck_sw', 'high_fet', 'manual_gate_charge'], ParamValue(['conv', 'boost_sw', 'low_fet', 'manual_gate_charge'])),
         (['conv', 'boost_sw', 'gate_res'], Range.from_tolerance(4.7, 0.05)),
         (['conv', 'buck_sw', 'gate_res'], ParamValue(['conv', 'boost_sw', 'gate_res'])),
 
@@ -957,12 +951,6 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['control', 'driver', 'low_fet', 'footprint_spec'], 'Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp'),
         (['control', 'driver', 'low_fet', 'part_spec'], 'IRF9540'),  # has a 30V/4A SOA
 
-        (['control', 'ifilt', 'c', 'require_basic_part'], False),  # no 10nF caps in basic library for some reason
-
-        (['control', 'snub_r', 'res', 'footprint_spec'], ParamValue(['control', 'isense', 'ranges[0]', 'isense', 'res', 'res', 'footprint_spec'])),
-        (['control', 'snub_r', 'res', 'require_basic_part'], False),
-        (['control', 'snub_c', 'cap', 'require_basic_part'], False),
-
         (['prot_vusb', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
         (['prot_conv', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
         (['prot_3v3', 'diode', 'footprint_spec'], 'Diode_SMD:D_SMA'),
@@ -971,12 +959,12 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['control', 'isense', 'ranges[0]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
         (['control', 'isense', 'ranges[1]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
         (['control', 'isense', 'ranges[2]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
-        (['vusb_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
-        (['convin_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
-
         (['spk_drv', 'pwr', 'current_draw'], Range(6.0e-7, 0.25)),  # assume speakers will be pretty mild
 
-        # user more basic parts
+        # use more basic parts
+        (['control', 'snub_c', 'cap', 'voltage_rating_derating'], 0.60),  # allow use of a 50V basic part caps
+        (['control', 'ifilt', 'c', 'voltage_rating_derating'], 0.60),
+
         # note, can't limit 5v reg and 12v reg feedback series, no overlap w/ downstream part supply voltages
         (['ramp', 'div', 'series'], 6),
         (['oled', 'iref_res', 'resistance'], Range.from_tolerance(1e6, 0.05)),  # use 1M resistor, up from 910k
@@ -984,9 +972,14 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
 
         # reduce line items
         (['convin_sense', 'Rs', 'res', 'res', 'part'], ParamValue(['vusb_sense', 'Rs', 'res', 'res', 'part'])),
+        (['vusb_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
+        (['convin_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
         (['reg_3v3', 'power_path', 'inductor', 'part'], ParamValue(['reg_v5', 'power_path', 'inductor', 'actual_part'])),
         (['reg_vcontrol', 'power_path', 'inductor', 'part'], ParamValue(['reg_v12', 'power_path', 'inductor', 'actual_part'])),
         (['filt_vcontroln', 'fb', 'part'], ParamValue(['dac_ferrite', 'fb', 'actual_part'])),
+        (['prot_vusb', 'diode', 'part'], ParamValue(['control', 'tvs_p', 'kicad_value'])),
+        (['prot_conv', 'diode', 'part'], ParamValue(['control', 'tvs_p', 'kicad_value'])),
+        (['prot_3v3', 'diode', 'part'], ParamValue(['control', 'tvs_n', 'kicad_value'])),
 
         # out of stock / unassembleable parts
         (['conv', 'power_path', 'out_cap', 'cap', 'part'], "C3216X5R1V226MTJ00E"),
