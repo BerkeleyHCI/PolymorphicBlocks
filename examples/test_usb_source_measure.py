@@ -917,11 +917,9 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['conv', 'power_path', 'in_cap', 'cap', 'voltage_rating_derating'], 0.85),
         (['conv', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
         (['conv', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.9),  # allow using a 35V cap
-        (['conv', 'power_path', 'out_cap', 'cap', 'require_basic_part'], False),  # high volt caps are rare
+        (['conv', 'power_path', 'out_cap', 'cap', 'require_basic_part'], False),
         (['control', 'driver', 'cap_in2', 'cap', 'voltage_rating_derating'], 0.9),
-        (['control', 'driver', 'cap_in2', 'cap', 'require_basic_part'], False),
         (['control', 'driver', 'cap_in3', 'cap', 'voltage_rating_derating'], 0.9),
-        (['control', 'driver', 'cap_in3', 'cap', 'require_basic_part'], False),
         (['reg_vcontrol', 'cf', 'voltage_rating_derating'], 0.85),
         (['reg_vcontrol', 'power_path', 'out_cap', 'cap', 'exact_capacitance'], False),
         (['reg_vcontrol', 'power_path', 'out_cap', 'cap', 'voltage_rating_derating'], 0.85),
@@ -961,6 +959,13 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['control', 'isense', 'ranges[2]', 'pwr_sw', 'ic', 'led_current_recommendation'], Range(0.002, 0.010)),
         (['spk_drv', 'pwr', 'current_draw'], Range(6.0e-7, 0.25)),  # assume speakers will be pretty mild
 
+        # the basic parts in the 100kOhm range is pretty limited
+        (['ramp', 'div', 'bottom_res', 'require_basic_part'], False),
+        (['reg_v5', 'fb', 'div', 'top_res', 'require_basic_part'], False),
+        (['reg_v12', 'fb', 'div', 'top_res', 'require_basic_part'], False),
+        (['reg_vcontrol', 'fb', 'div', 'top_res', 'require_basic_part'], False),
+        (['reg_vcontrol', 'fb', 'div', 'bottom_res', 'require_basic_part'], False),
+
         # use more basic parts
         (['control', 'snub_c', 'cap', 'voltage_rating_derating'], 0.60),  # allow use of a 50V basic part caps
         (['control', 'ifilt', 'c', 'voltage_rating_derating'], 0.60),
@@ -971,15 +976,22 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['ramp', 'drv', 'gate_voltage'], Range(0.0, 10.0)),  # gate max isn't parsed, but typically up to 20v
 
         # reduce line items
+        (['reg_vcontrol', 'rect', 'actual_part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
+        (['conv', 'buck_sw', 'driver', 'boot', 'actual_part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
+        (['conv', 'boost_sw', 'driver', 'boot', 'actual_part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
+        (['control', 'err_source', 'diode', 'actual_part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
+        (['control', 'err_sink', 'diode', 'actual_part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
+
         (['convin_sense', 'Rs', 'res', 'res', 'part'], ParamValue(['vusb_sense', 'Rs', 'res', 'res', 'part'])),
         (['vusb_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
         (['convin_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
         (['reg_3v3', 'power_path', 'inductor', 'part'], ParamValue(['reg_v5', 'power_path', 'inductor', 'actual_part'])),
         (['reg_vcontrol', 'power_path', 'inductor', 'part'], ParamValue(['reg_v12', 'power_path', 'inductor', 'actual_part'])),
         (['filt_vcontroln', 'fb', 'part'], ParamValue(['dac_ferrite', 'fb', 'actual_part'])),
-        (['prot_vusb', 'diode', 'part'], ParamValue(['control', 'tvs_p', 'kicad_value'])),
-        (['prot_conv', 'diode', 'part'], ParamValue(['control', 'tvs_p', 'kicad_value'])),
-        (['prot_3v3', 'diode', 'part'], ParamValue(['control', 'tvs_n', 'kicad_value'])),
+        # the low-leakage TVS diodes aren't in the parts table, so directly insert the LCSC part
+        (['prot_vusb', 'diode', 'lcsc_part'], ParamValue(['control', 'tvs_p', 'lcsc_part'])),
+        (['prot_conv', 'diode', 'lcsc_part'], ParamValue(['control', 'tvs_p', 'lcsc_part'])),
+        (['prot_3v3', 'diode', 'lcsc_part'], ParamValue(['control', 'tvs_n', 'lcsc_part'])),  # note, 5v zener diode
 
         # out of stock / unassembleable parts
         (['conv', 'power_path', 'out_cap', 'cap', 'part'], "C3216X5R1V226MTJ00E"),
