@@ -441,8 +441,8 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
 
 # JlcPartsRefinements are used in production since the old parts table
 # list many parts that are no longer basic.
-class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
-# class UsbSourceMeasure(JlcBoardTop):
+# class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
+class UsbSourceMeasure(JlcBoardTop):
   def contents(self) -> None:
     super().contents()
 
