@@ -181,7 +181,7 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
       rds_on=self.rds_on,
       power=self.pwr.link().voltage * self.current))
     resistance = 3.0*kOhm(tol=0.05)  # 3 x 1k in series
-    max_clamp_voltage = VoltageLink._supply_voltage_range(self.gnd, self.pwr).upper() - self.gate_clamp_voltage.lower()
+    max_clamp_voltage = VoltageLink._supply_voltage_range(self.pwr_gate_neg, self.pwr_gate_pos).upper() - self.gate_clamp_voltage.lower()
     self.res = self.Block(Resistor(
       resistance=resistance,
       power=(0, max_clamp_voltage * max_clamp_voltage / resistance.lower()),
