@@ -1,3 +1,5 @@
+from deprecated import deprecated
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -49,6 +51,7 @@ class Nlas4157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, False)
 
 
+@deprecated("obsolete part")
 class Nlas4157(AnalogSwitch):
   """NLAS4157 2:1 analog switch, 1ohm Ron, in SOT-363. OBSOLETE.
   Pin compatible with:

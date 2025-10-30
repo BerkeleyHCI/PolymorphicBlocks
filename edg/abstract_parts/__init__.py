@@ -73,7 +73,7 @@ from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRe
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
 from .PowerCircuits import HalfBridge, FetHalfBridge, HalfBridgeIndependent, HalfBridgePwm, FetHalfBridgeIndependent,\
-    FetHalfBridgePwmReset, RampLimiter, FetPrecharge
+    FetHalfBridgePwmReset, RampLimiter
 from .AbstractLedDriver import LedDriver, LedDriverPwm, LedDriverSwitchingConverter
 from .AbstractFuse import Fuse, SeriesPowerFuse, PptcFuse, FuseStandardFootprint, TableFuse, SeriesPowerPptcFuse
 from .AbstractCrystal import Crystal, TableCrystal, OscillatorReference, CeramicResonator

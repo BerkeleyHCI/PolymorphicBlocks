@@ -42,7 +42,7 @@ class JlcPartsDiode(PartsTableSelectorFootprint, JlcPartsBase, TableDiode):
             row_dict[cls.REVERSE_RECOVERY] = reverse_recovery
 
             return row_dict
-        except (KeyError, TypeError, PartParserUtil.ParseError) as e:
+        except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
 
 

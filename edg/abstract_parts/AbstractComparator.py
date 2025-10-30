@@ -33,8 +33,7 @@ class VoltageComparator(GeneratorBlock):
     tolerance is specified wide enough.
     The output is logic high when the input exceeds the trip voltage by default,
     this can be inverted with the invert parameter.
-    Optionally this can take a reference voltage input, otherwise this generates a 1:1
-    divider by default.
+    Optionally this can take a reference voltage input, otherwise this generates a divider.
 
     TODO: maybe a version that takes an input analog signal?
     """
