@@ -278,7 +278,7 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
       self.diode = self.Block(Diode(  # TODO should be encoded as a voltage difference?
         reverse_voltage=self.amp.out.voltage_out,
         current=RangeExpr.ZERO,  # an approximation, current rating not significant here
-        voltage_drop=(0, 0.5)*Volt  # arbitrary low threshold
+        voltage_drop=(0, 0.8)*Volt  # arbitrary low threshold
       ))
       amp_out_model = AnalogSink(
         impedance=self.output.link().sink_impedance
@@ -976,11 +976,11 @@ class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
         (['ramp', 'drv', 'gate_voltage'], Range(0.0, 10.0)),  # gate max isn't parsed, but typically up to 20v
 
         # reduce line items
-        (['reg_vcontrol', 'rect', 'actual_part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
-        (['conv', 'buck_sw', 'driver', 'boot', 'actual_part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
-        (['conv', 'boost_sw', 'driver', 'boot', 'actual_part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
-        (['control', 'err_source', 'diode', 'actual_part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
-        (['control', 'err_sink', 'diode', 'actual_part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
+        (['control', 'err_source', 'diode', 'part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
+        (['control', 'err_sink', 'diode', 'part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
+        (['reg_vcontrol', 'rect', 'part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
+        (['conv', 'buck_sw', 'driver', 'boot', 'part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
+        (['conv', 'boost_sw', 'driver', 'boot', 'part'], ParamValue(['reg_v12', 'rect', 'actual_part'])),
 
         (['convin_sense', 'Rs', 'res', 'res', 'part'], ParamValue(['vusb_sense', 'Rs', 'res', 'res', 'part'])),
         (['vusb_sense', 'Rs', 'res', 'res', 'require_basic_part'], False),
