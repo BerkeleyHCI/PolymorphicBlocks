@@ -58,7 +58,25 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        "clearance|121506106|39443424|64c3f9bf-f998-4b42-a4df-5da41c72cfeb|e1e55fbe-5064-4da6-93ff-9e041837b78b",
+        "clearance|122067050|40053716|64c3f9bf-f998-4b42-a4df-5da41c72cfeb|29832e8f-f52e-4560-a339-9005273e5d03",
+        "clearance|122225283|39755825|64c3f9bf-f998-4b42-a4df-5da41c72cfeb|87bf1575-51dd-424a-b41d-32621e6b5f0c",
+        "courtyards_overlap|238250001|25520001|7a851136-19e5-4c03-af4e-da4cb1c801a1|e87171dd-bcdd-41db-a414-125fb82c49d0",
+        "courtyards_overlap|253250001|25900001|5c2c2475-9e70-4828-826f-da02ef9d65bd|aa5a4b34-34c0-4c9f-b333-4cc4146f8d0f",
+        "courtyards_overlap|263270001|25520001|5c2c2475-9e70-4828-826f-da02ef9d65bd|e42b96c4-0551-48ec-a02c-c843f9df8ebc",
+        "courtyards_overlap|272120001|27980001|f119ae2d-eaed-468c-bbf0-abfc27c6f026|93ca1119-1d09-43e5-b8bb-408b3abf603f",
+        "courtyards_overlap|272120001|34950001|0655b71c-708e-4630-85de-4f129c677fbd|93ca1119-1d09-43e5-b8bb-408b3abf603f",
+        "courtyards_overlap|273169194|3210001|2cd7211e-e4e2-4f36-bba5-5a475ffda723|4c3e762d-b6c7-45e4-8ee2-d4d33d0168a6",
+        "courtyards_overlap|274200001|16930001|465deed6-80be-4a7d-81a3-077d348e5064|4c3e762d-b6c7-45e4-8ee2-d4d33d0168a6",
+        "courtyards_overlap|274200001|35930001|93ca1119-1d09-43e5-b8bb-408b3abf603f|fd20e11a-a6ef-4681-b47b-daaa482e25ee",
+        "courtyards_overlap|277657236|43067465|2896a51e-506e-40fe-b0fc-cdc4db3c05d3|fd20e11a-a6ef-4681-b47b-daaa482e25ee",
+        "courtyards_overlap|286549999|22210001|465deed6-80be-4a7d-81a3-077d348e5064|93ca1119-1d09-43e5-b8bb-408b3abf603f",
+        "hole_clearance|119880000|17100000|a7e3f130-f95d-41dd-9895-6e4c5276d5e6|5ca8f1b1-5bb1-42ad-8ba5-c99a57271dcd",
+        "hole_clearance|119880000|17300000|a7e3f130-f95d-41dd-9895-6e4c5276d5e6|37401f14-c6f3-40d8-ac6d-cc8ba48a43b2",
+        "hole_clearance|119880000|22700000|2f1ab027-a8cb-4028-a5bb-3bd899836bf7|d6017cf4-e16f-49cf-8562-7ab610c5769b",
+        "hole_clearance|119880000|22900000|2f1ab027-a8cb-4028-a5bb-3bd899836bf7|7535e4da-dcc3-45b9-b1a5-e654a9013257"
+      ],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
