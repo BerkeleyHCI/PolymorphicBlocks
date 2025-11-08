@@ -9,16 +9,18 @@ class Neopixel(Light, Block):
     """Abstract base class for Neopixel-type LEDs including the Vdd/Gnd/Din/Dout interface."""
     def __init__(self) -> None:
         super().__init__()
-        self.vdd = self.Port(VoltageSink.empty(), [Power])
+        self.pwr = self.Port(VoltageSink.empty(), [Power])
+        self.vdd = self.pwr  # deprecated alias
         self.gnd = self.Port(Ground.empty(), [Common])
         self.din = self.Port(DigitalSink.empty(), [Input])
         self.dout = self.Port(DigitalSource.empty(), optional=True)
 
 
 class Ws2812b(Neopixel, FootprintBlock, JlcPart):
+    """5050-size Neopixel RGB. Specifically does NOT need extra filtering capacitors."""
     def __init__(self) -> None:
         super().__init__()
-        self.vdd.init_from(VoltageSink(
+        self.pwr.init_from(VoltageSink(
             voltage_limits=(3.7, 5.3) * Volt,
             current_draw=(0.6, 0.6 + 12*3) * mAmp,
         ))
@@ -30,7 +32,7 @@ class Ws2812b(Neopixel, FootprintBlock, JlcPart):
             # note that a more restrictive input_threshold_abs of (1.5, 2.3) was used previously
         ))
         self.dout.init_from(DigitalSource.from_supply(
-            self.gnd, self.vdd,
+            self.gnd, self.pwr,
             current_limits=0*mAmp(tol=0),
         ))
 
@@ -38,7 +40,7 @@ class Ws2812b(Neopixel, FootprintBlock, JlcPart):
         self.footprint(
             'D', 'LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm',
             {
-                '1': self.vdd,
+                '1': self.pwr,
                 '2': self.dout,
                 '3': self.gnd,
                 '4': self.din
@@ -54,9 +56,7 @@ class Ws2812b(Neopixel, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Sk6812Mini_E(Neopixel, FootprintBlock):
-    """SK6812MINI-E reverse-mount Neopixel RGB LED, commonly used for keyboard lighting.
-    Note: while listed as JLC C5149201, it seems non-stocked and is standard assembly only."""
+class Sk6812Mini_E_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
         self.vdd.init_from(VoltageSink(
@@ -86,10 +86,23 @@ class Sk6812Mini_E(Neopixel, FootprintBlock):
             mfr='Opsco Optoelectronics', part='SK6812MINI-E',
             datasheet='https://cdn-shop.adafruit.com/product-files/4960/4960_SK6812MINI-E_REV02_EN.pdf'
         )
+        self.assign(self.lcsc_part, 'C5149201')
+        self.assign(self.actual_basic_part, False)
 
 
-class Sk6805_Ec15(Neopixel, JlcPart, FootprintBlock):
-    """SK6805-EC15 Neopixel RGB LED in 1.5x1.5 (0606)."""
+class Sk6812Mini_E(Neopixel):
+    """Reverse-mount (through-board) Neopixel RGB LED, commonly used for keyboard lighting."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.device = self.Block(Sk6812Mini_E_Device())
+        self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))
+        self.connect(self.gnd, self.device.gnd, self.cap.gnd)
+        self.connect(self.pwr, self.device.vdd, self.cap.pwr)
+        self.connect(self.din, self.device.din)
+        self.connect(self.dout, self.device.dout)
+
+
+class Sk6805_Ec15_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
         self.vdd.init_from(VoltageSink(
@@ -123,8 +136,19 @@ class Sk6805_Ec15(Neopixel, JlcPart, FootprintBlock):
         self.assign(self.actual_basic_part, False)
 
 
-class Sk6812_Side_A(Neopixel, FootprintBlock):
-    """SK6812-SIDE-A side-emitting Neopixel LED."""
+class Sk6805_Ec15(Neopixel):
+    """0606-size (1.5mm x 1.5mm) size Neopixel RGB LED."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.device = self.Block(Sk6805_Ec15_Device())
+        self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))
+        self.connect(self.gnd, self.device.gnd, self.cap.gnd)
+        self.connect(self.pwr, self.device.vdd, self.cap.pwr)
+        self.connect(self.din, self.device.din)
+        self.connect(self.dout, self.device.dout)
+
+
+class Sk6812_Side_A_Device(InternalSubcircuit, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
         self.vdd.init_from(VoltageSink(
@@ -157,6 +181,18 @@ class Sk6812_Side_A(Neopixel, FootprintBlock):
         # potentially footprint-compatible with C2890037
 
 
+class Ws2812c_2020(Neopixel):
+    """Side-emitting Neopixel LED, including used for keyboard edge lighting."""
+    def __init__(self) -> None:
+        super().__init__()
+        self.device = self.Block(Sk6812_Side_A_Device())
+        self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))
+        self.connect(self.gnd, self.device.gnd, self.cap.gnd)
+        self.connect(self.pwr, self.device.vdd, self.cap.pwr)
+        self.connect(self.din, self.device.din)
+        self.connect(self.dout, self.device.dout)
+
+
 class NeopixelArray(Light, GeneratorBlock):
     """An array of Neopixels"""
     @init_in_parent
@@ -164,7 +200,8 @@ class NeopixelArray(Light, GeneratorBlock):
         super().__init__()
         self.din = self.Port(DigitalSink.empty(), [Input])
         self.dout = self.Port(DigitalSource.empty(), [Output], optional=True)
-        self.vdd = self.Port(VoltageSink.empty(), [Power])
+        self.pwr = self.Port(VoltageSink.empty(), [Power])
+        self.vdd = self.pwr  # deprecated alias
         self.gnd = self.Port(Ground.empty(), [Common])
 
         self.count = self.ArgParameter(count)
@@ -178,7 +215,7 @@ class NeopixelArray(Light, GeneratorBlock):
         for led_i in range(self.get(self.count)):
             led = self.led[str(led_i)] = self.Block(Neopixel())
             self.connect(last_signal_pin, led.din)
-            self.connect(self.vdd, led.vdd)
+            self.connect(self.pwr, led.pwr)
             self.connect(self.gnd, led.gnd)
             last_signal_pin = led.dout
         self.connect(self.dout, last_signal_pin)
