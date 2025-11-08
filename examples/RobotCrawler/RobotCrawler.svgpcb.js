@@ -7,62 +7,62 @@ const RJ1 = board.add(JST_PH_B2B_PH_K_1x02_P2_00mm_Vertical, {
 })
 // servos[0].conn
 const RJ2 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(1.785, 2.110), rotate: 0,
+  translate: pt(2.585, 2.110), rotate: 0,
   id: 'RJ2'
 })
 // servos[1].conn
 const RJ3 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(2.045, 2.110), rotate: 0,
+  translate: pt(2.845, 2.110), rotate: 0,
   id: 'RJ3'
 })
 // servos[2].conn
 const RJ4 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(2.305, 2.110), rotate: 0,
+  translate: pt(3.105, 2.110), rotate: 0,
   id: 'RJ4'
 })
 // servos[3].conn
 const RJ5 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(2.565, 2.110), rotate: 0,
+  translate: pt(3.365, 2.110), rotate: 0,
   id: 'RJ5'
 })
 // servos[4].conn
 const RJ6 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(2.824, 2.110), rotate: 0,
+  translate: pt(3.624, 2.110), rotate: 0,
   id: 'RJ6'
 })
 // servos[5].conn
 const RJ7 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(3.084, 2.110), rotate: 0,
+  translate: pt(3.884, 2.110), rotate: 0,
   id: 'RJ7'
 })
 // servos[6].conn
 const RJ8 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(3.344, 2.110), rotate: 0,
+  translate: pt(4.144, 2.110), rotate: 0,
   id: 'RJ8'
 })
 // servos[7].conn
 const RJ9 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(3.604, 2.110), rotate: 0,
+  translate: pt(4.404, 2.110), rotate: 0,
   id: 'RJ9'
 })
 // servos[8].conn
 const RJ10 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(3.864, 2.110), rotate: 0,
+  translate: pt(0.071, 2.944), rotate: 0,
   id: 'RJ10'
 })
 // servos[9].conn
 const RJ11 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(4.124, 2.110), rotate: 0,
+  translate: pt(0.331, 2.944), rotate: 0,
   id: 'RJ11'
 })
 // servos[10].conn
 const RJ12 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(0.071, 2.944), rotate: 0,
+  translate: pt(0.591, 2.944), rotate: 0,
   id: 'RJ12'
 })
 // servos[11].conn
 const RJ13 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(0.331, 2.944), rotate: 0,
+  translate: pt(0.850, 2.944), rotate: 0,
   id: 'RJ13'
 })
 // imu.ic
@@ -82,12 +82,12 @@ const RC2 = board.add(C_0603_1608Metric, {
 })
 // servos_cam[0].conn
 const RJ14 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(0.591, 2.944), rotate: 0,
+  translate: pt(1.110, 2.944), rotate: 0,
   id: 'RJ14'
 })
 // servos_cam[1].conn
 const RJ15 = board.add(PinHeader_1x04_P2_54mm_Vertical, {
-  translate: pt(0.850, 2.944), rotate: 0,
+  translate: pt(1.370, 2.944), rotate: 0,
   id: 'RJ15'
 })
 // jlc_th.th1
@@ -117,17 +117,17 @@ const RTP2 = board.add(TestPoint_TE_RCT_0805, {
 })
 // reg_3v3.ic
 const RU2 = board.add(SOT_89_3, {
-  translate: pt(3.500, 2.672), rotate: 0,
+  translate: pt(3.531, 2.672), rotate: 0,
   id: 'RU2'
 })
 // reg_3v3.in_cap.cap
 const RC3 = board.add(C_0603_1608Metric, {
-  translate: pt(3.446, 2.839), rotate: 0,
+  translate: pt(3.477, 2.839), rotate: 0,
   id: 'RC3'
 })
 // reg_3v3.out_cap.cap
 const RC4 = board.add(C_0603_1608Metric, {
-  translate: pt(3.602, 2.839), rotate: 0,
+  translate: pt(3.633, 2.839), rotate: 0,
   id: 'RC4'
 })
 // tp_3v3.tp
@@ -137,42 +137,42 @@ const RTP3 = board.add(TestPoint_TE_RCT_0805, {
 })
 // reg_14v.ic
 const RU3 = board.add(SOT_23_5, {
-  translate: pt(1.951, 2.641), rotate: 0,
+  translate: pt(2.470, 2.641), rotate: 0,
   id: 'RU3'
 })
 // reg_14v.fb.div.top_res
 const RR1 = board.add(R_0603_1608Metric, {
-  translate: pt(1.928, 2.906), rotate: 0,
+  translate: pt(2.448, 2.906), rotate: 0,
   id: 'RR1'
 })
 // reg_14v.fb.div.bottom_res
 const RR2 = board.add(R_0603_1608Metric, {
-  translate: pt(2.084, 2.906), rotate: 0,
+  translate: pt(2.604, 2.906), rotate: 0,
   id: 'RR2'
 })
 // reg_14v.cff
 const RC5 = board.add(C_0603_1608Metric, {
-  translate: pt(2.240, 2.906), rotate: 0,
+  translate: pt(2.760, 2.906), rotate: 0,
   id: 'RC5'
 })
 // reg_14v.inductor
 const RL1 = board.add(L_1210_3225Metric, {
-  translate: pt(2.161, 2.636), rotate: 0,
+  translate: pt(2.680, 2.636), rotate: 0,
   id: 'RL1'
 })
 // reg_14v.rect
 const RD1 = board.add(D_SOD_323, {
-  translate: pt(2.327, 2.785), rotate: 0,
+  translate: pt(2.847, 2.785), rotate: 0,
   id: 'RD1'
 })
 // reg_14v.in_cap.cap
 const RC6 = board.add(C_0805_2012Metric, {
-  translate: pt(2.157, 2.786), rotate: 0,
+  translate: pt(2.677, 2.786), rotate: 0,
   id: 'RC6'
 })
 // reg_14v.out_cap.cap
 const RC7 = board.add(C_1206_3216Metric, {
-  translate: pt(1.961, 2.793), rotate: 0,
+  translate: pt(2.480, 2.793), rotate: 0,
   id: 'RC7'
 })
 // tp_14v.tp
@@ -182,32 +182,32 @@ const RTP4 = board.add(TestPoint_TE_RCT_0805, {
 })
 // reg_2v5.ic
 const RU4 = board.add(SOT_23, {
-  translate: pt(3.854, 2.641), rotate: 0,
+  translate: pt(3.885, 2.641), rotate: 0,
   id: 'RU4'
 })
 // reg_2v5.in_cap.cap
 const RC8 = board.add(C_0603_1608Metric, {
-  translate: pt(3.836, 2.776), rotate: 0,
+  translate: pt(3.868, 2.776), rotate: 0,
   id: 'RC8'
 })
 // reg_2v5.out_cap.cap
 const RC9 = board.add(C_0603_1608Metric, {
-  translate: pt(3.992, 2.776), rotate: 0,
+  translate: pt(4.024, 2.776), rotate: 0,
   id: 'RC9'
 })
 // reg_1v2.ic
 const RU5 = board.add(SOT_23, {
-  translate: pt(4.244, 2.641), rotate: 0,
+  translate: pt(4.276, 2.641), rotate: 0,
   id: 'RU5'
 })
 // reg_1v2.in_cap.cap
 const RC10 = board.add(C_0603_1608Metric, {
-  translate: pt(4.227, 2.776), rotate: 0,
+  translate: pt(4.258, 2.776), rotate: 0,
   id: 'RC10'
 })
 // reg_1v2.out_cap.cap
 const RC11 = board.add(C_0603_1608Metric, {
-  translate: pt(4.383, 2.776), rotate: 0,
+  translate: pt(4.414, 2.776), rotate: 0,
   id: 'RC11'
 })
 // mcu.ic
@@ -397,42 +397,42 @@ const RR7 = board.add(R_0603_1608Metric, {
 })
 // test_led.led[0].package
 const RD4 = board.add(LED_0603_1608Metric, {
-  translate: pt(3.055, 2.603), rotate: 0,
+  translate: pt(3.086, 2.603), rotate: 0,
   id: 'RD4'
 })
 // test_led.led[0].res
 const RR8 = board.add(R_0603_1608Metric, {
-  translate: pt(3.055, 2.797), rotate: 0,
+  translate: pt(3.086, 2.797), rotate: 0,
   id: 'RR8'
 })
 // test_led.led[1].package
 const RD5 = board.add(LED_0603_1608Metric, {
-  translate: pt(3.211, 2.603), rotate: 0,
+  translate: pt(3.243, 2.603), rotate: 0,
   id: 'RD5'
 })
 // test_led.led[1].res
 const RR9 = board.add(R_0603_1608Metric, {
-  translate: pt(3.211, 2.797), rotate: 0,
+  translate: pt(3.242, 2.797), rotate: 0,
   id: 'RR9'
 })
 // test_led.led[2].package
 const RD6 = board.add(LED_0603_1608Metric, {
-  translate: pt(3.055, 2.700), rotate: 0,
+  translate: pt(3.086, 2.700), rotate: 0,
   id: 'RD6'
 })
 // test_led.led[2].res
 const RR10 = board.add(R_0603_1608Metric, {
-  translate: pt(3.055, 2.894), rotate: 0,
+  translate: pt(3.086, 2.894), rotate: 0,
   id: 'RR10'
 })
 // test_led.led[3].package
 const RD7 = board.add(LED_0603_1608Metric, {
-  translate: pt(3.211, 2.700), rotate: 0,
+  translate: pt(3.243, 2.700), rotate: 0,
   id: 'RD7'
 })
 // test_led.led[3].res
 const RR11 = board.add(R_0603_1608Metric, {
-  translate: pt(3.211, 2.894), rotate: 0,
+  translate: pt(3.242, 2.894), rotate: 0,
   id: 'RR11'
 })
 // oled.device.conn
@@ -487,83 +487,133 @@ const RD9 = board.add(D_SOD_323, {
 })
 // cam.device.conn
 const RJ20 = board.add(Hirose_FH12_24S_0_5SH_1x24_1MP_P0_50mm_Horizontal, {
-  translate: pt(1.396, 2.767), rotate: 0,
+  translate: pt(1.915, 2.767), rotate: 0,
   id: 'RJ20'
 })
 // cam.dovdd_cap.cap
 const RC37 = board.add(C_0603_1608Metric, {
-  translate: pt(1.098, 2.953), rotate: 0,
+  translate: pt(1.617, 2.953), rotate: 0,
   id: 'RC37'
 })
 // cam.reset_cap
 const RC38 = board.add(C_0603_1608Metric, {
-  translate: pt(1.254, 2.953), rotate: 0,
+  translate: pt(1.773, 2.953), rotate: 0,
   id: 'RC38'
 })
 // cam.pclk_cap
 const RC39 = board.add(C_0603_1608Metric, {
-  translate: pt(1.409, 2.953), rotate: 0,
+  translate: pt(1.929, 2.953), rotate: 0,
   id: 'RC39'
 })
 // cam.reset_pull.res
 const RR14 = board.add(R_0603_1608Metric, {
-  translate: pt(1.565, 2.953), rotate: 0,
+  translate: pt(2.085, 2.953), rotate: 0,
   id: 'RR14'
 })
-// rgbs.led[0]
+// rgbs.led[0].device
 const RD10 = board.add(LED_SK6812_SIDE_A, {
-  translate: pt(2.591, 2.609), rotate: 0,
+  translate: pt(2.109, 1.969), rotate: 0,
   id: 'RD10'
 })
-// rgbs.led[1]
+// rgbs.led[0].cap.cap
+const RC40 = board.add(C_0603_1608Metric, {
+  translate: pt(1.772, 1.769), rotate: 0,
+  id: 'RC40'
+})
+// rgbs.led[1].device
 const RD11 = board.add(LED_SK6812_SIDE_A, {
-  translate: pt(2.796, 2.609), rotate: 0,
+  translate: pt(2.313, 1.969), rotate: 0,
   id: 'RD11'
 })
-// rgbs.led[2]
+// rgbs.led[1].cap.cap
+const RC41 = board.add(C_0603_1608Metric, {
+  translate: pt(1.928, 1.769), rotate: 0,
+  id: 'RC41'
+})
+// rgbs.led[2].device
 const RD12 = board.add(LED_SK6812_SIDE_A, {
-  translate: pt(2.591, 2.688), rotate: 0,
+  translate: pt(1.797, 2.066), rotate: 0,
   id: 'RD12'
 })
-// rgbs.led[3]
+// rgbs.led[2].cap.cap
+const RC42 = board.add(C_0603_1608Metric, {
+  translate: pt(2.084, 1.769), rotate: 0,
+  id: 'RC42'
+})
+// rgbs.led[3].device
 const RD13 = board.add(LED_SK6812_SIDE_A, {
-  translate: pt(2.796, 2.688), rotate: 0,
+  translate: pt(2.002, 2.066), rotate: 0,
   id: 'RD13'
 })
-// rgbs.led[4]
+// rgbs.led[3].cap.cap
+const RC43 = board.add(C_0603_1608Metric, {
+  translate: pt(2.240, 1.769), rotate: 0,
+  id: 'RC43'
+})
+// rgbs.led[4].device
 const RD14 = board.add(LED_SK6812_SIDE_A, {
-  translate: pt(2.591, 2.767), rotate: 0,
+  translate: pt(2.206, 2.066), rotate: 0,
   id: 'RD14'
 })
-// rgbs.led[5]
+// rgbs.led[4].cap.cap
+const RC44 = board.add(C_0603_1608Metric, {
+  translate: pt(1.772, 1.866), rotate: 0,
+  id: 'RC44'
+})
+// rgbs.led[5].device
 const RD15 = board.add(LED_SK6812_SIDE_A, {
-  translate: pt(2.796, 2.767), rotate: 0,
+  translate: pt(1.797, 2.145), rotate: 0,
   id: 'RD15'
 })
-// rgbs.led[6]
+// rgbs.led[5].cap.cap
+const RC45 = board.add(C_0603_1608Metric, {
+  translate: pt(1.928, 1.866), rotate: 0,
+  id: 'RC45'
+})
+// rgbs.led[6].device
 const RD16 = board.add(LED_SK6812_SIDE_A, {
-  translate: pt(2.591, 2.846), rotate: 0,
+  translate: pt(2.002, 2.145), rotate: 0,
   id: 'RD16'
 })
-// rgbs.led[7]
+// rgbs.led[6].cap.cap
+const RC46 = board.add(C_0603_1608Metric, {
+  translate: pt(2.084, 1.866), rotate: 0,
+  id: 'RC46'
+})
+// rgbs.led[7].device
 const RD17 = board.add(LED_SK6812_SIDE_A, {
-  translate: pt(2.796, 2.846), rotate: 0,
+  translate: pt(2.206, 2.145), rotate: 0,
   id: 'RD17'
 })
-// rgbs.led[8]
+// rgbs.led[7].cap.cap
+const RC47 = board.add(C_0603_1608Metric, {
+  translate: pt(2.240, 1.866), rotate: 0,
+  id: 'RC47'
+})
+// rgbs.led[8].device
 const RD18 = board.add(LED_SK6812_SIDE_A, {
-  translate: pt(2.591, 2.924), rotate: 0,
+  translate: pt(1.797, 2.224), rotate: 0,
   id: 'RD18'
 })
-// rgbs.led[9]
+// rgbs.led[8].cap.cap
+const RC48 = board.add(C_0603_1608Metric, {
+  translate: pt(1.772, 1.963), rotate: 0,
+  id: 'RC48'
+})
+// rgbs.led[9].device
 const RD19 = board.add(LED_SK6812_SIDE_A, {
-  translate: pt(2.796, 2.924), rotate: 0,
+  translate: pt(2.002, 2.224), rotate: 0,
   id: 'RD19'
+})
+// rgbs.led[9].cap.cap
+const RC49 = board.add(C_0603_1608Metric, {
+  translate: pt(1.928, 1.963), rotate: 0,
+  id: 'RC49'
 })
 
 board.setNetlist([
-  {name: "Rvbatt", pads: [["RJ1", "2"], ["RTP1", "1"], ["RU2", "2"], ["RU3", "5"], ["RU4", "3"], ["RU5", "3"], ["RJ2", "2"], ["RJ3", "2"], ["RJ4", "2"], ["RJ5", "2"], ["RJ6", "2"], ["RJ7", "2"], ["RJ8", "2"], ["RJ9", "2"], ["RJ10", "2"], ["RJ11", "2"], ["RJ12", "2"], ["RJ13", "2"], ["RJ14", "2"], ["RJ15", "2"], ["RD10", "2"], ["RD11", "2"], ["RD12", "2"], ["RD13", "2"], ["RD14", "2"], ["RD15", "2"], ["RD16", "2"], ["RD17", "2"], ["RD18", "2"], ["RD19", "2"], ["RL1", "1"], ["RU3", "4"], ["RC3", "1"], ["RC6", "1"], ["RC8", "1"], ["RC10", "1"]]},
-  {name: "Rgnd", pads: [["RJ1", "1"], ["RTP2", "1"], ["RU2", "1"], ["RU3", "2"], ["RU4", "1"], ["RU5", "1"], ["RU6", "1"], ["RU6", "40"], ["RU6", "41"], ["RU7", "8"], ["RU7", "23"], ["RU7", "35"], ["RU7", "47"], ["RU7", "44"], ["RU8", "19"], ["RU8", "57"], ["RU1", "1"], ["RU1", "2"], ["RU1", "3"], ["RU1", "6"], ["RU1", "7"], ["RR6", "2"], ["RR7", "2"], ["RJ2", "3"], ["RJ3", "3"], ["RJ4", "3"], ["RJ5", "3"], ["RJ6", "3"], ["RJ7", "3"], ["RJ8", "3"], ["RJ9", "3"], ["RJ10", "3"], ["RJ11", "3"], ["RJ12", "3"], ["RJ13", "3"], ["RJ14", "3"], ["RJ15", "3"], ["RD10", "4"], ["RD11", "4"], ["RD12", "4"], ["RD13", "4"], ["RD14", "4"], ["RD15", "4"], ["RD16", "4"], ["RD17", "4"], ["RD18", "4"], ["RD19", "4"], ["RR12", "2"], ["RD9", "1"], ["RC38", "2"], ["RC39", "2"], ["RC3", "2"], ["RC4", "2"], ["RC6", "2"], ["RC7", "2"], ["RC8", "2"], ["RC9", "2"], ["RC10", "2"], ["RC11", "2"], ["RC12", "2"], ["RC13", "2"], ["RJ16", "5"], ["RJ17", "5"], ["RC15", "2"], ["RC16", "2"], ["RC17", "2"], ["RC18", "2"], ["RC19", "2"], ["RC20", "2"], ["RJ18", "5"], ["RC21", "2"], ["RC22", "2"], ["RC23", "2"], ["RC24", "2"], ["RC25", "2"], ["RC26", "2"], ["RC27", "2"], ["RC28", "2"], ["RU9", "4"], ["RC30", "2"], ["RC31", "2"], ["RC32", "2"], ["RC1", "2"], ["RC2", "2"], ["RR8", "2"], ["RR9", "2"], ["RR10", "2"], ["RR11", "2"], ["RC33", "2"], ["RC34", "2"], ["RC35", "2"], ["RC36", "2"], ["RJ20", "10"], ["RJ20", "23"], ["RC37", "2"], ["RR2", "2"], ["RC14", "2"], ["RJ19", "7"], ["RJ19", "1"], ["RJ19", "31"], ["RJ19", "26"], ["RJ19", "16"], ["RJ19", "15"], ["RJ19", "21"], ["RJ19", "22"], ["RJ19", "23"], ["RJ19", "24"], ["RJ19", "25"], ["RJ19", "12"], ["RJ19", "14"], ["RJ19", "10"], ["RJ19", "11"], ["RJ20", "17"], ["RC29", "2"]]},
+  {name: "Rvbatt", pads: [["RJ1", "2"], ["RTP1", "1"], ["RU2", "2"], ["RU3", "5"], ["RU4", "3"], ["RU5", "3"], ["RJ2", "2"], ["RJ3", "2"], ["RJ4", "2"], ["RJ5", "2"], ["RJ6", "2"], ["RJ7", "2"], ["RJ8", "2"], ["RJ9", "2"], ["RJ10", "2"], ["RJ11", "2"], ["RJ12", "2"], ["RJ13", "2"], ["RJ14", "2"], ["RJ15", "2"], ["RL1", "1"], ["RU3", "4"], ["RC3", "1"], ["RC6", "1"], ["RC8", "1"], ["RC10", "1"], ["RD10", "2"], ["RD11", "2"], ["RD12", "2"], ["RD13", "2"], ["RD14", "2"], ["RD15", "2"], ["RD16", "2"], ["RD17", "2"], ["RD18", "2"], ["RD19", "2"], ["RC40", "1"], ["RC41", "1"], ["RC42", "1"], ["RC43", "1"], ["RC44", "1"], ["RC45", "1"], ["RC46", "1"], ["RC47", "1"], ["RC48", "1"], ["RC49", "1"]]},
+  {name: "Rgnd", pads: [["RJ1", "1"], ["RTP2", "1"], ["RU2", "1"], ["RU3", "2"], ["RU4", "1"], ["RU5", "1"], ["RU6", "1"], ["RU6", "40"], ["RU6", "41"], ["RU7", "8"], ["RU7", "23"], ["RU7", "35"], ["RU7", "47"], ["RU7", "44"], ["RU8", "19"], ["RU8", "57"], ["RU1", "1"], ["RU1", "2"], ["RU1", "3"], ["RU1", "6"], ["RU1", "7"], ["RR6", "2"], ["RR7", "2"], ["RJ2", "3"], ["RJ3", "3"], ["RJ4", "3"], ["RJ5", "3"], ["RJ6", "3"], ["RJ7", "3"], ["RJ8", "3"], ["RJ9", "3"], ["RJ10", "3"], ["RJ11", "3"], ["RJ12", "3"], ["RJ13", "3"], ["RJ14", "3"], ["RJ15", "3"], ["RR12", "2"], ["RD9", "1"], ["RC38", "2"], ["RC39", "2"], ["RC3", "2"], ["RC4", "2"], ["RC6", "2"], ["RC7", "2"], ["RC8", "2"], ["RC9", "2"], ["RC10", "2"], ["RC11", "2"], ["RC12", "2"], ["RC13", "2"], ["RJ16", "5"], ["RJ17", "5"], ["RC15", "2"], ["RC16", "2"], ["RC17", "2"], ["RC18", "2"], ["RC19", "2"], ["RC20", "2"], ["RJ18", "5"], ["RC21", "2"], ["RC22", "2"], ["RC23", "2"], ["RC24", "2"], ["RC25", "2"], ["RC26", "2"], ["RC27", "2"], ["RC28", "2"], ["RU9", "4"], ["RC30", "2"], ["RC31", "2"], ["RC32", "2"], ["RC1", "2"], ["RC2", "2"], ["RR8", "2"], ["RR9", "2"], ["RR10", "2"], ["RR11", "2"], ["RC33", "2"], ["RC34", "2"], ["RC35", "2"], ["RC36", "2"], ["RJ20", "10"], ["RJ20", "23"], ["RC37", "2"], ["RD10", "4"], ["RD11", "4"], ["RD12", "4"], ["RD13", "4"], ["RD14", "4"], ["RD15", "4"], ["RD16", "4"], ["RD17", "4"], ["RD18", "4"], ["RD19", "4"], ["RR2", "2"], ["RC14", "2"], ["RJ19", "7"], ["RJ19", "1"], ["RJ19", "31"], ["RJ19", "26"], ["RJ19", "16"], ["RJ19", "15"], ["RJ19", "21"], ["RJ19", "22"], ["RJ19", "23"], ["RJ19", "24"], ["RJ19", "25"], ["RJ19", "12"], ["RJ19", "14"], ["RJ19", "10"], ["RJ19", "11"], ["RJ20", "17"], ["RC29", "2"], ["RC40", "2"], ["RC41", "2"], ["RC42", "2"], ["RC43", "2"], ["RC44", "2"], ["RC45", "2"], ["RC46", "2"], ["RC47", "2"], ["RC48", "2"], ["RC49", "2"]]},
   {name: "Rv3v3", pads: [["RU2", "3"], ["RTP3", "1"], ["RU6", "2"], ["RU7", "1"], ["RU7", "9"], ["RU7", "24"], ["RU7", "36"], ["RU7", "48"], ["RU8", "1"], ["RU8", "10"], ["RU8", "22"], ["RU8", "33"], ["RU8", "42"], ["RU8", "49"], ["RU8", "44"], ["RU8", "43"], ["RU8", "48"], ["RU1", "5"], ["RU1", "12"], ["RU1", "8"], ["RC4", "1"], ["RC12", "1"], ["RC13", "1"], ["RJ16", "1"], ["RJ17", "1"], ["RC15", "1"], ["RC16", "1"], ["RC17", "1"], ["RC18", "1"], ["RC19", "1"], ["RC20", "1"], ["RJ18", "1"], ["RC21", "1"], ["RC22", "1"], ["RC23", "1"], ["RC24", "1"], ["RC25", "1"], ["RC26", "1"], ["RC27", "1"], ["RC28", "1"], ["RU9", "8"], ["RR4", "1"], ["RR5", "1"], ["RC2", "1"], ["RC1", "1"], ["RC35", "1"], ["RJ20", "14"], ["RC37", "1"], ["RR14", "1"], ["RR3", "1"], ["RJ19", "8"], ["RJ19", "17"], ["RJ19", "13"], ["RC29", "1"]]},
   {name: "Rv14", pads: [["RTP4", "1"], ["RD1", "1"], ["RC5", "1"], ["RC7", "1"], ["RR1", "1"], ["RJ19", "5"], ["RJ19", "27"], ["RC36", "1"]]},
   {name: "Rv2v5", pads: [["RU4", "2"], ["RJ20", "21"], ["RC9", "1"]]},
@@ -673,7 +723,7 @@ board.setNetlist([
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
-const limit1 = pt(4.559055118110236, 3.474015748031496);
+const limit1 = pt(4.592913385826771, 3.474015748031496);
 const xMin = Math.min(limit0[0], limit1[0]);
 const xMax = Math.max(limit0[0], limit1[0]);
 const yMin = Math.min(limit0[1], limit1[1]);

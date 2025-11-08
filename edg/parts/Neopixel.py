@@ -6,7 +6,8 @@ from .JlcPart import JlcPart
 
 @abstract_block_default(lambda: Ws2812b)
 class Neopixel(Light, Block):
-    """Abstract base class for Neopixel-type LEDs including the Vdd/Gnd/Din/Dout interface."""
+    """Abstract base class for individually-addressable, serially-connected Neopixel-type
+    (typically RGB) LEDs and defines the pwr/gnd/din/dout interface."""
     def __init__(self) -> None:
         super().__init__()
         self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -59,20 +60,20 @@ class Ws2812b(Neopixel, FootprintBlock, JlcPart):
 class Sk6812Mini_E_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.vdd.init_from(VoltageSink(
+        self.vdd = self.Port(VoltageSink(
             voltage_limits=(3.7, 5.5) * Volt,
             current_draw=(1, 1 + 12*3) * mAmp,  # 1 mA static type + up to 12mA/ch
         ))
-        self.gnd.init_from(Ground())
-        self.din.init_from(DigitalSink.from_supply(
+        self.gnd = self.Port(Ground())
+        self.din = self.Port(DigitalSink.from_supply(
             self.gnd, self.vdd,
             voltage_limit_tolerance=(-0.5, 0.5),
             input_threshold_factor=(0.3, 0.7),
         ))
-        self.dout.init_from(DigitalSource.from_supply(
+        self.dout = self.Port(DigitalSource.from_supply(
             self.gnd, self.vdd,
             current_limits=0*mAmp(tol=0),
-        ))
+        ), optional=True)
 
     def contents(self) -> None:
         self.footprint(
@@ -105,20 +106,20 @@ class Sk6812Mini_E(Neopixel):
 class Sk6805_Ec15_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.vdd.init_from(VoltageSink(
+        self.vdd = self.Port(VoltageSink(
             voltage_limits=(3.7, 5.5) * Volt,
             current_draw=(1, 1 + 5*3) * mAmp,  # 1 mA static type + up to 5mA/ch
         ))
-        self.gnd.init_from(Ground())
-        self.din.init_from(DigitalSink.from_supply(
+        self.gnd = self.Port(Ground())
+        self.din = self.Port(DigitalSink.from_supply(
             self.gnd, self.vdd,
             voltage_limit_tolerance=(-0.5, 0.5),
             input_threshold_factor=(0.3, 0.7),
         ))
-        self.dout.init_from(DigitalSource.from_supply(
+        self.dout = self.Port(DigitalSource.from_supply(
             self.gnd, self.vdd,
             current_limits=0*mAmp(tol=0),
-        ))
+        ), optional=True)
 
     def contents(self) -> None:
         self.footprint(
@@ -151,20 +152,20 @@ class Sk6805_Ec15(Neopixel):
 class Sk6812_Side_A_Device(InternalSubcircuit, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.vdd.init_from(VoltageSink(
+        self.vdd = self.Port(VoltageSink(
             voltage_limits=(3.5, 5.5) * Volt,
             current_draw=(1, 1 + 12*3) * mAmp,  # 1 mA static type + up to 12mA/ch
         ))
-        self.gnd.init_from(Ground())
-        self.din.init_from(DigitalSink.from_supply(
+        self.gnd = self.Port(Ground())
+        self.din = self.Port(DigitalSink.from_supply(
             self.gnd, self.vdd,
             voltage_limit_tolerance=(-0.5, 0.5),
             input_threshold_factor=(0.3, 0.7),
         ))
-        self.dout.init_from(DigitalSource.from_supply(
+        self.dout = self.Port(DigitalSource.from_supply(
             self.gnd, self.vdd,
             current_limits=0*mAmp(tol=0),
-        ))
+        ), optional=True)
 
     def contents(self) -> None:
         self.footprint(
@@ -181,7 +182,7 @@ class Sk6812_Side_A_Device(InternalSubcircuit, FootprintBlock):
         # potentially footprint-compatible with C2890037
 
 
-class Ws2812c_2020(Neopixel):
+class Sk6812_Side_A(Neopixel):
     """Side-emitting Neopixel LED, including used for keyboard edge lighting."""
     def __init__(self) -> None:
         super().__init__()
