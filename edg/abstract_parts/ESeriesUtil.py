@@ -107,7 +107,17 @@ class ESeriesUtil:
                                 E192_DIFF[48], E192_DIFF[96], E192_DIFF[192])),
   }
 
-  VALUE_SERIES = {v: k for k, series in SERIES.items() for v in series}
+  # reverse mapping of value to series, reverse SERIES so lower series preferred
+  VALUE_SERIES = {v: k for k, series in reversed(SERIES.items()) for v in series}
+
+  @classmethod
+  def series_of(cls, value: float) -> Optional[int]:
+    """Returns the E-series that contains the given value, or None if not found.
+    Performs limited rounding to account for floating point issues."""
+    if value == 0:
+      return None
+    normalized_value = value * math.pow(10, -math.floor(math.log10(value)))
+    return cls.VALUE_SERIES.get(cls.round_sig(normalized_value, cls.ROUND_DIGITS), None)
 
 
 ESeriesRatioValueType = TypeVar('ESeriesRatioValueType', bound='ESeriesRatioValue')
