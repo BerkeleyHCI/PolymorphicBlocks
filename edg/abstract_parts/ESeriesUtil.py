@@ -107,6 +107,8 @@ class ESeriesUtil:
                                 E192_DIFF[48], E192_DIFF[96], E192_DIFF[192])),
   }
 
+  VALUE_SERIES = {v: k for k, series in SERIES.items() for v in series}
+
 
 ESeriesRatioValueType = TypeVar('ESeriesRatioValueType', bound='ESeriesRatioValue')
 class ESeriesRatioValue(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
