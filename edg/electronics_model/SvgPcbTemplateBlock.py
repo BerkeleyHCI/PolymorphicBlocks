@@ -47,7 +47,7 @@ class SvgPcbTemplateBlock(Block):
         block_path = self._svgpcb_pathname_data.append_block(*block_ref)
         candidate_blocks = [block for block in self._svgpcb_netlist.blocks
                             if block.full_path.startswith(block_path)]
-        assert len(candidate_blocks) == 1
+        assert len(candidate_blocks) > 0
         refdes = candidate_blocks[0].refdes
         assert isinstance(refdes, str)
         assert refdes is not None
@@ -60,11 +60,11 @@ class SvgPcbTemplateBlock(Block):
 
     def _svgpcb_footprint_block_path_of(self, block_ref: List[str]) -> TransformUtil.Path:
         """Infrastructure method, given the name of a container block, returns the block path of the footprint block.
-        Asserts there is exactly one."""
+        Picks the first one, which is assumed to be the main / anchor device."""
         block_path = self._svgpcb_pathname_data.append_block(*block_ref)
         candidate_blocks = [block for block in self._svgpcb_netlist.blocks
                             if block.full_path.startswith(block_path)]
-        assert len(candidate_blocks) == 1
+        assert len(candidate_blocks) > 0
         return candidate_blocks[0].full_path
 
     def _svgpcb_footprint_of(self, path: TransformUtil.Path) -> str:
@@ -72,7 +72,7 @@ class SvgPcbTemplateBlock(Block):
         If _svgpcb_footprint_block_path_of returned a value, this will return the footprint; otherwise crashes."""
         candidate_blocks = [block for block in self._svgpcb_netlist.blocks
                             if block.full_path == path]
-        assert len(candidate_blocks) == 1
+        assert len(candidate_blocks) > 0
         return self._svgpcb_footprint_to_svgpcb(candidate_blocks[0].footprint)
 
     def _svgpcb_pin_of(self, block_ref: List[str], pin_ref: List[str]) -> str:
