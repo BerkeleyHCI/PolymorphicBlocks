@@ -217,6 +217,8 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
                        var: SelfType,
                        op: NumericOp) -> SelfType:
     """Creates a new expression that is the result of a unary operation on the input"""
+    if not builder.curr_context_within_top(1):
+      return var
 
     assert var._is_bound()
     return var._new_bind(UnaryOpBinding(var, op))

@@ -152,6 +152,9 @@ class Passive(CircuitPort[PassiveLink]):
 
   AdaptTargetType = TypeVar('AdaptTargetType', bound=CircuitPort)
   def adapt_to(self, that: AdaptTargetType) -> AdaptTargetType:
+    if not builder.curr_context_within_top(1):
+      return that
+
     # this is an experimental style that takes a port that has initializers but is not bound
     # and automatically creates an adapter from it, by matching the port parameter fields
     # with the adapter constructor argument fields by name
