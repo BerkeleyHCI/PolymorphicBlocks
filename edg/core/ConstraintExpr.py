@@ -108,6 +108,12 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
 
   @classmethod
   def _to_expr_type(cls, input: BoolLike) -> BoolExpr:
+    if not builder.curr_context_within_top(1):
+      if isinstance(input, BoolExpr):
+        return input
+      else:
+        return BoolExpr()
+
     if isinstance(input, BoolExpr):
       assert input._is_bound()
       return input
@@ -133,6 +139,9 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
                         rhs: BoolExpr,
                         op: Union[NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp]) -> BoolExpr:  # TODO dedup w/ NumLike
     """Creates a new expression that is the result of a binary operation on inputs"""
+    if not builder.curr_context_within_top(1):
+      return lhs
+
     if type(lhs) != type(rhs):
       raise TypeError(f"op args must be of same type, "
                       f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}")
@@ -162,6 +171,8 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
     return self._create_binary_op(self, self._to_expr_type(target), BoolOp.implies)
 
   def __invert__(self) -> BoolExpr:
+    if not builder.curr_context_within_top(1):
+      return BoolExpr()
     return self._new_bind(UnaryOpBinding(self, BoolOp.op_not))
 
   # does not seem possible to restrict type-params of type vars pre-Python3.12
@@ -181,6 +192,10 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
       then_val = else_val._to_expr_type(then_val)
     else:
       raise ValueError("either then_val or else_val must be ConstraintExpr, TODO support dual-casting")
+
+    if not builder.curr_context_within_top(1):
+      return then_val  # fast path for dummy inner blocks
+
     assert self._is_bound() and then_val._is_bound() and else_val._is_bound()
     return then_val._new_bind(IfThenElseBinding(self, then_val, else_val))
 
@@ -212,6 +227,9 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
                         rhs: SelfType,
                         op: Union[NumericOp, RangeSetOp]) -> SelfType:
     """Creates a new expression that is the result of a binary operation on inputs"""
+    if not builder.curr_context_within_top(1):
+      return lhs  # fast path for dummy inner blocks
+
     if type(lhs) != type(rhs):
       raise TypeError(f"op args must be of same type, "
                       f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}")
@@ -270,6 +288,9 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
                       lhs: ConstraintExpr,
                       rhs: ConstraintExpr,
                       op:  Union[BoolOp,EqOp,OrdOp]) -> BoolExpr:
+    if not builder.curr_context_within_top(1):
+      return BoolExpr()  # fast path for dummy inner blocks
+
     if not isinstance(lhs, ConstraintExpr):
       raise TypeError(f"op args must be of type ConstraintExpr, got {lhs} of type {type(lhs)}")
     if not isinstance(rhs, ConstraintExpr):
@@ -309,6 +330,12 @@ class IntExpr(NumLikeExpr[int, IntLike]):
 
   @classmethod
   def _to_expr_type(cls, input: IntLike) -> IntExpr:
+    if not builder.curr_context_within_top(1):
+      if isinstance(input, IntExpr):
+        return input
+      else:
+        return IntExpr()
+
     if isinstance(input, IntExpr):
       assert input._is_bound()
       return input
@@ -336,6 +363,12 @@ class FloatExpr(NumLikeExpr[float, Union[FloatLike, IntExpr]]):
 
   @classmethod
   def _to_expr_type(cls, input: Union[FloatLike, IntExpr]) -> FloatExpr:
+    if not builder.curr_context_within_top(1):
+      if isinstance(input, FloatExpr):
+        return input
+      else:
+        return FloatExpr()
+
     if isinstance(input, FloatExpr):
       assert input._is_bound()
       return input
@@ -380,6 +413,12 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
 
   @classmethod
   def _to_expr_type(cls, input: Union[RangeLike, FloatLike, IntLike]) -> RangeExpr:
+    if not builder.curr_context_within_top(1):
+      if isinstance(input, RangeExpr):
+        return input
+      else:
+        return RangeExpr()
+
     if isinstance(input, RangeExpr):
       assert input._is_bound()
       return input
@@ -499,6 +538,12 @@ class StringExpr(ConstraintExpr[str, StringLike]):
 
   @classmethod
   def _to_expr_type(cls, input: StringLike) -> StringExpr:
+    if not builder.curr_context_within_top(1):
+      if isinstance(input, StringExpr):
+        return input
+      else:
+        return StringExpr()
+
     if isinstance(input, StringExpr):
       assert input._is_bound()
       return input

@@ -4,6 +4,7 @@ from functools import reduce, wraps
 from typing import *
 
 from .. import edgir
+from .Builder import builder
 from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, ArrayBoolExpr, ArrayBoolLike, ArrayIntLike, \
   ArrayFloatLike, ArrayRangeLike, ArrayStringLike
 from .Array import BaseVector, Vector
@@ -493,6 +494,9 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   T = TypeVar('T', bound=BasePort)
   def Port(self, tpe: T, tags: Iterable[PortTag]=[], *, optional: bool = False, doc: Optional[str] = None) -> T:
     """Registers a port for this Block"""
+    if not builder.is_top2(self):
+      return tpe  # if not top-level, object is used for type only
+
     if not isinstance(tpe, (Port, Vector)):
       raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")
     for tag in tags:
@@ -507,10 +511,15 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
   def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False, doc: Optional[str] = None,
              _connect = True) -> ExportType:
     """Exports a port of a child block, but does not propagate tags or optional."""
-    assert port._is_bound(), "can only export bound type"
-    port_parent = port._block_parent()
-    assert isinstance(port_parent, Block)
-    assert port_parent._parent is self, "can only export ports of contained block"
+    if not builder.is_top2(self):
+      return port  # if not top-level, object is used for type only
+
+    if builder.is_top(self):
+      # only check validity of export in top-level block
+      assert port._is_bound(), "can only export bound type"
+      port_parent = port._block_parent()
+      assert isinstance(port_parent, Block)
+      assert port_parent._parent is self, "can only export ports of contained block"
 
     if isinstance(port, BaseVector):  # TODO can the vector and non-vector paths be unified?
       assert isinstance(port, Vector)
@@ -529,6 +538,9 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
   BlockType = TypeVar('BlockType', bound='Block')
   def Block(self, tpe: BlockType) -> BlockType:
+    if not builder.is_top(self):
+      return tpe  # if not top-level, object is used for type only
+
     from .BlockInterfaceMixin import BlockInterfaceMixin
     from .DesignTop import DesignTop
     if not isinstance(tpe, Block):

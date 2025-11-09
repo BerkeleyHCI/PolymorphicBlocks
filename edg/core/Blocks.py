@@ -444,6 +444,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
       check_subexpr(subexpr)
 
   def require(self, constraint: BoolLike, name: Optional[str] = None, *, unchecked: bool=False) -> BoolExpr:
+    if not builder.is_top(self):
+      return constraint  # if not top-level, object is used for type only
+
     constraint_typed = BoolExpr._to_expr_type(constraint)
     if not isinstance(name, (str, type(None))):
       raise TypeError(f"name to constrain(...) must be str or None, got {name} of type {type(name)}")
@@ -462,6 +465,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   def assign(self, target: ConstraintExpr[ConstrType, Any],
              value: Union[ConstraintExpr[ConstrType, Any], ConstrType],
              name: Optional[str] = None) -> AssignExpr:
+    if not builder.is_top(self):
+      return AssignExpr()  # if not top-level, object is used for type only
+
     if not isinstance(target, ConstraintExpr):
       raise TypeError(f"target to assign(...) must be ConstraintExpr, got {target} of type {type(target)}")
     if not isinstance(name, (str, type(None))):
@@ -482,6 +488,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   T = TypeVar('T', bound=BasePort)
   def Port(self, tpe: T, *, optional: bool = False, doc: Optional[str] = None) -> T:
     """Registers a port for this Block"""
+    if not builder.is_top2(self):
+      return tpe  # if not top-level, object is used for type only
+
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call Port(...) outside __init__",
                                  "call Port(...) inside __init__ only, and remember to call super().__init__()")
@@ -502,6 +511,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   ConstraintType = TypeVar('ConstraintType', bound=ConstraintExpr)
   def Parameter(self, tpe: ConstraintType, *, doc: Optional[str] = None) -> ConstraintType:
     """Registers a parameter for this Block"""
+    if not builder.is_top2(self):
+      return tpe  # if not top-level, object is used for type only
+
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call Parameter(...) outside __init__",
                                  "call Parameter(...) inside __init__ only, and remember to call super().__init__()")
@@ -519,6 +531,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     return elt
 
   def connect(self, *connects: Union[BasePort, Connection], flatten=False) -> Connection:
+    if not builder.is_top(self):
+      return Connection(self, False)  # if not top-level, object is used for type only
+
     for connect in connects:
       if not isinstance(connect, (BasePort, Connection)):
         raise TypeError(f"param to connect(...) must be BasePort or Connection, got {connect}")

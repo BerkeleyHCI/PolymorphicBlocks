@@ -34,6 +34,21 @@ class Builder:
     else:
       return self.stack[-1]
 
+  def curr_context_within_top(self, depth: int) -> bool:
+    return len(self.stack) <= depth
+
+  def is_top(self, elt: Refable) -> bool:
+    """Returns whether the argument elt is the top of the stack, the element being constructed.
+    Inner elements can have simplified construction for optimization."""
+    assert len(self.stack) >= 1
+    return self.stack[0] is elt
+
+  def is_top2(self, elt: Refable) -> bool:
+    """Returns whether the argument elt is the top or first-inner on the stack.
+    Inner elements can have simplified construction for optimization."""
+    assert len(self.stack) >= 1
+    return self.stack[0] is elt or ((len(self.stack) >= 2) and self.stack[1] is elt)
+
   def elaborate_toplevel(self, block: BaseBlock, *,
                          is_generator: bool = False,
                          generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]] = []) -> edgir.HierarchyBlock:
