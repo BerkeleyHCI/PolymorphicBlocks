@@ -229,10 +229,11 @@ class BlockMeta(ElementMeta):
     if '__init__' in new_cls.__dict__:
       orig_init = new_cls.__dict__['__init__']
 
-      print(new_cls)
-
       # collect the annotations from the fn signature and map to ConstraintExpr types
       # discard param 0=self
+      positional_expr_types: List[Type[ConstraintExpr]] = []  # for all positional-capable args
+      keyword_expr_types: Dict[str, Type[ConstraintExpr]] = {}  # for all keyword-capable args
+
       for arg_index, (arg_name, arg_param) in enumerate(list(inspect.signature(orig_init).parameters.items())[1:]):
         if arg_param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
           continue  # ignore *args and **kwargs, those will get resolved in the super().__init__ hook
@@ -240,7 +241,13 @@ class BlockMeta(ElementMeta):
         param_expr_type = BlockMeta._ANNOTATION_EXPR_MAP.get(arg_param.annotation, None)
         assert param_expr_type is not None, f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}"
 
-        print(arg_index, arg_param.kind, arg_name)
+        if arg_param.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD):
+          assert arg_index == len(positional_expr_types)
+          positional_expr_types.append(param_expr_type)
+        if arg_param.kind in (inspect.Parameter.KEYWORD_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD):
+          keyword_expr_types[arg_name] = param_expr_type
+
+      print(new_cls, positional_expr_types, keyword_expr_types)
 
       def wrapped_init(self, *args, **kwargs) -> None:
         return orig_init(self, *args, **kwargs)
