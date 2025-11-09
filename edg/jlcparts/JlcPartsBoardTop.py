@@ -29,7 +29,7 @@ class JlcPartsRefinements(DesignTop):
         (FerriteBead, JlcPartsFerriteBead)
       ],
       class_values=[  # realistically only RCs are going to likely be basic parts
-        (JlcResistor, ['require_basic_part'], True),
-        (JlcCapacitor, ['require_basic_part'], True),
+        (JlcPartsResistorSmd, ['require_basic_part'], True),
+        (JlcPartsMlcc, ['require_basic_part'], True),
       ],
     )
