@@ -43,6 +43,8 @@ def init_in_parent(fn: InitType) -> InitType:
 
   @wraps(fn)
   def wrapped(self: Block, *args_tup, **kwargs) -> Any:
+    # return fn(self, *args_tup, **kwargs)
+
     args = list(args_tup)
     builder_prev = builder.get_curr_context()
     builder.push_element(self)
@@ -227,7 +229,9 @@ class BlockMeta(ElementMeta):
     if '__init__' in new_cls.__dict__:
       orig_init = new_cls.__dict__['__init__']
       print(new_cls, inspect.signature(orig_init).parameters.items())
+
       def wrapped_init(self, *args, **kwargs) -> None:
+        print(self)
         return orig_init(self, *args, **kwargs)
 
       new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
