@@ -6,6 +6,7 @@ from functools import reduce, wraps
 from typing import *
 
 from .. import edgir
+from .Builder import builder
 from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, ArrayBoolExpr, ArrayBoolLike, ArrayIntLike, \
   ArrayFloatLike, ArrayRangeLike, ArrayStringLike
 from .Array import BaseVector, Vector
@@ -43,8 +44,6 @@ def init_in_parent(fn: InitType) -> InitType:
 
   @wraps(fn)
   def wrapped(self: Block, *args_tup, **kwargs) -> Any:
-    # return fn(self, *args_tup, **kwargs)
-
     args = list(args_tup)
     builder_prev = builder.get_curr_context()
     builder.push_element(self)
@@ -230,27 +229,63 @@ class BlockMeta(ElementMeta):
       orig_init = new_cls.__dict__['__init__']
 
       # collect the annotations from the fn signature and map to ConstraintExpr types
-      # discard param 0=self
       positional_expr_types: List[Type[ConstraintExpr]] = []  # for all positional-capable args
+      positional_arg_names: List[str] = []  # TODO REMOVE
+      positional_only_num: int = 0  # number of required positional args
       keyword_expr_types: Dict[str, Type[ConstraintExpr]] = {}  # for all keyword-capable args
 
+      # discard param 0=self
       for arg_index, (arg_name, arg_param) in enumerate(list(inspect.signature(orig_init).parameters.items())[1:]):
         if arg_param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
           continue  # ignore *args and **kwargs, those will get resolved in the super().__init__ hook
 
         param_expr_type = BlockMeta._ANNOTATION_EXPR_MAP.get(arg_param.annotation, None)
-        assert param_expr_type is not None, f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}"
+        if param_expr_type is None:
+          raise BlockDefinitionError(f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}")
 
         if arg_param.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD):
           assert arg_index == len(positional_expr_types)
           positional_expr_types.append(param_expr_type)
+          positional_arg_names.append(arg_name)  # TODO REMOVE
+          if arg_param.kind == inspect.Parameter.POSITIONAL_ONLY:
+            assert positional_only_num == arg_index
+            positional_only_num += 1
         if arg_param.kind in (inspect.Parameter.KEYWORD_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD):
           keyword_expr_types[arg_name] = param_expr_type
 
-      print(new_cls, positional_expr_types, keyword_expr_types)
+      print("DISCOVER", orig_init, positional_expr_types, keyword_expr_types)
 
       def wrapped_init(self, *args, **kwargs) -> None:
-        return orig_init(self, *args, **kwargs)
+        print("CALL", orig_init, args, kwargs)
+        if not hasattr(self, '_init_params_value'):  # TODO REMOVE
+          self._init_params_value = {}
+
+        # remap args here, must happen in parent scope
+        assert len(positional_expr_types) >= len(args)
+
+        arg_values_typed = [arg_type._to_expr_type(arg_value)
+                            for arg_value, arg_type in zip(args, positional_expr_types)]
+        kwarg_values_typed = {arg_name: keyword_expr_types[arg_name]._to_expr_type(arg_value)
+                              for arg_name, arg_value in kwargs.items()}
+
+        # create wrapper ConstraintExpr in new object scope
+        builder_prev = builder.get_curr_context()
+        builder.push_element(self)
+        try:
+          # TODO at top-level ONLY fill in all positional args
+          new_args = [arg_type()._bind(InitParamBinding(self))
+                      for arg_value, arg_type in zip(arg_values_typed, positional_expr_types)]
+          new_kwargs = {arg_name: keyword_expr_types[arg_name]()._bind(InitParamBinding(self))
+                        for arg_name, arg_value in kwarg_values_typed.items()}
+
+          for arg_name, param_value, arg_value in zip(positional_arg_names, new_args, arg_values_typed):
+            self._init_params_value[arg_name] = (param_value, arg_value)
+          for arg_name, arg_value in kwarg_values_typed.items():
+            self._init_params_value[arg_name] = (new_kwargs[arg_name], arg_value)
+        finally:
+          builder.pop_to(builder_prev)
+
+        return orig_init(self, *new_args, **new_kwargs)
 
       new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
 
@@ -265,7 +300,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   def __init__(self) -> None:
     super().__init__()
 
-    # name -> (empty param, default argument (if any)), set in @init_in_parent
+    # name -> (empty param, default argument (if any)), set in metaclass __init__ hook
     self._init_params_value: Dict[str, Tuple[ConstraintExpr, Optional[ConstraintExpr]]]
     if not hasattr(self, '_init_params_value'):
       self._init_params_value = {}
@@ -558,7 +593,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     if param.binding is None:
       raise TypeError(f"param to ArgParameter(...) must have binding")
     if not isinstance(param.binding, InitParamBinding):
-      raise TypeError(f"param to ArgParameter(...) must be __init__ argument with @init_in_parent")
+      raise TypeError(f"param to ArgParameter(...) must be __init__ argument")
 
     if doc is not None:
       self._param_docs[param] = doc
