@@ -200,7 +200,7 @@ class BlockMeta(ElementMeta):
 
   This is applied to every class that inherits this metaclass, and hooks every super().__init__ call."""
 
-  _ANNOTATION_EXPR_MAP = {
+  _ANNOTATION_EXPR_MAP: Dict[Any, Type[ConstraintExpr]] = {
     BoolLike: BoolExpr,
     "BoolLike": BoolExpr,
     IntLike: IntExpr,
@@ -228,10 +228,21 @@ class BlockMeta(ElementMeta):
 
     if '__init__' in new_cls.__dict__:
       orig_init = new_cls.__dict__['__init__']
-      print(new_cls, inspect.signature(orig_init).parameters.items())
+
+      print(new_cls)
+
+      # collect the annotations from the fn signature and map to ConstraintExpr types
+      # discard param 0=self
+      for arg_index, (arg_name, arg_param) in enumerate(list(inspect.signature(orig_init).parameters.items())[1:]):
+        if arg_param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+          continue  # ignore *args and **kwargs, those will get resolved in the super().__init__ hook
+
+        param_expr_type = BlockMeta._ANNOTATION_EXPR_MAP.get(arg_param.annotation, None)
+        assert param_expr_type is not None, f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}"
+
+        print(arg_index, arg_param.kind, arg_name)
 
       def wrapped_init(self, *args, **kwargs) -> None:
-        print(self)
         return orig_init(self, *args, **kwargs)
 
       new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)

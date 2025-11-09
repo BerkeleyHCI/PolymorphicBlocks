@@ -103,7 +103,7 @@ class DifferentialLcLowpassFilter(GeneratorBlock, RfFilter):
 
     @init_in_parent
     def __init__(self, freq_cutoff: FloatLike, inductance: FloatLike, input_res: FloatLike,
-                 freq: FloatLike, current: RangeExpr, voltage: RangeExpr):
+                 freq: FloatLike, current: RangeLike, voltage: RangeLike):
         super().__init__()
         self.freq_cutoff = self.ArgParameter(freq_cutoff)
         self.inductance = self.ArgParameter(inductance)
