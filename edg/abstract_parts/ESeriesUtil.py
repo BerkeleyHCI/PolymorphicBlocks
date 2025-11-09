@@ -116,7 +116,7 @@ class ESeriesUtil:
   def series_of(cls, value: float, *, default: Optional[SeriesDefaultType] = None) -> Union[None, int, SeriesDefaultType]:
     """Returns the E-series that contains the given value, or None if not found.
     Performs limited rounding to account for floating point issues."""
-    if value == 0:
+    if value <= 0:
       return default
     normalized_value = value * math.pow(10, -math.floor(math.log10(value)))
     return cls.VALUE_SERIES.get(cls.round_sig(normalized_value, cls.ROUND_DIGITS), default)
