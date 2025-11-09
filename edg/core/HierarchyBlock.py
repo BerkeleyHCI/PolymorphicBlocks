@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import functools
+import inspect
 from functools import reduce, wraps
 from typing import *
 
@@ -183,13 +185,52 @@ class ChainConnect:
 
 
 class BlockMeta(ElementMeta):
-  """This provides a hook on __init__ that, when the Block is the top-level,
-  it generates default args / kwargs values based on the inspected type annotations if no default is provided.
+  """This provides a hook on __init__ that replaces argument values with empty ConstraintExpr
+  based on the type annotation and stores the supplied argument to the __init__ (if any) in the binding.
 
-  This allows Block __init__ methods to have required args (with no defaults) while
-  being instantiable at the top-level (where there is no context to provide concrete values)."""
+  The supplied argument is cast to its target type and stored in the binding, in its parent context.
+  The binding itself is in the new object's context.
+
+  This performs two functions:
+  - Allows blocks to compile at the top-level where required parameters have no values and there is no
+  context that provides those values
+  - Standardize the type of objects passed to self.ArgParameter, so the result is properly typed.
+
+  This is applied to every class that inherits this metaclass, and hooks every super().__init__ call."""
+
+  _ANNOTATION_EXPR_MAP = {
+    BoolLike: BoolExpr,
+    "BoolLike": BoolExpr,
+    IntLike: IntExpr,
+    "IntLike": IntExpr,
+    FloatLike: FloatExpr,
+    "FloatLike": FloatExpr,
+    RangeLike: RangeExpr,
+    "RangeLike": RangeExpr,
+    StringLike: StringExpr,
+    "StringLike": StringExpr,
+    ArrayBoolLike: ArrayBoolExpr,
+    "ArrayBoolLike": ArrayBoolExpr,
+    ArrayIntLike: ArrayIntExpr,
+    "ArrayIntLike": ArrayIntExpr,
+    ArrayFloatLike: ArrayFloatExpr,
+    "ArrayFloatLike": ArrayFloatExpr,
+    ArrayRangeLike: ArrayRangeExpr,
+    "ArrayRangeLike": ArrayRangeExpr,
+    ArrayStringLike: ArrayStringExpr,
+    "ArrayStringLike": ArrayStringExpr,
+  }
+
   def __new__(cls, *args: Any, **kwargs: Any) -> Any:
     new_cls = super().__new__(cls, *args, **kwargs)
+
+    if '__init__' in new_cls.__dict__:
+      orig_init = new_cls.__dict__['__init__']
+      print(new_cls, inspect.signature(orig_init).parameters.items())
+      def wrapped_init(self, *args, **kwargs) -> None:
+        return orig_init(self, *args, **kwargs)
+
+      new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
 
     return new_cls
 
