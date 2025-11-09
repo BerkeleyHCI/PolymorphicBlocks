@@ -245,7 +245,6 @@ class DigitalSourceBridge(CircuitPortBridge):
 
 
 class DigitalSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
-  @init_in_parent
   def __init__(self):
     super().__init__()
     self.src = self.Port(DigitalSink(  # otherwise ideal

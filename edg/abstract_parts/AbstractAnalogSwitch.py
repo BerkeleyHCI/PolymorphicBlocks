@@ -37,7 +37,6 @@ class AnalogSwitch(Interface, KiCadImportableBlock, Block):
 class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
   """Generates an n-ported analog switch by creating a tree of individual, smaller switches.
   Parameterized by the size of the element switches."""
-  @init_in_parent
   def __init__(self, switch_size: IntLike = 0):
     super().__init__()
     self.switch_size = self.ArgParameter(switch_size)

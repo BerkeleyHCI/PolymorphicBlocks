@@ -4,7 +4,6 @@ from edg import *
 
 
 class DomeButtonConnector(Connector, FootprintBlock):
-  @init_in_parent
   def __init__(self) -> None:
     super().__init__()
 

@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-    @init_in_parent
     def __init__(self, peak_output_current: FloatLike):
         super().__init__()
 
@@ -47,7 +46,6 @@ class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Tps92200(LedDriverPwm, LedDriver, GeneratorBlock):
     """TPS92200 buck 4-30V 1.5A 1 MHz LED driver and 150nS min on-time.
     This is the -D2 variant, with PWM input for 1-100% range as a 20-200kHz digital signal"""
-    @init_in_parent
     def __init__(self, led_voltage: RangeLike = (1, 4)*Volt, *,
                  input_ripple_limit: FloatLike = 0.2*Volt,  # from 8.2 example application
                  output_ripple_limit: FloatLike = 0.01*Volt) -> None:

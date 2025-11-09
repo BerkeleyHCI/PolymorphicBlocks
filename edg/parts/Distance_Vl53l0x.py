@@ -106,7 +106,6 @@ class Vl53l0xConnector(Vl53l0x, WrapperFootprintBlock):
 
 class Vl53l0xArray(DistanceSensor, GeneratorBlock):
   """Array of Vl53l0x with common I2C but individually exposed XSHUT pins and optionally GPIO1 (interrupt)."""
-  @init_in_parent
   def __init__(self, count: IntLike, *, first_reset_fixed: BoolLike = False):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])

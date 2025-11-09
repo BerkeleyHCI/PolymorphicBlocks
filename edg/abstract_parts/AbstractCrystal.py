@@ -33,7 +33,6 @@ class CrystalStandardFootprint(StandardFootprint['Crystal']):
 class Crystal(DiscreteComponent, HasStandardFootprint):
   _STANDARD_FOOTPRINT = CrystalStandardFootprint
 
-  @init_in_parent
   def __init__(self, frequency: RangeLike) -> None:
     """Discrete crystal component."""
     super().__init__()
@@ -60,7 +59,6 @@ class TableCrystal(PartsTableSelector, Crystal):
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)
 
-  @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     """Discrete crystal component."""
     super().__init__(*args, **kwargs)
@@ -78,7 +76,6 @@ class TableCrystal(PartsTableSelector, Crystal):
 
 @abstract_block_default(lambda: OscillatorCrystal)
 class OscillatorReference(DiscreteApplication):
-  @init_in_parent
   def __init__(self, frequency: RangeLike) -> None:
     """Crystal and supporting circuitry to connect it to an oscillator driver.
     Should include load capacitors."""

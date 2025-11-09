@@ -333,7 +333,6 @@ class TestBlinkyWithLibraryExport(SimpleBoardTop):
 
 
 class LedArray(GeneratorBlock):
-  @init_in_parent
   def __init__(self, count: IntLike) -> None:
     super().__init__()
     self.ios = self.Port(Vector(DigitalSink.empty()), [Input])

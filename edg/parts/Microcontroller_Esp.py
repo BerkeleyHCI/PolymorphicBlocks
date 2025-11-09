@@ -22,7 +22,6 @@ class EspProgrammingAutoReset(BlockInterfaceMixin[EspProgrammingHeader]):
   """Mixin for ESP programming header with auto-reset and auto-boot pins.
   By default, these are required to be connected (since it doesn't make sense to instantiate
   this without connecting the additional pins to the micro), but can be disabled with parameters."""
-  @init_in_parent
   def __init__(self, *args, require_auto_reset: BoolLike = True, **kwargs) -> None:
     super().__init__(*args, **kwargs)
 
@@ -79,7 +78,6 @@ class EspProgrammingTc2030(EspProgrammingAutoReset, EspProgrammingHeader):
 class HasEspProgramming(IoController, GeneratorBlock):
   """A mixin for a block (typically an IoController wrapper) that has an ESP style programming header.
   Can generate into the standard UART cable, the auto-programming header, or TODO a boundary port."""
-  @init_in_parent
   def __init__(self, programming: StringLike = "uart-button"):
     super().__init__()
     self.programming = self.ArgParameter(programming)  # programming connector to generate

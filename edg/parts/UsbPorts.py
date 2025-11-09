@@ -35,7 +35,6 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
   """Raw USB Type-C Receptacle
   Pullup capable indicates whether this port (or more accurately, the device on the other side) can pull
   up the signal. In UFP (upstream-facing, device) mode the power source should pull up CC."""
-  @init_in_parent
   def __init__(self, voltage_out: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
                current_limits: RangeLike = UsbConnector.USB2_CURRENT_LIMITS,
                cc_pullup_capable: BoolLike = False) -> None:
@@ -85,7 +84,6 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
   """USB Type-C Receptacle that automatically generates the CC resistors if CC is not connected."""
-  @init_in_parent
   def __init__(self, voltage_out: RangeLike = UsbConnector.USB2_VOLTAGE_RANGE,  # allow custom PD voltage and current
                current_limits: RangeLike = UsbConnector.USB2_CURRENT_LIMITS) -> None:
     super().__init__()

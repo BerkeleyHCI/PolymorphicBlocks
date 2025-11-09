@@ -20,7 +20,6 @@ class VoltageRegulator(PowerConditioner):
   implementations commonly have restrictions, for example linear regulators can only produce voltages lower
   than the input voltage.
   """
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike) -> None:
     super().__init__()
 
@@ -98,7 +97,6 @@ class LinearRegulatorDevice(Block):
   """Abstract base class that provides a default model with common functionality for a linear regulator chip.
   Does not include supporting components like capacitors.
   """
-  @init_in_parent
   def __init__(self) -> None:
     super().__init__()
 
@@ -150,7 +148,6 @@ class SwitchingVoltageRegulator(VoltageRegulator):
       ripple_ratio_range.lower() * output_current_range.upper(),
       upper_ripple_limit))
 
-  @init_in_parent
   def __init__(self, *args,
                input_ripple_limit: FloatLike = 75 * mVolt,
                output_ripple_limit: FloatLike = 25 * mVolt,
@@ -327,7 +324,6 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
       sw_ilim - (inductor_iripple.upper() / 2), Range.all())
     return iout_limit_inductor.intersect(iout_limit_sw).intersect(Range.from_lower(0))
 
-  @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
                output_current: RangeLike, sw_current_limits: RangeLike, *,
                input_voltage_ripple: FloatLike,
@@ -523,7 +519,6 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
                       inductor_peak_currents=inductor_peak_currents,
                       effective_dutycycle=effective_dutycycle)
 
-  @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
                output_current: RangeLike, sw_current_limits: RangeLike, *,
                input_voltage_ripple: FloatLike,
@@ -646,7 +641,6 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
   https://www.ti.com/lit/an/slva535b/slva535b.pdf
     Largely based on this document, the tl;dr of which is combine the buck and boost equations
   """
-  @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
                output_current: RangeLike, sw_current_limits: RangeLike, *,
                efficiency: RangeLike = (0.8, 1.0),  # from TI reference

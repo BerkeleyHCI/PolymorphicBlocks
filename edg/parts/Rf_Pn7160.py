@@ -27,7 +27,6 @@ class NfcAntenna(FootprintBlock, GeneratorBlock, Interface):
                    ((1 - (w**2) * inductance * capacitance)**2 + (w * resistance * capacitance)**2)
         return complex(realpart, imagpart)
 
-    @init_in_parent
     def __init__(self, ant_footprint: StringLike, freq: FloatLike, inductance: FloatLike, resistance: FloatLike,
                  capacitance: FloatLike):
         super().__init__()
@@ -63,7 +62,6 @@ class NfcAntennaDampening(InternalSubcircuit, GeneratorBlock):
         For differential configuration, halve the result and split among the +/- terminals."""
         return impedance.imag / target_q - impedance.real
 
-    @init_in_parent
     def __init__(self, target_q: FloatLike, ant_r: FloatLike, ant_x: FloatLike):
         super().__init__()
         self.in1 = self.Port(Passive())
@@ -101,7 +99,6 @@ class DifferentialLcLowpassFilter(GeneratorBlock, RfFilter):
     def _calculate_capacitance(cls, freq_cutoff: float, inductance: float) -> float:
         return 1 / (inductance * (2*pi*freq_cutoff)**2)  # from f = 1 / (2 pi sqrt(LC))
 
-    @init_in_parent
     def __init__(self, freq_cutoff: FloatLike, inductance: FloatLike, input_res: FloatLike,
                  freq: FloatLike, current: RangeLike, voltage: RangeLike):
         super().__init__()
@@ -154,7 +151,6 @@ class DifferentialLLowPassFilter(GeneratorBlock, RfFilter):
         se_cp = PiLowPassFilter._reactance_to_capacitance(freq, se_xp)
         return se_cs, se_cp
 
-    @init_in_parent
     def __init__(self, freq: FloatLike, src_r: FloatLike, src_x: FloatLike, snk_r: FloatLike, snk_x: FloatLike,
                  voltage: RangeLike):
         super().__init__()
@@ -192,7 +188,6 @@ class DifferentialLLowPassFilter(GeneratorBlock, RfFilter):
 
 
 class Pn7160RxFilter(InternalSubcircuit, Block):
-    @init_in_parent
     def __init__(self, resistance: RangeLike, capacitance: RangeLike, voltage: RangeLike):
         super().__init__()
         self.resistance = self.ArgParameter(resistance)

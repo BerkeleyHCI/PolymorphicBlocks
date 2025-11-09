@@ -430,15 +430,13 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
         if not (block_parent is self or block_parent_parent is self):
           raise UnreachableParameterError(f"In {type(self)}, constraint references unreachable parameter {expr}. "
-                                          "Only own parameters, or immediate contained blocks' parameters can be accessed. "
-                                          "To pass in parameters from constructors, don't forget @init_in_parent")
+                                          "Only own parameters, or immediate contained blocks' parameters can be accessed.")
       elif isinstance(expr, BasePort):
         block_parent = cast(BaseBlock, expr._block_parent())
         assert block_parent is not None
         if not block_parent is self or block_parent._parent is self:
           raise UnreachableParameterError(f"In {type(self)}, constraint references unreachable port {expr}. "
-                                          "Only own ports, or immediate contained blocks' ports can be accessed. "
-                                          "To pass in parameters from constructors, don't forget @init_in_parent")
+                                          "Only own ports, or immediate contained blocks' ports can be accessed.")
 
     for subexpr in constraint._get_exprs():
       check_subexpr(subexpr)

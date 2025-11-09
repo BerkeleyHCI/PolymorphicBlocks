@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Ltc3429_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
     self.vin = self.Port(VoltageSink(

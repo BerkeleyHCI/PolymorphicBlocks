@@ -17,7 +17,6 @@ class TvsDiode(BaseDiode):
     TODO: model capacitance frequency? model breakdown and clamping voltage?
     TODO: how does this differ from Zener diodes?
     """
-    @init_in_parent
     def __init__(self, working_voltage: RangeLike, *,
                  capacitance: RangeLike = Range.all()) -> None:
         super().__init__()
@@ -32,7 +31,6 @@ class TvsDiode(BaseDiode):
 
 class ProtectionTvsDiode(Protection):
     """TVS diode across a power rail"""
-    @init_in_parent
     def __init__(self, working_voltage: RangeLike):
         super().__init__()
 
@@ -52,7 +50,6 @@ class ProtectionTvsDiode(Protection):
 
 class DigitalTvsDiode(Protection):
     """TVS diode protecting a signal line"""
-    @init_in_parent
     def __init__(self, working_voltage: RangeLike, *, capacitance: RangeLike = Range.all()):
         super().__init__()
 

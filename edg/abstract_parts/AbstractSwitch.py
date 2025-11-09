@@ -11,7 +11,6 @@ class Switch(KiCadImportableBlock, DiscreteComponent):
     assert symbol_name == 'Switch:SW_SPST'
     return {'1': self.sw, '2': self.com}
 
-  @init_in_parent
   def __init__(self, voltage: RangeLike, current: RangeLike = 0*Amp(tol=0)) -> None:
     super().__init__()
 
@@ -36,7 +35,6 @@ class MechanicalKeyswitch(Switch):
 class RotaryEncoder(DiscreteComponent):
   """Rotary encoder with discrete clicks and a quadrature signal (A/B/Common).
   Includes shaft-type encoders as well as thumbwheels."""
-  @init_in_parent
   def __init__(self, voltage: RangeLike, current: RangeLike = 0*Amp(tol=0)) -> None:
     super().__init__()
 
@@ -60,7 +58,6 @@ class RotaryEncoderSwitch(BlockInterfaceMixin[RotaryEncoder]):
 @abstract_block
 class DirectionSwitch(DiscreteComponent):
   """Directional switch with a, b, c, d (clockwise) switches and common."""
-  @init_in_parent
   def __init__(self, voltage: RangeLike, current: RangeLike = 0*Amp(tol=0)) -> None:
     super().__init__()
 

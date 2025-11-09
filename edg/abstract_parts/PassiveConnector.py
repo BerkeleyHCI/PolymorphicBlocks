@@ -13,7 +13,6 @@ class PassiveConnector(DiscreteComponent, Block):
   than the maximum pin index (but can be smaller, unassigned pins are NC).
   The allocated pin names correlate with the footprint pin, 1-indexed (per electronics convention).
   It is up to the instantiating layer to set the pinmap (or allow the user to set it by refinements)."""
-  @init_in_parent
   def __init__(self, length: IntLike = 0):
     super().__init__()
     self.pins = self.Port(Vector(Passive.empty()))

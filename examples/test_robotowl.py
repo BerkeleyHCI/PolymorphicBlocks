@@ -7,7 +7,6 @@ from .test_robotdriver import PwmConnector, LedConnector
 
 class PhotodiodeSensor(LightSensor, KiCadSchematicBlock, Block):
   """Simple photodiode-based light sensor"""
-  @init_in_parent
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])

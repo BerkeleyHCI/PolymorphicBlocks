@@ -14,7 +14,6 @@ class ResistorMux(Interface, KiCadImportableBlock, GeneratorBlock):
       'V+': self.pwr,  'V-': self.gnd
     }
 
-  @init_in_parent
   def __init__(self, resistances: ArrayRangeLike):
     super().__init__()
 
@@ -50,7 +49,6 @@ class MultimeterAnalog(KiCadSchematicBlock, Block):
 
   TODO: support wider ranges, to be implemented with port array support
   """
-  @init_in_parent
   def __init__(self):
     super().__init__()
 
@@ -92,7 +90,6 @@ class MultimeterAnalog(KiCadSchematicBlock, Block):
 class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
   """Protected constant-current stage for the multimeter driver.
   """
-  @init_in_parent
   def __init__(self, voltage_rating: RangeLike = RangeExpr()):
     super().__init__()
 

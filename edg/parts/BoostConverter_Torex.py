@@ -17,7 +17,6 @@ class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
     ('MR-G', 'Package_TO_SOT_SMD:SOT-23-5'),
   ]
 
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike, frequency: RangeLike = Range.all()):
     super().__init__()
 

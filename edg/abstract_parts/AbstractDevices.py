@@ -4,7 +4,6 @@ from .Categories import *
 
 @abstract_block
 class Battery(PowerSource):
-  @init_in_parent
   def __init__(self, voltage: RangeLike,
                current: RangeLike = RangeExpr.ZERO, *,
                capacity: FloatLike = 0.0):
