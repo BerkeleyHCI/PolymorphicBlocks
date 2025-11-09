@@ -11,7 +11,7 @@ from .Binding import InitParamBinding, AssignBinding
 from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
-from .Core import Refable, non_library
+from .Core import Refable, non_library, ElementMeta
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -182,8 +182,20 @@ class ChainConnect:
     return iter((tuple(self.blocks), self))
 
 
+class BlockMeta(ElementMeta):
+  """This provides a hook on __init__ that, when the Block is the top-level,
+  it generates default args / kwargs values based on the inspected type annotations if no default is provided.
+
+  This allows Block __init__ methods to have required args (with no defaults) while
+  being instantiable at the top-level (where there is no context to provide concrete values)."""
+  def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+    new_cls = super().__new__(cls, *args, **kwargs)
+
+    return new_cls
+
+
 @non_library
-class Block(BaseBlock[edgir.HierarchyBlock]):
+class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   """Part with a statically-defined subcircuit.
   Relations between contained parameters may only be expressed in the given constraint language.
   """

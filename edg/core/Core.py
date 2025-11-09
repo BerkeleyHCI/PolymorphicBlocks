@@ -143,13 +143,15 @@ class ElementDict(Generic[ElementType]):
 
 
 class ElementMeta(type):
+  """Hook on construction to store some metadata about its creation.
+  This hooks the top-level __init__ only."""
   def __call__(cls, *args, **kwargs):
     parent = builder.get_curr_context()
     block_context = builder.get_enclosing_block()
     try:
       obj = type.__call__(cls, *args, **kwargs)
-      obj._initializer_args = (args, kwargs)
-      obj._lexical_parent = parent
+      obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
+      obj._lexical_parent = parent  # stores context for error checking
       obj._block_context = block_context
       obj._post_init()
     finally:
