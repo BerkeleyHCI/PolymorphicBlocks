@@ -58,12 +58,12 @@ class RatioTestCase(unittest.TestCase):
                       (4, 1), (1, 4), (4, 2), (2, 4), (4, 3), (3, 4), (4, 4)])
 
   def test_series_of(self):
-    self.assertEqual(ESeriesUtil.series_of(1.0), 1)
+    self.assertEqual(ESeriesUtil.series_of(1.0), 3)
     self.assertEqual(ESeriesUtil.series_of(2.2), 3)
     self.assertEqual(ESeriesUtil.series_of(6.8), 6)
     self.assertEqual(ESeriesUtil.series_of(6800), 6)
     self.assertEqual(ESeriesUtil.series_of(0.91), 24)
-    self.assertEqual(ESeriesUtil.series_of(0.01), 1)
+    self.assertEqual(ESeriesUtil.series_of(0.01), 3)
     self.assertEqual(ESeriesUtil.series_of(9.88), 192)
     self.assertEqual(ESeriesUtil.series_of(0.42), None)
     self.assertEqual(ESeriesUtil.series_of(0.42, default=1000), 1000)

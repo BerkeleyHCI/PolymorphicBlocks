@@ -38,7 +38,7 @@ class ResistorDividerTest(unittest.TestCase):
       (820, 100))
 
   def test_impossible(self) -> None:
-    e1_calculator = ESeriesRatioUtil(ESeriesUtil.SERIES[1], 0.01, DividerValues)
+    e1_calculator = ESeriesRatioUtil([1.0], 0.01, DividerValues)
 
     with self.assertRaises(ESeriesRatioUtil.NoMatchException) as error:
       self.assertEqual(

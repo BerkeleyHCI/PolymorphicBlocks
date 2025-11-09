@@ -65,8 +65,7 @@ class ESeriesUtil:
   SERIES_MAX = 192
 
   E24_DIFF = {  # series as difference from prior series
-    1: [1.0],
-    3: [2.2, 4.7],
+    3: [1.0, 2.2, 4.7],
     6: [1.5, 3.3, 6.8],
     12: [1.2, 1.8, 2.7, 3.9, 5.6, 8.2],
     24: [1.1, 1.3, 1.6, 2.0, 2.4, 3.0, 3.6, 4.3, 5.1, 6.2, 7.5, 9.1],
@@ -92,11 +91,10 @@ class ESeriesUtil:
   }
 
   SERIES = {  # whole series in zigzag order
-    1: list(itertools.chain(E24_DIFF[1])),
-    3: list(itertools.chain(E24_DIFF[1], E24_DIFF[3])),
-    6: list(itertools.chain(E24_DIFF[1], E24_DIFF[3], E24_DIFF[6])),
-    12: list(itertools.chain(E24_DIFF[1], E24_DIFF[3], E24_DIFF[6], E24_DIFF[12])),
-    24: list(itertools.chain(E24_DIFF[1], E24_DIFF[3], E24_DIFF[6], E24_DIFF[12], E24_DIFF[24])),
+    3: list(itertools.chain(E24_DIFF[3])),
+    6: list(itertools.chain(E24_DIFF[3], E24_DIFF[6])),
+    12: list(itertools.chain(E24_DIFF[3], E24_DIFF[6], E24_DIFF[12])),
+    24: list(itertools.chain(E24_DIFF[3], E24_DIFF[6], E24_DIFF[12], E24_DIFF[24])),
 
     # These are E192 without the E24 series
     48: list(itertools.chain(E192_DIFF[48])),
