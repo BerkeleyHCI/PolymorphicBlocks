@@ -4,6 +4,7 @@ from typing import Optional, cast, Dict, Any, Tuple, Mapping
 import math
 
 from ..electronics_model import *
+from .ESeriesUtil import ESeriesUtil
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
 from .PartsTablePart import PartsTableSelector
 from .Categories import *
@@ -196,6 +197,10 @@ class TableCapacitor(PartsTableSelector, Capacitor):
   def _row_filter_capacitance(self, row: PartsTableRow) -> bool:
     return row[self.CAPACITANCE].fuzzy_in(self.get(self.capacitance))
 
+  @classmethod
+  def _row_sort_by(cls, row: PartsTableRow) -> Any:
+    return (ESeriesUtil.series_of(row[cls.NOMINAL_CAPACITANCE], default=ESeriesUtil.SERIES_MAX + 1),
+            super()._row_sort_by(row))
 
 @non_library
 class TableDeratingCapacitor(TableCapacitor):

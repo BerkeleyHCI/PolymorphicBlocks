@@ -2,9 +2,12 @@ import itertools
 import math
 from abc import ABCMeta, abstractmethod
 from collections import deque
-from typing import Sequence, Optional, TypeVar, Tuple, List, Generic, Type
+from typing import Sequence, Optional, TypeVar, Tuple, List, Generic, Type, Union, overload
 
 from ..electronics_model import *
+
+
+SeriesDefaultType = TypeVar('SeriesDefaultType')
 
 
 class ESeriesUtil:
@@ -59,6 +62,8 @@ class ESeriesUtil:
 
   ROUND_DIGITS = 5
 
+  SERIES_MAX = 192
+
   E24_DIFF = {  # series as difference from prior series
     1: [1.0],
     3: [2.2, 4.7],
@@ -97,27 +102,26 @@ class ESeriesUtil:
     48: list(itertools.chain(E192_DIFF[48])),
     96: list(itertools.chain(E192_DIFF[48], E192_DIFF[96])),
     192: list(itertools.chain(E192_DIFF[48], E192_DIFF[96], E192_DIFF[192])),
-
-    # These are E24 + E192, prioritizing E24
-    2448: list(itertools.chain(E24_DIFF[1], E24_DIFF[3], E24_DIFF[6], E24_DIFF[12], E24_DIFF[24],
-                               E192_DIFF[48])),
-    2496: list(itertools.chain(E24_DIFF[1], E24_DIFF[3], E24_DIFF[6], E24_DIFF[12], E24_DIFF[24],
-                               E192_DIFF[48], E192_DIFF[96])),
-    24192: list(itertools.chain(E24_DIFF[1], E24_DIFF[3], E24_DIFF[6], E24_DIFF[12], E24_DIFF[24],
-                                E192_DIFF[48], E192_DIFF[96], E192_DIFF[192])),
   }
 
   # reverse mapping of value to series, reverse SERIES so lower series preferred
   VALUE_SERIES = {v: k for k, series in reversed(SERIES.items()) for v in series}
 
   @classmethod
-  def series_of(cls, value: float) -> Optional[int]:
+  @overload
+  def series_of(cls, value: float) -> Optional[int]: ...
+  @classmethod
+  @overload
+  def series_of(cls, value: float, *, default: SeriesDefaultType) -> Union[int, SeriesDefaultType]: ...
+
+  @classmethod
+  def series_of(cls, value: float, *, default: Optional[SeriesDefaultType] = None) -> Union[None, int, SeriesDefaultType]:
     """Returns the E-series that contains the given value, or None if not found.
     Performs limited rounding to account for floating point issues."""
     if value == 0:
-      return None
+      return default
     normalized_value = value * math.pow(10, -math.floor(math.log10(value)))
-    return cls.VALUE_SERIES.get(cls.round_sig(normalized_value, cls.ROUND_DIGITS), None)
+    return cls.VALUE_SERIES.get(cls.round_sig(normalized_value, cls.ROUND_DIGITS), default)
 
 
 ESeriesRatioValueType = TypeVar('ESeriesRatioValueType', bound='ESeriesRatioValue')

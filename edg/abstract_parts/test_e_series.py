@@ -41,8 +41,6 @@ class PreferredNumberTestCase(unittest.TestCase):
                      1000)
     self.assertEqual(ESeriesUtil.choose_preferred_number(Range(220, 820), ESeriesUtil.SERIES[24], 0.01),
                      470)
-    self.assertEqual(ESeriesUtil.choose_preferred_number(Range(220, 820), ESeriesUtil.SERIES[24192], 0.01),
-                     470)
 
     # Test dynamic range edge cases
     self.assertEqual(ESeriesUtil.choose_preferred_number(Range(999, 1500), ESeriesUtil.SERIES[24], 0.01),
@@ -68,3 +66,4 @@ class RatioTestCase(unittest.TestCase):
     self.assertEqual(ESeriesUtil.series_of(0.01), 1)
     self.assertEqual(ESeriesUtil.series_of(9.88), 192)
     self.assertEqual(ESeriesUtil.series_of(0.42), None)
+    self.assertEqual(ESeriesUtil.series_of(0.42, default=1000), 1000)
