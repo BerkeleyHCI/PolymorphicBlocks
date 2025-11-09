@@ -50,7 +50,7 @@ class SourceMeasureRangingCell(Interface, KiCadSchematicBlock):
     self.import_kicad(self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),
                       locals={
                         'clamp': {
-                          'clamp_current': (2.5, 25)*mAmp,
+                          'clamp_current': (5, 25)*mAmp,
                           'clamp_target': (0, float('inf'))*Volt,
                           'zero_out': True
                         },

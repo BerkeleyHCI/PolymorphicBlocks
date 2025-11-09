@@ -1,7 +1,8 @@
 import re
-from typing import Optional, cast, Mapping, Dict
+from typing import Optional, cast, Mapping, Dict, Any
 
 from ..electronics_model import *
+from .ESeriesUtil import ESeriesUtil
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableSelector
 from .Categories import *
@@ -119,6 +120,11 @@ class TableResistor(PartsTableSelector, Resistor):
     self.assign(self.actual_resistance, row[self.RESISTANCE])
     self.assign(self.actual_power_rating, row[self.POWER_RATING])
     self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
+
+  @classmethod
+  def _row_sort_by(cls, row: PartsTableRow) -> Any:
+    return (ESeriesUtil.series_of(row[cls.RESISTANCE].center(), default=ESeriesUtil.SERIES_MAX + 1),
+            super()._row_sort_by(row))
 
 
 class SeriesResistor(Resistor, GeneratorBlock):
