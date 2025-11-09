@@ -94,12 +94,12 @@ class Er_Oled_091_3(Oled, Resettable, Block):
         self.iref_res = self.Block(Resistor(resistance=560*kOhm(tol=0.05)))  # TODO dynamic sizing
         self.connect(self.iref_res.a, self.device.iref)
         self.connect(self.iref_res.b.adapt_to(Ground()), self.gnd)
-        self.vcomh_cap = self.Block(DecouplingCapacitor((2.2*.8, 20)*uFarad)).connected(self.gnd, self.device.vcomh)
+        self.vcomh_cap = self.Block(DecouplingCapacitor((2.2*.8, 10)*uFarad)).connected(self.gnd, self.device.vcomh)
 
         self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
         self.vdd_cap2 = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
         self.vcc_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vcc)
-        self.vcc_cap2 = self.Block(DecouplingCapacitor(capacitance=(4.7*.8, 20)*uFarad))\
+        self.vcc_cap2 = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2)))\
             .connected(self.gnd, self.device.vcc)
