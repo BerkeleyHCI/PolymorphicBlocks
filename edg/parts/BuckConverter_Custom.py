@@ -4,7 +4,6 @@ from ..abstract_parts import *
 class CustomSyncBuckConverterIndependent(DiscreteBoostConverter):
     """Custom synchronous buck with two PWM inputs for the high and low side gate drivers.
     Because of the MOSFET body diode, will probably be fine-ish if the low side FET is not driven."""
-    @init_in_parent
     def __init__(self, *args,
                  frequency: RangeLike = (100, 1000)*kHertz,
                  ripple_ratio: RangeLike = (0.2, 0.5),

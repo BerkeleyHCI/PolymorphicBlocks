@@ -22,7 +22,6 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
       return {pin: block.ports.request(pin) for pin in pin_numbers}
     return block_model, block_pinning
 
-  @init_in_parent
   def __init__(self, kicad_pins: ArrayStringLike, kicad_refdes_prefix: StringLike, kicad_footprint: StringLike,
                kicad_part: StringLike, kicad_value: StringLike, kicad_datasheet: StringLike,
                kicad_jlcpcb_part: StringLike):

@@ -17,7 +17,6 @@ class ESeriesResistor(SelectorArea, Resistor, FootprintBlock, GeneratorBlock):
   """
   PACKAGE_POWER: List[Tuple[float, str]]
 
-  @init_in_parent
   def __init__(self, *args, series: IntLike = 24, tolerance: FloatLike = 0.01,
                footprint_spec: StringLike = "", **kwargs):
     super().__init__(*args, **kwargs)

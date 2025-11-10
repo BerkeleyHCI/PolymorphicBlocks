@@ -78,7 +78,6 @@ class Waveshare_Epd(EInk, GeneratorBlock):
     https://www.waveshare.com/wiki/E-Paper_Driver_HAT
     excluding the "clever" reset circuit
     """
-    @init_in_parent
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Waveshare_Epd_Device())

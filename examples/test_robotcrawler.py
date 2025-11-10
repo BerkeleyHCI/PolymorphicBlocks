@@ -7,7 +7,6 @@ class ServoFeedbackConnector(Connector, Block):
   """4-pin connector modeling the FS90-FB micro servo with positional feedback,
   https://www.pololu.com/product/3436
   """
-  @init_in_parent
   def __init__(self):
     super().__init__()
     self.conn = self.Block(PinHeader254(4))

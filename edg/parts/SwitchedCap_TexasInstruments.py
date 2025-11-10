@@ -5,7 +5,6 @@ from .JlcPart import JlcPart
 class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     FREQUENCY = Range(40000, 80000)  # Hz
     SWITCH_RESISTANCE = Range(4, 8)  # Ohm
-    @init_in_parent
     def __init__(self):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
@@ -49,7 +48,6 @@ class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Lm2664(PowerConditioner, Block):
     """Switched capacitor inverter"""
-    @init_in_parent
     def __init__(self, output_resistance_limit: FloatLike = 25 * Ohm,
                  output_ripple_limit: FloatLike = 25 * mVolt):
         super().__init__()

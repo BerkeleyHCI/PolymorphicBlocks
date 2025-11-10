@@ -5,7 +5,6 @@ from ..abstract_parts import *
 # and inputs in the center
 class VoltageSinkConnector(DummyDevice, NetBlock):
   """Connects two voltage sinks together (FET top sink to exterior source)."""
-  @init_in_parent
   def __init__(self, voltage_out: RangeLike, a_current_limits: RangeLike, b_current_limits: RangeLike) -> None:
     super().__init__()
     self.a = self.Port(VoltageSource(
@@ -20,7 +19,6 @@ class VoltageSinkConnector(DummyDevice, NetBlock):
 
 class VoltageSourceConnector(DummyDevice, NetBlock):
   """Connects two voltage sources together (inductor output to FET center 'source')."""
-  @init_in_parent
   def __init__(self, a_current_draw: RangeLike, b_current_draw: RangeLike) -> None:
     super().__init__()
     self.a = self.Port(VoltageSink(
@@ -35,7 +33,6 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
   """Custom synchronous buck-boost with four PWMs for the switches.
   Because of the MOSFET body diode, will probably be fine-ish if the buck low-side FET and the boost high-side FET
   are not driven"""
-  @init_in_parent
   def __init__(self, *args,
                frequency: RangeLike = (100, 1000)*kHertz,
                ripple_ratio: RangeLike = (0.2, 0.5),

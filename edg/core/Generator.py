@@ -72,7 +72,7 @@ class GeneratorBlock(Block):
       assert isinstance(req_param.binding, InitParamBinding) or \
              (isinstance(req_param.binding, (AllocatedBinding, IsConnectedBinding))
               and req_param.binding.src._parent is self), \
-        f"generator parameter {i} {req_param} not an __init__ parameter (or missing @init_in_parent)"
+        f"generator parameter {i} {req_param} not an __init__ parameter"
     self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, reqs)
 
   def generate(self):

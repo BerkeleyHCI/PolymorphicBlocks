@@ -6,7 +6,6 @@ from .Categories import *
 @abstract_block
 class Oscillator(DiscreteApplication):
   """Device that generates a digital clock signal given power."""
-  @init_in_parent
   def __init__(self, frequency: RangeLike) -> None:
     super().__init__()
 
@@ -33,7 +32,6 @@ class TableOscillator(PartsTableSelector, Oscillator):
   No default footprints are provided since these may be non-standard."""
   FREQUENCY = PartsTableColumn(Range)
 
-  @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.frequency)

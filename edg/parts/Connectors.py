@@ -5,7 +5,6 @@ from .PassiveConnector_Header import JstShSmHorizontal
 @abstract_block
 class PowerBarrelJack(Connector, PowerSource, Block):
   """Barrel jack that models a configurable voltage / max current power supply."""
-  @init_in_parent
   def __init__(self,
                voltage_out: RangeLike = RangeExpr(),
                current_limits: RangeLike = RangeExpr.ALL) -> None:
@@ -60,7 +59,6 @@ class LipoConnector(Connector, Battery):
   Default pinning has ground being pin 1, and power being pin 2.
 
   Connector type not specified, up to the user through a refinement."""
-  @init_in_parent
   def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args,
                actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs):
     from ..electronics_model.PassivePort import PassiveAdapterVoltageSink

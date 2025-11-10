@@ -18,7 +18,6 @@ class PassiveLink(CircuitLink):
 
 
 class PassiveAdapterGround(CircuitPortAdapter[Ground]):
-  @init_in_parent
   def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL):
     super().__init__()
     self.src = self.Port(Passive())
@@ -27,7 +26,6 @@ class PassiveAdapterGround(CircuitPortAdapter[Ground]):
 
 class PassiveAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
   # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
-  @init_in_parent
   def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
                current_limits: RangeLike = RangeExpr.ALL):
     super().__init__()
@@ -36,8 +34,7 @@ class PassiveAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
 
 
 class PassiveAdapterVoltageSink(CircuitPortAdapter[VoltageSink]):
-  # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
-  @init_in_parent
+  # TODO we can't use **kwargs b/c the init hook needs an initializer list
   def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO):
     super().__init__()
@@ -46,8 +43,7 @@ class PassiveAdapterVoltageSink(CircuitPortAdapter[VoltageSink]):
 
 
 class PassiveAdapterDigitalSource(CircuitPortAdapter[DigitalSource]):
-  # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
-  @init_in_parent
+  # TODO we can't use **kwargs b/c the init hook needs an initializer list
   def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
                current_limits: RangeLike = RangeExpr.ALL,
                output_thresholds: RangeLike = RangeExpr.ALL,
@@ -66,8 +62,7 @@ class PassiveAdapterDigitalSource(CircuitPortAdapter[DigitalSource]):
 
 
 class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
-  # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
-  @init_in_parent
+  # TODO we can't use **kwargs b/c the init hook needs an initializer list
   def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO,
                input_thresholds: RangeLike = RangeExpr.EMPTY,
@@ -84,8 +79,7 @@ class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
 
 
 class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
-  # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
-  @init_in_parent
+  # TODO we can't use **kwargs b/c the init hook needs an initializer list
   def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO,
                voltage_out: RangeLike = RangeExpr.ZERO,
@@ -106,8 +100,7 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
 
 
 class PassiveAdapterAnalogSource(CircuitPortAdapter[AnalogSource]):
-  # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
-  @init_in_parent
+  # TODO we can't use **kwargs b/c the init hook needs an initializer list
   def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO, signal_out: RangeLike = RangeExpr.ZERO,
                current_limits: RangeLike = RangeExpr.ALL, impedance: RangeLike = RangeExpr.ZERO):
     super().__init__()
@@ -117,8 +110,7 @@ class PassiveAdapterAnalogSource(CircuitPortAdapter[AnalogSource]):
 
 
 class PassiveAdapterAnalogSink(CircuitPortAdapter[AnalogSink]):
-  # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
-  @init_in_parent
+  # TODO we can't use **kwargs b/c the init hook needs an initializer list
   def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL, signal_limits: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO,
                impedance: RangeLike = RangeExpr.INF):

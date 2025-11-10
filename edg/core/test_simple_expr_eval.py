@@ -42,7 +42,6 @@ class TestReductionPort(Port[TestReductionLink]):
 
 
 class TestEvalPortBlock(Block):
-  @init_in_parent
   def __init__(self, range_param: RangeLike = RangeExpr()) -> None:
     super().__init__()
     self.port = self.Port(TestReductionPort(range_param))

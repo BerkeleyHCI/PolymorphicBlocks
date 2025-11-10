@@ -107,7 +107,6 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
     return (-1.0, -1.0,
             self._svgpcb_get(self.ncols) * 0.5 * 25.4 + 1.0, (self._svgpcb_get(self.nrows) + 1) * .5 * 25.4 + 1.0)
 
-  @init_in_parent
   def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7)*Volt):
     super().__init__()
 

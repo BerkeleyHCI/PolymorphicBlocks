@@ -17,7 +17,6 @@ class DummyGround(DummyDevice):
 
 
 class DummyVoltageSource(DummyDevice):
-  @init_in_parent
   def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
                current_limits: RangeLike = RangeExpr.ALL) -> None:
     super().__init__()
@@ -32,7 +31,6 @@ class DummyVoltageSource(DummyDevice):
 
 
 class DummyVoltageSink(DummyDevice):
-  @init_in_parent
   def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
@@ -46,7 +44,6 @@ class DummyVoltageSink(DummyDevice):
 
 
 class DummyDigitalSource(DummyDevice):
-  @init_in_parent
   def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
                current_limits: RangeLike = RangeExpr.ALL) -> None:
     super().__init__()
@@ -58,7 +55,6 @@ class DummyDigitalSource(DummyDevice):
 
 
 class DummyDigitalSink(DummyDevice):
-  @init_in_parent
   def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
@@ -70,7 +66,6 @@ class DummyDigitalSink(DummyDevice):
 
 
 class DummyAnalogSource(DummyDevice):
-  @init_in_parent
   def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO,
                signal_out: RangeLike = RangeExpr.EMPTY,
                current_limits: RangeLike = RangeExpr.ALL,
@@ -86,7 +81,6 @@ class DummyAnalogSource(DummyDevice):
 
 
 class DummyAnalogSink(DummyDevice):
-  @init_in_parent
   def __init__(self, voltage_limit: RangeLike = RangeExpr.ALL,
                signal_limit: RangeLike = RangeExpr.ALL,
                current_draw: RangeLike = RangeExpr.ZERO,
@@ -103,7 +97,6 @@ class DummyAnalogSink(DummyDevice):
 
 class ForcedVoltageCurrentDraw(DummyDevice, NetBlock):
   """Forces some input current draw regardless of the output's actual current draw value"""
-  @init_in_parent
   def __init__(self, forced_current_draw: RangeLike) -> None:
     super().__init__()
 
@@ -120,7 +113,6 @@ class ForcedVoltageCurrentDraw(DummyDevice, NetBlock):
 
 class ForcedVoltageCurrentLimit(DummyDevice, NetBlock):
   """Forces some output current limit, which should be tighter than the input's actual current draw."""
-  @init_in_parent
   def __init__(self, forced_current_limit: RangeLike) -> None:
     super().__init__()
 
@@ -140,7 +132,6 @@ class ForcedVoltageCurrentLimit(DummyDevice, NetBlock):
 class ForcedVoltage(DummyDevice, NetBlock):
   """Forces some voltage on the output regardless of the input's actual voltage.
   Current draw is passed through unchanged."""
-  @init_in_parent
   def __init__(self, forced_voltage: RangeLike) -> None:
     super().__init__()
 
@@ -157,7 +148,6 @@ class ForcedVoltage(DummyDevice, NetBlock):
 
 class ForcedVoltageCurrent(DummyDevice, NetBlock):
   """Forces some voltage and current on the output regardless of the input's actual parameters."""
-  @init_in_parent
   def __init__(self, forced_voltage: RangeLike, forced_current: RangeLike) -> None:
     super().__init__()
 
@@ -171,7 +161,6 @@ class ForcedVoltageCurrent(DummyDevice, NetBlock):
 
 
 class ForcedAnalogVoltage(DummyDevice, NetBlock):
-  @init_in_parent
   def __init__(self, forced_voltage: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
@@ -188,7 +177,6 @@ class ForcedAnalogVoltage(DummyDevice, NetBlock):
 
 
 class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice, NetBlock):
-  @init_in_parent
   def __init__(self, forced_signal: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
@@ -210,7 +198,6 @@ class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice, NetBlock):
 
 
 class ForcedDigitalSinkCurrentDraw(DummyDevice, NetBlock):
-  @init_in_parent
   def __init__(self, forced_current_draw: RangeLike = RangeExpr()) -> None:
     super().__init__()
 

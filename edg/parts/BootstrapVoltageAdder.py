@@ -4,8 +4,7 @@ from ..abstract_parts import *
 class BootstrapVoltageAdder(KiCadSchematicBlock, PowerConditioner, Block):
     """Bipolar (positive and negative) voltage adder using a switched cap circuit.
     """
-    @init_in_parent
-    def __init__(self, frequency: RangeExpr = 250*kHertz(tol=0), ripple_limit: FloatExpr = 25*mVolt):
+    def __init__(self, frequency: RangeLike = 250*kHertz(tol=0), ripple_limit: FloatLike = 25*mVolt):
         super().__init__()
 
         self.gnd = self.Port(Ground.empty())

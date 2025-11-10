@@ -85,7 +85,6 @@ class CapacitorStandardFootprint(StandardFootprint['Capacitor']):
 @abstract_block
 class UnpolarizedCapacitor(PassiveComponent):
   """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
-  @init_in_parent
   def __init__(self, capacitance: RangeLike, voltage: RangeLike, *,
                voltage_rating_derating: FloatLike = 0.5,
                exact_capacitance: BoolLike = False) -> None:
@@ -150,7 +149,6 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock, HasStandardFootpri
   def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Capacitor':
     return Capacitor(*cls.parse_capacitor(properties['Value']))
 
-  @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
 
@@ -178,7 +176,6 @@ class TableCapacitor(PartsTableSelector, Capacitor):
   NOMINAL_CAPACITANCE = PartsTableColumn(float)  # nominal capacitance, even with asymmetrical tolerances
   VOLTAGE_RATING = PartsTableColumn(Range)
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.capacitance, self.voltage, self.voltage_rating_derating, self.exact_capacitance)
@@ -220,7 +217,6 @@ class TableDeratingCapacitor(TableCapacitor):
   DERATE_LOWEST = 0.2  # floor for maximum derating factor
   # LOOSELY approximated from https://www.maximintegrated.com/en/design/technical-documents/tutorials/5/5527.html
 
-  @init_in_parent
   def __init__(self, *args, single_nominal_capacitance: RangeLike = (0, 22)*uFarad, **kwargs):
     super().__init__(*args, **kwargs)
     self.single_nominal_capacitance = self.ArgParameter(single_nominal_capacitance)
@@ -292,7 +288,6 @@ class DummyCapacitorFootprint(DummyDevice, Capacitor, FootprintBlock):
 
   TODO: use footprint table?
   """
-  @init_in_parent
   def __init__(self, footprint: StringLike = "", manufacturer: StringLike = "", part_number: StringLike = "",
                value: StringLike = "",
                *args, **kwargs):
@@ -316,7 +311,6 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
     return {'1': self.pwr, '2': self.gnd}
 
-  @init_in_parent
   def __init__(self, capacitance: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
     super().__init__()
 
@@ -342,7 +336,7 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     return self
 
 
-class CombinedCapacitorElement(Capacitor):  # to avoid an abstract part error
+class CombinedCapacitorElement(Capacitor):
   def contents(self):
     super().contents()
     self.assign(self.actual_capacitance, self.capacitance)  # fake it, since a combined capacitance is handwavey
@@ -351,11 +345,11 @@ class CombinedCapacitorElement(Capacitor):  # to avoid an abstract part error
 class CombinedCapacitor(MultipackDevice, MultipackBlock, GeneratorBlock):
   """A packed capacitor that combines multiple individual capacitors into a single component,
   with the sum of or taking the max of the constituent capacitances."""
-  @init_in_parent
   def __init__(self, *, extend_upper: BoolLike = False) -> None:
     super().__init__()
 
-    self.elements = self.PackedPart(PackedBlockArray(CombinedCapacitorElement()))
+    self.elements = self.PackedPart(PackedBlockArray(CombinedCapacitorElement(capacitance=RangeExpr(),
+                                                                              voltage=RangeExpr())))
     self.pos = self.PackedExport(self.elements.ports_array(lambda x: x.pos))
     self.neg = self.PackedExport(self.elements.ports_array(lambda x: x.neg))
     self.capacitances = self.PackedParameter(self.elements.params_array(lambda x: x.capacitance))

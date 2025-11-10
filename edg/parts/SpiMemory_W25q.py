@@ -17,7 +17,6 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
     # higher capacity variants available but not in SOIC-8
   ]
 
-  @init_in_parent
   def __init__(self, size: RangeLike):
     super().__init__()
     self.vcc = self.Port(VoltageSink(

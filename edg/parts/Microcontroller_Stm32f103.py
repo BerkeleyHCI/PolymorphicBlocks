@@ -250,7 +250,6 @@ class Stm32f103_48_Device(Stm32f103Base_Device):
 
 
 class UsbDpPullUp(InternalSubcircuit, Block):
-  @init_in_parent
   def __init__(self, resistance: RangeLike):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])

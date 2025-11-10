@@ -53,7 +53,6 @@ class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
     If the power sink (power is sunk into the port and off-board) is connected, is_power_provider
     indicates whether this port should model the maximum downstream current draw
     """
-    @init_in_parent
     def __init__(self, is_power_provider: BoolLike = False) -> None:
         super().__init__()
         self.is_power_provider = self.ArgParameter(is_power_provider)
@@ -134,7 +133,6 @@ class JacdacEdgeConnector(Connector, JacdacSubcircuit, GeneratorBlock):
 
     Requires this KiCad footprint library to be available: https://github.com/mattoppenheim/jacdac
     """
-    @init_in_parent
     def __init__(self, is_power_provider: BoolLike = False) -> None:
         super().__init__()
         self.is_power_provider = self.ArgParameter(is_power_provider)

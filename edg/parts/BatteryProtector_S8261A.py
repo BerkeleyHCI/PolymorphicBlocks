@@ -39,7 +39,6 @@ class S8261A_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class S8261A(PowerConditioner, Block):
   """1-cell LiIon/LiPo Battery protection IC protecting against overcharge, overdischarge, over current.
   """
-  @init_in_parent
   def __init__(self) -> None:
     super().__init__()
 

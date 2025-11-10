@@ -12,7 +12,6 @@ class Speaker(HumanInterface):
 
 class ConnectorSpeaker(Speaker):
   """Speaker that delegates to a PassiveConnector and with configurable impedance."""
-  @init_in_parent
   def __init__(self, impedance: RangeLike = 8*Ohm(tol=0)):
     super().__init__()
 

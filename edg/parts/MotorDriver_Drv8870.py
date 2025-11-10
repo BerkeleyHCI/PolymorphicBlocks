@@ -61,7 +61,6 @@ class Drv8870_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 class Drv8870(BrushedMotorDriver):
   """Brushed DC motor driver, 6.5-45v, PWM control, internally current limited using current sense and trip point"""
-  @init_in_parent
   def __init__(self, current_trip: RangeLike = (2, 3)*Amp) -> None:
     super().__init__()
     self.ic = self.Block(Drv8870_Device())

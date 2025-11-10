@@ -40,7 +40,6 @@ class HalfBridgePwm(BlockInterfaceMixin[HalfBridge]):
 @abstract_block
 class FetHalfBridge(HalfBridge):
     """Implementation of a half-bridge with two NFETs and a gate driver."""
-    @init_in_parent
     def __init__(self, frequency: RangeLike, fet_rds: RangeLike = (0, 1)*Ohm,
                  gate_res: RangeLike = 22*Ohm(tol=0.05)):
         super().__init__()
@@ -158,7 +157,6 @@ class RampLimiter(KiCadSchematicBlock):
     Additional more complex circuits
     https://electronics.stackexchange.com/questions/294061/p-channel-mosfet-inrush-current-limiting
     """
-    @init_in_parent
     def __init__(self, *, cgd: RangeLike = 10*nFarad(tol=0.5), target_ramp: RangeLike = 1000*Volt(tol=0.25),
                  target_vgs: RangeLike = (4, 10)*Volt, max_rds: FloatLike = 1*Ohm,
                  _cdiv_vgs_factor: RangeLike = (0.05, 0.75)):

@@ -41,7 +41,6 @@ class BaseDiode(DiscreteSemiconductor, HasStandardFootprint):
   """
   _STANDARD_FOOTPRINT = DiodeStandardFootprint
 
-  @init_in_parent
   def __init__(self) -> None:
     super().__init__()
 
@@ -59,7 +58,6 @@ class Diode(KiCadImportableBlock, BaseDiode):
     assert symbol_name in ('Device:D', 'Device:D_Small')
     return {'A': self.anode, 'K': self.cathode}
 
-  @init_in_parent
   def __init__(self, reverse_voltage: RangeLike, current: RangeLike, *,
                voltage_drop: RangeLike = Range.all(),
                reverse_recovery_time: RangeLike = Range.all()) -> None:
@@ -95,7 +93,6 @@ class TableDiode(PartsTableSelector, Diode):
   FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
   REVERSE_RECOVERY = PartsTableColumn(Range)  # possible reverse recovery time
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.reverse_voltage, self.current, self.voltage_drop, self.reverse_recovery_time)
@@ -125,7 +122,6 @@ class ZenerDiode(KiCadImportableBlock, BaseDiode, DiscreteSemiconductor):
     assert symbol_name in ('Device:D_Zener', 'Device:D_Zener_Small')
     return {'A': self.anode, 'K': self.cathode}
 
-  @init_in_parent
   def __init__(self, zener_voltage: RangeLike) -> None:
     super().__init__()
 
@@ -149,7 +145,6 @@ class TableZenerDiode(PartsTableSelector, ZenerDiode):
   ZENER_VOLTAGE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)  # tolerable power
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.zener_voltage)
@@ -167,7 +162,6 @@ class TableZenerDiode(PartsTableSelector, ZenerDiode):
 class ProtectionZenerDiode(Protection):
   """Zener diode reversed across a power rail to provide transient overvoltage protection (and become an incandescent
   indicator on a reverse voltage)"""
-  @init_in_parent
   def __init__(self, voltage: RangeLike):
     super().__init__()
 
@@ -188,7 +182,6 @@ class ProtectionZenerDiode(Protection):
 @deprecated("Use AnalogClampResistor, which should be cheaper and cause less signal distortion")
 class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
   """Analog overvoltage protection diode to clamp the input voltage"""
-  @init_in_parent
   def __init__(self, voltage: RangeLike):
     super().__init__()
 

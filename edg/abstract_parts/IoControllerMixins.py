@@ -8,7 +8,6 @@ class WithCrystalGenerator(IoController, GeneratorBlock):
   """A Block generator mixin that checks if a crystal oscillator is needed, and if so generates it."""
   DEFAULT_CRYSTAL_FREQUENCY: Range
 
-  @init_in_parent
   def __init__(self):
     super().__init__()
     self.xtal_node = self.connect()  # connect this internal node to the microcontroller; this may be empty

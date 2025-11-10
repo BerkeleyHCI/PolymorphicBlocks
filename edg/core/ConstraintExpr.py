@@ -398,7 +398,7 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
         FloatExpr._to_expr_type(input[1])
         ))
     else:
-      raise TypeError(f"op arg to RangeExpr must be FloatLike, got {input} of type {type(input)}")
+      raise TypeError(f"op arg to RangeExpr must be RangeLike, got {input} of type {type(input)}")
 
   @classmethod
   def _decl_to_proto(cls) -> edgir.ValInit:

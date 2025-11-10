@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from functools import reduce, wraps
+import functools
+import inspect
+import warnings
+from functools import reduce
 from typing import *
 
 from .. import edgir
+from .Builder import builder
 from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, ArrayBoolExpr, ArrayBoolLike, ArrayIntLike, \
   ArrayFloatLike, ArrayRangeLike, ArrayStringLike
 from .Array import BaseVector, Vector
@@ -11,7 +15,7 @@ from .Binding import InitParamBinding, AssignBinding
 from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
-from .Core import Refable, non_library
+from .Core import Refable, non_library, ElementMeta
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -22,108 +26,22 @@ if TYPE_CHECKING:
   from .BlockInterfaceMixin import BlockInterfaceMixin
 
 
-InitType = TypeVar('InitType', bound=Callable[..., None])
-def init_in_parent(fn: InitType) -> InitType:
-  """
-  This is a wrapper around any Block's __init__ that takes parameters, so arguments passed into the parameters
-  generate into parameter assignments in the parent Block scope.
+def init_in_parent(fn: Any) -> Any:
+  warnings.warn(
+    f"in {fn}, @init_in_parent is no longer needed, the annotation can be removed without replacement",
+    DeprecationWarning,
+    stacklevel=2
+  )
 
-  This also handles default values, which are generated into the Block containing the __init__.
-
-  It is explicitly not supported for a subclass to modify the parameters passed to a super().__init__ call.
-  This can interact badly with refinement, since the parameters of super().__init__ could be directly assigned
-  in an enclosing block, yet the subclass would also re-assign the same parameter, leading to a conflicting assign.
-  These cases should use composition instead of inheritance, by instantiating the "super" Block and so its parameters
-  are not made available to the enclosing scope.
-  """
-  import inspect
-  from .Builder import builder
-
-  @wraps(fn)
-  def wrapped(self: Block, *args_tup, **kwargs) -> Any:
-    args = list(args_tup)
-    builder_prev = builder.get_curr_context()
-    builder.push_element(self)
-    try:
-      if not hasattr(self, '_init_params_value'):
-        self._init_params_value = {}
-
-      for arg_index, (arg_name, arg_param) in enumerate(list(inspect.signature(fn).parameters.items())[1:]):  # discard 0=self
-        if arg_param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
-          continue  # ignore *args and **kwargs, those will get resolved at a lower level
-
-        if arg_name in kwargs:
-          arg_val = kwargs[arg_name]
-        elif arg_index < len(args):
-          arg_val = args[arg_index]
-        elif arg_param.default is not inspect._empty:
-          arg_val = arg_param.default
-        else:
-          arg_val = None
-
-        if arg_name in self._init_params_value:  # if previously declared, check it is the prev param and keep as-is
-          (prev_param, prev_val) = self._init_params_value[arg_name]
-          assert prev_param is arg_val, f"in {fn}, redefinition of initializer {arg_name}={arg_val} over prior {prev_val}"
-        else:  # not previously declared, create a new constructor parameter
-          if isinstance(arg_val, ConstraintExpr):
-            assert arg_val._is_bound() or arg_val.initializer is None,\
-              f"in constructor arguments got non-bound default {arg_name}={arg_val}: " +\
-              "either leave default empty or pass in a value or uninitialized type " +\
-              "(eg, 2.0, FloatExpr(), but NOT FloatExpr(2.0))"
-
-          param_model: ConstraintExpr
-          if arg_param.annotation in (BoolLike, "BoolLike", BoolExpr, "BoolExpr"):
-            param_model = BoolExpr()
-          elif arg_param.annotation in (IntLike, "IntLike", IntExpr, "IntExpr"):
-            param_model = IntExpr()
-          elif arg_param.annotation in (FloatLike, "FloatLike", FloatExpr, "FloatExpr"):
-            param_model = FloatExpr()
-          elif arg_param.annotation in (RangeLike, "RangeLike", RangeExpr, "RangeExpr"):
-            param_model = RangeExpr()
-          elif arg_param.annotation in (StringLike, "StringLike", StringExpr, "StringExpr"):
-            param_model = StringExpr()
-          elif arg_param.annotation in (ArrayBoolLike, "ArrayBoolLike", ArrayBoolExpr, "ArrayBoolExpr"):
-            param_model = ArrayBoolExpr()
-          elif arg_param.annotation in (ArrayIntLike, "ArrayIntLike", ArrayIntExpr, "ArrayIntExpr"):
-            param_model = ArrayIntExpr()
-          elif arg_param.annotation in (ArrayFloatLike, "ArrayFloatLike", ArrayFloatExpr, "ArrayFloatExpr"):
-            param_model = ArrayFloatExpr()
-          elif arg_param.annotation in (ArrayRangeLike, "ArrayRangeLike", ArrayRangeExpr, "ArrayRangeExpr"):
-            param_model = ArrayRangeExpr()
-          elif arg_param.annotation in (ArrayStringLike, "ArrayStringLike", ArrayStringExpr, "ArrayStringExpr"):
-            param_model = ArrayStringExpr()
-          else:
-            raise ValueError(f"In {fn}, unknown argument type for {arg_name}: {arg_param.annotation}")
-
-          # Create new parameter in self, and pass through this one instead of the original
-          param_bound = param_model._bind(InitParamBinding(self))
-
-          # transform value to standaradize form to ConstraintExpr or None as needed
-          if isinstance(arg_val, ConstraintExpr):
-            if not arg_val._is_bound():  # TODO: perhaps deprecate the FloatExpr() form as an empty param?
-              assert arg_val.initializer is None, f"models may not be passed into __init__ {arg_name}={arg_val}"
-              arg_val = None
-          elif not isinstance(arg_val, ConstraintExpr) and arg_val is not None:
-            arg_val = param_model._to_expr_type(arg_val)
-          assert arg_val is None or type(param_model) == type(arg_val), \
-            f"type mismatch for {arg_name}: argument type {type(param_model)}, argument value {type(arg_val)}"
-
-          self._init_params_value[arg_name] = (param_bound, arg_val)
-
-          if arg_name in kwargs:
-            kwargs[arg_name] = param_bound
-          elif arg_index < len(args):
-            args[arg_index] = param_bound
-          else:
-            kwargs[arg_name] = param_bound
-    finally:
-      builder.pop_to(builder_prev)
-
+  @functools.wraps(fn)
+  def wrapped(self: Block, *args, **kwargs) -> Any:
+    # in concept, the outer deprecation should fire, but it doesn't consistently, so this is added for redundancy
+    warnings.warn(
+      f"in {fn}, @init_in_parent is no longer needed, the annotation can be removed without replacement",
+      DeprecationWarning
+    )
     return fn(self, *args, **kwargs)
-
-  # TODO check fn is constructor?
-
-  return cast(InitType, wrapped)
+  return wrapped
 
 
 # TODO not statically type checked, since the port may be externally facing. TODO: maybe PortTags should be bridgeable?
@@ -182,21 +100,150 @@ class ChainConnect:
     return iter((tuple(self.blocks), self))
 
 
+class BlockMeta(ElementMeta):
+  """This provides a hook on __init__ that replaces argument values with empty ConstraintExpr
+  based on the type annotation and stores the supplied argument to the __init__ (if any) in the binding.
+
+  The supplied argument is cast to its target type and stored in the binding, in its parent context.
+  The binding itself is in the new object's context.
+
+  This performs two functions:
+  - Allows blocks to compile at the top-level where required parameters have no values and there is no
+  context that provides those values
+  - Standardize the type of objects passed to self.ArgParameter, so the result is properly typed.
+
+  This is applied to every class that inherits this metaclass, and hooks every super().__init__ call."""
+
+  _ANNOTATION_EXPR_MAP: Dict[Any, Type[ConstraintExpr]] = {
+    BoolLike: BoolExpr,
+    "BoolLike": BoolExpr,
+    IntLike: IntExpr,
+    "IntLike": IntExpr,
+    FloatLike: FloatExpr,
+    "FloatLike": FloatExpr,
+    RangeLike: RangeExpr,
+    "RangeLike": RangeExpr,
+    StringLike: StringExpr,
+    "StringLike": StringExpr,
+    ArrayBoolLike: ArrayBoolExpr,
+    "ArrayBoolLike": ArrayBoolExpr,
+    ArrayIntLike: ArrayIntExpr,
+    "ArrayIntLike": ArrayIntExpr,
+    ArrayFloatLike: ArrayFloatExpr,
+    "ArrayFloatLike": ArrayFloatExpr,
+    ArrayRangeLike: ArrayRangeExpr,
+    "ArrayRangeLike": ArrayRangeExpr,
+    ArrayStringLike: ArrayStringExpr,
+    "ArrayStringLike": ArrayStringExpr,
+  }
+
+  def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+    new_cls = super().__new__(cls, *args, **kwargs)
+
+    if '__init__' in new_cls.__dict__:
+      orig_init = new_cls.__dict__['__init__']
+
+      # collect and pre-process argument data
+      arg_data: List[Tuple[str, inspect.Parameter, Type[ConstraintExpr]]] = []
+      # discard param 0 (self)
+      for arg_name, arg_param in list(inspect.signature(orig_init).parameters.items())[1:]:
+        if arg_param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+          param_expr_type = BlockMeta._ANNOTATION_EXPR_MAP.get(arg_param.annotation, None)
+          if param_expr_type is None:
+            raise BlockDefinitionError(new_cls, f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}")
+        else:
+          param_expr_type = ConstraintExpr  # dummy placeholder
+
+        arg_data.append((arg_name, arg_param, param_expr_type))
+
+      def wrapped_init(self, *args, **kwargs) -> None:
+        if not hasattr(self, '_init_params'):  # used to communicate to the block the added init params
+          self._init_params = {}
+
+        def remap_arg(arg_name: str, arg_type: Type[ConstraintExpr], arg_value: Any) -> ConstraintExpr:
+          if isinstance(arg_value, ConstraintExpr):
+            if isinstance(arg_value.binding, InitParamBinding) and arg_value.binding.parent is self:
+              return arg_value  # pass through arg that has been previously transformed
+
+          if isinstance(arg_value, ConstraintExpr):  # otherwise, create a new arg
+            if arg_value._is_bound():
+              typed_arg_value: Optional[ConstraintExpr] = arg_type._to_expr_type(arg_value)
+            elif arg_value.initializer is None:
+              typed_arg_value = None
+            else:
+              raise BlockDefinitionError(self,
+                                         f"in constructor arguments got non-bound value {arg_name}={arg_value}: " + \
+                                         "either leave default empty or pass in a value or uninitialized type " + \
+                                         "(eg, 2.0, FloatExpr(), but NOT FloatExpr(2.0))")
+          elif arg_value is not None:
+            typed_arg_value = arg_type._to_expr_type(arg_value)
+          else:
+            typed_arg_value = None
+
+          return arg_type()._bind(InitParamBinding(self, typed_arg_value))
+
+        # create wrapper ConstraintExpr in new object scope
+        builder_prev = builder.get_curr_context()
+        builder.push_element(self)
+        try:
+          # rebuild args and kwargs by traversing the args list
+          new_args: List[Any] = []
+          new_kwargs: Dict[str, Any] = {}
+          for arg_pos, (arg_name, arg_param, param_expr_type) in enumerate(arg_data):
+            if arg_param.kind == inspect.Parameter.VAR_POSITIONAL:  # pass-through *args, handled at lower level
+              new_args.extend(args[arg_pos:])
+            elif arg_param.kind == inspect.Parameter.VAR_KEYWORD:  # pass-through *kwargs, handled at lower level
+              for arg_name in kwargs:
+                if arg_name not in new_kwargs:
+                  new_kwargs[arg_name] = kwargs[arg_name]
+            elif arg_pos < len(args) and arg_param.kind in (inspect.Parameter.POSITIONAL_ONLY,
+                                                            inspect.Parameter.POSITIONAL_OR_KEYWORD):  # present positional arg
+              new_arg = remap_arg(arg_name, param_expr_type, args[arg_pos])
+              new_args.append(new_arg)
+              self._init_params[arg_name] = new_arg
+            elif arg_pos >= len(args) and arg_param.kind in (inspect.Parameter.POSITIONAL_ONLY, ):  # non-present positional arg
+              if len(builder.stack) == 1:  # at top-level, fill in all args
+                new_arg = remap_arg(arg_name, param_expr_type, None)
+                new_args.append(new_arg)
+                self._init_params[arg_name] = new_arg
+            elif arg_name in kwargs and arg_param.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                                                           inspect.Parameter.KEYWORD_ONLY):  # present kwarg
+              new_arg = remap_arg(arg_name, param_expr_type, kwargs[arg_name])
+              new_kwargs[arg_name] = new_arg
+              self._init_params[arg_name] = new_arg
+            elif arg_name not in kwargs and arg_param.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                                                               inspect.Parameter.KEYWORD_ONLY):  # non-present kwarg
+              if arg_param.default is not inspect._empty:  # default values do show up in kwargs, add them to transform them
+                new_arg = remap_arg(arg_name, param_expr_type, arg_param.default)
+                new_kwargs[arg_name] = new_arg
+                self._init_params[arg_name] = new_arg
+              elif len(builder.stack) == 1:  # at top-level, fill in all args
+                new_arg = remap_arg(arg_name, param_expr_type, None)
+                new_kwargs[arg_name] = new_arg
+                self._init_params[arg_name] = new_arg
+        finally:
+          builder.pop_to(builder_prev)
+
+        orig_init(self, *new_args, **new_kwargs)
+
+      new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
+
+    return new_cls
+
+
 @non_library
-class Block(BaseBlock[edgir.HierarchyBlock]):
+class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   """Part with a statically-defined subcircuit.
   Relations between contained parameters may only be expressed in the given constraint language.
   """
   def __init__(self) -> None:
     super().__init__()
 
-    # name -> (empty param, default argument (if any)), set in @init_in_parent
-    self._init_params_value: Dict[str, Tuple[ConstraintExpr, Optional[ConstraintExpr]]]
-    if not hasattr(self, '_init_params_value'):
-      self._init_params_value = {}
-    for param_name, (param, param_value) in self._init_params_value.items():
-      self._parameters.register(param)
-      self.manager.add_element(param_name, param)
+    if hasattr(self, '_init_params'):  # used to propagate params generated in the metaclass __init__ hook
+      for param_name, param in cast(Dict, self._init_params).items():
+        self._parameters.register(param)
+        self.manager.add_element(param_name, param)
+      delattr(self, '_init_params')
 
     self._mixins: List['BlockInterfaceMixin'] = []
 
@@ -224,23 +271,14 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     return ref_map
 
-  def _get_init_params_values(self) -> Dict[str, Tuple[ConstraintExpr, Optional[ConstraintExpr]]]:
-    if self._mixins:
-      combined_dict = self._init_params_value.copy()
-      for mixin in self._mixins:
-        combined_dict.update(mixin._get_init_params_values())
-      return combined_dict
-    else:
-      return self._init_params_value
-
   def _populate_def_proto_block_base(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     pb = super()._populate_def_proto_block_base(pb)
 
     # generate param defaults
-    for param_name, (param, param_value) in self._get_init_params_values().items():
-      if param_value is not None:
+    for param_name, param in self._parameters.items():
+      if isinstance(param.binding, InitParamBinding) and param.binding.value is not None:
         # default values can't depend on anything so the ref_map is empty
-        pb.param_defaults[param_name].CopyFrom(param_value._expr_to_proto(IdentityDict()))
+        pb.param_defaults[param_name].CopyFrom(param.binding.value._expr_to_proto(IdentityDict()))
 
     return pb
 
@@ -341,10 +379,13 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
 
     # generate block initializers
     for (block_name, block) in self._blocks.items():
-      for (block_param_name, (block_param, block_param_value)) in block._get_init_params_values().items():
-        if block_param_value is not None:
+      all_block_params = dict(block._parameters.items())
+      for mixin in block._mixins:
+        all_block_params.update(mixin._parameters.items())
+      for (block_param_name, block_param) in all_block_params.items():
+        if isinstance(block_param.binding, InitParamBinding) and block_param.binding.value is not None:
           edgir.add_pair(pb.constraints, f'(init){block_name}.{block_param_name}').CopyFrom(  # TODO better name
-            AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param_value), ref_map)
+            AssignBinding.make_assign(block_param, block_param.binding.value, ref_map)
           )
 
     return pb
@@ -358,8 +399,6 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     pb = self._populate_def_proto_block_base(pb)
     pb = self._populate_def_proto_port_init(pb)
 
-    for (name, (param, param_value)) in self._get_init_params_values().items():
-      assert param.initializer is None, f"__init__ argument param {name} has unexpected initializer"
     pb = self._populate_def_proto_param_init(pb)
 
     pb = self._populate_def_proto_hierarchy(pb)
@@ -483,7 +522,7 @@ class Block(BaseBlock[edgir.HierarchyBlock]):
     if param.binding is None:
       raise TypeError(f"param to ArgParameter(...) must have binding")
     if not isinstance(param.binding, InitParamBinding):
-      raise TypeError(f"param to ArgParameter(...) must be __init__ argument with @init_in_parent")
+      raise TypeError(f"param to ArgParameter(...) must be __init__ argument")
 
     if doc is not None:
       self._param_docs[param] = doc

@@ -29,7 +29,6 @@ class Cr2032(Battery, FootprintBlock):
 
 
 class Li18650(Battery, FootprintBlock):
-  @init_in_parent
   def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args,
                actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs):
     super().__init__(voltage, *args, **kwargs)
@@ -56,7 +55,6 @@ class Li18650(Battery, FootprintBlock):
 
 class AaBattery(Battery, FootprintBlock):
   """AA battery holder supporting alkaline and rechargeable chemistries."""
-  @init_in_parent
   def __init__(self, voltage: RangeLike = (1.0, 1.6)*Volt, *args,
                actual_voltage: RangeLike = (1.0, 1.6)*Volt, **kwargs):
     super().__init__(voltage, *args, **kwargs)
@@ -83,7 +81,6 @@ class AaBattery(Battery, FootprintBlock):
 
 class AaBatteryStack(Battery, GeneratorBlock):
     """AA Alkaline battery stack that generates batteries in series"""
-    @init_in_parent
     def __init__(self, count: IntLike = 1, *, cell_actual_voltage: RangeLike = (1.0, 1.6)*Volt):
         super().__init__(voltage=Range.all())  # no voltage spec passed in
         self.count = self.ArgParameter(count)

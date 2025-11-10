@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Lmv331_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-    @init_in_parent
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())

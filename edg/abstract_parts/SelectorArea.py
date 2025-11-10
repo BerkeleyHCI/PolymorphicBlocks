@@ -18,7 +18,6 @@ class SelectorArea(PartsTablePart):
   1812    R=23.01   C=23.4    D=23.01
   2512    R=29.3376           D=29.3376
   """
-  @init_in_parent
   def __init__(self, *args, footprint_area: RangeLike = RangeExpr.ALL, **kwargs):
     super().__init__(*args, **kwargs)
     self.footprint_area = self.ArgParameter(footprint_area)

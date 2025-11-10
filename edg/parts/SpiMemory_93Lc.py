@@ -19,7 +19,6 @@ class E93Lc_B_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
     #  'C616337', False),  # BT-I/OT variant
   ]
 
-  @init_in_parent
   def __init__(self, size: RangeLike):
     super().__init__()
     self.vcc = self.Port(VoltageSink(

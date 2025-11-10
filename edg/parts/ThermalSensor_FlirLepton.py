@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-    @init_in_parent
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
@@ -88,7 +87,6 @@ class FlirLepton(Sensor, Resettable, Block):
     <50mK (35mK typical) NETD.
     Only the part number for the socket is generated, the sensor (a $100+ part) must be purchased separately.
     """
-    @init_in_parent
     def __init__(self):
         super().__init__()
         self.ic = self.Block(FlirLepton_Device())

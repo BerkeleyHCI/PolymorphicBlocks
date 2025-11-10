@@ -19,7 +19,6 @@ class BidirectionaLevelShifter(Interface, GeneratorBlock):
     If empty, both sides are assumed to be able to drive the shifter and must have voltages and output thresholds
     modeled. TODO: this mode may be brittle
     """
-    @init_in_parent
     def __init__(self, lv_res: RangeLike = 4.7*kOhm(tol=0.05), hv_res: RangeLike = 4.7*kOhm(tol=0.05),
                  src_hint: StringLike = '') -> None:
         super().__init__()

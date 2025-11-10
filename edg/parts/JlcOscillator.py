@@ -9,7 +9,6 @@ class JlcOscillator_Device(InternalSubcircuit, Block):
   Defines a standard interface, and specifies the footprint here."""
   FOOTPRINT: str
 
-  @init_in_parent
   def __init__(self, in_kicad_part: StringLike, in_kicad_value: StringLike, in_kicad_datasheet: StringLike,
                in_lcsc_part: StringLike, in_actual_basic_part: BoolLike):
     super().__init__()
@@ -29,7 +28,6 @@ class JlcOscillator_Device(InternalSubcircuit, Block):
 class Sg8101_Base_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
   FOOTPRINT: str
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.gnd.init_from(Ground())

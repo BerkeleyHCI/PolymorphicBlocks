@@ -13,7 +13,6 @@ class DiscreteRfWarning(BlockInterfaceMixin[Block]):
     parasitics of real devices.
     The discrete RF library components / generators are also experimental and subject to change.
     They also do not adhere to the tolerance conventions of non-RF parts."""
-    @init_in_parent
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.discrete_rf_warning = self.Parameter(BoolExpr(False))
@@ -76,7 +75,6 @@ class LLowPassFilterWith2HNotch(GeneratorBlock, RfFilter):
         lc_c = 1/(lc_l * (2*pi*2*freq)**2)
         return lc_l, c, lc_c
 
-    @init_in_parent
     def __init__(self, frequency: FloatLike, src_resistance: FloatLike, src_reactance: FloatLike,
                  load_resistance: FloatLike, tolerance: FloatLike,
                  voltage: RangeLike, current: RangeLike):
@@ -173,7 +171,6 @@ class PiLowPassFilter(GeneratorBlock, RfFilter):
 
         return c1, c2, l1 + l2, rv
 
-    @init_in_parent
     def __init__(self, frequency: RangeLike, src_resistance: FloatLike, src_reactance: FloatLike,
                  load_resistance: FloatLike, tolerance: FloatLike,
                  voltage: RangeLike, current: RangeLike):

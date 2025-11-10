@@ -40,7 +40,6 @@ class Led(DiscreteSemiconductor, HasStandardFootprint):
   Orange: LedColor = "orange"
   Any: LedColor = ""
 
-  @init_in_parent
   def __init__(self, color: LedColorLike = Any):
     super().__init__()
 
@@ -55,7 +54,6 @@ class Led(DiscreteSemiconductor, HasStandardFootprint):
 class TableLed(PartsTableSelector, Led):
   COLOR = PartsTableColumn(str)
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.color)
@@ -83,7 +81,6 @@ class RgbLedCommonAnode(DiscreteSemiconductor):
 # TODO should there be some kind of abstract LED class, that works for both high and low side?
 class IndicatorLed(Light):
   """High-side-driven (default, "common cathode") indicator LED"""
-  @init_in_parent
   def __init__(self, color: LedColorLike = Led.Any, *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """Controlled LEDs, with provisions for both current source and sink configurations.
     signal_in is a constant-voltage digital source, so this must contain some ballast.
@@ -115,7 +112,6 @@ class IndicatorLed(Light):
 
 class IndicatorLedArray(Light, GeneratorBlock):
   """An array of IndicatorLed, just a convenience wrapper."""
-  @init_in_parent
   def __init__(self, count: IntLike, color: LedColorLike = Led.Any, *,
                current_draw: RangeLike = (1, 10) * mAmp):
     super().__init__()
@@ -139,7 +135,6 @@ class IndicatorLedArray(Light, GeneratorBlock):
 @abstract_block
 class IndicatorSinkLed(Light, Block):
   """Abstract part for an low-side-driven ("common anode") indicator LED"""
-  @init_in_parent
   def __init__(self, color: LedColorLike = Led.Any, *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """Controlled LEDs, with provisions for both current source and sink configurations.
     signal_in is a constant-voltage digital source, so this must contain some ballast.
@@ -155,7 +150,6 @@ class IndicatorSinkLed(Light, Block):
 
 class IndicatorSinkLedResistor(IndicatorSinkLed):
   """TODO: should the resistor sided-ness be configurable, eg as a generator? Similar for IndicatorLed"""
-  @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
 
@@ -178,7 +172,6 @@ class IndicatorSinkLedResistor(IndicatorSinkLed):
 
 class IndicatorSinkLedArray(Light, GeneratorBlock):
   """An array of IndicatorSinkLed, just a convenience wrapper."""
-  @init_in_parent
   def __init__(self, count: IntLike, color: LedColorLike = Led.Any, *,
                current_draw: RangeLike = (1, 10) * mAmp):
     super().__init__()
@@ -201,7 +194,6 @@ class IndicatorSinkLedArray(Light, GeneratorBlock):
 
 class VoltageIndicatorLed(Light):
   """LED connected to a voltage rail as an indicator that there is voltage present"""
-  @init_in_parent
   def __init__(self, color: LedColorLike = Led.Any, *, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """
     TODO: support non single color wavelength (eg, color temperature?)
@@ -231,7 +223,6 @@ class VoltageIndicatorLed(Light):
 # TODO should there be some kind of abstract LED class, that works for both CA and CC type LEDs?
 class IndicatorSinkRgbLed(Light):
   """Common anode indicator RGB LED"""
-  @init_in_parent
   def __init__(self, current_draw: RangeLike = (1, 10)*mAmp) -> None:
     """RGB LEDs, with provisions for both common-anode and common-cathode configurations.
     This should not contain amplifiers."""
