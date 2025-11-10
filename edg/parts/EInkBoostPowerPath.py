@@ -5,7 +5,6 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
   """Boost converter power path for e-ink displays with negative voltage generation through
   a bootstrap switched-cap circuit.
   Current is the peak current through the FET and diodes."""
-  @init_in_parent
   def __init__(self, voltage_out: RangeLike, current: RangeLike, inductance: RangeLike,
                in_capacitance: RangeLike, out_capacitance: RangeLike, resistance: RangeLike,
                diode_voltage_drop: RangeLike = (0, 0.5)*Volt):

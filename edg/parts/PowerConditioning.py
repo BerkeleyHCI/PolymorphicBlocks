@@ -29,7 +29,6 @@ class BufferedSupply(PowerConditioner):
 
   See https://electronics.stackexchange.com/questions/178605/op-amp-mosfet-constant-current-power-source
   """
-  @init_in_parent
   def __init__(self, charging_current: RangeLike, sense_resistance: RangeLike,
                voltage_drop: RangeLike) -> None:
     super().__init__()
@@ -113,7 +112,6 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
   """Single-diode power merge block for two voltage sources, where the lower voltage one is diode-gated and less
   preferred if both are connected.
   """
-  @init_in_parent
   def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = RangeExpr.ALL) -> None:
     super().__init__()
 
@@ -147,7 +145,6 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
 class DiodePowerMerge(PowerConditioner, Block):
   """Diode power merge block for two voltage sources.
   """
-  @init_in_parent
   def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = (0, float('inf'))) -> None:
     super().__init__()
 
@@ -195,7 +192,6 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
   The higher priority input incurs a diode drop, while the lower priority input has a FET.
   As a side effect, the FET power path also acts as reverse polarity protection.
   """
-  @init_in_parent
   def __init__(self, diode_voltage_drop: RangeLike, fet_rds_on: RangeLike) -> None:
     super().__init__()
 
@@ -264,8 +260,6 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
   100R-330R is good but 1k-50k can be used for continuous load.
   Ref: https://components101.com/articles/design-guide-pmos-mosfet-for-reverse-voltage-polarity-protection
   """
-
-  @init_in_parent
   def __init__(self, gate_resistor: RangeLike = 10 * kOhm(tol=0.05), rds_on: RangeLike = (0, 0.1) * Ohm):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
@@ -307,8 +301,6 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
   But always reverse protect. R1 and R2 are the pullup bias resistors for mp1 and mp2 PFet.
   More info at: https://www.edn.com/reverse-voltage-protection-for-battery-chargers/
   """
-
-  @init_in_parent
   def __init__(self, r1_val: RangeLike = 100 * kOhm(tol=0.01), r2_val: RangeLike = 100 * kOhm(tol=0.01),
                rds_on: RangeLike = (0, 0.1) * Ohm):
     super().__init__()
@@ -375,8 +367,6 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
   """A high-side PFET power gate that has a button to power on, can be latched on by an external signal,
   and provides the button output as a signal.
   """
-
-  @init_in_parent
   def __init__(self, pull_resistance: RangeLike = 10 * kOhm(tol=0.05), amp_resistance: RangeLike = 10 * kOhm(tol=0.05),
                diode_drop: RangeLike = (0, 0.4) * Volt):
     super().__init__()
@@ -455,7 +445,6 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
 class SoftPowerSwitch(PowerSwitch, Block):
   """A software power switch that adds a power button a user can turn on
   """
-  @init_in_parent
   def __init__(self, pull_resistance: RangeLike = 10 * kOhm(tol=0.05), amp_resistance: RangeLike = 10 * kOhm(tol=0.05),
                diode_drop: RangeLike = (0, 0.4) * Volt):
     super().__init__()

@@ -6,7 +6,6 @@ from .PartsTablePart import PartsTableSelector
 
 @abstract_block
 class Antenna(Interface, Block):
-  @init_in_parent
   def __init__(self, frequency: RangeLike, impedance: RangeLike = Range.all(), power: RangeLike = (0, 0)*Watt):
     super().__init__()
 
@@ -31,7 +30,6 @@ class TableAntenna(Antenna, PartsTableSelector, GeneratorBlock):
   IMPEDANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.frequency, self.power, self.impedance)

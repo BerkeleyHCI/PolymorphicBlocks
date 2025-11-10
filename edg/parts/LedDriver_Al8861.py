@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-    @init_in_parent
     def __init__(self, peak_output_current: FloatLike):
         super().__init__()
 
@@ -46,7 +45,6 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Al8861(LedDriverPwm, LedDriverSwitchingConverter, LedDriver, GeneratorBlock):
     """AL8861 buck LED driver."""
-    @init_in_parent
     def __init__(self, diode_voltage_drop: RangeLike = Range.all()):
         super().__init__()
 

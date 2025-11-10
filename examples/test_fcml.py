@@ -7,7 +7,6 @@ from edg.abstract_parts.PartsTable import ExperimentalUserFnPartsTable
 
 class PowerOutConnector(Connector, Block):
   """Parameterized current draw voltage output connector"""
-  @init_in_parent
   def __init__(self, current: RangeLike):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
@@ -23,8 +22,7 @@ class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
     assert symbol_name == 'Device:D'
     return {'A': self.pwr_in, 'K': self.pwr_out}
 
-  @init_in_parent
-  def __init__(self, reverse_voltage: RangeExpr, current: RangeExpr, voltage_drop: RangeExpr) -> None:
+  def __init__(self, reverse_voltage: RangeLike, current: RangeLike, voltage_drop: RangeLike) -> None:
     super().__init__()
 
     self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
@@ -57,7 +55,6 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
   - it does not generate an isolator, since signals are already ground-referenced
   - it does not generate a low-side bootstrap diode and cap, since voltage is provided
   - it does not generate a flying capacitor on the input, since that is the input cap"""
-  @init_in_parent
   def __init__(self, is_first: BoolLike = False, *,
                in_voltage: RangeLike, frequency: RangeLike, fet_rds: RangeLike,
                gate_res: RangeLike):
@@ -178,7 +175,6 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
   TODO: Is there a way to unify this with BuckConverterPowerPath?
   This basically completely duplicates it, but adds a scaling factor that doesn't exist there
   """
-  @init_in_parent
   def __init__(self, input_voltage: RangeLike, output_voltage: RangeLike, frequency: RangeLike,
                output_current: RangeLike, sw_current_limits: RangeLike, *,
                input_voltage_ripple: FloatLike,
@@ -276,7 +272,6 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
   either be high or low (but not both or none).
   Generates a digital isolator for each gate driver that is offset from ground.
   """
-  @init_in_parent
   def __init__(self, levels: IntLike, ratios: RangeLike, frequency: RangeLike, *,
                ripple_ratio: RangeLike = (0.2, 0.5), fet_rds: RangeLike = (0, 0.1)*Ohm):
     super().__init__()

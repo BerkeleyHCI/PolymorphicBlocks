@@ -70,7 +70,6 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
   def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Resistor':
     return Resistor(resistance=cls.parse_resistor(properties['Value']))
 
-  @init_in_parent
   def __init__(self, resistance: RangeLike, power: RangeLike = RangeExpr.ZERO,
                voltage: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
@@ -104,7 +103,6 @@ class TableResistor(PartsTableSelector, Resistor):
   POWER_RATING = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.resistance, self.power, self.voltage)
@@ -129,7 +127,6 @@ class TableResistor(PartsTableSelector, Resistor):
 
 class PullupResistor(DiscreteApplication):
   """Pull-up resistor with an VoltageSink for automatic implicit connect to a Power line."""
-  @init_in_parent
   def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
@@ -152,7 +149,6 @@ class PullupResistor(DiscreteApplication):
 
 class PulldownResistor(DiscreteApplication):
   """Pull-down resistor with an VoltageSink for automatic implicit connect to a Ground line."""
-  @init_in_parent
   def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
@@ -175,7 +171,6 @@ class PulldownResistor(DiscreteApplication):
 
 class PullupResistorArray(TypedTestPoint, GeneratorBlock):
   """Array of PullupResistors, sized from the port array's connections."""
-  @init_in_parent
   def __init__(self, resistance: RangeLike):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -194,7 +189,6 @@ class PullupResistorArray(TypedTestPoint, GeneratorBlock):
 
 class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
   """Array of PulldownResistors, sized from the port array's connections."""
-  @init_in_parent
   def __init__(self, resistance: RangeLike):
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
@@ -213,7 +207,6 @@ class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
 
 class SeriesPowerResistor(DiscreteApplication):
   """Series resistor for power applications"""
-  @init_in_parent
   def __init__(self, resistance: RangeLike) -> None:
     super().__init__()
 
@@ -251,7 +244,6 @@ class SeriesPowerResistor(DiscreteApplication):
 
 class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorBlock):
   """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
-  @init_in_parent
   def __init__(self, resistance: RangeLike, sense_in_reqd: BoolLike = True) -> None:
     super().__init__()
 
@@ -302,7 +294,6 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
 
   TODO: clamp_target should be inferred from the target voltage_limits,
   but voltage_limits doesn't always get propagated"""
-  @init_in_parent
   def __init__(self, clamp_target: RangeLike = (0, 3)*Volt, clamp_current: RangeLike = (0.25, 2.5)*mAmp,
                protection_voltage: RangeLike = (0, 0)*Volt, zero_out: BoolLike = False):
     super().__init__()

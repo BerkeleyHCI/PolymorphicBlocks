@@ -29,7 +29,6 @@ class SourceMeasureFan(Connector):
 
 
 class SourceMeasureRangingCell(Interface, KiCadSchematicBlock):
-  @init_in_parent
   def __init__(self, resistance: RangeLike):
     super().__init__()
     self.resistance = self.ArgParameter(resistance)
@@ -77,7 +76,6 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
       'V+': self.pwr,  'V-': self.gnd
     }
 
-  @init_in_parent
   def __init__(self, resistances: ArrayRangeLike, currents: ArrayRangeLike):
     super().__init__()
 
@@ -139,7 +137,6 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
       '1': self.control, '3': self.out, 'V+': self.pwr, 'V-': self.gnd
     }
 
-  @init_in_parent
   def __init__(self, current: RangeLike, rds_on: RangeLike):
     super().__init__()
 
@@ -208,7 +205,6 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
     assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
     return {'+': self.actual, '-': self.target, '3': self.output, 'V+': self.pwr, 'V-': self.gnd}
 
-  @init_in_parent
   def __init__(self, diode_spec: StringLike, output_resistance: RangeLike, input_resistance: RangeLike, *,
                series: IntLike = 24, tolerance: FloatLike = 0.01):
     super().__init__()
@@ -299,7 +295,6 @@ class ErrorAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlo
 class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
   """Analog feedback circuit for the source-measure unit
   """
-  @init_in_parent
   def __init__(self, current: RangeLike, rds_on: RangeLike):
     super().__init__()
 

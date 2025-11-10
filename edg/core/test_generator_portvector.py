@@ -111,7 +111,6 @@ class TestGeneratorWrapper(unittest.TestCase):
 
 
 class GeneratorArrayParam(GeneratorBlock):
-  @init_in_parent
   def __init__(self, param: ArrayRangeLike) -> None:
     super().__init__()
     self.ports = self.Port(Vector(TestPortSink()))

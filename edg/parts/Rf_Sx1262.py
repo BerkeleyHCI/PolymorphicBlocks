@@ -99,7 +99,6 @@ class Sx1262BalunLike(InternalSubcircuit, GeneratorBlock):
         l_c_new = (l_c * cp) / (cp - l_c)
         return l_l, l_c_new, cp
 
-    @init_in_parent
     def __init__(self, frequency: FloatLike, src_resistance: FloatLike, src_reactance: FloatLike,
                  load_resistance: FloatLike, tolerance: FloatLike,
                  voltage: RangeLike, current: RangeLike):

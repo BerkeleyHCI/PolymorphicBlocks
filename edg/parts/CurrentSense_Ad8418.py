@@ -6,7 +6,6 @@ from .JlcPart import JlcPart
 
 class Ad8418a_Device(JlcPart, FootprintBlock, InternalSubcircuit):
     GAIN = Range.from_tolerance(20, 0.0015)
-    @init_in_parent
     def __init__(self, in_diff_range: RangeLike):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
@@ -64,7 +63,6 @@ class Ad8418a(CurrentSensor, KiCadImportableBlock, Block):
             'V+': self.pwr, 'V-': self.gnd
         }
 
-    @init_in_parent
     def __init__(self, in_diff_range: RangeLike):
         super().__init__()
         self.in_diff_range = self.ArgParameter(in_diff_range)

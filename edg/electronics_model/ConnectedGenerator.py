@@ -26,7 +26,6 @@ class BaseConnectedGenerator(DefaultConnectionBlock, GeneratorBlock, Generic[Out
   INPUTS_TYPE: Type[Port]
   OUTPUT_TYPE: Type[Port]
 
-  @init_in_parent
   def __init__(self, in_is_connected: BoolLike = BoolExpr()) -> None:
     """in_is_connected needs to be connected from above, since from the perspective
     of this block, the input is always (locally) connected"""

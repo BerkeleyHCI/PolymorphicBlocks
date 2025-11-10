@@ -82,7 +82,6 @@ class Er_Epd027_2(EInk, GeneratorBlock):
     (Probably) compatible with https://www.waveshare.com/w/upload/b/ba/2.7inch_e-Paper_V2_Specification.pdf,
     and https://www.waveshare.com/w/upload/7/7b/2.7inch-e-paper-b-v2-specification.pdf
     """
-    @init_in_parent
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Er_Epd027_2_Device())

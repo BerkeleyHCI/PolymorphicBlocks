@@ -37,7 +37,6 @@ class PartsTableBase:
 class PartsTablePart(Block):
   """An interface mixin for a part that is selected from a table, defining parameters to allow manual part selection
   as well as matching parts."""
-  @init_in_parent
   def __init__(self, *args, part: StringLike = "", **kwargs):
     super().__init__(*args, **kwargs)
     self.part = self.ArgParameter(part)
@@ -89,7 +88,6 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
 @abstract_block
 class SelectorFootprint(PartsTablePart):
   """Mixin that allows a specified footprint, for Blocks that automatically select a part."""
-  @init_in_parent
   def __init__(self, *args, footprint_spec: StringLike = "", **kwargs):
     super().__init__(*args, **kwargs)
     self.footprint_spec = self.ArgParameter(footprint_spec)  # actual_footprint left to the actual footprint
@@ -102,7 +100,6 @@ class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
   but an internal block is created instead."""
   KICAD_FOOTPRINT = PartsTableColumn(str)
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.footprint_spec)

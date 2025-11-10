@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Ref30xx_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
 

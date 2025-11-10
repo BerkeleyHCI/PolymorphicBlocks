@@ -16,7 +16,6 @@ class I2cPullupBlock(Block):
 
 
 class I2cTargetBlock(Block):
-  @init_in_parent
   def __init__(self, address: IntLike):
     super().__init__()
     self.port = self.Port(I2cTarget(DigitalBidir(), [address]))

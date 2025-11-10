@@ -12,7 +12,6 @@ class TestSingleInitializerBlock(Block):
 
 
 class TestInternalBlock(Block):
-  @init_in_parent
   def __init__(self, inner_param: FloatLike = 3.0, bundle_param: FloatLike = FloatExpr()) -> None:
     super().__init__()
     self.inner_bundle = self.Port(TestBundle(bundle_param, 0, 24), optional=True)

@@ -34,7 +34,6 @@ class FuseStandardFootprint(StandardFootprint['Fuse']):
 class Fuse(DiscreteComponent, HasStandardFootprint):
   _STANDARD_FOOTPRINT = FuseStandardFootprint
 
-  @init_in_parent
   def __init__(self, trip_current: RangeLike, *, hold_current: RangeLike = RangeExpr.ALL,
                voltage: RangeLike = RangeExpr.ZERO) -> None:
     """Model-wise, equivalent to a VoltageSource|Sink passthrough, with a trip rating."""
@@ -74,7 +73,6 @@ class SeriesPowerFuse(Protection):
   """Series fuse for power applications"""
   FUSE_TYPE = Fuse
 
-  @init_in_parent
   def __init__(self, trip_current: RangeLike) -> None:
     super().__init__()
 
@@ -116,7 +114,6 @@ class TableFuse(PartsTableSelector, Fuse):
   HOLD_CURRENT = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.trip_current, self.hold_current, self.voltage)

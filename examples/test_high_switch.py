@@ -178,7 +178,6 @@ class M12CanConnector(Connector, FootprintBlock):
 
 
 class LightsConnector(Connector, FootprintBlock):
-  @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()) -> None:
     super().__init__()
 
@@ -204,7 +203,6 @@ class LightsConnector(Connector, FootprintBlock):
 
 
 class LightsDriver(Block):
-  @init_in_parent
   def __init__(self, current_draw: RangeLike = RangeExpr()) -> None:
     super().__init__()
 

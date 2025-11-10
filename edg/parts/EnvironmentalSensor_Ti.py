@@ -52,7 +52,6 @@ class Hdc1080(TemperatureSensor, HumiditySensor, Block):
 
 
 class Tmp1075n_Device(InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBlock):
-    @init_in_parent
     def __init__(self, addr_lsb: IntLike) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
@@ -97,7 +96,6 @@ class Tmp1075n_Device(InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBloc
 
 class Tmp1075n(TemperatureSensor, Block):
     """Temperature sensor with 0.25C typical accuracy"""
-    @init_in_parent
     def __init__(self, addr_lsb: IntLike = 0):
         super().__init__()
         self.ic = self.Block(Tmp1075n_Device(addr_lsb))

@@ -53,7 +53,6 @@ class ResistorArray(MultipackDevice, MultipackBlock, HasStandardFootprint):
   """An n-element resistor array, where all resistors have the same resistance and power rating."""
   _STANDARD_FOOTPRINT = ResistorArrayStandardFootprint
 
-  @init_in_parent
   def __init__(self, count: IntLike = 0) -> None:  # 0 means 'size automatically'
     super().__init__()
 
@@ -91,7 +90,6 @@ class TableResistorArray(PartsTableSelector, ResistorArray):
   POWER_RATING = PartsTableColumn(Range)
   COUNT = PartsTableColumn(int)
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.count, self.a.requested(), self.b.requested(), self.resistances, self.powers)

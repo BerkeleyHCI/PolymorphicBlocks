@@ -5,7 +5,6 @@ from edg import *
 
 class BldcConnector(Connector, Block):
   """Parameterizable-current connector to an external BLDC motor."""
-  @init_in_parent
   def __init__(self, max_current: FloatLike):
     super().__init__()
     self.conn = self.Block(PassiveConnector())

@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Mcp73831_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self, actual_charging_current: RangeLike) -> None:
     super().__init__()
 
@@ -45,7 +44,6 @@ class Mcp73831_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Mcp73831(PowerConditioner, Block):
   """Single-cell Li-ion / Li-poly charger, seemingly popular on Adafruit and Sparkfun boards."""
-  @init_in_parent
   def __init__(self, charging_current: RangeLike) -> None:
     super().__init__()
 

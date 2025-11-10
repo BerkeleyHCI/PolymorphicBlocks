@@ -14,7 +14,6 @@ class Comparator(KiCadInstantiableBlock, Analog):
     def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Comparator':
         return Comparator()
 
-    @init_in_parent
     def __init__(self) -> None:
         super().__init__()
 

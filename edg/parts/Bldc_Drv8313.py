@@ -102,7 +102,6 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 
 class Drv8313(BldcDriver, GeneratorBlock):
-    @init_in_parent
     def __init__(self, *, risense_res: RangeLike = 100*mOhm(tol=0.05)) -> None:
         super().__init__()
         self.ic = self.Block(Drv8313_Device())

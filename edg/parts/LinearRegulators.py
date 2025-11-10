@@ -5,7 +5,6 @@ from .JlcPart import JlcPart
 
 
 class Ld1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
 
@@ -60,7 +59,6 @@ class Ld1117(LinearRegulator):
 
 
 class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
 
@@ -121,7 +119,6 @@ class Ldl1117(LinearRegulator):
 
 
 class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
 
@@ -195,7 +192,6 @@ class Ap2204k(VoltageRegulatorEnableWrapper, LinearRegulator):
 
 
 class Ap7215_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
 
@@ -235,7 +231,6 @@ class Ap7215(LinearRegulator):
 
 
 class Xc6206p_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
 
@@ -306,7 +301,6 @@ class Xc6206p(LinearRegulator):
 
 class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
   # Also pin-compatible with MCP1802 and NJM2882F (which has a noise bypass pin)
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
 
@@ -376,7 +370,6 @@ class Xc6209(VoltageRegulatorEnableWrapper, LinearRegulator):
 
 
 class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
 
@@ -448,7 +441,6 @@ class Ap2210(VoltageRegulatorEnableWrapper, LinearRegulator):
 
 class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, SelectorFootprint, PartsTablePart, JlcPart,
                     GeneratorBlock, FootprintBlock):
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
 
@@ -552,7 +544,6 @@ class Lp5907(VoltageRegulatorEnableWrapper, LinearRegulator):
 
 class Tlv757p_Device(InternalSubcircuit, LinearRegulatorDevice, PartsTablePart, JlcPart, GeneratorBlock,
                      FootprintBlock):
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
 
@@ -633,7 +624,6 @@ class Tlv757p(VoltageRegulatorEnableWrapper, LinearRegulator):
 
 
 class L78l_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, GeneratorBlock, FootprintBlock):
-  @init_in_parent
   def __init__(self, output_voltage: RangeLike):
     super().__init__()
 

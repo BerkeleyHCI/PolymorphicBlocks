@@ -5,7 +5,6 @@ from .JlcPart import JlcPart
 
 
 class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-    @init_in_parent
     def __init__(self, charging_current: RangeLike):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
@@ -102,7 +101,6 @@ class Mp2722(DiscreteBuckConverter):
 
     VSYS_MIN_DEFAULT = 3.588  # regulation target, tracks above this
 
-    @init_in_parent
     def __init__(self, *args: Any, frequency: RangeLike = (900, 1280)*kHertz,
                  charging_current: RangeLike = (0, 3)*Amp, **kwargs: Any):
         super().__init__(*args, **kwargs)

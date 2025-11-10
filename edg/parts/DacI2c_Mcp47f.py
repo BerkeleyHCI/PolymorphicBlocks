@@ -2,7 +2,6 @@ from ..abstract_parts import *
 
 
 class Mcp47f_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
-  @init_in_parent
   def __init__(self, addr_lsb: IntLike) -> None:
     super().__init__()
     self.vss = self.Port(Ground())

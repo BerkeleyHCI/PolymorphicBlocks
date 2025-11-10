@@ -15,7 +15,6 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
   This defines the interface for the SWO and TDI pin spec (passed to the pin assignment),
   and instantiates a SWD target with connected power and ground. SWD must be connected by
   the subclass."""
-  @init_in_parent
   def __init__(self, swd_swo_pin: StringLike = "NC", swd_tdi_pin: StringLike = "NC", swd_connect_reset: BoolLike = True):
     super().__init__()
     self.swd_swo_pin = self.ArgParameter(swd_swo_pin)

@@ -131,7 +131,6 @@ class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Tpa2005d1(SpeakerDriver, Block):
     """TPA2005D1 configured in single-ended input mode.
     Possible semi-pin-compatible with PAM8302AASCR (C113367), but which has internal resistor."""
-    @init_in_parent
     def __init__(self, gain: RangeLike = Range.from_tolerance(20, 0.2)):
         super().__init__()
         # TODO should be a SpeakerDriver abstract part
@@ -229,7 +228,6 @@ class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Pam8302a(SpeakerDriver, Block):
     """PAM8302A configured in single-ended input mode."""
-    @init_in_parent
     def __init__(self):
         super().__init__()
 
