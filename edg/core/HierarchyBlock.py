@@ -157,8 +157,8 @@ class BlockMeta(ElementMeta):
         arg_data.append((arg_name, arg_param, param_expr_type))
 
       def wrapped_init(self, *args, **kwargs) -> None:
-        if not hasattr(self, '_init_params_value'):  # TODO REMOVE
-          self._init_params_value = {}
+        if not hasattr(self, '_init_params'):  # used to communicate to the block the added init params
+          self._init_params = {}
 
         # this discards extra args at this stage, they will be re-inserted later
         def remap_arg(arg_name: str, arg_type: Type[ConstraintExpr], arg_value: Any) -> ConstraintExpr:
@@ -201,30 +201,27 @@ class BlockMeta(ElementMeta):
                                                           inspect.Parameter.POSITIONAL_OR_KEYWORD):  # present positional arg
               new_arg = remap_arg(arg_name, param_expr_type, args[arg_pos])
               new_args.append(new_arg)
-              assert isinstance(new_arg.binding, InitParamBinding)
-              self._init_params_value[arg_name] = (new_arg, new_arg.binding._value)
+              self._init_params[arg_name] = new_arg
             elif arg_pos >= len(args) and arg_param.kind in (inspect.Parameter.POSITIONAL_ONLY, ):  # non-present positional
               if len(builder.stack) == 1:  # at top-level, fill in all args
                 new_arg = remap_arg(arg_name, param_expr_type, None)
                 new_args.append(new_arg)
-                self._init_params_value[arg_name] = (new_arg, None)
+                self._init_params[arg_name] = new_arg
             elif arg_name in kwargs and arg_param.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
                                                            inspect.Parameter.KEYWORD_ONLY):  # present kwarg
               new_arg = remap_arg(arg_name, param_expr_type, kwargs[arg_name])
               new_kwargs[arg_name] = new_arg
-              assert isinstance(new_arg.binding, InitParamBinding)
-              self._init_params_value[arg_name] = (new_arg, new_arg.binding._value)
+              self._init_params[arg_name] = new_arg
             elif arg_name not in kwargs and arg_param.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
                                                                inspect.Parameter.KEYWORD_ONLY):  # non-present kwarg
               if arg_param.default is not inspect._empty:  # default values do show up in kwargs, always transformed
                 new_arg = remap_arg(arg_name, param_expr_type, arg_param.default)
                 new_kwargs[arg_name] = new_arg
-                assert isinstance(new_arg.binding, InitParamBinding)
-                self._init_params_value[arg_name] = (new_arg, new_arg.binding._value)
+                self._init_params[arg_name] = new_arg
               elif len(builder.stack) == 1:  # at top-level, fill in all args
                 new_arg = remap_arg(arg_name, param_expr_type, None)
                 new_kwargs[arg_name] = new_arg
-                self._init_params_value[arg_name] = (new_arg, None)
+                self._init_params[arg_name] = new_arg
         finally:
           builder.pop_to(builder_prev)
 
@@ -243,13 +240,11 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   def __init__(self) -> None:
     super().__init__()
 
-    # name -> (empty param, default argument (if any)), set in metaclass __init__ hook
-    self._init_params_value: Dict[str, Tuple[ConstraintExpr, Optional[ConstraintExpr]]]
-    if not hasattr(self, '_init_params_value'):
-      self._init_params_value = {}
-    for param_name, (param, param_value) in self._init_params_value.items():
-      self._parameters.register(param)
-      self.manager.add_element(param_name, param)
+    if hasattr(self, '_init_params'):  # used to propagate params generated in the metaclass __init__ hook
+      for param_name, param in cast(Dict, self._init_params).items():
+        self._parameters.register(param)
+        self.manager.add_element(param_name, param)
+      delattr(self, '_init_params')
 
     self._mixins: List['BlockInterfaceMixin'] = []
 
@@ -277,23 +272,14 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     return ref_map
 
-  def _get_init_params_values(self) -> Dict[str, Tuple[ConstraintExpr, Optional[ConstraintExpr]]]:
-    if self._mixins:
-      combined_dict = self._init_params_value.copy()
-      for mixin in self._mixins:
-        combined_dict.update(mixin._get_init_params_values())
-      return combined_dict
-    else:
-      return self._init_params_value
-
   def _populate_def_proto_block_base(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     pb = super()._populate_def_proto_block_base(pb)
 
     # generate param defaults
-    for param_name, (param, param_value) in self._get_init_params_values().items():
-      if param_value is not None:
+    for param_name, param in self._parameters.items():
+      if isinstance(param.binding, InitParamBinding) and param.binding._value is not None:
         # default values can't depend on anything so the ref_map is empty
-        pb.param_defaults[param_name].CopyFrom(param_value._expr_to_proto(IdentityDict()))
+        pb.param_defaults[param_name].CopyFrom(param.binding._value._expr_to_proto(IdentityDict()))
 
     return pb
 
@@ -394,10 +380,13 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     # generate block initializers
     for (block_name, block) in self._blocks.items():
-      for (block_param_name, (block_param, block_param_value)) in block._get_init_params_values().items():
-        if block_param_value is not None:
+      all_block_params = dict(block._parameters.items())
+      for mixin in block._mixins:
+        all_block_params.update(mixin._parameters.items())
+      for (block_param_name, block_param) in all_block_params.items():
+        if isinstance(block_param.binding, InitParamBinding) and block_param.binding._value is not None:
           edgir.add_pair(pb.constraints, f'(init){block_name}.{block_param_name}').CopyFrom(  # TODO better name
-            AssignBinding.make_assign(block_param, block_param._to_expr_type(block_param_value), ref_map)
+            AssignBinding.make_assign(block_param, block_param.binding._value, ref_map)
           )
 
     return pb
@@ -411,8 +400,6 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     pb = self._populate_def_proto_block_base(pb)
     pb = self._populate_def_proto_port_init(pb)
 
-    for (name, (param, param_value)) in self._get_init_params_values().items():
-      assert param.initializer is None, f"__init__ argument param {name} has unexpected initializer"
     pb = self._populate_def_proto_param_init(pb)
 
     pb = self._populate_def_proto_hierarchy(pb)
