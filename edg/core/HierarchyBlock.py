@@ -259,7 +259,6 @@ class BlockMeta(ElementMeta):
             else:
               default_args[arg_name] = (arg_index, arg_param.default)
 
-
       def wrapped_init(self, *args, **kwargs) -> None:
         if not hasattr(self, '_init_params_value'):  # TODO REMOVE
           self._init_params_value = {}
@@ -303,12 +302,15 @@ class BlockMeta(ElementMeta):
 
           for arg_name, param_value, arg_value in zip(positional_arg_names, new_args, arg_values_typed):
             self._init_params_value[arg_name] = (param_value, arg_value)
-          for arg_name, arg_value in kwarg_values_typed.items():
-            self._init_params_value[arg_name] = (new_kwargs[arg_name], arg_value)
+          for arg_name, arg_obj in new_kwargs.items():
+            arg_value = keyword_expr_types.get(arg_name)
+            if arg_value is None:
+              arg_value = default_args.get(arg_name)
+            self._init_params_value[arg_name] = (arg_obj, arg_value)
         finally:
           builder.pop_to(builder_prev)
 
-        print(orig_init, new_args, new_kwargs)
+        print(orig_init, args, new_args, kwargs, new_kwargs)
         orig_init(self, *new_args, **new_kwargs)
 
       new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
