@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import functools
 import inspect
-from functools import reduce, wraps
+import warnings
+from functools import reduce
 from typing import *
 
 from .. import edgir
@@ -25,108 +26,22 @@ if TYPE_CHECKING:
   from .BlockInterfaceMixin import BlockInterfaceMixin
 
 
-InitType = TypeVar('InitType', bound=Callable[..., None])
-def init_in_parent(fn: InitType) -> InitType:
-  """
-  This is a wrapper around any Block's __init__ that takes parameters, so arguments passed into the parameters
-  generate into parameter assignments in the parent Block scope.
+def init_in_parent(fn: Any) -> Any:
+  warnings.warn(
+    f"in {fn}, @init_in_parent is no longer needed, the annotation can be removed without replacement",
+    DeprecationWarning,
+    stacklevel=2
+  )
 
-  This also handles default values, which are generated into the Block containing the __init__.
-
-  It is explicitly not supported for a subclass to modify the parameters passed to a super().__init__ call.
-  This can interact badly with refinement, since the parameters of super().__init__ could be directly assigned
-  in an enclosing block, yet the subclass would also re-assign the same parameter, leading to a conflicting assign.
-  These cases should use composition instead of inheritance, by instantiating the "super" Block and so its parameters
-  are not made available to the enclosing scope.
-  """
-  import inspect
-  from .Builder import builder
-
-  @wraps(fn)
-  def wrapped(self: Block, *args_tup, **kwargs) -> Any:
-    args = list(args_tup)
-    builder_prev = builder.get_curr_context()
-    builder.push_element(self)
-    try:
-      if not hasattr(self, '_init_params_value'):
-        self._init_params_value = {}
-
-      for arg_index, (arg_name, arg_param) in enumerate(list(inspect.signature(fn).parameters.items())[1:]):  # discard 0=self
-        if arg_param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
-          continue  # ignore *args and **kwargs, those will get resolved at a lower level
-
-        if arg_name in kwargs:
-          arg_val = kwargs[arg_name]
-        elif arg_index < len(args):
-          arg_val = args[arg_index]
-        elif arg_param.default is not inspect._empty:
-          arg_val = arg_param.default
-        else:
-          arg_val = None
-
-        if arg_name in self._init_params_value:  # if previously declared, check it is the prev param and keep as-is
-          (prev_param, prev_val) = self._init_params_value[arg_name]
-          assert prev_param is arg_val, f"in {fn}, redefinition of initializer {arg_name}={arg_val} over prior {prev_val}"
-        else:  # not previously declared, create a new constructor parameter
-          if isinstance(arg_val, ConstraintExpr):
-            assert arg_val._is_bound() or arg_val.initializer is None,\
-              f"in constructor arguments got non-bound default {arg_name}={arg_val}: " +\
-              "either leave default empty or pass in a value or uninitialized type " +\
-              "(eg, 2.0, FloatExpr(), but NOT FloatExpr(2.0))"
-
-          param_model: ConstraintExpr
-          if arg_param.annotation in (BoolLike, "BoolLike", BoolExpr, "BoolExpr"):
-            param_model = BoolExpr()
-          elif arg_param.annotation in (IntLike, "IntLike", IntExpr, "IntExpr"):
-            param_model = IntExpr()
-          elif arg_param.annotation in (FloatLike, "FloatLike", FloatExpr, "FloatExpr"):
-            param_model = FloatExpr()
-          elif arg_param.annotation in (RangeLike, "RangeLike", RangeExpr, "RangeExpr"):
-            param_model = RangeExpr()
-          elif arg_param.annotation in (StringLike, "StringLike", StringExpr, "StringExpr"):
-            param_model = StringExpr()
-          elif arg_param.annotation in (ArrayBoolLike, "ArrayBoolLike", ArrayBoolExpr, "ArrayBoolExpr"):
-            param_model = ArrayBoolExpr()
-          elif arg_param.annotation in (ArrayIntLike, "ArrayIntLike", ArrayIntExpr, "ArrayIntExpr"):
-            param_model = ArrayIntExpr()
-          elif arg_param.annotation in (ArrayFloatLike, "ArrayFloatLike", ArrayFloatExpr, "ArrayFloatExpr"):
-            param_model = ArrayFloatExpr()
-          elif arg_param.annotation in (ArrayRangeLike, "ArrayRangeLike", ArrayRangeExpr, "ArrayRangeExpr"):
-            param_model = ArrayRangeExpr()
-          elif arg_param.annotation in (ArrayStringLike, "ArrayStringLike", ArrayStringExpr, "ArrayStringExpr"):
-            param_model = ArrayStringExpr()
-          else:
-            raise ValueError(f"In {fn}, unknown argument type for {arg_name}: {arg_param.annotation}")
-
-          # Create new parameter in self, and pass through this one instead of the original
-          param_bound = param_model._bind(InitParamBinding(self))
-
-          # transform value to standaradize form to ConstraintExpr or None as needed
-          if isinstance(arg_val, ConstraintExpr):
-            if not arg_val._is_bound():  # TODO: perhaps deprecate the FloatExpr() form as an empty param?
-              assert arg_val.initializer is None, f"models may not be passed into __init__ {arg_name}={arg_val}"
-              arg_val = None
-          elif not isinstance(arg_val, ConstraintExpr) and arg_val is not None:
-            arg_val = param_model._to_expr_type(arg_val)
-          assert arg_val is None or type(param_model) == type(arg_val), \
-            f"type mismatch for {arg_name}: argument type {type(param_model)}, argument value {type(arg_val)}"
-
-          self._init_params_value[arg_name] = (param_bound, arg_val)
-
-          if arg_name in kwargs:
-            kwargs[arg_name] = param_bound
-          elif arg_index < len(args):
-            args[arg_index] = param_bound
-          else:
-            kwargs[arg_name] = param_bound
-    finally:
-      builder.pop_to(builder_prev)
-
+  @functools.wraps(fn)
+  def wrapped(self: Block, *args, **kwargs) -> Any:
+    # in concept, the outer deprecation should fire, but it doesn't consistently, so this is added for redundancy
+    warnings.warn(
+      f"in {fn}, @init_in_parent is no longer needed, the annotation can be removed without replacement",
+      DeprecationWarning
+    )
     return fn(self, *args, **kwargs)
-
-  # TODO check fn is constructor?
-
-  return cast(InitType, wrapped)
+  return wrapped
 
 
 # TODO not statically type checked, since the port may be externally facing. TODO: maybe PortTags should be bridgeable?
@@ -245,7 +160,6 @@ class BlockMeta(ElementMeta):
         if not hasattr(self, '_init_params_value'):  # TODO REMOVE
           self._init_params_value = {}
 
-        # remap args here, must happen in parent scope
         # this discards extra args at this stage, they will be re-inserted later
         def remap_arg(arg_name: str, arg_type: Type[ConstraintExpr], arg_value: Any) -> ConstraintExpr:
           if isinstance(arg_value, ConstraintExpr):
