@@ -307,12 +307,12 @@ class BlockMeta(ElementMeta):
                 new_kwargs[arg_name] = arg_type()._bind(InitParamBinding(self))
 
           for arg_name, param_value, arg_value in zip(positional_arg_names, new_args, arg_values_typed):
-            if arg_value.binding is None:
+            if arg_value.binding is None or (isinstance(arg_value.binding, InitParamBinding) and arg_value.binding.parent is self):
               arg_value = None
             self._init_params_value[arg_name] = (param_value, arg_value)
           for arg_name, param_value in new_kwargs.items():
             arg_value = kwarg_values_typed.get(arg_name)
-            if arg_value is None or arg_value.binding is None:
+            if arg_value is None or arg_value.binding is None or (isinstance(arg_value.binding, InitParamBinding) and arg_value.binding.parent is self):
               arg_value = None
             self._init_params_value[arg_name] = (param_value, arg_value)
         finally:
