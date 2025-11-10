@@ -234,6 +234,7 @@ class BlockMeta(ElementMeta):
       positional_only_count: int = 0  # number of required positional args
       keyword_expr_types: Dict[str, Type[ConstraintExpr]] = {}  # for all keyword-capable args
       default_args: Dict[str, Tuple[Optional[int], Any]] = {}  # args to positional index, default values
+      kw_pos: dict[str, int] = {}
 
       # discard param 0=self
       for arg_index, (arg_name, arg_param) in enumerate(list(inspect.signature(orig_init).parameters.items())[1:]):
@@ -258,6 +259,7 @@ class BlockMeta(ElementMeta):
               default_args[arg_name] = (None, arg_param.default)
             else:
               default_args[arg_name] = (arg_index, arg_param.default)
+          kw_pos[arg_name] = arg_index
 
       def wrapped_init(self, *args, **kwargs) -> None:
         if not hasattr(self, '_init_params_value'):  # TODO REMOVE
@@ -279,8 +281,8 @@ class BlockMeta(ElementMeta):
 
         # args with defaults may not show up in kwargs and need to be specially handled
         for arg_name, (arg_pos, arg_default) in default_args.items():
-          if arg_name not in kwargs and (arg_pos is None or arg_pos >= len(args)):
-            kwarg_values_typed[arg_name] = keyword_expr_types[arg_name]._to_expr_type(arg_default)
+          if (arg_name not in kwargs) and ((arg_pos is None) or (arg_pos >= len(args))):
+            kwarg_values_typed[arg_name] = create_typed_arg(keyword_expr_types[arg_name], arg_default)
 
         # create wrapper ConstraintExpr in new object scope
         builder_prev = builder.get_curr_context()
@@ -303,18 +305,20 @@ class BlockMeta(ElementMeta):
               new_args.append(arg_type()._bind(InitParamBinding(self)))
 
             for arg_name, arg_type in keyword_expr_types.items():
-              if arg_name not in new_kwargs:
+              if arg_name not in new_kwargs and (kw_pos[arg_name] >= len(args)):
                 new_kwargs[arg_name] = arg_type()._bind(InitParamBinding(self))
 
           for arg_name, param_value, arg_value in zip(positional_arg_names, new_args, arg_values_typed):
             if arg_value.binding is None or (isinstance(arg_value.binding, InitParamBinding) and arg_value.binding.parent is self):
               arg_value = None
-            self._init_params_value[arg_name] = (param_value, arg_value)
+            if arg_name not in self._init_params_value:
+              self._init_params_value[arg_name] = (param_value, arg_value)
           for arg_name, param_value in new_kwargs.items():
             arg_value = kwarg_values_typed.get(arg_name)
             if arg_value is None or arg_value.binding is None or (isinstance(arg_value.binding, InitParamBinding) and arg_value.binding.parent is self):
               arg_value = None
-            self._init_params_value[arg_name] = (param_value, arg_value)
+            if arg_name not in self._init_params_value:
+              self._init_params_value[arg_name] = (param_value, arg_value)
         finally:
           builder.pop_to(builder_prev)
 
@@ -323,6 +327,8 @@ class BlockMeta(ElementMeta):
         for arg_name in kwargs:
           if arg_name not in new_kwargs:
             new_kwargs[arg_name] = kwargs[arg_name]
+
+        # print(orig_init, args, new_args, kwargs, new_kwargs)
         orig_init(self, *new_args, **new_kwargs)
 
       new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
