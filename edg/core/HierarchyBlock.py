@@ -264,12 +264,18 @@ class BlockMeta(ElementMeta):
           self._init_params_value = {}
 
         # remap args here, must happen in parent scope
-        assert len(positional_expr_types) >= len(args)
+        # this discards extra args at this stage, they will be re-inserted later
+        def create_typed_arg(arg_type: Type[ConstraintExpr], arg_value: Any) -> ConstraintExpr:
+          if isinstance(arg_value, arg_type):  # pass through correctly typed, including unbound as explicit not-specified
+            return arg_value
+          else:
+            return arg_type._to_expr_type(arg_value)
 
-        arg_values_typed = [arg_type._to_expr_type(arg_value)
+        arg_values_typed = [create_typed_arg(arg_type, arg_value)
                             for arg_value, arg_type in zip(args, positional_expr_types)]
-        kwarg_values_typed = {arg_name: keyword_expr_types[arg_name]._to_expr_type(arg_value)
-                              for arg_name, arg_value in kwargs.items()}
+        kwarg_values_typed = {arg_name: create_typed_arg(keyword_expr_types[arg_name], arg_value)
+                              for arg_name, arg_value in kwargs.items()
+                              if arg_name in keyword_expr_types}
 
         # args with defaults may not show up in kwargs and need to be specially handled
         for arg_name, (arg_pos, arg_default) in default_args.items():
@@ -281,7 +287,7 @@ class BlockMeta(ElementMeta):
         builder.push_element(self)
         try:
           def remap_arg(arg_type: Type[ConstraintExpr], arg_value: ConstraintExpr) -> ConstraintExpr:
-            if isinstance(arg_value.binding, InitParamBinding) and arg_value.binding is self:
+            if isinstance(arg_value.binding, InitParamBinding) and arg_value.binding.parent is self:
               return arg_value  # pass through arg that has been previously transformed
             else:
               return arg_type()._bind(InitParamBinding(self))
@@ -301,13 +307,22 @@ class BlockMeta(ElementMeta):
                 new_kwargs[arg_name] = arg_type()._bind(InitParamBinding(self))
 
           for arg_name, param_value, arg_value in zip(positional_arg_names, new_args, arg_values_typed):
+            if arg_value.binding is None:
+              arg_value = None
             self._init_params_value[arg_name] = (param_value, arg_value)
           for arg_name, param_value in new_kwargs.items():
-            self._init_params_value[arg_name] = (param_value, kwarg_values_typed.get(arg_name))
+            arg_value = kwarg_values_typed.get(arg_name)
+            if arg_value is None or arg_value.binding is None:
+              arg_value = None
+            self._init_params_value[arg_name] = (param_value, arg_value)
         finally:
           builder.pop_to(builder_prev)
 
-        # print(orig_init, args, new_args, kwargs, new_kwargs)
+        # re-insert extra args that were discarded earlier, these might be handled by a super().__init__ call
+        new_args.extend(args[len(new_args):])
+        for arg_name in kwargs:
+          if arg_name not in new_kwargs:
+            new_kwargs[arg_name] = kwargs[arg_name]
         orig_init(self, *new_args, **new_kwargs)
 
       new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
