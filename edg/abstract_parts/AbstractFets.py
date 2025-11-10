@@ -92,7 +92,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
                gate_voltage: RangeLike = (0, 0), gate_threshold_voltage: RangeLike = Range.all(),
                rds_on: RangeLike = Range.all(),
                gate_charge: RangeLike = Range.all(), power: RangeLike = Range.exact(0),
-               channel: StringLike = "") -> None:
+               channel: StringLike = StringExpr()) -> None:
     super().__init__()
 
     self.source = self.Port(Passive.empty())
