@@ -22,7 +22,7 @@ class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
     assert symbol_name == 'Device:D'
     return {'A': self.pwr_in, 'K': self.pwr_out}
 
-  def __init__(self, reverse_voltage: RangeExpr, current: RangeExpr, voltage_drop: RangeExpr) -> None:
+  def __init__(self, reverse_voltage: RangeLike, current: RangeLike, voltage_drop: RangeLike) -> None:
     super().__init__()
 
     self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
