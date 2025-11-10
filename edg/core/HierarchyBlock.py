@@ -271,12 +271,17 @@ class BlockMeta(ElementMeta):
         kwarg_values_typed = {arg_name: keyword_expr_types[arg_name]._to_expr_type(arg_value)
                               for arg_name, arg_value in kwargs.items()}
 
+        # args with defaults may not show up in kwargs and need to be specially handled
+        for arg_name, (arg_pos, arg_default) in default_args.items():
+          if arg_name not in kwargs and (arg_pos is None or arg_pos >= len(args)):
+            kwarg_values_typed[arg_name] = keyword_expr_types[arg_name]._to_expr_type(arg_default)
+
         # create wrapper ConstraintExpr in new object scope
         builder_prev = builder.get_curr_context()
         builder.push_element(self)
         try:
           def remap_arg(arg_type: Type[ConstraintExpr], arg_value: ConstraintExpr) -> ConstraintExpr:
-            if isinstance(arg_value.binding, InitParamBinding):
+            if isinstance(arg_value.binding, InitParamBinding) and arg_value.binding is self:
               return arg_value  # pass through arg that has been previously transformed
             else:
               return arg_type()._bind(InitParamBinding(self))
@@ -285,11 +290,6 @@ class BlockMeta(ElementMeta):
                       for arg_value, arg_type in zip(arg_values_typed, positional_expr_types)]
           new_kwargs = {arg_name: remap_arg(keyword_expr_types[arg_name], arg_value)
                         for arg_name, arg_value in kwarg_values_typed.items()}
-
-          # args with defaults may not show up in kwargs and need to be specially handled
-          for arg_name, (arg_pos, arg_default) in default_args.items():
-            if arg_name not in new_kwargs and (arg_pos is None or arg_pos >= len(new_args)):
-              new_kwargs[arg_name] = keyword_expr_types[arg_name]()._bind(InitParamBinding(self))
 
           if len(builder.stack) == 1:  # at top-level, fill in all args
             for i in range(len(args), positional_only_count):
@@ -302,15 +302,12 @@ class BlockMeta(ElementMeta):
 
           for arg_name, param_value, arg_value in zip(positional_arg_names, new_args, arg_values_typed):
             self._init_params_value[arg_name] = (param_value, arg_value)
-          for arg_name, arg_obj in new_kwargs.items():
-            arg_value = keyword_expr_types.get(arg_name)
-            if arg_value is None:
-              arg_value = default_args.get(arg_name)
-            self._init_params_value[arg_name] = (arg_obj, arg_value)
+          for arg_name, param_value in new_kwargs.items():
+            self._init_params_value[arg_name] = (param_value, kwarg_values_typed.get(arg_name))
         finally:
           builder.pop_to(builder_prev)
 
-        print(orig_init, args, new_args, kwargs, new_kwargs)
+        # print(orig_init, args, new_args, kwargs, new_kwargs)
         orig_init(self, *new_args, **new_kwargs)
 
       new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
