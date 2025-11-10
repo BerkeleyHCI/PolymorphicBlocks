@@ -277,9 +277,9 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     # generate param defaults
     for param_name, param in self._parameters.items():
-      if isinstance(param.binding, InitParamBinding) and param.binding._value is not None:
+      if isinstance(param.binding, InitParamBinding) and param.binding.value is not None:
         # default values can't depend on anything so the ref_map is empty
-        pb.param_defaults[param_name].CopyFrom(param.binding._value._expr_to_proto(IdentityDict()))
+        pb.param_defaults[param_name].CopyFrom(param.binding.value._expr_to_proto(IdentityDict()))
 
     return pb
 
@@ -384,9 +384,9 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
       for mixin in block._mixins:
         all_block_params.update(mixin._parameters.items())
       for (block_param_name, block_param) in all_block_params.items():
-        if isinstance(block_param.binding, InitParamBinding) and block_param.binding._value is not None:
+        if isinstance(block_param.binding, InitParamBinding) and block_param.binding.value is not None:
           edgir.add_pair(pb.constraints, f'(init){block_name}.{block_param_name}').CopyFrom(  # TODO better name
-            AssignBinding.make_assign(block_param, block_param.binding._value, ref_map)
+            AssignBinding.make_assign(block_param, block_param.binding.value, ref_map)
           )
 
     return pb

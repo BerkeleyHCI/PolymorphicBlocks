@@ -111,7 +111,7 @@ class InitParamBinding(ParamBinding):
   Can optionally take a value, which would have a binding in the parent's scope."""
   def __init__(self, parent: ParamParentTypes, value: Optional[ConstraintExpr] = None):
     super().__init__(parent)
-    self._value = value
+    self.value = value
 
 
 class LiteralBinding(Binding):
