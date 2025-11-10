@@ -149,10 +149,10 @@ class BlockMeta(ElementMeta):
       for arg_name, arg_param in list(inspect.signature(orig_init).parameters.items())[1:]:
         if arg_param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
           param_expr_type = BlockMeta._ANNOTATION_EXPR_MAP.get(arg_param.annotation, None)
+          if param_expr_type is None:
+            raise BlockDefinitionError(new_cls, f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}")
         else:
           param_expr_type = ConstraintExpr  # dummy placeholder
-        if param_expr_type is None:
-          raise BlockDefinitionError(new_cls, f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}")
 
         arg_data.append((arg_name, arg_param, param_expr_type))
 
@@ -160,7 +160,6 @@ class BlockMeta(ElementMeta):
         if not hasattr(self, '_init_params'):  # used to communicate to the block the added init params
           self._init_params = {}
 
-        # this discards extra args at this stage, they will be re-inserted later
         def remap_arg(arg_name: str, arg_type: Type[ConstraintExpr], arg_value: Any) -> ConstraintExpr:
           if isinstance(arg_value, ConstraintExpr):
             if isinstance(arg_value.binding, InitParamBinding) and arg_value.binding.parent is self:
@@ -198,11 +197,11 @@ class BlockMeta(ElementMeta):
                 if arg_name not in new_kwargs:
                   new_kwargs[arg_name] = kwargs[arg_name]
             elif arg_pos < len(args) and arg_param.kind in (inspect.Parameter.POSITIONAL_ONLY,
-                                                          inspect.Parameter.POSITIONAL_OR_KEYWORD):  # present positional arg
+                                                            inspect.Parameter.POSITIONAL_OR_KEYWORD):  # present positional arg
               new_arg = remap_arg(arg_name, param_expr_type, args[arg_pos])
               new_args.append(new_arg)
               self._init_params[arg_name] = new_arg
-            elif arg_pos >= len(args) and arg_param.kind in (inspect.Parameter.POSITIONAL_ONLY, ):  # non-present positional
+            elif arg_pos >= len(args) and arg_param.kind in (inspect.Parameter.POSITIONAL_ONLY, ):  # non-present positional arg
               if len(builder.stack) == 1:  # at top-level, fill in all args
                 new_arg = remap_arg(arg_name, param_expr_type, None)
                 new_args.append(new_arg)
@@ -214,7 +213,7 @@ class BlockMeta(ElementMeta):
               self._init_params[arg_name] = new_arg
             elif arg_name not in kwargs and arg_param.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
                                                                inspect.Parameter.KEYWORD_ONLY):  # non-present kwarg
-              if arg_param.default is not inspect._empty:  # default values do show up in kwargs, always transformed
+              if arg_param.default is not inspect._empty:  # default values do show up in kwargs, add them to transform them
                 new_arg = remap_arg(arg_name, param_expr_type, arg_param.default)
                 new_kwargs[arg_name] = new_arg
                 self._init_params[arg_name] = new_arg
