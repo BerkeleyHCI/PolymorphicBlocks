@@ -336,7 +336,7 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     return self
 
 
-class CombinedCapacitorElement(Capacitor):  # to avoid an abstract part error
+class CombinedCapacitorElement(Capacitor):
   def contents(self):
     super().contents()
     self.assign(self.actual_capacitance, self.capacitance)  # fake it, since a combined capacitance is handwavey
@@ -348,7 +348,8 @@ class CombinedCapacitor(MultipackDevice, MultipackBlock, GeneratorBlock):
   def __init__(self, *, extend_upper: BoolLike = False) -> None:
     super().__init__()
 
-    self.elements = self.PackedPart(PackedBlockArray(CombinedCapacitorElement()))
+    self.elements = self.PackedPart(PackedBlockArray(CombinedCapacitorElement(capacitance=RangeExpr(),
+                                                                              voltage=RangeExpr())))
     self.pos = self.PackedExport(self.elements.ports_array(lambda x: x.pos))
     self.neg = self.PackedExport(self.elements.ports_array(lambda x: x.neg))
     self.capacitances = self.PackedParameter(self.elements.params_array(lambda x: x.capacitance))
