@@ -231,8 +231,9 @@ class BlockMeta(ElementMeta):
       # collect the annotations from the fn signature and map to ConstraintExpr types
       positional_expr_types: List[Type[ConstraintExpr]] = []  # for all positional-capable args
       positional_arg_names: List[str] = []  # TODO REMOVE
-      positional_only_num: int = 0  # number of required positional args
+      positional_only_count: int = 0  # number of required positional args
       keyword_expr_types: Dict[str, Type[ConstraintExpr]] = {}  # for all keyword-capable args
+      default_args: Dict[str, Tuple[Optional[int], Any]] = {}  # args to positional index, default values
 
       # discard param 0=self
       for arg_index, (arg_name, arg_param) in enumerate(list(inspect.signature(orig_init).parameters.items())[1:]):
@@ -241,22 +242,25 @@ class BlockMeta(ElementMeta):
 
         param_expr_type = BlockMeta._ANNOTATION_EXPR_MAP.get(arg_param.annotation, None)
         if param_expr_type is None:
-          raise BlockDefinitionError(f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}")
+          raise BlockDefinitionError(new_cls, f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}")
 
         if arg_param.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD):
           assert arg_index == len(positional_expr_types)
           positional_expr_types.append(param_expr_type)
           positional_arg_names.append(arg_name)  # TODO REMOVE
           if arg_param.kind == inspect.Parameter.POSITIONAL_ONLY:
-            assert positional_only_num == arg_index
-            positional_only_num += 1
+            positional_only_count = arg_index
+            assert arg_param.default is inspect._empty
         if arg_param.kind in (inspect.Parameter.KEYWORD_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD):
           keyword_expr_types[arg_name] = param_expr_type
+          if arg_param.default is not inspect._empty:
+            if arg_param.kind == inspect.Parameter.KEYWORD_ONLY:
+              default_args[arg_name] = (None, arg_param.default)
+            else:
+              default_args[arg_name] = (arg_index, arg_param.default)
 
-      print("DISCOVER", orig_init, positional_expr_types, keyword_expr_types)
 
       def wrapped_init(self, *args, **kwargs) -> None:
-        print("CALL", orig_init, args, kwargs)
         if not hasattr(self, '_init_params_value'):  # TODO REMOVE
           self._init_params_value = {}
 
@@ -272,11 +276,30 @@ class BlockMeta(ElementMeta):
         builder_prev = builder.get_curr_context()
         builder.push_element(self)
         try:
-          # TODO at top-level ONLY fill in all positional args
-          new_args = [arg_type()._bind(InitParamBinding(self))
+          def remap_arg(arg_type: Type[ConstraintExpr], arg_value: ConstraintExpr) -> ConstraintExpr:
+            if isinstance(arg_value.binding, InitParamBinding):
+              return arg_value  # pass through arg that has been previously transformed
+            else:
+              return arg_type()._bind(InitParamBinding(self))
+
+          new_args = [remap_arg(arg_type, arg_value)
                       for arg_value, arg_type in zip(arg_values_typed, positional_expr_types)]
-          new_kwargs = {arg_name: keyword_expr_types[arg_name]()._bind(InitParamBinding(self))
+          new_kwargs = {arg_name: remap_arg(keyword_expr_types[arg_name], arg_value)
                         for arg_name, arg_value in kwarg_values_typed.items()}
+
+          # args with defaults may not show up in kwargs and need to be specially handled
+          for arg_name, (arg_pos, arg_default) in default_args.items():
+            if arg_name not in new_kwargs and (arg_pos is None or arg_pos >= len(new_args)):
+              new_kwargs[arg_name] = keyword_expr_types[arg_name]()._bind(InitParamBinding(self))
+
+          if len(builder.stack) == 1:  # at top-level, fill in all args
+            for i in range(len(args), positional_only_count):
+              arg_type = positional_expr_types[i]
+              new_args.append(arg_type()._bind(InitParamBinding(self)))
+
+            for arg_name, arg_type in keyword_expr_types.items():
+              if arg_name not in new_kwargs:
+                new_kwargs[arg_name] = arg_type()._bind(InitParamBinding(self))
 
           for arg_name, param_value, arg_value in zip(positional_arg_names, new_args, arg_values_typed):
             self._init_params_value[arg_name] = (param_value, arg_value)
@@ -285,7 +308,8 @@ class BlockMeta(ElementMeta):
         finally:
           builder.pop_to(builder_prev)
 
-        return orig_init(self, *new_args, **new_kwargs)
+        print(orig_init, new_args, new_kwargs)
+        orig_init(self, *new_args, **new_kwargs)
 
       new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
 

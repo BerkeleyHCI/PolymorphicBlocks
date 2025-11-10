@@ -3,6 +3,17 @@ import unittest
 from edg import *
 
 
+class TestLed(SimpleBoardTop):
+  """The actually simplest circuit, a LED connected to a dummy source."""
+  def contents(self) -> None:
+    self.gnd = self.Block(DummyGround())
+    self.src = self.Block(DummyDigitalSource())
+    self.led = self.Block(IndicatorLed())
+
+    self.connect(self.led.signal, self.src.io)
+    self.connect(self.gnd.gnd, self.led.gnd)
+
+
 class TestBlinkyBasic(SimpleBoardTop):
   """The simplest cirucit, a microcontroller dev board with a LED."""
   def contents(self) -> None:
@@ -543,6 +554,9 @@ class TestBlinkyWithModeledSchematicImport(SimpleBoardTop):
 
 
 class BlinkyTestCase(unittest.TestCase):
+  def test_led(self) -> None:
+    compile_board_inplace(TestLed)
+
   def test_design_basic(self) -> None:
     compile_board_inplace(TestBlinkyBasic)  # generate this netlist as a test
 
