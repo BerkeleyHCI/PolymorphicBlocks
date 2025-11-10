@@ -45,7 +45,7 @@ class DefaultTestCase(unittest.TestCase):
     self.assertEqual(len(pb.param_defaults), 0)
 
   def test_non_default(self):
-    pb = NonDefaultParamClass()._elaborated_def_to_proto()
+    pb = NonDefaultParamClass()._elaborated_def_to_proto()  # type: ignore
 
     self.assertEqual(len(pb.param_defaults), 0)
 
