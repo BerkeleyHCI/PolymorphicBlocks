@@ -147,12 +147,11 @@ class BlockMeta(ElementMeta):
       arg_data: List[Tuple[str, inspect.Parameter, Type[ConstraintExpr]]] = []
       # discard param 0 (self)
       for arg_name, arg_param in list(inspect.signature(orig_init).parameters.items())[1:]:
-        if arg_param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
-          param_expr_type = BlockMeta._ANNOTATION_EXPR_MAP.get(arg_param.annotation, None)
-          if param_expr_type is None:
-            raise BlockDefinitionError(new_cls, f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}")
-        else:
-          param_expr_type = ConstraintExpr  # dummy placeholder
+        if arg_param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+          continue  # pass-through *kwargs, handled at lower level
+        param_expr_type = BlockMeta._ANNOTATION_EXPR_MAP.get(arg_param.annotation, None)
+        if param_expr_type is None:
+          raise BlockDefinitionError(new_cls, f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}")
 
         arg_data.append((arg_name, arg_param, param_expr_type))
 
@@ -190,13 +189,7 @@ class BlockMeta(ElementMeta):
           new_args: List[Any] = []
           new_kwargs: Dict[str, Any] = {}
           for arg_pos, (arg_name, arg_param, param_expr_type) in enumerate(arg_data):
-            if arg_param.kind == inspect.Parameter.VAR_POSITIONAL:  # pass-through *args, handled at lower level
-              new_args.extend(args[arg_pos:])
-            elif arg_param.kind == inspect.Parameter.VAR_KEYWORD:  # pass-through *kwargs, handled at lower level
-              for arg_name in kwargs:
-                if arg_name not in new_kwargs:
-                  new_kwargs[arg_name] = kwargs[arg_name]
-            elif arg_pos < len(args) and arg_param.kind in (inspect.Parameter.POSITIONAL_ONLY,
+            if arg_pos < len(args) and arg_param.kind in (inspect.Parameter.POSITIONAL_ONLY,
                                                             inspect.Parameter.POSITIONAL_OR_KEYWORD):  # present positional arg
               new_arg = remap_arg(arg_name, param_expr_type, args[arg_pos])
               new_args.append(new_arg)
@@ -221,10 +214,16 @@ class BlockMeta(ElementMeta):
                 new_arg = remap_arg(arg_name, param_expr_type, None)
                 new_kwargs[arg_name] = new_arg
                 self._init_params[arg_name] = new_arg
+
+          # unconditioally pass through all args and kwargs
+          new_args.extend(args[len(new_args):])
+          for arg_name in kwargs:
+            if arg_name not in new_kwargs:
+              new_kwargs[arg_name] = kwargs[arg_name]
+
+          orig_init(self, *new_args, **new_kwargs)
         finally:
           builder.pop_to(builder_prev)
-
-        orig_init(self, *new_args, **new_kwargs)
 
       new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
 
