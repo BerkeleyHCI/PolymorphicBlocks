@@ -188,7 +188,7 @@ class MultipackBlock(Block):
       raise BlockDefinitionError(self, "can only define multipack in init")
     if isinstance(packed_param, ConstraintExpr):
       assert type(self_param) == type(packed_param), "packed_assign parameters must be of the same type"
-      block_parent = packed_param.parent
+      block_parent = packed_param._context
       assert isinstance(block_parent, Block)
       self._packed_assigns_by_packed_block[block_parent][self_param] = packed_param
     elif isinstance(packed_param, PackedBlockParamArray):
@@ -234,7 +234,7 @@ class MultipackBlock(Block):
       raise BlockDefinitionError(self, "can only define multipack in init")
     if isinstance(packed_param, ConstraintExpr):
       assert type(packed_param) == type(self_param), "unpacked_assign parameters must be of the same type"
-      block_parent = packed_param.parent
+      block_parent = packed_param._context
       assert isinstance(block_parent, Block)
       self._unpacked_assigns_by_packed_block[block_parent][self_param] = packed_param
     elif isinstance(packed_param, PackedBlockParam):

@@ -146,17 +146,12 @@ class ElementMeta(type):
   """Hook on construction to store some metadata about its creation.
   This hooks the top-level __init__ only."""
   def __call__(cls, *args, **kwargs):
-    parent = builder.get_curr_context()
     block_context = builder.get_enclosing_block()
-    try:
-      obj = type.__call__(cls, *args, **kwargs)
-      obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
-      obj._lexical_parent = parent  # stores context for error checking
-      obj._block_context = block_context
-      obj._post_init()
-    finally:
-      if builder.get_curr_context() is not parent:  # in case the constructor skipped internal element init
-        builder.pop_to(parent)
+
+    obj = type.__call__(cls, *args, **kwargs)
+    obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
+    obj._block_context = block_context
+    obj._post_init()
 
     return obj
 
@@ -198,11 +193,9 @@ class LibraryElement(Refable, metaclass=ElementMeta):
     return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xff)
 
   def __init__(self) -> None:
-    self._lexical_parent: Optional[LibraryElement]  # set by metaclass
+    self._block_context: Optional["Refable"]  # set by metaclass, as lexical scope available pre-binding
     self._parent: Optional[LibraryElement] = None  # set by binding, None means not bound
     self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
-
-    builder.push_element(self)
 
     self.manager = SubElementManager()
     self.manager_ignored: Set[str] = set(['_parent'])

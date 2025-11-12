@@ -26,7 +26,6 @@ class BasePort(HasMetadata):
   def __init__(self) -> None:
     """Abstract Base Class for ports"""
     self._parent: Optional[PortParentTypes]  # refined from Optional[Refable] in base LibraryElement
-    self._block_context: Optional[BaseBlock]  # set by metaclass, as lexical scope available pre-binding
     self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
 
     super().__init__()

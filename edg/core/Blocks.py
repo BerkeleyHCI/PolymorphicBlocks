@@ -407,7 +407,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   def _bind(self: SelfType, parent: Union[BaseBlock, Port]) -> SelfType:
     """Returns a clone of this object with the specified binding. This object must be unbound."""
     assert self._parent is None, "can't clone bound block"
-    assert builder.get_curr_context() is self._lexical_parent, "can't clone to different context"
+    assert builder.get_enclosing_block() is self._block_context, "can't clone to different context"
     clone = type(self)(*self._initializer_args[0], **self._initializer_args[1])  # type: ignore
     clone._bind_in_place(parent)
     return clone
@@ -415,27 +415,24 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   def _check_constraint(self, constraint: ConstraintExpr) -> None:
     def check_subexpr(expr: Union[ConstraintExpr, BasePort]) -> None:  # TODO rewrite this whole method
       if isinstance(expr, ConstraintExpr) and isinstance(expr.binding, ParamBinding):
-        if isinstance(expr.parent, BaseBlock):
-          block_parent = expr.parent
-        elif isinstance(expr.parent, BasePort):
-          block_parent = cast(BaseBlock, expr.parent._block_parent())  # TODO make less ugly
-          assert block_parent is not None
-        else:
-          raise ValueError(f"unknown parent {expr.parent} of {expr}")
+        expr_parent = expr.binding.parent
+        if isinstance(expr_parent, BasePort):
+          expr_block_parent = expr_parent._block_parent()
+          assert expr_block_parent is not None
+          expr_parent = expr_block_parent
 
-        if isinstance(block_parent._parent, BasePort):
-          block_parent_parent: Any = block_parent._parent._block_parent()
-        else:
-          block_parent_parent = block_parent._parent
+        expr_parent_parent = expr_parent._parent  # may be None for top-level
+        if isinstance(expr_parent_parent, BasePort):  # resolve Link parent port to parent block
+          expr_parent_parent = expr_parent_parent._block_parent()
 
-        if not (block_parent is self or block_parent_parent is self):
-          raise UnreachableParameterError(f"In {type(self)}, constraint references unreachable parameter {expr}. "
+        if not (expr_parent is self or expr_parent_parent is self):
+          raise UnreachableParameterError(f"In {self}, constraint references unreachable parameter {expr}. "
                                           "Only own parameters, or immediate contained blocks' parameters can be accessed.")
       elif isinstance(expr, BasePort):
         block_parent = cast(BaseBlock, expr._block_parent())
         assert block_parent is not None
         if not block_parent is self or block_parent._parent is self:
-          raise UnreachableParameterError(f"In {type(self)}, constraint references unreachable port {expr}. "
+          raise UnreachableParameterError(f"In {self}, constraint references unreachable port {expr}. "
                                           "Only own ports, or immediate contained blocks' ports can be accessed.")
 
     for subexpr in constraint._get_exprs():
