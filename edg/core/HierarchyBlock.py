@@ -148,7 +148,7 @@ class BlockMeta(ElementMeta):
       # discard param 0 (self)
       for arg_name, arg_param in list(inspect.signature(orig_init).parameters.items())[1:]:
         if arg_param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
-          continue  # pass-through *kwargs, handled at lower level
+          continue  # pass through of *args, **kwargs handled later
         param_expr_type = BlockMeta._ANNOTATION_EXPR_MAP.get(arg_param.annotation, None)
         if param_expr_type is None:
           raise BlockDefinitionError(new_cls, f"in {new_cls}.__init__, unknown annotation type for {arg_name}: {arg_param.annotation}")
