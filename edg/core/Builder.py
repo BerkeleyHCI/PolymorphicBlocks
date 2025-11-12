@@ -14,12 +14,17 @@ class Builder:
   def __init__(self) -> None:
     self.stack: List[BaseBlock] = []
 
-  def push_element(self, elt: BaseBlock) -> None:
-    self.stack.append(elt)
+  def push_element(self, elt: BaseBlock) -> Optional[BaseBlock]:
+    """Pushes a new element onto the context stack, returning the previous top element.
+    Ignores if the element is already on top of the stack."""
+    prev_elt = self.get_enclosing_block()
+    if not self.stack or self.stack[-1] is not elt:  # prevent double-pushing
+      self.stack.append(elt)
+    return prev_elt
 
   def pop_to(self, elt: Optional[BaseBlock]) -> None:
-    self.stack.pop()
-    assert self.get_enclosing_block() is elt
+    while (elt is None and self.stack) or (elt is not None and self.stack[-1] is not elt):
+      self.stack.pop()
 
   def get_enclosing_block(self) -> Optional[BaseBlock]:
     if not self.stack:
