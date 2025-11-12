@@ -202,8 +202,6 @@ class LibraryElement(Refable, metaclass=ElementMeta):
     self._parent: Optional[LibraryElement] = None  # set by binding, None means not bound
     self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
 
-    builder.push_element(self)
-
     self.manager = SubElementManager()
     self.manager_ignored: Set[str] = set(['_parent'])
 
