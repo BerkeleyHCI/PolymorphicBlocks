@@ -196,4 +196,4 @@ class JlcSwitchFet(PartsTableSelectorFootprint, JlcBaseFet, FetFallbackGateCharg
   pass
 
 
-lambda: JlcFet, JlcSwitchFet()  # ensure class is instantiable (non-abstract)
+lambda: (JlcFet(), JlcSwitchFet())  # ensure class is instantiable (non-abstract)
