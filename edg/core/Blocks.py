@@ -415,14 +415,17 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   def _check_constraint(self, constraint: ConstraintExpr) -> None:
     def check_subexpr(expr: Union[ConstraintExpr, BasePort]) -> None:  # TODO rewrite this whole method
       if isinstance(expr, ConstraintExpr) and isinstance(expr.binding, ParamBinding):
-        if isinstance(expr.binding.parent, BaseBlock):
-          expr_parent = expr.binding.parent
-        elif isinstance(expr.binding.parent, BasePort):
-          expr_parent = expr.binding.parent._block_parent()
-        else:
-          raise ValueError("unexpected parent type")
+        expr_parent = expr.binding.parent
+        if isinstance(expr_parent, BasePort):
+          expr_block_parent = expr_parent._block_parent()
+          assert expr_block_parent is not None
+          expr_parent = expr_block_parent
 
-        if not (expr_parent is self or expr_parent._parent is self):
+        expr_parent_parent = expr_parent._parent  # may be None for top-level
+        if isinstance(expr_parent_parent, BasePort):  # resolve Link parent port to parent block
+          expr_parent_parent = expr_parent_parent._block_parent()
+
+        if not (expr_parent is self or expr_parent_parent is self):
           raise UnreachableParameterError(f"In {self}, constraint references unreachable parameter {expr}. "
                                           "Only own parameters, or immediate contained blocks' parameters can be accessed.")
       elif isinstance(expr, BasePort):
