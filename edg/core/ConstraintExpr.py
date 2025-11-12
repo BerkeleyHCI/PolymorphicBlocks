@@ -81,7 +81,7 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   def _bind(self: SelfType, binding: Binding) -> SelfType:
     """Returns a clone of this object with the specified binding. This object must be unbound."""
     assert not self._is_bound()
-    assert builder.get_enclosing_block() is self._context, f"can't clone in original context {self._context} to different new context {builder.get_curr_context()}"
+    assert builder.get_enclosing_block() is self._context, f"can't clone in original context {self._context} to different new context {builder.get_enclosing_block()}"
     if not isinstance(binding, ParamBinding):
       assert self.initializer is None, "Only Parameters may have initializers"
     clone: SelfType = type(self)(self.initializer)

@@ -213,7 +213,7 @@ class BlockMeta(ElementMeta):
                 new_kwargs[arg_name] = new_arg
                 self._init_params[arg_name] = new_arg
 
-          # unconditioally pass through all args and kwargs
+          # unconditionally pass through all args and kwargs
           new_args.extend(args[len(new_args):])
           for arg_name in kwargs:
             if arg_name not in new_kwargs:
