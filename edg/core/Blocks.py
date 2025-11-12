@@ -415,27 +415,19 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   def _check_constraint(self, constraint: ConstraintExpr) -> None:
     def check_subexpr(expr: Union[ConstraintExpr, BasePort]) -> None:  # TODO rewrite this whole method
       if isinstance(expr, ConstraintExpr) and isinstance(expr.binding, ParamBinding):
-        if isinstance(expr.parent, BaseBlock):
-          block_parent = expr.parent
-        elif isinstance(expr.parent, BasePort):
-          block_parent = cast(BaseBlock, expr.parent._block_parent())  # TODO make less ugly
-          assert block_parent is not None
+        if isinstance(expr._context, BaseBlock):
+          block_parent = expr._context
         else:
-          raise ValueError(f"unknown parent {expr.parent} of {expr}")
+          raise ValueError(f"unknown parent {expr._context} of {expr}")
 
-        if isinstance(block_parent._parent, BasePort):
-          block_parent_parent: Any = block_parent._parent._block_parent()
-        else:
-          block_parent_parent = block_parent._parent
-
-        if not (block_parent is self or block_parent_parent is self):
-          raise UnreachableParameterError(f"In {type(self)}, constraint references unreachable parameter {expr}. "
+        if not (block_parent is self or block_parent._parent is self):
+          raise UnreachableParameterError(f"In {self}, constraint references unreachable parameter {expr}. "
                                           "Only own parameters, or immediate contained blocks' parameters can be accessed.")
       elif isinstance(expr, BasePort):
         block_parent = cast(BaseBlock, expr._block_parent())
         assert block_parent is not None
         if not block_parent is self or block_parent._parent is self:
-          raise UnreachableParameterError(f"In {type(self)}, constraint references unreachable port {expr}. "
+          raise UnreachableParameterError(f"In {self}, constraint references unreachable port {expr}. "
                                           "Only own ports, or immediate contained blocks' ports can be accessed.")
 
     for subexpr in constraint._get_exprs():

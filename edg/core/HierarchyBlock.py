@@ -181,9 +181,14 @@ class BlockMeta(ElementMeta):
 
           return arg_type()._bind(InitParamBinding(self, typed_arg_value))
 
-        # create wrapper ConstraintExpr in new object scope
-        builder_prev = builder.get_curr_context()
-        builder.push_element(self)
+        if builder.get_curr_context() is not self:
+          # test needed to make sure we don't double-push in nested super().__init__ calls
+          # create wrapper ConstraintExpr in new object scope
+          builder_prev = (True, builder.get_curr_context())
+          builder.push_element(self)
+        else:
+          builder_prev = (False, None)  # dummy value for try/finally
+
         try:
           # rebuild args and kwargs by traversing the args list
           new_args: List[Any] = []
@@ -223,7 +228,8 @@ class BlockMeta(ElementMeta):
 
           orig_init(self, *new_args, **new_kwargs)
         finally:
-          builder.pop_to(builder_prev)
+          if builder_prev[0]:
+            builder.pop_to(builder_prev[1])
 
       new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
 
