@@ -20,10 +20,10 @@ class LinkMeta(ElementMeta):
     if '__init__' in new_cls.__dict__:
       orig_init = new_cls.__dict__['__init__']
       def wrapped_init(self, *args, **kwargs) -> None:
-        if builder.get_curr_context() is not self:
+        if builder.get_enclosing_block() is not self:
           # test needed to make sure we don't double-push in nested super().__init__ calls
           # create wrapper ConstraintExpr in new object scope
-          builder_prev = (True, builder.get_curr_context())
+          builder_prev = (True, builder.get_enclosing_block())
           builder.push_element(self)
         else:
           builder_prev = (False, None)  # dummy value for try/finally

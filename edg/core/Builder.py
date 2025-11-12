@@ -19,22 +19,22 @@ class Builder:
 
   def pop_to(self, elt: Optional[BaseBlock]) -> None:
     self.stack.pop()
-    assert self.get_curr_context() is elt
+    assert self.get_enclosing_block() is elt
 
-  @deprecated("use get_curr_context() instead, context frames can only be blocks now")
   def get_enclosing_block(self) -> Optional[BaseBlock]:
-    return self.get_curr_context()
-
-  def get_curr_context(self) -> Optional[BaseBlock]:
     if not self.stack:
       return None
     else:
       return self.stack[-1]
 
+  @deprecated("use get_enclosing_block() instead, context frames can only be blocks now")
+  def get_curr_context(self) -> Optional[BaseBlock]:
+    return self.get_enclosing_block()
+
   def elaborate_toplevel(self, block: BaseBlock, *,
                          is_generator: bool = False,
                          generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]] = []) -> edgir.HierarchyBlock:
-    assert self.get_curr_context() is None
+    assert self.get_enclosing_block() is None
     self.push_element(block)
     try:
       if is_generator:  # TODO this is kind of nasty =(

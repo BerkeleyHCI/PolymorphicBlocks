@@ -407,7 +407,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
   def _bind(self: SelfType, parent: Union[BaseBlock, Port]) -> SelfType:
     """Returns a clone of this object with the specified binding. This object must be unbound."""
     assert self._parent is None, "can't clone bound block"
-    assert builder.get_curr_context() is self._lexical_parent, "can't clone to different context"
+    assert builder.get_enclosing_block() is self._block_context, "can't clone to different context"
     clone = type(self)(*self._initializer_args[0], **self._initializer_args[1])  # type: ignore
     clone._bind_in_place(parent)
     return clone

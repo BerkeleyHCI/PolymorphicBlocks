@@ -181,10 +181,10 @@ class BlockMeta(ElementMeta):
 
           return arg_type()._bind(InitParamBinding(self, typed_arg_value))
 
-        if builder.get_curr_context() is not self:
+        if builder.get_enclosing_block() is not self:
           # test needed to make sure we don't double-push in nested super().__init__ calls
           # create wrapper ConstraintExpr in new object scope
-          builder_prev = (True, builder.get_curr_context())
+          builder_prev = (True, builder.get_enclosing_block())
           builder.push_element(self)
         else:
           builder_prev = (False, None)  # dummy value for try/finally
