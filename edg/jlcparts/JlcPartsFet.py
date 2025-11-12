@@ -68,4 +68,4 @@ class JlcPartsSwitchFet(PartsTableSelectorFootprint, JlcPartsBaseFet, TableSwitc
     pass
 
 
-lambda: JlcPartsFet(), JlcPartsSwitchFet()  # ensure class is instantiable (non-abstract)
+lambda: (JlcPartsFet(), JlcPartsSwitchFet())  # ensure class is instantiable (non-abstract)

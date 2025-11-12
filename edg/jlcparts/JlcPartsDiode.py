@@ -70,4 +70,4 @@ class JlcPartsZenerDiode(TableZenerDiode, PartsTableSelectorFootprint, JlcPartsB
             return None
 
 
-lambda: JlcPartsDiode(), JlcPartsZenerDiode()  # ensure class is instantiable (non-abstract)
+lambda: (JlcPartsDiode(), JlcPartsZenerDiode())  # ensure class is instantiable (non-abstract)

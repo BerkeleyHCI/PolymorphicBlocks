@@ -17,6 +17,7 @@ from .. import edgir
 
 if TYPE_CHECKING:
   from .Ports import BasePort
+  from .Blocks import BaseBlock
 
 
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
@@ -64,7 +65,7 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
       self.initializer = None
     else:
       self.initializer = self._to_expr_type(initializer)
-    self.parent = builder.get_curr_context()
+    self._context: Optional[BaseBlock] = builder.get_enclosing_block()
 
   def _get_exprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     assert self.binding is not None
@@ -80,7 +81,7 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   def _bind(self: SelfType, binding: Binding) -> SelfType:
     """Returns a clone of this object with the specified binding. This object must be unbound."""
     assert not self._is_bound()
-    assert builder.get_curr_context() is self.parent, f"can't clone in original context {self.parent} to different new context {builder.get_curr_context()}"
+    assert builder.get_enclosing_block() is self._context, f"can't clone in original context {self._context} to different new context {builder.get_enclosing_block()}"
     if not isinstance(binding, ParamBinding):
       assert self.initializer is None, "Only Parameters may have initializers"
     clone: SelfType = type(self)(self.initializer)

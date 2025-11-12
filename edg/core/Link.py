@@ -1,18 +1,38 @@
 from __future__ import annotations
 
+import functools
 from typing import *
 
 from .. import edgir
 from .Array import BaseVector, DerivedVector
 from .Blocks import BaseBlock, Connection
-from .Core import Refable, non_library
+from .Builder import builder
+from .Core import Refable, non_library, ElementMeta
 from .HdlUserExceptions import UnconnectableError
 from .IdentityDict import IdentityDict
 from .Ports import Port
 
 
+class LinkMeta(ElementMeta):
+  def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+    new_cls = super().__new__(cls, *args, **kwargs)
+
+    if '__init__' in new_cls.__dict__:
+      orig_init = new_cls.__dict__['__init__']
+      def wrapped_init(self, *args, **kwargs) -> None:
+        builder_prev = builder.push_element(self)
+        try:
+          orig_init(self, *args, **kwargs)
+        finally:
+          builder.pop_to(builder_prev)
+
+      new_cls.__init__ = functools.update_wrapper(wrapped_init, orig_init)
+
+    return new_cls
+
+
 @non_library
-class Link(BaseBlock[edgir.Link]):
+class Link(BaseBlock[edgir.Link], metaclass=LinkMeta):
   def __init__(self) -> None:
     super().__init__()
     self.parent: Optional[Port] = None
