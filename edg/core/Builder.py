@@ -39,8 +39,6 @@ class Builder:
   def elaborate_toplevel(self, block: BaseBlock, *,
                          is_generator: bool = False,
                          generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]] = []) -> edgir.HierarchyBlock:
-    assert self.get_enclosing_block() is None
-    self.push_element(block)
     try:
       if is_generator:  # TODO this is kind of nasty =(
         elaborated = block._generated_def_to_proto(generate_values)  # type: ignore
@@ -50,8 +48,6 @@ class Builder:
       return elaborated
     except Exception as e:
       raise Exception(f"While elaborating {block.__class__}") from e
-    finally:
-      self.pop_to(None)
 
 
 builder = Builder()

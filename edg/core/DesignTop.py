@@ -1,6 +1,7 @@
 from typing import TypeVar, Union, List, Tuple, Dict, Type
 
 from .. import edgir
+from .Builder import builder
 from .Ports import Port
 from .ConstraintExpr import ConstraintExpr
 from .HdlUserExceptions import BlockDefinitionError
@@ -51,11 +52,16 @@ class DesignTop(Block):
 
   # TODO make this non-overriding? - this needs to call multipack after contents
   def _elaborated_def_to_proto(self) -> edgir.HierarchyBlock:
-    assert self._elaboration_state == BlockElaborationState.post_init
-    self._elaboration_state = BlockElaborationState.contents
-    self.contents()
-    self.multipack()
-    self._elaboration_state = BlockElaborationState.post_contents
+    prev_element = builder.push_element(self)
+    assert prev_element is None
+    try:
+      assert self._elaboration_state == BlockElaborationState.post_init
+      self._elaboration_state = BlockElaborationState.contents
+      self.contents()
+      self.multipack()
+      self._elaboration_state = BlockElaborationState.post_contents
+    finally:
+      builder.pop_to(prev_element)
     return self._def_to_proto()
 
   def _populate_def_proto_block_contents(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:

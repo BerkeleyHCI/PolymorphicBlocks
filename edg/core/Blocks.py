@@ -292,10 +292,16 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     raise NotImplementedError
 
   def _elaborated_def_to_proto(self) -> BaseBlockEdgirType:
-    assert self._elaboration_state == BlockElaborationState.post_init
-    self._elaboration_state = BlockElaborationState.contents
-    self.contents()
-    self._elaboration_state = BlockElaborationState.post_contents
+    prev_element = builder.push_element(self)
+    assert prev_element is None
+    try:
+      assert self._elaboration_state == BlockElaborationState.post_init
+      self._elaboration_state = BlockElaborationState.contents
+      self.contents()
+      self._elaboration_state = BlockElaborationState.post_contents
+    finally:
+      builder.pop_to(prev_element)
+
     return self._def_to_proto()
 
   def _populate_def_proto_block_base(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
