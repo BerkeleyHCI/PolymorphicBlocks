@@ -22,9 +22,14 @@ class Builder:
       self.stack.append(elt)
     return prev_elt
 
-  def pop_to(self, elt: Optional[BaseBlock]) -> None:
-    while (elt is None and self.stack) or (elt is not None and self.stack[-1] is not elt):
-      self.stack.pop()
+  def pop_to(self, prev: Optional[BaseBlock]) -> None:
+    """Pops at most one element from stack, expecting prev to be at the top of the stack.
+    The pattern should be one pop for one push, and allowing that duplicate pushes are ignored."""
+    if (prev is None and not self.stack) or (prev is not None and self.stack[-1] is prev):
+      return
+
+    self.stack.pop()
+    assert (prev is None and not self.stack) or (prev is not None and self.stack[-1] is prev)
 
   def get_enclosing_block(self) -> Optional[BaseBlock]:
     if not self.stack:
@@ -39,8 +44,6 @@ class Builder:
   def elaborate_toplevel(self, block: BaseBlock, *,
                          is_generator: bool = False,
                          generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]] = []) -> edgir.HierarchyBlock:
-    assert self.get_enclosing_block() is None
-    self.push_element(block)
     try:
       if is_generator:  # TODO this is kind of nasty =(
         elaborated = block._generated_def_to_proto(generate_values)  # type: ignore
@@ -50,8 +53,6 @@ class Builder:
       return elaborated
     except Exception as e:
       raise Exception(f"While elaborating {block.__class__}") from e
-    finally:
-      self.pop_to(None)
 
 
 builder = Builder()

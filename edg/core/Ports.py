@@ -183,7 +183,7 @@ class Port(BasePort, Generic[PortLinkType]):
     adapter_inst = enclosing_block.Block(adapter)
     adapter_name_suffix = f"_{self._adapter_count}" if self._adapter_count > 0 else ""
     enclosing_block.manager.add_element(
-      f"(adapter){block_parent._name_from(enclosing_block)}.{self._name_from(block_parent)}{adapter_name_suffix}",
+      f"(adapter){self._name_from(enclosing_block)}{adapter_name_suffix}",
       adapter_inst)
     enclosing_block.connect(self, adapter_inst.src)  # we don't name it to avoid explicit name conflicts
     self._adapter_count += 1

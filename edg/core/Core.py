@@ -209,7 +209,7 @@ class LibraryElement(Refable, metaclass=ElementMeta):
       self.manager.add_element(name, value)
     super().__setattr__(name, value)
 
-  def _name_of_child(self, subelt: Any, allow_unknown: bool = False) -> str:
+  def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
     self_name = self.manager.name_of(subelt)
     if self_name is not None:
       return self_name
@@ -224,7 +224,7 @@ class LibraryElement(Refable, metaclass=ElementMeta):
       return []
     else:
       assert self._parent is not None, "can't get path / name for non-bound element"
-      return self._parent._path_from(base, allow_unknown) + [self._parent._name_of_child(self, allow_unknown)]
+      return self._parent._path_from(base, allow_unknown) + [self._parent._name_of_child(self, base, allow_unknown)]
 
   def _name_from(self, base: LibraryElement, allow_unknown: bool = False) -> str:
     """Returns the path name to (inclusive) this element from some starting point.
