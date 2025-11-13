@@ -22,12 +22,14 @@ class Builder:
       self.stack.append(elt)
     return prev_elt
 
-  def pop_to(self, elt: Optional[BaseBlock]) -> None:
-    if (elt is None and not self.stack) or (elt is not None and self.stack[-1] is elt):
+  def pop_to(self, prev: Optional[BaseBlock]) -> None:
+    """Pops at most one element from stack, expecting prev to be at the top of the stack.
+    The pattern should be one pop for one push, and allowing that duplicate pushes are ignored."""
+    if (prev is None and not self.stack) or (prev is not None and self.stack[-1] is prev):
       return
 
     self.stack.pop()
-    assert (elt is None and not self.stack) or (elt is not None and self.stack[-1] is elt)
+    assert (prev is None and not self.stack) or (prev is not None and self.stack[-1] is prev)
 
   def get_enclosing_block(self) -> Optional[BaseBlock]:
     if not self.stack:
