@@ -84,7 +84,7 @@ class DesignTop(Block):
       else:
         raise TypeError
       assert isinstance(multipack_block, MultipackBlock)
-      multipack_name = self._name_of_child(multipack_block)
+      multipack_name = self._name_of_child(multipack_block, self)
       multipack_ref_base = edgir.LocalPath()
       multipack_ref_base.steps.add().name = multipack_name
       multipack_ref_map = multipack_block._get_ref_map(multipack_ref_base)
@@ -96,9 +96,9 @@ class DesignTop(Block):
       packed_ref_map = multipack_part_block._get_ref_map(packed_ref_base)
 
       if isinstance(multipack_part, Block):
-        part_name = multipack_block._name_of_child(multipack_part)
+        part_name = multipack_block._name_of_child(multipack_part, self)
       elif isinstance(multipack_part, PackedBlockAllocate):
-        part_name = multipack_block._name_of_child(multipack_part.parent)
+        part_name = multipack_block._name_of_child(multipack_part.parent, self)
         assert multipack_part.suggested_name, "multipack parts must have suggested name, for consistency"
         part_name += f"[{multipack_part.suggested_name}]"
       else:
@@ -111,7 +111,7 @@ class DesignTop(Block):
           packed_port_port = packed_port.port
         else:
           raise TypeError
-        packed_port_name = multipack_part_block._name_of_child(packed_port_port)
+        packed_port_name = multipack_part_block._name_of_child(packed_port_port, self)
         exported_tunnel = edgir.add_pair(pb.constraints,
                                          f"(packed){multipack_name}.{part_name}.{packed_port_name}").exportedTunnel
         exported_tunnel.internal_block_port.ref.CopyFrom(multipack_ref_map[exterior_port])
@@ -123,13 +123,13 @@ class DesignTop(Block):
 
       for multipack_param, packed_param in packing_rule.tunnel_assigns.items():
         if isinstance(packed_param, ConstraintExpr):
-          packed_param_name = multipack_part_block._name_of_child(packed_param)
+          packed_param_name = multipack_part_block._name_of_child(packed_param, self)
           assign_tunnel = edgir.add_pair(pb.constraints,
                                          f"(packed){multipack_name}.{part_name}.{packed_param_name}").assignTunnel
           assign_tunnel.dst.CopyFrom(multipack_ref_map[multipack_param])
           assign_tunnel.src.ref.CopyFrom(packed_ref_map[packed_param])
         elif isinstance(packed_param, PackedBlockParamArray):
-          multipack_param_name = multipack_block._name_of_child(multipack_param)
+          multipack_param_name = multipack_block._name_of_child(multipack_param, self)
           constr_name = f"(packed){multipack_name}.{multipack_param_name}"
           packed_params.setdefault(constr_name, (multipack_ref_map[multipack_param], []))[1].append(
             packed_ref_map[packed_param.param])
@@ -138,14 +138,14 @@ class DesignTop(Block):
 
       for multipack_param, unpacked_param in packing_rule.tunnel_unpack_assigns.items():
         if isinstance(unpacked_param, ConstraintExpr):
-          multipack_param_name = multipack_block._name_of_child(multipack_param)
+          multipack_param_name = multipack_block._name_of_child(multipack_param, self)
           # TODO need better constraint naming scheme
           assign_tunnel = edgir.add_pair(pb.constraints,
                                          f"(unpacked){multipack_name}.{part_name}.{multipack_param_name}").assignTunnel
           assign_tunnel.dst.CopyFrom(packed_ref_map[unpacked_param])
           assign_tunnel.src.ref.CopyFrom(multipack_ref_map[multipack_param])
         elif isinstance(unpacked_param, PackedBlockParam):
-          multipack_param_name = multipack_block._name_of_child(multipack_param)
+          multipack_param_name = multipack_block._name_of_child(multipack_param, self)
           # TODO need better constraint naming scheme
           assign_tunnel = edgir.add_pair(pb.constraints,
                                          f"(unpacked){multipack_name}.{part_name}.{multipack_param_name}").assignTunnel
