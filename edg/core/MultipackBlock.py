@@ -7,6 +7,7 @@ from .Array import Vector
 from .ArrayExpr import ArrayExpr, ArrayBoolExpr, ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr
 from .Binding import InitParamBinding
 from .Blocks import BlockElaborationState
+from .Builder import builder
 from .HdlUserExceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
 from .Core import non_library, SubElementDict
@@ -134,6 +135,9 @@ class MultipackBlock(Block):
   def PackedPart(self, tpe: PackedPartType) -> PackedPartType:
     """Adds a block type that can be packed into this block.
     The block is a "virtual block" that will not appear in the design tree."""
+    if not builder.is_top2(self):
+      return tpe  # unlike Blocks, PackedParts are part of the API
+
     if not isinstance(tpe, (Block, PackedBlockArray)):
       raise TypeError(f"param to PackedPart(...) must be Block, got {tpe} of type {type(tpe)}")
     if self._elaboration_state != BlockElaborationState.init:
@@ -149,6 +153,9 @@ class MultipackBlock(Block):
 
   def packed_connect(self, exterior_port: BasePort, packed_port: PackedPortTypes) -> None:
     """Defines a packing rule specified as a virtual connection between an exterior port and a PackedBlock port."""
+    if not builder.is_top2(self):
+      return  # unlike Blocks, packed connections are used by the containing block
+
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
     if isinstance(packed_port, Port):
@@ -172,6 +179,9 @@ class MultipackBlock(Block):
   def PackedExport(self, packed_port: PackedPortTypes, *, optional: bool = False) -> BasePort:
     """Defines a Port in this block, by exporting a port from a packed part or packed part array.
     Like self.Export(...), combines self.Port(...) with self.packed_connect(...)."""
+    if not builder.is_top2(self):
+      return packed_port  # if not top-level, object is used for type only
+
     if isinstance(packed_port, Port):
       new_port: BasePort = self.Port(type(packed_port).empty(), optional=optional)
     elif isinstance(packed_port, PackedBlockPortArray):
@@ -184,6 +194,9 @@ class MultipackBlock(Block):
   def packed_assign(self, self_param: ConstraintExpr, packed_param: PackedParamTypes) -> None:
     """Defines a packing rule assigning my parameter from a PackedBlock parameter.
     IMPORTANT: for packed arrays, no ordering on elements is guaranteed, and must be treated as an unordered set."""
+    if not builder.is_top2(self):
+      return  # unlike Blocks, packed connections are used by the containing block
+
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
     if isinstance(packed_param, ConstraintExpr):
@@ -216,6 +229,9 @@ class MultipackBlock(Block):
     """Defines a Parameter in this block, by exporting a parameter from a packed part or packed part array.
     Combines self.Parameter(...) with self.packed_assign(...), and additionally compatible with generators
     where self.Parameter(...) would error out."""
+    if not builder.is_top2(self):
+      return packed_param
+
     if isinstance(packed_param, ConstraintExpr):
       new_param = type(packed_param)()._bind(InitParamBinding(self))
     elif isinstance(packed_param, PackedBlockParamArray):
@@ -230,6 +246,9 @@ class MultipackBlock(Block):
     """Defines an (un)packing rule assigning a Packed parameter from my parameter (reverse of packed_assign).
     Only direct parameter-to-parameter assignment allowed, even for packed block arrays,
     """
+    if not builder.is_top2(self):
+      return  # unlike Blocks, packed connections are used by the containing block
+
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")
     if isinstance(packed_param, ConstraintExpr):

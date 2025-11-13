@@ -446,7 +446,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def require(self, constraint: BoolLike, name: Optional[str] = None, *, unchecked: bool=False) -> BoolExpr:
     if not builder.is_top(self):
-      return BoolExpr._to_expr_type(constraint)  # if not top-level, object is used for type only
+      return BoolExpr()  # if not top-level, object is used for type only
 
     constraint_typed = BoolExpr._to_expr_type(constraint)
     if not isinstance(name, (str, type(None))):
