@@ -109,6 +109,9 @@ class ParamBinding(Binding):
 class InitParamBinding(ParamBinding):
   """Binding that indicates this is a parameter from an __init__ argument.
   Can optionally take a value, which would have a binding in the parent's scope."""
+  def __repr__(self) -> str:
+    return f"InitParam({self.parent}={self.value})"
+
   def __init__(self, parent: ParamParentTypes, value: Optional[ConstraintExpr] = None):
     super().__init__(parent)
     self.value = value
