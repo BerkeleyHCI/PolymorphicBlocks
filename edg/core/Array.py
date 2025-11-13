@@ -130,12 +130,12 @@ class Vector(BaseVector, Generic[VectorType]):
     return self._elts.items()
 
   # unlike most other LibraryElement types, the names are stored in _elts and _allocates
-  def _name_of_child(self, subelt: Any, allow_unknown: bool = False) -> str:
+  def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
     from .HierarchyBlock import Block
     block_parent = self._block_parent()
     assert isinstance(block_parent, Block)
 
-    if builder.get_enclosing_block() is block_parent or builder.get_enclosing_block() is None:
+    if context is block_parent:
       # in block defining this port (direct elt definition), or in test top
       assert self._elts is not None, "can't get name on undefined vector"
       for (name, elt) in self._elts.items():
@@ -145,7 +145,7 @@ class Vector(BaseVector, Generic[VectorType]):
         return f"(unknown {subelt.__class__.__name__})"
       else:
         raise ValueError(f"no name for {subelt}")
-    elif builder.get_enclosing_block() is block_parent._parent:
+    elif context is block_parent._parent:
       # in block enclosing the block defining this port (allocate required)
       for (i, (suggested_name, allocate_elt)) in enumerate(self._requests):
         if subelt is allocate_elt:

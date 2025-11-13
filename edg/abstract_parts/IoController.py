@@ -175,7 +175,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
         allocation_list.append((io_port.elt_type(), self.get(io_port.requested())))
       elif isinstance(io_port, Port):  # derive Port connections from is_connected
         if self.get(io_port.is_connected()):
-          requested = [self._name_of_child(io_port)]  # generate requested name from port name if connected
+          requested = [self._name_of_child(io_port, self)]  # generate requested name from port name if connected
         else:
           requested = []
         allocation_list.append((type(io_port), requested))
