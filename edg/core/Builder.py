@@ -23,8 +23,11 @@ class Builder:
     return prev_elt
 
   def pop_to(self, elt: Optional[BaseBlock]) -> None:
-    while (elt is None and self.stack) or (elt is not None and self.stack[-1] is not elt):
-      self.stack.pop()
+    if (elt is None and not self.stack) or (elt is not None and self.stack[-1] is elt):
+      return
+
+    self.stack.pop()
+    assert (elt is None and not self.stack) or (elt is not None and self.stack[-1] is elt)
 
   def get_enclosing_block(self) -> Optional[BaseBlock]:
     if not self.stack:

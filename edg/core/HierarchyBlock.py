@@ -166,7 +166,7 @@ class BlockMeta(ElementMeta):
 
           if isinstance(arg_value, ConstraintExpr):  # otherwise, create a new arg
             if arg_value._is_bound():
-              typed_arg_value: Optional[ConstraintExpr] = arg_type._to_expr_type(arg_value)
+              typed_arg_value: Optional[ConstraintExpr] = arg_value
             elif arg_value.initializer is None:
               typed_arg_value = None
             else:
@@ -175,7 +175,7 @@ class BlockMeta(ElementMeta):
                                          "either leave default empty or pass in a value or uninitialized type " + \
                                          "(eg, 2.0, FloatExpr(), but NOT FloatExpr(2.0))")
           elif arg_value is not None:
-            typed_arg_value = arg_type._to_expr_type(arg_value)
+            typed_arg_value = arg_value
           else:
             typed_arg_value = None
 
@@ -275,7 +275,8 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     for param_name, param in self._parameters.items():
       if isinstance(param.binding, InitParamBinding) and param.binding.value is not None:
         # default values can't depend on anything so the ref_map is empty
-        pb.param_defaults[param_name].CopyFrom(param.binding.value._expr_to_proto(IdentityDict()))
+        param_typed_value = param._to_expr_type(param.binding.value)
+        pb.param_defaults[param_name].CopyFrom(param_typed_value._expr_to_proto(IdentityDict()))
 
     return pb
 
@@ -381,8 +382,9 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
         all_block_params.update(mixin._parameters.items())
       for (block_param_name, block_param) in all_block_params.items():
         if isinstance(block_param.binding, InitParamBinding) and block_param.binding.value is not None:
+          param_typed_value = block_param._to_expr_type(block_param.binding.value)
           edgir.add_pair(pb.constraints, f'(init){block_name}.{block_param_name}').CopyFrom(  # TODO better name
-            AssignBinding.make_assign(block_param, block_param.binding.value, ref_map)
+            AssignBinding.make_assign(block_param, param_typed_value, ref_map)
           )
 
     return pb
