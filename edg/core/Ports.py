@@ -244,7 +244,8 @@ class Port(BasePort, Generic[PortLinkType]):
     # TODO: with some magic, this can be implemented w/o the function call by hiding logic in getattr
     if self._link_instance is not None:
       return self._link_instance
-    assert self._is_bound(), "not bound, can't create link"
+    if builder.curr_context_within_top(1):  # TODO clean this up
+      assert self._is_bound(), "not bound, can't create link"
 
     self._link_instance = self.link_type()
     self._link_instance._bind_in_place(self)

@@ -42,6 +42,8 @@ class Cp2102_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.rts = self.Port(dout_model, optional=True)
     self.cts = self.Port(din_model, optional=True)
 
+  def contents(self):
+    super().contents()
     self.require(self.uart.is_connected() | self.ri.is_connected() | self.dcd.is_connected() | self.dtr.is_connected()
                  | self.dsr.is_connected() | self.rts.is_connected() | self.cts.is_connected())
 

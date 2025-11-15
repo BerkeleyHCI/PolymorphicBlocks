@@ -217,6 +217,9 @@ class Vector(BaseVector, Generic[VectorType]):
     Argument is the port model (optionally with initializers) and an optional suggested name.
     Can only be called from the block defining this port (where this is a boundary port),
     and this port must be bound."""
+    if not builder.curr_context_within_top(1):
+      return self._tpe
+
     assert self._is_bound(), "not bound, can't create array elements"
     assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
     assert type(tpe) is type(self._tpe), f"created elts {type(tpe)} must be same type as array type {type(self._tpe)}"
@@ -241,6 +244,9 @@ class Vector(BaseVector, Generic[VectorType]):
     port of an internal block).
     To create elements where this is the boundary block, use init_elts(...).
     """
+    if not builder.curr_context_within_top(1):
+      return self._tpe
+
     from .HierarchyBlock import Block
     assert self._is_bound(), "not bound, can't allocate array elements"
     block_parent = self._block_parent()
@@ -262,6 +268,9 @@ class Vector(BaseVector, Generic[VectorType]):
     port of an internal block).
     Can only be used as an array elements sink.
     """
+    if not builder.curr_context_within_top(1):
+      return Vector(type(self._tpe).empty())
+
     from .HierarchyBlock import Block
     assert self._is_bound(), "not bound, can't allocate array elements"
     block_parent = self._block_parent()
