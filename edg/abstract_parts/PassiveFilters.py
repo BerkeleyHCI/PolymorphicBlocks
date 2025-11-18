@@ -162,7 +162,6 @@ class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock):
       '1': self.inp, '2': self.inn, '3': self.outp, '4': self.outn
     }
 
-  @init_in_parent
   def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
     super().__init__()
     self.inn = self.Port(AnalogSink.empty())

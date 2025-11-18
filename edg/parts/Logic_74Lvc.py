@@ -73,7 +73,6 @@ class Sn74lvc1g74(Interface, Block):
 
 
 class Sn74lvc2g02_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-    @init_in_parent
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
@@ -127,7 +126,6 @@ class Sn74lvc2g02_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class Sn74lvc2g02(Interface, Block):
     """2-input positive NOR gate
     TODO: support multipacking"""
-    @init_in_parent
     def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Sn74lvc2g02_Device())

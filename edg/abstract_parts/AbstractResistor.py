@@ -132,7 +132,6 @@ class SeriesResistor(Resistor, GeneratorBlock):
   Generally used as a refinement to break up a single (logical) resistor that is dissipating too much power
   or has an excessive voltage across it. Accounts for tolerance stackup for power and voltage distribution
   using specified (not actual) resistor tolerance - is a pessimistic calculation."""
-  @init_in_parent
   def __init__(self, *args, count: IntLike = 2, **kwargs):
     super().__init__(*args, **kwargs)
     self.count = self.ArgParameter(count)
@@ -388,7 +387,6 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
 
   TODO: clamp_target should be inferred from the target voltage_limits,
   but voltage_limits doesn't always get propagated."""
-  @init_in_parent
   def __init__(self, clamp_target: RangeLike = (0, 3)*Volt, clamp_current: RangeLike = (1.0, 10)*mAmp,
                protection_voltage: RangeLike = (0, 0)*Volt, zero_out: BoolLike = False):
     super().__init__()

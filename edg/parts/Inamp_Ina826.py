@@ -74,7 +74,6 @@ class Ina826(KiCadImportableBlock, GeneratorBlock):
     }
     return mapping[symbol_name]
 
-  @init_in_parent
   def __init__(self, ratio: RangeLike = 10*Ratio(tol=0.05)):
     super().__init__()
     self.ic = self.Block(Ina826_Device())

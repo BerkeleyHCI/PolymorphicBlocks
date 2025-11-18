@@ -36,7 +36,6 @@ class VoltageComparator(GeneratorBlock):
 
     TODO: maybe a version that takes an input analog signal?
     """
-    @init_in_parent
     def __init__(self, trip_voltage: RangeLike, *, invert: BoolLike = False,
                  input_impedance: RangeLike=(4.7, 47)*kOhm,
                  trip_ref: RangeLike=1.65*Volt(tol=0.10)):

@@ -343,7 +343,6 @@ class AnalogCapacitor(DiscreteApplication, KiCadImportableBlock):
     assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
     return {'1': self.io, '2': self.gnd}
 
-  @init_in_parent
   def __init__(self, capacitance: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
     super().__init__()
 

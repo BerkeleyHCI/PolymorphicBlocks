@@ -338,7 +338,6 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
     assert symbol_name == 'edg_importable:Unk2'
     return {'1': self.input, '2': self.output}
 
-  @init_in_parent
   def __init__(self, model_voltage_clamp: RangeLike, model_signal_clamp: RangeLike = RangeExpr.ALL):
     super().__init__()
 
