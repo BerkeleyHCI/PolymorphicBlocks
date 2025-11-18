@@ -4,7 +4,6 @@ from edg import *
 
 
 class MotorConnector(Connector, Block):
-  @init_in_parent
   def __init__(self, current_draw: RangeLike):
     super().__init__()
     self.conn = self.Block(PassiveConnector())
@@ -18,7 +17,6 @@ class MotorConnector(Connector, Block):
 
 
 class PwmConnector(Connector, Block):
-  @init_in_parent
   def __init__(self, current_draw: RangeLike):
     super().__init__()
     self.conn = self.Block(PinHeader254())
@@ -34,7 +32,6 @@ class PwmConnector(Connector, Block):
 
 class LedConnector(Connector, Block):
   """Connector for external WS2812s."""
-  @init_in_parent
   def __init__(self, num_leds: FloatLike = 0):
     super().__init__()
     self.conn = self.Block(PassiveConnector())

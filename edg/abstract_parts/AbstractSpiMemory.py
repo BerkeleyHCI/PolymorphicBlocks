@@ -5,7 +5,6 @@ from .Categories import *
 @abstract_block
 class SpiMemory(Memory, Block):
   """Base class for SPI memory, with acceptable sizes (in bits) as a range."""
-  @init_in_parent
   def __init__(self, size: RangeLike) -> None:
     super().__init__()
 

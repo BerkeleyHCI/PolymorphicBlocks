@@ -140,7 +140,6 @@ class VoltageSink(VoltageBase):
 
 
 class VoltageSinkAdapterGroundReference(CircuitPortAdapter['GroundReference']):
-  @init_in_parent
   def __init__(self, current_draw: RangeLike):
     super().__init__()
     from .GroundPort import GroundReference
@@ -154,7 +153,6 @@ class VoltageSinkAdapterGroundReference(CircuitPortAdapter['GroundReference']):
 
 
 class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
-  @init_in_parent
   def __init__(self):
     from .DigitalPorts import DigitalSource
     super().__init__()
@@ -170,7 +168,6 @@ class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
 
 
 class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
-  @init_in_parent
   def __init__(self):
     from .AnalogPort import AnalogSource
 

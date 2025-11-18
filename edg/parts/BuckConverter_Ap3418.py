@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Ap3418_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-  @init_in_parent
   def __init__(self):
     super().__init__()
     self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined

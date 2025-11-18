@@ -36,7 +36,6 @@ class FerriteBead(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
     assert symbol_name in ('Device:L_Ferrite', 'Device:L_Ferrite_Small')
     return {'1': self.a, '2': self.b}
 
-  @init_in_parent
   def __init__(self, *, current: RangeLike = RangeExpr.ZERO,
                hf_impedance: RangeLike = RangeExpr.ALL,
                dc_resistance: RangeLike = RangeExpr.ALL) -> None:
@@ -73,7 +72,6 @@ class TableFerriteBead(PartsTableSelector, FerriteBead):
   HF_IMPEDANCE = PartsTableColumn(Range)
   DC_RESISTANCE = PartsTableColumn(Range)
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.current, self.hf_impedance, self.dc_resistance)
@@ -97,7 +95,6 @@ class SeriesPowerFerriteBead(DiscreteApplication, KiCadImportableBlock):
     assert symbol_name in ('Device:L_Ferrite', 'Device:L_Ferrite_Small')
     return {'1': self.pwr_in, '2': self.pwr_out}
 
-  @init_in_parent
   def __init__(self, hf_impedance: RangeLike = RangeExpr.ALL,
                dc_resistance: RangeLike = RangeExpr.ALL) -> None:
     super().__init__()

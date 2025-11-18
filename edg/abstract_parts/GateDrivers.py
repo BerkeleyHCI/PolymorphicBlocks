@@ -18,7 +18,6 @@ class HalfBridgeDriver(PowerSwitch, Block):
 
   TODO: auto-generate parameters based on switching frequencies and FET parameters?
   """
-  @init_in_parent
   def __init__(self, has_boot_diode: BoolLike):
     super().__init__()
     self.has_boot_diode = self.ArgParameter(has_boot_diode)

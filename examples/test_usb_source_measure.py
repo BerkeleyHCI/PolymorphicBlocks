@@ -29,7 +29,6 @@ class SourceMeasureFan(Connector):
 
 
 class SourceMeasureRangingCell(Interface, KiCadSchematicBlock):
-  @init_in_parent
   def __init__(self, resistance: RangeLike):
     super().__init__()
     self.resistance = self.ArgParameter(resistance)
@@ -77,7 +76,6 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
       'V+': self.pwr,  'V-': self.gnd
     }
 
-  @init_in_parent
   def __init__(self, resistances: ArrayRangeLike, currents: ArrayRangeLike):
     super().__init__()
 
@@ -142,7 +140,6 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
       'VG+': self.pwr_gate_pos, 'VG-': self.pwr_gate_neg
     }
 
-  @init_in_parent
   def __init__(self, current: RangeLike, rds_on: RangeLike, gate_clamp_voltage: RangeLike):
     super().__init__()
 
@@ -235,7 +232,6 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
     return {'M': self.actual, 'T': self.target, 'F': self.target_fine, '3': self.output, 'S': self.sense_out,
             'V+': self.pwr, 'V-': self.gnd}
 
-  @init_in_parent
   def __init__(self, input_resistance: RangeLike = 0*Ohm(tol=0), *,
                dir: StringLike = '', res: RangeLike = 0*Ohm(tol=0), fine_scale: FloatLike = 0,
                series: IntLike = 24, tolerance: FloatLike = 0.01):
@@ -394,7 +390,6 @@ class SrLatchInverted(Block):
 class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
   """Analog feedback circuit for the source-measure unit
   """
-  @init_in_parent
   def __init__(self, current: RangeLike, rds_on: RangeLike):
     super().__init__()
 

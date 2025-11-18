@@ -3,7 +3,6 @@ from .AbstractDiodes import Diode
 
 
 class CustomDiode(Diode, FootprintBlock, GeneratorBlock):
-  @init_in_parent
   def __init__(self, *args, footprint_spec: StringLike = "",
                manufacturer_spec: StringLike = "", part_spec: StringLike = "", **kwargs):
     super().__init__(*args, **kwargs)

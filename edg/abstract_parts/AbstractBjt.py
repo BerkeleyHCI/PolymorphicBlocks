@@ -48,7 +48,6 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   def Pnp(*args, **kwargs) -> 'Bjt':
     return Bjt(*args, **kwargs, channel='PNP')
 
-  @init_in_parent
   def __init__(self, collector_voltage: RangeLike, collector_current: RangeLike, *,
                gain: RangeLike = Range.all(), power: RangeLike = Range.exact(0),
                channel: StringLike = StringExpr()) -> None:
@@ -91,7 +90,6 @@ class TableBjt(PartsTableSelector, Bjt):
   POWER_RATING = PartsTableColumn(Range)
   CHANNEL = PartsTableColumn(str)  # either 'PNP' or 'NPN'
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.collector_voltage, self.collector_current, self.gain, self.power, self.channel)

@@ -4,7 +4,6 @@ from ..abstract_parts import *
 
 
 class Mcp3561_Device(InternalSubcircuit, GeneratorBlock, FootprintBlock):
-  @init_in_parent
   def __init__(self, has_ext_ref: BoolLike) -> None:
     super().__init__()
     self.avdd = self.Port(VoltageSink(

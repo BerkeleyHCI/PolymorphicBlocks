@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Sn74lvc1g74_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-    @init_in_parent
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
@@ -56,7 +55,6 @@ class Sn74lvc1g74(Interface, Block):
     """D flip-flop with clear and preset
 
     TODO: should extend an abstract flip-lop interface, with async (n)set and (n)clear mixins"""
-    @init_in_parent
     def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Sn74lvc1g74_Device())

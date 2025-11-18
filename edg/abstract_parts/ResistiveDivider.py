@@ -72,7 +72,6 @@ class ResistiveDivider(InternalSubcircuit, KiCadImportableBlock, GeneratorBlock)
     return RangeExpr._to_expr_type(((vtop.lower() - vbot.lower()) * ratio.lower() + vbot.lower(),
             (vtop.upper() - vbot.upper()) * ratio.upper() + vbot.upper()))
 
-  @init_in_parent
   def __init__(self, ratio: RangeLike, impedance: RangeLike, *,
                series: IntLike = 24, tolerance: FloatLike = 0.01) -> None:
     super().__init__()
@@ -145,7 +144,6 @@ class BaseVoltageDivider(KiCadImportableBlock):
     assert symbol_name == 'Device:VoltageDivider'
     return {'1': self.input, '2': self.output, '3': self.gnd}
 
-  @init_in_parent
   def __init__(self, impedance: RangeLike) -> None:
     super().__init__()
 
@@ -177,7 +175,6 @@ class BaseVoltageDivider(KiCadImportableBlock):
 class VoltageDivider(Analog, BaseVoltageDivider):
   """Voltage divider that takes in an output voltage and parallel impedance spec, and produces an output analog signal
   of the appropriate magnitude (as a fraction of the input voltage)"""
-  @init_in_parent
   def __init__(self, *, output_voltage: RangeLike, impedance: RangeLike) -> None:
     super().__init__(impedance=impedance)
     self.output_voltage = self.ArgParameter(output_voltage)
@@ -192,7 +189,6 @@ class VoltageSenseDivider(Analog, BaseVoltageDivider):
   with variable input voltage.
 
   TODO: can this be unified with VoltageDivider?"""
-  @init_in_parent
   def __init__(self, *, full_scale_voltage: RangeLike, impedance: RangeLike) -> None:
     super().__init__(impedance=impedance)
     self.full_scale_voltage = self.ArgParameter(full_scale_voltage)
@@ -202,7 +198,6 @@ class VoltageSenseDivider(Analog, BaseVoltageDivider):
 class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
   """Voltage divider that takes in a ratio and parallel impedance spec, and produces an output analog signal
   of the appropriate magnitude (as a fraction of the input voltage)"""
-  @init_in_parent
   def __init__(self, *, output_voltage: RangeLike, impedance: RangeLike,
                assumed_input_voltage: RangeLike) -> None:
     super().__init__(impedance=impedance)
@@ -230,7 +225,6 @@ class SignalDivider(Analog, KiCadImportableBlock, Block):
     assert symbol_name == 'Device:VoltageDivider'
     return {'1': self.input, '2': self.output, '3': self.gnd}
 
-  @init_in_parent
   def __init__(self, ratio: RangeLike, impedance: RangeLike) -> None:
     super().__init__()
 

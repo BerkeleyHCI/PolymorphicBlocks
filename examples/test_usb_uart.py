@@ -5,7 +5,6 @@ from edg import *
 
 class UartConnector(Connector, Block):
   """UART connector, follows the TXD, RXD, GND, +5 pinning of cheap CP2102 dongles."""
-  @init_in_parent
   def __init__(self, *, pwr_current_draw: RangeLike = (0, 0)*mAmp):
     super().__init__()
     self.conn = self.Block(PassiveConnector())

@@ -52,26 +52,6 @@ class BadLinkTestCase(unittest.TestCase):
     with self.assertRaises(UnconnectableError):
       self.NoBridgeHierarchyBlock()._elaborated_def_to_proto()
 
-  class AboveConnectBlock(Block):
-    """A block that directly tries to connect to a parent port (passed in through the constructor)"""
-    class BadInnerBlock(Block):  # TODO this is kind of nasty?
-      def __init__(self, above_port: TestPortSource) -> None:
-        super().__init__()
-        self.connect(above_port)
-        assert False  # the above connect should error
-
-    def __init__(self) -> None:
-      super().__init__()
-      self.source = self.Port(TestPortSource())
-
-    def contents(self) -> None:
-      super().contents()
-      self.inner = self.Block(self.BadInnerBlock(self.source))
-
-  def test_above_connect(self) -> None:
-    with self.assertRaises(UnconnectableError):
-      self.AboveConnectBlock()._elaborated_def_to_proto()
-
   class AmbiguousJoinBlock(Block):
     """A block with a connect join that merges two names"""
     def contents(self) -> None:
@@ -86,43 +66,3 @@ class BadLinkTestCase(unittest.TestCase):
   def test_ambiguous_join(self) -> None:
     with self.assertRaises(UnconnectableError):
       self.AmbiguousJoinBlock()._elaborated_def_to_proto()
-
-
-class InaccessibleParamTestCase(unittest.TestCase):
-  class BadParamReferenceBlock(Block):
-    """A block that tries to access deeply nested block parameters"""
-    class BadInnerBlock(Block):
-      def __init__(self, in_range: RangeExpr) -> None:
-        super().__init__()
-        self.require(in_range == (0, 1))
-
-    def __init__(self) -> None:
-      super().__init__()
-      self.range = self.Parameter(RangeExpr())
-
-    def contents(self) -> None:
-      super().contents()
-      self.inner = self.Block(self.BadInnerBlock(self.range))
-
-  def test_bad_param_reference(self) -> None:
-    with self.assertRaises(UnreachableParameterError):
-      self.BadParamReferenceBlock()._elaborated_def_to_proto()
-
-  class BadParamInitBlock(Block):
-    """A block that does initialization without @init_in_parent"""
-    class BadInnerBlock(Block):
-      def __init__(self, in_range: RangeExpr) -> None:
-        super().__init__()
-        self.range = self.Parameter(RangeExpr(in_range))
-
-    def __init__(self) -> None:
-      super().__init__()
-      self.range = self.Parameter(RangeExpr())
-
-    def contents(self) -> None:
-      super().contents()
-      self.inner = self.Block(self.BadInnerBlock(self.range))
-
-  def test_bad_param_initializer(self) -> None:
-    with self.assertRaises(UnreachableParameterError):
-      self.BadParamInitBlock()._elaborated_def_to_proto()

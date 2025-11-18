@@ -143,18 +143,15 @@ class ElementDict(Generic[ElementType]):
 
 
 class ElementMeta(type):
+  """Hook on construction to store some metadata about its creation.
+  This hooks the top-level __init__ only."""
   def __call__(cls, *args, **kwargs):
-    parent = builder.get_curr_context()
     block_context = builder.get_enclosing_block()
-    try:
-      obj = type.__call__(cls, *args, **kwargs)
-      obj._initializer_args = (args, kwargs)
-      obj._lexical_parent = parent
-      obj._block_context = block_context
-      obj._post_init()
-    finally:
-      if builder.get_curr_context() is not parent:  # in case the constructor skipped internal element init
-        builder.pop_to(parent)
+
+    obj = type.__call__(cls, *args, **kwargs)
+    obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
+    obj._block_context = block_context
+    obj._post_init()
 
     return obj
 
@@ -196,11 +193,9 @@ class LibraryElement(Refable, metaclass=ElementMeta):
     return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xff)
 
   def __init__(self) -> None:
-    self._lexical_parent: Optional[LibraryElement]  # set by metaclass
+    self._block_context: Optional["Refable"]  # set by metaclass, as lexical scope available pre-binding
     self._parent: Optional[LibraryElement] = None  # set by binding, None means not bound
     self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
-
-    builder.push_element(self)
 
     self.manager = SubElementManager()
     self.manager_ignored: Set[str] = set(['_parent'])
@@ -214,7 +209,7 @@ class LibraryElement(Refable, metaclass=ElementMeta):
       self.manager.add_element(name, value)
     super().__setattr__(name, value)
 
-  def _name_of_child(self, subelt: Any, allow_unknown: bool = False) -> str:
+  def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
     self_name = self.manager.name_of(subelt)
     if self_name is not None:
       return self_name
@@ -229,7 +224,7 @@ class LibraryElement(Refable, metaclass=ElementMeta):
       return []
     else:
       assert self._parent is not None, "can't get path / name for non-bound element"
-      return self._parent._path_from(base, allow_unknown) + [self._parent._name_of_child(self, allow_unknown)]
+      return self._parent._path_from(base, allow_unknown) + [self._parent._name_of_child(self, base, allow_unknown)]
 
   def _name_from(self, base: LibraryElement, allow_unknown: bool = False) -> str:
     """Returns the path name to (inclusive) this element from some starting point.

@@ -5,6 +5,7 @@ from typing import *
 from deprecated import deprecated
 
 from .. import edgir
+from .Builder import builder
 from .Ports import BasePort, Port
 from .PortTag import PortTag
 from .IdentityDict import IdentityDict
@@ -72,7 +73,7 @@ class GeneratorBlock(Block):
       assert isinstance(req_param.binding, InitParamBinding) or \
              (isinstance(req_param.binding, (AllocatedBinding, IsConnectedBinding))
               and req_param.binding.src._parent is self), \
-        f"generator parameter {i} {req_param} not an __init__ parameter (or missing @init_in_parent)"
+        f"generator parameter {i} {req_param} not an __init__ parameter"
     self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, reqs)
 
   def generate(self):
@@ -106,30 +107,34 @@ class GeneratorBlock(Block):
 
   def _generated_def_to_proto(self, generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]]) -> \
       edgir.HierarchyBlock:
-    assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
-    self._elaboration_state = BlockElaborationState.contents
+    prev_element = builder.push_element(self)
+    assert prev_element is None
 
-    self.contents()
+    try:
+      assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
+      self._elaboration_state = BlockElaborationState.contents
+      self.contents()
+      self._elaboration_state = BlockElaborationState.generate
 
-    self._elaboration_state = BlockElaborationState.generate
+      # Translate parameter values to function arguments
+      ref_map = self._get_ref_map(edgir.LocalPath())
+      generate_values_map = {path.SerializeToString(): value for (path, value) in generate_values}
 
-    # Translate parameter values to function arguments
-    ref_map = self._get_ref_map(edgir.LocalPath())
-    generate_values_map = {path.SerializeToString(): value for (path, value) in generate_values}
+      assert (self.__class__, AbstractBlockProperty) not in self._elt_properties  # abstract blocks can't generate
+      if type(self).generate is not GeneratorBlock.generate:
+        for param in self._generator_params_list:
+          self._generator_param_values[param] = param._from_lit(generate_values_map[ref_map[param].SerializeToString()])
+        self.generate()
+      elif self._generator is not None:  # legacy generator style
+        fn_args = [arg_param._from_lit(generate_values_map[ref_map[arg_param].SerializeToString()])
+                   for arg_param in self._generator.fn_args]
+        self._generator.fn(*fn_args)
+      else:
+        raise BlockDefinitionError(self, "Generator missing generate implementation", "define generate")
 
-    assert (self.__class__, AbstractBlockProperty) not in self._elt_properties  # abstract blocks can't generate
-    if type(self).generate is not GeneratorBlock.generate:
-      for param in self._generator_params_list:
-        self._generator_param_values[param] = param._from_lit(generate_values_map[ref_map[param].SerializeToString()])
-      self.generate()
-    elif self._generator is not None:  # legacy generator style
-      fn_args = [arg_param._from_lit(generate_values_map[ref_map[arg_param].SerializeToString()])
-                 for arg_param in self._generator.fn_args]
-      self._generator.fn(*fn_args)
-    else:
-      raise BlockDefinitionError(self, "Generator missing generate implementation", "define generate")
-
-    self._elaboration_state = BlockElaborationState.post_generate
+      self._elaboration_state = BlockElaborationState.post_generate
+    finally:
+      builder.pop_to(prev_element)
 
     return self._def_to_proto()
 

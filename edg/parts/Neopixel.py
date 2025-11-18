@@ -243,7 +243,6 @@ class Sk6812_Side_A(Neopixel):
 
 class NeopixelArray(Light, GeneratorBlock):
     """An array of Neopixels"""
-    @init_in_parent
     def __init__(self, count: IntLike):
         super().__init__()
         self.din = self.Port(DigitalSink.empty(), [Input])

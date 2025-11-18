@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self):
     super().__init__()
     self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
@@ -84,7 +83,6 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
 
 
 class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self):
     super().__init__()
     self.sw = self.Port(VoltageSource(

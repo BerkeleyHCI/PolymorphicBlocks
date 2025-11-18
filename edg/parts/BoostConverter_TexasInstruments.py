@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Tps61040_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self):
     super().__init__()
     vfb = Range(1.208, 1.258)
@@ -159,7 +158,6 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
 
 
 class Lm2733_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  @init_in_parent
   def __init__(self):
     super().__init__()
     self.pwr_in = self.Port(VoltageSink(

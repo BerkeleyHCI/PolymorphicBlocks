@@ -14,7 +14,6 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
 
   TODO: clamp_voltage should be compared against the actual voltage so the clamp is automatically generated,
   but generators don't support link terms (yet?)"""
-  @init_in_parent
   def __init__(self, pull_resistance: RangeLike = 10*kOhm(tol=0.05), max_rds: FloatLike = 1*Ohm,
                frequency: RangeLike = RangeExpr.ZERO, *,
                clamp_voltage: RangeLike = RangeExpr.ZERO, clamp_resistance_ratio: FloatLike = 10) -> None:
@@ -105,7 +104,6 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
 
 class OpenDrainDriver(PowerSwitch, Block):
   """NFET configured as an open-drain driver. Potentially useful for voltage translation applications."""
-  @init_in_parent
   def __init__(self, max_rds: FloatLike = 1*Ohm, frequency: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()
 

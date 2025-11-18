@@ -6,7 +6,6 @@ from .JlcPart import JlcPart
 
 
 class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBlock):
-  @init_in_parent
   def __init__(self, addr_lsb: IntLike, **kwags) -> None:
     super().__init__(**kwags)
     self.gnd = self.Port(Ground())
@@ -80,7 +79,6 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
 
 class Pcf8574(IoExpander, PinMappable):
   """8 bit I2C IO expander with 'quasi-bidirectional IOs'"""
-  @init_in_parent
   def __init__(self, addr_lsb: IntLike = 0) -> None:
     super().__init__()
     self.ic = self.Block(Pcf8574_Device(addr_lsb=addr_lsb, pin_assigns=self.pin_assigns))

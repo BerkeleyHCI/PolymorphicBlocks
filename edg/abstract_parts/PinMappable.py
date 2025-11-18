@@ -12,7 +12,6 @@ class PinMappable(Block):
   This may simply delegate the pin mapping to an inner block, for example for a microcontroller application circuit
   to delegate the pin mapping to the microcontroller chip block.
   """
-  @init_in_parent
   def __init__(self, pin_assigns: ArrayStringLike = []) -> None:
     super().__init__()
     self.pin_assigns = self.ArgParameter(pin_assigns)

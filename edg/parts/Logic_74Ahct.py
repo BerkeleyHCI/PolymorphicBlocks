@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class L74Ahct1g125_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-  @init_in_parent
   def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground())
@@ -41,7 +40,6 @@ class L74Ahct1g125_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 class L74Ahct1g125(Interface, Block):
   """Single buffer, useful as a level shifter"""
-  @init_in_parent
   def __init__(self) -> None:
     super().__init__()
     self.ic = self.Block(L74Ahct1g125_Device())

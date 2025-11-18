@@ -9,7 +9,6 @@ class TeRc(TestPoint, FootprintBlock, GeneratorBlock):
     '1206': ('RCS-0C', 'edg:TestPoint_TE_RCS_RCW_1206'),
   }
 
-  @init_in_parent
   def __init__(self, size: StringLike = '0805'):
     super().__init__()
     self.size = self.ArgParameter(size)

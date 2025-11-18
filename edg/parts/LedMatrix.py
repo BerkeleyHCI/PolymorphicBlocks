@@ -164,7 +164,6 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.2, rowSpacing=0.2) {{
     return (-1.0, -1.0,
             self._svgpcb_get(self.ncols) * .2 * 25.4 + 1.0, (self._svgpcb_get(self.nrows) + 1) * .2 * 25.4 + 1.0)
 
-  @init_in_parent
   def __init__(self, nrows: IntLike, ncols: IntLike,
                color: LedColorLike = Led.Any, current_draw: RangeLike = (1, 10)*mAmp):
     super().__init__()

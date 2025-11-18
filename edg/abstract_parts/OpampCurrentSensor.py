@@ -15,7 +15,6 @@ class OpampCurrentSensor(CurrentSensor, KiCadImportableBlock, Block):
   Discrete diffamp circuits generally have poor accuracy as a result of resistor tolerances, including
   very poor common-mode rejection.
   """
-  @init_in_parent
   def __init__(self, resistance: RangeLike, ratio: RangeLike, input_impedance: RangeLike):
     super().__init__()
 

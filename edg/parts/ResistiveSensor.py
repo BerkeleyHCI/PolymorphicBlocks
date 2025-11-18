@@ -6,7 +6,6 @@ class ConnectorResistiveSensor(Analog, Block):
   that is part of this block) using a simple voltage divider circuit.
   The external resistor is on the bottom (which makes this of a classic Wheatstone Bridge
   as drawn on Wikipedia)."""
-  @init_in_parent
   def __init__(self, resistance_range: RangeLike, fixed_resistance: RangeLike) -> None:
     super().__init__()
     self.resistance_range = self.ArgParameter(resistance_range)

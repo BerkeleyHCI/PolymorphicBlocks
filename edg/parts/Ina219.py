@@ -3,7 +3,6 @@ from .JlcPart import JlcPart
 
 
 class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock):
-    @init_in_parent
     def __init__(self, addr_lsb: IntLike):
         super().__init__()
         self.addr_lsb = self.ArgParameter(addr_lsb)
@@ -74,7 +73,6 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock)
 class Ina219(CurrentSensor, Block):
     """Current/voltage/power monitor with I2C interface"""
 
-    @init_in_parent
     def __init__(self, shunt_resistor: RangeLike = 2.0 * mOhm(tol=0.05), *, addr_lsb: IntLike = 0):
         super().__init__()
         self.ic = self.Block(Ina219_Device(addr_lsb))

@@ -10,7 +10,6 @@ class FetFallbackGateCharge(PartsTableSelector, BaseTableFet):
   """A TableFet that allows a fallback gate charge if not specified in the table.
   Unspecified entries must be Range.all(), which will be substituted with the fallback
   value in per-Block post-processing."""
-  @init_in_parent
   def __init__(self, *args, fallback_gate_charge: RangeLike = Range.from_tolerance(3000e-9, 0), **kwargs):
     super().__init__(*args, **kwargs)
     # allow the user to specify a gate charge
@@ -197,4 +196,4 @@ class JlcSwitchFet(PartsTableSelectorFootprint, JlcBaseFet, FetFallbackGateCharg
   pass
 
 
-lambda: JlcFet, JlcSwitchFet()  # ensure class is instantiable (non-abstract)
+lambda: (JlcFet(), JlcSwitchFet())  # ensure class is instantiable (non-abstract)

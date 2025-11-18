@@ -9,7 +9,6 @@ class IronConnector(Connector, Block):
   TODO: support series heater and thermocouple, requires additional protection circuits on amps
   TODO: optional generation for isense_res, if not connected
   """
-  @init_in_parent
   def __init__(self, *, isense_resistance: RangeLike = 22*mOhm(tol=0.05), current_draw: RangeLike=(0, 3.25)*Amp):
     super().__init__()
     self.conn = self.Block(PinHeader254(3))

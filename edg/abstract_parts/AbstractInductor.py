@@ -90,7 +90,6 @@ class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
     assert symbol_name in ('Device:L', 'Device:L_Small')
     return {'1': self.a, '2': self.b}
 
-  @init_in_parent
   def __init__(self, inductance: RangeLike,
                current: RangeLike = RangeExpr.ZERO,
                frequency: RangeLike = RangeExpr.ZERO,
@@ -136,7 +135,6 @@ class TableInductor(PartsTableSelector, Inductor):
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable current
   DC_RESISTANCE = PartsTableColumn(Range)  # actual DCR
 
-  @init_in_parent
   def __init__(self, *args, **kwargs) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.inductance, self.current, self.frequency, self.resistance_dc,
@@ -170,7 +168,6 @@ class TableInductor(PartsTableSelector, Inductor):
 
 class SeriesPowerInductor(DiscreteApplication):
   """VoltageSource/Sink-typed series inductor for power filtering"""
-  @init_in_parent
   def __init__(self, inductance: RangeLike, current: RangeLike = RangeExpr.ZERO,
                frequency: RangeLike = RangeExpr.ZERO) -> None:
     super().__init__()

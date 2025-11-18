@@ -97,7 +97,6 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   def PFet(*args, **kwargs) -> 'Fet':
     return Fet(*args, **kwargs, channel='P')
 
-  @init_in_parent
   def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike, *,
                gate_voltage: RangeLike = (0, 0), gate_threshold_voltage: RangeLike = Range.all(),
                rds_on: RangeLike = Range.all(),
@@ -159,7 +158,6 @@ class BaseTableFet(Fet):
 
 @non_library
 class TableFet(PartsTableSelector, BaseTableFet):
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.drain_voltage, self.drain_current, self.gate_voltage, self.gate_threshold_voltage,
@@ -204,7 +202,6 @@ class SwitchFet(Fet):
     return SwitchFet(*args, **kwargs, channel='P')
 
 
-  @init_in_parent
   def __init__(self, *, frequency: RangeLike = 0*Hertz(tol=0), drive_current: RangeLike = Range.all(), **kwargs) -> None:
     super().__init__(**kwargs)
 
@@ -218,7 +215,6 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
   STATIC_POWER = PartsTableColumn(Range)
   TOTAL_POWER = PartsTableColumn(Range)
 
-  @init_in_parent
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.generator_param(self.frequency, self.drain_voltage, self.drain_current,

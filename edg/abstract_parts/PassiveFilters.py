@@ -9,7 +9,6 @@ from .Categories import *
 
 class LowPassRc(AnalogFilter, Block):
   """Passive-typed low-pass RC specified by the resistor value (impedance) and -3dB (~70%) cutoff frequency."""
-  @init_in_parent
   def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike, voltage: RangeLike):
     super().__init__()
     self.input = self.Port(Passive.empty())
@@ -35,7 +34,6 @@ class LowPassRc(AnalogFilter, Block):
 class PullupDelayRc(DigitalFilter, Block):
   """Pull-up resistor with capacitor for delay.
   """
-  @init_in_parent
   def __init__(self, impedance: RangeLike, time_constant: RangeLike):
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -62,7 +60,6 @@ class PullupDelayRc(DigitalFilter, Block):
 class AnalogLowPassRc(DigitalFilter, Block):
   """Low-pass RC filter attached to an analog line.
   """
-  @init_in_parent
   def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
     super().__init__()
     self.input = self.Port(AnalogSink.empty(), [Input])
@@ -85,7 +82,6 @@ class DigitalLowPassRc(DigitalFilter, Block):
   """Low-pass RC filter attached to a digital line.
   Does not change the signal, only performs filtering
   """
-  @init_in_parent
   def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
     super().__init__()
     self.input = self.Port(DigitalSink.empty(), [Input])
@@ -109,7 +105,6 @@ class DigitalLowPassRcArray(DigitalFilter, GeneratorBlock):
   """Array of DigitalLowPassRc, currently takes its size from the output.
   TODO: properly size when either input or output is sized?
   """
-  @init_in_parent
   def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
     super().__init__()
     self.input = self.Port(Vector(DigitalSink.empty()), [Input])
@@ -139,7 +134,6 @@ class LowPassRcDac(DigitalToAnalog, Block):
   Lower frequencies will result in either higher impedance or larger caps.
   This must be manually specified, since PWM frequency data is not part of the electronics model.
   """
-  @init_in_parent
   def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
     super().__init__()
     self.input = self.Port(DigitalSink.empty(), [Input])
