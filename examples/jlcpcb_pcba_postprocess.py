@@ -85,6 +85,7 @@ _FOOTPRINT_ROTATIONS = {
   'Package_TO_SOT_SMD:SOT-23-8': 180,
   'Package_TO_SOT_SMD:SOT-89-3': 180,
   'Package_TO_SOT_SMD:SOT-323_SC-70': 180,
+  'Package_TO_SOT_SMD:SOT-363_SC-70-6': 180,
   'Package_TO_SOT_SMD:SOT-223-3_TabPin2': 180,
   'Package_TO_SOT_SMD:TO-252-2': 180,
   'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': -90,
