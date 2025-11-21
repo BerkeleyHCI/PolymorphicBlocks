@@ -100,6 +100,25 @@ class ChainConnect:
     return iter((tuple(self.blocks), self))
 
 
+
+BlockPrototypeType = TypeVar('BlockPrototypeType', bound='Block')
+class BlockPrototype(Generic[BlockPrototypeType]):
+  """A block prototype, that contains a type and arguments, but without constructing the entire block
+  and running its (potentially quite expensive) __init__.
+
+  This class is automatically created on Block instantiations by the BlockMeta metaclass __init__ hook."""
+  def __init__(self, tpe: Type[BlockPrototypeType], args: List[Any], kwargs: Dict[str, Any]) -> None:
+    self._tpe = tpe
+    self._args = args
+    self._kwargs = kwargs
+
+  def bind(self) -> BlockPrototypeType:
+    """Binds the prototype into an actual Block instance."""
+    # TODO set / inspect on global binding flag
+    return self._tpe(*self._args, **self._kwargs)  # type: ignore
+
+
+
 class BlockMeta(ElementMeta):
   """This provides a hook on __init__ that replaces argument values with empty ConstraintExpr
   based on the type annotation and stores the supplied argument to the __init__ (if any) in the binding.
