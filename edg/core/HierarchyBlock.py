@@ -100,7 +100,6 @@ class ChainConnect:
     return iter((tuple(self.blocks), self))
 
 
-
 BlockPrototypeType = TypeVar('BlockPrototypeType', bound='Block')
 class BlockPrototype(Generic[BlockPrototypeType]):
   """A block prototype, that contains a type and arguments, but without constructing the entire block
@@ -117,6 +116,17 @@ class BlockPrototype(Generic[BlockPrototypeType]):
     # TODO set / inspect on global binding flag
     return self._tpe(*self._args, **self._kwargs)  # type: ignore
 
+  def __getattribute__(self, item: str) -> Any:
+    if item.startswith("_"):
+      return super().__getattribute__(item)
+    else:
+      raise AttributeError(f"BlockPrototype has no attributes, must bind to get a concrete Block instance, tried to get {item}")
+
+  def __setattr__(self, key: str, value: Any) -> None:
+    if key.startswith("_"):
+      super().__setattr__(key, value)
+    else:
+      raise AttributeError(f"BlockPrototype has no attributes, must bind to get a concrete Block instance, tried to set {key}")
 
 
 class BlockMeta(ElementMeta):
