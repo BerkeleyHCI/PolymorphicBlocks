@@ -18,9 +18,22 @@ if TYPE_CHECKING:
   from .PortBlocks import PortBridge, PortAdapter
 
 
+class PortMeta(type):
+  def __call__(cls, *args, **kwargs):
+    """Hook on construction to store some metadata about its creation.
+    This hooks the top-level __init__ only."""
+    block_context = builder.get_enclosing_block()
+
+    obj = type.__call__(cls, *args, **kwargs)
+    obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
+    obj._block_context = block_context
+
+    return obj
+
+
 PortParentTypes = Union['BaseContainerPort', 'BaseBlock']
 @non_library
-class BasePort(HasMetadata):
+class BasePort(HasMetadata, metaclass=PortMeta):
   SelfType = TypeVar('SelfType', bound='BasePort')
 
   def __init__(self) -> None:

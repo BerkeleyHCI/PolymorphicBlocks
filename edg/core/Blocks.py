@@ -276,10 +276,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return delegated_connects
 
-  def _post_init(self):
-    assert self._elaboration_state == BlockElaborationState.init
-    self._elaboration_state = BlockElaborationState.post_init
-
   def name(self) -> StringExpr:
     return self._name
 
