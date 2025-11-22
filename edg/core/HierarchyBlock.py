@@ -166,6 +166,15 @@ class BlockMeta(ElementMeta):
     "ArrayStringLike": ArrayStringExpr,
   }
 
+  _next_bind: Optional[Type[Block]] = None
+
+  @staticmethod
+  def _set_next_bind(cls: Type[Block]) -> None:
+    """Call to set that the next block construction will be of type and should be bound
+    (concrete block instantiated)"""
+    assert BlockMeta._next_bind is None
+    BlockMeta._next_bind = cls
+
   def __new__(cls, *args: Any, **kwargs: Any) -> Any:
     new_cls = super().__new__(cls, *args, **kwargs)
 
