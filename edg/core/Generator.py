@@ -84,7 +84,7 @@ class GeneratorBlock(Block):
   #
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     if self._elaboration_state != BlockElaborationState.post_generate:  # only write generator on the stub definition
-      ref_map = self._create_ref_map()  # TODO dedup ref_map
+      ref_map = self._create_ref_map()
       pb = edgir.HierarchyBlock()
       self._populate_def_proto_block_base(pb)
       pb.generator.SetInParent()  # even if rest of the fields are empty, make sure to create a record
