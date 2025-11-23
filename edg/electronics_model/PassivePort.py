@@ -8,6 +8,7 @@ from .AnalogPort import AnalogSource, AnalogSink
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
 from .VoltagePorts import CircuitPort, VoltageSource, VoltageSink
+from ..core.Ports import PortPrototype
 
 
 class PassiveLink(CircuitLink):
@@ -147,15 +148,9 @@ class Passive(CircuitPort[PassiveLink]):
     # this is an experimental style that takes a port that has initializers but is not bound
     # and automatically creates an adapter from it, by matching the port parameter fields
     # with the adapter constructor argument fields by name
-    assert isinstance(that, Port), 'adapter target must be port'
-    assert not that._is_bound(), 'adapter target must be model only'
-    assert that.__class__ in self.adapter_type_map, f'no adapter to {that.__class__}'
-    adapter_cls = self.adapter_type_map[that.__class__]
+    assert isinstance(that, PortPrototype), 'adapter target must be port'
+    assert that._tpe in self.adapter_type_map, f'no adapter to {that.__class__}'
+    adapter_cls = self.adapter_type_map[that._tpe]
 
-    # map initializers from that to constructor args
-    adapter_init_kwargs = {}  # make everything kwargs for simplicity
-    for param_name, param in that._parameters.items():
-      assert param.initializer is not None, f"missing initializer for {param_name}"
-      adapter_init_kwargs[param_name] = param.initializer
-
-    return self._convert(adapter_cls(**adapter_init_kwargs))
+    assert not that._args, 'adapter target cannot have positional args'
+    return self._convert(adapter_cls(**that._kwargs))
