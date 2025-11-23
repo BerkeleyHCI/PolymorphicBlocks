@@ -14,7 +14,7 @@ from .Core import Refable, HasMetadata, builder, SubElementDict, non_library, El
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
-from .Ports import BasePort, Port
+from .Ports import BasePort, Port, PortPrototype
 
 if TYPE_CHECKING:
   from .Link import Link
@@ -486,8 +486,14 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can't call Port(...) outside __init__",
                                  "call Port(...) inside __init__ only, and remember to call super().__init__()")
-    if not isinstance(tpe, BasePort):
-      raise TypeError(f"param to Port(...) must be Port, got {tpe} of type {type(tpe)}")
+
+    if isinstance(tpe, PortPrototype):
+      tpe_cls = tpe._tpe
+    else:
+      tpe_cls = tpe.__class__
+
+    if not issubclass(tpe_cls, BasePort):
+      raise TypeError(f"param to Port(...) must be Port, got {tpe_cls}")
 
     elt = tpe._bind(self)
     self._ports.register(elt)

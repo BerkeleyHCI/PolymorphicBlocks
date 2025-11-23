@@ -1,11 +1,18 @@
 import unittest
 
 from .HierarchyBlock import BlockPrototype, Block
+from .test_common import TestPortSource
+from .Ports import Port, PortPrototype
 
 
 class TestBlockPrototype(Block):
   def __init__(self) -> None:
     super().__init__()
+    port_model = TestPortSource()
+    assert isinstance(port_model, PortPrototype)
+    self.port = self.Port(port_model)
+    assert isinstance(self.port, Port)
+
     block_model = Block()
     assert isinstance(block_model, BlockPrototype)
     self.subblock = self.Block(block_model)

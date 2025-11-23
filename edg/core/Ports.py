@@ -4,6 +4,7 @@ import itertools
 from abc import abstractmethod
 from typing import *
 
+from .Prototype import BasePrototype
 from .. import edgir
 from .Binding import ParamBinding, IsConnectedBinding, NameBinding
 from .Builder import builder
@@ -30,10 +31,32 @@ class InitializerContextMeta(type):
     return obj
 
 
+PortPrototypeType = TypeVar('PortPrototypeType', bound='BasePort')
+class PortPrototype(BasePrototype[PortPrototypeType]):
+  def _bind(self, parent: Union[BaseBlock, Port]) -> PortPrototypeType:
+    """Binds the prototype into an actual Block instance."""
+    BasePort._next_bind = self._tpe
+    port = self._instantiate()
+    port._bind_in_place(parent)
+    return port
+
+
 PortParentTypes = Union['BaseContainerPort', 'BaseBlock']
 @non_library
 class BasePort(HasMetadata, metaclass=InitializerContextMeta):
   SelfType = TypeVar('SelfType', bound='BasePort')
+
+  _next_bind: Optional[Type[BasePort]] = None  # set when binding, to avoid creating a prototype
+
+  def __new__(cls, *args: Any, **kwargs: Any) -> BasePort:
+    if BasePort._next_bind is not None:
+      assert BasePort._next_bind is cls
+      BasePort._next_bind = None
+      return super().__new__(cls)
+    elif builder.get_enclosing_block() is None:  # always construct if top-level
+      return super().__new__(cls)
+    else:
+      return PortPrototype(cls, args, kwargs)  # type: ignore
 
   def __init__(self) -> None:
     """Abstract Base Class for ports"""

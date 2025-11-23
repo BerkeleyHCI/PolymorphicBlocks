@@ -21,7 +21,7 @@ from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 from .PortTag import PortTag, Input, Output, InOut
-from .Ports import BasePort, Port
+from .Ports import BasePort, Port, PortPrototype
 
 if TYPE_CHECKING:
   from .BlockInterfaceMixin import BlockInterfaceMixin
@@ -564,7 +564,12 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   T = TypeVar('T', bound=BasePort)
   def Port(self, tpe: T, tags: Iterable[PortTag]=[], *, optional: bool = False, doc: Optional[str] = None) -> T:
     """Registers a port for this Block"""
-    if not isinstance(tpe, (Port, Vector)):
+    if isinstance(tpe, PortPrototype):
+      tpe_cls = tpe._tpe
+    else:
+      tpe_cls = tpe.__class__
+
+    if not issubclass(tpe_cls, (Port, Vector)):
       raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")
     for tag in tags:
       assert_cast(tag, PortTag, "tag for Port(...)")
