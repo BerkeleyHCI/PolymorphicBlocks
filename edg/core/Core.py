@@ -156,13 +156,13 @@ class Refable():
 
   def _create_ref_map(self, prefix: edgir.LocalPath = edgir.LocalPath()) -> IdentityDict['Refable', edgir.LocalPath]:
     """Wrapper around _build_ref_map for top-level refmap construction."""
-    refmap = IdentityDict['Refable', edgir.LocalPath]()
-    self._build_ref_map(refmap, prefix)
-    return refmap
+    ref_map = IdentityDict['Refable', edgir.LocalPath]()
+    self._build_ref_map(ref_map, prefix)
+    return ref_map
 
-  def _build_ref_map(self, refmap: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
+  def _build_ref_map(self, ref_map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
     """Adds the references contained by this object to the parameter refmap."""
-    refmap[self] = prefix
+    ref_map[self] = prefix
 
 
 class EltPropertiesBase:

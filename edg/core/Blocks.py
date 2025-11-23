@@ -413,9 +413,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
   def _build_ref_map(self, map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
     super()._build_ref_map(map, prefix)
     map[self.name()] = edgir.localpath_concat(prefix, edgir.NAME)
-    for (name, param) in self._parameters.items():
+    for name, param in self._parameters.items():
       param._build_ref_map(map, edgir.localpath_concat(prefix, name))
-    for (name, port) in self._ports.items():
+    for name, port in self._ports.items():
       port._build_ref_map(map, edgir.localpath_concat(prefix, name))
 
   def _bind_in_place(self, parent: Union[BaseBlock, Port]):

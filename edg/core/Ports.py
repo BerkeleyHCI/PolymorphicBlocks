@@ -231,15 +231,14 @@ class Port(BasePort, Generic[PortLinkType]):
   def _type_of(self) -> Hashable:
     return type(self)
 
-  def _build_ref_map(self, refmap: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
-    super()._build_ref_map(refmap, prefix)
-
-    refmap[self.is_connected()] = edgir.localpath_concat(prefix, edgir.IS_CONNECTED)
-    refmap[self.name()] = edgir.localpath_concat(prefix, edgir.NAME)
+  def _build_ref_map(self, ref_map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
+    super()._build_ref_map(ref_map, prefix)
+    ref_map[self.is_connected()] = edgir.localpath_concat(prefix, edgir.IS_CONNECTED)
+    ref_map[self.name()] = edgir.localpath_concat(prefix, edgir.NAME)
     for name, param in self._parameters.items():
-      param._build_ref_map(refmap, edgir.localpath_concat(prefix, name))
+      param._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
     if self._link_instance is not None:
-      self._link_instance._build_ref_map(refmap, edgir.localpath_concat(prefix, edgir.CONNECTED_LINK))
+      self._link_instance._build_ref_map(ref_map, edgir.localpath_concat(prefix, edgir.CONNECTED_LINK))
 
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
     self._parameters.finalize()
@@ -329,10 +328,10 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     return pb
 
-  def _build_ref_map(self, refmap: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
-    super()._build_ref_map(refmap, prefix)
+  def _build_ref_map(self, ref_map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
+    super()._build_ref_map(ref_map, prefix)
     for name, field in self._ports.items():
-      field._build_ref_map(refmap, edgir.localpath_concat(prefix, name))
+      field._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
 
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
     self_initializers = super()._get_initializers(path_prefix)

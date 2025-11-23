@@ -1,11 +1,8 @@
+from abc import abstractmethod
 from typing import Optional, Any, List, Tuple
 
-from abc import abstractmethod
-
-from .. import edgir
-from ..core import *
 from .NetlistGenerator import Netlist
-from ..core.Core import Refable
+from ..core import *
 
 
 @non_library

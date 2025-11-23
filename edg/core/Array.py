@@ -25,8 +25,7 @@ class MapExtractBinding(Binding):
     return [self.container]
 
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
-    contained_map = IdentityDict[Refable, edgir.LocalPath]()
-    self.container._elt_sample._build_ref_map(contained_map, edgir.LocalPath())
+    contained_map = self.container._elt_sample._create_ref_map(edgir.LocalPath())
 
     pb = edgir.ValueExpr()
     pb.map_extract.container.ref.CopyFrom(ref_map[self.container])  # TODO support arbitrary refs
@@ -184,7 +183,6 @@ class Vector(BaseVector, Generic[VectorType]):
     super()._build_ref_map(map, prefix)
     map[self._length] = edgir.localpath_concat(prefix, edgir.LENGTH)
     map[self._requested] = edgir.localpath_concat(prefix, edgir.ALLOCATED)
-
     elts_items = self._elts.items() if self._elts is not None else []
     for index, elt in elts_items:
       elt._build_ref_map(map, edgir.localpath_concat(prefix, index))

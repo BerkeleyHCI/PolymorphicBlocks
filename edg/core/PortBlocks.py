@@ -40,7 +40,6 @@ class PortBridge(InternalBlock, Block):
   def _build_ref_map(self, map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
     if self.__class__ == PortBridge:  # TODO: hack to allow this to elaborate as abstract class while being invalid
       return
-
     super()._build_ref_map(map, prefix)
 
 
@@ -66,13 +65,7 @@ class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
     assert 'optional' not in kwargs, "Ports in PortBridge are optional by default, required should be set by enclosing block"
     return super().Port(tpe, *args, optional=True, **kwargs)
 
-  # TODO: dedup w/ BaseBlock
-  def _build_ref_map(self, refmap: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
+  def _build_ref_map(self, ref_map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
     if self.__class__ is PortAdapter:  # TODO: hack to allow this to elaborate as abstract class while being invalid
       return
-
-    # return super().get_ref_map(prefix) +  # TODO: dedup w/ BaseBlock, and does this break anything?
-    for name, param in self._parameters.items():
-      param._build_ref_map(refmap, edgir.localpath_concat(prefix, name))
-    self.src._build_ref_map(refmap, edgir.localpath_concat(prefix, 'src'))
-    self.dst._build_ref_map(refmap, edgir.localpath_concat(prefix, 'dst'))
+    super()._build_ref_map(ref_map, prefix)
