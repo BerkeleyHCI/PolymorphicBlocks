@@ -5,15 +5,15 @@ from typing import *
 
 from .. import edgir
 from .Array import BaseVector, DerivedVector
-from .Blocks import BaseBlock, Connection
+from .Blocks import BaseBlock, Connection, BaseBlockMeta
 from .Builder import builder
-from .Core import Refable, non_library, ElementMeta
+from .Core import Refable, non_library
 from .HdlUserExceptions import UnconnectableError
 from .IdentityDict import IdentityDict
 from .Ports import Port
 
 
-class LinkMeta(ElementMeta):
+class LinkMeta(BaseBlockMeta):
   def __new__(cls, *args: Any, **kwargs: Any) -> Any:
     new_cls = super().__new__(cls, *args, **kwargs)
 

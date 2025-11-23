@@ -18,15 +18,26 @@ if TYPE_CHECKING:
   from .PortBlocks import PortBridge, PortAdapter
 
 
+class InitializerContextMeta(type):
+  def __call__(cls, *args, **kwargs):
+    """Hook on construction to store some metadata about its creation.
+    This hooks the top-level __init__ only."""
+    obj = type.__call__(cls, *args, **kwargs)
+    obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
+    return obj
+
+
 PortParentTypes = Union['BaseContainerPort', 'BaseBlock']
 @non_library
-class BasePort(HasMetadata):
+class BasePort(HasMetadata, metaclass=InitializerContextMeta):
   SelfType = TypeVar('SelfType', bound='BasePort')
 
   def __init__(self) -> None:
     """Abstract Base Class for ports"""
     self._parent: Optional[PortParentTypes]  # refined from Optional[Refable] in base LibraryElement
+    self._block_context: Optional["Refable"]  # set by metaclass, as lexical scope available pre-binding
     self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
+    self._block_context = builder.get_enclosing_block()
 
     super().__init__()
 
@@ -157,12 +168,15 @@ class Port(BasePort, Generic[PortLinkType]):
 
   def _bridge(self) -> Optional[PortBridge]:
     """Creates a (unbound) bridge and returns it."""
+    from .HierarchyBlock import Block
+
     if self.bridge_type is None:
       return None
     if self._bridge_instance is not None:
       return self._bridge_instance
     assert self._is_bound(), "not bound, can't create bridge"
 
+    Block._next_bind = self.bridge_type
     self._bridge_instance = self.bridge_type()
     return self._bridge_instance
 

@@ -36,7 +36,8 @@ class DesignTop(Block):
       if isinstance(multipack_part, Block):
         return path, type(multipack_part)
       elif isinstance(multipack_part, PackedBlockAllocate):
-        return path, type(multipack_part.parent._tpe)
+        assert multipack_part.parent._elt_sample is not None
+        return path, type(multipack_part.parent._elt_sample)
       else:
         raise TypeError
 
@@ -55,7 +56,7 @@ class DesignTop(Block):
     prev_element = builder.push_element(self)
     assert prev_element is None
     try:
-      assert self._elaboration_state == BlockElaborationState.post_init
+      assert self._elaboration_state == BlockElaborationState.init
       self._elaboration_state = BlockElaborationState.contents
       self.contents()
       self.multipack()

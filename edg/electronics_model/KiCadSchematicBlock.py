@@ -208,9 +208,9 @@ class KiCadSchematicBlock(Block):
 
                 # use the caller's globals, since this needs to reflect the caller's imports
                 block_model = eval(inline_code, inspect.stack()[1][0].f_globals, locals)
-                assert isinstance(block_model, KiCadImportableBlock),\
-                    f"block {block_model} created by {inline_code} not KicadImportableBlock"
                 block = self.Block(block_model)
+                assert isinstance(block, KiCadImportableBlock), \
+                    f"block {block} created by {inline_code} not KicadImportableBlock"
                 block_pinning = block.symbol_pinning(symbol.lib)
                 setattr(self, symbol.refdes, block)
             elif symbol.lib in SYMBOL_MAP:  # sub-block with code to parse the value

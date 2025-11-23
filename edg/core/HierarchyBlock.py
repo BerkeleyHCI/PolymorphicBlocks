@@ -12,10 +12,10 @@ from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, Arr
   ArrayFloatLike, ArrayRangeLike, ArrayStringLike
 from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
-from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty
+from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty, BaseBlockMeta
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
-from .Core import Refable, non_library, ElementMeta
+from .Core import Refable, non_library
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -100,7 +100,41 @@ class ChainConnect:
     return iter((tuple(self.blocks), self))
 
 
-class BlockMeta(ElementMeta):
+BlockPrototypeType = TypeVar('BlockPrototypeType', bound='Block')
+class BlockPrototype(Generic[BlockPrototypeType]):
+  """A block prototype, that contains a type and arguments, but without constructing the entire block
+  and running its (potentially quite expensive) __init__.
+
+  This class is automatically created on Block instantiations by the BlockMeta metaclass __init__ hook."""
+  def __init__(self, tpe: Type[BlockPrototypeType], args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
+    self._tpe = tpe
+    self._args = args
+    self._kwargs = kwargs
+
+  def __repr__(self) -> str:
+    return f"{self.__class__.__name__}({self._tpe}, args={self._args}, kwargs={self._kwargs})"
+
+  def _bind(self, parent: Union[BaseBlock, Port]) -> BlockPrototypeType:
+    """Binds the prototype into an actual Block instance."""
+    Block._next_bind = self._tpe
+    block = self._tpe(*self._args, **self._kwargs)  # type: ignore
+    block._bind_in_place(parent)
+    return block
+
+  def __getattribute__(self, item: str) -> Any:
+    if item.startswith("_"):
+      return super().__getattribute__(item)
+    else:
+      raise AttributeError(f"{self.__class__.__name__} has no attributes, must bind to get a concrete instance, tried to get {item}")
+
+  def __setattr__(self, key: str, value: Any) -> None:
+    if key.startswith("_"):
+      super().__setattr__(key, value)
+    else:
+      raise AttributeError(f"{self.__class__.__name__} has no attributes, must bind to get a concrete instance, tried to set {key}")
+
+
+class BlockMeta(BaseBlockMeta):
   """This provides a hook on __init__ that replaces argument values with empty ConstraintExpr
   based on the type annotation and stores the supplied argument to the __init__ (if any) in the binding.
 
@@ -233,6 +267,23 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   """Part with a statically-defined subcircuit.
   Relations between contained parameters may only be expressed in the given constraint language.
   """
+  _next_bind: Optional[Type[Block]] = None  # set when binding, to avoid creating a prototype
+
+  def __new__(cls, *args: Any, **kwargs: Any) -> Block:
+    if Block._next_bind is not None:
+      assert Block._next_bind is cls
+      Block._next_bind = None
+      return super().__new__(cls)
+    elif builder.get_enclosing_block() is None:  # always construct if top-level
+      return super().__new__(cls)
+    else:
+      return BlockPrototype(cls, args, kwargs)  # type: ignore
+
+  SelfType = TypeVar('SelfType', bound='BaseBlock')
+  def _bind(self: SelfType, parent: Union[BaseBlock, Port]) -> SelfType:
+    # for type checking only
+    raise TypeError("_bind should be called from BlockPrototype")
+
   def __init__(self) -> None:
     super().__init__()
 
@@ -410,14 +461,19 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   def with_mixin(self, tpe: MixinType) -> MixinType:
     """Adds an interface mixin for this Block. Mainly useful for abstract blocks, e.g. IoController with HasI2s."""
     from .BlockInterfaceMixin import BlockInterfaceMixin
-    if not (isinstance(tpe, BlockInterfaceMixin) and tpe._is_mixin()):
+    if isinstance(tpe, BlockPrototype):
+      tpe_cls = tpe._tpe
+    else:
+      tpe_cls = tpe.__class__
+
+    if not (issubclass(tpe_cls, BlockInterfaceMixin) and tpe_cls._is_mixin()):
       raise TypeError("param to with_mixin must be a BlockInterfaceMixin")
     if isinstance(self, BlockInterfaceMixin) and self._is_mixin():
       raise BlockDefinitionError(self, "mixins can not have with_mixin")
     if (self.__class__, AbstractBlockProperty) not in self._elt_properties:
       raise BlockDefinitionError(self, "mixins can only be added to abstract classes")
-    if not isinstance(self, tpe._get_mixin_base()):
-      raise TypeError(f"block {self.__class__.__name__} not an instance of mixin base {tpe._get_mixin_base().__name__}")
+    if not isinstance(self, tpe_cls._get_mixin_base()):
+      raise TypeError(f"block {self.__class__.__name__} not an instance of mixin base {tpe_cls._get_mixin_base().__name__}")
     assert self._parent is not None
 
     elt = tpe._bind(self._parent)
@@ -569,15 +625,22 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   def Block(self, tpe: BlockType) -> BlockType:
     from .BlockInterfaceMixin import BlockInterfaceMixin
     from .DesignTop import DesignTop
-    if not isinstance(tpe, Block):
-      raise TypeError(f"param to Block(...) must be Block, got {tpe} of type {type(tpe)}")
-    if isinstance(tpe, BlockInterfaceMixin) and tpe._is_mixin():
-      raise TypeError("param to Block(...) must not be BlockInterfaceMixin")
-    if isinstance(tpe, DesignTop):
-      raise TypeError(f"param to Block(...) may not be DesignTop")
+
     if self._elaboration_state not in \
-        [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
+            [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
       raise BlockDefinitionError(self, "can only define blocks in init, contents, or generate")
+
+    if isinstance(tpe, BlockPrototype):
+      tpe_cls = tpe._tpe
+    else:
+      tpe_cls = tpe.__class__
+
+    if not issubclass(tpe_cls, Block):
+      raise TypeError(f"param to Block(...) must be Block, got {tpe_cls}")
+    if issubclass(tpe_cls, BlockInterfaceMixin) and tpe_cls._is_mixin():
+      raise TypeError("param to Block(...) must not be BlockInterfaceMixin")
+    if issubclass(tpe_cls, DesignTop):
+      raise TypeError(f"param to Block(...) may not be DesignTop")
 
     elt = tpe._bind(self)
     self._blocks.register(elt)

@@ -12,7 +12,7 @@ from .IdentityDict import IdentityDict
 from .Core import non_library, SubElementDict
 from .ConstraintExpr import ConstraintExpr, BoolExpr, IntExpr, FloatExpr, RangeExpr, StringExpr
 from .Ports import BasePort, Port
-from .HierarchyBlock import Block
+from .HierarchyBlock import Block, BlockPrototype
 
 
 class PackedBlockAllocate(NamedTuple):
@@ -134,7 +134,12 @@ class MultipackBlock(Block):
   def PackedPart(self, tpe: PackedPartType) -> PackedPartType:
     """Adds a block type that can be packed into this block.
     The block is a "virtual block" that will not appear in the design tree."""
-    if not isinstance(tpe, (Block, PackedBlockArray)):
+    if isinstance(tpe, BlockPrototype):
+      tpe_cls = tpe._tpe
+    else:
+      tpe_cls = tpe.__class__
+
+    if not issubclass(tpe_cls, (Block, PackedBlockArray)):
       raise TypeError(f"param to PackedPart(...) must be Block, got {tpe} of type {type(tpe)}")
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(self, "can only define multipack in init")

@@ -20,6 +20,16 @@ if TYPE_CHECKING:
   from .Link import Link
 
 
+class BaseBlockMeta(type):
+  """Adds a hook to set the post-init elaboration state"""
+  def __call__(cls, *args, **kwargs):
+    block_context = builder.get_enclosing_block()
+    obj = super().__call__(*args, **kwargs)
+    if isinstance(obj, BaseBlock):  # ignore block prototypes
+      obj._block_context = block_context
+    return obj
+
+
 class Connection():
   """An incremental connection builder, that validates additional ports as they are added so
   the stack trace can provide the problematic statement."""
@@ -186,7 +196,6 @@ class Connection():
 class BlockElaborationState(Enum):
   pre_init = 1  # not sure if this is needed, doesn't actually get used
   init = 2
-  post_init = 3
   contents = 4
   post_contents = 5
   generate = 6
@@ -230,12 +239,13 @@ class DescriptionString():
 AbstractBlockProperty = EltPropertiesBase()
 
 @non_library
-class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
+class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMeta):
   """Base block that has ports (IOs), parameters, and constraints between them.
   """
   # __init__ should initialize the object with structural information (parameters, fields)
   # as well as optionally initialization (parameter defaults)
   def __init__(self) -> None:
+    self._block_context: Optional["Refable"]  # set by metaclass, as lexical scope available pre-binding
     self._parent: Optional[Union[BaseBlock, Port]]  # refined from Optional[Refable] in base LibraryElement
 
     super().__init__()
@@ -276,10 +286,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
     return delegated_connects
 
-  def _post_init(self):
-    assert self._elaboration_state == BlockElaborationState.init
-    self._elaboration_state = BlockElaborationState.post_init
-
   def name(self) -> StringExpr:
     return self._name
 
@@ -295,7 +301,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
     prev_element = builder.push_element(self)
     assert prev_element is None
     try:
-      assert self._elaboration_state == BlockElaborationState.post_init
+      assert self._elaboration_state == BlockElaborationState.init
       self._elaboration_state = BlockElaborationState.contents
       self.contents()
       self._elaboration_state = BlockElaborationState.post_contents
@@ -408,15 +414,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
 
   def _bind_in_place(self, parent: Union[BaseBlock, Port]):
     self._parent = parent
-
-  SelfType = TypeVar('SelfType', bound='BaseBlock')
-  def _bind(self: SelfType, parent: Union[BaseBlock, Port]) -> SelfType:
-    """Returns a clone of this object with the specified binding. This object must be unbound."""
-    assert self._parent is None, "can't clone bound block"
-    assert builder.get_enclosing_block() is self._block_context, "can't clone to different context"
-    clone = type(self)(*self._initializer_args[0], **self._initializer_args[1])  # type: ignore
-    clone._bind_in_place(parent)
-    return clone
 
   def _check_constraint(self, constraint: ConstraintExpr) -> None:
     def check_subexpr(expr: Union[ConstraintExpr, BasePort]) -> None:  # TODO rewrite this whole method

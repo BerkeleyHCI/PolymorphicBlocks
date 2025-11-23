@@ -142,20 +142,6 @@ class ElementDict(Generic[ElementType]):
     return self.container.values()
 
 
-class ElementMeta(type):
-  """Hook on construction to store some metadata about its creation.
-  This hooks the top-level __init__ only."""
-  def __call__(cls, *args, **kwargs):
-    block_context = builder.get_enclosing_block()
-
-    obj = type.__call__(cls, *args, **kwargs)
-    obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
-    obj._block_context = block_context
-    obj._post_init()
-
-    return obj
-
-
 class Refable():
   """Object that could be referenced into a edgir.LocalPath"""
   def __repr__(self) -> str:
@@ -185,7 +171,7 @@ def non_library(decorated: NonLibraryType) -> NonLibraryType:
 
 
 @non_library
-class LibraryElement(Refable, metaclass=ElementMeta):
+class LibraryElement(Refable):
   """Defines a library element, which optionally contains other library elements."""
   _elt_properties: Dict[Tuple[Type[LibraryElement], EltPropertiesBase], Any] = {}
 
@@ -193,16 +179,10 @@ class LibraryElement(Refable, metaclass=ElementMeta):
     return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xff)
 
   def __init__(self) -> None:
-    self._block_context: Optional["Refable"]  # set by metaclass, as lexical scope available pre-binding
     self._parent: Optional[LibraryElement] = None  # set by binding, None means not bound
-    self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
 
     self.manager = SubElementManager()
     self.manager_ignored: Set[str] = set(['_parent'])
-
-  """Optionally overloaded to run anything post-__init__"""
-  def _post_init(self):
-    pass
 
   def __setattr__(self, name: str, value: Any) -> None:
     if hasattr(self, 'manager_ignored') and name not in self.manager_ignored:

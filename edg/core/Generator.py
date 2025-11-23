@@ -111,7 +111,7 @@ class GeneratorBlock(Block):
     assert prev_element is None
 
     try:
-      assert self._elaboration_state == BlockElaborationState.post_init  # TODO dedup w/ elaborated_def_to_proto
+      assert self._elaboration_state == BlockElaborationState.init
       self._elaboration_state = BlockElaborationState.contents
       self.contents()
       self._elaboration_state = BlockElaborationState.generate

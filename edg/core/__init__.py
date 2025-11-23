@@ -21,7 +21,7 @@ from .IdentitySet import IdentitySet
 from .MultiBiDict import MultiBiDict
 
 # Features for library builders
-from .Core import LibraryElement, SubElementDict, ElementDict, ElementMeta, non_library
+from .Core import LibraryElement, SubElementDict, ElementDict, non_library
 from .Blocks import BasePort, BaseBlock
 from .Categories import InternalBlock
 from .Builder import builder
