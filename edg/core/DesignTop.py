@@ -56,7 +56,7 @@ class DesignTop(Block):
     prev_element = builder.push_element(self)
     assert prev_element is None
     try:
-      assert self._elaboration_state == BlockElaborationState.post_init
+      assert self._elaboration_state == BlockElaborationState.init
       self._elaboration_state = BlockElaborationState.contents
       self.contents()
       self.multipack()

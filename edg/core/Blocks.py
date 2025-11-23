@@ -26,8 +26,6 @@ class BaseBlockMeta(type):
     block_context = builder.get_enclosing_block()
     obj = super().__call__(*args, **kwargs)
     if isinstance(obj, BaseBlock):  # ignore block prototypes
-      assert obj._elaboration_state == BlockElaborationState.init
-      obj._elaboration_state = BlockElaborationState.post_init
       obj._block_context = block_context
     return obj
 
@@ -198,7 +196,6 @@ class Connection():
 class BlockElaborationState(Enum):
   pre_init = 1  # not sure if this is needed, doesn't actually get used
   init = 2
-  post_init = 3
   contents = 4
   post_contents = 5
   generate = 6
@@ -304,7 +301,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
     prev_element = builder.push_element(self)
     assert prev_element is None
     try:
-      assert self._elaboration_state == BlockElaborationState.post_init
+      assert self._elaboration_state == BlockElaborationState.init
       self._elaboration_state = BlockElaborationState.contents
       self.contents()
       self._elaboration_state = BlockElaborationState.post_contents
