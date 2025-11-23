@@ -231,7 +231,7 @@ class Port(BasePort, Generic[PortLinkType]):
   def _type_of(self) -> Hashable:
     return type(self)
 
-  def _build_ref_map(self, ref_map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
+  def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
     super()._build_ref_map(ref_map, prefix)
     ref_map[self.is_connected()] = edgir.localpath_concat(prefix, edgir.IS_CONNECTED)
     ref_map[self.name()] = edgir.localpath_concat(prefix, edgir.NAME)
@@ -328,7 +328,7 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     return pb
 
-  def _build_ref_map(self, ref_map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
+  def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
     super()._build_ref_map(ref_map, prefix)
     for name, field in self._ports.items():
       field._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))

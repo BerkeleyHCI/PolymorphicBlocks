@@ -158,11 +158,11 @@ class Refable():
 
   def _create_ref_map(self, prefix: edgir.LocalPath = edgir.LocalPath()) -> RefMapType:
     """Wrapper around _build_ref_map for top-level refmap construction."""
-    ref_map = IdentityDict['Refable', edgir.LocalPath]()
+    ref_map = IdentityDict[Refable, edgir.LocalPath]()
     self._build_ref_map(ref_map, prefix)
     return ref_map
 
-  def _build_ref_map(self, ref_map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
+  def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
     """Adds the references contained by this object to the parameter refmap."""
     ref_map[self] = prefix
 
@@ -247,7 +247,7 @@ class LibraryElement(Refable):
 class StructuredMetadata():
   """Base class for metadata that is structured (as a class in Python)"""
   @abstractmethod
-  def _to_proto(self, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.Metadata:
+  def _to_proto(self, ref_map: Refable.RefMapType) -> edgir.Metadata:
     raise NotImplementedError
 
 
@@ -297,7 +297,7 @@ class HasMetadata(LibraryElement):
     return ordered_direct_bases, ordered_indirect_bases
 
   def _populate_metadata(self, pb: edgir.Metadata, src: Any,
-                         ref_map: IdentityDict[Refable, edgir.LocalPath]) -> None:
+                         ref_map: Refable.RefMapType) -> None:
     """Generate metadata from a given object."""
     if isinstance(src, StructuredMetadata):
       pb.CopyFrom(src._to_proto(ref_map))

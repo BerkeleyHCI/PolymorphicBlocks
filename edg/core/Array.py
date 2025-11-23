@@ -24,7 +24,7 @@ class MapExtractBinding(Binding):
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return [self.container]
 
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     contained_map = self.container._elt_sample._create_ref_map(edgir.LocalPath())
 
     pb = edgir.ValueExpr()
@@ -41,7 +41,7 @@ class FlattenBinding(Binding):
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return [self.elts]
 
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.unary_set.op = edgir.UnarySetExpr.Op.FLATTEN
     pb.unary_set.vals.CopyFrom(self.elts._expr_to_proto(ref_map))
@@ -179,15 +179,15 @@ class Vector(BaseVector, Generic[VectorType]):
   def _def_to_proto(self) -> edgir.PortTypes:
     raise RuntimeError()  # this doesn't generate into a library element
 
-  def _build_ref_map(self, map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
-    super()._build_ref_map(map, prefix)
-    map[self._length] = edgir.localpath_concat(prefix, edgir.LENGTH)
-    map[self._requested] = edgir.localpath_concat(prefix, edgir.ALLOCATED)
+  def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
+    super()._build_ref_map(ref_map, prefix)
+    ref_map[self._length] = edgir.localpath_concat(prefix, edgir.LENGTH)
+    ref_map[self._requested] = edgir.localpath_concat(prefix, edgir.ALLOCATED)
     elts_items = self._elts.items() if self._elts is not None else []
     for index, elt in elts_items:
-      elt._build_ref_map(map, edgir.localpath_concat(prefix, index))
+      elt._build_ref_map(ref_map, edgir.localpath_concat(prefix, index))
     for suggested_name, request in self._requests:
-      request._build_ref_map(map, edgir.localpath_concat(prefix, edgir.Allocate(suggested_name)))
+      request._build_ref_map(ref_map, edgir.localpath_concat(prefix, edgir.Allocate(suggested_name)))
 
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
     if self._elts is not None:

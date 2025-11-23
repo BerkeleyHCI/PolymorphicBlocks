@@ -307,7 +307,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
         out.append(block_port)
     return out
 
-  def _build_ref_map(self, ref_map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath, *,
+  def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath, *,
                      interface_only: bool = False) -> None:
     super()._build_ref_map(ref_map, prefix)
     for mixin in self._mixins:
