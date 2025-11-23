@@ -279,6 +279,11 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     else:
       return BlockPrototype(cls, args, kwargs)  # type: ignore
 
+  SelfType = TypeVar('SelfType', bound='BaseBlock')
+  def _bind(self: SelfType, parent: Union[BaseBlock, Port]) -> SelfType:
+    # for type checking only
+    raise TypeError("_bind should be called from BlockPrototype")
+
   def __init__(self) -> None:
     super().__init__()
 

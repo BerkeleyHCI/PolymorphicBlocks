@@ -10,7 +10,7 @@ from .. import edgir
 from .Array import BaseVector, Vector
 from .Binding import AssignBinding, NameBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr, BoolLike
-from .Core import Refable, HasMetadata, builder, SubElementDict, non_library, EltPropertiesBase, InitializerContextMeta
+from .Core import Refable, HasMetadata, builder, SubElementDict, non_library, EltPropertiesBase
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
   from .Link import Link
 
 
-class BaseBlockMeta(InitializerContextMeta):
+class BaseBlockMeta(type):
   """Adds a hook to set the post-init elaboration state"""
   def __call__(cls, *args, **kwargs):
     block_context = builder.get_enclosing_block()
@@ -249,7 +249,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
   # as well as optionally initialization (parameter defaults)
   def __init__(self) -> None:
     self._block_context: Optional["Refable"]  # set by metaclass, as lexical scope available pre-binding
-    self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
     self._parent: Optional[Union[BaseBlock, Port]]  # refined from Optional[Refable] in base LibraryElement
 
     super().__init__()
@@ -418,15 +417,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
 
   def _bind_in_place(self, parent: Union[BaseBlock, Port]):
     self._parent = parent
-
-  SelfType = TypeVar('SelfType', bound='BaseBlock')
-  def _bind(self: SelfType, parent: Union[BaseBlock, Port]) -> SelfType:
-    """Returns a clone of this object with the specified binding. This object must be unbound."""
-    assert self._parent is None, "can't clone bound block"
-    assert builder.get_enclosing_block() is self._block_context, "can't clone to different context"
-    clone = type(self)(*self._initializer_args[0], **self._initializer_args[1])  # type: ignore
-    clone._bind_in_place(parent)
-    return clone
 
   def _check_constraint(self, constraint: ConstraintExpr) -> None:
     def check_subexpr(expr: Union[ConstraintExpr, BasePort]) -> None:  # TODO rewrite this whole method

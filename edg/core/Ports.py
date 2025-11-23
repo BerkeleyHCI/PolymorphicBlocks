@@ -8,7 +8,7 @@ from .. import edgir
 from .Binding import ParamBinding, IsConnectedBinding, NameBinding
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
-from .Core import Refable, HasMetadata, SubElementDict, non_library, InitializerContextMeta
+from .Core import Refable, HasMetadata, SubElementDict, non_library
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 
@@ -17,6 +17,17 @@ if TYPE_CHECKING:
   from .Link import Link
   from .PortBlocks import PortBridge, PortAdapter
 
+
+class InitializerContextMeta(type):
+  def __call__(cls, *args, **kwargs):
+    """Hook on construction to store some metadata about its creation.
+    This hooks the top-level __init__ only."""
+    # TODO initializer_args should be replaced with the prototype system
+
+    obj = type.__call__(cls, *args, **kwargs)
+    obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
+
+    return obj
 
 
 PortParentTypes = Union['BaseContainerPort', 'BaseBlock']
