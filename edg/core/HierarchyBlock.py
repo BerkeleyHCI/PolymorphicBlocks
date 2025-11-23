@@ -125,13 +125,13 @@ class BlockPrototype(Generic[BlockPrototypeType]):
     if item.startswith("_"):
       return super().__getattribute__(item)
     else:
-      raise AttributeError(f"BlockPrototype has no attributes, must bind to get a concrete Block instance, tried to get {item}")
+      raise AttributeError(f"{self.__class__.__name__} has no attributes, must bind to get a concrete instance, tried to get {item}")
 
   def __setattr__(self, key: str, value: Any) -> None:
     if key.startswith("_"):
       super().__setattr__(key, value)
     else:
-      raise AttributeError(f"BlockPrototype has no attributes, must bind to get a concrete Block instance, tried to set {key}")
+      raise AttributeError(f"{self.__class__.__name__} has no attributes, must bind to get a concrete instance, tried to set {key}")
 
 
 class BlockMeta(BaseBlockMeta):
