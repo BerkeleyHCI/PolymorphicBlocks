@@ -37,10 +37,10 @@ class PortPrototype(BasePrototype[PortPrototypeType]):
     super().__init__(tpe, args, kwargs)
     self._empty = empty
 
-  def _bind(self, parent: Union[BaseBlock, Port]) -> PortPrototypeType:
+  def _bind(self, parent: PortParentTypes, empty: bool = False) -> PortPrototypeType:
     BasePort._next_bind = self._tpe
     port = self._instantiate()
-    if self._empty:
+    if self._empty or empty:
       # This is kind of a really nasty hack that overwrites initializers :s
       port._clear_initializers()
     port._bind_in_place(parent)

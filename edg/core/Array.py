@@ -253,7 +253,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert builder.get_enclosing_block() is block_parent._parent or builder.get_enclosing_block() is None, \
       "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
-    allocated = type(self._tpe).empty()._bind(self)
+    allocated = self._tpe._bind(self, empty=True)
     self._requests.append((suggested_name, allocated))
     return allocated
 
@@ -274,7 +274,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert builder.get_enclosing_block() is block_parent._parent or builder.get_enclosing_block() is None, \
       "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
     # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
-    allocated = Vector(type(self._tpe).empty())._bind(self)
+    allocated = Vector(self._tpe)._bind(self)
     self._requests.append((suggested_name, allocated))
     return allocated
 
@@ -323,6 +323,7 @@ class Vector(BaseVector, Generic[VectorType]):
     if isinstance(param, ConstraintExpr):  # TODO check that returned type is child
       return ArrayExpr.array_of_elt(param)._bind(MapExtractBinding(self, param))
     elif isinstance(param, BasePort):
+      BasePort._next_bind = DerivedVector
       return DerivedVector(self, param)
     else:
       raise TypeError(f"selector must return ConstraintExpr or BasePort, got {param} of type {type(param)}")

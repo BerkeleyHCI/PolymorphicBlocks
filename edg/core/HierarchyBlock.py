@@ -590,7 +590,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     if isinstance(port, BaseVector):  # TODO can the vector and non-vector paths be unified?
       assert isinstance(port, Vector)
-      new_port: BasePort = self.Port(Vector(port._tpe.empty()),
+      new_port: BasePort = self.Port(Vector(port._tpe),
                                      tags, optional=optional, doc=doc)
     elif isinstance(port, Port):
       new_port = self.Port(type(port).empty(),  # TODO is dropping args safe in all cases?
