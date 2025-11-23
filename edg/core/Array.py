@@ -11,7 +11,7 @@ from .Builder import builder
 from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, StringExpr, IntExpr, Binding
 from .Core import Refable, non_library
 from .IdentityDict import IdentityDict
-from .Ports import BaseContainerPort, BasePort, Port
+from .Ports import BaseContainerPort, BasePort, Port, PortPrototype
 from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr
 
 
@@ -96,12 +96,17 @@ class DerivedVector(BaseVector, Generic[VectorType]):
 class Vector(BaseVector, Generic[VectorType]):
   # TODO: Library types need to be removed from the type hierarchy, because this does not generate into a library elt
   def __init__(self, tpe: VectorType) -> None:
-    if not isinstance(tpe, BasePort):
-      raise TypeError(f"arg to Vector(...) must be BasePort, got {tpe} of type {type(tpe)}")
+    if isinstance(tpe, PortPrototype):
+      tpe_cls = tpe._tpe
+    else:
+      assert not tpe._is_bound()
+      tpe_cls = tpe.__class__
+
+    if not issubclass(tpe_cls, BasePort):
+      raise TypeError(f"arg to Vector(...) must be BasePort, got {tpe_cls}")
 
     super().__init__()
 
-    assert not tpe._is_bound()
     self._tpe = tpe
     self._elt_sample = tpe._bind(self)
     self._elts: Optional[OrderedDict[str, VectorType]] = None  # concrete elements, for boundary ports
