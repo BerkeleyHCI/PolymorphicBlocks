@@ -1,5 +1,6 @@
 from typing import TypeVar, Union, List, Tuple, Dict, Type
 
+from .Core import Refable
 from .. import edgir
 from .Builder import builder
 from .Ports import Port
@@ -65,9 +66,9 @@ class DesignTop(Block):
       builder.pop_to(prev_element)
     return self._def_to_proto()
 
-  def _populate_def_proto_block_contents(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
+  def _populate_def_proto_block_contents(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
     """Add multipack constraints"""
-    pb = super()._populate_def_proto_block_contents(pb)
+    super()._populate_def_proto_block_contents(pb, ref_map)
 
     # Since ConstraintExpr arrays don't have the allocate construct (like connects),
     # we need to aggregate them into a packed array format (instead of generating a constraint for each element)
@@ -88,13 +89,13 @@ class DesignTop(Block):
       multipack_name = self._name_of_child(multipack_block, self)
       multipack_ref_base = edgir.LocalPath()
       multipack_ref_base.steps.add().name = multipack_name
-      multipack_ref_map = multipack_block._get_ref_map(multipack_ref_base)
+      multipack_ref_map = multipack_block._create_ref_map(multipack_ref_base)
 
       packing_rule = multipack_block._get_block_packing_rule(multipack_part)
       packed_ref_base = edgir.LocalPath()
       for packed_path_part in packed_path:
         packed_ref_base.steps.add().name = packed_path_part
-      packed_ref_map = multipack_part_block._get_ref_map(packed_ref_base)
+      packed_ref_map = multipack_part_block._create_ref_map(packed_ref_base)
 
       if isinstance(multipack_part, Block):
         part_name = multipack_block._name_of_child(multipack_part, self)
@@ -163,10 +164,7 @@ class DesignTop(Block):
       for assign_src in assign_srcs:
         assign_src_vals.add().ref.CopyFrom(assign_src)
 
-    return pb
-
   PackedBlockType = TypeVar('PackedBlockType', bound=MultipackBlock)
-
   def PackedBlock(self, tpe: PackedBlockType) -> PackedBlockType:
     """Instantiates a multipack block, that can be used to pack constituent blocks arbitrarily deep in the design."""
     # TODO: additional checks and enforcement beyond what Block provides - eg disallowing .connect operations

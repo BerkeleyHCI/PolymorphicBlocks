@@ -91,7 +91,7 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   def _is_bound(self) -> bool:
     return self.binding is not None and self.binding.is_bound()
 
-  def _expr_to_proto(self, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+  def _expr_to_proto(self, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     assert self.binding is not None
     return self.binding.expr_to_proto(self, ref_map)
 

@@ -231,16 +231,14 @@ class Port(BasePort, Generic[PortLinkType]):
   def _type_of(self) -> Hashable:
     return type(self)
 
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
+  def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
+    super()._build_ref_map(ref_map, prefix)
+    ref_map[self.is_connected()] = edgir.localpath_concat(prefix, edgir.IS_CONNECTED)
+    ref_map[self.name()] = edgir.localpath_concat(prefix, edgir.NAME)
+    for name, param in self._parameters.items():
+      param._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
     if self._link_instance is not None:
-      link_refs = self._link_instance._get_ref_map(edgir.localpath_concat(prefix, edgir.CONNECTED_LINK))
-    else:
-      link_refs = IdentityDict([])
-    return super()._get_ref_map(prefix) + IdentityDict[Refable, edgir.LocalPath](
-      [(self.is_connected(), edgir.localpath_concat(prefix, edgir.IS_CONNECTED)),
-       (self.name(), edgir.localpath_concat(prefix, edgir.NAME))],
-      *[param._get_ref_map(edgir.localpath_concat(prefix, name)) for name, param in self._parameters.items()]
-    ) + link_refs
+      self._link_instance._build_ref_map(ref_map, edgir.localpath_concat(prefix, edgir.CONNECTED_LINK))
 
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
     self._parameters.finalize()
@@ -330,10 +328,10 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     return pb
 
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    return super()._get_ref_map(prefix) + IdentityDict(
-      *[field._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, field) in self._ports.items()]
-    )
+  def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
+    super()._build_ref_map(ref_map, prefix)
+    for name, field in self._ports.items():
+      field._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
 
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
     self_initializers = super()._get_initializers(path_prefix)

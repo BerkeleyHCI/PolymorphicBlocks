@@ -37,12 +37,6 @@ class PortBridge(InternalBlock, Block):
     assert 'optional' not in kwargs, f"Ports in PortBridge are optional by default, required should be set by enclosing block, in {kwargs}"
     return super().Port(tpe, *args, optional=True, **kwargs)
 
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    if self.__class__ == PortBridge:  # TODO: hack to allow this to elaborate as abstract class while being invalid
-      return IdentityDict()
-
-    return super()._get_ref_map(prefix)
-
 
 AdapterDstType = TypeVar('AdapterDstType', bound=Port)
 @abstract_block
@@ -65,15 +59,3 @@ class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
   def Port(self, tpe: T, *args, **kwargs) -> T:
     assert 'optional' not in kwargs, "Ports in PortBridge are optional by default, required should be set by enclosing block"
     return super().Port(tpe, *args, optional=True, **kwargs)
-
-  # TODO: dedup w/ BaseBlock
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    if self.__class__ == PortAdapter:  # TODO: hack to allow this to elaborate as abstract class while being invalid
-      return IdentityDict()
-
-    # return super().get_ref_map(prefix) +  # TODO: dedup w/ BaseBlock, and does this break anything?
-    return IdentityDict(
-      *[param._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, param) in self._parameters.items()],
-      self.src._get_ref_map(edgir.localpath_concat(prefix, 'src')),
-      self.dst._get_ref_map(edgir.localpath_concat(prefix, 'dst'))
-    )

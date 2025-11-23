@@ -180,9 +180,14 @@ class Connection():
     bridged_connects: List[Tuple[BasePort, edgir.LocalPath]] = []
     link_connects: List[Tuple[BasePort, edgir.LocalPath]] = []
     assert self.link_instance is not None
-    link_ref_map = self.link_instance._get_ref_map_allocate(edgir.LocalPath())
+    link_ref_map = self.link_instance._create_ref_map()
     for link_port, connected_ports in self.link_connected_ports.items():
       link_ref = link_ref_map[link_port]
+      if isinstance(link_port, BaseVector):
+        allocate_path = edgir.LocalPath()
+        allocate_path.CopyFrom(link_ref)
+        allocate_path.steps.append(edgir.LocalStep(allocate=''))
+        link_ref = allocate_path
       for connected_port in connected_ports:
         bridged_port = self.bridged_ports.get(connected_port, None)
         if bridged_port is None:  # direct connection, no bridge
@@ -214,14 +219,13 @@ class DescriptionString():
   def __init__(self, *elts: Union[str, DescriptionStringElts]):
     self.elts = elts
 
-  def add_to_proto(self, pb, ref_map):
+  def add_to_proto(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType):
     for elt in self.elts:
       if isinstance(elt, DescriptionStringElts):
         elt.set_elt_proto(pb, ref_map)
       elif isinstance(elt, str):
         new_phrase = pb.description.add()
         new_phrase.text = elt
-    return pb
 
   class FormatUnits(DescriptionStringElts):
     ref: ConstraintExpr
@@ -310,7 +314,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
 
     return self._def_to_proto()
 
-  def _populate_def_proto_block_base(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
+  def _populate_def_proto_block_base(self, pb: BaseBlockEdgirType) -> None:
     """Populates the structural parts of a block proto: parameters, ports, superclasses"""
     assert self._elaboration_state == BlockElaborationState.post_contents or \
            self._elaboration_state == BlockElaborationState.post_generate
@@ -343,7 +347,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
     for (name, port) in self._ports.items():
       edgir.add_pair(pb.ports, name).CopyFrom(port._instance_to_proto())
 
-    ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
+    ref_map = self._create_ref_map()
     for (name, port) in self._ports.items():
       if port in self._required_ports:
         if isinstance(port, Port):
@@ -359,58 +363,45 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
 
     self._constraints.finalize()  # needed for source locator generation
 
-    ref_map = self._get_ref_map(edgir.LocalPath())
     self._populate_metadata(pb.meta, self._metadata, ref_map)
 
-    return pb
-
-  def _populate_def_proto_port_init(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
-    ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
-
+  def _populate_def_proto_port_init(self, pb: BaseBlockEdgirType, ref_map: Refable.RefMapType) -> None:
     for (name, port) in self._ports.items():
       for (param, path, initializer) in port._get_initializers([name]):
         edgir.add_pair(pb.constraints, f"(init){'.'.join(path)}").CopyFrom(
           AssignBinding.make_assign(param, param._to_expr_type(initializer), ref_map)
         )
-    return pb
 
-  def _populate_def_proto_param_init(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
-    ref_map = self._get_ref_map(edgir.LocalPath())  # TODO dedup ref_map
+  def _populate_def_proto_param_init(self, pb: BaseBlockEdgirType, ref_map: Refable.RefMapType) -> None:
     for (name, param) in self._parameters.items():
       if param.initializer is not None:
         edgir.add_pair(pb.constraints, f'(init){name}').CopyFrom(
           AssignBinding.make_assign(param, param.initializer, ref_map)
         )
-    return pb
 
-  def _populate_def_proto_block_contents(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
+  def _populate_def_proto_block_contents(self, pb: BaseBlockEdgirType, ref_map: Refable.RefMapType) -> None:
     """Populates the contents of a block proto: constraints"""
     assert self._elaboration_state == BlockElaborationState.post_contents or \
            self._elaboration_state == BlockElaborationState.post_generate
 
     self._constraints.finalize()
 
-    ref_map = self._get_ref_map(edgir.LocalPath())
-
     for (name, constraint) in self._constraints.items():
       edgir.add_pair(pb.constraints, name).CopyFrom(constraint._expr_to_proto(ref_map))
 
-    return pb
-
-  def _populate_def_proto_description(self, pb: BaseBlockEdgirType) -> BaseBlockEdgirType:
+  def _populate_def_proto_description(self, pb: BaseBlockEdgirType, ref_map: Refable.RefMapType) -> None:
     description = self.description
     assert(description is None or isinstance(description, DescriptionString))
     if isinstance(description, DescriptionString):
-      pb = description.add_to_proto(pb, self._get_ref_map(edgir.LocalPath()))
+      description.add_to_proto(pb, ref_map)
 
-    return pb
-
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    return super()._get_ref_map(prefix) + IdentityDict(
-      [(self.name(), edgir.localpath_concat(prefix, edgir.NAME))],
-      *[param._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, param) in self._parameters.items()],
-      *[port._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, port) in self._ports.items()]
-    )
+  def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
+    super()._build_ref_map(ref_map, prefix)
+    ref_map[self.name()] = edgir.localpath_concat(prefix, edgir.NAME)
+    for name, param in self._parameters.items():
+      param._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
+    for name, port in self._ports.items():
+      port._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
 
   def _bind_in_place(self, parent: Union[BaseBlock, Port]):
     self._parent = parent

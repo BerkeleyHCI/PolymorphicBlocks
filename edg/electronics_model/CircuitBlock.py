@@ -115,11 +115,6 @@ class CircuitPortBridge(NetBaseBlock, PortBridge):
     super().contents()
     self.net()
 
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    if self.__class__ == CircuitPortBridge:  # TODO: hack to allow this to elaborate as abstract class while being invalid
-      return IdentityDict()
-    return super()._get_ref_map(prefix)
-
 
 AdapterDstType = TypeVar('AdapterDstType', bound='CircuitPort')
 @abstract_block
@@ -131,11 +126,6 @@ class CircuitPortAdapter(KiCadImportableBlock, NetBaseBlock, PortAdapter[Adapter
   def contents(self):
     super().contents()
     self.net()
-
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    if self.__class__ == CircuitPortAdapter:  # TODO: hack to allow this to elaborate as abstract class while being invalid
-      return IdentityDict()
-    return super()._get_ref_map(prefix)
 
 
 @non_library  # TODO make abstract instead?

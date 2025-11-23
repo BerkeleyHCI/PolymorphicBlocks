@@ -24,8 +24,9 @@ class MapExtractBinding(Binding):
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return [self.container]
 
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
-    contained_map = self.container._get_contained_ref_map()
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
+    contained_map = self.container._elt_sample._create_ref_map(edgir.LocalPath())
+
     pb = edgir.ValueExpr()
     pb.map_extract.container.ref.CopyFrom(ref_map[self.container])  # TODO support arbitrary refs
     pb.map_extract.path.CopyFrom(contained_map[self.elt])
@@ -40,7 +41,7 @@ class FlattenBinding(Binding):
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return [self.elts]
 
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: IdentityDict[Refable, edgir.LocalPath]) -> edgir.ValueExpr:
+  def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.unary_set.op = edgir.UnarySetExpr.Op.FLATTEN
     pb.unary_set.vals.CopyFrom(self.elts._expr_to_proto(ref_map))
@@ -178,16 +179,15 @@ class Vector(BaseVector, Generic[VectorType]):
   def _def_to_proto(self) -> edgir.PortTypes:
     raise RuntimeError()  # this doesn't generate into a library element
 
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
+  def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
+    super()._build_ref_map(ref_map, prefix)
+    ref_map[self._length] = edgir.localpath_concat(prefix, edgir.LENGTH)
+    ref_map[self._requested] = edgir.localpath_concat(prefix, edgir.ALLOCATED)
     elts_items = self._elts.items() if self._elts is not None else []
-
-    return super()._get_ref_map(prefix) + IdentityDict[Refable, edgir.LocalPath](
-      [(self._length, edgir.localpath_concat(prefix, edgir.LENGTH)),
-       (self._requested, edgir.localpath_concat(prefix, edgir.ALLOCATED))],
-      *[elt._get_ref_map(edgir.localpath_concat(prefix, index)) for (index, elt) in elts_items]) + IdentityDict(
-      *[elt._get_ref_map(edgir.localpath_concat(prefix, edgir.Allocate(suggested_name)))
-        for (suggested_name, elt) in self._requests]
-    )
+    for index, elt in elts_items:
+      elt._build_ref_map(ref_map, edgir.localpath_concat(prefix, index))
+    for suggested_name, request in self._requests:
+      request._build_ref_map(ref_map, edgir.localpath_concat(prefix, edgir.Allocate(suggested_name)))
 
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
     if self._elts is not None:
@@ -195,9 +195,6 @@ class Vector(BaseVector, Generic[VectorType]):
         elt._get_initializers(path_prefix + [name]) for (name, elt) in self._elts.items()]))
     else:
       return []
-
-  def _get_contained_ref_map(self) -> IdentityDict[Refable, edgir.LocalPath]:
-    return self._elt_sample._get_ref_map(edgir.LocalPath())
 
   def defined(self) -> None:
     """Marks this vector as defined, even if it is empty. Can be called multiple times, and append_elt can continue

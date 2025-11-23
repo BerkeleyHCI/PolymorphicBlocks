@@ -12,7 +12,7 @@ from .IdentityDict import IdentityDict
 from .Binding import InitParamBinding, AllocatedBinding, IsConnectedBinding
 from .Blocks import BlockElaborationState, AbstractBlockProperty
 from .ConstraintExpr import ConstraintExpr
-from .Core import non_library
+from .Core import non_library, Refable
 from .HdlUserExceptions import *
 from .HierarchyBlock import Block
 
@@ -84,9 +84,9 @@ class GeneratorBlock(Block):
   #
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     if self._elaboration_state != BlockElaborationState.post_generate:  # only write generator on the stub definition
+      ref_map = self._create_ref_map()
       pb = edgir.HierarchyBlock()
-      ref_map = self._get_ref_map(edgir.LocalPath())
-      pb = self._populate_def_proto_block_base(pb)
+      self._populate_def_proto_block_base(pb)
       pb.generator.SetInParent()  # even if rest of the fields are empty, make sure to create a record
 
       if type(self).generate is not GeneratorBlock.generate:
@@ -117,7 +117,7 @@ class GeneratorBlock(Block):
       self._elaboration_state = BlockElaborationState.generate
 
       # Translate parameter values to function arguments
-      ref_map = self._get_ref_map(edgir.LocalPath())
+      ref_map = self._create_ref_map()
       generate_values_map = {path.SerializeToString(): value for (path, value) in generate_values}
 
       assert (self.__class__, AbstractBlockProperty) not in self._elt_properties  # abstract blocks can't generate
