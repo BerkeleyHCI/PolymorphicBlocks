@@ -160,12 +160,15 @@ class Port(BasePort, Generic[PortLinkType]):
 
   def _bridge(self) -> Optional[PortBridge]:
     """Creates a (unbound) bridge and returns it."""
+    from .HierarchyBlock import Block
+
     if self.bridge_type is None:
       return None
     if self._bridge_instance is not None:
       return self._bridge_instance
     assert self._is_bound(), "not bound, can't create bridge"
 
+    Block._next_bind = self.bridge_type
     self._bridge_instance = self.bridge_type()
     return self._bridge_instance
 
