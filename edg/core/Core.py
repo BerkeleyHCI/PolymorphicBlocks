@@ -179,9 +179,7 @@ class LibraryElement(Refable):
     return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xff)
 
   def __init__(self) -> None:
-    self._block_context: Optional["Refable"]  # set by metaclass, as lexical scope available pre-binding
     self._parent: Optional[LibraryElement] = None  # set by binding, None means not bound
-    self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
 
     self.manager = SubElementManager()
     self.manager_ignored: Set[str] = set(['_parent'])
@@ -310,3 +308,15 @@ class HasMetadata(LibraryElement):
     else:
       raise ValueError(f'must overload _metadata_to_proto to handle unknown value {src}')
     return pb
+
+
+class InitializerContextMeta(type):
+  def __call__(cls, *args, **kwargs):
+    """Hook on construction to store some metadata about its creation.
+    This hooks the top-level __init__ only."""
+    # TODO initializer_args should be replaced with the prototype system
+
+    obj = type.__call__(cls, *args, **kwargs)
+    obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
+
+    return obj

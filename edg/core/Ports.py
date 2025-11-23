@@ -8,7 +8,7 @@ from .. import edgir
 from .Binding import ParamBinding, IsConnectedBinding, NameBinding
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
-from .Core import Refable, HasMetadata, SubElementDict, non_library
+from .Core import Refable, HasMetadata, SubElementDict, non_library, InitializerContextMeta
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 
@@ -18,28 +18,18 @@ if TYPE_CHECKING:
   from .PortBlocks import PortBridge, PortAdapter
 
 
-class PortMeta(type):
-  def __call__(cls, *args, **kwargs):
-    """Hook on construction to store some metadata about its creation.
-    This hooks the top-level __init__ only."""
-    block_context = builder.get_enclosing_block()
-
-    obj = type.__call__(cls, *args, **kwargs)
-    obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
-    obj._block_context = block_context
-
-    return obj
-
 
 PortParentTypes = Union['BaseContainerPort', 'BaseBlock']
 @non_library
-class BasePort(HasMetadata, metaclass=PortMeta):
+class BasePort(HasMetadata, metaclass=InitializerContextMeta):
   SelfType = TypeVar('SelfType', bound='BasePort')
 
   def __init__(self) -> None:
     """Abstract Base Class for ports"""
     self._parent: Optional[PortParentTypes]  # refined from Optional[Refable] in base LibraryElement
+    self._block_context: Optional["Refable"]  # set by metaclass, as lexical scope available pre-binding
     self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
+    self._block_context = builder.get_enclosing_block()
 
     super().__init__()
 

@@ -10,7 +10,7 @@ from .. import edgir
 from .Array import BaseVector, Vector
 from .Binding import AssignBinding, NameBinding
 from .ConstraintExpr import ConstraintExpr, BoolExpr, ParamBinding, AssignExpr, StringExpr, BoolLike
-from .Core import Refable, HasMetadata, builder, SubElementDict, non_library, EltPropertiesBase
+from .Core import Refable, HasMetadata, builder, SubElementDict, non_library, EltPropertiesBase, InitializerContextMeta
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
@@ -18,6 +18,18 @@ from .Ports import BasePort, Port
 
 if TYPE_CHECKING:
   from .Link import Link
+
+
+class BaseBlockMeta(InitializerContextMeta):
+  """Adds a hook to set the post-init elaboration state"""
+  def __call__(cls, *args, **kwargs):
+    block_context = builder.get_enclosing_block()
+    obj = super().__call__(*args, **kwargs)
+    if isinstance(obj, BaseBlock):  # ignore block prototypes
+      assert obj._elaboration_state == BlockElaborationState.init
+      obj._elaboration_state = BlockElaborationState.post_init
+      obj._block_context = block_context
+    return obj
 
 
 class Connection():
@@ -230,12 +242,14 @@ class DescriptionString():
 AbstractBlockProperty = EltPropertiesBase()
 
 @non_library
-class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType]):
+class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMeta):
   """Base block that has ports (IOs), parameters, and constraints between them.
   """
   # __init__ should initialize the object with structural information (parameters, fields)
   # as well as optionally initialization (parameter defaults)
   def __init__(self) -> None:
+    self._block_context: Optional["Refable"]  # set by metaclass, as lexical scope available pre-binding
+    self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
     self._parent: Optional[Union[BaseBlock, Port]]  # refined from Optional[Refable] in base LibraryElement
 
     super().__init__()

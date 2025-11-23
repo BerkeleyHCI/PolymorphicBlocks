@@ -5,7 +5,7 @@ from typing import *
 
 from .. import edgir
 from .Array import BaseVector, DerivedVector
-from .Blocks import BaseBlock, Connection, BlockElaborationState
+from .Blocks import BaseBlock, Connection, BaseBlockMeta
 from .Builder import builder
 from .Core import Refable, non_library
 from .HdlUserExceptions import UnconnectableError
@@ -13,20 +13,7 @@ from .IdentityDict import IdentityDict
 from .Ports import Port
 
 
-class LinkMeta(type):
-  def __call__(cls, *args, **kwargs):
-    """Hook on construction to store some metadata about its creation.
-    This hooks the top-level __init__ only."""
-    block_context = builder.get_enclosing_block()
-
-    obj = type.__call__(cls, *args, **kwargs)
-    obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
-    obj._block_context = block_context
-    assert obj._elaboration_state == BlockElaborationState.init
-    obj._elaboration_state = BlockElaborationState.post_init
-
-    return obj
-
+class LinkMeta(BaseBlockMeta):
   def __new__(cls, *args: Any, **kwargs: Any) -> Any:
     new_cls = super().__new__(cls, *args, **kwargs)
 

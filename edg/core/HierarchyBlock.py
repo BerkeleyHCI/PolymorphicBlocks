@@ -12,7 +12,7 @@ from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, Arr
   ArrayFloatLike, ArrayRangeLike, ArrayStringLike
 from .Array import BaseVector, Vector
 from .Binding import InitParamBinding, AssignBinding
-from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty
+from .Blocks import BaseBlock, Connection, BlockElaborationState, AbstractBlockProperty, BaseBlockMeta
 from .ConstraintExpr import BoolLike, FloatLike, IntLike, RangeLike, StringLike
 from .ConstraintExpr import ConstraintExpr, BoolExpr, FloatExpr, IntExpr, RangeExpr, StringExpr
 from .Core import Refable, non_library
@@ -106,7 +106,7 @@ class BlockPrototype(Generic[BlockPrototypeType]):
   and running its (potentially quite expensive) __init__.
 
   This class is automatically created on Block instantiations by the BlockMeta metaclass __init__ hook."""
-  def __init__(self, tpe: Type[BlockPrototypeType], args: Tuple[Any], kwargs: Dict[str, Any]) -> None:
+  def __init__(self, tpe: Type[BlockPrototypeType], args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
     self._tpe = tpe
     self._args = args
     self._kwargs = kwargs
@@ -129,7 +129,7 @@ class BlockPrototype(Generic[BlockPrototypeType]):
       raise AttributeError(f"BlockPrototype has no attributes, must bind to get a concrete Block instance, tried to set {key}")
 
 
-class BlockMeta(type):
+class BlockMeta(BaseBlockMeta):
   """This provides a hook on __init__ that replaces argument values with empty ConstraintExpr
   based on the type annotation and stores the supplied argument to the __init__ (if any) in the binding.
 
@@ -174,19 +174,6 @@ class BlockMeta(type):
     (concrete block instantiated)"""
     assert BlockMeta._next_bind is None
     BlockMeta._next_bind = cls
-
-  def __call__(cls, *args, **kwargs):
-    """Hook on construction to store some metadata about its creation.
-    This hooks the top-level __init__ only."""
-    block_context = builder.get_enclosing_block()
-
-    obj = type.__call__(cls, *args, **kwargs)
-    obj._initializer_args = (args, kwargs)  # stores args so it is clone-able
-    obj._block_context = block_context
-    assert obj._elaboration_state == BlockElaborationState.init
-    obj._elaboration_state = BlockElaborationState.post_init
-
-    return obj
 
   def __new__(cls, *args: Any, **kwargs: Any) -> Any:
     new_cls = super().__new__(cls, *args, **kwargs)
@@ -284,13 +271,12 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   """Part with a statically-defined subcircuit.
   Relations between contained parameters may only be expressed in the given constraint language.
   """
-  # TODO IMPLEMENT ME
-  # def __new__(cls, *args: Any, **kwargs: Any) -> Union[Block, BlockPrototype]:
-  #   if BlockMeta._next_bind is cls:
-  #     BlockMeta._next_bind = None
-  #     return super().__new__(cls)
-  #   else:
-  #     return BlockPrototype(cls, args, kwargs)
+  def __new__(cls, *args: Any, **kwargs: Any) -> Block:
+    if BlockMeta._next_bind is cls:
+      BlockMeta._next_bind = None
+      return super().__new__(cls)
+    else:
+      return BlockPrototype(cls, args, kwargs)  # type: ignore
 
   def __init__(self) -> None:
     super().__init__()
