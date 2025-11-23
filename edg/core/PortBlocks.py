@@ -37,11 +37,6 @@ class PortBridge(InternalBlock, Block):
     assert 'optional' not in kwargs, f"Ports in PortBridge are optional by default, required should be set by enclosing block, in {kwargs}"
     return super().Port(tpe, *args, optional=True, **kwargs)
 
-  def _build_ref_map(self, map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
-    if self.__class__ == PortBridge:  # TODO: hack to allow this to elaborate as abstract class while being invalid
-      return
-    super()._build_ref_map(map, prefix)
-
 
 AdapterDstType = TypeVar('AdapterDstType', bound=Port)
 @abstract_block
@@ -64,8 +59,3 @@ class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
   def Port(self, tpe: T, *args, **kwargs) -> T:
     assert 'optional' not in kwargs, "Ports in PortBridge are optional by default, required should be set by enclosing block"
     return super().Port(tpe, *args, optional=True, **kwargs)
-
-  def _build_ref_map(self, ref_map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
-    if self.__class__ is PortAdapter:  # TODO: hack to allow this to elaborate as abstract class while being invalid
-      return
-    super()._build_ref_map(ref_map, prefix)
