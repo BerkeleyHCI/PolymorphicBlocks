@@ -3,7 +3,6 @@ from __future__ import annotations
 import functools
 import inspect
 import warnings
-from functools import reduce
 from typing import *
 
 from .. import edgir
@@ -308,12 +307,15 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
         out.append(block_port)
     return out
 
-  def _build_ref_map(self, ref_map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
+  def _build_ref_map(self, ref_map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath, *,
+                     interface_only: bool = False) -> None:
     super()._build_ref_map(ref_map, prefix)
-    for name, block in self._blocks.items():
-      block._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
     for mixin in self._mixins:
       mixin._build_ref_map(ref_map, prefix)
+    if not interface_only:
+      for name, block in self._blocks.items():
+        assert isinstance(block, Block)
+        block._build_ref_map(ref_map, edgir.localpath_concat(prefix, name), interface_only=True)
 
   def _populate_def_proto_block_base(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     pb = super()._populate_def_proto_block_base(pb)
