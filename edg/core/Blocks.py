@@ -364,7 +364,6 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
 
     self._constraints.finalize()  # needed for source locator generation
 
-    ref_map = self._create_ref_map()
     self._populate_metadata(pb.meta, self._metadata, ref_map)
 
     return pb
