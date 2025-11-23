@@ -8,8 +8,8 @@ class TestBlockPrototype(Block):
     super().__init__()
     block_model = Block()
     assert isinstance(block_model, BlockPrototype)
-    block_model = self.Block(block_model)
-    assert isinstance(block_model, Block)
+    self.subblock = self.Block(block_model)
+    assert isinstance(self.subblock, Block)
 
 
 class BlockPrototypeTestCase(unittest.TestCase):

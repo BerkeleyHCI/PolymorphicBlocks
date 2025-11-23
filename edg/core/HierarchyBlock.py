@@ -111,10 +111,12 @@ class BlockPrototype(Generic[BlockPrototypeType]):
     self._args = args
     self._kwargs = kwargs
 
-  def bind(self) -> BlockPrototypeType:
+  def _bind(self, parent: Union[BaseBlock, Port]) -> BlockPrototypeType:
     """Binds the prototype into an actual Block instance."""
-    # TODO set / inspect on global binding flag
-    return self._tpe(*self._args, **self._kwargs)  # type: ignore
+    Block._next_bind = self._tpe
+    block = self._tpe(*self._args, **self._kwargs)  # type: ignore
+    block._bind_in_place(parent)
+    return block
 
   def __getattribute__(self, item: str) -> Any:
     if item.startswith("_"):
@@ -165,15 +167,6 @@ class BlockMeta(BaseBlockMeta):
     ArrayStringLike: ArrayStringExpr,
     "ArrayStringLike": ArrayStringExpr,
   }
-
-  _next_bind: Optional[Type[Block]] = None
-
-  @staticmethod
-  def _set_next_bind(cls: Type[Block]) -> None:
-    """Call to set that the next block construction will be of type and should be bound
-    (concrete block instantiated)"""
-    assert BlockMeta._next_bind is None
-    BlockMeta._next_bind = cls
 
   def __new__(cls, *args: Any, **kwargs: Any) -> Any:
     new_cls = super().__new__(cls, *args, **kwargs)
@@ -271,9 +264,14 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   """Part with a statically-defined subcircuit.
   Relations between contained parameters may only be expressed in the given constraint language.
   """
+  _next_bind: Optional[Type[Block]] = None  # set when binding, to avoid creating a prototype
+
   def __new__(cls, *args: Any, **kwargs: Any) -> Block:
-    if BlockMeta._next_bind is cls:
-      BlockMeta._next_bind = None
+    if Block._next_bind is not None:
+      assert Block._next_bind is cls
+      Block._next_bind = None
+      return super().__new__(cls)
+    elif builder.get_enclosing_block() is None:  # always construct if top-level
       return super().__new__(cls)
     else:
       return BlockPrototype(cls, args, kwargs)  # type: ignore
@@ -614,15 +612,22 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   def Block(self, tpe: BlockType) -> BlockType:
     from .BlockInterfaceMixin import BlockInterfaceMixin
     from .DesignTop import DesignTop
-    if not isinstance(tpe, Block):
-      raise TypeError(f"param to Block(...) must be Block, got {tpe} of type {type(tpe)}")
-    if isinstance(tpe, BlockInterfaceMixin) and tpe._is_mixin():
-      raise TypeError("param to Block(...) must not be BlockInterfaceMixin")
-    if isinstance(tpe, DesignTop):
-      raise TypeError(f"param to Block(...) may not be DesignTop")
+
     if self._elaboration_state not in \
-        [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
+            [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
       raise BlockDefinitionError(self, "can only define blocks in init, contents, or generate")
+
+    if isinstance(tpe, BlockPrototype):
+      tpe_cls = tpe._tpe
+    else:
+      tpe_cls = tpe.__class__
+
+    if not issubclass(tpe_cls, Block):
+      raise TypeError(f"param to Block(...) must be Block, got {tpe} of type {type(tpe)}")
+    if issubclass(tpe_cls, BlockInterfaceMixin) and tpe_cls._is_mixin():
+      raise TypeError("param to Block(...) must not be BlockInterfaceMixin")
+    if issubclass(tpe_cls, DesignTop):
+      raise TypeError(f"param to Block(...) may not be DesignTop")
 
     elt = tpe._bind(self)
     self._blocks.register(elt)
