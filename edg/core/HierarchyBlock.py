@@ -6,6 +6,7 @@ import warnings
 from functools import reduce
 from typing import *
 
+from .Prototype import BasePrototype
 from .. import edgir
 from .Builder import builder
 from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, ArrayBoolExpr, ArrayBoolLike, ArrayIntLike, \
@@ -101,37 +102,13 @@ class ChainConnect:
 
 
 BlockPrototypeType = TypeVar('BlockPrototypeType', bound='Block')
-class BlockPrototype(Generic[BlockPrototypeType]):
-  """A block prototype, that contains a type and arguments, but without constructing the entire block
-  and running its (potentially quite expensive) __init__.
-
-  This class is automatically created on Block instantiations by the BlockMeta metaclass __init__ hook."""
-  def __init__(self, tpe: Type[BlockPrototypeType], args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
-    self._tpe = tpe
-    self._args = args
-    self._kwargs = kwargs
-
-  def __repr__(self) -> str:
-    return f"{self.__class__.__name__}({self._tpe}, args={self._args}, kwargs={self._kwargs})"
-
+class BlockPrototype(BasePrototype[BlockPrototypeType]):
   def _bind(self, parent: Union[BaseBlock, Port]) -> BlockPrototypeType:
     """Binds the prototype into an actual Block instance."""
     Block._next_bind = self._tpe
-    block = self._tpe(*self._args, **self._kwargs)  # type: ignore
+    block = self._instantiate()
     block._bind_in_place(parent)
     return block
-
-  def __getattribute__(self, item: str) -> Any:
-    if item.startswith("_"):
-      return super().__getattribute__(item)
-    else:
-      raise AttributeError(f"BlockPrototype has no attributes, must bind to get a concrete Block instance, tried to get {item}")
-
-  def __setattr__(self, key: str, value: Any) -> None:
-    if key.startswith("_"):
-      super().__setattr__(key, value)
-    else:
-      raise AttributeError(f"BlockPrototype has no attributes, must bind to get a concrete Block instance, tried to set {key}")
 
 
 class BlockMeta(BaseBlockMeta):
