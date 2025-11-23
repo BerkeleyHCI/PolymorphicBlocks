@@ -66,9 +66,9 @@ class DesignTop(Block):
       builder.pop_to(prev_element)
     return self._def_to_proto()
 
-  def _populate_def_proto_block_contents(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
+  def _populate_def_proto_block_contents(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
     """Add multipack constraints"""
-    pb = super()._populate_def_proto_block_contents(pb)
+    super()._populate_def_proto_block_contents(pb, ref_map)
 
     # Since ConstraintExpr arrays don't have the allocate construct (like connects),
     # we need to aggregate them into a packed array format (instead of generating a constraint for each element)
@@ -164,10 +164,7 @@ class DesignTop(Block):
       for assign_src in assign_srcs:
         assign_src_vals.add().ref.CopyFrom(assign_src)
 
-    return pb
-
   PackedBlockType = TypeVar('PackedBlockType', bound=MultipackBlock)
-
   def PackedBlock(self, tpe: PackedBlockType) -> PackedBlockType:
     """Instantiates a multipack block, that can be used to pack constituent blocks arbitrarily deep in the design."""
     # TODO: additional checks and enforcement beyond what Block provides - eg disallowing .connect operations

@@ -38,14 +38,16 @@ class Link(BaseBlock[edgir.Link], metaclass=LinkMeta):
     self.parent: Optional[Port] = None
 
   def _def_to_proto(self) -> edgir.Link:
-    pb = self._populate_def_proto_block_base(edgir.Link())
-    pb = self._populate_def_proto_param_init(pb)
-    pb = self._populate_def_proto_block_contents(pb)
-    pb = self._populate_def_proto_description(pb)
+    ref_map = self._create_ref_map()
+
+    pb = edgir.Link()
+    self._populate_def_proto_block_base(pb)
+    self._populate_def_proto_param_init(pb, ref_map)
+    self._populate_def_proto_block_contents(pb, ref_map)
+    self._populate_def_proto_description(pb, ref_map)
     # specifically ignore the port initializers
 
     # actually generate the links and connects
-    ref_map = self._create_ref_map()
     self._connects.finalize()
     delegated_connects = self._all_delegated_connects()
     for name, connect in self._connects.items_ordered():

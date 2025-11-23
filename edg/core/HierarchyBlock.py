@@ -317,8 +317,8 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
         assert isinstance(block, Block)
         block._build_ref_map(ref_map, edgir.localpath_concat(prefix, name), interface_only=True)
 
-  def _populate_def_proto_block_base(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
-    pb = super()._populate_def_proto_block_base(pb)
+  def _populate_def_proto_block_base(self, pb: edgir.HierarchyBlock) -> None:
+    super()._populate_def_proto_block_base(pb)
 
     # generate param defaults
     for param_name, param in self._parameters.items():
@@ -327,14 +327,10 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
         param_typed_value = param._to_expr_type(param.binding.value)
         pb.param_defaults[param_name].CopyFrom(param_typed_value._expr_to_proto(IdentityDict()))
 
-    return pb
-
-  def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
+  def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
     self._blocks.finalize()
     self._connects.finalize()
     self._chains.finalize()
-
-    ref_map = self._create_ref_map()
 
     for name, block in self._blocks.items():
       new_block_lib = edgir.add_pair(pb.blocks, name).lib_elem
@@ -436,22 +432,21 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
             AssignBinding.make_assign(block_param, param_typed_value, ref_map)
           )
 
-    return pb
-
   # TODO make this non-overriding?
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     assert not self._mixins  # blocks with mixins can only be instantiated anonymously
+    ref_map = self._create_ref_map()
 
     pb = edgir.HierarchyBlock()
     pb.prerefine_class.target.name = self._get_def_name()  # TODO integrate with a non-link populate_def_proto_block...
-    pb = self._populate_def_proto_block_base(pb)
-    pb = self._populate_def_proto_port_init(pb)
+    self._populate_def_proto_block_base(pb)
+    self._populate_def_proto_port_init(pb, ref_map)
 
-    pb = self._populate_def_proto_param_init(pb)
+    self._populate_def_proto_param_init(pb, ref_map)
 
-    pb = self._populate_def_proto_hierarchy(pb)
-    pb = self._populate_def_proto_block_contents(pb)
-    pb = self._populate_def_proto_description(pb)
+    self._populate_def_proto_hierarchy(pb, ref_map)
+    self._populate_def_proto_block_contents(pb, ref_map)
+    self._populate_def_proto_description(pb, ref_map)
 
     return pb
 
