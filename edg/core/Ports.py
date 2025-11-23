@@ -33,10 +33,16 @@ class InitializerContextMeta(type):
 
 PortPrototypeType = TypeVar('PortPrototypeType', bound='BasePort')
 class PortPrototype(BasePrototype[PortPrototypeType]):
+  def __init__(self, tpe: Type[PortPrototypeType], args: Tuple[Any, ...], kwargs: Dict[str, Any], empty: bool = False):
+    super().__init__(tpe, args, kwargs)
+    self._empty = empty
+
   def _bind(self, parent: Union[BaseBlock, Port]) -> PortPrototypeType:
-    """Binds the prototype into an actual Block instance."""
     BasePort._next_bind = self._tpe
     port = self._instantiate()
+    if self._empty:
+      # This is kind of a really nasty hack that overwrites initializers :s
+      port._clear_initializers()
     port._bind_in_place(parent)
     return port
 
@@ -149,10 +155,7 @@ class Port(BasePort, Generic[PortLinkType]):
   @classmethod
   def empty(cls: Type[SelfType]) -> SelfType:
     """Automatically generated empty constructor, that creates a port with all parameters None."""
-    # This is kind of a really nasty hack that overwrites initializers :s
-    new_model = cls()
-    new_model._clear_initializers()
-    return new_model
+    return PortPrototype(cls, (), {}, empty=True)  # type: ignore
 
   def __init__(self) -> None:
     """Constructor for ports, structural information (parameters, fields) should be defined here
@@ -372,8 +375,13 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
   T = TypeVar('T', bound=Port)
   def Port(self, tpe: T, *, desc: Optional[str] = None) -> T:
     """Registers a field for this Bundle"""
-    if not isinstance(tpe, Port):
-      raise TypeError(f"param to Field(...) must be Port, got {tpe} of type {type(tpe)}")
+    if isinstance(tpe, PortPrototype):
+      tpe_cls = tpe._tpe
+    else:
+      tpe_cls = tpe.__class__
+
+    if not issubclass(tpe_cls, Port):
+      raise TypeError(f"param to Field(...) must be Port, got {tpe_cls}")
 
     elt = tpe._bind(self)
     self._ports.register(elt)
