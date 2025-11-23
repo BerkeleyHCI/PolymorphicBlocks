@@ -111,6 +111,9 @@ class BlockPrototype(Generic[BlockPrototypeType]):
     self._args = args
     self._kwargs = kwargs
 
+  def __repr__(self) -> str:
+    return f"BlockPrototype({self._tpe}, args={self._args}, kwargs={self._kwargs})"
+
   def _bind(self, parent: Union[BaseBlock, Port]) -> BlockPrototypeType:
     """Binds the prototype into an actual Block instance."""
     Block._next_bind = self._tpe
@@ -453,7 +456,6 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   def with_mixin(self, tpe: MixinType) -> MixinType:
     """Adds an interface mixin for this Block. Mainly useful for abstract blocks, e.g. IoController with HasI2s."""
     from .BlockInterfaceMixin import BlockInterfaceMixin
-
     if isinstance(tpe, BlockPrototype):
       tpe_cls = tpe._tpe
     else:
@@ -466,7 +468,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     if (self.__class__, AbstractBlockProperty) not in self._elt_properties:
       raise BlockDefinitionError(self, "mixins can only be added to abstract classes")
     if not isinstance(self, tpe_cls._get_mixin_base()):
-      raise TypeError(f"block {self.__class__.__name__} not an instance of mixin base {tpe._get_mixin_base().__name__}")
+      raise TypeError(f"block {self.__class__.__name__} not an instance of mixin base {tpe_cls._get_mixin_base().__name__}")
     assert self._parent is not None
 
     elt = tpe._bind(self._parent)
@@ -629,7 +631,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
       tpe_cls = tpe.__class__
 
     if not issubclass(tpe_cls, Block):
-      raise TypeError(f"param to Block(...) must be Block, got {tpe} of type {type(tpe)}")
+      raise TypeError(f"param to Block(...) must be Block, got {tpe_cls}")
     if issubclass(tpe_cls, BlockInterfaceMixin) and tpe_cls._is_mixin():
       raise TypeError("param to Block(...) must not be BlockInterfaceMixin")
     if issubclass(tpe_cls, DesignTop):
