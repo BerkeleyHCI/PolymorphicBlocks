@@ -37,20 +37,6 @@ class Link(BaseBlock[edgir.Link], metaclass=LinkMeta):
     super().__init__()
     self.parent: Optional[Port] = None
 
-  # Returns the ref_map, but with a trailing ALLOCATE for BaseVector ports
-  def _get_ref_map_allocate(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    def map_port_allocate(ref: Refable, path: edgir.LocalPath) -> edgir.LocalPath:
-      if isinstance(ref, BaseVector):
-        new_path = edgir.LocalPath()
-        new_path.CopyFrom(path)
-        new_path.steps.append(edgir.LocalStep(allocate=''))
-        return new_path
-      else:
-        return path
-
-    return IdentityDict([(port, map_port_allocate(port, path))
-                         for port, path in self._get_ref_map(prefix).items()])
-
   def _def_to_proto(self) -> edgir.Link:
     pb = self._populate_def_proto_block_base(edgir.Link())
     pb = self._populate_def_proto_param_init(pb)
@@ -59,7 +45,7 @@ class Link(BaseBlock[edgir.Link], metaclass=LinkMeta):
     # specifically ignore the port initializers
 
     # actually generate the links and connects
-    ref_map = self._get_ref_map(edgir.LocalPath())
+    ref_map = self._create_ref_map()
     self._connects.finalize()
     delegated_connects = self._all_delegated_connects()
     for name, connect in self._connects.items_ordered():

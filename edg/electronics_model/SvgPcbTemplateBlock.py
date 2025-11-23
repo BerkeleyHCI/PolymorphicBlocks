@@ -1,8 +1,11 @@
 from typing import Optional, Any, List, Tuple
 
 from abc import abstractmethod
+
+from .. import edgir
 from ..core import *
 from .NetlistGenerator import Netlist
+from ..core.Core import Refable
 
 
 @non_library
@@ -27,7 +30,7 @@ class SvgPcbTemplateBlock(Block):
         self._svgpcb_pathname_data = pathname
         self._svgpcb_design = design
         self._svgpcb_netlist = netlist
-        self._svgpcb_ref_map = self._get_ref_map(pathname.to_local_path())
+        self._svgpcb_ref_map = self._create_ref_map(pathname.to_local_path())
 
     def _svgpcb_pathname(self) -> str:
         """Infrastructure method, returns the pathname for this Block as a JS-code-friendly string."""

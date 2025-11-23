@@ -1,5 +1,6 @@
 from typing import TypeVar, Union, List, Tuple, Dict, Type
 
+from .Core import Refable
 from .. import edgir
 from .Builder import builder
 from .Ports import Port
@@ -88,13 +89,13 @@ class DesignTop(Block):
       multipack_name = self._name_of_child(multipack_block, self)
       multipack_ref_base = edgir.LocalPath()
       multipack_ref_base.steps.add().name = multipack_name
-      multipack_ref_map = multipack_block._get_ref_map(multipack_ref_base)
+      multipack_ref_map = multipack_block._create_ref_map(multipack_ref_base)
 
       packing_rule = multipack_block._get_block_packing_rule(multipack_part)
       packed_ref_base = edgir.LocalPath()
       for packed_path_part in packed_path:
         packed_ref_base.steps.add().name = packed_path_part
-      packed_ref_map = multipack_part_block._get_ref_map(packed_ref_base)
+      packed_ref_map = multipack_part_block._create_ref_map(packed_ref_base)
 
       if isinstance(multipack_part, Block):
         part_name = multipack_block._name_of_child(multipack_part, self)

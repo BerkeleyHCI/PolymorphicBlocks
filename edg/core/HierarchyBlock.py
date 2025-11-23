@@ -308,16 +308,12 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
         out.append(block_port)
     return out
 
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    ref_map = super()._get_ref_map(prefix) + IdentityDict(
-      *[block._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, block) in self._blocks.items()]
-    )
-    mixin_ref_maps = list(map(lambda mixin: mixin._get_ref_map(prefix), self._mixins))
-    if mixin_ref_maps:
-      mixin_ref_map = reduce(lambda a, b: a+b, mixin_ref_maps)
-      ref_map += mixin_ref_map
-
-    return ref_map
+  def _build_ref_map(self, refmap: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
+    super()._build_ref_map(refmap, prefix)
+    for name, block in self._blocks.items():
+      block._build_ref_map(refmap, edgir.localpath_concat(prefix, name))
+    for mixin in self._mixins:
+      mixin._build_ref_map(refmap, prefix)
 
   def _populate_def_proto_block_base(self, pb: edgir.HierarchyBlock) -> edgir.HierarchyBlock:
     pb = super()._populate_def_proto_block_base(pb)
@@ -336,7 +332,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     self._connects.finalize()
     self._chains.finalize()
 
-    ref_map = self._get_ref_map(edgir.LocalPath())
+    ref_map = self._create_ref_map()
 
     for name, block in self._blocks.items():
       new_block_lib = edgir.add_pair(pb.blocks, name).lib_elem

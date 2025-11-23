@@ -154,8 +154,15 @@ class Refable():
     raise ValueError("bool-ing a Refable is almost certainly a mistake. "
                      "Note: 'and' and 'or' do not work on BoolExpr, use '&' or '|' instead.")
 
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict['Refable', edgir.LocalPath]:
-    return IdentityDict([(self, prefix)])
+  def _create_ref_map(self, prefix: edgir.LocalPath = edgir.LocalPath()) -> IdentityDict['Refable', edgir.LocalPath]:
+    """Wrapper around _build_ref_map for top-level refmap construction."""
+    refmap = IdentityDict['Refable', edgir.LocalPath]()
+    self._build_ref_map(refmap, prefix)
+    return refmap
+
+  def _build_ref_map(self, refmap: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
+    """Adds the references contained by this object to the parameter refmap."""
+    refmap[self] = prefix
 
 
 class EltPropertiesBase:

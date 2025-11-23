@@ -37,11 +37,11 @@ class PortBridge(InternalBlock, Block):
     assert 'optional' not in kwargs, f"Ports in PortBridge are optional by default, required should be set by enclosing block, in {kwargs}"
     return super().Port(tpe, *args, optional=True, **kwargs)
 
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
+  def _build_ref_map(self, map: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
     if self.__class__ == PortBridge:  # TODO: hack to allow this to elaborate as abstract class while being invalid
-      return IdentityDict()
+      return
 
-    return super()._get_ref_map(prefix)
+    super()._build_ref_map(map, prefix)
 
 
 AdapterDstType = TypeVar('AdapterDstType', bound=Port)
@@ -67,13 +67,12 @@ class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
     return super().Port(tpe, *args, optional=True, **kwargs)
 
   # TODO: dedup w/ BaseBlock
-  def _get_ref_map(self, prefix: edgir.LocalPath) -> IdentityDict[Refable, edgir.LocalPath]:
-    if self.__class__ == PortAdapter:  # TODO: hack to allow this to elaborate as abstract class while being invalid
-      return IdentityDict()
+  def _build_ref_map(self, refmap: IdentityDict['Refable', edgir.LocalPath], prefix: edgir.LocalPath) -> None:
+    if self.__class__ is PortAdapter:  # TODO: hack to allow this to elaborate as abstract class while being invalid
+      return
 
     # return super().get_ref_map(prefix) +  # TODO: dedup w/ BaseBlock, and does this break anything?
-    return IdentityDict(
-      *[param._get_ref_map(edgir.localpath_concat(prefix, name)) for (name, param) in self._parameters.items()],
-      self.src._get_ref_map(edgir.localpath_concat(prefix, 'src')),
-      self.dst._get_ref_map(edgir.localpath_concat(prefix, 'dst'))
-    )
+    for name, param in self._parameters.items():
+      param._build_ref_map(refmap, edgir.localpath_concat(prefix, name))
+    self.src._build_ref_map(refmap, edgir.localpath_concat(prefix, 'src'))
+    self.dst._build_ref_map(refmap, edgir.localpath_concat(prefix, 'dst'))
