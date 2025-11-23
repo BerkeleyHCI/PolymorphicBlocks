@@ -36,7 +36,7 @@ class DesignTop(Block):
       if isinstance(multipack_part, Block):
         return path, type(multipack_part)
       elif isinstance(multipack_part, PackedBlockAllocate):
-        return path, type(multipack_part.parent._tpe)
+        return path, type(multipack_part.parent._elt_sample)
       else:
         raise TypeError
 

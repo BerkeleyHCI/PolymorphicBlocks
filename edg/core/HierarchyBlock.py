@@ -112,7 +112,7 @@ class BlockPrototype(Generic[BlockPrototypeType]):
     self._kwargs = kwargs
 
   def __repr__(self) -> str:
-    return f"BlockPrototype({self._tpe}, args={self._args}, kwargs={self._kwargs})"
+    return f"{self.__class__.__name__}({self._tpe}, args={self._args}, kwargs={self._kwargs})"
 
   def _bind(self, parent: Union[BaseBlock, Port]) -> BlockPrototypeType:
     """Binds the prototype into an actual Block instance."""
