@@ -117,10 +117,10 @@ class Sn74lvc2g02_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 '7': self.out1,
                 '8': self.vcc,
             },
-            mfr='Texas Instruments', part='SN74LVC2G02DCUT',
+            mfr='Texas Instruments', part='SN74LVC2G02DCUR',
             datasheet='https://www.ti.com/lit/ds/symlink/sn74lvc2g02.pdf'
         )
-        self.assign(self.lcsc_part, 'C2867561')
+        self.assign(self.lcsc_part, 'C133589')
 
 
 class Sn74lvc2g02(Interface, Block):
