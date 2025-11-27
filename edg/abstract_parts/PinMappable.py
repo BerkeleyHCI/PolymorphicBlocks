@@ -1,5 +1,4 @@
 import itertools
-from abc import ABCMeta
 from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dict, Set, Any
 
 from ..electronics_model import *
@@ -37,7 +36,7 @@ class PinMappable(Block):
     self.assign(self.actual_pin_assigns, allocation_strs)
 
 
-class BasePinMapResource(metaclass=ABCMeta):
+class BasePinMapResource:
   """Abstract base class for a resource definition for the pin mapping utility. Because these are so intertwined with
   the actual pin mapper, these are just named data structures - the logic for handling these is in the pin mapper."""
 
