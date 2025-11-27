@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Type, List, Optional, get_args, get_origin, Tuple, Callable
+from typing import TypeVar, Generic, Type, List, Optional, get_args, get_origin, Tuple, Callable, Any
 
 from .Core import non_library, HasMetadata
 from .Blocks import AbstractBlockProperty

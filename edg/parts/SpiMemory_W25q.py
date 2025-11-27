@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
