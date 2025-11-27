@@ -39,7 +39,7 @@ class PackedBlockParam(NamedTuple):  # a parameter replicated from an array of b
   param: ConstraintExpr
 
 
-PackedBlockElementType = TypeVar('PackedBlockElementType', bound=Block, default=Block)
+PackedBlockElementType = TypeVar('PackedBlockElementType', covariant=True, bound=Block, default=Block)
 class PackedBlockArray(Generic[PackedBlockElementType]):
   """A container "block" (for multipack packing only) for an arbitrary-length array of Blocks.
   This is meant to be analogous to Vector (port arrays), though there isn't an use case for this in general
