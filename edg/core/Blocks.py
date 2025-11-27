@@ -434,7 +434,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
   def require(self, constraint: BoolLike, name: Optional[str] = None, *, unchecked: bool=False) -> BoolExpr:
     constraint_typed = BoolExpr._to_expr_type(constraint)
     if not isinstance(name, (str, type(None))):
-      raise TypeError(f"name to constrain(...) must be str or None, got {name} of type {type(name)}")
+      raise EdgTypeError(f"require(...) name", name, (str, None))
 
     if not unchecked:  # before we have const prop need to manually set nested params
       self._check_constraint(constraint_typed)
@@ -451,9 +451,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
              value: Union[ConstraintExpr[ConstrType, Any], ConstrType],
              name: Optional[str] = None) -> AssignExpr:
     if not isinstance(target, ConstraintExpr):
-      raise TypeError(f"target to assign(...) must be ConstraintExpr, got {target} of type {type(target)}")
+      raise EdgTypeError(f"assign(...) target", target, ConstraintExpr)
     if not isinstance(name, (str, type(None))):
-      raise TypeError(f"name to constrain(...) must be str or None, got {name} of type {type(name)}")
+      raise EdgTypeError(f"assign(...) name", name, (str, None))
 
     self._check_constraint(target)
     expr_value = target._to_expr_type(value)

@@ -7,7 +7,7 @@ from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict
 
 from typing_extensions import ParamSpec
 
-from ..core import Range
+from ..core.Range import Range
 
 
 # from https://stackoverflow.com/questions/47965083/comparable-types-with-mypy

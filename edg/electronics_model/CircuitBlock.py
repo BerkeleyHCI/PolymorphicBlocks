@@ -7,7 +7,7 @@ from ..core import *
 from ..core import IdentityDict  # TODO: this is ugly
 from ..core.ConstraintExpr import Refable
 from .KiCadImportableBlock import KiCadImportableBlock
-
+from ..core.HdlUserExceptions import EdgTypeError
 
 CircuitLinkType = TypeVar('CircuitLinkType', bound=Link, covariant=True)
 class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
@@ -67,7 +67,7 @@ class FootprintBlock(Block):
     pinning_array = []
     for pin_name, pin_port in pinning.items():
       if not isinstance(pin_port, CircuitPort):
-        raise TypeError(f"pin port to Footprint(...) must be CircuitPort, got {pin_port} of type {type(pin_port)}")
+        raise EdgTypeError(f"Footprint(...) pin", pin_port, CircuitPort)
       pinning_array.append(f'{pin_name}={pin_port._name_from(self)}')
     self.assign(self.fp_pinning, pinning_array)
 

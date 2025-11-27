@@ -5,12 +5,12 @@ from abc import abstractmethod
 from typing import *
 from deprecated import deprecated
 
+from .HdlUserExceptions import EdgTypeError
 from .. import edgir
 from .Binding import LengthBinding, AllocatedBinding
 from .Builder import builder
 from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, StringExpr, IntExpr, Binding
 from .Core import Refable, non_library
-from .IdentityDict import IdentityDict
 from .Ports import BaseContainerPort, BasePort, Port
 from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr
 
@@ -98,7 +98,7 @@ class Vector(BaseVector, Generic[VectorType]):
   # TODO: Library types need to be removed from the type hierarchy, because this does not generate into a library elt
   def __init__(self, tpe: VectorType) -> None:
     if not isinstance(tpe, BasePort):
-      raise TypeError(f"arg to Vector(...) must be BasePort, got {tpe} of type {type(tpe)}")
+      raise EdgTypeError(f"arg to Vector(...)", tpe, BasePort)
 
     super().__init__()
 
@@ -292,7 +292,7 @@ class Vector(BaseVector, Generic[VectorType]):
   def validate_selector(expected: Type[SelectorType], result: ConstraintExpr) -> SelectorType:
     # TODO check returned type is child
     if not isinstance(result, expected):
-      raise TypeError(f"selector must return {expected.__name__}, got {result.__class__.__name__}")
+      raise EdgTypeError(f"selector return", result, expected)
     return result
 
   ExtractPortType = TypeVar('ExtractPortType', bound=Port)
@@ -317,7 +317,7 @@ class Vector(BaseVector, Generic[VectorType]):
     elif isinstance(param, BasePort):
       return DerivedVector(self, param)
     else:
-      raise TypeError(f"selector must return ConstraintExpr or BasePort, got {param} of type {type(param)}")
+      raise EdgTypeError(f"selector return", param, (ConstraintExpr, BasePort))
 
   def any_connected(self) -> BoolExpr:
     return self.any(lambda port: port.is_connected())
@@ -345,7 +345,7 @@ class Vector(BaseVector, Generic[VectorType]):
     elif isinstance(param, RangeExpr):
       return ArrayRangeExpr()._bind(MapExtractBinding(self, param)).sum()
     else:  # TODO check that returned type is child
-      raise TypeError(f"selector must return Float/RangeExpr, got {param} of type {type(param)}")
+      raise EdgTypeError(f"selector return", param, (FloatExpr, RangeExpr))
 
   def min(self, selector: Callable[[VectorType], FloatExpr]) -> FloatExpr:
     param = self.validate_selector(FloatExpr, selector(self._elt_sample))

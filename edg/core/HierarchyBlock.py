@@ -461,13 +461,13 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
       tpe_cls = tpe.__class__
 
     if not (issubclass(tpe_cls, BlockInterfaceMixin) and tpe_cls._is_mixin()):
-      raise TypeError("param to with_mixin must be a BlockInterfaceMixin")
+      raise EdgTypeError("with_mixin param", tpe, BlockInterfaceMixin)
     if isinstance(self, BlockInterfaceMixin) and self._is_mixin():
       raise BlockDefinitionError(type(self), "mixins can not have with_mixin")
     if (self.__class__, AbstractBlockProperty) not in self._elt_properties:
       raise BlockDefinitionError(type(self), "mixins can only be added to abstract classes")
     if not isinstance(self, tpe_cls._get_mixin_base()):
-      raise TypeError(f"block {self.__class__.__name__} not an instance of mixin base {tpe_cls._get_mixin_base().__name__}")
+      raise EdgTypeError(f"block not an instance of mixin base", self, tpe_cls._get_mixin_base())
     assert self._parent is not None
 
     elt = tpe._bind(self._parent)
@@ -531,8 +531,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   def implicit_connect(self, *implicits: ImplicitConnect) -> ImplicitScope:
     for implicit in implicits:
       if not isinstance(implicit, ImplicitConnect):
-        raise TypeError(f"param to implicit_connect(...) must be ImplicitConnect, "
-                        f"got {implicit} of type {type(implicit)}")
+        raise EdgTypeError(f"implicit_connect(...) param", implicit, ImplicitConnect)
 
     return ImplicitScope(self, implicits)
 
@@ -568,7 +567,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     """Registers a constructor argument parameter for this Block.
     This doesn't actually do anything, but is needed to help the type system converter the *Like to a *Expr."""
     if not isinstance(param, ConstraintExpr):
-      raise TypeError(f"param to ArgParameter(...) must be ConstraintExpr, got {param} of type {type(param)}")
+      raise EdgTypeError(f"ArgParameter(...) param", param, ConstraintExpr)
     if param.binding is None:
       raise TypeError(f"param to ArgParameter(...) must have binding")
     if not isinstance(param.binding, InitParamBinding):
@@ -586,7 +585,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
       raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")
     for tag in tags:
       if not isinstance(tag, PortTag):
-        raise TypeError(f"tags in Port(...) must be PortTag, got {tag} of type {type(tag)}")
+        raise EdgTypeError(f"Port(...) tag", tag, PortTag)
 
     port = super().Port(tpe, optional=optional, doc=doc)
 
@@ -632,7 +631,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
       tpe_cls = tpe.__class__
 
     if not issubclass(tpe_cls, Block):
-      raise TypeError(f"param to Block(...) must be Block, got {tpe_cls}")
+      raise EdgTypeError(f"Block(...) param", tpe_cls, Block)
     if issubclass(tpe_cls, BlockInterfaceMixin) and tpe_cls._is_mixin():
       raise TypeError("param to Block(...) must not be BlockInterfaceMixin")
     if issubclass(tpe_cls, DesignTop):

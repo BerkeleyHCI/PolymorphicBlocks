@@ -345,7 +345,7 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
   def Port(self, tpe: T, *, desc: Optional[str] = None) -> T:
     """Registers a field for this Bundle"""
     if not isinstance(tpe, Port):
-      raise TypeError(f"param to Field(...) must be Port, got {tpe} of type {type(tpe)}")
+      raise EdgTypeError(f"param to Field(...)", tpe, Port)
 
     elt = tpe._bind(self)
     self._ports.register(elt)

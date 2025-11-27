@@ -7,7 +7,7 @@ from .Array import Vector
 from .ArrayExpr import ArrayExpr, ArrayBoolExpr, ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr
 from .Binding import InitParamBinding
 from .Blocks import BlockElaborationState
-from .HdlUserExceptions import BlockDefinitionError
+from .HdlUserExceptions import BlockDefinitionError, EdgTypeError
 from .IdentityDict import IdentityDict
 from .Core import non_library, SubElementDict
 from .ConstraintExpr import ConstraintExpr, BoolExpr, IntExpr, FloatExpr, RangeExpr, StringExpr
@@ -140,7 +140,7 @@ class MultipackBlock(Block):
       tpe_cls = tpe.__class__
 
     if not issubclass(tpe_cls, (Block, PackedBlockArray)):
-      raise TypeError(f"param to PackedPart(...) must be Block, got {tpe} of type {type(tpe)}")
+      raise EdgTypeError(f"PackedPart(...) param", tpe, Block)
     if self._elaboration_state != BlockElaborationState.init:
       raise BlockDefinitionError(type(self), "can only define multipack in init")
 

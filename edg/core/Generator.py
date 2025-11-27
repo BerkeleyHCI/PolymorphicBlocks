@@ -37,7 +37,7 @@ class GeneratorBlock(Block):
                                  "call generator_param(...) inside __init__ or contents only, and remember to call super().__init__()")
     for param in params:
       if not isinstance(param, ConstraintExpr):
-        raise TypeError(f"param to generator_param(...) must be ConstraintExpr, got {param} of type {type(param)}")
+        raise EdgTypeError(f"generator_param(...) param", param, ConstraintExpr)
       if param.binding is None:
         raise BlockDefinitionError(type(self), "generator_param(...) param must be bound")
       if not isinstance(param.binding, (InitParamBinding, AllocatedBinding, IsConnectedBinding)):
