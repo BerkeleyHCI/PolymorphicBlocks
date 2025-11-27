@@ -5,7 +5,7 @@ from .Blocks import AbstractBlockProperty
 from .HdlUserExceptions import BlockDefinitionError
 from .HierarchyBlock import Block
 
-MixinBaseType = TypeVar('MixinBaseType', bound='Block')
+MixinBaseType = TypeVar('MixinBaseType', covariant=True, bound=Block, default=Block)
 
 
 @non_library
