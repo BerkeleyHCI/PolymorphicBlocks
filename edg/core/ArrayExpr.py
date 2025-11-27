@@ -25,9 +25,9 @@ class SampleElementBinding(Binding):
 
 
 SelfType = TypeVar('SelfType', bound='ArrayExpr')
-ArrayEltType = TypeVar('ArrayEltType', bound=ConstraintExpr, covariant=True)
-ArrayWrappedType = TypeVar('ArrayWrappedType', covariant=True)
-ArrayCastableType = TypeVar('ArrayCastableType', contravariant=True)
+ArrayEltType = TypeVar('ArrayEltType', bound=ConstraintExpr, covariant=True, default=ConstraintExpr)
+ArrayWrappedType = TypeVar('ArrayWrappedType', covariant=True, default=Any)
+ArrayCastableType = TypeVar('ArrayCastableType', contravariant=True, default=Any)
 class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
                 Generic[ArrayEltType, ArrayWrappedType, ArrayCastableType]):
   """An Array-valued ConstraintExpr (a variable-sized list of ConstraintExpr).

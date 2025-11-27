@@ -123,7 +123,7 @@ class FootprintData(BaseModel):
     bbox: Tuple[float, float, float, float]  # [x_min, y_min, x_max, y_max]
 
 
-class FootprintJson(RootModel):  # script relpath imports are weird so this is duplicated here
+class FootprintJson(RootModel[Dict[str, FootprintData]]):  # script relpath imports are weird so this is duplicated here
     root: dict[str, FootprintData]  # footprint name -> data
 
 
