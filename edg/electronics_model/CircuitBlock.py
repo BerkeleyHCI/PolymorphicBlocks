@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 from typing import *
+from typing_extensions import TypeVar
 
-from .. import edgir
 from ..core import *
-from ..core import IdentityDict  # TODO: this is ugly
-from ..core.ConstraintExpr import Refable
 from .KiCadImportableBlock import KiCadImportableBlock
 from ..core.HdlUserExceptions import EdgTypeError
 

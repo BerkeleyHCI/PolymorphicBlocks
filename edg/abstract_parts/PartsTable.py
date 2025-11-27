@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import csv
 import itertools
-from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
+from typing import Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
   cast, Tuple, Sequence, Protocol
 
-from typing_extensions import ParamSpec
+from typing_extensions import ParamSpec, TypeVar
 
 from ..core.Range import Range
 

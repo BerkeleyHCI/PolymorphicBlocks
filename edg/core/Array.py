@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 from abc import abstractmethod
 from typing import *
+from typing_extensions import TypeVar
 from deprecated import deprecated
 
 from .HdlUserExceptions import EdgTypeError

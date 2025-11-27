@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 from abc import abstractmethod
 from typing import *
+from typing_extensions import TypeVar
 
 from .. import edgir
 from .Binding import ParamBinding, IsConnectedBinding, NameBinding

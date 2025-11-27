@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import *
+from typing_extensions import TypeVar
 
 from .. import edgir
 from .Binding import EqOp, ArrayBinding, UnarySetOpBinding, BinarySetOpBinding
@@ -8,7 +9,6 @@ from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, Range
   BoolExpr, BoolLike, StringLike, \
   NumericOp, BoolOp, RangeSetOp, Binding, StringExpr, IntExpr
 from .Core import Refable
-from .IdentityDict import IdentityDict
 from .Ports import BasePort
 from .Range import Range
 

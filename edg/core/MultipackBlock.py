@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, Callable, overload
+from typing import NamedTuple, Optional, Union, List, Tuple, Generic, Callable, overload
+from typing_extensions import TypeVar
 from deprecated import deprecated
 
 from .Array import Vector

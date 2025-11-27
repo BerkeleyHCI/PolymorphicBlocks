@@ -4,6 +4,7 @@ from abc import abstractmethod
 from deprecated import deprecated
 from itertools import chain
 from typing import *
+from typing_extensions import TypeVar
 
 from .Binding import Binding, ParamBinding, BoolLiteralBinding, IntLiteralBinding, \
   FloatLiteralBinding, RangeLiteralBinding, StringLiteralBinding, RangeBuilderBinding, \
@@ -11,7 +12,6 @@ from .Binding import Binding, ParamBinding, BoolLiteralBinding, IntLiteralBindin
 from .Binding import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp
 from .Builder import builder
 from .Core import Refable
-from .IdentityDict import IdentityDict
 from .Range import Range
 from .. import edgir
 
