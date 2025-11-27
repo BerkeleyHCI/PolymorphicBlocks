@@ -318,7 +318,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
         assert isinstance(block, Block)
         block._build_ref_map(ref_map, edgir.localpath_concat(prefix, name), interface_only=True)
 
-  def _populate_def_proto_block_base(self, pb: edgir.HierarchyBlock) -> None:
+  def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
     super()._populate_def_proto_block_base(pb)
 
     # generate param defaults

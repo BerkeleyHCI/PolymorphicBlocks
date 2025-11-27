@@ -66,7 +66,7 @@ class DesignTop(Block):
       builder.pop_to(prev_element)
     return self._def_to_proto()
 
-  def _populate_def_proto_block_contents(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
+  def _populate_def_proto_block_contents(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     """Add multipack constraints"""
     super()._populate_def_proto_block_contents(pb, ref_map)
 

@@ -86,5 +86,5 @@ class Link(BaseBlock, metaclass=LinkMeta):
 
     return pb
 
-  def _elaborated_def_to_proto(self) -> edgir.HierarchyBlock:
+  def _elaborated_def_to_proto(self) -> edgir.Link:
     return cast(edgir.Link, super()._elaborated_def_to_proto())
