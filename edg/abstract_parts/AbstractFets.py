@@ -7,59 +7,6 @@ from .Categories import *
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-class FetStandardFootprint(StandardFootprint['Fet']):
-  REFDES_PREFIX = 'Q'
-
-  FOOTPRINT_PINNING_MAP = {
-    (
-      'Package_TO_SOT_SMD:SOT-23',
-      'Package_TO_SOT_SMD:SOT-323_SC-70',
-    ): lambda block: {
-      '1': block.gate,
-      '2': block.source,
-      '3': block.drain,
-    },
-    (
-      'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
-      'Package_TO_SOT_SMD:TO-252-2',
-      'Package_TO_SOT_SMD:TO-263-2'
-    ): lambda block: {
-      '1': block.gate,
-      '2': block.drain,
-      '3': block.source,
-    },
-    'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': lambda block: {
-      '1': block.source,
-      '2': block.source,
-      '3': block.source,
-      '4': block.gate,
-      '5': block.drain,
-      '6': block.drain,
-      '7': block.drain,
-      '8': block.drain,
-    },
-    (
-      'Package_SO:PowerPAK_SO-8_Single',
-      'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
-    ): lambda block: {
-      '1': block.source,
-      '2': block.source,
-      '3': block.source,
-      '4': block.gate,
-      '5': block.drain,
-    },
-    (
-      'Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp',
-      'Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown',
-      'Package_TO_SOT_THT:TO-220-3_Vertical',
-    ): lambda block: {
-      '1': block.gate,
-      '2': block.drain,
-      '3': block.source,
-    },
-  }
-
-
 @abstract_block
 class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   """Base class for untyped MOSFETs
@@ -80,7 +27,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   - https://www.allaboutcircuits.com/technical-articles/choosing-the-right-transistor-understanding-low-frequency-mosfet-parameters/
   - https://www.allaboutcircuits.com/technical-articles/choosing-the-right-transistor-understanding-dynamic-mosfet-parameters/
   """
-  _STANDARD_FOOTPRINT = FetStandardFootprint
+  _STANDARD_FOOTPRINT = lambda: FetStandardFootprint
 
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     # TODO actually check that the device channel corresponds with the schematic?
@@ -141,6 +88,59 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
       "<b>Pmax:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
       " <b>of operating:</b> ", DescriptionString.FormatUnits(self.power, "W")
     )
+
+
+class FetStandardFootprint(StandardFootprint[Fet]):
+  REFDES_PREFIX = 'Q'
+
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Package_TO_SOT_SMD:SOT-23',
+      'Package_TO_SOT_SMD:SOT-323_SC-70',
+    ): lambda block: {
+      '1': block.gate,
+      '2': block.source,
+      '3': block.drain,
+    },
+    (
+      'Package_TO_SOT_SMD:SOT-223-3_TabPin2',
+      'Package_TO_SOT_SMD:TO-252-2',
+      'Package_TO_SOT_SMD:TO-263-2'
+    ): lambda block: {
+      '1': block.gate,
+      '2': block.drain,
+      '3': block.source,
+    },
+    'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': lambda block: {
+      '1': block.source,
+      '2': block.source,
+      '3': block.source,
+      '4': block.gate,
+      '5': block.drain,
+      '6': block.drain,
+      '7': block.drain,
+      '8': block.drain,
+    },
+    (
+      'Package_SO:PowerPAK_SO-8_Single',
+      'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic',
+    ): lambda block: {
+      '1': block.source,
+      '2': block.source,
+      '3': block.source,
+      '4': block.gate,
+      '5': block.drain,
+    },
+    (
+      'Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp',
+      'Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown',
+      'Package_TO_SOT_THT:TO-220-3_Vertical',
+    ): lambda block: {
+      '1': block.gate,
+      '2': block.drain,
+      '3': block.source,
+    },
+  }
 
 
 @non_library

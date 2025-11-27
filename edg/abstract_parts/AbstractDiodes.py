@@ -9,6 +9,19 @@ from .PartsTablePart import PartsTableSelector
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
+@non_library
+class BaseDiode(DiscreteSemiconductor, HasStandardFootprint):
+  """Base class for diodes, with anode and cathode pins, including a very wide range of devices.
+  """
+  _STANDARD_FOOTPRINT = lambda: DiodeStandardFootprint
+
+  def __init__(self) -> None:
+    super().__init__()
+
+    self.anode = self.Port(Passive.empty())
+    self.cathode = self.Port(Passive.empty())
+
+
 class DiodeStandardFootprint(StandardFootprint['BaseDiode']):
   REFDES_PREFIX = 'D'
 
@@ -33,19 +46,6 @@ class DiodeStandardFootprint(StandardFootprint['BaseDiode']):
       '3': block.anode,
     },
   }
-
-
-@non_library
-class BaseDiode(DiscreteSemiconductor, HasStandardFootprint):
-  """Base class for diodes, with anode and cathode pins, including a very wide range of devices.
-  """
-  _STANDARD_FOOTPRINT = DiodeStandardFootprint
-
-  def __init__(self) -> None:
-    super().__init__()
-
-    self.anode = self.Port(Passive.empty())
-    self.cathode = self.Port(Passive.empty())
 
 
 @abstract_block

@@ -9,30 +9,9 @@ from .PartsTablePart import PartsTableSelector
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-class FuseStandardFootprint(StandardFootprint['Fuse']):
-  REFDES_PREFIX = 'F'
-
-  FOOTPRINT_PINNING_MAP = {
-    (
-      'Resistor_SMD:R_0201_0603Metric',
-      'Resistor_SMD:R_0402_1005Metric',
-      'Resistor_SMD:R_0603_1608Metric',
-      'Resistor_SMD:R_0805_2012Metric',
-      'Resistor_SMD:R_1206_3216Metric',
-      'Resistor_SMD:R_1210_3225Metric',
-      'Resistor_SMD:R_1812_4532Metric',
-      'Resistor_SMD:R_2010_5025Metric',
-      'Resistor_SMD:R_2512_6332Metric',
-    ): lambda block: {
-      '1': block.a,
-      '2': block.b,
-    },
-  }
-
-
 @abstract_block
 class Fuse(DiscreteComponent, HasStandardFootprint):
-  _STANDARD_FOOTPRINT = FuseStandardFootprint
+  _STANDARD_FOOTPRINT = lambda: FuseStandardFootprint
 
   def __init__(self, trip_current: RangeLike, *, hold_current: RangeLike = RangeExpr.ALL,
                voltage: RangeLike = RangeExpr.ZERO) -> None:
@@ -67,6 +46,27 @@ class Fuse(DiscreteComponent, HasStandardFootprint):
                  "hold current not within specified rating")
     self.require(self.voltage.within(self.actual_voltage_rating),
                  "operating voltage not within rating")
+
+
+class FuseStandardFootprint(StandardFootprint[Fuse]):
+  REFDES_PREFIX = 'F'
+
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Resistor_SMD:R_0201_0603Metric',
+      'Resistor_SMD:R_0402_1005Metric',
+      'Resistor_SMD:R_0603_1608Metric',
+      'Resistor_SMD:R_0805_2012Metric',
+      'Resistor_SMD:R_1206_3216Metric',
+      'Resistor_SMD:R_1210_3225Metric',
+      'Resistor_SMD:R_1812_4532Metric',
+      'Resistor_SMD:R_2010_5025Metric',
+      'Resistor_SMD:R_2512_6332Metric',
+    ): lambda block: {
+      '1': block.a,
+      '2': block.b,
+    },
+  }
 
 
 class SeriesPowerFuse(Protection):

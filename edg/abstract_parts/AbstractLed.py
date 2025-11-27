@@ -8,29 +8,13 @@ from .PartsTablePart import PartsTableSelector
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-class LedStandardFootprint(StandardFootprint['Led']):
-  REFDES_PREFIX = 'D'
-
-  FOOTPRINT_PINNING_MAP = {
-    (
-      'LED_SMD:LED_0402_1005Metric',
-      'LED_SMD:LED_0603_1608Metric',
-      'LED_SMD:LED_0805_2012Metric',
-      'LED_SMD:LED_1206_3216Metric',
-    ): lambda block: {
-      '2': block.a,
-      '1': block.k,
-    },
-  }
-
-
 LedColor = str  # type alias
 LedColorLike = StringLike  # type alias
 
 
 @abstract_block
 class Led(DiscreteSemiconductor, HasStandardFootprint):
-  _STANDARD_FOOTPRINT = LedStandardFootprint
+  _STANDARD_FOOTPRINT = lambda: LedStandardFootprint
 
   # Common color definitions
   Red: LedColor = "red"
@@ -50,6 +34,22 @@ class Led(DiscreteSemiconductor, HasStandardFootprint):
 
     self.a = self.Port(Passive.empty())
     self.k = self.Port(Passive.empty())
+
+
+class LedStandardFootprint(StandardFootprint[Led]):
+  REFDES_PREFIX = 'D'
+
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'LED_SMD:LED_0402_1005Metric',
+      'LED_SMD:LED_0603_1608Metric',
+      'LED_SMD:LED_0805_2012Metric',
+      'LED_SMD:LED_1206_3216Metric',
+    ): lambda block: {
+      '2': block.a,
+      '1': block.k,
+    },
+  }
 
 
 @non_library

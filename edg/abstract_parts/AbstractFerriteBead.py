@@ -7,30 +7,9 @@ from .Categories import *
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-class FerriteBeadStandardFootprint(StandardFootprint['FerriteBead']):
-  REFDES_PREFIX = 'FB'
-
-  FOOTPRINT_PINNING_MAP = {
-    (
-      'Inductor_SMD:L_0201_0603Metric',
-      'Inductor_SMD:L_0402_1005Metric',
-      'Inductor_SMD:L_0603_1608Metric',
-      'Inductor_SMD:L_0805_2012Metric',
-      'Inductor_SMD:L_1206_3216Metric',
-      'Inductor_SMD:L_1210_3225Metric',
-      'Inductor_SMD:L_1812_4532Metric',
-      'Inductor_SMD:L_2010_5025Metric',
-      'Inductor_SMD:L_2512_6332Metric',
-    ): lambda block: {
-      '1': block.a,
-      '2': block.b,
-    },
-  }
-
-
 @abstract_block
 class FerriteBead(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
-  _STANDARD_FOOTPRINT = FerriteBeadStandardFootprint
+  _STANDARD_FOOTPRINT = lambda: FerriteBeadStandardFootprint
 
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Device:L_Ferrite', 'Device:L_Ferrite_Small')
@@ -64,10 +43,30 @@ class FerriteBead(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
     )
 
 
+class FerriteBeadStandardFootprint(StandardFootprint[FerriteBead]):
+  REFDES_PREFIX = 'FB'
+
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Inductor_SMD:L_0201_0603Metric',
+      'Inductor_SMD:L_0402_1005Metric',
+      'Inductor_SMD:L_0603_1608Metric',
+      'Inductor_SMD:L_0805_2012Metric',
+      'Inductor_SMD:L_1206_3216Metric',
+      'Inductor_SMD:L_1210_3225Metric',
+      'Inductor_SMD:L_1812_4532Metric',
+      'Inductor_SMD:L_2010_5025Metric',
+      'Inductor_SMD:L_2512_6332Metric',
+    ): lambda block: {
+      '1': block.a,
+      '2': block.b,
+    },
+  }
+
+
+
 @non_library
 class TableFerriteBead(PartsTableSelector, FerriteBead):
-  _STANDARD_FOOTPRINT = FerriteBeadStandardFootprint
-
   CURRENT_RATING = PartsTableColumn(Range)
   HF_IMPEDANCE = PartsTableColumn(Range)
   DC_RESISTANCE = PartsTableColumn(Range)

@@ -7,7 +7,53 @@ from .Categories import *
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-class InductorStandardFootprint(StandardFootprint['Inductor']):
+@abstract_block
+class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
+  _STANDARD_FOOTPRINT = lambda: InductorStandardFootprint
+
+  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+    assert symbol_name in ('Device:L', 'Device:L_Small')
+    return {'1': self.a, '2': self.b}
+
+  def __init__(self, inductance: RangeLike,
+               current: RangeLike = RangeExpr.ZERO,
+               frequency: RangeLike = RangeExpr.ZERO,
+               resistance_dc: RangeLike = (0, 1)*Ohm,  # generic sane choice?
+               *,
+               experimental_filter_fn: StringLike = ""
+               ) -> None:
+    super().__init__()
+
+    self.a = self.Port(Passive.empty())
+    self.b = self.Port(Passive.empty())
+
+    self.inductance = self.ArgParameter(inductance)
+    self.current = self.ArgParameter(current)  # defined as operating current range, non-directioned
+    self.frequency = self.ArgParameter(frequency)  # defined as operating frequency range
+    self.resistance_dc = self.ArgParameter(resistance_dc)
+    self.experimental_filter_fn = self.ArgParameter(experimental_filter_fn)
+
+    self.actual_inductance = self.Parameter(RangeExpr())
+    self.actual_current_rating = self.Parameter(RangeExpr())
+    self.actual_frequency_rating = self.Parameter(RangeExpr())
+    self.actual_resistance_dc = self.Parameter(RangeExpr())
+
+  def contents(self) -> None:
+    super().contents()
+
+    self.description = DescriptionString(
+      "<b>inductance:</b> ", DescriptionString.FormatUnits(self.actual_inductance, "H"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.inductance, "H"), "\n",
+      "<b>current rating:</b> ", DescriptionString.FormatUnits(self.actual_current_rating, "A"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.current, "A"), "\n",
+      "<b>frequency rating:</b> ", DescriptionString.FormatUnits(self.actual_frequency_rating, "Hz"),
+      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"), "\n",
+      "<b>dc resistance:</b> ", DescriptionString.FormatUnits(self.actual_resistance_dc, "Ω"),
+      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.resistance_dc, "Ω"),
+    )
+
+
+class InductorStandardFootprint(StandardFootprint[Inductor]):
   REFDES_PREFIX = 'L'
 
   FOOTPRINT_PINNING_MAP = {
@@ -80,52 +126,6 @@ class InductorStandardFootprint(StandardFootprint['Inductor']):
       '2': block.b,
     },
   }
-
-
-@abstract_block
-class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
-  _STANDARD_FOOTPRINT = InductorStandardFootprint
-
-  def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
-    assert symbol_name in ('Device:L', 'Device:L_Small')
-    return {'1': self.a, '2': self.b}
-
-  def __init__(self, inductance: RangeLike,
-               current: RangeLike = RangeExpr.ZERO,
-               frequency: RangeLike = RangeExpr.ZERO,
-               resistance_dc: RangeLike = (0, 1)*Ohm,  # generic sane choice?
-               *,
-               experimental_filter_fn: StringLike = ""
-               ) -> None:
-    super().__init__()
-
-    self.a = self.Port(Passive.empty())
-    self.b = self.Port(Passive.empty())
-
-    self.inductance = self.ArgParameter(inductance)
-    self.current = self.ArgParameter(current)  # defined as operating current range, non-directioned
-    self.frequency = self.ArgParameter(frequency)  # defined as operating frequency range
-    self.resistance_dc = self.ArgParameter(resistance_dc)
-    self.experimental_filter_fn = self.ArgParameter(experimental_filter_fn)
-
-    self.actual_inductance = self.Parameter(RangeExpr())
-    self.actual_current_rating = self.Parameter(RangeExpr())
-    self.actual_frequency_rating = self.Parameter(RangeExpr())
-    self.actual_resistance_dc = self.Parameter(RangeExpr())
-
-  def contents(self) -> None:
-    super().contents()
-
-    self.description = DescriptionString(
-      "<b>inductance:</b> ", DescriptionString.FormatUnits(self.actual_inductance, "H"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.inductance, "H"), "\n",
-      "<b>current rating:</b> ", DescriptionString.FormatUnits(self.actual_current_rating, "A"),
-      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.current, "A"), "\n",
-      "<b>frequency rating:</b> ", DescriptionString.FormatUnits(self.actual_frequency_rating, "Hz"),
-      " <b>of operating:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"), "\n",
-      "<b>dc resistance:</b> ", DescriptionString.FormatUnits(self.actual_resistance_dc, "Ω"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.resistance_dc, "Ω"),
-    )
 
 
 @non_library
