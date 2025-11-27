@@ -1,4 +1,4 @@
-from typing import Any, Type, TypeVar, Union, Tuple, TYPE_CHECKING
+from typing import Any, Type, Union, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
   from edg import BaseBlock
