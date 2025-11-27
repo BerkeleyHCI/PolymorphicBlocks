@@ -18,7 +18,8 @@ class EdgTypeError(EdslUserError):
     else:
       expected_type_str = expected_type.__name__
 
-    super().__init__(f"{item_desc} expected to be of type {expected_type_str}, got {object} of type {type(object).__name__}")
+    super().__init__(f"{item_desc} expected to be of type {expected_type_str}, got {object} of type {type(object).__name__}",
+                     f"ensure {item_desc} is of type {expected_type_str}")
 
 
 class EdgContextError(EdslUserError):
