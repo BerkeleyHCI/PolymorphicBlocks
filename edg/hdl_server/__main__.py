@@ -79,7 +79,7 @@ def class_from_library(elt: edgir.LibraryPath, expected_superclass: Type[Library
   assert inspect.ismodule(elt_module)
   cls = getattr(elt_module, elt_split[-1])
   assert issubclass(cls, expected_superclass)
-  return cls
+  return cls  # type: ignore
 
 
 def process_request(request: edgrpc.HdlRequest) -> Optional[edgrpc.HdlResponse]:

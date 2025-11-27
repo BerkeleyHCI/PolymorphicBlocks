@@ -1,6 +1,6 @@
 import itertools
 from enum import Enum
-from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple, Union, Iterable
+from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple, Union, Iterable, cast
 
 import math
 import sexpdata  # type: ignore
@@ -51,7 +51,7 @@ def parse_at(sexp: List[Any], expected_car: str = 'at') -> Tuple[float, float, f
 def parse_symbol(sexp: Any) -> str:
   """Asserts sexp is a Symbol and returns its value."""
   assert isinstance(sexp, sexpdata.Symbol)
-  return sexp.value()
+  return cast(str, sexp.value())
 
 
 class KiCadLibPin:

@@ -183,7 +183,7 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
     else:
       raise ValueError("either then_val or else_val must be ConstraintExpr, TODO support dual-casting")
     assert self._is_bound() and then_val._is_bound() and else_val._is_bound()
-    return then_val._new_bind(IfThenElseBinding(self, then_val, else_val))
+    return then_val._new_bind(IfThenElseBinding(self, then_val, else_val))  # type: ignore
 
 
 NumLikeSelfType = TypeVar('NumLikeSelfType', bound='NumLikeExpr')
