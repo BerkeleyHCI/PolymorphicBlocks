@@ -19,7 +19,7 @@ from .. import edgir
 
 
 class MapExtractBinding(Binding):
-  def __init__(self, container: Vector, elt: ConstraintExpr):
+  def __init__(self, container: BaseVector, elt: ConstraintExpr):
     super().__init__()
     self.container = container
     self.elt = elt
@@ -28,7 +28,7 @@ class MapExtractBinding(Binding):
     return [self.container]
 
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
-    contained_map = self.container._elt_sample._create_ref_map(edgir.LocalPath())
+    contained_map = self.container._get_elt_sample()._create_ref_map(edgir.LocalPath())
 
     pb = edgir.ValueExpr()
     pb.map_extract.container.ref.CopyFrom(ref_map[self.container])  # TODO support arbitrary refs
@@ -59,7 +59,7 @@ class BaseVector(BaseContainerPort):
 
 
 # A 'fake'/'intermediate'/'view' vector object used as a return in map_extract operations.
-VectorType = TypeVar('VectorType', covariant=True, bound=Port, default=Port)
+VectorType = TypeVar('VectorType', bound=Port, default=Port)
 @non_library
 class DerivedVector(BaseVector, Generic[VectorType]):
   # TODO: Library types need to be removed from the type hierarchy, because this does not generate into a library elt
