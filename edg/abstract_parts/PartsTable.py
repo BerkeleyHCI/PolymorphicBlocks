@@ -109,14 +109,14 @@ class PartsTable:
                 if fn(row)]
     return PartsTable(new_rows)
 
-  def map_new_columns(self, fn: Callable[[PartsTableRow], Optional[Dict[PartsTableColumn[Any], Any]]],
+  def map_new_columns(self, fn: Callable[[PartsTableRow], Optional[Dict[PartsTableColumn, Any]]],
                       overwrite: bool = False) -> PartsTable:
     """Creates a new table (deep copy) with additional rows.
     All entries must have the same keys.
     Specify overwrite=True to overwrite an existing row. To preserve the existing value (no-op), return it.
     Return None to drop the row."""
     new_rows: List[PartsTableRow] = []
-    first_keys: Optional[KeysView] = None
+    first_keys: Optional[KeysView[PartsTableColumn]] = None
     for row in self.rows:
       new_columns = fn(row)
       if new_columns is None:
@@ -164,7 +164,7 @@ class PartsTable:
 
 
 UserFnMetaParams = ParamSpec('UserFnMetaParams')
-UserFnType = TypeVar('UserFnType', bound=Callable, covariant=True)
+UserFnType = TypeVar('UserFnType', bound=Callable[..., Any], covariant=True)
 class UserFnSerialiable(Protocol[UserFnMetaParams, UserFnType]):
   """A protocol that marks functions as usable in deserialize, that they have been registered."""
   _is_serializable: None  # guard attribute
@@ -188,11 +188,11 @@ class ExperimentalUserFnPartsTable(PartsTable):
 
   _FN_SERIALIZATION_SEPARATOR = ";"
 
-  _user_fns: Dict[str, Tuple[Callable, Sequence[Type]]] = {}  # name -> fn, [arg types]
-  _fn_name_dict: Dict[Callable, str] = {}
+  _user_fns: Dict[str, Tuple[Callable[..., Any], Sequence[Type[Any]]]] = {}  # name -> fn, [arg types]
+  _fn_name_dict: Dict[Callable[..., Any], str] = {}
 
   @staticmethod
-  def user_fn(param_types: Sequence[Type] = []) -> Callable[[Callable[UserFnMetaParams, UserFnType]],
+  def user_fn(param_types: Sequence[Type[Any]] = []) -> Callable[[Callable[UserFnMetaParams, UserFnType]],
       UserFnSerialiable[UserFnMetaParams, UserFnType]]:
     def decorator(fn: Callable[UserFnMetaParams, UserFnType]) -> UserFnSerialiable[UserFnMetaParams, UserFnType]:
       """Decorator to register a user function that can be used in ExperimentalUserFnPartsTable."""
@@ -211,7 +211,7 @@ class ExperimentalUserFnPartsTable(PartsTable):
     if fn not in cls._fn_name_dict:
       raise ValueError(f"Function {fn} not registered.")
     fn_ctor, fn_argtypes = cls._user_fns[fn.__name__]
-    def serialize_arg(tpe: Type, val: Any) -> str:
+    def serialize_arg(tpe: Type[Any], val: Any) -> str:
       assert isinstance(val, tpe), f"in serialize {val}, expected {tpe}, got {type(val)}"
       if tpe is bool:
         return str(val)
@@ -234,7 +234,7 @@ class ExperimentalUserFnPartsTable(PartsTable):
       raise ValueError(f"Function {serialized} not registered.")
     fn_ctor, fn_argtypes = cls._user_fns[split[0]]
     assert len(split) == len(fn_argtypes) + 1
-    def deserialize_arg(tpe: Type, val: str) -> Any:
+    def deserialize_arg(tpe: Type[Any], val: str) -> Any:
       if tpe is bool:
         return val == 'True'
       elif tpe is int:

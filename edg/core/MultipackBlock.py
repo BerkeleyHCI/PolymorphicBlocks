@@ -20,14 +20,14 @@ class PackedBlockAllocate(NamedTuple):
   suggested_name: Optional[str]
 
 
-ArrayPortType = TypeVar('ArrayPortType', bound=Port)
+ArrayPortType = TypeVar('ArrayPortType', covariant=True, bound=Port, default=Port)
 class PackedBlockPortArray(Generic[ArrayPortType]):
   def __init__(self, parent: PackedBlockArray, port: ArrayPortType):
     self.parent = parent
     self.port = port
 
 
-ArrayParamType = TypeVar('ArrayParamType', bound=ConstraintExpr)
+ArrayParamType = TypeVar('ArrayParamType', covariant=True, bound=ConstraintExpr, default=ConstraintExpr)
 class PackedBlockParamArray(Generic[ArrayParamType]):  # an array of parameters from an array of parts
   def __init__(self, parent: PackedBlockArray, param: ArrayParamType):
     self.parent = parent

@@ -1,5 +1,5 @@
 import itertools
-from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dict, Set, Any
+from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dict, Set, Any, Mapping
 
 from ..electronics_model import *
 
@@ -141,10 +141,10 @@ class AllocatedResource(NamedTuple):
 # Defines a way to convert port models into related types for use in bundles, for example from the
 # DigitalBidir in pin definitions to the DigitalSource/Sink used by the Uart bundle.
 # Specified as entries of target port type: (source port type, conversion function)
-PortTransformsType = Dict[Type, Tuple[Type, Callable]]
+PortTransformsType = Mapping[Type[Port], Tuple[Type[Port], Callable[[Port], Port]]]
 DefaultPortTransforms: PortTransformsType = {
-  DigitalSource: (DigitalBidir, DigitalSource.from_bidir),
-  DigitalSink: (DigitalBidir, DigitalSink.from_bidir),
+  DigitalSource: (DigitalBidir, DigitalSource.from_bidir),  # type: ignore
+  DigitalSink: (DigitalBidir, DigitalSink.from_bidir),  # type: ignore
 }
 
 

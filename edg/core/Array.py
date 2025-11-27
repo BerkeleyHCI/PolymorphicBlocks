@@ -310,14 +310,14 @@ class Vector(BaseVector, Generic[VectorType]):
   @overload
   def map_extract(self, selector: Callable[[VectorType], ExtractPortType]) -> DerivedVector[ExtractPortType]: ...
 
-  def map_extract(self, selector: Callable[[VectorType], Union[ConstraintExpr, BasePort]]) -> Union[ArrayExpr, DerivedVector]:
+  def map_extract(self, selector: Callable[[VectorType], Union[ConstraintExpr, Port]]) -> Union[ArrayExpr, DerivedVector]:
     param = selector(self._elt_sample)
     if isinstance(param, ConstraintExpr):  # TODO check that returned type is child
       return ArrayExpr.array_of_elt(param)._bind(MapExtractBinding(self, param))
-    elif isinstance(param, BasePort):
+    elif isinstance(param, Port):
       return DerivedVector(self, param)
     else:
-      raise EdgTypeError(f"selector return", param, (ConstraintExpr, BasePort))
+      raise EdgTypeError(f"selector return", param, (ConstraintExpr, Port))
 
   def any_connected(self) -> BoolExpr:
     return self.any(lambda port: port.is_connected())
