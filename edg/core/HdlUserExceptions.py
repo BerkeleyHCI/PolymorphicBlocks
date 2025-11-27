@@ -13,8 +13,7 @@ class EdslUserError(Exception):
 class EdgTypeError(EdslUserError):
   """Argument of the wrong type passed into a EDG core function."""
   def __init__(self, item_desc: str, object: Any, expected_type: Union[Type, Tuple[Type, ...]]):
-    super().__init__(f"{item_desc} expected to be of type {expected_type}, got type {type(object)}",
-                     f"make sure {item_desc} is of type {expected_type}")
+    super().__init__(f"{item_desc} expected to be of type {expected_type.__name__}, got type {type(object).__name__}")
 
 
 class EdgContextError(EdslUserError):
