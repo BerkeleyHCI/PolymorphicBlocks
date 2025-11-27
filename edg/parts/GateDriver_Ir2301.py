@@ -64,7 +64,7 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Ir2301(HalfBridgeDriver, HalfBridgeDriverIndependent):
   """IR2301 half-bridge driver supporting 600V offset, 5-20v input, external boot diode,
   no shoot through protect, no deadtime."""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.require(~self.has_boot_diode, 'TODO: boot diode generator')

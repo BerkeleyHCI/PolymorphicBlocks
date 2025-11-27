@@ -105,7 +105,7 @@ class FlirLepton(Sensor, Resettable, Block):
         self.cci = self.Export(self.ic.cci, doc="I2C-like Command and Control Interface")
         self.vsync = self.Export(self.ic.vsync, optional=True, doc="Optional frame-sync output")
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.vddc_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vddc)

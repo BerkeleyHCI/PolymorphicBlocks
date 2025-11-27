@@ -77,7 +77,7 @@ class Er_Oled_091_3(Oled, Resettable, Block):
         self.cs = self.Export(self.device.cs)
         self.dc = self.Export(self.device.dc)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.connect(self.pwr, self.device.vbat)
         self.connect(self.reset, self.device.res)

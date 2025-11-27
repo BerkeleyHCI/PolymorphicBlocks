@@ -29,7 +29,7 @@ class Sn74lvc1g3157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.b1 = self.Port(Passive(), optional=True)
     self.b0 = self.Port(Passive(), optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.footprint(
@@ -52,7 +52,7 @@ class Sn74lvc1g3157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class Sn74lvc1g3157(AnalogSwitch):
   """2:1 analog switch, 6ohm Ron(typ), in SOT-363.
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.require(~self.control_gnd.is_connected(), "device does not support control ground")

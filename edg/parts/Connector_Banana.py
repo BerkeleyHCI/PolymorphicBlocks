@@ -7,7 +7,7 @@ class Ct3151(BananaSafetyJack, FootprintBlock):
 
   TODO: automatically support color code generation?
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'J', 'Connector:CalTest_CT3151',
@@ -26,7 +26,7 @@ class Fcr7350(BananaSafetyJack, FootprintBlock):
 
   TODO: automatically support color code generation?
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'J', 'edg:CLIFF_FCR7350',

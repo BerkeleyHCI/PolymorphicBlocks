@@ -93,14 +93,14 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
 
 
 class TestCapacitor(Capacitor):
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.assign(self.actual_capacitance, self.capacitance)
         self.assign(self.actual_voltage_rating, Range.all())
 
 
 class TestInductor(Inductor):
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.assign(self.actual_inductance, self.inductance)
         self.assign(self.actual_current_rating, (0, 1.5)*Amp)

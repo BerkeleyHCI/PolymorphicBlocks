@@ -84,7 +84,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
     self.actual_power_rating = self.Parameter(RangeExpr())
     self.actual_voltage_rating = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -357,7 +357,7 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
     self.protection_voltage = self.ArgParameter(protection_voltage)
     self.zero_out = self.ArgParameter(zero_out)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     # TODO bidirectional clamping calcs?
@@ -399,7 +399,7 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
     self.protection_voltage = self.ArgParameter(protection_voltage)
     self.zero_out = self.ArgParameter(zero_out)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     # TODO bidirectional clamping calcs?

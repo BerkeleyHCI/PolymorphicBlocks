@@ -51,7 +51,7 @@ class FerriteBead(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
     self.actual_hf_impedance = self.Parameter(RangeExpr())
     self.actual_dc_resistance = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(

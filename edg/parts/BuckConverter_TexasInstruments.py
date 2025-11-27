@@ -42,7 +42,7 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_frequency, 580*kHertz(tol=0))
@@ -124,7 +124,7 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
   Note: TPS54202 has frequency spread-spectrum operation and internal pull-up on EN
   TPS54202H has no internal EN pull-up but a Zener diode clamp to limit voltage.
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.generator_param(self.reset.is_connected())
 

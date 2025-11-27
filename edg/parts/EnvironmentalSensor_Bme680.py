@@ -52,7 +52,7 @@ class Bme680(TemperatureSensor, HumiditySensor, PressureSensor, GasSensor, Defau
         self.pwr_io = self.Export(self.ic.vddio, default=self.pwr, doc="IO supply voltage")
         self.i2c = self.Export(self.ic.i2c, [InOut])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()  # capacitors from shuttle board example
         self.vdd_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
         self.vddio_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vddio)

@@ -41,7 +41,8 @@ class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.vcc.current_draw, (0.7, 5.0)*mAmp + self.drvl.link().current_drawn +
                 self.drvh.link().current_drawn)  # only system supply given
 
-  def contents(self):
+  def contents(self) -> None:
+    super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
       {
@@ -67,7 +68,7 @@ class Ncp3420(HalfBridgeDriver, HalfBridgeDriverPwm, Resettable, GeneratorBlock)
     super().__init__(*args, **kwargs)
     self.generator_param(self.has_boot_diode, self.high_pwr.is_connected())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.ic = self.Block(Ncp3420_Device())

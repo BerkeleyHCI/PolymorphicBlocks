@@ -29,7 +29,7 @@ class CpuFanPwmControl(BlockInterfaceMixin[CpuFanConnector]):
 
 class CpuFan3Pin(CpuFanConnector, FootprintBlock):
     """3-pin fan controller"""
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.footprint(
             'J', 'Connector:FanPinHeader_1x03_P2.54mm_Vertical',
@@ -44,7 +44,7 @@ class CpuFan3Pin(CpuFanConnector, FootprintBlock):
 
 class CpuFan4Pin(CpuFanConnector, CpuFanPwmControl, FootprintBlock):
     """3-pin fan controller"""
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.footprint(
             'J', 'Connector:FanPinHeader_1x04_P2.54mm_Vertical',

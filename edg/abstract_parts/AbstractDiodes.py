@@ -73,7 +73,7 @@ class Diode(KiCadImportableBlock, BaseDiode):
     self.actual_voltage_drop = self.Parameter(RangeExpr())
     self.actual_reverse_recovery_time = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -130,7 +130,7 @@ class ZenerDiode(KiCadImportableBlock, BaseDiode, DiscreteSemiconductor):
     self.actual_zener_voltage = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -170,7 +170,7 @@ class ProtectionZenerDiode(Protection):
 
     self.voltage = self.ArgParameter(voltage)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
     self.connect(self.diode.cathode.adapt_to(VoltageSink(
@@ -191,7 +191,7 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
 
     self.voltage = self.ArgParameter(voltage)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))

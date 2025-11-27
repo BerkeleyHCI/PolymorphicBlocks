@@ -25,7 +25,7 @@ class Pe4259_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         # note that most other comparable RF switches do not have single-pin control
         # a future revision so the application circuit will replace this part with a dual-pin control circuit
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.footprint(
@@ -60,7 +60,7 @@ class Pe4259(Nonstrict3v3Compatible, Block):
         self.ctrl = self.Port(DigitalSink.empty())
         self.vdd = self.Port(VoltageSink.empty(), [Power])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.vdd_res = self.Block(Resistor(1*kOhm(tol=0.05)))

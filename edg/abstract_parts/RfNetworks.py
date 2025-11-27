@@ -17,7 +17,7 @@ class DiscreteRfWarning(BlockInterfaceMixin[Block]):
         super().__init__(*args, **kwargs)
         self.discrete_rf_warning = self.Parameter(BoolExpr(False))
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.require(self.discrete_rf_warning == False, "warning: discrete RF circuit, design may be tricky")
 

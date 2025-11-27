@@ -95,7 +95,7 @@ class Er_Epd027_2(EInk, GeneratorBlock):
 
         self.generator_param(self.dc.is_connected())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.lcd = self.Block(Er_Epd027_2_Outline())  # for device outline

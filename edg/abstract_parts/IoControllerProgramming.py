@@ -24,7 +24,7 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
     self.swd_node = self.connect()  # connect this internal node to the microcontroller
     self.reset_node = self.connect()  # connect this internal node to the microcontroller
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.swd = self.Block(SwdCortexTargetConnector())
     self.connect(self.swd.gnd, self.gnd)

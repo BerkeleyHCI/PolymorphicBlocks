@@ -25,7 +25,7 @@ class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.sw = self.Port(VoltageSource())
         self.boot = self.Port(Passive())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.footprint(
             'U', 'Package_TO_SOT_SMD:SOT-23-6',

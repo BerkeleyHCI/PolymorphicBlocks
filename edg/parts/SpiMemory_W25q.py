@@ -73,7 +73,7 @@ class W25q(SpiMemory, SpiMemoryQspi, GeneratorBlock):
     super().__init__(*args, **kwargs)
     self.generator_param(self.io2.is_connected(), self.io3.is_connected())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.ic = self.Block(W25q_Device(self.size))

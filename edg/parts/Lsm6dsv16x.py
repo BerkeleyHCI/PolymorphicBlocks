@@ -77,7 +77,7 @@ class Lsm6dsv16x(Accelerometer, Gyroscope, DefaultExportBlock):
         self.qvar1 = self.Export(self.ic.qvar1, optional=True, doc="qvar input pin 1")
         self.qvar2 = self.Export(self.ic.qvar2, optional=True, doc="qvar input pin 2")
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.vdd_cap = self.Block(DecouplingCapacitor(100 * nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
         self.vddio_cap = self.Block(DecouplingCapacitor(100 * nFarad(tol=0.2))).connected(self.gnd, self.ic.vddio)

@@ -29,7 +29,7 @@ class VoltageRegulator(PowerConditioner):
     self.pwr_out = self.Port(VoltageSource.empty(), [Output])
     self.gnd = self.Port(Ground.empty(), [Common])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -52,7 +52,7 @@ class VoltageRegulatorEnableWrapper(Resettable, VoltageRegulator, GeneratorBlock
     """Returns the inner device's reset pin, to be connected in the generator.
     Only called within a generator."""
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.generator_param(self.reset.is_connected())
 
@@ -81,7 +81,7 @@ class VoltageReference(LinearRegulator):
 
 class IdealLinearRegulator(Resettable, LinearRegulator, IdealModel):
   """Ideal linear regulator, draws the output current and produces spec output voltage limited by input voltage"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.upper()))
     self.gnd.init_from(Ground())
@@ -178,7 +178,7 @@ class DiscreteBuckConverter(BuckConverter):
 class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
   """Ideal buck converter producing the spec output voltage (buck-boost) limited by input voltage
   and drawing input current from conversation of power"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.upper()))
     self.gnd.init_from(Ground())
@@ -360,7 +360,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
     self.actual_inductor_current_peak = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -428,7 +428,7 @@ class DiscreteBoostConverter(BoostConverter):
 class IdealBoostConverter(Resettable, DiscreteBoostConverter, IdealModel):
   """Ideal boost converter producing the spec output voltage (buck-boost) limited by input voltage
   and drawing input current from conversation of power"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     effective_output_voltage = self.output_voltage.intersect((self.pwr_in.link().voltage.lower(), float('inf')))
     self.gnd.init_from(Ground())
@@ -553,7 +553,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
     self.actual_inductor_current_peak = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -620,7 +620,7 @@ class DiscreteBuckBoostConverter(BuckBoostConverter):
 class IdealVoltageRegulator(Resettable, DiscreteBuckBoostConverter, IdealModel):
   """Ideal buck-boost / general DC-DC converter producing the spec output voltage
   and drawing input current from conversation of power"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.gnd.init_from(Ground())
     self.pwr_in.init_from(VoltageSink(
@@ -675,7 +675,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
     self.actual_inductor_current_peak = self.Parameter(RangeExpr())  # inductor current accounting for ripple (upper is peak)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(

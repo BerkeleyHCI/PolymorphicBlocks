@@ -224,7 +224,7 @@ class Stm32l432Base(Resettable, IoControllerDac, IoControllerCan, IoControllerUs
         self.ic: Stm32l432Base_Device
         self.generator_param(self.reset.is_connected())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         with self.implicit_connect(

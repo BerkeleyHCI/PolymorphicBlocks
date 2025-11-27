@@ -46,7 +46,7 @@ class Opa2171_Device(Opa171_Base_Device, JlcPart, FootprintBlock):
     self.innb = self.Port(analog_in_model)
     self.outb = self.Port(analog_out_model)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',

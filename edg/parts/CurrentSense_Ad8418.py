@@ -33,7 +33,7 @@ class Ad8418a_Device(JlcPart, FootprintBlock, InternalSubcircuit):
             impedance=2*Ohm(tol=0)  # range not specified
         ))
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.footprint(
             'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
@@ -75,7 +75,8 @@ class Ad8418a(CurrentSensor, KiCadImportableBlock, Block):
         self.ref = self.Export(self.amp.vref1)  # TODO optional for grounded unidirectional
         self.out = self.Export(self.amp.out)
 
-    def contents(self):
+    def contents(self) -> None:
+        super().contents()
         self.connect(self.ref, self.amp.vref2)
         self.vdd_cap = self.Block(DecouplingCapacitor(
             capacitance=0.1*uFarad(tol=0.2),

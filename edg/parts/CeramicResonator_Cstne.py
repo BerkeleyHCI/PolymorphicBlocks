@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Cstne(CeramicResonator, GeneratorBlock, JlcPart, FootprintBlock):
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.gnd.init_from(Ground())
         self.generator_param(self.frequency)

@@ -36,7 +36,7 @@ class Pcf2129_Device(InternalSubcircuit, FootprintBlock):
       voltage_out=self.pwr_bat.link().voltage
     ))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-16W_7.5x10.3mm_P1.27mm',
@@ -74,7 +74,7 @@ class Pcf2129(RealtimeClock, Block):
     self.clkout = self.Export(self.ic.clkout, optional=True)
     self.int = self.Export(self.ic.int, optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.vdd_res = self.Block(SeriesPowerResistor(

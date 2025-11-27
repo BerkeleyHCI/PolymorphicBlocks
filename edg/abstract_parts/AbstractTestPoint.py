@@ -27,7 +27,7 @@ class BaseTypedTestPoint(TypedTestPoint, Block):
     self.tp_name = self.ArgParameter(tp_name)
     self.tp = self.Block(TestPoint(tp_name=StringExpr()))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.assign(self.tp.tp_name, (self.tp_name == "").then_else(self.io.link().name(), self.tp_name))
 
@@ -42,7 +42,7 @@ class BaseRfTestPoint(TypedTestPoint, Block):
     self.gnd = self.Export(self.conn.gnd, [Common])
     self.io: Port
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     conn_tp = self.conn.with_mixin(RfConnectorTestPoint(StringExpr()))
     self.assign(conn_tp.tp_name, (self.tp_name == "").then_else(self.io.link().name(), self.tp_name))
@@ -136,7 +136,7 @@ class I2cTestPoint(TypedTestPoint, Block):
     self.io = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
     self.tp_name = self.ArgParameter(tp_name)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     name_prefix = (self.tp_name == '').then_else(self.io.link().name(), self.tp_name)
     self.tp_scl = self.Block(DigitalTestPoint(name_prefix + '.scl'))
@@ -156,7 +156,7 @@ class SpiTestPoint(TypedTestPoint, Block):
     self.io = self.Port(SpiPeripheral(DigitalBidir.empty()), [InOut])
     self.tp_name = self.ArgParameter(tp_name)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     name_prefix = (self.tp_name == '').then_else(self.io.link().name(), self.tp_name)
     self.tp_sck = self.Block(DigitalTestPoint(name_prefix + '.sck'))
@@ -178,7 +178,7 @@ class CanControllerTestPoint(TypedTestPoint, Block):
     self.io = self.Port(CanPassivePort(DigitalBidir.empty()), [InOut])
     self.tp_name = self.ArgParameter(tp_name)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     name_prefix = (self.tp_name == '').then_else(self.io.link().name(), self.tp_name)
     self.tp_txd = self.Block(DigitalTestPoint(name_prefix + '.txd'))
@@ -198,7 +198,7 @@ class CanDiffTestPoint(TypedTestPoint, Block):
     self.io = self.Port(CanDiffPort(DigitalBidir.empty()), [InOut])
     self.tp_name = self.ArgParameter(tp_name)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     name_prefix = (self.tp_name == '').then_else(self.io.link().name(), self.tp_name)
     self.tp_canh = self.Block(DigitalTestPoint(name_prefix + '.canh'))

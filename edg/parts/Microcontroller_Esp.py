@@ -123,7 +123,7 @@ class EspAutoProgram(Interface, KiCadSchematicBlock):
     self.en = self.Port(DigitalSource.empty())
     self.boot = self.Port(DigitalSource.empty())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     signal_voltage = self.dtr.link().voltage.hull(self.rts.link().voltage)
     signal_thresholds = self.dtr.link().output_thresholds.hull(self.rts.link().output_thresholds)

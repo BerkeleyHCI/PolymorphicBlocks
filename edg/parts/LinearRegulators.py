@@ -672,7 +672,7 @@ class L78l_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, GeneratorB
 class L78l(LinearRegulator):
   """L78Lxx high(er) input voltage linear regulator in SOT-89.
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.ic = self.Block(L78l_Device(self.output_voltage))
     self.connect(self.pwr_in, self.ic.pwr_in)

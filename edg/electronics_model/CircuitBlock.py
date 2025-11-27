@@ -104,14 +104,14 @@ class WrapperFootprintBlock(FootprintBlock):
 
 @abstract_block
 class NetBlock(InternalBlock, NetBaseBlock, Block):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.net()
 
 
 @abstract_block
 class CircuitPortBridge(NetBaseBlock, PortBridge):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.net()
 
@@ -123,13 +123,13 @@ class CircuitPortAdapter(KiCadImportableBlock, NetBaseBlock, PortAdapter[Adapter
     assert symbol_name == 'edg_importable:Adapter'
     return {'1': self.src, '2': self.dst}
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.net()
 
 
 @non_library  # TODO make abstract instead?
 class CircuitLink(NetBaseBlock, Link):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.net()

@@ -41,7 +41,7 @@ class Opa197_Device(Opa197_Base_Device, JlcPart, FootprintBlock):
     self.vinn = self.Port(analog_in_model)
     self.vout = self.Port(self._analog_out_model())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
@@ -66,7 +66,7 @@ class Opa197(Opamp):
   """High voltage opamp (4.5-36V) in SOIC-8.
   (part also available in SOT-23-5)
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.ic = self.Block(Opa197_Device())
@@ -97,7 +97,7 @@ class Opa2197_Device(Opa197_Base_Device, JlcPart, FootprintBlock):
     self.innb = self.Port(analog_in_model)
     self.outb = self.Port(analog_out_model)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',

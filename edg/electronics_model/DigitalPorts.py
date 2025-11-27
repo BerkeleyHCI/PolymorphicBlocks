@@ -51,7 +51,7 @@ class DigitalLink(CircuitLink):
     self._has_low_signal_driver = self.Parameter(BoolExpr())
     self._has_high_signal_driver = self.Parameter(BoolExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(

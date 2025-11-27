@@ -44,7 +44,7 @@ class Crystal(DiscreteComponent, HasStandardFootprint):
     self.crystal = self.Port(CrystalPort(self.actual_frequency), [InOut])  # set by subclass
     self.gnd = self.Port(Ground(), [Common])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(

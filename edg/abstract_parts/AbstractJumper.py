@@ -20,7 +20,7 @@ class DigitalJumper(TypedJumper, Block):
     self.input = self.Port(DigitalSink.empty(), [Input])
     self.output = self.Port(DigitalSource.empty(), [Output])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.device = self.Block(Jumper())
     self.connect(self.input, self.device.a.adapt_to(DigitalSink(

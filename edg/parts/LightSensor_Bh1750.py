@@ -45,7 +45,7 @@ class Bh1750(LightSensor, Block):
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()  # capacitors from shuttle board example
         self.vcc_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vcc)
         self.dvi_res = self.Block(Resistor(1*kOhm(tol=0.05)))

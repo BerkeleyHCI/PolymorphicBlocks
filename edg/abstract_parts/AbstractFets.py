@@ -125,7 +125,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
     self.actual_rds_on = self.Parameter(RangeExpr())
     self.actual_gate_charge = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(

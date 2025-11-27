@@ -3,7 +3,7 @@ from ..abstract_parts import *
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class Outline_Pn1332(Mechanical, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       '', 'calisco:Outline_150mm_70mm_PNX-91432',
@@ -22,7 +22,7 @@ class MountingHole(Mechanical, FootprintBlock):
     super().__init__()
     self.pad = self.Port(Passive(), optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'H', self.FOOTPRINT,

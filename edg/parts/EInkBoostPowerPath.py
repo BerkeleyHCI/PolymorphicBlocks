@@ -25,7 +25,7 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
     self.resistance = self.ArgParameter(resistance)
     self.diode_voltage_drop = self.ArgParameter(diode_voltage_drop)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.fet = self.Block(Fet.NFet(

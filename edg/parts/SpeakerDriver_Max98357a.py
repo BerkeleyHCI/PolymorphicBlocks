@@ -85,7 +85,7 @@ class Max98357a(SpeakerDriver, Block):
         self.i2s = self.Export(self.ic.i2s, [Input])
         self.out = self.Export(self.ic.out, [Output])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         with self.implicit_connect(

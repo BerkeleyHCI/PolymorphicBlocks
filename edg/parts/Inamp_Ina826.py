@@ -35,7 +35,7 @@ class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.rg2 = self.Port(Passive())
     self.rg3 = self.Port(Passive())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',

@@ -128,7 +128,7 @@ class Mp2722(DiscreteBuckConverter):
 
         self.frequency = self.ArgParameter(frequency)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         # TODO only allow subset of frequencies, based on SW_FREQ table

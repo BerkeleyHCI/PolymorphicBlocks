@@ -273,7 +273,7 @@ class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoContro
     self.ic: Stm32f103Base_Device
     self.generator_param(self.reset.is_connected())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     with self.implicit_connect(

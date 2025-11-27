@@ -83,7 +83,7 @@ class Er_Tft_128_3(Lcd, Resettable, Block):
         self.ctp_rst = self.Export(self.ic.ctp_rst, optional=True, doc='Touch panel interface')
         self.ctp_int = self.Export(self.ic.ctp_int, optional=True, doc='Touch panel interface')
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.connect(self.reset, self.ic.rst)
         self.require(self.reset.is_connected())

@@ -26,7 +26,7 @@ class FootprintPassiveConnector(PassiveConnector, GeneratorBlock, FootprintBlock
   """PassiveConnector that is a footprint and provides some base functionality for generation."""
   allowed_pins: Iterable[int]
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.generator_param(self.length, self.pins.requested())
 

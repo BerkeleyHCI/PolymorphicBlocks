@@ -327,7 +327,7 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
     self.gnd = self.Port(Ground.empty(), [Common])
     self.swd = self.Port(SwdPullPort(DigitalSource.empty()), [InOut])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.swdio = self.Block(PullupResistor((10, 100) * kOhm(tol=0.05))).connected(self.pwr, self.swd.swdio)
     self.swclk = self.Block(PulldownResistor((10, 100) * kOhm(tol=0.05))).connected(self.gnd, self.swd.swclk)
@@ -345,7 +345,7 @@ class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, 
     self.ic: Lpc1549Base_Device
     self.generator_param(self.reset.is_connected())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     with self.implicit_connect(

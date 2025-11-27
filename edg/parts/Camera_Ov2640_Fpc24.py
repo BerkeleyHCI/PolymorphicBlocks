@@ -88,7 +88,7 @@ class Ov2640_Fpc24(Ov2640, GeneratorBlock):
         super().__init__()
         self.generator_param(self.pwdn.is_connected(), self.reset.is_connected())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.dovdd_cap = self.Block(DecouplingCapacitor(capacitance=0.1*uFarad(tol=0.2)))\
             .connected(self.device.dgnd, self.device.dovdd)

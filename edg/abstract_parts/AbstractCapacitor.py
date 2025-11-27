@@ -106,7 +106,7 @@ class UnpolarizedCapacitor(PassiveComponent):
     self.actual_capacitance = self.Parameter(RangeExpr())
     self.actual_voltage_rating = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -363,7 +363,7 @@ class AnalogCapacitor(DiscreteApplication, KiCadImportableBlock):
 
 
 class CombinedCapacitorElement(Capacitor):  # to avoid an abstract part error
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.assign(self.actual_capacitance, self.capacitance)  # fake it, since a combined capacitance is handwavey
 

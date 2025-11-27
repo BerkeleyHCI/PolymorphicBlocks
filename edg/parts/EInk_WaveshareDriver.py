@@ -91,7 +91,7 @@ class Waveshare_Epd(EInk, GeneratorBlock):
 
         self.generator_param(self.dc.is_connected())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.vdd_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))\

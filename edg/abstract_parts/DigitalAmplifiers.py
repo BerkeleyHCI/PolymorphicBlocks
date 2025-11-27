@@ -114,7 +114,7 @@ class OpenDrainDriver(PowerSwitch, Block):
     self.max_rds = self.ArgParameter(max_rds)
     self.frequency = self.ArgParameter(frequency)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     
     self.drv = self.Block(SwitchFet.NFet(

@@ -273,7 +273,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interf
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
     self.generator_param(self.reset.is_connected())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
@@ -482,7 +482,7 @@ class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, I
         'Vbus': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.gnd.init_from(Ground())

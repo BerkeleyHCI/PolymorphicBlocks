@@ -20,7 +20,7 @@ class CustomSyncBuckConverterIndependent(DiscreteBoostConverter):
         self.voltage_drop = self.ArgParameter(voltage_drop)
         self.rds_on = self.ArgParameter(rds_on)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.assign(self.actual_frequency, self.frequency)

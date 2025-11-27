@@ -49,7 +49,7 @@ class Fuse(DiscreteComponent, HasStandardFootprint):
     self.voltage = self.ArgParameter(voltage)  # operating voltage
     self.actual_voltage_rating = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(

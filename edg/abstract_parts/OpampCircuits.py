@@ -27,7 +27,7 @@ class OpampFollower(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock)
     self.input = self.Port(AnalogSink.empty(), [Input])
     self.output = self.Port(AnalogSource.empty(), [Output])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.amp = self.Block(Opamp())
@@ -106,7 +106,7 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
 
     self.actual_amplification = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -241,7 +241,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
 
     self.actual_ratio = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(

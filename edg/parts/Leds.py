@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class SmtLed(Led, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'D', 'LED_SMD:LED_0603_1608Metric',
@@ -16,7 +16,7 @@ class SmtLed(Led, FootprintBlock):
 
 
 class ThtLed(Led, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'D', 'LED_THT:LED_D5.0mm',
@@ -29,7 +29,7 @@ class ThtLed(Led, FootprintBlock):
 
 
 class Smt0606RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'D', 'LED_SMD:LED_LiteOn_LTST-C19HE1WT',
@@ -46,7 +46,7 @@ class Smt0606RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
 
 
 class Smt0404RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'D', 'LED_SMD:LED_Lumex_SML-LX0404SIUPGUSB',
@@ -63,7 +63,7 @@ class Smt0404RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
 
 
 class ThtRgbLed(RgbLedCommonAnode, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'D', 'LED_THT:LED_D5.0mm-4_RGB_Staggered_Pins',

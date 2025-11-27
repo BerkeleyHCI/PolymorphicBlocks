@@ -43,6 +43,6 @@ class Ah1806(MagneticSwitch, Block):
         self.pwr = self.Export(self.ic.vdd, [Power])
         self.out = self.Export(self.ic.output, [Output])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.cin = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.pwr)

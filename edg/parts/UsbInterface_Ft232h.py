@@ -59,7 +59,7 @@ class Ft232hl_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.adbus = self.Port(Vector(DigitalBidir.empty()))
     self.acbus = self.Port(Vector(DigitalBidir.empty()))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     for i in range(8):
@@ -139,7 +139,8 @@ class Ft232EepromDriver(InternalSubcircuit, Block):
     self.eedata = self.Port(DigitalBidir.empty())
     self.spi = self.Port(SpiController.empty())
 
-  def contents(self):
+  def contents(self) -> None:
+    super().contents()
     self.connect(self.eeclk, self.spi.sck)
     self.connect(self.eedata, self.spi.mosi)
     self.do_pull = self.Block(PullupResistor(10*kOhm(tol=0.05))).connected(self.pwr, self.spi.miso)

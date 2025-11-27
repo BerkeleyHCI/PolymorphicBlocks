@@ -13,7 +13,7 @@ class Cr2032(Battery, FootprintBlock):
     ))
     self.gnd.init_from(Ground())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_capacity, (210, 210)*mAmp)  # TODO bounds of a few CR2032 cells; should be A*h
@@ -38,7 +38,7 @@ class Li18650(Battery, FootprintBlock):
     ))
     self.gnd.init_from(Ground())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_capacity, (2, 3.6)*Amp)  # TODO should be A*h
@@ -64,7 +64,7 @@ class AaBattery(Battery, FootprintBlock):
       current_limits=(0, 1)*Amp,
     ))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_capacity, (2, 3)*Amp)  # TODO should be A*h
