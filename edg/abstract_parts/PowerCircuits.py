@@ -1,11 +1,14 @@
 from ..electronics_model import *
 from .Resettable import Resettable
-from .AbstractResistor import Resistor
+from .AbstractResistor import Resistor, SeriesPowerResistor
 from .AbstractFets import SwitchFet, Fet
 from .AbstractCapacitor import Capacitor
 from .GateDrivers import HalfBridgeDriver, HalfBridgeDriverIndependent, HalfBridgeDriverPwm
+from .DigitalAmplifiers import HighSideSwitch
 from .ResistiveDivider import VoltageDivider, ResistiveDivider
 from .Categories import PowerConditioner
+from .MergedBlocks import MergedVoltageSource
+from .DummyDevices import ForcedVoltageCurrentDraw
 
 
 @abstract_block_default(lambda: FetHalfBridgeIndependent)
@@ -223,4 +226,3 @@ class RampLimiter(KiCadSchematicBlock):
                 'control': DigitalSink(),
                 'gnd': Ground(),
             })
-

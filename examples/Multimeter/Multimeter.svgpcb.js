@@ -608,6 +608,7 @@ board.setNetlist([
   {name: "measure.range.dummy.io", pads: [["U11", "1"]]},
   {name: "measure.range.switch.sw[0_0].com", pads: [["U12", "3"], ["U10", "4"]]},
   {name: "measure.range.switch.sw[0_1].com", pads: [["U12", "1"], ["U11", "4"]]},
+  {name: "adc.mclkin", pads: [["U14", "18"]]},
   {name: "adc.vins.2", pads: [["U14", "7"]]},
   {name: "adc.vins.3", pads: [["U14", "8"]]},
   {name: "adc.vins.4", pads: [["U14", "9"]]},

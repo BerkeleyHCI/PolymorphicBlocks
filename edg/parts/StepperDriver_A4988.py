@@ -107,7 +107,7 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.assign(self.lcsc_part, 'C38437')
 
 
-class A4988(BrushedMotorDriver, GeneratorBlock):
+class A4988(GeneratorBlock):
   """Bipolar stepper motor driver with microstepping (1:2/4/8/16) and current limiting. 8-35V input, up to 2A."""
   def __init__(self, step_resolution: IntLike = 16,
                itrip: RangeLike = 1*Amp(tol=0.15),

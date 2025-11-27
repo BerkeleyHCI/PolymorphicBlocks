@@ -219,7 +219,7 @@ class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
     self.assign(self.actual_input_voltage, self.output_voltage / self.actual_ratio)
 
 
-class SignalDivider(Analog, Block):
+class SignalDivider(Analog, KiCadImportableBlock, Block):
   """Specialization of ResistiveDivider for Analog signals"""
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'Device:VoltageDivider'
