@@ -115,7 +115,7 @@ class CircuitPortBridge(NetBaseBlock, PortBridge):
     self.net()
 
 
-AdapterDstType = TypeVar('AdapterDstType', bound='CircuitPort')
+AdapterDstType = TypeVar('AdapterDstType', covariant=True, bound='CircuitPort', default='CircuitPort')
 @abstract_block
 class CircuitPortAdapter(KiCadImportableBlock, NetBaseBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:

@@ -18,8 +18,8 @@ class JlcPart(Block):
     self.require(self.require_basic_part.implies(self.actual_basic_part), "required basic part")
 
 
-DescriptionParser = Tuple[re.Pattern,
-                          Callable[[re.Match], Dict[PartsTableColumn, Any]]]
+DescriptionParser = Tuple[re.Pattern[str],
+                          Callable[[re.Match[str]], Dict[PartsTableColumn, Any]]]
 class JlcTableBase(PartsTableBase):
   """Defines common table headers, columns, and functionality for parsing JLCPCB parts tables."""
   PART_NUMBER_COL = 'MFR.Part'  # used only for translation to the PartsTableFootprint col
@@ -63,7 +63,7 @@ class JlcTableBase(PartsTableBase):
     }
 
   @staticmethod
-  def parse(description: str, regex_dictionary: Dict[str, re.Pattern]) -> Dict[str, str]:
+  def parse(description: str, regex_dictionary: Dict[str, re.Pattern[str]]) -> Dict[str, str]:
     extraction_table = {}
 
     for key, pattern in regex_dictionary.items():

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar, Type, Dict
+from typing import TypeVar, Type, Dict, Mapping
 
 from ..core import *
 from .GroundPort import Ground

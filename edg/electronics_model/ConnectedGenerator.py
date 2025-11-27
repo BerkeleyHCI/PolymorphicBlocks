@@ -16,9 +16,9 @@ class DefaultConnectionBlock(InternalBlock):
   pass
 
 
-OutputType = TypeVar('OutputType', bound=Port)
-InputsType = TypeVar('InputsType', bound=Port)
-LinkType = TypeVar('LinkType', bound=Link)
+OutputType = TypeVar('OutputType', covariant=True, bound=Port, default=Port)
+InputsType = TypeVar('InputsType', covariant=True, bound=Port, default=Port)
+LinkType = TypeVar('LinkType', covariant=True, bound=Link, default=Link)
 SelfType = TypeVar('SelfType', bound='BaseConnectedGenerator')
 @non_library  # this can't be instantiated
 class BaseConnectedGenerator(DefaultConnectionBlock, GeneratorBlock, Generic[OutputType, InputsType, LinkType]):

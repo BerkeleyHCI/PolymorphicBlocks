@@ -38,7 +38,7 @@ class PortBridge(InternalBlock, Block):
     return super().Port(tpe, *args, optional=True, **kwargs)
 
 
-AdapterDstType = TypeVar('AdapterDstType', bound=Port)
+AdapterDstType = TypeVar('AdapterDstType', covariant=True, bound=Port, default=Port)
 @abstract_block
 class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
   """Defines an adapter from one port type to another port type. This behaves as a normal block, and both the src and

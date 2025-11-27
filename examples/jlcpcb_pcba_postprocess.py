@@ -144,7 +144,7 @@ if __name__ == '__main__':
     if os.path.exists(f'{args.file_path_prefix}.csv'):  # remove previous one to avoid confusion
       os.remove(f'{args.file_path_prefix}.csv')
     with open(f'{args.file_path_prefix}.csv', 'w', newline='') as bom_out:
-      merged_csv_out: Optional[csv.DictWriter] = None
+      merged_csv_out: Optional[csv.DictWriter[str]] = None
       for input_bom_file in args.merge_boms:
         with open(input_bom_file, 'r', newline='') as bom_in:
           csv_dict_in = csv.DictReader(bom_in)
