@@ -8,7 +8,7 @@ from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
 @abstract_block
-class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint['Bjt']):
+class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   """Base class for untyped BJTs
   """
   _STANDARD_FOOTPRINT = BjtStandardFootprint

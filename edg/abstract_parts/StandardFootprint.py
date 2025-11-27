@@ -1,4 +1,5 @@
-from typing import Optional, Dict, TypeVar, Generic, Callable, Union, Tuple, ClassVar, Protocol, Type
+from typing import Optional, Dict, TypeVar, Generic, Callable, Union, Tuple, ClassVar, Type
+from typing_extensions import Self
 
 from ..electronics_model import *
 
@@ -36,6 +37,7 @@ class StandardFootprint(Generic[StandardPinningType]):
     return cls._footprint_pinning_map()[footprint](block)
 
 
-class HasStandardFootprint(Generic[StandardPinningType]):
+@non_library
+class HasStandardFootprint(Block):
   """Base class that defines that a class supports a StandardFootprint"""
-  _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint[StandardPinningType]]]
+  _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint[Self]]]

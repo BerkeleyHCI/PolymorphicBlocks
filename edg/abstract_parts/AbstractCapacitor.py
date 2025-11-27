@@ -11,77 +11,6 @@ from .Categories import *
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-class CapacitorStandardFootprint(StandardFootprint['Capacitor']):
-  REFDES_PREFIX = 'C'
-
-  # IMPORTANT! DummyFootprint doesn't use this, it will break on anything that isn't this pinning
-  FOOTPRINT_PINNING_MAP = {
-    (
-      'Capacitor_SMD:C_0201_0603Metric',
-      'Capacitor_SMD:C_0402_1005Metric',
-      'Capacitor_SMD:C_0603_1608Metric',
-      'Capacitor_SMD:C_0805_2012Metric',
-      'Capacitor_SMD:C_1206_3216Metric',
-      'Capacitor_SMD:C_1210_3225Metric',
-      'Capacitor_SMD:C_1812_4532Metric',
-      'Capacitor_SMD:C_2512_6332Metric',
-
-      'Capacitor_SMD:CP_Elec_3x5.3',
-      'Capacitor_SMD:CP_Elec_3x5.4',
-      'Capacitor_SMD:CP_Elec_4x3',
-      'Capacitor_SMD:CP_Elec_4x3.9',
-      'Capacitor_SMD:CP_Elec_4x4.5',
-      'Capacitor_SMD:CP_Elec_4x5.3',
-      'Capacitor_SMD:CP_Elec_4x5.4',
-      'Capacitor_SMD:CP_Elec_4x5.7',
-      'Capacitor_SMD:CP_Elec_4x5.8',
-      'Capacitor_SMD:CP_Elec_5x3',
-      'Capacitor_SMD:CP_Elec_5x3.9',
-      'Capacitor_SMD:CP_Elec_5x4.4',
-      'Capacitor_SMD:CP_Elec_5x4.5',
-      'Capacitor_SMD:CP_Elec_5x5.3',
-      'Capacitor_SMD:CP_Elec_5x5.4',
-      'Capacitor_SMD:CP_Elec_5x5.7',
-      'Capacitor_SMD:CP_Elec_5x5.8',
-      'Capacitor_SMD:CP_Elec_5x5.9',
-      'Capacitor_SMD:CP_Elec_6.3x3',
-      'Capacitor_SMD:CP_Elec_6.3x3.9',
-      'Capacitor_SMD:CP_Elec_6.3x4.5',
-      'Capacitor_SMD:CP_Elec_6.3x4.9',
-      'Capacitor_SMD:CP_Elec_6.3x5.2',
-      'Capacitor_SMD:CP_Elec_6.3x5.3',
-      'Capacitor_SMD:CP_Elec_6.3x5.4',
-      'Capacitor_SMD:CP_Elec_6.3x5.7',
-      'Capacitor_SMD:CP_Elec_6.3x5.8',
-      'Capacitor_SMD:CP_Elec_6.3x5.9',
-      'Capacitor_SMD:CP_Elec_6.3x7.7',
-      'Capacitor_SMD:CP_Elec_6.3x9.9',
-      'Capacitor_SMD:CP_Elec_8x5.4',
-      'Capacitor_SMD:CP_Elec_8x6.2',
-      'Capacitor_SMD:CP_Elec_8x6.5',
-      'Capacitor_SMD:CP_Elec_8x6.7',
-      'Capacitor_SMD:CP_Elec_8x6.9',
-      'Capacitor_SMD:CP_Elec_8x10',
-      'Capacitor_SMD:CP_Elec_8x10.5',
-      'Capacitor_SMD:CP_Elec_8x11.9',
-      'Capacitor_SMD:CP_Elec_10x7.7',
-      'Capacitor_SMD:CP_Elec_10x7.9',
-      'Capacitor_SMD:CP_Elec_10x10',
-      'Capacitor_SMD:CP_Elec_10x10.5',
-      'Capacitor_SMD:CP_Elec_10x12.5',
-      'Capacitor_SMD:CP_Elec_10x12.6',
-      'Capacitor_SMD:CP_Elec_10x14.3',
-      'Capacitor_SMD:CP_Elec_16x17.5',
-      'Capacitor_SMD:CP_Elec_16x22',
-      'Capacitor_SMD:CP_Elec_18x7.5',
-      'Capacitor_SMD:CP_Elec_18x22',
-    ): lambda block: {
-      '1': block.pos,
-      '2': block.neg,
-    },
-  }
-
-
 @abstract_block
 class UnpolarizedCapacitor(PassiveComponent):
   """Base type for a capacitor, that defines its parameters and without ports (since capacitors can be polarized)"""
@@ -154,6 +83,77 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock, HasStandardFootpri
 
     self.pos = self.Port(Passive.empty())
     self.neg = self.Port(Passive.empty())
+
+
+class CapacitorStandardFootprint(StandardFootprint[Capacitor]):
+  REFDES_PREFIX = 'C'
+
+  # IMPORTANT! DummyFootprint doesn't use this, it will break on anything that isn't this pinning
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Capacitor_SMD:C_0201_0603Metric',
+      'Capacitor_SMD:C_0402_1005Metric',
+      'Capacitor_SMD:C_0603_1608Metric',
+      'Capacitor_SMD:C_0805_2012Metric',
+      'Capacitor_SMD:C_1206_3216Metric',
+      'Capacitor_SMD:C_1210_3225Metric',
+      'Capacitor_SMD:C_1812_4532Metric',
+      'Capacitor_SMD:C_2512_6332Metric',
+
+      'Capacitor_SMD:CP_Elec_3x5.3',
+      'Capacitor_SMD:CP_Elec_3x5.4',
+      'Capacitor_SMD:CP_Elec_4x3',
+      'Capacitor_SMD:CP_Elec_4x3.9',
+      'Capacitor_SMD:CP_Elec_4x4.5',
+      'Capacitor_SMD:CP_Elec_4x5.3',
+      'Capacitor_SMD:CP_Elec_4x5.4',
+      'Capacitor_SMD:CP_Elec_4x5.7',
+      'Capacitor_SMD:CP_Elec_4x5.8',
+      'Capacitor_SMD:CP_Elec_5x3',
+      'Capacitor_SMD:CP_Elec_5x3.9',
+      'Capacitor_SMD:CP_Elec_5x4.4',
+      'Capacitor_SMD:CP_Elec_5x4.5',
+      'Capacitor_SMD:CP_Elec_5x5.3',
+      'Capacitor_SMD:CP_Elec_5x5.4',
+      'Capacitor_SMD:CP_Elec_5x5.7',
+      'Capacitor_SMD:CP_Elec_5x5.8',
+      'Capacitor_SMD:CP_Elec_5x5.9',
+      'Capacitor_SMD:CP_Elec_6.3x3',
+      'Capacitor_SMD:CP_Elec_6.3x3.9',
+      'Capacitor_SMD:CP_Elec_6.3x4.5',
+      'Capacitor_SMD:CP_Elec_6.3x4.9',
+      'Capacitor_SMD:CP_Elec_6.3x5.2',
+      'Capacitor_SMD:CP_Elec_6.3x5.3',
+      'Capacitor_SMD:CP_Elec_6.3x5.4',
+      'Capacitor_SMD:CP_Elec_6.3x5.7',
+      'Capacitor_SMD:CP_Elec_6.3x5.8',
+      'Capacitor_SMD:CP_Elec_6.3x5.9',
+      'Capacitor_SMD:CP_Elec_6.3x7.7',
+      'Capacitor_SMD:CP_Elec_6.3x9.9',
+      'Capacitor_SMD:CP_Elec_8x5.4',
+      'Capacitor_SMD:CP_Elec_8x6.2',
+      'Capacitor_SMD:CP_Elec_8x6.5',
+      'Capacitor_SMD:CP_Elec_8x6.7',
+      'Capacitor_SMD:CP_Elec_8x6.9',
+      'Capacitor_SMD:CP_Elec_8x10',
+      'Capacitor_SMD:CP_Elec_8x10.5',
+      'Capacitor_SMD:CP_Elec_8x11.9',
+      'Capacitor_SMD:CP_Elec_10x7.7',
+      'Capacitor_SMD:CP_Elec_10x7.9',
+      'Capacitor_SMD:CP_Elec_10x10',
+      'Capacitor_SMD:CP_Elec_10x10.5',
+      'Capacitor_SMD:CP_Elec_10x12.5',
+      'Capacitor_SMD:CP_Elec_10x12.6',
+      'Capacitor_SMD:CP_Elec_10x14.3',
+      'Capacitor_SMD:CP_Elec_16x17.5',
+      'Capacitor_SMD:CP_Elec_16x22',
+      'Capacitor_SMD:CP_Elec_18x7.5',
+      'Capacitor_SMD:CP_Elec_18x22',
+    ): lambda block: {
+      '1': block.pos,
+      '2': block.neg,
+    },
+  }
 
 
 @abstract_block
