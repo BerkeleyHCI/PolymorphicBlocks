@@ -313,7 +313,7 @@ class Vector(BaseVector, Generic[VectorType]):
   @overload
   def map_extract(self, selector: Callable[[VectorType], ExtractPortType]) -> DerivedVector[ExtractPortType]: ...
 
-  def map_extract(self, selector: Callable[[VectorType], Union[ConstraintExpr, Port]]) -> Union[ArrayExpr, DerivedVector]:
+  def map_extract(self, selector: Callable[[VectorType], Union[ConstraintExpr, ExtractPortType]]) -> Union[ArrayExpr, DerivedVector[ExtractPortType]]:
     param = selector(self._elt_sample)
     if isinstance(param, ConstraintExpr):  # TODO check that returned type is child
       return ArrayExpr.array_of_elt(param)._bind(MapExtractBinding(self, param))
