@@ -16,7 +16,7 @@ class Comparable(Protocol):
   def __lt__(self, other: Any) -> bool: ...
 
 
-PartsTableColumnType = TypeVar('PartsTableColumnType')
+PartsTableColumnType = TypeVar('PartsTableColumnType', default=Any)
 class PartsTableColumn(Generic[PartsTableColumnType]):
   """A column header for a parts table, that allows indexing by an object
   (instead of a string) that also checks the value type.

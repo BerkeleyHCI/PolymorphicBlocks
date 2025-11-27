@@ -21,8 +21,8 @@ if TYPE_CHECKING:
 
 
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
-WrappedType = TypeVar('WrappedType', covariant=True)
-CastableType = TypeVar('CastableType', contravariant=True)
+WrappedType = TypeVar('WrappedType', covariant=True, default=Any)
+CastableType = TypeVar('CastableType', contravariant=True, default=Any)
 class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   """Base class for constraint expressions. Basically a container for operations.
   Actual meaning is held in the Binding.

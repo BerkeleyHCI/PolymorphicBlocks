@@ -35,7 +35,6 @@ edg = ["core/resources/edg-compiler-precompiled.jar", "electronics_model/resourc
 strict = true
 
 implicit_reexport = true
-disallow_any_generics = false
 
 [project.urls]
 Homepage = "https://github.com/BerkeleyHCI/PolymorphicBlocks"

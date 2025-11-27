@@ -9,7 +9,7 @@ from ..core.ConstraintExpr import Refable
 from .KiCadImportableBlock import KiCadImportableBlock
 from ..core.HdlUserExceptions import EdgTypeError
 
-CircuitLinkType = TypeVar('CircuitLinkType', bound=Link, covariant=True)
+CircuitLinkType = TypeVar('CircuitLinkType', bound=Link, covariant=True, default=Link)
 class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
   """Electrical connection that represents a single port into a single copper net"""
   pass

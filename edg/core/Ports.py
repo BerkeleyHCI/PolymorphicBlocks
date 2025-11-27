@@ -110,7 +110,7 @@ class BaseContainerPort(BasePort):  # TODO can this be removed?
   pass
 
 
-PortLinkType = TypeVar('PortLinkType', bound='Link', covariant=True)  # TODO: this breaks w/ selftypes
+PortLinkType = TypeVar('PortLinkType', bound='Link', covariant=True, default='Link')  # TODO: this breaks w/ selftypes
 @non_library
 class Port(BasePort, Generic[PortLinkType]):
   """Abstract Base Class for ports"""
