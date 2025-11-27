@@ -59,7 +59,7 @@ class PinResource(BaseLeafPinMapResource):
   def __repr__(self) -> str:
     return f"PinResource({self.pin}, {self.name_models})"
 
-  def __eq__(self, other) -> bool:
+  def __eq__(self, other: Any) -> bool:
     # TODO avoid using is if we can compare port model equality
     return isinstance(other, PinResource) and self.pin == other.pin and self.name_models is other.name_models
 

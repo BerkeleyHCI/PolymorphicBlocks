@@ -56,7 +56,7 @@ class RangeTestCase(unittest.TestCase):
     self.assertFalse(Range(-1, 2).intersects(Range(3, 4)))
     self.assertFalse(Range(-1, 2).intersects(Range(-3, -2)))
 
-  def test_intersect(self):
+  def test_intersect(self) -> None:
     self.assertEqual(Range(-1, 2).intersect(Range(2, 3)), Range(2, 2))
     self.assertEqual(Range(-1, 2).intersect(Range(0, 3)), Range(0, 2))
     self.assertEqual(Range(-1, 2).intersect(Range(-2, -1)), Range(-1, -1))
@@ -65,7 +65,7 @@ class RangeTestCase(unittest.TestCase):
     with self.assertRaises(ValueError):
       Range(-1, 2).intersect(Range(3, 4))
 
-  def test_hull(self):
+  def test_hull(self) -> None:
     self.assertEqual(Range(-1, 2).hull(Range(2, 3)), Range(-1, 3))
     self.assertEqual(Range(-1, 2).hull(Range(0, 3)), Range(-1, 3))
     self.assertEqual(Range(-1, 2).hull(Range(-2, -1)), Range(-2, 2))

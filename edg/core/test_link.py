@@ -9,15 +9,15 @@ class LinkTestCase(unittest.TestCase):
   def setUp(self):
     self.pb = TestLink()._elaborated_def_to_proto()
 
-  def test_self_class(self):
+  def test_self_class(self) -> None:
     self.assertEqual(self.pb.self_class.target.name, "edg.core.test_elaboration_common.TestLink")
 
-  def test_superclasses(self):
+  def test_superclasses(self) -> None:
     self.assertEqual(len(self.pb.superclasses), 1)
     self.assertEqual(self.pb.superclasses[0].target.name, "edg.core.test_elaboration_common.TestLinkBase")
     self.assertEqual(len(self.pb.super_superclasses), 0)
 
-  def test_param_def(self):
+  def test_param_def(self) -> None:
     self.assertEqual(len(self.pb.params), 3)
     self.assertTrue(self.pb.params[0].name, 'float_param_sink_sum')
     self.assertTrue(self.pb.params[0].value.HasField('floating'))
@@ -26,14 +26,14 @@ class LinkTestCase(unittest.TestCase):
     self.assertTrue(self.pb.params[2].name, 'range_param_sink_common')
     self.assertTrue(self.pb.params[2].value.HasField('range'))
 
-  def test_port_def(self):
+  def test_port_def(self) -> None:
     self.assertEqual(len(self.pb.ports), 2)
     self.assertTrue(self.pb.ports[0].name, 'source')
     self.assertEqual(self.pb.ports[0].value.lib_elem.target.name, "edg.core.test_elaboration_common.TestPortSource")
     self.assertTrue(self.pb.ports[1].name, 'sinks')
     self.assertEqual(self.pb.ports[1].value.array.self_class.target.name, "edg.core.test_elaboration_common.TestPortSink")
 
-  def test_constraints(self):
+  def test_constraints(self) -> None:
     # partial test of constraints, only the ones that are more interesting than tested elsewhere
     # namely, ones that deal with map and reduce operations
     constraints = list(map(lambda pair: pair.value, self.pb.constraints))

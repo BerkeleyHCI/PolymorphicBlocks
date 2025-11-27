@@ -190,7 +190,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
     return dict(chain(self._system_pinmap().items(), io_pins.items()))
 
 
-def makeIdealIoController():  # needed to avoid circular import
+def makeIdealIoController() -> Type[Block]:  # needed to avoid circular import
   from .IdealIoController import IdealIoController
   return IdealIoController
 

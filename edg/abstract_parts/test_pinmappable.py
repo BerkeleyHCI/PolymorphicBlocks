@@ -6,7 +6,7 @@ from .PinMappable import PinMapUtil, PinResource, Passive, PeripheralFixedPin, U
 
 
 class PinMapUtilTest(unittest.TestCase):
-  def test_remap(self):
+  def test_remap(self) -> None:
     mapper = PinMapUtil([
       PinResource('PIO1', {'PIO1': Passive()}),
       PinResource('PIO2', {'PIO2': Passive()}),  # dropped
@@ -32,7 +32,7 @@ class PinMapUtilTest(unittest.TestCase):
 
     self.assertTrue(remapped.resources[2] is mapper.resources[3])  # simple passthrough
 
-  def test_assign_assigned(self):  # fully user-specified
+  def test_assign_assigned(self) -> None:  # fully user-specified
     dio_model = DigitalBidir()
     ain_model = AnalogSink()
     allocated = PinMapUtil([
@@ -48,7 +48,7 @@ class PinMapUtilTest(unittest.TestCase):
     self.assertIn(AllocatedResource(ain_model, 'AIO4', 'AIn4', '4'), allocated)
     self.assertIn(AllocatedResource(ain_model, 'AIO5', 'AIn5', '5'), allocated)
 
-  def test_assign_mixed(self):  # mix of user-specified and automatic assignments, assuming greedy algo
+  def test_assign_mixed(self) -> None:  # mix of user-specified and automatic assignments, assuming greedy algo
     dio_model = DigitalBidir()
     ain_model = AnalogSink()
     allocated = PinMapUtil([
@@ -64,7 +64,7 @@ class PinMapUtilTest(unittest.TestCase):
     self.assertIn(AllocatedResource(ain_model, 'AIO4', 'AIn4', '4'), allocated)
     self.assertIn(AllocatedResource(ain_model, 'AIO5', 'AIn5', '5'), allocated)
 
-  def test_assign_bad(self):  # bad user-specified assignments
+  def test_assign_bad(self) -> None:  # bad user-specified assignments
     dio_model = DigitalBidir()
     ain_model = AnalogSink()
     with self.assertRaises(BadUserAssignError):
@@ -74,7 +74,7 @@ class PinMapUtilTest(unittest.TestCase):
       ]).allocate([(AnalogSink, ['AIO'])],
                   ["AIO=1"])
 
-  def test_assign_duplicated(self):  # duplicated (over-assigned resources) user-specified assignments
+  def test_assign_duplicated(self) -> None:  # duplicated (over-assigned resources) user-specified assignments
     dio_model = DigitalBidir()
     ain_model = AnalogSink()
     with self.assertRaises(BadUserAssignError):
@@ -84,7 +84,7 @@ class PinMapUtilTest(unittest.TestCase):
       ]).allocate([(AnalogSink, ['AIO1', 'AIO2'])],
                   ["AIO1=3", "AIO2=3"])
 
-  def test_assign_overflow(self):  # more requested ports than available resources
+  def test_assign_overflow(self) -> None:  # more requested ports than available resources
     dio_model = DigitalBidir()
     ain_model = AnalogSink()
     with self.assertRaises(AutomaticAllocationError):
@@ -93,7 +93,7 @@ class PinMapUtilTest(unittest.TestCase):
         PinResource('3', {'PIO3': dio_model, 'AIn3': ain_model}),
       ]).allocate([(AnalogSink, ['AIO3', 'AIO4'])])
 
-  def test_assign_bundle_fixed(self):
+  def test_assign_bundle_fixed(self) -> None:
     usb_model = UsbDevicePort()
     allocated = PinMapUtil([
       PeripheralFixedPin('USB0', usb_model, {'dm': '2', 'dp': '3'}),
@@ -101,14 +101,14 @@ class PinMapUtilTest(unittest.TestCase):
                 ["usb.dm=2", "usb.dp=3"])
     self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': ('2', None), 'dp': ('3', None)}), allocated)
 
-  def test_assign_bundle_fixed_auto(self):
+  def test_assign_bundle_fixed_auto(self) -> None:
     usb_model = UsbDevicePort()
     allocated = PinMapUtil([
       PeripheralFixedPin('USB0', usb_model, {'dm': '2', 'dp': '3'}),
     ]).allocate([(UsbDevicePort, ['usb'])])
     self.assertIn(AllocatedResource(usb_model, 'usb', 'USB0', {'dm': ('2', None), 'dp': ('3', None)}), allocated)
 
-  def test_assign_bundle_fixed_badspec(self):
+  def test_assign_bundle_fixed_badspec(self) -> None:
     usb_model = UsbDevicePort()
     with self.assertRaises(BadUserAssignError):
       PinMapUtil([
@@ -121,7 +121,7 @@ class PinMapUtilTest(unittest.TestCase):
       ]).allocate([(UsbDevicePort, ['usb'])],
                   ["usb.quack=1"])
 
-  def test_assign_bundle_delegating(self):
+  def test_assign_bundle_delegating(self) -> None:
     dio_model = DigitalBidir()
     ain_model = AnalogSink()
     allocated = PinMapUtil([
@@ -136,7 +136,7 @@ class PinMapUtilTest(unittest.TestCase):
     self.assertEqual(allocated[0].resource_name, 'UART0')
     self.assertEqual(allocated[0].pin, {'tx': ('1', 'PIO1'), 'rx': ('3', 'PIO3')})
 
-  def test_assign_bundle_delegating_auto(self):
+  def test_assign_bundle_delegating_auto(self) -> None:
     dio_model = DigitalBidir()
     ain_model = AnalogSink()
     allocated = PinMapUtil([
@@ -150,7 +150,7 @@ class PinMapUtilTest(unittest.TestCase):
     self.assertEqual(allocated[0].resource_name, 'UART0')
     self.assertEqual(allocated[0].pin, {'tx': ('1', 'PIO1'), 'rx': ('2', 'PIO2')})
 
-  def test_assign_bundle_delegating_badspec(self):
+  def test_assign_bundle_delegating_badspec(self) -> None:
     dio_model = DigitalBidir()
     ain_model = AnalogSink()
     with self.assertRaises(BadUserAssignError):
@@ -172,7 +172,7 @@ class PinMapUtilTest(unittest.TestCase):
       ]).allocate([(UartPort, ['uart'])],
                   ["uart.quack=1"])
 
-  def test_assign_bundle_delegating_fixed(self):
+  def test_assign_bundle_delegating_fixed(self) -> None:
     dio_model = DigitalBidir()
     dio_model_tx = DigitalBidir(
       voltage_out=3.3 * Volt(tol=0.01),
@@ -200,7 +200,7 @@ class PinMapUtilTest(unittest.TestCase):
     self.assertTrue(allocated[0].port_model.rx.current_draw.initializer is not None)
     self.assertTrue(allocated[0].port_model.rx.current_draw.initializer is dio_model_rx.current_draw.initializer)
 
-  def test_assign_bundle_delegating_notconnected(self):
+  def test_assign_bundle_delegating_notconnected(self) -> None:
     dio_model = DigitalBidir()
     allocated = PinMapUtil([
       PinResource('1', {'PIO1': dio_model}),

@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from .AbstractDiodes import Diode
 

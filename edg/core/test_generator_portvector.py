@@ -33,10 +33,10 @@ class TestGeneratorElements(Block):
 
 
 class TestGeneratorPortVector(unittest.TestCase):
-  def test_generator(self):
+  def test_generator(self) -> None:
     ScalaCompiler.compile(TestGeneratorElements)
 
-  def test_initializer(self):
+  def test_initializer(self) -> None:
     compiled = ScalaCompiler.compile(TestGeneratorElements)
     pb = compiled.contents.blocks[0].value.hierarchy
     self.assertEqual(pb.constraints[1].name, "(init)ports.0.range_param")
@@ -64,7 +64,7 @@ class TestElementsInvalid(Block):
 
 
 class TestPortVectorInvalid(unittest.TestCase):
-  def test_generator_error(self):
+  def test_generator_error(self) -> None:
     with self.assertRaises(CompilerCheckError):
       ScalaCompiler.compile(TestElementsInvalid)
 
@@ -90,10 +90,10 @@ class GeneratorWrapperTest(Block):  # same as TestGeneratorElements, but creatin
 
 
 class TestGeneratorWrapper(unittest.TestCase):
-  def test_generator(self):
+  def test_generator(self) -> None:
     ScalaCompiler.compile(GeneratorWrapperTest)
 
-  def test_exported_ports(self):
+  def test_exported_ports(self) -> None:
     compiled = ScalaCompiler.compile(GeneratorWrapperTest)
     pb = edgir.pair_get(compiled.contents.blocks, 'block').hierarchy
 
@@ -136,5 +136,5 @@ class GeneratorArrayParamTop(Block):
 
 
 class TestGeneratorArrayParam(unittest.TestCase):
-  def test_generator(self):
+  def test_generator(self) -> None:
     ScalaCompiler.compile(GeneratorArrayParamTop)

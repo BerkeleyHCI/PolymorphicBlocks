@@ -14,7 +14,7 @@ class DescriptionBlock(Block):
 
 
 class DescriptionBlockProtoTestCase(unittest.TestCase):
-    def test_description(self):
+    def test_description(self) -> None:
         pb = DescriptionBlock()._elaborated_def_to_proto()
 
         self.assertEqual(len(pb.description), 3)

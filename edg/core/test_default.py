@@ -39,39 +39,39 @@ class CombinedParamSubClass(DefaultParamSubClass):  # adds a default param on to
 
 
 class DefaultTestCase(unittest.TestCase):
-  def test_base(self):
+  def test_base(self) -> None:
     pb = BaseParamClass()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.param_defaults), 0)
 
-  def test_non_default(self):
+  def test_non_default(self) -> None:
     pb = NonDefaultParamClass()._elaborated_def_to_proto()  # type: ignore
 
     self.assertEqual(len(pb.param_defaults), 0)
 
-  def test_non_default_subclass(self):
+  def test_non_default_subclass(self) -> None:
     pb = NonDefaultParamSubClass()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.param_defaults), 0)
 
-  def test_empty_default(self):
+  def test_empty_default(self) -> None:
     pb = EmptyDefaultParamClass()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.param_defaults), 0)
 
-  def test_default(self):
+  def test_default(self) -> None:
     pb = DefaultParamSubClass()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.param_defaults), 1)
     self.assertEqual(pb.param_defaults['default_param'], edgir.lit_to_expr(42))
 
-  def test_override(self):
+  def test_override(self) -> None:
     pb = OverrideDefaultSubClass()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.param_defaults), 1)
     self.assertEqual(pb.param_defaults['default_param'], edgir.lit_to_expr(16))
 
-  def test_combined(self):
+  def test_combined(self) -> None:
     pb = CombinedParamSubClass()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.param_defaults), 2)

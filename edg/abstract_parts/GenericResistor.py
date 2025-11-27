@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 from ..electronics_model import *
 from .AbstractResistor import Resistor

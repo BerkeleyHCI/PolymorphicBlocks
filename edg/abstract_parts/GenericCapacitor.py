@@ -1,4 +1,4 @@
-from typing import NamedTuple, Dict, Optional
+from typing import NamedTuple, Dict, Optional, Any
 import math
 
 from ..electronics_model import *

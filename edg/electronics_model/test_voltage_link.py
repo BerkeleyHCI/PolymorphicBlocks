@@ -7,5 +7,5 @@ class VoltageLinkTestCase(unittest.TestCase):
   def setUp(self):
     self.pb = VoltageLink()._elaborated_def_to_proto()
 
-  def test_metadata(self):
+  def test_metadata(self) -> None:
     self.assertIn('nets', self.pb.meta.members.node)

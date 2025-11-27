@@ -6,7 +6,7 @@ from .SvgPcbBackend import arrange_blocks, flatten_packed_block, PlacedBlock, Bl
 
 
 class PartPlacerTestCase(unittest.TestCase):
-    def test_placement(self):
+    def test_placement(self) -> None:
         u1 = NetBlock(
             footprint="Package_QFP:LQFP-48-1EP_7x7mm_P0.5mm_EP3.6x3.6mm", refdes="U1", part="", value="",
             full_path=TransformUtil.Path.empty().append_block("U1"), path=[], class_path=[]
@@ -30,7 +30,7 @@ class PartPlacerTestCase(unittest.TestCase):
         self.assertAlmostEqual(arranged.elts[2][1][0], 12.78, places=2)
         self.assertAlmostEqual(arranged.elts[2][1][1], 3.19, places=2)
 
-    def test_placement_hierarchical(self):
+    def test_placement_hierarchical(self) -> None:
         u1 = NetBlock(
             footprint="Package_QFP:LQFP-48-1EP_7x7mm_P0.5mm_EP3.6x3.6mm", refdes="U1", part="", value="",
             full_path=TransformUtil.Path.empty().append_block('A').append_block("U1"), path=[], class_path=[]
@@ -77,7 +77,7 @@ class PartPlacerTestCase(unittest.TestCase):
         self.assertAlmostEqual(flattened[TransformUtil.Path.empty().append_block('B').append_block('R3')][0], 1.48, places=2)
         self.assertAlmostEqual(flattened[TransformUtil.Path.empty().append_block('B').append_block('R3')][1], 14.03, places=2)
 
-    def test_placement_bbox(self):
+    def test_placement_bbox(self) -> None:
         r1 = NetBlock(
             footprint="Resistor_SMD:R_0603_1608Metric", refdes="R1", part="", value="",
             full_path=TransformUtil.Path.empty().append_block("R1"), path=[], class_path=[]

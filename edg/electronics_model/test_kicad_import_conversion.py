@@ -27,14 +27,14 @@ class KiCadBoundaryConversionBlock(KiCadSchematicBlock):
 
 
 class KiCadImportProtoTestCase(unittest.TestCase):
-    def test_conversion_block(self):
+    def test_conversion_block(self) -> None:
         # because this generates an adapter, the structure differs from the other KiCad import tests
         # this also doesn't re-check the other structure, only the conversions
         # (and that it doesn't connection-error out in the first place)
         pb = KiCadConversionBlock()._elaborated_def_to_proto()
         self.validate(pb)
 
-    def test_boundary_conversion_block(self):
+    def test_boundary_conversion_block(self) -> None:
         pb = KiCadBoundaryConversionBlock()._elaborated_def_to_proto()
         self.validate(pb)
 
