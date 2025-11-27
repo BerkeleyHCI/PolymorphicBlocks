@@ -38,7 +38,7 @@ class JlcAluminumCapacitor(PartsTableSelectorFootprint, JlcTableSelector, TableC
       else:
         return None
 
-      if new_cols[cls.KICAD_FOOTPRINT] not in cls._STANDARD_FOOTPRINT._footprint_pinning_map():
+      if new_cols[cls.KICAD_FOOTPRINT] not in cls.standard_footprint()._footprint_pinning_map():
         return None
 
       new_cols.update(cls._parse_jlcpcb_common(row))

@@ -11,7 +11,7 @@ from .StandardFootprint import StandardFootprint, HasStandardFootprint
 class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   """Base class for untyped BJTs
   """
-  _STANDARD_FOOTPRINT = BjtStandardFootprint
+  _STANDARD_FOOTPRINT = lambda: BjtStandardFootprint
 
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     # TODO actually check that the device channel corresponds with the schematic?

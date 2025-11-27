@@ -48,7 +48,7 @@ class UnpolarizedCapacitor(PassiveComponent):
 @abstract_block
 class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock, HasStandardFootprint):
   """Polarized capacitor, which we assume will be the default"""
-  _STANDARD_FOOTPRINT = CapacitorStandardFootprint
+  _STANDARD_FOOTPRINT = lambda: CapacitorStandardFootprint
 
   CAPACITOR_REGEX = re.compile("^" + f"([\d.{PartParserUtil.SI_PREFIXES}]+)\s*F?" +
                                "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?" +

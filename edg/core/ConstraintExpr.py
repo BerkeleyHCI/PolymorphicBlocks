@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from typing import Generic, Any, TYPE_CHECKING, Tuple, Type, Optional, Union, Iterable, overload, NoReturn
+
 from deprecated import deprecated
 from itertools import chain
-from typing import *
 from typing_extensions import TypeVar
 
 from .Binding import Binding, ParamBinding, BoolLiteralBinding, IntLiteralBinding, \

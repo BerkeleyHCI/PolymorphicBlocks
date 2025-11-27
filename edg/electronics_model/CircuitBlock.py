@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import *
+from typing import Generic, Any, Optional, List, Mapping, Dict
+
 from typing_extensions import TypeVar
 
-from ..core import *
 from .KiCadImportableBlock import KiCadImportableBlock
+from ..core import *
 from ..core.HdlUserExceptions import EdgTypeError
 
 CircuitLinkType = TypeVar('CircuitLinkType', bound=Link, covariant=True, default=Link)

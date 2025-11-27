@@ -2,18 +2,20 @@ from __future__ import annotations
 
 import itertools
 from abc import abstractmethod
-from typing import *
-from typing_extensions import TypeVar
-from deprecated import deprecated
+from typing import Generic, Any, Tuple, Type, Optional, Union, Iterable, overload, Hashable, List, \
+  ItemsView, Callable
 
-from .HdlUserExceptions import EdgTypeError
-from .. import edgir
+from deprecated import deprecated
+from typing_extensions import TypeVar
+
+from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr
 from .Binding import LengthBinding, AllocatedBinding
 from .Builder import builder
 from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, StringExpr, IntExpr, Binding
 from .Core import Refable, non_library
+from .HdlUserExceptions import EdgTypeError
 from .Ports import BaseContainerPort, BasePort, Port
-from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr
+from .. import edgir
 
 
 class MapExtractBinding(Binding):
@@ -206,7 +208,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
 
     if self._elts is None:
-      self._elts = OrderedDict()
+      self._elts = {}
 
   def append_elt(self, tpe: VectorType, suggested_name: Optional[str] = None) -> VectorType:
     """Appends a new element of this array (if this is not to be a dynamically-sized array - including
@@ -220,7 +222,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert type(tpe) is type(self._tpe), f"created elts {type(tpe)} must be same type as array type {type(self._tpe)}"
 
     if self._elts is None:
-      self._elts = OrderedDict()
+      self._elts = {}
     if suggested_name is None:
       suggested_name = str(self._elt_next_index)
       self._elt_next_index += 1

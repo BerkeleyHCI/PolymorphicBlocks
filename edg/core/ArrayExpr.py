@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import *
+from typing import Generic, Any, Type, Optional, Union, Iterable, Sequence, List
+
 from typing_extensions import TypeVar
 
-from .. import edgir
 from .Binding import EqOp, ArrayBinding, UnarySetOpBinding, BinarySetOpBinding
 from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, RangeExpr, RangeLike, \
   BoolExpr, BoolLike, StringLike, \
@@ -11,6 +11,7 @@ from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, Range
 from .Core import Refable
 from .Ports import BasePort
 from .Range import Range
+from .. import edgir
 
 
 class SampleElementBinding(Binding):

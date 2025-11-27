@@ -116,8 +116,8 @@ class PartsTableSelectorFootprint(PartsTableFootprintFilter, FootprintBlock, Has
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.footprint(
-      self._STANDARD_FOOTPRINT.REFDES_PREFIX, row[self.KICAD_FOOTPRINT],
-      self._STANDARD_FOOTPRINT._make_pinning(self, row[self.KICAD_FOOTPRINT]),
+      self.standard_footprint().REFDES_PREFIX, row[self.KICAD_FOOTPRINT],
+      self.standard_footprint()._make_pinning(self, row[self.KICAD_FOOTPRINT]),
       mfr=row[self.MANUFACTURER_COL], part=row[self.PART_NUMBER_COL],
       value=row[self.DESCRIPTION_COL],
       datasheet=row[self.DATASHEET_COL]

@@ -40,4 +40,14 @@ class StandardFootprint(Generic[StandardPinningType]):
 @non_library
 class HasStandardFootprint(Block):
   """Base class that defines that a class supports a StandardFootprint"""
-  _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint[Self]]]
+  # the footprint can be a lambda to allow the pinning to be defined after
+  _STANDARD_FOOTPRINT: ClassVar[Union[Type[StandardFootprint[Self]],
+                                      Callable[[], Type[StandardFootprint[Self]]]]]
+
+  @classmethod
+  def standard_footprint(cls) -> Type[StandardFootprint[Self]]:
+    """Returns the StandardFootprint class for this block"""
+    if callable(cls._STANDARD_FOOTPRINT):
+      return cls._STANDARD_FOOTPRINT()
+    else:
+      return cls._STANDARD_FOOTPRINT

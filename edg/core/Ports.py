@@ -2,20 +2,20 @@ from __future__ import annotations
 
 import itertools
 from abc import abstractmethod
-from typing import *
+from typing import Generic, Optional, Dict, Hashable, List
+
 from typing_extensions import TypeVar
 
-from .. import edgir
 from .Binding import ParamBinding, IsConnectedBinding, NameBinding
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
 from .Core import Refable, HasMetadata, SubElementDict, non_library
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
+from .. import edgir
 
 if TYPE_CHECKING:
   from .Blocks import BaseBlock
-  from .Link import Link
   from .PortBlocks import PortBridge, PortAdapter
 
 
