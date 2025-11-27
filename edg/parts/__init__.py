@@ -37,6 +37,7 @@ from .Opamp_Opax197 import Opa197, Opa2197
 from .Opamp_Opax189 import Opa189, Opa2189
 from .Opamp_Opax333 import Opa2333
 from .Opamp_Lmv321 import Lmv321
+from .Inamp_Ina826 import Ina826
 from .CeramicResonator_Cstne import Cstne
 
 from .PassiveConnector_Header import PinHeader254, PinHeader254Vertical, PinHeader254Horizontal, PinSocket254
@@ -112,7 +113,8 @@ from .DacI2c_Mcp4728 import Mcp4728
 
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
-from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, Sk6812_Side_A, NeopixelArray, NeopixelArrayCircular
+from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, Ws2812c_2020, Sk6812_Side_A, \
+    NeopixelArray, NeopixelArrayCircular
 from .Lcd_Qt096t_if09 import Qt096t_if09
 from .Lcd_Ch280qv10_Ct import Ch280qv10_Ct
 from .Lcd_Er_Tft1_28_3 import Er_Tft_128_3
@@ -126,7 +128,8 @@ from .EInk_E2154fs091 import E2154fs091
 from .EInk_Er_Epd027_2 import Er_Epd027_2
 from .EInk_WaveshareDriver import Waveshare_Epd
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
-from .SolidStateRelay_Toshiba import Tlp3545a
+from .SolidStateRelay_Toshiba import Tlp3545a, Tlp170am
+from .AnalogSwitch_7400 import Sn74lvc1g3157
 from .AnalogSwitch_Nlas4157 import Nlas4157
 from .AnalogSwitch_Dg468 import Dg468
 from .CanTransceiver_Iso1050 import Iso1050dub
@@ -145,7 +148,7 @@ from .SpiMemory_93Lc import E93Lc_B
 from .UsbUart_Cp2102 import Cp2102
 from .UsbInterface_Ft232h import Ft232hl
 from .Logic_74Ahct import L74Ahct1g125
-from .Logic_74Lvc import Sn74lvc1g74
+from .Logic_74Lvc import Sn74lvc1g74, Sn74lvc2g02
 from .Rf_Sx1262 import Sx1262
 from .Rf_Pn7160 import Pn7160
 from .Comparator_Lmv331 import Lmv331

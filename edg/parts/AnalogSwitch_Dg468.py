@@ -6,14 +6,15 @@ class Dg468_Device(InternalSubcircuit, FootprintBlock, JlcPart):
   def __init__(self):
     super().__init__()
 
-    self.gnd = self.Port(Ground())
+    self.vn = self.Port(Ground())
     self.vp = self.Port(VoltageSink(
       voltage_limits=(7, 36)*Volt,  # 44v abs max
       current_draw=(5, 20)*uAmp,
     ))
 
+    self.gnd = self.Port(Ground())  # for control signal
     self.in_ = self.Port(DigitalSink.from_supply(
-      self.gnd, self.vp,
+      self.vn, self.vp,
       voltage_limit_tolerance=(-2, 2)*Volt,  # or 30mA
       input_threshold_abs=(0.8, 2.5)*Volt
     ))
@@ -34,7 +35,7 @@ class Dg468_Device(InternalSubcircuit, FootprintBlock, JlcPart):
       'U', 'Package_TO_SOT_SMD:SOT-23-6',
       {
         '1': self.no,
-        '2': self.gnd,  # v-
+        '2': self.vn,
         '3': self.in_,
         '4': self.gnd,
         '5': self.vp,
@@ -47,15 +48,19 @@ class Dg468_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.assign(self.actual_basic_part, False)
 
 
-class Dg468(AnalogSwitch):
+class Dg468(AnalogSwitch, GeneratorBlock):
   """DG468 36V 10ohm SPST switch in normally-open configuration
   """
+  def __init__(self):
+    super().__init__()
+    self.generator_param(self.control_gnd.is_connected())
+
   def contents(self):
     super().contents()
 
     self.ic = self.Block(Dg468_Device())
     self.connect(self.pwr, self.ic.vp)
-    self.connect(self.gnd, self.ic.gnd)
+    self.connect(self.gnd, self.ic.vn)
     self.connect(self.com, self.ic.com)
     self.connect(self.inputs.append_elt(Passive.empty(), '1'), self.ic.no)
     self.connect(self.control.append_elt(DigitalSink.empty(), '0'), self.ic.in_)
@@ -68,3 +73,10 @@ class Dg468(AnalogSwitch):
     self.vdd_cap = self.Block(DecouplingCapacitor(
       capacitance=0.1*uFarad(tol=0.2),
     )).connected(self.gnd, self.pwr)
+
+  def generate(self):
+    super().generate()
+    if self.get(self.control_gnd.is_connected()):
+      self.connect(self.control_gnd, self.ic.gnd)
+    else:
+      self.connect(self.gnd, self.ic.gnd)  # default

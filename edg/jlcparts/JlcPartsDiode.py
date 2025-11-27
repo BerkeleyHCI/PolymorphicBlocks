@@ -20,10 +20,16 @@ class JlcPartsDiode(PartsTableSelectorFootprint, JlcPartsBase, TableDiode):
 
             row_dict[cls.VOLTAGE_RATING] = Range.zero_to_upper(PartParserUtil.parse_value(
                 attributes.get("Reverse voltage (vr)", str), 'V'))
-            row_dict[cls.CURRENT_RATING] = Range.zero_to_upper(PartParserUtil.parse_value(
-                attributes.get("Average rectified current (io)", str), 'A'))
             row_dict[cls.FORWARD_VOLTAGE] = Range.zero_to_upper(PartParserUtil.parse_value(
                 attributes.get("Forward voltage (vf@if)", str).split('@')[0], 'V'))
+            if "Average rectified current (io)" in attributes:
+                row_dict[cls.CURRENT_RATING] = Range.zero_to_upper(PartParserUtil.parse_value(
+                    attributes.get("Average rectified current (io)", str), 'A'))
+            elif "Rectified current" in attributes:  # different key for some files
+                row_dict[cls.CURRENT_RATING] = Range.zero_to_upper(PartParserUtil.parse_value(
+                    attributes.get("Rectified current", str), 'A'))
+            else:
+                raise KeyError("no current rating")
 
             try:  # sometimes '-'
                 reverse_recovery = Range.exact(PartParserUtil.parse_value(

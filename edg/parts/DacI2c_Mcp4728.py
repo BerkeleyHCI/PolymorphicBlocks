@@ -53,10 +53,10 @@ class Mcp4728_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
         '9': self.vout3,
         '10': self.vss,
       },
-      mfr='Microchip Technology', part='MCP4728-E/UN',
+      mfr='Microchip Technology', part='MCP4728T-E/UN',
       datasheet='https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/22187E.pdf'
     )
-    self.assign(self.lcsc_part, 'C108207')
+    self.assign(self.lcsc_part, 'C478093')
     self.assign(self.actual_basic_part, False)
 
 

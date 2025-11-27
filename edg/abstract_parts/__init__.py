@@ -27,18 +27,19 @@ from .SelectorArea import SelectorArea, PartsTableAreaSelector
 from .AbstractDevices import Battery
 from .AbstractConnector import BananaJack, BananaSafetyJack, RfConnector, RfConnectorTestPoint, RfConnectorAntenna,\
     UflConnector, SmaConnector, SmaMConnector, SmaFConnector
-from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor
+from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor, SeriesResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
-from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor, AnalogClampResistor
+from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor, AnalogClampResistor, DigitalClampResistor
 from .AbstractResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
 from .AbstractCapacitor import UnpolarizedCapacitor, Capacitor, CeramicCapacitor, AluminumCapacitor, \
     CapacitorStandardFootprint, TableCapacitor, TableDeratingCapacitor
-from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor, CombinedCapacitor
+from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor, AnalogCapacitor, CombinedCapacitor
 from .AbstractInductor import Inductor, TableInductor, SeriesPowerInductor
 from .AbstractFerriteBead import FerriteBead, FerriteBeadStandardFootprint, TableFerriteBead, SeriesPowerFerriteBead
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, VoltageSenseDivider
 from .ResistiveDivider import FeedbackVoltageDivider, SignalDivider
-from .PassiveFilters import LowPassRc, AnalogLowPassRc, DigitalLowPassRc, DigitalLowPassRcArray, LowPassRcDac, PullupDelayRc
+from .PassiveFilters import LowPassRc, AnalogLowPassRc, DigitalLowPassRc, DigitalLowPassRcArray, LowPassRcDac, \
+    PullupDelayRc, LowPassAnalogDifferentialRc
 from .RfNetworks import DiscreteRfWarning, LLowPassFilter, LHighPassFilter, LLowPassFilterWith2HNotch, PiLowPassFilter
 from .I2cPullup import I2cPullup
 from .LevelShifter import BidirectionaLevelShifter
@@ -61,7 +62,7 @@ from .AbstractAnalogSwitch import AnalogSwitch, AnalogSwitchTree, AnalogDemuxer,
 from .AbstractSwitch import Switch, TactileSwitch, MechanicalKeyswitch, DigitalSwitch
 from .AbstractSwitch import RotaryEncoder, RotaryEncoderSwitch, DigitalRotaryEncoder, DigitalRotaryEncoderSwitch
 from .AbstractSwitch import DirectionSwitch, DirectionSwitchCenter, DigitalDirectionSwitch, DigitalDirectionSwitchCenter
-from .AbstractComparator import Comparator
+from .AbstractComparator import Comparator, VoltageComparator
 from .AbstractOpamp import Opamp, OpampElement, MultipackOpamp, MultipackOpampGenerator
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
 from .AbstractSpiMemory import SpiMemory, SpiMemoryQspi
@@ -81,7 +82,7 @@ from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConne
     SwdCortexTargetConnectorSwo, SwdCortexTargetConnectorTdi
 from .AbstractTestPoint import TestPoint, GroundTestPoint, VoltageTestPoint, DigitalTestPoint, DigitalArrayTestPoint, \
     AnalogTestPoint, I2cTestPoint, SpiTestPoint, CanControllerTestPoint, CanDiffTestPoint
-from .AbstractTestPoint import AnalogRfTestPoint
+from .AbstractTestPoint import AnalogCoaxTestPoint
 from .AbstractJumper import Jumper, DigitalJumper
 from .PassiveConnector import PassiveConnector, FootprintPassiveConnector
 from .TouchPad import FootprintToucbPad

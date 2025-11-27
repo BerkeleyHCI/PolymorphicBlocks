@@ -41,10 +41,12 @@ PART_ROTATIONS = {
   'C106912': -90,  # NLAS4157
   'C3663690': 180,  # TMP1075N
   'C70285': 180,  # SN74LVC1G74DCUR
-  'C2651906': 0,  # DG468
+  'C2651906': -90,  # DG468
   'C840095': 0,  # LM2664 SOT-23-6
   'C2858491': 270,  # ESP32-C3H4 - seems really broken
   'C2865497': 0,  # TPS92200D2DDCR SOT-23-6
+  'C7976': 180,  # LMV331IDCKR SOT-353
+  'C478093': -90,  # MCP4728T-E/UN
 
   'C2962219': -90,  # 2x5 1.27mm header shrouded
   'C126830': 90,  # "SOT-23" USB ESD protector
@@ -80,12 +82,15 @@ _FOOTPRINT_ROTATIONS = {
   'Package_TO_SOT_SMD:SOT-23': 180,
   'Package_TO_SOT_SMD:SOT-23-5': 180,
   'Package_TO_SOT_SMD:SOT-23-6': 180,
+  'Package_TO_SOT_SMD:SOT-23-8': 180,
   'Package_TO_SOT_SMD:SOT-89-3': 180,
   'Package_TO_SOT_SMD:SOT-323_SC-70': 180,
+  'Package_TO_SOT_SMD:SOT-363_SC-70-6': 180,
   'Package_TO_SOT_SMD:SOT-223-3_TabPin2': 180,
   'Package_TO_SOT_SMD:TO-252-2': 180,
   'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm': -90,
   'Package_SO:SOIC-8_5.23x5.23mm_P1.27mm': -90,
+  'Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic': -90,
   'Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm': -90,
 
   'OptoDevice:Osram_BPW34S-SMD': 180,
@@ -94,55 +99,7 @@ _FOOTPRINT_ROTATIONS = {
 
   'Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal': 180,
 
-  'Capacitor_SMD:CP_Elec_3x5.3': 180,
-  'Capacitor_SMD:CP_Elec_3x5.4': 180,
-  'Capacitor_SMD:CP_Elec_4x3': 180,
-  'Capacitor_SMD:CP_Elec_4x3.9': 180,
-  'Capacitor_SMD:CP_Elec_4x4.5': 180,
-  'Capacitor_SMD:CP_Elec_4x5.3': 180,
-  'Capacitor_SMD:CP_Elec_4x5.4': 180,
-  'Capacitor_SMD:CP_Elec_4x5.7': 180,
-  'Capacitor_SMD:CP_Elec_4x5.8': 180,
-  'Capacitor_SMD:CP_Elec_5x3': 180,
-  'Capacitor_SMD:CP_Elec_5x3.9': 180,
-  'Capacitor_SMD:CP_Elec_5x4.4': 180,
-  'Capacitor_SMD:CP_Elec_5x4.5': 180,
-  'Capacitor_SMD:CP_Elec_5x5.3': 180,
-  'Capacitor_SMD:CP_Elec_5x5.4': 180,
-  'Capacitor_SMD:CP_Elec_5x5.7': 180,
-  'Capacitor_SMD:CP_Elec_5x5.8': 180,
-  'Capacitor_SMD:CP_Elec_5x5.9': 180,
-  'Capacitor_SMD:CP_Elec_6.3x3': 180,
-  'Capacitor_SMD:CP_Elec_6.3x3.9': 180,
-  'Capacitor_SMD:CP_Elec_6.3x4.5': 180,
-  'Capacitor_SMD:CP_Elec_6.3x4.9': 180,
-  'Capacitor_SMD:CP_Elec_6.3x5.2': 180,
-  'Capacitor_SMD:CP_Elec_6.3x5.3': 180,
-  'Capacitor_SMD:CP_Elec_6.3x5.4': 180,
-  'Capacitor_SMD:CP_Elec_6.3x5.7': 180,
-  'Capacitor_SMD:CP_Elec_6.3x5.8': 180,
-  'Capacitor_SMD:CP_Elec_6.3x5.9': 180,
-  'Capacitor_SMD:CP_Elec_6.3x7.7': 180,
-  'Capacitor_SMD:CP_Elec_6.3x9.9': 180,
-  'Capacitor_SMD:CP_Elec_8x5.4': 180,
-  'Capacitor_SMD:CP_Elec_8x6.2': 180,
-  'Capacitor_SMD:CP_Elec_8x6.5': 180,
-  'Capacitor_SMD:CP_Elec_8x6.7': 180,
-  'Capacitor_SMD:CP_Elec_8x6.9': 180,
-  'Capacitor_SMD:CP_Elec_8x10': 180,
-  'Capacitor_SMD:CP_Elec_8x10.5': 180,
-  'Capacitor_SMD:CP_Elec_8x11.9': 180,
-  'Capacitor_SMD:CP_Elec_10x7.7': 180,
-  'Capacitor_SMD:CP_Elec_10x7.9': 180,
-  'Capacitor_SMD:CP_Elec_10x10': 180,
-  'Capacitor_SMD:CP_Elec_10x10.5': 180,
-  'Capacitor_SMD:CP_Elec_10x12.5': 180,
-  'Capacitor_SMD:CP_Elec_10x12.6': 180,
-  'Capacitor_SMD:CP_Elec_10x14.3': 180,
-  'Capacitor_SMD:CP_Elec_16x17.5': 180,
-  'Capacitor_SMD:CP_Elec_16x22': 180,
-  'Capacitor_SMD:CP_Elec_18x7.5': 180,
-  'Capacitor_SMD:CP_Elec_18x22': 180,
+  # note, SMD e-cap are sometimes flipped but are not included here as it's inconsistent
 }
 
 # footprint position export doesn't include the footprint library name

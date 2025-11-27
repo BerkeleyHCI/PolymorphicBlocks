@@ -38,6 +38,7 @@ class Mcp3561_Device(InternalSubcircuit, GeneratorBlock, FootprintBlock):
     # Datasheet table 1.1
     self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 10) * MHertz))  # note 20MHz for >2.7V DVdd
     self.cs = self.Port(dio_model)
+    self.mclkin = self.Port(DigitalSink.from_bidir(dio_model), optional=True)  # clkin on TSSOP devices
 
     self.has_ext_ref = self.ArgParameter(has_ext_ref)
     self.generator_param(self.ch.requested(), self.vrefp.is_connected(), self.has_ext_ref)
@@ -82,7 +83,7 @@ class Mcp3561_Device(InternalSubcircuit, GeneratorBlock, FootprintBlock):
         '15': self.spi.mosi,
         '16': self.spi.miso,
         # '17': nIRQ / MDAT
-        # '18': MCLK
+        '18': self.mclkin,
         '19': self.vss,
         '20': self.dvdd,
       },
@@ -104,6 +105,7 @@ class Mcp3561(AnalogToDigital, GeneratorBlock):
     self.pwr = self.Port(VoltageSink.empty())
     self.gnd = self.Export(self.ic.vss, [Common])
     self.vref = self.Port(VoltageSink.empty(), optional=True)
+    self.mclkin = self.Export(self.ic.mclkin, optional=True)
     self.assign(self.ic.has_ext_ref, self.vref.is_connected())
     self.generator_param(self.vref.is_connected())
 
