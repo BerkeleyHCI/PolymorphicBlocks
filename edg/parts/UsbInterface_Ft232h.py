@@ -132,7 +132,7 @@ class Ft232hl_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 class Ft232EepromDriver(InternalSubcircuit, Block):
   """Adapts the EECLK and EEDATA pins of the FT232 to the SPI of the EEPROM"""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty())
     self.eeclk = self.Port(DigitalSink.empty())

@@ -108,7 +108,7 @@ class TestInductor(Inductor):
 
 
 class BuckPowerPathTestTop(DesignTop):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(BuckConverterPowerPath(
             input_voltage=Range(4, 6), output_voltage=(2, 3),
@@ -139,7 +139,7 @@ class BuckPowerPathTestTop(DesignTop):
 
 
 class BoostPowerPathTestTop(DesignTop):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(BoostConverterPowerPath(
             input_voltage=Range(4, 6), output_voltage=(10, 14),

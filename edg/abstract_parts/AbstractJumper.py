@@ -8,14 +8,14 @@ class Jumper(DiscreteComponent, Block):
   as always connected for model purposes.
 
   Wrapping blocks can add typed port and parameter propagation semantics."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.a = self.Port(Passive())
     self.b = self.Port(Passive())
 
 
 class DigitalJumper(TypedJumper, Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.input = self.Port(DigitalSink.empty(), [Input])
     self.output = self.Port(DigitalSource.empty(), [Output])

@@ -15,7 +15,7 @@ EDG_PROTO_VERSION = 7
 
 class LibraryElementIndexer:
   """Indexer for libraries, recursively searches modules and their LibraryElements."""
-  def __init__(self):
+  def __init__(self) -> None:
     self.seen_modules: Set[ModuleType] = set()
     self.seen_elements: Set[Type[LibraryElement]] = set()
 

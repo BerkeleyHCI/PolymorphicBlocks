@@ -241,7 +241,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Resetta
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
   NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.ic: Esp32_Wroom_32_Device
     self.generator_param(self.reset.is_connected())

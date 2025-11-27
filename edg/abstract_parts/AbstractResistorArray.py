@@ -44,7 +44,7 @@ class ResistorArrayStandardFootprint(StandardFootprint['ResistorArray']):
 
 
 class ResistorArrayElement(Resistor):  # to avoid an abstract part error
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__(resistance=RangeExpr(), power=RangeExpr())
 
 

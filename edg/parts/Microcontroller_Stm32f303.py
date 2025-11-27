@@ -238,7 +238,7 @@ class Nucleo_F303k8(IoControllerUsbOut, IoControllerPowerOut, IoController, Stm3
         'Vusb': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     self.gnd.init_from(Ground())

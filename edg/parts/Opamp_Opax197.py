@@ -34,7 +34,7 @@ class Opa197_Base_Device(InternalSubcircuit):
 class Opa197_Device(Opa197_Base_Device, JlcPart, FootprintBlock):
   DEVICES = 1
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     analog_in_model = self._analog_in_model()
     self.vinp = self.Port(analog_in_model)
@@ -85,7 +85,7 @@ class Opa197(Opamp):
 class Opa2197_Device(Opa197_Base_Device, JlcPart, FootprintBlock):
   DEVICES = 2
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     analog_in_model = self._analog_in_model()

@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Tlv9061_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vcc = self.Port(VoltageSink(
       voltage_limits=(1.8, 5.5)*Volt, current_draw=(538, 800)*uAmp  # quiescent current

@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTablePart, GeneratorBlock, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.vdd = self.Port(VoltageSink(
@@ -75,7 +75,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
 
 class Max98357a(SpeakerDriver, Block):
     """MAX98357A I2S speaker driver with default gain."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.ic = self.Block(Max98357a_Device())

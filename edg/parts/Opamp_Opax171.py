@@ -22,7 +22,7 @@ class Opa171_Base_Device(InternalSubcircuit):
       impedance=150*Ohm(tol=0)  # open-loop resistance
     )
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vn = self.Port(Ground(), [Common])
     self.vp = self.Port(VoltageSink(
@@ -34,7 +34,7 @@ class Opa171_Base_Device(InternalSubcircuit):
 class Opa2171_Device(Opa171_Base_Device, JlcPart, FootprintBlock):
   DEVICES = 2
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     analog_in_model = self._analog_in_model()

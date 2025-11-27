@@ -153,7 +153,7 @@ class VoltageSinkAdapterGroundReference(CircuitPortAdapter['GroundReference']):
 
 
 class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
-  def __init__(self):
+  def __init__(self) -> None:
     from .DigitalPorts import DigitalSource
     super().__init__()
     self.src = self.Port(VoltageSink(
@@ -168,7 +168,7 @@ class VoltageSinkAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
 
 
 class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
-  def __init__(self):
+  def __init__(self) -> None:
     from .AnalogPort import AnalogSource
 
     super().__init__()

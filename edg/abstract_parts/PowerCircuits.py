@@ -15,7 +15,7 @@ from .DummyDevices import ForcedVoltageCurrentDraw
 class HalfBridge(PowerConditioner, Block):
     """Half bridge circuit with logic-level inputs and current draw calculated from the output node.
     Two power rails: logic power (which can be used to power gate drivers), and the power rail."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.gnd = self.Port(Ground.empty())
@@ -27,7 +27,7 @@ class HalfBridge(PowerConditioner, Block):
 
 @abstract_block_default(lambda: FetHalfBridgeIndependent)
 class HalfBridgeIndependent(BlockInterfaceMixin[HalfBridge]):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.low_ctl = self.Port(DigitalSink.empty())
         self.high_ctl = self.Port(DigitalSink.empty())
@@ -35,7 +35,7 @@ class HalfBridgeIndependent(BlockInterfaceMixin[HalfBridge]):
 
 @abstract_block_default(lambda: FetHalfBridgePwmReset)
 class HalfBridgePwm(BlockInterfaceMixin[HalfBridge]):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.pwm_ctl = self.Port(DigitalSink.empty())
 

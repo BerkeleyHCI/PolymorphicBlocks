@@ -12,7 +12,7 @@ from .VoltagePorts import CircuitPort, VoltageSource, VoltageSink
 
 class PassiveLink(CircuitLink):
   """Copper-only connection"""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.passives = self.Port(Vector(Passive()))
 

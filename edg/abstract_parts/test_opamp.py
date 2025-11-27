@@ -7,7 +7,7 @@ from .OpampCircuits import Amplifier
 
 
 class AnalogSourceDummy(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(AnalogSource(), [InOut])
 
@@ -29,7 +29,7 @@ class TestResistor(Resistor):
 
 
 class AmplifierTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(Amplifier(
       amplification=Range.from_tolerance(2, 0.05)

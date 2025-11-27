@@ -4,13 +4,13 @@ from . import *
 
 
 class AnalogSourceBlock(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(AnalogSource())
 
 
 class AnalogSinkInfiniteBlock(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(AnalogSink(
       impedance=RangeExpr.INF,
@@ -18,7 +18,7 @@ class AnalogSinkInfiniteBlock(Block):
 
 
 class AnalogSinkOneOhmBlock(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(AnalogSink(
       impedance=(1, 1)*Ohm,
@@ -26,7 +26,7 @@ class AnalogSinkOneOhmBlock(Block):
 
 
 class AnalogTwoInfiniteTest(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.source = self.Block(AnalogSourceBlock())
     self.sink1 = self.Block(AnalogSinkInfiniteBlock())
@@ -35,7 +35,7 @@ class AnalogTwoInfiniteTest(Block):
 
 
 class AnalogTwoOneOhmTest(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.source = self.Block(AnalogSourceBlock())
     self.sink1 = self.Block(AnalogSinkOneOhmBlock())
@@ -44,7 +44,7 @@ class AnalogTwoOneOhmTest(Block):
 
 
 class AnalogMixedTest(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.source = self.Block(AnalogSourceBlock())
     self.sink1 = self.Block(AnalogSinkInfiniteBlock())

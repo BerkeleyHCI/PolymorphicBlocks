@@ -69,7 +69,7 @@ class TableLed(PartsTableSelector, Led):
 
 @abstract_block
 class RgbLedCommonAnode(DiscreteSemiconductor):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())
@@ -274,12 +274,12 @@ class IndicatorSinkRgbLed(Light):
 
 
 class IndicatorSinkPackedRgbLedElement(IndicatorSinkLed):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__(current_draw=RangeExpr())
 
 
 class IndicatorSinkPackedRgbLed(MultipackDevice, MultipackBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     # Optional multipack definition

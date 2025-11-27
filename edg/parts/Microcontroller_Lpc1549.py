@@ -321,7 +321,7 @@ class Lpc1549_64_Device(Lpc1549Base_Device):
 
 
 class Lpc1549SwdPull(InternalSubcircuit, Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])

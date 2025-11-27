@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pgnd = self.Port(Ground(), [Common])
     self.vcc = self.Port(VoltageSink.from_gnd(

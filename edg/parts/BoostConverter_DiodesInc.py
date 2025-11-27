@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(2.6, 16)*Volt,

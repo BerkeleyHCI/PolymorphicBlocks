@@ -174,7 +174,7 @@ class AnalogSink(AnalogBase):
 
 
 class AnalogSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.src = self.Port(AnalogSink(  # otherwise ideal
       current_draw=RangeExpr()

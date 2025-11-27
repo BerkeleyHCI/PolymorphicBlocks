@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vsp = self.Port(VoltageSink(
       voltage_limits=(3, 36)*Volt, current_draw=(200, 300)*uAmp  # over temperature range, typ to max

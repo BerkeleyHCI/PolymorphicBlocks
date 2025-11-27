@@ -102,7 +102,7 @@ class KiCadTunnel:
   def __repr__(self):
     return f"{self.__class__.__name__}({self.name} @ {self.pt})"
 
-  def __init__(self):
+  def __init__(self) -> None:
     self.name: str
     self.pt: PointType
 
@@ -148,7 +148,7 @@ class KiCadMarker:
   def __repr__(self):
     return f"{self.__class__.__name__}({self.pt})"
 
-  def __init__(self):
+  def __init__(self) -> None:
     self.pt: PointType
 
 

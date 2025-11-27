@@ -364,7 +364,7 @@ class Mdbt50q_1mv2_Device(Nrf52840_Base, InternalSubcircuit, JlcPart):
 
 
 class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.usb_inner = self.Port(UsbHostPort.empty(), [Input])
     self.usb_outer = self.Port(UsbDevicePort.empty(), [Output])

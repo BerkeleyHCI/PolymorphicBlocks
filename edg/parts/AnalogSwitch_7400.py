@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Sn74lvc1g3157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     self.gnd = self.Port(Ground())

@@ -59,7 +59,7 @@ class GroundBridge(CircuitPortBridge):
 
 
 class GroundAdapterVoltageSource(CircuitPortAdapter['VoltageSource']):
-    def __init__(self):
+    def __init__(self) -> None:
         from .VoltagePorts import VoltageSource
         super().__init__()
         self.src = self.Port(Ground())
@@ -69,7 +69,7 @@ class GroundAdapterVoltageSource(CircuitPortAdapter['VoltageSource']):
 
 
 class GroundAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
-    def __init__(self):
+    def __init__(self) -> None:
         from .DigitalPorts import DigitalSource
         super().__init__()
         self.src = self.Port(Ground())
@@ -80,7 +80,7 @@ class GroundAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
 
 
 class GroundAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
-    def __init__(self):
+    def __init__(self) -> None:
         from .AnalogPort import AnalogSource
 
         super().__init__()

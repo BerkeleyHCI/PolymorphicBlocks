@@ -9,7 +9,7 @@ class DigitalIsolator(Interface, GeneratorBlock):
   map down to a single chip (or be multipacked).
   in_a -> out_b, and in_b -> out_a must each have the same array elements, which is how
   channels will be matched to pins."""
-  def __init__(self):
+  def __init__(self) -> None:
       super().__init__()
       self.pwr_a = self.Port(VoltageSink.empty())
       self.gnd_a = self.Port(Ground.empty())

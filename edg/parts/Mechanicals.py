@@ -18,7 +18,7 @@ class Outline_Pn1332(Mechanical, FootprintBlock):
 class MountingHole(Mechanical, FootprintBlock):
   FOOTPRINT: str = ''
   VALUE: str = ''
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pad = self.Port(Passive(), optional=True)
 

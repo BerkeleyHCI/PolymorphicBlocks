@@ -8,7 +8,7 @@ from .DummyDevices import DummyVoltageSource, DummyVoltageSink, DummyDigitalSink
 
 
 class IdealCircuitTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Block(DummyGround())
     self.pwr = self.Block(DummyVoltageSource(5*Volt(tol=0)))

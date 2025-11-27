@@ -36,7 +36,7 @@ class MultipackOpamp(MultipackDevice, MultipackBlock):
   """Base class for packed opamps - devices that have multiple opamps in a single package,
   with shared power and ground connections. Typically used with the multipack feature to
   fit individual opamps across the design hierarchy into one of these."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.elements = self.PackedPart(PackedBlockArray(OpampElement()))
     self.pwr = self.PackedExport(self.elements.ports_array(lambda x: x.pwr))
@@ -54,7 +54,7 @@ class MultipackOpampGenerator(MultipackOpamp, GeneratorBlock):
     pwr: VoltageSink
     amps: List[Tuple[AnalogSink, AnalogSink, AnalogSource]]  # amp-, amp+, out
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.generator_param(self.pwr.requested(), self.gnd.requested(),
                          self.inn.requested(), self.inp.requested(), self.out.requested())

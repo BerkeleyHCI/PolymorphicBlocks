@@ -2,7 +2,7 @@ from ..abstract_parts import *
 
 
 class Iso1050dub_Device(InternalSubcircuit, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     # Table 6.3, recommended operating conditions
     self.vcc1 = self.Port(VoltageSink(

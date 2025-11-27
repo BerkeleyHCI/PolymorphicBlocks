@@ -4,7 +4,7 @@ from . import *
 
 
 class ResistorTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(GenericChipResistor(
       resistance=1 * kOhm(tol=0.1),
@@ -14,7 +14,7 @@ class ResistorTestTop(Block):
 
 
 class PowerResistorTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(GenericChipResistor(
       resistance=1 * kOhm(tol=0.1),
@@ -25,7 +25,7 @@ class PowerResistorTestTop(Block):
 
 
 class NonE12ResistorTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(GenericChipResistor(
       resistance=8.06 * kOhm(tol=0.01),
