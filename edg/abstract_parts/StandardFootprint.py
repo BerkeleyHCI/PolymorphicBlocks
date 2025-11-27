@@ -8,11 +8,11 @@ PinningFunction = Callable[[StandardPinningType], Dict[str, CircuitPort]]
 class StandardFootprint(Generic[StandardPinningType]):
   """A shared helper class that provides a table to provide standard pin mapping from footprints."""
   REFDES_PREFIX: ClassVar[str]
-  FOOTPRINT_PINNING_MAP: ClassVar[Dict[Union[str, Tuple[str, ...]], PinningFunction]]  # user-specified
-  _EXPANDED_FOOTPRINT_PINNING_MAP: Optional[Dict[str, PinningFunction]] = None  # automatically-generated from above
+  FOOTPRINT_PINNING_MAP: ClassVar[Dict[Union[str, Tuple[str, ...]], PinningFunction[StandardPinningType]]]  # user-specified
+  _EXPANDED_FOOTPRINT_PINNING_MAP: Optional[Dict[str, PinningFunction[StandardPinningType]]] = None  # automatically-generated from above
 
   @classmethod
-  def _footprint_pinning_map(cls) -> Dict[str, PinningFunction]:
+  def _footprint_pinning_map(cls) -> Dict[str, PinningFunction[StandardPinningType]]:
     """Returns the footprint pinning map as a dict of footprint name -> pinning fn, generating and caching the
     expanded table as needed"""
     if cls._EXPANDED_FOOTPRINT_PINNING_MAP is None:
@@ -36,8 +36,6 @@ class StandardFootprint(Generic[StandardPinningType]):
     return cls._footprint_pinning_map()[footprint](block)
 
 
-class HasStandardFootprint:
+class HasStandardFootprint(Generic[StandardPinningType]):
   """Base class that defines that a class supports a StandardFootprint"""
-  # TODO: this should be typed on the StandardFootprint type, but type vars in ClassVar are disallowed
-  # https://github.com/python/mypy/issues/5144
-  _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint]]
+  _STANDARD_FOOTPRINT: ClassVar[Type[StandardFootprint[StandardPinningType]]]

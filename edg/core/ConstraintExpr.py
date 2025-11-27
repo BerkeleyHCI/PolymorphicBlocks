@@ -187,7 +187,7 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
 
 
 NumLikeSelfType = TypeVar('NumLikeSelfType', bound='NumLikeExpr')
-NumLikeCastable = TypeVar('NumLikeCastable')  # should include the self type
+NumLikeCastable = TypeVar('NumLikeCastable', default=Any)  # should include the self type
 class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedType, NumLikeCastable]):
   """Trait for numeric-like expressions, providing common arithmetic operations"""
 
