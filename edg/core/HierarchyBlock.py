@@ -263,7 +263,7 @@ class BlockMeta(BaseBlockMeta):
 
 
 @non_library
-class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
+class Block(BaseBlock, metaclass=BlockMeta):
   """Part with a statically-defined subcircuit.
   Relations between contained parameters may only be expressed in the given constraint language.
   """
@@ -450,6 +450,9 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     self._populate_def_proto_description(pb, ref_map)
 
     return pb
+
+  def _elaborated_def_to_proto(self) -> edgir.HierarchyBlock:
+    return cast(edgir.HierarchyBlock, super()._elaborated_def_to_proto())
 
   MixinType = TypeVar('MixinType', bound='BlockInterfaceMixin')
   def with_mixin(self, tpe: MixinType) -> MixinType:
