@@ -199,7 +199,7 @@ class Stm32g031_G_Device(Stm32g031Base_Device):
 @abstract_block
 class Stm32g031Base(Resettable, IoControllerI2cTarget, Microcontroller, IoControllerWithSwdTargetConnector,
                     IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
-    DEVICE: Type[Stm32g031Base_Device] = Stm32g031Base_Device  # type: ignore
+    DEVICE: Type[Stm32g031Base_Device] = Stm32g031Base_Device
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)

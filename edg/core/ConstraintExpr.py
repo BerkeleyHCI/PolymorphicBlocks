@@ -175,7 +175,7 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
   @overload
   def then_else(self, then_val: Any, else_val: IteType) -> IteType: ...
 
-  def then_else(self, then_val: Any, else_val: Any) -> ConstraintExpr:  # type: ignore
+  def then_else(self, then_val: Any, else_val: Any) -> ConstraintExpr:
     if isinstance(then_val, ConstraintExpr):
       else_val = then_val._to_expr_type(else_val)
     elif isinstance(else_val, ConstraintExpr):
@@ -283,22 +283,22 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
       return self._create_bool_op(self, self._to_expr_type(other), EqOp.ne)
     return NotImplemented
 
-  def __gt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
+  def __gt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
     if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
       return self._create_bool_op(self, self._to_expr_type(other), OrdOp.gt)
     return NotImplemented
 
-  def __ge__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
+  def __ge__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
     if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
       return self._create_bool_op(self, self._to_expr_type(other), OrdOp.ge)
     return NotImplemented
 
-  def __lt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
+  def __lt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
     if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
       return self._create_bool_op(self, self._to_expr_type(other), OrdOp.lt)
     return NotImplemented
 
-  def __le__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
+  def __le__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
     if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
       return self._create_bool_op(self, self._to_expr_type(other), OrdOp.le)
     return NotImplemented

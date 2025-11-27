@@ -117,7 +117,7 @@ class BlockPrototype(Generic[BlockPrototypeType]):
   def _bind(self, parent: Union[BaseBlock, Port]) -> BlockPrototypeType:
     """Binds the prototype into an actual Block instance."""
     Block._next_bind = self._tpe
-    block = self._tpe(*self._args, **self._kwargs)  # type: ignore
+    block = self._tpe(*self._args, **self._kwargs)
     block._bind_in_place(parent)
     return block
 
@@ -295,7 +295,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     self._mixins: List['BlockInterfaceMixin'] = []
 
-    self._blocks = self.manager.new_dict(Block)  # type: ignore
+    self._blocks = self.manager.new_dict(Block)
     self._chains = self.manager.new_dict(ChainConnect, anon_prefix='anon_chain')
     self._port_tags = IdentityDict[BasePort, Set[PortTag[Any]]]()
 
@@ -547,7 +547,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   @overload
   def ArgParameter(self, param: IntLike, *, doc: Optional[str] = None) -> IntExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: FloatLike, *, doc: Optional[str] = None) -> FloatExpr: ...  # type: ignore
+  def ArgParameter(self, param: FloatLike, *, doc: Optional[str] = None) -> FloatExpr: ...
   @overload
   def ArgParameter(self, param: RangeLike, *, doc: Optional[str] = None) -> RangeExpr: ...  # type: ignore
   @overload
@@ -557,11 +557,11 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   @overload
   def ArgParameter(self, param: ArrayIntLike, *, doc: Optional[str] = None) -> ArrayIntExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: ArrayFloatLike, *, doc: Optional[str] = None) -> ArrayFloatExpr: ...  # type: ignore
+  def ArgParameter(self, param: ArrayFloatLike, *, doc: Optional[str] = None) -> ArrayFloatExpr: ...
   @overload
-  def ArgParameter(self, param: ArrayRangeLike, *, doc: Optional[str] = None) -> ArrayRangeExpr: ...  # type: ignore
+  def ArgParameter(self, param: ArrayRangeLike, *, doc: Optional[str] = None) -> ArrayRangeExpr: ...
   @overload
-  def ArgParameter(self, param: ArrayStringLike, *, doc: Optional[str] = None) -> ArrayStringExpr: ...  # type: ignore
+  def ArgParameter(self, param: ArrayStringLike, *, doc: Optional[str] = None) -> ArrayStringExpr: ...
 
   def ArgParameter(self, param: CastableType, *, doc: Optional[str] = None) -> ConstraintExpr[Any, CastableType]:
     """Registers a constructor argument parameter for this Block.
@@ -589,7 +589,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     port = super().Port(tpe, optional=optional, doc=doc)
 
     self._port_tags[port] = set(tags)
-    return port  # type: ignore
+    return port
 
   ExportType = TypeVar('ExportType', bound=BasePort)
   def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False, doc: Optional[str] = None,

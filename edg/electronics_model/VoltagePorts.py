@@ -182,9 +182,7 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
     ))
 
     # TODO might be an overestimate
-    # TODO debug the type ignore. Seems to go away after poking, and reappears on a dmypy restart
-    # Perhaps a circular reference issue?
-    self.assign(self.src.current_draw, self.dst.link().current_drawn)  # type: ignore
+    self.assign(self.src.current_draw, self.dst.link().current_drawn)
 
 
 class VoltageSource(VoltageBase):

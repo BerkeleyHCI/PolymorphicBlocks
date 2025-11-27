@@ -72,7 +72,7 @@ class BasePort(HasMetadata, metaclass=InitializerContextMeta):
     parameter initializers."""
     assert self._parent is None, "can't clone bound block"
     # TODO: this might be more efficient (but trickier) with copy.copy
-    cloned = type(self)(*self._initializer_args[0], **self._initializer_args[1])  # type: ignore
+    cloned = type(self)(*self._initializer_args[0], **self._initializer_args[1])
     cloned._cloned_from(self)
     return cloned
 
@@ -142,7 +142,7 @@ class Port(BasePort, Generic[PortLinkType]):
     self._adapter_count: int = 0
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
-    self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
+    self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)
 
     self.manager_ignored.update(['_is_connected', '_name'])
     self._is_connected = BoolExpr()._bind(IsConnectedBinding(self))
@@ -215,7 +215,7 @@ class Port(BasePort, Generic[PortLinkType]):
 
     pb.self_class.target.name = self._get_def_name()
 
-    direct_bases, indirect_bases = self._get_bases_of(Port)  # type: ignore
+    direct_bases, indirect_bases = self._get_bases_of(Port)
     for cls in direct_bases:
       pb.superclasses.add().target.name = cls._static_def_name()
     for cls in indirect_bases:
@@ -313,7 +313,7 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     pb.self_class.target.name = self._get_def_name()
 
-    direct_bases, indirect_bases = self._get_bases_of(Bundle)  # type: ignore
+    direct_bases, indirect_bases = self._get_bases_of(Bundle)
     for cls in direct_bases:
       pb.superclasses.add().target.name = cls._static_def_name()
     for cls in indirect_bases:

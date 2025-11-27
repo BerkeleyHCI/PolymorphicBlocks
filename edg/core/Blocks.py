@@ -258,18 +258,17 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
 
     self.description: Optional[DescriptionString] = None   # additional string field to be displayed as part of the tooltip for blocks
 
-    # TODO delete type ignore after https://github.com/python/mypy/issues/5374
-    self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
+    self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)
     self._param_docs = IdentityDict[ConstraintExpr, str]()
 
-    self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)  # type: ignore
+    self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)
     self._required_ports = IdentitySet[BasePort]()
     self._port_docs = IdentityDict[BasePort, str]()
 
     self._connects = self.manager.new_dict(Connection, anon_prefix='anon_link')
     self._connects_by_port = IdentityDict[BasePort, Connection]()  # port -> connection
     self._connect_delegateds = IdentityDict[Connection, List[Connection]]()  # for net joins, joined connect -> prior connects
-    self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
+    self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')
 
     self._name = StringExpr()._bind(NameBinding(self))
 

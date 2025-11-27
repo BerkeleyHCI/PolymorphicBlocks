@@ -58,15 +58,15 @@ def elaborate_class(elt_cls: Type[LibraryElementType]) -> Tuple[LibraryElementTy
 
   if isinstance(obj, Block):
     block_proto = builder.elaborate_toplevel(obj)
-    return obj, edgir.Library.NS.Val(hierarchy_block=block_proto)  # type: ignore
+    return obj, edgir.Library.NS.Val(hierarchy_block=block_proto)
   elif isinstance(obj, Link):
     link_proto = builder.elaborate_toplevel(obj)
     assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
-    return obj, edgir.Library.NS.Val(link=link_proto)  # type: ignore
+    return obj, edgir.Library.NS.Val(link=link_proto)
   elif isinstance(obj, Bundle):  # TODO: note Bundle extends Port, so this must come first
-    return obj, edgir.Library.NS.Val(bundle=obj._def_to_proto())  # type: ignore
+    return obj, edgir.Library.NS.Val(bundle=obj._def_to_proto())
   elif isinstance(obj, Port):
-    return obj, edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))  # type: ignore
+    return obj, edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))
   else:
     raise RuntimeError(f"didn't match type of library element {elt_cls}")
 

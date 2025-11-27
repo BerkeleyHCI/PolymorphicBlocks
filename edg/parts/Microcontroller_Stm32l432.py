@@ -217,7 +217,7 @@ class Stm32l432k_Device(Stm32l432Base_Device):
 class Stm32l432Base(Resettable, IoControllerDac, IoControllerCan, IoControllerUsb, IoControllerI2cTarget,
                     Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator,
                     IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
-    DEVICE: Type[Stm32l432Base_Device] = Stm32l432Base_Device  # type: ignore
+    DEVICE: Type[Stm32l432Base_Device] = Stm32l432Base_Device
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)

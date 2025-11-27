@@ -337,7 +337,7 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, IoControllerCan,
                   IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator,
                   IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
-  DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
+  DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
   def __init__(self, **kwargs: Any) -> None:

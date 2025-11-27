@@ -256,7 +256,7 @@ class HasMetadata(LibraryElement):
   """A library element with the metadata dict-like field"""
   def __init__(self) -> None:
     super().__init__()
-    self._metadata: SubElementDict[Any] = self.manager.new_dict(Any)  # type: ignore
+    self._metadata: SubElementDict[Any] = self.manager.new_dict(Any)
 
   MetadataType = TypeVar('MetadataType', bound=Union[StructuredMetadata, str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]])
   def Metadata(self, value: MetadataType) -> MetadataType:

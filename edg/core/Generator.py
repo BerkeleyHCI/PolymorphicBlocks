@@ -57,7 +57,7 @@ class GeneratorBlock(Block):
     fn_args: Tuple[ConstraintExpr, ...]  # params to unpack for the generator function
 
   @deprecated(reason="implement self.generate() instead (using self.get(...), self.generator_param(...))")
-  def generator(self, fn: Callable[..., None], *reqs: Any) -> None:  # type: ignore
+  def generator(self, fn: Callable[..., None], *reqs: Any) -> None:
     """
     Registers a generator function
     :param fn: function (of self) to invoke, where the parameter list lines up with reqs
