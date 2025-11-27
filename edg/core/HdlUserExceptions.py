@@ -10,13 +10,6 @@ class EdslUserError(Exception):
     super().__init__(exc)
 
 
-AssertedType = TypeVar('AssertedType')
-def assert_cast(elt: Any, expected_type: Union[Type[AssertedType], Tuple[Type[AssertedType], ...]], item_desc: str) -> AssertedType:
-  if not isinstance(elt, expected_type):
-    raise EdgTypeError(item_desc, elt, expected_type)
-  return elt
-
-
 class EdgTypeError(EdslUserError):
   """Argument of the wrong type passed into a EDG core function."""
   def __init__(self, item_desc: str, object: Any, expected_type: Union[Type, Tuple[Type, ...]]):

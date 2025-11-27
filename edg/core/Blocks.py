@@ -474,7 +474,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
       raise BlockDefinitionError(type(self), "can't call Port(...) outside __init__",
                                  "call Port(...) inside __init__ only, and remember to call super().__init__()")
     if not isinstance(tpe, BasePort):
-      raise TypeError(f"param to Port(...) must be Port, got {tpe} of type {type(tpe)}")
+      raise EdgTypeError(f"param to Port(...)", tpe, BasePort)
 
     elt = tpe._bind(self)
     self._ports.register(elt)
@@ -494,7 +494,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
       raise BlockDefinitionError(type(self), "can't call Parameter(...) outside __init__",
                                  "call Parameter(...) inside __init__ only, and remember to call super().__init__()")
     if not isinstance(tpe, ConstraintExpr):
-      raise TypeError(f"param to Parameter(...) must be ConstraintExpr, got {tpe} of type {type(tpe)}")
+      raise EdgTypeError(f"param to Parameter(...)", tpe, ConstraintExpr)
 
     elt = tpe._bind(ParamBinding(self))
     self._parameters.register(elt)
@@ -509,7 +509,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
   def connect(self, *connects: Union[BasePort, Connection], flatten: bool=False) -> Connection:
     for connect in connects:
       if not isinstance(connect, (BasePort, Connection)):
-        raise TypeError(f"param to connect(...) must be BasePort or Connection, got {connect}")
+        raise EdgTypeError(f"param to connect(...)", connect, (BasePort, Connection))
 
     connects_ports = [connect for connect in connects if isinstance(connect, BasePort)]
     connects_connects = [connect for connect in connects if isinstance(connect, Connection)]

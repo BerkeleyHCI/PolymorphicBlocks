@@ -494,7 +494,8 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
       raise EdgTypeError(f"first element 0 to chain", elts[0], (BasePort, Connection, Block))
 
     for i, elt in list(enumerate(elts))[1:-1]:
-      elt = assert_cast(elt, (Block), f"middle arguments elts[{i}] to chain")
+      if not isinstance(elt, Block):
+        raise EdgTypeError(f"middle arguments elts[{i}] in chain", elt, Block)
       if elt._get_ports_by_tag({Input}) and elt._get_ports_by_tag({Output}):
         in_ports = elt._get_ports_by_tag({Input})
         out_ports = elt._get_ports_by_tag({Output})
@@ -584,7 +585,8 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     if not isinstance(tpe, (Port, Vector)):
       raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")
     for tag in tags:
-      assert_cast(tag, PortTag, "tag for Port(...)")
+      if not isinstance(tag, PortTag):
+        raise TypeError(f"tags in Port(...) must be PortTag, got {tag} of type {type(tag)}")
 
     port = super().Port(tpe, optional=optional, doc=doc)
 

@@ -46,6 +46,8 @@ class Builder:
                          generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]] = []) -> edgir.HierarchyBlock:
     try:
       if is_generator:  # TODO this is kind of nasty =(
+        from .Generator import GeneratorBlock
+        assert isinstance(block, GeneratorBlock)
         elaborated = block._generated_def_to_proto(generate_values)
       else:  # TODO check is a GeneratorBlock w/o circular imports?
         elaborated = block._elaborated_def_to_proto()

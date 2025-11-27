@@ -47,7 +47,7 @@ class GeneratorBlock(Block):
 
   WrappedType = TypeVar('WrappedType', bound=Any)
   def get(self, param: ConstraintExpr[WrappedType, Any]) -> WrappedType:
-    return self._generator_param_values[param]
+    return self._generator_param_values[param]  # type: ignore
 
   # Generator dependency data
   #

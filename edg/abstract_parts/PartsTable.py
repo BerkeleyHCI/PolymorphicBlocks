@@ -227,8 +227,8 @@ class ExperimentalUserFnPartsTable(PartsTable):
     return cls._FN_SERIALIZATION_SEPARATOR.join([fn.__name__] + serialized_args)
 
   @classmethod
-  def deserialize_fn(cls, serialized: str) -> Callable:
-    """Deserializes a user function from a string."""
+  def deserialize_fn(cls, serialized: str) -> Any:
+    """Deserializes and applies a user function from a string."""
     split = serialized.split(cls._FN_SERIALIZATION_SEPARATOR)
     if split[0] not in cls._user_fns:
       raise ValueError(f"Function {serialized} not registered.")
