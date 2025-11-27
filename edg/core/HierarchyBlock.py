@@ -486,7 +486,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     elif isinstance(elts[0], Block):
       outable_ports = elts[0]._get_ports_by_tag({Output}) + elts[0]._get_ports_by_tag({InOut})
       if len(outable_ports) > 1:
-        raise BlockDefinitionError(elts[0], f"first element 0 to chain {type(elts[0])} does not have exactly one InOut or Output port: {outable_ports}")
+        raise BlockDefinitionError(type(self), f"first element 0 to chain {type(elts[0])} does not have exactly one InOut or Output port: {outable_ports}")
       current_port = outable_ports[0]
       chain_blocks.append(elts[0])
     else:
@@ -621,7 +621,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     if self._elaboration_state not in \
             [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
-      raise BlockDefinitionError(self, "can only define blocks in init, contents, or generate")
+      raise BlockDefinitionError(type(self), "can only define blocks in init, contents, or generate")
 
     if isinstance(tpe, BlockPrototype):
       tpe_cls = tpe._tpe

@@ -472,7 +472,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
   def Port(self, tpe: T, *, optional: bool = False, doc: Optional[str] = None) -> T:
     """Registers a port for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
-      raise BlockDefinitionError(self, "can't call Port(...) outside __init__",
+      raise BlockDefinitionError(type(self), "can't call Port(...) outside __init__",
                                  "call Port(...) inside __init__ only, and remember to call super().__init__()")
     if not isinstance(tpe, BasePort):
       raise TypeError(f"param to Port(...) must be Port, got {tpe} of type {type(tpe)}")
@@ -492,7 +492,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
   def Parameter(self, tpe: ConstraintType, *, doc: Optional[str] = None) -> ConstraintType:
     """Registers a parameter for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
-      raise BlockDefinitionError(self, "can't call Parameter(...) outside __init__",
+      raise BlockDefinitionError(type(self), "can't call Parameter(...) outside __init__",
                                  "call Parameter(...) inside __init__ only, and remember to call super().__init__()")
     if not isinstance(tpe, ConstraintExpr):
       raise TypeError(f"param to Parameter(...) must be ConstraintExpr, got {tpe} of type {type(tpe)}")
