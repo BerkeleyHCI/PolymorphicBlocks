@@ -32,7 +32,7 @@ edg = ["core/resources/edg-compiler-precompiled.jar", "electronics_model/resourc
 
 [tool.mypy]
 check_untyped_defs = true
-# disallow_incomplete_defs = true
+disallow_incomplete_defs = true
 disallow_untyped_defs = true
 # enable_error_code = ["explicit-override"]
 # strict = true
