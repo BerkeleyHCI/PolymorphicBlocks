@@ -16,6 +16,7 @@ from .. import edgir
 
 if TYPE_CHECKING:
   from .Blocks import BaseBlock
+  from .Link import Link
   from .PortBlocks import PortBridge, PortAdapter
 
 

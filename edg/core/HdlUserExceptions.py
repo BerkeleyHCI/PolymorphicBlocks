@@ -12,7 +12,7 @@ class EdslUserError(Exception):
 
 class EdgTypeError(EdslUserError):
   """Argument of the wrong type passed into a EDG core function."""
-  def __init__(self, item_desc: str, object: Any, expected_type: Union[Type, Tuple[Type, ...]]):
+  def __init__(self, item_desc: str, object: Any, expected_type: Union[Type[Any], Tuple[Type[Any], ...]]):
     if isinstance(expected_type, tuple):
       expected_type_str = '/'.join([t.__name__ for t in expected_type])
     else:

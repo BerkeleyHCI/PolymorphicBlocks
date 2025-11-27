@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import csv
 import itertools
-from typing import Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, OrderedDict, \
+from typing import Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, \
   cast, Tuple, Sequence, Protocol
 
 from typing_extensions import ParamSpec, TypeVar
@@ -83,7 +83,7 @@ class PartsTable:
     return cls.from_dict_rows(dict_rows)
 
   @staticmethod
-  def from_dict_rows(*dict_rowss: Union[List[Dict[str, str]], List[OrderedDict[str, str]]]) -> 'PartsTable':
+  def from_dict_rows(*dict_rowss: Union[List[Dict[str, str]], List[Dict[str, str]]]) -> 'PartsTable':
     """Creates a parts table from dict rows, such as parsed by csv.DictReader.
     Checks to make sure all incoming rows are dense (have all cells)."""
     all_dict_rows = list(itertools.chain(*dict_rowss))

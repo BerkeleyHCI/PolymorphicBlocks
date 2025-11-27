@@ -288,7 +288,8 @@ class Block(BaseBlock, metaclass=BlockMeta):
     super().__init__()
 
     if hasattr(self, '_init_params'):  # used to propagate params generated in the metaclass __init__ hook
-      for param_name, param in cast(Dict, self._init_params).items():
+      self._init_params: Dict[str, ConstraintExpr]
+      for param_name, param in self._init_params.items():
         self._parameters.register(param)
         self.manager.add_element(param_name, param)
       delattr(self, '_init_params')
@@ -320,6 +321,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
 
   def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
     super()._populate_def_proto_block_base(pb)
+    assert isinstance(pb, edgir.HierarchyBlock)
 
     # generate param defaults
     for param_name, param in self._parameters.items():

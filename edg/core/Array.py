@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from abc import abstractmethod
 from typing import Generic, Any, Tuple, Type, Optional, Union, Iterable, overload, Hashable, List, \
-  ItemsView, Callable
+  ItemsView, Callable, Dict
 
 from deprecated import deprecated
 from typing_extensions import TypeVar
@@ -108,7 +108,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert not tpe._is_bound()
     self._tpe = tpe
     self._elt_sample = tpe._bind(self)
-    self._elts: Optional[OrderedDict[str, VectorType]] = None  # concrete elements, for boundary ports
+    self._elts: Optional[Dict[str, VectorType]] = None  # concrete elements, for boundary ports
     self._elt_next_index = 0
     self._requests: List[Tuple[Optional[str], BasePort]] = []  # used to track request / request_vector for ref_map
 

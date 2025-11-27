@@ -48,6 +48,6 @@ class HasStandardFootprint(Block):
   def standard_footprint(cls) -> Type[StandardFootprint[Self]]:
     """Returns the StandardFootprint class for this block"""
     if callable(cls._STANDARD_FOOTPRINT):
-      return cls._STANDARD_FOOTPRINT()
+      return cls._STANDARD_FOOTPRINT()  # type: ignore
     else:
       return cls._STANDARD_FOOTPRINT
