@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import *
+from typing import Any, Generic
+from typing_extensions import TypeVar
 
-from .. import edgir
 from .Categories import InternalBlock
-from .Core import Refable
 from .HierarchyBlock import Block, abstract_block
-from .IdentityDict import IdentityDict
 from .Ports import BasePort, Port
 
 

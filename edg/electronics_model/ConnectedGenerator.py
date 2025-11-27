@@ -1,4 +1,5 @@
-from typing import Type, TypeVar, Generic
+from typing import Type, Generic
+from typing_extensions import TypeVar
 
 from ..core import *
 from .VoltagePorts import VoltageLink, VoltageSink, VoltageSource
