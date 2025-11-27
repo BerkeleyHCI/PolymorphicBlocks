@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Optional, NamedTuple, Any
+from typing import Optional, NamedTuple, Any, Callable
 
 from deprecated import deprecated
 
@@ -304,7 +304,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
   @staticmethod
   @ExperimentalUserFnPartsTable.user_fn([float, float, float])
-  def _buck_inductor_filter(max_avg_current: float, ripple_scale: float, min_ripple: float):
+  def _buck_inductor_filter(max_avg_current: float, ripple_scale: float, min_ripple: float) -> Callable[[PartsTableRow], bool]:
     """Applies further filtering to inductors using the trade-off between inductance and peak-peak current.
     max_avg_current is the maximum average current (not accounting for ripple) seen by the inductor
     ripple_scale is the scaling factor from 1/L to ripple

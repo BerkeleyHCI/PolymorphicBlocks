@@ -16,9 +16,8 @@ class BomItem(NamedTuple):
 
 
 class GenerateBom(BaseBackend):      # creates and populates .csv file
-    def run(self, design: CompiledDesign, args=None) -> List[Tuple[edgir.LocalPath, str]]:
-        if args is None:
-            args = {}
+    def run(self, design: CompiledDesign, args: Dict[str, str]= {}) -> List[Tuple[edgir.LocalPath, str]]:
+        assert not args
         bom_list = BomTransform(design).run()
 
         bom_string = io.StringIO()

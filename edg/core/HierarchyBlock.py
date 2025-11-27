@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import inspect
 import warnings
+from types import TracebackType
 from typing import *
 
 from .. import edgir
@@ -83,7 +84,7 @@ class ImplicitScope:
     self.open = True
     return self
 
-  def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+  def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]) -> None:
     self.open = False
 
 

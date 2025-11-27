@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 class BaseBlockMeta(type):
   """Adds a hook to set the post-init elaboration state"""
-  def __call__(cls, *args, **kwargs):
+  def __call__(cls, *args: Any, **kwargs: Any) -> Any:
     block_context = builder.get_enclosing_block()
     obj = super().__call__(*args, **kwargs)
     if isinstance(obj, BaseBlock):  # ignore block prototypes
@@ -211,7 +211,7 @@ BaseBlockEdgirType = TypeVar('BaseBlockEdgirType', bound=edgir.BlockLikeTypes)
 
 class DescriptionStringElts():
   @abstractmethod
-  def set_elt_proto(self, pb, ref_map=None):
+  def set_elt_proto(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     raise NotImplementedError
 
 
@@ -234,7 +234,7 @@ class DescriptionString():
       self.ref = ref
       self.units = units
 
-    def set_elt_proto(self, pb, ref_map=None) -> None:
+    def set_elt_proto(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
       new_phrase = pb.description.add()
       new_phrase.param.path.CopyFrom(ref_map[self.ref])
       new_phrase.param.unit = self.units
