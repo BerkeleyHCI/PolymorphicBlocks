@@ -50,14 +50,14 @@ class PreferredNumberTestCase(unittest.TestCase):
 
 
 class RatioTestCase(unittest.TestCase):
-  def test_ratio_product(self):
+  def test_ratio_product(self) -> None:
     self.assertEqual(ESeriesRatioUtil._generate_e_series_product([1, 2, 3, 4], 0, 0),
                      [(1, 1),
                       (2, 1), (1, 2), (2, 2),
                       (3, 1), (1, 3), (3, 2), (2, 3), (3, 3),
                       (4, 1), (1, 4), (4, 2), (2, 4), (4, 3), (3, 4), (4, 4)])
 
-  def test_series_of(self):
+  def test_series_of(self) -> None:
     self.assertEqual(ESeriesUtil.series_of(1.0), 3)
     self.assertEqual(ESeriesUtil.series_of(2.2), 3)
     self.assertEqual(ESeriesUtil.series_of(6.8), 6)

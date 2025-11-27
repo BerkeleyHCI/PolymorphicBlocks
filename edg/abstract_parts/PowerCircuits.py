@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from .Resettable import Resettable
 from .AbstractResistor import Resistor, SeriesPowerResistor
@@ -113,7 +115,7 @@ class FetHalfBridgeIndependent(FetHalfBridge, HalfBridgeIndependent):
 
 
 class FetHalfBridgePwmReset(FetHalfBridge, HalfBridgePwm, Resettable, GeneratorBlock):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.generator_param(self.reset.is_connected())
 

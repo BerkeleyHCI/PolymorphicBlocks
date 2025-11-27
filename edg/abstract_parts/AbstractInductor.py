@@ -135,7 +135,7 @@ class TableInductor(PartsTableSelector, Inductor):
   CURRENT_RATING = PartsTableColumn(Range)  # tolerable current
   DC_RESISTANCE = PartsTableColumn(Range)  # actual DCR
 
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.inductance, self.current, self.frequency, self.resistance_dc,
                          self.experimental_filter_fn)

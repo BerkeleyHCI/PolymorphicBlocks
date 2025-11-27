@@ -1,3 +1,5 @@
+from typing import Any
+
 from .Categories import ProgrammingConnector
 from ..electronics_model import *
 
@@ -15,20 +17,20 @@ class SwdCortexTargetConnector(ProgrammingConnector):
 
 class SwdCortexTargetConnectorReset(BlockInterfaceMixin[SwdCortexTargetConnector]):
   """Mixin for SWD connectors with adding the optional reset pin"""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.reset = self.Port(DigitalSource.empty(), optional=True)  # as open-drain
 
 
 class SwdCortexTargetConnectorSwo(BlockInterfaceMixin[SwdCortexTargetConnector]):
   """Mixin for SWD connectors with adding the optional SWO pin"""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.swo = self.Port(DigitalBidir.empty(), optional=True)
 
 
 class SwdCortexTargetConnectorTdi(BlockInterfaceMixin[SwdCortexTargetConnector]):
   """Mixin for SWD connectors with adding the NONSTANDARD TDI pin (where pins are shared with JTAG)"""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.tdi = self.Port(DigitalBidir.empty(), optional=True)

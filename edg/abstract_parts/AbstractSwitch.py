@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 
 from ..electronics_model import *
 from .Categories import *
@@ -49,7 +49,7 @@ class RotaryEncoder(DiscreteComponent):
 class RotaryEncoderSwitch(BlockInterfaceMixin[RotaryEncoder]):
   """Rotary encoder mixin adding a switch pin (sharing a common with the encoder),
   with ratings assumed to be the same between the switch and encoder."""
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.sw = self.Port(Passive.empty(), optional=True)
@@ -74,7 +74,7 @@ class DirectionSwitch(DiscreteComponent):
 class DirectionSwitchCenter(BlockInterfaceMixin[DirectionSwitch]):
   """DirectionSwitch mixin adding center switch pin (sharing a common with the encoder),
   with ratings assumed to be the same between the switch and encoder."""
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.center = self.Port(Passive.empty(), optional=True)
@@ -124,7 +124,7 @@ class DigitalWrapperRotaryEncoder(DigitalRotaryEncoder):
 @abstract_block_default(lambda: DigitalWrapperRotaryEncoderWithSwitch)
 class DigitalRotaryEncoderSwitch(BlockInterfaceMixin[DigitalRotaryEncoder]):
   """DigitalRotaryEncoder mixin adding a switch pin."""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.sw = self.Port(DigitalSource.empty(), optional=True)
@@ -174,7 +174,7 @@ class DigitalWrapperDirectionSwitch(DigitalDirectionSwitch):
 @abstract_block_default(lambda: DigitalWrapperDirectionSwitchWithCenter)
 class DigitalDirectionSwitchCenter(BlockInterfaceMixin[DigitalDirectionSwitch]):
   """DigitalRotaryEncoder mixin adding a switch pin."""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.center = self.Port(DigitalSource.empty(), optional=True)

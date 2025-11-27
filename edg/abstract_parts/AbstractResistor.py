@@ -103,7 +103,7 @@ class TableResistor(PartsTableSelector, Resistor):
   POWER_RATING = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.resistance, self.power, self.voltage)
 
@@ -132,7 +132,7 @@ class SeriesResistor(Resistor, GeneratorBlock):
   Generally used as a refinement to break up a single (logical) resistor that is dissipating too much power
   or has an excessive voltage across it. Accounts for tolerance stackup for power and voltage distribution
   using specified (not actual) resistor tolerance - is a pessimistic calculation."""
-  def __init__(self, *args, count: IntLike = 2, **kwargs):
+  def __init__(self, *args: Any, count: IntLike = 2, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.count = self.ArgParameter(count)
     self.generator_param(self.count, self.resistance)

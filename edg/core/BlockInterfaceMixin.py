@@ -65,7 +65,7 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
         return BlockInterfaceMixin in cls.__bases__ or\
             all(map(lambda bcls: issubclass(bcls, BlockInterfaceMixin) and bcls._is_mixin(), cls.__bases__))
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         if self._is_mixin():  # all mixins must be abstract
             if (self.__class__, AbstractBlockProperty) not in self._elt_properties:

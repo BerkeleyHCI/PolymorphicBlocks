@@ -66,7 +66,7 @@ class PartsTable:
     return [os.path.join(prefix_dir, filename) for filename in filenames]
 
   @classmethod
-  def from_csv_files(cls, csv_names: List[str], encoding='utf-8') -> 'PartsTable':
+  def from_csv_files(cls, csv_names: List[str], encoding: str='utf-8') -> 'PartsTable':
     dict_rows = []
     for filename in csv_names:
       with open(filename, newline='', encoding=encoding) as csvfile:
@@ -149,7 +149,7 @@ class PartsTable:
     new_rows = sorted(self.rows, key=fn, reverse=reverse)
     return PartsTable(new_rows)
 
-  def first(self, err="no elements in list") -> PartsTableRow:
+  def first(self, err: str="no elements in list") -> PartsTableRow:
     if not self.rows:
       raise IndexError(err)
     return self.rows[0]

@@ -69,7 +69,7 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
 class W25q(SpiMemory, SpiMemoryQspi, GeneratorBlock):
   """Winbond W25Q series of SPI memory devices
   """
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.io2.is_connected(), self.io3.is_connected())
 

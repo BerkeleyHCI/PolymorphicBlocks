@@ -36,7 +36,7 @@ class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):
   SINGLE_CAP_MAX = 22e-6 # maximum capacitance in a single part
   MAX_CAP_PACKAGE = 'Capacitor_SMD:C_1206_3216Metric' # default package for largest possible capacitor
 
-  def __init__(self, *args, footprint_spec: StringLike = "", derating_coeff: FloatLike = 1.0, **kwargs):
+  def __init__(self, *args: Any, footprint_spec: StringLike = "", derating_coeff: FloatLike = 1.0, **kwargs: Any) -> None:
     """
     footprint specifies an optional constraint on footprint
     derating_coeff specifies an optional derating coefficient (1.0 = no derating), that does not scale with package.

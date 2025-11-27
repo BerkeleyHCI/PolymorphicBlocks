@@ -28,6 +28,6 @@ class LedDriverSwitchingConverter(BlockInterfaceMixin[LedDriver]):
 
 class LedDriverPwm(BlockInterfaceMixin[LedDriver]):
     """LED driver mixin with PWM input for dimming control."""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.pwm = self.Port(DigitalSink.empty(), optional=True)

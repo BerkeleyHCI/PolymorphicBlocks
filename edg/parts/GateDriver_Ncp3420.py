@@ -64,7 +64,7 @@ class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Ncp3420(HalfBridgeDriver, HalfBridgeDriverPwm, Resettable, GeneratorBlock):
   """Half-bridge driver supporting 35V offset, 4.6-13.2v input, external boot diode, auto-deadtime."""
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.has_boot_diode, self.high_pwr.is_connected())
 

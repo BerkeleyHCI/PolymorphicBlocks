@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from .PartsTable import PartsTableRow
 from .PartsTablePart import PartsTableFootprintFilter, PartsTablePart
@@ -18,7 +20,7 @@ class SelectorArea(PartsTablePart):
   1812    R=23.01   C=23.4    D=23.01
   2512    R=29.3376           D=29.3376
   """
-  def __init__(self, *args, footprint_area: RangeLike = RangeExpr.ALL, **kwargs):
+  def __init__(self, *args: Any, footprint_area: RangeLike = RangeExpr.ALL, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.footprint_area = self.ArgParameter(footprint_area)
 
@@ -30,7 +32,7 @@ class SelectorArea(PartsTablePart):
 @non_library
 class PartsTableAreaSelector(PartsTableFootprintFilter, SelectorArea):
   """Defines an implementation for the area selector using parts tables and KICAD_FOOTPRINT."""
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.footprint_area)
 

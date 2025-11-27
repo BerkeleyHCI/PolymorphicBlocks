@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from .Categories import *
 from .AbstractResistor import Resistor
@@ -54,7 +56,7 @@ class Led(DiscreteSemiconductor, HasStandardFootprint):
 class TableLed(PartsTableSelector, Led):
   COLOR = PartsTableColumn(str)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.color)
 
@@ -150,7 +152,7 @@ class IndicatorSinkLed(Light, Block):
 
 class IndicatorSinkLedResistor(IndicatorSinkLed):
   """TODO: should the resistor sided-ness be configurable, eg as a generator? Similar for IndicatorLed"""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.require(self.signal.current_draw.within((-self.current_draw.upper(), 0)))

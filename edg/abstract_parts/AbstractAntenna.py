@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -30,7 +32,7 @@ class TableAntenna(Antenna, PartsTableSelector, GeneratorBlock):
   IMPEDANCE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.frequency, self.power, self.impedance)
 

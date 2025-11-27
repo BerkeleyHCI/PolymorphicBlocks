@@ -149,7 +149,7 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock, HasStandardFootpri
   def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Capacitor':
     return Capacitor(*cls.parse_capacitor(properties['Value']))
 
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.pos = self.Port(Passive.empty())
@@ -176,7 +176,7 @@ class TableCapacitor(PartsTableSelector, Capacitor):
   NOMINAL_CAPACITANCE = PartsTableColumn(float)  # nominal capacitance, even with asymmetrical tolerances
   VOLTAGE_RATING = PartsTableColumn(Range)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.capacitance, self.voltage, self.voltage_rating_derating, self.exact_capacitance)
 
@@ -217,7 +217,7 @@ class TableDeratingCapacitor(TableCapacitor):
   DERATE_LOWEST = 0.2  # floor for maximum derating factor
   # LOOSELY approximated from https://www.maximintegrated.com/en/design/technical-documents/tutorials/5/5527.html
 
-  def __init__(self, *args, single_nominal_capacitance: RangeLike = (0, 22)*uFarad, **kwargs):
+  def __init__(self, *args: Any, single_nominal_capacitance: RangeLike = (0, 22)*uFarad, **kwargs: Any):
     super().__init__(*args, **kwargs)
     self.single_nominal_capacitance = self.ArgParameter(single_nominal_capacitance)
     self.generator_param(self.single_nominal_capacitance)
@@ -290,7 +290,7 @@ class DummyCapacitorFootprint(DummyDevice, Capacitor, FootprintBlock):
   """
   def __init__(self, footprint: StringLike = "", manufacturer: StringLike = "", part_number: StringLike = "",
                value: StringLike = "",
-               *args, **kwargs):
+               *args: Any, **kwargs: Any):
     super().__init__(*args, **kwargs)
 
     self.footprint(

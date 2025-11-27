@@ -1,4 +1,4 @@
-from typing import List, Optional, TypeVar, cast
+from typing import List, Optional, TypeVar, cast, Any
 
 from ..electronics_model import *
 from .IoController import BaseIoController
@@ -12,7 +12,7 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
     The export is also customizable, e.g. if additional subcircuits are needed for some connection.
     Also defines a function for adding additional internal pin assignments.
     The internal device (self.ic) must have been created (e.g., in contents()) before this generate() is called."""
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.ic: BaseIoController
         self.generator_param(self.pin_assigns)

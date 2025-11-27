@@ -265,7 +265,7 @@ class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
       'TXD': '28',  # U0TXD, GPIO21
     })
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.lna_in = self.Port(Passive())
 

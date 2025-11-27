@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -90,7 +92,7 @@ class TableResistorArray(PartsTableSelector, ResistorArray):
   POWER_RATING = PartsTableColumn(Range)
   COUNT = PartsTableColumn(int)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.count, self.a.requested(), self.b.requested(), self.resistances, self.powers)
 

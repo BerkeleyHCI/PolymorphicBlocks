@@ -35,7 +35,7 @@ class FootprintBlock(Block):
   Provides interfaces that define footprints and copper connections and generates to appropriate metadata.
   """
   # TODO perhaps don't allow part / package initializers since those shouldn't be used
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.fp_footprint = self.Parameter(StringExpr())
     self.fp_pinning = self.Parameter(ArrayStringExpr())
@@ -97,7 +97,7 @@ class WrapperFootprintBlock(FootprintBlock):
   Useful for, for example, a breakout board where the modelling details are provided by internal chip blocks,
   but needs to show up as only a carrier board footprint.
   EXPERIMENTAL - API SUBJECT TO CHANGE."""
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.fp_is_wrapper = self.Metadata("A")  # TODO replace with not metadata, eg superclass inspection
 

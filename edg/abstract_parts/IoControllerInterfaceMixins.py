@@ -1,9 +1,11 @@
+from typing import Any
+
 from ..electronics_model import *
 from .IoController import BaseIoController, IoController
 
 
 class IoControllerSpiPeripheral(BlockInterfaceMixin[BaseIoController]):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.spi_peripheral = self.Port(Vector(SpiPeripheral.empty()), optional=True,
@@ -12,7 +14,7 @@ class IoControllerSpiPeripheral(BlockInterfaceMixin[BaseIoController]):
 
 
 class IoControllerI2cTarget(BlockInterfaceMixin[BaseIoController]):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.i2c_target = self.Port(Vector(I2cTarget.empty()), optional=True,
@@ -21,7 +23,7 @@ class IoControllerI2cTarget(BlockInterfaceMixin[BaseIoController]):
 
 
 class IoControllerTouchDriver(BlockInterfaceMixin[BaseIoController]):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.touch = self.Port(Vector(TouchDriver.empty()), optional=True,
@@ -30,7 +32,7 @@ class IoControllerTouchDriver(BlockInterfaceMixin[BaseIoController]):
 
 
 class IoControllerDac(BlockInterfaceMixin[BaseIoController]):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.dac = self.Port(Vector(AnalogSource.empty()), optional=True,
@@ -39,7 +41,7 @@ class IoControllerDac(BlockInterfaceMixin[BaseIoController]):
 
 
 class IoControllerCan(BlockInterfaceMixin[BaseIoController]):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.can = self.Port(Vector(CanControllerPort.empty()), optional=True,
@@ -56,7 +58,7 @@ class IoControllerUsb(BlockInterfaceMixin[BaseIoController]):
     pass
 
 class IoControllerUsbCc(BlockInterfaceMixin[BaseIoController]):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.cc = self.Port(Vector(UsbCcPort.empty()), optional=True,
@@ -65,7 +67,7 @@ class IoControllerUsbCc(BlockInterfaceMixin[BaseIoController]):
 
 
 class IoControllerI2s(BlockInterfaceMixin[BaseIoController]):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.i2s = self.Port(Vector(I2sController.empty()), optional=True,
@@ -74,7 +76,7 @@ class IoControllerI2s(BlockInterfaceMixin[BaseIoController]):
 
 
 class IoControllerDvp8(BlockInterfaceMixin[BaseIoController]):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.dvp8 = self.Port(Vector(Dvp8Host.empty()), optional=True,
@@ -96,7 +98,7 @@ class IoControllerBle(BlockInterfaceMixin[BaseIoController]):
 
 class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
     """IO controller mixin that provides an output of the IO controller's VddIO rail, commonly 3.3v."""
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.pwr_out = self.Port(VoltageSource.empty(), optional=True,
                                  doc="Power output port, typically of the device's Vdd or VddIO rail at 3.3v")
@@ -104,7 +106,7 @@ class IoControllerPowerOut(BlockInterfaceMixin[IoController]):
 
 class IoControllerUsbOut(BlockInterfaceMixin[IoController]):
     """IO controller mixin that provides an output of the IO controller's USB Vbus."""
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.vusb_out = self.Port(VoltageSource.empty(), optional=True,
                                   doc="Power output port of the device's Vbus, typically 5v")
@@ -112,7 +114,7 @@ class IoControllerUsbOut(BlockInterfaceMixin[IoController]):
 
 class IoControllerVin(BlockInterfaceMixin[IoController]):
     """IO controller mixin that provides a >=5v input to the device, typically upstream of the Vbus-to-3.3 regulator."""
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.pwr_vin = self.Port(VoltageSink.empty(), optional=True,
                                  doc="Power input pin, typically rated for 5v or a bit beyond.")

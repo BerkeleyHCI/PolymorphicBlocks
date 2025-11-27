@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Optional, NamedTuple
+from typing import Optional, NamedTuple, Any
 
 from deprecated import deprecated
 
@@ -148,10 +148,10 @@ class SwitchingVoltageRegulator(VoltageRegulator):
       ripple_ratio_range.lower() * output_current_range.upper(),
       upper_ripple_limit))
 
-  def __init__(self, *args,
+  def __init__(self, *args: Any,
                input_ripple_limit: FloatLike = 75 * mVolt,
                output_ripple_limit: FloatLike = 25 * mVolt,
-               **kwargs) -> None:
+               **kwargs: Any) -> None:
     """https://www.ti.com/lit/an/slta055/slta055.pdf: recommends 75mV for maximum peak-peak ripple voltage
     """
     super().__init__(*args, **kwargs)
@@ -165,7 +165,7 @@ class SwitchingVoltageRegulator(VoltageRegulator):
 @abstract_block_default(lambda: IdealBuckConverter)
 class BuckConverter(SwitchingVoltageRegulator):
   """Step-down switching converter"""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.require(self.pwr_out.voltage_out.upper() <= self.pwr_in.voltage_limits.upper())
 
@@ -316,7 +316,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     return filter_fn
 
   @staticmethod
-  def _ilim_expr(inductor_ilim: RangeExpr, sw_ilim: RangeExpr, inductor_iripple: RangeExpr):
+  def _ilim_expr(inductor_ilim: RangeExpr, sw_ilim: RangeExpr, inductor_iripple: RangeExpr) -> RangeExpr:
     """Returns the average current limit, as an expression, derived from the inductor and switch (instantaneous)
     current limits."""
     iout_limit_inductor = inductor_ilim - (inductor_iripple.upper() / 2)
@@ -415,7 +415,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 @abstract_block_default(lambda: IdealBoostConverter)
 class BoostConverter(SwitchingVoltageRegulator):
   """Step-up switching converter"""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
 

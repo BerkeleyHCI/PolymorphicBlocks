@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 from deprecated import deprecated
 
 from ..electronics_model import *
@@ -93,7 +93,7 @@ class TableDiode(PartsTableSelector, Diode):
   FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
   REVERSE_RECOVERY = PartsTableColumn(Range)  # possible reverse recovery time
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.reverse_voltage, self.current, self.voltage_drop, self.reverse_recovery_time)
 
@@ -145,7 +145,7 @@ class TableZenerDiode(PartsTableSelector, ZenerDiode):
   ZENER_VOLTAGE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)  # tolerable power
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.zener_voltage)
 

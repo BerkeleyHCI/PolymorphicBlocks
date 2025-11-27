@@ -1,4 +1,4 @@
-from typing import cast
+from typing import cast, Any
 
 from ..electronics_model import *
 from ..electronics_model.CanPort import CanLogicLink
@@ -50,7 +50,7 @@ class BaseRfTestPoint(TypedTestPoint, Block):
 
 class GroundTestPoint(BaseTypedTestPoint, Block):
   """Test point with a VoltageSink port."""
-  def __init__(self, *args):
+  def __init__(self, *args: Any) -> None:
     super().__init__(*args)
     self.io = self.Port(Ground.empty(), [InOut])
     self.connect(self.io, self.tp.io.adapt_to(Ground()))
@@ -62,7 +62,7 @@ class GroundTestPoint(BaseTypedTestPoint, Block):
 
 class VoltageTestPoint(BaseTypedTestPoint, Block):
   """Test point with a VoltageSink port."""
-  def __init__(self, *args):
+  def __init__(self, *args: Any) -> None:
     super().__init__(*args)
     self.io = self.Port(VoltageSink.empty(), [InOut])
     self.connect(self.io, self.tp.io.adapt_to(VoltageSink()))
@@ -74,7 +74,7 @@ class VoltageTestPoint(BaseTypedTestPoint, Block):
 
 class DigitalTestPoint(BaseTypedTestPoint, Block):
   """Test point with a DigitalSink port."""
-  def __init__(self, *args):
+  def __init__(self, *args: Any) -> None:
     super().__init__(*args)
     self.io = self.Port(DigitalSink.empty(), [InOut])
     self.connect(self.io, self.tp.io.adapt_to(DigitalSink()))
@@ -86,7 +86,7 @@ class DigitalTestPoint(BaseTypedTestPoint, Block):
 
 class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
   """Creates an array of Digital test points, sized from the port array's connections."""
-  def __init__(self, tp_name: StringLike = ''):
+  def __init__(self, tp_name: StringLike = '') -> None:
     super().__init__()
     self.io = self.Port(Vector(DigitalSink.empty()), [InOut])
     self.tp_name = self.ArgParameter(tp_name)
@@ -106,7 +106,7 @@ class DigitalArrayTestPoint(TypedTestPoint, GeneratorBlock):
 
 class AnalogTestPoint(BaseTypedTestPoint, Block):
   """Test point with a AnalogSink port"""
-  def __init__(self, *args):
+  def __init__(self, *args: Any) -> None:
     super().__init__(*args)
     self.io = self.Port(AnalogSink.empty(), [InOut])
     self.connect(self.io, self.tp.io.adapt_to(AnalogSink()))
@@ -120,7 +120,7 @@ class AnalogCoaxTestPoint(BaseRfTestPoint, Block):
   """Test point with a AnalogSink port and using a coax connector with shielding connected to gnd.
   No impedance matching, this is intended for lower frequency signals where the wavelength would be
   much longer than the test lead length"""
-  def __init__(self, *args):
+  def __init__(self, *args: Any) -> None:
     super().__init__(*args)
     self.io = self.Export(self.conn.sig.adapt_to(AnalogSink()), [InOut])
 
@@ -131,7 +131,7 @@ class AnalogCoaxTestPoint(BaseRfTestPoint, Block):
 
 class I2cTestPoint(TypedTestPoint, Block):
   """Two test points for I2C SDA and SCL"""
-  def __init__(self, tp_name: StringLike = ""):
+  def __init__(self, tp_name: StringLike = "") -> None:
     super().__init__()
     self.io = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
     self.tp_name = self.ArgParameter(tp_name)
@@ -151,7 +151,7 @@ class I2cTestPoint(TypedTestPoint, Block):
 
 class SpiTestPoint(TypedTestPoint, Block):
   """Test points for SPI"""
-  def __init__(self, tp_name: StringLike = ""):
+  def __init__(self, tp_name: StringLike = "") -> None:
     super().__init__()
     self.io = self.Port(SpiPeripheral(DigitalBidir.empty()), [InOut])
     self.tp_name = self.ArgParameter(tp_name)
@@ -173,7 +173,7 @@ class SpiTestPoint(TypedTestPoint, Block):
 
 class CanControllerTestPoint(TypedTestPoint, Block):
   """Two test points for CAN controller-side TXD and RXD"""
-  def __init__(self, tp_name: StringLike = ""):
+  def __init__(self, tp_name: StringLike = "") -> None:
     super().__init__()
     self.io = self.Port(CanPassivePort(DigitalBidir.empty()), [InOut])
     self.tp_name = self.ArgParameter(tp_name)
@@ -193,7 +193,7 @@ class CanControllerTestPoint(TypedTestPoint, Block):
 
 class CanDiffTestPoint(TypedTestPoint, Block):
   """Two test points for CAN differential-side canh and canl"""
-  def __init__(self, tp_name: StringLike = ""):
+  def __init__(self, tp_name: StringLike = "") -> None:
     super().__init__()
     self.io = self.Port(CanDiffPort(DigitalBidir.empty()), [InOut])
     self.tp_name = self.ArgParameter(tp_name)

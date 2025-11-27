@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 
 
@@ -17,6 +19,6 @@ class Resettable(BlockInterfaceMixin[Block]):
     Microcontrollers may generate internal programming connectors that drive this signal, and system designers must
     connect microcontroller resets with this in mind - for example, only driving them in open-drain mode.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.reset = self.Port(DigitalSink.empty(), optional=True)

@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from .Categories import Connector
 from .AbstractAntenna import Antenna
@@ -35,7 +37,7 @@ class RfConnectorTestPoint(BlockInterfaceMixin[RfConnector]):
 
 class RfConnectorAntenna(Antenna):
   """RF connector used as an antenna"""
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.conn = self.Block(RfConnector())
     self.connect(self.conn.sig, self.a)
