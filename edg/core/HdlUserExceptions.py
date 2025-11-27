@@ -44,7 +44,7 @@ class UnreachableParameterError(Exception):
 
 class BlockDefinitionError(EdslUserError):
   """Base error for likely mistakes when writing a block definition"""
-  def __init__(self, block, exc: str, resolution: str = ''):
+  def __init__(self, block, exc: str, resolution: str = '') -> None:
     super().__init__(f"invalid block definition for {type(block)}: {exc}", resolution)
 
 

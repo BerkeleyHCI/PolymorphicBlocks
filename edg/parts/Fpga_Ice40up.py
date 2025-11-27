@@ -41,7 +41,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
   BITSTREAM_BITS: int = 0
 
   @staticmethod
-  def make_dio_model(gnd: Ground, vccio: VoltageSink):
+  def make_dio_model(gnd: Ground, vccio: VoltageSink) -> DigitalBidir:
     return DigitalBidir.from_supply(
       gnd, vccio,
       voltage_limit_tolerance=(-0.3, 0.2) * Volt,  # table 4.13
@@ -50,7 +50,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
       pullup_capable=True, pulldown_capable=False,
     )
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     self.gnd = self.Port(Ground(), [Common])
@@ -253,7 +253,7 @@ class Ice40up(Fpga, IoController):
   """
   DEVICE: Type[Ice40up_Device] = Ice40up_Device
 
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
     self.cdone = self.Port(DigitalSource.empty(), optional=True)
 

@@ -600,9 +600,10 @@ class LiteralConstructor:
     self.scale = scale
     self.units = units
 
-  def __call__(self, dummy=None, tol: Optional[float]=None):
-    if tol is not None:
-      return RangeConstructor(tol, self.scale, self.units)
+  def __call__(self, dummy=None, tol: Optional[float]=None) -> RangeConstructor:
+    if tol is None:
+      raise ValueError("requires tol, use without parens to create un-toleranced literal")
+    return RangeConstructor(tol, self.scale, self.units)
 
   @overload
   def __rmul__(self, other: float) -> FloatExpr: ...

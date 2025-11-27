@@ -147,7 +147,7 @@ def process_request(request: edgrpc.HdlRequest) -> Optional[edgrpc.HdlResponse]:
     traceback.print_exc()
   return response
 
-def run_server():
+def run_server() -> None:
   stdin_deserializer = BufferDeserializer(edgrpc.HdlRequest, sys.stdin.buffer)
   stdout_serializer = BufferSerializer[edgrpc.HdlResponse](sys.stdout.buffer)
 

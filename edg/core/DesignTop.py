@@ -22,10 +22,10 @@ class DesignTop(Block):
     self._packed_blocks = IdentityDict[
       Union[Block, PackedBlockAllocate], DesignPath]()  # multipack part -> packed block (as path)
 
-  def Port(self, *args, **kwargs):
+  def Port(self, *args: Any, **kwargs: Any) -> None:
     raise ValueError("Can't create ports on design top")
 
-  def Export(self, *args, **kwargs):
+  def Export(self, *args: Any, **kwargs: Any) -> None:
     raise ValueError("Can't create ports on design top")
 
   def refinements(self) -> Refinements:
@@ -47,7 +47,7 @@ class DesignTop(Block):
                             for multipack_part, path in self._packed_blocks.items()]
     )
 
-  def multipack(self):
+  def multipack(self) -> None:
     """Defines multipack packing rules, by defining multipack devices and providing packing connections.
     Subclasses should define multipack by stacking on top of super().multipack()."""
     pass

@@ -26,14 +26,14 @@ class PortBridge(InternalBlock, Block):
     self.outer_port: Any
     self.inner_link: Any
 
-  def __setattr__(self, name: str, value):
+  def __setattr__(self, name: str, value: Any) -> None:
     if isinstance(value, Port):
       assert name == '_parent' or name == "outer_port" or name == "inner_link", \
         "PortBridge can only have outer_port or inner_link ports, got %s" % name
     super().__setattr__(name, value)
 
   T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, *args, **kwargs) -> T:
+  def Port(self, tpe: T, *args: Any, **kwargs: Any) -> T:
     assert 'optional' not in kwargs, f"Ports in PortBridge are optional by default, required should be set by enclosing block, in {kwargs}"
     return super().Port(tpe, *args, optional=True, **kwargs)
 
@@ -49,13 +49,13 @@ class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
     self.src: Any
     self.dst: AdapterDstType
 
-  def __setattr__(self, name: str, value):
+  def __setattr__(self, name: str, value: Any) -> None:
     if isinstance(value, Port):
       assert name == '_parent' or name == "src" or name == "dst", \
         "PortAdapter can only have src or dst ports, got %s" % name
     super().__setattr__(name, value)
 
   T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, *args, **kwargs) -> T:
+  def Port(self, tpe: T, *args: Any, **kwargs: Any) -> T:
     assert 'optional' not in kwargs, "Ports in PortBridge are optional by default, required should be set by enclosing block"
     return super().Port(tpe, *args, optional=True, **kwargs)

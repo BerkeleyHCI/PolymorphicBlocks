@@ -35,7 +35,7 @@ class SubElementDict(Generic[ElementType]):
     self.keys_list.append(name)
 
   # TODO should this be automatically called?
-  def finalize(self):
+  def finalize(self) -> None:
     if self.closed:
       return
     if self.anon_prefix is None:
@@ -89,7 +89,7 @@ class SubElementManager:
     self.dicts.append((filter_type, sub_dict))
     return sub_dict
 
-  def add_alias(self, src: Any, target: Any):
+  def add_alias(self, src: Any, target: Any) -> None:
     self.aliases[src] = target
 
   def add_element(self, name: str, item: Any) -> None:
@@ -275,7 +275,7 @@ class HasMetadata(LibraryElement):
 
     mypy currently does not allow passing in abstract types, so generally calls to this need type: ignore."""
     direct_bases: Set[Type] = set()
-    def process_direct_base(bcls: Type[HasMetadata.BaseType]):
+    def process_direct_base(bcls: Type[HasMetadata.BaseType]) -> None:
       if not issubclass(bcls, base_type):
         return  # ignore above base_type
       if (bcls, NonLibraryProperty) in bcls._elt_properties:  # non-library, recurse into parents

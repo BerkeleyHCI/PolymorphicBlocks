@@ -15,7 +15,7 @@ class Stm32l432Base_Device(IoControllerI2cTarget, IoControllerDac, IoControllerC
     SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
     RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         # Additional ports (on top of BaseIoController)
@@ -219,7 +219,7 @@ class Stm32l432Base(Resettable, IoControllerDac, IoControllerCan, IoControllerUs
                     IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
     DEVICE: Type[Stm32l432Base_Device] = Stm32l432Base_Device  # type: ignore
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.ic: Stm32l432Base_Device
         self.generator_param(self.reset.is_connected())

@@ -15,7 +15,7 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     # Additional ports (on top of BaseIoController)
@@ -268,7 +268,7 @@ class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoContro
   DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
     self.ic: Stm32f103Base_Device
     self.generator_param(self.reset.is_connected())

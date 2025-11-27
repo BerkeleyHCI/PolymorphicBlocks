@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..abstract_parts import *
 
 
@@ -33,11 +35,11 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
   """Custom synchronous buck-boost with four PWMs for the switches.
   Because of the MOSFET body diode, will probably be fine-ish if the buck low-side FET and the boost high-side FET
   are not driven"""
-  def __init__(self, *args,
+  def __init__(self, *args: Any,
                frequency: RangeLike = (100, 1000)*kHertz,
                ripple_ratio: RangeLike = (0.2, 0.5),
                rds_on: RangeLike = (0, 1.0)*Ohm,
-               **kwargs):
+               **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.pwr_logic = self.Port(VoltageSink.empty())

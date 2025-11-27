@@ -45,7 +45,7 @@ class TopMultipackDesign(DesignTop):
     self.sink1 = self.Block(PartSink())
     self.sink2 = self.Block(TestBlockContainerSink())
 
-  def multipack(self):
+  def multipack(self) -> None:
     self.packed = self.Block(MultipackBlockSink())
     self.pack(self.packed.sink1, ['sink1'])
     self.pack(self.packed.sink2, ['sink2', 'inner'])
@@ -126,7 +126,7 @@ class TopMultipackArrayDesign(DesignTop):
     self.sink1 = self.Block(PartSink())
     self.sink2 = self.Block(TestBlockContainerSink())
 
-  def multipack(self):
+  def multipack(self) -> None:
     self.packed = self.Block(MultipackArrayBlockSink())
     self.pack(self.packed.sinks.request('1'), ['sink1'])
     self.pack(self.packed.sinks.request('2'), ['sink2', 'inner'])

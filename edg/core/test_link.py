@@ -6,7 +6,7 @@ from .test_elaboration_common import TestLink
 
 
 class LinkTestCase(unittest.TestCase):
-  def setUp(self):
+  def setUp(self) -> None:
     self.pb = TestLink()._elaborated_def_to_proto()
 
   def test_self_class(self) -> None:

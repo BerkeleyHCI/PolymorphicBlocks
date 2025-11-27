@@ -10,7 +10,7 @@ class FetFallbackGateCharge(PartsTableSelector, BaseTableFet):
   """A TableFet that allows a fallback gate charge if not specified in the table.
   Unspecified entries must be Range.all(), which will be substituted with the fallback
   value in per-Block post-processing."""
-  def __init__(self, *args, fallback_gate_charge: RangeLike = Range.from_tolerance(3000e-9, 0), **kwargs):
+  def __init__(self, *args: Any, fallback_gate_charge: RangeLike = Range.from_tolerance(3000e-9, 0), **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     # allow the user to specify a gate charge
     self.fallback_gate_charge = self.ArgParameter(fallback_gate_charge)

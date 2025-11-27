@@ -168,7 +168,7 @@ class Esp32s3_Base(Esp32s3_Ios, GeneratorBlock):
       'U0TXD': self.uart0.tx,
     }).remap(self.SYSTEM_PIN_REMAP)
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     self.pwr = self.Port(self._vdd_model(), [Power])

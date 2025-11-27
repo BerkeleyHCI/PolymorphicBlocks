@@ -501,7 +501,7 @@ class DigitalSingleSourceFake:
       high_driver=high_signal_driver
     )
 
-  def empty(self):
+  def empty(self) -> DigitalSource:
     return DigitalSource.empty()
 
 

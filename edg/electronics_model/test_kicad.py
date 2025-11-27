@@ -1,6 +1,6 @@
 import os
 import unittest
-from typing import Type
+from typing import Type, Tuple
 
 from . import *
 from . import test_netlist
@@ -9,7 +9,7 @@ from .BomBackend import GenerateBom
 
 
 class NetlistTestCase(unittest.TestCase):
-  def generate_net(self, design: Type[Block]):
+  def generate_net(self, design: Type[Block]) -> Tuple[str, str]:
     compiled = ScalaCompiler.compile(design)
     compiled.append_values(RefdesRefinementPass().run(compiled))
 

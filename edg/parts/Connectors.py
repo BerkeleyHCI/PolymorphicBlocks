@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..abstract_parts import *
 from .PassiveConnector_Header import JstShSmHorizontal
 
@@ -59,8 +61,8 @@ class LipoConnector(Connector, Battery):
   Default pinning has ground being pin 1, and power being pin 2.
 
   Connector type not specified, up to the user through a refinement."""
-  def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args,
-               actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs):
+  def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args: Any,
+               actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs: Any) -> None:
     from ..electronics_model.PassivePort import PassiveAdapterVoltageSink
     super().__init__(voltage, *args, **kwargs)
     self.chg = self.Port(VoltageSink.empty(), optional=True)  # ideal port for charging

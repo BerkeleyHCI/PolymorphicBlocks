@@ -38,7 +38,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         pb = KiCadBoundaryConversionBlock()._elaborated_def_to_proto()
         self.validate(pb)
 
-    def validate(self, pb: edgir.HierarchyBlock):
+    def validate(self, pb: edgir.HierarchyBlock) -> None:
         constraints = list(map(lambda pair: pair.value, pb.constraints))
 
         expected_conn = edgir.ValueExpr()

@@ -1,4 +1,5 @@
 import unittest
+from typing import Any
 
 from .. import edgir
 from . import *
@@ -23,18 +24,18 @@ class EmptyDefaultParamClass(BaseParamClass):  # contains a single empty-default
 
 
 class DefaultParamSubClass(EmptyDefaultParamClass):  # adds a default param on top of the inherited params
-  def __init__(self, default_param: IntLike = 42, **kwargs) -> None:
+  def __init__(self, default_param: IntLike = 42, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
 
 class OverrideDefaultSubClass(DefaultParamSubClass):  # changes the default param of the parent
-  def __init__(self, default_param: IntLike = 16, **kwargs) -> None:
+  def __init__(self, default_param: IntLike = 16, **kwargs: Any) -> None:
     super().__init__(default_param, **kwargs)
 
 
 class CombinedParamSubClass(DefaultParamSubClass):  # adds a default param on top of the inherited params
   def __init__(self, nondefault_param2: FloatLike = FloatExpr(),
-               default_param2: StringLike = "test", **kwargs) -> None:
+               default_param2: StringLike = "test", **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
 

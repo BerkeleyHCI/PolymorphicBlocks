@@ -185,7 +185,7 @@ class SvgPcbBackend(BaseBackend):
 
     def _generate(self, design: CompiledDesign, netlist: Netlist) -> str:
         """Generates SVBPCB fragments as a structured result"""
-        def block_matches_prefixes(block: NetBlock, prefixes: List[Tuple[str, ...]]):
+        def block_matches_prefixes(block: NetBlock, prefixes: List[Tuple[str, ...]]) -> bool:
             for prefix in prefixes:
                 if block.full_path.blocks[0:min(len(block.full_path.blocks), len(prefix))] == prefix:
                     return True

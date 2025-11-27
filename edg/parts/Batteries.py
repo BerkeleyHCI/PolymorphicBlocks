@@ -1,11 +1,11 @@
-from typing import Optional, Union
+from typing import Optional, Union, Any
 
 from ..abstract_parts import *
 
 
 class Cr2032(Battery, FootprintBlock):
-  def __init__(self, voltage: RangeLike = (2.0, 3.0)*Volt, *args,
-               actual_voltage: RangeLike = (2.0, 3.0)*Volt, **kwargs):
+  def __init__(self, voltage: RangeLike = (2.0, 3.0)*Volt, *args: Any,
+               actual_voltage: RangeLike = (2.0, 3.0)*Volt, **kwargs: Any) -> None:
     super().__init__(voltage, *args, **kwargs)
     self.pwr.init_from(VoltageSource(
       voltage_out=self.gnd.link().voltage + actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
@@ -29,8 +29,8 @@ class Cr2032(Battery, FootprintBlock):
 
 
 class Li18650(Battery, FootprintBlock):
-  def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args,
-               actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs):
+  def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args: Any,
+               actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs: Any) -> None:
     super().__init__(voltage, *args, **kwargs)
     self.pwr.init_from(VoltageSource(
       voltage_out=self.gnd.link().voltage + actual_voltage,
@@ -55,8 +55,8 @@ class Li18650(Battery, FootprintBlock):
 
 class AaBattery(Battery, FootprintBlock):
   """AA battery holder supporting alkaline and rechargeable chemistries."""
-  def __init__(self, voltage: RangeLike = (1.0, 1.6)*Volt, *args,
-               actual_voltage: RangeLike = (1.0, 1.6)*Volt, **kwargs):
+  def __init__(self, voltage: RangeLike = (1.0, 1.6)*Volt, *args: Any,
+               actual_voltage: RangeLike = (1.0, 1.6)*Volt, **kwargs: Any) -> None:
     super().__init__(voltage, *args, **kwargs)
     self.gnd.init_from(Ground())
     self.pwr.init_from(VoltageSource(

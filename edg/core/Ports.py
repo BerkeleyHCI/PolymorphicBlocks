@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class InitializerContextMeta(type):
-  def __call__(cls, *args, **kwargs):
+  def __call__(cls, *args: Any, **kwargs: Any) -> Any:
     """Hook on construction to store some metadata about its creation.
     This hooks the top-level __init__ only."""
     obj = type.__call__(cls, *args, **kwargs)
@@ -64,7 +64,7 @@ class BasePort(HasMetadata, metaclass=InitializerContextMeta):
     """Returns the proto of an instance of this object"""
     raise NotImplementedError
 
-  def _bind_in_place(self, parent: PortParentTypes):
+  def _bind_in_place(self, parent: PortParentTypes) -> None:
     self._parent = parent
 
   def _clone(self: SelfType) -> SelfType:
@@ -87,7 +87,7 @@ class BasePort(HasMetadata, metaclass=InitializerContextMeta):
     clone._bind_in_place(parent)
     return clone
 
-  def _is_bound(self):
+  def _is_bound(self) -> bool:
     def impl(elt: Optional[PortParentTypes]) -> bool:
       if elt is None:
         return False
@@ -161,7 +161,7 @@ class Port(BasePort, Generic[PortLinkType]):
       assert isinstance(other_param, type(param))
       param.initializer = other_param.initializer
 
-  def init_from(self: SelfType, other: SelfType):
+  def init_from(self: SelfType, other: SelfType) -> None:
     assert self._parent is not None, "may only init_from on an bound port"
     assert not self._get_initializers([]), "may only init_from an empty model"
     self._cloned_from(other)

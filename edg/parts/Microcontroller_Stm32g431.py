@@ -16,7 +16,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
     SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
     RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         # Power and ground
@@ -240,7 +240,7 @@ class Stm32g431Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
                     IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
     DEVICE: Type[Stm32g431Base_Device] = Stm32g431Base_Device
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.ic: Stm32g431Base_Device
         self.generator_param(self.reset.is_connected())

@@ -6,7 +6,7 @@ from .test_elaboration_common import TestPortBase, TestPortSource
 
 
 class PortProtoTestCase(unittest.TestCase):
-  def setUp(self):
+  def setUp(self) -> None:
     self.pb = cast(edgir.Port, TestPortBase()._def_to_proto())  # TODO eliminate cast
 
   def test_contains_param(self) -> None:
@@ -16,7 +16,7 @@ class PortProtoTestCase(unittest.TestCase):
 
 
 class PortSourceProtoTestCase(unittest.TestCase):
-  def setUp(self):
+  def setUp(self) -> None:
     self.pb = cast(edgir.Port, TestPortSource()._def_to_proto())
 
   def test_self_class(self) -> None:

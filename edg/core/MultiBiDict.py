@@ -10,7 +10,7 @@ class MultiBiDict(Generic[KeyType, ValueType]):
     self.dict: Dict[KeyType, Set[ValueType]] = {}
     self.inverse_dict: Dict[ValueType, Set[KeyType]] = {}
 
-  def add(self, key: KeyType, value: ValueType):
+  def add(self, key: KeyType, value: ValueType) -> None:
     self.dict.setdefault(key, set()).add(value)
     self.inverse_dict.setdefault(value, set()).add(key)
 
@@ -40,6 +40,6 @@ class MultiBiDict(Generic[KeyType, ValueType]):
     else:
       return key_set.copy().pop()
 
-  def clear(self):
+  def clear(self) -> None:
     self.dict = {}
     self.inverse_dict = {}

@@ -151,7 +151,7 @@ class DefaultExportBlock(GeneratorBlock):
     self._default_exports: List[Tuple[BasePort, Port, Port]] = []  # internal, exported, default
 
   ExportType = TypeVar('ExportType', bound=BasePort)
-  def Export(self, port: ExportType, *args, default: Optional[Port] = None, **kwargs) -> ExportType:
+  def Export(self, port: ExportType, *args: Any, default: Optional[Port] = None, **kwargs: Any) -> ExportType:
     """A generator-only variant of Export that supports an optional default (either internal or external)
     to connect the (internal) port being exported to, if the external exported port is not connected."""
     if default is None:

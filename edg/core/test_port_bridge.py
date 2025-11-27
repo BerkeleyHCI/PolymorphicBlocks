@@ -6,7 +6,7 @@ from . import *
 
 
 class PortBridgeProtoTestCase(unittest.TestCase):
-  def setUp(self):
+  def setUp(self) -> None:
     self.pb = TestPortBridge()._elaborated_def_to_proto()
 
   def test_contains_param(self) -> None:

@@ -1,13 +1,13 @@
 from itertools import chain
-from typing import Dict, List
+from typing import Dict, List, Any
 
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
 class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBlock):
-  def __init__(self, addr_lsb: IntLike, **kwags) -> None:
-    super().__init__(**kwags)
+  def __init__(self, addr_lsb: IntLike, **kwargs: Any) -> None:
+    super().__init__(**kwargs)
     self.gnd = self.Port(Ground())
     self.vdd = self.Port(VoltageSink(
       voltage_limits=(2.3, 5.5)*Volt,

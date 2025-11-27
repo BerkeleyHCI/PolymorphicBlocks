@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from ..core import *
 from .CircuitBlock import CircuitPortBridge, CircuitPortAdapter, CircuitLink, CircuitPort
 from .Units import Volt, Ohm
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class GroundLink(CircuitLink):
     @classmethod
-    def _voltage_range(cls, port: Port[GroundLink]):
+    def _voltage_range(cls, port: Port[GroundLink]) -> RangeExpr:
         if isinstance(port, Ground):
             return port.is_connected().then_else(port.link().voltage,
                                                  RangeExpr._to_expr_type(RangeExpr.ZERO))
@@ -124,7 +124,7 @@ class GroundReference(CircuitPort[GroundLink]):
 
 from deprecated import deprecated
 @deprecated("Use Ground() or GroundReference(...), Ground is no longer directioned")
-def GroundSource(*args, **kwargs):
+def GroundSource(*args: Any, **kwargs: Any) -> Ground:
     return Ground()
 
 

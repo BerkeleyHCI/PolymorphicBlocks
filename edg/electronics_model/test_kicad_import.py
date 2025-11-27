@@ -171,7 +171,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
     def test_overlapped_port(self) -> None:
         self.check_connectivity(KiCadBlockOverlappedPort)
 
-    def check_connectivity(self, cls: Type[KiCadSchematicBlock]):
+    def check_connectivity(self, cls: Type[KiCadSchematicBlock]) -> None:
         """Checks the connectivity of the generated proto, since the examples have similar structures."""
         pb = cls()._elaborated_def_to_proto()
         constraints = list(map(lambda pair: pair.value, pb.constraints))

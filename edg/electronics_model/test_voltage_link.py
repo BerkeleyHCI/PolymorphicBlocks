@@ -4,7 +4,7 @@ from .VoltagePorts import VoltageLink
 
 
 class VoltageLinkTestCase(unittest.TestCase):
-  def setUp(self):
+  def setUp(self) -> None:
     self.pb = VoltageLink()._elaborated_def_to_proto()
 
   def test_metadata(self) -> None:

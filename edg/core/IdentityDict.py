@@ -41,13 +41,13 @@ class IdentityDict(Generic[KeyType, ValueType]):  # TODO this should implement M
   def __add__(self, other: IdentityDict[KeyType, ValueType]) -> IdentityDict[KeyType, ValueType]:
     return self.extend(other.items())
 
-  def __setitem__(self, key: KeyType, item: ValueType):
+  def __setitem__(self, key: KeyType, item: ValueType) -> None:
     key_id = id(key)
     assert key_id not in self.dict, f"attempted to overwrite {key}={self.dict[key_id]} with new {item}"
     self.dict[key_id] = item
     self.keys_dict[key_id] = key
 
-  def update(self, key: KeyType, item: ValueType):
+  def update(self, key: KeyType, item: ValueType) -> None:
     key_id = id(key)
     assert key_id in self.dict, f"attempted to update {key}={self.dict[key_id]} with no prior"
     self.dict[key_id] = item
@@ -70,5 +70,5 @@ class IdentityDict(Generic[KeyType, ValueType]):  # TODO this should implement M
   def __contains__(self, item: KeyType) -> bool:
     return id(item) in self.dict
 
-  def __bool__(self):
+  def __bool__(self) -> bool:
     return bool(self.dict)

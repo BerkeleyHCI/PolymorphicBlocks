@@ -128,7 +128,7 @@ class AnalogSink(AnalogBase):
                   signal_limit_bound: Optional[Tuple[FloatLike, FloatLike]] = None,
                   signal_limit_abs: Optional[RangeLike] = None,
                   current_draw: RangeLike = RangeExpr.ZERO,
-                  impedance: RangeLike = RangeExpr.INF):
+                  impedance: RangeLike = RangeExpr.INF) -> 'AnalogSink':
     supply_range = VoltageLink._supply_voltage_range(neg, pos)
     if voltage_limit_tolerance is not None:
       assert voltage_limit_abs is None
@@ -193,7 +193,7 @@ class AnalogSource(AnalogBase):
                   signal_out_bound: Optional[Tuple[FloatLike, FloatLike]] = None,
                   signal_out_abs: Optional[RangeLike] = None,
                   current_limits: RangeLike = RangeExpr.ALL,
-                  impedance: RangeLike = RangeExpr.ZERO):
+                  impedance: RangeLike = RangeExpr.ZERO) -> 'AnalogSource':
     supply_range = VoltageLink._supply_voltage_range(neg, pos)
     if signal_out_bound is not None:
       assert signal_out_abs is None

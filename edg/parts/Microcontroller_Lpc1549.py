@@ -15,7 +15,7 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     # Ports with shared references
@@ -340,7 +340,7 @@ class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, 
   DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
     self.ic: Lpc1549Base_Device
     self.generator_param(self.reset.is_connected())

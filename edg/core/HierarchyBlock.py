@@ -33,7 +33,7 @@ def init_in_parent(fn: Any) -> Any:
   )
 
   @functools.wraps(fn)
-  def wrapped(self: Block, *args, **kwargs) -> Any:
+  def wrapped(self: Block, *args: Any, **kwargs: Any) -> Any:
     # in concept, the outer deprecation should fire, but it doesn't consistently, so this is added for redundancy
     warnings.warn(
       f"in {fn}, @init_in_parent is no longer needed, the annotation can be removed without replacement",
@@ -95,7 +95,7 @@ class ChainConnect:
     self.blocks = blocks
     self.links = links
 
-  def __iter__(self):
+  def __iter__(self) -> Iterator[Union[Block, 'ChainConnect']]:
     return iter((tuple(self.blocks), self))
 
 
@@ -188,7 +188,7 @@ class BlockMeta(BaseBlockMeta):
 
         arg_data.append((arg_name, arg_param, param_expr_type))
 
-      def wrapped_init(self, *args, **kwargs) -> None:
+      def wrapped_init(self, *args: Any, **kwargs: Any) -> None:
         if not hasattr(self, '_init_params'):  # used to communicate to the block the added init params
           self._init_params = {}
 
@@ -534,7 +534,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     return ImplicitScope(self, implicits)
 
-  def connect(self, *connects: Union[BasePort, Connection], flatten=False) -> Connection:
+  def connect(self, *connects: Union[BasePort, Connection], flatten: bool=False) -> Connection:
     assert not flatten, "flatten only allowed in links"
     return super().connect(*connects, flatten=flatten)
 
@@ -592,7 +592,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
   ExportType = TypeVar('ExportType', bound=BasePort)
   def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False, doc: Optional[str] = None,
-             _connect = True) -> ExportType:
+             _connect: bool = True) -> ExportType:
     """Exports a port of a child block, but does not propagate tags or optional."""
     assert port._is_bound(), "can only export bound type"
     port_parent = port._block_parent()

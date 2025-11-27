@@ -1,5 +1,5 @@
 import math
-from typing import Tuple, Union
+from typing import Tuple, Union, Any
 from deprecated import deprecated
 
 
@@ -121,13 +121,13 @@ class Range:
   def __repr__(self) -> str:
     return f"Range({self.lower, self.upper})"
 
-  def __init__(self, lower: float, upper: float):
+  def __init__(self, lower: float, upper: float) -> None:
     assert lower <= upper or (math.isnan(lower) and math.isnan(upper)), \
       f"invalid range with lower {lower} > upper {upper}"
     self.lower = float(lower)
     self.upper = float(upper)
 
-  def __eq__(self, other) -> bool:
+  def __eq__(self, other: Any) -> bool:
     if not isinstance(other, Range):
       return False
     return self.lower == other.lower and self.upper == other.upper

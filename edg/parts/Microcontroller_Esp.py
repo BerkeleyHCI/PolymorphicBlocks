@@ -22,7 +22,7 @@ class EspProgrammingAutoReset(BlockInterfaceMixin[EspProgrammingHeader]):
   """Mixin for ESP programming header with auto-reset and auto-boot pins.
   By default, these are required to be connected (since it doesn't make sense to instantiate
   this without connecting the additional pins to the micro), but can be disabled with parameters."""
-  def __init__(self, *args, require_auto_reset: BoolLike = True, **kwargs) -> None:
+  def __init__(self, *args: Any, require_auto_reset: BoolLike = True, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.en = self.Port(DigitalSource.empty(), optional=True)  # effectively a reset pin

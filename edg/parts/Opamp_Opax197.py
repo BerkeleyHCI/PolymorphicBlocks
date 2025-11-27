@@ -6,7 +6,7 @@ from .JlcPart import JlcPart
 class Opa197_Base_Device(InternalSubcircuit):
   DEVICES: int
 
-  def _analog_in_model(self):
+  def _analog_in_model(self) -> AnalogSink:
     return AnalogSink.from_supply(
       self.vn, self.vp,
       voltage_limit_tolerance=(-0.5, 0.5)*Volt,  # input common mode absolute maximum ratings
@@ -14,7 +14,7 @@ class Opa197_Base_Device(InternalSubcircuit):
       impedance=1e13*Ohm(tol=0)  # no tolerance bounds given on datasheet
     )
 
-  def _analog_out_model(self):
+  def _analog_out_model(self) -> AnalogSource:
     return AnalogSource.from_supply(
       self.vn, self.vp,
       signal_out_bound=(0.125*Volt, -0.125*Volt),  # output swing from rail, assumed at 10k load

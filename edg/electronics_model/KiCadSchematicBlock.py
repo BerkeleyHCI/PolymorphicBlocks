@@ -150,7 +150,7 @@ class KiCadSchematicBlock(Block):
     """
     def import_kicad(self, filepath: str, locals: Mapping[str, Any] = {},
                      *, nodes: Mapping[str, Optional[BasePort]] = {}, conversions: Mapping[str, CircuitPort] = {},
-                     auto_adapt: bool = False):
+                     auto_adapt: bool = False) -> None:
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
         # so declaring it here causes it to reference Opamp lazily
         from ..abstract_parts import Resistor, Capacitor, Opamp

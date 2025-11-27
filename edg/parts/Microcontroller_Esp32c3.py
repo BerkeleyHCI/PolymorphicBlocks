@@ -110,7 +110,7 @@ class Esp32c3_Base(Esp32c3_Ios, BaseIoControllerPinmapGenerator):
       'RXD': self.uart0.rx,
     }
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     self.pwr = self.Port(self._vdd_model(), [Power])

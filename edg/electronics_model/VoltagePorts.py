@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class VoltageLink(CircuitLink):
   @classmethod
-  def _voltage_range(cls, port: Port[VoltageLink]):
+  def _voltage_range(cls, port: Port[VoltageLink]) -> RangeExpr:
     """Returns the voltage for a Voltage port, either sink or source"""
     if isinstance(port, VoltageSource):
       return port.voltage_out
@@ -23,7 +23,7 @@ class VoltageLink(CircuitLink):
       raise TypeError
 
   @classmethod
-  def _supply_voltage_range(cls, neg: Port[GroundLink], pos: Port[VoltageLink]):
+  def _supply_voltage_range(cls, neg: Port[GroundLink], pos: Port[VoltageLink]) -> RangeExpr:
     """For a negative and positive Voltage port (either sink or source), returns the voltage span."""
     return GroundLink._voltage_range(neg).hull(cls._voltage_range(pos))
 
@@ -108,7 +108,7 @@ class VoltageBase(CircuitPort[VoltageLink]):
   # TODO: support isolation domains and offset grounds
 
   # these are here (instead of in VoltageSource) since the port may be on the other side of a bridge
-  def as_ground(self, current_draw) -> GroundReference:
+  def as_ground(self, current_draw: RangeLike) -> GroundReference:
     """Adapts this port to a ground. Current draw is the current drawn from this port, and is required
     since ground does not model current draw.
     """

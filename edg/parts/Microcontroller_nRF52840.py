@@ -183,7 +183,7 @@ class Nrf52840_Base(Nrf52840_Ios, GeneratorBlock):
       'nRESET': self.nreset,
     }).remap(self.SYSTEM_PIN_REMAP)
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     self.gnd = self.Port(Ground(), [Common])
@@ -266,7 +266,7 @@ class Holyiot_18010_Device(Nrf52840_Base, InternalSubcircuit):
 class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
                     IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
     self.ic: Holyiot_18010_Device
     self.ic = self.Block(Holyiot_18010_Device(pin_assigns=ArrayStringExpr()))
@@ -379,7 +379,7 @@ class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
 class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
                    IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
     self.ic: Mdbt50q_1mv2_Device
     self.ic = self.Block(Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr()))  # defined in generator to mix in SWO/TDI

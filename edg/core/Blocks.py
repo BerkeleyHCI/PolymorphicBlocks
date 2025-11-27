@@ -81,7 +81,7 @@ class Connection():
     else:
       return None
 
-  def add_ports(self, ports: Iterable[BasePort]):
+  def add_ports(self, ports: Iterable[BasePort]) -> None:
     from .HierarchyBlock import Block
     from .Link import Link
 
@@ -219,7 +219,7 @@ class DescriptionString():
   def __init__(self, *elts: Union[str, DescriptionStringElts]):
     self.elts = elts
 
-  def add_to_proto(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType):
+  def add_to_proto(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     for elt in self.elts:
       if isinstance(elt, DescriptionStringElts):
         elt.set_elt_proto(pb, ref_map)
@@ -234,7 +234,7 @@ class DescriptionString():
       self.ref = ref
       self.units = units
 
-    def set_elt_proto(self, pb, ref_map=None):
+    def set_elt_proto(self, pb, ref_map=None) -> None:
       new_phrase = pb.description.add()
       new_phrase.param.path.CopyFrom(ref_map[self.ref])
       new_phrase.param.unit = self.units
@@ -403,7 +403,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
     for name, port in self._ports.items():
       port._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
 
-  def _bind_in_place(self, parent: Union[BaseBlock, Port]):
+  def _bind_in_place(self, parent: Union[BaseBlock, Port]) -> None:
     self._parent = parent
 
   def _check_constraint(self, constraint: ConstraintExpr) -> None:
@@ -507,7 +507,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
 
     return elt
 
-  def connect(self, *connects: Union[BasePort, Connection], flatten=False) -> Connection:
+  def connect(self, *connects: Union[BasePort, Connection], flatten: bool=False) -> Connection:
     for connect in connects:
       if not isinstance(connect, (BasePort, Connection)):
         raise TypeError(f"param to connect(...) must be BasePort or Connection, got {connect}")
