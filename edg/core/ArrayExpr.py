@@ -76,7 +76,7 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
     else:
       raise TypeError(f"unknown ConstraintExpr type for wrapped param {elt}")
 
-  def __init__(self, initializer=None):
+  def __init__(self, initializer=None) -> None:
     super().__init__(initializer)
     self._elt_sample: ArrayEltType = self._elt_type()._new_bind(SampleElementBinding())
 

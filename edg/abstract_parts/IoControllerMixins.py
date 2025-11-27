@@ -6,7 +6,7 @@ from ..electronics_model import *
 @non_library
 class WithCrystalGenerator(IoController, GeneratorBlock):
   """A Block generator mixin that checks if a crystal oscillator is needed, and if so generates it."""
-  DEFAULT_CRYSTAL_FREQUENCY: Range
+  DEFAULT_CRYSTAL_FREQUENCY: RangeLike
 
   def __init__(self) -> None:
     super().__init__()

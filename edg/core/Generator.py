@@ -33,15 +33,15 @@ class GeneratorBlock(Block):
     """Declares some parameter to be a generator, so in generate() it can be used in self.get().
     Parameters that have not been called in generator_param will error out if used in self.get()."""
     if self._elaboration_state not in (BlockElaborationState.init, BlockElaborationState.contents):
-      raise BlockDefinitionError(self, "can't call generator_param(...) outside __init__ or contents",
+      raise BlockDefinitionError(type(self), "can't call generator_param(...) outside __init__ or contents",
                                  "call generator_param(...) inside __init__ or contents only, and remember to call super().__init__()")
     for param in params:
       if not isinstance(param, ConstraintExpr):
         raise TypeError(f"param to generator_param(...) must be ConstraintExpr, got {param} of type {type(param)}")
       if param.binding is None:
-        raise BlockDefinitionError(self, "generator_param(...) param must be bound")
+        raise BlockDefinitionError(type(self), "generator_param(...) param must be bound")
       if not isinstance(param.binding, (InitParamBinding, AllocatedBinding, IsConnectedBinding)):
-        raise BlockDefinitionError(self, "generator_param(...) param must be an __init__ param, port requested, or port is_connected")
+        raise BlockDefinitionError(type(self), "generator_param(...) param must be an __init__ param, port requested, or port is_connected")
 
       self._generator_params_list.append(param)
 
@@ -100,7 +100,7 @@ class GeneratorBlock(Block):
       elif (self.__class__, AbstractBlockProperty) in self._elt_properties:
         pass  # abstract blocks allowed to not define a generator
       else:
-        raise BlockDefinitionError(self, "Generator missing generate implementation", "define generate")
+        raise BlockDefinitionError(type(self), "Generator missing generate implementation", "define generate")
       return pb
     else:
       return super()._def_to_proto()
@@ -130,7 +130,7 @@ class GeneratorBlock(Block):
                    for arg_param in self._generator.fn_args]
         self._generator.fn(*fn_args)
       else:
-        raise BlockDefinitionError(self, "Generator missing generate implementation", "define generate")
+        raise BlockDefinitionError(type(self), "Generator missing generate implementation", "define generate")
 
       self._elaboration_state = BlockElaborationState.post_generate
     finally:

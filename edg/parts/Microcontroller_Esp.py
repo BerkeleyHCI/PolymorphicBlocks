@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..abstract_parts import *
 from .PassiveConnector_Header import PinHeader254
 from .PassiveConnector_TagConnect import TagConnect

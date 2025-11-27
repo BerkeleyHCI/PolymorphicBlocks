@@ -95,7 +95,7 @@ class ChainConnect:
     self.blocks = blocks
     self.links = links
 
-  def __iter__(self) -> Iterator[Union[Block, 'ChainConnect']]:
+  def __iter__(self) -> Iterable[Union[Tuple[Block, ...], 'ChainConnect']]:
     return iter((tuple(self.blocks), self))
 
 
@@ -188,7 +188,7 @@ class BlockMeta(BaseBlockMeta):
 
         arg_data.append((arg_name, arg_param, param_expr_type))
 
-      def wrapped_init(self, *args: Any, **kwargs: Any) -> None:
+      def wrapped_init(self: Any, *args: Any, **kwargs: Any) -> None:
         if not hasattr(self, '_init_params'):  # used to communicate to the block the added init params
           self._init_params = {}
 
@@ -462,9 +462,9 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     if not (issubclass(tpe_cls, BlockInterfaceMixin) and tpe_cls._is_mixin()):
       raise TypeError("param to with_mixin must be a BlockInterfaceMixin")
     if isinstance(self, BlockInterfaceMixin) and self._is_mixin():
-      raise BlockDefinitionError(self, "mixins can not have with_mixin")
+      raise BlockDefinitionError(type(self), "mixins can not have with_mixin")
     if (self.__class__, AbstractBlockProperty) not in self._elt_properties:
-      raise BlockDefinitionError(self, "mixins can only be added to abstract classes")
+      raise BlockDefinitionError(type(self), "mixins can only be added to abstract classes")
     if not isinstance(self, tpe_cls._get_mixin_base()):
       raise TypeError(f"block {self.__class__.__name__} not an instance of mixin base {tpe_cls._get_mixin_base().__name__}")
     assert self._parent is not None
@@ -475,7 +475,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     return elt
 
-  def chain(self, *elts: Union[Connection, BasePort, Block]) -> ChainConnect:
+  def chain(self, *elts: Union[Connection, BasePort, Block]) -> Any:
     if not elts:
       return self._chains.register(ChainConnect([], []))
     chain_blocks = []
@@ -498,27 +498,27 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
         in_ports = elt._get_ports_by_tag({Input})
         out_ports = elt._get_ports_by_tag({Output})
         if len(in_ports) != 1:
-          raise ChainError(self, f"element {i} to chain {type(elt)} does not have exactly one Input port: {in_ports}")
+          raise ChainError(type(self), f"element {i} to chain {type(elt)} does not have exactly one Input port: {in_ports}")
         elif len(out_ports) != 1:
-          raise ChainError(self, f"element {i} to chain {type(elt)} does not have exactly one Output port: {out_ports}")
+          raise ChainError(type(self), f"element {i} to chain {type(elt)} does not have exactly one Output port: {out_ports}")
         chain_links.append(self.connect(current_port, in_ports[0]))
         chain_blocks.append(elt)
         current_port = out_ports[0]
       elif elt._get_ports_by_tag({InOut}):
         ports = elt._get_ports_by_tag({InOut})
         if len(ports) != 1:
-          raise ChainError(self, f"element {i} to chain {type(elt)} does not have exactly one InOut port: {ports}")
+          raise ChainError(type(self), f"element {i} to chain {type(elt)} does not have exactly one InOut port: {ports}")
         self.connect(current_port, ports[0])
         chain_blocks.append(elt)
       else:
-        raise ChainError(self, f"element {i} to chain {type(elt)} has no Input and Output, or InOut ports")
+        raise ChainError(type(self), f"element {i} to chain {type(elt)} has no Input and Output, or InOut ports")
 
     if isinstance(elts[-1], (BasePort, Connection)):
       chain_links.append(self.connect(current_port, elts[-1]))
     elif isinstance(elts[-1], Block):
       inable_ports = elts[-1]._get_ports_by_tag({Input}) + elts[-1]._get_ports_by_tag({InOut})
       if len(inable_ports) != 1:
-        raise BlockDefinitionError(elts[-1], f"last element {len(elts) - 1} to chain {type(elts[-1])} does not have exactly one InOut or Input port: {inable_ports}")
+        raise BlockDefinitionError(type(self), f"last element {len(elts) - 1} to chain {type(elts[-1])} does not have exactly one InOut or Input port: {inable_ports}")
       chain_blocks.append(elts[-1])
       chain_links.append(self.connect(current_port, inable_ports[0]))
     else:

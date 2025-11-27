@@ -1,9 +1,9 @@
-from typing import TypeVar, Union, List, Tuple, Dict, Type
+from typing import TypeVar, Union, List, Tuple, Dict, Type, Any
 
 from .Core import Refable
 from .. import edgir
 from .Builder import builder
-from .Ports import Port
+from .Ports import Port, BasePort
 from .ConstraintExpr import ConstraintExpr
 from .HdlUserExceptions import BlockDefinitionError
 from .IdentityDict import IdentityDict
@@ -22,10 +22,10 @@ class DesignTop(Block):
     self._packed_blocks = IdentityDict[
       Union[Block, PackedBlockAllocate], DesignPath]()  # multipack part -> packed block (as path)
 
-  def Port(self, *args: Any, **kwargs: Any) -> None:
+  def Port(self, *args: Any, **kwargs: Any) -> Any:
     raise ValueError("Can't create ports on design top")
 
-  def Export(self, *args: Any, **kwargs: Any) -> None:
+  def Export(self, *args: Any, **kwargs: Any) -> Any:
     raise ValueError("Can't create ports on design top")
 
   def refinements(self) -> Refinements:
@@ -174,7 +174,7 @@ class DesignTop(Block):
     """Packs a block (arbitrarily deep in the design tree, specified as a path) into a PackedBlock multipack block."""
     if self._elaboration_state not in \
         [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
-      raise BlockDefinitionError(self, "can only define multipack in init, contents, or generate")
+      raise BlockDefinitionError(type(self), "can only define multipack in init, contents, or generate")
     if isinstance(multipack_part, Block):
       multipack_block = multipack_part._parent
     elif isinstance(multipack_part, PackedBlockAllocate):

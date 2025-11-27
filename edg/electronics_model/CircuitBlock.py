@@ -59,7 +59,7 @@ class FootprintBlock(Block):
 
     if self._elaboration_state not in (BlockElaborationState.init, BlockElaborationState.contents,
                                        BlockElaborationState.generate):
-      raise BlockDefinitionError(self, "can't call Footprint(...) outside __init__, contents or generate",
+      raise BlockDefinitionError(type(self), "can't call Footprint(...) outside __init__, contents or generate",
                                  "call Footprint(...) inside those functions, and remember to make the super() call")
 
     self.fp_is_footprint = self.Metadata("")
