@@ -24,7 +24,7 @@ class PackedPassive(NetPackingBlock, GeneratorBlock):
     self.generator_param(self.elts.requested())
     self.packed(self.elts, self.merged)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.elts.defined()
     for request in self.get(self.elts.requested()):
@@ -43,7 +43,7 @@ class PackedGround(NetPackingBlock, GeneratorBlock):
     self.generator_param(self.gnd_ins.requested())
     self.packed(self.gnd_ins, self.gnd_out)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.gnd_ins.defined()
     for in_request in self.get(self.gnd_ins.requested()):
@@ -67,7 +67,7 @@ class PackedVoltageSource(NetPackingBlock, GeneratorBlock):
     self.generator_param(self.pwr_ins.requested())
     self.packed(self.pwr_ins, self.pwr_out)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.pwr_ins.defined()
     for in_request in self.get(self.pwr_ins.requested()):

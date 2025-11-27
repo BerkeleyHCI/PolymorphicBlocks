@@ -23,7 +23,7 @@ class DigitalIsolator(Interface, GeneratorBlock):
 
       self.generator_param(self.in_a.requested(), self.out_b.requested(), self.in_b.requested(), self.out_a.requested())
 
-  def generate(self):  # validity checks
+  def generate(self) -> None:  # validity checks
       super().generate()
       assert self.get(self.in_a.requested()) == self.get(self.out_b.requested()), \
           "in_a requested and out_b requested must be equal"

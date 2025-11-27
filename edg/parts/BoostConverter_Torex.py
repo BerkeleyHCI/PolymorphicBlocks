@@ -94,7 +94,7 @@ class Xc9142(Resettable, DiscreteBoostConverter, GeneratorBlock):
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.ce)

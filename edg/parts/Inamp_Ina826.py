@@ -89,7 +89,7 @@ class Ina826(KiCadImportableBlock, GeneratorBlock):
     self.actual_ratio = self.Parameter(RangeExpr())
     self.generator_param(self.ratio)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     # Datasheet section 8.1: decoupling caps placed as close to device pins as possible

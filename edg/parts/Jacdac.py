@@ -86,7 +86,7 @@ class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
         self.require(self.jd_pwr_src.is_connected() | self.jd_pwr_sink.is_connected())
         self.require(self.jd_pwr_src.is_connected().implies(~self.jd_pwr_sink.is_connected()))
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         if self.get(self.jd_pwr_src.is_connected()):
@@ -148,7 +148,7 @@ class JacdacEdgeConnector(Connector, JacdacSubcircuit, GeneratorBlock):
 
         self.generator_param(self.jd_pwr_src.is_connected(), self.jd_pwr_sink.is_connected())
 
-    def generate(self):
+    def generate(self) -> None:
         super().contents()
 
         with self.implicit_connect(

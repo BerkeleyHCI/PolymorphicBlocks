@@ -178,7 +178,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.2, rowSpacing=0.2) {{
     self.ncols = self.ArgParameter(ncols)
     self.generator_param(self.nrows, self.ncols)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     nrows = self.get(self.nrows)
     ncols = self.get(self.ncols)

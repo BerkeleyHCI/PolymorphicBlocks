@@ -24,7 +24,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
 
         self.generator_param(self.part, self.footprint_spec)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         if not self.get(self.footprint_spec) or \
                 self.get(self.footprint_spec) == 'Package_DFN_QFN:QFN-16-1EP_3x3mm_P0.5mm_EP1.45x1.45mm':

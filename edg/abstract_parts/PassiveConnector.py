@@ -35,7 +35,7 @@ class FootprintPassiveConnector(PassiveConnector, GeneratorBlock, FootprintBlock
     Implementing classes must implement this method."""
     raise NotImplementedError
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     max_pin_index = 0
     for pin in self.get(self.pins.requested()):

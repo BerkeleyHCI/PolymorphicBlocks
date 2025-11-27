@@ -40,7 +40,7 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
     self.size = self.ArgParameter(size)
     self.generator_param(self.size)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     suitable_parts = [part for part in self.PARTS if part[0] in self.get(self.size)]
     assert suitable_parts, "no memory in requested size range"
@@ -87,7 +87,7 @@ class W25q(SpiMemory, SpiMemoryQspi, GeneratorBlock):
       capacitance=0.1*uFarad(tol=0.2)
     )).connected(self.gnd, self.pwr)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     self.require(self.io2.is_connected() == self.io3.is_connected())

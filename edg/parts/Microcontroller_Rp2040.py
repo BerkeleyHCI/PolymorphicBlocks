@@ -353,7 +353,7 @@ class Rp2040(Resettable, Rp2040_Interfaces, Microcontroller, IoControllerWithSwd
 
     self.vreg_out_cap = self.Block(DecouplingCapacitor(1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     if self.get(self.reset.is_connected()):

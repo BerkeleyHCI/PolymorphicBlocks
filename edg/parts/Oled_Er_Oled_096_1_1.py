@@ -113,7 +113,7 @@ class Er_Oled_096_1_1(Oled, Resettable, GeneratorBlock):
         self.vcc_cap = self.Block(DecouplingCapacitor(capacitance=(2.2*0.8, 10)*uFarad))\
             .connected(self.gnd, self.device.vcc)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         gnd_digital = self.gnd.as_digital_source()

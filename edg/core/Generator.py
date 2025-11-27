@@ -76,7 +76,7 @@ class GeneratorBlock(Block):
         f"generator parameter {i} {req_param} not an __init__ parameter"
     self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, reqs)
 
-  def generate(self):
+  def generate(self) -> None:
     """Generate function which has access to the value of generator params. Implement me."""
     pass
 
@@ -164,7 +164,7 @@ class DefaultExportBlock(GeneratorBlock):
       self._default_exports.append((port, new_port, default))
     return new_port
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     for (internal, exported, default) in self._default_exports:
       if self.get(exported.is_connected()):

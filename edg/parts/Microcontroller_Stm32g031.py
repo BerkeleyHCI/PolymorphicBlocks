@@ -221,7 +221,7 @@ class Stm32g031Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
             self.pwr_cap0 = imp.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2)))
             self.pwr_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         if self.get(self.reset.is_connected()):

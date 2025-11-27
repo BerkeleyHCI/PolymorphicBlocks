@@ -125,7 +125,7 @@ class Waveshare_Epd(EInk, GeneratorBlock):
         self.connect(self.boost.pos_out, self.device.prevgh)
         self.connect(self.boost.neg_out, self.device.prevgl)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         if self.get(self.dc.is_connected()):  # 4-line serial, BS low
             self.connect(self.gnd.as_digital_source(), self.device.bs)

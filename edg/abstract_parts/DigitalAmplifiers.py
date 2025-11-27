@@ -33,7 +33,7 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
     self.clamp_resistance_ratio = self.ArgParameter(clamp_resistance_ratio)
     self.generator_param(self.clamp_voltage)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     pwr_voltage = self.pwr.link().voltage

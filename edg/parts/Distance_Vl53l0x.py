@@ -67,7 +67,7 @@ class Vl53l0x(DistanceSensor, Resettable, GeneratorBlock):
                          doc="Interrupt output for new data available")
     self.generator_param(self.reset.is_connected(), self.int.is_connected())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.xshut)
@@ -89,7 +89,7 @@ class Vl53l0xConnector(Vl53l0x, WrapperFootprintBlock):
   This has an onboard 2.8v regulator, but thankfully the IO tolerance is not referenced to Vdd
 
   TODO: not completely correct that this should extend the application circuit"""
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.footprint(
       'J', 'Connector_PinSocket_2.54mm:PinSocket_1x06_P2.54mm_Vertical',
@@ -119,7 +119,7 @@ class Vl53l0xArray(DistanceSensor, GeneratorBlock):
     self.first_reset_fixed = self.ArgParameter(first_reset_fixed)
     self.generator_param(self.count, self.first_reset_fixed)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.elt = ElementDict[Vl53l0x]()
     for elt_i in range(self.get(self.count)):

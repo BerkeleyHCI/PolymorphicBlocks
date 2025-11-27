@@ -281,7 +281,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interf
     self.connect(self.swd_node, self.ic.swd)
     self.connect(self.reset_node, self.ic.nreset)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.nreset)
@@ -400,7 +400,7 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfa
     ) as imp:
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     if self.get(self.reset.is_connected()):

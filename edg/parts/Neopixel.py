@@ -254,7 +254,7 @@ class NeopixelArray(Light, GeneratorBlock):
         self.count = self.ArgParameter(count)
         self.generator_param(self.count)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         self.led = ElementDict[Neopixel]()
 

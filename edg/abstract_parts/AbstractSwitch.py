@@ -135,7 +135,7 @@ class DigitalWrapperRotaryEncoderWithSwitch(DigitalRotaryEncoderSwitch, DigitalW
     super().contents()
     self.generator_param(self.sw.is_connected())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.sw.is_connected()):
       package_sw = self.package.with_mixin(RotaryEncoderSwitch())
@@ -186,7 +186,7 @@ class DigitalWrapperDirectionSwitchWithCenter(DigitalDirectionSwitchCenter, Digi
     super().contents()
     self.generator_param(self.center.is_connected())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.center.is_connected()):
       package_sw = self.package.with_mixin(DirectionSwitchCenter())

@@ -42,7 +42,7 @@ class NfcAntenna(FootprintBlock, GeneratorBlock, Interface):
         self.z_real = self.Parameter(FloatExpr())
         self.z_imag = self.Parameter(FloatExpr())
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         impedance = NfcAntenna.impedance_from_lrc(self.get(self.freq), self.get(self.inductance),
@@ -76,7 +76,7 @@ class NfcAntennaDampening(InternalSubcircuit, GeneratorBlock):
         self.z_real = self.Parameter(FloatExpr())
         self.z_imag = self.Parameter(FloatExpr())
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         res_value = self.damp_res_from_impedance(complex(self.get(self.ant_r), self.get(self.ant_x)),
@@ -119,7 +119,7 @@ class DifferentialLcLowpassFilter(GeneratorBlock, RfFilter):
         self.out2 = self.Port(Passive())
         self.gnd = self.Port(Ground.empty(), [Common])
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         inductor_model = Inductor(self.get(self.inductance)*Henry(tol=0.1),
@@ -168,7 +168,7 @@ class DifferentialLLowPassFilter(GeneratorBlock, RfFilter):
         self.out2 = self.Port(Passive())
         self.gnd = self.Port(Ground.empty(), [Common])
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         diff_cs, diff_cp = self._calculate_se_values(self.get(self.freq),

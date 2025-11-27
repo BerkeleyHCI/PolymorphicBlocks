@@ -29,7 +29,7 @@ class ResistorMux(Interface, KiCadImportableBlock, GeneratorBlock):
     self.resistances = self.ArgParameter(resistances)
     self.generator_param(self.resistances)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.res = ElementDict[Resistor]()
     for i, resistance in enumerate(self.get(self.resistances)):

@@ -112,7 +112,7 @@ class Ov2640_Fpc24(Ov2640, GeneratorBlock):
         self.connect(self.dvp8.y6, self.device.y.request('8'))
         self.connect(self.dvp8.y7, self.device.y.request('9'))
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         if self.get(self.pwdn.is_connected()):
             self.connect(self.pwdn, self.device.pwdn)

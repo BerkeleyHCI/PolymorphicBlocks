@@ -8,7 +8,7 @@ class Cstne(CeramicResonator, GeneratorBlock, JlcPart, FootprintBlock):
         self.gnd.init_from(Ground())
         self.generator_param(self.frequency)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         parts = [  # tolerance is total stackup: initial temperature, aging
             (Range.from_tolerance(8e6, 0.0007 + 0.0011 + 0.0007), 'CSTNE8M00GH5L000R0', 'C882602',

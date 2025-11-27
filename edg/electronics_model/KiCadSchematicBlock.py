@@ -56,7 +56,7 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
         self.kicad_pins = self.ArgParameter(kicad_pins)
         self.generator_param(self.kicad_pins)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)
                    for pin_name in self.get(self.kicad_pins)}

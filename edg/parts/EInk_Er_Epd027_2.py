@@ -126,7 +126,7 @@ class Er_Epd027_2(EInk, GeneratorBlock):
         self.connect(self.boost.pos_out, self.device.vgh)
         self.connect(self.boost.neg_out, self.device.vgl)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         if self.get(self.dc.is_connected()):  # 4-line serial, BS low
             self.connect(self.gnd.as_digital_source(), self.device.bs)

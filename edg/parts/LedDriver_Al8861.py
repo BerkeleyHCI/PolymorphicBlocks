@@ -22,6 +22,7 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.peak_output_current = self.ArgParameter(peak_output_current)
 
     def contents(self) -> None:
+        super().contents()
         self.require(self.peak_output_current < 2*Amp)
         self.footprint(
             'U', 'Package_SO:MSOP-8-1EP_3x3mm_P0.65mm_EP1.68x1.88mm_ThermalVias',
@@ -59,8 +60,8 @@ class Al8861(LedDriverPwm, LedDriverSwitchingConverter, LedDriver, GeneratorBloc
 
         self.actual_ripple = self.Parameter(RangeExpr())
 
-    def generate(self):
-        super().contents()
+    def generate(self) -> None:
+        super().generate()
 
         # TODO replace with BuckConverterPowerPath, though the 33uH minimum inductance is very high
         self.require(self.max_current.within((0, 1.5)*Amp))  # for MSOP and SOT89 packages

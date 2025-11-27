@@ -48,7 +48,7 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
         Called within generate (has access to generator params), and after modifications from make_export_*."""
         return assigns
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in self.ic._io_ports}
 

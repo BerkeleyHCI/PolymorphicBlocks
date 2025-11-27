@@ -391,7 +391,7 @@ class CombinedCapacitor(MultipackDevice, MultipackBlock, GeneratorBlock):
     self.generator_param(self.pos.requested(), self.neg.requested(), self.extend_upper)
 
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     capacitance = self.capacitances.sum()
     if self.get(self.extend_upper):

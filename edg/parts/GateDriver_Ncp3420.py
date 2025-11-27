@@ -83,7 +83,7 @@ class Ncp3420(HalfBridgeDriver, HalfBridgeDriverPwm, Resettable, GeneratorBlock)
     # serves as both boot cap and decoupling cap
     self.high_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.high_gnd, self.ic.bst)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     if self.get(self.high_pwr.is_connected()):

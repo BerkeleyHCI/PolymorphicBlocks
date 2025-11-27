@@ -263,7 +263,7 @@ class Stm32g431Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
             self.pwr_cap3 = imp.Block(DecouplingCapacitor(100 * nFarad(tol=0.2)))
             self.pwr_cap4 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.nrst)  # otherwise NRST has internal pull-up

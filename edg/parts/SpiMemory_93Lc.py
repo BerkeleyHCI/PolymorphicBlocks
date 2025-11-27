@@ -40,7 +40,7 @@ class E93Lc_B_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
     self.size = self.ArgParameter(size)
     self.generator_param(self.size)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     suitable_parts = [part for part in self.PARTS if part[0] in self.get(self.size)]
     assert suitable_parts, "no memory in requested size range"

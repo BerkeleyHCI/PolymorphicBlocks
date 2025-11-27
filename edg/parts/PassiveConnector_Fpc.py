@@ -27,7 +27,7 @@ class Fpc050BottomFlip(Fpc050Bottom, GeneratorBlock):
     super().contents()
     self.generator_param(self.length, self.pins.requested())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.conn = self.Block(Fpc050Top(self.length))
     length = self.get(self.length)

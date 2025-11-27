@@ -86,7 +86,7 @@ class HasEspProgramming(IoController, GeneratorBlock):
     self.program_en_node = self.connect()
     self.program_boot_node = self.connect()
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     programming = self.get(self.programming)
 

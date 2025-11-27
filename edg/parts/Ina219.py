@@ -29,7 +29,7 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock)
         self.in_pos = self.Port(AnalogSink(voltage_limits=(-0.3, 26) * Volt))
         self.in_neg = self.Port(AnalogSink(voltage_limits=(-0.3, 26) * Volt))
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         sa1_pin, sa0_pin = {

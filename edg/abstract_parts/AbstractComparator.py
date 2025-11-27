@@ -55,7 +55,7 @@ class VoltageComparator(GeneratorBlock):
 
         self.actual_trip_voltage = self.Parameter(RangeExpr())
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         if self.get(self.ref.is_connected()):

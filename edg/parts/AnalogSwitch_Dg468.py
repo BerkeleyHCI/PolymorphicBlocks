@@ -74,7 +74,7 @@ class Dg468(AnalogSwitch, GeneratorBlock):
       capacitance=0.1*uFarad(tol=0.2),
     )).connected(self.gnd, self.pwr)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.control_gnd.is_connected()):
       self.connect(self.control_gnd, self.ic.gnd)

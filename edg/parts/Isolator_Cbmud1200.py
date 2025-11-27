@@ -58,7 +58,7 @@ class Cbmud1200l(DigitalIsolator, GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     assert not self.get(self.in_b.requested()) and not self.get(self.out_a.requested()), f"device has no b->a channels"
 

@@ -376,7 +376,7 @@ class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, 
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     if self.get(self.reset.is_connected()):

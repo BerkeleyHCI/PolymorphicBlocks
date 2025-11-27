@@ -87,7 +87,7 @@ class AaBatteryStack(Battery, GeneratorBlock):
         self.cell_actual_voltage = self.ArgParameter(cell_actual_voltage)
         self.generator_param(self.count)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         prev_cell: Optional[AaBattery] = None
         prev_capacity_min: Union[FloatExpr, float] = float('inf')

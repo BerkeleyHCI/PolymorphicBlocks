@@ -116,7 +116,7 @@ class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):
         self.connect(self.vsl_d1.cathode, self.vsl_d2.anode)
         self.connect(self.vsl_d2.cathode.adapt_to(Ground()), self.gnd)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         gnd_digital = self.gnd.as_digital_source()

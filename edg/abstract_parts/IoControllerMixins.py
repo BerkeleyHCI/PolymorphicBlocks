@@ -17,7 +17,7 @@ class WithCrystalGenerator(IoController, GeneratorBlock):
     Called within generate, has access to generator params."""
     return False
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self._crystal_required():
       self.crystal = self.Block(OscillatorReference(self.DEFAULT_CRYSTAL_FREQUENCY))

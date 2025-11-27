@@ -26,6 +26,7 @@ class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.boot = self.Port(Passive())
 
     def contents(self):
+        super().contents()
         self.footprint(
             'U', 'Package_TO_SOT_SMD:SOT-23-6',
             {
@@ -61,8 +62,8 @@ class Tps92200(LedDriverPwm, LedDriver, GeneratorBlock):
         self.input_ripple_limit = self.ArgParameter(input_ripple_limit)
         self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
 
-    def generate(self):
-        super().contents()
+    def generate(self) -> None:
+        super().generate()
 
         with self.implicit_connect(
                 ImplicitConnect(self.pwr, [Power]),

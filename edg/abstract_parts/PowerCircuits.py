@@ -117,7 +117,7 @@ class FetHalfBridgePwmReset(FetHalfBridge, HalfBridgePwm, Resettable, GeneratorB
         super().__init__(*args, **kwargs)
         self.generator_param(self.reset.is_connected())
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         self.connect(self.pwm_ctl, self.driver.with_mixin(HalfBridgeDriverPwm()).pwm_in)
         if self.get(self.reset.is_connected()):

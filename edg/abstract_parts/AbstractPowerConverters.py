@@ -56,7 +56,7 @@ class VoltageRegulatorEnableWrapper(Resettable, VoltageRegulator, GeneratorBlock
     super().contents()
     self.generator_param(self.reset.is_connected())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self._generator_inner_reset_pin())

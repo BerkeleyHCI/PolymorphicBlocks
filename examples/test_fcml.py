@@ -84,7 +84,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     self.is_first = self.ArgParameter(is_first)
     self.generator_param(self.is_first, self.high_boot_out.is_connected())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     # control path is still defined in HDL
     if self.get(self.is_first):
@@ -291,7 +291,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     self.ratios = self.ArgParameter(ratios)
     self.generator_param(self.levels, self.ratios)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     levels = self.get(self.levels)
     assert levels >= 2, "levels must be 2 or more"

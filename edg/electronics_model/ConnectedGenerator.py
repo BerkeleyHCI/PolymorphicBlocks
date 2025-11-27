@@ -36,7 +36,7 @@ class BaseConnectedGenerator(DefaultConnectionBlock, GeneratorBlock, Generic[Out
     self.in_is_connected = self.ArgParameter(in_is_connected)
     self.generator_param(self.in_is_connected)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.in_is_connected):
       self.connect(self.out, self.in_connected)

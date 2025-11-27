@@ -137,7 +137,7 @@ class SeriesResistor(Resistor, GeneratorBlock):
     self.count = self.ArgParameter(count)
     self.generator_param(self.count, self.resistance)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     count = self.get(self.count)
     last_port = self.a
@@ -225,7 +225,7 @@ class PullupResistorArray(TypedTestPoint, GeneratorBlock):
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.res = ElementDict[PullupResistor]()
     for requested in self.get(self.io.requested()):
@@ -243,7 +243,7 @@ class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.res = ElementDict[PulldownResistor]()
     for requested in self.get(self.io.requested()):
@@ -314,7 +314,7 @@ class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorB
 
     self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     if self.get(self.sense_in.is_connected()):

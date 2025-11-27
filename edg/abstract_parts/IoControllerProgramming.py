@@ -39,7 +39,7 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
       assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
     return assigns
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.swd_swo_pin) != 'NC':
       self.connect(self.ic.gpio.request('swd_swo'), self.swd.with_mixin(SwdCortexTargetConnectorSwo()).swo)

@@ -61,7 +61,7 @@ class Sd18ob261(Microphone, GeneratorBlock):
 
         self.generator_param(self.lr.is_connected())
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         self.pwr_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)

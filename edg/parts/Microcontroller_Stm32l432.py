@@ -243,7 +243,7 @@ class Stm32l432Base(Resettable, IoControllerDac, IoControllerCan, IoControllerUs
             self.vdda_cap0 = imp.Block(DecouplingCapacitor(10*nFarad(tol=0.2)))
             self.vdda_cap1 = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2)))
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         if self.get(self.reset.is_connected()):

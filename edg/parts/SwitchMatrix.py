@@ -118,7 +118,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
     self.ncols = self.ArgParameter(ncols)
     self.generator_param(self.nrows, self.ncols)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     row_ports = {}
     for row in range(self.get(self.nrows)):

@@ -95,7 +95,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 
     self.out_range = self.Parameter(RangeExpr())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.ranges = ElementDict[SourceMeasureRangingCell]()
 
