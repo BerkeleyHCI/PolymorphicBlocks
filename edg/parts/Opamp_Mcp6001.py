@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vcc = self.Port(VoltageSink(
       voltage_limits=(1.8, 6.0)*Volt, current_draw=(50, 170)*uAmp

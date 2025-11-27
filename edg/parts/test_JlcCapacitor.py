@@ -3,7 +3,7 @@ from .JlcCapacitor import *
 
 
 class JlcCapacitorTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(JlcCapacitor(
         capacitance=10 * nFarad(tol=0.1),
@@ -14,7 +14,7 @@ class JlcCapacitorTestTop(Block):
 
 
 class JlcBigCapacitorTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(JlcCapacitor(
         capacitance=(50, 1000) * uFarad,

@@ -22,7 +22,7 @@ class BldcConnector(Connector, Block):
 class MagneticEncoder(Connector, Magnetometer, Block):
   """Connector to AS5600 mangetic encoder,
   https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf"""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.conn = self.Block(PassiveConnector())
 
@@ -39,7 +39,7 @@ class MagneticEncoder(Connector, Magnetometer, Block):
 
 class I2cConnector(Connector, Block):
   """Generic I2C connector, QWIIC pinning (gnd/vcc/sda/scl)"""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.conn = self.Block(PassiveConnector())
 
@@ -55,7 +55,7 @@ class I2cConnector(Connector, Block):
 
 class BldcHallSensor(Connector, Block):
   """Generic BLDC hall sensor, as +5v, U, V, W, GND"""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.conn = self.Block(PassiveConnector())
 

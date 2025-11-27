@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Sn65hvd230_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vcc = self.Port(VoltageSink(
       voltage_limits=(3, 3.6) * Volt, current_draw=(0.370, 17) * mAmp
@@ -24,7 +24,7 @@ class Sn65hvd230_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       current_draw=(-30, 30) * uAmp, current_limits=(-250, 250) * mAmp
     )))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
@@ -46,7 +46,7 @@ class Sn65hvd230_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 
 class Sn65hvd230(CanTransceiver):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.ic = self.Block(Sn65hvd230_Device())
     self.connect(self.ic.controller, self.controller)

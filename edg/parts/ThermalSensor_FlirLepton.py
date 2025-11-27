@@ -87,7 +87,7 @@ class FlirLepton(Sensor, Resettable, Block):
     <50mK (35mK typical) NETD.
     Only the part number for the socket is generated, the sensor (a $100+ part) must be purchased separately.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(FlirLepton_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])

@@ -38,14 +38,14 @@ class Hdc1080_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 class Hdc1080(TemperatureSensor, HumiditySensor, Block):
     """Temperature and humidity sensor with +/- 0.2C and +/- 2% RH typical accuracy"""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Hdc1080_Device())
         self.pwr = self.Export(self.ic.vdd, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c, [InOut])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         # X7R capacitor recommended
         self.vdd_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
@@ -105,6 +105,6 @@ class Tmp1075n(TemperatureSensor, Block):
         self.i2c = self.Export(self.ic.i2c, [InOut])
         self.alert = self.Export(self.ic.alert, optional=True, doc="Overtemperature SMBus alert")
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.vdd_cap = self.Block(DecouplingCapacitor(0.01*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)

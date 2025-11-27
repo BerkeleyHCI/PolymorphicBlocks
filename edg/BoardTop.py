@@ -3,7 +3,7 @@ from .parts import *
 
 class BaseBoardTop(DesignTop):
   """Design top with refinements for intermediate-level (0603+ SMD), hand-solderable components."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.refdes_prefix = self.Parameter(StringExpr())
     self.assign(self.refdes_prefix, "")  # override with refinements
@@ -52,7 +52,7 @@ class BoardTop(BaseBoardTop):
 
 
 class JlcToolingHole(InternalSubcircuit, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'H', 'edg:JlcToolingHole_1.152mm',
@@ -62,7 +62,7 @@ class JlcToolingHole(InternalSubcircuit, FootprintBlock):
 
 
 class JlcToolingHoles(InternalSubcircuit, Block):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.th1 = self.Block(JlcToolingHole())
     self.th2 = self.Block(JlcToolingHole())
@@ -111,7 +111,7 @@ class JlcTopRefinements(BaseBoardTop):
 
 class JlcBoardTop(JlcTopRefinements):
   """Design top with refinements to use parts from JLC's assembly service and including the tooling holes"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.jlc_th = self.Block(JlcToolingHoles())
 

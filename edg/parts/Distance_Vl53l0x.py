@@ -28,7 +28,7 @@ class Vl53l0x_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_threshold_abs=(0.6, 1.12),
     )), [Output])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'OptoDevice:ST_VL53L0X',
@@ -55,7 +55,7 @@ class Vl53l0x_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Vl53l0x(DistanceSensor, Resettable, GeneratorBlock):
   """Time-of-flight laser ranging sensor, up to 2m"""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.ic = self.Block(Vl53l0x_Device())
     self.gnd = self.Export(self.ic.vss, [Common])

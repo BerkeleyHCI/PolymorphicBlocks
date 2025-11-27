@@ -7,7 +7,7 @@ from .PassiveConnector_Header import PinHeader127DualShrouded
 
 class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
   """Custom programming header for iCE40 loosely based on the SWD pinning"""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])  # in practice this can power the target
     self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
@@ -15,7 +15,7 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
     self.cs = self.Port(DigitalSource.empty())
     self.reset = self.Port(DigitalSource.empty())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.conn = self.Block(PinHeader127DualShrouded(10))
     self.connect(self.pwr, self.conn.pins.request('1').adapt_to(VoltageSink()))
@@ -257,7 +257,7 @@ class Ice40up(Fpga, IoController):
     super().__init__(**kwargs)
     self.cdone = self.Port(DigitalSource.empty(), optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     # schematics don't seem to be available for the official reference designs,

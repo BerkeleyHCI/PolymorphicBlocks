@@ -27,7 +27,7 @@ class Nhd_312_25664uc_Device(InternalSubcircuit, FootprintBlock):
     self.nres = self.Port(DigitalSink.from_bidir(io_model))
     self.ncs = self.Port(DigitalSink.from_bidir(io_model))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     pinning: Dict[str, CircuitPort] = {
@@ -73,7 +73,7 @@ class Nhd_312_25664uc(Oled, Block):
     self.cs = self.Export(self.device.ncs)
     self.spi = self.Port(SpiPeripheral(DigitalBidir.empty()))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.connect(self.spi.sck, self.device.sclk)

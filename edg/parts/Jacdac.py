@@ -175,7 +175,7 @@ class JacdacEdgeConnector(Connector, JacdacSubcircuit, GeneratorBlock):
 class JacdacDataInterface(JacdacSubcircuit, Block):
     """Interface from a Jacdac data bus to a device, including protection and EMI filtering.
     Does NOT include per-port circuitry like ESD diodes and status LEDs."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground.empty(), [Common])
         self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -210,7 +210,7 @@ class JacdacDataInterface(JacdacSubcircuit, Block):
 class JacdacMountingData1(JacdacSubcircuit, FootprintBlock):
     """Jacdac mounting hole for data, with a passive-typed port so it doesn't count as a connection
     for validation purposes."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.jd_data = self.Port(JacdacPassivePort())
 
@@ -224,7 +224,7 @@ class JacdacMountingData1(JacdacSubcircuit, FootprintBlock):
 
 
 class JacdacMountingGnd2(JacdacSubcircuit, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
 
@@ -238,7 +238,7 @@ class JacdacMountingGnd2(JacdacSubcircuit, FootprintBlock):
 
 
 class JacdacMountingGnd4(JacdacSubcircuit, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
 
@@ -252,7 +252,7 @@ class JacdacMountingGnd4(JacdacSubcircuit, FootprintBlock):
 
 
 class JacdacMountingPwr3(JacdacSubcircuit, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.jd_pwr = self.Port(VoltageSink())
 

@@ -115,7 +115,7 @@ class HasEspProgramming(IoController, GeneratorBlock):
 
 class EspAutoProgram(Interface, KiCadSchematicBlock):
   """Auto-programming circuit for the ESP series, to drive the target EN (reset) and BOOT (e.g., IO0) pins."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dtr = self.Port(DigitalSink.empty())
     self.rts = self.Port(DigitalSink.empty())

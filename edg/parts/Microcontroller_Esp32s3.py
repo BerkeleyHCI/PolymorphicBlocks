@@ -245,7 +245,7 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Resett
                       IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """ESP32-S3-WROOM-1 module
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.ic: Esp32s3_Wroom_1_Device
     self.generator_param(self.reset.is_connected())

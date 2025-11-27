@@ -8,7 +8,7 @@ class Pesd1can(CanEsdDiode, FootprintBlock):
     self.gnd.init_from(Ground())
     self.can.init_from(CanDiffPort())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.footprint(

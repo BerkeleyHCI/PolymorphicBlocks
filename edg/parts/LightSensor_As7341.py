@@ -42,14 +42,14 @@ class As7341_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class As7341(LightSensor, Block):
     """11-channel spectral sensor, from 350nm to 1000nm, with 8 visible light channels,
     a NIR channel, a non-filtered ("clear" wideband) channel, and a flicker detection channel"""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(As7341_Device())
         self.pwr = self.Export(self.ic.vdd, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         # capacitance value assumed, same value as on Adafruit's breakout
         self.vdd_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)

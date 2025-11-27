@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class A1304_Device(InternalBlock, FootprintBlock, JlcPart):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
         self.vcc = self.Port(VoltageSink.from_gnd(
@@ -34,7 +34,7 @@ class A1304_Device(InternalBlock, FootprintBlock, JlcPart):
 class A1304(Magnetometer, Block):
     """Linear hall-effect sensor with analog output, sometimes used in game controllers as trigger detectors.
     Typ 4 mV / Gauss with full scale range of +/-375 Gauss."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(A1304_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])

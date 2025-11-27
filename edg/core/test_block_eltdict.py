@@ -6,7 +6,7 @@ from .test_common import TestBlockSource, TestBlockSink, TestPortSource, TestPor
 
 class EltDictBlock(Block):
   """Block with an EltDict of sub-blocks"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.sink = ElementDict[Block]()
     self.sink[0] = self.Block(TestBlockSink())

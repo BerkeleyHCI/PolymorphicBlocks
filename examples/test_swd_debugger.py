@@ -14,7 +14,7 @@ class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
     self.swo = self.Port(DigitalBidir.empty(), optional=True)
     self.tdi = self.Port(DigitalBidir.empty(), optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.conn = self.Block(PinHeader127DualShrouded(10))
 
@@ -39,7 +39,7 @@ class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
     self.reset = self.Port(DigitalSink.empty(), optional=True)
     self.swo = self.Port(DigitalBidir.empty(), optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.conn = self.Block(PinHeader254DualShroudedInline(6))

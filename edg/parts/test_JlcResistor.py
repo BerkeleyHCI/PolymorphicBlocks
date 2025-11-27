@@ -3,7 +3,7 @@ from .JlcResistor import *
 
 
 class JlcResistorTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(JlcResistor(
       resistance=750 * Ohm(tol=0.10),

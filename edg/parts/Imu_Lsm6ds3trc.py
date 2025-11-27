@@ -56,7 +56,7 @@ class Lsm6ds3trc_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class Lsm6ds3trc(Accelerometer, Gyroscope, DefaultExportBlock):
     """Integrated 3d accelerometer (ranging over +/- 2/4/8/16 g) and 3d gyroscope
     (ranging over +/- 125/250/500/1000/2000 dps)."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Lsm6ds3trc_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])

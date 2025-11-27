@@ -22,7 +22,7 @@ class TestParameterConstProp(Block):
     self.range_const = self.Parameter(RangeExpr())
     self.range_param = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     self.assign(self.float_const, 2.0)
     self.assign(self.float_param, self.float_const)
 

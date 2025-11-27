@@ -130,7 +130,7 @@ class GeneratorIsConnected(GeneratorBlock):
 
 
 class TestGeneratorConnectedTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.generator = self.Block(GeneratorIsConnected())
     self.sink = self.Block(TestBlockSink((0.5, 2.5)))
@@ -138,7 +138,7 @@ class TestGeneratorConnectedTop(Block):
 
 
 class TestGeneratorNotConnectedTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.generator = self.Block(GeneratorIsConnected())
 
@@ -154,7 +154,7 @@ class GeneratorInnerConnect(GeneratorBlock):
 
 
 class TestGeneratorInnerConnectTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.generator = self.Block(GeneratorInnerConnect())
     self.sink = self.Block(TestBlockSink((1.5, 3.5)))

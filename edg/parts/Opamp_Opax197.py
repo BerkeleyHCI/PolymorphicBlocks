@@ -22,7 +22,7 @@ class Opa197_Base_Device(InternalSubcircuit):
       impedance=375*Ohm(tol=0)  # no tolerance bounds given on datasheet; open-loop impedance
     )
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vn = self.Port(Ground(), [Common])
     self.vp = self.Port(VoltageSink(

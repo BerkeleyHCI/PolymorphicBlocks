@@ -16,7 +16,7 @@ class PowerBarrelJack(Connector, PowerSource, Block):
 
 class Pj_102ah(PowerBarrelJack, FootprintBlock):
   """Barrel jack for 2.1mm ID and 5.5mm OD"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.require(self.pwr.voltage_out.within((0, 24)*Volt))  # datasheet ratings for connector
     self.require(self.pwr.current_limits.within((0, 2.5)*Volt))
@@ -34,7 +34,7 @@ class Pj_102ah(PowerBarrelJack, FootprintBlock):
 
 class Pj_036ah(PowerBarrelJack, FootprintBlock):
   """SMT Barrel jack for 2.1mm ID and 5.5mm OD"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.require(self.pwr.voltage_out.within((0, 24)*Volt))  # datasheet ratings for connector
     self.require(self.pwr.current_limits.within((0, 5)*Volt))
@@ -81,7 +81,7 @@ class LipoConnector(Connector, Battery):
 class QwiicTarget(Connector):
   """A Qwiic (https://www.sparkfun.com/qwiic) connector to a I2C target.
   This would be on a board with a host controller."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.conn = self.Block(JstShSmHorizontal(4))
     self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()), [Common])

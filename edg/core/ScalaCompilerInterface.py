@@ -67,7 +67,7 @@ class ScalaCompilerInstance:
   kDevRelpath = "../../compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
   kPrecompiledRelpath = "resources/edg-compiler-precompiled.jar"
 
-  def __init__(self):
+  def __init__(self) -> None:
     self.process: Optional[Any] = None
 
   def check_started(self) -> None:

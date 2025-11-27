@@ -146,7 +146,7 @@ class DefaultExportBlock(GeneratorBlock):
   This encapsulates the common pattern of an optional export, which if not externally connected,
   connects the internal port to some other default port.
   TODO The default can be specified as a port, or a function that returns a port (e.g. to instantiate adapters)."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self._default_exports: List[Tuple[BasePort, Port, Port]] = []  # internal, exported, default
 

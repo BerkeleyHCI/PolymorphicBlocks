@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     FREQUENCY = Range(40000, 80000)  # Hz
     SWITCH_RESISTANCE = Range(4, 8)  # Ohm
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
         self.vp = self.Port(VoltageSink(

@@ -26,7 +26,7 @@ class TestBlockSinkElasticArray(GeneratorBlock):
 
 
 class ArrayConnectBlock(Block):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.source = self.Block(TestBlockSourceFixedArray())
@@ -73,7 +73,7 @@ class ArrayConnectProtoTestCase(unittest.TestCase):
 
 
 class ArrayAllocatedConnectBlock(Block):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.source1 = self.Block(TestBlockSourceFixedArray())

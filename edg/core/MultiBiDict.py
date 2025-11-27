@@ -6,7 +6,7 @@ KeyType = TypeVar('KeyType', bound=Hashable)
 ValueType = TypeVar('ValueType', bound=Hashable)
 
 class MultiBiDict(Generic[KeyType, ValueType]):
-  def __init__(self):
+  def __init__(self) -> None:
     self.dict: Dict[KeyType, Set[ValueType]] = {}
     self.inverse_dict: Dict[ValueType, Set[KeyType]] = {}
 

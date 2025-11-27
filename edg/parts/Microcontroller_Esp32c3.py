@@ -173,7 +173,7 @@ class Esp32c3_Wroom02_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, J
 class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Esp32c3_Interfaces,
                       IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.ic: Esp32c3_Wroom02_Device
     self.generator_param(self.reset.is_connected())
@@ -320,7 +320,7 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
 
   DEFAULT_CRYSTAL_FREQUENCY = 40*MHertz(tol=10e-6)
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.ic: Esp32c3_Device
     self.generator_param(self.reset.is_connected())

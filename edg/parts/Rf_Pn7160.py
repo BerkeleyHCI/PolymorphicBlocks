@@ -198,7 +198,7 @@ class Pn7160RxFilter(InternalSubcircuit, Block):
         self.out1 = self.Port(Passive())
         self.out2 = self.Port(Passive())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         rrx_model = Resistor(resistance=self.resistance)
         self.rrx1 = self.Block(rrx_model)
@@ -318,7 +318,7 @@ class Pn7160_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class Pn7160(Resettable, DiscreteRfWarning, Block):
     """Multi-protocol NFC controller, up to 1.3W output power, in I2C ('A' suffix)
     """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Pn7160_Device())
         self.gnd = self.Export(self.ic.vss, [Common])
@@ -327,7 +327,7 @@ class Pn7160(Resettable, DiscreteRfWarning, Block):
         self.i2c = self.Export(self.ic.i2c)
         self.irq = self.Export(self.ic.irq)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.connect(self.reset, self.ic.ven)

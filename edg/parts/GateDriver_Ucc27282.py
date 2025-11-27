@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vss = self.Port(Ground(), [Common])
     self.vdd = self.Port(VoltageSink.from_gnd(

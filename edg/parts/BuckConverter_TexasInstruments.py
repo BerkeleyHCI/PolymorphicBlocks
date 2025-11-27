@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
     self.pwr_in = self.Port(VoltageSink(
@@ -83,7 +83,7 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
 
 
 class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.sw = self.Port(VoltageSource(
       current_limits=(0, 2)*Amp  # most conservative figures, low-side limited. TODO: better ones?

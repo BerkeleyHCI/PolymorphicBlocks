@@ -119,7 +119,7 @@ class MultipackBlock(Block):
   implement the application circuit, containing sub-blocks for both the decoupling cap and the chip) and the
   packing definition (specific to this class - but does not contribute to the block implementation).
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self._packed_blocks: SubElementDict[PackedBlockTypes] = self.manager.new_dict((Block, PackedBlockArray))
     # TODO should these be defined in terms of Refs?

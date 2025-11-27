@@ -2,7 +2,7 @@ from ..abstract_parts import *
 
 
 class Xbee_S3b_Device(InternalSubcircuit, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     # only required pins are Vcc, GND, DOUT, DIN
@@ -27,7 +27,7 @@ class Xbee_S3b_Device(InternalSubcircuit, FootprintBlock):
     self.rssi = self.Port(DigitalSource.from_bidir(digital_model), optional=True)
     self.associate = self.Port(DigitalSource.from_bidir(digital_model), optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Sparkfun_RF:XBEE',
@@ -70,7 +70,7 @@ class Xbee_S3b(Interface, Radiofrequency, FootprintBlock):
     self.rssi = self.Export(self.ic.rssi, optional=True)
     self.associate = self.Export(self.ic.associate, optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.vdd_cap_0 = self.Block(DecouplingCapacitor(
@@ -102,7 +102,7 @@ class BlueSmirf(Interface, Radiofrequency, FootprintBlock):
     self.cts = self.Port(DigitalSink.from_bidir(digital_model), optional=True)
     self.rts = self.Port(DigitalSource.from_bidir(digital_model), optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical',

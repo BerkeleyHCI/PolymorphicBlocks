@@ -89,7 +89,7 @@ class Ina219(CurrentSensor, Block):
         self.sense_pos = self.Export(self.Rs.pwr_in)
         self.sense_neg = self.Export(self.Rs.pwr_out)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.connect(self.Rs.sense_in, self.ic.in_pos)
         self.connect(self.Rs.sense_out, self.ic.in_neg)

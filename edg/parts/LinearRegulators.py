@@ -179,7 +179,7 @@ class Ap2204k(VoltageRegulatorEnableWrapper, LinearRegulator):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.ic = self.Block(Ap2204k_Device(self.output_voltage))
     self.connect(self.pwr_in, self.ic.pwr_in)
@@ -218,7 +218,7 @@ class Ap7215_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, Footprin
 class Ap7215(LinearRegulator):
   """AP7215 fixed 3.3v LDO in SOT-89 providing the LinearRegulator interface.
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.ic = self.Block(Ap7215_Device(self.output_voltage))
     self.connect(self.pwr_in, self.ic.pwr_in)

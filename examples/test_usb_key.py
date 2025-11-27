@@ -5,11 +5,11 @@ from edg import *
 
 class StTscSenseChannel(Block):
   """Sense channel for STM micros' TSC peripheral."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.io = self.Port(DigitalBidir.empty(), [Input])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.res = self.Block(Resistor(resistance=10*kOhm(tol=0.05)))  # recommended by ST
     self.connect(self.io, self.res.a.adapt_to(DigitalBidir()))  # ideal
@@ -19,12 +19,12 @@ class StTscSenseChannel(Block):
 
 class StTscReference(Block):
   """Reference capacitor for STM micros' TSC peripheral."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.gnd = self.Port(Ground.empty(), [Common])
     self.io = self.Port(DigitalBidir.empty(), [Input])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.cap = self.Block(Capacitor(10*nFarad(tol=0.2), voltage=self.io.link().voltage))
     self.connect(self.cap.pos.adapt_to(DigitalBidir()), self.io)

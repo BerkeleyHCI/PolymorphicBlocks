@@ -24,7 +24,7 @@ class CanConnector(Connector):
 class TofArray(JlcBoardTop):
   """A ToF LiDAR array with application as emulating a laser harp and demonstrating another array topology.
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     # design configuration variables

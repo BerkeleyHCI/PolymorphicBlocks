@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Lm4871_Device(InternalSubcircuit, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.pwr = self.Port(VoltageSink(
@@ -21,7 +21,7 @@ class Lm4871_Device(InternalSubcircuit, FootprintBlock):
 
         self.byp = self.Port(Passive())
 
-    def contents(self):
+    def contents(self) -> None:
         self.footprint(
             'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
             {
@@ -40,7 +40,7 @@ class Lm4871_Device(InternalSubcircuit, FootprintBlock):
 
 
 class Lm4871(SpeakerDriver, Block):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # TODO should be a SpeakerDriver abstract part
 
@@ -51,7 +51,7 @@ class Lm4871(SpeakerDriver, Block):
         self.sig = self.Port(AnalogSink.empty(), [Input])
         self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         # TODO size component based on higher level input?
 
@@ -85,7 +85,7 @@ class Lm4871(SpeakerDriver, Block):
 
 
 class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.pwr = self.Port(VoltageSink(
@@ -107,7 +107,7 @@ class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.vo1 = self.Port(speaker_port)
         self.vo2 = self.Port(speaker_port)
 
-    def contents(self):
+    def contents(self) -> None:
         self.footprint(
             'U', 'Package_SO:MSOP-8-1EP_3x3mm_P0.65mm_EP1.68x1.88mm_ThermalVias',
             {
@@ -144,7 +144,7 @@ class Tpa2005d1(SpeakerDriver, Block):
 
         self.gain = self.ArgParameter(gain)
 
-    def contents(self):
+    def contents(self) -> None:
         import math
         super().contents()
 
@@ -185,7 +185,7 @@ class Tpa2005d1(SpeakerDriver, Block):
 
 
 class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.pwr = self.Port(VoltageSink(
@@ -206,7 +206,7 @@ class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.vop = self.Port(speaker_port)
         self.von = self.Port(speaker_port)
 
-    def contents(self):
+    def contents(self) -> None:
         self.footprint(
             'U', 'Package_SO:MSOP-8_3x3mm_P0.65mm',
             {
@@ -228,7 +228,7 @@ class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Pam8302a(SpeakerDriver, Block):
     """PAM8302A configured in single-ended input mode."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.ic = self.Block(Pam8302a_Device())
@@ -238,7 +238,7 @@ class Pam8302a(SpeakerDriver, Block):
         self.sig = self.Port(AnalogSink.empty(), [Input])
         self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.pwr_cap0 = self.Block(DecouplingCapacitor(

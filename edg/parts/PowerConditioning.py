@@ -10,7 +10,7 @@ class Supercap(DiscreteComponent, FootprintBlock):  # TODO actually model superc
     self.pos = self.Port(VoltageSink())
     self.neg = self.Port(Ground())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'C', 'Capacitor_THT:CP_Radial_D14.0mm_P5.00mm',  # actually 13.5

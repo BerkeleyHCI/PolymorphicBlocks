@@ -87,7 +87,7 @@ class Er_Oled_096_1_1(Oled, Resettable, GeneratorBlock):
         self.i2c = self.Port(I2cTarget.empty(), optional=True)
         self.generator_param(self.spi.is_connected(), self.dc.is_connected(), self.i2c.is_connected())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.connect(self.pwr, self.device.vbat)
         self.connect(self.reset, self.device.res)

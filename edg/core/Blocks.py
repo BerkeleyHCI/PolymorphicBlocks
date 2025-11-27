@@ -294,7 +294,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
     return self._name
 
   """Overload this method to define the contents of this block"""
-  def contents(self):
+  def contents(self) -> None:
     pass
 
   @abstractmethod

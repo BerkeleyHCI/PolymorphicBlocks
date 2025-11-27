@@ -44,7 +44,7 @@ class Bme680_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class Bme680(TemperatureSensor, HumiditySensor, PressureSensor, GasSensor, DefaultExportBlock):
     """Gas (indoor air quality), pressure, temperature, and humidity sensor.
     Humidity accuracy /-3% RH, pressure noise 0.12 Pa, temperature accuracy +/-0.5 C @ 25C"""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Bme680_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])

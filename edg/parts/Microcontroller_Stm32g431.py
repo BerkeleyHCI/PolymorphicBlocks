@@ -245,7 +245,7 @@ class Stm32g431Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
         self.ic: Stm32g431Base_Device
         self.generator_param(self.reset.is_connected())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         with self.implicit_connect(
                 ImplicitConnect(self.pwr, [Power]),

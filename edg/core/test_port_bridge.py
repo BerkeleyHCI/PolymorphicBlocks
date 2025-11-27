@@ -38,7 +38,7 @@ class PortBridgeProtoTestCase(unittest.TestCase):
 
 
 class BadPortBridge(PortBridge):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.bad_port = self.Port(TestPortSink())
 

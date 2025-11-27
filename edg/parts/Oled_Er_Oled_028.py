@@ -88,7 +88,7 @@ class Er_Oled028_1(Oled, Resettable, GeneratorBlock):
 
         self.generator_param(self.dc.is_connected())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.connect(self.pwr, self.device.vci)
         self.connect(self.reset, self.device.res)

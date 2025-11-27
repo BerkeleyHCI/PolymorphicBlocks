@@ -21,7 +21,7 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
         self.peak_output_current = self.ArgParameter(peak_output_current)
 
-    def contents(self):
+    def contents(self) -> None:
         self.require(self.peak_output_current < 2*Amp)
         self.footprint(
             'U', 'Package_SO:MSOP-8-1EP_3x3mm_P0.65mm_EP1.68x1.88mm_ThermalVias',

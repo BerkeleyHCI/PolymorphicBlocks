@@ -4,7 +4,7 @@ from .JlcInductor import *
 
 
 class JlcInductorTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(JlcInductor(
       inductance=2.2 * uHenry(tol=0.2),

@@ -61,7 +61,7 @@ class Lsm6dsv16x(Accelerometer, Gyroscope, DefaultExportBlock):
     (ranging over +/- 125/250/500/1000/2000 dps). Onboard sensor fusion for quaternion calculation.
     Supports external qvar for tap detections, etc."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Lsm6dsv16x_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])

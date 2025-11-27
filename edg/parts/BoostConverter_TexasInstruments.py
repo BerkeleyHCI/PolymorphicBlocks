@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Tps61040_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     vfb = Range(1.208, 1.258)
     self.vfb = self.Parameter(RangeExpr(vfb*Volt))
@@ -44,7 +44,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.require(self.output_voltage >= self.pwr_in.link().voltage)  # it's a boost converter
@@ -158,7 +158,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
 
 
 class Lm2733_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(2.7, 14)*Volt,
@@ -174,7 +174,7 @@ class Lm2733_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_threshold_abs=(0.5, 1.5)*Volt
     ))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23-5',
@@ -197,7 +197,7 @@ class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.nshdn
 
-  def contents(self):
+  def contents(self) -> None:
     import math
     super().contents()
 

@@ -14,7 +14,7 @@ from .Range import Range
 
 
 class SampleElementBinding(Binding):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:  # element should be returned by the containing ConstraintExpr

@@ -6,7 +6,7 @@ from .JlcPart import JlcPart
 
 
 class Pe4259_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.gnd = self.Port(Ground())
@@ -50,7 +50,7 @@ class Pe4259(Nonstrict3v3Compatible, Block):
     Requires all RF pins be held at 0v or are DC-blocked with a series cap.
     TODO: perhaps a RfSwitch base class? maybe some relation to AnalogSwitch? (though not valid at DC)
     """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Pe4259_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
@@ -225,7 +225,7 @@ class Sx1262(Resettable, DiscreteRfWarning, Block):
     Up to 62.5kb/s in LoRa mode and 300kb/s in FSK mode.
     TODO: RF frequency parameterization
     """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Sx1262_Device())
         self.pwr = self.Export(self.ic.vbat, [Power])

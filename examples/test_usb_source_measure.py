@@ -9,7 +9,7 @@ from edg import *
 
 
 class SourceMeasureDutConnector(Connector):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.conn = self.Block(PinHeader254Horizontal(3))
     self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()), [Common])
@@ -18,7 +18,7 @@ class SourceMeasureDutConnector(Connector):
 
 
 class SourceMeasureFan(Connector):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.conn = self.Block(JstPhKVertical(2))
     self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()), [Common])
@@ -44,7 +44,7 @@ class SourceMeasureRangingCell(Interface, KiCadSchematicBlock):
     self.sense_in = self.Port(AnalogSource.empty())
     self.sense_out = self.Port(AnalogSource.empty())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.import_kicad(self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),
                       locals={
@@ -370,7 +370,7 @@ class SrLatchInverted(Block):
   and NOR2 output is high, which feeds back into a NOR1 input to keep NOR1 low.
   NOR2 handles reset without priority, when the input goes high, its output goes low which clears the latch.
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.ic = self.Block(Sn74lvc2g02())
     self.gnd = self.Export(self.ic.gnd, [Common])
@@ -380,7 +380,7 @@ class SrLatchInverted(Block):
     self.rst = self.Export(self.ic.in2a)  # any in2
     self.out = self.Export(self.ic.out1)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.connect(self.ic.out1, self.ic.in2b)
     self.connect(self.ic.out2, self.ic.in1b)
@@ -421,7 +421,7 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.import_kicad(self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),

@@ -2,7 +2,7 @@ from ..abstract_parts import *
 
 
 class SolderJumperTriangular(Jumper, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'JP', 'Jumper:SolderJumper-2_P1.3mm_Open_TrianglePad1.0x1.5mm',

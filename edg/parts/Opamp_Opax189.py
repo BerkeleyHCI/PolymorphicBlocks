@@ -22,7 +22,7 @@ class Opax189_Base_Device(InternalSubcircuit):
       impedance=380*Ohm(tol=0)  # open-loop impedance; no tolerance bounds specified
     )
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vn = self.Port(Ground(), [Common])
     self.vp = self.Port(VoltageSink(
@@ -34,14 +34,14 @@ class Opax189_Base_Device(InternalSubcircuit):
 class Opa189_Device(Opax189_Base_Device, JlcPart, FootprintBlock):
   DEVICES = 1
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     analog_in_model = self._analog_in_model()
     self.vinp = self.Port(analog_in_model)
     self.vinn = self.Port(analog_in_model)
     self.vout = self.Port(self._analog_out_model())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
@@ -65,7 +65,7 @@ class Opa189_Device(Opax189_Base_Device, JlcPart, FootprintBlock):
 class Opa189(Opamp):
   """High voltage (4.5-36V), low-noise opamp in SOIC-8.
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.ic = self.Block(Opa189_Device())
@@ -84,7 +84,7 @@ class Opa189(Opamp):
 class Opa2189_Device(Opax189_Base_Device, JlcPart, FootprintBlock):
   DEVICES = 2
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     analog_in_model = self._analog_in_model()
     analog_out_model = self._analog_out_model()
@@ -95,7 +95,7 @@ class Opa2189_Device(Opax189_Base_Device, JlcPart, FootprintBlock):
     self.innb = self.Port(analog_in_model)
     self.outb = self.Port(analog_out_model)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',

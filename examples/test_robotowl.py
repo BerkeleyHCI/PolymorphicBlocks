@@ -13,7 +13,7 @@ class PhotodiodeSensor(LightSensor, KiCadSchematicBlock, Block):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.out = self.Port(AnalogSource.empty(), [Output])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.import_kicad(
       self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),

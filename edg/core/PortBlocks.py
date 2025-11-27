@@ -20,7 +20,7 @@ class PortBridge(InternalBlock, Block):
   Example: a power sink internal port can connect to one power sink port on an internal block without a port bridge,
   but requires a port bridge to connect to a power link that serves multiple power sinks on internal blocks.
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     # TODO these should be type Port[Any], but that seems to break type inference
     self.outer_port: Any
@@ -43,7 +43,7 @@ AdapterDstType = TypeVar('AdapterDstType', bound=Port)
 class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
   """Defines an adapter from one port type to another port type. This behaves as a normal block, and both the src and
    dst are connected with normal connect semantics. Should only be inferred on internal block ports."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     # TODO these should be type Port[Any], but that seems to break type inference
     self.src: Any

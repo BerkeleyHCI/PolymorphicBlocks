@@ -4,7 +4,7 @@ from edg import *
 
 
 class PowerInConnector(Connector):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.conn = self.Block(JstShSmHorizontal())
     self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))

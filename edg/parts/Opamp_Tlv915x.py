@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Tlv9152_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vp = self.Port(VoltageSink(
       voltage_limits=(2.7, 16)*Volt, current_draw=(560*2, 750*2)*uAmp  # quiescent current for both amps
@@ -29,7 +29,7 @@ class Tlv9152_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.innb = self.Port(analog_in_model)
     self.outb = self.Port(analog_out_model)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
