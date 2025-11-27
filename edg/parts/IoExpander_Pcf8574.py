@@ -1,13 +1,13 @@
 from itertools import chain
-from typing import Dict
+from typing import Dict, Any
 
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
 class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBlock):
-  def __init__(self, addr_lsb: IntLike, **kwags) -> None:
-    super().__init__(**kwags)
+  def __init__(self, addr_lsb: IntLike, **kwargs: Any) -> None:
+    super().__init__(**kwargs)
     self.gnd = self.Port(Ground())
     self.vdd = self.Port(VoltageSink(  # same between TI and NXP versions
       voltage_limits=(2.5, 6)*Volt,

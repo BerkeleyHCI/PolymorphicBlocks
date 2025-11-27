@@ -18,7 +18,7 @@ class Path(NamedTuple):  # internal helper type
   def __hash__(self) -> int:
     return hash((self.blocks, self.links, self.ports, self.params))
 
-  def __eq__(self, other) -> bool:
+  def __eq__(self, other: Any) -> bool:
     return isinstance(other, Path) and self.blocks == other.blocks and self.links == other.links and \
            self.ports == other.ports and self.params == other.params
 
@@ -72,7 +72,7 @@ class Path(NamedTuple):  # internal helper type
   def block_component(self) -> Path:
     return Path(self.blocks, (), (), ())
 
-  def link_component(self, must_have_link=True) -> Path:
+  def link_component(self, must_have_link: bool=True) -> Path:
     if must_have_link:
       assert self.links
     return Path(self.blocks, self.links, (), ())

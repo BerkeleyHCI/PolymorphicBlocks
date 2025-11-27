@@ -58,7 +58,7 @@ class Qmc5883l(Magnetometer, DefaultExportBlock):
     """3-axis magnetometer.
     This part seems to be a licensed semi-copy of the HMC5883L which is no longer in production.
     It might be hardware drop-in compatible though the firmware protocol differs."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Qmc5883l_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
@@ -67,7 +67,7 @@ class Qmc5883l(Magnetometer, DefaultExportBlock):
         self.i2c = self.Export(self.ic.i2c)
         self.drdy = self.Export(self.ic.drdy, optional=True)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.vdd_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
         self.set_cap = self.Block(Capacitor(0.22*uFarad(tol=0.2), voltage=self.pwr.link().voltage))

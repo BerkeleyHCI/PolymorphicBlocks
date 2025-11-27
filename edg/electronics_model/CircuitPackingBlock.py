@@ -17,14 +17,14 @@ class NetPackingBlock(InternalBlock, Block):
 
 
 class PackedPassive(NetPackingBlock, GeneratorBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.elts = self.Port(Vector(Passive.empty()))
     self.merged = self.Port(Passive.empty())
     self.generator_param(self.elts.requested())
     self.packed(self.elts, self.merged)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.elts.defined()
     for request in self.get(self.elts.requested()):
@@ -34,7 +34,7 @@ class PackedPassive(NetPackingBlock, GeneratorBlock):
 class PackedGround(NetPackingBlock, GeneratorBlock):
   """Takes in several Ground connections that are of the same net (asserted in netlister),
   and provides a single Ground."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.gnd_ins = self.Port(Vector(Ground.empty()))
     self.gnd_out = self.Port(GroundReference(
@@ -43,7 +43,7 @@ class PackedGround(NetPackingBlock, GeneratorBlock):
     self.generator_param(self.gnd_ins.requested())
     self.packed(self.gnd_ins, self.gnd_out)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.gnd_ins.defined()
     for in_request in self.get(self.gnd_ins.requested()):
@@ -57,7 +57,7 @@ class PackedVoltageSource(NetPackingBlock, GeneratorBlock):
   """Takes in several VoltageSink connections that are of the same net (asserted in netlister),
   and provides a single VoltageSource. Distributes the current draw from the VoltageSource
   equally among the inputs."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pwr_ins = self.Port(Vector(VoltageSink.empty()))
     self.pwr_out = self.Port(VoltageSource(
@@ -67,7 +67,7 @@ class PackedVoltageSource(NetPackingBlock, GeneratorBlock):
     self.generator_param(self.pwr_ins.requested())
     self.packed(self.pwr_ins, self.pwr_out)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.pwr_ins.defined()
     for in_request in self.get(self.pwr_ins.requested()):

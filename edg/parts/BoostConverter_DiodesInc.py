@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pwr_in = self.Port(VoltageSink(
       voltage_limits=(2.6, 16)*Volt,
@@ -19,7 +19,7 @@ class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_thresholds=(0.4, 1.5)*Volt
     ))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23-5',
@@ -42,7 +42,7 @@ class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.nshdn
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_frequency, (1.1, 1.9)*MHertz)

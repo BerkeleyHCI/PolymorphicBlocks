@@ -20,7 +20,7 @@ class ConnectorResistiveSensor(Analog, Block):
     self.actual_impedance = self.Parameter(RangeExpr())
     self.actual_series_impedance = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     self.top = self.Block(Resistor(self.fixed_resistance, voltage=self.input.link().voltage))
     self.bot = self.Block(PassiveConnector(2))
     self.connect(self.input, self.top.a.adapt_to(VoltageSink(

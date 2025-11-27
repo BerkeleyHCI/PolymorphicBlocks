@@ -10,13 +10,13 @@ from ..electronics_model.test_kicad_import_blackbox import KiCadBlackboxBlock
 
 
 class PassiveDummy(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(Passive(), [InOut])
 
 
 class KiCadBlackboxTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(KiCadBlackboxBlock())
     (self.dummypwr, ), _ = self.chain(self.dut.pwr, self.Block(PassiveDummy()))
@@ -25,7 +25,7 @@ class KiCadBlackboxTop(Block):
 
 
 class DummyResistor(Resistor, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__(Range.all())
     self.footprint('R', 'Resistor_SMD:R_0603_1608Metric',
                    {'1': self.a,
@@ -34,7 +34,7 @@ class DummyResistor(Resistor, FootprintBlock):
 
 
 class KiCadImportBlackboxTestCase(unittest.TestCase):
-  def test_netlist(self):
+  def test_netlist(self) -> None:
     net = NetlistTestCase.generate_net(KiCadBlackboxTop, refinements=Refinements(
       class_refinements=[
         (Resistor, DummyResistor),

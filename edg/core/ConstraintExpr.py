@@ -175,7 +175,7 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
   @overload
   def then_else(self, then_val: Any, else_val: IteType) -> IteType: ...
 
-  def then_else(self, then_val: Any, else_val: Any) -> ConstraintExpr:  # type: ignore
+  def then_else(self, then_val: Any, else_val: Any) -> ConstraintExpr:
     if isinstance(then_val, ConstraintExpr):
       else_val = then_val._to_expr_type(else_val)
     elif isinstance(else_val, ConstraintExpr):
@@ -183,7 +183,7 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
     else:
       raise ValueError("either then_val or else_val must be ConstraintExpr, TODO support dual-casting")
     assert self._is_bound() and then_val._is_bound() and else_val._is_bound()
-    return then_val._new_bind(IfThenElseBinding(self, then_val, else_val))
+    return then_val._new_bind(IfThenElseBinding(self, then_val, else_val))  # type: ignore
 
 
 NumLikeSelfType = TypeVar('NumLikeSelfType', bound='NumLikeExpr')
@@ -283,22 +283,22 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
       return self._create_bool_op(self, self._to_expr_type(other), EqOp.ne)
     return NotImplemented
 
-  def __gt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
+  def __gt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
     if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
       return self._create_bool_op(self, self._to_expr_type(other), OrdOp.gt)
     return NotImplemented
 
-  def __ge__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
+  def __ge__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
     if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
       return self._create_bool_op(self, self._to_expr_type(other), OrdOp.ge)
     return NotImplemented
 
-  def __lt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
+  def __lt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
     if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
       return self._create_bool_op(self, self._to_expr_type(other), OrdOp.lt)
     return NotImplemented
 
-  def __le__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
+  def __le__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
     if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
       return self._create_bool_op(self, self._to_expr_type(other), OrdOp.le)
     return NotImplemented
@@ -600,9 +600,10 @@ class LiteralConstructor:
     self.scale = scale
     self.units = units
 
-  def __call__(self, dummy=None, tol: Optional[float]=None):
-    if tol is not None:
-      return RangeConstructor(tol, self.scale, self.units)
+  def __call__(self, *, tol: Optional[float]=None) -> RangeConstructor:
+    if tol is None:
+      raise ValueError("requires tol, use without parens to create un-toleranced literal")
+    return RangeConstructor(tol, self.scale, self.units)
 
   @overload
   def __rmul__(self, other: float) -> FloatExpr: ...

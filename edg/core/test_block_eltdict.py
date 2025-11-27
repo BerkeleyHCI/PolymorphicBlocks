@@ -6,7 +6,7 @@ from .test_common import TestBlockSource, TestBlockSink, TestPortSource, TestPor
 
 class EltDictBlock(Block):
   """Block with an EltDict of sub-blocks"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.sink = ElementDict[Block]()
     self.sink[0] = self.Block(TestBlockSink())
@@ -19,7 +19,7 @@ class EltDictBlock(Block):
 
 
 class EltDictBlockProtoTestCase(unittest.TestCase):
-  def test_connectivity(self):
+  def test_connectivity(self) -> None:
     pb = EltDictBlock()._elaborated_def_to_proto()
     self.assertEqual(pb.blocks[0].name, 'sink[0]')
     self.assertEqual(pb.blocks[0].value.lib_elem.base.target.name, "edg.core.test_common.TestBlockSink")

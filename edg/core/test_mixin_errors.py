@@ -1,7 +1,7 @@
 import unittest
 
 from . import *
-from .HdlUserExceptions import BlockDefinitionError
+from .HdlUserExceptions import BlockDefinitionError, EdgTypeError
 from .test_block import TestBlock
 from .test_mixin import TestMixin, TestMixinBase, TestMixinConcreteBlock
 
@@ -57,5 +57,5 @@ class BadMixinUsageTestCase(unittest.TestCase):
             self.mixin = self.block.with_mixin(TestMixin())
 
     def test_bad_base_mixin(self) -> None:
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EdgTypeError):
             self.BadBaseMixin()._elaborated_def_to_proto()

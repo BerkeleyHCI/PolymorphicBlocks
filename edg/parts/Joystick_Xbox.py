@@ -4,7 +4,7 @@ from ..abstract_parts import *
 class XboxElite2Joystick(FootprintBlock, HumanInterface):
     """Joystick assembly (X/Y analog axes + switch) from the XBox Elite 2 controller.
     Proper polarity for compatibility with hall effect sensors."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(VoltageSink(
@@ -15,7 +15,7 @@ class XboxElite2Joystick(FootprintBlock, HumanInterface):
         self.ax1 = self.Port(AnalogSource.from_supply(self.gnd, self.pwr))
         self.ax2 = self.Port(AnalogSource.from_supply(self.gnd, self.pwr))
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.footprint(

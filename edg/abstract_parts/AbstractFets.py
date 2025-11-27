@@ -90,11 +90,11 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
     return {'D': self.drain, 'G': self.gate, 'S': self.source}
 
   @staticmethod
-  def NFet(*args, **kwargs) -> 'Fet':
+  def NFet(*args: Any, **kwargs: Any) -> 'Fet':
     return Fet(*args, **kwargs, channel='N')
 
   @staticmethod
-  def PFet(*args, **kwargs) -> 'Fet':
+  def PFet(*args: Any, **kwargs: Any) -> 'Fet':
     return Fet(*args, **kwargs, channel='P')
 
   def __init__(self, drain_voltage: RangeLike, drain_current: RangeLike, *,
@@ -125,7 +125,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
     self.actual_rds_on = self.Parameter(RangeExpr())
     self.actual_gate_charge = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -158,7 +158,7 @@ class BaseTableFet(Fet):
 
 @non_library
 class TableFet(PartsTableSelector, BaseTableFet):
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.drain_voltage, self.drain_current, self.gate_voltage, self.gate_threshold_voltage,
                          self.rds_on, self.gate_charge, self.power, self.channel)
@@ -194,15 +194,15 @@ class SwitchFet(Fet):
   # TODO ideally this would just instantaite a Fet internally, but the parts selection becomes more complex b/c
   # parameters are cross-dependent
   @staticmethod
-  def NFet(*args, **kwargs):
+  def NFet(*args: Any, **kwargs: Any) -> 'SwitchFet':
     return SwitchFet(*args, **kwargs, channel='N')
 
   @staticmethod
-  def PFet(*args, **kwargs):
+  def PFet(*args: Any, **kwargs: Any) -> 'SwitchFet':
     return SwitchFet(*args, **kwargs, channel='P')
 
 
-  def __init__(self, *, frequency: RangeLike = 0*Hertz(tol=0), drive_current: RangeLike = Range.all(), **kwargs) -> None:
+  def __init__(self, *, frequency: RangeLike = 0*Hertz(tol=0), drive_current: RangeLike = Range.all(), **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     self.frequency = self.ArgParameter(frequency)
@@ -215,7 +215,7 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
   STATIC_POWER = PartsTableColumn(Range)
   TOTAL_POWER = PartsTableColumn(Range)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.frequency, self.drain_voltage, self.drain_current,
                          self.gate_voltage, self.gate_threshold_voltage,

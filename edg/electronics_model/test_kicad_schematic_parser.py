@@ -14,19 +14,19 @@ def net_to_tuple(net: ParsedNet) -> Tuple[Set[Tuple[Type, str]], Set[str]]:
 
 
 class KiCadSchematicParserTest(unittest.TestCase):
-  def test_kicad(self):
+  def test_kicad(self) -> None:
     self.check_schematic_rcs("test_kicad_import.kicad_sch")
 
-  def test_kicad_rot(self):
+  def test_kicad_rot(self) -> None:
     self.check_schematic_rcs("test_kicad_import_rot.kicad_sch")
 
-  def test_kicad_tunnel(self):
+  def test_kicad_tunnel(self) -> None:
     self.check_schematic_rcs("test_kicad_import_tunnel.kicad_sch")
 
-  def test_kicad_modified_symbol(self):
+  def test_kicad_modified_symbol(self) -> None:
     self.check_schematic_rcs("test_kicad_import_modified_symbol.kicad_sch")
 
-  def check_schematic_rcs(self, filename):
+  def check_schematic_rcs(self, filename: str) -> None:
     with open(os.path.join(os.path.dirname(__file__), "resources", filename), "r") as file:
       file_data = file.read()
     sch = KiCadSchematic(file_data)
@@ -41,7 +41,7 @@ class KiCadSchematicParserTest(unittest.TestCase):
     self.assertIn(('R2', 'Device:R'), symbols)
     self.assertIn(('C1', 'Device:C'), symbols)
 
-  def test_kicad_power(self):
+  def test_kicad_power(self) -> None:
     # this one differs because it has the additional power "labels"
     with open(os.path.join(os.path.dirname(__file__), "resources", "test_kicad_import_power.kicad_sch"), "r") as file:
       file_data = file.read()
@@ -57,13 +57,13 @@ class KiCadSchematicParserTest(unittest.TestCase):
     self.assertIn(('R2', 'Device:R'), symbols)
     self.assertIn(('C1', 'Device:C'), symbols)
 
-  def test_degenerate_label(self):
+  def test_degenerate_label(self) -> None:
     with open(os.path.join(os.path.dirname(__file__), "resources", "test_kicad_import_badlabel.kicad_sch"), "r") as file:
       file_data = file.read()
     with self.assertRaises(ValueError):
       KiCadSchematic(file_data)
 
-  def test_noconnect(self):
+  def test_noconnect(self) -> None:
     with open(os.path.join(os.path.dirname(__file__), "resources", "test_kicad_import_nc.kicad_sch"), "r") as file:
       file_data = file.read()
     sch = KiCadSchematic(file_data)
@@ -73,28 +73,28 @@ class KiCadSchematicParserTest(unittest.TestCase):
     self.assertIn(({(KiCadLabel, 'node')}, {'R1.2', 'R2.1', 'C1.1'}), nets)
     self.assertIn(({(KiCadLabel, 'GND')}, {'R2.2', 'C1.2'}), nets)
 
-  def check_bad_noconnect(self, filename):
+  def check_bad_noconnect(self, filename: str) -> None:
     with open(os.path.join(os.path.dirname(__file__), "resources", filename), "r") as file:
       file_data = file.read()
     with self.assertRaises(ValueError):
       KiCadSchematic(file_data)
 
-  def test_kicad_noconnect_disconnected(self):
+  def test_kicad_noconnect_disconnected(self) -> None:
     self.check_bad_noconnect("test_kicad_import_nc_baddis.kicad_sch")
 
-  def test_kicad_noconnect_multiple(self):
+  def test_kicad_noconnect_multiple(self) -> None:
     self.check_bad_noconnect("test_kicad_import_nc_badmult.kicad_sch")
 
-  def test_kicad_mirrorx(self):
+  def test_kicad_mirrorx(self) -> None:
     self.check_schematic_fet("test_kicad_import_mirrorx.kicad_sch")
 
-  def test_kicad_mirrory(self):
+  def test_kicad_mirrory(self) -> None:
     self.check_schematic_fet("test_kicad_import_mirrory.kicad_sch")
 
-  def test_kicad_mirrory_rot(self):
+  def test_kicad_mirrory_rot(self) -> None:
     self.check_schematic_fet("test_kicad_import_mirrory_rot.kicad_sch")
 
-  def check_schematic_fet(self, filename):
+  def check_schematic_fet(self, filename: str) -> None:
     """R and Cs are symmetric and don't test for mirroring well."""
     with open(os.path.join(os.path.dirname(__file__), "resources", filename), "r") as file:
       file_data = file.read()
@@ -105,7 +105,7 @@ class KiCadSchematicParserTest(unittest.TestCase):
     self.assertIn(({(KiCadGlobalLabel, 'gate')}, {'Q1.2'}), nets)
     self.assertIn(({(KiCadGlobalLabel, 'source')}, {'Q1.3'}), nets)
 
-  def test_connectedports(self):
+  def test_connectedports(self) -> None:
     """Schematic with two connected ports without components."""
     with open(os.path.join(os.path.dirname(__file__), "resources", "test_kicad_import_connectedports.kicad_sch"), "r") as file:
       file_data = file.read()

@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Sd18ob261_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.vdd = self.Port(VoltageSink(
@@ -27,7 +27,7 @@ class Sd18ob261_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             current_limits=(-20, 20)*mAmp  # short circuit current for data pin
         ))
 
-    def contents(self):
+    def contents(self) -> None:
         self.footprint(
             'U', 'Sensor_Audio:Knowles_LGA-5_3.5x2.65mm',
             {
@@ -48,7 +48,7 @@ class Sd18ob261(Microphone, GeneratorBlock):
     """SD18OB261-060 PDM microphone, probably footprint-compatible with similar Knowles devices.
     Application circuit is not specified in the datasheet, this uses the one from SPH0655LM4H
     (single 0.1uF decap)."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.ic = self.Block(Sd18ob261_Device())
@@ -61,7 +61,7 @@ class Sd18ob261(Microphone, GeneratorBlock):
 
         self.generator_param(self.lr.is_connected())
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         self.pwr_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)

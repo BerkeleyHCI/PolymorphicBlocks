@@ -8,7 +8,7 @@ from .DummyDevices import DummyVoltageSource, DummyVoltageSink, DummyGround
 
 
 class SwitchingConverterCalculationTest(unittest.TestCase):
-    def test_buck_converter(self):
+    def test_buck_converter(self) -> None:
         values_ref = BuckConverterPowerPath._calculate_parameters(
             Range.exact(5), Range.exact(2.5), Range.exact(100e3), Range.exact(1),
             Range.exact(1), Range.exact(0.1), 0.01, 0.001,
@@ -28,7 +28,7 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
         self.assertEqual(values_ref.input_capacitance, values.input_capacitance)
         self.assertEqual(values_ref.output_capacitance, values.output_capacitance)
 
-    def test_buck_converter_example(self):
+    def test_buck_converter_example(self) -> None:
         # using the example from https://passive-components.eu/buck-converter-design-and-calculation/
         values = BuckConverterPowerPath._calculate_parameters(
             Range.exact(12 + 0.4), Range.exact(3.3 + 0.4), Range.exact(500e3), Range.exact(1),
@@ -47,7 +47,7 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
         self.assertAlmostEqual(values.inductor_peak_currents.upper, 1.173, places=3)
         self.assertAlmostEqual(values.output_capacitance.lower, 5.24e-6, places=7)
 
-    def test_boost_converter(self):
+    def test_boost_converter(self) -> None:
         values_ref = BoostConverterPowerPath._calculate_parameters(
             Range.exact(5), Range.exact(10), Range.exact(100e3), Range.exact(0.5),
             Range.exact(2), Range.exact(0.4), 0.01, 0.001,
@@ -68,7 +68,7 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
         self.assertEqual(values_ref.input_capacitance, values.input_capacitance)
         self.assertEqual(values_ref.output_capacitance, values.output_capacitance)
 
-    def test_boost_converter_example(self):
+    def test_boost_converter_example(self) -> None:
         # using the example from https://passive-components.eu/boost-converter-design-and-calculation/
         values = BoostConverterPowerPath._calculate_parameters(
             Range.exact(5), Range.exact(12 + 0.4), Range.exact(500e3), Range.exact(0.5),
@@ -93,14 +93,14 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
 
 
 class TestCapacitor(Capacitor):
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.assign(self.actual_capacitance, self.capacitance)
         self.assign(self.actual_voltage_rating, Range.all())
 
 
 class TestInductor(Inductor):
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.assign(self.actual_inductance, self.inductance)
         self.assign(self.actual_current_rating, (0, 1.5)*Amp)
@@ -108,7 +108,7 @@ class TestInductor(Inductor):
 
 
 class BuckPowerPathTestTop(DesignTop):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(BuckConverterPowerPath(
             input_voltage=Range(4, 6), output_voltage=(2, 3),
@@ -139,7 +139,7 @@ class BuckPowerPathTestTop(DesignTop):
 
 
 class BoostPowerPathTestTop(DesignTop):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.dut = self.Block(BoostConverterPowerPath(
             input_voltage=Range(4, 6), output_voltage=(10, 14),

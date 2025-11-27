@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 
 from ..electronics_model import *
 from .Categories import *
@@ -49,7 +49,7 @@ class RotaryEncoder(DiscreteComponent):
 class RotaryEncoderSwitch(BlockInterfaceMixin[RotaryEncoder]):
   """Rotary encoder mixin adding a switch pin (sharing a common with the encoder),
   with ratings assumed to be the same between the switch and encoder."""
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.sw = self.Port(Passive.empty(), optional=True)
@@ -74,7 +74,7 @@ class DirectionSwitch(DiscreteComponent):
 class DirectionSwitchCenter(BlockInterfaceMixin[DirectionSwitch]):
   """DirectionSwitch mixin adding center switch pin (sharing a common with the encoder),
   with ratings assumed to be the same between the switch and encoder."""
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.center = self.Port(Passive.empty(), optional=True)
@@ -88,7 +88,7 @@ class DigitalSwitch(HumanInterface):
     self.gnd = self.Port(Ground.empty(), [Common])
     self.out = self.Port(DigitalSource.empty(), [Output])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.package = self.Block(Switch(current=self.out.link().current_drawn,
                                      voltage=self.out.link().voltage))
@@ -110,7 +110,7 @@ class DigitalRotaryEncoder(HumanInterface):
 
 class DigitalWrapperRotaryEncoder(DigitalRotaryEncoder):
   """Basic implementation for DigitalRotaryEncoder as a wrapper around a passive-typed RotaryEncoder."""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.package = self.Block(RotaryEncoder(current=self.a.link().current_drawn.hull(self.b.link().current_drawn),
                                             voltage=self.a.link().voltage.hull(self.b.link().voltage)))
@@ -124,18 +124,18 @@ class DigitalWrapperRotaryEncoder(DigitalRotaryEncoder):
 @abstract_block_default(lambda: DigitalWrapperRotaryEncoderWithSwitch)
 class DigitalRotaryEncoderSwitch(BlockInterfaceMixin[DigitalRotaryEncoder]):
   """DigitalRotaryEncoder mixin adding a switch pin."""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.sw = self.Port(DigitalSource.empty(), optional=True)
 
 
 class DigitalWrapperRotaryEncoderWithSwitch(DigitalRotaryEncoderSwitch, DigitalWrapperRotaryEncoder, GeneratorBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.generator_param(self.sw.is_connected())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.sw.is_connected()):
       package_sw = self.package.with_mixin(RotaryEncoderSwitch())
@@ -158,7 +158,7 @@ class DigitalDirectionSwitch(HumanInterface):
 
 class DigitalWrapperDirectionSwitch(DigitalDirectionSwitch):
   """Basic implementation for DigitalDirectionSwitch as a wrapper around a passive-typed DirectionSwitch."""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.package = self.Block(DirectionSwitch(current=self.a.link().current_drawn.hull(self.b.link().current_drawn),
                                               voltage=self.a.link().voltage.hull(self.b.link().voltage)))
@@ -174,7 +174,7 @@ class DigitalWrapperDirectionSwitch(DigitalDirectionSwitch):
 @abstract_block_default(lambda: DigitalWrapperDirectionSwitchWithCenter)
 class DigitalDirectionSwitchCenter(BlockInterfaceMixin[DigitalDirectionSwitch]):
   """DigitalRotaryEncoder mixin adding a switch pin."""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.center = self.Port(DigitalSource.empty(), optional=True)
@@ -182,11 +182,11 @@ class DigitalDirectionSwitchCenter(BlockInterfaceMixin[DigitalDirectionSwitch]):
 
 class DigitalWrapperDirectionSwitchWithCenter(DigitalDirectionSwitchCenter, DigitalWrapperDirectionSwitch,
                                               GeneratorBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.generator_param(self.center.is_connected())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.center.is_connected()):
       package_sw = self.package.with_mixin(DirectionSwitchCenter())

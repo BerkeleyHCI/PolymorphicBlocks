@@ -28,7 +28,7 @@ class JlcOscillator_Device(InternalSubcircuit, Block):
 class Sg8101_Base_Device(JlcOscillator_Device, JlcPart, FootprintBlock):
   FOOTPRINT: str
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.gnd.init_from(Ground())
     self.vcc.init_from(VoltageSink(voltage_limits=(1.62, 3.62)*Volt,

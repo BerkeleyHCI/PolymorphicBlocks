@@ -7,7 +7,7 @@ from typing import TypeVar, Generic, Type, overload, Union, Callable, List, Dict
 
 from typing_extensions import ParamSpec
 
-from ..core import Range
+from ..core.Range import Range
 
 
 # from https://stackoverflow.com/questions/47965083/comparable-types-with-mypy
@@ -31,7 +31,7 @@ class PartsTableRow:
   Internal type, does not do any error checking (so data should be checked before being
   passed into this object)."""
   def __init__(self, value: Dict[Any, Any]):  # TODO Dict not covariant so we can't check key types
-    self.value = value
+    self.values = value
 
   @overload
   def __getitem__(self, item: str) -> str: ...
@@ -40,7 +40,15 @@ class PartsTableRow:
 
   def __getitem__(self, item: Union[str, PartsTableColumn[PartsTableColumnType]]) -> \
       Union[str, PartsTableColumnType]:
-    return self.value[item]
+    value = self.values[item]
+    if isinstance(item, str):
+      assert isinstance(value, str)
+      return value
+    elif isinstance(item, PartsTableColumn):
+      assert isinstance(value, item.value_type)
+      return value
+    else:
+      raise TypeError()
 
 
 class PartsTable:
@@ -66,7 +74,7 @@ class PartsTable:
     return [os.path.join(prefix_dir, filename) for filename in filenames]
 
   @classmethod
-  def from_csv_files(cls, csv_names: List[str], encoding='utf-8') -> 'PartsTable':
+  def from_csv_files(cls, csv_names: List[str], encoding: str='utf-8') -> 'PartsTable':
     dict_rows = []
     for filename in csv_names:
       with open(filename, newline='', encoding=encoding) as csvfile:
@@ -116,8 +124,8 @@ class PartsTable:
 
       if first_keys is None:
         first_keys = new_columns.keys()
-        assert first_keys.isdisjoint(row.value.keys()) or overwrite, \
-          f"new columns {new_columns} overwrites existing row keys {row.value.keys()} without overwrite=True"
+        assert first_keys.isdisjoint(row.values.keys()) or overwrite, \
+          f"new columns {new_columns} overwrites existing row keys {row.values.keys()} without overwrite=True"
       else:
         assert first_keys == new_columns.keys(), \
           f"new columns {new_columns} in row {row} has different keys than first row keys {first_keys}"
@@ -127,7 +135,7 @@ class PartsTable:
         assert isinstance(new_col_val, new_col_key.value_type), \
           f"new column elt {new_col_key}={new_col_val} in {row} not of expected type {new_col_key.value_type}"
       new_row_dict = {}
-      new_row_dict.update(row.value)
+      new_row_dict.update(row.values)
       new_row_dict.update(new_columns)
       new_rows.append(PartsTableRow(new_row_dict))
     return PartsTable(new_rows)
@@ -149,7 +157,7 @@ class PartsTable:
     new_rows = sorted(self.rows, key=fn, reverse=reverse)
     return PartsTable(new_rows)
 
-  def first(self, err="no elements in list") -> PartsTableRow:
+  def first(self, err: str="no elements in list") -> PartsTableRow:
     if not self.rows:
       raise IndexError(err)
     return self.rows[0]
@@ -219,8 +227,8 @@ class ExperimentalUserFnPartsTable(PartsTable):
     return cls._FN_SERIALIZATION_SEPARATOR.join([fn.__name__] + serialized_args)
 
   @classmethod
-  def deserialize_fn(cls, serialized: str) -> Callable:
-    """Deserializes a user function from a string."""
+  def deserialize_fn(cls, serialized: str) -> Any:
+    """Deserializes and applies a user function from a string."""
     split = serialized.split(cls._FN_SERIALIZATION_SEPARATOR)
     if split[0] not in cls._user_fns:
       raise ValueError(f"Function {serialized} not registered.")
@@ -235,7 +243,7 @@ class ExperimentalUserFnPartsTable(PartsTable):
         return float(val)
       elif tpe is Range:
         parts = val[1:-1].split(",")
-        return Range(float(parts[0]), float(parts[1]))  # type: ignore
+        return Range(float(parts[0]), float(parts[1]))
       else:
         raise TypeError(f"cannot deserialize type {tpe} in user function serialization")
     deserialized_args = [deserialize_arg(tpe, arg) for tpe, arg in zip(fn_argtypes, split[1:])]

@@ -27,14 +27,14 @@ class KiCadAliasedLink(KiCadSchematicBlock):
 
 
 class KiCadImportFailTestCase(unittest.TestCase):
-    def test_missing_port(self):
+    def test_missing_port(self) -> None:
         with self.assertRaises(Exception):
             KiCadMissingPort()._elaborated_def_to_proto()
 
-    def test_aliased_port(self):
+    def test_aliased_port(self) -> None:
         with self.assertRaises(Exception):
             KiCadAliasedPort()._elaborated_def_to_proto()
 
-    def test_aliased_link(self):
+    def test_aliased_link(self) -> None:
         with self.assertRaises(Exception):
             KiCadAliasedLink()._elaborated_def_to_proto()

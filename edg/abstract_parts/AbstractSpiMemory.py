@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from .Categories import *
 
@@ -24,7 +26,7 @@ class SpiMemoryQspi(BlockInterfaceMixin[SpiMemory]):
   Vanilla SPI SDI maps to IO0, and SDO maps to IO1.
   EXPERIMENTAL - interface subject to change.
   May prevent the use of some chip functions that conflict with QSPI lines."""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.io2 = self.Port(DigitalBidir.empty(), optional=True)
     self.io3 = self.Port(DigitalBidir.empty(), optional=True)

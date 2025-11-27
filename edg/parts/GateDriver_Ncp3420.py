@@ -1,9 +1,11 @@
+from typing import Any
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
 class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pgnd = self.Port(Ground(), [Common])
     self.vcc = self.Port(VoltageSink.from_gnd(
@@ -41,7 +43,8 @@ class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.vcc.current_draw, (0.7, 5.0)*mAmp + self.drvl.link().current_drawn +
                 self.drvh.link().current_drawn)  # only system supply given
 
-  def contents(self):
+  def contents(self) -> None:
+    super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
       {
@@ -63,11 +66,11 @@ class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Ncp3420(HalfBridgeDriver, HalfBridgeDriverPwm, Resettable, GeneratorBlock):
   """Half-bridge driver supporting 35V offset, 4.6-13.2v input, external boot diode, auto-deadtime."""
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.has_boot_diode, self.high_pwr.is_connected())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.ic = self.Block(Ncp3420_Device())
@@ -83,7 +86,7 @@ class Ncp3420(HalfBridgeDriver, HalfBridgeDriverPwm, Resettable, GeneratorBlock)
     # serves as both boot cap and decoupling cap
     self.high_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.high_gnd, self.ic.bst)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     if self.get(self.high_pwr.is_connected()):

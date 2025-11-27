@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.com = self.Port(Ground(), [Common])
     self.vcc = self.Port(VoltageSink.from_gnd(
@@ -41,7 +41,7 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     ))
     self.assign(self.vb.current_draw, (50, 190)*uAmp + self.ho.link().current_drawn)
 
-  def contents(self):
+  def contents(self) -> None:
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
       {
@@ -64,7 +64,7 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Ir2301(HalfBridgeDriver, HalfBridgeDriverIndependent):
   """IR2301 half-bridge driver supporting 600V offset, 5-20v input, external boot diode,
   no shoot through protect, no deadtime."""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.require(~self.has_boot_diode, 'TODO: boot diode generator')

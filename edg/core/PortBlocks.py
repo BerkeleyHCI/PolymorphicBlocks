@@ -20,20 +20,20 @@ class PortBridge(InternalBlock, Block):
   Example: a power sink internal port can connect to one power sink port on an internal block without a port bridge,
   but requires a port bridge to connect to a power link that serves multiple power sinks on internal blocks.
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     # TODO these should be type Port[Any], but that seems to break type inference
     self.outer_port: Any
     self.inner_link: Any
 
-  def __setattr__(self, name: str, value):
+  def __setattr__(self, name: str, value: Any) -> None:
     if isinstance(value, Port):
       assert name == '_parent' or name == "outer_port" or name == "inner_link", \
         "PortBridge can only have outer_port or inner_link ports, got %s" % name
     super().__setattr__(name, value)
 
   T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, *args, **kwargs) -> T:
+  def Port(self, tpe: T, *args: Any, **kwargs: Any) -> T:
     assert 'optional' not in kwargs, f"Ports in PortBridge are optional by default, required should be set by enclosing block, in {kwargs}"
     return super().Port(tpe, *args, optional=True, **kwargs)
 
@@ -43,19 +43,19 @@ AdapterDstType = TypeVar('AdapterDstType', bound=Port)
 class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
   """Defines an adapter from one port type to another port type. This behaves as a normal block, and both the src and
    dst are connected with normal connect semantics. Should only be inferred on internal block ports."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     # TODO these should be type Port[Any], but that seems to break type inference
     self.src: Any
     self.dst: AdapterDstType
 
-  def __setattr__(self, name: str, value):
+  def __setattr__(self, name: str, value: Any) -> None:
     if isinstance(value, Port):
       assert name == '_parent' or name == "src" or name == "dst", \
         "PortAdapter can only have src or dst ports, got %s" % name
     super().__setattr__(name, value)
 
   T = TypeVar('T', bound=BasePort)
-  def Port(self, tpe: T, *args, **kwargs) -> T:
+  def Port(self, tpe: T, *args: Any, **kwargs: Any) -> T:
     assert 'optional' not in kwargs, "Ports in PortBridge are optional by default, required should be set by enclosing block"
     return super().Port(tpe, *args, optional=True, **kwargs)

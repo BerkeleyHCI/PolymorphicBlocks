@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import List, Dict, Tuple, Type, Optional
+from typing import List, Dict, Tuple, Type, Optional, Any
 
 from deprecated import deprecated
 
@@ -16,7 +16,7 @@ class BaseIoController(PinMappable, Block):
   Pin assignments are handled via refinements and can be assigned to pins' allocated names.
 
   This should not be instantiated as a generic block."""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.gpio = self.Port(Vector(DigitalBidir.empty()), optional=True,
@@ -46,7 +46,7 @@ class BaseIoController(PinMappable, Block):
     self._io_ports: List[BasePort] = [  # ordered by assignment order, most restrictive should be first
       self.adc, self.spi, self.i2c, self.uart, self.usb, self.gpio]
 
-  def __getattr__(self, item):
+  def __getattr__(self, item: str) -> Any:
     # automatically materialize some mixins on abstract classes, only if this is IoController
     # note, getattr ONLY called when the field does not exist, and hasattr is implemented via getattr
     if self.__class__ is IoController and item == 'can':
@@ -146,11 +146,11 @@ class BaseIoController(PinMappable, Block):
 @non_library
 class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
   """BaseIoController with generator code to set pin mappings"""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.pin_assigns)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     for io_port in self._io_ports:  # defined in contents() so subclass __init__ can define additional _io_ports
       if isinstance(io_port, Vector):
@@ -190,7 +190,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
     return dict(chain(self._system_pinmap().items(), io_pins.items()))
 
 
-def makeIdealIoController():  # needed to avoid circular import
+def makeIdealIoController() -> Type[Block]:  # needed to avoid circular import
   from .IdealIoController import IdealIoController
   return IdealIoController
 
@@ -208,8 +208,8 @@ class IoController(ProgrammableController, BaseIoController):
   This defines a power input port that powers the device, though the IoControllerPowerOut mixin can be used
   for a controller that provides power (like USB-powered dev boards).
   """
-  def __init__(self, *awgs, **kwargs) -> None:
-    super().__init__(*awgs, **kwargs)
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
+    super().__init__(*args, **kwargs)
 
     self.gnd = self.Port(Ground.empty(), [Common], optional=True)
     self.pwr = self.Port(VoltageSink.empty(), [Power], optional=True)
@@ -218,7 +218,7 @@ class IoController(ProgrammableController, BaseIoController):
 @non_library
 class IoControllerPowerRequired(IoController):
   """IO controller with required power pins."""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.require(self.gnd.is_connected())
     self.require(self.pwr.is_connected())

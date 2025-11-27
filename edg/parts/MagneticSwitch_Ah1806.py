@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Ah1806_Device(InternalBlock, FootprintBlock, JlcPart):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
         self.vdd = self.Port(VoltageSink.from_gnd(
@@ -15,7 +15,7 @@ class Ah1806_Device(InternalBlock, FootprintBlock, JlcPart):
             self.gnd, current_limits=(-1, 0)*mAmp
         ))
 
-    def contents(self):
+    def contents(self) -> None:
         self.footprint(
             'U', 'Package_TO_SOT_SMD:SOT-23',
             {
@@ -36,13 +36,13 @@ class Ah1806(MagneticSwitch, Block):
     and 20 G (10-40 tolerance range) release point.
     0.1% duty cycle, period of 75ms (typ).
     Pin-compatible with some others in the AH18xx series and DRV5032, which have different trip characteristics"""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Ah1806_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.pwr = self.Export(self.ic.vdd, [Power])
         self.out = self.Export(self.ic.output, [Output])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.cin = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.pwr)

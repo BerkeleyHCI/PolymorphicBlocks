@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Tlv9061_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vcc = self.Port(VoltageSink(
       voltage_limits=(1.8, 5.5)*Volt, current_draw=(538, 800)*uAmp  # quiescent current
@@ -24,7 +24,7 @@ class Tlv9061_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       impedance=100*Ohm(tol=0)  # no tolerance bounds given on datasheet; open-loop impedance
     ))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23-6',
@@ -46,7 +46,7 @@ class Tlv9061_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Tlv9061(Opamp):
   """RRIO op-amp in SOT-23-6.
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.ic = self.Block(Tlv9061_Device())

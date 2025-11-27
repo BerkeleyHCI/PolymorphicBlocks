@@ -1,4 +1,5 @@
 import unittest
+from typing import Any
 
 from .. import edgir
 from . import *
@@ -13,7 +14,7 @@ class TestMixinBase(Block):
 
 
 class TestMixin(BlockInterfaceMixin[TestMixinBase]):
-  def __init__(self, *args, mixin_float: FloatLike = 1.0, **kwargs) -> None:
+  def __init__(self, *args: Any, mixin_float: FloatLike = 1.0, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.mixin_port = self.Port(TestPortSink())
     self.mixin_float = self.ArgParameter(mixin_float)

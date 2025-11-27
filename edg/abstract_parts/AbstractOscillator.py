@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from . import PartsTableColumn, PartsTableRow, PartsTableSelector
 from .Categories import *
@@ -16,7 +18,7 @@ class Oscillator(DiscreteApplication):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.out = self.Port(DigitalSource.empty(), [Output])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -32,7 +34,7 @@ class TableOscillator(PartsTableSelector, Oscillator):
   No default footprints are provided since these may be non-standard."""
   FREQUENCY = PartsTableColumn(Range)
 
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.frequency)
 

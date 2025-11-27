@@ -1,4 +1,7 @@
-from typing import Any, Type, TypeVar, Union, Tuple
+from typing import Any, Type, Union, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+  from edg import BaseBlock
 
 
 class EdslUserError(Exception):
@@ -7,18 +10,16 @@ class EdslUserError(Exception):
     super().__init__(exc)
 
 
-AssertedType = TypeVar('AssertedType')
-def assert_cast(elt: Any, expected_type: Union[Type[AssertedType], Tuple[Type[AssertedType], ...]], item_desc: str) -> AssertedType:
-  if not isinstance(elt, expected_type):
-    raise EdgTypeError(item_desc, elt, expected_type)
-  return elt
-
-
 class EdgTypeError(EdslUserError):
   """Argument of the wrong type passed into a EDG core function."""
   def __init__(self, item_desc: str, object: Any, expected_type: Union[Type, Tuple[Type, ...]]):
-    super().__init__(f"{item_desc} expected to be of type {expected_type}, got type {type(object)}",
-                     f"make sure {item_desc} is of type {expected_type}")
+    if isinstance(expected_type, tuple):
+      expected_type_str = '/'.join([t.__name__ for t in expected_type])
+    else:
+      expected_type_str = expected_type.__name__
+
+    super().__init__(f"{item_desc} expected to be of type {expected_type_str}, got {object} of type {type(object).__name__}",
+                     f"ensure {item_desc} is of type {expected_type_str}")
 
 
 class EdgContextError(EdslUserError):
@@ -44,8 +45,8 @@ class UnreachableParameterError(Exception):
 
 class BlockDefinitionError(EdslUserError):
   """Base error for likely mistakes when writing a block definition"""
-  def __init__(self, block, exc: str, resolution: str = ''):
-    super().__init__(f"invalid block definition for {type(block)}: {exc}", resolution)
+  def __init__(self, block_type: Type['BaseBlock'], exc: str, resolution: str = '') -> None:
+    super().__init__(f"invalid block definition for {block_type}: {exc}", resolution)
 
 
 class ChainError(BlockDefinitionError):

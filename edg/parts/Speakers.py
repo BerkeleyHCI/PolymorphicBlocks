@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 @abstract_block
 class Speaker(HumanInterface):
   """Abstract speaker part with speaker input port."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.input = self.Port(SpeakerPort.empty(), [Input])
 

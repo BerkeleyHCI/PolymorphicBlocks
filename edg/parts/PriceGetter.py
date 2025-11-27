@@ -87,7 +87,7 @@ class GeneratePrice(BaseBackend):
                 temp_price = price
         return quantity * temp_price
 
-    def run(self, design: CompiledDesign, args=None) -> List[Tuple[edgir.LocalPath, str]]:
+    def run(self, design: CompiledDesign, args: Dict[str, str]={}) -> List[Tuple[edgir.LocalPath, str]]:
         assert not args
         price_list = PartQuantityTransform(design).run()
         total_price: float = 0

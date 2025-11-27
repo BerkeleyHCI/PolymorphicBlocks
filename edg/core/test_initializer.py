@@ -43,7 +43,7 @@ class TestMultipleInstantiationBlock(Block):
 
 
 class InitializerTestCase(unittest.TestCase):
-  def test_initializer(self):
+  def test_initializer(self) -> None:
     pb = TestSingleInitializerBlock()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.constraints), 3)
@@ -54,7 +54,7 @@ class InitializerTestCase(unittest.TestCase):
     self.assertEqual(pb.constraints[2].name, "(init)bundle_port.b.float_param")
     self.assertEqual(pb.constraints[2].value, edgir.AssignLit(['bundle_port', 'b', 'float_param'], -1.0))
 
-  def test_nested_initializer(self):
+  def test_nested_initializer(self) -> None:
     pb = TestNestedBlock()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.constraints), 5)
@@ -69,7 +69,7 @@ class InitializerTestCase(unittest.TestCase):
     self.assertEqual(pb.constraints[4].name, "(init)inner.bundle_param")
     self.assertEqual(pb.constraints[4].value, edgir.AssignLit(['inner', 'bundle_param'], 31.0))
 
-  def test_nested_inner(self):
+  def test_nested_inner(self) -> None:
     pb = TestInternalBlock()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.constraints), 3)  # should not generate initializers for constructors
@@ -79,14 +79,14 @@ class InitializerTestCase(unittest.TestCase):
     self.assertEqual(pb.constraints[1].name, "(init)inner_bundle.a.float_param")
     self.assertEqual(pb.constraints[2].name, "(init)inner_bundle.b.float_param")
 
-  def test_default_initializer(self):
+  def test_default_initializer(self) -> None:
     pb = TestDefaultBlock()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.constraints), 1)
     self.assertEqual(pb.constraints[0].name, "(init)inner.inner_param")
     self.assertEqual(pb.constraints[0].value, edgir.AssignLit(['inner', 'inner_param'], 3.0))
 
-  def test_multiple_initializer(self):
+  def test_multiple_initializer(self) -> None:
     pb = TestMultipleInstantiationBlock()._elaborated_def_to_proto()
 
     self.assertEqual(len(pb.constraints), 2)

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class InitializerContextMeta(type):
-  def __call__(cls, *args, **kwargs):
+  def __call__(cls, *args: Any, **kwargs: Any) -> Any:
     """Hook on construction to store some metadata about its creation.
     This hooks the top-level __init__ only."""
     obj = type.__call__(cls, *args, **kwargs)
@@ -64,7 +64,7 @@ class BasePort(HasMetadata, metaclass=InitializerContextMeta):
     """Returns the proto of an instance of this object"""
     raise NotImplementedError
 
-  def _bind_in_place(self, parent: PortParentTypes):
+  def _bind_in_place(self, parent: PortParentTypes) -> None:
     self._parent = parent
 
   def _clone(self: SelfType) -> SelfType:
@@ -72,7 +72,7 @@ class BasePort(HasMetadata, metaclass=InitializerContextMeta):
     parameter initializers."""
     assert self._parent is None, "can't clone bound block"
     # TODO: this might be more efficient (but trickier) with copy.copy
-    cloned = type(self)(*self._initializer_args[0], **self._initializer_args[1])  # type: ignore
+    cloned = type(self)(*self._initializer_args[0], **self._initializer_args[1])
     cloned._cloned_from(self)
     return cloned
 
@@ -87,7 +87,7 @@ class BasePort(HasMetadata, metaclass=InitializerContextMeta):
     clone._bind_in_place(parent)
     return clone
 
-  def _is_bound(self):
+  def _is_bound(self) -> bool:
     def impl(elt: Optional[PortParentTypes]) -> bool:
       if elt is None:
         return False
@@ -142,7 +142,7 @@ class Port(BasePort, Generic[PortLinkType]):
     self._adapter_count: int = 0
 
     # TODO delete type ignore after https://github.com/python/mypy/issues/5374
-    self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
+    self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)
 
     self.manager_ignored.update(['_is_connected', '_name'])
     self._is_connected = BoolExpr()._bind(IsConnectedBinding(self))
@@ -161,7 +161,7 @@ class Port(BasePort, Generic[PortLinkType]):
       assert isinstance(other_param, type(param))
       param.initializer = other_param.initializer
 
-  def init_from(self: SelfType, other: SelfType):
+  def init_from(self: SelfType, other: SelfType) -> None:
     assert self._parent is not None, "may only init_from on an bound port"
     assert not self._get_initializers([]), "may only init_from an empty model"
     self._cloned_from(other)
@@ -215,7 +215,7 @@ class Port(BasePort, Generic[PortLinkType]):
 
     pb.self_class.target.name = self._get_def_name()
 
-    direct_bases, indirect_bases = self._get_bases_of(Port)  # type: ignore
+    direct_bases, indirect_bases = self._get_bases_of(Port)
     for cls in direct_bases:
       pb.superclasses.add().target.name = cls._static_def_name()
     for cls in indirect_bases:
@@ -313,7 +313,7 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     pb.self_class.target.name = self._get_def_name()
 
-    direct_bases, indirect_bases = self._get_bases_of(Bundle)  # type: ignore
+    direct_bases, indirect_bases = self._get_bases_of(Bundle)
     for cls in direct_bases:
       pb.superclasses.add().target.name = cls._static_def_name()
     for cls in indirect_bases:
@@ -345,7 +345,7 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
   def Port(self, tpe: T, *, desc: Optional[str] = None) -> T:
     """Registers a field for this Bundle"""
     if not isinstance(tpe, Port):
-      raise TypeError(f"param to Field(...) must be Port, got {tpe} of type {type(tpe)}")
+      raise EdgTypeError(f"param to Field(...)", tpe, Port)
 
     elt = tpe._bind(self)
     self._ports.register(elt)

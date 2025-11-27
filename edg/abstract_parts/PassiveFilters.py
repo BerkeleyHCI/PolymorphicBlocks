@@ -116,7 +116,7 @@ class DigitalLowPassRcArray(DigitalFilter, GeneratorBlock):
 
     self.generator_param(self.output.requested())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.elts = ElementDict[DigitalLowPassRc]()
     model = DigitalLowPassRc(self.impedance, self.cutoff_freq)

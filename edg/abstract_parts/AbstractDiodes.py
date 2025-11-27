@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 from deprecated import deprecated
 
 from ..electronics_model import *
@@ -73,7 +73,7 @@ class Diode(KiCadImportableBlock, BaseDiode):
     self.actual_voltage_drop = self.Parameter(RangeExpr())
     self.actual_reverse_recovery_time = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -93,7 +93,7 @@ class TableDiode(PartsTableSelector, Diode):
   FORWARD_VOLTAGE = PartsTableColumn(Range)  # possible forward voltage range
   REVERSE_RECOVERY = PartsTableColumn(Range)  # possible reverse recovery time
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.reverse_voltage, self.current, self.voltage_drop, self.reverse_recovery_time)
 
@@ -130,7 +130,7 @@ class ZenerDiode(KiCadImportableBlock, BaseDiode, DiscreteSemiconductor):
     self.actual_zener_voltage = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -145,7 +145,7 @@ class TableZenerDiode(PartsTableSelector, ZenerDiode):
   ZENER_VOLTAGE = PartsTableColumn(Range)
   POWER_RATING = PartsTableColumn(Range)  # tolerable power
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.zener_voltage)
 
@@ -170,7 +170,7 @@ class ProtectionZenerDiode(Protection):
 
     self.voltage = self.ArgParameter(voltage)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
     self.connect(self.diode.cathode.adapt_to(VoltageSink(
@@ -191,7 +191,7 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
 
     self.voltage = self.ArgParameter(voltage)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))

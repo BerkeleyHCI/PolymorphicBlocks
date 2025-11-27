@@ -168,7 +168,7 @@ class Esp32s3_Base(Esp32s3_Ios, GeneratorBlock):
       'U0TXD': self.uart0.tx,
     }).remap(self.SYSTEM_PIN_REMAP)
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     self.pwr = self.Port(self._vdd_model(), [Power])
@@ -245,7 +245,7 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Resett
                       IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """ESP32-S3-WROOM-1 module
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.ic: Esp32s3_Wroom_1_Device
     self.generator_param(self.reset.is_connected())

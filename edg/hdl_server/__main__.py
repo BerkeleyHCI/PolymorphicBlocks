@@ -15,7 +15,7 @@ EDG_PROTO_VERSION = 7
 
 class LibraryElementIndexer:
   """Indexer for libraries, recursively searches modules and their LibraryElements."""
-  def __init__(self):
+  def __init__(self) -> None:
     self.seen_modules: Set[ModuleType] = set()
     self.seen_elements: Set[Type[LibraryElement]] = set()
 
@@ -58,15 +58,15 @@ def elaborate_class(elt_cls: Type[LibraryElementType]) -> Tuple[LibraryElementTy
 
   if isinstance(obj, Block):
     block_proto = builder.elaborate_toplevel(obj)
-    return obj, edgir.Library.NS.Val(hierarchy_block=block_proto)  # type: ignore
+    return obj, edgir.Library.NS.Val(hierarchy_block=block_proto)
   elif isinstance(obj, Link):
     link_proto = builder.elaborate_toplevel(obj)
     assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
-    return obj, edgir.Library.NS.Val(link=link_proto)  # type: ignore
+    return obj, edgir.Library.NS.Val(link=link_proto)
   elif isinstance(obj, Bundle):  # TODO: note Bundle extends Port, so this must come first
-    return obj, edgir.Library.NS.Val(bundle=obj._def_to_proto())  # type: ignore
+    return obj, edgir.Library.NS.Val(bundle=obj._def_to_proto())
   elif isinstance(obj, Port):
-    return obj, edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))  # type: ignore
+    return obj, edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))
   else:
     raise RuntimeError(f"didn't match type of library element {elt_cls}")
 
@@ -79,7 +79,7 @@ def class_from_library(elt: edgir.LibraryPath, expected_superclass: Type[Library
   assert inspect.ismodule(elt_module)
   cls = getattr(elt_module, elt_split[-1])
   assert issubclass(cls, expected_superclass)
-  return cls
+  return cls  # type: ignore
 
 
 def process_request(request: edgrpc.HdlRequest) -> Optional[edgrpc.HdlResponse]:
@@ -147,7 +147,7 @@ def process_request(request: edgrpc.HdlRequest) -> Optional[edgrpc.HdlResponse]:
     traceback.print_exc()
   return response
 
-def run_server():
+def run_server() -> None:
   stdin_deserializer = BufferDeserializer(edgrpc.HdlRequest, sys.stdin.buffer)
   stdout_serializer = BufferSerializer[edgrpc.HdlResponse](sys.stdout.buffer)
 

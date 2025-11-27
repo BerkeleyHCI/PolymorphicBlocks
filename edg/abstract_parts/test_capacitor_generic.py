@@ -4,7 +4,7 @@ from . import *
 
 
 class CapacitorGenericTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(GenericMlcc(
       capacitance=0.1 * uFarad(tol=0.2),
@@ -15,7 +15,7 @@ class CapacitorGenericTestTop(Block):
 
 
 class BigCapacitorGenericTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(GenericMlcc(
       capacitance=(50, 1000) * uFarad,
@@ -26,7 +26,7 @@ class BigCapacitorGenericTestTop(Block):
 
 
 class HighVoltageCapacitorGenericTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(GenericMlcc(
       capacitance=0.2 * uFarad(tol=0.2),
@@ -37,7 +37,7 @@ class HighVoltageCapacitorGenericTestTop(Block):
 
 
 class HighSingleCapacitorGenericTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(GenericMlcc(
       capacitance=22 * uFarad(tol=0.2),
@@ -48,7 +48,7 @@ class HighSingleCapacitorGenericTestTop(Block):
 
 
 class MediumSingleCapacitorGenericTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(GenericMlcc(
       capacitance=2 * uFarad(tol=0.2),
@@ -58,7 +58,7 @@ class MediumSingleCapacitorGenericTestTop(Block):
     (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
 
 class DeratedCapacitorGenericTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(GenericMlcc(
       capacitance=1 * uFarad(tol=0.2),
@@ -68,7 +68,7 @@ class DeratedCapacitorGenericTestTop(Block):
     (self.dummyb, ), _ = self.chain(self.dut.neg, self.Block(DummyPassive()))
 
 class BigMultiCapacitorGenericTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(GenericMlcc(
       capacitance=(50, 1000) * uFarad,

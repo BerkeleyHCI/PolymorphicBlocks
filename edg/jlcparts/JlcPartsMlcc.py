@@ -7,7 +7,7 @@ from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapacitor, CeramicCapacitor):
     _JLC_PARTS_FILE_NAMES = ["CapacitorsMultilayer_Ceramic_Capacitors_MLCC___SMDakaSMT"]
 
-    def __init__(self, *args, capacitance_minimum_size: BoolLike = True, **kwargs):
+    def __init__(self, *args: Any, capacitance_minimum_size: BoolLike = True, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.capacitance_minimum_size = self.ArgParameter(capacitance_minimum_size)
         self.generator_param(self.capacitance_minimum_size)

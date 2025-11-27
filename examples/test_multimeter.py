@@ -29,7 +29,7 @@ class ResistorMux(Interface, KiCadImportableBlock, GeneratorBlock):
     self.resistances = self.ArgParameter(resistances)
     self.generator_param(self.resistances)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.res = ElementDict[Resistor]()
     for i, resistance in enumerate(self.get(self.resistances)):
@@ -49,7 +49,7 @@ class MultimeterAnalog(KiCadSchematicBlock, Block):
 
   TODO: support wider ranges, to be implemented with port array support
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     # TODO: separate Vref?
@@ -62,7 +62,7 @@ class MultimeterAnalog(KiCadSchematicBlock, Block):
 
     self.select = self.Port(Vector(DigitalSink.empty()))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.res = self.Block(Resistor(1*MOhm(tol=0.01), voltage=self.input_positive.link().voltage))
@@ -104,7 +104,7 @@ class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
 
     self.voltage_rating = self.ArgParameter(voltage_rating)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     max_in_voltage = self.control.link().voltage.upper()
 

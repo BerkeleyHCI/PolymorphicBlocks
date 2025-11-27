@@ -5,7 +5,7 @@ from edg import *
 
 class FpgaProgrammingHeader(Connector, Block):
   """Custom programming header for iCE40 loosely based on the SWD pinning"""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), optional=True)
     self.gnd = self.Port(Ground.empty(), [Common])
@@ -13,7 +13,7 @@ class FpgaProgrammingHeader(Connector, Block):
     self.cs = self.Port(DigitalSink.empty())
     self.reset = self.Port(DigitalSink.empty())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.conn = self.Block(PinHeader127DualShrouded(10))
     self.connect(self.pwr, self.conn.pins.request('1').adapt_to(VoltageSink()))

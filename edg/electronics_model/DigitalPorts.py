@@ -51,7 +51,7 @@ class DigitalLink(CircuitLink):
     self._has_low_signal_driver = self.Parameter(BoolExpr())
     self._has_high_signal_driver = self.Parameter(BoolExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -245,7 +245,7 @@ class DigitalSourceBridge(CircuitPortBridge):
 
 
 class DigitalSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.src = self.Port(DigitalSink(  # otherwise ideal
       current_draw=RangeExpr()
@@ -501,7 +501,7 @@ class DigitalSingleSourceFake:
       high_driver=high_signal_driver
     )
 
-  def empty(self):
+  def empty(self) -> DigitalSource:
     return DigitalSource.empty()
 
 

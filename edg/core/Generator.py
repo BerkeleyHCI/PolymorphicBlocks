@@ -23,7 +23,7 @@ class GeneratorBlock(Block):
   """Block which allows arbitrary Python code to generate its internal subcircuit,
   and unlike regular Blocks can rely on Python values of solved parameters.
   """
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self._generator: Optional[GeneratorBlock.GeneratorRecord] = None
     self._generator_params_list: list[ConstraintExpr] = []
@@ -33,21 +33,21 @@ class GeneratorBlock(Block):
     """Declares some parameter to be a generator, so in generate() it can be used in self.get().
     Parameters that have not been called in generator_param will error out if used in self.get()."""
     if self._elaboration_state not in (BlockElaborationState.init, BlockElaborationState.contents):
-      raise BlockDefinitionError(self, "can't call generator_param(...) outside __init__ or contents",
+      raise BlockDefinitionError(type(self), "can't call generator_param(...) outside __init__ or contents",
                                  "call generator_param(...) inside __init__ or contents only, and remember to call super().__init__()")
     for param in params:
       if not isinstance(param, ConstraintExpr):
-        raise TypeError(f"param to generator_param(...) must be ConstraintExpr, got {param} of type {type(param)}")
+        raise EdgTypeError(f"generator_param(...) param", param, ConstraintExpr)
       if param.binding is None:
-        raise BlockDefinitionError(self, "generator_param(...) param must be bound")
+        raise BlockDefinitionError(type(self), "generator_param(...) param must be bound")
       if not isinstance(param.binding, (InitParamBinding, AllocatedBinding, IsConnectedBinding)):
-        raise BlockDefinitionError(self, "generator_param(...) param must be an __init__ param, port requested, or port is_connected")
+        raise BlockDefinitionError(type(self), "generator_param(...) param must be an __init__ param, port requested, or port is_connected")
 
       self._generator_params_list.append(param)
 
   WrappedType = TypeVar('WrappedType', bound=Any)
   def get(self, param: ConstraintExpr[WrappedType, Any]) -> WrappedType:
-    return self._generator_param_values[param]
+    return self._generator_param_values[param]  # type: ignore
 
   # Generator dependency data
   #
@@ -57,7 +57,7 @@ class GeneratorBlock(Block):
     fn_args: Tuple[ConstraintExpr, ...]  # params to unpack for the generator function
 
   @deprecated(reason="implement self.generate() instead (using self.get(...), self.generator_param(...))")
-  def generator(self, fn: Callable[..., None], *reqs: Any) -> None:  # type: ignore
+  def generator(self, fn: Callable[..., None], *reqs: Any) -> None:
     """
     Registers a generator function
     :param fn: function (of self) to invoke, where the parameter list lines up with reqs
@@ -76,7 +76,7 @@ class GeneratorBlock(Block):
         f"generator parameter {i} {req_param} not an __init__ parameter"
     self._generator = GeneratorBlock.GeneratorRecord(fn, reqs, reqs)
 
-  def generate(self):
+  def generate(self) -> None:
     """Generate function which has access to the value of generator params. Implement me."""
     pass
 
@@ -100,7 +100,7 @@ class GeneratorBlock(Block):
       elif (self.__class__, AbstractBlockProperty) in self._elt_properties:
         pass  # abstract blocks allowed to not define a generator
       else:
-        raise BlockDefinitionError(self, "Generator missing generate implementation", "define generate")
+        raise BlockDefinitionError(type(self), "Generator missing generate implementation", "define generate")
       return pb
     else:
       return super()._def_to_proto()
@@ -130,7 +130,7 @@ class GeneratorBlock(Block):
                    for arg_param in self._generator.fn_args]
         self._generator.fn(*fn_args)
       else:
-        raise BlockDefinitionError(self, "Generator missing generate implementation", "define generate")
+        raise BlockDefinitionError(type(self), "Generator missing generate implementation", "define generate")
 
       self._elaboration_state = BlockElaborationState.post_generate
     finally:
@@ -146,12 +146,12 @@ class DefaultExportBlock(GeneratorBlock):
   This encapsulates the common pattern of an optional export, which if not externally connected,
   connects the internal port to some other default port.
   TODO The default can be specified as a port, or a function that returns a port (e.g. to instantiate adapters)."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self._default_exports: List[Tuple[BasePort, Port, Port]] = []  # internal, exported, default
 
   ExportType = TypeVar('ExportType', bound=BasePort)
-  def Export(self, port: ExportType, *args, default: Optional[Port] = None, **kwargs) -> ExportType:
+  def Export(self, port: ExportType, *args: Any, default: Optional[Port] = None, **kwargs: Any) -> ExportType:
     """A generator-only variant of Export that supports an optional default (either internal or external)
     to connect the (internal) port being exported to, if the external exported port is not connected."""
     if default is None:
@@ -164,7 +164,7 @@ class DefaultExportBlock(GeneratorBlock):
       self._default_exports.append((port, new_port, default))
     return new_port
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     for (internal, exported, default) in self._default_exports:
       if self.get(exported.is_connected()):

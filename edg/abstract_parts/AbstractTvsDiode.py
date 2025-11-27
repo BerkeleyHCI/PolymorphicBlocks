@@ -39,7 +39,7 @@ class ProtectionTvsDiode(Protection):
 
         self.working_voltage = self.ArgParameter(working_voltage)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.diode = self.Block(TvsDiode(working_voltage=self.working_voltage))
         self.connect(self.diode.cathode.adapt_to(VoltageSink(
@@ -59,7 +59,7 @@ class DigitalTvsDiode(Protection):
         self.working_voltage = self.ArgParameter(working_voltage)
         self.capacitance = self.ArgParameter(capacitance)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.diode = self.Block(TvsDiode(working_voltage=self.working_voltage, capacitance=self.capacitance))
         self.connect(self.diode.cathode.adapt_to(DigitalSink(

@@ -7,7 +7,7 @@ from ..core import *
 from ..core import IdentityDict  # TODO: this is ugly
 from ..core.ConstraintExpr import Refable
 from .KiCadImportableBlock import KiCadImportableBlock
-
+from ..core.HdlUserExceptions import EdgTypeError
 
 CircuitLinkType = TypeVar('CircuitLinkType', bound=Link, covariant=True)
 class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
@@ -35,7 +35,7 @@ class FootprintBlock(Block):
   Provides interfaces that define footprints and copper connections and generates to appropriate metadata.
   """
   # TODO perhaps don't allow part / package initializers since those shouldn't be used
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.fp_footprint = self.Parameter(StringExpr())
     self.fp_pinning = self.Parameter(ArrayStringExpr())
@@ -59,7 +59,7 @@ class FootprintBlock(Block):
 
     if self._elaboration_state not in (BlockElaborationState.init, BlockElaborationState.contents,
                                        BlockElaborationState.generate):
-      raise BlockDefinitionError(self, "can't call Footprint(...) outside __init__, contents or generate",
+      raise BlockDefinitionError(type(self), "can't call Footprint(...) outside __init__, contents or generate",
                                  "call Footprint(...) inside those functions, and remember to make the super() call")
 
     self.fp_is_footprint = self.Metadata("")
@@ -67,7 +67,7 @@ class FootprintBlock(Block):
     pinning_array = []
     for pin_name, pin_port in pinning.items():
       if not isinstance(pin_port, CircuitPort):
-        raise TypeError(f"pin port to Footprint(...) must be CircuitPort, got {pin_port} of type {type(pin_port)}")
+        raise EdgTypeError(f"Footprint(...) pin", pin_port, CircuitPort)
       pinning_array.append(f'{pin_name}={pin_port._name_from(self)}')
     self.assign(self.fp_pinning, pinning_array)
 
@@ -97,21 +97,21 @@ class WrapperFootprintBlock(FootprintBlock):
   Useful for, for example, a breakout board where the modelling details are provided by internal chip blocks,
   but needs to show up as only a carrier board footprint.
   EXPERIMENTAL - API SUBJECT TO CHANGE."""
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.fp_is_wrapper = self.Metadata("A")  # TODO replace with not metadata, eg superclass inspection
 
 
 @abstract_block
 class NetBlock(InternalBlock, NetBaseBlock, Block):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.net()
 
 
 @abstract_block
 class CircuitPortBridge(NetBaseBlock, PortBridge):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.net()
 
@@ -123,13 +123,13 @@ class CircuitPortAdapter(KiCadImportableBlock, NetBaseBlock, PortAdapter[Adapter
     assert symbol_name == 'edg_importable:Adapter'
     return {'1': self.src, '2': self.dst}
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.net()
 
 
 @non_library  # TODO make abstract instead?
 class CircuitLink(NetBaseBlock, Link):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.net()

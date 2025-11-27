@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Ap3418_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
     self.pwr_in = self.Port(VoltageSink(
@@ -41,7 +41,7 @@ class Ap3418(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_frequency, (1.12, 1.68)*MHertz)

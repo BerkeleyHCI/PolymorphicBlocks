@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTablePart, GeneratorBlock, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.vdd = self.Port(VoltageSink(
@@ -24,7 +24,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
 
         self.generator_param(self.part, self.footprint_spec)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         if not self.get(self.footprint_spec) or \
                 self.get(self.footprint_spec) == 'Package_DFN_QFN:QFN-16-1EP_3x3mm_P0.5mm_EP1.45x1.45mm':
@@ -75,7 +75,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
 
 class Max98357a(SpeakerDriver, Block):
     """MAX98357A I2S speaker driver with default gain."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.ic = self.Block(Max98357a_Device())
@@ -85,7 +85,7 @@ class Max98357a(SpeakerDriver, Block):
         self.i2s = self.Export(self.ic.i2s, [Input])
         self.out = self.Export(self.ic.out, [Output])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         with self.implicit_connect(

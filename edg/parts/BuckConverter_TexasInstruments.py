@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
     self.pwr_in = self.Port(VoltageSink(
@@ -42,7 +42,7 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_frequency, 580*kHertz(tol=0))
@@ -83,7 +83,7 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
 
 
 class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.sw = self.Port(VoltageSource(
       current_limits=(0, 2)*Amp  # most conservative figures, low-side limited. TODO: better ones?
@@ -124,7 +124,7 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
   Note: TPS54202 has frequency spread-spectrum operation and internal pull-up on EN
   TPS54202H has no internal EN pull-up but a Zener diode clamp to limit voltage.
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.generator_param(self.reset.is_connected())
 
@@ -163,7 +163,7 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
                                           self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.en)

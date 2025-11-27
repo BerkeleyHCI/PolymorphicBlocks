@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Opa2333_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vp = self.Port(VoltageSink(
       voltage_limits=(1.8, 5.5)*Volt, current_draw=(17*2, 28*2)*uAmp  # quiescent current for both amps
@@ -29,7 +29,7 @@ class Opa2333_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.innb = self.Port(analog_in_model)
     self.outb = self.Port(analog_out_model)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',

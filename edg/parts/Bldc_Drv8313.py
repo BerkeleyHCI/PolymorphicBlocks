@@ -119,7 +119,7 @@ class Drv8313(BldcDriver, GeneratorBlock):
         self.risense_res = self.ArgParameter(risense_res)
         self.generator_param(self.pgnd_sense.requested())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.vm_cap_bulk = self.Block(DecouplingCapacitor((10*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
         self.vm_cap1 = self.Block(DecouplingCapacitor((0.1*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
@@ -140,7 +140,7 @@ class Drv8313(BldcDriver, GeneratorBlock):
         self.nsleep_default = self.Block(DigitalSourceConnected()) \
             .out_with_default(self.ic.nsleep, self.nsleep, self.ic.v3p3.as_digital_source())
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         pgnd_requested = self.get(self.pgnd_sense.requested())
         gnd_voltage_source: Optional[VoltageSource] = None  # only create one, if needed

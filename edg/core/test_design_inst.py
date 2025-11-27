@@ -21,7 +21,7 @@ class PortBridgeHierarchyBlockTop(Block):
 
 
 class DesignInstantiationTestCase(unittest.TestCase):
-  def test_single_hierarchy(self):
+  def test_single_hierarchy(self) -> None:
     """
     Tests design instantiation with a single level of hierarchy blocks.
     Only tests that the contained blocks are instantiated and structurally correct, does not check internal constraints
@@ -104,7 +104,7 @@ class DesignInstantiationTestCase(unittest.TestCase):
     expanded.block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, constraints)
 
-  def test_exported_hierarchy(self):
+  def test_exported_hierarchy(self) -> None:
     compiled_design = ScalaCompiler.compile(ExportPortHierarchyBlockTop)
     self.assertEqual(compiled_design.contents.blocks[0].name, 'block')
     pb = compiled_design.contents.blocks[0].value.hierarchy
@@ -134,7 +134,7 @@ class DesignInstantiationTestCase(unittest.TestCase):
     expected_conn.exported.internal_block_port.ref.steps.add().name = 'sink'
     self.assertIn(expected_conn, constraints)
 
-  def test_bridge_hierarchy(self):
+  def test_bridge_hierarchy(self) -> None:
     compiled_design = ScalaCompiler.compile(PortBridgeHierarchyBlockTop)
     self.assertEqual(compiled_design.contents.blocks[0].name, 'block')
     pb = compiled_design.contents.blocks[0].value.hierarchy

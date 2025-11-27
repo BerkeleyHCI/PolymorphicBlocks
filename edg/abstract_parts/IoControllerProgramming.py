@@ -24,7 +24,7 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
     self.swd_node = self.connect()  # connect this internal node to the microcontroller
     self.reset_node = self.connect()  # connect this internal node to the microcontroller
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.swd = self.Block(SwdCortexTargetConnector())
     self.connect(self.swd.gnd, self.gnd)
@@ -39,7 +39,7 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
       assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
     return assigns
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.swd_swo_pin) != 'NC':
       self.connect(self.ic.gpio.request('swd_swo'), self.swd.with_mixin(SwdCortexTargetConnectorSwo()).swo)

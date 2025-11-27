@@ -84,7 +84,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
     self.actual_power_rating = self.Parameter(RangeExpr())
     self.actual_voltage_rating = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -103,7 +103,7 @@ class TableResistor(PartsTableSelector, Resistor):
   POWER_RATING = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.resistance, self.power, self.voltage)
 
@@ -132,12 +132,12 @@ class SeriesResistor(Resistor, GeneratorBlock):
   Generally used as a refinement to break up a single (logical) resistor that is dissipating too much power
   or has an excessive voltage across it. Accounts for tolerance stackup for power and voltage distribution
   using specified (not actual) resistor tolerance - is a pessimistic calculation."""
-  def __init__(self, *args, count: IntLike = 2, **kwargs):
+  def __init__(self, *args: Any, count: IntLike = 2, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.count = self.ArgParameter(count)
     self.generator_param(self.count, self.resistance)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     count = self.get(self.count)
     last_port = self.a
@@ -225,7 +225,7 @@ class PullupResistorArray(TypedTestPoint, GeneratorBlock):
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.res = ElementDict[PullupResistor]()
     for requested in self.get(self.io.requested()):
@@ -243,7 +243,7 @@ class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.res = ElementDict[PulldownResistor]()
     for requested in self.get(self.io.requested()):
@@ -314,7 +314,7 @@ class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorB
 
     self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     if self.get(self.sense_in.is_connected()):
@@ -357,7 +357,7 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
     self.protection_voltage = self.ArgParameter(protection_voltage)
     self.zero_out = self.ArgParameter(zero_out)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     # TODO bidirectional clamping calcs?
@@ -399,7 +399,7 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
     self.protection_voltage = self.ArgParameter(protection_voltage)
     self.zero_out = self.ArgParameter(zero_out)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     # TODO bidirectional clamping calcs?

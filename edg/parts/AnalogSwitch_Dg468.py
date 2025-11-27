@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Dg468_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     self.vn = self.Port(Ground())
@@ -28,7 +28,7 @@ class Dg468_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.com = self.Port(Passive())
     self.no = self.Port(Passive(), optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.footprint(
@@ -51,11 +51,11 @@ class Dg468_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class Dg468(AnalogSwitch, GeneratorBlock):
   """DG468 36V 10ohm SPST switch in normally-open configuration
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.generator_param(self.control_gnd.is_connected())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.ic = self.Block(Dg468_Device())
@@ -74,7 +74,7 @@ class Dg468(AnalogSwitch, GeneratorBlock):
       capacitance=0.1*uFarad(tol=0.2),
     )).connected(self.gnd, self.pwr)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.control_gnd.is_connected()):
       self.connect(self.control_gnd, self.ic.gnd)

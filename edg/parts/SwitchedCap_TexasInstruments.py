@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     FREQUENCY = Range(40000, 80000)  # Hz
     SWITCH_RESISTANCE = Range(4, 8)  # Ohm
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
         self.vp = self.Port(VoltageSink(
@@ -27,7 +27,7 @@ class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         #     input_threshold_abs=(0.8, 2)*Volt
         # ), optional=True)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.footprint(
             'U', 'Package_TO_SOT_SMD:SOT-23-6',
@@ -58,7 +58,7 @@ class Lm2664(PowerConditioner, Block):
         self.output_resistance_limit = self.ArgParameter(output_resistance_limit)
         self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.require(self.output_resistance_limit >= 2 * self.ic.SWITCH_RESISTANCE.upper,
                      "min output resistance spec below switch resistance")

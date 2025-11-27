@@ -4,7 +4,7 @@ from ..abstract_parts import *
 @abstract_block_default(lambda: CpuFan3Pin)
 class CpuFanConnector(Connector, Block):
     """Abstract block for a 3-pin CPU fan connector."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(VoltageSink(
@@ -17,7 +17,7 @@ class CpuFanConnector(Connector, Block):
 @abstract_block_default(lambda: CpuFan4Pin)
 class CpuFanPwmControl(BlockInterfaceMixin[CpuFanConnector]):
     """Mixin that adds an PWM control pin (open-collector input) to a CpuFanConnector."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.control = self.Port(DigitalBidir(
             voltage_limits=(0, 5.25)*Volt,
@@ -29,7 +29,7 @@ class CpuFanPwmControl(BlockInterfaceMixin[CpuFanConnector]):
 
 class CpuFan3Pin(CpuFanConnector, FootprintBlock):
     """3-pin fan controller"""
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.footprint(
             'J', 'Connector:FanPinHeader_1x03_P2.54mm_Vertical',
@@ -44,7 +44,7 @@ class CpuFan3Pin(CpuFanConnector, FootprintBlock):
 
 class CpuFan4Pin(CpuFanConnector, CpuFanPwmControl, FootprintBlock):
     """3-pin fan controller"""
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.footprint(
             'J', 'Connector:FanPinHeader_1x04_P2.54mm_Vertical',

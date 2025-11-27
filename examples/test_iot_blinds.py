@@ -4,7 +4,7 @@ from edg import *
 
 
 class IotRollerBlindsConnector(Block):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.conn = self.Block(JstXh(length=6))
         self.gnd = self.Export(self.conn.pins.request('4').adapt_to(Ground()))
@@ -19,7 +19,7 @@ class IotRollerBlindsConnector(Block):
 
 
 class PowerInConnector(Connector):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.conn = self.Block(JstPh())
         self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
@@ -30,7 +30,7 @@ class PowerInConnector(Connector):
 
 
 class PowerOutConnector(Connector):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.conn = self.Block(JstPh())
         self.gnd = self.Export(self.conn.pins.request('1').adapt_to(Ground()))
@@ -162,7 +162,7 @@ class IotRollerBlinds(JlcBoardTop):
 
 
 class MotorConnector(Block):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.conn = self.Block(Picoblade(length=2))
         self.motor1 = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink(current_draw=(0, 0.5)*Amp)))

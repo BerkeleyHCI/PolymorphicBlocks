@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from . import PartsTableSelector, PartsTableColumn, Capacitor, PartsTableRow
 from .Categories import *
@@ -44,7 +46,7 @@ class Crystal(DiscreteComponent, HasStandardFootprint):
     self.crystal = self.Port(CrystalPort(self.actual_frequency), [InOut])  # set by subclass
     self.gnd = self.Port(Ground(), [Common])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -59,7 +61,7 @@ class TableCrystal(PartsTableSelector, Crystal):
   FREQUENCY = PartsTableColumn(Range)
   CAPACITANCE = PartsTableColumn(float)
 
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     """Discrete crystal component."""
     super().__init__(*args, **kwargs)
     self.generator_param(self.frequency)

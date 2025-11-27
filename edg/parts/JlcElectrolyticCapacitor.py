@@ -19,7 +19,7 @@ class JlcAluminumCapacitor(PartsTableSelectorFootprint, JlcTableSelector, TableC
      }),
   ]
 
-  def __init__(self, *args, capacitance_minimum_size: BoolLike = True, **kwargs):
+  def __init__(self, *args: Any, capacitance_minimum_size: BoolLike = True, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.capacitance_minimum_size = self.ArgParameter(capacitance_minimum_size)
     self.generator_param(self.capacitance_minimum_size)

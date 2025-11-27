@@ -6,14 +6,14 @@ from .test_common import TestBlockSink, TestPortSource
 
 
 class AdapterLink(Link):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     
     self.ports = self.Port(Vector(AdapterPort()))
 
 
 class AdapterPortAdapter(PortAdapter[TestPortSource]):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     self.src = self.Port(AdapterPort())
@@ -28,13 +28,13 @@ class AdapterPort(Port[AdapterLink]):
 
 
 class AdapterBlock(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(AdapterPort())
 
 
 class AdapterTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     self.adapter_src = self.Block(AdapterBlock())

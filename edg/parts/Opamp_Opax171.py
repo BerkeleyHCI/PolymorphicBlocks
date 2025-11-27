@@ -6,7 +6,7 @@ from .JlcPart import JlcPart
 class Opa171_Base_Device(InternalSubcircuit):
   DEVICES: int
 
-  def _analog_in_model(self):
+  def _analog_in_model(self) -> AnalogSink:
     return AnalogSink.from_supply(
       self.vn, self.vp,
       voltage_limit_tolerance=(-0.5, 0.5)*Volt,  # input common mode absolute maximum ratings
@@ -14,7 +14,7 @@ class Opa171_Base_Device(InternalSubcircuit):
       impedance=100e6*Ohm(tol=0)  # no tolerance specified; differential impedance
     )
 
-  def _analog_out_model(self):
+  def _analog_out_model(self) -> AnalogSource:
     return AnalogSource.from_supply(
       self.vn, self.vp,
       signal_out_bound=(0.350*Volt, -0.350*Volt),  # output swing from rail, 10k load, over temperature
@@ -22,7 +22,7 @@ class Opa171_Base_Device(InternalSubcircuit):
       impedance=150*Ohm(tol=0)  # open-loop resistance
     )
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vn = self.Port(Ground(), [Common])
     self.vp = self.Port(VoltageSink(
@@ -34,7 +34,7 @@ class Opa171_Base_Device(InternalSubcircuit):
 class Opa2171_Device(Opa171_Base_Device, JlcPart, FootprintBlock):
   DEVICES = 2
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     analog_in_model = self._analog_in_model()
@@ -46,7 +46,7 @@ class Opa2171_Device(Opa171_Base_Device, JlcPart, FootprintBlock):
     self.innb = self.Port(analog_in_model)
     self.outb = self.Port(analog_out_model)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',

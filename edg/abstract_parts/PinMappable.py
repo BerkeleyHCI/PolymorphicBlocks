@@ -1,6 +1,6 @@
 import itertools
 from abc import ABCMeta
-from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dict, Set
+from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dict, Set, Any
 
 from ..electronics_model import *
 
@@ -17,7 +17,7 @@ class PinMappable(Block):
     self.pin_assigns = self.ArgParameter(pin_assigns)
     self.actual_pin_assigns = self.Parameter(ArrayStringExpr())
 
-  def generator_set_allocation(self, allocations: List['AllocatedResource']):
+  def generator_set_allocation(self, allocations: List['AllocatedResource']) -> None:
     allocation_strs = []
     for allocation in allocations:
       if allocation.pin is None:
@@ -56,10 +56,10 @@ class PinResource(BaseLeafPinMapResource):
     self.pin = pin
     self.name_models = name_models
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"PinResource({self.pin}, {self.name_models})"
 
-  def __eq__(self, other):
+  def __eq__(self, other: Any) -> bool:
     # TODO avoid using is if we can compare port model equality
     return isinstance(other, PinResource) and self.pin == other.pin and self.name_models is other.name_models
 
@@ -78,10 +78,10 @@ class PeripheralFixedPin(BaseLeafPinMapResource):
     self.port_model = port_model
     self.inner_allowed_pins = inner_allowed_pins
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"PeripheralFixedPin({self.name}, {self.port_model.__class__.__name__} {self.inner_allowed_pins})"
 
-  def __eq__(self, other):
+  def __eq__(self, other: Any) -> bool:
     # TODO avoid using is if we can compare port model equality
     return isinstance(other, PeripheralFixedPin) and self.name == other.name and \
            self.port_model is other.port_model and self.inner_allowed_pins == other.inner_allowed_pins
@@ -96,10 +96,10 @@ class PeripheralAnyResource(BaseDelegatingPinMapResource):
     self.name = name
     self.port_model = port_model
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"PeripheralAnyResource({self.name}, {self.port_model.__class__.__name__})"
 
-  def __eq__(self, other):
+  def __eq__(self, other: Any) -> bool:
     # TODO avoid using is if we can compare port model equality
     return isinstance(other, PeripheralAnyResource) and self.name == other.name and \
            self.port_model is other.port_model
@@ -116,10 +116,10 @@ class PeripheralFixedResource(BaseDelegatingPinMapResource):
     self.port_model = port_model
     self.inner_allowed_names = inner_allowed_names
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"PeripheralFixedResource({self.name}, {self.port_model.__class__.__name__}, {self.inner_allowed_names})"
 
-  def __eq__(self, other):
+  def __eq__(self, other: Any) -> bool:
     # TODO avoid using is if we can compare port model equality
     return isinstance(other, PeripheralFixedResource) and self.name == other.name and \
            self.port_model is other.port_model and self.inner_allowed_names == other.inner_allowed_names
@@ -133,7 +133,7 @@ class AllocatedResource(NamedTuple):
   pin: Union[str, None, Dict[str, Tuple[str, Optional[str]]]]  # pin number if port is leaf, or
                                                                # recursive definition for bundles (pin, resource)
 
-  def __eq__(self, other):
+  def __eq__(self, other: Any) -> bool:
     # TODO better port model check, perhaps by initializer
     return self.port_model is other.port_model and self.name == other.name and \
            self.resource_name is other.resource_name and self.pin == other.pin
@@ -302,7 +302,7 @@ class PinMapUtil:
       for supported_type in self._resource_port_types(resource):
         free_resources_by_type.setdefault(supported_type, []).append(resource)
 
-    def mark_resource_used(resource: BasePinMapResource):
+    def mark_resource_used(resource: BasePinMapResource) -> None:
       for supported_type in self._resource_port_types(resource):
         free_resources_by_type[supported_type].remove(resource)
 

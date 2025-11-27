@@ -8,6 +8,6 @@ class FootprintToucbPad(FootprintBlock, HumanInterface):
         self.pad = self.Port(TouchPadPort(), [Input])
         self.touch_footprint = self.ArgParameter(touch_footprint)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.footprint('U', self.touch_footprint, {'1': self.pad})

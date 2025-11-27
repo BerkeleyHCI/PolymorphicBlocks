@@ -66,7 +66,7 @@ class MicroSdSocket(SdCard):
 
 
 class Dm3btDsfPejs(MicroSdSocket, Connector, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     # TODO add pull up resistors and capacitors and w/e?
     self.footprint(
@@ -89,7 +89,7 @@ class Dm3btDsfPejs(MicroSdSocket, Connector, FootprintBlock):
 
 
 class Molex1040310811(MicroSdSocket, Connector, JlcPart, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     # TODO add pull up resistors and capacitors and w/e?
     self.footprint(

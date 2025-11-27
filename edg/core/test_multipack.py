@@ -15,7 +15,7 @@ class PartSink(Block):
 
 class MultipackBlockSink(MultipackBlock):
   """Unlike a real multipack block, this is simplified and has no implementation."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     self.sink1 = self.PackedPart(PartSink())
@@ -40,12 +40,12 @@ class TestBlockContainerSink(Block):
 
 
 class TopMultipackDesign(DesignTop):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.sink1 = self.Block(PartSink())
     self.sink2 = self.Block(TestBlockContainerSink())
 
-  def multipack(self):
+  def multipack(self) -> None:
     self.packed = self.Block(MultipackBlockSink())
     self.pack(self.packed.sink1, ['sink1'])
     self.pack(self.packed.sink2, ['sink2', 'inner'])
@@ -110,7 +110,7 @@ class TopMultipackDesignTestCase(unittest.TestCase):
 
 class MultipackArrayBlockSink(MultipackBlock):
   """Same as above, but with array constructs."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.sinks = self.PackedPart(PackedBlockArray(PartSink()))
     self.sink_ports = self.PackedExport(self.sinks.ports_array(lambda x: x.sink))
@@ -121,12 +121,12 @@ class MultipackArrayBlockSink(MultipackBlock):
 
 
 class TopMultipackArrayDesign(DesignTop):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.sink1 = self.Block(PartSink())
     self.sink2 = self.Block(TestBlockContainerSink())
 
-  def multipack(self):
+  def multipack(self) -> None:
     self.packed = self.Block(MultipackArrayBlockSink())
     self.pack(self.packed.sinks.request('1'), ['sink1'])
     self.pack(self.packed.sinks.request('2'), ['sink2', 'inner'])

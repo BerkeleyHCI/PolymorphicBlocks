@@ -1,10 +1,12 @@
+from typing import Any
+
 from ..electronics_model import *
 from .AbstractDiodes import Diode
 
 
 class CustomDiode(Diode, FootprintBlock, GeneratorBlock):
-  def __init__(self, *args, footprint_spec: StringLike = "",
-               manufacturer_spec: StringLike = "", part_spec: StringLike = "", **kwargs):
+  def __init__(self, *args: Any, footprint_spec: StringLike = "",
+               manufacturer_spec: StringLike = "", part_spec: StringLike = "", **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.footprint_spec = self.ArgParameter(footprint_spec)  # actual_footprint left to the actual footprint
     self.manufacturer_spec = self.ArgParameter(manufacturer_spec)

@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from .Categories import *
 from .AbstractResistor import Resistor
@@ -54,7 +56,7 @@ class Led(DiscreteSemiconductor, HasStandardFootprint):
 class TableLed(PartsTableSelector, Led):
   COLOR = PartsTableColumn(str)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.color)
 
@@ -69,7 +71,7 @@ class TableLed(PartsTableSelector, Led):
 
 @abstract_block
 class RgbLedCommonAnode(DiscreteSemiconductor):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     self.a = self.Port(Passive.empty())
@@ -123,7 +125,7 @@ class IndicatorLedArray(Light, GeneratorBlock):
     self.count = self.ArgParameter(count)
     self.generator_param(self.count)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.led = ElementDict[IndicatorLed]()
     for led_i in range(self.get(self.count)):
@@ -150,7 +152,7 @@ class IndicatorSinkLed(Light, Block):
 
 class IndicatorSinkLedResistor(IndicatorSinkLed):
   """TODO: should the resistor sided-ness be configurable, eg as a generator? Similar for IndicatorLed"""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.require(self.signal.current_draw.within((-self.current_draw.upper(), 0)))
@@ -183,7 +185,7 @@ class IndicatorSinkLedArray(Light, GeneratorBlock):
     self.count = self.ArgParameter(count)
     self.generator_param(self.count)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     self.led = ElementDict[IndicatorSinkLed]()
     for led_i in range(self.get(self.count)):
@@ -274,12 +276,12 @@ class IndicatorSinkRgbLed(Light):
 
 
 class IndicatorSinkPackedRgbLedElement(IndicatorSinkLed):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__(current_draw=RangeExpr())
 
 
 class IndicatorSinkPackedRgbLed(MultipackDevice, MultipackBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     # Optional multipack definition

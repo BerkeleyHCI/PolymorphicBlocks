@@ -49,7 +49,7 @@ class Qt096t_if09(Lcd, Resettable, Block):
     self.spi = self.Export(self.device.spi)
     self.led = self.Port(DigitalSink.empty())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.connect(self.reset, self.device.reset)
     self.require(self.reset.is_connected())

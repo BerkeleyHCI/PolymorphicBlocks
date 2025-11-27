@@ -87,7 +87,7 @@ class Er_Oled_096_1_1(Oled, Resettable, GeneratorBlock):
         self.i2c = self.Port(I2cTarget.empty(), optional=True)
         self.generator_param(self.spi.is_connected(), self.dc.is_connected(), self.i2c.is_connected())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.connect(self.pwr, self.device.vbat)
         self.connect(self.reset, self.device.res)
@@ -113,7 +113,7 @@ class Er_Oled_096_1_1(Oled, Resettable, GeneratorBlock):
         self.vcc_cap = self.Block(DecouplingCapacitor(capacitance=(2.2*0.8, 10)*uFarad))\
             .connected(self.gnd, self.device.vcc)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         gnd_digital = self.gnd.as_digital_source()

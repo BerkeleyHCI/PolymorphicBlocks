@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..core import BoolLike, init_in_parent
 from ..electronics_model import Block, abstract_block, InternalBlock
 
@@ -347,11 +349,11 @@ class DummyDevice(InternalBlock):
 class IdealModel(InternalBlock):
   """Ideal model device that can be used as a placeholder to get a design compiling
   but has no physical implementation."""
-  def __init__(self, *args, allow_ideal: BoolLike = False, **kwargs):
+  def __init__(self, *args: Any, allow_ideal: BoolLike = False, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.allow_ideal = self.ArgParameter(allow_ideal)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.require(self.allow_ideal, "ideal model")
 

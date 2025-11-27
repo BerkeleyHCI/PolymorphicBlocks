@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 class Cbmud1200l_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.gnd1 = self.Port(Ground())
     self.vdd1 = self.Port(VoltageSink.from_gnd(
@@ -34,7 +34,7 @@ class Cbmud1200l_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.voa = self.Port(out_model)
     self.vob = self.Port(out_model)
 
-  def contents(self):
+  def contents(self) -> None:
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
       {
@@ -55,10 +55,10 @@ class Cbmud1200l_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 
 class Cbmud1200l(DigitalIsolator, GeneratorBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     assert not self.get(self.in_b.requested()) and not self.get(self.out_a.requested()), f"device has no b->a channels"
 

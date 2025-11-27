@@ -4,13 +4,13 @@ from . import *
 
 
 class I2cControllerBlock(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(I2cController())
 
 
 class I2cPullupBlock(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(I2cPullupPort())
 
@@ -22,7 +22,7 @@ class I2cTargetBlock(Block):
 
 
 class I2cTest(DesignTop):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.controller = self.Block(I2cControllerBlock())
     self.pull = self.Block(I2cPullupBlock())
@@ -34,7 +34,7 @@ class I2cTest(DesignTop):
 
 
 class I2cNoPullTest(DesignTop):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.controller = self.Block(I2cControllerBlock())
     self.device1 = self.Block(I2cTargetBlock(1))
@@ -42,7 +42,7 @@ class I2cNoPullTest(DesignTop):
 
 
 class I2cConflictTest(DesignTop):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.controller = self.Block(I2cControllerBlock())
     self.pull = self.Block(I2cPullupBlock())

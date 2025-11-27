@@ -6,7 +6,7 @@ from .. import edgir
 from ..core import *
 from .VoltagePorts import VoltageSource, VoltageSink
 from .CircuitBlock import FootprintBlock
-from .NetlistGenerator import NetlistTransform, NetPin as RawNetPin, NetBlock as RawNetBlock, Net
+from .NetlistGenerator import NetlistTransform, NetPin as RawNetPin, NetBlock as RawNetBlock, Net, Netlist
 from .RefdesRefinementPass import RefdesRefinementPass
 
 
@@ -185,7 +185,7 @@ class TestDualHierarchyCircuit(Block):
 
 class NetlistTestCase(unittest.TestCase):
   @staticmethod
-  def generate_net(design: Type[Block], refinements: Refinements = Refinements()):
+  def generate_net(design: Type[Block], refinements: Refinements = Refinements()) -> Netlist:
     compiled = ScalaCompiler.compile(design, refinements)
     compiled.append_values(RefdesRefinementPass().run(compiled))
     return NetlistTransform(compiled).run()

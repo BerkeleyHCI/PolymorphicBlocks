@@ -78,7 +78,7 @@ class JlcInductor(PartsTableSelectorFootprint, JlcTableSelector, TableInductor):
      }),
   ]
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     # because the table does not have frequency specs, the table filter can't enforce frequency ratings
     # so the user must add the actual frequency rating in refinements

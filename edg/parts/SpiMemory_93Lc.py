@@ -40,7 +40,7 @@ class E93Lc_B_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
     self.size = self.ArgParameter(size)
     self.generator_param(self.size)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     suitable_parts = [part for part in self.PARTS if part[0] in self.get(self.size)]
     assert suitable_parts, "no memory in requested size range"
@@ -68,7 +68,7 @@ class E93Lc_B(SpiMemory):
   """93LCxxB series of SPI EEPROMs. The E prefix is because Python identifiers can't start with numbers
   Note, A variant is 8-bit word, B variant is 16-bit word
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.ic = self.Block(E93Lc_B_Device(self.size))

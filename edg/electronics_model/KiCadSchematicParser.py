@@ -1,6 +1,6 @@
 import itertools
 from enum import Enum
-from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple, Union, Iterable
+from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple, Union, Iterable, cast
 
 import math
 import sexpdata  # type: ignore
@@ -51,12 +51,12 @@ def parse_at(sexp: List[Any], expected_car: str = 'at') -> Tuple[float, float, f
 def parse_symbol(sexp: Any) -> str:
   """Asserts sexp is a Symbol and returns its value."""
   assert isinstance(sexp, sexpdata.Symbol)
-  return sexp.value()
+  return cast(str, sexp.value())
 
 
 class KiCadLibPin:
   """Pin in a library symbol"""
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.number} @ {self.pos})"
 
   def __init__(self, sexp: List[Any]):
@@ -69,7 +69,7 @@ class KiCadLibPin:
 
 class KiCadLibSymbol:
   """Symbol in a library"""
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.name})"
 
   def __init__(self, sexp: List[Any]):
@@ -86,7 +86,7 @@ class KiCadLibSymbol:
 
 
 class KiCadWire:
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.pt1}, {self.pt2})"
 
   def __init__(self, sexp: List[Any]):
@@ -99,16 +99,16 @@ class KiCadWire:
 
 
 class KiCadTunnel:
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.name} @ {self.pt})"
 
-  def __init__(self):
+  def __init__(self) -> None:
     self.name: str
     self.pt: PointType
 
 
 class KiCadBaseLabel(KiCadTunnel):
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.name} @ {self.pt})"
 
   def __init__(self, sexp: List[Any]):
@@ -145,10 +145,10 @@ class KiCadPowerLabel(KiCadTunnel):  # not really a label, but behaves like a la
 
 
 class KiCadMarker:
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.pt})"
 
-  def __init__(self):
+  def __init__(self) -> None:
     self.pt: PointType
 
 
@@ -161,7 +161,7 @@ class KiCadNoConnect(KiCadMarker):
 
 
 class KiCadSymbol:
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.refdes}, {self.lib} @ {self.pos})"
 
   def __init__(self, sexp: List[Any]):
@@ -186,7 +186,7 @@ class KiCadSymbol:
 
 
 class KiCadPin:
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.refdes}.{self.pin_number} @ {self.pt})"
 
   def __init__(self, symbol: KiCadSymbol, pin: KiCadLibPin):
@@ -220,7 +220,7 @@ class ParsedNet(NamedTuple):
   labels: List[KiCadTunnel]
   pins: List[KiCadPin]
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return f"{self.__class__.__name__}(labels={self.labels}, pins={self.pins})"
 
 

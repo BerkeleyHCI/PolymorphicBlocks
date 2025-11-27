@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 class Nlas4157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
     self.vcc = self.Port(VoltageSink(
@@ -31,7 +31,7 @@ class Nlas4157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.b1 = self.Port(Passive(), optional=True)
     self.b0 = self.Port(Passive(), optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.footprint(
@@ -58,7 +58,7 @@ class Nlas4157(AnalogSwitch):
   - TS5A3159: 5v tolerant, 1 ohm
   - TS5A3160: 5v tolerant, 1 ohm
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.require(~self.control_gnd.is_connected(), "device does not support control ground")

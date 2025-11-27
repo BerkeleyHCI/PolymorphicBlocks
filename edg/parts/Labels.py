@@ -4,7 +4,7 @@ from deprecated import deprecated
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class LeadFreeIndicator(Label, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'edg:Indicator_LeadFree',
@@ -15,7 +15,7 @@ class LeadFreeIndicator(Label, FootprintBlock):
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class IdDots4(Label, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'edg:Indicator_IdDots_4',
@@ -26,7 +26,7 @@ class IdDots4(Label, FootprintBlock):
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class DuckLogo(Label, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'edg:Symbol_Duckling',
@@ -37,7 +37,7 @@ class DuckLogo(Label, FootprintBlock):
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class LemurLogo(Label, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'edg:Symbol_LemurSmall',

@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class A1304_Device(InternalBlock, FootprintBlock, JlcPart):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
         self.vcc = self.Port(VoltageSink.from_gnd(
@@ -16,7 +16,7 @@ class A1304_Device(InternalBlock, FootprintBlock, JlcPart):
             signal_out_abs=(0.38, 2.87)  # output saturation limits @ Vcc=3.3v
         ))
 
-    def contents(self):
+    def contents(self) -> None:
         self.footprint(
             'U', 'Package_TO_SOT_SMD:SOT-23',
             {
@@ -34,13 +34,13 @@ class A1304_Device(InternalBlock, FootprintBlock, JlcPart):
 class A1304(Magnetometer, Block):
     """Linear hall-effect sensor with analog output, sometimes used in game controllers as trigger detectors.
     Typ 4 mV / Gauss with full scale range of +/-375 Gauss."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(A1304_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.pwr = self.Export(self.ic.vcc, [Power])
         self.out = self.Export(self.ic.vout, [Output])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.cbyp = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.pwr)

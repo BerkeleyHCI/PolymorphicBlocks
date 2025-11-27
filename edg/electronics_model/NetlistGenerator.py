@@ -49,7 +49,7 @@ class BoardScope(NamedTuple):
   assert_connected: List[Tuple[TransformUtil.Path, TransformUtil.Path]]
 
   @classmethod
-  def empty(cls, path: TransformUtil.Path):  # returns a fresh, empty BordScope
+  def empty(cls, path: TransformUtil.Path) -> 'BoardScope':  # returns a fresh, empty BordScope
     return BoardScope(path, {}, {}, {}, [])
 
 

@@ -32,7 +32,7 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
     'Capacitor_SMD:C_1812_4532Metric': 0.04,  # arbitrary, copy from 1206
   }
 
-  def __init__(self, *args, capacitance_minimum_size: BoolLike = True, **kwargs):
+  def __init__(self, *args: Any, capacitance_minimum_size: BoolLike = True, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.capacitance_minimum_size = self.ArgParameter(capacitance_minimum_size)
     self.generator_param(self.capacitance_minimum_size)
@@ -132,7 +132,7 @@ class JlcDummyCapacitor(JlcPart, DummyCapacitorFootprint):
   """
   def __init__(self, set_lcsc_part: StringLike = "", set_basic_part: BoolLike = False,
                footprint: StringLike = "", manufacturer: StringLike = "",
-               part_number: StringLike = "", value: StringLike = "", *args, **kwargs) -> None:
+               part_number: StringLike = "", value: StringLike = "", *args: Any, **kwargs: Any) -> None:
     super().__init__(footprint=footprint, manufacturer=manufacturer, part_number=part_number,
                      value=value, *args, **kwargs)
 

@@ -145,7 +145,7 @@ class Esp32_Base(Esp32_Ios, GeneratorBlock):
   """
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     self.pwr = self.Port(self._vdd_model(), [Power])
@@ -241,7 +241,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Resetta
   """Wrapper around Esp32c3_Wroom02 with external capacitors and UART programming header.
   NOT COMPATIBLE WITH QSPI PSRAM VARIANTS - for those, GPIO16 needs to be pulled up.
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.ic: Esp32_Wroom_32_Device
     self.generator_param(self.reset.is_connected())
@@ -348,8 +348,8 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
         'GPIO2': self.io2,
       }).remap(self.SYSTEM_PIN_REMAP)
 
-  def __init__(self, **kawrgs) -> None:
-    super().__init__(**kawrgs)
+  def __init__(self, **kwargs: Any) -> None:
+    super().__init__(**kwargs)
 
     self.gnd.init_from(Ground())
     self.pwr.init_from(self._vdd_model())

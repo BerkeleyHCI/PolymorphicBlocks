@@ -22,7 +22,7 @@ class CalSolCanBlock(Block):
     self.controller = self.Port(CanTransceiverPort.empty(), [Input])
     self.can = self.Port(CanDiffPort.empty(), optional=True)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.conn = self.Block(CalSolCanConnector())
@@ -55,7 +55,7 @@ class CanFuse(PptcFuse, FootprintBlock):
   def __init__(self, trip_current: RangeLike = (100, 200)*mAmp):
     super().__init__(trip_current)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_trip_current, 150*mAmp(tol=0))
@@ -82,7 +82,7 @@ class CalSolPowerConnector(Connector, FootprintBlock):
     ))
     self.gnd = self.Port(Ground())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.footprint(
@@ -107,7 +107,7 @@ class CalSolCanConnector(Connector, FootprintBlock):
     self.gnd = self.Port(Ground())
     self.differential = self.Port(CanDiffPort(), [Output])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.footprint(
@@ -134,7 +134,7 @@ class CalSolCanConnectorRa(Connector, FootprintBlock):
     self.gnd = self.Port(Ground())
     self.differential = self.Port(CanDiffPort(), [Output])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.footprint(
@@ -161,7 +161,7 @@ class M12CanConnector(Connector, FootprintBlock):
     self.gnd = self.Port(Ground())
     self.differential = self.Port(CanDiffPort(), [Output])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.footprint(
@@ -187,7 +187,7 @@ class LightsConnector(Connector, FootprintBlock):
     for i in range(2):
       self.out[i] = self.Port(VoltageSink(current_draw=current_draw))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.footprint(

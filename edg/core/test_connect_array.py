@@ -19,14 +19,14 @@ class TestBlockSinkElasticArray(GeneratorBlock):
     self.sinks = self.Port(Vector(TestPortSink()))
     self.generator_param(self.sinks.requested())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     for request in self.get(self.sinks.requested()):
       self.sinks.append_elt(TestPortSink(), request)
 
 
 class ArrayConnectBlock(Block):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.source = self.Block(TestBlockSourceFixedArray())
@@ -73,7 +73,7 @@ class ArrayConnectProtoTestCase(unittest.TestCase):
 
 
 class ArrayAllocatedConnectBlock(Block):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.source1 = self.Block(TestBlockSourceFixedArray())

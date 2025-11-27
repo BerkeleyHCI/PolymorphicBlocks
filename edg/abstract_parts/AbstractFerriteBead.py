@@ -1,4 +1,4 @@
-from typing import Optional, cast, Dict
+from typing import Optional, cast, Dict, Any
 
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -51,7 +51,7 @@ class FerriteBead(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
     self.actual_hf_impedance = self.Parameter(RangeExpr())
     self.actual_dc_resistance = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -72,7 +72,7 @@ class TableFerriteBead(PartsTableSelector, FerriteBead):
   HF_IMPEDANCE = PartsTableColumn(Range)
   DC_RESISTANCE = PartsTableColumn(Range)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.current, self.hf_impedance, self.dc_resistance)
 

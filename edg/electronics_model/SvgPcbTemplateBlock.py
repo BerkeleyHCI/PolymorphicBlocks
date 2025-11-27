@@ -15,7 +15,7 @@ class SvgPcbTemplateBlock(Block):
 
     This defines the interface and supporting utilities only."""
     @staticmethod
-    def _svgpcb_pathname_to_svgpcb(path: TransformUtil.Path):
+    def _svgpcb_pathname_to_svgpcb(path: TransformUtil.Path) -> str:
         return '_'.join(path.to_tuple()).replace('[', '_').replace(']', '_')
 
     @staticmethod

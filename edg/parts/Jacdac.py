@@ -80,13 +80,13 @@ class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
 
         self.generator_param(self.jd_pwr_src.is_connected())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.require(self.jd_pwr_src.is_connected() | self.jd_pwr_sink.is_connected())
         self.require(self.jd_pwr_src.is_connected().implies(~self.jd_pwr_sink.is_connected()))
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         if self.get(self.jd_pwr_src.is_connected()):
@@ -106,7 +106,7 @@ class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
 
 class Rclamp0521p(TvsDiode, FootprintBlock, JlcPart):
     """RCLAMP0521P-N TVS diode in 0402 package, recommended in the Jacdac DDK."""
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.require(self.working_voltage.within(self.actual_working_voltage))
         self.require(self.actual_capacitance.within(self.capacitance))
@@ -148,7 +148,7 @@ class JacdacEdgeConnector(Connector, JacdacSubcircuit, GeneratorBlock):
 
         self.generator_param(self.jd_pwr_src.is_connected(), self.jd_pwr_sink.is_connected())
 
-    def generate(self):
+    def generate(self) -> None:
         super().contents()
 
         with self.implicit_connect(
@@ -175,7 +175,7 @@ class JacdacEdgeConnector(Connector, JacdacSubcircuit, GeneratorBlock):
 class JacdacDataInterface(JacdacSubcircuit, Block):
     """Interface from a Jacdac data bus to a device, including protection and EMI filtering.
     Does NOT include per-port circuitry like ESD diodes and status LEDs."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground.empty(), [Common])
         self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -183,7 +183,7 @@ class JacdacDataInterface(JacdacSubcircuit, Block):
         self.signal = self.Port(DigitalBidir.empty(), [Input])
         self.jd_data = self.Port(JacdacDataPort.empty(), [Output])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.ferrite = self.Block(FerriteBead(hf_impedance=(1, float('inf'))*kOhm))
         signal_level = self.signal.link().voltage
@@ -210,11 +210,12 @@ class JacdacDataInterface(JacdacSubcircuit, Block):
 class JacdacMountingData1(JacdacSubcircuit, FootprintBlock):
     """Jacdac mounting hole for data, with a passive-typed port so it doesn't count as a connection
     for validation purposes."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.jd_data = self.Port(JacdacPassivePort())
 
-    def contents(self):
+    def contents(self) -> None:
+        super().contents()
         self.footprint(
             'MH', 'Jacdac:jacdac_hole_DATA_notched_MH1',
             {
@@ -224,11 +225,12 @@ class JacdacMountingData1(JacdacSubcircuit, FootprintBlock):
 
 
 class JacdacMountingGnd2(JacdacSubcircuit, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
 
-    def contents(self):
+    def contents(self) -> None:
+        super().contents()
         self.footprint(
             'MH', 'Jacdac:jacdac_hole_GND_MH2',
             {
@@ -238,11 +240,12 @@ class JacdacMountingGnd2(JacdacSubcircuit, FootprintBlock):
 
 
 class JacdacMountingGnd4(JacdacSubcircuit, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
 
-    def contents(self):
+    def contents(self) -> None:
+        super().contents()
         self.footprint(
             'MH', 'Jacdac:jacdac_hole_GND_MH4',
             {
@@ -252,11 +255,12 @@ class JacdacMountingGnd4(JacdacSubcircuit, FootprintBlock):
 
 
 class JacdacMountingPwr3(JacdacSubcircuit, FootprintBlock):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.jd_pwr = self.Port(VoltageSink())
 
-    def contents(self):
+    def contents(self) -> None:
+        super().contents()
         self.footprint(
             'MH', 'Jacdac:jacdac_hole_PWR_MH3',
             {
@@ -271,7 +275,7 @@ class JacdacDeviceTop(DesignTop):
 
     Recommend connecting to the nets, instead of connecting directly to the created Blocks and their Ports."""
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.edge = self.Block(JacdacEdgeConnector())
         self.jd_mh1 = self.Block(JacdacMountingData1())

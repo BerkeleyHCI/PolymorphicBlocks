@@ -19,7 +19,7 @@ class LinkMeta(BaseBlockMeta):
 
     if '__init__' in new_cls.__dict__:
       orig_init = new_cls.__dict__['__init__']
-      def wrapped_init(self, *args, **kwargs) -> None:
+      def wrapped_init(self: Any, *args: Any, **kwargs: Any) -> None:
         builder_prev = builder.push_element(self)
         try:
           orig_init(self, *args, **kwargs)

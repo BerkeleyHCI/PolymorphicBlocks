@@ -20,7 +20,7 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
     """Returns VDDIO (can be VoltageSink or VoltageSource)."""
     ...
 
-  def _iovdd_model(self):
+  def _iovdd_model(self) -> VoltageSink:
     return VoltageSink(
       voltage_limits=(1.62, 3.63)*Volt,  # Table 628
       current_draw=(1.2, 4.3)*mAmp + self.io_current_draw.upper()  # Table 629
@@ -180,7 +180,7 @@ class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcirc
   def _vddio(self) -> Port[VoltageLink]:
     return self.iovdd
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     self.gnd = self.Port(Ground(), [Common])
@@ -312,7 +312,7 @@ class Rp2040(Resettable, Rp2040_Interfaces, Microcontroller, IoControllerWithSwd
              WithCrystalGenerator, IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
     self.ic: Rp2040_Device
     self.generator_param(self.reset.is_connected())
@@ -353,7 +353,7 @@ class Rp2040(Resettable, Rp2040_Interfaces, Microcontroller, IoControllerWithSwd
 
     self.vreg_out_cap = self.Block(DecouplingCapacitor(1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     if self.get(self.reset.is_connected()):

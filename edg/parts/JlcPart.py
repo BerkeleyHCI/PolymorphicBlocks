@@ -9,7 +9,7 @@ class JlcPart(Block):
   """Provides additional data fields for JLCPCB parts for their SMT service.
   By default, this does not check for basic parts, but that can be changed in refinements.
   """
-  def __init__(self, *args, require_basic_part: BoolLike = False, **kwargs):
+  def __init__(self, *args: Any, require_basic_part: BoolLike = False, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.lcsc_part = self.Parameter(StringExpr())
     self.actual_basic_part = self.Parameter(BoolExpr())
@@ -63,7 +63,7 @@ class JlcTableBase(PartsTableBase):
     }
 
   @staticmethod
-  def parse(description: str, regex_dictionary: Dict[str, re.Pattern]):
+  def parse(description: str, regex_dictionary: Dict[str, re.Pattern]) -> Dict[str, str]:
     extraction_table = {}
 
     for key, pattern in regex_dictionary.items():

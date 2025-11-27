@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..abstract_parts import *
 from deprecated import deprecated
 
@@ -6,7 +8,7 @@ from deprecated import deprecated
 class LedDriver(PowerConditioner, Interface):
     """Abstract current-regulated high-power LED driver.
     LED ports are passive and should be directly connected to the LED (or LED string)."""
-    def __init__(self, max_current: RangeLike):
+    def __init__(self, max_current: RangeLike) -> None:
         super().__init__()
 
         self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -21,13 +23,13 @@ class LedDriver(PowerConditioner, Interface):
 @deprecated("ripple should be an internal parameter")
 class LedDriverSwitchingConverter(BlockInterfaceMixin[LedDriver]):
     """LED driver mixin indicating that the LED driver is a switching converter and with a peak-peak ripple limit."""
-    def __init__(self, *args, ripple_limit: FloatLike = float('inf'), **kwargs):
+    def __init__(self, *args: Any, ripple_limit: FloatLike = float('inf'), **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.ripple_limit = self.ArgParameter(ripple_limit)
 
 
 class LedDriverPwm(BlockInterfaceMixin[LedDriver]):
     """LED driver mixin with PWM input for dimming control."""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.pwm = self.Port(DigitalSink.empty(), optional=True)

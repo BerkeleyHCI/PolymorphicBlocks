@@ -88,7 +88,7 @@ class Er_Oled028_1(Oled, Resettable, GeneratorBlock):
 
         self.generator_param(self.dc.is_connected())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.connect(self.pwr, self.device.vci)
         self.connect(self.reset, self.device.res)
@@ -123,7 +123,7 @@ class Er_Oled028_1(Oled, Resettable, GeneratorBlock):
         self.connect(self.vsl_d1.cathode, self.vsl_d2.anode)
         self.connect(self.vsl_d2.cathode.adapt_to(Ground()), self.gnd)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         if self.get(self.dc.is_connected()):  # 4-line serial
             self.connect(self.gnd.as_digital_source(), self.device.bs0)

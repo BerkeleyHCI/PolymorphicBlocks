@@ -16,7 +16,7 @@ class Ld1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.output_voltage = self.ArgParameter(output_voltage)
     self.generator_param(self.output_voltage)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     parts = [  # output voltage
       (Range(1.140, 1.260), 'LD1117S12TR', 'C155612'),
@@ -70,7 +70,7 @@ class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     self.output_voltage = self.ArgParameter(output_voltage)
     self.generator_param(self.output_voltage)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     TOLERANCE = 0.03  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [  # output voltage
@@ -137,7 +137,7 @@ class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     self.output_voltage = self.ArgParameter(output_voltage)
     self.generator_param(self.output_voltage)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     TOLERANCE = 0.02
@@ -179,7 +179,7 @@ class Ap2204k(VoltageRegulatorEnableWrapper, LinearRegulator):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.ic = self.Block(Ap2204k_Device(self.output_voltage))
     self.connect(self.pwr_in, self.ic.pwr_in)
@@ -218,7 +218,7 @@ class Ap7215_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, Footprin
 class Ap7215(LinearRegulator):
   """AP7215 fixed 3.3v LDO in SOT-89 providing the LinearRegulator interface.
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.ic = self.Block(Ap7215_Device(self.output_voltage))
     self.connect(self.pwr_in, self.ic.pwr_in)
@@ -240,7 +240,7 @@ class Xc6206p_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     self.output_voltage = self.ArgParameter(output_voltage)
     self.generator_param(self.output_voltage)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     parts = [  # output range, part number, (dropout typ @10mA, max @100mA), max current, lcsc, basic part
       # +/-0.03v tolerance for Vout < 1.5v
@@ -318,7 +318,7 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.output_voltage = self.ArgParameter(output_voltage)
     self.generator_param(self.output_voltage)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [  # output voltage, part number, (dropout typ @ 30mA, dropout max @ 100mA), max current, lcsc
@@ -387,7 +387,7 @@ class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
     self.output_voltage = self.ArgParameter(output_voltage)
     self.generator_param(self.output_voltage)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     TOLERANCE = 0.02  # worst-case -40 < Tj < 125C, slightly better at 25C
     parts = [  # output voltage
@@ -458,7 +458,7 @@ class Lp5907_Device(InternalSubcircuit, LinearRegulatorDevice, SelectorFootprint
       input_thresholds=(0.4, 1.2)*Volt
     ))
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     parts = [  # output voltage, Table in 6.5 tolerance varies by output voltage
       (Range.from_tolerance(1.2, 0.03), 'LP5907MFX-1.2/NOPB', 'Package_TO_SOT_SMD:SOT-23-5', 'C73478'),
@@ -559,7 +559,7 @@ class Tlv757p_Device(InternalSubcircuit, LinearRegulatorDevice, PartsTablePart, 
       input_thresholds=(0.3, 1)*Volt
     ))
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     tolerance = 0.015  # over 125C range, Vout >= 1v
     parts = [  # output range, part, dropout voltage for non-DYD over 125C range, LCSC
@@ -630,7 +630,7 @@ class L78l_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, GeneratorB
     self.output_voltage = self.ArgParameter(output_voltage)
     self.generator_param(self.output_voltage)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     parts = [  # output voltage, input max voltage, quiescent current, dropout
@@ -672,7 +672,7 @@ class L78l_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, GeneratorB
 class L78l(LinearRegulator):
   """L78Lxx high(er) input voltage linear regulator in SOT-89.
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.ic = self.Block(L78l_Device(self.output_voltage))
     self.connect(self.pwr_in, self.ic.pwr_in)

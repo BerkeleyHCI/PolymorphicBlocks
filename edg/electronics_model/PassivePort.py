@@ -12,7 +12,7 @@ from .VoltagePorts import CircuitPort, VoltageSource, VoltageSink
 
 class PassiveLink(CircuitLink):
   """Copper-only connection"""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.passives = self.Port(Vector(Passive()))
 
@@ -158,4 +158,4 @@ class Passive(CircuitPort[PassiveLink]):
       assert param.initializer is not None, f"missing initializer for {param_name}"
       adapter_init_kwargs[param_name] = param.initializer
 
-    return self._convert(adapter_cls(**adapter_init_kwargs))
+    return self._convert(adapter_cls(**adapter_init_kwargs))  # type: ignore

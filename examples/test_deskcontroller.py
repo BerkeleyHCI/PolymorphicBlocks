@@ -6,7 +6,7 @@ from edg import *
 class JiecangConnector(Block):
     """RJ-12 connector for (some?) Jiecang standing desk controllers
     https://github.com/phord/Jarvis?tab=readme-ov-file#physical-interface-rj-12"""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.conn = self.Block(PassiveConnector(length=6))
         self.gnd = self.Export(self.conn.pins.request('2').adapt_to(Ground()), [Common])

@@ -45,7 +45,7 @@ class Ltc3429(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   """Low-input-voltage boost converter (starts as low as 0.85V).
   Pin-compatible with the less-expensive UM3429S"""
   NMOS_CURRENT_LIMIT = 0.6
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_frequency, (380, 630)*kHertz)

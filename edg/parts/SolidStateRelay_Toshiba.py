@@ -2,7 +2,7 @@ from ..abstract_parts import *
 
 
 class Tlp3545a(SolidStateRelay, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.assign(self.led_forward_voltage, (1.50, 1.80)*Volt)
     self.assign(self.led_current_limit, (5, 30)*mAmp)
@@ -27,7 +27,7 @@ class Tlp3545a(SolidStateRelay, FootprintBlock):
 
 
 class Tlp170am(SolidStateRelay, FootprintBlock):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.assign(self.led_forward_voltage, (1.1, 1.4)*Volt)  # 1.27 nominal
     self.assign(self.led_current_limit, (2, 30)*mAmp)

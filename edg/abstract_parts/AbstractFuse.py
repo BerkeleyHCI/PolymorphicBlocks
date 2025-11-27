@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import Optional, cast, Any
 
 from deprecated import deprecated
 
@@ -49,7 +49,7 @@ class Fuse(DiscreteComponent, HasStandardFootprint):
     self.voltage = self.ArgParameter(voltage)  # operating voltage
     self.actual_voltage_rating = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -114,7 +114,7 @@ class TableFuse(PartsTableSelector, Fuse):
   HOLD_CURRENT = PartsTableColumn(Range)
   VOLTAGE_RATING = PartsTableColumn(Range)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.trip_current, self.hold_current, self.voltage)
 

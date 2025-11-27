@@ -183,7 +183,7 @@ class Nrf52840_Base(Nrf52840_Ios, GeneratorBlock):
       'nRESET': self.nreset,
     }).remap(self.SYSTEM_PIN_REMAP)
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     self.gnd = self.Port(Ground(), [Common])
@@ -266,14 +266,14 @@ class Holyiot_18010_Device(Nrf52840_Base, InternalSubcircuit):
 class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
                     IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around the Holyiot 18010 that includes supporting components (programming port)"""
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
     self.ic: Holyiot_18010_Device
     self.ic = self.Block(Holyiot_18010_Device(pin_assigns=ArrayStringExpr()))
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
     self.generator_param(self.reset.is_connected())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.connect(self.pwr, self.ic.pwr)
     self.connect(self.gnd, self.ic.gnd)
@@ -281,7 +281,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interf
     self.connect(self.swd_node, self.ic.swd)
     self.connect(self.reset_node, self.ic.nreset)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.nreset)
@@ -364,7 +364,7 @@ class Mdbt50q_1mv2_Device(Nrf52840_Base, InternalSubcircuit, JlcPart):
 
 
 class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.usb_inner = self.Port(UsbHostPort.empty(), [Input])
     self.usb_outer = self.Port(UsbDevicePort.empty(), [Output])
@@ -379,7 +379,7 @@ class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
 class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfaces, IoControllerWithSwdTargetConnector,
                    IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
   """Wrapper around the Mdbt50q_1mv2 that includes the reference schematic"""
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
     self.ic: Mdbt50q_1mv2_Device
     self.ic = self.Block(Mdbt50q_1mv2_Device(pin_assigns=ArrayStringExpr()))  # defined in generator to mix in SWO/TDI
@@ -400,7 +400,7 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfa
     ) as imp:
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     if self.get(self.reset.is_connected()):
@@ -482,7 +482,7 @@ class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, I
         'Vbus': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.gnd.init_from(Ground())

@@ -38,14 +38,14 @@ class Bh1750_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 class Bh1750(LightSensor, Block):
     """16-bit ambient light sensor, 1-65535 lx"""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Bh1750_Device())
         self.pwr = self.Export(self.ic.vcc, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()  # capacitors from shuttle board example
         self.vcc_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vcc)
         self.dvi_res = self.Block(Resistor(1*kOhm(tol=0.05)))

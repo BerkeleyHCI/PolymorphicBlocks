@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 
 from ..electronics_model import *
 from .Categories import *
@@ -41,11 +41,11 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
     return {'B': self.base, 'C': self.collector, 'E': self.emitter}
 
   @staticmethod
-  def Npn(*args, **kwargs) -> 'Bjt':
+  def Npn(*args: Any, **kwargs: Any) -> 'Bjt':
     return Bjt(*args, **kwargs, channel='NPN')
 
   @staticmethod
-  def Pnp(*args, **kwargs) -> 'Bjt':
+  def Pnp(*args: Any, **kwargs: Any) -> 'Bjt':
     return Bjt(*args, **kwargs, channel='PNP')
 
   def __init__(self, collector_voltage: RangeLike, collector_current: RangeLike, *,
@@ -68,7 +68,7 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
     self.actual_power_rating = self.Parameter(RangeExpr())
     self.actual_gain = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -90,7 +90,7 @@ class TableBjt(PartsTableSelector, Bjt):
   POWER_RATING = PartsTableColumn(Range)
   CHANNEL = PartsTableColumn(str)  # either 'PNP' or 'NPN'
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.collector_voltage, self.collector_current, self.gain, self.power, self.channel)
 

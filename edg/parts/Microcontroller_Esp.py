@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..abstract_parts import *
 from .PassiveConnector_Header import PinHeader254
 from .PassiveConnector_TagConnect import TagConnect
@@ -22,7 +24,7 @@ class EspProgrammingAutoReset(BlockInterfaceMixin[EspProgrammingHeader]):
   """Mixin for ESP programming header with auto-reset and auto-boot pins.
   By default, these are required to be connected (since it doesn't make sense to instantiate
   this without connecting the additional pins to the micro), but can be disabled with parameters."""
-  def __init__(self, *args, require_auto_reset: BoolLike = True, **kwargs) -> None:
+  def __init__(self, *args: Any, require_auto_reset: BoolLike = True, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
 
     self.en = self.Port(DigitalSource.empty(), optional=True)  # effectively a reset pin
@@ -86,7 +88,7 @@ class HasEspProgramming(IoController, GeneratorBlock):
     self.program_en_node = self.connect()
     self.program_boot_node = self.connect()
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     programming = self.get(self.programming)
 
@@ -115,7 +117,7 @@ class HasEspProgramming(IoController, GeneratorBlock):
 
 class EspAutoProgram(Interface, KiCadSchematicBlock):
   """Auto-programming circuit for the ESP series, to drive the target EN (reset) and BOOT (e.g., IO0) pins."""
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dtr = self.Port(DigitalSink.empty())
     self.rts = self.Port(DigitalSink.empty())
@@ -123,7 +125,7 @@ class EspAutoProgram(Interface, KiCadSchematicBlock):
     self.en = self.Port(DigitalSource.empty())
     self.boot = self.Port(DigitalSource.empty())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     signal_voltage = self.dtr.link().voltage.hull(self.rts.link().voltage)
     signal_thresholds = self.dtr.link().output_thresholds.hull(self.rts.link().output_thresholds)

@@ -7,7 +7,7 @@ from .Array import Vector
 from .ArrayExpr import ArrayExpr, ArrayBoolExpr, ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr
 from .Binding import InitParamBinding
 from .Blocks import BlockElaborationState
-from .HdlUserExceptions import BlockDefinitionError
+from .HdlUserExceptions import BlockDefinitionError, EdgTypeError
 from .IdentityDict import IdentityDict
 from .Core import non_library, SubElementDict
 from .ConstraintExpr import ConstraintExpr, BoolExpr, IntExpr, FloatExpr, RangeExpr, StringExpr
@@ -119,7 +119,7 @@ class MultipackBlock(Block):
   implement the application circuit, containing sub-blocks for both the decoupling cap and the chip) and the
   packing definition (specific to this class - but does not contribute to the block implementation).
   """
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self._packed_blocks: SubElementDict[PackedBlockTypes] = self.manager.new_dict((Block, PackedBlockArray))
     # TODO should these be defined in terms of Refs?
@@ -140,9 +140,9 @@ class MultipackBlock(Block):
       tpe_cls = tpe.__class__
 
     if not issubclass(tpe_cls, (Block, PackedBlockArray)):
-      raise TypeError(f"param to PackedPart(...) must be Block, got {tpe} of type {type(tpe)}")
+      raise EdgTypeError(f"PackedPart(...) param", tpe, Block)
     if self._elaboration_state != BlockElaborationState.init:
-      raise BlockDefinitionError(self, "can only define multipack in init")
+      raise BlockDefinitionError(type(self), "can only define multipack in init")
 
     elt = tpe._bind(self)  # TODO: does this actually need to be bound?
     self._packed_blocks.register(elt)
@@ -155,7 +155,7 @@ class MultipackBlock(Block):
   def packed_connect(self, exterior_port: BasePort, packed_port: PackedPortTypes) -> None:
     """Defines a packing rule specified as a virtual connection between an exterior port and a PackedBlock port."""
     if self._elaboration_state != BlockElaborationState.init:
-      raise BlockDefinitionError(self, "can only define multipack in init")
+      raise BlockDefinitionError(type(self), "can only define multipack in init")
     if isinstance(packed_port, Port):
       assert type(exterior_port) == type(packed_port), "packed_connect ports must be of the same type"
       block_parent = packed_port._block_parent()
@@ -190,7 +190,7 @@ class MultipackBlock(Block):
     """Defines a packing rule assigning my parameter from a PackedBlock parameter.
     IMPORTANT: for packed arrays, no ordering on elements is guaranteed, and must be treated as an unordered set."""
     if self._elaboration_state != BlockElaborationState.init:
-      raise BlockDefinitionError(self, "can only define multipack in init")
+      raise BlockDefinitionError(type(self), "can only define multipack in init")
     if isinstance(packed_param, ConstraintExpr):
       assert type(self_param) == type(packed_param), "packed_assign parameters must be of the same type"
       block_parent = packed_param._context
@@ -236,7 +236,7 @@ class MultipackBlock(Block):
     Only direct parameter-to-parameter assignment allowed, even for packed block arrays,
     """
     if self._elaboration_state != BlockElaborationState.init:
-      raise BlockDefinitionError(self, "can only define multipack in init")
+      raise BlockDefinitionError(type(self), "can only define multipack in init")
     if isinstance(packed_param, ConstraintExpr):
       assert type(packed_param) == type(self_param), "unpacked_assign parameters must be of the same type"
       block_parent = packed_param._context

@@ -1,11 +1,11 @@
-from typing import Optional, Union
+from typing import Optional, Union, Any
 
 from ..abstract_parts import *
 
 
 class Cr2032(Battery, FootprintBlock):
-  def __init__(self, voltage: RangeLike = (2.0, 3.0)*Volt, *args,
-               actual_voltage: RangeLike = (2.0, 3.0)*Volt, **kwargs):
+  def __init__(self, voltage: RangeLike = (2.0, 3.0)*Volt, *args: Any,
+               actual_voltage: RangeLike = (2.0, 3.0)*Volt, **kwargs: Any) -> None:
     super().__init__(voltage, *args, **kwargs)
     self.pwr.init_from(VoltageSource(
       voltage_out=self.gnd.link().voltage + actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
@@ -13,7 +13,7 @@ class Cr2032(Battery, FootprintBlock):
     ))
     self.gnd.init_from(Ground())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_capacity, (210, 210)*mAmp)  # TODO bounds of a few CR2032 cells; should be A*h
@@ -29,8 +29,8 @@ class Cr2032(Battery, FootprintBlock):
 
 
 class Li18650(Battery, FootprintBlock):
-  def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args,
-               actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs):
+  def __init__(self, voltage: RangeLike = (2.5, 4.2)*Volt, *args: Any,
+               actual_voltage: RangeLike = (2.5, 4.2)*Volt, **kwargs: Any) -> None:
     super().__init__(voltage, *args, **kwargs)
     self.pwr.init_from(VoltageSource(
       voltage_out=self.gnd.link().voltage + actual_voltage,
@@ -38,7 +38,7 @@ class Li18650(Battery, FootprintBlock):
     ))
     self.gnd.init_from(Ground())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_capacity, (2, 3.6)*Amp)  # TODO should be A*h
@@ -55,8 +55,8 @@ class Li18650(Battery, FootprintBlock):
 
 class AaBattery(Battery, FootprintBlock):
   """AA battery holder supporting alkaline and rechargeable chemistries."""
-  def __init__(self, voltage: RangeLike = (1.0, 1.6)*Volt, *args,
-               actual_voltage: RangeLike = (1.0, 1.6)*Volt, **kwargs):
+  def __init__(self, voltage: RangeLike = (1.0, 1.6)*Volt, *args: Any,
+               actual_voltage: RangeLike = (1.0, 1.6)*Volt, **kwargs: Any) -> None:
     super().__init__(voltage, *args, **kwargs)
     self.gnd.init_from(Ground())
     self.pwr.init_from(VoltageSource(
@@ -64,7 +64,7 @@ class AaBattery(Battery, FootprintBlock):
       current_limits=(0, 1)*Amp,
     ))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.assign(self.actual_capacity, (2, 3)*Amp)  # TODO should be A*h
@@ -87,7 +87,7 @@ class AaBatteryStack(Battery, GeneratorBlock):
         self.cell_actual_voltage = self.ArgParameter(cell_actual_voltage)
         self.generator_param(self.count)
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         prev_cell: Optional[AaBattery] = None
         prev_capacity_min: Union[FloatExpr, float] = float('inf')

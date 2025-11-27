@@ -14,7 +14,7 @@ from .Range import Range
 
 
 class SampleElementBinding(Binding):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
 
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:  # element should be returned by the containing ConstraintExpr
@@ -76,7 +76,7 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
     else:
       raise TypeError(f"unknown ConstraintExpr type for wrapped param {elt}")
 
-  def __init__(self, initializer=None):
+  def __init__(self: SelfType, initializer: Optional[Union[SelfType, ArrayCastableType]]=None) -> None:
     super().__init__(initializer)
     self._elt_sample: ArrayEltType = self._elt_type()._new_bind(SampleElementBinding())
 

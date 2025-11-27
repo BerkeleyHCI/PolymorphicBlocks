@@ -6,9 +6,9 @@ from ..electronics_model import *
 @non_library
 class WithCrystalGenerator(IoController, GeneratorBlock):
   """A Block generator mixin that checks if a crystal oscillator is needed, and if so generates it."""
-  DEFAULT_CRYSTAL_FREQUENCY: Range
+  DEFAULT_CRYSTAL_FREQUENCY: RangeLike
 
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.xtal_node = self.connect()  # connect this internal node to the microcontroller; this may be empty
 
@@ -17,7 +17,7 @@ class WithCrystalGenerator(IoController, GeneratorBlock):
     Called within generate, has access to generator params."""
     return False
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self._crystal_required():
       self.crystal = self.Block(OscillatorReference(self.DEFAULT_CRYSTAL_FREQUENCY))

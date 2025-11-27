@@ -2,7 +2,7 @@ from ..abstract_parts import *
 
 
 class Iso1050dub_Device(InternalSubcircuit, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     # Table 6.3, recommended operating conditions
     self.vcc1 = self.Port(VoltageSink(
@@ -28,7 +28,7 @@ class Iso1050dub_Device(InternalSubcircuit, FootprintBlock):
       current_draw=(-4, 4) * mAmp, current_limits=(-70, 70) * mAmp
     )))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOP-8_6.62x9.15mm_P2.54mm',
@@ -49,7 +49,7 @@ class Iso1050dub_Device(InternalSubcircuit, FootprintBlock):
 
 
 class Iso1050dub(IsolatedCanTransceiver):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.ic = self.Block(Iso1050dub_Device())
     self.connect(self.ic.controller, self.controller)

@@ -44,7 +44,7 @@ class Bme680_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class Bme680(TemperatureSensor, HumiditySensor, PressureSensor, GasSensor, DefaultExportBlock):
     """Gas (indoor air quality), pressure, temperature, and humidity sensor.
     Humidity accuracy /-3% RH, pressure noise 0.12 Pa, temperature accuracy +/-0.5 C @ 25C"""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Bme680_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
@@ -52,7 +52,7 @@ class Bme680(TemperatureSensor, HumiditySensor, PressureSensor, GasSensor, Defau
         self.pwr_io = self.Export(self.ic.vddio, default=self.pwr, doc="IO supply voltage")
         self.i2c = self.Export(self.ic.i2c, [InOut])
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()  # capacitors from shuttle board example
         self.vdd_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
         self.vddio_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vddio)

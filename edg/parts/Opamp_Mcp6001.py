@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vcc = self.Port(VoltageSink(
       voltage_limits=(1.8, 6.0)*Volt, current_draw=(50, 170)*uAmp
@@ -25,7 +25,7 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       impedance=300*Ohm(tol=0)  # no tolerance bounds given on datasheet
     ))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23-5',
@@ -46,7 +46,7 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Mcp6001(Opamp):
   """MCP6001 RRO op-amp in SOT-23-5
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.ic = self.Block(Mcp6001_Device())

@@ -6,7 +6,7 @@ from .JlcPart import JlcPart
 class Nano2Fuseholder(Fuse, JlcPart, FootprintBlock):
     """Littelfuse Nano2 / 154 series fuseholder. Generic versions exist as 1808 fuses.
     TODO: generate fuse part numbers from a table, currently this only generates the holder"""
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.footprint(
             'F', 'Fuse:Fuseholder_Littelfuse_Nano2_154x',

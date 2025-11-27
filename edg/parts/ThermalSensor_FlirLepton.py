@@ -87,7 +87,7 @@ class FlirLepton(Sensor, Resettable, Block):
     <50mK (35mK typical) NETD.
     Only the part number for the socket is generated, the sensor (a $100+ part) must be purchased separately.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(FlirLepton_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
@@ -105,7 +105,7 @@ class FlirLepton(Sensor, Resettable, Block):
         self.cci = self.Export(self.ic.cci, doc="I2C-like Command and Control Interface")
         self.vsync = self.Export(self.ic.vsync, optional=True, doc="Optional frame-sync output")
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.vddc_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vddc)

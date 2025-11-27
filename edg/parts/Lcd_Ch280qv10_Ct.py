@@ -107,7 +107,7 @@ class Ch280qv10_Ct(Lcd, Resettable, Block):
 
         self.ctp_i2c = self.Export(self.device.ctp_i2c, optional=True)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.connect(self.pwr, self.device.vci)
         self.connect(self.reset, self.device.reset, self.device.ctp_res)  # combined LCD and CTP reset

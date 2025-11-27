@@ -5,7 +5,7 @@ from .JlcPart import JlcPart
 
 
 class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vsp = self.Port(VoltageSink(
       voltage_limits=(3, 36)*Volt, current_draw=(200, 300)*uAmp  # over temperature range, typ to max
@@ -35,7 +35,7 @@ class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.rg2 = self.Port(Passive())
     self.rg3 = self.Port(Passive())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
@@ -89,7 +89,7 @@ class Ina826(KiCadImportableBlock, GeneratorBlock):
     self.actual_ratio = self.Parameter(RangeExpr())
     self.generator_param(self.ratio)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     # Datasheet section 8.1: decoupling caps placed as close to device pins as possible

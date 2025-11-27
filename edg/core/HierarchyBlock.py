@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import inspect
 import warnings
+from types import TracebackType
 from typing import *
 
 from .. import edgir
@@ -33,7 +34,7 @@ def init_in_parent(fn: Any) -> Any:
   )
 
   @functools.wraps(fn)
-  def wrapped(self: Block, *args, **kwargs) -> Any:
+  def wrapped(self: Block, *args: Any, **kwargs: Any) -> Any:
     # in concept, the outer deprecation should fire, but it doesn't consistently, so this is added for redundancy
     warnings.warn(
       f"in {fn}, @init_in_parent is no longer needed, the annotation can be removed without replacement",
@@ -83,7 +84,7 @@ class ImplicitScope:
     self.open = True
     return self
 
-  def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+  def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]) -> None:
     self.open = False
 
 
@@ -95,7 +96,7 @@ class ChainConnect:
     self.blocks = blocks
     self.links = links
 
-  def __iter__(self):
+  def __iter__(self) -> Iterable[Union[Tuple[Block, ...], 'ChainConnect']]:
     return iter((tuple(self.blocks), self))
 
 
@@ -116,7 +117,7 @@ class BlockPrototype(Generic[BlockPrototypeType]):
   def _bind(self, parent: Union[BaseBlock, Port]) -> BlockPrototypeType:
     """Binds the prototype into an actual Block instance."""
     Block._next_bind = self._tpe
-    block = self._tpe(*self._args, **self._kwargs)  # type: ignore
+    block = self._tpe(*self._args, **self._kwargs)
     block._bind_in_place(parent)
     return block
 
@@ -188,7 +189,7 @@ class BlockMeta(BaseBlockMeta):
 
         arg_data.append((arg_name, arg_param, param_expr_type))
 
-      def wrapped_init(self, *args, **kwargs) -> None:
+      def wrapped_init(self: Any, *args: Any, **kwargs: Any) -> None:
         if not hasattr(self, '_init_params'):  # used to communicate to the block the added init params
           self._init_params = {}
 
@@ -294,7 +295,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     self._mixins: List['BlockInterfaceMixin'] = []
 
-    self._blocks = self.manager.new_dict(Block)  # type: ignore
+    self._blocks = self.manager.new_dict(Block)
     self._chains = self.manager.new_dict(ChainConnect, anon_prefix='anon_chain')
     self._port_tags = IdentityDict[BasePort, Set[PortTag[Any]]]()
 
@@ -460,13 +461,13 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
       tpe_cls = tpe.__class__
 
     if not (issubclass(tpe_cls, BlockInterfaceMixin) and tpe_cls._is_mixin()):
-      raise TypeError("param to with_mixin must be a BlockInterfaceMixin")
+      raise EdgTypeError("with_mixin param", tpe, BlockInterfaceMixin)
     if isinstance(self, BlockInterfaceMixin) and self._is_mixin():
-      raise BlockDefinitionError(self, "mixins can not have with_mixin")
+      raise BlockDefinitionError(type(self), "mixins can not have with_mixin")
     if (self.__class__, AbstractBlockProperty) not in self._elt_properties:
-      raise BlockDefinitionError(self, "mixins can only be added to abstract classes")
+      raise BlockDefinitionError(type(self), "mixins can only be added to abstract classes")
     if not isinstance(self, tpe_cls._get_mixin_base()):
-      raise TypeError(f"block {self.__class__.__name__} not an instance of mixin base {tpe_cls._get_mixin_base().__name__}")
+      raise EdgTypeError(f"block not an instance of mixin base", self, tpe_cls._get_mixin_base())
     assert self._parent is not None
 
     elt = tpe._bind(self._parent)
@@ -475,7 +476,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     return elt
 
-  def chain(self, *elts: Union[Connection, BasePort, Block]) -> ChainConnect:
+  def chain(self, *elts: Union[Connection, BasePort, Block]) -> Any:
     if not elts:
       return self._chains.register(ChainConnect([], []))
     chain_blocks = []
@@ -486,39 +487,40 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     elif isinstance(elts[0], Block):
       outable_ports = elts[0]._get_ports_by_tag({Output}) + elts[0]._get_ports_by_tag({InOut})
       if len(outable_ports) > 1:
-        raise BlockDefinitionError(elts[0], f"first element 0 to chain {type(elts[0])} does not have exactly one InOut or Output port: {outable_ports}")
+        raise BlockDefinitionError(type(self), f"first element 0 to chain {type(elts[0])} does not have exactly one InOut or Output port: {outable_ports}")
       current_port = outable_ports[0]
       chain_blocks.append(elts[0])
     else:
       raise EdgTypeError(f"first element 0 to chain", elts[0], (BasePort, Connection, Block))
 
     for i, elt in list(enumerate(elts))[1:-1]:
-      elt = assert_cast(elt, (Block), f"middle arguments elts[{i}] to chain")
+      if not isinstance(elt, Block):
+        raise EdgTypeError(f"middle arguments elts[{i}] in chain", elt, Block)
       if elt._get_ports_by_tag({Input}) and elt._get_ports_by_tag({Output}):
         in_ports = elt._get_ports_by_tag({Input})
         out_ports = elt._get_ports_by_tag({Output})
         if len(in_ports) != 1:
-          raise ChainError(self, f"element {i} to chain {type(elt)} does not have exactly one Input port: {in_ports}")
+          raise ChainError(type(self), f"element {i} to chain {type(elt)} does not have exactly one Input port: {in_ports}")
         elif len(out_ports) != 1:
-          raise ChainError(self, f"element {i} to chain {type(elt)} does not have exactly one Output port: {out_ports}")
+          raise ChainError(type(self), f"element {i} to chain {type(elt)} does not have exactly one Output port: {out_ports}")
         chain_links.append(self.connect(current_port, in_ports[0]))
         chain_blocks.append(elt)
         current_port = out_ports[0]
       elif elt._get_ports_by_tag({InOut}):
         ports = elt._get_ports_by_tag({InOut})
         if len(ports) != 1:
-          raise ChainError(self, f"element {i} to chain {type(elt)} does not have exactly one InOut port: {ports}")
+          raise ChainError(type(self), f"element {i} to chain {type(elt)} does not have exactly one InOut port: {ports}")
         self.connect(current_port, ports[0])
         chain_blocks.append(elt)
       else:
-        raise ChainError(self, f"element {i} to chain {type(elt)} has no Input and Output, or InOut ports")
+        raise ChainError(type(self), f"element {i} to chain {type(elt)} has no Input and Output, or InOut ports")
 
     if isinstance(elts[-1], (BasePort, Connection)):
       chain_links.append(self.connect(current_port, elts[-1]))
     elif isinstance(elts[-1], Block):
       inable_ports = elts[-1]._get_ports_by_tag({Input}) + elts[-1]._get_ports_by_tag({InOut})
       if len(inable_ports) != 1:
-        raise BlockDefinitionError(elts[-1], f"last element {len(elts) - 1} to chain {type(elts[-1])} does not have exactly one InOut or Input port: {inable_ports}")
+        raise BlockDefinitionError(type(self), f"last element {len(elts) - 1} to chain {type(elts[-1])} does not have exactly one InOut or Input port: {inable_ports}")
       chain_blocks.append(elts[-1])
       chain_links.append(self.connect(current_port, inable_ports[0]))
     else:
@@ -529,12 +531,11 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   def implicit_connect(self, *implicits: ImplicitConnect) -> ImplicitScope:
     for implicit in implicits:
       if not isinstance(implicit, ImplicitConnect):
-        raise TypeError(f"param to implicit_connect(...) must be ImplicitConnect, "
-                        f"got {implicit} of type {type(implicit)}")
+        raise EdgTypeError(f"implicit_connect(...) param", implicit, ImplicitConnect)
 
     return ImplicitScope(self, implicits)
 
-  def connect(self, *connects: Union[BasePort, Connection], flatten=False) -> Connection:
+  def connect(self, *connects: Union[BasePort, Connection], flatten: bool=False) -> Connection:
     assert not flatten, "flatten only allowed in links"
     return super().connect(*connects, flatten=flatten)
 
@@ -546,7 +547,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   @overload
   def ArgParameter(self, param: IntLike, *, doc: Optional[str] = None) -> IntExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: FloatLike, *, doc: Optional[str] = None) -> FloatExpr: ...  # type: ignore
+  def ArgParameter(self, param: FloatLike, *, doc: Optional[str] = None) -> FloatExpr: ...
   @overload
   def ArgParameter(self, param: RangeLike, *, doc: Optional[str] = None) -> RangeExpr: ...  # type: ignore
   @overload
@@ -556,17 +557,17 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
   @overload
   def ArgParameter(self, param: ArrayIntLike, *, doc: Optional[str] = None) -> ArrayIntExpr: ...  # type: ignore
   @overload
-  def ArgParameter(self, param: ArrayFloatLike, *, doc: Optional[str] = None) -> ArrayFloatExpr: ...  # type: ignore
+  def ArgParameter(self, param: ArrayFloatLike, *, doc: Optional[str] = None) -> ArrayFloatExpr: ...
   @overload
-  def ArgParameter(self, param: ArrayRangeLike, *, doc: Optional[str] = None) -> ArrayRangeExpr: ...  # type: ignore
+  def ArgParameter(self, param: ArrayRangeLike, *, doc: Optional[str] = None) -> ArrayRangeExpr: ...
   @overload
-  def ArgParameter(self, param: ArrayStringLike, *, doc: Optional[str] = None) -> ArrayStringExpr: ...  # type: ignore
+  def ArgParameter(self, param: ArrayStringLike, *, doc: Optional[str] = None) -> ArrayStringExpr: ...
 
   def ArgParameter(self, param: CastableType, *, doc: Optional[str] = None) -> ConstraintExpr[Any, CastableType]:
     """Registers a constructor argument parameter for this Block.
     This doesn't actually do anything, but is needed to help the type system converter the *Like to a *Expr."""
     if not isinstance(param, ConstraintExpr):
-      raise TypeError(f"param to ArgParameter(...) must be ConstraintExpr, got {param} of type {type(param)}")
+      raise EdgTypeError(f"ArgParameter(...) param", param, ConstraintExpr)
     if param.binding is None:
       raise TypeError(f"param to ArgParameter(...) must have binding")
     if not isinstance(param.binding, InitParamBinding):
@@ -583,16 +584,17 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     if not isinstance(tpe, (Port, Vector)):
       raise NotImplementedError("Non-Port (eg, Vector) ports not (yet?) supported")
     for tag in tags:
-      assert_cast(tag, PortTag, "tag for Port(...)")
+      if not isinstance(tag, PortTag):
+        raise EdgTypeError(f"Port(...) tag", tag, PortTag)
 
     port = super().Port(tpe, optional=optional, doc=doc)
 
     self._port_tags[port] = set(tags)
-    return port  # type: ignore
+    return port
 
   ExportType = TypeVar('ExportType', bound=BasePort)
   def Export(self, port: ExportType, tags: Iterable[PortTag]=[], *, optional: bool = False, doc: Optional[str] = None,
-             _connect = True) -> ExportType:
+             _connect: bool = True) -> ExportType:
     """Exports a port of a child block, but does not propagate tags or optional."""
     assert port._is_bound(), "can only export bound type"
     port_parent = port._block_parent()
@@ -621,7 +623,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     if self._elaboration_state not in \
             [BlockElaborationState.init, BlockElaborationState.contents, BlockElaborationState.generate]:
-      raise BlockDefinitionError(self, "can only define blocks in init, contents, or generate")
+      raise BlockDefinitionError(type(self), "can only define blocks in init, contents, or generate")
 
     if isinstance(tpe, BlockPrototype):
       tpe_cls = tpe._tpe
@@ -629,7 +631,7 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
       tpe_cls = tpe.__class__
 
     if not issubclass(tpe_cls, Block):
-      raise TypeError(f"param to Block(...) must be Block, got {tpe_cls}")
+      raise EdgTypeError(f"Block(...) param", tpe_cls, Block)
     if issubclass(tpe_cls, BlockInterfaceMixin) and tpe_cls._is_mixin():
       raise TypeError("param to Block(...) must not be BlockInterfaceMixin")
     if issubclass(tpe_cls, DesignTop):

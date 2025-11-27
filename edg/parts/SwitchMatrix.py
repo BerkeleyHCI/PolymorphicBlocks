@@ -118,7 +118,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
     self.ncols = self.ArgParameter(ncols)
     self.generator_param(self.nrows, self.ncols)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     row_ports = {}
     for row in range(self.get(self.nrows)):
@@ -127,7 +127,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
     self.sw = ElementDict[Switch]()
     self.d = ElementDict[Diode]()
     for col in range(self.get(self.ncols)):
-      col_port = cast(DigitalSink, self.cols.append_elt(DigitalSink.empty(), str(col)))
+      col_port = self.cols.append_elt(DigitalSink.empty(), str(col))
       col_port_model = DigitalSink()  # ideal, negligible current draw (assumed) and thresholds checked at other side
       for (row, row_port) in row_ports.items():
         sw = self.sw[f"{col},{row}"] = self.Block(Switch(

@@ -1,5 +1,5 @@
 from math import pi, sqrt
-from typing import Tuple
+from typing import Tuple, Any
 
 from ..electronics_model import *
 from .AbstractCapacitor import Capacitor
@@ -13,11 +13,11 @@ class DiscreteRfWarning(BlockInterfaceMixin[Block]):
     parasitics of real devices.
     The discrete RF library components / generators are also experimental and subject to change.
     They also do not adhere to the tolerance conventions of non-RF parts."""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.discrete_rf_warning = self.Parameter(BoolExpr(False))
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.require(self.discrete_rf_warning == False, "warning: discrete RF circuit, design may be tricky")
 

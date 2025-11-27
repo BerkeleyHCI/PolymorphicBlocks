@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 class BaseBlockMeta(type):
   """Adds a hook to set the post-init elaboration state"""
-  def __call__(cls, *args, **kwargs):
+  def __call__(cls, *args: Any, **kwargs: Any) -> Any:
     block_context = builder.get_enclosing_block()
     obj = super().__call__(*args, **kwargs)
     if isinstance(obj, BaseBlock):  # ignore block prototypes
@@ -81,7 +81,7 @@ class Connection():
     else:
       return None
 
-  def add_ports(self, ports: Iterable[BasePort]):
+  def add_ports(self, ports: Iterable[BasePort]) -> None:
     from .HierarchyBlock import Block
     from .Link import Link
 
@@ -211,7 +211,7 @@ BaseBlockEdgirType = TypeVar('BaseBlockEdgirType', bound=edgir.BlockLikeTypes)
 
 class DescriptionStringElts():
   @abstractmethod
-  def set_elt_proto(self, pb, ref_map=None):
+  def set_elt_proto(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     raise NotImplementedError
 
 
@@ -219,7 +219,7 @@ class DescriptionString():
   def __init__(self, *elts: Union[str, DescriptionStringElts]):
     self.elts = elts
 
-  def add_to_proto(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType):
+  def add_to_proto(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     for elt in self.elts:
       if isinstance(elt, DescriptionStringElts):
         elt.set_elt_proto(pb, ref_map)
@@ -234,7 +234,7 @@ class DescriptionString():
       self.ref = ref
       self.units = units
 
-    def set_elt_proto(self, pb, ref_map=None):
+    def set_elt_proto(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
       new_phrase = pb.description.add()
       new_phrase.param.path.CopyFrom(ref_map[self.ref])
       new_phrase.param.unit = self.units
@@ -258,18 +258,17 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
 
     self.description: Optional[DescriptionString] = None   # additional string field to be displayed as part of the tooltip for blocks
 
-    # TODO delete type ignore after https://github.com/python/mypy/issues/5374
-    self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)  # type: ignore
+    self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)
     self._param_docs = IdentityDict[ConstraintExpr, str]()
 
-    self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)  # type: ignore
+    self._ports: SubElementDict[BasePort] = self.manager.new_dict(BasePort)
     self._required_ports = IdentitySet[BasePort]()
     self._port_docs = IdentityDict[BasePort, str]()
 
     self._connects = self.manager.new_dict(Connection, anon_prefix='anon_link')
     self._connects_by_port = IdentityDict[BasePort, Connection]()  # port -> connection
     self._connect_delegateds = IdentityDict[Connection, List[Connection]]()  # for net joins, joined connect -> prior connects
-    self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')  # type: ignore
+    self._constraints: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr, anon_prefix='anon_constr')
 
     self._name = StringExpr()._bind(NameBinding(self))
 
@@ -294,7 +293,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
     return self._name
 
   """Overload this method to define the contents of this block"""
-  def contents(self):
+  def contents(self) -> None:
     pass
 
   @abstractmethod
@@ -403,7 +402,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
     for name, port in self._ports.items():
       port._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
 
-  def _bind_in_place(self, parent: Union[BaseBlock, Port]):
+  def _bind_in_place(self, parent: Union[BaseBlock, Port]) -> None:
     self._parent = parent
 
   def _check_constraint(self, constraint: ConstraintExpr) -> None:
@@ -435,7 +434,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
   def require(self, constraint: BoolLike, name: Optional[str] = None, *, unchecked: bool=False) -> BoolExpr:
     constraint_typed = BoolExpr._to_expr_type(constraint)
     if not isinstance(name, (str, type(None))):
-      raise TypeError(f"name to constrain(...) must be str or None, got {name} of type {type(name)}")
+      raise EdgTypeError(f"require(...) name", name, (str, None))
 
     if not unchecked:  # before we have const prop need to manually set nested params
       self._check_constraint(constraint_typed)
@@ -452,9 +451,9 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
              value: Union[ConstraintExpr[ConstrType, Any], ConstrType],
              name: Optional[str] = None) -> AssignExpr:
     if not isinstance(target, ConstraintExpr):
-      raise TypeError(f"target to assign(...) must be ConstraintExpr, got {target} of type {type(target)}")
+      raise EdgTypeError(f"assign(...) target", target, ConstraintExpr)
     if not isinstance(name, (str, type(None))):
-      raise TypeError(f"name to constrain(...) must be str or None, got {name} of type {type(name)}")
+      raise EdgTypeError(f"assign(...) name", name, (str, None))
 
     self._check_constraint(target)
     expr_value = target._to_expr_type(value)
@@ -472,10 +471,10 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
   def Port(self, tpe: T, *, optional: bool = False, doc: Optional[str] = None) -> T:
     """Registers a port for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
-      raise BlockDefinitionError(self, "can't call Port(...) outside __init__",
+      raise BlockDefinitionError(type(self), "can't call Port(...) outside __init__",
                                  "call Port(...) inside __init__ only, and remember to call super().__init__()")
     if not isinstance(tpe, BasePort):
-      raise TypeError(f"param to Port(...) must be Port, got {tpe} of type {type(tpe)}")
+      raise EdgTypeError(f"param to Port(...)", tpe, BasePort)
 
     elt = tpe._bind(self)
     self._ports.register(elt)
@@ -492,10 +491,10 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
   def Parameter(self, tpe: ConstraintType, *, doc: Optional[str] = None) -> ConstraintType:
     """Registers a parameter for this Block"""
     if self._elaboration_state != BlockElaborationState.init:
-      raise BlockDefinitionError(self, "can't call Parameter(...) outside __init__",
+      raise BlockDefinitionError(type(self), "can't call Parameter(...) outside __init__",
                                  "call Parameter(...) inside __init__ only, and remember to call super().__init__()")
     if not isinstance(tpe, ConstraintExpr):
-      raise TypeError(f"param to Parameter(...) must be ConstraintExpr, got {tpe} of type {type(tpe)}")
+      raise EdgTypeError(f"param to Parameter(...)", tpe, ConstraintExpr)
 
     elt = tpe._bind(ParamBinding(self))
     self._parameters.register(elt)
@@ -507,10 +506,10 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
 
     return elt
 
-  def connect(self, *connects: Union[BasePort, Connection], flatten=False) -> Connection:
+  def connect(self, *connects: Union[BasePort, Connection], flatten: bool=False) -> Connection:
     for connect in connects:
       if not isinstance(connect, (BasePort, Connection)):
-        raise TypeError(f"param to connect(...) must be BasePort or Connection, got {connect}")
+        raise EdgTypeError(f"param to connect(...)", connect, (BasePort, Connection))
 
     connects_ports = [connect for connect in connects if isinstance(connect, BasePort)]
     connects_connects = [connect for connect in connects if isinstance(connect, Connection)]

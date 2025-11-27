@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -44,7 +46,7 @@ class ResistorArrayStandardFootprint(StandardFootprint['ResistorArray']):
 
 
 class ResistorArrayElement(Resistor):  # to avoid an abstract part error
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__(resistance=RangeExpr(), power=RangeExpr())
 
 
@@ -71,7 +73,7 @@ class ResistorArray(MultipackDevice, MultipackBlock, HasStandardFootprint):
     self.unpacked_assign(self.elements.params(lambda x: x.actual_resistance), self.actual_resistance)
     self.unpacked_assign(self.elements.params(lambda x: x.actual_power_rating), self.actual_power_rating)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(  # TODO better support for array typed
@@ -90,7 +92,7 @@ class TableResistorArray(PartsTableSelector, ResistorArray):
   POWER_RATING = PartsTableColumn(Range)
   COUNT = PartsTableColumn(int)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.generator_param(self.count, self.a.requested(), self.b.requested(), self.resistances, self.powers)
 

@@ -15,7 +15,7 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     # Additional ports (on top of BaseIoController)
@@ -265,15 +265,15 @@ class UsbDpPullUp(InternalSubcircuit, Block):
 class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoControllerUsb, Microcontroller,
                     IoControllerWithSwdTargetConnector, WithCrystalGenerator, IoControllerPowerRequired,
                     BaseIoControllerExportable, GeneratorBlock):
-  DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device  # type: ignore
+  DEVICE: Type[Stm32f103Base_Device] = Stm32f103Base_Device
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
     self.ic: Stm32f103Base_Device
     self.generator_param(self.reset.is_connected())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     with self.implicit_connect(
@@ -295,7 +295,7 @@ class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoContro
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     if self.get(self.reset.is_connected()):

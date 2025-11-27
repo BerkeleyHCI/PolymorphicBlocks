@@ -7,13 +7,14 @@ from .OpampCircuits import Amplifier
 
 
 class AnalogSourceDummy(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.port = self.Port(AnalogSource(), [InOut])
 
 
 class TestOpamp(Opamp):
-  def contents(self):
+  def contents(self) -> None:
+    super().contents()
     self.pwr.init_from(VoltageSink())
     self.gnd.init_from(Ground())
     self.inp.init_from(AnalogSink())
@@ -22,13 +23,13 @@ class TestOpamp(Opamp):
 
 
 class TestResistor(Resistor):
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.assign(self.actual_resistance, self.resistance)
 
 
 class AmplifierTestTop(Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.dut = self.Block(Amplifier(
       amplification=Range.from_tolerance(2, 0.05)

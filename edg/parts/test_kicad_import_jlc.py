@@ -17,7 +17,7 @@ class JlcBlackboxBlock(KiCadSchematicBlock):
 
 
 class JlcImportBlackboxTestCase(unittest.TestCase):
-    def test_import_blackbox(self):
+    def test_import_blackbox(self) -> None:
         # the elaborate_toplevel wrapper is needed since the inner block uses array ports
         pb = Builder.builder.elaborate_toplevel(JlcBlackboxBlock())
         constraints = list(map(lambda pair: pair.value, pb.constraints))

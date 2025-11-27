@@ -1,4 +1,4 @@
-from typing import List, Optional, TypeVar, cast
+from typing import List, Optional, TypeVar, cast, Any
 
 from ..electronics_model import *
 from .IoController import BaseIoController
@@ -12,12 +12,12 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
     The export is also customizable, e.g. if additional subcircuits are needed for some connection.
     Also defines a function for adding additional internal pin assignments.
     The internal device (self.ic) must have been created (e.g., in contents()) before this generate() is called."""
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.ic: BaseIoController
         self.generator_param(self.pin_assigns)
 
-    def contents(self):  # TODO can this be deduplicated w/ BaseIoControllerPinmapGenerator?
+    def contents(self) -> None:  # TODO can this be deduplicated w/ BaseIoControllerPinmapGenerator?
         super().contents()
         for io_port in self._io_ports:  # defined in contents() so subclass __init__ can define additional _io_ports
             if isinstance(io_port, Vector):
@@ -48,12 +48,12 @@ class BaseIoControllerExportable(BaseIoController, GeneratorBlock):
         Called within generate (has access to generator params), and after modifications from make_export_*."""
         return assigns
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         inner_ios_by_type = {self._type_of_io(io_port): io_port for io_port in self.ic._io_ports}
 
         # mutated in-place during _make_export_*
-        assigns_raw = self.get(self.pin_assigns).copy()  # type: ignore
+        assigns_raw = self.get(self.pin_assigns).copy()
         assigns = cast(List[Optional[str]], assigns_raw)
         assign_index_by_name = {assign.split('=')[0]: i for i, assign in enumerate(assigns_raw)}
 

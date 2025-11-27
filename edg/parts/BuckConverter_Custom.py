@@ -1,14 +1,16 @@
+from typing import Any
+
 from ..abstract_parts import *
 
 
 class CustomSyncBuckConverterIndependent(DiscreteBoostConverter):
     """Custom synchronous buck with two PWM inputs for the high and low side gate drivers.
     Because of the MOSFET body diode, will probably be fine-ish if the low side FET is not driven."""
-    def __init__(self, *args,
+    def __init__(self, *args: Any,
                  frequency: RangeLike = (100, 1000)*kHertz,
                  ripple_ratio: RangeLike = (0.2, 0.5),
                  voltage_drop: RangeLike = (0, 1)*Volt, rds_on: RangeLike = (0, 1.0)*Ohm,
-                 **kwargs):
+                 **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.pwr_logic = self.Port(VoltageSink.empty())
@@ -20,7 +22,7 @@ class CustomSyncBuckConverterIndependent(DiscreteBoostConverter):
         self.voltage_drop = self.ArgParameter(voltage_drop)
         self.rds_on = self.ArgParameter(rds_on)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         self.assign(self.actual_frequency, self.frequency)

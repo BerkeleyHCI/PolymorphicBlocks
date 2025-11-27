@@ -4,7 +4,7 @@ from .JlcPart import JlcPart
 
 class Bwipx_1_001e(RfConnectorTestPoint, UflConnector, JlcPart, FootprintBlock):
     """BAT WIRELESS IPEX connector"""
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.footprint(
             'J', 'Connector_Coaxial:U.FL_Hirose_U.FL-R-SMT-1_Vertical',
@@ -22,7 +22,7 @@ class Bwipx_1_001e(RfConnectorTestPoint, UflConnector, JlcPart, FootprintBlock):
 
 class Amphenol901143(SmaFConnector, FootprintBlock):
     """PTH right-angle SMA-F connector"""
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.footprint(
             'J', 'Connector_Coaxial:SMA_Amphenol_901-143_Horizontal',

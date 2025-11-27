@@ -55,7 +55,7 @@ class CompiledDesign:
       localpath = edgir.LocalPathList(path)
     return self._values.get(localpath.SerializeToString(), None)
 
-  def append_values(self, values: List[Tuple[edgir.LocalPath, edgir.ValueLit]]):
+  def append_values(self, values: List[Tuple[edgir.LocalPath, edgir.ValueLit]]) -> None:
     """Append solved values to this design, such as from a refinement pass"""
     for (value_path, value_value) in values:
       value_path_str = value_path.SerializeToString()
@@ -67,7 +67,7 @@ class ScalaCompilerInstance:
   kDevRelpath = "../../compiler/target/scala-2.13/edg-compiler-assembly-0.1-SNAPSHOT.jar"
   kPrecompiledRelpath = "resources/edg-compiler-precompiled.jar"
 
-  def __init__(self):
+  def __init__(self) -> None:
     self.process: Optional[Any] = None
 
   def check_started(self) -> None:
@@ -140,7 +140,7 @@ class ScalaCompilerInstance:
       raise CompilerCheckError(f"error during compilation:\n{design.errors_str()}")
     return design
 
-  def close(self):
+  def close(self) -> None:
     assert self.process is not None
     self.process.stdin.close()
     self.process.stdout.close()

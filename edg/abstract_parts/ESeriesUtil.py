@@ -239,8 +239,7 @@ class ESeriesRatioUtil(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
 
     # if it gets here, the search queue has been exhausted without a result
     assert best is not None
-    # mypy 0.950 breaks without the type: ignore
-    raise self._no_result_error(best[0], best[1], target)  # type: ignore
+    raise self._no_result_error(best[0], best[1], target)
 
   def _get_next_decades(self, decade: Tuple[int, int], target: ESeriesRatioValueType) -> List[Tuple[int, int]]:
     """If the target was not found scanning the entire decade, this is called to determine next decades to search.

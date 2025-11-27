@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Optional, NamedTuple
+from typing import Optional, NamedTuple, Any, Callable
 
 from deprecated import deprecated
 
@@ -29,7 +29,7 @@ class VoltageRegulator(PowerConditioner):
     self.pwr_out = self.Port(VoltageSource.empty(), [Output])
     self.gnd = self.Port(Ground.empty(), [Common])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -52,11 +52,11 @@ class VoltageRegulatorEnableWrapper(Resettable, VoltageRegulator, GeneratorBlock
     """Returns the inner device's reset pin, to be connected in the generator.
     Only called within a generator."""
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.generator_param(self.reset.is_connected())
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self._generator_inner_reset_pin())
@@ -81,7 +81,7 @@ class VoltageReference(LinearRegulator):
 
 class IdealLinearRegulator(Resettable, LinearRegulator, IdealModel):
   """Ideal linear regulator, draws the output current and produces spec output voltage limited by input voltage"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.upper()))
     self.gnd.init_from(Ground())
@@ -148,10 +148,10 @@ class SwitchingVoltageRegulator(VoltageRegulator):
       ripple_ratio_range.lower() * output_current_range.upper(),
       upper_ripple_limit))
 
-  def __init__(self, *args,
+  def __init__(self, *args: Any,
                input_ripple_limit: FloatLike = 75 * mVolt,
                output_ripple_limit: FloatLike = 25 * mVolt,
-               **kwargs) -> None:
+               **kwargs: Any) -> None:
     """https://www.ti.com/lit/an/slta055/slta055.pdf: recommends 75mV for maximum peak-peak ripple voltage
     """
     super().__init__(*args, **kwargs)
@@ -165,7 +165,7 @@ class SwitchingVoltageRegulator(VoltageRegulator):
 @abstract_block_default(lambda: IdealBuckConverter)
 class BuckConverter(SwitchingVoltageRegulator):
   """Step-down switching converter"""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.require(self.pwr_out.voltage_out.upper() <= self.pwr_in.voltage_limits.upper())
 
@@ -178,7 +178,7 @@ class DiscreteBuckConverter(BuckConverter):
 class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
   """Ideal buck converter producing the spec output voltage (buck-boost) limited by input voltage
   and drawing input current from conversation of power"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     effective_output_voltage = self.output_voltage.intersect((0, self.pwr_in.link().voltage.upper()))
     self.gnd.init_from(Ground())
@@ -304,7 +304,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 
   @staticmethod
   @ExperimentalUserFnPartsTable.user_fn([float, float, float])
-  def _buck_inductor_filter(max_avg_current: float, ripple_scale: float, min_ripple: float):
+  def _buck_inductor_filter(max_avg_current: float, ripple_scale: float, min_ripple: float) -> Callable[[PartsTableRow], bool]:
     """Applies further filtering to inductors using the trade-off between inductance and peak-peak current.
     max_avg_current is the maximum average current (not accounting for ripple) seen by the inductor
     ripple_scale is the scaling factor from 1/L to ripple
@@ -316,7 +316,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     return filter_fn
 
   @staticmethod
-  def _ilim_expr(inductor_ilim: RangeExpr, sw_ilim: RangeExpr, inductor_iripple: RangeExpr):
+  def _ilim_expr(inductor_ilim: RangeExpr, sw_ilim: RangeExpr, inductor_iripple: RangeExpr) -> RangeExpr:
     """Returns the average current limit, as an expression, derived from the inductor and switch (instantaneous)
     current limits."""
     iout_limit_inductor = inductor_ilim - (inductor_iripple.upper() / 2)
@@ -360,7 +360,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
     self.actual_inductor_current_peak = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -415,7 +415,7 @@ class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
 @abstract_block_default(lambda: IdealBoostConverter)
 class BoostConverter(SwitchingVoltageRegulator):
   """Step-up switching converter"""
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, *args: Any, **kwargs: Any) -> None:
     super().__init__(*args, **kwargs)
     self.require(self.pwr_out.voltage_out.lower() >= self.pwr_in.voltage_limits.lower())
 
@@ -428,7 +428,7 @@ class DiscreteBoostConverter(BoostConverter):
 class IdealBoostConverter(Resettable, DiscreteBoostConverter, IdealModel):
   """Ideal boost converter producing the spec output voltage (buck-boost) limited by input voltage
   and drawing input current from conversation of power"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     effective_output_voltage = self.output_voltage.intersect((self.pwr_in.link().voltage.lower(), float('inf')))
     self.gnd.init_from(Ground())
@@ -553,7 +553,7 @@ class BoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
     self.actual_inductor_current_peak = self.Parameter(RangeExpr())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(
@@ -620,7 +620,7 @@ class DiscreteBuckBoostConverter(BuckBoostConverter):
 class IdealVoltageRegulator(Resettable, DiscreteBuckBoostConverter, IdealModel):
   """Ideal buck-boost / general DC-DC converter producing the spec output voltage
   and drawing input current from conversation of power"""
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.gnd.init_from(Ground())
     self.pwr_in.init_from(VoltageSink(
@@ -675,7 +675,7 @@ class BuckBoostConverterPowerPath(InternalSubcircuit, GeneratorBlock):
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
     self.actual_inductor_current_peak = self.Parameter(RangeExpr())  # inductor current accounting for ripple (upper is peak)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.description = DescriptionString(

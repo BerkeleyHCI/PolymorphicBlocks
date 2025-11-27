@@ -15,7 +15,7 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
   RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
 
     # Ports with shared references
@@ -321,13 +321,13 @@ class Lpc1549_64_Device(Lpc1549Base_Device):
 
 
 class Lpc1549SwdPull(InternalSubcircuit, Block):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.gnd = self.Port(Ground.empty(), [Common])
     self.swd = self.Port(SwdPullPort(DigitalSource.empty()), [InOut])
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.swdio = self.Block(PullupResistor((10, 100) * kOhm(tol=0.05))).connected(self.pwr, self.swd.swdio)
     self.swclk = self.Block(PulldownResistor((10, 100) * kOhm(tol=0.05))).connected(self.gnd, self.swd.swclk)
@@ -337,15 +337,15 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
 class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, IoControllerCan,
                   IoControllerUsb, Microcontroller, IoControllerWithSwdTargetConnector, WithCrystalGenerator,
                   IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
-  DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device  # type: ignore
+  DEVICE: Type[Lpc1549Base_Device] = Lpc1549Base_Device
   DEFAULT_CRYSTAL_FREQUENCY = 12*MHertz(tol=0.005)
 
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs: Any) -> None:
     super().__init__(**kwargs)
     self.ic: Lpc1549Base_Device
     self.generator_param(self.reset.is_connected())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     with self.implicit_connect(
@@ -376,7 +376,7 @@ class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, 
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
 
     if self.get(self.reset.is_connected()):

@@ -178,7 +178,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.2, rowSpacing=0.2) {{
     self.ncols = self.ArgParameter(ncols)
     self.generator_param(self.nrows, self.ncols)
 
-  def generate(self):
+  def generate(self) -> None:
     super().generate()
     nrows = self.get(self.nrows)
     ncols = self.get(self.ncols)
@@ -190,7 +190,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.2, rowSpacing=0.2) {{
     # internally, this uses passive ports on all the components, and only casts to a DigitalSink at the end
     # which is necessary to account for that not all LEDs can be simultaneously on
     passive_ios: Dict[int, Passive] = {}  # keeps the passive-side port for each boundary IO
-    def connect_passive_io(index: int, io: Passive):
+    def connect_passive_io(index: int, io: Passive) -> None:
       # connects a Passive-typed IO to the index, handling the first and subsequent case
       if index in passive_ios:
         self.connect(passive_ios[index], io)  # subsequent case, actually do the connection

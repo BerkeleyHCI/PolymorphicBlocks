@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..electronics_model import *
 from .Resettable import Resettable
 from .AbstractResistor import Resistor, SeriesPowerResistor
@@ -15,7 +17,7 @@ from .DummyDevices import ForcedVoltageCurrentDraw
 class HalfBridge(PowerConditioner, Block):
     """Half bridge circuit with logic-level inputs and current draw calculated from the output node.
     Two power rails: logic power (which can be used to power gate drivers), and the power rail."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.gnd = self.Port(Ground.empty())
@@ -27,7 +29,7 @@ class HalfBridge(PowerConditioner, Block):
 
 @abstract_block_default(lambda: FetHalfBridgeIndependent)
 class HalfBridgeIndependent(BlockInterfaceMixin[HalfBridge]):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.low_ctl = self.Port(DigitalSink.empty())
         self.high_ctl = self.Port(DigitalSink.empty())
@@ -35,7 +37,7 @@ class HalfBridgeIndependent(BlockInterfaceMixin[HalfBridge]):
 
 @abstract_block_default(lambda: FetHalfBridgePwmReset)
 class HalfBridgePwm(BlockInterfaceMixin[HalfBridge]):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.pwm_ctl = self.Port(DigitalSink.empty())
 
@@ -52,7 +54,7 @@ class FetHalfBridge(HalfBridge):
 
         self.actual_current_limits = self.Parameter(RangeExpr())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         self.driver = self.Block(HalfBridgeDriver(has_boot_diode=True))
         self.connect(self.driver.gnd, self.gnd)
@@ -105,7 +107,7 @@ class FetHalfBridge(HalfBridge):
 
 
 class FetHalfBridgeIndependent(FetHalfBridge, HalfBridgeIndependent):
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
         driver_mixin = self.driver.with_mixin(HalfBridgeDriverIndependent())
         self.connect(self.low_ctl, driver_mixin.low_in)
@@ -113,11 +115,11 @@ class FetHalfBridgeIndependent(FetHalfBridge, HalfBridgeIndependent):
 
 
 class FetHalfBridgePwmReset(FetHalfBridge, HalfBridgePwm, Resettable, GeneratorBlock):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.generator_param(self.reset.is_connected())
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
         self.connect(self.pwm_ctl, self.driver.with_mixin(HalfBridgeDriverPwm()).pwm_in)
         if self.get(self.reset.is_connected()):
@@ -176,7 +178,7 @@ class RampLimiter(KiCadSchematicBlock):
         self.max_rds = self.ArgParameter(max_rds)
         self._cdiv_vgs_factor = self.ArgParameter(_cdiv_vgs_factor)
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         pwr_voltage = self.pwr_in.link().voltage

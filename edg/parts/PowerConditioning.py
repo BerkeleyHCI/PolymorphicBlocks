@@ -10,7 +10,7 @@ class Supercap(DiscreteComponent, FootprintBlock):  # TODO actually model superc
     self.pos = self.Port(VoltageSink())
     self.neg = self.Port(Ground())
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'C', 'Capacitor_THT:CP_Radial_D14.0mm_P5.00mm',  # actually 13.5
@@ -203,7 +203,7 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
     self.diode_voltage_drop = self.ArgParameter(diode_voltage_drop)
     self.fet_rds_on = self.ArgParameter(fet_rds_on)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     # FET behavior requires the high priority path to be higher voltage
@@ -269,7 +269,7 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
     self.gate_resistor = self.ArgParameter(gate_resistor)
     self.rds_on = self.ArgParameter(rds_on)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     output_current_draw = self.pwr_out.link().current_drawn
     self.fet = self.Block(Fet.PFet(
@@ -315,7 +315,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
     self.r2_val = self.ArgParameter(r2_val)
     self.rds_on = self.ArgParameter(rds_on)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.r1 = self.Block(Resistor(resistance=self.r1_val))
     self.r2 = self.Block(Resistor(resistance=self.r2_val))
@@ -383,7 +383,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
     self.amp_resistance = self.ArgParameter(amp_resistance)
     self.diode_drop = self.ArgParameter(diode_drop)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     control_voltage = self.btn_in.link().voltage.hull(self.gnd.link().voltage)
     pwr_voltage = self.pwr_out.link().voltage.hull(self.gnd.link().voltage)
@@ -455,7 +455,7 @@ class SoftPowerSwitch(PowerSwitch, Block):
     self.btn_out = self.Export(self.pwr_gate.btn_out)
     self.control = self.Export(self.pwr_gate.control)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),

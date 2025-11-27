@@ -3,7 +3,7 @@ from .JlcPart import JlcPart
 
 
 class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
-  def __init__(self):
+  def __init__(self) -> None:
     super().__init__()
     self.vcc = self.Port(VoltageSink(
       voltage_limits=(2.7, 5.5)*Volt, current_draw=(80, 170)*uAmp  # quiescent current
@@ -23,7 +23,7 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
       current_limits=(-40, 40)*mAmp,  # output short circuit current
     ))
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
     self.footprint(
       'U', 'Package_TO_SOT_SMD:SOT-23-5',
@@ -44,7 +44,7 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class Lmv321(Opamp):
   """RRO op-amp in SOT-23-5.
   """
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.ic = self.Block(Lmv321_Device())

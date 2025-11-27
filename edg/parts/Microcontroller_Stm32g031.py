@@ -15,7 +15,7 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
     SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
     RESOURCE_PIN_REMAP: Dict[str, str]  # resource name in base -> pin name
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         # Additional ports (on top of BaseIoController)
@@ -199,14 +199,14 @@ class Stm32g031_G_Device(Stm32g031Base_Device):
 @abstract_block
 class Stm32g031Base(Resettable, IoControllerI2cTarget, Microcontroller, IoControllerWithSwdTargetConnector,
                     IoControllerPowerRequired, BaseIoControllerExportable, GeneratorBlock):
-    DEVICE: Type[Stm32g031Base_Device] = Stm32g031Base_Device  # type: ignore
+    DEVICE: Type[Stm32g031Base_Device] = Stm32g031Base_Device
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.ic: Stm32g031Base_Device
         self.generator_param(self.reset.is_connected())
 
-    def contents(self):
+    def contents(self) -> None:
         super().contents()
 
         with self.implicit_connect(
@@ -221,7 +221,7 @@ class Stm32g031Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
             self.pwr_cap0 = imp.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2)))
             self.pwr_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
 
-    def generate(self):
+    def generate(self) -> None:
         super().generate()
 
         if self.get(self.reset.is_connected()):

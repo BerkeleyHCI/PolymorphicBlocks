@@ -130,48 +130,48 @@ class KiCadBlockOverlappedPort(KiCadSchematicBlock):
 
 
 class KiCadImportProtoTestCase(unittest.TestCase):
-    def test_block(self):
+    def test_block(self) -> None:
         self.check_connectivity(KiCadBlock)
 
-    def test_block_aliased_pin_name(self):
+    def test_block_aliased_pin_name(self) -> None:
         self.check_connectivity(KiCadBlockAliasedPinName)
 
-    def test_hierarchy_label_block(self):
+    def test_hierarchy_label_block(self) -> None:
         self.check_connectivity(KiCadHierarchyLabelBlock)
 
-    def test_tunnel_block(self):
+    def test_tunnel_block(self) -> None:
         self.check_connectivity(KiCadTunnelBlock)
 
-    def test_inline_block(self):
+    def test_inline_block(self) -> None:
         self.check_connectivity(KiCadInlineBlock)
 
-    def test_inline_badmultiline(self):
+    def test_inline_badmultiline(self) -> None:
         with self.assertRaises(AssertionError):
             self.check_connectivity(KiCadInlineBlockBadMultiline)
 
-    def test_inline_vars_block(self):
+    def test_inline_vars_block(self) -> None:
         self.check_connectivity(KiCadInlineVarsBlock)
 
-    def test_codeparts_block(self):
+    def test_codeparts_block(self) -> None:
         self.check_connectivity(KiCadCodePartsBock)
 
-    def test_node_block(self):
+    def test_node_block(self) -> None:
         self.check_connectivity(KiCadNodeBlock)
 
-    def test_power_block(self):
+    def test_power_block(self) -> None:
         self.check_connectivity(KiCadPowerBlock)
 
-    def test_modified_symbol_block(self):
+    def test_modified_symbol_block(self) -> None:
         self.check_connectivity(KiCadModifiedSymbolBlock)
 
-    def test_aliased_port(self):
+    def test_aliased_port(self) -> None:
         with self.assertRaises(AssertionError):
             self.check_connectivity(KiCadBlockAliasedPort)
 
-    def test_overlapped_port(self):
+    def test_overlapped_port(self) -> None:
         self.check_connectivity(KiCadBlockOverlappedPort)
 
-    def check_connectivity(self, cls: Type[KiCadSchematicBlock]):
+    def check_connectivity(self, cls: Type[KiCadSchematicBlock]) -> None:
         """Checks the connectivity of the generated proto, since the examples have similar structures."""
         pb = cls()._elaborated_def_to_proto()
         constraints = list(map(lambda pair: pair.value, pb.constraints))

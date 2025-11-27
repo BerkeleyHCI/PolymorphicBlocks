@@ -19,7 +19,7 @@ class PmosHighSideSwitch(PowerSwitch):
     self.frequency = self.ArgParameter(frequency)
     self.max_rds = self.ArgParameter(max_rds)
 
-  def contents(self):
+  def contents(self) -> None:
     super().contents()
 
     self.drv = self.Block(SwitchFet.PFet(

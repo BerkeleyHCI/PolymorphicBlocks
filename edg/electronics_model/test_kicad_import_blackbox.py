@@ -28,7 +28,7 @@ class KiCadBlackboxBlockAutoadapt(KiCadSchematicBlock):
 
 
 class KiCadImportBlackboxTestCase(unittest.TestCase):
-    def test_import_blackbox(self):
+    def test_import_blackbox(self) -> None:
         # the elaborate_toplevel wrapper is needed since the inner block uses array ports
         pb = Builder.builder.elaborate_toplevel(KiCadBlackboxBlock())
         constraints = list(map(lambda pair: pair.value, pb.constraints))
@@ -81,7 +81,7 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
         self.assertIn(edgir.AssignLit(['SYM1', 'kicad_refdes_prefix'], 'SYM'), constraints)
         self.assertIn(edgir.AssignLit(['SYM1', 'kicad_footprint'], 'Symbol:Symbol_ESD-Logo_CopperTop'), constraints)
 
-    def test_import_blackbox_autoadapt(self):
+    def test_import_blackbox_autoadapt(self) -> None:
         # the elaborate_toplevel wrapper is needed since the inner block uses array ports
         pb = Builder.builder.elaborate_toplevel(KiCadBlackboxBlockAutoadapt())
         constraints = list(map(lambda pair: pair.value, pb.constraints))
