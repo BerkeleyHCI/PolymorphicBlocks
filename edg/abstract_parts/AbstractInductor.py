@@ -168,6 +168,7 @@ class TableInductor(PartsTableSelector, Inductor):
     self.assign(self.actual_resistance_dc, row[self.DC_RESISTANCE])
 
   @classmethod
+  @override
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return row[cls.DC_RESISTANCE].center()
 

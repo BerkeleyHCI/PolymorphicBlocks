@@ -202,6 +202,7 @@ class TableCapacitor(PartsTableSelector, Capacitor):
     return row[self.CAPACITANCE].fuzzy_in(self.get(self.capacitance))
 
   @classmethod
+  @override
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return (ESeriesUtil.series_of(row[cls.NOMINAL_CAPACITANCE], default=ESeriesUtil.SERIES_MAX + 1),
             super()._row_sort_by(row))

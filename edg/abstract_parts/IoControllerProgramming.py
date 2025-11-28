@@ -34,6 +34,7 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
     self.connect(self.swd.pwr, self.pwr)
     self.connect(self.swd_node, self.swd.swd)
 
+  @override
   def _inner_pin_assigns(self, assigns: List[str]) -> List[str]:
     assigns = super()._inner_pin_assigns(assigns)
     if self.get(self.swd_swo_pin) != 'NC':

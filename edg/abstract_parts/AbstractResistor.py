@@ -127,6 +127,7 @@ class TableResistor(PartsTableSelector, Resistor):
     self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
 
   @classmethod
+  @override
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return (ESeriesUtil.series_of(row[cls.RESISTANCE].center(), default=ESeriesUtil.SERIES_MAX + 1),
             super()._row_sort_by(row))

@@ -29,6 +29,7 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
     self.parallel_impedance = parallel_impedance  # parallel impedance into the opamp negative pin
 
   @staticmethod
+  @override
   def from_resistors(r1_range: Range, r2_range: Range) -> 'DividerValues':
     """This uses a slight rewriting of terms to avoid duplication of terms and not double-count tolerances:
     ratio = R2 / (R1 + R2) => divide  through by R2 / R2
@@ -39,10 +40,12 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
       1 / (1 / r1_range + 1 / r2_range)
     )
 
+  @override
   def initial_test_decades(self) -> Tuple[int, int]:
     decade = ceil(log10(self.parallel_impedance.center()))
     return decade, decade
 
+  @override
   def distance_to(self, spec: 'DividerValues') -> List[float]:
     if self.ratio in spec.ratio and self.parallel_impedance in spec.parallel_impedance:
       return []
@@ -52,6 +55,7 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
         abs(self.parallel_impedance.center() - spec.parallel_impedance.center())
       ]
 
+  @override
   def intersects(self, spec: 'DividerValues') -> bool:
     return self.ratio.intersects(spec.ratio) and \
            self.parallel_impedance.intersects(spec.parallel_impedance)
