@@ -480,7 +480,7 @@ class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, I
     else:
       return self.pwr_out
 
-    @override
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
