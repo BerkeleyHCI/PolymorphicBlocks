@@ -31,7 +31,7 @@ packages = ["edg.edgir", "edg.edgrpc", "edg.core", "edg.hdl_server", "edg.electr
 edg = ["core/resources/edg-compiler-precompiled.jar", "electronics_model/resources/kicad_footprints.json", "abstract_parts/resources/*.kicad_sch", "parts/resources/Pruned_JLCPCB SMT Parts Library(20220419).csv", "parts/resources/*.kicad_sch"]
 
 [tool.mypy]
-# enable_error_code = ["explicit-override"]
+enable_error_code = ["explicit-override"]
 strict = true
 
 implicit_reexport = true
