@@ -298,6 +298,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
   def contents(self) -> None:
     pass
 
+  @override
   def _def_to_proto(self) -> edgir.BlockLikeTypes:
     raise NotImplementedError
 
@@ -334,7 +335,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
     pb.self_class.target.name = self._get_def_name()
 
-    direct_bases, indirect_bases = self._get_bases_of(BaseBlock)  # type: ignore
+    direct_bases, indirect_bases = self._get_bases_of(BaseBlock)
     for cls in direct_bases:
       pb.superclasses.add().target.name = cls._static_def_name()
     for cls in indirect_bases:
