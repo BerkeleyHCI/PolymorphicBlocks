@@ -1,5 +1,7 @@
 from typing import List, Tuple, Dict, Set, Optional
 
+from typing_extensions import override
+
 from .. import edgir
 from ..core import CompiledDesign, TransformUtil
 from ..core.BaseRefinementPass import BaseRefinementPass

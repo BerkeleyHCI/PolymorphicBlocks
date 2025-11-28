@@ -80,5 +80,6 @@ class Ltc3429(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
 
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.nshdn

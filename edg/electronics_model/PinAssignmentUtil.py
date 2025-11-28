@@ -2,6 +2,8 @@ from typing import *
 from abc import abstractmethod
 from itertools import chain
 
+from typing_extensions import override
+
 from ..core import *
 from .VoltagePorts import CircuitPort
 
@@ -50,9 +52,11 @@ class AnyPinAssign(AssignablePinGroup):
     self.all_ports = list(ports)
     self.pins = set(str(pin) for pin in pins)
 
+  @override
   def get_assignable_ports(self) -> Iterable[Port]:
     return self.all_ports
 
+  @override
   def assign(self, port: Port, preassigns: IdentityDict[CircuitPort, PinName], assigned: Set[ConcretePinName]) ->\
       Optional[AssignedPins]:
     assignments: Dict[ConcretePinName, CircuitPort] = {}
@@ -91,9 +95,11 @@ class PeripheralPinAssign(AssignablePinGroup):
       [process_assignable_pin(leaf_pins) for leaf_pins in pin_group] for pin_group in pin_groups
     ]
 
+  @override
   def get_assignable_ports(self) -> Iterable[Port]:
     return self.all_ports
 
+  @override
   def assign(self, port: Port, preassigns: IdentityDict[CircuitPort, PinName], assigned: Set[ConcretePinName]) -> \
       Optional[AssignedPins]:
     leaf_name_ports = list(leaf_circuit_ports("", port))

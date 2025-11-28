@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Generic, Any, Type, Optional, Union, Iterable, Sequence, List
 
-from typing_extensions import TypeVar
+from typing_extensions import TypeVar, override
 
 from .Binding import EqOp, ArrayBinding, UnarySetOpBinding, BinarySetOpBinding
 from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, RangeExpr, RangeLike, \
@@ -18,9 +18,11 @@ class SampleElementBinding(Binding):
   def __init__(self) -> None:
     super().__init__()
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:  # element should be returned by the containing ConstraintExpr
     return []
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     raise ValueError  # can't be used directly
 
@@ -40,11 +42,13 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
   _elt_type: Type[ArrayEltType]
 
   @classmethod
+  @override
   def _from_lit(cls, pb: edgir.ValueLit) -> ArrayWrappedType:
     assert pb.HasField('array')
     return [cls._elt_type._from_lit(sub_pb) for sub_pb in pb.array.elts]  # type: ignore
 
   @classmethod
+  @override
   def _to_expr_type(cls: Type[SelfType], input: ArrayCastableType) -> SelfType:
     if isinstance(input, cls):
       assert input._is_bound()
@@ -56,6 +60,7 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
       raise TypeError(f"arg to {cls.__name__} must be ArrayCastableType, got {input} of type {type(input)}")
 
   @classmethod
+  @override
   def _decl_to_proto(cls) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.array.CopyFrom(cls._elt_type._decl_to_proto())

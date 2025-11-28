@@ -24,9 +24,11 @@ class MapExtractBinding(Binding):
     self.container = container
     self.elt = elt
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return [self.container]
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     contained_map = self.container._get_elt_sample()._create_ref_map(edgir.LocalPath())
 
@@ -41,9 +43,11 @@ class FlattenBinding(Binding):
     super().__init__()
     self.elts = elts
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return [self.elts]
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.unary_set.op = edgir.UnarySetExpr.Op.FLATTEN
@@ -78,18 +82,23 @@ class DerivedVector(BaseVector, Generic[VectorType]):
     assert base._parent is not None  # to satisfy type checker, though kind of duplicates _is_bound
     self._bind_in_place(base._parent)
 
+  @override
   def _type_of(self) -> Hashable:
     return (self.target._type_of(),)
 
+  @override
   def _get_elt_sample(self) -> BasePort:
     return self.target
 
+  @override
   def _instance_to_proto(self) -> edgir.PortLike:
     raise RuntimeError()  # this doesn't generate into a library element
 
+  @override
   def _def_to_proto(self) -> edgir.PortTypes:
     raise RuntimeError()  # this doesn't generate into a library element
 
+  @override
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
     raise RuntimeError()  # should never happen
 
@@ -135,6 +144,7 @@ class Vector(BaseVector, Generic[VectorType]):
     return self._elts.items()
 
   # unlike most other LibraryElement types, the names are stored in _elts and _allocates
+  @override
   def _name_of_child(self, subelt: Any, context: Any, allow_unknown: bool = False) -> str:
     from .HierarchyBlock import Block
     block_parent = self._block_parent()
@@ -165,12 +175,15 @@ class Vector(BaseVector, Generic[VectorType]):
     else:
       raise ValueError(f"unknown context of array")
 
+  @override
   def _get_elt_sample(self) -> BasePort:
     return self._elt_sample
 
+  @override
   def _get_def_name(self) -> str:
     raise RuntimeError()  # this doesn't generate into a library element
 
+  @override
   def _instance_to_proto(self) -> edgir.PortLike:
     pb = edgir.PortLike()
     pb.array.self_class.target.name = self._elt_sample._get_def_name()
@@ -180,9 +193,11 @@ class Vector(BaseVector, Generic[VectorType]):
         edgir.add_pair(pb.array.ports.ports, name).CopyFrom(elt._instance_to_proto())
     return pb
 
+  @override
   def _def_to_proto(self) -> edgir.PortTypes:
     raise RuntimeError()  # this doesn't generate into a library element
 
+  @override
   def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
     super()._build_ref_map(ref_map, prefix)
     ref_map[self._length] = edgir.localpath_concat(prefix, edgir.LENGTH)
@@ -193,6 +208,7 @@ class Vector(BaseVector, Generic[VectorType]):
     for suggested_name, request in self._requests:
       request._build_ref_map(ref_map, edgir.localpath_concat(prefix, edgir.Allocate(suggested_name)))
 
+  @override
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
     if self._elts is not None:
       return list(itertools.chain(*[
@@ -284,6 +300,7 @@ class Vector(BaseVector, Generic[VectorType]):
   def requested(self) -> ArrayStringExpr:
     return self._requested
 
+  @override
   def _type_of(self) -> Hashable:
     return (self._elt_sample._type_of(),)
 

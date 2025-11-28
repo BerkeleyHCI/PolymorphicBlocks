@@ -21,7 +21,6 @@ class KiCadBlackboxBase(InternalBlock):
 
     @classmethod
     @abstractmethod
-    @override
     def block_from_symbol(cls: Type[BlackboxSelfType], symbol: KiCadSymbol, lib: KiCadLibSymbol) -> \
             Tuple[BlackboxSelfType, Callable[[BlackboxSelfType], Mapping[str, BasePort]]]:
         """Creates a blackbox block from a schematic symbol. Returns the block template and a function that given

@@ -198,6 +198,7 @@ class LibraryElement(Refable):
     self.manager = SubElementManager()
     self.manager_ignored: Set[str] = set(['_parent'])
 
+  @override
   def __setattr__(self, name: str, value: Any) -> None:
     if hasattr(self, 'manager_ignored') and name not in self.manager_ignored:
       self.manager.add_element(name, value)
