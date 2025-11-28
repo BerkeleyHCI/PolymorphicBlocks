@@ -20,7 +20,7 @@ dependencies = [
     "protobuf >= 3.20.0",
     "sexpdata==0.0.3",
     "Deprecated",
-    "typing_extensions",
+    "typing_extensions >= 4.4.0",
 ]
 requires-python = ">=3.9"
 
@@ -35,7 +35,6 @@ edg = ["core/resources/edg-compiler-precompiled.jar", "electronics_model/resourc
 strict = true
 
 implicit_reexport = true
-disallow_any_generics = false
 
 [project.urls]
 Homepage = "https://github.com/BerkeleyHCI/PolymorphicBlocks"

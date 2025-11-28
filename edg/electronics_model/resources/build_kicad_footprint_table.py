@@ -63,7 +63,7 @@ def polygon_lines_area(lines: List[Line]) -> Optional[float]:
     return abs(sum) / 2
 
 
-def sexp_list_find_all(container: list, key: str) -> List[List[Any]]:
+def sexp_list_find_all(container: list[Any], key: str) -> List[List[Any]]:
     """Given a sexp list, return all elements which are lists where the first element is a symbol of key."""
     matching_elts = []
     for elt in container:
@@ -123,7 +123,7 @@ class FootprintData(BaseModel):
     bbox: Tuple[float, float, float, float]  # [x_min, y_min, x_max, y_max]
 
 
-class FootprintJson(RootModel):  # script relpath imports are weird so this is duplicated here
+class FootprintJson(RootModel[Dict[str, FootprintData]]):  # script relpath imports are weird so this is duplicated here
     root: dict[str, FootprintData]  # footprint name -> data
 
 

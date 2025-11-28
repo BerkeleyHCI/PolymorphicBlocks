@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-from typing import *
+from typing import Generic, Any, Type, Optional, Union, Iterable, Sequence, List
 
-from .. import edgir
+from typing_extensions import TypeVar
+
 from .Binding import EqOp, ArrayBinding, UnarySetOpBinding, BinarySetOpBinding
 from .ConstraintExpr import ConstraintExpr, IntLike, FloatExpr, FloatLike, RangeExpr, RangeLike, \
   BoolExpr, BoolLike, StringLike, \
   NumericOp, BoolOp, RangeSetOp, Binding, StringExpr, IntExpr
 from .Core import Refable
-from .IdentityDict import IdentityDict
 from .Ports import BasePort
 from .Range import Range
+from .. import edgir
 
 
 class SampleElementBinding(Binding):
@@ -25,9 +26,9 @@ class SampleElementBinding(Binding):
 
 
 SelfType = TypeVar('SelfType', bound='ArrayExpr')
-ArrayEltType = TypeVar('ArrayEltType', bound=ConstraintExpr, covariant=True)
-ArrayWrappedType = TypeVar('ArrayWrappedType', covariant=True)
-ArrayCastableType = TypeVar('ArrayCastableType', contravariant=True)
+ArrayEltType = TypeVar('ArrayEltType', bound=ConstraintExpr, covariant=True, default=ConstraintExpr)
+ArrayWrappedType = TypeVar('ArrayWrappedType', covariant=True, default=Any)
+ArrayCastableType = TypeVar('ArrayCastableType', contravariant=True, default=Any)
 class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
                 Generic[ArrayEltType, ArrayWrappedType, ArrayCastableType]):
   """An Array-valued ConstraintExpr (a variable-sized list of ConstraintExpr).

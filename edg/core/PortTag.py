@@ -4,9 +4,8 @@ from typing import *
 from .Ports import BasePort, Port
 
 
-PortType = TypeVar('PortType', bound=BasePort, covariant=True)  # TODO this should just be Port, but current needed to work w/ BaseBlock.Port type hierarchy
-class PortTag(Generic[PortType]):
-  def __init__(self, tpe: Type[PortType]):
+class PortTag:
+  def __init__(self, tpe: Type[BasePort]) -> None:
     self.port_tpe = tpe
 
 

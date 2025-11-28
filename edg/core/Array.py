@@ -2,21 +2,24 @@ from __future__ import annotations
 
 import itertools
 from abc import abstractmethod
-from typing import *
-from deprecated import deprecated
+from typing import Generic, Any, Tuple, Type, Optional, Union, Iterable, overload, Hashable, List, \
+  ItemsView, Callable, Dict
 
-from .HdlUserExceptions import EdgTypeError
-from .. import edgir
+from deprecated import deprecated
+from typing_extensions import TypeVar
+
+from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr
 from .Binding import LengthBinding, AllocatedBinding
 from .Builder import builder
 from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, StringExpr, IntExpr, Binding
 from .Core import Refable, non_library
+from .HdlUserExceptions import EdgTypeError
 from .Ports import BaseContainerPort, BasePort, Port
-from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr
+from .. import edgir
 
 
 class MapExtractBinding(Binding):
-  def __init__(self, container: Vector, elt: ConstraintExpr):
+  def __init__(self, container: BaseVector, elt: ConstraintExpr):
     super().__init__()
     self.container = container
     self.elt = elt
@@ -25,7 +28,7 @@ class MapExtractBinding(Binding):
     return [self.container]
 
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
-    contained_map = self.container._elt_sample._create_ref_map(edgir.LocalPath())
+    contained_map = self.container._get_elt_sample()._create_ref_map(edgir.LocalPath())
 
     pb = edgir.ValueExpr()
     pb.map_extract.container.ref.CopyFrom(ref_map[self.container])  # TODO support arbitrary refs
@@ -56,7 +59,7 @@ class BaseVector(BaseContainerPort):
 
 
 # A 'fake'/'intermediate'/'view' vector object used as a return in map_extract operations.
-VectorType = TypeVar('VectorType', bound='Port')
+VectorType = TypeVar('VectorType', bound=Port, default=Port)
 @non_library
 class DerivedVector(BaseVector, Generic[VectorType]):
   # TODO: Library types need to be removed from the type hierarchy, because this does not generate into a library elt
@@ -105,7 +108,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert not tpe._is_bound()
     self._tpe = tpe
     self._elt_sample = tpe._bind(self)
-    self._elts: Optional[OrderedDict[str, VectorType]] = None  # concrete elements, for boundary ports
+    self._elts: Optional[Dict[str, VectorType]] = None  # concrete elements, for boundary ports
     self._elt_next_index = 0
     self._requests: List[Tuple[Optional[str], BasePort]] = []  # used to track request / request_vector for ref_map
 
@@ -205,7 +208,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
 
     if self._elts is None:
-      self._elts = OrderedDict()
+      self._elts = {}
 
   def append_elt(self, tpe: VectorType, suggested_name: Optional[str] = None) -> VectorType:
     """Appends a new element of this array (if this is not to be a dynamically-sized array - including
@@ -219,7 +222,7 @@ class Vector(BaseVector, Generic[VectorType]):
     assert type(tpe) is type(self._tpe), f"created elts {type(tpe)} must be same type as array type {type(self._tpe)}"
 
     if self._elts is None:
-      self._elts = OrderedDict()
+      self._elts = {}
     if suggested_name is None:
       suggested_name = str(self._elt_next_index)
       self._elt_next_index += 1
@@ -310,14 +313,14 @@ class Vector(BaseVector, Generic[VectorType]):
   @overload
   def map_extract(self, selector: Callable[[VectorType], ExtractPortType]) -> DerivedVector[ExtractPortType]: ...
 
-  def map_extract(self, selector: Callable[[VectorType], Union[ConstraintExpr, BasePort]]) -> Union[ArrayExpr, DerivedVector]:
+  def map_extract(self, selector: Callable[[VectorType], Union[ConstraintExpr, ExtractPortType]]) -> Union[ArrayExpr, DerivedVector[ExtractPortType]]:
     param = selector(self._elt_sample)
     if isinstance(param, ConstraintExpr):  # TODO check that returned type is child
       return ArrayExpr.array_of_elt(param)._bind(MapExtractBinding(self, param))
-    elif isinstance(param, BasePort):
+    elif isinstance(param, Port):
       return DerivedVector(self, param)
     else:
-      raise EdgTypeError(f"selector return", param, (ConstraintExpr, BasePort))
+      raise EdgTypeError(f"selector return", param, (ConstraintExpr, Port))
 
   def any_connected(self) -> BoolExpr:
     return self.any(lambda port: port.is_connected())

@@ -1,6 +1,5 @@
 import itertools
-from abc import ABCMeta
-from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dict, Set, Any
+from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dict, Set, Any, Mapping
 
 from ..electronics_model import *
 
@@ -37,7 +36,7 @@ class PinMappable(Block):
     self.assign(self.actual_pin_assigns, allocation_strs)
 
 
-class BasePinMapResource(metaclass=ABCMeta):
+class BasePinMapResource:
   """Abstract base class for a resource definition for the pin mapping utility. Because these are so intertwined with
   the actual pin mapper, these are just named data structures - the logic for handling these is in the pin mapper."""
 
@@ -142,10 +141,10 @@ class AllocatedResource(NamedTuple):
 # Defines a way to convert port models into related types for use in bundles, for example from the
 # DigitalBidir in pin definitions to the DigitalSource/Sink used by the Uart bundle.
 # Specified as entries of target port type: (source port type, conversion function)
-PortTransformsType = Dict[Type, Tuple[Type, Callable]]
+PortTransformsType = Mapping[Type[Port], Tuple[Type[Port], Callable[[Port], Port]]]
 DefaultPortTransforms: PortTransformsType = {
-  DigitalSource: (DigitalBidir, DigitalSource.from_bidir),
-  DigitalSink: (DigitalBidir, DigitalSink.from_bidir),
+  DigitalSource: (DigitalBidir, DigitalSource.from_bidir),  # type: ignore
+  DigitalSink: (DigitalBidir, DigitalSink.from_bidir),  # type: ignore
 }
 
 

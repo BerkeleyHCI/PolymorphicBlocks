@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from typing import Generic, Any, TYPE_CHECKING, Tuple, Type, Optional, Union, Iterable, overload, NoReturn
+
 from deprecated import deprecated
 from itertools import chain
-from typing import *
+from typing_extensions import TypeVar
 
 from .Binding import Binding, ParamBinding, BoolLiteralBinding, IntLiteralBinding, \
   FloatLiteralBinding, RangeLiteralBinding, StringLiteralBinding, RangeBuilderBinding, \
@@ -11,7 +13,6 @@ from .Binding import Binding, ParamBinding, BoolLiteralBinding, IntLiteralBindin
 from .Binding import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp
 from .Builder import builder
 from .Core import Refable
-from .IdentityDict import IdentityDict
 from .Range import Range
 from .. import edgir
 
@@ -21,8 +22,8 @@ if TYPE_CHECKING:
 
 
 SelfType = TypeVar('SelfType', bound='ConstraintExpr')
-WrappedType = TypeVar('WrappedType', covariant=True)
-CastableType = TypeVar('CastableType', contravariant=True)
+WrappedType = TypeVar('WrappedType', covariant=True, default=Any)
+CastableType = TypeVar('CastableType', contravariant=True, default=Any)
 class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   """Base class for constraint expressions. Basically a container for operations.
   Actual meaning is held in the Binding.
@@ -187,7 +188,7 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
 
 
 NumLikeSelfType = TypeVar('NumLikeSelfType', bound='NumLikeExpr')
-NumLikeCastable = TypeVar('NumLikeCastable')  # should include the self type
+NumLikeCastable = TypeVar('NumLikeCastable', default=Any)  # should include the self type
 class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedType, NumLikeCastable]):
   """Trait for numeric-like expressions, providing common arithmetic operations"""
 

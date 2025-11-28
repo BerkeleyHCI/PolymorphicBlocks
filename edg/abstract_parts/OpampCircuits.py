@@ -36,7 +36,7 @@ class OpampFollower(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock)
     self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"))
 
 
-class AmplifierValues(ESeriesRatioValue):
+class AmplifierValues(ESeriesRatioValue['AmplifierValues']):
   def __init__(self, amplification: Range, parallel_impedance: Range):
     self.amplification = amplification  # amplification factor from in to out
     self.parallel_impedance = parallel_impedance  # parallel impedance into the opamp negative pin
@@ -158,7 +158,7 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
     self.assign(self.actual_amplification, 1 + (self.r1.actual_resistance / self.r2.actual_resistance))
 
 
-class DifferentialValues(ESeriesRatioValue):
+class DifferentialValues(ESeriesRatioValue['DifferentialValues']):
   def __init__(self, ratio: Range, input_impedance: Range):
     self.ratio = ratio  # ratio from difference between inputs to output
     self.input_impedance = input_impedance  # resistance of the input resistor

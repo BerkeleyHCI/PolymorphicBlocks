@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TypeVar, NamedTuple, Optional, Union, List, Tuple, Generic, Callable, overload
+from typing import NamedTuple, Optional, Union, List, Tuple, Generic, Callable, overload
+from typing_extensions import TypeVar
 from deprecated import deprecated
 
 from .Array import Vector
@@ -20,14 +21,14 @@ class PackedBlockAllocate(NamedTuple):
   suggested_name: Optional[str]
 
 
-ArrayPortType = TypeVar('ArrayPortType', bound=Port)
+ArrayPortType = TypeVar('ArrayPortType', covariant=True, bound=Port, default=Port)
 class PackedBlockPortArray(Generic[ArrayPortType]):
   def __init__(self, parent: PackedBlockArray, port: ArrayPortType):
     self.parent = parent
     self.port = port
 
 
-ArrayParamType = TypeVar('ArrayParamType', bound=ConstraintExpr)
+ArrayParamType = TypeVar('ArrayParamType', covariant=True, bound=ConstraintExpr, default=ConstraintExpr)
 class PackedBlockParamArray(Generic[ArrayParamType]):  # an array of parameters from an array of parts
   def __init__(self, parent: PackedBlockArray, param: ArrayParamType):
     self.parent = parent
@@ -39,7 +40,7 @@ class PackedBlockParam(NamedTuple):  # a parameter replicated from an array of b
   param: ConstraintExpr
 
 
-PackedBlockElementType = TypeVar('PackedBlockElementType', bound=Block)
+PackedBlockElementType = TypeVar('PackedBlockElementType', covariant=True, bound=Block, default=Block)
 class PackedBlockArray(Generic[PackedBlockElementType]):
   """A container "block" (for multipack packing only) for an arbitrary-length array of Blocks.
   This is meant to be analogous to Vector (port arrays), though there isn't an use case for this in general
@@ -50,7 +51,7 @@ class PackedBlockArray(Generic[PackedBlockElementType]):
     self._parent: Optional[Block] = None
     self._allocates: List[Tuple[Optional[str], Block]] = []  # outer facing only, to track allocate for ref_map
 
-  def _bind(self, parent: Block) -> PackedBlockArray:
+  def _bind(self, parent: Block) -> PackedBlockArray[PackedBlockElementType]:
     clone = PackedBlockArray(self._tpe)
     clone._parent = parent
     clone._elt_sample = self._tpe._bind(parent)

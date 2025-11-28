@@ -32,7 +32,7 @@ class LinkMeta(BaseBlockMeta):
 
 
 @non_library
-class Link(BaseBlock[edgir.Link], metaclass=LinkMeta):
+class Link(BaseBlock, metaclass=LinkMeta):
   def __init__(self) -> None:
     super().__init__()
     self.parent: Optional[Port] = None
@@ -85,3 +85,6 @@ class Link(BaseBlock[edgir.Link], metaclass=LinkMeta):
           )
 
     return pb
+
+  def _elaborated_def_to_proto(self) -> edgir.Link:
+    return cast(edgir.Link, super()._elaborated_def_to_proto())

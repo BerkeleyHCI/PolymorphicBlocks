@@ -1,8 +1,8 @@
 import itertools
 import math
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from collections import deque
-from typing import Sequence, Optional, TypeVar, Tuple, List, Generic, Type, Union, overload
+from typing import Any, Sequence, Optional, TypeVar, Tuple, List, Generic, Type, Union, overload
 
 from ..electronics_model import *
 
@@ -122,8 +122,8 @@ class ESeriesUtil:
     return cls.VALUE_SERIES.get(cls.round_sig(normalized_value, cls.ROUND_DIGITS), default)
 
 
-ESeriesRatioValueType = TypeVar('ESeriesRatioValueType', bound='ESeriesRatioValue')
-class ESeriesRatioValue(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
+ESeriesRatioValueType = TypeVar('ESeriesRatioValueType', bound='ESeriesRatioValue[Any]')
+class ESeriesRatioValue(Generic[ESeriesRatioValueType]):
   """Abstract base class for the calculated output value for a resistor ... thing.
   Yes, not too descriptive, but example applications are:
   - resistive divider: ratio and impedance
@@ -154,7 +154,7 @@ class ESeriesRatioValue(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
     ...
 
 
-class ESeriesRatioUtil(Generic[ESeriesRatioValueType], metaclass=ABCMeta):
+class ESeriesRatioUtil(Generic[ESeriesRatioValueType]):
   """Base class for an algorithm that searches pairs of E-series numbers
   to get some desired output (eg, ratio and impedance for a resistive divider).
   The output calculations are determined by the value_type class.

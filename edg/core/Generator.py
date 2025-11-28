@@ -52,7 +52,7 @@ class GeneratorBlock(Block):
   # Generator dependency data
   #
   class GeneratorRecord(NamedTuple):
-    fn: Callable
+    fn: Callable[..., None]
     req_params: Tuple[ConstraintExpr, ...]  # all required params for generator to fire
     fn_args: Tuple[ConstraintExpr, ...]  # params to unpack for the generator function
 

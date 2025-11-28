@@ -8,6 +8,8 @@ from .. import edgir
 
 if TYPE_CHECKING:
   from .Blocks import BaseBlock
+  from .Link import Link
+  from .HierarchyBlock import Block
 
 
 class Builder:
@@ -41,14 +43,23 @@ class Builder:
   def get_curr_context(self) -> Optional[BaseBlock]:
     return self.get_enclosing_block()
 
+  @overload
+  def elaborate_toplevel(self, block: Block, *,
+                         is_generator: bool = False,
+                         generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]] = []) -> edgir.HierarchyBlock: ...
+  @overload
+  def elaborate_toplevel(self, block: Link, *,
+                         is_generator: bool = False,
+                         generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]] = []) -> edgir.Link: ...
+
   def elaborate_toplevel(self, block: BaseBlock, *,
                          is_generator: bool = False,
-                         generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]] = []) -> edgir.HierarchyBlock:
+                         generate_values: Iterable[Tuple[edgir.LocalPath, edgir.ValueLit]] = []) -> edgir.BlockLikeTypes:
     try:
       if is_generator:  # TODO this is kind of nasty =(
         from .Generator import GeneratorBlock
         assert isinstance(block, GeneratorBlock)
-        elaborated = block._generated_def_to_proto(generate_values)
+        elaborated: edgir.BlockLikeTypes = block._generated_def_to_proto(generate_values)
       else:  # TODO check is a GeneratorBlock w/o circular imports?
         elaborated = block._elaborated_def_to_proto()
 

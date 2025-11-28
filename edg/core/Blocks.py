@@ -207,8 +207,6 @@ class BlockElaborationState(Enum):
   post_generate = 7
 
 
-BaseBlockEdgirType = TypeVar('BaseBlockEdgirType', bound=edgir.BlockLikeTypes)
-
 class DescriptionStringElts():
   @abstractmethod
   def set_elt_proto(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
@@ -243,7 +241,7 @@ class DescriptionString():
 AbstractBlockProperty = EltPropertiesBase()
 
 @non_library
-class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMeta):
+class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
   """Base block that has ports (IOs), parameters, and constraints between them.
   """
   # __init__ should initialize the object with structural information (parameters, fields)
@@ -297,10 +295,10 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
     pass
 
   @abstractmethod
-  def _def_to_proto(self) -> BaseBlockEdgirType:
+  def _def_to_proto(self) -> edgir.BlockLikeTypes:
     raise NotImplementedError
 
-  def _elaborated_def_to_proto(self) -> BaseBlockEdgirType:
+  def _elaborated_def_to_proto(self) -> edgir.BlockLikeTypes:
     prev_element = builder.push_element(self)
     assert prev_element is None
     try:
@@ -313,7 +311,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
 
     return self._def_to_proto()
 
-  def _populate_def_proto_block_base(self, pb: BaseBlockEdgirType) -> None:
+  def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
     """Populates the structural parts of a block proto: parameters, ports, superclasses"""
     assert self._elaboration_state == BlockElaborationState.post_contents or \
            self._elaboration_state == BlockElaborationState.post_generate
@@ -364,21 +362,21 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
 
     self._populate_metadata(pb.meta, self._metadata, ref_map)
 
-  def _populate_def_proto_port_init(self, pb: BaseBlockEdgirType, ref_map: Refable.RefMapType) -> None:
+  def _populate_def_proto_port_init(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     for (name, port) in self._ports.items():
       for (param, path, initializer) in port._get_initializers([name]):
         edgir.add_pair(pb.constraints, f"(init){'.'.join(path)}").CopyFrom(
           AssignBinding.make_assign(param, param._to_expr_type(initializer), ref_map)
         )
 
-  def _populate_def_proto_param_init(self, pb: BaseBlockEdgirType, ref_map: Refable.RefMapType) -> None:
+  def _populate_def_proto_param_init(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     for (name, param) in self._parameters.items():
       if param.initializer is not None:
         edgir.add_pair(pb.constraints, f'(init){name}').CopyFrom(
           AssignBinding.make_assign(param, param.initializer, ref_map)
         )
 
-  def _populate_def_proto_block_contents(self, pb: BaseBlockEdgirType, ref_map: Refable.RefMapType) -> None:
+  def _populate_def_proto_block_contents(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     """Populates the contents of a block proto: constraints"""
     assert self._elaboration_state == BlockElaborationState.post_contents or \
            self._elaboration_state == BlockElaborationState.post_generate
@@ -388,7 +386,7 @@ class BaseBlock(HasMetadata, Generic[BaseBlockEdgirType], metaclass=BaseBlockMet
     for (name, constraint) in self._constraints.items():
       edgir.add_pair(pb.constraints, name).CopyFrom(constraint._expr_to_proto(ref_map))
 
-  def _populate_def_proto_description(self, pb: BaseBlockEdgirType, ref_map: Refable.RefMapType) -> None:
+  def _populate_def_proto_description(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     description = self.description
     assert(description is None or isinstance(description, DescriptionString))
     if isinstance(description, DescriptionString):

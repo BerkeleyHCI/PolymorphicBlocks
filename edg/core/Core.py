@@ -16,7 +16,7 @@ class SubElementDict(Generic[ElementType]):
     self.anon_prefix = anon_prefix
     self.container: Dict[str, ElementType] = {}
     self.names = IdentityDict[ElementType, str]()  # TODO unify w/ container?
-    self.keys_list: List = []
+    self.keys_list: List[str] = []
     self.closed = False
 
   def register(self, item: ElementType) -> ElementType:
@@ -80,7 +80,7 @@ class SubElementDict(Generic[ElementType]):
 
 class SubElementManager:
   def __init__(self) -> None:
-    self.dicts: List[Tuple[Union[Type, Tuple[Type, ...]], SubElementDict]] = []
+    self.dicts: List[Tuple[Union[Type[Any], Tuple[Type[Any], ...]], SubElementDict[Any]]] = []
     self.aliases = IdentityDict[Any, Any]()
 
   def new_dict(self, filter_type: Union[Type[ElementType], Tuple[Type[ElementType], ...]],
@@ -274,7 +274,7 @@ class HasMetadata(LibraryElement):
     superclasses order is not defined (but MRO in current practice).
 
     mypy currently does not allow passing in abstract types, so generally calls to this need type: ignore."""
-    direct_bases: Set[Type] = set()
+    direct_bases: Set[Type[HasMetadata]] = set()
     def process_direct_base(bcls: Type[HasMetadata.BaseType]) -> None:
       if not issubclass(bcls, base_type):
         return  # ignore above base_type

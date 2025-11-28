@@ -57,8 +57,8 @@ class ESeriesResistor(SelectorArea, Resistor, FootprintBlock, GeneratorBlock):
     self.assign(self.actual_power_rating, Range.zero_to_upper(suitable_packages[0][0]))
 
     self.footprint(
-      self._STANDARD_FOOTPRINT.REFDES_PREFIX, suitable_packages[0][1],
-      self._STANDARD_FOOTPRINT._make_pinning(self, suitable_packages[0][1]),
+      self._standard_footprint().REFDES_PREFIX, suitable_packages[0][1],
+      self._standard_footprint()._make_pinning(self, suitable_packages[0][1]),
       value=f'{UnitUtils.num_to_prefix(selected_center, 3)}, {tolerance * 100:0.3g}%, {suitable_packages[0][0]} W',
     )
 

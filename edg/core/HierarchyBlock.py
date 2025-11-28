@@ -263,7 +263,7 @@ class BlockMeta(BaseBlockMeta):
 
 
 @non_library
-class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
+class Block(BaseBlock, metaclass=BlockMeta):
   """Part with a statically-defined subcircuit.
   Relations between contained parameters may only be expressed in the given constraint language.
   """
@@ -288,7 +288,8 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     super().__init__()
 
     if hasattr(self, '_init_params'):  # used to propagate params generated in the metaclass __init__ hook
-      for param_name, param in cast(Dict, self._init_params).items():
+      self._init_params: Dict[str, ConstraintExpr]
+      for param_name, param in self._init_params.items():
         self._parameters.register(param)
         self.manager.add_element(param_name, param)
       delattr(self, '_init_params')
@@ -297,13 +298,13 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
 
     self._blocks = self.manager.new_dict(Block)
     self._chains = self.manager.new_dict(ChainConnect, anon_prefix='anon_chain')
-    self._port_tags = IdentityDict[BasePort, Set[PortTag[Any]]]()
+    self._port_tags = IdentityDict[BasePort, Set[PortTag]]()
 
   def _get_ports_by_tag(self, tags: Set[PortTag]) -> List[BasePort]:
     out = []
     for block_port_name, block_port in self._ports.items():
       assert isinstance(block_port, BasePort)
-      port_tags: Set[PortTag[Any]] = self._port_tags.get(block_port, set())
+      port_tags: Set[PortTag] = self._port_tags.get(block_port, set())
       if port_tags.issuperset(tags):
         out.append(block_port)
     return out
@@ -318,8 +319,9 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
         assert isinstance(block, Block)
         block._build_ref_map(ref_map, edgir.localpath_concat(prefix, name), interface_only=True)
 
-  def _populate_def_proto_block_base(self, pb: edgir.HierarchyBlock) -> None:
+  def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
     super()._populate_def_proto_block_base(pb)
+    assert isinstance(pb, edgir.HierarchyBlock)
 
     # generate param defaults
     for param_name, param in self._parameters.items():
@@ -450,6 +452,9 @@ class Block(BaseBlock[edgir.HierarchyBlock], metaclass=BlockMeta):
     self._populate_def_proto_description(pb, ref_map)
 
     return pb
+
+  def _elaborated_def_to_proto(self) -> edgir.HierarchyBlock:
+    return cast(edgir.HierarchyBlock, super()._elaborated_def_to_proto())
 
   MixinType = TypeVar('MixinType', bound='BlockInterfaceMixin')
   def with_mixin(self, tpe: MixinType) -> MixinType:

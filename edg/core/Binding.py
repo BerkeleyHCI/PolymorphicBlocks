@@ -12,7 +12,7 @@ from .Range import Range
 
 if TYPE_CHECKING:
   from .Ports import BasePort, Port
-  from .Array import Vector
+  from .Array import Vector, BaseVector
   from .Blocks import BaseBlock
   from .ConstraintExpr import ConstraintExpr, FloatExpr, BoolExpr
 
@@ -449,7 +449,7 @@ class LengthBinding(Binding):
   def __repr__(self) -> str:
     return f"Length"
 
-  def __init__(self, src: Vector):
+  def __init__(self, src: BaseVector):
     super().__init__()
     self.src = src
 
@@ -467,7 +467,7 @@ class AllocatedBinding(Binding):
   def __repr__(self) -> str:
     return f"Allocated"
 
-  def __init__(self, src: Vector):
+  def __init__(self, src: BaseVector):
     super().__init__()
     self.src = src
 

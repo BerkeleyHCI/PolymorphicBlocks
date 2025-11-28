@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import *
+from typing import Any, Generic
+from typing_extensions import TypeVar
 
-from .. import edgir
 from .Categories import InternalBlock
-from .Core import Refable
 from .HierarchyBlock import Block, abstract_block
-from .IdentityDict import IdentityDict
 from .Ports import BasePort, Port
 
 
@@ -38,7 +36,7 @@ class PortBridge(InternalBlock, Block):
     return super().Port(tpe, *args, optional=True, **kwargs)
 
 
-AdapterDstType = TypeVar('AdapterDstType', bound=Port)
+AdapterDstType = TypeVar('AdapterDstType', covariant=True, bound=Port, default=Port)
 @abstract_block
 class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
   """Defines an adapter from one port type to another port type. This behaves as a normal block, and both the src and

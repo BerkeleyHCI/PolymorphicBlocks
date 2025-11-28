@@ -2,15 +2,17 @@ from __future__ import annotations
 
 import itertools
 from abc import abstractmethod
-from typing import *
+from typing import Generic, Optional, Dict, Hashable, List
 
-from .. import edgir
+from typing_extensions import TypeVar
+
 from .Binding import ParamBinding, IsConnectedBinding, NameBinding
 from .Builder import builder
 from .ConstraintExpr import ConstraintExpr, BoolExpr, StringExpr
 from .Core import Refable, HasMetadata, SubElementDict, non_library
 from .HdlUserExceptions import *
 from .IdentityDict import IdentityDict
+from .. import edgir
 
 if TYPE_CHECKING:
   from .Blocks import BaseBlock
@@ -110,7 +112,7 @@ class BaseContainerPort(BasePort):  # TODO can this be removed?
   pass
 
 
-PortLinkType = TypeVar('PortLinkType', bound='Link', covariant=True)  # TODO: this breaks w/ selftypes
+PortLinkType = TypeVar('PortLinkType', bound='Link', covariant=True, default='Link')  # TODO: this breaks w/ selftypes
 @non_library
 class Port(BasePort, Generic[PortLinkType]):
   """Abstract Base Class for ports"""

@@ -1,11 +1,12 @@
-from typing import TypeVar, Generic, Type, List, Optional, get_args, get_origin, Tuple, Callable, Any
+from typing import Generic, Type, List, Optional, get_args, get_origin, Tuple, Callable, Any
+from typing_extensions import TypeVar
 
 from .Core import non_library, HasMetadata
 from .Blocks import AbstractBlockProperty
 from .HdlUserExceptions import BlockDefinitionError
 from .HierarchyBlock import Block
 
-MixinBaseType = TypeVar('MixinBaseType', bound='Block')
+MixinBaseType = TypeVar('MixinBaseType', covariant=True, bound=Block, default=Block)
 
 
 @non_library

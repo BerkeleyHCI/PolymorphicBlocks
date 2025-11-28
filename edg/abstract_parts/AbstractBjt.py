@@ -7,31 +7,11 @@ from .PartsTablePart import PartsTableSelector
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
 
-class BjtStandardFootprint(StandardFootprint['Bjt']):
-  REFDES_PREFIX = 'Q'
-
-  FOOTPRINT_PINNING_MAP = {
-    (
-      'Package_TO_SOT_SMD:SOT-23',
-      'Package_TO_SOT_SMD:SOT-323_SC-70',
-    ): lambda block: {
-      '1': block.base,
-      '2': block.emitter,
-      '3': block.collector,
-    },
-    'Package_TO_SOT_SMD:SOT-89-3': lambda block: {
-      '1': block.base,
-      '2': block.collector,
-      '3': block.emitter,
-    },
-  }
-
-
 @abstract_block
 class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   """Base class for untyped BJTs
   """
-  _STANDARD_FOOTPRINT = BjtStandardFootprint
+  _STANDARD_FOOTPRINT = lambda: BjtStandardFootprint
 
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     # TODO actually check that the device channel corresponds with the schematic?
@@ -81,6 +61,26 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
       "<b>Pmax:</b> ", DescriptionString.FormatUnits(self.actual_power_rating, "W"),
       " <b>of operating:</b> ", DescriptionString.FormatUnits(self.power, "W")
     )
+
+
+class BjtStandardFootprint(StandardFootprint[Bjt]):
+  REFDES_PREFIX = 'Q'
+
+  FOOTPRINT_PINNING_MAP = {
+    (
+      'Package_TO_SOT_SMD:SOT-23',
+      'Package_TO_SOT_SMD:SOT-323_SC-70',
+    ): lambda block: {
+      '1': block.base,
+      '2': block.emitter,
+      '3': block.collector,
+    },
+    'Package_TO_SOT_SMD:SOT-89-3': lambda block: {
+      '1': block.base,
+      '2': block.collector,
+      '3': block.emitter,
+    },
+  }
 
 
 class TableBjt(PartsTableSelector, Bjt):

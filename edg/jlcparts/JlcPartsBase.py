@@ -26,7 +26,7 @@ class JlcPartsAttributeEntry(BaseModel):
 
 ParsedType = TypeVar('ParsedType')  # can't be inside the class or it gets confused as a pydantic model entry
 
-class JlcPartsAttributes(RootModel):
+class JlcPartsAttributes(RootModel[Dict[str, JlcPartsAttributeEntry]]):
     root: dict[str, JlcPartsAttributeEntry]
 
     def get(self, key: str, expected_type: Type[ParsedType], default: Optional[ParsedType] = None, sub: str = 'default') -> ParsedType:
@@ -55,7 +55,7 @@ class JlcPartsPriceEntry(BaseModel):
     qTo: Optional[int]  # None = top bucket
 
 
-class JlcPartsPrice(RootModel):
+class JlcPartsPrice(RootModel[List[JlcPartsPriceEntry]]):
     root: list[JlcPartsPriceEntry]
 
     def for_min_qty(self) -> float:
@@ -69,7 +69,7 @@ class JlcPartsPrice(RootModel):
         return min_seen_price[1]
 
 
-class JlcPartsStockFile(RootModel):
+class JlcPartsStockFile(RootModel[Dict[str, int]]):
     root: dict[str, int]  # LCSC to stock level
 
 
