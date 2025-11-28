@@ -22,8 +22,8 @@ class CustomDiode(Diode, FootprintBlock, GeneratorBlock):
 
   def generate(self) -> None:
     self.footprint(
-      self.standard_footprint().REFDES_PREFIX, self.footprint_spec,
-      self.standard_footprint()._make_pinning(self, self.get(self.footprint_spec)),
+      self._standard_footprint().REFDES_PREFIX, self.footprint_spec,
+      self._standard_footprint()._make_pinning(self, self.get(self.footprint_spec)),
       mfr=self.manufacturer_spec, part=self.part_spec,
       value=self.part_spec,
       datasheet=""

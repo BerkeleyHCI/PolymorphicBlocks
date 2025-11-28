@@ -45,7 +45,7 @@ class HasStandardFootprint(Block):
                                       Callable[[], Type[StandardFootprint[Self]]]]]
 
   @classmethod
-  def standard_footprint(cls) -> Type[StandardFootprint[Self]]:
+  def _standard_footprint(cls) -> Type[StandardFootprint[Self]]:
     """Returns the StandardFootprint class for this block"""
     if callable(cls._STANDARD_FOOTPRINT):
       return cls._STANDARD_FOOTPRINT()  # type: ignore
