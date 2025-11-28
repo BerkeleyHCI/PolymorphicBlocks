@@ -9,6 +9,7 @@ from .Categories import Interface
 @abstract_block
 class AnalogSwitch(Interface, KiCadImportableBlock, Block):
   """Base class for a n-ported analog switch with passive-typed ports."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name.startswith('edg_importable:Mux')  # can be any Mux
     count = int(symbol_name.removeprefix('edg_importable:Mux'))
@@ -107,6 +108,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
 class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
   """Wrapper around AnalogSwitch that provides muxing functionality - multiple sink ports, one source port.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name.startswith('edg_importable:Mux')  # can be any Mux
     count = int(symbol_name.removeprefix('edg_importable:Mux'))

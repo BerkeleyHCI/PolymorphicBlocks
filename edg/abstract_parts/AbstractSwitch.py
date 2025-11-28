@@ -9,6 +9,7 @@ from .Categories import *
 @abstract_block
 class Switch(KiCadImportableBlock, DiscreteComponent):
   """Two-ported device that closes a circuit when pressed."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'Switch:SW_SPST'
     return {'1': self.sw, '2': self.com}

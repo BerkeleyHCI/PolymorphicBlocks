@@ -103,6 +103,7 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return [row[cls.PARALLEL_COUNT], super(JlcCapacitor, cls)._row_sort_by(row)]
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     # see comment in TableCapacitor._row_generate for why this needs to be here
     if row[self.PARALLEL_COUNT] == 1:

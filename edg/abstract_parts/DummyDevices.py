@@ -192,6 +192,7 @@ class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice, NetBlock):
 
     self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'edg_importable:Adapter'
     return {'1': self.signal_in, '2': self.signal_out}

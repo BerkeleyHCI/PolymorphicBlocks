@@ -13,6 +13,7 @@ from .StandardFootprint import StandardFootprint, HasStandardFootprint
 class FerriteBead(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
   _STANDARD_FOOTPRINT = lambda: FerriteBeadStandardFootprint
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Device:L_Ferrite', 'Device:L_Ferrite_Small')
     return {'1': self.a, '2': self.b}
@@ -77,12 +78,14 @@ class TableFerriteBead(PartsTableSelector, FerriteBead):
     super().__init__(*args, **kwargs)
     self.generator_param(self.current, self.hf_impedance, self.dc_resistance)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       self.get(self.current).fuzzy_in(row[self.CURRENT_RATING]) and \
       row[self.HF_IMPEDANCE].fuzzy_in(self.get(self.hf_impedance)) and \
       row[self.DC_RESISTANCE].fuzzy_in(self.get(self.dc_resistance))
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_current_rating, row[self.CURRENT_RATING])
@@ -92,6 +95,7 @@ class TableFerriteBead(PartsTableSelector, FerriteBead):
 
 class SeriesPowerFerriteBead(DiscreteApplication, KiCadImportableBlock):
   """Series ferrite bead for power applications"""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Device:L_Ferrite', 'Device:L_Ferrite_Small')
     return {'1': self.pwr_in, '2': self.pwr_out}

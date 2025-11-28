@@ -69,10 +69,12 @@ class TableCrystal(PartsTableSelector, Crystal):
     super().__init__(*args, **kwargs)
     self.generator_param(self.frequency)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       (row[self.FREQUENCY] in self.get(self.frequency))
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_frequency, row[self.FREQUENCY])

@@ -20,6 +20,7 @@ class PowerOutConnector(Connector, Block):
 
 class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
   """Series diode that propagates voltage"""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'Device:D'
     return {'A': self.pwr_in, 'K': self.pwr_out}

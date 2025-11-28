@@ -58,6 +58,7 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock, HasStandardFootpri
                                "\s*" + f"([\d.{PartParserUtil.SI_PREFIXES}]+\s*V)" + "$")
   CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
     return {'1': self.pos, '2': self.neg}
@@ -183,11 +184,13 @@ class TableCapacitor(PartsTableSelector, Capacitor):
     super().__init__(*args, **kwargs)
     self.generator_param(self.capacitance, self.voltage, self.voltage_rating_derating, self.exact_capacitance)
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
     self.assign(self.actual_capacitance, row[self.CAPACITANCE])
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     derated_voltage = self.get(self.voltage) / self.get(self.voltage_rating_derating)
     return super()._row_filter(row) and \
@@ -267,6 +270,7 @@ class TableDeratingCapacitor(TableCapacitor):
             row[self.PARALLEL_DERATED_CAPACITANCE].fuzzy_in(self.get(self.capacitance))
     ))
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     """This one is weird. Because this is the last in the class order, this is called last.
     So the top subclass needs explicit logic to handle parallel capacitors."""
@@ -310,6 +314,7 @@ class DummyCapacitorFootprint(DummyDevice, Capacitor, FootprintBlock):
 class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
   """Optionally polarized capacitor used for DC decoupling, with VoltageSink connections with voltage inference.
   Implemented as a shim block."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
     return {'1': self.pwr, '2': self.gnd}
@@ -342,6 +347,7 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
 class AnalogCapacitor(DiscreteApplication, KiCadImportableBlock):
   """Capacitor attached to an analog line, that presents as an open model-wise.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Device:C', 'Device:C_Small', 'Device:C_Polarized', 'Device:C_Polarized_Small')
     return {'1': self.io, '2': self.gnd}

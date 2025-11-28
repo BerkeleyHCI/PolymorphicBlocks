@@ -15,6 +15,7 @@ from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
 class OpampFollower(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock):
   """Opamp follower circuit, outputs the same signal as the input (but probably stronger)."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:Follower'
     return {
@@ -79,6 +80,7 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
   The input and output impedances given are a bit more complex, so this simplifies it to
   the opamp's specified pin impedances - TODO: is this correct(ish)?
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     mapping: Dict[str, Dict[str, BasePort]] = {
       'Simulation_SPICE:OPAMP': {
@@ -211,6 +213,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
 
   ratio specifies Rf/R1, the amplification ratio.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     mapping: Dict[str, Dict[str, BasePort]] = {
       'Simulation_SPICE:OPAMP': {  # reference pin not supported
@@ -328,6 +331,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
   Series is lower and tolerance is higher because there's a cap involved
   TODO - separate series for cap, and series and tolerance by decade?
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     mapping: Dict[str, Dict[str, BasePort]] = {
       'Simulation_SPICE:OPAMP': {

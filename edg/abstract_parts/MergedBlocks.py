@@ -73,6 +73,7 @@ class MergedDigitalSource(DummyDevice, NetBlock, GeneratorBlock):
 
 
 class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorBlock):
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name.startswith('edg_importable:Merge')  # can be any merge
     count = int(symbol_name.removeprefix('edg_importable:Merge'))

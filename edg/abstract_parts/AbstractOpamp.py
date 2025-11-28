@@ -10,6 +10,7 @@ from .Categories import Analog, MultipackDevice
 class Opamp(Analog, KiCadInstantiableBlock, Block):
   """Base class for opamps. Parameters need to be more restricted in subclasses.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
     return {'+': self.inp, '-': self.inn, '3': self.out, 'V+': self.pwr, 'V-': self.gnd}

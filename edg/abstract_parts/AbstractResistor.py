@@ -19,6 +19,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
                               "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%?)?" + "$")
   RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Device:R', 'Device:R_Small')
     return {'1': self.a, '2': self.b}
@@ -110,12 +111,14 @@ class TableResistor(PartsTableSelector, Resistor):
     super().__init__(*args, **kwargs)
     self.generator_param(self.resistance, self.power, self.voltage)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       row[self.RESISTANCE].fuzzy_in(self.get(self.resistance)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING]) and \
       self.get(self.voltage).fuzzy_in(row[self.VOLTAGE_RATING])
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_resistance, row[self.RESISTANCE])
@@ -260,6 +263,7 @@ class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
 
 class SeriesPowerResistor(DiscreteApplication, KiCadImportableBlock):
   """Series resistor for power applications"""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Device:R', 'Device:R_Small')
     return {'1': self.pwr_in, '2': self.pwr_out}
@@ -337,6 +341,7 @@ class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorB
       cast(Block, builder.get_enclosing_block()).connect(pwr_out, self.pwr_out)
     return self
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
     assert symbol_name == 'edg_importable:CurrentSenseResistor'
     return {'1': self.pwr_in, '2': self.pwr_out, 'sense_in': self.sense_in, 'sense_out': self.sense_out}
@@ -380,6 +385,7 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
       impedance=self.signal_in.link().source_impedance + self.res.actual_resistance
     )), self.signal_out)
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
     assert symbol_name == 'Device:R'
     return {'1': self.signal_in, '2': self.signal_out}
@@ -422,6 +428,7 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
       output_thresholds=self.signal_in.link().output_thresholds
     )), self.signal_out)
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
     assert symbol_name == 'Device:R'
     return {'1': self.signal_in, '2': self.signal_out}

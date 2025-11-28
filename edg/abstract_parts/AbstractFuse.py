@@ -120,12 +120,14 @@ class TableFuse(PartsTableSelector, Fuse):
     super().__init__(*args, **kwargs)
     self.generator_param(self.trip_current, self.hold_current, self.voltage)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       row[self.TRIP_CURRENT].fuzzy_in(self.get(self.trip_current)) and \
       row[self.HOLD_CURRENT].fuzzy_in(self.get(self.hold_current)) and \
       self.get(self.voltage).fuzzy_in(row[self.VOLTAGE_RATING])
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_trip_current, row[self.TRIP_CURRENT])

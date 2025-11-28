@@ -62,10 +62,12 @@ class TableLed(PartsTableSelector, Led):
     super().__init__(*args, **kwargs)
     self.generator_param(self.color)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       (not self.get(self.color) or row[self.COLOR] == self.get(self.color))
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_color, row[self.COLOR])

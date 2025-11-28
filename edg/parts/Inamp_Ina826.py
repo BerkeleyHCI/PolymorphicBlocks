@@ -63,6 +63,7 @@ class Ina826(KiCadImportableBlock, GeneratorBlock):
   """Cost-effective instrumentation amplifier in SOIC-8, with gain 1-1000 set by single resistor.
   TODO: DiffAmp / InAmp abstract class, which supports KiCadImportableBlock
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     mapping: Dict[str, Dict[str, BasePort]] = {
       'Simulation_SPICE:OPAMP': {  # reference pin not supported

@@ -99,6 +99,7 @@ class TableResistorArray(PartsTableSelector, ResistorArray):
     super().__init__(*args, **kwargs)
     self.generator_param(self.count, self.a.requested(), self.b.requested(), self.resistances, self.powers)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     # TODO some kind of range intersect construct?
     resistances_min = max([resistance.lower for resistance in self.get(self.resistances)])
@@ -117,6 +118,7 @@ class TableResistorArray(PartsTableSelector, ResistorArray):
       row[self.RESISTANCE].fuzzy_in(resistance_intersect) and \
       powers_hull.fuzzy_in(row[self.POWER_RATING])
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     for i in range(row[self.COUNT]):  # must generate ports before creating the footprint
       self.a.append_elt(Passive(), str(i))

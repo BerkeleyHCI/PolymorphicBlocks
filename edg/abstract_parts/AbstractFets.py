@@ -31,6 +31,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   """
   _STANDARD_FOOTPRINT = lambda: FetStandardFootprint
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     # TODO actually check that the device channel corresponds with the schematic?
     assert symbol_name.startswith('Device:Q_NMOS_') or symbol_name.startswith('Device:Q_PMOS_')
@@ -166,6 +167,7 @@ class TableFet(PartsTableSelector, BaseTableFet):
     self.generator_param(self.drain_voltage, self.drain_current, self.gate_voltage, self.gate_threshold_voltage,
                          self.rds_on, self.gate_charge, self.power, self.channel)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       row[self.CHANNEL] == self.get(self.channel) and \
@@ -177,6 +179,7 @@ class TableFet(PartsTableSelector, BaseTableFet):
       row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_drain_voltage_rating, row[self.VDS_RATING])
@@ -228,6 +231,7 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
     self.actual_switching_power = self.Parameter(RangeExpr())
     self.actual_total_power = self.Parameter(RangeExpr())
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:  # here this is just a pre-filter step
     return super()._row_filter(row) and \
       row[self.CHANNEL] == self.get(self.channel) and \
@@ -266,6 +270,7 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
 
     return super()._table_postprocess(table).map_new_columns(process_row)
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_drain_voltage_rating, row[self.VDS_RATING])

@@ -160,6 +160,7 @@ class LowPassRcDac(DigitalToAnalog, Block):
 class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock):
   """Analog-typed low-pass differential RC filter, with cutoff frequency specified at the -3dB (~70%) point.
   Impedance is the single-ended resistor value."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:DifferentialRC'
     return {

@@ -71,6 +71,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 
   The control line is one bit for each range (range connectivity is independent).
   Multiple ranges can be connected simultaneously, this allows make-before-break connectivity."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'edg_importable:CurrentSenseResistorMux'
     return {
@@ -136,6 +137,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
   """Emitter follower circuit.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:Follower'  # this requires an schematic-modified symbol
     return {
@@ -232,6 +234,7 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
 
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
     return {'M': self.actual, 'T': self.target, 'F': self.target_fine, '3': self.output, 'S': self.sense_out,
@@ -340,6 +343,7 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
   """JET-based current clamp, clamps to roughly 10mA while maintaining a relatively low non-clamping
   impedance of ~100ohm. Max ~35V limited by JFET Vgs,max.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:Unk2'
     return {'1': self.input, '2': self.output}

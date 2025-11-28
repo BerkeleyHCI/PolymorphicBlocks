@@ -36,12 +36,14 @@ class TableAntenna(Antenna, PartsTableSelector, GeneratorBlock):
     super().__init__(*args, **kwargs)
     self.generator_param(self.frequency, self.power, self.impedance)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       self.get(self.frequency).fuzzy_in(row[self.FREQUENCY_RATING]) and \
       row[self.IMPEDANCE].fuzzy_in(self.get(self.impedance)) and\
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_frequency_rating, row[self.FREQUENCY_RATING])

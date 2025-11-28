@@ -46,6 +46,7 @@ class OpampCurrentSensor(CurrentSensor, KiCadImportableBlock, Block):
     self.connect(self.amp.output, self.force_signal.signal_in)
     self.connect(self.force_signal.signal_out, self.out)
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
     assert symbol_name == 'edg_importable:OpampCurrentSensor'
     return {'+': self.pwr_in, '-': self.pwr_out, 'R': self.ref, '3': self.out,

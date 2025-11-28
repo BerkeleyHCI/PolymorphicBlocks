@@ -107,6 +107,7 @@ class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
     super().__init__(*args, **kwargs)
     self.generator_param(self.footprint_spec)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       ((not self.get(self.footprint_spec)) or self.get(self.footprint_spec) == row[self.KICAD_FOOTPRINT])
@@ -116,6 +117,7 @@ class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
 class PartsTableSelectorFootprint(PartsTableFootprintFilter, FootprintBlock, HasStandardFootprint):
   """PartsTableFootprintFilter, but also with footprint creation. Must define a standard pinning.
   """
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.footprint(

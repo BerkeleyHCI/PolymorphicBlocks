@@ -59,6 +59,7 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
 
 class ResistiveDivider(InternalSubcircuit, KiCadImportableBlock, GeneratorBlock):
   """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'Device:VoltageDivider'
     return {'1': self.top, '2': self.center, '3': self.bottom}
@@ -144,6 +145,7 @@ class BaseVoltageDivider(KiCadImportableBlock):
   The actual output voltage is defined as a ratio of the input voltage, and the divider is specified by
   ratio and impedance.
   Subclasses should define the ratio and impedance spec."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'Device:VoltageDivider'
     return {'1': self.input, '2': self.output, '3': self.gnd}
@@ -226,6 +228,7 @@ class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
 
 class SignalDivider(Analog, KiCadImportableBlock, Block):
   """Specialization of ResistiveDivider for Analog signals"""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'Device:VoltageDivider'
     return {'1': self.input, '2': self.output, '3': self.gnd}

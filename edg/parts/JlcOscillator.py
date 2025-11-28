@@ -97,6 +97,7 @@ class JlcOscillator(JlcTableSelector, TableOscillator):
       lambda row: [row[cls.BASIC_PART_HEADER], cls._row_area(row), row[cls.COST]]
     )
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     for series, device_cls in self.SERIES_DEVICE_MAP.items():
       if row[self.PART_NUMBER_COL].startswith(series):
