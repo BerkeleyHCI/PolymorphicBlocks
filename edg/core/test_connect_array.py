@@ -40,6 +40,7 @@ class ArrayConnectBlock(Block):
 
 
 class ArrayConnectProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = ArrayConnectBlock()._elaborated_def_to_proto()
 
@@ -89,6 +90,7 @@ class ArrayAllocatedConnectBlock(Block):
 
 
 class ArrayAllocatedConnectProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = ArrayAllocatedConnectBlock()._elaborated_def_to_proto()
 

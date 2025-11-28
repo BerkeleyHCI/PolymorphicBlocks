@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Optional, Tuple
 
+from typing_extensions import override
+
 from ..core import *
 from .CircuitBlock import CircuitLink, CircuitPortAdapter
 from .GroundPort import GroundLink

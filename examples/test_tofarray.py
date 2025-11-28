@@ -106,6 +106,7 @@ class TofArray(JlcBoardTop):
         self.spk_drv.pwr
       )
 
+  @override
   def multipack(self) -> None:
     self.res1 = self.PackedBlock(ResistorArray())
     self.pack(self.res1.elements.request('0'), ['leds', 'led[0]', 'res'])

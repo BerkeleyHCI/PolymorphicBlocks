@@ -200,10 +200,12 @@ class SwitchFet(Fet):
   # TODO ideally this would just instantaite a Fet internally, but the parts selection becomes more complex b/c
   # parameters are cross-dependent
   @staticmethod
+  @override
   def NFet(*args: Any, **kwargs: Any) -> 'SwitchFet':
     return SwitchFet(*args, **kwargs, channel='N')
 
   @staticmethod
+  @override
   def PFet(*args: Any, **kwargs: Any) -> 'SwitchFet':
     return SwitchFet(*args, **kwargs, channel='P')
 

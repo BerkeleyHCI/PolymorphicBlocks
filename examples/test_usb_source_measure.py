@@ -783,6 +783,7 @@ class UsbSourceMeasure(JlcBoardTop):
       'misc': 'fan_drv, fan, jlc_th',
     })
 
+  @override
   def multipack(self) -> None:
     self.vimeas_amps = self.PackedBlock(Opa2189())  # low noise opamp
     self.pack(self.vimeas_amps.elements.request('0'), ['control', 'amp', 'amp'])

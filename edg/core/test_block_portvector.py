@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 from .test_elaboration_common import TestPortSink, TestBlockSink, TestBlockSource
@@ -63,6 +65,7 @@ class TestBlockPortVectorConstraint(TestBlockPortVectorBase):
 
 
 class BlockVectorBaseProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestBlockPortVectorBase()._elaborated_def_to_proto()
 
@@ -76,6 +79,7 @@ class BlockVectorBaseProtoTestCase(unittest.TestCase):
 
 
 class BlockVectorProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestBlockPortVectorConcrete()._elaborated_def_to_proto()
 
@@ -92,6 +96,7 @@ class BlockVectorProtoTestCase(unittest.TestCase):
 
 
 class BlockVectorEmptyProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestBlockPortVectorEmpty()._elaborated_def_to_proto()
 
@@ -104,6 +109,7 @@ class BlockVectorEmptyProtoTestCase(unittest.TestCase):
 
 
 class VectorExportProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestBlockPortVectorExport()._elaborated_def_to_proto()
 
@@ -127,6 +133,7 @@ class VectorExportProtoTestCase(unittest.TestCase):
 
 
 class VectorBridgedProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestBlockPortVectorBridged()._elaborated_def_to_proto()
 
@@ -166,6 +173,7 @@ class VectorBridgedProtoTestCase(unittest.TestCase):
 
 
 class VectorConnectProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestBlockPortVectorConnect()._elaborated_def_to_proto()
 
@@ -207,6 +215,7 @@ class VectorConnectProtoTestCase(unittest.TestCase):
 
 
 class VectorConstraintProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestBlockPortVectorConstraint()._elaborated_def_to_proto()
 

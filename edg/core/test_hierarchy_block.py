@@ -19,6 +19,7 @@ class TopHierarchyBlock(Block):
 
 
 class TopHierarchyBlockProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TopHierarchyBlock()._elaborated_def_to_proto()
 
@@ -82,6 +83,7 @@ class MultiConnectBlock(Block):
 
 
 class MultiConnectBlockProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = MultiConnectBlock()._elaborated_def_to_proto()
 
@@ -139,6 +141,7 @@ class ConnectJoinBlock(Block):
 
 
 class ConnectJoinBlockProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = ConnectJoinBlock()._elaborated_def_to_proto()
 
@@ -194,6 +197,7 @@ class ExportPortHierarchyBlock(Block):
 
 
 class ExportPortHierarchyBlockTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = ExportPortHierarchyBlock()._elaborated_def_to_proto()
 
@@ -226,6 +230,7 @@ class IndirectExportPortHierarchyBlock(Block):
 
 
 class IndirectExportPortHierarchyBlockTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = IndirectExportPortHierarchyBlock()._elaborated_def_to_proto()
 
@@ -259,6 +264,7 @@ class PortBridgeHierarchyBlock(Block):
 
 
 class PortBridgeHierarchyBlockTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = PortBridgeHierarchyBlock()._elaborated_def_to_proto()
 

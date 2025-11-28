@@ -23,6 +23,7 @@ class MixinUsageTestCase(unittest.TestCase):
       self.mixin_source = self.Block(TestBlockSource())
       self.mixin_net = self.connect(self.mixin.mixin_port, self.mixin_source.source)
 
+  @override
   def setUp(self) -> None:
     self.pb = self.MixinBlock()._elaborated_def_to_proto()
 

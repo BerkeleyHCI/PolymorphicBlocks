@@ -38,6 +38,7 @@ class TestParameterConstProp(Block):
 
 
 class ConstPropTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestParameterConstProp)
 
@@ -96,6 +97,7 @@ class TestPortConstPropTopBlock(Block):
 
 
 class ConstPropPortTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestPortConstPropTopBlock)
 
@@ -118,6 +120,7 @@ class TestDisconnectedTopBlock(Block):
 
 
 class DisconnectedPortTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestDisconnectedTopBlock)
 
@@ -166,6 +169,7 @@ class TestPortConstPropBundleTopBlock(Block):
 
 
 class ConstPropBundleTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestPortConstPropBundleTopBlock)
 

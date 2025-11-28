@@ -173,6 +173,7 @@ class RobotDriver(JlcBoardTop):
     self.connect(self.gnd, self.servo.gnd)
     self.connect(self.mcu.gpio.request('pwm'), self.servo.pwm)
 
+  @override
   def multipack(self) -> None:
     self.led_res = self.PackedBlock(ResistorArray())
     self.pack(self.led_res.elements.request('0'), ['leds', 'led[0]', 'res'])

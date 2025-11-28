@@ -47,6 +47,7 @@ class DesignTop(Block):
                             for multipack_part, path in self._packed_blocks.items()]
     )
 
+  @override
   def multipack(self) -> None:
     """Defines multipack packing rules, by defining multipack devices and providing packing connections.
     Subclasses should define multipack by stacking on top of super().multipack()."""

@@ -125,6 +125,7 @@ class EspLora(JlcBoardTop):
       self.connect(self.nfc.reset, self.mcu.gpio.request('nfc_rst'))
       self.connect(self.nfc.irq, self.mcu.gpio.request('nfc_irq'))
 
+  @override
   def multipack(self) -> None:
     self.tx_cpack = self.PackedBlock(CombinedCapacitor())
     self.pack(self.tx_cpack.elements.request('0'), ['lora', 'tx_l', 'c'])

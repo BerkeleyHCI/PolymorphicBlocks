@@ -47,6 +47,7 @@ class TestPackedDevices(DesignTop):
     self.vpos = self.connect(self.source.pos, self.sink1.pos, self.sink2.pos)
     self.gnd = self.connect(self.source.neg, self.sink1.neg, self.sink2.neg)
 
+  @override
   def multipack(self) -> None:
     self.sink = self.PackedBlock(TestPackedSink())
     self.pack(self.sink.elements.request('1'), ['sink1'])
@@ -68,6 +69,7 @@ class TestInvalidPackedDevices(DesignTop):
     self.vpos2 = self.connect(self.source2.pos, self.sink2.pos)
     self.gnd2 = self.connect(self.source2.neg, self.sink2.neg)
 
+  @override
   def multipack(self) -> None:
     self.sink = self.PackedBlock(TestPackedSink())
     self.pack(self.sink.elements.request('1'), ['sink1'])

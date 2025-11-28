@@ -1,11 +1,14 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from .test_elaboration_common import TestPortBridge, TestPortSink
 from . import *
 
 
 class PortBridgeProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestPortBridge()._elaborated_def_to_proto()
 

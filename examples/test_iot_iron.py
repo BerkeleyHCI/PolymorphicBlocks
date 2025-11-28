@@ -188,6 +188,7 @@ class IotIron(JlcBoardTop):
       self.connect(self.tamp.output, self.mcu.adc.request('thermocouple'))
       self.tp_t = self.Block(AnalogTestPoint()).connected(self.iron.thermocouple)
 
+  @override
   def multipack(self) -> None:
     self.packed_opamp = self.PackedBlock(Opa2333())
     self.pack(self.packed_opamp.elements.request('0'), ['ifilt', 'amp'])

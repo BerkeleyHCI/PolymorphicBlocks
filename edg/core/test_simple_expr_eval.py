@@ -19,6 +19,7 @@ class TestEvalExprBlock(Block):
 
 
 class EvalExprTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestEvalExprBlock)
 
@@ -60,6 +61,7 @@ class TestEvalReductionBlock(Block):
 
 
 class EvalReductionTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestEvalReductionBlock)
 

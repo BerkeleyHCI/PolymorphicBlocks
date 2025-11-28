@@ -445,6 +445,7 @@ class TestBlinkyPacked(SimpleBoardTop):
 
       # optionally, you may have also instantiated your magnetic sensor
 
+  @override
   def multipack(self) -> None:
     self.res_pack = self.PackedBlock(ResistorArray())
     self.pack(self.res_pack.elements.request('0'), ['led', 'led[0]', 'res'])

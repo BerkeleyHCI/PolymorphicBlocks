@@ -74,6 +74,7 @@ class UsbKey(JlcBoardTop):
 
       self.connect(self.mcu.gpio.request('b1_gnd'), self.mcu.gpio.request('c15_gnd'), self.usb.gnd.as_digital_source())
 
+  @override
   def multipack(self) -> None:
     self.packed_mcu_vdda_cap = self.PackedBlock(CombinedCapacitor())
     self.pack(self.packed_mcu_vdda_cap.elements.request('0'), ['mcu', 'vdda_cap0', 'cap'])
