@@ -1,6 +1,8 @@
 from typing import Optional, Dict, Any, Tuple, Callable, List
 import re
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -89,6 +91,7 @@ class JlcTableBase(PartsTableBase):
 @non_library
 class JlcTableSelector(PartsTableAreaSelector, PartsTableFootprintFilter, JlcPart, JlcTableBase):
   @classmethod
+  @override
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return [row[cls.BASIC_PART_HEADER], cls._row_area(row), super()._row_sort_by(row), row[cls.COST]]
 

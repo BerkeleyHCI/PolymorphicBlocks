@@ -79,6 +79,7 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock, HasStandardFootpri
     return (capacitance, Range.zero_to_upper(voltage))
 
   @classmethod
+  @override
   def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Capacitor':
     return Capacitor(*cls.parse_capacitor(properties['Value']))
 
@@ -230,10 +231,12 @@ class TableDeratingCapacitor(TableCapacitor):
 
     self.actual_derated_capacitance = self.Parameter(RangeExpr())
 
+  @override
   def _row_filter_capacitance(self, row: PartsTableRow) -> bool:
     # post-derating capacitance filtering is in _table_postprocess
     return Range.exact(row[self.NOMINAL_CAPACITANCE]).fuzzy_in(self.get(self.single_nominal_capacitance))
 
+  @override
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     def add_derated_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if not self.get(self.exact_capacitance):

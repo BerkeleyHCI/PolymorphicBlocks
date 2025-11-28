@@ -1,5 +1,7 @@
 from typing import List, Tuple, Dict
 
+from typing_extensions import override
+
 from .. import edgir
 from ..core import *
 from . import footprint as kicad
@@ -7,6 +9,7 @@ from .NetlistGenerator import NetlistTransform
 
 
 class NetlistBackend(BaseBackend):
+  @override
   def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]:
     if set(args.keys()) - {'RefdesMode'} != set():
       raise ValueError("Invalid argument found in args")

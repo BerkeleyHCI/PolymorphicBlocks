@@ -11,6 +11,7 @@ class PartQuantityTransform(TransformUtil.Transform):
         self.design = design
         self.part_list: Dict[str, int] = {}
 
+    @override
     def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
         lcsc_part_number = self.design.get_value(context.path.to_tuple() + ('lcsc_part',))
         part = self.design.get_value(context.path.to_tuple() + ('fp_part',))
@@ -87,6 +88,7 @@ class GeneratePrice(BaseBackend):
                 temp_price = price
         return quantity * temp_price
 
+    @override
     def run(self, design: CompiledDesign, args: Dict[str, str]={}) -> List[Tuple[edgir.LocalPath, str]]:
         assert not args
         price_list = PartQuantityTransform(design).run()

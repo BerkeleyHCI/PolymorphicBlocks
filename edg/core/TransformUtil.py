@@ -2,6 +2,8 @@ from __future__ import annotations
 from typing import *
 import sys  # for exception chaining
 
+from typing_extensions import override
+
 from .. import edgir
 
 
@@ -15,6 +17,7 @@ class Path(NamedTuple):  # internal helper type
   ports: Tuple[str, ...]
   params: Tuple[str, ...]
 
+  @override
   def __hash__(self) -> int:
     return hash((self.blocks, self.links, self.ports, self.params))
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, Generic
-from typing_extensions import TypeVar
+from typing_extensions import TypeVar, override
 
 from .Categories import InternalBlock
 from .HierarchyBlock import Block, abstract_block
@@ -24,6 +24,7 @@ class PortBridge(InternalBlock, Block):
     self.outer_port: Any
     self.inner_link: Any
 
+  @override
   def __setattr__(self, name: str, value: Any) -> None:
     if isinstance(value, Port):
       assert name == '_parent' or name == "outer_port" or name == "inner_link", \
@@ -31,6 +32,7 @@ class PortBridge(InternalBlock, Block):
     super().__setattr__(name, value)
 
   T = TypeVar('T', bound=BasePort)
+  @override
   def Port(self, tpe: T, *args: Any, **kwargs: Any) -> T:
     assert 'optional' not in kwargs, f"Ports in PortBridge are optional by default, required should be set by enclosing block, in {kwargs}"
     return super().Port(tpe, *args, optional=True, **kwargs)
@@ -47,6 +49,7 @@ class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
     self.src: Any
     self.dst: AdapterDstType
 
+  @override
   def __setattr__(self, name: str, value: Any) -> None:
     if isinstance(value, Port):
       assert name == '_parent' or name == "src" or name == "dst", \
@@ -54,6 +57,7 @@ class PortAdapter(InternalBlock, Block, Generic[AdapterDstType]):
     super().__setattr__(name, value)
 
   T = TypeVar('T', bound=BasePort)
+  @override
   def Port(self, tpe: T, *args: Any, **kwargs: Any) -> T:
     assert 'optional' not in kwargs, "Ports in PortBridge are optional by default, required should be set by enclosing block"
     return super().Port(tpe, *args, optional=True, **kwargs)

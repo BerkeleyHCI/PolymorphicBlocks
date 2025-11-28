@@ -1,6 +1,8 @@
 from typing import Optional, Any, Dict
 import re
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart, JlcTableSelector
 
@@ -38,6 +40,7 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
     self.generator_param(self.capacitance_minimum_size)
 
   @classmethod
+  @override
   def _make_table(cls) -> PartsTable:
     CAPACITOR_MATCHES = {
       'nominal_capacitance': re.compile(r"(^|\s)([^±]\S+F)($|\s)"),
@@ -79,6 +82,7 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
 
     return cls._jlc_table().map_new_columns(parse_row)
 
+  @override
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     def filter_minimum_size(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       # enforce minimum packages, note the cutoffs are exclusive
@@ -100,6 +104,7 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
     return table
 
   @classmethod
+  @override
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return [row[cls.PARALLEL_COUNT], super(JlcCapacitor, cls)._row_sort_by(row)]
 
@@ -113,6 +118,7 @@ class JlcCapacitor(JlcTableSelector, PartsTableSelectorFootprint, TableDeratingC
       self.assign(self.actual_basic_part, True)  # dummy value
       self._make_parallel_footprints(row)
 
+  @override
   def _make_parallel_footprints(self, row: PartsTableRow) -> None:
     cap_model = JlcDummyCapacitor(set_lcsc_part=row[self.LCSC_PART_HEADER],
                                   set_basic_part=row[self.BASIC_PART_HEADER] == self.BASIC_PART_VALUE,

@@ -4,7 +4,7 @@ import itertools
 from abc import abstractmethod
 from typing import Generic, Optional, Dict, Hashable, List
 
-from typing_extensions import TypeVar
+from typing_extensions import TypeVar, override
 
 from .Binding import ParamBinding, IsConnectedBinding, NameBinding
 from .Builder import builder
@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 
 class InitializerContextMeta(type):
+  @override
   def __call__(cls, *args: Any, **kwargs: Any) -> Any:
     """Hook on construction to store some metadata about its creation.
     This hooks the top-level __init__ only."""
@@ -55,6 +56,7 @@ class BasePort(HasMetadata, metaclass=InitializerContextMeta):
       raise ValueError(f"Unknown parent type {self._parent}")
 
   @abstractmethod
+  @override
   def _def_to_proto(self) -> edgir.PortTypes:  # TODO: this might not be valid for Vector types?
     raise NotImplementedError
 
@@ -155,6 +157,7 @@ class Port(BasePort, Generic[PortLinkType]):
     for (name, param) in self._parameters.items():
       param.initializer = None
 
+  @override
   def _cloned_from(self: SelfType, other: SelfType) -> None:
     super()._cloned_from(other)
     self._parameters.finalize()
@@ -205,11 +208,13 @@ class Port(BasePort, Generic[PortLinkType]):
     self._adapter_count += 1
     return adapter_inst.dst
 
+  @override
   def _instance_to_proto(self) -> edgir.PortLike:
     pb = edgir.PortLike()
     pb.lib_elem.target.name = self._get_def_name()
     return pb
 
+  @override
   def _def_to_proto(self) -> edgir.PortTypes:
     self._parameters.finalize()
 
@@ -230,9 +235,11 @@ class Port(BasePort, Generic[PortLinkType]):
 
     return pb
 
+  @override
   def _type_of(self) -> Hashable:
     return type(self)
 
+  @override
   def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
     super()._build_ref_map(ref_map, prefix)
     ref_map[self.is_connected()] = edgir.localpath_concat(prefix, edgir.IS_CONNECTED)
@@ -242,6 +249,7 @@ class Port(BasePort, Generic[PortLinkType]):
     if self._link_instance is not None:
       self._link_instance._build_ref_map(ref_map, edgir.localpath_concat(prefix, edgir.CONNECTED_LINK))
 
+  @override
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
     self._parameters.finalize()
     return [(param, path_prefix + [name], param.initializer) for (name, param) in self._parameters.items()
@@ -281,12 +289,14 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     self._ports: SubElementDict[Port] = self.manager.new_dict(Port)
 
+  @override
   def _clear_initializers(self) -> None:
     super()._clear_initializers()
     self._ports.finalize()
     for (name, port) in self._ports.items():
       port._clear_initializers()
 
+  @override
   def _cloned_from(self: SelfType, other: SelfType) -> None:
     super()._cloned_from(other)
     for (name, port) in self._ports.items():
@@ -307,6 +317,7 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
       cloned_port._cloned_from(replace_port)
     return cloned
 
+  @override
   def _def_to_proto(self) -> edgir.Bundle:
     self._parameters.finalize()
     self._ports.finalize()
@@ -330,11 +341,13 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
 
     return pb
 
+  @override
   def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
     super()._build_ref_map(ref_map, prefix)
     for name, field in self._ports.items():
       field._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
 
+  @override
   def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
     self_initializers = super()._get_initializers(path_prefix)
     self._ports.finalize()

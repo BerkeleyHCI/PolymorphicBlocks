@@ -126,6 +126,7 @@ class Opa2197_Device(Opa197_Base_Device, JlcPart, FootprintBlock):
 class Opa2197(MultipackOpampGenerator):
   """Dual precision RRO opamps.
   """
+  @override
   def _make_multipack_opamp(self) -> MultipackOpampGenerator.OpampPorts:
     self.ic = self.Block(Opa2197_Device())
     # Datasheet section 9: recommend 0.1uF bypass capacitors close to power supply pins

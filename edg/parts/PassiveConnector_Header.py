@@ -1,4 +1,7 @@
 from typing import Tuple
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -11,6 +14,7 @@ class PinHeader254(PassiveConnector):
 class PinHeader254Vertical(PinHeader254, FootprintPassiveConnector):
   """Generic 2.54mm pin header in vertical through-hole."""
   allowed_pins = range(1, 40+1)
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_PinHeader_2.54mm:PinHeader_1x{length:02d}_P2.54mm_Vertical',
             "Generic", f"PinHeader2.54 1x{length}")
@@ -19,6 +23,7 @@ class PinHeader254Vertical(PinHeader254, FootprintPassiveConnector):
 class PinHeader254Horizontal(PinHeader254, FootprintPassiveConnector):
   """Generic 2.54mm pin header in horizontal (right-angle) through-hole."""
   allowed_pins = range(1, 40+1)
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_PinHeader_2.54mm:PinHeader_1x{length:02d}_P2.54mm_Horizontal',
             "Generic", f"PinHeader2.54 1x{length} Horizontal")
@@ -27,6 +32,7 @@ class PinHeader254Horizontal(PinHeader254, FootprintPassiveConnector):
 class PinSocket254(FootprintPassiveConnector):
   """Generic 2.54mm pin socket in vertical through-hole."""
   allowed_pins = range(1, 40+1)
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_PinSocket_2.54mm:PinSocket_1x{length:02d}_P2.54mm_Vertical',
             "Generic", f"PinSocket2.54 1x{length}")
@@ -35,6 +41,7 @@ class PinSocket254(FootprintPassiveConnector):
 class PinHeader254DualShroudedInline(FootprintPassiveConnector):
   """Generic 2.54mm dual-row pin header in edge-inline."""
   allowed_pins = {6}
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'edg:PinHeader_2x{length//2:02d}_P2.54mm_EdgeInline',
             "Generic", f"PinHeader2.54 Shrouded 2x{length//2}")
@@ -43,6 +50,7 @@ class PinHeader254DualShroudedInline(FootprintPassiveConnector):
 class PinHeader127DualShrouded(FootprintPassiveConnector, JlcPart):
   """Generic dual-row 1.27mm pin header in vertical through-hole pinned in zigzag."""
   allowed_pins = [10]  # TODO support more
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     assert length == 10, "TODO support more lengths"
     self.assign(self.lcsc_part, 'C2962219')
@@ -60,6 +68,7 @@ class JstXh(FootprintPassiveConnector):
 class JstXhAVertical(JstXh):
   """JST B*B-XH-A series connector: 2.50mm shrouded and polarized, in vertical through-hole."""
   allowed_pins = list(range(2, 16+1)) + [20]
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_JST:JST_XH_B{length}B-XH-A_1x{length:02d}_P2.50mm_Vertical',
             "JST", f"B{length}B-XH-A")
@@ -68,6 +77,7 @@ class JstXhAVertical(JstXh):
 class JstXhAHorizontal(JstXh):
   """JST S*B-XH-A series connector: 2.50mm shrouded and polarized, in horizontal through-hole."""
   allowed_pins = list(range(2, 16+1)) + [20]
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_JST:JST_XH_S{length}B-XH-A_1x{length:02d}_P2.50mm_Vertical',
             "JST", f"S{length}B-XH-A")
@@ -81,6 +91,7 @@ class JstPh(FootprintPassiveConnector):
 class JstPhKVertical(JstPh):
   """JST B*B-PH-K series connector: 2.00mm shrouded and polarized, in vertical through-hole."""
   allowed_pins = range(2, 16+1)
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_JST:JST_PH_B{length}B-PH-K_1x{length:02d}_P2.00mm_Vertical',
             "JST", f"B{length}B-PH-K")
@@ -106,6 +117,7 @@ class JstPhKHorizontal(JstPh, JlcPart):
     15: 'C157936',
     16: 'C157934',
   }
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
     self.assign(self.actual_basic_part, False)
@@ -116,6 +128,7 @@ class JstPhKHorizontal(JstPh, JlcPart):
 class JstPhSmVertical(JstPh):
   """JST B*B-PH-SM4 series connector: 2.00mm shrouded and polarized, in vertical surface-mount."""
   allowed_pins = range(2, 16+1)
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_JST:JST_PH_B{length}B-PH-SM4-TB_1x{length:02d}-1MP_P2.00mm_Vertical',
             "JST", f"B{length}B-PH-SM4-TB")
@@ -133,6 +146,7 @@ class JstPhSmVerticalJlc(JlcPart, JstPhSmVertical):
     8: 'C519165',
     14: 'C278813',
   }
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
@@ -160,6 +174,7 @@ class JstShSmHorizontal(FootprintPassiveConnector, JlcPart):
     20: 'C160415',
   }
   allowed_pins = PART_NUMBERS.keys()
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
@@ -177,6 +192,7 @@ class Picoblade(FootprintPassiveConnector):
 class Picoblade53398(Picoblade):
   """Picoblade connector in surface-mount vertical."""
   allowed_pins = list(range(2, 16+1)) + [20]
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_Molex:Molex_PicoBlade_53398-{length:02d}71_1x{length:02d}-1MP_P1.25mm_Vertical',
             "Molex", f"53398{length:02d}71")
@@ -185,6 +201,7 @@ class Picoblade53398(Picoblade):
 class Picoblade53261(Picoblade):
   """Picoblade connector in surface-mount horizontal."""
   allowed_pins = list(range(2, 16+1)) + [20]
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_Molex:Molex_PicoBlade_53261-{length:02d}71_1x{length:02d}-1MP_P1.25mm_Vertical',
             "Molex", f"53261{length:02d}71")
@@ -194,6 +211,7 @@ class MolexSl(FootprintPassiveConnector):
   """Molex SL series connector: 2.54mm shrouded and polarized, in vertical through-hole.
   Breadboard wire compatible - especially for debugging in a pinch."""
   allowed_pins = range(2, 25+1)
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_Molex:Molex_SL_171971-00{length:02d}_1x{length:02d}_P2.54mm_Vertical',
             "Molex", f"171971-00{length:02d}_1x{length:02d}")

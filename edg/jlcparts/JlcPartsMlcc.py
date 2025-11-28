@@ -1,4 +1,7 @@
 from typing import Any, Optional, Dict
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 from ..parts.JlcCapacitor import JlcCapacitor, JlcDummyCapacitor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
@@ -13,6 +16,7 @@ class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapac
         self.generator_param(self.capacitance_minimum_size)
 
     @classmethod
+    @override
     def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes) \
             -> Optional[Dict[PartsTableColumn, Any]]:
         try:
@@ -37,6 +41,7 @@ class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapac
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
 
+    @override
     def _table_postprocess(self, table: PartsTable) -> PartsTable:
         # TODO deduplicate w/ JlcCapacitor
         def filter_minimum_size(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:

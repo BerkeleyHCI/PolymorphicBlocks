@@ -1,5 +1,8 @@
 import re
 from typing import Optional, Dict, Any, List
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
@@ -23,6 +26,7 @@ class JlcResistorArray(PartsTableSelectorFootprint, JlcTableSelector, TableResis
   ]
 
   @classmethod
+  @override
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row['Second Category'] != 'Resistor Networks & Arrays':

@@ -15,6 +15,7 @@ class Comparator(KiCadInstantiableBlock, Analog):
         return {'+': self.inp, '-': self.inn, '3': self.out, 'V+': self.pwr, 'V-': self.gnd}
 
     @classmethod
+    @override
     def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Comparator':
         return Comparator()
 

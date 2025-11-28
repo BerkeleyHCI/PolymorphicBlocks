@@ -11,9 +11,11 @@ class CharlieplexedLedMatrix(Light, GeneratorBlock, SvgPcbTemplateBlock):
   Anodes (columns) are directly connected to the IO line, while the cathodes (rows) are connected through a resistor.
   A generalization of https://en.wikipedia.org/wiki/Charlieplexing#/media/File:3-pin_Charlieplexing_matrix_with_common_resistors.svg
   """
+  @override
   def _svgpcb_fn_name_adds(self) -> Optional[str]:
     return f"{self._svgpcb_get(self.ncols)}_{self._svgpcb_get(self.nrows)}"
 
+  @override
   def _svgpcb_template(self) -> str:
     led_block = self._svgpcb_footprint_block_path_of(['led[0_0]'])
     res_block = self._svgpcb_footprint_block_path_of(['res[0]'])
@@ -162,6 +164,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.2, rowSpacing=0.2) {{
 }}
 """
 
+  @override
   def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
     return (-1.0, -1.0,
             self._svgpcb_get(self.ncols) * .2 * 25.4 + 1.0, (self._svgpcb_get(self.nrows) + 1) * .2 * 25.4 + 1.0)

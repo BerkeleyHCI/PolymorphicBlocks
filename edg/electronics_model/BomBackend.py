@@ -1,6 +1,8 @@
 import io
 from typing import List, Tuple, Dict, NamedTuple
 
+from typing_extensions import override
+
 from .. import edgir
 from ..core import BaseBackend, CompiledDesign, TransformUtil
 
@@ -16,6 +18,7 @@ class BomItem(NamedTuple):
 
 
 class GenerateBom(BaseBackend):      # creates and populates .csv file
+    @override
     def run(self, design: CompiledDesign, args: Dict[str, str]= {}) -> List[Tuple[edgir.LocalPath, str]]:
         assert not args
         bom_list = BomTransform(design).run()
@@ -42,6 +45,7 @@ class BomTransform(TransformUtil.Transform):
         self.design = design
         self.bom_list: Dict[BomItem, List[str]] = {}  # BomItem -> list of refdes
 
+    @override
     def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
         footprint = self.design.get_value(context.path.to_tuple() + ('fp_footprint',))
         refdes = self.design.get_value(context.path.to_tuple() + ('fp_refdes',))

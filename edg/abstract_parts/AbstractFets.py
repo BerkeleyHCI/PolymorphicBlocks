@@ -245,6 +245,7 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
       row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
+  @override
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     drive_current = self.get(self.drive_current)
     gate_drive_rise, gate_drive_fall = drive_current.upper, -drive_current.lower

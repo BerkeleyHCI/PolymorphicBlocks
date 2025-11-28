@@ -56,6 +56,7 @@ class Opa2333_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Opa2333(MultipackOpampGenerator):
   """Dual precision RRIO (including negative input) opamps.
   """
+  @override
   def _make_multipack_opamp(self) -> MultipackOpampGenerator.OpampPorts:
     self.ic = self.Block(Opa2333_Device())
     # Datasheet section 9: recommend 0.1uF bypass capacitors close to power supply pins

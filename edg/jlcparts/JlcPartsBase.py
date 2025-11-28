@@ -5,6 +5,8 @@ from pydantic import BaseModel, RootModel, Field
 import gzip
 import os
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from ..parts.JlcPart import JlcPart
 
@@ -102,6 +104,7 @@ class JlcPartsBase(JlcPart, PartsTableAreaSelector, PartsTableFootprintFilter):
     _cached_table: Optional[PartsTable] = None  # set on a per-class basis
 
     @classmethod
+    @override
     def _make_table(cls) -> PartsTable:
         """Return the table, cached if possible"""
         if cls._cached_table is None:
@@ -164,6 +167,7 @@ class JlcPartsBase(JlcPart, PartsTableAreaSelector, PartsTableFootprintFilter):
         return PartsTable(rows)
 
     @classmethod
+    @override
     def _row_sort_by(cls, row: PartsTableRow) -> Any:
         return [not row[cls.BASIC_PART_COL], cls._row_area(row), super()._row_sort_by(row), row[cls.COST_COL]]
 

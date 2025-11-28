@@ -51,6 +51,7 @@ class HiroseFh12sh(Fpc050Bottom, FootprintPassiveConnector):
   _kicad_pins = {6, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 24, 25, 26, 28,
                  30, 32, 33, 34, 35, 36, 40, 45, 50, 53}
   allowed_pins = _fh12_pins.intersection(_kicad_pins)
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_FFC-FPC:Hirose_FH12-{length}S-0.5SH_1x{length:02d}-1MP_P0.50mm_Horizontal',
             "Hirose", f"FH12-{length}S-0.5SH")
@@ -91,6 +92,7 @@ class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
     60: 'C2918970'  # FCC
   }
 
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
@@ -133,6 +135,7 @@ class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
     54: 'C262258',  # also C2691600 for -ECC
     60: 'C262652'  # ECA
   }
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])
@@ -144,6 +147,8 @@ class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
 class Te1734839(Fpc050Top, FootprintPassiveConnector):
   """TE x-1734839 FFC/FPC connector, 0.50mm pitch horizontal top contacts."""
   allowed_positions = range(5, 50)
+
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     return (f'Connector_FFC-FPC:TE_{length // 10}-1734839-{length % 10}_1x{length:02d}-1MP_P0.5mm_Horizontal',
             "TE Connectivity", f"{length // 10}-1734839-{length % 10}")
@@ -183,6 +188,7 @@ class HiroseFh35cshw(Fpc030TopBottom, FootprintPassiveConnector, JlcPart):
   PART_NUMBERS = {  # partial list of the ones currently used
     31: 'C424662',
   }
+  @override
   def part_footprint_mfr_name(self, length: int) -> Tuple[str, str, str]:
     # TODO this isn't the intended hook and uses side effects, but it works for now
     self.assign(self.lcsc_part, self.PART_NUMBERS[length])

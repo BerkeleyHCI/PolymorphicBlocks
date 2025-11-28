@@ -56,6 +56,7 @@ class JlcDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode, Tabl
   ]
 
   @classmethod
+  @override
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row['Second Category'] not in [
@@ -97,6 +98,7 @@ class JlcZenerDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode,
   ]
 
   @classmethod
+  @override
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row['Second Category'] != 'Zener Diodes':

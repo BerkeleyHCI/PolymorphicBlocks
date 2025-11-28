@@ -38,6 +38,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
       return Range.from_tolerance(center, (-cls.RESISTOR_DEFAULT_TOL, cls.RESISTOR_DEFAULT_TOL))
 
   @classmethod
+  @override
   def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Resistor':
     return Resistor(resistance=cls.parse_resistor(properties['Value']))
 

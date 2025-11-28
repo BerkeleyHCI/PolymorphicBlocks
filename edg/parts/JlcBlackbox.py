@@ -11,6 +11,7 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
   This can't extend KiCadBlackbox because KiCadBlackbox.block_from_symbol is non-compositional
   """
   @classmethod
+  @override
   def block_from_symbol(cls, symbol: KiCadSymbol, lib: KiCadLibSymbol) -> \
       Tuple['KiCadJlcBlackbox', Callable[['KiCadJlcBlackbox'], Mapping[str, BasePort]]]:
     pin_numbers = [pin.number for pin in lib.pins]

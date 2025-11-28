@@ -151,6 +151,7 @@ class SvgPcbTransform(TransformUtil.Transform):
         self.netlist = netlist
         self._svgpcb_blocks: List[SvgPcbGeneratedBlock] = []
 
+    @override
     def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
         # ignore root, bit of a heuristic hack since importing the toplevel script can be brittle
         if context.path == TransformUtil.Path.empty():
@@ -176,6 +177,7 @@ class SvgPcbTransform(TransformUtil.Transform):
 
 
 class SvgPcbBackend(BaseBackend):
+    @override
     def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]:
         netlist = NetlistTransform(design).run()
         result = self._generate(design, netlist)

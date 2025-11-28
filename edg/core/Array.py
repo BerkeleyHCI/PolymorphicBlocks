@@ -6,7 +6,7 @@ from typing import Generic, Any, Tuple, Type, Optional, Union, Iterable, overloa
   ItemsView, Callable, Dict
 
 from deprecated import deprecated
-from typing_extensions import TypeVar
+from typing_extensions import TypeVar, override
 
 from .ArrayExpr import ArrayExpr, ArrayRangeExpr, ArrayStringExpr, ArrayBoolExpr, ArrayFloatExpr, ArrayIntExpr
 from .Binding import LengthBinding, AllocatedBinding
