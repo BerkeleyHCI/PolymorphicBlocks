@@ -23,6 +23,7 @@ class I2cLink(Link):
 
     self.has_pull = self.Parameter(BoolExpr(self.pull.any_connected()))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.require(self.pull.any_connected() | self.controller.has_pullup)
@@ -66,6 +67,7 @@ class I2cTargetBridge(PortBridge):
     self.outer_port = self.Port(I2cTarget.empty())
     self.inner_link = self.Port(I2cController(DigitalBidir.empty(), self.outer_port.link().has_pull))
 
+  @override
   def contents(self) -> None:
     super().contents()
 

@@ -39,6 +39,7 @@ class ProtectionTvsDiode(Protection):
 
         self.working_voltage = self.ArgParameter(working_voltage)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.diode = self.Block(TvsDiode(working_voltage=self.working_voltage))
@@ -59,6 +60,7 @@ class DigitalTvsDiode(Protection):
         self.working_voltage = self.ArgParameter(working_voltage)
         self.capacitance = self.ArgParameter(capacitance)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.diode = self.Block(TvsDiode(working_voltage=self.working_voltage, capacitance=self.capacitance))

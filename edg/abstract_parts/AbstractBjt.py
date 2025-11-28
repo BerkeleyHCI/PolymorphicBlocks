@@ -48,6 +48,7 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
     self.actual_power_rating = self.Parameter(RangeExpr())
     self.actual_gain = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 

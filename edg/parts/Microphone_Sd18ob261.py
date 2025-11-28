@@ -27,6 +27,7 @@ class Sd18ob261_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             current_limits=(-20, 20)*mAmp  # short circuit current for data pin
         ))
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Sensor_Audio:Knowles_LGA-5_3.5x2.65mm',
@@ -61,6 +62,7 @@ class Sd18ob261(Microphone, GeneratorBlock):
 
         self.generator_param(self.lr.is_connected())
 
+    @override
     def generate(self) -> None:
         super().generate()
 

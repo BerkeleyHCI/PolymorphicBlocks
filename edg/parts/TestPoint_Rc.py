@@ -14,6 +14,7 @@ class TeRc(TestPoint, FootprintBlock, GeneratorBlock):
     self.size = self.ArgParameter(size)
     self.generator_param(self.size)
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.size) not in self._PART_TABLE:

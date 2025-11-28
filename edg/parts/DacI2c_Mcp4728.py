@@ -31,6 +31,7 @@ class Mcp4728_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
 
     self.generator_param(self.ldac.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -84,6 +85,7 @@ class Mcp4728(DigitalToAnalog, GeneratorBlock):
     self.generator_param(self.output_caps, self.out0.is_connected(), self.out1.is_connected(),
                          self.out2.is_connected(), self.out3.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
 

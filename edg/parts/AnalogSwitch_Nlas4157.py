@@ -31,6 +31,7 @@ class Nlas4157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.b1 = self.Port(Passive(), optional=True)
     self.b0 = self.Port(Passive(), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -58,6 +59,7 @@ class Nlas4157(AnalogSwitch):
   - TS5A3159: 5v tolerant, 1 ohm
   - TS5A3160: 5v tolerant, 1 ohm
   """
+  @override
   def contents(self) -> None:
     super().contents()
 

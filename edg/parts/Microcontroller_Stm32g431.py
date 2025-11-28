@@ -185,6 +185,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             }),
         ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
+    @override
     def generate(self) -> None:
         super().generate()
         self.footprint(
@@ -245,6 +246,7 @@ class Stm32g431Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
         self.ic: Stm32g431Base_Device
         self.generator_param(self.reset.is_connected())
 
+    @override
     def contents(self) -> None:
         super().contents()
         with self.implicit_connect(
@@ -263,6 +265,7 @@ class Stm32g431Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
             self.pwr_cap3 = imp.Block(DecouplingCapacitor(100 * nFarad(tol=0.2)))
             self.pwr_cap4 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
+    @override
     def generate(self) -> None:
         super().generate()
         if self.get(self.reset.is_connected()):

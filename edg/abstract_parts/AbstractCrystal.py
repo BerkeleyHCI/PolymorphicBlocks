@@ -21,6 +21,7 @@ class Crystal(DiscreteComponent, HasStandardFootprint):
     self.crystal = self.Port(CrystalPort(self.actual_frequency), [InOut])  # set by subclass
     self.gnd = self.Port(Ground(), [Common])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -103,6 +104,7 @@ class OscillatorCrystal(OscillatorReference):  # TODO rename to disambiguate fro
   # TODO this should be formalized better.
   CAPACITOR_TOLERANCE = 0.38
 
+  @override
   def contents(self) -> None:
     super().contents()
 

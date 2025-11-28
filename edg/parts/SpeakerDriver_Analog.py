@@ -21,6 +21,7 @@ class Lm4871_Device(InternalSubcircuit, FootprintBlock):
 
         self.byp = self.Port(Passive())
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
@@ -51,6 +52,7 @@ class Lm4871(SpeakerDriver, Block):
         self.sig = self.Port(AnalogSink.empty(), [Input])
         self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
+    @override
     def contents(self) -> None:
         super().contents()
         # TODO size component based on higher level input?
@@ -107,6 +109,7 @@ class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.vo1 = self.Port(speaker_port)
         self.vo2 = self.Port(speaker_port)
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_SO:MSOP-8-1EP_3x3mm_P0.65mm_EP1.68x1.88mm_ThermalVias',
@@ -144,6 +147,7 @@ class Tpa2005d1(SpeakerDriver, Block):
 
         self.gain = self.ArgParameter(gain)
 
+    @override
     def contents(self) -> None:
         import math
         super().contents()
@@ -206,6 +210,7 @@ class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.vop = self.Port(speaker_port)
         self.von = self.Port(speaker_port)
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_SO:MSOP-8_3x3mm_P0.65mm',
@@ -238,6 +243,7 @@ class Pam8302a(SpeakerDriver, Block):
         self.sig = self.Port(AnalogSink.empty(), [Input])
         self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
+    @override
     def contents(self) -> None:
         super().contents()
 

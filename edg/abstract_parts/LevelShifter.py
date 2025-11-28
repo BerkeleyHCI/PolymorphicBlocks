@@ -32,6 +32,7 @@ class BidirectionaLevelShifter(Interface, GeneratorBlock):
         self.src_hint = self.ArgParameter(src_hint)
         self.generator_param(self.lv_res, self.hv_res, self.src_hint)
 
+    @override
     def generate(self) -> None:
         super().generate()
 

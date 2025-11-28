@@ -21,6 +21,7 @@ class BadGeneratorTestCase(unittest.TestCase):
       self.param = self.Parameter(FloatExpr())
       self.generator_param(self.param)
 
+    @override
     def generate(self) -> None:
       super().generate()
 

@@ -252,6 +252,7 @@ class Holyiot_18010_Device(Nrf52840_Base, InternalSubcircuit):
     'P0.10': '36',
   }
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -273,6 +274,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interf
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
     self.generator_param(self.reset.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.connect(self.pwr, self.ic.pwr)
@@ -281,6 +283,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interf
     self.connect(self.swd_node, self.ic.swd)
     self.connect(self.reset_node, self.ic.nreset)
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):
@@ -350,6 +353,7 @@ class Mdbt50q_1mv2_Device(Nrf52840_Base, InternalSubcircuit, JlcPart):
     'P1.01': '61',
   }
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -386,6 +390,7 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfa
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
     self.generator_param(self.reset.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.connect(self.pwr, self.ic.pwr)
@@ -400,6 +405,7 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfa
     ) as imp:
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -482,6 +488,7 @@ class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, I
         'Vbus': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -501,6 +508,7 @@ class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, I
 
     self.generator_param(self.pwr.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
 

@@ -21,6 +21,7 @@ class Bme680_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.i2c = self.Port(I2cTarget(dio_model, [0x76]))
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_LGA:Bosch_LGA-8_3x3mm_P0.8mm_ClockwisePinNumbering',
@@ -52,6 +53,7 @@ class Bme680(TemperatureSensor, HumiditySensor, PressureSensor, GasSensor, Defau
         self.pwr_io = self.Export(self.ic.vddio, default=self.pwr, doc="IO supply voltage")
         self.i2c = self.Export(self.ic.i2c, [InOut])
 
+    @override
     def contents(self) -> None:
         super().contents()  # capacitors from shuttle board example
         self.vdd_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)

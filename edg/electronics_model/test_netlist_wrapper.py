@@ -12,6 +12,7 @@ class SinkWrapperBlock(WrapperFootprintBlock):
     self.pos = self.Port(VoltageSink.empty())
     self.neg = self.Port(VoltageSink.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -31,6 +32,7 @@ class SinkWrapperBlock(WrapperFootprintBlock):
 
 
 class TestWrapperCircuit(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 

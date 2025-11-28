@@ -37,6 +37,7 @@ class Ws2812b(Neopixel, FootprintBlock, JlcPart):
             current_limits=0*mAmp(tol=0),
         ))
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'D', 'LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm',
@@ -75,6 +76,7 @@ class Sk6812Mini_E_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             current_limits=0*mAmp(tol=0),
         ), optional=True)
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'D', 'edg:LED_SK6812MINI-E',
@@ -121,6 +123,7 @@ class Sk6805_Ec15_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             current_limits=0*mAmp(tol=0),
         ), optional=True)
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'D', 'LED_SMD:LED_SK6812_EC15_1.5x1.5mm',
@@ -168,6 +171,7 @@ class Ws2812c_2020_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             current_limits=0*mAmp(tol=0),
         ), optional=True)
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'D', 'LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm',
@@ -214,6 +218,7 @@ class Sk6812_Side_A_Device(InternalSubcircuit, FootprintBlock):
             current_limits=0*mAmp(tol=0),
         ), optional=True)
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'D', 'edg:LED_SK6812-SIDE-A',
@@ -254,6 +259,7 @@ class NeopixelArray(Light, GeneratorBlock):
         self.count = self.ArgParameter(count)
         self.generator_param(self.count)
 
+    @override
     def generate(self) -> None:
         super().generate()
         self.led = ElementDict[Neopixel]()

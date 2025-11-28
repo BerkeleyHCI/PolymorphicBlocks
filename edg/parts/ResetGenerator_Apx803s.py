@@ -15,6 +15,7 @@ class Apx803s_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
         self.generator_param(self.reset_threshold)
         self.actual_reset_threshold = self.Parameter(RangeExpr())
 
+    @override
     def generate(self) -> None:
         super().generate()
         parts = [  # output range, part number, lcsc

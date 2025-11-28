@@ -46,6 +46,7 @@ class Opa2171_Device(Opa171_Base_Device, JlcPart, FootprintBlock):
     self.innb = self.Port(analog_in_model)
     self.outb = self.Port(analog_out_model)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(

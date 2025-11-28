@@ -43,6 +43,7 @@ class Ncp3420_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.vcc.current_draw, (0.7, 5.0)*mAmp + self.drvl.link().current_drawn +
                 self.drvh.link().current_drawn)  # only system supply given
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -70,6 +71,7 @@ class Ncp3420(HalfBridgeDriver, HalfBridgeDriverPwm, Resettable, GeneratorBlock)
     super().__init__(*args, **kwargs)
     self.generator_param(self.has_boot_diode, self.high_pwr.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -86,6 +88,7 @@ class Ncp3420(HalfBridgeDriver, HalfBridgeDriverPwm, Resettable, GeneratorBlock)
     # serves as both boot cap and decoupling cap
     self.high_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.high_gnd, self.ic.bst)
 
+  @override
   def generate(self) -> None:
     super().generate()
 

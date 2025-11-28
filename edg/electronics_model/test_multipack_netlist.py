@@ -19,6 +19,7 @@ class TestPackedSink(MultipackBlock):
     self.pos = self.PackedExport(self.elements.ports_array(lambda x: x.pos))
     self.neg = self.PackedExport(self.elements.ports_array(lambda x: x.neg))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -33,6 +34,7 @@ class TestPackedSink(MultipackBlock):
 
 
 class TestPackedDevices(DesignTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -50,6 +52,7 @@ class TestPackedDevices(DesignTop):
 
 
 class TestInvalidPackedDevices(DesignTop):
+  @override
   def contents(self) -> None:
     super().contents()
 

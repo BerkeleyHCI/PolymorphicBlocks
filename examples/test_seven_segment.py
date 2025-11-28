@@ -6,6 +6,7 @@ from edg import *
 class SevenSegment(JlcBoardTop):
   """RGB 7-segment clock using Neopixels.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -88,6 +89,7 @@ class SevenSegment(JlcBoardTop):
       self.connect(self.v5v_sense.input, self.pwr)
       self.connect(self.v5v_sense.output, self.mcu.adc.request('v5v_sense'))
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

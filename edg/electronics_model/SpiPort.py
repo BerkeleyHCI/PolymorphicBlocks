@@ -18,6 +18,7 @@ class SpiLink(Link):
     self.controller = self.Port(SpiController(DigitalBidir.empty()))
     self.peripherals = self.Port(Vector(SpiPeripheral(DigitalBidir.empty())))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.sck = self.connect(self.controller.sck, self.peripherals.map_extract(lambda device: device.sck),

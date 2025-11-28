@@ -15,6 +15,7 @@ class XboxElite2Joystick(FootprintBlock, HumanInterface):
         self.ax1 = self.Port(AnalogSource.from_supply(self.gnd, self.pwr))
         self.ax2 = self.Port(AnalogSource.from_supply(self.gnd, self.pwr))
 
+    @override
     def contents(self) -> None:
         super().contents()
 

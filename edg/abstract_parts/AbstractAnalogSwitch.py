@@ -43,6 +43,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
     self.switch_size = self.ArgParameter(switch_size)
     self.generator_param(self.switch_size, self.inputs.requested(), self.control_gnd.is_connected())
 
+  @override
   def generate(self) -> None:
     import math
     super().generate()
@@ -132,6 +133,7 @@ class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
 
     self.generator_param(self.inputs.requested(), self.control_gnd.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.inputs.defined()
@@ -175,6 +177,7 @@ class AnalogDemuxer(Interface, GeneratorBlock):
 
     self.generator_param(self.outputs.requested())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.outputs.defined()

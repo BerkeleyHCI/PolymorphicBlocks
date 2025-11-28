@@ -12,6 +12,7 @@ class I2cControllerBitBang(BitBangAdapter, Block):
     self.scl = self.Port(DigitalBidir.empty())
     self.sda = self.Port(DigitalBidir.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.connect(self.i2c.scl, self.scl)

@@ -29,6 +29,7 @@ class ResistorMux(Interface, KiCadImportableBlock, GeneratorBlock):
     self.resistances = self.ArgParameter(resistances)
     self.generator_param(self.resistances)
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.res = ElementDict[Resistor]()
@@ -62,6 +63,7 @@ class MultimeterAnalog(KiCadSchematicBlock, Block):
 
     self.select = self.Port(Vector(DigitalSink.empty()))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -104,6 +106,7 @@ class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
 
     self.voltage_rating = self.ArgParameter(voltage_rating)
 
+  @override
   def contents(self) -> None:
     super().contents()
     max_in_voltage = self.control.link().voltage.upper()
@@ -163,6 +166,7 @@ class Multimeter(JlcBoardTop):
     CIRCUITS WHILE USB IS PLUGGED IN. BE AWARE OF GROUND PATHS.
   """
 
+  @override
   def contents(self) -> None:
     super().contents()
     VOLTAGE_RATING = (0, 250) * Volt
@@ -318,6 +322,7 @@ class Multimeter(JlcBoardTop):
       self.connect(self.mcu.gpio.request_vector('driver_select'), self.driver.select)
       self.connect(self.mcu.gpio.request('driver_enable'), self.driver.enable)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

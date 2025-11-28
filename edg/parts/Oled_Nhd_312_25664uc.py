@@ -27,6 +27,7 @@ class Nhd_312_25664uc_Device(InternalSubcircuit, FootprintBlock):
     self.nres = self.Port(DigitalSink.from_bidir(io_model))
     self.ncs = self.Port(DigitalSink.from_bidir(io_model))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -73,6 +74,7 @@ class Nhd_312_25664uc(Oled, Block):
     self.cs = self.Export(self.device.ncs)
     self.spi = self.Port(SpiPeripheral(DigitalBidir.empty()))
 
+  @override
   def contents(self) -> None:
     super().contents()
 

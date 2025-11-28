@@ -22,6 +22,7 @@ class UartConnector(Connector, Block):
 
 class UsbUart(JlcBoardTop):
   """USB UART converter board"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb_uart = self.Block(UsbCReceptacle())
@@ -55,6 +56,7 @@ class UsbUart(JlcBoardTop):
       self.out = imp.Block(UartConnector())
       self.connect(self.usbconv.uart, self.out.uart)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

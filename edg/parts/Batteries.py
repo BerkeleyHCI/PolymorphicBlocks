@@ -13,6 +13,7 @@ class Cr2032(Battery, FootprintBlock):
     ))
     self.gnd.init_from(Ground())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -38,6 +39,7 @@ class Li18650(Battery, FootprintBlock):
     ))
     self.gnd.init_from(Ground())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -64,6 +66,7 @@ class AaBattery(Battery, FootprintBlock):
       current_limits=(0, 1)*Amp,
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -87,6 +90,7 @@ class AaBatteryStack(Battery, GeneratorBlock):
         self.cell_actual_voltage = self.ArgParameter(cell_actual_voltage)
         self.generator_param(self.count)
 
+    @override
     def generate(self) -> None:
         super().generate()
         prev_cell: Optional[AaBattery] = None

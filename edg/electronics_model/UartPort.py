@@ -10,6 +10,7 @@ class UartLink(Link):
     self.a = self.Port(UartPort(DigitalBidir.empty()))
     self.b = self.Port(UartPort(DigitalBidir.empty()))
 
+  @override
   def contents(self) -> None:
     super().contents()
 

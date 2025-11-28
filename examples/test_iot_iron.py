@@ -36,6 +36,7 @@ class IotIron(JlcBoardTop):
 
   Inspired by https://github.com/AxxAxx/AxxSolder/tree/main, see repo README for links on connector pinning.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -190,6 +191,7 @@ class IotIron(JlcBoardTop):
     self.pack(self.packed_opamp.elements.request('0'), ['ifilt', 'amp'])
     self.pack(self.packed_opamp.elements.request('1'), ['tamp', 'amp'])
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

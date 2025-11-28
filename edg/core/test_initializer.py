@@ -23,18 +23,21 @@ class TestNestedBlock(Block):
     super().__init__()
     self.outer_bundle = self.Port(TestBundle(21, 1, -1), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.inner = self.Block(TestInternalBlock(62, 31))
 
 
 class TestDefaultBlock(Block):
+  @override
   def contents(self) -> None:
     super().contents()
     self.inner = self.Block(TestInternalBlock())
 
 
 class TestMultipleInstantiationBlock(Block):
+  @override
   def contents(self) -> None:
     super().contents()
     model = TestInternalBlock()

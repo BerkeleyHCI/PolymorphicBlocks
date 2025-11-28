@@ -353,6 +353,7 @@ class IdealModel(InternalBlock):
     super().__init__(*args, **kwargs)
     self.allow_ideal = self.ArgParameter(allow_ideal)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.require(self.allow_ideal, "ideal model")

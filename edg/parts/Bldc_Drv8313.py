@@ -36,6 +36,7 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.cpl = self.Port(Passive())  # connect Vm rated, 0.01uF ceramic capacitor
         self.cph = self.Port(Passive())
 
+    @override
     def contents(self) -> None:
         out_model = DigitalSource.from_supply(
             self.gnd, self.vm,
@@ -119,6 +120,7 @@ class Drv8313(BldcDriver, GeneratorBlock):
         self.risense_res = self.ArgParameter(risense_res)
         self.generator_param(self.pgnd_sense.requested())
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.vm_cap_bulk = self.Block(DecouplingCapacitor((10*0.8, 100)*uFarad)).connected(self.gnd, self.ic.vm)
@@ -140,6 +142,7 @@ class Drv8313(BldcDriver, GeneratorBlock):
         self.nsleep_default = self.Block(DigitalSourceConnected()) \
             .out_with_default(self.ic.nsleep, self.nsleep, self.ic.v3p3.as_digital_source())
 
+    @override
     def generate(self) -> None:
         super().generate()
         pgnd_requested = self.get(self.pgnd_sense.requested())

@@ -40,6 +40,7 @@ class TestBlockContainerSink(Block):
 
 
 class TopMultipackDesign(DesignTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.sink1 = self.Block(PartSink())
@@ -121,6 +122,7 @@ class MultipackArrayBlockSink(MultipackBlock):
 
 
 class TopMultipackArrayDesign(DesignTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.sink1 = self.Block(PartSink())

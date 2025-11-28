@@ -19,6 +19,7 @@ class BootstrapVoltageAdder(KiCadSchematicBlock, PowerConditioner, Block):
         self.frequency = self.ArgParameter(frequency)
         self.ripple_limit = self.ArgParameter(ripple_limit)
 
+    @override
     def contents(self) -> None:
         super().contents()
 

@@ -7,6 +7,7 @@ class Ct3151(BananaSafetyJack, FootprintBlock):
 
   TODO: automatically support color code generation?
   """
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -26,6 +27,7 @@ class Fcr7350(BananaSafetyJack, FootprintBlock):
 
   TODO: automatically support color code generation?
   """
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(

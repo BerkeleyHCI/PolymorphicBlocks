@@ -28,6 +28,7 @@ class DesignTop(Block):
   def Export(self, *args: Any, **kwargs: Any) -> Any:
     raise ValueError("Can't create ports on design top")
 
+  @override
   def refinements(self) -> Refinements:
     """Defines top-level refinements.
     Subclasses should define refinements by stacking new refinements on a super().refinements() call."""

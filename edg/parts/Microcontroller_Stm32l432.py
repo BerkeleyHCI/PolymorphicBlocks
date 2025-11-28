@@ -157,6 +157,7 @@ class Stm32l432Base_Device(IoControllerI2cTarget, IoControllerDac, IoControllerC
             }),
         ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
+    @override
     def generate(self) -> None:
         super().generate()
 
@@ -224,6 +225,7 @@ class Stm32l432Base(Resettable, IoControllerDac, IoControllerCan, IoControllerUs
         self.ic: Stm32l432Base_Device
         self.generator_param(self.reset.is_connected())
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -243,6 +245,7 @@ class Stm32l432Base(Resettable, IoControllerDac, IoControllerCan, IoControllerUs
             self.vdda_cap0 = imp.Block(DecouplingCapacitor(10*nFarad(tol=0.2)))
             self.vdda_cap1 = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2)))
 
+    @override
     def generate(self) -> None:
         super().generate()
 

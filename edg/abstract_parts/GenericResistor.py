@@ -27,6 +27,7 @@ class ESeriesResistor(SelectorArea, Resistor, FootprintBlock, GeneratorBlock):
     self.generator_param(self.resistance, self.power, self.series, self.tolerance, self.footprint_spec,
                          self.footprint_area)
 
+  @override
   def generate(self) -> None:
     super().generate()
 

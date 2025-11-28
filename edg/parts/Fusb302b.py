@@ -23,6 +23,7 @@ class Fusb302b_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.i2c = self.Port(I2cTarget(i2c_model, [0x22]))
     self.int_n = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)
 
+  @override
   def contents(self) -> None:
     self.footprint(
       'U', 'Package_DFN_QFN:WQFN-14-1EP_2.5x2.5mm_P0.5mm_EP1.45x1.45mm',
@@ -63,6 +64,7 @@ class Fusb302b(Interface, Block):
     self.i2c = self.Export(self.ic.i2c)
     self.int = self.Export(self.ic.int_n)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

@@ -33,6 +33,7 @@ class Ad8418a_Device(JlcPart, FootprintBlock, InternalSubcircuit):
             impedance=2*Ohm(tol=0)  # range not specified
         ))
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(
@@ -75,6 +76,7 @@ class Ad8418a(CurrentSensor, KiCadImportableBlock, Block):
         self.ref = self.Export(self.amp.vref1)  # TODO optional for grounded unidirectional
         self.out = self.Export(self.amp.out)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.connect(self.ref, self.amp.vref2)

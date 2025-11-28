@@ -17,6 +17,7 @@ class Hdc1080_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.i2c = self.Port(I2cTarget(dio_model, [0x40]))
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(
@@ -45,6 +46,7 @@ class Hdc1080(TemperatureSensor, HumiditySensor, Block):
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c, [InOut])
 
+    @override
     def contents(self) -> None:
         super().contents()
         # X7R capacitor recommended
@@ -70,6 +72,7 @@ class Tmp1075n_Device(InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBloc
         self.addr_lsb = self.ArgParameter(addr_lsb)
         self.generator_param(self.addr_lsb)
 
+    @override
     def generate(self) -> None:
         super().generate()
         addr_lsb = self.get(self.addr_lsb)
@@ -105,6 +108,7 @@ class Tmp1075n(TemperatureSensor, Block):
         self.i2c = self.Export(self.ic.i2c, [InOut])
         self.alert = self.Export(self.ic.alert, optional=True, doc="Overtemperature SMBus alert")
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.vdd_cap = self.Block(DecouplingCapacitor(0.01*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)

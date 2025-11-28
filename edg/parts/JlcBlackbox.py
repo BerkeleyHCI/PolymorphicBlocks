@@ -38,6 +38,7 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
     self.kicad_pins = self.ArgParameter(kicad_pins)
     self.generator_param(self.kicad_pins)
 
+  @override
   def generate(self) -> None:
     super().generate()
     mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)

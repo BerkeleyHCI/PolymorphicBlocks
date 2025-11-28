@@ -9,6 +9,7 @@ class StTscSenseChannel(Block):
     super().__init__()
     self.io = self.Port(DigitalBidir.empty(), [Input])
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.res = self.Block(Resistor(resistance=10*kOhm(tol=0.05)))  # recommended by ST
@@ -24,6 +25,7 @@ class StTscReference(Block):
     self.gnd = self.Port(Ground.empty(), [Common])
     self.io = self.Port(DigitalBidir.empty(), [Input])
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.cap = self.Block(Capacitor(10*nFarad(tol=0.2), voltage=self.io.link().voltage))
@@ -35,6 +37,7 @@ class UsbKey(JlcBoardTop):
   """USB dongle with the PCB as the USB-A contact surface and a microcontroller on the opposite side.
   Similar circuitry and same pinning as the Solokeys Somu: https://github.com/solokeys/solo-hw/tree/master/solo
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -80,6 +83,7 @@ class UsbKey(JlcBoardTop):
     self.pack(self.packed_mcu_vdd1_cap.elements.request('1'), ['mcu', 'vdd_cap_bulk', 'cap'])
     self.pack(self.packed_mcu_vdd1_cap.elements.request('2'), ['mcu', 'vdd_cap[1]', 'cap'])
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

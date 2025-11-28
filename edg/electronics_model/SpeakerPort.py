@@ -10,6 +10,7 @@ class SpeakerLink(Link):
     self.source = self.Port(SpeakerDriverPort())
     self.sink = self.Port(SpeakerPort())
 
+  @override
   def contents(self) -> None:
     super().contents()
 

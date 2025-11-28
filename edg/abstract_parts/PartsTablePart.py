@@ -75,6 +75,7 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
     If there is no matching row, this is not called."""
     self.assign(self.actual_part, row[self.PART_NUMBER_COL])
 
+  @override
   def generate(self) -> None:
     matching_table = self._get_table().filter(lambda row: self._row_filter(row))
     postprocessed_table = self._table_postprocess(matching_table)

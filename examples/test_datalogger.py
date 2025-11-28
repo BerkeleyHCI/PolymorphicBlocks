@@ -5,6 +5,7 @@ from .test_high_switch import CalSolPowerConnector, CalSolCanBlock, CanFuse
 
 
 class Datalogger(BoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -112,6 +113,7 @@ class Datalogger(BoardTop):
       (self.v5sense, ), _ = self.chain(self.v5, imp.Block(div_model), self.mcu.adc.request('v5sense'))
       (self.vscsense, ), _ = self.chain(self.buffer.sc_out, imp.Block(div_model), self.mcu.adc.request('vscsense'))
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

@@ -12,6 +12,7 @@ class I2cPullup(Interface, Block):
     self.i2c = self.Port(I2cPullupPort.empty(), [InOut])
 
 
+  @override
   def contents(self) -> None:
     super().contents()
 

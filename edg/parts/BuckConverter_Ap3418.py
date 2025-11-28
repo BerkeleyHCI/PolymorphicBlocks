@@ -18,6 +18,7 @@ class Ap3418_Device(InternalSubcircuit, FootprintBlock, JlcPart):
       input_threshold_abs=(0.4, 1.5)*Volt
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -41,6 +42,7 @@ class Ap3418(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
+  @override
   def contents(self) -> None:
     super().contents()
 

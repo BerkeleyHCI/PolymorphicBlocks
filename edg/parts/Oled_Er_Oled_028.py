@@ -3,6 +3,7 @@ from .PassiveConnector_Fpc import Fpc050Bottom
 
 
 class Er_Oled028_1_Outline(InternalSubcircuit, FootprintBlock):
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint('U', 'edg:Lcd_Er_Oled028_1_Outline', {},
@@ -88,6 +89,7 @@ class Er_Oled028_1(Oled, Resettable, GeneratorBlock):
 
         self.generator_param(self.dc.is_connected())
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.connect(self.pwr, self.device.vci)
@@ -123,6 +125,7 @@ class Er_Oled028_1(Oled, Resettable, GeneratorBlock):
         self.connect(self.vsl_d1.cathode, self.vsl_d2.anode)
         self.connect(self.vsl_d2.cathode.adapt_to(Ground()), self.gnd)
 
+    @override
     def generate(self) -> None:
         super().generate()
         if self.get(self.dc.is_connected()):  # 4-line serial

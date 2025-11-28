@@ -15,6 +15,7 @@ class DomeButtonConnector(Connector, FootprintBlock):
     self.sw2 = self.Port(Ground(), [Common])
     self.sw1 = self.Port(DigitalSource.low_from_supply(self.sw2))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -31,6 +32,7 @@ class DomeButtonConnector(Connector, FootprintBlock):
 
 
 class Simon(BoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -90,6 +92,7 @@ class Simon(BoardTop):
             self.Block(ForcedDigitalSinkCurrentDraw((0, 0))),
             self.btn[i].led_a)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_values=[

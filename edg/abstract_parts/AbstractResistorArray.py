@@ -36,6 +36,7 @@ class ResistorArray(MultipackDevice, MultipackBlock, HasStandardFootprint):
     self.unpacked_assign(self.elements.params(lambda x: x.actual_resistance), self.actual_resistance)
     self.unpacked_assign(self.elements.params(lambda x: x.actual_power_rating), self.actual_power_rating)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

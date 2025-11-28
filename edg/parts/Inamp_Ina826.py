@@ -35,6 +35,7 @@ class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.rg2 = self.Port(Passive())
     self.rg3 = self.Port(Passive())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -89,6 +90,7 @@ class Ina826(KiCadImportableBlock, GeneratorBlock):
     self.actual_ratio = self.Parameter(RangeExpr())
     self.generator_param(self.ratio)
 
+  @override
   def generate(self) -> None:
     super().generate()
 

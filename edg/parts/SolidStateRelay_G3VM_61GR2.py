@@ -2,6 +2,7 @@ from ..abstract_parts import *
 
 
 class G3VM_61GR2(SolidStateRelay, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.assign(self.led_forward_voltage, (1.18, 1.48)*Volt)

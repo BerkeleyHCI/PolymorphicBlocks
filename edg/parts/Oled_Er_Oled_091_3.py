@@ -4,6 +4,7 @@ from .PassiveConnector_Fpc import Fpc050Bottom
 
 class Er_Oled_091_3_Outline(InternalSubcircuit, FootprintBlock):
     """Footprint for OLED panel outline"""
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint('U', 'edg:Lcd_Er_Oled0.91_3_Outline', {},
@@ -77,6 +78,7 @@ class Er_Oled_091_3(Oled, Resettable, Block):
         self.cs = self.Export(self.device.cs)
         self.dc = self.Export(self.device.dc)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.connect(self.pwr, self.device.vbat)

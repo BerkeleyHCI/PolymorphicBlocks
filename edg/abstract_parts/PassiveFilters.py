@@ -19,6 +19,7 @@ class LowPassRc(AnalogFilter, Block):
     self.cutoff_freq = self.ArgParameter(cutoff_freq)
     self.voltage = self.ArgParameter(voltage)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -116,6 +117,7 @@ class DigitalLowPassRcArray(DigitalFilter, GeneratorBlock):
 
     self.generator_param(self.output.requested())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.elts = ElementDict[DigitalLowPassRc]()
@@ -172,6 +174,7 @@ class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock):
     self.impedance = self.ArgParameter(impedance)
     self.cutoff_freq = self.ArgParameter(cutoff_freq)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

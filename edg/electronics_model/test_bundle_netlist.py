@@ -18,6 +18,7 @@ class TestFakeSpiController(FootprintBlock):
     self.cs_out_1 = self.Port(DigitalSource())
     self.cs_out_2 = self.Port(DigitalSource())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(  # it's anyone's guess why the resistor array is a SPI controller
@@ -40,6 +41,7 @@ class TestFakeSpiPeripheral(FootprintBlock):
     self.spi = self.Port(SpiPeripheral())
     self.cs_in = self.Port(DigitalSink())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(  # it's anyone's guess why this resistor array has a different pinning in peripheral mode
@@ -55,6 +57,7 @@ class TestFakeSpiPeripheral(FootprintBlock):
 
 
 class TestSpiCircuit(DesignTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -73,6 +76,7 @@ class TestFakeUartBlock(FootprintBlock):
 
     self.port = self.Port(UartPort())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -86,6 +90,7 @@ class TestFakeUartBlock(FootprintBlock):
 
 
 class TestUartCircuit(DesignTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -101,6 +106,7 @@ class TestFakeCanBlock(FootprintBlock):
 
     self.port = self.Port(CanDiffPort())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -114,6 +120,7 @@ class TestFakeCanBlock(FootprintBlock):
 
 
 class TestCanCircuit(DesignTop):
+  @override
   def contents(self) -> None:
     super().contents()
 

@@ -15,6 +15,7 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
     self.cs = self.Port(DigitalSource.empty())
     self.reset = self.Port(DigitalSource.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.conn = self.Block(PinHeader127DualShrouded(10))
@@ -170,6 +171,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
       PeripheralAnyResource('SPI2', spi_model),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -257,6 +259,7 @@ class Ice40up(Fpga, IoController):
     super().__init__(**kwargs)
     self.cdone = self.Port(DigitalSource.empty(), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

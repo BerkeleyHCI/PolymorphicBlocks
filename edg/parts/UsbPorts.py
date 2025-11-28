@@ -13,6 +13,7 @@ class UsbAReceptacle(UsbHostConnector, FootprintBlock):
 
     self.usb.init_from(UsbDevicePort())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -47,6 +48,7 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
     self.cc = self.Port(UsbCcPort(pullup_capable=cc_pullup_capable), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -96,6 +98,7 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
 
     self.generator_param(self.pwr.is_connected(), self.cc.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.cc.is_connected()):  # if CC externally connected, connect directly to USB port
@@ -118,6 +121,7 @@ class UsbAPlugPads(UsbDeviceConnector, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.pwr.init_from(VoltageSource(
@@ -143,6 +147,7 @@ class UsbMicroBReceptacle(UsbDeviceConnector, FootprintBlock):
   def __init__(self) -> None:
     super().__init__()
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.pwr.init_from(VoltageSource(
@@ -178,6 +183,7 @@ class UsbCcPulldownResistor(InternalSubcircuit, Block):
     self.cc = self.Port(UsbCcPort.empty(), [Input])
     self.gnd = self.Port(Ground.empty(), [Common])
 
+  @override
   def contents(self) -> None:
     super().contents()
     pdr_model = PulldownResistor(resistance=5.1*kOhm(tol=0.01))
@@ -186,6 +192,7 @@ class UsbCcPulldownResistor(InternalSubcircuit, Block):
 
 
 class Tpd2e009(UsbEsdDiode, FootprintBlock, JlcPart):
+  @override
   def contents(self) -> None:
     # Note, also compatible: https://www.diodes.com/assets/Datasheets/DT1452-02SO.pdf
     # PESD5V0X1BT,215 (different architecture, but USB listed as application)
@@ -206,6 +213,7 @@ class Tpd2e009(UsbEsdDiode, FootprintBlock, JlcPart):
 
 class Pesd5v0x1bt(UsbEsdDiode, FootprintBlock, JlcPart):
   """Ultra low capacitance ESD protection diode (0.9pF typ), suitable for USB and GbE"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.gnd.init_from(Ground())
@@ -226,6 +234,7 @@ class Pesd5v0x1bt(UsbEsdDiode, FootprintBlock, JlcPart):
 
 class Pgb102st23(UsbEsdDiode, FootprintBlock, JlcPart):
   """ESD suppressor, suitable for high speed protocols including USB2.0, 0.12pF typ"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.gnd.init_from(Ground())

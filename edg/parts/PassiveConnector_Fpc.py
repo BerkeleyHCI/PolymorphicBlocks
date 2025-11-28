@@ -23,10 +23,12 @@ class Fpc050Bottom(Fpc050):
 class Fpc050BottomFlip(Fpc050Bottom, GeneratorBlock):
   """Flipped FPC connector - bottom entry connector is top entry on the opposite board side.
   Reverses the pin ordering to reflect the mirroring."""
+  @override
   def contents(self) -> None:
     super().contents()
     self.generator_param(self.length, self.pins.requested())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.conn = self.Block(Fpc050Top(self.length))

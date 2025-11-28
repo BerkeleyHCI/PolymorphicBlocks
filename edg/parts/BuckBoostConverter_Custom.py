@@ -50,6 +50,7 @@ class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
     self.ripple_ratio = self.ArgParameter(ripple_ratio)
     self.rds_on = self.ArgParameter(rds_on)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

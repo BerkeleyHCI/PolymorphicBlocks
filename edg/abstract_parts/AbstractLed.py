@@ -125,6 +125,7 @@ class IndicatorLedArray(Light, GeneratorBlock):
     self.count = self.ArgParameter(count)
     self.generator_param(self.count)
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.led = ElementDict[IndicatorLed]()
@@ -185,6 +186,7 @@ class IndicatorSinkLedArray(Light, GeneratorBlock):
     self.count = self.ArgParameter(count)
     self.generator_param(self.count)
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.led = ElementDict[IndicatorSinkLed]()

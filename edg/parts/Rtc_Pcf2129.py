@@ -36,6 +36,7 @@ class Pcf2129_Device(InternalSubcircuit, FootprintBlock):
       voltage_out=self.pwr_bat.link().voltage
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -74,6 +75,7 @@ class Pcf2129(RealtimeClock, Block):
     self.clkout = self.Export(self.ic.clkout, optional=True)
     self.int = self.Export(self.ic.int, optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

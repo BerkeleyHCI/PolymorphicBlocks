@@ -13,6 +13,7 @@ class AnalogSourceDummy(Block):
 
 
 class TestOpamp(Opamp):
+  @override
   def contents(self) -> None:
     super().contents()
     self.pwr.init_from(VoltageSink())
@@ -23,6 +24,7 @@ class TestOpamp(Opamp):
 
 
 class TestResistor(Resistor):
+  @override
   def contents(self) -> None:
     super().contents()
     self.assign(self.actual_resistance, self.resistance)

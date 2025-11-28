@@ -41,6 +41,7 @@ class Opa189_Device(Opax189_Base_Device, JlcPart, FootprintBlock):
     self.vinn = self.Port(analog_in_model)
     self.vout = self.Port(self._analog_out_model())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -65,6 +66,7 @@ class Opa189_Device(Opax189_Base_Device, JlcPart, FootprintBlock):
 class Opa189(Opamp):
   """High voltage (4.5-36V), low-noise opamp in SOIC-8.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -95,6 +97,7 @@ class Opa2189_Device(Opax189_Base_Device, JlcPart, FootprintBlock):
     self.innb = self.Port(analog_in_model)
     self.outb = self.Port(analog_out_model)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(

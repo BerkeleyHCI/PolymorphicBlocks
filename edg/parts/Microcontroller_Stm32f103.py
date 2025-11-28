@@ -175,6 +175,7 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
       }),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -273,6 +274,7 @@ class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoContro
     self.ic: Stm32f103Base_Device
     self.generator_param(self.reset.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -295,6 +297,7 @@ class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoContro
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
+  @override
   def generate(self) -> None:
     super().generate()
 

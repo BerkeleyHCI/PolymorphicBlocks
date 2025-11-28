@@ -29,6 +29,7 @@ class Mcp3201_Device(InternalSubcircuit, FootprintBlock):
     self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(10, 1600) * kHertz))
     self.cs = self.Port(dio_model)
 
+  @override
   def contents(self) -> None:
     # Note, B-grade chip has lower INL (+/-1 LSB) compared to C-grade (+/-2 LSB)
     self.footprint(
@@ -68,6 +69,7 @@ class Mcp3201(AnalogToDigital, Block):
     self.spi = self.Export(self.ic.spi, [Output])
     self.cs = self.Export(self.ic.cs)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

@@ -291,6 +291,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
     return self._name
 
   """Overload this method to define the contents of this block"""
+  @override
   def contents(self) -> None:
     pass
 

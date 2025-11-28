@@ -28,6 +28,7 @@ class Fuse(DiscreteComponent, HasStandardFootprint):
     self.voltage = self.ArgParameter(voltage)  # operating voltage
     self.actual_voltage_rating = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 

@@ -6,6 +6,7 @@ from edg import *
 class IotKnob(JlcBoardTop):
   """IoT knob with lights, buttons, and a screen.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -107,6 +108,7 @@ class IotKnob(JlcBoardTop):
         self.mcu.adc.request('v5v_sense')
       )
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

@@ -24,6 +24,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
 
         self.generator_param(self.part, self.footprint_spec)
 
+    @override
     def generate(self) -> None:
         super().generate()
         if not self.get(self.footprint_spec) or \
@@ -85,6 +86,7 @@ class Max98357a(SpeakerDriver, Block):
         self.i2s = self.Export(self.ic.i2s, [Input])
         self.out = self.Export(self.ic.out, [Output])
 
+    @override
     def contents(self) -> None:
         super().contents()
 

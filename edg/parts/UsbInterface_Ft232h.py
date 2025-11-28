@@ -59,6 +59,7 @@ class Ft232hl_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.adbus = self.Port(Vector(DigitalBidir.empty()))
     self.acbus = self.Port(Vector(DigitalBidir.empty()))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -139,6 +140,7 @@ class Ft232EepromDriver(InternalSubcircuit, Block):
     self.eedata = self.Port(DigitalBidir.empty())
     self.spi = self.Port(SpiController.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.connect(self.eeclk, self.spi.sck)
@@ -175,6 +177,7 @@ class Ft232hl(Interface, GeneratorBlock):
     self.generator_param(self.uart.is_connected(), self.mpsse.is_connected(), self.mpsse_cs.is_connected(),
                          self.adbus.requested())
 
+  @override
   def contents(self) -> None:
     # connections from Figure 6.1, bus powered configuration
     self.vbus_fb = self.Block(SeriesPowerFerriteBead(hf_impedance=(600*Ohm(tol=0.25)))) \
@@ -223,6 +226,7 @@ class Ft232hl(Interface, GeneratorBlock):
     self.connect(self.eeprom_spi.eedata, self.ic.eedata)
     self.connect(self.eeprom_spi.spi, self.eeprom.spi)
 
+  @override
   def generate(self) -> None:
     # make connections and pin mutual exclusion constraints
     if self.get(self.uart.is_connected()):

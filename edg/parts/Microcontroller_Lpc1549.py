@@ -173,6 +173,7 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
       }),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -327,6 +328,7 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
     self.gnd = self.Port(Ground.empty(), [Common])
     self.swd = self.Port(SwdPullPort(DigitalSource.empty()), [InOut])
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.swdio = self.Block(PullupResistor((10, 100) * kOhm(tol=0.05))).connected(self.pwr, self.swd.swdio)
@@ -345,6 +347,7 @@ class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, 
     self.ic: Lpc1549Base_Device
     self.generator_param(self.reset.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -376,6 +379,7 @@ class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, 
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
+  @override
   def generate(self) -> None:
     super().generate()
 

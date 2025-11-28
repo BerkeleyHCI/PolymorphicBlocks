@@ -27,6 +27,7 @@ class OpampFollower(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock)
     self.input = self.Port(AnalogSink.empty(), [Input])
     self.output = self.Port(AnalogSource.empty(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -106,6 +107,7 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
 
     self.actual_amplification = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -114,6 +116,7 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.amplification, "")
     )
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -241,6 +244,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
 
     self.actual_ratio = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -249,6 +253,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.ratio, "")
     )
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -349,6 +354,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
 
     self.actual_factor = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 

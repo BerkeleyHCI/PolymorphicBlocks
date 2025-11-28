@@ -27,6 +27,7 @@ class Lm2664_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         #     input_threshold_abs=(0.8, 2)*Volt
         # ), optional=True)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(
@@ -58,6 +59,7 @@ class Lm2664(PowerConditioner, Block):
         self.output_resistance_limit = self.ArgParameter(output_resistance_limit)
         self.output_ripple_limit = self.ArgParameter(output_ripple_limit)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.require(self.output_resistance_limit >= 2 * self.ic.SWITCH_RESISTANCE.upper,

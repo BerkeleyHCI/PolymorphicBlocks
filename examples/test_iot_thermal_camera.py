@@ -6,6 +6,7 @@ from edg import *
 class IotThermalCamera(JlcBoardTop):
   """Dual-mode IR and RGB camera board with ESP32
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -98,6 +99,7 @@ class IotThermalCamera(JlcBoardTop):
       self.connect(self.flir.vsync, self.mcu.gpio.request('flir_vsync'))
 
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

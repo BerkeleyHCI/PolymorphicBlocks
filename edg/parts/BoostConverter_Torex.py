@@ -38,6 +38,7 @@ class Xc9142_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
     self.actual_current_limit = self.Parameter(RangeExpr())  # set by part number
     self.actual_frequency = self.Parameter(RangeExpr())  # set by part number
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -73,6 +74,7 @@ class Xc9142(Resettable, DiscreteBoostConverter, GeneratorBlock):
   """Low-input-voltage boost converter (starts as low as 0.9V) with fixed output.
   XC9142 has PWM/PFM functionality, compared to PWM only for XC9141.
   Semi pin compatible with XC9140, LTC3525, MAX1724."""
+  @override
   def contents(self) -> None:
     super().contents()
     self.generator_param(self.reset.is_connected())
@@ -94,6 +96,7 @@ class Xc9142(Resettable, DiscreteBoostConverter, GeneratorBlock):
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):

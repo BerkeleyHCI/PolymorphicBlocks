@@ -28,6 +28,7 @@ class Iso1050dub_Device(InternalSubcircuit, FootprintBlock):
       current_draw=(-4, 4) * mAmp, current_limits=(-70, 70) * mAmp
     )))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -49,6 +50,7 @@ class Iso1050dub_Device(InternalSubcircuit, FootprintBlock):
 
 
 class Iso1050dub(IsolatedCanTransceiver):
+  @override
   def contents(self) -> None:
     super().contents()
     self.ic = self.Block(Iso1050dub_Device())

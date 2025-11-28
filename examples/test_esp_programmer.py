@@ -25,6 +25,7 @@ class EspProgrammerTc2030Inline(Connector, Block):
 
 class EspProgrammer(JlcBoardTop):
   """USB UART converter board set up for ESP programming including auto-program circuit."""
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb_uart = self.Block(UsbCReceptacle())
@@ -63,6 +64,7 @@ class EspProgrammer(JlcBoardTop):
       (self.led, ), _ = self.chain(self.usbconv.suspend, imp.Block(IndicatorSinkLed(Led.White)))
       (self.led_en, ), _ = self.chain(self.usbconv.rts, imp.Block(IndicatorSinkLed(Led.Red)))
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

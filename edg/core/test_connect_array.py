@@ -19,6 +19,7 @@ class TestBlockSinkElasticArray(GeneratorBlock):
     self.sinks = self.Port(Vector(TestPortSink()))
     self.generator_param(self.sinks.requested())
 
+  @override
   def generate(self) -> None:
     super().generate()
     for request in self.get(self.sinks.requested()):
@@ -26,6 +27,7 @@ class TestBlockSinkElasticArray(GeneratorBlock):
 
 
 class ArrayConnectBlock(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -73,6 +75,7 @@ class ArrayConnectProtoTestCase(unittest.TestCase):
 
 
 class ArrayAllocatedConnectBlock(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 

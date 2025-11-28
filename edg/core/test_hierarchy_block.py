@@ -6,6 +6,7 @@ from .test_common import TestBlockSource, TestBlockSink, TestPortSink
 
 
 class TopHierarchyBlock(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -64,6 +65,7 @@ class TopHierarchyBlockProtoTestCase(unittest.TestCase):
 
 
 class MultiConnectBlock(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -118,6 +120,7 @@ class MultiConnectBlockProtoTestCase(unittest.TestCase):
 
 
 class ConnectJoinBlock(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -213,6 +216,7 @@ class IndirectExportPortHierarchyBlock(Block):
     super().__init__()
     self.exported = self.Port(TestPortSink(), optional=True)  # avoid required constraint
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.sink = self.Block(TestBlockSink())
@@ -244,6 +248,7 @@ class PortBridgeHierarchyBlock(Block):
     super().__init__()
     self.source_port = self.Port(TestPortSink(), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.sink1 = self.Block(TestBlockSink())

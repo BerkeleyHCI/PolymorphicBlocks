@@ -38,6 +38,7 @@ class VoltageLink(CircuitLink):
     self.current_drawn = self.Parameter(RangeExpr())
     self.current_limits = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -70,6 +71,7 @@ class VoltageSinkBridge(CircuitPortBridge):
     self.inner_link = self.Port(VoltageSource(current_limits=RangeExpr.ALL,
                                               voltage_out=RangeExpr()))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -93,6 +95,7 @@ class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources
     self.inner_link = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL,
                                             current_draw=RangeExpr()))
 
+  @override
   def contents(self) -> None:
     super().contents()
 

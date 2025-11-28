@@ -15,6 +15,7 @@ class CanLogicLink(Link):
     # TODO write custom top level digital constraints
     # TODO model frequency ... somewhere
 
+  @override
   def contents(self) -> None:
     super().contents()
     # TODO future: digital constraints through link inference
@@ -67,6 +68,7 @@ class CanDiffLink(Link):
     # TODO write custom top level digital constraints
     # TODO future: digital constraints through link inference
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -83,6 +85,7 @@ class CanDiffBridge(PortBridge):
     self.outer_port = self.Port(CanDiffPort(DigitalBidir.empty()))
     self.inner_link = self.Port(CanDiffPort(DigitalBidir.empty()))
 
+  @override
   def contents(self) -> None:
     super().contents()
 

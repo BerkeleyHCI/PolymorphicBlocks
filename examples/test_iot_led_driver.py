@@ -19,6 +19,7 @@ class PowerInConnector(Connector):
 class IotLedDriver(JlcBoardTop):
   """Multichannel IoT high-power external LED driver with a 12v barrel jack input.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -94,6 +95,7 @@ class IotLedDriver(JlcBoardTop):
         ledk_sink = self.led_sink[i*2+1] = imp.Block(DummyPassive())
         self.connect(led_drv.ledk, ledk_sink.io)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

@@ -1,7 +1,10 @@
+from typing_extensions import override
+
 from edg import *
 
 
 class BlinkyExample(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     # your implementation here

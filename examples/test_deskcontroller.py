@@ -32,6 +32,7 @@ class DeskController(JlcBoardTop):
     """Standing desk controller for desks with a Jiecang controller
     https://community.home-assistant.io/t/desky-standing-desk-esphome-works-with-desky-uplift-jiecang-assmann-others/383790
     """
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -104,6 +105,7 @@ class DeskController(JlcBoardTop):
                                                     self.Block(DigitalTestPoint('npx')),
                                                     imp.Block(NeopixelArray(6)))
 
+    @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[

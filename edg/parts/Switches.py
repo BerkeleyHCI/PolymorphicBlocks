@@ -2,6 +2,7 @@ from ..abstract_parts import *
 
 
 class SmtSwitch(TactileSwitch, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -19,6 +20,7 @@ class SmtSwitch(TactileSwitch, FootprintBlock):
 
 
 class SmtSwitchRa(TactileSwitch, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -40,6 +42,7 @@ class KailhSocket(MechanicalKeyswitch, FootprintBlock):
   Name: Switch_Keyboard_Hotswap_Kailh
   Location: ${KICAD6_3RD_PARTY}/footprints/com_github_perigoso_keyswitch-kicad-library/Switch_Keyboard_Hotswap_Kailh.pretty
   """
+  @override
   def contents(self) -> None:
     super().contents()
 

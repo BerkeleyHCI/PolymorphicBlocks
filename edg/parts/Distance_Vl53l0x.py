@@ -28,6 +28,7 @@ class Vl53l0x_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_threshold_abs=(0.6, 1.12),
     )), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -67,6 +68,7 @@ class Vl53l0x(DistanceSensor, Resettable, GeneratorBlock):
                          doc="Interrupt output for new data available")
     self.generator_param(self.reset.is_connected(), self.int.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):
@@ -89,6 +91,7 @@ class Vl53l0xConnector(Vl53l0x, WrapperFootprintBlock):
   This has an onboard 2.8v regulator, but thankfully the IO tolerance is not referenced to Vdd
 
   TODO: not completely correct that this should extend the application circuit"""
+  @override
   def generate(self) -> None:
     super().generate()
     self.footprint(
@@ -119,6 +122,7 @@ class Vl53l0xArray(DistanceSensor, GeneratorBlock):
     self.first_reset_fixed = self.ArgParameter(first_reset_fixed)
     self.generator_param(self.count, self.first_reset_fixed)
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.elt = ElementDict[Vl53l0x]()

@@ -29,6 +29,7 @@ class Sn74lvc1g3157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.b1 = self.Port(Passive(), optional=True)
     self.b0 = self.Port(Passive(), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -52,6 +53,7 @@ class Sn74lvc1g3157_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class Sn74lvc1g3157(AnalogSwitch):
   """2:1 analog switch, 6ohm Ron(typ), in SOT-363.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 

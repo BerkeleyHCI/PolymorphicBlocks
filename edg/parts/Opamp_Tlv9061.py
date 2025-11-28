@@ -24,6 +24,7 @@ class Tlv9061_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       impedance=100*Ohm(tol=0)  # no tolerance bounds given on datasheet; open-loop impedance
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -46,6 +47,7 @@ class Tlv9061_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Tlv9061(Opamp):
   """RRIO op-amp in SOT-23-6.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 

@@ -11,6 +11,7 @@ class CrystalLink(Link):
     self.drive_voltage = self.Parameter(RangeExpr(self.driver.voltage_out))
     self.frequency = self.Parameter(RangeExpr(self.crystal.frequency))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.require(self.driver.frequency_limits.contains(self.frequency))

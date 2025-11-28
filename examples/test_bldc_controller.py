@@ -76,6 +76,7 @@ class BldcHallSensor(Connector, Block):
 class BldcController(JlcBoardTop):
   """Test BLDC (brushless DC motor) driver circuit with position feedback and USB PD
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -172,6 +173,7 @@ class BldcController(JlcBoardTop):
                                                self.Block(AnalogTestPoint()),
                                                self.mcu.adc.request(f'curr_{i}'))
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

@@ -35,6 +35,7 @@ class SdSocket(SdCard, Connector, FootprintBlock):
     self.cd = self.Port(sw_model, optional=True)
     self.wp = self.Port(sw_model, optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
     # TODO do we need capacitors?
@@ -66,6 +67,7 @@ class MicroSdSocket(SdCard):
 
 
 class Dm3btDsfPejs(MicroSdSocket, Connector, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     # TODO add pull up resistors and capacitors and w/e?
@@ -89,6 +91,7 @@ class Dm3btDsfPejs(MicroSdSocket, Connector, FootprintBlock):
 
 
 class Molex1040310811(MicroSdSocket, Connector, JlcPart, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     # TODO add pull up resistors and capacitors and w/e?

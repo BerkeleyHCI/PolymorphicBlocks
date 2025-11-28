@@ -17,6 +17,7 @@ class WithCrystalGenerator(IoController, GeneratorBlock):
     Called within generate, has access to generator params."""
     return False
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self._crystal_required():

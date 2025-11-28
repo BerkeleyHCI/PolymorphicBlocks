@@ -49,6 +49,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
   """Implementation of the crawler robot, that implements what is needed to connect the interface blocks
   as well as optional additional blocks.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -161,6 +162,7 @@ class RobotCrawler(RobotCrawlerSpec, JlcBoardTop):
         imp.Block(NeopixelArray(10)))
 
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

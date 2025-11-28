@@ -99,6 +99,7 @@ class GenericMlcc(Capacitor, SelectorArea, FootprintBlock, GeneratorBlock):
     ),
   ]
 
+  @override
   def generate(self) -> None:
     """
     Selects a generic capacitor without using product tables

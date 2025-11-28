@@ -12,6 +12,7 @@ class SwdLink(Link):
     self.device = self.Port(SwdTargetPort.empty())
     self.pull = self.Port(Vector(SwdPullPort.empty()), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
     

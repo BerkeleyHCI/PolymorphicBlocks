@@ -6,6 +6,7 @@ class Ec11eWithSwitch(RotaryEncoderSwitch, RotaryEncoder, JlcPart, FootprintBloc
   """Generic EC11E PTH rotary with pushbutton switch.
   Default part is EC11E18244A5, with 1.5mm pushbutton travel, 36 detents (finest),
   but footprint should be compatible with other parts in the EC11E w/ switch series"""
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -29,6 +30,7 @@ class Ec11j15WithSwitch(RotaryEncoderSwitch, RotaryEncoder, JlcPart, FootprintBl
   """Generic EC11J15 SMD rotary with pushbutton switch.
   Default part is EC11J1525402, with 1.5mm pushbutton travel, 30 detents (finest),
   but footprint should be compatible with other parts in the EC11J15 w/ switch series"""
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -52,6 +54,7 @@ class Ec11j15WithSwitch(RotaryEncoderSwitch, RotaryEncoder, JlcPart, FootprintBl
 class Ec05e(RotaryEncoder, JlcPart, FootprintBlock):
   """Generic EC05E PTH rotary encoder with hollow shaft.
   Default part is EC05E1220401, horizontal-mount part."""
+  @override
   def contents(self) -> None:
     super().contents()
 

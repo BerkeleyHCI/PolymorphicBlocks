@@ -20,6 +20,7 @@ class CustomDiode(Diode, FootprintBlock, GeneratorBlock):
     self.assign(self.actual_voltage_drop, Range.zero_to_upper(0))
     self.assign(self.actual_reverse_recovery_time, Range.zero_to_upper(0))
 
+  @override
   def generate(self) -> None:
     self.footprint(
       self._standard_footprint().REFDES_PREFIX, self.footprint_spec,

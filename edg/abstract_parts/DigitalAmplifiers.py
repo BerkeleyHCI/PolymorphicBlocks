@@ -33,6 +33,7 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
     self.clamp_resistance_ratio = self.ArgParameter(clamp_resistance_ratio)
     self.generator_param(self.clamp_voltage)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -114,6 +115,7 @@ class OpenDrainDriver(PowerSwitch, Block):
     self.max_rds = self.ArgParameter(max_rds)
     self.frequency = self.ArgParameter(frequency)
 
+  @override
   def contents(self) -> None:
     super().contents()
     

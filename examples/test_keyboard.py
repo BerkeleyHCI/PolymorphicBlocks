@@ -14,6 +14,7 @@ from edg import *
 
 
 class Keyboard(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -33,6 +34,7 @@ class Keyboard(SimpleBoardTop):
       self.connect(self.sw.cols, self.mcu.gpio.request_vector())
       self.connect(self.sw.rows, self.mcu.gpio.request_vector())
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[

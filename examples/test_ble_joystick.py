@@ -6,6 +6,7 @@ from edg import *
 class BleJoystick(JlcBoardTop):
     """BLE joystick with XYAB buttons
     """
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -107,6 +108,7 @@ class BleJoystick(JlcBoardTop):
                 self.mp2722.i2c
             )
 
+    @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[

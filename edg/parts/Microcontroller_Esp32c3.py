@@ -157,6 +157,7 @@ class Esp32c3_Wroom02_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, J
       'TXD': '12',  # TXD, GPIO21
     })
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -181,6 +182,7 @@ class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resett
     self.io2_ext_connected: bool = False
     self.io8_ext_connected: bool = False
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -196,6 +198,7 @@ class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resett
       self.vcc_cap0 = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))  # C1
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -287,6 +290,7 @@ class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
     self.xtal = self.Port(CrystalDriver(frequency_limits=40*MHertz(tol=10e-6),
                                         voltage_out=self.pwr.link().voltage))
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -328,6 +332,7 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
     self.io2_ext_connected: bool = False
     self.io8_ext_connected: bool = False
 
+  @override
   def contents(self) -> None:
     super().contents()
     with self.implicit_connect(
@@ -369,6 +374,7 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
         inductance=2*nHenry(tol=0.2),
       )).connected(self.pwr, self.ic.vdd3p3)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -465,6 +471,7 @@ class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoCont
         'VUSB': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -482,6 +489,7 @@ class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoCont
 
     self.generator_param(self.pwr.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
 

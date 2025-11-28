@@ -32,6 +32,7 @@ class EspProgrammingAutoReset(BlockInterfaceMixin[EspProgrammingHeader]):
 
     self.require_auto_reset = self.ArgParameter(require_auto_reset)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.require(self.require_auto_reset.implies(self.en.is_connected() & self.boot.is_connected()),
@@ -42,6 +43,7 @@ class EspProgrammingAutoReset(BlockInterfaceMixin[EspProgrammingHeader]):
 
 class EspProgrammingPinHeader254(EspProgrammingHeader):
   """Programming header for ESP series micros using 2.54mm headers, matching the pinning in the reference schematics."""
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -62,6 +64,7 @@ class EspProgrammingTc2030(EspProgrammingAutoReset, EspProgrammingHeader):
   Per boot docs, EN is connected to RTS and boot is connected to DTR (CTS on the original pinning,
   since it doesn't have a DTR pin).
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -88,6 +91,7 @@ class HasEspProgramming(IoController, GeneratorBlock):
     self.program_en_node = self.connect()
     self.program_boot_node = self.connect()
 
+  @override
   def generate(self) -> None:
     super().generate()
     programming = self.get(self.programming)
@@ -125,6 +129,7 @@ class EspAutoProgram(Interface, KiCadSchematicBlock):
     self.en = self.Port(DigitalSource.empty())
     self.boot = self.Port(DigitalSource.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
     signal_voltage = self.dtr.link().voltage.hull(self.rts.link().voltage)

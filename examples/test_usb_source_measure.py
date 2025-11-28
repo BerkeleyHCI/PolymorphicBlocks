@@ -44,6 +44,7 @@ class SourceMeasureRangingCell(Interface, KiCadSchematicBlock):
     self.sense_in = self.Port(AnalogSource.empty())
     self.sense_out = self.Port(AnalogSource.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.import_kicad(self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),
@@ -95,6 +96,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 
     self.out_range = self.Parameter(RangeExpr())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.ranges = ElementDict[SourceMeasureRangingCell]()
@@ -157,6 +159,7 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
     self.rds_on = self.ArgParameter(rds_on)
     self.gate_clamp_voltage = self.ArgParameter(gate_clamp_voltage)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -255,6 +258,7 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
     self.generator_param(self.input_resistance, self.res, self.dir, self.series, self.tolerance,
                          self.target_fine.is_connected(), self.sense_out.is_connected(), self.fine_scale)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -347,6 +351,7 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
     self.input = self.Port(AnalogSink.empty(), [Power])
     self.output = self.Port(AnalogSource.empty(), [Common])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -380,6 +385,7 @@ class SrLatchInverted(Block):
     self.rst = self.Export(self.ic.in2a)  # any in2
     self.out = self.Export(self.ic.out1)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.connect(self.ic.out1, self.ic.in2b)
@@ -421,6 +427,7 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -437,6 +444,7 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
 # list many parts that are no longer basic.
 # class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
 class UsbSourceMeasure(JlcBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -786,6 +794,7 @@ class UsbSourceMeasure(JlcBoardTop):
     self.pack(self.cintref_amps.elements.request('0'), ['control', 'int', 'amp'])
     self.pack(self.cintref_amps.elements.request('1'), ['control', 'dmeas', 'amp'])  # this path matters much less
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

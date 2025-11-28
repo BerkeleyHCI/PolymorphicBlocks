@@ -93,6 +93,7 @@ class SwitchingConverterCalculationTest(unittest.TestCase):
 
 
 class TestCapacitor(Capacitor):
+    @override
     def contents(self) -> None:
         super().contents()
         self.assign(self.actual_capacitance, self.capacitance)
@@ -100,6 +101,7 @@ class TestCapacitor(Capacitor):
 
 
 class TestInductor(Inductor):
+    @override
     def contents(self) -> None:
         super().contents()
         self.assign(self.actual_inductance, self.inductance)
@@ -126,6 +128,7 @@ class BuckPowerPathTestTop(DesignTop):
         self.require(self.dut.pwr_out.current_limits.contains(Range(0.0, 1.260)))
         self.require(self.dut.switch.current_draw.contains(Range(0.067, 0.832)))
 
+    @override
     def refinements(self) -> Refinements:
         return Refinements(
             class_refinements=[
@@ -157,6 +160,7 @@ class BoostPowerPathTestTop(DesignTop):
         self.require(self.dut.pwr_in.current_draw.contains(Range(0.334, 2.185)))
         self.require(self.dut.switch.current_limits.contains(Range(0.0, 0.280)))
 
+    @override
     def refinements(self) -> Refinements:
         return Refinements(
             class_refinements=[

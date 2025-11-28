@@ -4,6 +4,7 @@ from edg import *
 
 
 class BatteryProtectorCircuit(BoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.battery_protector = self.Block(S8261A())

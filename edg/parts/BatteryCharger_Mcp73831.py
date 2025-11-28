@@ -24,6 +24,7 @@ class Mcp73831_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     ))
     self.prog = self.Port(Passive())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -56,6 +57,7 @@ class Mcp73831(PowerConditioner, Block):
 
     self.charging_current = self.ArgParameter(charging_current)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

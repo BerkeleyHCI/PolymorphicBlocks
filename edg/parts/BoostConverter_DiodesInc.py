@@ -19,6 +19,7 @@ class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_thresholds=(0.4, 1.5)*Volt
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -42,6 +43,7 @@ class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.nshdn
 
+  @override
   def contents(self) -> None:
     super().contents()
 

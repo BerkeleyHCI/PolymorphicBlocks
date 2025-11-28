@@ -18,6 +18,7 @@ class Oscillator(DiscreteApplication):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.out = self.Port(DigitalSource.empty(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
 

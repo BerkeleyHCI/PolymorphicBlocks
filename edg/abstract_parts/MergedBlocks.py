@@ -15,6 +15,7 @@ class MergedVoltageSource(DummyDevice, NetBlock, GeneratorBlock):
     ))
     self.generator_param(self.pwr_ins.requested())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.pwr_ins.defined()
@@ -45,6 +46,7 @@ class MergedDigitalSource(DummyDevice, NetBlock, GeneratorBlock):
     ))
     self.generator_param(self.ins.requested())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.ins.defined()
@@ -86,6 +88,7 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorB
     self.inputs = self.Port(Vector(AnalogSink.empty()))
     self.generator_param(self.inputs.requested())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.inputs.defined()
@@ -114,6 +117,7 @@ class MergedSpiController(DummyDevice, GeneratorBlock):
     self.out = self.Port(SpiController.empty())
     self.generator_param(self.ins.requested())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.sck_merge = self.Block(MergedDigitalSource())

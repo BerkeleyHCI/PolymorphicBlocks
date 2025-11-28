@@ -38,6 +38,7 @@ class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
     self.actual_frequency_rating = self.Parameter(RangeExpr())
     self.actual_resistance_dc = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 

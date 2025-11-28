@@ -18,6 +18,7 @@ class S8261A_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.co = self.Port(Passive())
 
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -62,6 +63,7 @@ class S8261A(PowerConditioner, Block):
       drain_voltage=self.pwr_in.link().voltage
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
 

@@ -25,6 +25,7 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       impedance=300*Ohm(tol=0)  # no tolerance bounds given on datasheet
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -46,6 +47,7 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Mcp6001(Opamp):
   """MCP6001 RRO op-amp in SOT-23-5
   """
+  @override
   def contents(self) -> None:
     super().contents()
 

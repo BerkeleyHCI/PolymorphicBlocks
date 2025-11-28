@@ -34,6 +34,7 @@ class FlirLepton_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.pwr_dwn_l = self.Port(DigitalSink.from_bidir(dio_model))
         self.vsync = self.Port(DigitalSource.from_bidir(dio_model), optional=True)
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -105,6 +106,7 @@ class FlirLepton(Sensor, Resettable, Block):
         self.cci = self.Export(self.ic.cci, doc="I2C-like Command and Control Interface")
         self.vsync = self.Export(self.ic.vsync, optional=True, doc="Optional frame-sync output")
 
+    @override
     def contents(self) -> None:
         super().contents()
 

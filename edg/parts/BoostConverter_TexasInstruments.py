@@ -21,6 +21,7 @@ class Tps61040_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_threshold_abs=(0.4, 1.3)*Volt
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -44,6 +45,7 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -174,6 +176,7 @@ class Lm2733_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_threshold_abs=(0.5, 1.5)*Volt
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -197,6 +200,7 @@ class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.nshdn
 
+  @override
   def contents(self) -> None:
     import math
     super().contents()

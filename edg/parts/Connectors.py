@@ -18,6 +18,7 @@ class PowerBarrelJack(Connector, PowerSource, Block):
 
 class Pj_102ah(PowerBarrelJack, FootprintBlock):
   """Barrel jack for 2.1mm ID and 5.5mm OD"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.require(self.pwr.voltage_out.within((0, 24)*Volt))  # datasheet ratings for connector
@@ -36,6 +37,7 @@ class Pj_102ah(PowerBarrelJack, FootprintBlock):
 
 class Pj_036ah(PowerBarrelJack, FootprintBlock):
   """SMT Barrel jack for 2.1mm ID and 5.5mm OD"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.require(self.pwr.voltage_out.within((0, 24)*Volt))  # datasheet ratings for connector

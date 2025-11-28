@@ -18,6 +18,7 @@ class GeneratorAssign(GeneratorBlock):
     # Because this doesn't have dependency parameters, this is the top-level design
     self.float_param = self.Parameter(FloatExpr())
 
+  @override
   def generate(self) -> None:
     self.assign(self.float_param, 2.0)
 
@@ -35,6 +36,7 @@ class GeneratorDependency(GeneratorBlock):
     self.float_preset = self.ArgParameter(float_preset)
     self.generator_param(self.float_preset)
 
+  @override
   def generate(self) -> None:
     self.assign(self.float_param, self.get(self.float_preset) * 2)
 
@@ -54,6 +56,7 @@ class GeneratorMultiParameter(GeneratorBlock):
     self.float_preset2 = self.ArgParameter(float_preset2)
     self.generator_param(self.float_preset1, self.float_preset2)
 
+  @override
   def generate(self) -> None:
     self.assign1 = self.assign(self.float_param1, self.get(self.float_preset1) * 3)
     self.assign2 = self.assign(self.float_param2, self.get(self.float_preset2) + 7)
@@ -122,6 +125,7 @@ class GeneratorIsConnected(GeneratorBlock):
     self.generator_param(self.port.is_connected())
     self.connected = self.Parameter(BoolExpr())
 
+  @override
   def generate(self) -> None:
     if self.get(self.port.is_connected()):
       self.assign(self.connected, True)
@@ -148,6 +152,7 @@ class GeneratorInnerConnect(GeneratorBlock):
     super().__init__()
     self.port = self.Port(TestPortSource(), optional=True)
 
+  @override
   def generate(self) -> None:
     self.inner = self.Block(TestBlockSource(4.5))
     self.connect(self.inner.port, self.port)
@@ -195,6 +200,7 @@ class GeneratorFailure(GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
 
+  @override
   def generate(self) -> None:
     def helperfn() -> None:
       raise TestGeneratorException("test text")

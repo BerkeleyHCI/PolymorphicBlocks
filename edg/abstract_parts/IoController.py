@@ -150,6 +150,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
     super().__init__(*args, **kwargs)
     self.generator_param(self.pin_assigns)
 
+  @override
   def contents(self) -> None:
     super().contents()
     for io_port in self._io_ports:  # defined in contents() so subclass __init__ can define additional _io_ports

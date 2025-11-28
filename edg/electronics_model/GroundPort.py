@@ -31,6 +31,7 @@ class GroundLink(CircuitLink):
         self.voltage = self.Parameter(RangeExpr())
         self.voltage_limits = self.Parameter(RangeExpr())
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -52,6 +53,7 @@ class GroundBridge(CircuitPortBridge):
         self.outer_port = self.Port(Ground())
         self.inner_link = self.Port(GroundReference(voltage_out=RangeExpr()))
 
+    @override
     def contents(self) -> None:
         super().contents()
 

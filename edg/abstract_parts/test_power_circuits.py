@@ -15,6 +15,7 @@ class RampLimiterTestTop(DesignTop):
     (self.dummyctl, ), _ = self.chain(self.dut.control, self.Block(DummyDigitalSource(voltage_out=3.3*Volt(tol=0))))
     (self.dummygnd, ), _ = self.chain(self.dut.gnd, self.Block(DummyGround()))
 
+  @override
   def refinements(self) -> Refinements:
     return Refinements(
       class_refinements=[

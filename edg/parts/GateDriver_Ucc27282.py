@@ -41,6 +41,7 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.assign(self.vdd.current_draw,
                 (0.3, 4.5)*mAmp + (0.2, 4)*mAmp + self.lo.link().current_drawn + self.ho.link().current_drawn)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -65,6 +66,7 @@ class Ucc27282_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 class Ucc27282(HalfBridgeDriver, HalfBridgeDriverIndependent):
   """UCC27282 half-bridge driver supporting 100V offset, 5.5-16v input, internal boot diode,
   shoot through protect, no deadtime."""
+  @override
   def contents(self) -> None:
     super().contents()
 

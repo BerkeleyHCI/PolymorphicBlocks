@@ -34,6 +34,7 @@ class OpampCurrentSensor(CurrentSensor, KiCadImportableBlock, Block):
     self.out = self.Port(AnalogSource.empty())
 
 
+  @override
   def contents(self) -> None:
     self.connect(self.amp.input_positive, self.sense.sense_in)
     self.connect(self.amp.input_negative, self.sense.sense_out)

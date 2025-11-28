@@ -29,6 +29,7 @@ class Mcp4921_Device(InternalSubcircuit, FootprintBlock):
     self.spi = self.Port(SpiPeripheral(dio_model, frequency_limit=(0, 20) * MHertz))
     self.cs = self.Port(dio_model)
 
+  @override
   def contents(self) -> None:
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
@@ -65,6 +66,7 @@ class Mcp4921(DigitalToAnalog, Block):
     self.cs = self.Export(self.ic.cs)
     self.ldac = self.Export(self.ic.ldac)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

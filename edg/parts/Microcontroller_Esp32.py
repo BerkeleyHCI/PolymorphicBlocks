@@ -223,6 +223,7 @@ class Esp32_Wroom_32_Device(Esp32_Base, InternalSubcircuit, FootprintBlock, JlcP
     'GPIO23': '37',
   }
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -246,6 +247,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Resetta
     self.ic: Esp32_Wroom_32_Device
     self.generator_param(self.reset.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -262,6 +264,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Resetta
       self.vcc_cap0 = imp.Block(DecouplingCapacitor(22 * uFarad(tol=0.2)))  # C1
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -367,6 +370,7 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
 
     self.generator_param(self.pwr.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
 

@@ -32,6 +32,7 @@ class UnrelatedAbstractBlock(Block):
 
 class BadMixinUsageTestCase(unittest.TestCase):
     class StandaloneMixinBlock(Block):
+        @override
         def contents(self) -> None:
             super().contents()
             self.block = self.Block(TestMixin())
@@ -41,6 +42,7 @@ class BadMixinUsageTestCase(unittest.TestCase):
             self.StandaloneMixinBlock()._elaborated_def_to_proto()
 
     class ConcreteMixinBlock(Block):
+        @override
         def contents(self) -> None:
             super().contents()
             self.block = self.Block(TestMixinConcreteBlock())
@@ -51,6 +53,7 @@ class BadMixinUsageTestCase(unittest.TestCase):
             self.ConcreteMixinBlock()._elaborated_def_to_proto()
 
     class BadBaseMixin(Block):
+        @override
         def contents(self) -> None:
             super().contents()
             self.block = self.Block(UnrelatedAbstractBlock())

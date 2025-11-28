@@ -64,6 +64,7 @@ class MultipackOpampGenerator(MultipackOpamp, GeneratorBlock):
     Returns (gnd, pwr, [(in-, in+, out)])."""
     raise NotImplementedError  # implement me
 
+  @override
   def generate(self) -> None:
     super().generate()
     amp_ports = self._make_multipack_opamp()

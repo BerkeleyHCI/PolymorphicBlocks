@@ -92,6 +92,7 @@ class ResistiveDivider(InternalSubcircuit, KiCadImportableBlock, GeneratorBlock)
     self.center = self.Port(Passive.empty())
     self.bottom = self.Port(Passive.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -102,6 +103,7 @@ class ResistiveDivider(InternalSubcircuit, KiCadImportableBlock, GeneratorBlock)
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.impedance, "Ω"))
 
 
+  @override
   def generate(self) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
     """
@@ -206,6 +208,7 @@ class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
     self.assumed_input_voltage = self.ArgParameter(assumed_input_voltage)
     self.actual_input_voltage = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 

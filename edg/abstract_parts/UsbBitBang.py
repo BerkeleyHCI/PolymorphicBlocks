@@ -38,6 +38,7 @@ class UsbBitBang(BitBangAdapter, Block):
     self.dm = self.Port(DigitalBidir.empty())
     self.dp_pull = self.Port(DigitalSink.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
 

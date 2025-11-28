@@ -54,6 +54,7 @@ class FetHalfBridge(HalfBridge):
 
         self.actual_current_limits = self.Parameter(RangeExpr())
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.driver = self.Block(HalfBridgeDriver(has_boot_diode=True))
@@ -107,6 +108,7 @@ class FetHalfBridge(HalfBridge):
 
 
 class FetHalfBridgeIndependent(FetHalfBridge, HalfBridgeIndependent):
+    @override
     def contents(self) -> None:
         super().contents()
         driver_mixin = self.driver.with_mixin(HalfBridgeDriverIndependent())
@@ -119,6 +121,7 @@ class FetHalfBridgePwmReset(FetHalfBridge, HalfBridgePwm, Resettable, GeneratorB
         super().__init__(*args, **kwargs)
         self.generator_param(self.reset.is_connected())
 
+    @override
     def generate(self) -> None:
         super().generate()
         self.connect(self.pwm_ctl, self.driver.with_mixin(HalfBridgeDriverPwm()).pwm_in)
@@ -178,6 +181,7 @@ class RampLimiter(KiCadSchematicBlock):
         self.max_rds = self.ArgParameter(max_rds)
         self._cdiv_vgs_factor = self.ArgParameter(_cdiv_vgs_factor)
 
+    @override
     def contents(self) -> None:
         super().contents()
 

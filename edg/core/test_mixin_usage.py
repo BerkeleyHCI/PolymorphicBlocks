@@ -8,6 +8,7 @@ from .test_mixin import TestMixin, TestMixinBase
 
 class MixinUsageTestCase(unittest.TestCase):
   class MixinBlock(Block):
+    @override
     def contents(self) -> None:
       super().contents()
 

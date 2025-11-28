@@ -52,6 +52,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
     self.actual_power_rating = self.Parameter(RangeExpr())
     self.actual_voltage_rating = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -137,6 +138,7 @@ class SeriesResistor(Resistor, GeneratorBlock):
     self.count = self.ArgParameter(count)
     self.generator_param(self.count, self.resistance)
 
+  @override
   def generate(self) -> None:
     super().generate()
     count = self.get(self.count)
@@ -225,6 +227,7 @@ class PullupResistorArray(TypedTestPoint, GeneratorBlock):
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.res = ElementDict[PullupResistor]()
@@ -243,6 +246,7 @@ class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.res = ElementDict[PulldownResistor]()
@@ -314,6 +318,7 @@ class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorB
 
     self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -357,6 +362,7 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
     self.protection_voltage = self.ArgParameter(protection_voltage)
     self.zero_out = self.ArgParameter(zero_out)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -399,6 +405,7 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
     self.protection_voltage = self.ArgParameter(protection_voltage)
     self.zero_out = self.ArgParameter(zero_out)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

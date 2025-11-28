@@ -34,6 +34,7 @@ class Cbmud1200l_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     self.voa = self.Port(out_model)
     self.vob = self.Port(out_model)
 
+  @override
   def contents(self) -> None:
     self.footprint(
       'U', 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm',
@@ -58,6 +59,7 @@ class Cbmud1200l(DigitalIsolator, GeneratorBlock):
   def __init__(self) -> None:
     super().__init__()
 
+  @override
   def generate(self) -> None:
     super().generate()
     assert not self.get(self.in_b.requested()) and not self.get(self.out_a.requested()), f"device has no b->a channels"
