@@ -3,6 +3,8 @@ import inspect
 import math
 from typing import List, Tuple, NamedTuple, Dict, Union, Set
 
+from typing_extensions import override
+
 from .. import edgir
 from .KicadFootprintData import FootprintDataTable
 from ..core import *
