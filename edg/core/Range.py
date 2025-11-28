@@ -1,6 +1,7 @@
 import math
 from typing import Tuple, Union, Any
 from deprecated import deprecated
+from typing_extensions import override
 
 
 class Range:
@@ -118,6 +119,7 @@ class Range:
     """Creates a Range that is a superset of every range"""
     return Range(float('-inf'), float('inf'))
 
+  @override
   def __repr__(self) -> str:
     return f"Range({self.lower, self.upper})"
 
@@ -127,6 +129,7 @@ class Range:
     self.lower = float(lower)
     self.upper = float(upper)
 
+  @override
   def __eq__(self, other: Any) -> bool:
     if not isinstance(other, Range):
       return False

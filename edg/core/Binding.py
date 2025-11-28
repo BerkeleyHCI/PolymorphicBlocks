@@ -5,6 +5,8 @@ from enum import Enum, auto
 from itertools import chain
 from typing import *
 
+from typing_extensions import override
+
 from .. import edgir
 from .Core import Refable
 from .IdentityDict import IdentityDict
@@ -82,6 +84,7 @@ class Binding:
 ParamParentTypes = Union['Port', 'BaseBlock']  # creates a circular module dependency on Core
 class ParamBinding(Binding):
   """Binding that indicates this is a parameter"""
+  @override
   def __repr__(self) -> str:
     return f"Param({self.parent})"
 
@@ -121,6 +124,7 @@ class LiteralBinding(Binding):
 
 
 class BoolLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.value})"
 
@@ -135,6 +139,7 @@ class BoolLiteralBinding(LiteralBinding):
 
 
 class IntLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.value})"
 
@@ -148,6 +153,7 @@ class IntLiteralBinding(LiteralBinding):
 
 
 class FloatLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.value})"
 
@@ -161,6 +167,7 @@ class FloatLiteralBinding(LiteralBinding):
 
 
 class RangeLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.value})"
 
@@ -175,6 +182,7 @@ class RangeLiteralBinding(LiteralBinding):
 
 
 class StringLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.value})"
 
@@ -189,6 +197,7 @@ class StringLiteralBinding(LiteralBinding):
 
 
 class ArrayLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.values})"
 
@@ -207,6 +216,7 @@ class ArrayLiteralBinding(LiteralBinding):
 
 
 class RangeBuilderBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"RangeBuilder({self.lower}, {self.upper})"
 
@@ -227,6 +237,7 @@ class RangeBuilderBinding(Binding):
 
 
 class ArrayBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Array({self.values})"
 
@@ -243,6 +254,7 @@ class ArrayBinding(LiteralBinding):
 
 
 class UnaryOpBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"UnaryOp({self.op}, ...)"
 
@@ -274,6 +286,7 @@ class UnaryOpBinding(Binding):
     return pb
 
 class UnarySetOpBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"UnarySetOp({self.op}, ...)"
 
@@ -310,6 +323,7 @@ class UnarySetOpBinding(Binding):
     return pb
 
 class BinaryOpBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"BinaryOp({self.op}, ...)"
 
@@ -360,6 +374,7 @@ class BinaryOpBinding(Binding):
     return pb
 
 class BinarySetOpBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"BinaryOp({self.op}, ...)"
 
@@ -390,6 +405,7 @@ class BinarySetOpBinding(Binding):
 
 
 class IfThenElseBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"IfThenElse(...)"
 
@@ -411,6 +427,7 @@ class IfThenElseBinding(Binding):
 
 
 class IsConnectedBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"IsConnected"
 
@@ -428,6 +445,7 @@ class IsConnectedBinding(Binding):
     return pb
 
 class NameBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"Name"
 
@@ -446,6 +464,7 @@ class NameBinding(Binding):
 
 
 class LengthBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"Length"
 
@@ -464,6 +483,7 @@ class LengthBinding(Binding):
 
 
 class AllocatedBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"Allocated"
 
@@ -490,6 +510,7 @@ class AssignBinding(Binding):
     pb.assign.src.CopyFrom(value._expr_to_proto(ref_map))
     return pb
 
+  @override
   def __repr__(self) -> str:
     return f"Assign({self.target}, ...)"
 

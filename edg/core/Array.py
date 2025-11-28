@@ -115,6 +115,7 @@ class Vector(BaseVector, Generic[VectorType]):
     self._length = IntExpr()._bind(LengthBinding(self))
     self._requested = ArrayStringExpr()._bind(AllocatedBinding(self))
 
+  @override
   def __repr__(self) -> str:
     # TODO dedup w/ Core.__repr__
     # but this can't depend on get_def_name since that crashes

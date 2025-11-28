@@ -4,7 +4,7 @@ from typing import List, Any, Dict, Tuple, TypeVar, Type, Set, NamedTuple, Union
 
 import math
 import sexpdata  # type: ignore
-
+from typing_extensions import override
 
 # This defines the minimum resolvable grid, so all coordinates are rounded to integer
 # coordinates to exact position equality checks can be made without worrying about
@@ -56,6 +56,7 @@ def parse_symbol(sexp: Any) -> str:
 
 class KiCadLibPin:
   """Pin in a library symbol"""
+  @override
   def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.number} @ {self.pos})"
 
@@ -69,6 +70,7 @@ class KiCadLibPin:
 
 class KiCadLibSymbol:
   """Symbol in a library"""
+  @override
   def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.name})"
 
@@ -86,6 +88,7 @@ class KiCadLibSymbol:
 
 
 class KiCadWire:
+  @override
   def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.pt1}, {self.pt2})"
 
@@ -99,6 +102,7 @@ class KiCadWire:
 
 
 class KiCadTunnel:
+  @override
   def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.name} @ {self.pt})"
 
@@ -108,6 +112,7 @@ class KiCadTunnel:
 
 
 class KiCadBaseLabel(KiCadTunnel):
+  @override
   def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.name} @ {self.pt})"
 
@@ -145,6 +150,7 @@ class KiCadPowerLabel(KiCadTunnel):  # not really a label, but behaves like a la
 
 
 class KiCadMarker:
+  @override
   def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.pt})"
 
@@ -161,6 +167,7 @@ class KiCadNoConnect(KiCadMarker):
 
 
 class KiCadSymbol:
+  @override
   def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.refdes}, {self.lib} @ {self.pos})"
 
@@ -186,6 +193,7 @@ class KiCadSymbol:
 
 
 class KiCadPin:
+  @override
   def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self.refdes}.{self.pin_number} @ {self.pt})"
 
@@ -220,6 +228,7 @@ class ParsedNet(NamedTuple):
   labels: List[KiCadTunnel]
   pins: List[KiCadPin]
 
+  @override
   def __repr__(self) -> str:
     return f"{self.__class__.__name__}(labels={self.labels}, pins={self.pins})"
 

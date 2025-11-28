@@ -5,13 +5,14 @@ import itertools
 from typing import Generic, Type, overload, Union, Callable, List, Dict, Any, KeysView, Optional, \
   cast, Tuple, Sequence, Protocol
 
-from typing_extensions import ParamSpec, TypeVar
+from typing_extensions import ParamSpec, TypeVar, override
 
 from ..core.Range import Range
 
 
 # from https://stackoverflow.com/questions/47965083/comparable-types-with-mypy
 class Comparable(Protocol):
+  @override
   def __eq__(self, other: Any) -> bool: ...
   def __lt__(self, other: Any) -> bool: ...
 

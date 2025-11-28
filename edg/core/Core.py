@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import *
 from abc import abstractmethod
 
+from typing_extensions import override
+
 from .. import edgir
 from .Builder import builder
 from .IdentityDict import IdentityDict
@@ -146,9 +148,11 @@ class Refable():
   """Object that could be referenced into a edgir.LocalPath"""
   RefMapType = IdentityDict['Refable', edgir.LocalPath]
 
+  @override
   def __repr__(self) -> str:
     return "%s@%02x" % (self.__class__.__name__, (id(self)//4)&0xff)
 
+  @override
   def __eq__(self, other: Any) -> None:  # type: ignore
     raise NotImplementedError(f"__eq__ reserved for DSL, attempted to compare {self} and {other}")
 
@@ -184,6 +188,7 @@ class LibraryElement(Refable):
   """Defines a library element, which optionally contains other library elements."""
   _elt_properties: Dict[Tuple[Type[LibraryElement], EltPropertiesBase], Any] = {}
 
+  @override
   def __repr__(self) -> str:
     return "%s@%02x" % (self._get_def_name(), (id(self) // 4) & 0xff)
 

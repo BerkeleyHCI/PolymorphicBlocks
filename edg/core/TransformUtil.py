@@ -18,10 +18,12 @@ class Path(NamedTuple):  # internal helper type
   def __hash__(self) -> int:
     return hash((self.blocks, self.links, self.ports, self.params))
 
+  @override
   def __eq__(self, other: Any) -> bool:
     return isinstance(other, Path) and self.blocks == other.blocks and self.links == other.links and \
            self.ports == other.ports and self.params == other.params
 
+  @override
   def __repr__(self) -> str:
     if not self.blocks and not self.links and not self.ports and not self.params:
       return '(root)'
@@ -150,6 +152,7 @@ class TransformContext(NamedTuple):
   path: Path
   design: edgir.Design
 
+  @override
   def __repr__(self) -> str:
     return f"TransformContext(path={self.path}, design=...)"
 

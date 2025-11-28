@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import *
 
+from typing_extensions import override
+
 KeyType = TypeVar('KeyType')
 ValueType = TypeVar('ValueType')
 class IdentityDict(Generic[KeyType, ValueType]):  # TODO this should implement Mapping[KeyType, ValueType]
@@ -35,6 +37,7 @@ class IdentityDict(Generic[KeyType, ValueType]):  # TODO this should implement M
       self.keys_dict[key_id] = key
     return self.dict[key_id]
 
+  @override
   def __repr__(self) -> str:
     return "IdentityDict" + str(self.items())
 

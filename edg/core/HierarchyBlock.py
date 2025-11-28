@@ -6,6 +6,8 @@ import warnings
 from types import TracebackType
 from typing import *
 
+from typing_extensions import override
+
 from .. import edgir
 from .Builder import builder
 from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, ArrayBoolExpr, ArrayBoolLike, ArrayIntLike, \
@@ -111,6 +113,7 @@ class BlockPrototype(Generic[BlockPrototypeType]):
     self._args = args
     self._kwargs = kwargs
 
+  @override
   def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self._tpe}, args={self._args}, kwargs={self._kwargs})"
 

@@ -5,7 +5,7 @@ from typing import Generic, Any, TYPE_CHECKING, Tuple, Type, Optional, Union, It
 
 from deprecated import deprecated
 from itertools import chain
-from typing_extensions import TypeVar
+from typing_extensions import TypeVar, override
 
 from .Binding import Binding, ParamBinding, BoolLiteralBinding, IntLiteralBinding, \
   FloatLiteralBinding, RangeLiteralBinding, StringLiteralBinding, RangeBuilderBinding, \
@@ -30,6 +30,7 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   """
   _CASTABLE_TYPES: Tuple[Type[CastableType], ...]  # for use in ininstance(), excluding self-cls
 
+  @override
   def __repr__(self) -> str:
     if self.binding is not None and self.initializer is not None:
       return f"{super().__repr__()}({self.binding})={self.initializer}"
@@ -97,6 +98,7 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
     return self.binding.expr_to_proto(self, ref_map)
 
   # for now we define that all constraints can be checked for equivalence
+  @override
   def __eq__(self: SelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
     # TODO: avoid creating excess BoolExpr
     return BoolExpr()._bind(BinaryOpBinding(self, self._to_expr_type(other), EqOp.eq))
