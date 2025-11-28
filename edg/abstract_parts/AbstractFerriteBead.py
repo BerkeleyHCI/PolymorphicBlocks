@@ -64,7 +64,6 @@ class FerriteBeadStandardFootprint(StandardFootprint[FerriteBead]):
   }
 
 
-
 @non_library
 class TableFerriteBead(PartsTableSelector, FerriteBead):
   CURRENT_RATING = PartsTableColumn(Range)

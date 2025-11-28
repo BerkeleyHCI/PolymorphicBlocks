@@ -24,7 +24,7 @@ class StandardFootprint(Generic[StandardPinningType]):
             assert pinning_footprint not in footprint_map, f"duplicate footprint entry {pinning_footprint}"
             footprint_map[pinning_footprint] = pinning_fn
         elif isinstance(pinning_footprints, str):
-          assert pinning_footprints not in footprint_map, f"duplicate footprint entry {pinning_footprint}"
+          assert pinning_footprints not in footprint_map, f"duplicate footprint entry {pinning_footprints}"
           footprint_map[pinning_footprints] = pinning_fn
         else:
           raise ValueError(f"unknown footprint entry {pinning_footprints}")
