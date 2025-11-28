@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -34,6 +36,7 @@ class Drv8833_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.bout1 = self.Port(dout_model, optional=True)
     self.bout2 = self.Port(dout_model, optional=True)
 
+  @override
   def contents(self) -> None:
     self.assign(self.vm.current_draw, (1.6, 3000) * uAmp +  # from sleep to max operating
                 (0,  # calculate possible motor current, assuming A1/2 and B1/2 are coupled (and not independent)
@@ -99,6 +102,7 @@ class Drv8833(BrushedMotorDriver, GeneratorBlock):
     self.bout1 = self.Export(self.ic.bout1, optional=True)
     self.bout2 = self.Export(self.ic.bout2, optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -109,6 +113,7 @@ class Drv8833(BrushedMotorDriver, GeneratorBlock):
     self.connect(self.vcp_cap.pos, self.ic.vcp)
     self.connect(self.vcp_cap.neg.adapt_to(VoltageSink()), self.ic.vm)
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.sleep.is_connected()):

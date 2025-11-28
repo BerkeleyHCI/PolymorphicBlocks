@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 from .ScalaCompilerInterface import ScalaCompiler
@@ -12,6 +14,7 @@ class GeneratorInnerBlock(GeneratorBlock):
     self.ports = self.Port(Vector(TestPortSink()))
     self.generator_param(self.ports.requested())
 
+  @override
   def generate(self) -> None:
     assert self.get(self.ports.requested()) == ['0', 'named', '1']
     self.ports.append_elt(TestPortSink((-1, 1)))
@@ -117,6 +120,7 @@ class GeneratorArrayParam(GeneratorBlock):
     self.param = self.ArgParameter(param)
     self.generator_param(self.param)
 
+  @override
   def generate(self) -> None:
     for elt in self.get(self.param):
       created_port = self.ports.append_elt(TestPortSink(elt))  # any port

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import *
 
 from deprecated import deprecated
+from typing_extensions import override
 
 from .. import edgir
 from .Builder import builder
@@ -82,6 +83,7 @@ class GeneratorBlock(Block):
 
   # Generator serialization and parsing
   #
+  @override
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     if self._elaboration_state != BlockElaborationState.post_generate:  # only write generator on the stub definition
       ref_map = self._create_ref_map()
@@ -151,6 +153,7 @@ class DefaultExportBlock(GeneratorBlock):
     self._default_exports: List[Tuple[BasePort, Port, Port]] = []  # internal, exported, default
 
   ExportType = TypeVar('ExportType', bound=BasePort)
+  @override
   def Export(self, port: ExportType, *args: Any, default: Optional[Port] = None, **kwargs: Any) -> ExportType:
     """A generator-only variant of Export that supports an optional default (either internal or external)
     to connect the (internal) port being exported to, if the external exported port is not connected."""
@@ -164,6 +167,7 @@ class DefaultExportBlock(GeneratorBlock):
       self._default_exports.append((port, new_port, default))
     return new_port
 
+  @override
   def generate(self) -> None:
     super().generate()
     for (internal, exported, default) in self._default_exports:

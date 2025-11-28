@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import Optional, Union, Any, ClassVar, Type, Protocol
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
 from .StandardFootprint import HasStandardFootprint
@@ -75,6 +77,7 @@ class PartsTableSelector(PartsTablePart, GeneratorBlock, PartsTableBase):
     If there is no matching row, this is not called."""
     self.assign(self.actual_part, row[self.PART_NUMBER_COL])
 
+  @override
   def generate(self) -> None:
     matching_table = self._get_table().filter(lambda row: self._row_filter(row))
     postprocessed_table = self._table_postprocess(matching_table)
@@ -104,6 +107,7 @@ class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
     super().__init__(*args, **kwargs)
     self.generator_param(self.footprint_spec)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       ((not self.get(self.footprint_spec)) or self.get(self.footprint_spec) == row[self.KICAD_FOOTPRINT])
@@ -113,6 +117,7 @@ class PartsTableFootprintFilter(PartsTableSelector, SelectorFootprint):
 class PartsTableSelectorFootprint(PartsTableFootprintFilter, FootprintBlock, HasStandardFootprint):
   """PartsTableFootprintFilter, but also with footprint creation. Must define a standard pinning.
   """
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.footprint(

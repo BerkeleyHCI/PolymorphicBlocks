@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 from .test_robotdriver import PwmConnector
@@ -30,6 +32,7 @@ class PcbBot(JlcBoardTop):
   - Charging ic is not reverse protected
   - MCU does not get turned off with the gate when powered by the USB and battery, though the vbatt line turns off. (by design)
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -159,6 +162,7 @@ class PcbBot(JlcBoardTop):
       self.switch = imp.Block(DigitalSwitch())
       self.connect(self.switch.out, self.mcu.gpio.request('pwr'))
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

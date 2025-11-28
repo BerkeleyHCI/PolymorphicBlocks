@@ -1,8 +1,11 @@
 from deprecated import deprecated
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class Outline_Pn1332(Mechanical, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -22,6 +25,7 @@ class MountingHole(Mechanical, FootprintBlock):
     super().__init__()
     self.pad = self.Port(Passive(), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(

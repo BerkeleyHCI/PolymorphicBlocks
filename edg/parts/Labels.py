@@ -1,9 +1,12 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from deprecated import deprecated
 
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class LeadFreeIndicator(Label, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -15,6 +18,7 @@ class LeadFreeIndicator(Label, FootprintBlock):
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class IdDots4(Label, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -26,6 +30,7 @@ class IdDots4(Label, FootprintBlock):
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class DuckLogo(Label, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -37,6 +42,7 @@ class DuckLogo(Label, FootprintBlock):
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class LemurLogo(Label, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(

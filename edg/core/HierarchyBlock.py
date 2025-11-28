@@ -6,6 +6,8 @@ import warnings
 from types import TracebackType
 from typing import *
 
+from typing_extensions import override
+
 from .. import edgir
 from .Builder import builder
 from . import ArrayStringExpr, ArrayRangeExpr, ArrayFloatExpr, ArrayIntExpr, ArrayBoolExpr, ArrayBoolLike, ArrayIntLike, \
@@ -111,6 +113,7 @@ class BlockPrototype(Generic[BlockPrototypeType]):
     self._args = args
     self._kwargs = kwargs
 
+  @override
   def __repr__(self) -> str:
     return f"{self.__class__.__name__}({self._tpe}, args={self._args}, kwargs={self._kwargs})"
 
@@ -121,12 +124,14 @@ class BlockPrototype(Generic[BlockPrototypeType]):
     block._bind_in_place(parent)
     return block
 
+  @override
   def __getattribute__(self, item: str) -> Any:
     if item.startswith("_"):
       return super().__getattribute__(item)
     else:
       raise AttributeError(f"{self.__class__.__name__} has no attributes, must bind to get a concrete instance, tried to get {item}")
 
+  @override
   def __setattr__(self, key: str, value: Any) -> None:
     if key.startswith("_"):
       super().__setattr__(key, value)
@@ -309,6 +314,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
         out.append(block_port)
     return out
 
+  @override
   def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath, *,
                      interface_only: bool = False) -> None:
     super()._build_ref_map(ref_map, prefix)
@@ -319,6 +325,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
         assert isinstance(block, Block)
         block._build_ref_map(ref_map, edgir.localpath_concat(prefix, name), interface_only=True)
 
+  @override
   def _populate_def_proto_block_base(self, pb: edgir.BlockLikeTypes) -> None:
     super()._populate_def_proto_block_base(pb)
     assert isinstance(pb, edgir.HierarchyBlock)
@@ -436,6 +443,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
           )
 
   # TODO make this non-overriding?
+  @override
   def _def_to_proto(self) -> edgir.HierarchyBlock:
     assert not self._mixins  # blocks with mixins can only be instantiated anonymously
     ref_map = self._create_ref_map()
@@ -453,6 +461,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
 
     return pb
 
+  @override
   def _elaborated_def_to_proto(self) -> edgir.HierarchyBlock:
     return cast(edgir.HierarchyBlock, super()._elaborated_def_to_proto())
 
@@ -540,6 +549,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
 
     return ImplicitScope(self, implicits)
 
+  @override
   def connect(self, *connects: Union[BasePort, Connection], flatten: bool=False) -> Connection:
     assert not flatten, "flatten only allowed in links"
     return super().connect(*connects, flatten=flatten)
@@ -584,6 +594,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
     return param
 
   T = TypeVar('T', bound=BasePort)
+  @override
   def Port(self, tpe: T, tags: Iterable[PortTag]=[], *, optional: bool = False, doc: Optional[str] = None) -> T:
     """Registers a port for this Block"""
     if not isinstance(tpe, (Port, Vector)):

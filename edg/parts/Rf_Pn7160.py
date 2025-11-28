@@ -1,6 +1,8 @@
 from typing import Tuple
 from math import pi
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -42,6 +44,7 @@ class NfcAntenna(FootprintBlock, GeneratorBlock, Interface):
         self.z_real = self.Parameter(FloatExpr())
         self.z_imag = self.Parameter(FloatExpr())
 
+    @override
     def generate(self) -> None:
         super().generate()
 
@@ -76,6 +79,7 @@ class NfcAntennaDampening(InternalSubcircuit, GeneratorBlock):
         self.z_real = self.Parameter(FloatExpr())
         self.z_imag = self.Parameter(FloatExpr())
 
+    @override
     def generate(self) -> None:
         super().generate()
 
@@ -119,6 +123,7 @@ class DifferentialLcLowpassFilter(GeneratorBlock, RfFilter):
         self.out2 = self.Port(Passive())
         self.gnd = self.Port(Ground.empty(), [Common])
 
+    @override
     def generate(self) -> None:
         super().generate()
 
@@ -168,6 +173,7 @@ class DifferentialLLowPassFilter(GeneratorBlock, RfFilter):
         self.out2 = self.Port(Passive())
         self.gnd = self.Port(Ground.empty(), [Common])
 
+    @override
     def generate(self) -> None:
         super().generate()
 
@@ -198,6 +204,7 @@ class Pn7160RxFilter(InternalSubcircuit, Block):
         self.out1 = self.Port(Passive())
         self.out2 = self.Port(Passive())
 
+    @override
     def contents(self) -> None:
         super().contents()
         rrx_model = Resistor(resistance=self.resistance)
@@ -266,6 +273,7 @@ class Pn7160_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             input_threshold_abs=(0.4, 1.1)*Volt
         ))
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_DFN_QFN:HVQFN-40-1EP_6x6mm_P0.5mm_EP4.1x4.1mm',
@@ -327,6 +335,7 @@ class Pn7160(Resettable, DiscreteRfWarning, Block):
         self.i2c = self.Export(self.ic.i2c)
         self.irq = self.Export(self.ic.irq)
 
+    @override
     def contents(self) -> None:
         super().contents()
 

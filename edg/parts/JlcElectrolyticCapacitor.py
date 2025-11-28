@@ -1,6 +1,8 @@
 from typing import Optional, Any, Dict, List
 import re
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import DescriptionParser, JlcTableSelector
 
@@ -25,6 +27,7 @@ class JlcAluminumCapacitor(PartsTableSelectorFootprint, JlcTableSelector, TableC
     self.generator_param(self.capacitance_minimum_size)
 
   @classmethod
+  @override
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row['Second Category'] != 'Aluminum Electrolytic Capacitors - SMD':

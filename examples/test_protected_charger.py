@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
@@ -11,6 +13,7 @@ class ProtectedCharger(JlcBoardTop):
     - A Port for load
     """
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -48,6 +51,7 @@ class ProtectedCharger(JlcBoardTop):
                      self.pwr_pins.pins.request('2').adapt_to(VoltageSink(current_draw=(0, 2.0) * Amp)))
         self.connect(self.pwr_pins.pins.request('3').adapt_to(Ground()), self.gnd)
 
+    @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[

@@ -1,11 +1,14 @@
 import unittest
 
+from typing_extensions import override
+
 from . import *
 from .test_common import TestBlockSource, TestBlockSink, TestPortSource, TestPortSink
 
 
 class EltDictBlock(Block):
   """Block with an EltDict of sub-blocks"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.sink = ElementDict[Block]()

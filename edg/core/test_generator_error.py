@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from . import *
 from .HdlUserExceptions import BlockDefinitionError
 
@@ -21,6 +23,7 @@ class BadGeneratorTestCase(unittest.TestCase):
       self.param = self.Parameter(FloatExpr())
       self.generator_param(self.param)
 
+    @override
     def generate(self) -> None:
       super().generate()
 

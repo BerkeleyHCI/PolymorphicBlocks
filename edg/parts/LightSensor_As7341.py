@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -19,6 +21,7 @@ class As7341_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.i2c = self.Port(I2cTarget(dio_model, [0x39]))
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_LGA:AMS_OLGA-8_2x3.1mm_P0.8mm',
@@ -49,6 +52,7 @@ class As7341(LightSensor, Block):
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c)
 
+    @override
     def contents(self) -> None:
         super().contents()
         # capacitance value assumed, same value as on Adafruit's breakout

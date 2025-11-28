@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -29,6 +31,7 @@ class CpuFanPwmControl(BlockInterfaceMixin[CpuFanConnector]):
 
 class CpuFan3Pin(CpuFanConnector, FootprintBlock):
     """3-pin fan controller"""
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(
@@ -44,6 +47,7 @@ class CpuFan3Pin(CpuFanConnector, FootprintBlock):
 
 class CpuFan4Pin(CpuFanConnector, CpuFanPwmControl, FootprintBlock):
     """3-pin fan controller"""
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(

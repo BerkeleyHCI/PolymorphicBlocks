@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -38,6 +40,7 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
     self.reset = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up, TODO disable-able and assignable as GPIO
     self._io_ports.insert(0, self.swd)
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
       'VddA': self.pwr,
@@ -56,6 +59,7 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
       'RESET': self.reset
     }).remap(self.SYSTEM_PIN_REMAP)
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     # Port models
     dio_5v_model = DigitalBidir.from_supply(
@@ -173,6 +177,7 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
       }),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -327,6 +332,7 @@ class Lpc1549SwdPull(InternalSubcircuit, Block):
     self.gnd = self.Port(Ground.empty(), [Common])
     self.swd = self.Port(SwdPullPort(DigitalSource.empty()), [InOut])
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.swdio = self.Block(PullupResistor((10, 100) * kOhm(tol=0.05))).connected(self.pwr, self.swd.swdio)
@@ -345,6 +351,7 @@ class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, 
     self.ic: Lpc1549Base_Device
     self.generator_param(self.reset.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -376,12 +383,14 @@ class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, 
       self.vref_cap[1] = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
       self.vref_cap[2] = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
+  @override
   def generate(self) -> None:
     super().generate()
 
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.reset)
 
+  @override
   def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
     return len(self.get(self.can.requested())) > 0 or len(self.get(self.usb.requested())) > 0 \
         or super()._crystal_required()

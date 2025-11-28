@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from . import PartsTableSelector, PartsTableColumn, Capacitor, PartsTableRow
 from .Categories import *
@@ -21,6 +23,7 @@ class Crystal(DiscreteComponent, HasStandardFootprint):
     self.crystal = self.Port(CrystalPort(self.actual_frequency), [InOut])  # set by subclass
     self.gnd = self.Port(Ground(), [Common])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -66,10 +69,12 @@ class TableCrystal(PartsTableSelector, Crystal):
     super().__init__(*args, **kwargs)
     self.generator_param(self.frequency)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       (row[self.FREQUENCY] in self.get(self.frequency))
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_frequency, row[self.FREQUENCY])
@@ -103,6 +108,7 @@ class OscillatorCrystal(OscillatorReference):  # TODO rename to disambiguate fro
   # TODO this should be formalized better.
   CAPACITOR_TOLERANCE = 0.38
 
+  @override
   def contents(self) -> None:
     super().contents()
 

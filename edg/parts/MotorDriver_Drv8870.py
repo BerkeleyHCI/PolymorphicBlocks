@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -32,6 +34,7 @@ class Drv8870_Device(InternalSubcircuit, FootprintBlock, JlcPart):
       current_draw=RangeExpr()
     ))
 
+  @override
   def contents(self) -> None:
     self.assign(self.isen.current_draw,
                 (0, self.out1.link().current_drawn.abs().upper().max(
@@ -75,6 +78,7 @@ class Drv8870(BrushedMotorDriver):
 
     self.current_trip = self.ArgParameter(current_trip)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.vm_cap0 = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.ic.vm)

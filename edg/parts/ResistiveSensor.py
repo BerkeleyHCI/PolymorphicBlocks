@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -20,6 +22,7 @@ class ConnectorResistiveSensor(Analog, Block):
     self.actual_impedance = self.Parameter(RangeExpr())
     self.actual_series_impedance = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     self.top = self.Block(Resistor(self.fixed_resistance, voltage=self.input.link().voltage))
     self.bot = self.Block(PassiveConnector(2))

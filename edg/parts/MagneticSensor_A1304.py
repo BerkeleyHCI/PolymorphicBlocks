@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -16,6 +18,7 @@ class A1304_Device(InternalBlock, FootprintBlock, JlcPart):
             signal_out_abs=(0.38, 2.87)  # output saturation limits @ Vcc=3.3v
         ))
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_TO_SOT_SMD:SOT-23',
@@ -41,6 +44,7 @@ class A1304(Magnetometer, Block):
         self.pwr = self.Export(self.ic.vcc, [Power])
         self.out = self.Export(self.ic.vout, [Output])
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.cbyp = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.pwr)

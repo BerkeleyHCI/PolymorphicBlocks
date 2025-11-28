@@ -1,8 +1,11 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
 class JlcSwitch(TactileSwitch, JlcPart, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -19,6 +22,7 @@ class JlcSwitch(TactileSwitch, JlcPart, FootprintBlock):
 
 
 class Skrtlae010(TactileSwitch, JlcPart, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
 

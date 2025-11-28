@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
@@ -12,6 +14,7 @@ class Obd2Connector(FootprintBlock):
 
     self.can = self.Port(CanDiffPort())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -26,6 +29,7 @@ class Obd2Connector(FootprintBlock):
 
 
 class CanAdapter(JlcBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -66,6 +70,7 @@ class CanAdapter(JlcBoardTop):
         self.mcu.adc.request('vobd_sense')
       )
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

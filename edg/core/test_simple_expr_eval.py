@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 
@@ -11,11 +13,13 @@ class TestEvalExprBlock(Block):
     self.sum_float = self.Parameter(FloatExpr(2 * LiteralConstructor(1) + 3 * LiteralConstructor(1)))
     self.sum_range = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     self.assign(self.sum_range, (2, 6) * LiteralConstructor(1) + (7, 8) * LiteralConstructor(1))
 
 
 class EvalExprTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestEvalExprBlock)
 
@@ -57,6 +61,7 @@ class TestEvalReductionBlock(Block):
 
 
 class EvalReductionTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestEvalReductionBlock)
 

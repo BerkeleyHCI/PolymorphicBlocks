@@ -1,6 +1,8 @@
 from typing import Tuple
 from math import pi
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -25,6 +27,7 @@ class Pe4259_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         # note that most other comparable RF switches do not have single-pin control
         # a future revision so the application circuit will replace this part with a dual-pin control circuit
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -60,6 +63,7 @@ class Pe4259(Nonstrict3v3Compatible, Block):
         self.ctrl = self.Port(DigitalSink.empty())
         self.vdd = self.Port(VoltageSink.empty(), [Power])
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -119,6 +123,7 @@ class Sx1262BalunLike(InternalSubcircuit, GeneratorBlock):
         self.generator_param(self.frequency, self.src_resistance, self.src_reactance, self.load_resistance,
                              self.tolerance)
 
+    @override
     def generate(self) -> None:
         super().generate()
 
@@ -183,6 +188,7 @@ class Sx1262_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             input_threshold_factor=(0.2, 0.7)
         ))
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.6x2.6mm',
@@ -239,6 +245,7 @@ class Sx1262(Resettable, DiscreteRfWarning, Block):
         # note, DIO2 is used for RF switch, DIO3 is used for TCXO control; these functions cannot be remapped elsewhere
         self.busy = self.Export(self.ic.busy)  # "the BUSY line is mandatory"
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.connect(self.ic.vbat_io, self.pwr)

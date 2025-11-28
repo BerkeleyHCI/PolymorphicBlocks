@@ -1,6 +1,8 @@
 from itertools import chain
 from typing import Dict, List, Any
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -27,6 +29,7 @@ class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
     self.addr_lsb = self.ArgParameter(addr_lsb)
     self.generator_param(self.addr_lsb, self.pin_assigns, self.io.requested())
 
+  @override
   def generate(self) -> None:
     dout_model = DigitalBidir.from_supply(  # same between TI and NXP versions
       self.gnd, self.vdd,
@@ -87,6 +90,7 @@ class Pca9554(IoExpander, PinMappable):
     self.i2c = self.Export(self.ic.i2c)
     self.io = self.Export(self.ic.io)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.assign(self.actual_pin_assigns, self.ic.actual_pin_assigns)

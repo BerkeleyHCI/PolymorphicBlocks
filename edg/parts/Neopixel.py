@@ -1,5 +1,7 @@
 from typing import Optional, Tuple
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -37,6 +39,7 @@ class Ws2812b(Neopixel, FootprintBlock, JlcPart):
             current_limits=0*mAmp(tol=0),
         ))
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'D', 'LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm',
@@ -75,6 +78,7 @@ class Sk6812Mini_E_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             current_limits=0*mAmp(tol=0),
         ), optional=True)
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'D', 'edg:LED_SK6812MINI-E',
@@ -121,6 +125,7 @@ class Sk6805_Ec15_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             current_limits=0*mAmp(tol=0),
         ), optional=True)
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'D', 'LED_SMD:LED_SK6812_EC15_1.5x1.5mm',
@@ -168,6 +173,7 @@ class Ws2812c_2020_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             current_limits=0*mAmp(tol=0),
         ), optional=True)
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'D', 'LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm',
@@ -214,6 +220,7 @@ class Sk6812_Side_A_Device(InternalSubcircuit, FootprintBlock):
             current_limits=0*mAmp(tol=0),
         ), optional=True)
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'D', 'edg:LED_SK6812-SIDE-A',
@@ -254,6 +261,7 @@ class NeopixelArray(Light, GeneratorBlock):
         self.count = self.ArgParameter(count)
         self.generator_param(self.count)
 
+    @override
     def generate(self) -> None:
         super().generate()
         self.led = ElementDict[Neopixel]()
@@ -270,9 +278,11 @@ class NeopixelArray(Light, GeneratorBlock):
 
 class NeopixelArrayCircular(NeopixelArray, SvgPcbTemplateBlock):
     """An array of Neopixels, with a circular layout template"""
+    @override
     def _svgpcb_fn_name_adds(self) -> Optional[str]:
         return f"{self._svgpcb_get(self.count)}"
 
+    @override
     def _svgpcb_template(self) -> str:
         led_block = self._svgpcb_footprint_block_path_of(['led[0]'])
         led_reftype, led_refnum = self._svgpcb_refdes_of(['led[0]'])
@@ -397,5 +407,6 @@ function {self._svgpcb_fn_name()}(xy, rot=270, radius=1, startAngle=0, endAngle=
 }}
 """
 
+    @override
     def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
         return -25.4 - 1.0, -25.4 - 1.0, 25.4 + 1.0, 25.4 + 1.0

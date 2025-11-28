@@ -1,5 +1,7 @@
 from typing import Optional
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -43,6 +45,7 @@ class Mcp3561_Device(InternalSubcircuit, GeneratorBlock, FootprintBlock):
     self.has_ext_ref = self.ArgParameter(has_ext_ref)
     self.generator_param(self.ch.requested(), self.vrefp.is_connected(), self.has_ext_ref)
 
+  @override
   def generate(self) -> None:
     ch_requested = self.get(self.ch.requested())
     CHANNEL_USE_MAPPINGS = [
@@ -114,6 +117,7 @@ class Mcp3561(AnalogToDigital, GeneratorBlock):
     self.spi = self.Export(self.ic.spi, [Output])
     self.cs = self.Export(self.ic.cs)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -135,6 +139,7 @@ class Mcp3561(AnalogToDigital, GeneratorBlock):
       # technically optional, but accuracy potentially degraded if omitted
       self.vref_cap = imp.Block(DecouplingCapacitor(10*uFarad(tol=0.2))).connected(pwr=self.ic.vrefp)
 
+  @override
   def generate(self) -> None:
     super().generate()
 

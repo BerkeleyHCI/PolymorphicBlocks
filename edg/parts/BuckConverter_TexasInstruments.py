@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -18,6 +20,7 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_thresholds=(0.8, 1.6)*Volt
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -39,9 +42,11 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch"""
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -100,6 +105,7 @@ class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_thresholds=(1.16, 1.35)*Volt
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -124,6 +130,7 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
   Note: TPS54202 has frequency spread-spectrum operation and internal pull-up on EN
   TPS54202H has no internal EN pull-up but a Zener diode clamp to limit voltage.
   """
+  @override
   def contents(self) -> None:
     super().contents()
     self.generator_param(self.reset.is_connected())
@@ -163,6 +170,7 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
                                           self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):

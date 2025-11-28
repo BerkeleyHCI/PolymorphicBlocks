@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .PassiveConnector_Header import PinHeader127DualShrouded
 from .PassiveConnector_TagConnect import TagConnect
@@ -5,6 +7,7 @@ from .PassiveConnector_TagConnect import TagConnect
 
 class SwdCortexTargetHeader(SwdCortexTargetConnector, SwdCortexTargetConnectorReset, SwdCortexTargetConnectorSwo,
                             SwdCortexTargetConnectorTdi):
+  @override
   def contents(self) -> None:
     super().contents()
     self.conn = self.Block(PinHeader127DualShrouded(10))
@@ -23,6 +26,7 @@ class SwdCortexTargetHeader(SwdCortexTargetConnector, SwdCortexTargetConnectorRe
 class SwdCortexTargetTagConnect(SwdCortexTargetConnector, SwdCortexTargetConnectorReset, SwdCortexTargetConnectorSwo):
   """OFFICIAL tag connect SWD header using the TC2030 series cables.
   https://www.tag-connect.com/wp-content/uploads/bsk-pdf-manager/TC2030-CTX_1.pdf"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.conn = self.Block(TagConnect(6))
@@ -38,6 +42,7 @@ class SwdCortexTargetTagConnect(SwdCortexTargetConnector, SwdCortexTargetConnect
 class SwdCortexTargetTc2050(SwdCortexTargetConnector, SwdCortexTargetConnectorReset, SwdCortexTargetConnectorSwo,
                             SwdCortexTargetConnectorTdi):
   """UNOFFICIAL tag connect SWD header, maintaining physical pin compatibility with the 2x05 1.27mm header."""
+  @override
   def contents(self) -> None:
     super().contents()
     self.conn = self.Block(TagConnect(10))

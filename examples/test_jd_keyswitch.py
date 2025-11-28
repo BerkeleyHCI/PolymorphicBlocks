@@ -1,11 +1,14 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
 class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
   """A Jacdac socketed mechanical keyswitch with RGB, for the gamer-maker in all of us.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -43,6 +46,7 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
       self.connect(self.mcu.gpio.request('jd_status'), self.jd_status)
 
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

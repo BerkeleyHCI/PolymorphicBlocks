@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 from .test_elaboration_common import TestPortBase
@@ -37,6 +39,7 @@ class TestBlock(TestBlockBase, TestBlockSecondNonLibrary):
 
 
 class BlockBaseProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestBlockBase()._elaborated_def_to_proto()
 
@@ -69,6 +72,7 @@ class BlockBaseProtoTestCase(unittest.TestCase):
 
 
 class BlockSecondBaseProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestBlockSecondBase()._elaborated_def_to_proto()
 
@@ -80,6 +84,7 @@ class BlockSecondBaseProtoTestCase(unittest.TestCase):
 
 
 class BlockProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestBlock()._elaborated_def_to_proto()
 

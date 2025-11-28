@@ -1,6 +1,8 @@
 import re
 from typing import Optional, cast, Mapping, Dict, Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .ESeriesUtil import ESeriesUtil
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -17,6 +19,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
                               "\s*" + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%?)?" + "$")
   RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Device:R', 'Device:R_Small')
     return {'1': self.a, '2': self.b}
@@ -35,6 +38,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
       return Range.from_tolerance(center, (-cls.RESISTOR_DEFAULT_TOL, cls.RESISTOR_DEFAULT_TOL))
 
   @classmethod
+  @override
   def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Resistor':
     return Resistor(resistance=cls.parse_resistor(properties['Value']))
 
@@ -52,6 +56,7 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
     self.actual_power_rating = self.Parameter(RangeExpr())
     self.actual_voltage_rating = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -107,12 +112,14 @@ class TableResistor(PartsTableSelector, Resistor):
     super().__init__(*args, **kwargs)
     self.generator_param(self.resistance, self.power, self.voltage)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       row[self.RESISTANCE].fuzzy_in(self.get(self.resistance)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING]) and \
       self.get(self.voltage).fuzzy_in(row[self.VOLTAGE_RATING])
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_resistance, row[self.RESISTANCE])
@@ -120,6 +127,7 @@ class TableResistor(PartsTableSelector, Resistor):
     self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
 
   @classmethod
+  @override
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return (ESeriesUtil.series_of(row[cls.RESISTANCE].center(), default=ESeriesUtil.SERIES_MAX + 1),
             super()._row_sort_by(row))
@@ -137,6 +145,7 @@ class SeriesResistor(Resistor, GeneratorBlock):
     self.count = self.ArgParameter(count)
     self.generator_param(self.count, self.resistance)
 
+  @override
   def generate(self) -> None:
     super().generate()
     count = self.get(self.count)
@@ -225,6 +234,7 @@ class PullupResistorArray(TypedTestPoint, GeneratorBlock):
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.res = ElementDict[PullupResistor]()
@@ -243,6 +253,7 @@ class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
     self.generator_param(self.io.requested())
     self.resistance = self.ArgParameter(resistance)
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.res = ElementDict[PulldownResistor]()
@@ -254,6 +265,7 @@ class PulldownResistorArray(TypedTestPoint, GeneratorBlock):
 
 class SeriesPowerResistor(DiscreteApplication, KiCadImportableBlock):
   """Series resistor for power applications"""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Device:R', 'Device:R_Small')
     return {'1': self.pwr_in, '2': self.pwr_out}
@@ -314,6 +326,7 @@ class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorB
 
     self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -330,6 +343,7 @@ class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorB
       cast(Block, builder.get_enclosing_block()).connect(pwr_out, self.pwr_out)
     return self
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
     assert symbol_name == 'edg_importable:CurrentSenseResistor'
     return {'1': self.pwr_in, '2': self.pwr_out, 'sense_in': self.sense_in, 'sense_out': self.sense_out}
@@ -357,6 +371,7 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
     self.protection_voltage = self.ArgParameter(protection_voltage)
     self.zero_out = self.ArgParameter(zero_out)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -372,6 +387,7 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
       impedance=self.signal_in.link().source_impedance + self.res.actual_resistance
     )), self.signal_out)
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
     assert symbol_name == 'Device:R'
     return {'1': self.signal_in, '2': self.signal_out}
@@ -399,6 +415,7 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
     self.protection_voltage = self.ArgParameter(protection_voltage)
     self.zero_out = self.ArgParameter(zero_out)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -413,6 +430,7 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
       output_thresholds=self.signal_in.link().output_thresholds
     )), self.signal_out)
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
     assert symbol_name == 'Device:R'
     return {'1': self.signal_in, '2': self.signal_out}

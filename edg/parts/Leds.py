@@ -1,8 +1,11 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
 class SmtLed(Led, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -16,6 +19,7 @@ class SmtLed(Led, FootprintBlock):
 
 
 class ThtLed(Led, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -29,6 +33,7 @@ class ThtLed(Led, FootprintBlock):
 
 
 class Smt0606RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -46,6 +51,7 @@ class Smt0606RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
 
 
 class Smt0404RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -63,6 +69,7 @@ class Smt0404RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
 
 
 class ThtRgbLed(RgbLedCommonAnode, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(

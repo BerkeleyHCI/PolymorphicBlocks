@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..core import *
 from .DigitalPorts import DigitalBidir
 
@@ -11,6 +13,7 @@ class UsbLink(Link):
     self.device = self.Port(UsbDevicePort())
     self.passive = self.Port(Vector(UsbPassivePort()), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
     # TODO write protocol-level signal constraints?
@@ -36,6 +39,7 @@ class UsbDeviceBridge(PortBridge):
     self.outer_port = self.Port(UsbDevicePort.empty())
     self.inner_link = self.Port(UsbHostPort.empty())
 
+  @override
   def contents(self) -> None:
     from .DigitalPorts import DigitalBidirBridge
     super().contents()
@@ -78,6 +82,7 @@ class UsbCcLink(Link):
     self.a = self.Port(UsbCcPort())
     self.b = self.Port(UsbCcPort())
 
+  @override
   def contents(self) -> None:
     super().contents()
     # TODO perhaps enable crossover connections as optional layout optimization?

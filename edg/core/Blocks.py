@@ -6,6 +6,8 @@ from abc import abstractmethod
 from enum import Enum
 from typing import *
 
+from typing_extensions import override
+
 from .. import edgir
 from .Array import BaseVector, Vector
 from .Binding import AssignBinding, NameBinding
@@ -22,6 +24,7 @@ if TYPE_CHECKING:
 
 class BaseBlockMeta(type):
   """Adds a hook to set the post-init elaboration state"""
+  @override
   def __call__(cls, *args: Any, **kwargs: Any) -> Any:
     block_context = builder.get_enclosing_block()
     obj = super().__call__(*args, **kwargs)
@@ -232,6 +235,7 @@ class DescriptionString():
       self.ref = ref
       self.units = units
 
+    @override
     def set_elt_proto(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
       new_phrase = pb.description.add()
       new_phrase.param.path.CopyFrom(ref_map[self.ref])
@@ -294,7 +298,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
   def contents(self) -> None:
     pass
 
-  @abstractmethod
+  @override
   def _def_to_proto(self) -> edgir.BlockLikeTypes:
     raise NotImplementedError
 
@@ -331,7 +335,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
     pb.self_class.target.name = self._get_def_name()
 
-    direct_bases, indirect_bases = self._get_bases_of(BaseBlock)  # type: ignore
+    direct_bases, indirect_bases = self._get_bases_of(BaseBlock)
     for cls in direct_bases:
       pb.superclasses.add().target.name = cls._static_def_name()
     for cls in indirect_bases:
@@ -392,6 +396,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
     if isinstance(description, DescriptionString):
       description.add_to_proto(pb, ref_map)
 
+  @override
   def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
     super()._build_ref_map(ref_map, prefix)
     ref_map[self.name()] = edgir.localpath_concat(prefix, edgir.NAME)

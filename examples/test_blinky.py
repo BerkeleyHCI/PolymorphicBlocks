@@ -1,10 +1,13 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
 class TestLed(SimpleBoardTop):
   """The actually simplest circuit, a LED connected to a dummy source."""
+  @override
   def contents(self) -> None:
     self.gnd = self.Block(DummyGround())
     self.src = self.Block(DummyDigitalSource())
@@ -16,6 +19,7 @@ class TestLed(SimpleBoardTop):
 
 class TestBlinkyBasic(SimpleBoardTop):
   """The simplest cirucit, a microcontroller dev board with a LED."""
+  @override
   def contents(self) -> None:
     self.mcu = self.Block(Nucleo_F303k8())
     self.led = self.Block(IndicatorLed())
@@ -30,6 +34,7 @@ class TestBlinkyEmpty(SimpleBoardTop):
 
 class TestBlinkyBasicBattery(SimpleBoardTop):
   """The simplest cirucit, a microcontroller dev board with a LED, powered from a battery"""
+  @override
   def contents(self) -> None:
     self.bat = self.Block(AaBatteryStack(4))
     self.mcu = self.Block(Xiao_Rp2040())
@@ -42,6 +47,7 @@ class TestBlinkyBasicBattery(SimpleBoardTop):
 
 
 class TestBlinkyIncomplete(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -53,6 +59,7 @@ class TestBlinkyIncomplete(SimpleBoardTop):
 
 
 class TestBlinkyRegulated(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -66,6 +73,7 @@ class TestBlinkyRegulated(SimpleBoardTop):
 
 
 class TestBlinkyComplete(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -77,6 +85,7 @@ class TestBlinkyComplete(SimpleBoardTop):
     self.connect(self.reg.pwr_out, self.mcu.pwr)
     self.connect(self.mcu.gpio.request('led'), self.led.signal)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -85,6 +94,7 @@ class TestBlinkyComplete(SimpleBoardTop):
 
 
 class TestBlinkyExpanded(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -104,6 +114,7 @@ class TestBlinkyExpanded(SimpleBoardTop):
       self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
       self.connect(self.usb.gnd, self.led[i].gnd)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -112,6 +123,7 @@ class TestBlinkyExpanded(SimpleBoardTop):
 
 
 class TestBlinkyImplicit(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -133,6 +145,7 @@ class TestBlinkyImplicit(SimpleBoardTop):
         self.led[i] = imp.Block(IndicatorLed())
         self.connect(self.mcu.gpio.request(f'led{i}'), self.led[i].signal)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -141,6 +154,7 @@ class TestBlinkyImplicit(SimpleBoardTop):
 
 
 class TestBlinkyChain(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -160,6 +174,7 @@ class TestBlinkyChain(SimpleBoardTop):
       for i in range(4):
         (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -168,6 +183,7 @@ class TestBlinkyChain(SimpleBoardTop):
 
 
 class TestBlinkyMicro(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -187,6 +203,7 @@ class TestBlinkyMicro(SimpleBoardTop):
       for i in range(4):
         (self.led[i], ), _ = self.chain(self.mcu.gpio.request(f'led{i}'), imp.Block(IndicatorLed()))
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -216,6 +233,7 @@ class Lf21215tmr_Device(FootprintBlock):
       output_threshold_offset=(0.2, -0.3)
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -245,6 +263,7 @@ class Lf21215tmr(Block):
     self.connect(self.ic.gnd, self.cap.gnd, self.gnd)
     self.connect(self.ic.vout, self.out)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -261,11 +280,13 @@ class Lf21215tmr_Export(Block):
     self.connect(self.cap.pwr, self.pwr)
     self.connect(self.cap.gnd, self.gnd)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
 
 class TestBlinkyWithLibrary(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -288,6 +309,7 @@ class TestBlinkyWithLibrary(SimpleBoardTop):
       self.mag = imp.Block(Lf21215tmr())
       self.connect(self.mcu.gpio.request('mag'), self.mag.out)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -305,6 +327,7 @@ class TestBlinkyWithLibrary(SimpleBoardTop):
 
 
 class TestBlinkyWithLibraryExport(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -327,6 +350,7 @@ class TestBlinkyWithLibraryExport(SimpleBoardTop):
       self.mag = imp.Block(Lf21215tmr_Export())
       self.connect(self.mcu.gpio.request('mag'), self.mag.out)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -351,6 +375,7 @@ class LedArray(GeneratorBlock):
     self.count = self.ArgParameter(count)
     self.generator_param(self.count)
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.led = ElementDict[IndicatorLed]()
@@ -362,6 +387,7 @@ class LedArray(GeneratorBlock):
 
 
 class TestBlinkyArray(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -381,6 +407,7 @@ class TestBlinkyArray(SimpleBoardTop):
 
       # optionally, you may have also instantiated your magnetic sensor
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -398,6 +425,7 @@ class TestBlinkyArray(SimpleBoardTop):
 
 
 class TestBlinkyPacked(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -417,6 +445,7 @@ class TestBlinkyPacked(SimpleBoardTop):
 
       # optionally, you may have also instantiated your magnetic sensor
 
+  @override
   def multipack(self) -> None:
     self.res_pack = self.PackedBlock(ResistorArray())
     self.pack(self.res_pack.elements.request('0'), ['led', 'led[0]', 'res'])
@@ -424,6 +453,7 @@ class TestBlinkyPacked(SimpleBoardTop):
     self.pack(self.res_pack.elements.request('2'), ['led', 'led[2]', 'res'])
     self.pack(self.res_pack.elements.request('3'), ['led', 'led[3]', 'res'])
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -455,6 +485,7 @@ class Hx711(KiCadSchematicBlock):
     self.sp = self.Port(Passive.empty())
     self.sn = self.Port(Passive.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.Q1 = self.Block(Bjt.Npn((0, 5)*Volt, 0*Amp(tol=0)))
@@ -463,6 +494,7 @@ class Hx711(KiCadSchematicBlock):
 
 
 class TestBlinkyWithSchematicImport(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -485,6 +517,7 @@ class TestBlinkyWithSchematicImport(SimpleBoardTop):
       self.connect(self.conn.pins.request('3'), self.sense.sp)
       self.connect(self.conn.pins.request('4'), self.sense.sn)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -508,6 +541,7 @@ class Hx711Modeled(KiCadSchematicBlock):
     self.sp = self.Port(Passive.empty())
     self.sn = self.Port(Passive.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.Q1 = self.Block(Bjt.Npn((0, 5)*Volt, 0*Amp(tol=0)))
@@ -523,6 +557,7 @@ class Hx711Modeled(KiCadSchematicBlock):
 
 
 class TestBlinkyWithModeledSchematicImport(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -545,6 +580,7 @@ class TestBlinkyWithModeledSchematicImport(SimpleBoardTop):
       self.connect(self.conn.pins.request('3'), self.sense.sp)
       self.connect(self.conn.pins.request('4'), self.sense.sn)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -14,6 +16,7 @@ class Ref30xx_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
     self.output_voltage = self.ArgParameter(output_voltage)
     self.generator_param(self.output_voltage)
 
+  @override
   def generate(self) -> None:
     super().generate()
     parts = [  # output voltage, table 7.5
@@ -45,6 +48,7 @@ class Ref30xx_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
 
 
 class Ref30xx(VoltageReference):
+  @override
   def contents(self) -> None:
     with self.implicit_connect(
         ImplicitConnect(self.gnd, [Common]),

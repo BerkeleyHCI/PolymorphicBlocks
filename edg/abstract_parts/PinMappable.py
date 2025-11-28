@@ -1,6 +1,8 @@
 import itertools
 from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dict, Set, Any, Mapping
 
+from typing_extensions import override
+
 from ..electronics_model import *
 
 
@@ -55,9 +57,11 @@ class PinResource(BaseLeafPinMapResource):
     self.pin = pin
     self.name_models = name_models
 
+  @override
   def __repr__(self) -> str:
     return f"PinResource({self.pin}, {self.name_models})"
 
+  @override
   def __eq__(self, other: Any) -> bool:
     # TODO avoid using is if we can compare port model equality
     return isinstance(other, PinResource) and self.pin == other.pin and self.name_models is other.name_models
@@ -77,9 +81,11 @@ class PeripheralFixedPin(BaseLeafPinMapResource):
     self.port_model = port_model
     self.inner_allowed_pins = inner_allowed_pins
 
+  @override
   def __repr__(self) -> str:
     return f"PeripheralFixedPin({self.name}, {self.port_model.__class__.__name__} {self.inner_allowed_pins})"
 
+  @override
   def __eq__(self, other: Any) -> bool:
     # TODO avoid using is if we can compare port model equality
     return isinstance(other, PeripheralFixedPin) and self.name == other.name and \
@@ -95,9 +101,11 @@ class PeripheralAnyResource(BaseDelegatingPinMapResource):
     self.name = name
     self.port_model = port_model
 
+  @override
   def __repr__(self) -> str:
     return f"PeripheralAnyResource({self.name}, {self.port_model.__class__.__name__})"
 
+  @override
   def __eq__(self, other: Any) -> bool:
     # TODO avoid using is if we can compare port model equality
     return isinstance(other, PeripheralAnyResource) and self.name == other.name and \
@@ -115,9 +123,11 @@ class PeripheralFixedResource(BaseDelegatingPinMapResource):
     self.port_model = port_model
     self.inner_allowed_names = inner_allowed_names
 
+  @override
   def __repr__(self) -> str:
     return f"PeripheralFixedResource({self.name}, {self.port_model.__class__.__name__}, {self.inner_allowed_names})"
 
+  @override
   def __eq__(self, other: Any) -> bool:
     # TODO avoid using is if we can compare port model equality
     return isinstance(other, PeripheralFixedResource) and self.name == other.name and \
@@ -132,6 +142,7 @@ class AllocatedResource(NamedTuple):
   pin: Union[str, None, Dict[str, Tuple[str, Optional[str]]]]  # pin number if port is leaf, or
                                                                # recursive definition for bundles (pin, resource)
 
+  @override
   def __eq__(self, other: Any) -> bool:
     # TODO better port model check, perhaps by initializer
     return self.port_model is other.port_model and self.name == other.name and \

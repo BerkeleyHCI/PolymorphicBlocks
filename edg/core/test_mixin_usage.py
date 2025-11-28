@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 from .test_common import TestBlockSource
@@ -8,6 +10,7 @@ from .test_mixin import TestMixin, TestMixinBase
 
 class MixinUsageTestCase(unittest.TestCase):
   class MixinBlock(Block):
+    @override
     def contents(self) -> None:
       super().contents()
 
@@ -20,6 +23,7 @@ class MixinUsageTestCase(unittest.TestCase):
       self.mixin_source = self.Block(TestBlockSource())
       self.mixin_net = self.connect(self.mixin.mixin_port, self.mixin_source.source)
 
+  @override
   def setUp(self) -> None:
     self.pb = self.MixinBlock()._elaborated_def_to_proto()
 

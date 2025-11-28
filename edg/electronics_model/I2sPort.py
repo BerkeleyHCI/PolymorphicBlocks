@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..core import *
 from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
 
@@ -11,6 +13,7 @@ class I2sLink(Link):
     self.target_receiver = self.Port(I2sTargetReceiver(DigitalSink.empty()))
     # TODO: multiple receivers, target transmitters, eg microphones
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.sck = self.connect(self.controller.sck, self.target_receiver.sck)

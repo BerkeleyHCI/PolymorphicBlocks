@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from . import *
 from .test_elaboration_common import TestPortSink
 
@@ -16,6 +18,7 @@ class TestBundle(Bundle):
 
 
 class BundleProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestBundle()._def_to_proto()
 

@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 from .test_elaboration_common import TestPortSink, TestBlockSink, TestBlockSource
@@ -40,11 +42,13 @@ class TestBlockContainerSink(Block):
 
 
 class TopMultipackDesign(DesignTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.sink1 = self.Block(PartSink())
     self.sink2 = self.Block(TestBlockContainerSink())
 
+  @override
   def multipack(self) -> None:
     self.packed = self.Block(MultipackBlockSink())
     self.pack(self.packed.sink1, ['sink1'])
@@ -52,6 +56,7 @@ class TopMultipackDesign(DesignTop):
 
 
 class TopMultipackDesignTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     pb = TopMultipackDesign()._elaborated_def_to_proto()
     self.constraints = list(map(lambda pair: pair.value, pb.constraints))
@@ -121,11 +126,13 @@ class MultipackArrayBlockSink(MultipackBlock):
 
 
 class TopMultipackArrayDesign(DesignTop):
+  @override
   def contents(self) -> None:
     super().contents()
     self.sink1 = self.Block(PartSink())
     self.sink2 = self.Block(TestBlockContainerSink())
 
+  @override
   def multipack(self) -> None:
     self.packed = self.Block(MultipackArrayBlockSink())
     self.pack(self.packed.sinks.request('1'), ['sink1'])
@@ -133,6 +140,7 @@ class TopMultipackArrayDesign(DesignTop):
 
 
 class TopMultipackArrayDesignTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     pb = TopMultipackArrayDesign()._elaborated_def_to_proto()
     self.constraints = list(map(lambda pair: pair.value, pb.constraints))

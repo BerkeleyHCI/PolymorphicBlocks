@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -42,6 +44,7 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
     self.size = self.ArgParameter(size)
     self.generator_param(self.size)
 
+  @override
   def generate(self) -> None:
     super().generate()
     suitable_parts = [part for part in self.PARTS if part[0] in self.get(self.size)]
@@ -75,6 +78,7 @@ class W25q(SpiMemory, SpiMemoryQspi, GeneratorBlock):
     super().__init__(*args, **kwargs)
     self.generator_param(self.io2.is_connected(), self.io3.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -89,6 +93,7 @@ class W25q(SpiMemory, SpiMemoryQspi, GeneratorBlock):
       capacitance=0.1*uFarad(tol=0.2)
     )).connected(self.gnd, self.pwr)
 
+  @override
   def generate(self) -> None:
     super().generate()
 

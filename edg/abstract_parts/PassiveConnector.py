@@ -1,4 +1,7 @@
 from typing import Tuple, Iterable
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -26,6 +29,7 @@ class FootprintPassiveConnector(PassiveConnector, GeneratorBlock, FootprintBlock
   """PassiveConnector that is a footprint and provides some base functionality for generation."""
   allowed_pins: Iterable[int]
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.generator_param(self.length, self.pins.requested())
@@ -35,6 +39,7 @@ class FootprintPassiveConnector(PassiveConnector, GeneratorBlock, FootprintBlock
     Implementing classes must implement this method."""
     raise NotImplementedError
 
+  @override
   def generate(self) -> None:
     super().generate()
     max_pin_index = 0

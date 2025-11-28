@@ -1,5 +1,7 @@
 from typing import List, cast, Optional, Dict
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import Interface
 
@@ -7,6 +9,7 @@ from .Categories import Interface
 @abstract_block
 class AnalogSwitch(Interface, KiCadImportableBlock, Block):
   """Base class for a n-ported analog switch with passive-typed ports."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name.startswith('edg_importable:Mux')  # can be any Mux
     count = int(symbol_name.removeprefix('edg_importable:Mux'))
@@ -43,6 +46,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
     self.switch_size = self.ArgParameter(switch_size)
     self.generator_param(self.switch_size, self.inputs.requested(), self.control_gnd.is_connected())
 
+  @override
   def generate(self) -> None:
     import math
     super().generate()
@@ -104,6 +108,7 @@ class AnalogSwitchTree(AnalogSwitch, GeneratorBlock):
 class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
   """Wrapper around AnalogSwitch that provides muxing functionality - multiple sink ports, one source port.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name.startswith('edg_importable:Mux')  # can be any Mux
     count = int(symbol_name.removeprefix('edg_importable:Mux'))
@@ -132,6 +137,7 @@ class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
 
     self.generator_param(self.inputs.requested(), self.control_gnd.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.inputs.defined()
@@ -175,6 +181,7 @@ class AnalogDemuxer(Interface, GeneratorBlock):
 
     self.generator_param(self.outputs.requested())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.outputs.defined()

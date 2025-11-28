@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -41,6 +43,7 @@ class Opa197_Device(Opa197_Base_Device, JlcPart, FootprintBlock):
     self.vinn = self.Port(analog_in_model)
     self.vout = self.Port(self._analog_out_model())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -66,6 +69,7 @@ class Opa197(Opamp):
   """High voltage opamp (4.5-36V) in SOIC-8.
   (part also available in SOT-23-5)
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -97,6 +101,7 @@ class Opa2197_Device(Opa197_Base_Device, JlcPart, FootprintBlock):
     self.innb = self.Port(analog_in_model)
     self.outb = self.Port(analog_out_model)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -121,6 +126,7 @@ class Opa2197_Device(Opa197_Base_Device, JlcPart, FootprintBlock):
 class Opa2197(MultipackOpampGenerator):
   """Dual precision RRO opamps.
   """
+  @override
   def _make_multipack_opamp(self) -> MultipackOpampGenerator.OpampPorts:
     self.ic = self.Block(Opa2197_Device())
     # Datasheet section 9: recommend 0.1uF bypass capacitors close to power supply pins

@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -19,6 +21,7 @@ class BootstrapVoltageAdder(KiCadSchematicBlock, PowerConditioner, Block):
         self.frequency = self.ArgParameter(frequency)
         self.ripple_limit = self.ArgParameter(ripple_limit)
 
+    @override
     def contents(self) -> None:
         super().contents()
 

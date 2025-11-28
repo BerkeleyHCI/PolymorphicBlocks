@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -31,6 +33,7 @@ class Stm32l432Base_Device(IoControllerI2cTarget, IoControllerDac, IoControllerC
 
         self.nrst = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
 
+    @override
     def _system_pinmap(self) -> Dict[str, CircuitPort]:
         return VariantPinRemapper({  # Pin/peripheral resource definitions (section 4)
             'Vdd': self.pwr,
@@ -39,6 +42,7 @@ class Stm32l432Base_Device(IoControllerI2cTarget, IoControllerDac, IoControllerC
             'NRST': self.nrst,
         }).remap(self.SYSTEM_PIN_REMAP)
 
+    @override
     def _io_pinmap(self) -> PinMapUtil:
         # Port models
         input_range = self.gnd.link().voltage.hull(self.pwr.link().voltage)
@@ -157,6 +161,7 @@ class Stm32l432Base_Device(IoControllerI2cTarget, IoControllerDac, IoControllerC
             }),
         ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
+    @override
     def generate(self) -> None:
         super().generate()
 
@@ -224,6 +229,7 @@ class Stm32l432Base(Resettable, IoControllerDac, IoControllerCan, IoControllerUs
         self.ic: Stm32l432Base_Device
         self.generator_param(self.reset.is_connected())
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -243,12 +249,14 @@ class Stm32l432Base(Resettable, IoControllerDac, IoControllerCan, IoControllerUs
             self.vdda_cap0 = imp.Block(DecouplingCapacitor(10*nFarad(tol=0.2)))
             self.vdda_cap1 = imp.Block(DecouplingCapacitor(1*uFarad(tol=0.2)))
 
+    @override
     def generate(self) -> None:
         super().generate()
 
         if self.get(self.reset.is_connected()):
             self.connect(self.reset, self.ic.nrst)  # otherwise NRST has internal pull-up
 
+    @override
     def _crystal_required(self) -> bool:  # crystal needed for CAN b/c tighter freq tolerance
         # note: no crystal needed for USB, has clock recovery system (CRS) trimming for USB only
         return len(self.get(self.can.requested())) > 0 or super()._crystal_required()

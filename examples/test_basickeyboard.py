@@ -10,10 +10,13 @@ Plugin Manager, it does not need to be in your global library table.
 
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
 class BasicKeyboard(SimpleBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -23,6 +26,7 @@ class BasicKeyboard(SimpleBoardTop):
     self.connect(self.sw.cols, self.mcu.gpio.request_vector())
     self.connect(self.sw.rows, self.mcu.gpio.request_vector())
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[

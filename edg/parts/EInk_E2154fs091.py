@@ -1,4 +1,7 @@
 from typing import *
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -39,6 +42,7 @@ class E2154fs091_Device(InternalSubcircuit, FootprintBlock):
     self.vgl = self.Port(Passive())
     self.vcom = self.Port(Passive())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -95,6 +99,7 @@ class E2154fs091(EInk):
     self.cs = self.Export(self.ic.cs)
     self.spi = self.Export(self.ic.spi)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

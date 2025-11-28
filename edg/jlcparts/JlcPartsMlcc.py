@@ -1,4 +1,7 @@
 from typing import Any, Optional, Dict
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 from ..parts.JlcCapacitor import JlcCapacitor, JlcDummyCapacitor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
@@ -13,6 +16,7 @@ class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapac
         self.generator_param(self.capacitance_minimum_size)
 
     @classmethod
+    @override
     def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes) \
             -> Optional[Dict[PartsTableColumn, Any]]:
         try:
@@ -37,6 +41,7 @@ class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapac
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
 
+    @override
     def _table_postprocess(self, table: PartsTable) -> PartsTable:
         # TODO deduplicate w/ JlcCapacitor
         def filter_minimum_size(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -59,9 +64,11 @@ class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapac
         return table
 
     @classmethod
+    @override
     def _row_sort_by(cls, row: PartsTableRow) -> Any:
         return [row[cls.PARALLEL_COUNT], super(JlcPartsMlcc, cls)._row_sort_by(row)]
 
+    @override
     def _row_generate(self, row: PartsTableRow) -> None:
         # see comment in TableCapacitor._row_generate for why this needs to be here
         if row[self.PARALLEL_COUNT] == 1:
@@ -71,6 +78,7 @@ class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapac
             self.assign(self.actual_basic_part, True)  # dummy value
             self._make_parallel_footprints(row)
 
+    @override
     def _make_parallel_footprints(self, row: PartsTableRow) -> None:
         cap_model = JlcDummyCapacitor(set_lcsc_part=row[self.LCSC_COL],
                                       set_basic_part=row[self.BASIC_PART_COL],

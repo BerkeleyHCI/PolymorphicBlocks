@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -18,6 +20,7 @@ class Bh1750_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.i2c = self.Port(I2cTarget(dio_model, [0x23]))
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_TO_SOT_SMD:HVSOF6',
@@ -45,6 +48,7 @@ class Bh1750(LightSensor, Block):
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c)
 
+    @override
     def contents(self) -> None:
         super().contents()  # capacitors from shuttle board example
         self.vcc_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vcc)

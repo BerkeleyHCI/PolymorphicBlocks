@@ -1,11 +1,14 @@
 import unittest
 from typing import cast
 
+from typing_extensions import override
+
 from .. import edgir
 from .test_elaboration_common import TestPortBase, TestPortSource
 
 
 class PortProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = cast(edgir.Port, TestPortBase()._def_to_proto())  # TODO eliminate cast
 
@@ -16,6 +19,7 @@ class PortProtoTestCase(unittest.TestCase):
 
 
 class PortSourceProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = cast(edgir.Port, TestPortSource()._def_to_proto())
 

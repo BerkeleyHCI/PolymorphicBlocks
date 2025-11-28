@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional, Tuple
 
 from deprecated import deprecated
+from typing_extensions import override
 
 from ..core import *
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
@@ -51,6 +52,7 @@ class DigitalLink(CircuitLink):
     self._has_low_signal_driver = self.Parameter(BoolExpr())
     self._has_high_signal_driver = self.Parameter(BoolExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -140,6 +142,7 @@ class DigitalSinkBridge(CircuitPortBridge):
                                               pullup_capable=False, pulldown_capable=False,  # don't create a loop
                                               _bridged_internal=True))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -234,6 +237,7 @@ class DigitalSourceBridge(CircuitPortBridge):
                                             pullup_capable=False, pulldown_capable=False,  # don't create a loop
                                             _bridged_internal=True))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -366,6 +370,7 @@ class DigitalBidirBridge(CircuitPortBridge):
                                              _bridged_internal=True
                                              ))
 
+  @override
   def contents(self) -> None:
     super().contents()
 

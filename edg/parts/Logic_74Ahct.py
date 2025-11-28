@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -21,6 +23,7 @@ class L74Ahct1g125_Device(InternalSubcircuit, FootprintBlock, JlcPart):
       current_limits=(-8, 8)*mAmp,
     ), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -48,6 +51,7 @@ class L74Ahct1g125(Interface, Block):
     self.input = self.Export(self.ic.a, [Input])
     self.output = self.Export(self.ic.y, [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.vdd_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)

@@ -1,11 +1,14 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
 class IotFan(JlcBoardTop):
   """IoT fan controller with a 12v barrel jack input and a CPU fan connector.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -94,6 +97,7 @@ class IotFan(JlcBoardTop):
           fan.with_mixin(CpuFanPwmControl()).control
         )
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

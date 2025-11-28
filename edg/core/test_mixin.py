@@ -1,6 +1,8 @@
 import unittest
 from typing import Any
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 from .test_common import TestPortSink
@@ -21,6 +23,7 @@ class TestMixin(BlockInterfaceMixin[TestMixinBase]):
 
 
 class MixinProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     cls = TestMixin()
     self.assertEqual(cls._is_mixin(), True)
@@ -60,6 +63,7 @@ class TestMixinSubclass(TestMixin):
 
 
 class MixinSubclassProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     cls = TestMixinSubclass()
     self.assertEqual(cls._is_mixin(), True)
@@ -101,6 +105,7 @@ class TestMixinConcreteBlock(TestMixin, TestMixinBase):
 
 
 class MixinConcreteBlockProtoTestCase(unittest.TestCase):  # pretty straightforward test of Python inheritance
+  @override
   def setUp(self) -> None:
     cls = TestMixinConcreteBlock()
     self.assertEqual(cls._is_mixin(), False)

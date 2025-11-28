@@ -1,5 +1,7 @@
 from typing import Optional, Any, Dict
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, PartsTable
 from .PartsTablePart import PartsTableSelector
@@ -29,6 +31,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   """
   _STANDARD_FOOTPRINT = lambda: FetStandardFootprint
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     # TODO actually check that the device channel corresponds with the schematic?
     assert symbol_name.startswith('Device:Q_NMOS_') or symbol_name.startswith('Device:Q_PMOS_')
@@ -72,6 +75,7 @@ class Fet(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
     self.actual_rds_on = self.Parameter(RangeExpr())
     self.actual_gate_charge = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -163,6 +167,7 @@ class TableFet(PartsTableSelector, BaseTableFet):
     self.generator_param(self.drain_voltage, self.drain_current, self.gate_voltage, self.gate_threshold_voltage,
                          self.rds_on, self.gate_charge, self.power, self.channel)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       row[self.CHANNEL] == self.get(self.channel) and \
@@ -174,6 +179,7 @@ class TableFet(PartsTableSelector, BaseTableFet):
       row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_drain_voltage_rating, row[self.VDS_RATING])
@@ -194,10 +200,12 @@ class SwitchFet(Fet):
   # TODO ideally this would just instantaite a Fet internally, but the parts selection becomes more complex b/c
   # parameters are cross-dependent
   @staticmethod
+  @override
   def NFet(*args: Any, **kwargs: Any) -> 'SwitchFet':
     return SwitchFet(*args, **kwargs, channel='N')
 
   @staticmethod
+  @override
   def PFet(*args: Any, **kwargs: Any) -> 'SwitchFet':
     return SwitchFet(*args, **kwargs, channel='P')
 
@@ -225,6 +233,7 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
     self.actual_switching_power = self.Parameter(RangeExpr())
     self.actual_total_power = self.Parameter(RangeExpr())
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:  # here this is just a pre-filter step
     return super()._row_filter(row) and \
       row[self.CHANNEL] == self.get(self.channel) and \
@@ -236,6 +245,7 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
       row[self.GATE_CHARGE].fuzzy_in(self.get(self.gate_charge)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
+  @override
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     drive_current = self.get(self.drive_current)
     gate_drive_rise, gate_drive_fall = drive_current.upper, -drive_current.lower
@@ -263,6 +273,7 @@ class TableSwitchFet(PartsTableSelector, SwitchFet, BaseTableFet):
 
     return super()._table_postprocess(table).map_new_columns(process_row)
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_drain_voltage_rating, row[self.VDS_RATING])

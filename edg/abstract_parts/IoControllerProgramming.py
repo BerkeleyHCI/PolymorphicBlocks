@@ -1,5 +1,7 @@
 from typing import List
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConnectorReset, SwdCortexTargetConnectorSwo, \
   SwdCortexTargetConnectorTdi
@@ -24,6 +26,7 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
     self.swd_node = self.connect()  # connect this internal node to the microcontroller
     self.reset_node = self.connect()  # connect this internal node to the microcontroller
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.swd = self.Block(SwdCortexTargetConnector())
@@ -31,6 +34,7 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
     self.connect(self.swd.pwr, self.pwr)
     self.connect(self.swd_node, self.swd.swd)
 
+  @override
   def _inner_pin_assigns(self, assigns: List[str]) -> List[str]:
     assigns = super()._inner_pin_assigns(assigns)
     if self.get(self.swd_swo_pin) != 'NC':
@@ -39,6 +43,7 @@ class IoControllerWithSwdTargetConnector(IoController, BaseIoControllerExportabl
       assigns.append(f'swd_tdi={self.get(self.swd_tdi_pin)}')
     return assigns
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.swd_swo_pin) != 'NC':

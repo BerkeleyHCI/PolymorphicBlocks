@@ -1,9 +1,12 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
 class Bwipx_1_001e(RfConnectorTestPoint, UflConnector, JlcPart, FootprintBlock):
     """BAT WIRELESS IPEX connector"""
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(
@@ -22,6 +25,7 @@ class Bwipx_1_001e(RfConnectorTestPoint, UflConnector, JlcPart, FootprintBlock):
 
 class Amphenol901143(SmaFConnector, FootprintBlock):
     """PTH right-angle SMA-F connector"""
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(

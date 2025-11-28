@@ -1,11 +1,14 @@
 from typing import List, Tuple, Dict, Set, Optional
 
+from typing_extensions import override
+
 from .. import edgir
 from ..core import CompiledDesign, TransformUtil
 from ..core.BaseRefinementPass import BaseRefinementPass
 
 
 class RefdesRefinementPass(BaseRefinementPass):
+  @override
   def run(self, design: CompiledDesign) -> List[Tuple[edgir.LocalPath, edgir.ValueLit]]:
     block_refdes_list = RefdesTransform(design).run()
     return [(block_path.append_param('fp_refdes').to_local_path(), edgir.lit_to_valuelit(block_refdes))
@@ -30,6 +33,7 @@ class RefdesTransform(TransformUtil.Transform):
     self.block_refdes_list: List[Tuple[TransformUtil.Path, str]] = []  # populated in traversal order
     self.refdes_last: Dict[Tuple[TransformUtil.Path, str], int] = {}  # (scope, prefix) -> num
 
+  @override
   def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
     scope = self.scopes[context.path]
     internal_scope = scope

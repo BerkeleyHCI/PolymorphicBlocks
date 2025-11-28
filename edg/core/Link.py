@@ -3,6 +3,8 @@ from __future__ import annotations
 import functools
 from typing import *
 
+from typing_extensions import override
+
 from .. import edgir
 from .Array import BaseVector, DerivedVector
 from .Blocks import BaseBlock, Connection, BaseBlockMeta
@@ -37,6 +39,7 @@ class Link(BaseBlock, metaclass=LinkMeta):
     super().__init__()
     self.parent: Optional[Port] = None
 
+  @override
   def _def_to_proto(self) -> edgir.Link:
     ref_map = self._create_ref_map()
 
@@ -86,5 +89,6 @@ class Link(BaseBlock, metaclass=LinkMeta):
 
     return pb
 
+  @override
   def _elaborated_def_to_proto(self) -> edgir.Link:
     return cast(edgir.Link, super()._elaborated_def_to_proto())

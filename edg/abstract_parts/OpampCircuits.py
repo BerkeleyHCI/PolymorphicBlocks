@@ -1,6 +1,8 @@
 from math import ceil, log10
 from typing import List, Tuple, Dict, Mapping
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .AbstractCapacitor import Capacitor
@@ -13,6 +15,7 @@ from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
 
 class OpampFollower(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock):
   """Opamp follower circuit, outputs the same signal as the input (but probably stronger)."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:Follower'
     return {
@@ -27,6 +30,7 @@ class OpampFollower(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock)
     self.input = self.Port(AnalogSink.empty(), [Input])
     self.output = self.Port(AnalogSource.empty(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -42,6 +46,7 @@ class AmplifierValues(ESeriesRatioValue['AmplifierValues']):
     self.parallel_impedance = parallel_impedance  # parallel impedance into the opamp negative pin
 
   @staticmethod
+  @override
   def from_resistors(r1_range: Range, r2_range: Range) -> 'AmplifierValues':
     """r2 is the low-side resistor (Vin- to GND) and r1 is the high-side resistor (Vin- to Vout)."""
     return AmplifierValues(
@@ -49,10 +54,12 @@ class AmplifierValues(ESeriesRatioValue['AmplifierValues']):
       1 / (1 / r1_range + 1 / r2_range)
     )
 
+  @override
   def initial_test_decades(self) -> Tuple[int, int]:
     decade = ceil(log10(self.parallel_impedance.center()))
     return decade, decade
 
+  @override
   def distance_to(self, spec: 'AmplifierValues') -> List[float]:
     if self.amplification in spec.amplification and self.parallel_impedance in spec.parallel_impedance:
       return []
@@ -62,6 +69,7 @@ class AmplifierValues(ESeriesRatioValue['AmplifierValues']):
         abs(self.parallel_impedance.center() - spec.parallel_impedance.center())
       ]
 
+  @override
   def intersects(self, spec: 'AmplifierValues') -> bool:
     return self.amplification.intersects(spec.amplification) and \
            self.parallel_impedance.intersects(spec.parallel_impedance)
@@ -76,6 +84,7 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
   The input and output impedances given are a bit more complex, so this simplifies it to
   the opamp's specified pin impedances - TODO: is this correct(ish)?
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     mapping: Dict[str, Dict[str, BasePort]] = {
       'Simulation_SPICE:OPAMP': {
@@ -106,6 +115,7 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
 
     self.actual_amplification = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -114,6 +124,7 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.amplification, "")
     )
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -164,6 +175,7 @@ class DifferentialValues(ESeriesRatioValue['DifferentialValues']):
     self.input_impedance = input_impedance  # resistance of the input resistor
 
   @staticmethod
+  @override
   def from_resistors(r1_range: Range, r2_range: Range) -> 'DifferentialValues':
     """r1 is the input side resistance and r2 is the feedback or ground resistor."""
     return DifferentialValues(
@@ -171,11 +183,13 @@ class DifferentialValues(ESeriesRatioValue['DifferentialValues']):
       r1_range
     )
 
+  @override
   def initial_test_decades(self) -> Tuple[int, int]:
     r1_decade = ceil(log10(self.input_impedance.center()))
     r2_decade = ceil(log10((self.input_impedance * self.ratio).center()))
     return r1_decade, r2_decade
 
+  @override
   def distance_to(self, spec: 'DifferentialValues') -> List[float]:
     if self.ratio in spec.ratio and self.input_impedance in spec.input_impedance:
       return []
@@ -185,6 +199,7 @@ class DifferentialValues(ESeriesRatioValue['DifferentialValues']):
         abs(self.input_impedance.center() - spec.input_impedance.center())
       ]
 
+  @override
   def intersects(self, spec: 'DifferentialValues') -> bool:
     return self.ratio.intersects(spec.ratio) and \
            self.input_impedance.intersects(spec.input_impedance)
@@ -206,6 +221,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
 
   ratio specifies Rf/R1, the amplification ratio.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     mapping: Dict[str, Dict[str, BasePort]] = {
       'Simulation_SPICE:OPAMP': {  # reference pin not supported
@@ -241,6 +257,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
 
     self.actual_ratio = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -249,6 +266,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.ratio, "")
     )
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -321,6 +339,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
   Series is lower and tolerance is higher because there's a cap involved
   TODO - separate series for cap, and series and tolerance by decade?
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     mapping: Dict[str, Dict[str, BasePort]] = {
       'Simulation_SPICE:OPAMP': {
@@ -349,6 +368,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
 
     self.actual_factor = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 

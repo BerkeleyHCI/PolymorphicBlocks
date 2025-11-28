@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -96,6 +98,7 @@ class Cp2102(Interface, PinMappable):
     self.rts = self.Export(self.ic.rts, optional=True)
     self.cts = self.Export(self.ic.cts, optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.connect(self.ic.regin, self.ic.vbus)

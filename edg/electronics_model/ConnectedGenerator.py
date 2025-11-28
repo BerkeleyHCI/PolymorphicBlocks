@@ -1,5 +1,5 @@
 from typing import Type, Generic
-from typing_extensions import TypeVar
+from typing_extensions import TypeVar, override
 
 from ..core import *
 from .VoltagePorts import VoltageLink, VoltageSink, VoltageSource
@@ -37,6 +37,7 @@ class BaseConnectedGenerator(DefaultConnectionBlock, GeneratorBlock, Generic[Out
     self.in_is_connected = self.ArgParameter(in_is_connected)
     self.generator_param(self.in_is_connected)
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.in_is_connected):

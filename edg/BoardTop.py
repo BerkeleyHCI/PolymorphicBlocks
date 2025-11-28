@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from .parts import *
 
 
@@ -8,6 +10,7 @@ class BaseBoardTop(DesignTop):
     self.refdes_prefix = self.Parameter(StringExpr())
     self.assign(self.refdes_prefix, "")  # override with refinements
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[
@@ -52,6 +55,7 @@ class BoardTop(BaseBoardTop):
 
 
 class JlcToolingHole(InternalSubcircuit, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -62,6 +66,7 @@ class JlcToolingHole(InternalSubcircuit, FootprintBlock):
 
 
 class JlcToolingHoles(InternalSubcircuit, Block):
+  @override
   def contents(self) -> None:
     super().contents()
     self.th1 = self.Block(JlcToolingHole())
@@ -71,6 +76,7 @@ class JlcToolingHoles(InternalSubcircuit, Block):
 
 class JlcTopRefinements(BaseBoardTop):
   """Design top with refinements to use parts from JLC's assembly service"""
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[
@@ -111,6 +117,7 @@ class JlcTopRefinements(BaseBoardTop):
 
 class JlcBoardTop(JlcTopRefinements):
   """Design top with refinements to use parts from JLC's assembly service and including the tooling holes"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.jlc_th = self.Block(JlcToolingHoles())
@@ -118,6 +125,7 @@ class JlcBoardTop(JlcTopRefinements):
 
 class SimpleBoardTop(JlcTopRefinements):
   """A BoardTop with refinements that make getting started easier but may not be desirable everywhere."""
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[

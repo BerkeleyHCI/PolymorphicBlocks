@@ -1,5 +1,7 @@
 from typing import Tuple, Callable, Mapping, List
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .JlcPart import JlcPart
 
@@ -9,6 +11,7 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
   This can't extend KiCadBlackbox because KiCadBlackbox.block_from_symbol is non-compositional
   """
   @classmethod
+  @override
   def block_from_symbol(cls, symbol: KiCadSymbol, lib: KiCadLibSymbol) -> \
       Tuple['KiCadJlcBlackbox', Callable[['KiCadJlcBlackbox'], Mapping[str, BasePort]]]:
     pin_numbers = [pin.number for pin in lib.pins]
@@ -38,6 +41,7 @@ class KiCadJlcBlackbox(KiCadBlackboxBase, JlcPart, FootprintBlock, GeneratorBloc
     self.kicad_pins = self.ArgParameter(kicad_pins)
     self.generator_param(self.kicad_pins)
 
+  @override
   def generate(self) -> None:
     super().generate()
     mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)

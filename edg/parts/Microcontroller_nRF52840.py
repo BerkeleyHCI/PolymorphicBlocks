@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import *
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -36,6 +38,7 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Generat
       pullup_capable=True, pulldown_capable=True,
     )
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     """Returns the mappable for given the input power and ground references.
     This separates the system pins definition from the IO pins definition."""
@@ -172,9 +175,11 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Generat
 class Nrf52840_Base(Nrf52840_Ios, GeneratorBlock):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     return self.pwr
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
       'Vdd': self.pwr,
@@ -252,6 +257,7 @@ class Holyiot_18010_Device(Nrf52840_Base, InternalSubcircuit):
     'P0.10': '36',
   }
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -273,6 +279,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interf
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
     self.generator_param(self.reset.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.connect(self.pwr, self.ic.pwr)
@@ -281,6 +288,7 @@ class Holyiot_18010(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interf
     self.connect(self.swd_node, self.ic.swd)
     self.connect(self.reset_node, self.ic.nreset)
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.reset.is_connected()):
@@ -350,6 +358,7 @@ class Mdbt50q_1mv2_Device(Nrf52840_Base, InternalSubcircuit, JlcPart):
     'P1.01': '61',
   }
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -386,6 +395,7 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfa
     self.pwr_usb = self.Export(self.ic.pwr_usb, optional=True)
     self.generator_param(self.reset.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.connect(self.pwr, self.ic.pwr)
@@ -400,6 +410,7 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfa
     ) as imp:
       self.vcc_cap = imp.Block(DecouplingCapacitor(10 * uFarad(tol=0.2)))
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -407,6 +418,7 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfa
       self.connect(self.reset, self.ic.nreset)
 
   ExportType = TypeVar('ExportType', bound=Port)
+  @override
   def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
                           assign: Optional[str]) -> Optional[str]:
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
@@ -461,12 +473,14 @@ class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, I
     # note onboard VBAT sense divider at P0.29
   }
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       return self.pwr
     else:
       return self.pwr_out
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
@@ -482,6 +496,7 @@ class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, I
         'Vbus': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -501,6 +516,7 @@ class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, I
 
     self.generator_param(self.pwr.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
 

@@ -1,6 +1,8 @@
 import unittest
 from typing import Type, List
 
+from typing_extensions import override
+
 from .. import edgir
 # to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
 from ..core import *
@@ -28,6 +30,7 @@ class TestFakeSource(FootprintBlock):
     self.pos = self.Port(VoltageSource(), optional=True)
     self.neg = self.Port(VoltageSource(), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(  # beefy (ok, not really) capacitor
@@ -50,6 +53,7 @@ class TestBaseFakeSink(Block):  # abstract base class to support multipacking
 
 
 class TestFakeSink(TestBaseFakeSink, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.pos.init_from(VoltageSink())
@@ -65,6 +69,7 @@ class TestFakeSink(TestBaseFakeSink, FootprintBlock):
 
 
 class TestSinglePart(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -72,6 +77,7 @@ class TestSinglePart(Block):
 
 
 class TestBasicCircuit(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -83,6 +89,7 @@ class TestBasicCircuit(Block):
 
 
 class TestMultisinkCircuit(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -102,6 +109,7 @@ class TestFakeAdapter(FootprintBlock):
     self.pos_out = self.Port(VoltageSource())
     self.neg = self.Port(VoltageSink())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -116,6 +124,7 @@ class TestFakeAdapter(FootprintBlock):
 
 
 class TestMultinetCircuit(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -135,6 +144,7 @@ class TestFakeSinkHierarchy(Block):
     self.pos = self.Port(VoltageSink.empty())
     self.neg = self.Port(VoltageSink.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -145,6 +155,7 @@ class TestFakeSinkHierarchy(Block):
 
 
 class TestHierarchyCircuit(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -162,6 +173,7 @@ class TestFakeDualSinkHierarchy(Block):
     self.pos = self.Port(VoltageSink.empty())
     self.neg = self.Port(VoltageSink.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -173,6 +185,7 @@ class TestFakeDualSinkHierarchy(Block):
 
 
 class TestDualHierarchyCircuit(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 

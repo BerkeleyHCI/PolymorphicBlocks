@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Generic, Any, Optional, List, Mapping, Dict
 
-from typing_extensions import TypeVar
+from typing_extensions import TypeVar, override
 
 from .KiCadImportableBlock import KiCadImportableBlock
 from ..core import *
@@ -103,6 +103,7 @@ class WrapperFootprintBlock(FootprintBlock):
 
 @abstract_block
 class NetBlock(InternalBlock, NetBaseBlock, Block):
+  @override
   def contents(self) -> None:
     super().contents()
     self.net()
@@ -110,6 +111,7 @@ class NetBlock(InternalBlock, NetBaseBlock, Block):
 
 @abstract_block
 class CircuitPortBridge(NetBaseBlock, PortBridge):
+  @override
   def contents(self) -> None:
     super().contents()
     self.net()
@@ -118,10 +120,12 @@ class CircuitPortBridge(NetBaseBlock, PortBridge):
 AdapterDstType = TypeVar('AdapterDstType', covariant=True, bound='CircuitPort', default='CircuitPort')
 @abstract_block
 class CircuitPortAdapter(KiCadImportableBlock, NetBaseBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'edg_importable:Adapter'
     return {'1': self.src, '2': self.dst}
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.net()
@@ -129,6 +133,7 @@ class CircuitPortAdapter(KiCadImportableBlock, NetBaseBlock, PortAdapter[Adapter
 
 @non_library  # TODO make abstract instead?
 class CircuitLink(NetBaseBlock, Link):
+  @override
   def contents(self) -> None:
     super().contents()
     self.net()

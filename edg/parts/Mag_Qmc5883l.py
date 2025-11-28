@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -26,6 +28,7 @@ class Qmc5883l_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.setc = self.Port(Passive())
         self.c1 = self.Port(Passive())
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_LGA:LGA-16_3x3mm_P0.5mm',
@@ -67,6 +70,7 @@ class Qmc5883l(Magnetometer, DefaultExportBlock):
         self.i2c = self.Export(self.ic.i2c)
         self.drdy = self.Export(self.ic.drdy, optional=True)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.vdd_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)

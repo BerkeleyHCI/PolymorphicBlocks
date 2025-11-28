@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..electronics_model import Volt, FootprintBlock
 from ..abstract_parts import Fuse
 from .JlcPart import JlcPart
@@ -6,6 +8,7 @@ from .JlcPart import JlcPart
 class Nano2Fuseholder(Fuse, JlcPart, FootprintBlock):
     """Littelfuse Nano2 / 154 series fuseholder. Generic versions exist as 1808 fuses.
     TODO: generate fuse part numbers from a table, currently this only generates the holder"""
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(

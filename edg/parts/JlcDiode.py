@@ -1,5 +1,8 @@
 from typing import *
 import re
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 from .JlcPart import DescriptionParser, JlcTableSelector
@@ -56,6 +59,7 @@ class JlcDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode, Tabl
   ]
 
   @classmethod
+  @override
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row['Second Category'] not in [
@@ -97,6 +101,7 @@ class JlcZenerDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode,
   ]
 
   @classmethod
+  @override
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row['Second Category'] != 'Zener Diodes':

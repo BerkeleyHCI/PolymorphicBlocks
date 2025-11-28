@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import DiscreteComponent, TypedJumper
 
@@ -20,6 +22,7 @@ class DigitalJumper(TypedJumper, Block):
     self.input = self.Port(DigitalSink.empty(), [Input])
     self.output = self.Port(DigitalSource.empty(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.device = self.Block(Jumper())

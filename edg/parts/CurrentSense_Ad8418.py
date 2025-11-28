@@ -1,5 +1,7 @@
 from typing import Dict
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -33,6 +35,7 @@ class Ad8418a_Device(JlcPart, FootprintBlock, InternalSubcircuit):
             impedance=2*Ohm(tol=0)  # range not specified
         ))
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(
@@ -55,6 +58,7 @@ class Ad8418a_Device(JlcPart, FootprintBlock, InternalSubcircuit):
 
 
 class Ad8418a(CurrentSensor, KiCadImportableBlock, Block):
+    @override
     def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
         assert symbol_name == 'edg_importable:DifferentialAmplifier'
         return {
@@ -75,6 +79,7 @@ class Ad8418a(CurrentSensor, KiCadImportableBlock, Block):
         self.ref = self.Export(self.amp.vref1)  # TODO optional for grounded unidirectional
         self.out = self.Export(self.amp.out)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.connect(self.ref, self.amp.vref2)

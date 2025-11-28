@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..core import BoolLike, init_in_parent
 from ..electronics_model import Block, abstract_block, InternalBlock
 
@@ -353,6 +355,7 @@ class IdealModel(InternalBlock):
     super().__init__(*args, **kwargs)
     self.allow_ideal = self.ArgParameter(allow_ideal)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.require(self.allow_ideal, "ideal model")

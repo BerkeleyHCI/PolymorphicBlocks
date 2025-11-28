@@ -3,6 +3,8 @@ import os
 from abc import abstractmethod
 from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, TypeVar, cast
 
+from typing_extensions import override
+
 from ..core import *
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
@@ -31,6 +33,7 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
     and has all passive ports.
     """
     @classmethod
+    @override
     def block_from_symbol(cls, symbol: KiCadSymbol, lib: KiCadLibSymbol) -> \
             Tuple['KiCadBlackbox', Callable[['KiCadBlackbox'], Mapping[str, BasePort]]]:
         pin_numbers = [pin.number for pin in lib.pins]
@@ -56,6 +59,7 @@ class KiCadBlackbox(KiCadBlackboxBase, FootprintBlock, GeneratorBlock, InternalB
         self.kicad_pins = self.ArgParameter(kicad_pins)
         self.generator_param(self.kicad_pins)
 
+    @override
     def generate(self) -> None:
         super().generate()
         mapping = {pin_name: self.ports.append_elt(Passive(), pin_name)

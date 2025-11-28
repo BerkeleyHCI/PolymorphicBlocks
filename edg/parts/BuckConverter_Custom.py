@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -22,6 +24,7 @@ class CustomSyncBuckConverterIndependent(DiscreteBoostConverter):
         self.voltage_drop = self.ArgParameter(voltage_drop)
         self.rds_on = self.ArgParameter(rds_on)
 
+    @override
     def contents(self) -> None:
         super().contents()
 

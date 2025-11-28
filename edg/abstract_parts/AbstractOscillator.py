@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from . import PartsTableColumn, PartsTableRow, PartsTableSelector
 from .Categories import *
@@ -18,6 +20,7 @@ class Oscillator(DiscreteApplication):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.out = self.Port(DigitalSource.empty(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -38,10 +41,12 @@ class TableOscillator(PartsTableSelector, Oscillator):
     super().__init__(*args, **kwargs)
     self.generator_param(self.frequency)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       row[self.FREQUENCY] in self.get(self.frequency)
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_frequency, row[self.FREQUENCY])

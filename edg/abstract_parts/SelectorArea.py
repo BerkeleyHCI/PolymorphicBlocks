@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .PartsTable import PartsTableRow
 from .PartsTablePart import PartsTableFootprintFilter, PartsTablePart
@@ -36,6 +38,7 @@ class PartsTableAreaSelector(PartsTableFootprintFilter, SelectorArea):
     super().__init__(*args, **kwargs)
     self.generator_param(self.footprint_area)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       (Range.exact(FootprintDataTable.area_of(row[self.KICAD_FOOTPRINT])).fuzzy_in(self.get(self.footprint_area)))

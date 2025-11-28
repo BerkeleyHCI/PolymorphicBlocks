@@ -1,5 +1,7 @@
 from typing import List, Tuple, Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .ESeriesUtil import ESeriesUtil
@@ -27,6 +29,7 @@ class ESeriesResistor(SelectorArea, Resistor, FootprintBlock, GeneratorBlock):
     self.generator_param(self.resistance, self.power, self.series, self.tolerance, self.footprint_spec,
                          self.footprint_area)
 
+  @override
   def generate(self) -> None:
     super().generate()
 

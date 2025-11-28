@@ -1,5 +1,7 @@
 from typing import cast
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import *
 from .AbstractResistor import Resistor
@@ -38,6 +40,7 @@ class UsbBitBang(BitBangAdapter, Block):
     self.dm = self.Port(DigitalBidir.empty())
     self.dp_pull = self.Port(DigitalSink.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
 

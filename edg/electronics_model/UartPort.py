@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..core import *
 from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
 
@@ -10,6 +12,7 @@ class UartLink(Link):
     self.a = self.Port(UartPort(DigitalBidir.empty()))
     self.b = self.Port(UartPort(DigitalBidir.empty()))
 
+  @override
   def contents(self) -> None:
     super().contents()
 

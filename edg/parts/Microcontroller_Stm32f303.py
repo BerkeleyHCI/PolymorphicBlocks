@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import *
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -22,6 +24,7 @@ class Stm32f303_Ios(IoControllerI2cTarget, IoControllerDac, IoControllerCan, Bas
       current_draw=(0.00055, 80)*mAmp + self.io_current_draw.upper()  # table 25 Idd standby to max
     )
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     """Returns the mappable for a STM32F303 device with the input power and ground references.
     This allows a shared definition between discrete chips and microcontroller boards"""
@@ -169,6 +172,7 @@ class Stm32f303_Device(Stm32f303_Ios, IoController, InternalSubcircuit, Generato
   TODO IMPLEMENT ME"""
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
       # 'Vbat': self.vdd,
@@ -217,12 +221,14 @@ class Nucleo_F303k8(IoControllerUsbOut, IoControllerPowerOut, IoController, Stm3
     'PB3': '30',  # CN4.15, D13
   }
 
+  @override
   def _vddio_vdda(self) -> Tuple[Port[VoltageLink], Port[VoltageLink]]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       return self.pwr, self.pwr
     else:
       return self.pwr_out, self.pwr_out
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
@@ -255,6 +261,7 @@ class Nucleo_F303k8(IoControllerUsbOut, IoControllerPowerOut, IoController, Stm3
 
     self.generator_param(self.pwr.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
 

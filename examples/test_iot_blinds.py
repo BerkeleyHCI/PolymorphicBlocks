@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
@@ -49,6 +51,7 @@ class IotRollerBlinds(JlcBoardTop):
     6 motor 1
     Motor takes ~12v (stall ~500mA, no-load ~300mA, min start 4v @ 150mA)
     """
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -124,6 +127,7 @@ class IotRollerBlinds(JlcBoardTop):
             'app': 'conn, drv',
         })
 
+    @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[
@@ -178,6 +182,7 @@ class IotCurtainCrawler(JlcBoardTop):
 
     Hall sensor is SOT-23 type, marked "6201"
     """
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -259,6 +264,7 @@ class IotCurtainCrawler(JlcBoardTop):
             'app': 'motor, drv, enca, encb',
         })
 
+    @override
     def refinements(self) -> Refinements:
         return super().refinements() + Refinements(
             instance_refinements=[

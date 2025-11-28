@@ -2,6 +2,8 @@ from __future__ import annotations
 from typing import *
 import sys  # for exception chaining
 
+from typing_extensions import override
+
 from .. import edgir
 
 
@@ -15,13 +17,16 @@ class Path(NamedTuple):  # internal helper type
   ports: Tuple[str, ...]
   params: Tuple[str, ...]
 
+  @override
   def __hash__(self) -> int:
     return hash((self.blocks, self.links, self.ports, self.params))
 
+  @override
   def __eq__(self, other: Any) -> bool:
     return isinstance(other, Path) and self.blocks == other.blocks and self.links == other.links and \
            self.ports == other.ports and self.params == other.params
 
+  @override
   def __repr__(self) -> str:
     if not self.blocks and not self.links and not self.ports and not self.params:
       return '(root)'
@@ -150,6 +155,7 @@ class TransformContext(NamedTuple):
   path: Path
   design: edgir.Design
 
+  @override
   def __repr__(self) -> str:
     return f"TransformContext(path={self.path}, design=...)"
 

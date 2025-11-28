@@ -1,5 +1,5 @@
 from typing import Generic, Type, List, Optional, get_args, get_origin, Tuple, Callable, Any
-from typing_extensions import TypeVar
+from typing_extensions import TypeVar, override
 
 from .Core import non_library, HasMetadata
 from .Blocks import AbstractBlockProperty
@@ -30,6 +30,7 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     """
     BaseType = TypeVar('BaseType', bound=HasMetadata)
     @classmethod
+    @override
     def _get_bases_of(cls, base_type: Type[BaseType]) -> Tuple[List[Type[BaseType]], List[Type[BaseType]]]:
         ordered_direct_bases, ordered_indirect_bases = super()._get_bases_of(base_type)
         if cls._is_mixin():  # adds the mixin base defined in MixinBaseType to the list of bases

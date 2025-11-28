@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -22,6 +24,7 @@ class Ltc3429_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_thresholds=(0.35, 1)*Volt
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -45,6 +48,7 @@ class Ltc3429(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   """Low-input-voltage boost converter (starts as low as 0.85V).
   Pin-compatible with the less-expensive UM3429S"""
   NMOS_CURRENT_LIMIT = 0.6
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -76,5 +80,6 @@ class Ltc3429(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
       self.connect(self.power_path.pwr_out, self.pwr_out)
       self.connect(self.power_path.switch, self.ic.sw)
 
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.nshdn

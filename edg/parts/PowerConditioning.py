@@ -1,5 +1,7 @@
 from typing import Optional, cast
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from ..electronics_model.PassivePort import PassiveAdapterVoltageSink, PassiveAdapterVoltageSource
 
@@ -10,6 +12,7 @@ class Supercap(DiscreteComponent, FootprintBlock):  # TODO actually model superc
     self.pos = self.Port(VoltageSink())
     self.neg = self.Port(Ground())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -203,6 +206,7 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
     self.diode_voltage_drop = self.ArgParameter(diode_voltage_drop)
     self.fet_rds_on = self.ArgParameter(fet_rds_on)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -269,6 +273,7 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
     self.gate_resistor = self.ArgParameter(gate_resistor)
     self.rds_on = self.ArgParameter(rds_on)
 
+  @override
   def contents(self) -> None:
     super().contents()
     output_current_draw = self.pwr_out.link().current_drawn
@@ -315,6 +320,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
     self.r2_val = self.ArgParameter(r2_val)
     self.rds_on = self.ArgParameter(rds_on)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.r1 = self.Block(Resistor(resistance=self.r1_val))
@@ -383,6 +389,7 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
     self.amp_resistance = self.ArgParameter(amp_resistance)
     self.diode_drop = self.ArgParameter(diode_drop)
 
+  @override
   def contents(self) -> None:
     super().contents()
     control_voltage = self.btn_in.link().voltage.hull(self.gnd.link().voltage)
@@ -455,6 +462,7 @@ class SoftPowerSwitch(PowerSwitch, Block):
     self.btn_out = self.Export(self.pwr_gate.btn_out)
     self.control = self.Export(self.pwr_gate.control)
 
+  @override
   def contents(self) -> None:
     super().contents()
     with self.implicit_connect(

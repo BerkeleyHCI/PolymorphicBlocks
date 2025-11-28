@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -21,6 +23,7 @@ class Lmv331_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         out_model = DigitalSource.low_from_supply(self.gnd)
         self.out = self.Port(out_model)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(
@@ -40,6 +43,7 @@ class Lmv331_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
 class Lmv331(Comparator):
     """General purpose comparator"""
+    @override
     def contents(self) -> None:
         super().contents()
         self.ic = self.Block(Lmv331_Device())

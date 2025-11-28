@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import IdealModel
 from .IoController import IoController
@@ -16,6 +18,7 @@ class IdealIoController(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCont
                              self.spi_peripheral.requested(), self.i2c.requested(), self.i2c_target.requested(),
                              self.uart.requested(), self.usb.requested(), self.can.requested(), self.i2s.requested())
 
+    @override
     def generate(self) -> None:
         self.pwr.init_from(VoltageSink(
             current_draw=RangeExpr()

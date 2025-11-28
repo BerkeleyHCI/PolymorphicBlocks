@@ -2,6 +2,8 @@ from functools import cmp_to_key
 from itertools import chain
 from typing import *
 
+from typing_extensions import override
+
 from .. import edgir
 from ..core import *
 
@@ -247,12 +249,15 @@ class NetlistTransform(TransformUtil.Transform):
     else:
       raise ValueError(f"can't connect types {elt1}, {elt2}")
 
+  @override
   def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
     self.process_blocklike(context.path, block)
 
+  @override
   def visit_link(self, context: TransformUtil.TransformContext, link: edgir.Link) -> None:
     self.process_blocklike(context.path, link)
 
+  @override
   def visit_linkarray(self, context: TransformUtil.TransformContext, link: edgir.LinkArray) -> None:
     self.process_blocklike(context.path, link)
 

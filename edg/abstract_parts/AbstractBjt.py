@@ -13,6 +13,7 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
   """
   _STANDARD_FOOTPRINT = lambda: BjtStandardFootprint
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     # TODO actually check that the device channel corresponds with the schematic?
     assert symbol_name.startswith('Device:Q_NPN_') or symbol_name.startswith('Device:Q_PNP_')
@@ -48,6 +49,7 @@ class Bjt(KiCadImportableBlock, DiscreteSemiconductor, HasStandardFootprint):
     self.actual_power_rating = self.Parameter(RangeExpr())
     self.actual_gain = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -94,6 +96,7 @@ class TableBjt(PartsTableSelector, Bjt):
     super().__init__(*args, **kwargs)
     self.generator_param(self.collector_voltage, self.collector_current, self.gain, self.power, self.channel)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       row[self.CHANNEL] == self.get(self.channel) and \
@@ -102,6 +105,7 @@ class TableBjt(PartsTableSelector, Bjt):
       row[self.GAIN].fuzzy_in(self.get(self.gain)) and \
       self.get(self.power).fuzzy_in(row[self.POWER_RATING])
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_collector_voltage_rating, row[self.VCE_RATING])

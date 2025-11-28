@@ -1,9 +1,12 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
 class Keystone5015(TestPoint, FootprintBlock, JlcPart):
   """Keystone 5015 / 5017 (difference in p/n is only from packaging) SMD test point"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.assign(self.lcsc_part, 'C238130')
@@ -21,6 +24,7 @@ class Keystone5015(TestPoint, FootprintBlock, JlcPart):
 
 class CompactKeystone5015(TestPoint, FootprintBlock, JlcPart):
   """Keystone 5015 / 5017 but with an experimental compact footprint"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.assign(self.lcsc_part, 'C2906768')
@@ -38,6 +42,7 @@ class CompactKeystone5015(TestPoint, FootprintBlock, JlcPart):
 
 class Keystone5000(TestPoint, FootprintBlock, JlcPart):
   """Keystone 5000-5004 series PTH test mini points"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.assign(self.lcsc_part, 'C238122')

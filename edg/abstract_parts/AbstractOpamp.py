@@ -1,5 +1,7 @@
 from typing import Mapping, Tuple, List, NamedTuple
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import Analog, MultipackDevice
 
@@ -8,11 +10,13 @@ from .Categories import Analog, MultipackDevice
 class Opamp(Analog, KiCadInstantiableBlock, Block):
   """Base class for opamps. Parameters need to be more restricted in subclasses.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
     return {'+': self.inp, '-': self.inn, '3': self.out, 'V+': self.pwr, 'V-': self.gnd}
 
   @classmethod
+  @override
   def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Opamp':
     return Opamp()
 
@@ -64,6 +68,7 @@ class MultipackOpampGenerator(MultipackOpamp, GeneratorBlock):
     Returns (gnd, pwr, [(in-, in+, out)])."""
     raise NotImplementedError  # implement me
 
+  @override
   def generate(self) -> None:
     super().generate()
     amp_ports = self._make_multipack_opamp()

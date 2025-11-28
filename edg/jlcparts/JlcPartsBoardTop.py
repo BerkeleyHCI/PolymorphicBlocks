@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..parts import *
 
 from .JlcPartsResistorSmd import JlcPartsResistorSmd
@@ -13,6 +15,7 @@ from .JlcPartsPptcFuse import JlcPartsPptcFuse
 
 class JlcPartsRefinements(DesignTop):
   """List of refinements that use JlcParts - mix this into a BoardTop"""
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       class_refinements=[

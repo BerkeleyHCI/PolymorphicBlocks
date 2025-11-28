@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .PassiveConnector_Fpc import Fpc050Bottom
 from .EInkBoostPowerPath import EInkBoostPowerPath
@@ -91,6 +93,7 @@ class Waveshare_Epd(EInk, GeneratorBlock):
 
         self.generator_param(self.dc.is_connected())
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -125,6 +128,7 @@ class Waveshare_Epd(EInk, GeneratorBlock):
         self.connect(self.boost.pos_out, self.device.prevgh)
         self.connect(self.boost.neg_out, self.device.prevgl)
 
+    @override
     def generate(self) -> None:
         super().generate()
         if self.get(self.dc.is_connected()):  # 4-line serial, BS low

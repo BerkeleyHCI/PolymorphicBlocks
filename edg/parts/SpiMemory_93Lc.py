@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -40,6 +42,7 @@ class E93Lc_B_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock
     self.size = self.ArgParameter(size)
     self.generator_param(self.size)
 
+  @override
   def generate(self) -> None:
     super().generate()
     suitable_parts = [part for part in self.PARTS if part[0] in self.get(self.size)]
@@ -68,6 +71,7 @@ class E93Lc_B(SpiMemory):
   """93LCxxB series of SPI EEPROMs. The E prefix is because Python identifiers can't start with numbers
   Note, A variant is 8-bit word, B variant is 16-bit word
   """
+  @override
   def contents(self) -> None:
     super().contents()
 

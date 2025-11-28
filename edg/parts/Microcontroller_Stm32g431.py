@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from .JlcPart import JlcPart
 from ..abstract_parts import *
 
@@ -31,6 +33,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         self._io_ports.insert(0, self.swd)
         self.nrst = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
 
+    @override
     def _system_pinmap(self) -> Dict[str, CircuitPort]:
         return VariantPinRemapper({
             'Vdd': self.pwr,
@@ -41,6 +44,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             'PG10-NRST': self.nrst,
         }).remap(self.SYSTEM_PIN_REMAP)
 
+    @override
     def _io_pinmap(self) -> PinMapUtil:
         input_range = self.gnd.link().voltage.hull(self.pwr.link().voltage)
         io_voltage_limit = (input_range + (-0.3, 3.6) * Volt).intersect(
@@ -185,6 +189,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             }),
         ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
+    @override
     def generate(self) -> None:
         super().generate()
         self.footprint(
@@ -245,6 +250,7 @@ class Stm32g431Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
         self.ic: Stm32g431Base_Device
         self.generator_param(self.reset.is_connected())
 
+    @override
     def contents(self) -> None:
         super().contents()
         with self.implicit_connect(
@@ -263,6 +269,7 @@ class Stm32g431Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
             self.pwr_cap3 = imp.Block(DecouplingCapacitor(100 * nFarad(tol=0.2)))
             self.pwr_cap4 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
+    @override
     def generate(self) -> None:
         super().generate()
         if self.get(self.reset.is_connected()):

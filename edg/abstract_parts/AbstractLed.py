@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import *
 from .AbstractResistor import Resistor
@@ -60,10 +62,12 @@ class TableLed(PartsTableSelector, Led):
     super().__init__(*args, **kwargs)
     self.generator_param(self.color)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       (not self.get(self.color) or row[self.COLOR] == self.get(self.color))
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_color, row[self.COLOR])
@@ -125,6 +129,7 @@ class IndicatorLedArray(Light, GeneratorBlock):
     self.count = self.ArgParameter(count)
     self.generator_param(self.count)
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.led = ElementDict[IndicatorLed]()
@@ -185,6 +190,7 @@ class IndicatorSinkLedArray(Light, GeneratorBlock):
     self.count = self.ArgParameter(count)
     self.generator_param(self.count)
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.led = ElementDict[IndicatorSinkLed]()

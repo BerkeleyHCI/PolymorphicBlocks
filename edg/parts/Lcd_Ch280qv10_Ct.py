@@ -1,8 +1,11 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .PassiveConnector_Fpc import Fpc050Bottom
 
 
 class Ch280qv10_Ct_Outline(InternalSubcircuit, FootprintBlock):
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint('U', 'edg:Lcd_Ch280qv10_Ct_Outline', {},
@@ -107,6 +110,7 @@ class Ch280qv10_Ct(Lcd, Resettable, Block):
 
         self.ctp_i2c = self.Export(self.device.ctp_i2c, optional=True)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.connect(self.pwr, self.device.vci)

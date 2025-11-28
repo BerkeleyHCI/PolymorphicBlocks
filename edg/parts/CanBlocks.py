@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -8,6 +10,7 @@ class Pesd1can(CanEsdDiode, FootprintBlock):
     self.gnd.init_from(Ground())
     self.can.init_from(CanDiffPort())
 
+  @override
   def contents(self) -> None:
     super().contents()
 

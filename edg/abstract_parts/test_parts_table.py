@@ -1,6 +1,8 @@
 import os
 import unittest
 
+from typing_extensions import override
+
 from .PartsTable import *
 
 
@@ -8,6 +10,7 @@ class PartsTableTest(unittest.TestCase):
   INT_COLUMN = PartsTableColumn(int)
 
   # TODO don't test using internal variables
+  @override
   def setUp(self) -> None:
     path = os.path.join(os.path.dirname(__file__), 'resources', 'test_table.csv')
     with open(path, newline='') as csvfile:

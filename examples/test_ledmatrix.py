@@ -1,11 +1,14 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
 class LedMatrix(JlcBoardTop):
   """A USB-connected WiFi-enabled LED matrix that demonstrates a charlieplexing LED matrix generator.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -42,6 +45,7 @@ class LedMatrix(JlcBoardTop):
       self.matrix = imp.Block(CharlieplexedLedMatrix(6, 5, current_draw=(3.5, 5)*mAmp, color=Led.Yellow))
       self.connect(self.mcu.gpio.request_vector('led'), self.matrix.ios)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

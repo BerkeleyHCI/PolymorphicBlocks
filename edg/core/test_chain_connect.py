@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 from .test_common import TestPortSink, TestPortSource
@@ -32,6 +34,7 @@ class TestBlockChainInput(Block):
 
 class ChainConnectUnpackNamedBlock(Block):
   """Block with chain connect, where those blocks are declared inline and named by unpack"""
+  @override
   def contents(self) -> None:
     super().contents()
     (self.output, self.inout, self.inputoutput, self.input), self.test_chain = self.chain(
@@ -44,6 +47,7 @@ class ChainConnectUnpackNamedBlock(Block):
 
 class ChainConnectExplicitNamedBlock(Block):
   """Block with chain connect, where those blocks are explicitly (separately) declared and named"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.output = self.Block(TestBlockChainOutput())

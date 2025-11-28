@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -58,6 +60,7 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.cc = self.Port(UsbCcPort(), optional=True)
         self.usb = self.Port(UsbDevicePort(), optional=True)  # BC protocol only
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.require(self.vin.current_draw.within((0, 3.2)*Amp), "Iin max limit")
@@ -128,6 +131,7 @@ class Mp2722(DiscreteBuckConverter):
 
         self.frequency = self.ArgParameter(frequency)
 
+    @override
     def contents(self) -> None:
         super().contents()
 

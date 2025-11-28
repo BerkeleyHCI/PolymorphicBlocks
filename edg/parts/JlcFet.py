@@ -1,5 +1,8 @@
 from typing import *
 import re
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 from .JlcPart import DescriptionParser, JlcTableSelector
@@ -16,6 +19,7 @@ class FetFallbackGateCharge(PartsTableSelector, BaseTableFet):
     self.fallback_gate_charge = self.ArgParameter(fallback_gate_charge)
     self.generator_param(self.fallback_gate_charge)
 
+  @override
   def _table_postprocess(self, table: PartsTable) -> PartsTable:
     fallback_gate_charge = self.get(self.fallback_gate_charge)
     def process_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -166,6 +170,7 @@ class JlcBaseFet(JlcTableSelector):
   }
 
   @classmethod
+  @override
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row['Second Category'] != 'MOSFETs':

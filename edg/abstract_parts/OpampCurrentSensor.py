@@ -1,5 +1,7 @@
 from typing import Dict
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import CurrentSensor
 from .DummyDevices import ForcedAnalogSignal
@@ -34,6 +36,7 @@ class OpampCurrentSensor(CurrentSensor, KiCadImportableBlock, Block):
     self.out = self.Port(AnalogSource.empty())
 
 
+  @override
   def contents(self) -> None:
     self.connect(self.amp.input_positive, self.sense.sense_in)
     self.connect(self.amp.input_negative, self.sense.sense_out)
@@ -43,6 +46,7 @@ class OpampCurrentSensor(CurrentSensor, KiCadImportableBlock, Block):
     self.connect(self.amp.output, self.force_signal.signal_in)
     self.connect(self.force_signal.signal_out, self.out)
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
     assert symbol_name == 'edg_importable:OpampCurrentSensor'
     return {'+': self.pwr_in, '-': self.pwr_out, 'R': self.ref, '3': self.out,

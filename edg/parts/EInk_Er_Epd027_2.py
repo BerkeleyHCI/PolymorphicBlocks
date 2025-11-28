@@ -1,9 +1,12 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .PassiveConnector_Fpc import Fpc050Bottom
 from .EInkBoostPowerPath import EInkBoostPowerPath
 
 
 class Er_Epd027_2_Outline(InternalSubcircuit, FootprintBlock):
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint('U', 'edg:Lcd_Er_Epd027_2_Outline', {},
@@ -95,6 +98,7 @@ class Er_Epd027_2(EInk, GeneratorBlock):
 
         self.generator_param(self.dc.is_connected())
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -126,6 +130,7 @@ class Er_Epd027_2(EInk, GeneratorBlock):
         self.connect(self.boost.pos_out, self.device.vgh)
         self.connect(self.boost.neg_out, self.device.vgl)
 
+    @override
     def generate(self) -> None:
         super().generate()
         if self.get(self.dc.is_connected()):  # 4-line serial, BS low

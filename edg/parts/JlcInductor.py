@@ -1,5 +1,8 @@
 from typing import *
 import re
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 from .JlcPart import DescriptionParser, JlcTableSelector
@@ -86,6 +89,7 @@ class JlcInductor(PartsTableSelectorFootprint, JlcTableSelector, TableInductor):
     self.require(self.frequency.within(self.manual_frequency_rating))
 
   @classmethod
+  @override
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row['Second Category'] not in ('Inductors (SMD)', 'Power Inductors'):

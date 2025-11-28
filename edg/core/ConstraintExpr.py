@@ -5,7 +5,7 @@ from typing import Generic, Any, TYPE_CHECKING, Tuple, Type, Optional, Union, It
 
 from deprecated import deprecated
 from itertools import chain
-from typing_extensions import TypeVar
+from typing_extensions import TypeVar, override
 
 from .Binding import Binding, ParamBinding, BoolLiteralBinding, IntLiteralBinding, \
   FloatLiteralBinding, RangeLiteralBinding, StringLiteralBinding, RangeBuilderBinding, \
@@ -30,6 +30,7 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   """
   _CASTABLE_TYPES: Tuple[Type[CastableType], ...]  # for use in ininstance(), excluding self-cls
 
+  @override
   def __repr__(self) -> str:
     if self.binding is not None and self.initializer is not None:
       return f"{super().__repr__()}({self.binding})={self.initializer}"
@@ -97,6 +98,7 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
     return self.binding.expr_to_proto(self, ref_map)
 
   # for now we define that all constraints can be checked for equivalence
+  @override
   def __eq__(self: SelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
     # TODO: avoid creating excess BoolExpr
     return BoolExpr()._bind(BinaryOpBinding(self, self._to_expr_type(other), EqOp.eq))
@@ -109,6 +111,7 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
   _CASTABLE_TYPES = (bool, )
 
   @classmethod
+  @override
   def _to_expr_type(cls, input: BoolLike) -> BoolExpr:
     if isinstance(input, BoolExpr):
       assert input._is_bound()
@@ -119,12 +122,14 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
       raise ValueError("unexpected type for %s of %s, expected BoolLike" % (input, type(input)))
 
   @classmethod
+  @override
   def _decl_to_proto(self) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.boolean.CopyFrom(edgir.Empty())
     return pb
 
   @classmethod
+  @override
   def _from_lit(cls, pb: edgir.ValueLit) -> bool:
     assert pb.HasField('boolean')
     return pb.boolean.val
@@ -194,6 +199,7 @@ class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedT
 
   @classmethod
   @abstractmethod
+  @override
   def _to_expr_type(cls: Type[NumLikeSelfType],
                     input: Union[NumLikeSelfType, WrappedType, NumLikeCastable]) -> NumLikeSelfType:
     """Casts the input from an equivalent-type to the self-type."""
@@ -310,6 +316,7 @@ class IntExpr(NumLikeExpr[int, IntLike]):
   _CASTABLE_TYPES = (int, )
 
   @classmethod
+  @override
   def _to_expr_type(cls, input: IntLike) -> IntExpr:
     if isinstance(input, IntExpr):
       assert input._is_bound()
@@ -320,12 +327,14 @@ class IntExpr(NumLikeExpr[int, IntLike]):
       raise TypeError(f"op arg to IntExpr must be IntLike, got {input} of type {type(input)}")
 
   @classmethod
+  @override
   def _decl_to_proto(cls) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.integer.CopyFrom(edgir.Empty())
     return pb
 
   @classmethod
+  @override
   def _from_lit(cls, pb: edgir.ValueLit) -> int:
     assert pb.HasField('integer')
     return pb.integer.val
@@ -337,6 +346,7 @@ class FloatExpr(NumLikeExpr[float, Union[FloatLike, IntExpr]]):
   _CASTABLE_TYPES = (float, int)
 
   @classmethod
+  @override
   def _to_expr_type(cls, input: Union[FloatLike, IntExpr]) -> FloatExpr:
     if isinstance(input, FloatExpr):
       assert input._is_bound()
@@ -350,12 +360,14 @@ class FloatExpr(NumLikeExpr[float, Union[FloatLike, IntExpr]]):
       raise TypeError(f"op arg to FloatExpr must be FloatLike, got {input} of type {type(input)}")
 
   @classmethod
+  @override
   def _decl_to_proto(cls) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.floating.CopyFrom(edgir.Empty())
     return pb
 
   @classmethod
+  @override
   def _from_lit(cls, pb: edgir.ValueLit) -> float:
     assert pb.HasField('floating')
     return pb.floating.val
@@ -381,6 +393,7 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
   EMPTY = Range(float('NaN'), float('NaN'))  # special marker to define an empty range, which is subset-eq of any range
 
   @classmethod
+  @override
   def _to_expr_type(cls, input: Union[RangeLike, FloatLike, IntLike]) -> RangeExpr:
     if isinstance(input, RangeExpr):
       assert input._is_bound()
@@ -403,12 +416,14 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
       raise TypeError(f"op arg to RangeExpr must be RangeLike, got {input} of type {type(input)}")
 
   @classmethod
+  @override
   def _decl_to_proto(cls) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.range.CopyFrom(edgir.Empty())
     return pb
 
   @classmethod
+  @override
   def _from_lit(cls, pb: edgir.ValueLit) -> Range:
     assert pb.HasField('range') and pb.range.minimum.HasField('floating') and pb.range.maximum.HasField('floating')
     return Range(pb.range.minimum.floating.val, pb.range.maximum.floating.val)
@@ -500,6 +515,7 @@ class StringExpr(ConstraintExpr[str, StringLike]):
   _CASTABLE_TYPES = (str, )
 
   @classmethod
+  @override
   def _to_expr_type(cls, input: StringLike) -> StringExpr:
     if isinstance(input, StringExpr):
       assert input._is_bound()
@@ -510,12 +526,14 @@ class StringExpr(ConstraintExpr[str, StringLike]):
       raise ValueError("unexpected type for %s of %s, expected StringLike" % (input, type(input)))
 
   @classmethod
+  @override
   def _decl_to_proto(cls) -> edgir.ValInit:
     pb = edgir.ValInit()
     pb.text.CopyFrom(edgir.Empty())
     return pb
 
   @classmethod
+  @override
   def _from_lit(cls, pb: edgir.ValueLit) -> str:
     assert pb.HasField('text')
     return pb.text.val
@@ -538,14 +556,17 @@ class StringExpr(ConstraintExpr[str, StringLike]):
 class AssignExpr(ConstraintExpr[None, None]):
   """Assignment expression, should be an internal type"""
   @classmethod
+  @override
   def _to_expr_type(cls, input: Any) -> NoReturn:
     raise ValueError("can't convert to AssignExpr")
 
   @classmethod
+  @override
   def _decl_to_proto(self) -> NoReturn:
     raise ValueError("can't create parameter from AssignExpr")
 
   @classmethod
+  @override
   def _from_lit(cls, pb: edgir.ValueLit) -> NoReturn:
     raise ValueError("can't unpack AssignExpr")
 

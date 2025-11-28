@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -19,6 +21,7 @@ class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_thresholds=(0.4, 1.5)*Volt
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -39,9 +42,11 @@ class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   """Adjustable boost converter in SOT-23-5 with integrated switch"""
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.nshdn
 
+  @override
   def contents(self) -> None:
     super().contents()
 

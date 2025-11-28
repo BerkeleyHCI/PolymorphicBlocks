@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import *
 
+from typing_extensions import override
+
 EltType = TypeVar('EltType')  # TODO maybe should be covariant? but is mutable so maybe not?
 class IdentitySet(Generic[EltType]):  # TODO this should implement some kind of set base class
   def __init__(self, *args: EltType) -> None:
@@ -17,6 +19,7 @@ class IdentitySet(Generic[EltType]):  # TODO this should implement some kind of 
   def __len__(self) -> int:
     return len(self.set)
 
+  @override
   def __repr__(self) -> str:
     return "IdentitySet" + str(self.dict.values())
 

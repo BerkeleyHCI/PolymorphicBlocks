@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from .IoController import IoController
 from .AbstractCrystal import OscillatorReference
 from ..electronics_model import *
@@ -17,6 +19,7 @@ class WithCrystalGenerator(IoController, GeneratorBlock):
     Called within generate, has access to generator params."""
     return False
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self._crystal_required():

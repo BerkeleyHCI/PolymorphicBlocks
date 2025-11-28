@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
@@ -50,6 +52,7 @@ class EspLora(JlcBoardTop):
 
   #define SDCARD_CS SPI_CS
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -122,11 +125,13 @@ class EspLora(JlcBoardTop):
       self.connect(self.nfc.reset, self.mcu.gpio.request('nfc_rst'))
       self.connect(self.nfc.irq, self.mcu.gpio.request('nfc_irq'))
 
+  @override
   def multipack(self) -> None:
     self.tx_cpack = self.PackedBlock(CombinedCapacitor())
     self.pack(self.tx_cpack.elements.request('0'), ['lora', 'tx_l', 'c'])
     self.pack(self.tx_cpack.elements.request('1'), ['lora', 'tx_pi', 'c1'])
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

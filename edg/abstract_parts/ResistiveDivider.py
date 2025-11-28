@@ -3,6 +3,8 @@ from __future__ import annotations
 from math import log10, ceil
 from typing import List, Tuple, Mapping
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from . import Analog, Resistor
 from .Categories import InternalSubcircuit
@@ -27,6 +29,7 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
     self.parallel_impedance = parallel_impedance  # parallel impedance into the opamp negative pin
 
   @staticmethod
+  @override
   def from_resistors(r1_range: Range, r2_range: Range) -> 'DividerValues':
     """This uses a slight rewriting of terms to avoid duplication of terms and not double-count tolerances:
     ratio = R2 / (R1 + R2) => divide  through by R2 / R2
@@ -37,10 +40,12 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
       1 / (1 / r1_range + 1 / r2_range)
     )
 
+  @override
   def initial_test_decades(self) -> Tuple[int, int]:
     decade = ceil(log10(self.parallel_impedance.center()))
     return decade, decade
 
+  @override
   def distance_to(self, spec: 'DividerValues') -> List[float]:
     if self.ratio in spec.ratio and self.parallel_impedance in spec.parallel_impedance:
       return []
@@ -50,6 +55,7 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
         abs(self.parallel_impedance.center() - spec.parallel_impedance.center())
       ]
 
+  @override
   def intersects(self, spec: 'DividerValues') -> bool:
     return self.ratio.intersects(spec.ratio) and \
            self.parallel_impedance.intersects(spec.parallel_impedance)
@@ -57,6 +63,7 @@ class DividerValues(ESeriesRatioValue['DividerValues']):
 
 class ResistiveDivider(InternalSubcircuit, KiCadImportableBlock, GeneratorBlock):
   """Abstract, untyped (Passive) resistive divider, that takes in a ratio and parallel impedance spec."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'Device:VoltageDivider'
     return {'1': self.top, '2': self.center, '3': self.bottom}
@@ -92,6 +99,7 @@ class ResistiveDivider(InternalSubcircuit, KiCadImportableBlock, GeneratorBlock)
     self.center = self.Port(Passive.empty())
     self.bottom = self.Port(Passive.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -102,6 +110,7 @@ class ResistiveDivider(InternalSubcircuit, KiCadImportableBlock, GeneratorBlock)
       " <b>of spec:</b> ", DescriptionString.FormatUnits(self.impedance, "Ω"))
 
 
+  @override
   def generate(self) -> None:
     """Generates a resistive divider meeting the required specifications, with the lowest E-series resistors possible.
     """
@@ -140,6 +149,7 @@ class BaseVoltageDivider(KiCadImportableBlock):
   The actual output voltage is defined as a ratio of the input voltage, and the divider is specified by
   ratio and impedance.
   Subclasses should define the ratio and impedance spec."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'Device:VoltageDivider'
     return {'1': self.input, '2': self.output, '3': self.gnd}
@@ -206,6 +216,7 @@ class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
     self.assumed_input_voltage = self.ArgParameter(assumed_input_voltage)
     self.actual_input_voltage = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -221,6 +232,7 @@ class FeedbackVoltageDivider(Analog, BaseVoltageDivider):
 
 class SignalDivider(Analog, KiCadImportableBlock, Block):
   """Specialization of ResistiveDivider for Analog signals"""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'Device:VoltageDivider'
     return {'1': self.input, '2': self.output, '3': self.gnd}

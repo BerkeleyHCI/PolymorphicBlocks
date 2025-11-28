@@ -1,7 +1,10 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
 class Tlp3545a(SolidStateRelay, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.assign(self.led_forward_voltage, (1.50, 1.80)*Volt)
@@ -27,6 +30,7 @@ class Tlp3545a(SolidStateRelay, FootprintBlock):
 
 
 class Tlp170am(SolidStateRelay, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.assign(self.led_forward_voltage, (1.1, 1.4)*Volt)  # 1.27 nominal

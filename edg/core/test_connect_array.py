@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 from .test_common import TestPortSource, TestPortSink
@@ -19,6 +21,7 @@ class TestBlockSinkElasticArray(GeneratorBlock):
     self.sinks = self.Port(Vector(TestPortSink()))
     self.generator_param(self.sinks.requested())
 
+  @override
   def generate(self) -> None:
     super().generate()
     for request in self.get(self.sinks.requested()):
@@ -26,6 +29,7 @@ class TestBlockSinkElasticArray(GeneratorBlock):
 
 
 class ArrayConnectBlock(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -36,6 +40,7 @@ class ArrayConnectBlock(Block):
 
 
 class ArrayConnectProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = ArrayConnectBlock()._elaborated_def_to_proto()
 
@@ -73,6 +78,7 @@ class ArrayConnectProtoTestCase(unittest.TestCase):
 
 
 class ArrayAllocatedConnectBlock(Block):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -84,6 +90,7 @@ class ArrayAllocatedConnectBlock(Block):
 
 
 class ArrayAllocatedConnectProtoTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = ArrayAllocatedConnectBlock()._elaborated_def_to_proto()
 

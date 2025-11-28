@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 from .test_common import TestBlockSource, TestBlockSink, TestPortSink, ImplicitSink, TestBlockImplicitSink
@@ -8,6 +10,7 @@ from .HdlUserExceptions import EdgContextError
 
 class ImplicitConnectBlock(Block):
   """Block with implicit scope containing some blocks"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.block_source = self.Block(TestBlockSource())
@@ -50,6 +53,7 @@ class ExportedImplicitConnectBlock(Block):
     super().__init__()
     self.sink_in = self.Port(TestPortSink())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.implicit_net = self.connect(self.sink_in)
@@ -89,6 +93,7 @@ class ExportedImplicitConnectTestCase(unittest.TestCase):
 
 class ImplicitConnectOutsideScopeErrorBlock(Block):
   """Block with implicit scope containing some blocks"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.block_source = self.Block(TestBlockSource())

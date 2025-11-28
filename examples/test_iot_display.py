@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
@@ -19,6 +21,7 @@ class PmosHighSideSwitch(PowerSwitch):
     self.frequency = self.ArgParameter(frequency)
     self.max_rds = self.ArgParameter(max_rds)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -44,6 +47,7 @@ class PmosHighSideSwitch(PowerSwitch):
 class IotDisplay(JlcBoardTop):
   """Battery-powered IoT e-paper display with deep sleep.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -138,6 +142,7 @@ class IotDisplay(JlcBoardTop):
       self.connect(self.mcu.gpio.request('fl_cs'), self.flash.cs)  # no test point, clip the SOIC
 
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -15,6 +17,7 @@ class Apx803s_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
         self.generator_param(self.reset_threshold)
         self.actual_reset_threshold = self.Parameter(RangeExpr())
 
+    @override
     def generate(self) -> None:
         super().generate()
         parts = [  # output range, part number, lcsc

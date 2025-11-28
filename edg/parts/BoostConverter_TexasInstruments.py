@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -21,6 +23,7 @@ class Tps61040_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_threshold_abs=(0.4, 1.3)*Volt
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -41,9 +44,11 @@ class Tps61040_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   """PFM (DCM, discontinuous mode) boost converter in SOT-23-5"""
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -174,6 +179,7 @@ class Lm2733_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       input_threshold_abs=(0.5, 1.5)*Volt
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -194,9 +200,11 @@ class Lm2733_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   """Adjustable boost converter in SOT-23-5 with integrated switch"""
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.nshdn
 
+  @override
   def contents(self) -> None:
     import math
     super().contents()

@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractFets import SwitchFet
 
@@ -23,6 +25,7 @@ class CustomFet(SwitchFet, FootprintBlock, GeneratorBlock):
     self.assign(self.actual_rds_on, Range.zero_to_upper(0))
     self.assign(self.actual_gate_charge, Range.zero_to_upper(0))
 
+  @override
   def generate(self) -> None:
     self.footprint(
       self._standard_footprint().REFDES_PREFIX, self.footprint_spec,

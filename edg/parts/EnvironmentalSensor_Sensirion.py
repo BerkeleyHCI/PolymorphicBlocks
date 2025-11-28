@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -17,6 +19,7 @@ class Shtc3_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         )
         self.i2c = self.Port(I2cTarget(dio_model, [0x70]))
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Sensor_Humidity:Sensirion_DFN-4-1EP_2x2mm_P1mm_EP0.7x1.6mm',
@@ -43,6 +46,7 @@ class Shtc3(TemperatureSensor, HumiditySensor, Block):
         self.pwr = self.Export(self.ic.vdd, [Power])
         self.i2c = self.Export(self.ic.i2c, [InOut])
 
+    @override
     def contents(self) -> None:
         super().contents()  # capacitors from datasheet
         self.vdd_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)

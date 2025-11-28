@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -23,6 +25,7 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
       current_limits=(-40, 40)*mAmp,  # output short circuit current
     ))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -44,6 +47,7 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 class Lmv321(Opamp):
   """RRO op-amp in SOT-23-5.
   """
+  @override
   def contents(self) -> None:
     super().contents()
 

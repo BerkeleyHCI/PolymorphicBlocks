@@ -1,7 +1,10 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
 class SolderJumperTriangular(Jumper, FootprintBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(

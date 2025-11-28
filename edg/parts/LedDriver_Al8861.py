@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -21,6 +23,7 @@ class Al8861_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
         self.peak_output_current = self.ArgParameter(peak_output_current)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.require(self.peak_output_current < 2*Amp)
@@ -60,6 +63,7 @@ class Al8861(LedDriverPwm, LedDriverSwitchingConverter, LedDriver, GeneratorBloc
 
         self.actual_ripple = self.Parameter(RangeExpr())
 
+    @override
     def generate(self) -> None:
         super().generate()
 

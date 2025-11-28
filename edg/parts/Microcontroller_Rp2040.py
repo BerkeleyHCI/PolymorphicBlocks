@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import *
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -35,6 +37,7 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
       pullup_capable=True, pulldown_capable=True
     )
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     pwr = self._vddio()
     dio_usb_model = dio_ft_model = dio_std_model = self._dio_model(pwr)
@@ -177,6 +180,7 @@ class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcirc
     'SWCLK': '24',
   }
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     return self.iovdd
 
@@ -221,6 +225,7 @@ class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcirc
     self.run = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
     self._io_ports.insert(0, self.swd)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -233,6 +238,7 @@ class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcirc
     self.run.init_from(DigitalSink.from_bidir(dio_ft_model))
 
   # Pin/peripheral resource definitions (table 3)
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return {
       '51': self.qspi_sd3,
@@ -268,6 +274,7 @@ class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcirc
       '57': self.gnd,  # pad
     }
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -293,6 +300,7 @@ class Rp2040Usb(InternalSubcircuit, Block):
     self.usb_rp = self.Port(UsbHostPort.empty(), [Input])
     self.usb = self.Port(UsbDevicePort.empty(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -317,6 +325,7 @@ class Rp2040(Resettable, Rp2040_Interfaces, Microcontroller, IoControllerWithSwd
     self.ic: Rp2040_Device
     self.generator_param(self.reset.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -353,6 +362,7 @@ class Rp2040(Resettable, Rp2040_Interfaces, Microcontroller, IoControllerWithSwd
 
     self.vreg_out_cap = self.Block(DecouplingCapacitor(1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.dvdd)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -360,6 +370,7 @@ class Rp2040(Resettable, Rp2040_Interfaces, Microcontroller, IoControllerWithSwd
       self.connect(self.reset, self.ic.run)
 
   ExportType = TypeVar('ExportType', bound=Port)
+  @override
   def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
                           assign: Optional[str]) -> Optional[str]:
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
@@ -368,6 +379,7 @@ class Rp2040(Resettable, Rp2040_Interfaces, Microcontroller, IoControllerWithSwd
       return assign
     return super()._make_export_vector(self_io, inner_vector, name, assign)
 
+  @override
   def _crystal_required(self) -> bool:  # crystal needed for USB b/c tighter freq tolerance
     return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()
 
@@ -405,12 +417,14 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, IoControllerVin, Rp2
     'GPIO3': '11',
   }
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       return self.pwr
     else:
       return self.pwr_out
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       return VariantPinRemapper({
@@ -424,6 +438,7 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, IoControllerVin, Rp2
         'VUSB': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -453,6 +468,7 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, IoControllerVin, Rp2
 
     self.generator_param(self.pwr.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
 

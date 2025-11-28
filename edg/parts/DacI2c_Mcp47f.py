@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -45,6 +47,7 @@ class Mcp47f_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock):
     self.addr_lsb = self.ArgParameter(addr_lsb)
     self.generator_param(self.addr_lsb)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -99,6 +102,7 @@ class Mcp47f(DigitalToAnalog, Block):
     self.lat0 = self.Export(self.ic.lat0)
     self.lat1 = self.Export(self.ic.lat1)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

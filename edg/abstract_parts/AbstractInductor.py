@@ -1,5 +1,7 @@
 from typing import Dict, Optional, cast, Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, ExperimentalUserFnPartsTable
 from .PartsTablePart import PartsTableSelector
@@ -11,6 +13,7 @@ from .StandardFootprint import StandardFootprint, HasStandardFootprint
 class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
   _STANDARD_FOOTPRINT = lambda: InductorStandardFootprint
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Device:L', 'Device:L_Small')
     return {'1': self.a, '2': self.b}
@@ -38,6 +41,7 @@ class Inductor(PassiveComponent, KiCadImportableBlock, HasStandardFootprint):
     self.actual_frequency_rating = self.Parameter(RangeExpr())
     self.actual_resistance_dc = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -140,6 +144,7 @@ class TableInductor(PartsTableSelector, Inductor):
     self.generator_param(self.inductance, self.current, self.frequency, self.resistance_dc,
                          self.experimental_filter_fn)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     filter_fn_str = self.get(self.experimental_filter_fn)
     if filter_fn_str:
@@ -154,6 +159,7 @@ class TableInductor(PartsTableSelector, Inductor):
       self.get(self.frequency).fuzzy_in(row[self.FREQUENCY_RATING]) and\
       (filter_fn is None or filter_fn(row))
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_inductance, row[self.INDUCTANCE])
@@ -162,6 +168,7 @@ class TableInductor(PartsTableSelector, Inductor):
     self.assign(self.actual_resistance_dc, row[self.DC_RESISTANCE])
 
   @classmethod
+  @override
   def _row_sort_by(cls, row: PartsTableRow) -> Any:
     return row[cls.DC_RESISTANCE].center()
 

@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 from .test_robotdriver import PwmConnector, LedConnector
@@ -13,6 +15,7 @@ class PhotodiodeSensor(LightSensor, KiCadSchematicBlock, Block):
     self.pwr = self.Port(VoltageSink.empty(), [Power])
     self.out = self.Port(AnalogSource.empty(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.import_kicad(
@@ -39,6 +42,7 @@ class RobotOwl(JlcBoardTop):
   1 NPX
   1 analog
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -111,6 +115,7 @@ class RobotOwl(JlcBoardTop):
         imp.Block(LedConnector())
       )
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

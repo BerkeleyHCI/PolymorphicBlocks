@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -24,6 +26,7 @@ class Sn65hvd230_Device(InternalSubcircuit, JlcPart, FootprintBlock):
       current_draw=(-30, 30) * uAmp, current_limits=(-250, 250) * mAmp
     )))
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -46,6 +49,7 @@ class Sn65hvd230_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 
 class Sn65hvd230(CanTransceiver):
+  @override
   def contents(self) -> None:
     super().contents()
     self.ic = self.Block(Sn65hvd230_Device())

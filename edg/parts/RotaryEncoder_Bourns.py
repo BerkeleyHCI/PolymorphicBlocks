@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -5,6 +7,7 @@ class Pec11s(RotaryEncoderSwitch, RotaryEncoder, FootprintBlock):
   """Bourns PEC11S SMD rotary with pushbutton switch.
   Default part is PEC11S-929K-S0015, but entire series is footprint-compatible.
   While the copper pattern is compatible with the EC11J15, there is a different mounting boss."""
+  @override
   def contents(self) -> None:
     super().contents()
 

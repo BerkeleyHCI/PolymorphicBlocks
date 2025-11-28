@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -28,6 +30,7 @@ class Dg468_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.com = self.Port(Passive())
     self.no = self.Port(Passive(), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -55,6 +58,7 @@ class Dg468(AnalogSwitch, GeneratorBlock):
     super().__init__()
     self.generator_param(self.control_gnd.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -74,6 +78,7 @@ class Dg468(AnalogSwitch, GeneratorBlock):
       capacitance=0.1*uFarad(tol=0.2),
     )).connected(self.gnd, self.pwr)
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.control_gnd.is_connected()):

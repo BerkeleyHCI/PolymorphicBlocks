@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from ..core import *
 from .CircuitPackingBlock import PackedVoltageSource
 from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink
@@ -19,6 +21,7 @@ class TestPackedSink(MultipackBlock):
     self.pos = self.PackedExport(self.elements.ports_array(lambda x: x.pos))
     self.neg = self.PackedExport(self.elements.ports_array(lambda x: x.neg))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -33,6 +36,7 @@ class TestPackedSink(MultipackBlock):
 
 
 class TestPackedDevices(DesignTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -43,6 +47,7 @@ class TestPackedDevices(DesignTop):
     self.vpos = self.connect(self.source.pos, self.sink1.pos, self.sink2.pos)
     self.gnd = self.connect(self.source.neg, self.sink1.neg, self.sink2.neg)
 
+  @override
   def multipack(self) -> None:
     self.sink = self.PackedBlock(TestPackedSink())
     self.pack(self.sink.elements.request('1'), ['sink1'])
@@ -50,6 +55,7 @@ class TestPackedDevices(DesignTop):
 
 
 class TestInvalidPackedDevices(DesignTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -63,6 +69,7 @@ class TestInvalidPackedDevices(DesignTop):
     self.vpos2 = self.connect(self.source2.pos, self.sink2.pos)
     self.gnd2 = self.connect(self.source2.neg, self.sink2.neg)
 
+  @override
   def multipack(self) -> None:
     self.sink = self.PackedBlock(TestPackedSink())
     self.pack(self.sink.elements.request('1'), ['sink1'])

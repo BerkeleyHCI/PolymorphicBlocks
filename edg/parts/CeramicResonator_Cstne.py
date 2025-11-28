@@ -1,13 +1,17 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
 class Cstne(CeramicResonator, GeneratorBlock, JlcPart, FootprintBlock):
+    @override
     def contents(self) -> None:
         super().contents()
         self.gnd.init_from(Ground())
         self.generator_param(self.frequency)
 
+    @override
     def generate(self) -> None:
         super().generate()
         parts = [  # tolerance is total stackup: initial temperature, aging

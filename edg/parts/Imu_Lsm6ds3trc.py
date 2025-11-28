@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -27,6 +29,7 @@ class Lsm6ds3trc_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.int1 = self.Port(dout_model, optional=True)
         self.int2 = self.Port(dout_model, optional=True)
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_LGA:Bosch_LGA-14_3x2.5mm_P0.5mm',
@@ -67,6 +70,7 @@ class Lsm6ds3trc(Accelerometer, Gyroscope, DefaultExportBlock):
         self.int1 = self.Export(self.ic.int1, optional=True, doc="Programmable interrupt")
         self.int2 = self.Export(self.ic.int2, optional=True, doc="Programmable interrupt")
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.vdd_cap = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)

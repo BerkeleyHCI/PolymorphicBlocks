@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 
@@ -22,6 +24,7 @@ class TestParameterConstProp(Block):
     self.range_const = self.Parameter(RangeExpr())
     self.range_param = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     self.assign(self.float_const, 2.0)
     self.assign(self.float_param, self.float_const)
@@ -35,6 +38,7 @@ class TestParameterConstProp(Block):
 
 
 class ConstPropTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestParameterConstProp)
 
@@ -93,6 +97,7 @@ class TestPortConstPropTopBlock(Block):
 
 
 class ConstPropPortTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestPortConstPropTopBlock)
 
@@ -115,6 +120,7 @@ class TestDisconnectedTopBlock(Block):
 
 
 class DisconnectedPortTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestDisconnectedTopBlock)
 
@@ -152,6 +158,7 @@ class TestPortConstPropBundleTopBlock(Block):
   def __init__(self) -> None:
     super().__init__()
 
+  @override
   def contents(self) -> None:
     self.block1 = self.Block(TestPortConstPropBundleInnerBlock())
     self.block2 = self.Block(TestPortConstPropBundleInnerBlock())  # dummy, just to infer a connection
@@ -162,6 +169,7 @@ class TestPortConstPropBundleTopBlock(Block):
 
 
 class ConstPropBundleTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.compiled = ScalaCompiler.compile(TestPortConstPropBundleTopBlock)
 

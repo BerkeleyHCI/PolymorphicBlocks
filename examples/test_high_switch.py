@@ -9,6 +9,8 @@
 
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
@@ -22,6 +24,7 @@ class CalSolCanBlock(Block):
     self.controller = self.Port(CanTransceiverPort.empty(), [Input])
     self.can = self.Port(CanDiffPort.empty(), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -55,6 +58,7 @@ class CanFuse(PptcFuse, FootprintBlock):
   def __init__(self, trip_current: RangeLike = (100, 200)*mAmp):
     super().__init__(trip_current)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -82,6 +86,7 @@ class CalSolPowerConnector(Connector, FootprintBlock):
     ))
     self.gnd = self.Port(Ground())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -107,6 +112,7 @@ class CalSolCanConnector(Connector, FootprintBlock):
     self.gnd = self.Port(Ground())
     self.differential = self.Port(CanDiffPort(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -134,6 +140,7 @@ class CalSolCanConnectorRa(Connector, FootprintBlock):
     self.gnd = self.Port(Ground())
     self.differential = self.Port(CanDiffPort(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -161,6 +168,7 @@ class M12CanConnector(Connector, FootprintBlock):
     self.gnd = self.Port(Ground())
     self.differential = self.Port(CanDiffPort(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -187,6 +195,7 @@ class LightsConnector(Connector, FootprintBlock):
     for i in range(2):
       self.out[i] = self.Port(VoltageSink(current_draw=current_draw))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -216,6 +225,7 @@ class LightsDriver(Block):
     for i in range(2):
       self.control[i] = self.Port(DigitalSink.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -233,6 +243,7 @@ class LightsDriver(Block):
 
 
 class HighSwitch(BoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -287,6 +298,7 @@ class HighSwitch(BoardTop):
         self.connect(self.mcu.gpio.request(f'light_{i}0'), light.control[0])
         self.connect(self.mcu.gpio.request(f'light_{i}1'), light.control[1])
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

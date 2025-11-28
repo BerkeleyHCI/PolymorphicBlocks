@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from .PassiveConnector_Fpc import Fpc050Bottom
 from ..abstract_parts import *
 
@@ -5,6 +7,7 @@ from ..abstract_parts import *
 class Er_Tft_128_3_Outline(InternalSubcircuit, FootprintBlock):
     """Footprint for TFT panel outline"""
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint('U', 'edg:Lcd_Er_Tft1_28_3_Outline', {},
@@ -83,6 +86,7 @@ class Er_Tft_128_3(Lcd, Resettable, Block):
         self.ctp_rst = self.Export(self.ic.ctp_rst, optional=True, doc='Touch panel interface')
         self.ctp_int = self.Export(self.ic.ctp_int, optional=True, doc='Touch panel interface')
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.connect(self.reset, self.ic.rst)

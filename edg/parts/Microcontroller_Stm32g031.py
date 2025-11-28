@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -30,6 +32,7 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
 
         self.nrst = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
 
+    @override
     def _system_pinmap(self) -> Dict[str, CircuitPort]:
         return VariantPinRemapper({  # Pin/peripheral resource definitions (section 4)
             'Vdd': self.pwr,
@@ -37,6 +40,7 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             'PF2-NRST': self.nrst,
         }).remap(self.SYSTEM_PIN_REMAP)
 
+    @override
     def _io_pinmap(self) -> PinMapUtil:
         # Port models
         input_range = self.gnd.link().voltage.hull(self.pwr.link().voltage)
@@ -141,6 +145,7 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             }),
         ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
+    @override
     def generate(self) -> None:
         super().generate()
 
@@ -206,6 +211,7 @@ class Stm32g031Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
         self.ic: Stm32g031Base_Device
         self.generator_param(self.reset.is_connected())
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -221,6 +227,7 @@ class Stm32g031Base(Resettable, IoControllerI2cTarget, Microcontroller, IoContro
             self.pwr_cap0 = imp.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2)))
             self.pwr_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
 
+    @override
     def generate(self) -> None:
         super().generate()
 

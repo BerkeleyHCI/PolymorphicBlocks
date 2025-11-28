@@ -5,6 +5,8 @@ from enum import Enum, auto
 from itertools import chain
 from typing import *
 
+from typing_extensions import override
+
 from .. import edgir
 from .Core import Refable
 from .IdentityDict import IdentityDict
@@ -82,6 +84,7 @@ class Binding:
 ParamParentTypes = Union['Port', 'BaseBlock']  # creates a circular module dependency on Core
 class ParamBinding(Binding):
   """Binding that indicates this is a parameter"""
+  @override
   def __repr__(self) -> str:
     return f"Param({self.parent})"
 
@@ -89,9 +92,11 @@ class ParamBinding(Binding):
     super().__init__()
     self.parent = parent
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:  # element should be returned by the containing ConstraintExpr
     return []
 
+  @override
   def is_bound(self) -> bool:
     # TODO clarify binding logic
     from .Ports import Port
@@ -100,6 +105,7 @@ class ParamBinding(Binding):
     else:
       return True
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.ref.CopyFrom(ref_map[expr])
@@ -116,11 +122,13 @@ class InitParamBinding(ParamBinding):
 
 class LiteralBinding(Binding):
   """Base class for literal bindings"""
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return []
 
 
 class BoolLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.value})"
 
@@ -128,6 +136,7 @@ class BoolLiteralBinding(LiteralBinding):
     super().__init__()
     self.value = value
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.literal.boolean.val = self.value
@@ -135,12 +144,14 @@ class BoolLiteralBinding(LiteralBinding):
 
 
 class IntLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.value})"
 
   def __init__(self, value: int):
     self.value = value
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.literal.integer.val = self.value
@@ -148,12 +159,14 @@ class IntLiteralBinding(LiteralBinding):
 
 
 class FloatLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.value})"
 
   def __init__(self, value: Union[float, int]):
     self.value: float = float(value)
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.literal.floating.val = self.value
@@ -161,12 +174,14 @@ class FloatLiteralBinding(LiteralBinding):
 
 
 class RangeLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.value})"
 
   def __init__(self, value: Range):
     self.value = value
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.literal.range.minimum.floating.val = self.value.lower
@@ -175,6 +190,7 @@ class RangeLiteralBinding(LiteralBinding):
 
 
 class StringLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.value})"
 
@@ -182,6 +198,7 @@ class StringLiteralBinding(LiteralBinding):
     super().__init__()
     self.value = value
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.literal.text.val = self.value
@@ -189,6 +206,7 @@ class StringLiteralBinding(LiteralBinding):
 
 
 class ArrayLiteralBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Lit({self.values})"
 
@@ -196,6 +214,7 @@ class ArrayLiteralBinding(LiteralBinding):
     super().__init__()
     self.values = values
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.literal.array.SetInParent()
@@ -207,6 +226,7 @@ class ArrayLiteralBinding(LiteralBinding):
 
 
 class RangeBuilderBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"RangeBuilder({self.lower}, {self.upper})"
 
@@ -215,9 +235,11 @@ class RangeBuilderBinding(Binding):
     self.lower = lower
     self.upper = upper
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return chain(self.lower._get_exprs(), self.lower._get_exprs())
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.binary.op = edgir.BinaryExpr.RANGE
@@ -227,6 +249,7 @@ class RangeBuilderBinding(Binding):
 
 
 class ArrayBinding(LiteralBinding):
+  @override
   def __repr__(self) -> str:
     return f"Array({self.values})"
 
@@ -234,6 +257,7 @@ class ArrayBinding(LiteralBinding):
     super().__init__()
     self.values = values
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.array.SetInParent()
@@ -243,6 +267,7 @@ class ArrayBinding(LiteralBinding):
 
 
 class UnaryOpBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"UnaryOp({self.op}, ...)"
 
@@ -263,9 +288,11 @@ class UnaryOpBinding(Binding):
     self.src = src
     self.op = op
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return chain(self.src._get_exprs())
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr,
                     ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
@@ -274,6 +301,7 @@ class UnaryOpBinding(Binding):
     return pb
 
 class UnarySetOpBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"UnarySetOp({self.op}, ...)"
 
@@ -299,9 +327,11 @@ class UnarySetOpBinding(Binding):
     self.src = src
     self.op = op
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return chain(self.src._get_exprs())
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr,
                     ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
@@ -310,6 +340,7 @@ class UnarySetOpBinding(Binding):
     return pb
 
 class BinaryOpBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"BinaryOp({self.op}, ...)"
 
@@ -349,9 +380,11 @@ class BinaryOpBinding(Binding):
     self.rhs = rhs
     self.op = op
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return chain(self.lhs._get_exprs(), self.rhs._get_exprs())
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.binary.op = self.op_map[self.op]
@@ -360,6 +393,7 @@ class BinaryOpBinding(Binding):
     return pb
 
 class BinarySetOpBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"BinaryOp({self.op}, ...)"
 
@@ -378,9 +412,11 @@ class BinarySetOpBinding(Binding):
     self.rhs = rhs
     self.op = op
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return chain(self.lhset._get_exprs(), self.rhs._get_exprs())
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.binary_set.op = self.op_map[self.op]
@@ -390,6 +426,7 @@ class BinarySetOpBinding(Binding):
 
 
 class IfThenElseBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"IfThenElse(...)"
 
@@ -399,9 +436,11 @@ class IfThenElseBinding(Binding):
     self.then_val = then_val
     self.else_val = else_val
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return chain(self.cond._get_exprs(), self.then_val._get_exprs(), self.else_val._get_exprs())
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.ifThenElse.cond.CopyFrom(self.cond._expr_to_proto(ref_map))
@@ -411,6 +450,7 @@ class IfThenElseBinding(Binding):
 
 
 class IsConnectedBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"IsConnected"
 
@@ -418,9 +458,11 @@ class IsConnectedBinding(Binding):
     super().__init__()
     self.src = src
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return [self.src]
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.ref.CopyFrom(ref_map[self.src])
@@ -428,6 +470,7 @@ class IsConnectedBinding(Binding):
     return pb
 
 class NameBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"Name"
 
@@ -435,9 +478,11 @@ class NameBinding(Binding):
     super().__init__()
     self.src = src
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return []
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.ref.CopyFrom(ref_map[self.src])
@@ -446,6 +491,7 @@ class NameBinding(Binding):
 
 
 class LengthBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"Length"
 
@@ -453,9 +499,11 @@ class LengthBinding(Binding):
     super().__init__()
     self.src = src
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return [self.src]
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.ref.CopyFrom(ref_map[self.src])
@@ -464,6 +512,7 @@ class LengthBinding(Binding):
 
 
 class AllocatedBinding(Binding):
+  @override
   def __repr__(self) -> str:
     return f"Allocated"
 
@@ -471,9 +520,11 @@ class AllocatedBinding(Binding):
     super().__init__()
     self.src = src
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return [self.src]
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     pb = edgir.ValueExpr()
     pb.ref.CopyFrom(ref_map[self.src])
@@ -490,6 +541,7 @@ class AssignBinding(Binding):
     pb.assign.src.CopyFrom(value._expr_to_proto(ref_map))
     return pb
 
+  @override
   def __repr__(self) -> str:
     return f"Assign({self.target}, ...)"
 
@@ -498,8 +550,10 @@ class AssignBinding(Binding):
     self.target = target
     self.value = value
 
+  @override
   def get_subexprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
     return [self.value]
 
+  @override
   def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
     return self.make_assign(self.target, self.value, ref_map)

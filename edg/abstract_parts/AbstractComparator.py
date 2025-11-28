@@ -1,5 +1,7 @@
 from typing import Mapping
 
+from typing_extensions import override
+
 from .ResistiveDivider import FeedbackVoltageDivider, VoltageDivider
 from ..abstract_parts import Analog
 from ..electronics_model import *
@@ -7,11 +9,13 @@ from ..electronics_model import *
 
 class Comparator(KiCadInstantiableBlock, Analog):
     """Abstract comparator interface, output goes high when inp > inn."""
+    @override
     def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
         assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
         return {'+': self.inp, '-': self.inn, '3': self.out, 'V+': self.pwr, 'V-': self.gnd}
 
     @classmethod
+    @override
     def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Comparator':
         return Comparator()
 
@@ -55,6 +59,7 @@ class VoltageComparator(GeneratorBlock):
 
         self.actual_trip_voltage = self.Parameter(RangeExpr())
 
+    @override
     def generate(self) -> None:
         super().generate()
 

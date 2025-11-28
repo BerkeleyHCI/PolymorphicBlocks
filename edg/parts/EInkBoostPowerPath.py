@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -25,6 +27,7 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
     self.resistance = self.ArgParameter(resistance)
     self.diode_voltage_drop = self.ArgParameter(diode_voltage_drop)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

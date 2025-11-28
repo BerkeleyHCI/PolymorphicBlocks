@@ -1,11 +1,14 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 from .test_elaboration_common import TestLink
 
 
 class LinkTestCase(unittest.TestCase):
+  @override
   def setUp(self) -> None:
     self.pb = TestLink()._elaborated_def_to_proto()
 

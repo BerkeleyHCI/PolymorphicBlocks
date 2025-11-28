@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import HumanInterface
 
@@ -8,6 +10,7 @@ class FootprintToucbPad(FootprintBlock, HumanInterface):
         self.pad = self.Port(TouchPadPort(), [Input])
         self.touch_footprint = self.ArgParameter(touch_footprint)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint('U', self.touch_footprint, {'1': self.pad})

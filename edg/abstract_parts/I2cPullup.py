@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import *
 from .AbstractResistor import PullupResistor
@@ -12,6 +14,7 @@ class I2cPullup(Interface, Block):
     self.i2c = self.Port(I2cPullupPort.empty(), [InOut])
 
 
+  @override
   def contents(self) -> None:
     super().contents()
 

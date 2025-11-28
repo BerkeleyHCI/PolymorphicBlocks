@@ -1,6 +1,8 @@
 import unittest
 from typing import Optional, Dict
 
+from typing_extensions import override
+
 from edg import *
 from edg.abstract_parts.PartsTable import ExperimentalUserFnPartsTable
 
@@ -18,6 +20,7 @@ class PowerOutConnector(Connector, Block):
 
 class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
   """Series diode that propagates voltage"""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'Device:D'
     return {'A': self.pwr_in, 'K': self.pwr_out}
@@ -84,6 +87,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
     self.is_first = self.ArgParameter(is_first)
     self.generator_param(self.is_first, self.high_boot_out.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
     # control path is still defined in HDL
@@ -210,6 +214,7 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
     self.actual_dutycycle = self.Parameter(RangeExpr())
     self.actual_inductor_current_ripple = self.Parameter(RangeExpr())
 
+  @override
   def generate(self) -> None:
     super().generate()
     inductor_scale = self.get(self.inductor_scale)
@@ -291,6 +296,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
     self.ratios = self.ArgParameter(ratios)
     self.generator_param(self.levels, self.ratios)
 
+  @override
   def generate(self) -> None:
     super().generate()
     levels = self.get(self.levels)
@@ -345,6 +351,7 @@ class DiscreteMutlilevelBuckConverter(PowerConditioner, GeneratorBlock):
 class Fcml(JlcBoardTop):
   """FPGA + FCML (flying cpacitor multilevel converter) test circuit,
   plus a bunch of other hardware blocks to test like RP2040"""
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -444,6 +451,7 @@ class Fcml(JlcBoardTop):
       (self.conv_out_sense, ), _ = self.chain(self.conv.pwr_out, imp.Block(div_model),
                                               self.mcu.adc.request('conv_out_sense'))
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import TypeVar, Type, Mapping
 
+from typing_extensions import override
+
 from ..core import *
 
 

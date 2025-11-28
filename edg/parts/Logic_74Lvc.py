@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -31,6 +33,7 @@ class Sn74lvc1g74_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.nq = self.Port(dout_model, optional=True)
         self.require(self.q.is_connected() | self.nq.is_connected())
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(
@@ -67,6 +70,7 @@ class Sn74lvc1g74(Interface, Block):
         self.q = self.Export(self.ic.q, optional=True)
         self.nq = self.Export(self.ic.nq, optional=True)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.vdd_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)
@@ -103,6 +107,7 @@ class Sn74lvc2g02_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.require((self.out2.is_connected() == self.in2a.is_connected()) &
                      (self.out2.is_connected() == self.in2b.is_connected()))
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(
@@ -138,6 +143,7 @@ class Sn74lvc2g02(Interface, Block):
         self.out1 = self.Export(self.ic.out1, optional=True)
         self.out2 = self.Export(self.ic.out2, optional=True)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.vdd_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.pwr)

@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
@@ -13,6 +15,7 @@ class FpgaProgrammingHeader(Connector, Block):
     self.cs = self.Port(DigitalSink.empty())
     self.reset = self.Port(DigitalSink.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.conn = self.Block(PinHeader127DualShrouded(10))
@@ -29,6 +32,7 @@ class FpgaProgrammingHeader(Connector, Block):
 
 class UsbFpgaProgrammer(JlcBoardTop):
   """USB UART converter board"""
+  @override
   def contents(self) -> None:
     super().contents()
     self.usb = self.Block(UsbCReceptacle())
@@ -56,6 +60,7 @@ class UsbFpgaProgrammer(JlcBoardTop):
       self.connect(self.ft232.adbus.request('4'), self.out.cs)
       self.connect(self.ft232.adbus.request('7'), self.out.reset)
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

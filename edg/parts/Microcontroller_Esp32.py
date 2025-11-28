@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import *
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 from .Microcontroller_Esp import HasEspProgramming
@@ -37,6 +39,7 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
       pullup_capable=True, pulldown_capable=True,
     )
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     pwr = self._vddio()
     dio_model = self._dio_model(pwr)
@@ -160,9 +163,11 @@ class Esp32_Base(Esp32_Ios, GeneratorBlock):
     # similarly, the programming UART is fixed and allocated separately
     self.uart0 = self.Port(UartPort(dio_model), optional=True)
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     return self.pwr
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
       'Vdd': self.pwr,
@@ -223,6 +228,7 @@ class Esp32_Wroom_32_Device(Esp32_Base, InternalSubcircuit, FootprintBlock, JlcP
     'GPIO23': '37',
   }
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -246,6 +252,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Resetta
     self.ic: Esp32_Wroom_32_Device
     self.generator_param(self.reset.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -262,6 +269,7 @@ class Esp32_Wroom_32(Microcontroller, Radiofrequency, HasEspProgramming, Resetta
       self.vcc_cap0 = imp.Block(DecouplingCapacitor(22 * uFarad(tol=0.2)))  # C1
       self.vcc_cap1 = imp.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))  # C2
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -325,12 +333,14 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
     # 'GPIO23': '39',  # camera CSI_HREF
   }
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       return self.pwr
     else:
       return self.pwr_out
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
@@ -367,6 +377,7 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
 
     self.generator_param(self.pwr.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
 

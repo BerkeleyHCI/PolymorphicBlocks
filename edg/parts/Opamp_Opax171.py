@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -46,6 +48,7 @@ class Opa2171_Device(Opa171_Base_Device, JlcPart, FootprintBlock):
     self.innb = self.Port(analog_in_model)
     self.outb = self.Port(analog_out_model)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -70,6 +73,7 @@ class Opa2171_Device(Opa171_Base_Device, JlcPart, FootprintBlock):
 class Opa2171(MultipackOpampGenerator):
   """Dual precision general purpose RRO opamp.
   """
+  @override
   def _make_multipack_opamp(self) -> MultipackOpampGenerator.OpampPorts:
     self.ic = self.Block(Opa2171_Device())
     # Datasheet section 9: recommend 0.1uF bypass capacitors close to power supply pins

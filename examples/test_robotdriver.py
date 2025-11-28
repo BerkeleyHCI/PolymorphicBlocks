@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
@@ -48,6 +50,7 @@ class RobotDriver(JlcBoardTop):
   """Robot driver that uses a ESP32 (non-C) chip and includes a few more blocks
   to use the extra available IOs
   """
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -170,6 +173,7 @@ class RobotDriver(JlcBoardTop):
     self.connect(self.gnd, self.servo.gnd)
     self.connect(self.mcu.gpio.request('pwm'), self.servo.pwm)
 
+  @override
   def multipack(self) -> None:
     self.led_res = self.PackedBlock(ResistorArray())
     self.pack(self.led_res.elements.request('0'), ['leds', 'led[0]', 'res'])
@@ -177,6 +181,7 @@ class RobotDriver(JlcBoardTop):
     self.pack(self.led_res.elements.request('2'), ['leds', 'led[2]', 'res'])
     self.pack(self.led_res.elements.request('3'), ['leds', 'led[3]', 'res'])
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

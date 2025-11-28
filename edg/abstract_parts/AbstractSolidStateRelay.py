@@ -1,5 +1,7 @@
 from typing import Dict
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .MergedBlocks import MergedAnalogSource
 from .AbstractResistor import Resistor
@@ -38,6 +40,7 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
   The ports are not tagged with Input/Output/InOut, because of potential for confusion between
   the digital side and the analog side.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'edg_importable:VoltageIsolatedSwitch'
     return {'in': self.signal, 'gnd': self.gnd, 'ain': self.pwr_in, 'aout': self.pwr_out}
@@ -82,6 +85,7 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
   A separate output-side pull port allows modeling the output switch standoff voltage
   when the switch is off.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'edg_importable:AnalogIsolatedSwitch'
     return {'in': self.signal, 'gnd': self.gnd,

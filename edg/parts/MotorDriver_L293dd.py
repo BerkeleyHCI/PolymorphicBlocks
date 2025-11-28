@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -42,6 +44,7 @@ class L293dd_Device(InternalSubcircuit, FootprintBlock):
         self.require(self.out3.is_connected().implies(self.in3.is_connected() & self.en2.is_connected()))
         self.require(self.out4.is_connected().implies(self.in4.is_connected() & self.en2.is_connected()))
 
+    @override
     def contents(self) -> None:
         self.footprint(
             'U', 'Package_SO:SOIC-20W_7.5x12.8mm_P1.27mm',
@@ -92,6 +95,7 @@ class L293dd(BrushedMotorDriver, Block):
         self.out3 = self.Export(self.ic.out3, optional=True)
         self.out4 = self.Export(self.ic.out4, optional=True)
 
+    @override
     def contents(self) -> None:
         super().contents()
 

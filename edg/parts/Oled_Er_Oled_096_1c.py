@@ -1,9 +1,12 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .PassiveConnector_Fpc import Fpc030Bottom
 
 
 class Er_Oled_096_1c_Outline(InternalSubcircuit, FootprintBlock):
     """Footprint for OLED panel outline"""
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint('U', 'edg:Lcd_Er_Oled0.96_1c_Outline', {},
@@ -88,6 +91,7 @@ class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):
         self.i2c = self.Port(I2cSlave.empty(), optional=True)
         self.generator_param(self.spi.is_connected(), self.dc.is_connected(), self.i2c.is_connected())
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.connect(self.reset, self.device.res)
@@ -116,6 +120,7 @@ class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):
         self.connect(self.vsl_d1.cathode, self.vsl_d2.anode)
         self.connect(self.vsl_d2.cathode.adapt_to(Ground()), self.gnd)
 
+    @override
     def generate(self) -> None:
         super().generate()
 

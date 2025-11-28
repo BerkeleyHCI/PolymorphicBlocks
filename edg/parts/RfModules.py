@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -27,6 +29,7 @@ class Xbee_S3b_Device(InternalSubcircuit, FootprintBlock):
     self.rssi = self.Port(DigitalSource.from_bidir(digital_model), optional=True)
     self.associate = self.Port(DigitalSource.from_bidir(digital_model), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(
@@ -70,6 +73,7 @@ class Xbee_S3b(Interface, Radiofrequency, FootprintBlock):
     self.rssi = self.Export(self.ic.rssi, optional=True)
     self.associate = self.Export(self.ic.associate, optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -102,6 +106,7 @@ class BlueSmirf(Interface, Radiofrequency, FootprintBlock):
     self.cts = self.Port(DigitalSink.from_bidir(digital_model), optional=True)
     self.rts = self.Port(DigitalSource.from_bidir(digital_model), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.footprint(

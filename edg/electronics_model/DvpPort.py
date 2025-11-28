@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..core import *
 from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
 
@@ -12,6 +14,7 @@ class Dvp8Link(Link):
         self.host = self.Port(Dvp8Host(DigitalBidir.empty()))
         self.cam = self.Port(Dvp8Camera(DigitalBidir.empty()))
 
+    @override
     def contents(self) -> None:
         super().contents()
 

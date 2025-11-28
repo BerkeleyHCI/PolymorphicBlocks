@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .PartsTable import PartsTableColumn, PartsTableRow
@@ -36,6 +38,7 @@ class ResistorArray(MultipackDevice, MultipackBlock, HasStandardFootprint):
     self.unpacked_assign(self.elements.params(lambda x: x.actual_resistance), self.actual_resistance)
     self.unpacked_assign(self.elements.params(lambda x: x.actual_power_rating), self.actual_power_rating)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -96,6 +99,7 @@ class TableResistorArray(PartsTableSelector, ResistorArray):
     super().__init__(*args, **kwargs)
     self.generator_param(self.count, self.a.requested(), self.b.requested(), self.resistances, self.powers)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     # TODO some kind of range intersect construct?
     resistances_min = max([resistance.lower for resistance in self.get(self.resistances)])
@@ -114,6 +118,7 @@ class TableResistorArray(PartsTableSelector, ResistorArray):
       row[self.RESISTANCE].fuzzy_in(resistance_intersect) and \
       powers_hull.fuzzy_in(row[self.POWER_RATING])
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     for i in range(row[self.COUNT]):  # must generate ports before creating the footprint
       self.a.append_elt(Passive(), str(i))

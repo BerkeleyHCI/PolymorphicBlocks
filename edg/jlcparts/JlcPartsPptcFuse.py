@@ -1,4 +1,7 @@
 from typing import Any, Optional, Dict
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 from ..parts.JlcPptcFuse import JlcPptcFuse
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
@@ -8,6 +11,7 @@ class JlcPartsPptcFuse(PartsTableSelectorFootprint, JlcPartsBase, TableFuse, Ppt
     _JLC_PARTS_FILE_NAMES = ["Circuit_ProtectionResettable_Fuses"]
 
     @classmethod
+    @override
     def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes) \
             -> Optional[Dict[PartsTableColumn, Any]]:
         try:

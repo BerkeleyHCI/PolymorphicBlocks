@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -67,6 +69,7 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     self.assign(self.vbb2.current_draw,
                 self.out2a.link().current_drawn.hull(self.out2b.link().current_drawn).abs().hull((0, 0)) + kVbbDraw)
 
+  @override
   def contents(self) -> None:
     self.footprint(
       'U', 'Package_DFN_QFN:TQFN-28-1EP_5x5mm_P0.5mm_EP3.25x3.25mm_ThermalVias',
@@ -136,6 +139,7 @@ class A4988(GeneratorBlock):
     self.out2a = self.Export(self.ic.out2a)
     self.out2b = self.Export(self.ic.out2b)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -168,6 +172,7 @@ class A4988(GeneratorBlock):
       self.connect(isense.a, sensen)
       self.connect(isense.b.adapt_to(Ground()), self.gnd)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -229,6 +234,7 @@ class PololuA4988(BrushedMotorDriver, WrapperFootprintBlock, GeneratorBlock):
     self.out2a = self.Export(self.model.out2a)
     self.out2b = self.Export(self.model.out2b)
 
+  @override
   def generate(self) -> None:
     super().generate()
 

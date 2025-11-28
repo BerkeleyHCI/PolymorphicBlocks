@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
@@ -14,6 +16,7 @@ class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
     self.swo = self.Port(DigitalBidir.empty(), optional=True)
     self.tdi = self.Port(DigitalBidir.empty(), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.conn = self.Block(PinHeader127DualShrouded(10))
@@ -39,6 +42,7 @@ class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
     self.reset = self.Port(DigitalSink.empty(), optional=True)
     self.swo = self.Port(DigitalBidir.empty(), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -64,6 +68,7 @@ class SwdSourceBitBang(InternalSubcircuit, Block):
     self.swd = self.Port(SwdHostPort.empty(), [Output])
     self.swo_in = self.Port(DigitalSink.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -89,6 +94,7 @@ class SwdSourceBitBang(InternalSubcircuit, Block):
 
 
 class SwdDebugger(JlcBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -153,6 +159,7 @@ class SwdDebugger(JlcBoardTop):
         self.mcu.adc.request('target_vsense')
       )
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[
@@ -196,6 +203,7 @@ class SwdSourceBitBangDirect(InternalSubcircuit, Block):
     self.swdio = self.Port(DigitalSink.empty())
     self.swd = self.Port(SwdHostPort.empty(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -204,6 +212,7 @@ class SwdSourceBitBangDirect(InternalSubcircuit, Block):
 
 
 class PicoProbe(JlcBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -262,6 +271,7 @@ class PicoProbe(JlcBoardTop):
         self.mcu.adc.request('target_vsense')
       )
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

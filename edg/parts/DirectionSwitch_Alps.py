@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -5,6 +7,7 @@ from .JlcPart import JlcPart
 class Skrh(DirectionSwitchCenter, DirectionSwitch, JlcPart, FootprintBlock):
     """Generic SKRH directional switch with pushbutton.
     Default part is SKRHABE010, but footprint should be compatible with the entire SKRH series."""
+    @override
     def contents(self) -> None:
         super().contents()
 

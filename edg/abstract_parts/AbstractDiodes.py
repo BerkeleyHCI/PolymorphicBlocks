@@ -1,5 +1,6 @@
 from typing import Dict, Any
 from deprecated import deprecated
+from typing_extensions import override
 
 from ..electronics_model import *
 from .DummyDevices import ForcedAnalogVoltage
@@ -54,6 +55,7 @@ class Diode(KiCadImportableBlock, BaseDiode):
 
   TODO power? capacitance? leakage current?
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Device:D', 'Device:D_Small')
     return {'A': self.anode, 'K': self.cathode}
@@ -73,6 +75,7 @@ class Diode(KiCadImportableBlock, BaseDiode):
     self.actual_voltage_drop = self.Parameter(RangeExpr())
     self.actual_reverse_recovery_time = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -97,6 +100,7 @@ class TableDiode(PartsTableSelector, Diode):
     super().__init__(*args, **kwargs)
     self.generator_param(self.reverse_voltage, self.current, self.voltage_drop, self.reverse_recovery_time)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       self.get(self.reverse_voltage).fuzzy_in(row[self.VOLTAGE_RATING]) and \
@@ -104,6 +108,7 @@ class TableDiode(PartsTableSelector, Diode):
       row[self.FORWARD_VOLTAGE].fuzzy_in(self.get(self.voltage_drop)) and \
       row[self.REVERSE_RECOVERY].fuzzy_in(self.get(self.reverse_recovery_time))
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_voltage_rating, row[self.VOLTAGE_RATING])
@@ -118,6 +123,7 @@ class ZenerDiode(KiCadImportableBlock, BaseDiode, DiscreteSemiconductor):
 
   TODO power? capacitance? leakage current?
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name in ('Device:D_Zener', 'Device:D_Zener_Small')
     return {'A': self.anode, 'K': self.cathode}
@@ -130,6 +136,7 @@ class ZenerDiode(KiCadImportableBlock, BaseDiode, DiscreteSemiconductor):
     self.actual_zener_voltage = self.Parameter(RangeExpr())
     self.actual_power_rating = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -149,10 +156,12 @@ class TableZenerDiode(PartsTableSelector, ZenerDiode):
     super().__init__(*args, **kwargs)
     self.generator_param(self.zener_voltage)
 
+  @override
   def _row_filter(self, row: PartsTableRow) -> bool:
     return super()._row_filter(row) and \
       row[self.ZENER_VOLTAGE].fuzzy_in(self.get(self.zener_voltage))
 
+  @override
   def _row_generate(self, row: PartsTableRow) -> None:
     super()._row_generate(row)
     self.assign(self.actual_zener_voltage, row[self.ZENER_VOLTAGE])
@@ -170,6 +179,7 @@ class ProtectionZenerDiode(Protection):
 
     self.voltage = self.ArgParameter(voltage)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
@@ -191,6 +201,7 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
 
     self.voltage = self.ArgParameter(voltage)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -204,6 +215,7 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
     self.connect(self.signal_out, self.forced.signal_out, self.diode.cathode.adapt_to(AnalogSink()))
     self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
 
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
     assert symbol_name == 'edg_importable:AnalogClampZenerDiode'
     return {'IN': self.signal_in, 'OUT': self.signal_out, 'GND': self.gnd}

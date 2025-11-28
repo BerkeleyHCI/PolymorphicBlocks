@@ -1,5 +1,7 @@
 from typing import TypeVar, Union, List, Tuple, Dict, Type, Any
 
+from typing_extensions import override
+
 from .Core import Refable
 from .. import edgir
 from .Builder import builder
@@ -22,9 +24,11 @@ class DesignTop(Block):
     self._packed_blocks = IdentityDict[
       Union[Block, PackedBlockAllocate], DesignPath]()  # multipack part -> packed block (as path)
 
+  @override
   def Port(self, *args: Any, **kwargs: Any) -> Any:
     raise ValueError("Can't create ports on design top")
 
+  @override
   def Export(self, *args: Any, **kwargs: Any) -> Any:
     raise ValueError("Can't create ports on design top")
 
@@ -53,6 +57,7 @@ class DesignTop(Block):
     pass
 
   # TODO make this non-overriding? - this needs to call multipack after contents
+  @override
   def _elaborated_def_to_proto(self) -> edgir.HierarchyBlock:
     prev_element = builder.push_element(self)
     assert prev_element is None
@@ -66,6 +71,7 @@ class DesignTop(Block):
       builder.pop_to(prev_element)
     return self._def_to_proto()
 
+  @override
   def _populate_def_proto_block_contents(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     """Add multipack constraints"""
     super()._populate_def_proto_block_contents(pb, ref_map)

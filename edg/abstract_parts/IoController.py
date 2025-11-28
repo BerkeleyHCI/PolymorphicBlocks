@@ -2,6 +2,7 @@ from itertools import chain
 from typing import List, Dict, Tuple, Type, Optional, Any
 
 from deprecated import deprecated
+from typing_extensions import override
 
 from ..electronics_model import *
 from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
@@ -150,6 +151,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
     super().__init__(*args, **kwargs)
     self.generator_param(self.pin_assigns)
 
+  @override
   def contents(self) -> None:
     super().contents()
     for io_port in self._io_ports:  # defined in contents() so subclass __init__ can define additional _io_ports

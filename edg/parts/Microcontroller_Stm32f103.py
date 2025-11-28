@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -43,6 +45,7 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
     self.swd = self.Port(SwdTargetPort.empty())
     self._io_ports.insert(0, self.swd)
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({  # Pin/peripheral resource definitions (table 3)
       'Vbat': self.pwr,
@@ -56,6 +59,7 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
       'NRST': self.nrst,
     }).remap(self.SYSTEM_PIN_REMAP)
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     # Port models
     dio_ft_model = DigitalBidir.from_supply(
@@ -175,6 +179,7 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
       }),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -273,6 +278,7 @@ class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoContro
     self.ic: Stm32f103Base_Device
     self.generator_param(self.reset.is_connected())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -295,13 +301,16 @@ class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoContro
       self.vdda_cap_0 = imp.Block(DecouplingCapacitor(10 * nFarad(tol=0.2)))
       self.vdda_cap_1 = imp.Block(DecouplingCapacitor(1 * uFarad(tol=0.2)))
 
+  @override
   def generate(self) -> None:
     super().generate()
 
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.nrst)
 
+
   ExportType = TypeVar('ExportType', bound=Port)
+  @override
   def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
                           assign: Optional[str]) -> Optional[str]:
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
@@ -312,6 +321,7 @@ class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoContro
       return assign
     return super()._make_export_vector(self_io, inner_vector, name, assign)
 
+  @override
   def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
     return len(self.get(self.can.requested())) > 0 or len(self.get(self.usb.requested())) > 0 \
         or super()._crystal_required()

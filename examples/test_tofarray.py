@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 
@@ -30,6 +32,7 @@ class TofArray(JlcBoardTop):
     # design configuration variables
     self.tof_count = self.Parameter(IntExpr(5))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -103,6 +106,7 @@ class TofArray(JlcBoardTop):
         self.spk_drv.pwr
       )
 
+  @override
   def multipack(self) -> None:
     self.res1 = self.PackedBlock(ResistorArray())
     self.pack(self.res1.elements.request('0'), ['leds', 'led[0]', 'res'])
@@ -121,6 +125,7 @@ class TofArray(JlcBoardTop):
     self.pack(self.rgb.green, ['leds', 'led[6]'])
     self.pack(self.rgb.blue, ['leds', 'led[7]'])
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

@@ -1,5 +1,7 @@
 from typing import Dict, Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import *
 
@@ -7,6 +9,7 @@ from .Categories import *
 @abstract_block
 class Switch(KiCadImportableBlock, DiscreteComponent):
   """Two-ported device that closes a circuit when pressed."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'Switch:SW_SPST'
     return {'1': self.sw, '2': self.com}
@@ -88,6 +91,7 @@ class DigitalSwitch(HumanInterface):
     self.gnd = self.Port(Ground.empty(), [Common])
     self.out = self.Port(DigitalSource.empty(), [Output])
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.package = self.Block(Switch(current=self.out.link().current_drawn,
@@ -110,6 +114,7 @@ class DigitalRotaryEncoder(HumanInterface):
 
 class DigitalWrapperRotaryEncoder(DigitalRotaryEncoder):
   """Basic implementation for DigitalRotaryEncoder as a wrapper around a passive-typed RotaryEncoder."""
+  @override
   def contents(self) -> None:
     super().contents()
     self.package = self.Block(RotaryEncoder(current=self.a.link().current_drawn.hull(self.b.link().current_drawn),
@@ -131,10 +136,12 @@ class DigitalRotaryEncoderSwitch(BlockInterfaceMixin[DigitalRotaryEncoder]):
 
 
 class DigitalWrapperRotaryEncoderWithSwitch(DigitalRotaryEncoderSwitch, DigitalWrapperRotaryEncoder, GeneratorBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.generator_param(self.sw.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.sw.is_connected()):
@@ -158,6 +165,7 @@ class DigitalDirectionSwitch(HumanInterface):
 
 class DigitalWrapperDirectionSwitch(DigitalDirectionSwitch):
   """Basic implementation for DigitalDirectionSwitch as a wrapper around a passive-typed DirectionSwitch."""
+  @override
   def contents(self) -> None:
     super().contents()
     self.package = self.Block(DirectionSwitch(current=self.a.link().current_drawn.hull(self.b.link().current_drawn),
@@ -182,10 +190,12 @@ class DigitalDirectionSwitchCenter(BlockInterfaceMixin[DigitalDirectionSwitch]):
 
 class DigitalWrapperDirectionSwitchWithCenter(DigitalDirectionSwitchCenter, DigitalWrapperDirectionSwitch,
                                               GeneratorBlock):
+  @override
   def contents(self) -> None:
     super().contents()
     self.generator_param(self.center.is_connected())
 
+  @override
   def generate(self) -> None:
     super().generate()
     if self.get(self.center.is_connected()):

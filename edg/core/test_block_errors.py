@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from . import *
 from .HdlUserExceptions import *
 from .test_common import TestPortSource, TestBlockSource, TestBlockSink
@@ -10,6 +12,7 @@ class BadLinkTestCase(unittest.TestCase):
 
   class OverconnectedHierarchyBlock(Block):
     """A block with connections that don't fit the link (2 sources connected vs. one in the link)"""
+    @override
     def contents(self) -> None:
       super().contents()
       self.source1 = self.Block(TestBlockSource())
@@ -29,6 +32,7 @@ class BadLinkTestCase(unittest.TestCase):
       super().__init__()
       self.source_port = self.Port(TestPortSource())
 
+    @override
     def contents(self) -> None:
       super().contents()
       self.source = self.Block(TestBlockSource())
@@ -54,6 +58,7 @@ class BadLinkTestCase(unittest.TestCase):
 
   class AmbiguousJoinBlock(Block):
     """A block with a connect join that merges two names"""
+    @override
     def contents(self) -> None:
       super().contents()
       self.source = self.Block(TestBlockSource())

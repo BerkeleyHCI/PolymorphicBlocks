@@ -1,6 +1,8 @@
 from math import pi, sqrt
 from typing import Tuple, Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractCapacitor import Capacitor
 from .AbstractInductor import Inductor
@@ -17,6 +19,7 @@ class DiscreteRfWarning(BlockInterfaceMixin[Block]):
         super().__init__(*args, **kwargs)
         self.discrete_rf_warning = self.Parameter(BoolExpr(False))
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.require(self.discrete_rf_warning == False, "warning: discrete RF circuit, design may be tricky")
@@ -94,6 +97,7 @@ class LLowPassFilterWith2HNotch(GeneratorBlock, RfFilter):
         self.generator_param(self.frequency, self.src_resistance, self.src_reactance, self.load_resistance,
                              self.tolerance)
 
+    @override
     def generate(self) -> None:
         super().generate()
 
@@ -190,6 +194,7 @@ class PiLowPassFilter(GeneratorBlock, RfFilter):
         self.generator_param(self.frequency, self.src_resistance, self.src_reactance, self.load_resistance,
                              self.tolerance)
 
+    @override
     def generate(self) -> None:
         super().generate()
 

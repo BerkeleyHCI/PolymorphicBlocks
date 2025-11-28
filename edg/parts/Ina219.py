@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -29,6 +31,7 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock)
         self.in_pos = self.Port(AnalogSink(voltage_limits=(-0.3, 26) * Volt))
         self.in_neg = self.Port(AnalogSink(voltage_limits=(-0.3, 26) * Volt))
 
+    @override
     def generate(self) -> None:
         super().generate()
 
@@ -89,6 +92,7 @@ class Ina219(CurrentSensor, Block):
         self.sense_pos = self.Export(self.Rs.pwr_in)
         self.sense_neg = self.Export(self.Rs.pwr_out)
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.connect(self.Rs.sense_in, self.ic.in_pos)

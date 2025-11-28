@@ -1,5 +1,8 @@
 import re
 from typing import Optional, Dict, Any
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcTableSelector
 
@@ -31,6 +34,7 @@ class JlcResistor(PartsTableSelectorFootprint, JlcTableSelector, TableResistor):
   }
 
   @classmethod
+  @override
   def _make_table(cls) -> PartsTable:
     def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
       if row['First Category'] != 'Resistors':

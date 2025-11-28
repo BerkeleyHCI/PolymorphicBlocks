@@ -1,6 +1,8 @@
 import unittest
 from typing import Mapping, Dict
 
+from typing_extensions import override
+
 from edg.abstract_parts.ESeriesUtil import ESeriesRatioUtil
 from edg.abstract_parts.ResistiveDivider import DividerValues
 from edg.electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic
@@ -44,6 +46,7 @@ class SourceMeasureRangingCell(Interface, KiCadSchematicBlock):
     self.sense_in = self.Port(AnalogSource.empty())
     self.sense_out = self.Port(AnalogSource.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.import_kicad(self.file_path("UsbSourceMeasure", f"{self.__class__.__name__}.kicad_sch"),
@@ -68,6 +71,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 
   The control line is one bit for each range (range connectivity is independent).
   Multiple ranges can be connected simultaneously, this allows make-before-break connectivity."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
     assert symbol_name == 'edg_importable:CurrentSenseResistorMux'
     return {
@@ -95,6 +99,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 
     self.out_range = self.Parameter(RangeExpr())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.ranges = ElementDict[SourceMeasureRangingCell]()
@@ -132,6 +137,7 @@ class RangingCurrentSenseResistor(Interface, KiCadImportableBlock, GeneratorBloc
 class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBlock, Block):
   """Emitter follower circuit.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:Follower'  # this requires an schematic-modified symbol
     return {
@@ -157,6 +163,7 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
     self.rds_on = self.ArgParameter(rds_on)
     self.gate_clamp_voltage = self.ArgParameter(gate_clamp_voltage)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -227,6 +234,7 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
 
   TODO: diode parameter should be an enum. Current values: '' (no diode), 'sink', 'source' (sinks or sources current)
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
     return {'M': self.actual, 'T': self.target, 'F': self.target_fine, '3': self.output, 'S': self.sense_out,
@@ -255,6 +263,7 @@ class GatedSummingAmplifier(InternalSubcircuit, KiCadSchematicBlock, KiCadImport
     self.generator_param(self.input_resistance, self.res, self.dir, self.series, self.tolerance,
                          self.target_fine.is_connected(), self.sense_out.is_connected(), self.fine_scale)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -334,6 +343,7 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
   """JET-based current clamp, clamps to roughly 10mA while maintaining a relatively low non-clamping
   impedance of ~100ohm. Max ~35V limited by JFET Vgs,max.
   """
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:Unk2'
     return {'1': self.input, '2': self.output}
@@ -347,6 +357,7 @@ class JfetCurrentClamp(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableB
     self.input = self.Port(AnalogSink.empty(), [Power])
     self.output = self.Port(AnalogSource.empty(), [Common])
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -380,6 +391,7 @@ class SrLatchInverted(Block):
     self.rst = self.Export(self.ic.in2a)  # any in2
     self.out = self.Export(self.ic.out1)
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.connect(self.ic.out1, self.ic.in2b)
@@ -421,6 +433,7 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
     self.current = self.ArgParameter(current)
     self.rds_on = self.ArgParameter(rds_on)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -437,6 +450,7 @@ class SourceMeasureControl(InternalSubcircuit, KiCadSchematicBlock, Block):
 # list many parts that are no longer basic.
 # class UsbSourceMeasure(JlcPartsRefinements, JlcBoardTop):
 class UsbSourceMeasure(JlcBoardTop):
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -769,6 +783,7 @@ class UsbSourceMeasure(JlcBoardTop):
       'misc': 'fan_drv, fan, jlc_th',
     })
 
+  @override
   def multipack(self) -> None:
     self.vimeas_amps = self.PackedBlock(Opa2189())  # low noise opamp
     self.pack(self.vimeas_amps.elements.request('0'), ['control', 'amp', 'amp'])
@@ -786,6 +801,7 @@ class UsbSourceMeasure(JlcBoardTop):
     self.pack(self.cintref_amps.elements.request('0'), ['control', 'int', 'amp'])
     self.pack(self.cintref_amps.elements.request('1'), ['control', 'dmeas', 'amp'])  # this path matters much less
 
+  @override
   def refinements(self) -> Refinements:
     return super().refinements() + Refinements(
       instance_refinements=[

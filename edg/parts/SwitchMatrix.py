@@ -1,5 +1,7 @@
 from typing import cast, Optional, Tuple
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 
@@ -14,9 +16,11 @@ class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
   This generates per-switch diodes which allows multiple keys to be pressed simultaneously.
   Diode anodes are attached to the rows, while cathodes go through each switch to the cols.
   """
+  @override
   def _svgpcb_fn_name_adds(self) -> Optional[str]:
     return f"{self._svgpcb_get(self.ncols)}_{self._svgpcb_get(self.nrows)}"
 
+  @override
   def _svgpcb_template(self) -> str:
     switch_block = self._svgpcb_footprint_block_path_of(['sw[0,0]'])
     diode_block = self._svgpcb_footprint_block_path_of(['d[0,0]'])
@@ -103,6 +107,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
 }}
 """
 
+  @override
   def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
     return (-1.0, -1.0,
             self._svgpcb_get(self.ncols) * 0.5 * 25.4 + 1.0, (self._svgpcb_get(self.nrows) + 1) * .5 * 25.4 + 1.0)
@@ -118,6 +123,7 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
     self.ncols = self.ArgParameter(ncols)
     self.generator_param(self.nrows, self.ncols)
 
+  @override
   def generate(self) -> None:
     super().generate()
     row_ports = {}

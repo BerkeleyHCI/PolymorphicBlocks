@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 from .PassiveConnector_Header import PinHeader127DualShrouded
@@ -15,6 +17,7 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
     self.cs = self.Port(DigitalSource.empty())
     self.reset = self.Port(DigitalSource.empty())
 
+  @override
   def contents(self) -> None:
     super().contents()
     self.conn = self.Block(PinHeader127DualShrouded(10))
@@ -89,6 +92,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
     self.spi_config = self.Port(SpiController(self._dpio1_model))
     self.spi_config_cs = self.Port(self._dpio1_model)
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:    # names consistent with pinout spreadsheet
     return VariantPinRemapper({
       'VCCPLL': self.vcc_pll,
@@ -108,6 +112,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
       'IOB_35b_SPI_SS': self.spi_config_cs,
     }).remap(self.SYSTEM_PIN_REMAP)
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     pio0_model = self.make_dio_model(self.gnd, self.vccio_0)
     dpio0_model = pio0_model  # differential capability currently not modeled
@@ -170,6 +175,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
       PeripheralAnyResource('SPI2', spi_model),
     ]).remap_pins(self.RESOURCE_PIN_REMAP)
 
+  @override
   def generate(self) -> None:
     super().generate()
 
@@ -257,6 +263,7 @@ class Ice40up(Fpga, IoController):
     super().__init__(**kwargs)
     self.cdone = self.Port(DigitalSource.empty(), optional=True)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

@@ -1,6 +1,8 @@
 from math import pi
 from typing import Optional, cast, Mapping
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .AbstractCapacitor import Capacitor
@@ -19,6 +21,7 @@ class LowPassRc(AnalogFilter, Block):
     self.cutoff_freq = self.ArgParameter(cutoff_freq)
     self.voltage = self.ArgParameter(voltage)
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -116,6 +119,7 @@ class DigitalLowPassRcArray(DigitalFilter, GeneratorBlock):
 
     self.generator_param(self.output.requested())
 
+  @override
   def generate(self) -> None:
     super().generate()
     self.elts = ElementDict[DigitalLowPassRc]()
@@ -156,6 +160,7 @@ class LowPassRcDac(DigitalToAnalog, Block):
 class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock):
   """Analog-typed low-pass differential RC filter, with cutoff frequency specified at the -3dB (~70%) point.
   Impedance is the single-ended resistor value."""
+  @override
   def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
     assert symbol_name == 'edg_importable:DifferentialRC'
     return {
@@ -172,6 +177,7 @@ class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock):
     self.impedance = self.ArgParameter(impedance)
     self.cutoff_freq = self.ArgParameter(cutoff_freq)
 
+  @override
   def contents(self) -> None:
     super().contents()
 

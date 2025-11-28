@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Optional, Tuple
 
+from typing_extensions import override
+
 from ..core import *
 from .CircuitBlock import CircuitLink, CircuitPortAdapter
 from .GroundPort import GroundLink
@@ -27,6 +29,7 @@ class AnalogLink(CircuitLink):
     self.signal_limits = self.Parameter(RangeExpr())
     self.current_limits = self.Parameter(RangeExpr())
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -75,6 +78,7 @@ class AnalogSinkBridge(CircuitPortBridge):
     self.inner_link = self.Port(AnalogSource(voltage_out=RangeExpr(), signal_out=RangeExpr(),
                                              current_limits=RangeExpr.ALL))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
@@ -105,6 +109,7 @@ class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources 
                                            signal_limits=RangeExpr.ALL,
                                            impedance=RangeExpr()))
 
+  @override
   def contents(self) -> None:
     super().contents()
 
