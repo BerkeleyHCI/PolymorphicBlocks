@@ -36,5 +36,9 @@ strict = true
 
 implicit_reexport = true
 
+[[tool.mypy.overrides]]
+module = ["edg.edgir.*", "edg.edgrpc.*"]  # generated code
+ignore_errors = true
+
 [project.urls]
 Homepage = "https://github.com/BerkeleyHCI/PolymorphicBlocks"
