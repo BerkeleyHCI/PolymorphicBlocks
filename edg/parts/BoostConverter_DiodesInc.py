@@ -42,6 +42,7 @@ class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Ap3012(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   """Adjustable boost converter in SOT-23-5 with integrated switch"""
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.nshdn
 

@@ -38,6 +38,7 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Generat
       pullup_capable=True, pulldown_capable=True,
     )
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     """Returns the mappable for given the input power and ground references.
     This separates the system pins definition from the IO pins definition."""
@@ -174,9 +175,11 @@ class Nrf52840_Ios(Nrf52840_Interfaces, BaseIoControllerPinmapGenerator, Generat
 class Nrf52840_Base(Nrf52840_Ios, GeneratorBlock):
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     return self.pwr
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
       'Vdd': self.pwr,
@@ -415,6 +418,7 @@ class Mdbt50q_1mv2(Microcontroller, Radiofrequency, Resettable, Nrf52840_Interfa
       self.connect(self.reset, self.ic.nreset)
 
   ExportType = TypeVar('ExportType', bound=Port)
+  @override
   def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
                           assign: Optional[str]) -> Optional[str]:
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
@@ -469,12 +473,14 @@ class Feather_Nrf52840(IoControllerUsbOut, IoControllerPowerOut, Nrf52840_Ios, I
     # note onboard VBAT sense divider at P0.29
   }
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       return self.pwr
     else:
       return self.pwr_out
 
+    @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")

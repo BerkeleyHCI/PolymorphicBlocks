@@ -37,6 +37,7 @@ class Rp2040_Ios(Rp2040_Interfaces, BaseIoControllerPinmapGenerator):
       pullup_capable=True, pulldown_capable=True
     )
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     pwr = self._vddio()
     dio_usb_model = dio_ft_model = dio_std_model = self._dio_model(pwr)
@@ -179,6 +180,7 @@ class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcirc
     'SWCLK': '24',
   }
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     return self.iovdd
 
@@ -236,6 +238,7 @@ class Rp2040_Device(Rp2040_Ios, BaseIoControllerPinmapGenerator, InternalSubcirc
     self.run.init_from(DigitalSink.from_bidir(dio_ft_model))
 
   # Pin/peripheral resource definitions (table 3)
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return {
       '51': self.qspi_sd3,
@@ -367,6 +370,7 @@ class Rp2040(Resettable, Rp2040_Interfaces, Microcontroller, IoControllerWithSwd
       self.connect(self.reset, self.ic.run)
 
   ExportType = TypeVar('ExportType', bound=Port)
+  @override
   def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
                           assign: Optional[str]) -> Optional[str]:
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
@@ -375,6 +379,7 @@ class Rp2040(Resettable, Rp2040_Interfaces, Microcontroller, IoControllerWithSwd
       return assign
     return super()._make_export_vector(self_io, inner_vector, name, assign)
 
+  @override
   def _crystal_required(self) -> bool:  # crystal needed for USB b/c tighter freq tolerance
     return len(self.get(self.usb.requested())) > 0 or super()._crystal_required()
 
@@ -412,12 +417,14 @@ class Xiao_Rp2040(IoControllerUsbOut, IoControllerPowerOut, IoControllerVin, Rp2
     'GPIO3': '11',
   }
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       return self.pwr
     else:
       return self.pwr_out
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       return VariantPinRemapper({

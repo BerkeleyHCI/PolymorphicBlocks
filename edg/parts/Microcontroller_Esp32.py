@@ -39,6 +39,7 @@ class Esp32_Ios(Esp32_Interfaces, BaseIoControllerPinmapGenerator):
       pullup_capable=True, pulldown_capable=True,
     )
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     pwr = self._vddio()
     dio_model = self._dio_model(pwr)
@@ -162,9 +163,11 @@ class Esp32_Base(Esp32_Ios, GeneratorBlock):
     # similarly, the programming UART is fixed and allocated separately
     self.uart0 = self.Port(UartPort(dio_model), optional=True)
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     return self.pwr
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
       'Vdd': self.pwr,
@@ -330,12 +333,14 @@ class Freenove_Esp32_Wrover(IoControllerUsbOut, IoControllerPowerOut, Esp32_Ios,
     # 'GPIO23': '39',  # camera CSI_HREF
   }
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       return self.pwr
     else:
       return self.pwr_out
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")

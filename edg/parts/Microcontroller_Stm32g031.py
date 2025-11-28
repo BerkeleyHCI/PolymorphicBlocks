@@ -32,6 +32,7 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
 
         self.nrst = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
 
+    @override
     def _system_pinmap(self) -> Dict[str, CircuitPort]:
         return VariantPinRemapper({  # Pin/peripheral resource definitions (section 4)
             'Vdd': self.pwr,
@@ -39,6 +40,7 @@ class Stm32g031Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             'PF2-NRST': self.nrst,
         }).remap(self.SYSTEM_PIN_REMAP)
 
+    @override
     def _io_pinmap(self) -> PinMapUtil:
         # Port models
         input_range = self.gnd.link().voltage.hull(self.pwr.link().voltage)

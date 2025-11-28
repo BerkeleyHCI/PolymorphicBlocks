@@ -40,6 +40,7 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
     self.reset = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up, TODO disable-able and assignable as GPIO
     self._io_ports.insert(0, self.swd)
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
       'VddA': self.pwr,
@@ -58,6 +59,7 @@ class Lpc1549Base_Device(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCon
       'RESET': self.reset
     }).remap(self.SYSTEM_PIN_REMAP)
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     # Port models
     dio_5v_model = DigitalBidir.from_supply(
@@ -388,6 +390,7 @@ class Lpc1549Base(Resettable, IoControllerSpiPeripheral, IoControllerI2cTarget, 
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.reset)
 
+  @override
   def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
     return len(self.get(self.can.requested())) > 0 or len(self.get(self.usb.requested())) > 0 \
         or super()._crystal_required()

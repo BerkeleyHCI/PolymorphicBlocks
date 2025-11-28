@@ -40,6 +40,7 @@ class Esp32s3_Ios(Esp32s3_Interfaces, BaseIoControllerPinmapGenerator):
       pullup_capable=True, pulldown_capable=True,
     )
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     pwr = self._vddio()
     dio_model = self._dio_model(pwr)
@@ -156,9 +157,11 @@ class Esp32s3_Base(Esp32s3_Ios, GeneratorBlock):
   """
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     return self.pwr
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({
       'VDD': self.pwr,  # including VDD3V3, VDD3P3_RTC, VDD_SPI, VDD3P3_CPU
@@ -281,6 +284,7 @@ class Esp32s3_Wroom_1(Microcontroller, Radiofrequency, HasEspProgramming, Resett
         gnd=self.gnd, pwr=self.pwr, io=self.ic.chip_pu)
 
   ExportType = TypeVar('ExportType', bound=Port)
+  @override
   def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
                           assign: Optional[str]) -> Optional[str]:
     """Allow overloading strapping pins"""
@@ -342,12 +346,14 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_I
     'GPIO1': '38',
   }
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       return self.pwr
     else:
       return self.pwr_out
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
@@ -363,6 +369,7 @@ class Freenove_Esp32s3_Wroom(IoControllerUsbOut, IoControllerPowerOut, Esp32s3_I
         'VUSB': self.vusb_out,
       }).remap(self.SYSTEM_PIN_REMAP)
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:  # allow the camera I2C pins to be used externally
     pwr = self._vddio()
     return super()._io_pinmap().add([

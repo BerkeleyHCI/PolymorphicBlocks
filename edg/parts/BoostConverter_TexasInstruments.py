@@ -44,6 +44,7 @@ class Tps61040_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   """PFM (DCM, discontinuous mode) boost converter in SOT-23-5"""
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
@@ -199,6 +200,7 @@ class Lm2733_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
   """Adjustable boost converter in SOT-23-5 with integrated switch"""
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.nshdn
 

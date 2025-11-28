@@ -92,6 +92,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
     self.spi_config = self.Port(SpiController(self._dpio1_model))
     self.spi_config_cs = self.Port(self._dpio1_model)
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:    # names consistent with pinout spreadsheet
     return VariantPinRemapper({
       'VCCPLL': self.vcc_pll,
@@ -111,6 +112,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
       'IOB_35b_SPI_SS': self.spi_config_cs,
     }).remap(self.SYSTEM_PIN_REMAP)
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     pio0_model = self.make_dio_model(self.gnd, self.vccio_0)
     dpio0_model = pio0_model  # differential capability currently not modeled

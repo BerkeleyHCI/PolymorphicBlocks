@@ -2,6 +2,8 @@ import csv
 import os
 from typing import List, Tuple, Dict, Optional
 
+from typing_extensions import override
+
 from .. import edgir
 from ..abstract_parts import *
 

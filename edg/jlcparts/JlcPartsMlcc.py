@@ -64,6 +64,7 @@ class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapac
         return table
 
     @classmethod
+    @override
     def _row_sort_by(cls, row: PartsTableRow) -> Any:
         return [row[cls.PARALLEL_COUNT], super(JlcPartsMlcc, cls)._row_sort_by(row)]
 
@@ -77,6 +78,7 @@ class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapac
             self.assign(self.actual_basic_part, True)  # dummy value
             self._make_parallel_footprints(row)
 
+    @override
     def _make_parallel_footprints(self, row: PartsTableRow) -> None:
         cap_model = JlcDummyCapacitor(set_lcsc_part=row[self.LCSC_COL],
                                       set_basic_part=row[self.BASIC_PART_COL],

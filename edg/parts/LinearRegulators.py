@@ -183,6 +183,7 @@ class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
 class Ap2204k(VoltageRegulatorEnableWrapper, LinearRegulator):
   """AP2204K block providing the LinearRegulator interface and optional enable (tied high if not connected).
   """
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
@@ -364,6 +365,7 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
 class Xc6209(VoltageRegulatorEnableWrapper, LinearRegulator):
   """XC6209F (F: 300mA version, no pull-down resistor; 2: +/-2% accuracy)
   Low-ESR ceramic cap compatible"""
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.ce
 
@@ -436,6 +438,7 @@ class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
 class Ap2210(VoltageRegulatorEnableWrapper, LinearRegulator):
   """AP2210 RF ULDO in SOT-23-5 with high PSRR and high(er) voltage tolerant.
   """
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
@@ -541,6 +544,7 @@ class Lp5907(VoltageRegulatorEnableWrapper, LinearRegulator):
   - AP139
   - TCR2EF
   """
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 
@@ -624,6 +628,7 @@ class Tlv757p(VoltageRegulatorEnableWrapper, LinearRegulator):
   By default, this models worst-case dropout at 1A, consult datasheet for lower dropouts for lower currents
   While it can electrically handle 1A, beware of thermal limits. Shuts down at 155C, Rja for SOT-23-5 of 100C/W
   """
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 

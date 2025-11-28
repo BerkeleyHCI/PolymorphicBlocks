@@ -45,6 +45,7 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
     self.swd = self.Port(SwdTargetPort.empty())
     self._io_ports.insert(0, self.swd)
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper({  # Pin/peripheral resource definitions (table 3)
       'Vbat': self.pwr,
@@ -58,6 +59,7 @@ class Stm32f103Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
       'NRST': self.nrst,
     }).remap(self.SYSTEM_PIN_REMAP)
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     # Port models
     dio_ft_model = DigitalBidir.from_supply(
@@ -306,7 +308,9 @@ class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoContro
     if self.get(self.reset.is_connected()):
       self.connect(self.reset, self.ic.nrst)
 
+
   ExportType = TypeVar('ExportType', bound=Port)
+  @override
   def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
                           assign: Optional[str]) -> Optional[str]:
     if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
@@ -317,6 +321,7 @@ class Stm32f103Base(Resettable, IoControllerI2cTarget, IoControllerCan, IoContro
       return assign
     return super()._make_export_vector(self_io, inner_vector, name, assign)
 
+  @override
   def _crystal_required(self) -> bool:  # crystal needed for CAN or USB b/c tighter freq tolerance
     return len(self.get(self.can.requested())) > 0 or len(self.get(self.usb.requested())) > 0 \
         or super()._crystal_required()

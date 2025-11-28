@@ -39,6 +39,7 @@ class Esp32c3_Ios(Esp32c3_Interfaces, BaseIoControllerPinmapGenerator):
       pullup_capable=True, pulldown_capable=True,
     )
 
+  @override
   def _io_pinmap(self) -> PinMapUtil:
     pwr = self._vddio()
     dio_model = self._dio_model(pwr)
@@ -97,9 +98,11 @@ class Esp32c3_Base(Esp32c3_Ios, BaseIoControllerPinmapGenerator):
   """
   SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]  # pin name in base -> pin name(s)
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     return self.pwr
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return {
       'Vdd': self.pwr,
@@ -147,6 +150,7 @@ class Esp32c3_Wroom02_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, J
     'GPIO0': '18',
   }
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper(super()._system_pinmap()).remap({
       'Vdd': '1',
@@ -221,6 +225,7 @@ class Esp32c3_Wroom02(Microcontroller, Radiofrequency, HasEspProgramming, Resett
       self.io2_ext_connected = True  # set to ensure this runs after external connections
 
   ExportType = TypeVar('ExportType', bound=Port)
+  @override
   def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
                           assign: Optional[str]) -> Optional[str]:
     """Add support for _GPIO2/8/9_STRAP and remap them to io2/8/9."""
@@ -258,6 +263,7 @@ class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
     'GPIO19': '26',
   }
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     return VariantPinRemapper(super()._system_pinmap()).remap({
       'Vdd': ['31', '32'],  # VDDA
@@ -397,6 +403,7 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
       self.io2_ext_connected = True  # set to ensure this runs after external connections
 
   ExportType = TypeVar('ExportType', bound=Port)
+  @override
   def _make_export_vector(self, self_io: ExportType, inner_vector: Vector[ExportType], name: str,
                           assign: Optional[str]) -> Optional[str]:
     """Add support for _GPIO2/8/9_STRAP and remap them to io2/8/9."""
@@ -416,6 +423,7 @@ class Esp32c3(Microcontroller, Radiofrequency, HasEspProgramming, Resettable, Es
         return None
     return super()._make_export_vector(self_io, inner_vector, name, assign)
 
+  @override
   def _crystal_required(self) -> bool:
     return True  # crystal oscillator always required
 
@@ -452,12 +460,14 @@ class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoCont
     'VDD_SPI': '11',
   }
 
+  @override
   def _vddio(self) -> Port[VoltageLink]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       return self.pwr
     else:
       return self.pwr_out
 
+  @override
   def _system_pinmap(self) -> Dict[str, CircuitPort]:
     if self.get(self.pwr.is_connected()):  # board sinks power
       self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")

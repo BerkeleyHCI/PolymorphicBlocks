@@ -278,9 +278,11 @@ class NeopixelArray(Light, GeneratorBlock):
 
 class NeopixelArrayCircular(NeopixelArray, SvgPcbTemplateBlock):
     """An array of Neopixels, with a circular layout template"""
+    @override
     def _svgpcb_fn_name_adds(self) -> Optional[str]:
         return f"{self._svgpcb_get(self.count)}"
 
+    @override
     def _svgpcb_template(self) -> str:
         led_block = self._svgpcb_footprint_block_path_of(['led[0]'])
         led_reftype, led_refnum = self._svgpcb_refdes_of(['led[0]'])
@@ -405,5 +407,6 @@ function {self._svgpcb_fn_name()}(xy, rot=270, radius=1, startAngle=0, endAngle=
 }}
 """
 
+    @override
     def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
         return -25.4 - 1.0, -25.4 - 1.0, 25.4 + 1.0, 25.4 + 1.0

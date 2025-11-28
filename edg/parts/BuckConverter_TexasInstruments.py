@@ -42,6 +42,7 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
 
 class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
   """Adjustable synchronous buck converter in SOT-23-6 with integrated switch"""
+  @override
   def _generator_inner_reset_pin(self) -> Port[DigitalLink]:
     return self.ic.en
 

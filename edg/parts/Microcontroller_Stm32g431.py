@@ -33,6 +33,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
         self._io_ports.insert(0, self.swd)
         self.nrst = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
 
+    @override
     def _system_pinmap(self) -> Dict[str, CircuitPort]:
         return VariantPinRemapper({
             'Vdd': self.pwr,
@@ -43,6 +44,7 @@ class Stm32g431Base_Device(IoControllerI2cTarget, IoControllerCan, IoControllerU
             'PG10-NRST': self.nrst,
         }).remap(self.SYSTEM_PIN_REMAP)
 
+    @override
     def _io_pinmap(self) -> PinMapUtil:
         input_range = self.gnd.link().voltage.hull(self.pwr.link().voltage)
         io_voltage_limit = (input_range + (-0.3, 3.6) * Volt).intersect(
