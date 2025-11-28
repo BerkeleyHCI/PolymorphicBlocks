@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 from .PassiveConnector_Header import PinHeader127DualShrouded

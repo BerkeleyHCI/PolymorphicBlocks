@@ -2,6 +2,7 @@ from itertools import chain
 from typing import List, Dict, Tuple, Type, Optional, Any
 
 from deprecated import deprecated
+from typing_extensions import override
 
 from ..electronics_model import *
 from .PinMappable import AllocatedResource, PinMappable, PinMapUtil

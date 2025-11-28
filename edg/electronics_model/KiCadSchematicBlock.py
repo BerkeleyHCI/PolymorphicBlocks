@@ -3,6 +3,8 @@ import os
 from abc import abstractmethod
 from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, TypeVar, cast
 
+from typing_extensions import override
+
 from ..core import *
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort

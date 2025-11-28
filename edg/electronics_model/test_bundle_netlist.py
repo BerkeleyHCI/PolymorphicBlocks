@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 # to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
 from ..core import *
 from .CircuitBlock import FootprintBlock

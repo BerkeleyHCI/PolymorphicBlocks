@@ -1,6 +1,8 @@
 import re
 from typing import Optional, cast, Mapping, Dict, Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .ESeriesUtil import ESeriesUtil
 from .PartsTable import PartsTableColumn, PartsTableRow

@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from . import *
 from .HdlUserExceptions import BlockDefinitionError, EdgTypeError
 from .test_block import TestBlock

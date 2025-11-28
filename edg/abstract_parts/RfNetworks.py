@@ -1,6 +1,8 @@
 from math import pi, sqrt
 from typing import Tuple, Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractCapacitor import Capacitor
 from .AbstractInductor import Inductor

@@ -1,5 +1,7 @@
 from typing import Mapping, Tuple, List, NamedTuple
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import Analog, MultipackDevice
 

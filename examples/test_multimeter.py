@@ -1,6 +1,8 @@
 import unittest
 from typing import Dict
 
+from typing_extensions import override
+
 from edg import *
 
 

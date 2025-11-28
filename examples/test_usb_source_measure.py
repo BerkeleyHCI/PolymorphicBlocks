@@ -1,6 +1,8 @@
 import unittest
 from typing import Mapping, Dict
 
+from typing_extensions import override
+
 from edg.abstract_parts.ESeriesUtil import ESeriesRatioUtil
 from edg.abstract_parts.ResistiveDivider import DividerValues
 from edg.electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic

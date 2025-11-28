@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import Optional, Union, Any, ClassVar, Type, Protocol
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .PartsTable import PartsTable, PartsTableColumn, PartsTableRow
 from .StandardFootprint import HasStandardFootprint

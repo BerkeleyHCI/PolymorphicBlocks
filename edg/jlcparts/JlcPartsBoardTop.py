@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..parts import *
 
 from .JlcPartsResistorSmd import JlcPartsResistorSmd

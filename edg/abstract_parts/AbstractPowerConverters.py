@@ -2,6 +2,7 @@ from abc import abstractmethod
 from typing import Optional, NamedTuple, Any, Callable
 
 from deprecated import deprecated
+from typing_extensions import override
 
 from .AbstractCapacitor import DecouplingCapacitor
 from .AbstractInductor import Inductor, TableInductor

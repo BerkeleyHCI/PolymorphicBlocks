@@ -2,6 +2,8 @@ import unittest
 from os import devnull
 from contextlib import redirect_stderr
 
+from typing_extensions import override
+
 from . import *
 from .ScalaCompilerInterface import ScalaCompiler
 

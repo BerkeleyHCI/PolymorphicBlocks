@@ -1,6 +1,8 @@
 from typing import Tuple
 from math import pi
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 

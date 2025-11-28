@@ -1,5 +1,7 @@
 from typing import Tuple, Callable, Mapping, List
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .JlcPart import JlcPart
 

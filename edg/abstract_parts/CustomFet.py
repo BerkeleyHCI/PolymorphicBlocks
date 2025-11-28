@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractFets import SwitchFet
 

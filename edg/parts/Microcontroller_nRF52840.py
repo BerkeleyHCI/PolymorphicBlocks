@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import *
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 

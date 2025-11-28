@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .. import edgir
 from . import *
 

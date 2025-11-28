@@ -6,6 +6,8 @@ from abc import abstractmethod
 from enum import Enum
 from typing import *
 
+from typing_extensions import override
+
 from .. import edgir
 from .Array import BaseVector, Vector
 from .Binding import AssignBinding, NameBinding

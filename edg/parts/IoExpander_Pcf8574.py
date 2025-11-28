@@ -1,6 +1,8 @@
 from itertools import chain
 from typing import Dict, Any
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 

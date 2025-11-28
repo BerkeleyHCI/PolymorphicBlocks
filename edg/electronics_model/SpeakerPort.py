@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..core import *
 from .AnalogPort import AnalogSource, AnalogSink
 

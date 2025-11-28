@@ -1,4 +1,7 @@
 from typing import Tuple, Iterable
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 

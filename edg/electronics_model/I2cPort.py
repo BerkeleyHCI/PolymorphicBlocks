@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from ..core import *
 from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir, DigitalBidirBridge, DigitalSinkBridge
 

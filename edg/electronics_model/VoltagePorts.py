@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from typing import *
+
+from typing_extensions import override
+
 from ..core import *
 from .CircuitBlock import CircuitPort, CircuitPortBridge, CircuitLink, CircuitPortAdapter
 from .GroundPort import GroundLink, GroundReference

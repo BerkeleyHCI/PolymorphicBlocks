@@ -3,6 +3,8 @@ from __future__ import annotations
 from math import log10, ceil
 from typing import List, Tuple, Mapping
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from . import Analog, Resistor
 from .Categories import InternalSubcircuit

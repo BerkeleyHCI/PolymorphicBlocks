@@ -10,6 +10,8 @@ Plugin Manager, it does not need to be in your global library table.
 
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 
 

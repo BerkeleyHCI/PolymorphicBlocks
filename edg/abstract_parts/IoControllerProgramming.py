@@ -1,5 +1,7 @@
 from typing import List
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractDebugHeaders import SwdCortexTargetConnector, SwdCortexTargetConnectorReset, SwdCortexTargetConnectorSwo, \
   SwdCortexTargetConnectorTdi

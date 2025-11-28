@@ -1,5 +1,6 @@
 from typing import Dict, Any
 from deprecated import deprecated
+from typing_extensions import override
 
 from ..electronics_model import *
 from .DummyDevices import ForcedAnalogVoltage

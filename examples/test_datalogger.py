@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from edg import *
 from .test_high_switch import CalSolPowerConnector, CalSolCanBlock, CanFuse
 

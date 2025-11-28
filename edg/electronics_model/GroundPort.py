@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+
+from typing_extensions import override
+
 from ..core import *
 from .CircuitBlock import CircuitPortBridge, CircuitPortAdapter, CircuitLink, CircuitPort
 from .Units import Volt, Ohm

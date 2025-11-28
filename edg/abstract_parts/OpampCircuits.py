@@ -1,6 +1,8 @@
 from math import ceil, log10
 from typing import List, Tuple, Dict, Mapping
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .AbstractCapacitor import Capacitor

@@ -1,5 +1,7 @@
 from typing import *
 
+from typing_extensions import override
+
 from .JlcPart import JlcPart
 from ..abstract_parts import *
 

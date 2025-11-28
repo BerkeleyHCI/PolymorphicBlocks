@@ -1,5 +1,7 @@
 from typing import Dict, Optional, cast, Any
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .PartsTable import PartsTableColumn, PartsTableRow, ExperimentalUserFnPartsTable
 from .PartsTablePart import PartsTableSelector

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import *
 
 from deprecated import deprecated
+from typing_extensions import override
 
 from .. import edgir
 from .Builder import builder

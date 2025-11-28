@@ -1,6 +1,8 @@
 import unittest
 from typing import Optional, Dict
 
+from typing_extensions import override
+
 from edg import *
 from edg.abstract_parts.PartsTable import ExperimentalUserFnPartsTable
 

@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from ..core import *
 from .CircuitPackingBlock import PackedVoltageSource
 from .test_netlist import TestFakeSource, TestFakeSink, TestBaseFakeSink

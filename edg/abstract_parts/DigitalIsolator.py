@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import Interface
 
@@ -23,6 +25,7 @@ class DigitalIsolator(Interface, GeneratorBlock):
 
       self.generator_param(self.in_a.requested(), self.out_b.requested(), self.in_b.requested(), self.out_a.requested())
 
+  @override
   def generate(self) -> None:  # validity checks
       super().generate()
       assert self.get(self.in_a.requested()) == self.get(self.out_b.requested()), \

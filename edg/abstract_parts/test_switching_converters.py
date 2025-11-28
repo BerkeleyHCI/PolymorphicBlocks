@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath
 from ..electronics_model import *
 from .AbstractInductor import Inductor

@@ -1,6 +1,8 @@
 from math import pi
 from typing import Optional, cast, Mapping
 
+from typing_extensions import override
+
 from ..electronics_model import *
 from .AbstractResistor import Resistor
 from .AbstractCapacitor import Capacitor

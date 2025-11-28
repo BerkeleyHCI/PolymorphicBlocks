@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Generic, Any, Optional, List, Mapping, Dict
 
-from typing_extensions import TypeVar
+from typing_extensions import TypeVar, override
 
 from .KiCadImportableBlock import KiCadImportableBlock
 from ..core import *

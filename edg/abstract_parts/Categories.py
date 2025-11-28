@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..core import BoolLike, init_in_parent
 from ..electronics_model import Block, abstract_block, InternalBlock
 

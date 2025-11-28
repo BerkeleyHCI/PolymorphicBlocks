@@ -1,5 +1,5 @@
 from typing import Type, Generic
-from typing_extensions import TypeVar
+from typing_extensions import TypeVar, override
 
 from ..core import *
 from .VoltagePorts import VoltageLink, VoltageSink, VoltageSource

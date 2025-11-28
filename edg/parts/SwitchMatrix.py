@@ -1,5 +1,7 @@
 from typing import cast, Optional, Tuple
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 

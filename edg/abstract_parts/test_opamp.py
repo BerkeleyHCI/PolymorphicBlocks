@@ -1,5 +1,7 @@
 import unittest
 
+from typing_extensions import override
+
 from . import *
 from .DummyDevices import DummyVoltageSource, DummyAnalogSink
 from .AbstractOpamp import Opamp

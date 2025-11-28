@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 
 

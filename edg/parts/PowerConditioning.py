@@ -1,5 +1,7 @@
 from typing import Optional, cast
 
+from typing_extensions import override
+
 from ..abstract_parts import *
 from ..electronics_model.PassivePort import PassiveAdapterVoltageSink, PassiveAdapterVoltageSource
 

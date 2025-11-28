@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from .PassiveConnector_Fpc import Fpc050Bottom
 from ..abstract_parts import *
 

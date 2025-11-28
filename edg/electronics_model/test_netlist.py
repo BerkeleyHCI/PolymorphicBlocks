@@ -1,6 +1,8 @@
 import unittest
 from typing import Type, List
 
+from typing_extensions import override
+
 from .. import edgir
 # to avoid re-defining NetBlock, this makes specific imports instead of 'from . import *'
 from ..core import *
