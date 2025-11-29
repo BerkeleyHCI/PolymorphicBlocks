@@ -24,6 +24,11 @@ dependencies = [
 ]
 requires-python = ">=3.9"
 
+[project.optional-dependencies]
+dev = [
+    "black",
+]
+
 [tool.setuptools]
 packages = ["edg.edgir", "edg.edgrpc", "edg.core", "edg.hdl_server", "edg.electronics_model", "edg.abstract_parts", "edg.parts", "edg.jlcparts", "edg"]
 
@@ -39,6 +44,9 @@ implicit_reexport = true
 [[tool.mypy.overrides]]
 module = ["edg.edgir.*", "edg.edgrpc.*"]  # generated code
 ignore_errors = true
+
+[tool.black]
+line-length = 120
 
 [project.urls]
 Homepage = "https://github.com/BerkeleyHCI/PolymorphicBlocks"
