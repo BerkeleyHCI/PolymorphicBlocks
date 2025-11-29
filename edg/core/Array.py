@@ -29,13 +29,10 @@ class MapExtractBinding(Binding):
     return [self.container]
 
   @override
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
+  def populate_expr_proto(self, pb: edgir.ValueExpr, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> None:
     contained_map = self.container._get_elt_sample()._create_ref_map(edgir.LocalPath())
-
-    pb = edgir.ValueExpr()
     pb.map_extract.container.ref.CopyFrom(ref_map[self.container])  # TODO support arbitrary refs
     pb.map_extract.path.CopyFrom(contained_map[self.elt])
-    return pb
 
 
 class FlattenBinding(Binding):
@@ -48,11 +45,9 @@ class FlattenBinding(Binding):
     return [self.elts]
 
   @override
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
-    pb = edgir.ValueExpr()
+  def populate_expr_proto(self, pb: edgir.ValueExpr, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> None:
     pb.unary_set.op = edgir.UnarySetExpr.Op.FLATTEN
-    pb.unary_set.vals.CopyFrom(self.elts._expr_to_proto(ref_map))
-    return pb
+    self.elts._populate_expr_proto(pb.unary_set.vals, ref_map)
 
 
 @non_library
@@ -91,8 +86,8 @@ class DerivedVector(BaseVector, Generic[VectorType]):
     return self.target
 
   @override
-  def _instance_to_proto(self) -> edgir.PortLike:
-    raise RuntimeError()  # this doesn't generate into a library element
+  def _populate_portlike_proto(self, pb: edgir.PortLike) -> None:
+    raise RuntimeError()  # this can't be a block's port
 
   @override
   def _def_to_proto(self) -> edgir.PortTypes:
@@ -184,14 +179,12 @@ class Vector(BaseVector, Generic[VectorType]):
     raise RuntimeError()  # this doesn't generate into a library element
 
   @override
-  def _instance_to_proto(self) -> edgir.PortLike:
-    pb = edgir.PortLike()
+  def _populate_portlike_proto(self, pb: edgir.PortLike) -> None:
     pb.array.self_class.target.name = self._elt_sample._get_def_name()
     if self._elts is not None:
       pb.array.ports.SetInParent()  # mark as defined, even if empty
       for name, elt in self._elts.items():
-        edgir.add_pair(pb.array.ports.ports, name).CopyFrom(elt._instance_to_proto())
-    return pb
+        elt._populate_portlike_proto(edgir.add_pair(pb.array.ports.ports, name))
 
   @override
   def _def_to_proto(self) -> edgir.PortTypes:

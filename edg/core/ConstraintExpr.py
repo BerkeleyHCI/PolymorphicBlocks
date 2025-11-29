@@ -49,7 +49,7 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
 
   @classmethod
   @abstractmethod
-  def _decl_to_proto(cls) -> edgir.ValInit:
+  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
     """Returns the protobuf for the definition of this parameter. Must have ParamBinding / ParamVariableBinding"""
     raise NotImplementedError
 
@@ -93,9 +93,9 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   def _is_bound(self) -> bool:
     return self.binding is not None and self.binding.is_bound()
 
-  def _expr_to_proto(self, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
+  def _populate_expr_proto(self, pb: edgir.ValueExpr, ref_map: Refable.RefMapType) -> None:
     assert self.binding is not None
-    return self.binding.expr_to_proto(self, ref_map)
+    self.binding.populate_expr_proto(pb, self, ref_map)
 
   # for now we define that all constraints can be checked for equivalence
   @override
@@ -123,10 +123,8 @@ class BoolExpr(ConstraintExpr[bool, BoolLike]):
 
   @classmethod
   @override
-  def _decl_to_proto(self) -> edgir.ValInit:
-    pb = edgir.ValInit()
-    pb.boolean.CopyFrom(edgir.Empty())
-    return pb
+  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+    pb.boolean.SetInParent()
 
   @classmethod
   @override
@@ -328,10 +326,8 @@ class IntExpr(NumLikeExpr[int, IntLike]):
 
   @classmethod
   @override
-  def _decl_to_proto(cls) -> edgir.ValInit:
-    pb = edgir.ValInit()
-    pb.integer.CopyFrom(edgir.Empty())
-    return pb
+  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+    pb.integer.SetInParent()
 
   @classmethod
   @override
@@ -361,10 +357,8 @@ class FloatExpr(NumLikeExpr[float, Union[FloatLike, IntExpr]]):
 
   @classmethod
   @override
-  def _decl_to_proto(cls) -> edgir.ValInit:
-    pb = edgir.ValInit()
-    pb.floating.CopyFrom(edgir.Empty())
-    return pb
+  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+    pb.floating.SetInParent()
 
   @classmethod
   @override
@@ -417,10 +411,8 @@ class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
 
   @classmethod
   @override
-  def _decl_to_proto(cls) -> edgir.ValInit:
-    pb = edgir.ValInit()
-    pb.range.CopyFrom(edgir.Empty())
-    return pb
+  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+    pb.range.SetInParent()
 
   @classmethod
   @override
@@ -527,10 +519,8 @@ class StringExpr(ConstraintExpr[str, StringLike]):
 
   @classmethod
   @override
-  def _decl_to_proto(cls) -> edgir.ValInit:
-    pb = edgir.ValInit()
-    pb.text.CopyFrom(edgir.Empty())
-    return pb
+  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+    pb.text.SetInParent()
 
   @classmethod
   @override
@@ -562,7 +552,7 @@ class AssignExpr(ConstraintExpr[None, None]):
 
   @classmethod
   @override
-  def _decl_to_proto(self) -> NoReturn:
+  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
     raise ValueError("can't create parameter from AssignExpr")
 
   @classmethod

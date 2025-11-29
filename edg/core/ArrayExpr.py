@@ -23,7 +23,7 @@ class SampleElementBinding(Binding):
     return []
 
   @override
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
+  def populate_expr_proto(self, pb: edgir.ValueExpr, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> None:
     raise ValueError  # can't be used directly
 
 
@@ -61,10 +61,8 @@ class ArrayExpr(ConstraintExpr[ArrayWrappedType, ArrayCastableType],
 
   @classmethod
   @override
-  def _decl_to_proto(cls) -> edgir.ValInit:
-    pb = edgir.ValInit()
-    pb.array.CopyFrom(cls._elt_type._decl_to_proto())
-    return pb
+  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+    cls._elt_type._populate_decl_proto(pb.array)
 
   @staticmethod
   def array_of_elt(elt: ConstraintExpr) -> ArrayExpr:

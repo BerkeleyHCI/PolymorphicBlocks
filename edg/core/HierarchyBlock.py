@@ -335,7 +335,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
       if isinstance(param.binding, InitParamBinding) and param.binding.value is not None:
         # default values can't depend on anything so the ref_map is empty
         param_typed_value = param._to_expr_type(param.binding.value)
-        pb.param_defaults[param_name].CopyFrom(param_typed_value._expr_to_proto(IdentityDict()))
+        param_typed_value._populate_expr_proto(pb.param_defaults[param_name], IdentityDict())
 
   def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
     self._blocks.finalize()
@@ -438,9 +438,9 @@ class Block(BaseBlock, metaclass=BlockMeta):
       for (block_param_name, block_param) in all_block_params.items():
         if isinstance(block_param.binding, InitParamBinding) and block_param.binding.value is not None:
           param_typed_value = block_param._to_expr_type(block_param.binding.value)
-          edgir.add_pair(pb.constraints, f'(init){block_name}.{block_param_name}').CopyFrom(  # TODO better name
-            AssignBinding.make_assign(block_param, param_typed_value, ref_map)
-          )
+          AssignBinding.populate_assign_proto(edgir.add_pair(pb.constraints, f'(init){block_name}.{block_param_name}'),
+                                              block_param, param_typed_value, ref_map)
+
 
   # TODO make this non-overriding?
   @override

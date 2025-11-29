@@ -64,8 +64,8 @@ class BasePort(HasMetadata, metaclass=InitializerContextMeta):
   def _type_of(self) -> Hashable: ...
 
   @abstractmethod
-  def _instance_to_proto(self) -> edgir.PortLike:
-    """Returns the proto of an instance of this object"""
+  def _populate_portlike_proto(self, pb: edgir.PortLike) -> None:
+    """Populates the proto of an instance of this object"""
     raise NotImplementedError
 
   def _bind_in_place(self, parent: PortParentTypes) -> None:
@@ -209,10 +209,8 @@ class Port(BasePort, Generic[PortLinkType]):
     return adapter_inst.dst
 
   @override
-  def _instance_to_proto(self) -> edgir.PortLike:
-    pb = edgir.PortLike()
+  def _populate_portlike_proto(self, pb: edgir.PortLike) -> None:
     pb.lib_elem.target.name = self._get_def_name()
-    return pb
 
   @override
   def _def_to_proto(self) -> edgir.PortTypes:
@@ -229,7 +227,7 @@ class Port(BasePort, Generic[PortLinkType]):
       pb.super_superclasses.add().target.name = cls._static_def_name()
 
     for (name, param) in self._parameters.items():
-      edgir.add_pair(pb.params, name).CopyFrom(param._decl_to_proto())
+      param._populate_decl_proto(edgir.add_pair(pb.params, name))
 
     self._populate_metadata(pb.meta, self._metadata, IdentityDict())  # TODO use ref map
 
@@ -333,9 +331,9 @@ class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
       pb.super_superclasses.add().target.name = cls._static_def_name()
 
     for (name, param) in self._parameters.items():
-      edgir.add_pair(pb.params, name).CopyFrom(param._decl_to_proto())
+      param._populate_decl_proto(edgir.add_pair(pb.params, name))
     for (name, port) in self._ports.items():
-      edgir.add_pair(pb.ports, name).CopyFrom(port._instance_to_proto())
+      port._populate_portlike_proto(edgir.add_pair(pb.ports, name))
 
     self._populate_metadata(pb.meta, self._metadata, IdentityDict())  # TODO use ref map
 

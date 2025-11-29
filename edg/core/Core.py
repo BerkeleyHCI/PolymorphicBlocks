@@ -250,13 +250,6 @@ class LibraryElement(Refable):
   def _def_to_proto(self) -> Union[edgir.PortTypes, edgir.BlockLikeTypes]: ...
 
 
-class StructuredMetadata():
-  """Base class for metadata that is structured (as a class in Python)"""
-  @abstractmethod
-  def _to_proto(self, ref_map: Refable.RefMapType) -> edgir.Metadata:
-    raise NotImplementedError
-
-
 @non_library
 class HasMetadata(LibraryElement):
   """A library element with the metadata dict-like field"""
@@ -264,7 +257,7 @@ class HasMetadata(LibraryElement):
     super().__init__()
     self._metadata: SubElementDict[Any] = self.manager.new_dict(Any)
 
-  MetadataType = TypeVar('MetadataType', bound=Union[StructuredMetadata, str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]])
+  MetadataType = TypeVar('MetadataType', bound=Union[str, Mapping[str, Any], SubElementDict[Any], IdentityDict[Any, Any]])
   def Metadata(self, value: MetadataType) -> MetadataType:
     """Adds a metadata field to this object. Reference to the value must not change, and reassignment will error.
     Value may be changed until proto generation.
@@ -305,9 +298,7 @@ class HasMetadata(LibraryElement):
   def _populate_metadata(self, pb: edgir.Metadata, src: Any,
                          ref_map: Refable.RefMapType) -> None:
     """Generate metadata from a given object."""
-    if isinstance(src, StructuredMetadata):
-      pb.CopyFrom(src._to_proto(ref_map))
-    elif isinstance(src, str):
+    if isinstance(src, str):
       pb.text_leaf = src
     elif isinstance(src, bytes):
       pb.bin_leaf = src
