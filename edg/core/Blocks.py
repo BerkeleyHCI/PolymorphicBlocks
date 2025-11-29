@@ -367,16 +367,14 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
   def _populate_def_proto_port_init(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     for (name, port) in self._ports.items():
       for (param, path, initializer) in port._get_initializers([name]):
-        edgir.add_pair(pb.constraints, f"(init){'.'.join(path)}").CopyFrom(
-          AssignBinding.make_assign(param, param._to_expr_type(initializer), ref_map)
-        )
+        AssignBinding.populate_assign_proto(edgir.add_pair(pb.constraints, f"(init){'.'.join(path)}"),
+                                            param, param._to_expr_type(initializer), ref_map)
 
   def _populate_def_proto_param_init(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     for (name, param) in self._parameters.items():
       if param.initializer is not None:
-        edgir.add_pair(pb.constraints, f'(init){name}').CopyFrom(
-          AssignBinding.make_assign(param, param.initializer, ref_map)
-        )
+        AssignBinding.populate_assign_proto(edgir.add_pair(pb.constraints, f'(init){name}'),
+                                            param, param.initializer, ref_map)
 
   def _populate_def_proto_block_contents(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     """Populates the contents of a block proto: constraints"""

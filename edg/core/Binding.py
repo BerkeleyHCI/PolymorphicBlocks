@@ -507,14 +507,11 @@ class AllocatedBinding(Binding):
 
 
 class AssignBinding(Binding):
-  # Convenience method to make an assign expr without the rest of this proto infrastructure
   @staticmethod
-  def make_assign(target: ConstraintExpr, value: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
-    # TODO DEDUP w/ _POPULATE_EXPR_PROTO
-    pb = edgir.ValueExpr()
+  def populate_assign_proto(pb: edgir.ValueExpr, target: ConstraintExpr, value: ConstraintExpr, ref_map: Refable.RefMapType) -> None:
+    # Convenience method to make an assign expr without the rest of this proto infrastructure
     pb.assign.dst.CopyFrom(ref_map[target])
     value._populate_expr_proto(pb.assign.src, ref_map)
-    return pb
 
   @override
   def __repr__(self) -> str:

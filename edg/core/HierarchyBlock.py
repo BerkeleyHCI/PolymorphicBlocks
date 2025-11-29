@@ -438,9 +438,9 @@ class Block(BaseBlock, metaclass=BlockMeta):
       for (block_param_name, block_param) in all_block_params.items():
         if isinstance(block_param.binding, InitParamBinding) and block_param.binding.value is not None:
           param_typed_value = block_param._to_expr_type(block_param.binding.value)
-          edgir.add_pair(pb.constraints, f'(init){block_name}.{block_param_name}').CopyFrom(  # TODO better name
-            AssignBinding.make_assign(block_param, param_typed_value, ref_map)
-          )
+          AssignBinding.populate_assign_proto(edgir.add_pair(pb.constraints, f'(init){block_name}.{block_param_name}'),
+                                              block_param, param_typed_value, ref_map)
+
 
   # TODO make this non-overriding?
   @override
