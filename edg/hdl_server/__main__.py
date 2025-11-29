@@ -125,8 +125,8 @@ def process_request(request: edgrpc.HdlRequest) -> Optional[edgrpc.HdlResponse]:
             )
         elif request.HasField("run_refinement"):
             refinement_pass_class = class_from_library(
-                request.run_refinement.refinement_pass, BaseRefinementPass
-            )  # type: ignore
+                request.run_refinement.refinement_pass, BaseRefinementPass  # type: ignore
+            )
             refinement_pass = refinement_pass_class()
 
             refinement_results = refinement_pass.run(
