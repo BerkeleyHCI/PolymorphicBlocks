@@ -31,6 +31,23 @@ jobs:
           "examples/**.py"
         ]'
 
+  black_latest_3_11:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.11'
+
+      - name: install mypy
+        run: |
+          pip install -r requirements.txt
+          pip install black
+      - name: black
+        run: black --check .
+
   mypy_latest_3_11:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
@@ -48,21 +65,6 @@ jobs:
         mypy --version
     - name: mypy
       run: mypy --install-types .
-
-  unittest_latest_3_11:
-    needs: pre_job
-    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.11'
-
-    - name: install dependencies
-      run: pip install -r requirements.txt
-    - name: unittest
-      run: python -m unittest discover
 
   packagetest_latest_3_11:
     needs: pre_job
@@ -83,23 +85,20 @@ jobs:
       - name: toptest
         run: cd examples && python test_blinky.py
 
-  mypy_latest_3_9:
+  unittest_latest_3_11:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.9'
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.11'
 
-      - name: install mypy
-        run: |
-          pip install -r requirements.txt
-          pip install mypy mypy-protobuf
-          mypy --version
-      - name: mypy
-        run: mypy --install-types .
+    - name: install dependencies
+      run: pip install -r requirements.txt
+    - name: unittest
+      run: python -m unittest discover
 
   unittest_latest_3_9:
     needs: pre_job
