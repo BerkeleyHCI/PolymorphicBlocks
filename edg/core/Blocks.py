@@ -343,10 +343,10 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
 
     for (name, param) in self._parameters.items():
       assert isinstance(param.binding, ParamBinding)
-      edgir.add_pair(pb.params, name).CopyFrom(param._decl_to_proto())
+      param._populate_decl_proto(edgir.add_pair(pb.params, name))
 
     for (name, port) in self._ports.items():
-      edgir.add_pair(pb.ports, name).CopyFrom(port._instance_to_proto())
+      port._populate_portlike_proto(edgir.add_pair(pb.ports, name))
 
     ref_map = self._create_ref_map()
     for (name, port) in self._ports.items():

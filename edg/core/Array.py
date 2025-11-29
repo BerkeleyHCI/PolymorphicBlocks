@@ -86,8 +86,8 @@ class DerivedVector(BaseVector, Generic[VectorType]):
     return self.target
 
   @override
-  def _instance_to_proto(self) -> edgir.PortLike:
-    raise RuntimeError()  # this doesn't generate into a library element
+  def _populate_portlike_proto(self, pb: edgir.PortLike) -> None:
+    raise RuntimeError()  # this can't be a block's port
 
   @override
   def _def_to_proto(self) -> edgir.PortTypes:
@@ -179,14 +179,12 @@ class Vector(BaseVector, Generic[VectorType]):
     raise RuntimeError()  # this doesn't generate into a library element
 
   @override
-  def _instance_to_proto(self) -> edgir.PortLike:
-    pb = edgir.PortLike()
+  def _populate_portlike_proto(self, pb: edgir.PortLike) -> None:
     pb.array.self_class.target.name = self._elt_sample._get_def_name()
     if self._elts is not None:
       pb.array.ports.SetInParent()  # mark as defined, even if empty
       for name, elt in self._elts.items():
-        edgir.add_pair(pb.array.ports.ports, name).CopyFrom(elt._instance_to_proto())
-    return pb
+        elt._populate_portlike_proto(edgir.add_pair(pb.array.ports.ports, name))
 
   @override
   def _def_to_proto(self) -> edgir.PortTypes:
