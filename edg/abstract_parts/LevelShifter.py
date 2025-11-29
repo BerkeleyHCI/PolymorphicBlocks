@@ -6,6 +6,7 @@ from .AbstractResistor import PullupResistor
 from .AbstractFets import Fet
 from .DummyDevices import DummyVoltageSink
 
+
 class BidirectionaLevelShifter(Interface, GeneratorBlock):
     """Bidirectional level shifter for low(ish) frequency signals.
     Circuit design from Phillips AN97055, https://cdn-shop.adafruit.com/datasheets/an97055.pdf
@@ -21,8 +22,13 @@ class BidirectionaLevelShifter(Interface, GeneratorBlock):
     If empty, both sides are assumed to be able to drive the shifter and must have voltages and output thresholds
     modeled. TODO: this mode may be brittle
     """
-    def __init__(self, lv_res: RangeLike = 4.7*kOhm(tol=0.05), hv_res: RangeLike = 4.7*kOhm(tol=0.05),
-                 src_hint: StringLike = '') -> None:
+
+    def __init__(
+        self,
+        lv_res: RangeLike = 4.7 * kOhm(tol=0.05),
+        hv_res: RangeLike = 4.7 * kOhm(tol=0.05),
+        src_hint: StringLike = "",
+    ) -> None:
         super().__init__()
         self.lv_pwr = self.Port(VoltageSink.empty())
         self.lv_io = self.Port(DigitalBidir.empty())
@@ -38,33 +44,35 @@ class BidirectionaLevelShifter(Interface, GeneratorBlock):
     def generate(self) -> None:
         super().generate()
 
-        self.fet = self.Block(Fet.NFet(
-            drain_voltage=self.hv_pwr.link().voltage.hull(self.hv_io.link().voltage),
-            drain_current=self.lv_io.link().current_drawn.hull(self.hv_io.link().current_drawn),
-            gate_voltage=self.lv_pwr.link().voltage - self.lv_io.link().voltage,
-            rds_on=(0, 1)*Ohm  # arbitrary
-        ))
+        self.fet = self.Block(
+            Fet.NFet(
+                drain_voltage=self.hv_pwr.link().voltage.hull(self.hv_io.link().voltage),
+                drain_current=self.lv_io.link().current_drawn.hull(self.hv_io.link().current_drawn),
+                gate_voltage=self.lv_pwr.link().voltage - self.lv_io.link().voltage,
+                rds_on=(0, 1) * Ohm,  # arbitrary
+            )
+        )
 
-        if self.get(self.src_hint) == 'lv':  # LV is source, HV model is incomplete
+        if self.get(self.src_hint) == "lv":  # LV is source, HV model is incomplete
             lv_io_model = DigitalBidir(
                 voltage_out=self.lv_pwr.link().voltage,  # this is not driving, effectively only a pullup
-                output_thresholds=self.lv_pwr.link().voltage.hull(-float('inf'))
+                output_thresholds=self.lv_pwr.link().voltage.hull(-float("inf")),
             )
         else:  # HV model is complete, can use its thresholds
             lv_io_model = DigitalBidir(
                 voltage_out=self.lv_pwr.link().voltage.hull(self.hv_io.link().voltage.lower()),
-                output_thresholds=self.lv_pwr.link().voltage.hull(self.hv_io.link().voltage.lower())
+                output_thresholds=self.lv_pwr.link().voltage.hull(self.hv_io.link().voltage.lower()),
             )
 
-        if self.get(self.src_hint) == 'hv':  # HV is source, LV model is incomplete
+        if self.get(self.src_hint) == "hv":  # HV is source, LV model is incomplete
             hv_io_model = DigitalBidir(
                 voltage_out=self.hv_pwr.link().voltage,  # this is not driving, effectively only a pullup
-                output_thresholds=self.hv_pwr.link().voltage.hull(-float('inf'))
+                output_thresholds=self.hv_pwr.link().voltage.hull(-float("inf")),
             )
         else:  # HV model is complete, can use its thresholds
             hv_io_model = DigitalBidir(
                 voltage_out=self.hv_pwr.link().voltage.hull(self.lv_io.link().voltage.lower()),
-                output_thresholds=self.hv_pwr.link().voltage.hull(self.lv_io.link().voltage.lower())
+                output_thresholds=self.hv_pwr.link().voltage.hull(self.lv_io.link().voltage.lower()),
             )
 
         self.connect(self.lv_io, self.fet.source.adapt_to(lv_io_model))

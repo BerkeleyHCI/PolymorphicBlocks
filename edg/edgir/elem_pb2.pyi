@@ -13,6 +13,7 @@ We don't strictly differentiate between library elements and
 elements within a design within the protobuf. In general, when
 there is a library element, we
 """
+
 import builtins
 import collections.abc
 from .. import edgir
@@ -20,6 +21,7 @@ import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.message
 import sys
+
 if sys.version_info >= (3, 8):
     import typing as typing_extensions
 else:
@@ -32,23 +34,18 @@ class NamedValInit(google.protobuf.message.Message):
     are unordered (whereas we want to preserve ordering to preserve design intent
     through the compiler), we use a sequence of these pairs.
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     NAME_FIELD_NUMBER: builtins.int
     VALUE_FIELD_NUMBER: builtins.int
     name: builtins.str
 
     @property
-    def value(self) -> edgir.init_pb2.ValInit:
-        ...
+    def value(self) -> edgir.init_pb2.ValInit: ...
+    def __init__(self, *, name: builtins.str = ..., value: edgir.init_pb2.ValInit | None = ...) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["name", b"name", "value", b"value"]) -> None: ...
 
-    def __init__(self, *, name: builtins.str=..., value: edgir.init_pb2.ValInit | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['value', b'value']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['name', b'name', 'value', b'value']) -> None:
-        ...
 global___NamedValInit = NamedValInit
 
 @typing_extensions.final
@@ -59,17 +56,11 @@ class NamedValueExpr(google.protobuf.message.Message):
     name: builtins.str
 
     @property
-    def value(self) -> edgir.expr_pb2.ValueExpr:
-        ...
+    def value(self) -> edgir.expr_pb2.ValueExpr: ...
+    def __init__(self, *, name: builtins.str = ..., value: edgir.expr_pb2.ValueExpr | None = ...) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["name", b"name", "value", b"value"]) -> None: ...
 
-    def __init__(self, *, name: builtins.str=..., value: edgir.expr_pb2.ValueExpr | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['value', b'value']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['name', b'name', 'value', b'value']) -> None:
-        ...
 global___NamedValueExpr = NamedValueExpr
 
 @typing_extensions.final
@@ -80,17 +71,11 @@ class NamedPortLike(google.protobuf.message.Message):
     name: builtins.str
 
     @property
-    def value(self) -> global___PortLike:
-        ...
+    def value(self) -> global___PortLike: ...
+    def __init__(self, *, name: builtins.str = ..., value: global___PortLike | None = ...) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["name", b"name", "value", b"value"]) -> None: ...
 
-    def __init__(self, *, name: builtins.str=..., value: global___PortLike | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['value', b'value']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['name', b'name', 'value', b'value']) -> None:
-        ...
 global___NamedPortLike = NamedPortLike
 
 @typing_extensions.final
@@ -101,17 +86,11 @@ class NamedBlockLike(google.protobuf.message.Message):
     name: builtins.str
 
     @property
-    def value(self) -> global___BlockLike:
-        ...
+    def value(self) -> global___BlockLike: ...
+    def __init__(self, *, name: builtins.str = ..., value: global___BlockLike | None = ...) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["name", b"name", "value", b"value"]) -> None: ...
 
-    def __init__(self, *, name: builtins.str=..., value: global___BlockLike | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['value', b'value']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['name', b'name', 'value', b'value']) -> None:
-        ...
 global___NamedBlockLike = NamedBlockLike
 
 @typing_extensions.final
@@ -122,17 +101,11 @@ class NamedLinkLike(google.protobuf.message.Message):
     name: builtins.str
 
     @property
-    def value(self) -> global___LinkLike:
-        ...
+    def value(self) -> global___LinkLike: ...
+    def __init__(self, *, name: builtins.str = ..., value: global___LinkLike | None = ...) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["name", b"name", "value", b"value"]) -> None: ...
 
-    def __init__(self, *, name: builtins.str=..., value: global___LinkLike | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['value', b'value']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['name', b'name', 'value', b'value']) -> None:
-        ...
 global___NamedLinkLike = NamedLinkLike
 
 @typing_extensions.final
@@ -146,37 +119,60 @@ class Port(google.protobuf.message.Message):
     META_FIELD_NUMBER: builtins.int
 
     @property
-    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]:
-        ...
-
+    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]: ...
     @property
-    def constraints(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]:
-        ...
-
+    def constraints(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]: ...
     @property
-    def self_class(self) -> edgir.ref_pb2.LibraryPath:
-        ...
-
+    def self_class(self) -> edgir.ref_pb2.LibraryPath: ...
     @property
-    def superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+    def superclasses(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """superclasses, may be empty"""
 
     @property
-    def super_superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+    def super_superclasses(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """all (recursive) superclasses above superclasses"""
 
     @property
     def meta(self) -> edgir.common_pb2.Metadata:
         """TODO: this provides type hierarchy data only, inheritance semantics are currently undefined"""
 
-    def __init__(self, *, params: collections.abc.Iterable[global___NamedValInit] | None=..., constraints: collections.abc.Iterable[global___NamedValueExpr] | None=..., self_class: edgir.ref_pb2.LibraryPath | None=..., superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None=..., super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
-        ...
+    def __init__(
+        self,
+        *,
+        params: collections.abc.Iterable[global___NamedValInit] | None = ...,
+        constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
+        self_class: edgir.ref_pb2.LibraryPath | None = ...,
+        superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        meta: edgir.common_pb2.Metadata | None = ...,
+    ) -> None: ...
+    def HasField(
+        self, field_name: typing_extensions.Literal["meta", b"meta", "self_class", b"self_class"]
+    ) -> builtins.bool: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "constraints",
+            b"constraints",
+            "meta",
+            b"meta",
+            "params",
+            b"params",
+            "self_class",
+            b"self_class",
+            "super_superclasses",
+            b"super_superclasses",
+            "superclasses",
+            b"superclasses",
+        ],
+    ) -> None: ...
 
-    def HasField(self, field_name: typing_extensions.Literal['meta', b'meta', 'self_class', b'self_class']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['constraints', b'constraints', 'meta', b'meta', 'params', b'params', 'self_class', b'self_class', 'super_superclasses', b'super_superclasses', 'superclasses', b'superclasses']) -> None:
-        ...
 global___Port = Port
 
 @typing_extensions.final
@@ -191,41 +187,63 @@ class Bundle(google.protobuf.message.Message):
     META_FIELD_NUMBER: builtins.int
 
     @property
-    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]:
-        ...
-
+    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]: ...
     @property
-    def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]:
-        ...
-
+    def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]: ...
     @property
-    def constraints(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]:
-        ...
-
+    def constraints(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]: ...
     @property
-    def self_class(self) -> edgir.ref_pb2.LibraryPath:
-        ...
-
+    def self_class(self) -> edgir.ref_pb2.LibraryPath: ...
     @property
-    def superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+    def superclasses(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """superclasses, may be empty"""
 
     @property
-    def super_superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+    def super_superclasses(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """all (recursive) superclasses above superclasses"""
 
     @property
-    def meta(self) -> edgir.common_pb2.Metadata:
-        ...
+    def meta(self) -> edgir.common_pb2.Metadata: ...
+    def __init__(
+        self,
+        *,
+        params: collections.abc.Iterable[global___NamedValInit] | None = ...,
+        ports: collections.abc.Iterable[global___NamedPortLike] | None = ...,
+        constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
+        self_class: edgir.ref_pb2.LibraryPath | None = ...,
+        superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        meta: edgir.common_pb2.Metadata | None = ...,
+    ) -> None: ...
+    def HasField(
+        self, field_name: typing_extensions.Literal["meta", b"meta", "self_class", b"self_class"]
+    ) -> builtins.bool: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "constraints",
+            b"constraints",
+            "meta",
+            b"meta",
+            "params",
+            b"params",
+            "ports",
+            b"ports",
+            "self_class",
+            b"self_class",
+            "super_superclasses",
+            b"super_superclasses",
+            "superclasses",
+            b"superclasses",
+        ],
+    ) -> None: ...
 
-    def __init__(self, *, params: collections.abc.Iterable[global___NamedValInit] | None=..., ports: collections.abc.Iterable[global___NamedPortLike] | None=..., constraints: collections.abc.Iterable[global___NamedValueExpr] | None=..., self_class: edgir.ref_pb2.LibraryPath | None=..., superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None=..., super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['meta', b'meta', 'self_class', b'self_class']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['constraints', b'constraints', 'meta', b'meta', 'params', b'params', 'ports', b'ports', 'self_class', b'self_class', 'super_superclasses', b'super_superclasses', 'superclasses', b'superclasses']) -> None:
-        ...
 global___Bundle = Bundle
 
 @typing_extensions.final
@@ -238,14 +256,12 @@ class PortArray(google.protobuf.message.Message):
         PORTS_FIELD_NUMBER: builtins.int
 
         @property
-        def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]:
-            ...
+        def ports(
+            self,
+        ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]: ...
+        def __init__(self, *, ports: collections.abc.Iterable[global___NamedPortLike] | None = ...) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["ports", b"ports"]) -> None: ...
 
-        def __init__(self, *, ports: collections.abc.Iterable[global___NamedPortLike] | None=...) -> None:
-            ...
-
-        def ClearField(self, field_name: typing_extensions.Literal['ports', b'ports']) -> None:
-            ...
     SELF_CLASS_FIELD_NUMBER: builtins.int
     PORTS_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
@@ -257,29 +273,38 @@ class PortArray(google.protobuf.message.Message):
         """
 
     @property
-    def ports(self) -> global___PortArray.Ports:
-        ...
-
+    def ports(self) -> global___PortArray.Ports: ...
     @property
-    def meta(self) -> edgir.common_pb2.Metadata:
-        ...
+    def meta(self) -> edgir.common_pb2.Metadata: ...
+    def __init__(
+        self,
+        *,
+        self_class: edgir.ref_pb2.LibraryPath | None = ...,
+        ports: global___PortArray.Ports | None = ...,
+        meta: edgir.common_pb2.Metadata | None = ...,
+    ) -> None: ...
+    def HasField(
+        self,
+        field_name: typing_extensions.Literal[
+            "contains", b"contains", "meta", b"meta", "ports", b"ports", "self_class", b"self_class"
+        ],
+    ) -> builtins.bool: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "contains", b"contains", "meta", b"meta", "ports", b"ports", "self_class", b"self_class"
+        ],
+    ) -> None: ...
+    def WhichOneof(
+        self, oneof_group: typing_extensions.Literal["contains", b"contains"]
+    ) -> typing_extensions.Literal["ports"] | None: ...
 
-    def __init__(self, *, self_class: edgir.ref_pb2.LibraryPath | None=..., ports: global___PortArray.Ports | None=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['contains', b'contains', 'meta', b'meta', 'ports', b'ports', 'self_class', b'self_class']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['contains', b'contains', 'meta', b'meta', 'ports', b'ports', 'self_class', b'self_class']) -> None:
-        ...
-
-    def WhichOneof(self, oneof_group: typing_extensions.Literal['contains', b'contains']) -> typing_extensions.Literal['ports'] | None:
-        ...
 global___PortArray = PortArray
 
 @typing_extensions.final
 class PortLike(google.protobuf.message.Message):
     """* Wrapper for different port like elements"""
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     UNDEFINED_FIELD_NUMBER: builtins.int
     LIB_ELEM_FIELD_NUMBER: builtins.int
@@ -288,36 +313,66 @@ class PortLike(google.protobuf.message.Message):
     BUNDLE_FIELD_NUMBER: builtins.int
 
     @property
-    def undefined(self) -> edgir.common_pb2.Empty:
-        ...
-
+    def undefined(self) -> edgir.common_pb2.Empty: ...
     @property
-    def lib_elem(self) -> edgir.ref_pb2.LibraryPath:
-        ...
-
+    def lib_elem(self) -> edgir.ref_pb2.LibraryPath: ...
     @property
     def port(self) -> global___Port:
         """* 'port' disallowed w/in the library"""
 
     @property
-    def array(self) -> global___PortArray:
-        ...
-
+    def array(self) -> global___PortArray: ...
     @property
     def bundle(self) -> global___Bundle:
         """* 'bundle' disallowed w/in the library"""
 
-    def __init__(self, *, undefined: edgir.common_pb2.Empty | None=..., lib_elem: edgir.ref_pb2.LibraryPath | None=..., port: global___Port | None=..., array: global___PortArray | None=..., bundle: global___Bundle | None=...) -> None:
-        ...
+    def __init__(
+        self,
+        *,
+        undefined: edgir.common_pb2.Empty | None = ...,
+        lib_elem: edgir.ref_pb2.LibraryPath | None = ...,
+        port: global___Port | None = ...,
+        array: global___PortArray | None = ...,
+        bundle: global___Bundle | None = ...,
+    ) -> None: ...
+    def HasField(
+        self,
+        field_name: typing_extensions.Literal[
+            "array",
+            b"array",
+            "bundle",
+            b"bundle",
+            "is",
+            b"is",
+            "lib_elem",
+            b"lib_elem",
+            "port",
+            b"port",
+            "undefined",
+            b"undefined",
+        ],
+    ) -> builtins.bool: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "array",
+            b"array",
+            "bundle",
+            b"bundle",
+            "is",
+            b"is",
+            "lib_elem",
+            b"lib_elem",
+            "port",
+            b"port",
+            "undefined",
+            b"undefined",
+        ],
+    ) -> None: ...
+    def WhichOneof(
+        self, oneof_group: typing_extensions.Literal["is", b"is"]
+    ) -> typing_extensions.Literal["undefined", "lib_elem", "port", "array", "bundle"] | None: ...
 
-    def HasField(self, field_name: typing_extensions.Literal['array', b'array', 'bundle', b'bundle', 'is', b'is', 'lib_elem', b'lib_elem', 'port', b'port', 'undefined', b'undefined']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['array', b'array', 'bundle', b'bundle', 'is', b'is', 'lib_elem', b'lib_elem', 'port', b'port', 'undefined', b'undefined']) -> None:
-        ...
-
-    def WhichOneof(self, oneof_group: typing_extensions.Literal['is', b'is']) -> typing_extensions.Literal['undefined', 'lib_elem', 'port', 'array', 'bundle'] | None:
-        ...
 global___PortLike = PortLike
 
 @typing_extensions.final
@@ -327,18 +382,13 @@ class Parameter(google.protobuf.message.Message):
     UNIT_FIELD_NUMBER: builtins.int
 
     @property
-    def path(self) -> edgir.ref_pb2.LocalPath:
-        ...
+    def path(self) -> edgir.ref_pb2.LocalPath: ...
     unit: builtins.str
 
-    def __init__(self, *, path: edgir.ref_pb2.LocalPath | None=..., unit: builtins.str=...) -> None:
-        ...
+    def __init__(self, *, path: edgir.ref_pb2.LocalPath | None = ..., unit: builtins.str = ...) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["path", b"path"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["path", b"path", "unit", b"unit"]) -> None: ...
 
-    def HasField(self, field_name: typing_extensions.Literal['path', b'path']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['path', b'path', 'unit', b'unit']) -> None:
-        ...
 global___Parameter = Parameter
 
 @typing_extensions.final
@@ -349,20 +399,18 @@ class StringDescriptionElement(google.protobuf.message.Message):
     text: builtins.str
 
     @property
-    def param(self) -> global___Parameter:
-        ...
+    def param(self) -> global___Parameter: ...
+    def __init__(self, *, text: builtins.str = ..., param: global___Parameter | None = ...) -> None: ...
+    def HasField(
+        self, field_name: typing_extensions.Literal["ElementType", b"ElementType", "param", b"param", "text", b"text"]
+    ) -> builtins.bool: ...
+    def ClearField(
+        self, field_name: typing_extensions.Literal["ElementType", b"ElementType", "param", b"param", "text", b"text"]
+    ) -> None: ...
+    def WhichOneof(
+        self, oneof_group: typing_extensions.Literal["ElementType", b"ElementType"]
+    ) -> typing_extensions.Literal["text", "param"] | None: ...
 
-    def __init__(self, *, text: builtins.str=..., param: global___Parameter | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['ElementType', b'ElementType', 'param', b'param', 'text', b'text']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['ElementType', b'ElementType', 'param', b'param', 'text', b'text']) -> None:
-        ...
-
-    def WhichOneof(self, oneof_group: typing_extensions.Literal['ElementType', b'ElementType']) -> typing_extensions.Literal['text', 'param'] | None:
-        ...
 global___StringDescriptionElement = StringDescriptionElement
 
 @typing_extensions.final
@@ -377,17 +425,11 @@ class HierarchyBlock(google.protobuf.message.Message):
         key: builtins.str
 
         @property
-        def value(self) -> edgir.expr_pb2.ValueExpr:
-            ...
+        def value(self) -> edgir.expr_pb2.ValueExpr: ...
+        def __init__(self, *, key: builtins.str = ..., value: edgir.expr_pb2.ValueExpr | None = ...) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
 
-        def __init__(self, *, key: builtins.str=..., value: edgir.expr_pb2.ValueExpr | None=...) -> None:
-            ...
-
-        def HasField(self, field_name: typing_extensions.Literal['value', b'value']) -> builtins.bool:
-            ...
-
-        def ClearField(self, field_name: typing_extensions.Literal['key', b'key', 'value', b'value']) -> None:
-            ...
     PARAMS_FIELD_NUMBER: builtins.int
     PARAM_DEFAULTS_FIELD_NUMBER: builtins.int
     PORTS_FIELD_NUMBER: builtins.int
@@ -406,9 +448,7 @@ class HierarchyBlock(google.protobuf.message.Message):
     DESCRIPTION_FIELD_NUMBER: builtins.int
 
     @property
-    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]:
-        ...
-
+    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]: ...
     @property
     def param_defaults(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, edgir.expr_pb2.ValueExpr]:
         """Refinements may introduce new parameters which would not be assigned a value in the parent class.
@@ -417,9 +457,7 @@ class HierarchyBlock(google.protobuf.message.Message):
         """
 
     @property
-    def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]:
-        ...
-
+    def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]: ...
     @property
     def blocks(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedBlockLike]:
         """* Bridges, which adapt an edge port to a link port - eg, edge VoltageSink to an internal link
@@ -428,11 +466,11 @@ class HierarchyBlock(google.protobuf.message.Message):
         """
 
     @property
-    def links(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedLinkLike]:
-        ...
-
+    def links(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedLinkLike]: ...
     @property
-    def constraints(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]:
+    def constraints(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]:
         """* Connections between internal block and link ports are represented by connected constraints.
         Connections between internal; block and edge (of this block) ports are represented by exported constraints.
         """
@@ -442,11 +480,15 @@ class HierarchyBlock(google.protobuf.message.Message):
         """self class, equivalent to the library name"""
 
     @property
-    def superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+    def superclasses(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """immediate superclasses, may be empty"""
 
     @property
-    def super_superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+    def super_superclasses(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """all (recursive) superclasses above superclasses"""
 
     @property
@@ -454,35 +496,100 @@ class HierarchyBlock(google.protobuf.message.Message):
         """class pre-refinement, only defined if refined"""
 
     @property
-    def prerefine_mixins(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+    def prerefine_mixins(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """mixins pre-refinement, from library elem"""
 
     @property
     def generator(self) -> global___Generator:
         """optional, and removed upon invocation"""
     is_abstract: builtins.bool
-    'true if self_class is abstract, and should error if used in a design'
+    "true if self_class is abstract, and should error if used in a design"
 
     @property
     def default_refinement(self) -> edgir.ref_pb2.LibraryPath:
         """optional default refinement subclass, only valid for library blocks"""
 
     @property
-    def meta(self) -> edgir.common_pb2.Metadata:
-        ...
-
+    def meta(self) -> edgir.common_pb2.Metadata: ...
     @property
-    def description(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___StringDescriptionElement]:
-        ...
+    def description(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___StringDescriptionElement]: ...
+    def __init__(
+        self,
+        *,
+        params: collections.abc.Iterable[global___NamedValInit] | None = ...,
+        param_defaults: collections.abc.Mapping[builtins.str, edgir.expr_pb2.ValueExpr] | None = ...,
+        ports: collections.abc.Iterable[global___NamedPortLike] | None = ...,
+        blocks: collections.abc.Iterable[global___NamedBlockLike] | None = ...,
+        links: collections.abc.Iterable[global___NamedLinkLike] | None = ...,
+        constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
+        self_class: edgir.ref_pb2.LibraryPath | None = ...,
+        superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        prerefine_class: edgir.ref_pb2.LibraryPath | None = ...,
+        prerefine_mixins: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        generator: global___Generator | None = ...,
+        is_abstract: builtins.bool = ...,
+        default_refinement: edgir.ref_pb2.LibraryPath | None = ...,
+        meta: edgir.common_pb2.Metadata | None = ...,
+        description: collections.abc.Iterable[global___StringDescriptionElement] | None = ...,
+    ) -> None: ...
+    def HasField(
+        self,
+        field_name: typing_extensions.Literal[
+            "default_refinement",
+            b"default_refinement",
+            "generator",
+            b"generator",
+            "meta",
+            b"meta",
+            "prerefine_class",
+            b"prerefine_class",
+            "self_class",
+            b"self_class",
+        ],
+    ) -> builtins.bool: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "blocks",
+            b"blocks",
+            "constraints",
+            b"constraints",
+            "default_refinement",
+            b"default_refinement",
+            "description",
+            b"description",
+            "generator",
+            b"generator",
+            "is_abstract",
+            b"is_abstract",
+            "links",
+            b"links",
+            "meta",
+            b"meta",
+            "param_defaults",
+            b"param_defaults",
+            "params",
+            b"params",
+            "ports",
+            b"ports",
+            "prerefine_class",
+            b"prerefine_class",
+            "prerefine_mixins",
+            b"prerefine_mixins",
+            "self_class",
+            b"self_class",
+            "super_superclasses",
+            b"super_superclasses",
+            "superclasses",
+            b"superclasses",
+        ],
+    ) -> None: ...
 
-    def __init__(self, *, params: collections.abc.Iterable[global___NamedValInit] | None=..., param_defaults: collections.abc.Mapping[builtins.str, edgir.expr_pb2.ValueExpr] | None=..., ports: collections.abc.Iterable[global___NamedPortLike] | None=..., blocks: collections.abc.Iterable[global___NamedBlockLike] | None=..., links: collections.abc.Iterable[global___NamedLinkLike] | None=..., constraints: collections.abc.Iterable[global___NamedValueExpr] | None=..., self_class: edgir.ref_pb2.LibraryPath | None=..., superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None=..., super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None=..., prerefine_class: edgir.ref_pb2.LibraryPath | None=..., prerefine_mixins: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None=..., generator: global___Generator | None=..., is_abstract: builtins.bool=..., default_refinement: edgir.ref_pb2.LibraryPath | None=..., meta: edgir.common_pb2.Metadata | None=..., description: collections.abc.Iterable[global___StringDescriptionElement] | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['default_refinement', b'default_refinement', 'generator', b'generator', 'meta', b'meta', 'prerefine_class', b'prerefine_class', 'self_class', b'self_class']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['blocks', b'blocks', 'constraints', b'constraints', 'default_refinement', b'default_refinement', 'description', b'description', 'generator', b'generator', 'is_abstract', b'is_abstract', 'links', b'links', 'meta', b'meta', 'param_defaults', b'param_defaults', 'params', b'params', 'ports', b'ports', 'prerefine_class', b'prerefine_class', 'prerefine_mixins', b'prerefine_mixins', 'self_class', b'self_class', 'super_superclasses', b'super_superclasses', 'superclasses', b'superclasses']) -> None:
-        ...
 global___HierarchyBlock = HierarchyBlock
 
 @typing_extensions.final
@@ -491,16 +598,16 @@ class Generator(google.protobuf.message.Message):
     REQUIRED_PARAMS_FIELD_NUMBER: builtins.int
 
     @property
-    def required_params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LocalPath]:
+    def required_params(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LocalPath]:
         """Parameters that must be defined for the generator to fire.
         These parameters are the only ones accessible to the generator.
         """
 
-    def __init__(self, *, required_params: collections.abc.Iterable[edgir.ref_pb2.LocalPath] | None=...) -> None:
-        ...
+    def __init__(self, *, required_params: collections.abc.Iterable[edgir.ref_pb2.LocalPath] | None = ...) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["required_params", b"required_params"]) -> None: ...
 
-    def ClearField(self, field_name: typing_extensions.Literal['required_params', b'required_params']) -> None:
-        ...
 global___Generator = Generator
 
 @typing_extensions.final
@@ -510,21 +617,20 @@ class BlockLibrary(google.protobuf.message.Message):
     MIXINS_FIELD_NUMBER: builtins.int
 
     @property
-    def base(self) -> edgir.ref_pb2.LibraryPath:
-        ...
-
+    def base(self) -> edgir.ref_pb2.LibraryPath: ...
     @property
-    def mixins(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
-        ...
+    def mixins(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]: ...
+    def __init__(
+        self,
+        *,
+        base: edgir.ref_pb2.LibraryPath | None = ...,
+        mixins: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["base", b"base"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["base", b"base", "mixins", b"mixins"]) -> None: ...
 
-    def __init__(self, *, base: edgir.ref_pb2.LibraryPath | None=..., mixins: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['base', b'base']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['base', b'base', 'mixins', b'mixins']) -> None:
-        ...
 global___BlockLibrary = BlockLibrary
 
 @typing_extensions.final
@@ -535,28 +641,36 @@ class BlockLike(google.protobuf.message.Message):
     HIERARCHY_FIELD_NUMBER: builtins.int
 
     @property
-    def undefined(self) -> edgir.common_pb2.Empty:
-        ...
-
+    def undefined(self) -> edgir.common_pb2.Empty: ...
     @property
-    def lib_elem(self) -> global___BlockLibrary:
-        ...
-
+    def lib_elem(self) -> global___BlockLibrary: ...
     @property
     def hierarchy(self) -> global___HierarchyBlock:
         """* not allowed w/in the library"""
 
-    def __init__(self, *, undefined: edgir.common_pb2.Empty | None=..., lib_elem: global___BlockLibrary | None=..., hierarchy: global___HierarchyBlock | None=...) -> None:
-        ...
+    def __init__(
+        self,
+        *,
+        undefined: edgir.common_pb2.Empty | None = ...,
+        lib_elem: global___BlockLibrary | None = ...,
+        hierarchy: global___HierarchyBlock | None = ...,
+    ) -> None: ...
+    def HasField(
+        self,
+        field_name: typing_extensions.Literal[
+            "hierarchy", b"hierarchy", "lib_elem", b"lib_elem", "type", b"type", "undefined", b"undefined"
+        ],
+    ) -> builtins.bool: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "hierarchy", b"hierarchy", "lib_elem", b"lib_elem", "type", b"type", "undefined", b"undefined"
+        ],
+    ) -> None: ...
+    def WhichOneof(
+        self, oneof_group: typing_extensions.Literal["type", b"type"]
+    ) -> typing_extensions.Literal["undefined", "lib_elem", "hierarchy"] | None: ...
 
-    def HasField(self, field_name: typing_extensions.Literal['hierarchy', b'hierarchy', 'lib_elem', b'lib_elem', 'type', b'type', 'undefined', b'undefined']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['hierarchy', b'hierarchy', 'lib_elem', b'lib_elem', 'type', b'type', 'undefined', b'undefined']) -> None:
-        ...
-
-    def WhichOneof(self, oneof_group: typing_extensions.Literal['type', b'type']) -> typing_extensions.Literal['undefined', 'lib_elem', 'hierarchy'] | None:
-        ...
 global___BlockLike = BlockLike
 
 @typing_extensions.final
@@ -573,31 +687,27 @@ class Link(google.protobuf.message.Message):
     DESCRIPTION_FIELD_NUMBER: builtins.int
 
     @property
-    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]:
-        ...
-
+    def params(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValInit]: ...
     @property
-    def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]:
-        ...
-
+    def ports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedPortLike]: ...
     @property
-    def links(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedLinkLike]:
-        ...
-
+    def links(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedLinkLike]: ...
     @property
-    def constraints(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]:
-        ...
-
+    def constraints(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]: ...
     @property
-    def self_class(self) -> edgir.ref_pb2.LibraryPath:
-        ...
-
+    def self_class(self) -> edgir.ref_pb2.LibraryPath: ...
     @property
-    def superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+    def superclasses(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """superclasses, may be empty"""
 
     @property
-    def super_superclasses(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
+    def super_superclasses(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[edgir.ref_pb2.LibraryPath]:
         """all (recursive) superclasses above superclasses"""
 
     @property
@@ -605,17 +715,49 @@ class Link(google.protobuf.message.Message):
         """TODO: this provides type hierarchy data only, inheritance semantics are currently undefined"""
 
     @property
-    def description(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___StringDescriptionElement]:
-        ...
+    def description(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___StringDescriptionElement]: ...
+    def __init__(
+        self,
+        *,
+        params: collections.abc.Iterable[global___NamedValInit] | None = ...,
+        ports: collections.abc.Iterable[global___NamedPortLike] | None = ...,
+        links: collections.abc.Iterable[global___NamedLinkLike] | None = ...,
+        constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
+        self_class: edgir.ref_pb2.LibraryPath | None = ...,
+        superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None = ...,
+        meta: edgir.common_pb2.Metadata | None = ...,
+        description: collections.abc.Iterable[global___StringDescriptionElement] | None = ...,
+    ) -> None: ...
+    def HasField(
+        self, field_name: typing_extensions.Literal["meta", b"meta", "self_class", b"self_class"]
+    ) -> builtins.bool: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "constraints",
+            b"constraints",
+            "description",
+            b"description",
+            "links",
+            b"links",
+            "meta",
+            b"meta",
+            "params",
+            b"params",
+            "ports",
+            b"ports",
+            "self_class",
+            b"self_class",
+            "super_superclasses",
+            b"super_superclasses",
+            "superclasses",
+            b"superclasses",
+        ],
+    ) -> None: ...
 
-    def __init__(self, *, params: collections.abc.Iterable[global___NamedValInit] | None=..., ports: collections.abc.Iterable[global___NamedPortLike] | None=..., links: collections.abc.Iterable[global___NamedLinkLike] | None=..., constraints: collections.abc.Iterable[global___NamedValueExpr] | None=..., self_class: edgir.ref_pb2.LibraryPath | None=..., superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None=..., super_superclasses: collections.abc.Iterable[edgir.ref_pb2.LibraryPath] | None=..., meta: edgir.common_pb2.Metadata | None=..., description: collections.abc.Iterable[global___StringDescriptionElement] | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['meta', b'meta', 'self_class', b'self_class']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['constraints', b'constraints', 'description', b'description', 'links', b'links', 'meta', b'meta', 'params', b'params', 'ports', b'ports', 'self_class', b'self_class', 'super_superclasses', b'super_superclasses', 'superclasses', b'superclasses']) -> None:
-        ...
 global___Link = Link
 
 @typing_extensions.final
@@ -640,25 +782,43 @@ class LinkArray(google.protobuf.message.Message):
         """
 
     @property
-    def constraints(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]:
+    def constraints(
+        self,
+    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedValueExpr]:
         """includes all exported constraints to map link ports to my ports"""
 
     @property
-    def links(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedLinkLike]:
-        ...
-
+    def links(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NamedLinkLike]: ...
     @property
-    def meta(self) -> edgir.common_pb2.Metadata:
-        ...
+    def meta(self) -> edgir.common_pb2.Metadata: ...
+    def __init__(
+        self,
+        *,
+        self_class: edgir.ref_pb2.LibraryPath | None = ...,
+        ports: collections.abc.Iterable[global___NamedPortLike] | None = ...,
+        constraints: collections.abc.Iterable[global___NamedValueExpr] | None = ...,
+        links: collections.abc.Iterable[global___NamedLinkLike] | None = ...,
+        meta: edgir.common_pb2.Metadata | None = ...,
+    ) -> None: ...
+    def HasField(
+        self, field_name: typing_extensions.Literal["meta", b"meta", "self_class", b"self_class"]
+    ) -> builtins.bool: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "constraints",
+            b"constraints",
+            "links",
+            b"links",
+            "meta",
+            b"meta",
+            "ports",
+            b"ports",
+            "self_class",
+            b"self_class",
+        ],
+    ) -> None: ...
 
-    def __init__(self, *, self_class: edgir.ref_pb2.LibraryPath | None=..., ports: collections.abc.Iterable[global___NamedPortLike] | None=..., constraints: collections.abc.Iterable[global___NamedValueExpr] | None=..., links: collections.abc.Iterable[global___NamedLinkLike] | None=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['meta', b'meta', 'self_class', b'self_class']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['constraints', b'constraints', 'links', b'links', 'meta', b'meta', 'ports', b'ports', 'self_class', b'self_class']) -> None:
-        ...
 global___LinkArray = LinkArray
 
 @typing_extensions.final
@@ -670,30 +830,37 @@ class LinkLike(google.protobuf.message.Message):
     ARRAY_FIELD_NUMBER: builtins.int
 
     @property
-    def undefined(self) -> edgir.common_pb2.Empty:
-        ...
-
+    def undefined(self) -> edgir.common_pb2.Empty: ...
     @property
-    def lib_elem(self) -> edgir.ref_pb2.LibraryPath:
-        ...
-
+    def lib_elem(self) -> edgir.ref_pb2.LibraryPath: ...
     @property
     def link(self) -> global___Link:
         """* not allowed w/in the library"""
 
     @property
-    def array(self) -> global___LinkArray:
-        ...
+    def array(self) -> global___LinkArray: ...
+    def __init__(
+        self,
+        *,
+        undefined: edgir.common_pb2.Empty | None = ...,
+        lib_elem: edgir.ref_pb2.LibraryPath | None = ...,
+        link: global___Link | None = ...,
+        array: global___LinkArray | None = ...,
+    ) -> None: ...
+    def HasField(
+        self,
+        field_name: typing_extensions.Literal[
+            "array", b"array", "lib_elem", b"lib_elem", "link", b"link", "type", b"type", "undefined", b"undefined"
+        ],
+    ) -> builtins.bool: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "array", b"array", "lib_elem", b"lib_elem", "link", b"link", "type", b"type", "undefined", b"undefined"
+        ],
+    ) -> None: ...
+    def WhichOneof(
+        self, oneof_group: typing_extensions.Literal["type", b"type"]
+    ) -> typing_extensions.Literal["undefined", "lib_elem", "link", "array"] | None: ...
 
-    def __init__(self, *, undefined: edgir.common_pb2.Empty | None=..., lib_elem: edgir.ref_pb2.LibraryPath | None=..., link: global___Link | None=..., array: global___LinkArray | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['array', b'array', 'lib_elem', b'lib_elem', 'link', b'link', 'type', b'type', 'undefined', b'undefined']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['array', b'array', 'lib_elem', b'lib_elem', 'link', b'link', 'type', b'type', 'undefined', b'undefined']) -> None:
-        ...
-
-    def WhichOneof(self, oneof_group: typing_extensions.Literal['type', b'type']) -> typing_extensions.Literal['undefined', 'lib_elem', 'link', 'array'] | None:
-        ...
 global___LinkLike = LinkLike

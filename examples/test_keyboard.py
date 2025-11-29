@@ -16,35 +16,35 @@ from edg import *
 
 
 class Keyboard(SimpleBoardTop):
-  @override
-  def contents(self) -> None:
-    super().contents()
+    @override
+    def contents(self) -> None:
+        super().contents()
 
-    self.usb = self.Block(UsbCReceptacle())
-    self.reg = self.Block(Ldl1117(3.3*Volt(tol=0.05)))
-    self.connect(self.usb.gnd, self.reg.gnd)
-    self.connect(self.usb.pwr, self.reg.pwr_in)
+        self.usb = self.Block(UsbCReceptacle())
+        self.reg = self.Block(Ldl1117(3.3 * Volt(tol=0.05)))
+        self.connect(self.usb.gnd, self.reg.gnd)
+        self.connect(self.usb.pwr, self.reg.pwr_in)
 
-    with self.implicit_connect(
+        with self.implicit_connect(
             ImplicitConnect(self.reg.pwr_out, [Power]),
             ImplicitConnect(self.reg.gnd, [Common]),
-    ) as imp:
-      self.mcu = imp.Block(Stm32f103_48())
-      self.connect(self.usb.usb, self.mcu.usb.request())
+        ) as imp:
+            self.mcu = imp.Block(Stm32f103_48())
+            self.connect(self.usb.usb, self.mcu.usb.request())
 
-      self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
-      self.connect(self.sw.cols, self.mcu.gpio.request_vector())
-      self.connect(self.sw.rows, self.mcu.gpio.request_vector())
+            self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
+            self.connect(self.sw.cols, self.mcu.gpio.request_vector())
+            self.connect(self.sw.rows, self.mcu.gpio.request_vector())
 
-  @override
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      class_refinements=[
-        (Switch, KailhSocket),
-      ],
-    )
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (Switch, KailhSocket),
+            ],
+        )
 
 
 class KeyboardTestCase(unittest.TestCase):
-  def test_design(self) -> None:
-    compile_board_inplace(Keyboard)
+    def test_design(self) -> None:
+        compile_board_inplace(Keyboard)

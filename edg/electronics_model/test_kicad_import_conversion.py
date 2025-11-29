@@ -6,24 +6,26 @@ from . import *
 
 class KiCadConversionBlock(KiCadSchematicBlock):
     """Block generates a Passive-to-VoltageSource adapter."""
+
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(VoltageSource.empty())
-        self.import_kicad(self.file_path("resources", "test_kicad_import.kicad_sch"),
-                          conversions={
-                              'R1.1': VoltageSource()  # ideal port
-                          })
+        self.import_kicad(
+            self.file_path("resources", "test_kicad_import.kicad_sch"),
+            conversions={"R1.1": VoltageSource()},  # ideal port
+        )
 
 
 class KiCadBoundaryConversionBlock(KiCadSchematicBlock):
     """Block generates a Passive-to-VoltageSource adapter on the boundary port."""
+
     def __init__(self) -> None:
         super().__init__()
         self.PORT_A = self.Port(VoltageSource.empty())
-        self.import_kicad(self.file_path("resources", "test_kicad_import.kicad_sch"),
-                          conversions={
-                              'PORT_A': VoltageSource()  # ideal port
-                          })
+        self.import_kicad(
+            self.file_path("resources", "test_kicad_import.kicad_sch"),
+            conversions={"PORT_A": VoltageSource()},  # ideal port
+        )
 
 
 class KiCadImportProtoTestCase(unittest.TestCase):
@@ -42,7 +44,7 @@ class KiCadImportProtoTestCase(unittest.TestCase):
         constraints = list(map(lambda pair: pair.value, pb.constraints))
 
         expected_conn = edgir.ValueExpr()
-        expected_conn.exported.exterior_port.ref.steps.add().name = 'PORT_A'
-        expected_conn.exported.internal_block_port.ref.steps.add().name = '(adapter)R1.a'
-        expected_conn.exported.internal_block_port.ref.steps.add().name = 'dst'
+        expected_conn.exported.exterior_port.ref.steps.add().name = "PORT_A"
+        expected_conn.exported.internal_block_port.ref.steps.add().name = "(adapter)R1.a"
+        expected_conn.exported.internal_block_port.ref.steps.add().name = "dst"
         self.assertIn(expected_conn, constraints)

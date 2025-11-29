@@ -14,13 +14,14 @@ class SvgPcbTemplateBlock(Block):
     and generation of non-templated footprints exists in the backend.
 
     This defines the interface and supporting utilities only."""
+
     @staticmethod
     def _svgpcb_pathname_to_svgpcb(path: TransformUtil.Path) -> str:
-        return '_'.join(path.to_tuple()).replace('[', '_').replace(']', '_')
+        return "_".join(path.to_tuple()).replace("[", "_").replace("]", "_")
 
     @staticmethod
     def _svgpcb_footprint_to_svgpcb(footprint: str) -> str:  # KiCad footprint name to SVGPCB reference
-        return footprint.split(':')[-1].replace('-', '_').replace(' ', '_').replace('.', '_')
+        return footprint.split(":")[-1].replace("-", "_").replace(" ", "_").replace(".", "_")
 
     def _svgpcb_init(self, pathname: TransformUtil.Path, design: CompiledDesign, netlist: Netlist) -> None:
         """Initializes this Block for SVGPCB template generation. Called from the backend."""
@@ -45,8 +46,7 @@ class SvgPcbTemplateBlock(Block):
         """Returns the refdes of a block, as a tuple of prefix and number,
         or crashes if the block is not valid."""
         block_path = self._svgpcb_pathname_data.append_block(*block_ref)
-        candidate_blocks = [block for block in self._svgpcb_netlist.blocks
-                            if block.full_path.startswith(block_path)]
+        candidate_blocks = [block for block in self._svgpcb_netlist.blocks if block.full_path.startswith(block_path)]
         assert len(candidate_blocks) > 0
         refdes = candidate_blocks[0].refdes
         assert isinstance(refdes, str)
@@ -55,23 +55,21 @@ class SvgPcbTemplateBlock(Block):
             if refdes[i].isalpha():
                 if i == len(refdes) - 1:
                     return refdes, -1  # fallback if no numeric portion
-                return refdes[:i+1], int(refdes[i+1:])
+                return refdes[: i + 1], int(refdes[i + 1 :])
         return "", int(refdes)
 
     def _svgpcb_footprint_block_path_of(self, block_ref: List[str]) -> TransformUtil.Path:
         """Infrastructure method, given the name of a container block, returns the block path of the footprint block.
         Picks the first one, which is assumed to be the main / anchor device."""
         block_path = self._svgpcb_pathname_data.append_block(*block_ref)
-        candidate_blocks = [block for block in self._svgpcb_netlist.blocks
-                            if block.full_path.startswith(block_path)]
+        candidate_blocks = [block for block in self._svgpcb_netlist.blocks if block.full_path.startswith(block_path)]
         assert len(candidate_blocks) > 0
         return candidate_blocks[0].full_path
 
     def _svgpcb_footprint_of(self, path: TransformUtil.Path) -> str:
         """Infrastructure method, returns the footprint for the output of _svgpcb_footprint_block_path_of.
         If _svgpcb_footprint_block_path_of returned a value, this will return the footprint; otherwise crashes."""
-        candidate_blocks = [block for block in self._svgpcb_netlist.blocks
-                            if block.full_path == path]
+        candidate_blocks = [block for block in self._svgpcb_netlist.blocks if block.full_path == path]
         assert len(candidate_blocks) > 0
         return self._svgpcb_footprint_to_svgpcb(candidate_blocks[0].footprint)
 
@@ -80,11 +78,9 @@ class SvgPcbTemplateBlock(Block):
         be connected to one of its pins, returns the footprint pin that the port is connected to."""
         footprint_path = self._svgpcb_footprint_block_path_of(block_ref)
         port_path = footprint_path.append_port(*pin_ref)
-        candidate_nets = [net for net in self._svgpcb_netlist.nets
-                          if port_path in net.ports]
+        candidate_nets = [net for net in self._svgpcb_netlist.nets if port_path in net.ports]
         assert len(candidate_nets) == 1
-        candidate_pins = [pin for pin in candidate_nets[0].pins
-                          if pin.block_path == footprint_path]
+        candidate_pins = [pin for pin in candidate_nets[0].pins if pin.block_path == footprint_path]
         assert len(candidate_pins) == 1
         return candidate_pins[0].pin_name
 

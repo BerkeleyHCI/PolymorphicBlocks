@@ -14,32 +14,33 @@ class JlcPartsLed(PartsTableSelectorFootprint, JlcPartsBase, TableLed):
         "Photoelectric_DevicesLight_Emitting_Diodes__LED_",
         "OptocouplerakaLEDakaDigital_TubeakaPhotoelectric_DeviceLight_Emitting_Diodes__LED_",
         "Optocouplers_and_LEDs_and_InfraredLight_Emitting_Diodes__LED_",
-        ]
+    ]
     _COLOR_MAP = {
-        'red': Led.Red,
-        'orange': Led.Orange,
-        'amber': Led.Yellow,
-        'yellow': Led.Yellow,
-        'green/yellow-green': Led.GreenYellow,
-        'yellow-green': Led.GreenYellow,
-        'green-yellow': Led.GreenYellow,
-        'emerald': Led.Green,
-        'blue': Led.Blue,
-        'ice blue': Led.Blue,
-        'white': Led.White,
-        'white light': Led.White,
+        "red": Led.Red,
+        "orange": Led.Orange,
+        "amber": Led.Yellow,
+        "yellow": Led.Yellow,
+        "green/yellow-green": Led.GreenYellow,
+        "yellow-green": Led.GreenYellow,
+        "green-yellow": Led.GreenYellow,
+        "emerald": Led.Green,
+        "blue": Led.Blue,
+        "ice blue": Led.Blue,
+        "white": Led.White,
+        "white light": Led.White,
     }
 
     @classmethod
     @override
-    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes) \
-            -> Optional[Dict[PartsTableColumn, Any]]:
+    def _entry_to_table_row(
+        cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes
+    ) -> Optional[Dict[PartsTableColumn, Any]]:
         try:
             row_dict[cls.KICAD_FOOTPRINT] = JlcLed.PACKAGE_FOOTPRINT_MAP[package]
 
             part_color: Optional[str] = None
-            if 'Emitted color' in attributes:
-                table_color = attributes.get('Emitted color', str).lower()
+            if "Emitted color" in attributes:
+                table_color = attributes.get("Emitted color", str).lower()
                 part_color = cls._COLOR_MAP[table_color]
             else:  # older basic parts don't have the parametrics
                 desc = row_dict[cls.DESCRIPTION_COL].lower()

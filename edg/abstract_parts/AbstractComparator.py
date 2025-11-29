@@ -9,14 +9,15 @@ from ..electronics_model import *
 
 class Comparator(KiCadInstantiableBlock, Analog):
     """Abstract comparator interface, output goes high when inp > inn."""
+
     @override
     def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
-        assert symbol_name in ('Simulation_SPICE:OPAMP', 'edg_importable:Opamp')
-        return {'+': self.inp, '-': self.inn, '3': self.out, 'V+': self.pwr, 'V-': self.gnd}
+        assert symbol_name in ("Simulation_SPICE:OPAMP", "edg_importable:Opamp")
+        return {"+": self.inp, "-": self.inn, "3": self.out, "V+": self.pwr, "V-": self.gnd}
 
     @classmethod
     @override
-    def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> 'Comparator':
+    def block_from_symbol(cls, symbol_name: str, properties: Mapping[str, str]) -> "Comparator":
         return Comparator()
 
     def __init__(self) -> None:
@@ -40,9 +41,15 @@ class VoltageComparator(GeneratorBlock):
 
     TODO: maybe a version that takes an input analog signal?
     """
-    def __init__(self, trip_voltage: RangeLike, *, invert: BoolLike = False,
-                 input_impedance: RangeLike=(4.7, 47)*kOhm,
-                 trip_ref: RangeLike=1.65*Volt(tol=0.10)):
+
+    def __init__(
+        self,
+        trip_voltage: RangeLike,
+        *,
+        invert: BoolLike = False,
+        input_impedance: RangeLike = (4.7, 47) * kOhm,
+        trip_ref: RangeLike = 1.65 * Volt(tol=0.10),
+    ):
         super().__init__()
         self.comp = self.Block(Comparator())
         self.gnd = self.Export(self.comp.gnd, [Common])
@@ -67,20 +74,22 @@ class VoltageComparator(GeneratorBlock):
             ref_pin: Port[AnalogLink] = self.ref
             ref_voltage = self.ref.link().signal
         else:
-            self.ref_div = self.Block(VoltageDivider(
-                output_voltage=self.trip_ref,
-                impedance=self.input_impedance,
-            ))
+            self.ref_div = self.Block(
+                VoltageDivider(
+                    output_voltage=self.trip_ref,
+                    impedance=self.input_impedance,
+                )
+            )
             self.connect(self.ref_div.input, self.pwr)
             self.connect(self.ref_div.gnd, self.gnd)
             ref_pin = self.ref_div.output
             ref_voltage = self.ref_div.output.link().signal
 
-        self.comp_div = self.Block(FeedbackVoltageDivider(
-            impedance=self.input_impedance,
-            output_voltage=ref_voltage,
-            assumed_input_voltage=self.trip_voltage
-        ))
+        self.comp_div = self.Block(
+            FeedbackVoltageDivider(
+                impedance=self.input_impedance, output_voltage=ref_voltage, assumed_input_voltage=self.trip_voltage
+            )
+        )
         self.assign(self.actual_trip_voltage, self.comp_div.actual_input_voltage)
         self.connect(self.comp_div.input, self.input.as_voltage_source())
         self.connect(self.comp_div.gnd, self.gnd)

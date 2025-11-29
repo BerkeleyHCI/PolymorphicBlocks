@@ -16,25 +16,25 @@ from edg import *
 
 
 class BasicKeyboard(SimpleBoardTop):
-  @override
-  def contents(self) -> None:
-    super().contents()
+    @override
+    def contents(self) -> None:
+        super().contents()
 
-    self.mcu = self.Block(Xiao_Rp2040())
+        self.mcu = self.Block(Xiao_Rp2040())
 
-    self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
-    self.connect(self.sw.cols, self.mcu.gpio.request_vector())
-    self.connect(self.sw.rows, self.mcu.gpio.request_vector())
+        self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
+        self.connect(self.sw.cols, self.mcu.gpio.request_vector())
+        self.connect(self.sw.rows, self.mcu.gpio.request_vector())
 
-  @override
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      class_refinements=[
-        (Switch, KailhSocket),
-      ],
-    )
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (Switch, KailhSocket),
+            ],
+        )
 
 
 class BasicKeyboardTestCase(unittest.TestCase):
-  def test_design(self) -> None:
-    compile_board_inplace(BasicKeyboard)
+    def test_design(self) -> None:
+        compile_board_inplace(BasicKeyboard)

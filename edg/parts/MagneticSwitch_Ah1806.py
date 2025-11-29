@@ -8,28 +8,31 @@ class Ah1806_Device(InternalBlock, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
-        self.vdd = self.Port(VoltageSink.from_gnd(
-            self.gnd,
-            voltage_limits=(2.5, 5.5)*Volt,
-            current_draw=(0, 40)*uAmp,  # average, up to 12mA when awake
-        ))
-        self.output = self.Port(DigitalSource.low_from_supply(
-            self.gnd, current_limits=(-1, 0)*mAmp
-        ))
+        self.vdd = self.Port(
+            VoltageSink.from_gnd(
+                self.gnd,
+                voltage_limits=(2.5, 5.5) * Volt,
+                current_draw=(0, 40) * uAmp,  # average, up to 12mA when awake
+            )
+        )
+        self.output = self.Port(DigitalSource.low_from_supply(self.gnd, current_limits=(-1, 0) * mAmp))
 
     @override
     def contents(self) -> None:
         self.footprint(
-            'U', 'Package_TO_SOT_SMD:SOT-23',
+            "U",
+            "Package_TO_SOT_SMD:SOT-23",
             {
-                '1': self.vdd,  # note, kicad pin numbers differs from datasheet pin numbers
-                '3': self.gnd,
-                '2': self.output,
+                "1": self.vdd,  # note, kicad pin numbers differs from datasheet pin numbers
+                "3": self.gnd,
+                "2": self.output,
             },
-            mfr="Diodes Incorporated", part='AH1806-W-7',
-            datasheet='https://www.diodes.com/assets/Datasheets/AH1806.pdf')
+            mfr="Diodes Incorporated",
+            part="AH1806-W-7",
+            datasheet="https://www.diodes.com/assets/Datasheets/AH1806.pdf",
+        )
 
-        self.assign(self.lcsc_part, 'C126663')
+        self.assign(self.lcsc_part, "C126663")
         self.assign(self.actual_basic_part, False)
 
 
@@ -39,6 +42,7 @@ class Ah1806(MagneticSwitch, Block):
     and 20 G (10-40 tolerance range) release point.
     0.1% duty cycle, period of 75ms (typ).
     Pin-compatible with some others in the AH18xx series and DRV5032, which have different trip characteristics"""
+
     def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Ah1806_Device())
@@ -49,4 +53,4 @@ class Ah1806(MagneticSwitch, Block):
     @override
     def contents(self) -> None:
         super().contents()
-        self.cin = self.Block(DecouplingCapacitor(100*nFarad(tol=0.2))).connected(self.gnd, self.pwr)
+        self.cin = self.Block(DecouplingCapacitor(100 * nFarad(tol=0.2))).connected(self.gnd, self.pwr)

@@ -8,46 +8,48 @@ from .JlcPart import DescriptionParser, JlcTableSelector
 
 
 class JlcAluminumCapacitor(PartsTableSelectorFootprint, JlcTableSelector, TableCapacitor, AluminumCapacitor):
-  DESCRIPTION_PARSERS: List[DescriptionParser] = [
-    # the negative match prevents the dimension substring from partially eaten
-    (re.compile(".* (\S+F).* (\S+V).* (±\S+%).*[^\d\.]([\d\.]+x[\d\.]+)mm Aluminum Electrolytic Capacitors.*"),
-     lambda match: {  # discard the HF impedance parameter
-       TableCapacitor.NOMINAL_CAPACITANCE: PartParserUtil.parse_value(match.group(1), 'F'),
-       TableCapacitor.CAPACITANCE: PartParserUtil.parse_abs_tolerance(
-         match.group(3), PartParserUtil.parse_value(match.group(1), 'F'), 'F'),
-       TableCapacitor.VOLTAGE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), 'V')),
+    DESCRIPTION_PARSERS: List[DescriptionParser] = [
+        # the negative match prevents the dimension substring from partially eaten
+        (
+            re.compile(".* (\S+F).* (\S+V).* (±\S+%).*[^\d\.]([\d\.]+x[\d\.]+)mm Aluminum Electrolytic Capacitors.*"),
+            lambda match: {  # discard the HF impedance parameter
+                TableCapacitor.NOMINAL_CAPACITANCE: PartParserUtil.parse_value(match.group(1), "F"),
+                TableCapacitor.CAPACITANCE: PartParserUtil.parse_abs_tolerance(
+                    match.group(3), PartParserUtil.parse_value(match.group(1), "F"), "F"
+                ),
+                TableCapacitor.VOLTAGE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), "V")),
+                JlcTableSelector.KICAD_FOOTPRINT: f"Capacitor_SMD:CP_Elec_{match.group(4)}",
+            },
+        ),
+    ]
 
-       JlcTableSelector.KICAD_FOOTPRINT: f"Capacitor_SMD:CP_Elec_{match.group(4)}",
-     }),
-  ]
+    def __init__(self, *args: Any, capacitance_minimum_size: BoolLike = True, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.capacitance_minimum_size = self.ArgParameter(capacitance_minimum_size)
+        self.generator_param(self.capacitance_minimum_size)
 
-  def __init__(self, *args: Any, capacitance_minimum_size: BoolLike = True, **kwargs: Any) -> None:
-    super().__init__(*args, **kwargs)
-    self.capacitance_minimum_size = self.ArgParameter(capacitance_minimum_size)
-    self.generator_param(self.capacitance_minimum_size)
+    @classmethod
+    @override
+    def _make_table(cls) -> PartsTable:
+        def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
+            if row["Second Category"] != "Aluminum Electrolytic Capacitors - SMD":
+                return None
 
-  @classmethod
-  @override
-  def _make_table(cls) -> PartsTable:
-    def parse_row(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
-      if row['Second Category'] != 'Aluminum Electrolytic Capacitors - SMD':
-        return None
+            new_cols = {}
 
-      new_cols = {}
+            desc_cols = cls.parse_full_description(row[cls.DESCRIPTION_COL], cls.DESCRIPTION_PARSERS)
+            if desc_cols is not None:
+                new_cols.update(desc_cols)
+            else:
+                return None
 
-      desc_cols = cls.parse_full_description(row[cls.DESCRIPTION_COL], cls.DESCRIPTION_PARSERS)
-      if desc_cols is not None:
-        new_cols.update(desc_cols)
-      else:
-        return None
+            if new_cols[cls.KICAD_FOOTPRINT] not in cls._standard_footprint()._footprint_pinning_map():
+                return None
 
-      if new_cols[cls.KICAD_FOOTPRINT] not in cls._standard_footprint()._footprint_pinning_map():
-        return None
+            new_cols.update(cls._parse_jlcpcb_common(row))
+            return new_cols
 
-      new_cols.update(cls._parse_jlcpcb_common(row))
-      return new_cols
-
-    return cls._jlc_table().map_new_columns(parse_row)
+        return cls._jlc_table().map_new_columns(parse_row)
 
 
 lambda: JlcAluminumCapacitor()  # ensure class is instantiable (non-abstract)

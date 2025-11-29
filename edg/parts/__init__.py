@@ -43,10 +43,32 @@ from .CeramicResonator_Cstne import Cstne
 from .PassiveConnector_Header import PinHeader254, PinHeader254Vertical, PinHeader254Horizontal, PinSocket254
 from .PassiveConnector_Header import PinHeader254DualShroudedInline
 from .PassiveConnector_Header import PinHeader127DualShrouded
-from .PassiveConnector_Header import JstXh, JstXhAHorizontal, JstXhAVertical, JstPh, JstPhKVertical, JstPhSmVertical,\
-    JstPhKHorizontal, JstPhSmVerticalJlc, JstShSmHorizontal, MolexSl, Picoblade, Picoblade53398, Picoblade53261
+from .PassiveConnector_Header import (
+    JstXh,
+    JstXhAHorizontal,
+    JstXhAVertical,
+    JstPh,
+    JstPhKVertical,
+    JstPhSmVertical,
+    JstPhKHorizontal,
+    JstPhSmVerticalJlc,
+    JstShSmHorizontal,
+    MolexSl,
+    Picoblade,
+    Picoblade53398,
+    Picoblade53261,
+)
 from .PassiveConnector_Fpc import Fpc030, Fpc030Top, Fpc030Bottom, Fpc030TopBottom, HiroseFh35cshw
-from .PassiveConnector_Fpc import Fpc050, Fpc050Top, Fpc050Bottom, Fpc050BottomFlip, HiroseFh12sh, Afc01, Afc07Top, Te1734839
+from .PassiveConnector_Fpc import (
+    Fpc050,
+    Fpc050Top,
+    Fpc050Bottom,
+    Fpc050BottomFlip,
+    HiroseFh12sh,
+    Afc01,
+    Afc07Top,
+    Te1734839,
+)
 from .PassiveConnector_TagConnect import TagConnect, TagConnectLegged, TagConnectNonLegged
 
 from .Jumpers import SolderJumperTriangular
@@ -67,7 +89,17 @@ from .BoostConverter_TexasInstruments import Tps61040, Lm2733
 from .SwitchedCap_TexasInstruments import Lm2664
 from .BuckConverter_Custom import CustomSyncBuckConverterIndependent
 from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverterPwm
-from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr, SoftPowerGate, SoftPowerSwitch, PmosReverseProtection, PmosChargerReverseProtection
+from .PowerConditioning import (
+    BufferedSupply,
+    Supercap,
+    SingleDiodePowerMerge,
+    DiodePowerMerge,
+    PriorityPowerOr,
+    SoftPowerGate,
+    SoftPowerSwitch,
+    PmosReverseProtection,
+    PmosChargerReverseProtection,
+)
 from .LedDriver_Al8861 import Al8861
 from .LedDriver_Tps92200 import Tps92200
 from .ResetGenerator_Apx803s import Apx803s
@@ -80,7 +112,12 @@ from .Microcontroller_Stm32g031 import Stm32g031_G
 from .Microcontroller_Stm32g431 import Stm32g431kb
 from .Microcontroller_Stm32l432 import Stm32l432k
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2, Feather_Nrf52840
-from .Microcontroller_Esp import EspProgrammingHeader, EspProgrammingAutoReset, EspProgrammingPinHeader254, EspProgrammingTc2030
+from .Microcontroller_Esp import (
+    EspProgrammingHeader,
+    EspProgrammingAutoReset,
+    EspProgrammingPinHeader254,
+    EspProgrammingTc2030,
+)
 from .Microcontroller_Esp import HasEspProgramming
 from .Microcontroller_Esp import EspAutoProgram
 from .Microcontroller_Esp32 import Esp32_Wroom_32, Freenove_Esp32_Wrover
@@ -113,8 +150,16 @@ from .DacI2c_Mcp4728 import Mcp4728
 
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
-from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, Ws2812c_2020, Sk6812_Side_A, \
-    NeopixelArray, NeopixelArrayCircular
+from .Neopixel import (
+    Neopixel,
+    Ws2812b,
+    Sk6812Mini_E,
+    Sk6805_Ec15,
+    Ws2812c_2020,
+    Sk6812_Side_A,
+    NeopixelArray,
+    NeopixelArrayCircular,
+)
 from .Lcd_Qt096t_if09 import Qt096t_if09
 from .Lcd_Ch280qv10_Ct import Ch280qv10_Ct
 from .Lcd_Er_Tft1_28_3 import Er_Tft_128_3
@@ -189,13 +234,16 @@ from .Jacdac import JacdacDeviceTop
 # compatibility shims
 import deprecated as __deprecated  # not to be exported
 
+
 @__deprecated.deprecated("new naming convention")
 class Vl53l0xApplication(Vl53l0x, DeprecatedBlock):
     pass
 
+
 @__deprecated.deprecated("new naming convention")
 class Imu_Lsm6ds3trc(Lsm6ds3trc, DeprecatedBlock):
     pass
+
 
 @__deprecated.deprecated("new naming convention")
 class Mag_Qmc5883l(Qmc5883l, DeprecatedBlock):

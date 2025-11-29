@@ -9,44 +9,47 @@ from .Categories import *
 
 @abstract_block
 class Oscillator(DiscreteApplication):
-  """Device that generates a digital clock signal given power."""
-  def __init__(self, frequency: RangeLike) -> None:
-    super().__init__()
+    """Device that generates a digital clock signal given power."""
 
-    self.frequency = self.ArgParameter(frequency)
-    self.actual_frequency = self.Parameter(RangeExpr())
+    def __init__(self, frequency: RangeLike) -> None:
+        super().__init__()
 
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.pwr = self.Port(VoltageSink.empty(), [Power])
-    self.out = self.Port(DigitalSource.empty(), [Output])
+        self.frequency = self.ArgParameter(frequency)
+        self.actual_frequency = self.Parameter(RangeExpr())
 
-  @override
-  def contents(self) -> None:
-    super().contents()
+        self.gnd = self.Port(Ground.empty(), [Common])
+        self.pwr = self.Port(VoltageSink.empty(), [Power])
+        self.out = self.Port(DigitalSource.empty(), [Output])
 
-    self.description = DescriptionString(
-      "<b>frequency:</b> ", DescriptionString.FormatUnits(self.actual_frequency, "Hz"),
-      " <b>of spec:</b> ", DescriptionString.FormatUnits(self.frequency, "Hz"),
-    )
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.description = DescriptionString(
+            "<b>frequency:</b> ",
+            DescriptionString.FormatUnits(self.actual_frequency, "Hz"),
+            " <b>of spec:</b> ",
+            DescriptionString.FormatUnits(self.frequency, "Hz"),
+        )
 
 
 @non_library
 class TableOscillator(PartsTableSelector, Oscillator):
-  """Provides basic part table matching functionality for oscillators, by frequency only.
-  Unlike other table-based passive components, this should generate the full application circuit.
-  No default footprints are provided since these may be non-standard."""
-  FREQUENCY = PartsTableColumn(Range)
+    """Provides basic part table matching functionality for oscillators, by frequency only.
+    Unlike other table-based passive components, this should generate the full application circuit.
+    No default footprints are provided since these may be non-standard."""
 
-  def __init__(self, *args: Any, **kwargs: Any) -> None:
-    super().__init__(*args, **kwargs)
-    self.generator_param(self.frequency)
+    FREQUENCY = PartsTableColumn(Range)
 
-  @override
-  def _row_filter(self, row: PartsTableRow) -> bool:
-    return super()._row_filter(row) and \
-      row[self.FREQUENCY] in self.get(self.frequency)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.generator_param(self.frequency)
 
-  @override
-  def _row_generate(self, row: PartsTableRow) -> None:
-    super()._row_generate(row)
-    self.assign(self.actual_frequency, row[self.FREQUENCY])
+    @override
+    def _row_filter(self, row: PartsTableRow) -> bool:
+        return super()._row_filter(row) and row[self.FREQUENCY] in self.get(self.frequency)
+
+    @override
+    def _row_generate(self, row: PartsTableRow) -> None:
+        super()._row_generate(row)
+        self.assign(self.actual_frequency, row[self.FREQUENCY])

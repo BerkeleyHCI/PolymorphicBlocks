@@ -13,4 +13,4 @@ class FootprintToucbPad(FootprintBlock, HumanInterface):
     @override
     def contents(self) -> None:
         super().contents()
-        self.footprint('U', self.touch_footprint, {'1': self.pad})
+        self.footprint("U", self.touch_footprint, {"1": self.pad})

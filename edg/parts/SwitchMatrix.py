@@ -6,36 +6,37 @@ from ..abstract_parts import *
 
 
 class SwitchMatrix(HumanInterface, GeneratorBlock, SvgPcbTemplateBlock):
-  """A switch matrix, such as for a keyboard, that generates (nrows * ncols) switches while only
-  using max(nrows, ncols) IOs.
+    """A switch matrix, such as for a keyboard, that generates (nrows * ncols) switches while only
+    using max(nrows, ncols) IOs.
 
-  Internally, the switches are in a matrix, with the driver driving one col low at a time while
-  reading which rows are low (with the other cols weakly pulled high).
-  This uses the Switch abstract class, which can be refined into e.g. a tactile switch or mechanical keyswitch.
+    Internally, the switches are in a matrix, with the driver driving one col low at a time while
+    reading which rows are low (with the other cols weakly pulled high).
+    This uses the Switch abstract class, which can be refined into e.g. a tactile switch or mechanical keyswitch.
 
-  This generates per-switch diodes which allows multiple keys to be pressed simultaneously.
-  Diode anodes are attached to the rows, while cathodes go through each switch to the cols.
-  """
-  @override
-  def _svgpcb_fn_name_adds(self) -> Optional[str]:
-    return f"{self._svgpcb_get(self.ncols)}_{self._svgpcb_get(self.nrows)}"
+    This generates per-switch diodes which allows multiple keys to be pressed simultaneously.
+    Diode anodes are attached to the rows, while cathodes go through each switch to the cols.
+    """
 
-  @override
-  def _svgpcb_template(self) -> str:
-    switch_block = self._svgpcb_footprint_block_path_of(['sw[0,0]'])
-    diode_block = self._svgpcb_footprint_block_path_of(['d[0,0]'])
-    switch_reftype, switch_refnum = self._svgpcb_refdes_of(['sw[0,0]'])
-    diode_reftype, diode_refnum = self._svgpcb_refdes_of(['d[0,0]'])
-    assert switch_block is not None and diode_block is not None
-    switch_footprint = self._svgpcb_footprint_of(switch_block)
-    switch_sw_pin = self._svgpcb_pin_of(['sw[0,0]'], ['sw'])
-    switch_com_pin = self._svgpcb_pin_of(['sw[0,0]'], ['com'])
-    diode_footprint = self._svgpcb_footprint_of(diode_block)
-    diode_a_pin = self._svgpcb_pin_of(['d[0,0]'], ['anode'])
-    diode_k_pin = self._svgpcb_pin_of(['d[0,0]'], ['cathode'])
-    assert all([pin is not None for pin in [switch_sw_pin, switch_com_pin, diode_a_pin, diode_k_pin]])
+    @override
+    def _svgpcb_fn_name_adds(self) -> Optional[str]:
+        return f"{self._svgpcb_get(self.ncols)}_{self._svgpcb_get(self.nrows)}"
 
-    return f"""\
+    @override
+    def _svgpcb_template(self) -> str:
+        switch_block = self._svgpcb_footprint_block_path_of(["sw[0,0]"])
+        diode_block = self._svgpcb_footprint_block_path_of(["d[0,0]"])
+        switch_reftype, switch_refnum = self._svgpcb_refdes_of(["sw[0,0]"])
+        diode_reftype, diode_refnum = self._svgpcb_refdes_of(["d[0,0]"])
+        assert switch_block is not None and diode_block is not None
+        switch_footprint = self._svgpcb_footprint_of(switch_block)
+        switch_sw_pin = self._svgpcb_pin_of(["sw[0,0]"], ["sw"])
+        switch_com_pin = self._svgpcb_pin_of(["sw[0,0]"], ["com"])
+        diode_footprint = self._svgpcb_footprint_of(diode_block)
+        diode_a_pin = self._svgpcb_pin_of(["d[0,0]"], ["anode"])
+        diode_k_pin = self._svgpcb_pin_of(["d[0,0]"], ["cathode"])
+        assert all([pin is not None for pin in [switch_sw_pin, switch_com_pin, diode_a_pin, diode_k_pin]])
+
+        return f"""\
 function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffset=[0.25, 0]) {{
   // Circuit generator params
   const ncols = {self._svgpcb_get(self.ncols)}
@@ -107,54 +108,67 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
 }}
 """
 
-  @override
-  def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
-    return (-1.0, -1.0,
-            self._svgpcb_get(self.ncols) * 0.5 * 25.4 + 1.0, (self._svgpcb_get(self.nrows) + 1) * .5 * 25.4 + 1.0)
+    @override
+    def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
+        return (
+            -1.0,
+            -1.0,
+            self._svgpcb_get(self.ncols) * 0.5 * 25.4 + 1.0,
+            (self._svgpcb_get(self.nrows) + 1) * 0.5 * 25.4 + 1.0,
+        )
 
-  def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7)*Volt):
-    super().__init__()
+    def __init__(self, nrows: IntLike, ncols: IntLike, voltage_drop: RangeLike = (0, 0.7) * Volt):
+        super().__init__()
 
-    self.rows = self.Port(Vector(DigitalSource.empty()))
-    self.cols = self.Port(Vector(DigitalSink.empty()))
-    self.voltage_drop = self.ArgParameter(voltage_drop)
+        self.rows = self.Port(Vector(DigitalSource.empty()))
+        self.cols = self.Port(Vector(DigitalSink.empty()))
+        self.voltage_drop = self.ArgParameter(voltage_drop)
 
-    self.nrows = self.ArgParameter(nrows)
-    self.ncols = self.ArgParameter(ncols)
-    self.generator_param(self.nrows, self.ncols)
+        self.nrows = self.ArgParameter(nrows)
+        self.ncols = self.ArgParameter(ncols)
+        self.generator_param(self.nrows, self.ncols)
 
-  @override
-  def generate(self) -> None:
-    super().generate()
-    row_ports = {}
-    for row in range(self.get(self.nrows)):
-      row_ports[row] = self.rows.append_elt(DigitalSource.empty(), str(row))
+    @override
+    def generate(self) -> None:
+        super().generate()
+        row_ports = {}
+        for row in range(self.get(self.nrows)):
+            row_ports[row] = self.rows.append_elt(DigitalSource.empty(), str(row))
 
-    self.sw = ElementDict[Switch]()
-    self.d = ElementDict[Diode]()
-    for col in range(self.get(self.ncols)):
-      col_port = self.cols.append_elt(DigitalSink.empty(), str(col))
-      col_port_model = DigitalSink()  # ideal, negligible current draw (assumed) and thresholds checked at other side
-      for (row, row_port) in row_ports.items():
-        sw = self.sw[f"{col},{row}"] = self.Block(Switch(
-          voltage=row_port.link().voltage,
-          current=row_port.link().current_drawn
-        ))
-        d = self.d[f"{col},{row}"] = self.Block(Diode(
-          current=row_port.link().current_drawn,
-          # col voltage is used as a proxy, since (properly) using the row voltage causes a circular dependency
-          reverse_voltage=col_port.link().voltage,
-          voltage_drop=self.voltage_drop
-        ))
-        lowest_output = col_port.link().voltage.lower() + d.actual_voltage_drop.lower()
-        highest_output = col_port.link().output_thresholds.lower() + d.actual_voltage_drop.upper()
-        self.connect(d.anode.adapt_to(DigitalSource(
-          voltage_out=(lowest_output, highest_output),
-          output_thresholds=(highest_output, float('inf')),
-          low_driver=True, high_driver=False
-        )), row_port)
-        self.connect(d.cathode, sw.sw)
-        self.connect(sw.com.adapt_to(col_port_model), col_port)
+        self.sw = ElementDict[Switch]()
+        self.d = ElementDict[Diode]()
+        for col in range(self.get(self.ncols)):
+            col_port = self.cols.append_elt(DigitalSink.empty(), str(col))
+            col_port_model = (
+                DigitalSink()
+            )  # ideal, negligible current draw (assumed) and thresholds checked at other side
+            for row, row_port in row_ports.items():
+                sw = self.sw[f"{col},{row}"] = self.Block(
+                    Switch(voltage=row_port.link().voltage, current=row_port.link().current_drawn)
+                )
+                d = self.d[f"{col},{row}"] = self.Block(
+                    Diode(
+                        current=row_port.link().current_drawn,
+                        # col voltage is used as a proxy, since (properly) using the row voltage causes a circular dependency
+                        reverse_voltage=col_port.link().voltage,
+                        voltage_drop=self.voltage_drop,
+                    )
+                )
+                lowest_output = col_port.link().voltage.lower() + d.actual_voltage_drop.lower()
+                highest_output = col_port.link().output_thresholds.lower() + d.actual_voltage_drop.upper()
+                self.connect(
+                    d.anode.adapt_to(
+                        DigitalSource(
+                            voltage_out=(lowest_output, highest_output),
+                            output_thresholds=(highest_output, float("inf")),
+                            low_driver=True,
+                            high_driver=False,
+                        )
+                    ),
+                    row_port,
+                )
+                self.connect(d.cathode, sw.sw)
+                self.connect(sw.com.adapt_to(col_port_model), col_port)
 
-    self.rows.defined()
-    self.cols.defined()
+        self.rows.defined()
+        self.cols.defined()

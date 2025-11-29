@@ -9,6 +9,7 @@ from .DigitalPorts import DigitalSink, DigitalSource, DigitalBidir
 class Dvp8Link(Link):
     """DVP (Digital Video Port) camera link with 8-wide data connection.
     TODO: ideally this would be width-parameterized, but that core logic doesn't exist yet."""
+
     def __init__(self) -> None:
         super().__init__()
         self.host = self.Port(Dvp8Host(DigitalBidir.empty()))

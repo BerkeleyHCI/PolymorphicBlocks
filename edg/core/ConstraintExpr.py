@@ -7,9 +7,19 @@ from deprecated import deprecated
 from itertools import chain
 from typing_extensions import TypeVar, override
 
-from .Binding import Binding, ParamBinding, BoolLiteralBinding, IntLiteralBinding, \
-  FloatLiteralBinding, RangeLiteralBinding, StringLiteralBinding, RangeBuilderBinding, \
-  UnaryOpBinding, BinaryOpBinding, IfThenElseBinding
+from .Binding import (
+    Binding,
+    ParamBinding,
+    BoolLiteralBinding,
+    IntLiteralBinding,
+    FloatLiteralBinding,
+    RangeLiteralBinding,
+    StringLiteralBinding,
+    RangeBuilderBinding,
+    UnaryOpBinding,
+    BinaryOpBinding,
+    IfThenElseBinding,
+)
 from .Binding import NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp
 from .Builder import builder
 from .Core import Refable
@@ -17,619 +27,628 @@ from .Range import Range
 from .. import edgir
 
 if TYPE_CHECKING:
-  from .Ports import BasePort
-  from .Blocks import BaseBlock
+    from .Ports import BasePort
+    from .Blocks import BaseBlock
 
 
-SelfType = TypeVar('SelfType', bound='ConstraintExpr')
-WrappedType = TypeVar('WrappedType', covariant=True, default=Any)
-CastableType = TypeVar('CastableType', contravariant=True, default=Any)
+SelfType = TypeVar("SelfType", bound="ConstraintExpr")
+WrappedType = TypeVar("WrappedType", covariant=True, default=Any)
+CastableType = TypeVar("CastableType", contravariant=True, default=Any)
+
+
 class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
-  """Base class for constraint expressions. Basically a container for operations.
-  Actual meaning is held in the Binding.
-  """
-  _CASTABLE_TYPES: Tuple[Type[CastableType], ...]  # for use in ininstance(), excluding self-cls
+    """Base class for constraint expressions. Basically a container for operations.
+    Actual meaning is held in the Binding.
+    """
 
-  @override
-  def __repr__(self) -> str:
-    if self.binding is not None and self.initializer is not None:
-      return f"{super().__repr__()}({self.binding})={self.initializer}"
-    if self.initializer is not None:
-      return f"{super().__repr__()}={self.initializer}"
-    if self.binding is not None:
-      return f"{super().__repr__()}({self.binding})"
-    else:
-      return f"{super().__repr__()}"
+    _CASTABLE_TYPES: Tuple[Type[CastableType], ...]  # for use in ininstance(), excluding self-cls
 
-  @classmethod
-  @abstractmethod
-  def _to_expr_type(cls: Type[SelfType], input: CastableType) -> SelfType:
-    """Casts the input from an equivalent-type to the self-type."""
-    raise NotImplementedError
+    @override
+    def __repr__(self) -> str:
+        if self.binding is not None and self.initializer is not None:
+            return f"{super().__repr__()}({self.binding})={self.initializer}"
+        if self.initializer is not None:
+            return f"{super().__repr__()}={self.initializer}"
+        if self.binding is not None:
+            return f"{super().__repr__()}({self.binding})"
+        else:
+            return f"{super().__repr__()}"
 
-  @classmethod
-  @abstractmethod
-  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
-    """Returns the protobuf for the definition of this parameter. Must have ParamBinding / ParamVariableBinding"""
-    raise NotImplementedError
+    @classmethod
+    @abstractmethod
+    def _to_expr_type(cls: Type[SelfType], input: CastableType) -> SelfType:
+        """Casts the input from an equivalent-type to the self-type."""
+        raise NotImplementedError
 
-  @classmethod
-  @abstractmethod
-  def _from_lit(cls, pb: edgir.ValueLit) -> WrappedType:
-    """Parses the literal / wrapped type from a ValueLit proto."""
-    raise NotImplementedError
+    @classmethod
+    @abstractmethod
+    def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+        """Returns the protobuf for the definition of this parameter. Must have ParamBinding / ParamVariableBinding"""
+        raise NotImplementedError
 
-  def __init__(self: SelfType, initializer: Optional[Union[SelfType, WrappedType]] = None):
-    self.binding: Optional[Binding] = None
-    if isinstance(initializer, type(self)) and not initializer._is_bound():  # model passed in
-      self.initializer: Optional[SelfType] = initializer.initializer
-    elif initializer is None:
-      self.initializer = None
-    else:
-      self.initializer = self._to_expr_type(initializer)
-    self._context: Optional[BaseBlock] = builder.get_enclosing_block()
+    @classmethod
+    @abstractmethod
+    def _from_lit(cls, pb: edgir.ValueLit) -> WrappedType:
+        """Parses the literal / wrapped type from a ValueLit proto."""
+        raise NotImplementedError
 
-  def _get_exprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
-    assert self.binding is not None
-    return chain([self], self.binding.get_subexprs())
+    def __init__(self: SelfType, initializer: Optional[Union[SelfType, WrappedType]] = None):
+        self.binding: Optional[Binding] = None
+        if isinstance(initializer, type(self)) and not initializer._is_bound():  # model passed in
+            self.initializer: Optional[SelfType] = initializer.initializer
+        elif initializer is None:
+            self.initializer = None
+        else:
+            self.initializer = self._to_expr_type(initializer)
+        self._context: Optional[BaseBlock] = builder.get_enclosing_block()
 
-  @classmethod
-  def _new_bind(cls: Type[SelfType], binding: Binding) -> SelfType:
-    """Returns a clone of this object with the specified binding. Discards existing binding / init data."""
-    clone: SelfType = cls()
-    clone.binding = binding
-    return clone
+    def _get_exprs(self) -> Iterable[Union[ConstraintExpr, BasePort]]:
+        assert self.binding is not None
+        return chain([self], self.binding.get_subexprs())
 
-  def _bind(self: SelfType, binding: Binding) -> SelfType:
-    """Returns a clone of this object with the specified binding. This object must be unbound."""
-    assert not self._is_bound()
-    assert builder.get_enclosing_block() is self._context, f"can't clone in original context {self._context} to different new context {builder.get_enclosing_block()}"
-    if not isinstance(binding, ParamBinding):
-      assert self.initializer is None, "Only Parameters may have initializers"
-    clone: SelfType = type(self)(self.initializer)
-    clone.binding = binding
-    return clone
+    @classmethod
+    def _new_bind(cls: Type[SelfType], binding: Binding) -> SelfType:
+        """Returns a clone of this object with the specified binding. Discards existing binding / init data."""
+        clone: SelfType = cls()
+        clone.binding = binding
+        return clone
 
-  def _is_bound(self) -> bool:
-    return self.binding is not None and self.binding.is_bound()
+    def _bind(self: SelfType, binding: Binding) -> SelfType:
+        """Returns a clone of this object with the specified binding. This object must be unbound."""
+        assert not self._is_bound()
+        assert (
+            builder.get_enclosing_block() is self._context
+        ), f"can't clone in original context {self._context} to different new context {builder.get_enclosing_block()}"
+        if not isinstance(binding, ParamBinding):
+            assert self.initializer is None, "Only Parameters may have initializers"
+        clone: SelfType = type(self)(self.initializer)
+        clone.binding = binding
+        return clone
 
-  def _populate_expr_proto(self, pb: edgir.ValueExpr, ref_map: Refable.RefMapType) -> None:
-    assert self.binding is not None
-    self.binding.populate_expr_proto(pb, self, ref_map)
+    def _is_bound(self) -> bool:
+        return self.binding is not None and self.binding.is_bound()
 
-  # for now we define that all constraints can be checked for equivalence
-  @override
-  def __eq__(self: SelfType, other: ConstraintExprCastable) -> BoolExpr:  #type: ignore
-    # TODO: avoid creating excess BoolExpr
-    return BoolExpr()._bind(BinaryOpBinding(self, self._to_expr_type(other), EqOp.eq))
+    def _populate_expr_proto(self, pb: edgir.ValueExpr, ref_map: Refable.RefMapType) -> None:
+        assert self.binding is not None
+        self.binding.populate_expr_proto(pb, self, ref_map)
+
+    # for now we define that all constraints can be checked for equivalence
+    @override
+    def __eq__(self: SelfType, other: ConstraintExprCastable) -> BoolExpr:  # type: ignore
+        # TODO: avoid creating excess BoolExpr
+        return BoolExpr()._bind(BinaryOpBinding(self, self._to_expr_type(other), EqOp.eq))
 
 
-BoolLike = Union[bool, 'BoolExpr']
+BoolLike = Union[bool, "BoolExpr"]
+
+
 class BoolExpr(ConstraintExpr[bool, BoolLike]):
-  """Boolean expression, can be used as a constraint"""
+    """Boolean expression, can be used as a constraint"""
 
-  _CASTABLE_TYPES = (bool, )
+    _CASTABLE_TYPES = (bool,)
 
-  @classmethod
-  @override
-  def _to_expr_type(cls, input: BoolLike) -> BoolExpr:
-    if isinstance(input, BoolExpr):
-      assert input._is_bound()
-      return input
-    elif isinstance(input, bool):
-      return BoolExpr()._bind(BoolLiteralBinding(input))
-    else:
-      raise ValueError("unexpected type for %s of %s, expected BoolLike" % (input, type(input)))
+    @classmethod
+    @override
+    def _to_expr_type(cls, input: BoolLike) -> BoolExpr:
+        if isinstance(input, BoolExpr):
+            assert input._is_bound()
+            return input
+        elif isinstance(input, bool):
+            return BoolExpr()._bind(BoolLiteralBinding(input))
+        else:
+            raise ValueError("unexpected type for %s of %s, expected BoolLike" % (input, type(input)))
 
-  @classmethod
-  @override
-  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
-    pb.boolean.SetInParent()
+    @classmethod
+    @override
+    def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+        pb.boolean.SetInParent()
 
-  @classmethod
-  @override
-  def _from_lit(cls, pb: edgir.ValueLit) -> bool:
-    assert pb.HasField('boolean')
-    return pb.boolean.val
+    @classmethod
+    @override
+    def _from_lit(cls, pb: edgir.ValueLit) -> bool:
+        assert pb.HasField("boolean")
+        return pb.boolean.val
 
-  @classmethod
-  def _create_binary_op(cls,
-                        lhs: BoolExpr,
-                        rhs: BoolExpr,
-                        op: Union[NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp]) -> BoolExpr:  # TODO dedup w/ NumLike
-    """Creates a new expression that is the result of a binary operation on inputs"""
-    if type(lhs) != type(rhs):
-      raise TypeError(f"op args must be of same type, "
-                      f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}")
+    @classmethod
+    def _create_binary_op(
+        cls, lhs: BoolExpr, rhs: BoolExpr, op: Union[NumericOp, BoolOp, EqOp, OrdOp, RangeSetOp]
+    ) -> BoolExpr:  # TODO dedup w/ NumLike
+        """Creates a new expression that is the result of a binary operation on inputs"""
+        if type(lhs) != type(rhs):
+            raise TypeError(
+                f"op args must be of same type, " f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}"
+            )
 
-    assert lhs._is_bound() and rhs._is_bound()
-    return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
+        assert lhs._is_bound() and rhs._is_bound()
+        return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
 
-  def __and__(self, rhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self, self._to_expr_type(rhs), BoolOp.op_and)
+    def __and__(self, rhs: BoolLike) -> BoolExpr:
+        return self._create_binary_op(self, self._to_expr_type(rhs), BoolOp.op_and)
 
-  def __rand__(self, lhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self._to_expr_type(lhs), self, BoolOp.op_and)
+    def __rand__(self, lhs: BoolLike) -> BoolExpr:
+        return self._create_binary_op(self._to_expr_type(lhs), self, BoolOp.op_and)
 
-  def __or__(self, rhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self, self._to_expr_type(rhs), BoolOp.op_or)
+    def __or__(self, rhs: BoolLike) -> BoolExpr:
+        return self._create_binary_op(self, self._to_expr_type(rhs), BoolOp.op_or)
 
-  def __ror__(self, lhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self._to_expr_type(lhs), self, BoolOp.op_or)
+    def __ror__(self, lhs: BoolLike) -> BoolExpr:
+        return self._create_binary_op(self._to_expr_type(lhs), self, BoolOp.op_or)
 
-  def __xor__(self, rhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self, self._to_expr_type(rhs), BoolOp.op_xor)
+    def __xor__(self, rhs: BoolLike) -> BoolExpr:
+        return self._create_binary_op(self, self._to_expr_type(rhs), BoolOp.op_xor)
 
-  def __rxor__(self, lhs: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self._to_expr_type(lhs), self, BoolOp.op_xor)
+    def __rxor__(self, lhs: BoolLike) -> BoolExpr:
+        return self._create_binary_op(self._to_expr_type(lhs), self, BoolOp.op_xor)
 
-  def implies(self, target: BoolLike) -> BoolExpr:
-    return self._create_binary_op(self, self._to_expr_type(target), BoolOp.implies)
+    def implies(self, target: BoolLike) -> BoolExpr:
+        return self._create_binary_op(self, self._to_expr_type(target), BoolOp.implies)
 
-  def __invert__(self) -> BoolExpr:
-    return self._new_bind(UnaryOpBinding(self, BoolOp.op_not))
+    def __invert__(self) -> BoolExpr:
+        return self._new_bind(UnaryOpBinding(self, BoolOp.op_not))
 
-  # does not seem possible to restrict type-params of type vars pre-Python3.12
-  # so where a single cast is needed we're stuck with Any
-  IteType = TypeVar('IteType', bound=ConstraintExpr)
-  @overload
-  def then_else(self, then_val: IteType, else_val: IteType) -> IteType: ...  # optional strongest-typed version
-  @overload
-  def then_else(self, then_val: IteType, else_val: Any) -> IteType: ...
-  @overload
-  def then_else(self, then_val: Any, else_val: IteType) -> IteType: ...
+    # does not seem possible to restrict type-params of type vars pre-Python3.12
+    # so where a single cast is needed we're stuck with Any
+    IteType = TypeVar("IteType", bound=ConstraintExpr)
 
-  def then_else(self, then_val: Any, else_val: Any) -> ConstraintExpr:
-    if isinstance(then_val, ConstraintExpr):
-      else_val = then_val._to_expr_type(else_val)
-    elif isinstance(else_val, ConstraintExpr):
-      then_val = else_val._to_expr_type(then_val)
-    else:
-      raise ValueError("either then_val or else_val must be ConstraintExpr, TODO support dual-casting")
-    assert self._is_bound() and then_val._is_bound() and else_val._is_bound()
-    return then_val._new_bind(IfThenElseBinding(self, then_val, else_val))  # type: ignore
+    @overload
+    def then_else(self, then_val: IteType, else_val: IteType) -> IteType: ...  # optional strongest-typed version
+    @overload
+    def then_else(self, then_val: IteType, else_val: Any) -> IteType: ...
+    @overload
+    def then_else(self, then_val: Any, else_val: IteType) -> IteType: ...
+
+    def then_else(self, then_val: Any, else_val: Any) -> ConstraintExpr:
+        if isinstance(then_val, ConstraintExpr):
+            else_val = then_val._to_expr_type(else_val)
+        elif isinstance(else_val, ConstraintExpr):
+            then_val = else_val._to_expr_type(then_val)
+        else:
+            raise ValueError("either then_val or else_val must be ConstraintExpr, TODO support dual-casting")
+        assert self._is_bound() and then_val._is_bound() and else_val._is_bound()
+        return then_val._new_bind(IfThenElseBinding(self, then_val, else_val))  # type: ignore
 
 
-NumLikeSelfType = TypeVar('NumLikeSelfType', bound='NumLikeExpr')
-NumLikeCastable = TypeVar('NumLikeCastable', default=Any)  # should include the self type
+NumLikeSelfType = TypeVar("NumLikeSelfType", bound="NumLikeExpr")
+NumLikeCastable = TypeVar("NumLikeCastable", default=Any)  # should include the self type
+
+
 class NumLikeExpr(ConstraintExpr[WrappedType, NumLikeCastable], Generic[WrappedType, NumLikeCastable]):
-  """Trait for numeric-like expressions, providing common arithmetic operations"""
+    """Trait for numeric-like expressions, providing common arithmetic operations"""
 
-  @classmethod
-  @abstractmethod
-  @override
-  def _to_expr_type(cls: Type[NumLikeSelfType],
-                    input: Union[NumLikeSelfType, WrappedType, NumLikeCastable]) -> NumLikeSelfType:
-    """Casts the input from an equivalent-type to the self-type."""
-    raise NotImplementedError
+    @classmethod
+    @abstractmethod
+    @override
+    def _to_expr_type(
+        cls: Type[NumLikeSelfType], input: Union[NumLikeSelfType, WrappedType, NumLikeCastable]
+    ) -> NumLikeSelfType:
+        """Casts the input from an equivalent-type to the self-type."""
+        raise NotImplementedError
 
-  @classmethod
-  def _create_unary_op(cls,
-                       var: SelfType,
-                       op: NumericOp) -> SelfType:
-    """Creates a new expression that is the result of a unary operation on the input"""
+    @classmethod
+    def _create_unary_op(cls, var: SelfType, op: NumericOp) -> SelfType:
+        """Creates a new expression that is the result of a unary operation on the input"""
 
-    assert var._is_bound()
-    return var._new_bind(UnaryOpBinding(var, op))
+        assert var._is_bound()
+        return var._new_bind(UnaryOpBinding(var, op))
 
-  @classmethod
-  def _create_binary_op(cls,
-                        lhs: SelfType,
-                        rhs: SelfType,
-                        op: Union[NumericOp, RangeSetOp]) -> SelfType:
-    """Creates a new expression that is the result of a binary operation on inputs"""
-    if type(lhs) != type(rhs):
-      raise TypeError(f"op args must be of same type, "
-                      f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}")
+    @classmethod
+    def _create_binary_op(cls, lhs: SelfType, rhs: SelfType, op: Union[NumericOp, RangeSetOp]) -> SelfType:
+        """Creates a new expression that is the result of a binary operation on inputs"""
+        if type(lhs) != type(rhs):
+            raise TypeError(
+                f"op args must be of same type, " f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}"
+            )
 
-    assert lhs._is_bound() and rhs._is_bound()
-    return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
+        assert lhs._is_bound() and rhs._is_bound()
+        return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
 
-  def __neg__(self: NumLikeSelfType) -> NumLikeSelfType:
-    return self._create_unary_op(self, NumericOp.negate)
+    def __neg__(self: NumLikeSelfType) -> NumLikeSelfType:
+        return self._create_unary_op(self, NumericOp.negate)
 
-  def __mul_inv__(self: NumLikeSelfType) -> NumLikeSelfType:
-    return self._create_unary_op(self, NumericOp.invert)
+    def __mul_inv__(self: NumLikeSelfType) -> NumLikeSelfType:
+        return self._create_unary_op(self, NumericOp.invert)
 
-  def __add__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
-      return self._create_binary_op(self, self._to_expr_type(rhs), NumericOp.add)
-    return NotImplemented
+    def __add__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
+        if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
+            return self._create_binary_op(self, self._to_expr_type(rhs), NumericOp.add)
+        return NotImplemented
 
-  def __radd__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
-      return self._create_binary_op(self._to_expr_type(lhs), self, NumericOp.add)
-    return NotImplemented
+    def __radd__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
+        if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
+            return self._create_binary_op(self._to_expr_type(lhs), self, NumericOp.add)
+        return NotImplemented
 
-  def __sub__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
-      return self.__add__(self._to_expr_type(rhs).__neg__())
-    return NotImplemented
+    def __sub__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
+        if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
+            return self.__add__(self._to_expr_type(rhs).__neg__())
+        return NotImplemented
 
-  def __rsub__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
-      return self.__neg__().__radd__(self._to_expr_type(lhs))
-    return NotImplemented
+    def __rsub__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
+        if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
+            return self.__neg__().__radd__(self._to_expr_type(lhs))
+        return NotImplemented
 
-  def __mul__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
-      return self._create_binary_op(self, self._to_expr_type(rhs), NumericOp.mul)
-    return NotImplemented
+    def __mul__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
+        if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
+            return self._create_binary_op(self, self._to_expr_type(rhs), NumericOp.mul)
+        return NotImplemented
 
-  def __rmul__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
-      return self._create_binary_op(self._to_expr_type(lhs), self, NumericOp.mul)
-    return NotImplemented
+    def __rmul__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
+        if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
+            return self._create_binary_op(self._to_expr_type(lhs), self, NumericOp.mul)
+        return NotImplemented
 
-  def __truediv__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
-    if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
-      return self.__mul__(self._to_expr_type(rhs).__mul_inv__())
-    return NotImplemented
+    def __truediv__(self: NumLikeSelfType, rhs: NumLikeCastable) -> NumLikeSelfType:
+        if isinstance(rhs, self._CASTABLE_TYPES) or isinstance(rhs, self.__class__):
+            return self.__mul__(self._to_expr_type(rhs).__mul_inv__())
+        return NotImplemented
 
-  def __rtruediv__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
-    if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
-      return self.__mul_inv__().__mul__(self._to_expr_type(lhs))
-    return NotImplemented
+    def __rtruediv__(self: NumLikeSelfType, lhs: NumLikeCastable) -> NumLikeSelfType:
+        if isinstance(lhs, self._CASTABLE_TYPES) or isinstance(lhs, self.__class__):
+            return self.__mul_inv__().__mul__(self._to_expr_type(lhs))
+        return NotImplemented
 
-  @classmethod
-  def _create_bool_op(cls,
-                      lhs: ConstraintExpr,
-                      rhs: ConstraintExpr,
-                      op:  Union[BoolOp,EqOp,OrdOp]) -> BoolExpr:
-    if not isinstance(lhs, ConstraintExpr):
-      raise TypeError(f"op args must be of type ConstraintExpr, got {lhs} of type {type(lhs)}")
-    if not isinstance(rhs, ConstraintExpr):
-      raise TypeError(f"op args must be of type ConstraintExpr, got {rhs} of type {type(rhs)}")
-    assert lhs._is_bound() and rhs._is_bound()
-    return BoolExpr()._bind(BinaryOpBinding(lhs, rhs, op))
+    @classmethod
+    def _create_bool_op(cls, lhs: ConstraintExpr, rhs: ConstraintExpr, op: Union[BoolOp, EqOp, OrdOp]) -> BoolExpr:
+        if not isinstance(lhs, ConstraintExpr):
+            raise TypeError(f"op args must be of type ConstraintExpr, got {lhs} of type {type(lhs)}")
+        if not isinstance(rhs, ConstraintExpr):
+            raise TypeError(f"op args must be of type ConstraintExpr, got {rhs} of type {type(rhs)}")
+        assert lhs._is_bound() and rhs._is_bound()
+        return BoolExpr()._bind(BinaryOpBinding(lhs, rhs, op))
 
-  def __ne__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  #type: ignore
-    if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
-      return self._create_bool_op(self, self._to_expr_type(other), EqOp.ne)
-    return NotImplemented
+    def __ne__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:  # type: ignore
+        if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
+            return self._create_bool_op(self, self._to_expr_type(other), EqOp.ne)
+        return NotImplemented
 
-  def __gt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
-    if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
-      return self._create_bool_op(self, self._to_expr_type(other), OrdOp.gt)
-    return NotImplemented
+    def __gt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
+        if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
+            return self._create_bool_op(self, self._to_expr_type(other), OrdOp.gt)
+        return NotImplemented
 
-  def __ge__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
-    if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
-      return self._create_bool_op(self, self._to_expr_type(other), OrdOp.ge)
-    return NotImplemented
+    def __ge__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
+        if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
+            return self._create_bool_op(self, self._to_expr_type(other), OrdOp.ge)
+        return NotImplemented
 
-  def __lt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
-    if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
-      return self._create_bool_op(self, self._to_expr_type(other), OrdOp.lt)
-    return NotImplemented
+    def __lt__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
+        if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
+            return self._create_bool_op(self, self._to_expr_type(other), OrdOp.lt)
+        return NotImplemented
 
-  def __le__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
-    if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
-      return self._create_bool_op(self, self._to_expr_type(other), OrdOp.le)
-    return NotImplemented
+    def __le__(self: NumLikeSelfType, other: NumLikeCastable) -> BoolExpr:
+        if isinstance(other, self._CASTABLE_TYPES) or isinstance(other, self.__class__):
+            return self._create_bool_op(self, self._to_expr_type(other), OrdOp.le)
+        return NotImplemented
 
 
-IntLike = Union['IntExpr', int]
+IntLike = Union["IntExpr", int]
+
+
 class IntExpr(NumLikeExpr[int, IntLike]):
-  _CASTABLE_TYPES = (int, )
+    _CASTABLE_TYPES = (int,)
 
-  @classmethod
-  @override
-  def _to_expr_type(cls, input: IntLike) -> IntExpr:
-    if isinstance(input, IntExpr):
-      assert input._is_bound()
-      return input
-    elif isinstance(input, int):
-      return IntExpr()._bind(IntLiteralBinding(input))
-    else:
-      raise TypeError(f"op arg to IntExpr must be IntLike, got {input} of type {type(input)}")
+    @classmethod
+    @override
+    def _to_expr_type(cls, input: IntLike) -> IntExpr:
+        if isinstance(input, IntExpr):
+            assert input._is_bound()
+            return input
+        elif isinstance(input, int):
+            return IntExpr()._bind(IntLiteralBinding(input))
+        else:
+            raise TypeError(f"op arg to IntExpr must be IntLike, got {input} of type {type(input)}")
 
-  @classmethod
-  @override
-  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
-    pb.integer.SetInParent()
+    @classmethod
+    @override
+    def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+        pb.integer.SetInParent()
 
-  @classmethod
-  @override
-  def _from_lit(cls, pb: edgir.ValueLit) -> int:
-    assert pb.HasField('integer')
-    return pb.integer.val
+    @classmethod
+    @override
+    def _from_lit(cls, pb: edgir.ValueLit) -> int:
+        assert pb.HasField("integer")
+        return pb.integer.val
 
 
 FloatLit = Union[float, int]
-FloatLike = Union['FloatExpr', float, int]
+FloatLike = Union["FloatExpr", float, int]
+
+
 class FloatExpr(NumLikeExpr[float, Union[FloatLike, IntExpr]]):
-  _CASTABLE_TYPES = (float, int)
+    _CASTABLE_TYPES = (float, int)
 
-  @classmethod
-  @override
-  def _to_expr_type(cls, input: Union[FloatLike, IntExpr]) -> FloatExpr:
-    if isinstance(input, FloatExpr):
-      assert input._is_bound()
-      return input
-    elif isinstance(input, IntExpr):
-      assert input._is_bound() and input.binding is not None
-      return FloatExpr()._bind(input.binding)
-    elif isinstance(input, int) or isinstance(input, float):
-      return FloatExpr()._bind(FloatLiteralBinding(input))
-    else:
-      raise TypeError(f"op arg to FloatExpr must be FloatLike, got {input} of type {type(input)}")
+    @classmethod
+    @override
+    def _to_expr_type(cls, input: Union[FloatLike, IntExpr]) -> FloatExpr:
+        if isinstance(input, FloatExpr):
+            assert input._is_bound()
+            return input
+        elif isinstance(input, IntExpr):
+            assert input._is_bound() and input.binding is not None
+            return FloatExpr()._bind(input.binding)
+        elif isinstance(input, int) or isinstance(input, float):
+            return FloatExpr()._bind(FloatLiteralBinding(input))
+        else:
+            raise TypeError(f"op arg to FloatExpr must be FloatLike, got {input} of type {type(input)}")
 
-  @classmethod
-  @override
-  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
-    pb.floating.SetInParent()
+    @classmethod
+    @override
+    def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+        pb.floating.SetInParent()
 
-  @classmethod
-  @override
-  def _from_lit(cls, pb: edgir.ValueLit) -> float:
-    assert pb.HasField('floating')
-    return pb.floating.val
+    @classmethod
+    @override
+    def _from_lit(cls, pb: edgir.ValueLit) -> float:
+        assert pb.HasField("floating")
+        return pb.floating.val
 
-  def min(self, other: FloatLike) -> FloatExpr:
-    return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.min)
+    def min(self, other: FloatLike) -> FloatExpr:
+        return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.min)
 
-  def max(self, other: FloatLike) -> FloatExpr:
-    return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.max)
+    def max(self, other: FloatLike) -> FloatExpr:
+        return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.max)
 
 
-RangeLike = Union['RangeExpr', Range, Tuple[FloatLike, FloatLike]]
+RangeLike = Union["RangeExpr", Range, Tuple[FloatLike, FloatLike]]
+
+
 class RangeExpr(NumLikeExpr[Range, Union[RangeLike, FloatLike, IntExpr]]):
-  # mypy doesn't like the unbounded tuple
-  _CASTABLE_TYPES = (float, int, FloatExpr, IntExpr, Range, tuple)  # type: ignore
+    # mypy doesn't like the unbounded tuple
+    _CASTABLE_TYPES = (float, int, FloatExpr, IntExpr, Range, tuple)  # type: ignore
 
-  # Some range literals for defaults
-  POSITIVE: Range = Range.from_lower(0.0)
-  NEGATIVE: Range = Range.from_upper(0.0)
-  ALL: Range = Range.all()
-  INF: Range = Range(float('inf'), float('inf'))
-  ZERO: Range = Range(0.0, 0.0)
-  EMPTY = Range(float('NaN'), float('NaN'))  # special marker to define an empty range, which is subset-eq of any range
+    # Some range literals for defaults
+    POSITIVE: Range = Range.from_lower(0.0)
+    NEGATIVE: Range = Range.from_upper(0.0)
+    ALL: Range = Range.all()
+    INF: Range = Range(float("inf"), float("inf"))
+    ZERO: Range = Range(0.0, 0.0)
+    EMPTY = Range(
+        float("NaN"), float("NaN")
+    )  # special marker to define an empty range, which is subset-eq of any range
 
-  @classmethod
-  @override
-  def _to_expr_type(cls, input: Union[RangeLike, FloatLike, IntLike]) -> RangeExpr:
-    if isinstance(input, RangeExpr):
-      assert input._is_bound()
-      return input
-    elif isinstance(input, (int, float, FloatExpr, IntExpr)):
-      expr = FloatExpr._to_expr_type(input)
-      return RangeExpr()._bind(RangeBuilderBinding(expr, expr))
-    elif isinstance(input, tuple) and isinstance(input[0], (int, float)) and isinstance(input[1], (int, float)):
-      assert len(input) == 2
-      return RangeExpr()._bind(RangeLiteralBinding(Range(input[0], input[1])))
-    elif isinstance(input, Range):
-      return RangeExpr()._bind(RangeLiteralBinding(input))
-    elif isinstance(input, tuple):
-      assert len(input) == 2
-      return RangeExpr()._bind(RangeBuilderBinding(
-        FloatExpr._to_expr_type(input[0]),
-        FloatExpr._to_expr_type(input[1])
-        ))
-    else:
-      raise TypeError(f"op arg to RangeExpr must be RangeLike, got {input} of type {type(input)}")
+    @classmethod
+    @override
+    def _to_expr_type(cls, input: Union[RangeLike, FloatLike, IntLike]) -> RangeExpr:
+        if isinstance(input, RangeExpr):
+            assert input._is_bound()
+            return input
+        elif isinstance(input, (int, float, FloatExpr, IntExpr)):
+            expr = FloatExpr._to_expr_type(input)
+            return RangeExpr()._bind(RangeBuilderBinding(expr, expr))
+        elif isinstance(input, tuple) and isinstance(input[0], (int, float)) and isinstance(input[1], (int, float)):
+            assert len(input) == 2
+            return RangeExpr()._bind(RangeLiteralBinding(Range(input[0], input[1])))
+        elif isinstance(input, Range):
+            return RangeExpr()._bind(RangeLiteralBinding(input))
+        elif isinstance(input, tuple):
+            assert len(input) == 2
+            return RangeExpr()._bind(
+                RangeBuilderBinding(FloatExpr._to_expr_type(input[0]), FloatExpr._to_expr_type(input[1]))
+            )
+        else:
+            raise TypeError(f"op arg to RangeExpr must be RangeLike, got {input} of type {type(input)}")
 
-  @classmethod
-  @override
-  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
-    pb.range.SetInParent()
+    @classmethod
+    @override
+    def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+        pb.range.SetInParent()
 
-  @classmethod
-  @override
-  def _from_lit(cls, pb: edgir.ValueLit) -> Range:
-    assert pb.HasField('range') and pb.range.minimum.HasField('floating') and pb.range.maximum.HasField('floating')
-    return Range(pb.range.minimum.floating.val, pb.range.maximum.floating.val)
+    @classmethod
+    @override
+    def _from_lit(cls, pb: edgir.ValueLit) -> Range:
+        assert pb.HasField("range") and pb.range.minimum.HasField("floating") and pb.range.maximum.HasField("floating")
+        return Range(pb.range.minimum.floating.val, pb.range.maximum.floating.val)
 
-  @classmethod
-  @deprecated("Use shrink_multiply")
-  def cancel_multiply(cls, input_side: RangeLike, output_side: RangeLike) -> RangeExpr:
-    return RangeExpr._to_expr_type(output_side).shrink_multiply(input_side)
+    @classmethod
+    @deprecated("Use shrink_multiply")
+    def cancel_multiply(cls, input_side: RangeLike, output_side: RangeLike) -> RangeExpr:
+        return RangeExpr._to_expr_type(output_side).shrink_multiply(input_side)
 
-  def __init__(self, initializer: Optional[RangeLike] = None) -> None:
-    # must cast non-empty initializer type, because range supports wider initializers
-    # TODO and must ignore initializers of self-type (because model weirdness) - remove model support!
-    if initializer is not None and not isinstance(initializer, RangeExpr):
-      initializer = self._to_expr_type(initializer)
-    super().__init__(initializer)
-    self._lower = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.min))
-    self._upper = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.max))
+    def __init__(self, initializer: Optional[RangeLike] = None) -> None:
+        # must cast non-empty initializer type, because range supports wider initializers
+        # TODO and must ignore initializers of self-type (because model weirdness) - remove model support!
+        if initializer is not None and not isinstance(initializer, RangeExpr):
+            initializer = self._to_expr_type(initializer)
+        super().__init__(initializer)
+        self._lower = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.min))
+        self._upper = FloatExpr()._bind(UnaryOpBinding(self, RangeSetOp.max))
 
-  def _initializer_to(self, target: ConstraintExpr) -> BoolExpr:
-    # must also handle initializer mode (subset, superset) here
-    assert isinstance(target, type(self)), "target must be of same type"  # TODO don't use isinstance
-    if self.initializer is None:
-      return BoolExpr._to_expr_type(True)
-    else:
-      return target == self.initializer
+    def _initializer_to(self, target: ConstraintExpr) -> BoolExpr:
+        # must also handle initializer mode (subset, superset) here
+        assert isinstance(target, type(self)), "target must be of same type"  # TODO don't use isinstance
+        if self.initializer is None:
+            return BoolExpr._to_expr_type(True)
+        else:
+            return target == self.initializer
 
-  def within(self, item: RangeLike) -> BoolExpr:
-    return self._create_bool_op(self, RangeExpr._to_expr_type(item), OrdOp.within)
+    def within(self, item: RangeLike) -> BoolExpr:
+        return self._create_bool_op(self, RangeExpr._to_expr_type(item), OrdOp.within)
 
-  def contains(self, item: Union[RangeLike, FloatLike]) -> BoolExpr:
-    if isinstance(item, (RangeExpr, tuple, Range)):
-      return RangeExpr._to_expr_type(item).within(self)
-    elif isinstance(item, (int, float, FloatExpr, IntExpr)):
-      return self._create_bool_op(FloatExpr._to_expr_type(item), self, OrdOp.within)
+    def contains(self, item: Union[RangeLike, FloatLike]) -> BoolExpr:
+        if isinstance(item, (RangeExpr, tuple, Range)):
+            return RangeExpr._to_expr_type(item).within(self)
+        elif isinstance(item, (int, float, FloatExpr, IntExpr)):
+            return self._create_bool_op(FloatExpr._to_expr_type(item), self, OrdOp.within)
 
-  def intersect(self, other: Union[RangeLike, FloatLike]) -> RangeExpr:
-    return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.intersection)
+    def intersect(self, other: Union[RangeLike, FloatLike]) -> RangeExpr:
+        return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.intersection)
 
-  def hull(self, other: Union[RangeLike, FloatLike]) -> RangeExpr:
-    return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.hull)
+    def hull(self, other: Union[RangeLike, FloatLike]) -> RangeExpr:
+        return self._create_binary_op(self._to_expr_type(other), self, RangeSetOp.hull)
 
-  def lower(self) -> FloatExpr:
-    return self._lower
+    def lower(self) -> FloatExpr:
+        return self._lower
 
-  def upper(self) -> FloatExpr:
-    return self._upper
+    def upper(self) -> FloatExpr:
+        return self._upper
 
-  def center(self) -> FloatExpr:
-    return (self._lower + self._upper) / 2
+    def center(self) -> FloatExpr:
+        return (self._lower + self._upper) / 2
 
-  @classmethod
-  def _create_range_float_binary_op(cls,
-                                    lhs: RangeExpr,
-                                    rhs: Union[RangeExpr, IntExpr, FloatExpr],
-                                    op: Union[NumericOp]) -> RangeExpr:
-    """Creates a new expression that is the result of a binary operation on inputs"""
-    if not isinstance(lhs, RangeExpr):
-      raise TypeError(f"range mul and div lhs must be range type, "
-                      f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}")
+    @classmethod
+    def _create_range_float_binary_op(
+        cls, lhs: RangeExpr, rhs: Union[RangeExpr, IntExpr, FloatExpr], op: Union[NumericOp]
+    ) -> RangeExpr:
+        """Creates a new expression that is the result of a binary operation on inputs"""
+        if not isinstance(lhs, RangeExpr):
+            raise TypeError(
+                f"range mul and div lhs must be range type, "
+                f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}"
+            )
 
-    if not isinstance(rhs, (RangeExpr, FloatExpr, IntExpr)):
-      raise TypeError(f"range mul and div rhs must be range or float or int type, "
-                      f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}")
+        if not isinstance(rhs, (RangeExpr, FloatExpr, IntExpr)):
+            raise TypeError(
+                f"range mul and div rhs must be range or float or int type, "
+                f"got lhs={lhs} of type {type(lhs)} and rhs={rhs} of type {type(rhs)}"
+            )
 
-    assert lhs._is_bound() and rhs._is_bound()
-    return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
+        assert lhs._is_bound() and rhs._is_bound()
+        return lhs._new_bind(BinaryOpBinding(lhs, rhs, op))
 
-  def shrink_multiply(self, contributing: RangeLike) -> RangeExpr:
-    """RangeExpr version of Range.shrink_multiply.
-    See docs for Range.shrink_multiply."""
-    return RangeExpr._create_binary_op(self, self._to_expr_type(contributing), NumericOp.shrink_mul)
+    def shrink_multiply(self, contributing: RangeLike) -> RangeExpr:
+        """RangeExpr version of Range.shrink_multiply.
+        See docs for Range.shrink_multiply."""
+        return RangeExpr._create_binary_op(self, self._to_expr_type(contributing), NumericOp.shrink_mul)
 
-  def abs(self) -> RangeExpr:
-    """Returns a RangeExpr that is the absolute value of this.
-    Intuitively, this returns a range that contains the absolute value of every point in the input."""
-    return (self.lower() < 0).then_else(
-      (self.upper() < 0).then_else(
-        self._to_expr_type((0 - self.upper(), 0 - self.lower())),  # both smaller than zero, invert everything
-        self._to_expr_type((0, self.upper().max(0 - self.lower())))  # range crosses zero
-      ),
-      self  # lower > 0 and by extension upper > 0, leave as-is
-    )
+    def abs(self) -> RangeExpr:
+        """Returns a RangeExpr that is the absolute value of this.
+        Intuitively, this returns a range that contains the absolute value of every point in the input."""
+        return (self.lower() < 0).then_else(
+            (self.upper() < 0).then_else(
+                self._to_expr_type((0 - self.upper(), 0 - self.lower())),  # both smaller than zero, invert everything
+                self._to_expr_type((0, self.upper().max(0 - self.lower()))),  # range crosses zero
+            ),
+            self,  # lower > 0 and by extension upper > 0, leave as-is
+        )
 
 
-StringLike = Union['StringExpr', str]
+StringLike = Union["StringExpr", str]
+
+
 class StringExpr(ConstraintExpr[str, StringLike]):
-  """String expression, can be used as a constraint"""
+    """String expression, can be used as a constraint"""
 
-  _CASTABLE_TYPES = (str, )
+    _CASTABLE_TYPES = (str,)
 
-  @classmethod
-  @override
-  def _to_expr_type(cls, input: StringLike) -> StringExpr:
-    if isinstance(input, StringExpr):
-      assert input._is_bound()
-      return input
-    elif isinstance(input, str):
-      return StringExpr()._bind(StringLiteralBinding(input))
-    else:
-      raise ValueError("unexpected type for %s of %s, expected StringLike" % (input, type(input)))
+    @classmethod
+    @override
+    def _to_expr_type(cls, input: StringLike) -> StringExpr:
+        if isinstance(input, StringExpr):
+            assert input._is_bound()
+            return input
+        elif isinstance(input, str):
+            return StringExpr()._bind(StringLiteralBinding(input))
+        else:
+            raise ValueError("unexpected type for %s of %s, expected StringLike" % (input, type(input)))
 
-  @classmethod
-  @override
-  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
-    pb.text.SetInParent()
+    @classmethod
+    @override
+    def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+        pb.text.SetInParent()
 
-  @classmethod
-  @override
-  def _from_lit(cls, pb: edgir.ValueLit) -> str:
-    assert pb.HasField('text')
-    return pb.text.val
+    @classmethod
+    @override
+    def _from_lit(cls, pb: edgir.ValueLit) -> str:
+        assert pb.HasField("text")
+        return pb.text.val
 
-  def _is_lit(self) -> bool:
-    assert self._is_bound()
-    return isinstance(self.binding, StringLiteralBinding)
+    def _is_lit(self) -> bool:
+        assert self._is_bound()
+        return isinstance(self.binding, StringLiteralBinding)
 
-  def __add__(self, rhs: StringLike) -> StringExpr:
-    rhs_typed = self._to_expr_type(rhs)
-    assert self._is_bound() and rhs_typed._is_bound()
-    return self._new_bind(BinaryOpBinding(self, rhs_typed, NumericOp.add))
+    def __add__(self, rhs: StringLike) -> StringExpr:
+        rhs_typed = self._to_expr_type(rhs)
+        assert self._is_bound() and rhs_typed._is_bound()
+        return self._new_bind(BinaryOpBinding(self, rhs_typed, NumericOp.add))
 
-  def __radd__(self, lhs: StringLike) -> StringExpr:
-    lhs_typed = self._to_expr_type(lhs)
-    assert lhs_typed._is_bound() and self._is_bound()
-    return self._new_bind(BinaryOpBinding(self, lhs_typed, NumericOp.add))
+    def __radd__(self, lhs: StringLike) -> StringExpr:
+        lhs_typed = self._to_expr_type(lhs)
+        assert lhs_typed._is_bound() and self._is_bound()
+        return self._new_bind(BinaryOpBinding(self, lhs_typed, NumericOp.add))
 
 
 class AssignExpr(ConstraintExpr[None, None]):
-  """Assignment expression, should be an internal type"""
-  @classmethod
-  @override
-  def _to_expr_type(cls, input: Any) -> NoReturn:
-    raise ValueError("can't convert to AssignExpr")
+    """Assignment expression, should be an internal type"""
 
-  @classmethod
-  @override
-  def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
-    raise ValueError("can't create parameter from AssignExpr")
+    @classmethod
+    @override
+    def _to_expr_type(cls, input: Any) -> NoReturn:
+        raise ValueError("can't convert to AssignExpr")
 
-  @classmethod
-  @override
-  def _from_lit(cls, pb: edgir.ValueLit) -> NoReturn:
-    raise ValueError("can't unpack AssignExpr")
+    @classmethod
+    @override
+    def _populate_decl_proto(cls, pb: edgir.ValInit) -> None:
+        raise ValueError("can't create parameter from AssignExpr")
 
-  def _is_lit(self) -> NoReturn:
-    raise ValueError("can't have literal AssignExpr")
+    @classmethod
+    @override
+    def _from_lit(cls, pb: edgir.ValueLit) -> NoReturn:
+        raise ValueError("can't unpack AssignExpr")
+
+    def _is_lit(self) -> NoReturn:
+        raise ValueError("can't have literal AssignExpr")
 
 
 # TODO actually implement dimensional analysis and units type checking
 class RangeConstructor:
-  def __init__(self, tolerance: float, scale: float = 1, units: str = '') -> None:
-    self.tolerance = tolerance
-    self.scale = scale
-    self.units = units
+    def __init__(self, tolerance: float, scale: float = 1, units: str = "") -> None:
+        self.tolerance = tolerance
+        self.scale = scale
+        self.units = units
 
-  @overload
-  def __rmul__(self, other: FloatLike) -> RangeExpr: ...
-  @overload
-  def __rmul__(self, other: RangeLike) -> RangeExpr: ...
+    @overload
+    def __rmul__(self, other: FloatLike) -> RangeExpr: ...
+    @overload
+    def __rmul__(self, other: RangeLike) -> RangeExpr: ...
 
-  def __rmul__(self, other: Union[FloatLike, RangeLike]) -> RangeExpr:
-    if isinstance(other, (int, float)):
-      values = [
-        other * self.scale * (1 - self.tolerance),
-        other * self.scale * (1 + self.tolerance)
-      ]
-    elif isinstance(other, tuple) and isinstance(other[0], (int, float)) and isinstance(other[1], (int, float)):
-      assert other[0] <= other[1]
-      if other[0] < 0 and other[1] < 0:
-        values = [
-          other[0] * self.scale * (1 + self.tolerance),
-          other[1] * self.scale * (1 - self.tolerance)
-        ]
-      elif other[0] < 0 <= other[1]:
-        values = [
-          other[0] * self.scale * (1 + self.tolerance),
-          other[1] * self.scale * (1 + self.tolerance)
-        ]
-      elif other[0] >= 0 and other[1] >= 0:
-        values = [
-          other[0] * self.scale * (1 - self.tolerance),
-          other[1] * self.scale * (1 + self.tolerance)
-        ]
-      else:
-        assert False, "range tolerance broken =("
-      assert values[0] <= values[1]
-    else:
-      raise TypeError(f"expected Float or Range Literal, got {other} of type {type(other)}")
-    return RangeExpr._to_expr_type((min(values), max(values)))
+    def __rmul__(self, other: Union[FloatLike, RangeLike]) -> RangeExpr:
+        if isinstance(other, (int, float)):
+            values = [other * self.scale * (1 - self.tolerance), other * self.scale * (1 + self.tolerance)]
+        elif isinstance(other, tuple) and isinstance(other[0], (int, float)) and isinstance(other[1], (int, float)):
+            assert other[0] <= other[1]
+            if other[0] < 0 and other[1] < 0:
+                values = [other[0] * self.scale * (1 + self.tolerance), other[1] * self.scale * (1 - self.tolerance)]
+            elif other[0] < 0 <= other[1]:
+                values = [other[0] * self.scale * (1 + self.tolerance), other[1] * self.scale * (1 + self.tolerance)]
+            elif other[0] >= 0 and other[1] >= 0:
+                values = [other[0] * self.scale * (1 - self.tolerance), other[1] * self.scale * (1 + self.tolerance)]
+            else:
+                assert False, "range tolerance broken =("
+            assert values[0] <= values[1]
+        else:
+            raise TypeError(f"expected Float or Range Literal, got {other} of type {type(other)}")
+        return RangeExpr._to_expr_type((min(values), max(values)))
 
 
 class LiteralConstructor:
-  def __init__(self, scale: float = 1, units: str = ''):
-    self.scale = scale
-    self.units = units
+    def __init__(self, scale: float = 1, units: str = ""):
+        self.scale = scale
+        self.units = units
 
-  def __call__(self, *, tol: Optional[float]=None) -> RangeConstructor:
-    if tol is None:
-      raise ValueError("requires tol, use without parens to create un-toleranced literal")
-    return RangeConstructor(tol, self.scale, self.units)
+    def __call__(self, *, tol: Optional[float] = None) -> RangeConstructor:
+        if tol is None:
+            raise ValueError("requires tol, use without parens to create un-toleranced literal")
+        return RangeConstructor(tol, self.scale, self.units)
 
-  @overload
-  def __rmul__(self, other: float) -> FloatExpr: ...
-  # can't use RangeLike directly because it overlaps with FloatLike
-  @overload
-  def __rmul__(self, other: Union[Range, Tuple[float, float]]) -> RangeExpr: ...
+    @overload
+    def __rmul__(self, other: float) -> FloatExpr: ...
 
-  def __rmul__(self, other: Union[float, Range, Tuple[float, float]]) -> Union[FloatExpr, RangeExpr]:
-    if isinstance(other, (int, float)):
-      return FloatExpr._to_expr_type(other * self.scale)
-    elif isinstance(other, Range):
-      return RangeExpr._to_expr_type(other * self.scale)
-    elif isinstance(other, tuple) and isinstance(other[0], (int, float, IntExpr, FloatExpr)) \
-            and isinstance(other[1], (int, float, IntExpr, FloatExpr)):
-      return RangeExpr._to_expr_type((other[0] * self.scale, other[1] * self.scale))
-    else:
-      raise TypeError(f"expected Float or Range Literal, got {other} of type {type(other)}")
+    # can't use RangeLike directly because it overlaps with FloatLike
+    @overload
+    def __rmul__(self, other: Union[Range, Tuple[float, float]]) -> RangeExpr: ...
+
+    def __rmul__(self, other: Union[float, Range, Tuple[float, float]]) -> Union[FloatExpr, RangeExpr]:
+        if isinstance(other, (int, float)):
+            return FloatExpr._to_expr_type(other * self.scale)
+        elif isinstance(other, Range):
+            return RangeExpr._to_expr_type(other * self.scale)
+        elif (
+            isinstance(other, tuple)
+            and isinstance(other[0], (int, float, IntExpr, FloatExpr))
+            and isinstance(other[1], (int, float, IntExpr, FloatExpr))
+        ):
+            return RangeExpr._to_expr_type((other[0] * self.scale, other[1] * self.scale))
+        else:
+            raise TypeError(f"expected Float or Range Literal, got {other} of type {type(other)}")

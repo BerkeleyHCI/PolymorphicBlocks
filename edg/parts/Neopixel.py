@@ -10,6 +10,7 @@ from .JlcPart import JlcPart
 class Neopixel(Light, Block):
     """Abstract base class for individually-addressable, serially-connected Neopixel-type
     (typically RGB) LEDs and defines the pwr/gnd/din/dout interface."""
+
     def __init__(self) -> None:
         super().__init__()
         self.pwr = self.Port(VoltageSink.empty(), [Power])
@@ -21,86 +22,99 @@ class Neopixel(Light, Block):
 
 class Ws2812b(Neopixel, FootprintBlock, JlcPart):
     """5050-size Neopixel RGB. Specifically does NOT need extra filtering capacitors."""
+
     def __init__(self) -> None:
         super().__init__()
-        self.pwr.init_from(VoltageSink(
-            voltage_limits=(3.7, 5.3) * Volt,
-            current_draw=(0.6, 0.6 + 12*3) * mAmp,
-        ))
+        self.pwr.init_from(
+            VoltageSink(
+                voltage_limits=(3.7, 5.3) * Volt,
+                current_draw=(0.6, 0.6 + 12 * 3) * mAmp,
+            )
+        )
         self.gnd.init_from(Ground())
-        self.din.init_from(DigitalSink.from_supply(
-            self.gnd, self.vdd,
-            voltage_limit_tolerance=(-0.3, 0.7),
-            input_threshold_abs=(0.7, 2.7),
-            # note that a more restrictive input_threshold_abs of (1.5, 2.3) was used previously
-        ))
-        self.dout.init_from(DigitalSource.from_supply(
-            self.gnd, self.pwr,
-            current_limits=0*mAmp(tol=0),
-        ))
+        self.din.init_from(
+            DigitalSink.from_supply(
+                self.gnd,
+                self.vdd,
+                voltage_limit_tolerance=(-0.3, 0.7),
+                input_threshold_abs=(0.7, 2.7),
+                # note that a more restrictive input_threshold_abs of (1.5, 2.3) was used previously
+            )
+        )
+        self.dout.init_from(
+            DigitalSource.from_supply(
+                self.gnd,
+                self.pwr,
+                current_limits=0 * mAmp(tol=0),
+            )
+        )
 
     @override
     def contents(self) -> None:
         self.footprint(
-            'D', 'LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm',
-            {
-                '1': self.pwr,
-                '2': self.dout,
-                '3': self.gnd,
-                '4': self.din
-            },
-            mfr='Worldsemi', part='WS2812B',
-            datasheet='https://datasheet.lcsc.com/lcsc/2106062036_Worldsemi-WS2812B-B-W_C2761795.pdf'
+            "D",
+            "LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm",
+            {"1": self.pwr, "2": self.dout, "3": self.gnd, "4": self.din},
+            mfr="Worldsemi",
+            part="WS2812B",
+            datasheet="https://datasheet.lcsc.com/lcsc/2106062036_Worldsemi-WS2812B-B-W_C2761795.pdf",
         )
         # this is actually the WS2812E-V5 which shares similar specs to the B version,
         # but brighter reed and weaker blue and is available for JLC's economy assembly process
         # note, XL-5050RGBC-WS2812B is package compatible but the digital logic thresholds are relative to Vdd
         # and Vih at 0.65 Vddmax = 5.5v is 3.575, which is not compatible with the B version
-        self.assign(self.lcsc_part, 'C2920042')
+        self.assign(self.lcsc_part, "C2920042")
         self.assign(self.actual_basic_part, False)
 
 
 class Sk6812Mini_E_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.vdd = self.Port(VoltageSink(
-            voltage_limits=(3.7, 5.5) * Volt,
-            current_draw=(1, 1 + 12*3) * mAmp,  # 1 mA static type + up to 12mA/ch
-        ))
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=(3.7, 5.5) * Volt,
+                current_draw=(1, 1 + 12 * 3) * mAmp,  # 1 mA static type + up to 12mA/ch
+            )
+        )
         self.gnd = self.Port(Ground())
-        self.din = self.Port(DigitalSink.from_supply(
-            self.gnd, self.vdd,
-            voltage_limit_tolerance=(-0.5, 0.5),
-            input_threshold_factor=(0.3, 0.7),
-        ))
-        self.dout = self.Port(DigitalSource.from_supply(
-            self.gnd, self.vdd,
-            current_limits=0*mAmp(tol=0),
-        ), optional=True)
+        self.din = self.Port(
+            DigitalSink.from_supply(
+                self.gnd,
+                self.vdd,
+                voltage_limit_tolerance=(-0.5, 0.5),
+                input_threshold_factor=(0.3, 0.7),
+            )
+        )
+        self.dout = self.Port(
+            DigitalSource.from_supply(
+                self.gnd,
+                self.vdd,
+                current_limits=0 * mAmp(tol=0),
+            ),
+            optional=True,
+        )
 
     @override
     def contents(self) -> None:
         self.footprint(
-            'D', 'edg:LED_SK6812MINI-E',
-            {
-                '1': self.vdd,
-                '2': self.dout,
-                '3': self.gnd,
-                '4': self.din
-            },
-            mfr='Opsco Optoelectronics', part='SK6812MINI-E',
-            datasheet='https://cdn-shop.adafruit.com/product-files/4960/4960_SK6812MINI-E_REV02_EN.pdf'
+            "D",
+            "edg:LED_SK6812MINI-E",
+            {"1": self.vdd, "2": self.dout, "3": self.gnd, "4": self.din},
+            mfr="Opsco Optoelectronics",
+            part="SK6812MINI-E",
+            datasheet="https://cdn-shop.adafruit.com/product-files/4960/4960_SK6812MINI-E_REV02_EN.pdf",
         )
-        self.assign(self.lcsc_part, 'C5149201')
+        self.assign(self.lcsc_part, "C5149201")
         self.assign(self.actual_basic_part, False)
 
 
 class Sk6812Mini_E(Neopixel):
     """Reverse-mount (through-board) Neopixel RGB LED, commonly used for keyboard lighting."""
+
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Sk6812Mini_E_Device())
-        self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))
+        self.cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
         self.connect(self.gnd, self.device.gnd, self.cap.gnd)
         self.connect(self.pwr, self.device.vdd, self.cap.pwr)
         self.connect(self.din, self.device.din)
@@ -110,45 +124,57 @@ class Sk6812Mini_E(Neopixel):
 class Sk6805_Ec15_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.vdd = self.Port(VoltageSink(
-            voltage_limits=(3.7, 5.5) * Volt,
-            current_draw=(1, 1 + 5*3) * mAmp,  # 1 mA static type + up to 5mA/ch
-        ))
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=(3.7, 5.5) * Volt,
+                current_draw=(1, 1 + 5 * 3) * mAmp,  # 1 mA static type + up to 5mA/ch
+            )
+        )
         self.gnd = self.Port(Ground())
-        self.din = self.Port(DigitalSink.from_supply(
-            self.gnd, self.vdd,
-            voltage_limit_tolerance=(-0.5, 0.5),
-            input_threshold_factor=(0.3, 0.7),
-        ))
-        self.dout = self.Port(DigitalSource.from_supply(
-            self.gnd, self.vdd,
-            current_limits=0*mAmp(tol=0),
-        ), optional=True)
+        self.din = self.Port(
+            DigitalSink.from_supply(
+                self.gnd,
+                self.vdd,
+                voltage_limit_tolerance=(-0.5, 0.5),
+                input_threshold_factor=(0.3, 0.7),
+            )
+        )
+        self.dout = self.Port(
+            DigitalSource.from_supply(
+                self.gnd,
+                self.vdd,
+                current_limits=0 * mAmp(tol=0),
+            ),
+            optional=True,
+        )
 
     @override
     def contents(self) -> None:
         self.footprint(
-            'D', 'LED_SMD:LED_SK6812_EC15_1.5x1.5mm',
+            "D",
+            "LED_SMD:LED_SK6812_EC15_1.5x1.5mm",
             {
-                '1': self.din,
-                '2': self.vdd,
-                '3': self.dout,
-                '4': self.gnd,
+                "1": self.din,
+                "2": self.vdd,
+                "3": self.dout,
+                "4": self.gnd,
             },
-            mfr='Opsco Optoelectronics', part='SK6805-EC15',
-            datasheet='https://cdn-shop.adafruit.com/product-files/4492/Datasheet.pdf'
+            mfr="Opsco Optoelectronics",
+            part="SK6805-EC15",
+            datasheet="https://cdn-shop.adafruit.com/product-files/4492/Datasheet.pdf",
         )
-        self.assign(self.lcsc_part, 'C2890035')
+        self.assign(self.lcsc_part, "C2890035")
         self.assign(self.actual_basic_part, False)
 
 
 class Sk6805_Ec15(Neopixel):
     """0606-size (1.5mm x 1.5mm) size Neopixel RGB LED.
     No longer allowed for JLC economic assembly."""
+
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Sk6805_Ec15_Device())
-        self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))
+        self.cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
         self.connect(self.gnd, self.device.gnd, self.cap.gnd)
         self.connect(self.pwr, self.device.vdd, self.cap.pwr)
         self.connect(self.din, self.device.din)
@@ -158,44 +184,56 @@ class Sk6805_Ec15(Neopixel):
 class Ws2812c_2020_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.vdd = self.Port(VoltageSink(
-            voltage_limits=(3.7, 5.3) * Volt,
-            current_draw=(0.001, 0.001 + 5*3) * mAmp,  # 1 uA static + up to 5mA/ch
-        ))
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=(3.7, 5.3) * Volt,
+                current_draw=(0.001, 0.001 + 5 * 3) * mAmp,  # 1 uA static + up to 5mA/ch
+            )
+        )
         self.gnd = self.Port(Ground())
-        self.din = self.Port(DigitalSink.from_supply(
-            self.gnd, self.vdd,
-            voltage_limit_tolerance=(-0.3, 0.7),
-            input_threshold_abs=(0.7, 2.7),
-        ))
-        self.dout = self.Port(DigitalSource.from_supply(
-            self.gnd, self.vdd,
-            current_limits=0*mAmp(tol=0),
-        ), optional=True)
+        self.din = self.Port(
+            DigitalSink.from_supply(
+                self.gnd,
+                self.vdd,
+                voltage_limit_tolerance=(-0.3, 0.7),
+                input_threshold_abs=(0.7, 2.7),
+            )
+        )
+        self.dout = self.Port(
+            DigitalSource.from_supply(
+                self.gnd,
+                self.vdd,
+                current_limits=0 * mAmp(tol=0),
+            ),
+            optional=True,
+        )
 
     @override
     def contents(self) -> None:
         self.footprint(
-            'D', 'LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm',
+            "D",
+            "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm",
             {
-                '1': self.dout,
-                '2': self.gnd,
-                '3': self.din,
-                '4': self.vdd,
+                "1": self.dout,
+                "2": self.gnd,
+                "3": self.din,
+                "4": self.vdd,
             },
-            mfr='Worldsemi', part='WS2812C-2020-V1',
-            datasheet='https://cdn.sparkfun.com/assets/e/1/0/f/b/WS2812C-2020_V1.2_EN_19112716191654.pdf'
+            mfr="Worldsemi",
+            part="WS2812C-2020-V1",
+            datasheet="https://cdn.sparkfun.com/assets/e/1/0/f/b/WS2812C-2020_V1.2_EN_19112716191654.pdf",
         )
-        self.assign(self.lcsc_part, 'C2976072')  # note, -V1 version
+        self.assign(self.lcsc_part, "C2976072")  # note, -V1 version
         self.assign(self.actual_basic_part, False)
 
 
 class Ws2812c_2020(Neopixel):
     """WS2812C low-power Neopixel RGB LED in 2.0x2.0. 3.3v logic-level signal compatible."""
+
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Ws2812c_2020_Device())
-        self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))
+        self.cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
         self.connect(self.gnd, self.device.gnd, self.cap.gnd)
         self.connect(self.pwr, self.device.vdd, self.cap.pwr)
         self.connect(self.din, self.device.din)
@@ -205,43 +243,55 @@ class Ws2812c_2020(Neopixel):
 class Sk6812_Side_A_Device(InternalSubcircuit, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.vdd = self.Port(VoltageSink(
-            voltage_limits=(3.5, 5.5) * Volt,
-            current_draw=(1, 1 + 12*3) * mAmp,  # 1 mA static type + up to 12mA/ch
-        ))
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=(3.5, 5.5) * Volt,
+                current_draw=(1, 1 + 12 * 3) * mAmp,  # 1 mA static type + up to 12mA/ch
+            )
+        )
         self.gnd = self.Port(Ground())
-        self.din = self.Port(DigitalSink.from_supply(
-            self.gnd, self.vdd,
-            voltage_limit_tolerance=(-0.5, 0.5),
-            input_threshold_factor=(0.3, 0.7),
-        ))
-        self.dout = self.Port(DigitalSource.from_supply(
-            self.gnd, self.vdd,
-            current_limits=0*mAmp(tol=0),
-        ), optional=True)
+        self.din = self.Port(
+            DigitalSink.from_supply(
+                self.gnd,
+                self.vdd,
+                voltage_limit_tolerance=(-0.5, 0.5),
+                input_threshold_factor=(0.3, 0.7),
+            )
+        )
+        self.dout = self.Port(
+            DigitalSource.from_supply(
+                self.gnd,
+                self.vdd,
+                current_limits=0 * mAmp(tol=0),
+            ),
+            optional=True,
+        )
 
     @override
     def contents(self) -> None:
         self.footprint(
-            'D', 'edg:LED_SK6812-SIDE-A',
+            "D",
+            "edg:LED_SK6812-SIDE-A",
             {
-                '1': self.din,
-                '2': self.vdd,
-                '3': self.dout,
-                '4': self.gnd,
+                "1": self.din,
+                "2": self.vdd,
+                "3": self.dout,
+                "4": self.gnd,
             },
-            mfr='Normand Electronic Co Ltd', part='SK6812 SIDE-A',
-            datasheet='http://www.normandled.com/upload/201810/SK6812%20SIDE-A%20LED%20Datasheet.pdf'
+            mfr="Normand Electronic Co Ltd",
+            part="SK6812 SIDE-A",
+            datasheet="http://www.normandled.com/upload/201810/SK6812%20SIDE-A%20LED%20Datasheet.pdf",
         )
         # potentially footprint-compatible with C2890037
 
 
 class Sk6812_Side_A(Neopixel):
     """Side-emitting Neopixel LED, including used for keyboard edge lighting."""
+
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Sk6812_Side_A_Device())
-        self.cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2)))
+        self.cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2)))
         self.connect(self.gnd, self.device.gnd, self.cap.gnd)
         self.connect(self.pwr, self.device.vdd, self.cap.pwr)
         self.connect(self.din, self.device.din)
@@ -250,6 +300,7 @@ class Sk6812_Side_A(Neopixel):
 
 class NeopixelArray(Light, GeneratorBlock):
     """An array of Neopixels"""
+
     def __init__(self, count: IntLike):
         super().__init__()
         self.din = self.Port(DigitalSink.empty(), [Input])
@@ -278,20 +329,21 @@ class NeopixelArray(Light, GeneratorBlock):
 
 class NeopixelArrayCircular(NeopixelArray, SvgPcbTemplateBlock):
     """An array of Neopixels, with a circular layout template"""
+
     @override
     def _svgpcb_fn_name_adds(self) -> Optional[str]:
         return f"{self._svgpcb_get(self.count)}"
 
     @override
     def _svgpcb_template(self) -> str:
-        led_block = self._svgpcb_footprint_block_path_of(['led[0]'])
-        led_reftype, led_refnum = self._svgpcb_refdes_of(['led[0]'])
+        led_block = self._svgpcb_footprint_block_path_of(["led[0]"])
+        led_reftype, led_refnum = self._svgpcb_refdes_of(["led[0]"])
         assert led_block is not None
         led_footprint = self._svgpcb_footprint_of(led_block)
-        led_vdd_pin = self._svgpcb_pin_of(['led[0]'], ['vdd'])
-        led_gnd_pin = self._svgpcb_pin_of(['led[0]'], ['gnd'])
-        led_din_pin = self._svgpcb_pin_of(['led[0]'], ['din'])
-        led_dout_pin = self._svgpcb_pin_of(['led[0]'], ['dout'])
+        led_vdd_pin = self._svgpcb_pin_of(["led[0]"], ["vdd"])
+        led_gnd_pin = self._svgpcb_pin_of(["led[0]"], ["gnd"])
+        led_din_pin = self._svgpcb_pin_of(["led[0]"], ["din"])
+        led_dout_pin = self._svgpcb_pin_of(["led[0]"], ["dout"])
         assert all([pin is not None for pin in [led_vdd_pin, led_gnd_pin, led_din_pin, led_dout_pin]])
 
         return f"""\

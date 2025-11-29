@@ -6,47 +6,31 @@ from deprecated import deprecated
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class LeadFreeIndicator(Label, FootprintBlock):
-  @override
-  def contents(self) -> None:
-    super().contents()
-    self.footprint(
-      'U', 'edg:Indicator_LeadFree',
-      {},
-      value='LeadFree'
-    )
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint("U", "edg:Indicator_LeadFree", {}, value="LeadFree")
 
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class IdDots4(Label, FootprintBlock):
-  @override
-  def contents(self) -> None:
-    super().contents()
-    self.footprint(
-      'U', 'edg:Indicator_IdDots_4',
-      {},
-      value='IdDots4'
-    )
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint("U", "edg:Indicator_IdDots_4", {}, value="IdDots4")
 
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class DuckLogo(Label, FootprintBlock):
-  @override
-  def contents(self) -> None:
-    super().contents()
-    self.footprint(
-      'U', 'edg:Symbol_Duckling',
-      {},
-      value='Duck'
-    )
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint("U", "edg:Symbol_Duckling", {}, value="Duck")
 
 
 @deprecated("non-circuit footprints should be added in layout as non-schematic items")
 class LemurLogo(Label, FootprintBlock):
-  @override
-  def contents(self) -> None:
-    super().contents()
-    self.footprint(
-      'U', 'edg:Symbol_LemurSmall',
-      {},
-      value='Lemur'
-    )
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint("U", "edg:Symbol_LemurSmall", {}, value="Lemur")
