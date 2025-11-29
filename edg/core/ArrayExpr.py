@@ -23,7 +23,7 @@ class SampleElementBinding(Binding):
     return []
 
   @override
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
+  def populate_expr_proto(self, pb: edgir.ValueExpr, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> None:
     raise ValueError  # can't be used directly
 
 

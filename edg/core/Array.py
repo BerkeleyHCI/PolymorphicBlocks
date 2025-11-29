@@ -29,13 +29,10 @@ class MapExtractBinding(Binding):
     return [self.container]
 
   @override
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
+  def populate_expr_proto(self, pb: edgir.ValueExpr, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> None:
     contained_map = self.container._get_elt_sample()._create_ref_map(edgir.LocalPath())
-
-    pb = edgir.ValueExpr()
     pb.map_extract.container.ref.CopyFrom(ref_map[self.container])  # TODO support arbitrary refs
     pb.map_extract.path.CopyFrom(contained_map[self.elt])
-    return pb
 
 
 class FlattenBinding(Binding):
@@ -48,11 +45,9 @@ class FlattenBinding(Binding):
     return [self.elts]
 
   @override
-  def expr_to_proto(self, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
-    pb = edgir.ValueExpr()
+  def populate_expr_proto(self, pb: edgir.ValueExpr, expr: ConstraintExpr, ref_map: Refable.RefMapType) -> None:
     pb.unary_set.op = edgir.UnarySetExpr.Op.FLATTEN
-    pb.unary_set.vals.CopyFrom(self.elts._expr_to_proto(ref_map))
-    return pb
+    self.elts._populate_expr_proto(pb.unary_set.vals, ref_map)
 
 
 @non_library

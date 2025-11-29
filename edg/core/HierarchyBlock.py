@@ -335,7 +335,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
       if isinstance(param.binding, InitParamBinding) and param.binding.value is not None:
         # default values can't depend on anything so the ref_map is empty
         param_typed_value = param._to_expr_type(param.binding.value)
-        pb.param_defaults[param_name].CopyFrom(param_typed_value._expr_to_proto(IdentityDict()))
+        param_typed_value._populate_expr_proto(pb.param_defaults[param_name], IdentityDict())
 
   def _populate_def_proto_hierarchy(self, pb: edgir.HierarchyBlock, ref_map: Refable.RefMapType) -> None:
     self._blocks.finalize()

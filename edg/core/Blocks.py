@@ -352,13 +352,11 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
     for (name, port) in self._ports.items():
       if port in self._required_ports:
         if isinstance(port, Port):
-          edgir.add_pair(pb.constraints, f'(reqd){name}').CopyFrom(
-            port.is_connected()._expr_to_proto(ref_map)
-          )
+          port.is_connected()._populate_expr_proto(
+            edgir.add_pair(pb.constraints, f'(reqd){name}'), ref_map)
         elif isinstance(port, Vector):
-          edgir.add_pair(pb.constraints, f'(reqd){name}').CopyFrom(
-            (port.length() > 0)._expr_to_proto(ref_map)
-          )
+          (port.length() > 0)._populate_expr_proto(
+            edgir.add_pair(pb.constraints, f'(reqd){name}'), ref_map)
         else:
           raise ValueError(f"unknown non-optional port type {port}")
 
@@ -388,7 +386,7 @@ class BaseBlock(HasMetadata, metaclass=BaseBlockMeta):
     self._constraints.finalize()
 
     for (name, constraint) in self._constraints.items():
-      edgir.add_pair(pb.constraints, name).CopyFrom(constraint._expr_to_proto(ref_map))
+      constraint._populate_expr_proto(edgir.add_pair(pb.constraints, name), ref_map)
 
   def _populate_def_proto_description(self, pb: edgir.BlockLikeTypes, ref_map: Refable.RefMapType) -> None:
     description = self.description

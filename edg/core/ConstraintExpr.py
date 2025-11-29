@@ -93,9 +93,9 @@ class ConstraintExpr(Refable, Generic[WrappedType, CastableType]):
   def _is_bound(self) -> bool:
     return self.binding is not None and self.binding.is_bound()
 
-  def _expr_to_proto(self, ref_map: Refable.RefMapType) -> edgir.ValueExpr:
+  def _populate_expr_proto(self, pb: edgir.ValueExpr, ref_map: Refable.RefMapType) -> None:
     assert self.binding is not None
-    return self.binding.expr_to_proto(self, ref_map)
+    self.binding.populate_expr_proto(pb, self, ref_map)
 
   # for now we define that all constraints can be checked for equivalence
   @override
