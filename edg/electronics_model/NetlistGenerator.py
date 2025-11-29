@@ -9,34 +9,37 @@ from ..core import *
 
 
 class InvalidNetlistBlockException(BaseException):
-  pass
+    pass
 
 
 class InvalidPackingException(BaseException):
-  pass
+    pass
 
 
 class NetBlock(NamedTuple):
-  footprint: str
-  refdes: str
-  part: str
-  value: str  # gets written directly to footprint
-  full_path: TransformUtil.Path  # full path to this footprint
-  path: List[str]  # short path to this footprint
-  class_path: List[edgir.LibraryPath]  # classes on short path to this footprint
+    footprint: str
+    refdes: str
+    part: str
+    value: str  # gets written directly to footprint
+    full_path: TransformUtil.Path  # full path to this footprint
+    path: List[str]  # short path to this footprint
+    class_path: List[edgir.LibraryPath]  # classes on short path to this footprint
+
 
 class NetPin(NamedTuple):
-  block_path: TransformUtil.Path  # full path to the block
-  pin_name: str
+    block_path: TransformUtil.Path  # full path to the block
+    pin_name: str
+
 
 class Net(NamedTuple):
-  name: str
-  pins: List[NetPin]
-  ports: List[TransformUtil.Path]
+    name: str
+    pins: List[NetPin]
+    ports: List[TransformUtil.Path]
+
 
 class Netlist(NamedTuple):
-  blocks: List[NetBlock]
-  nets: List[Net]
+    blocks: List[NetBlock]
+    nets: List[Net]
 
 
 # The concept of board scopes is footprints associated with a scope (defined as a path) that is a board,
@@ -44,303 +47,326 @@ class Netlist(NamedTuple):
 # The default (top-level) board has TransformUtil.Path.empty().
 # None board scope means the footprints do not exist (virtual component), eg the associated blocks were for modeling.
 class BoardScope(NamedTuple):
-  path: TransformUtil.Path  # root path
-  footprints: Dict[TransformUtil.Path, NetBlock]  # Path -> Block footprint
-  edges: Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Port Path -> connected Port Paths
-  pins: Dict[TransformUtil.Path, List[NetPin]]  # mapping from Port to pad
-  assert_connected: List[Tuple[TransformUtil.Path, TransformUtil.Path]]
+    path: TransformUtil.Path  # root path
+    footprints: Dict[TransformUtil.Path, NetBlock]  # Path -> Block footprint
+    edges: Dict[TransformUtil.Path, List[TransformUtil.Path]]  # Port Path -> connected Port Paths
+    pins: Dict[TransformUtil.Path, List[NetPin]]  # mapping from Port to pad
+    assert_connected: List[Tuple[TransformUtil.Path, TransformUtil.Path]]
 
-  @classmethod
-  def empty(cls, path: TransformUtil.Path) -> 'BoardScope':  # returns a fresh, empty BordScope
-    return BoardScope(path, {}, {}, {}, [])
+    @classmethod
+    def empty(cls, path: TransformUtil.Path) -> "BoardScope":  # returns a fresh, empty BordScope
+        return BoardScope(path, {}, {}, {}, [])
 
 
 Scopes = Dict[TransformUtil.Path, Optional[BoardScope]]  # Block -> board scope (reference, aliased across entries)
-ClassPaths = Dict[TransformUtil.Path, List[edgir.LibraryPath]]  # Path -> class names corresponding to shortened path name
+ClassPaths = Dict[
+    TransformUtil.Path, List[edgir.LibraryPath]
+]  # Path -> class names corresponding to shortened path name
+
+
 class NetlistTransform(TransformUtil.Transform):
-  @staticmethod
-  def flatten_port(path: TransformUtil.Path, port: edgir.PortLike) -> Iterable[TransformUtil.Path]:
-    if port.HasField('port'):
-      return [path]
-    elif port.HasField('array') and port.array.HasField('ports'):
-      return chain(*[NetlistTransform.flatten_port(path.append_port(port_pair.name), port_pair.value)
-                     for port_pair in port.array.ports.ports])
-    else:
-      raise ValueError(f"don't know how to flatten netlistable port {port}")
-
-  def __init__(self, design: CompiledDesign):
-    self.all_scopes = [BoardScope.empty(TransformUtil.Path.empty())]  # list of unique scopes
-    self.scopes: Scopes = {TransformUtil.Path.empty(): self.all_scopes[0]}
-
-    self.short_paths: Dict[TransformUtil.Path, List[str]] = {TransformUtil.Path.empty(): []}  # seed root
-    self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
-
-    self.design = design
-
-  def process_blocklike(self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]) -> None:
-    # TODO may need rethought to support multi-board assemblies
-    scope = self.scopes[path]  # including footprint and exports, and everything within a link
-    internal_scope = scope  # for internal blocks
-
-    if isinstance(block, edgir.HierarchyBlock):
-      if 'fp_is_wrapper' in block.meta.members.node:  # wrapper internal blocks ignored
-        internal_scope = None
-      for block_pair in block.blocks:
-        self.scopes[path.append_block(block_pair.name)] = internal_scope
-      for link_pair in block.links:  # links considered to be the same scope as self
-        self.scopes[path.append_link(link_pair.name)] = scope
-
-      # generate short paths for children first, for Blocks only
-      main_internal_blocks: Dict[str, edgir.BlockLike] = {}
-      other_internal_blocks: Dict[str, edgir.BlockLike] = {}
-
-      for block_pair in block.blocks:
-        subblock = block_pair.value
-        # ignore pseudoblocks like bridges and adapters that have no internals
-        if not subblock.hierarchy.blocks and 'fp_is_footprint' not in subblock.hierarchy.meta.members.node:
-          other_internal_blocks[block_pair.name] = block_pair.value
+    @staticmethod
+    def flatten_port(path: TransformUtil.Path, port: edgir.PortLike) -> Iterable[TransformUtil.Path]:
+        if port.HasField("port"):
+            return [path]
+        elif port.HasField("array") and port.array.HasField("ports"):
+            return chain(
+                *[
+                    NetlistTransform.flatten_port(path.append_port(port_pair.name), port_pair.value)
+                    for port_pair in port.array.ports.ports
+                ]
+            )
         else:
-          main_internal_blocks[block_pair.name] = block_pair.value
+            raise ValueError(f"don't know how to flatten netlistable port {port}")
 
-      short_path = self.short_paths[path]
-      class_path = self.class_paths[path]
+    def __init__(self, design: CompiledDesign):
+        self.all_scopes = [BoardScope.empty(TransformUtil.Path.empty())]  # list of unique scopes
+        self.scopes: Scopes = {TransformUtil.Path.empty(): self.all_scopes[0]}
 
-      if len(main_internal_blocks) == 1 and short_path:  # never shorten top-level blocks
-        name = list(main_internal_blocks.keys())[0]
-        self.short_paths[path.append_block(name)] = short_path
-        self.class_paths[path.append_block(name)] = class_path
-      else:
-        for (name, subblock) in main_internal_blocks.items():
-          self.short_paths[path.append_block(name)] = short_path + [name]
-          self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
+        self.short_paths: Dict[TransformUtil.Path, List[str]] = {TransformUtil.Path.empty(): []}  # seed root
+        self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
 
-      for (name, subblock) in other_internal_blocks.items():
-        self.short_paths[path.append_block(name)] = short_path + [name]
-        self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
-    elif isinstance(block, (edgir.Link, edgir.LinkArray)):
-      for link_pair in block.links:
-        self.scopes[path.append_link(link_pair.name)] = scope
+        self.design = design
 
-    if 'nets' in block.meta.members.node and scope is not None:
-      # add self as a net
-      # list conversion to deal with iterable-once
-      flat_ports = list(chain(*[self.flatten_port(path.append_port(port_pair.name), port_pair.value)
-                                for port_pair in block.ports]))
-      scope.edges.setdefault(path, []).extend(flat_ports)
-      for port_path in flat_ports:
-        scope.edges.setdefault(port_path, []).append(path)
+    def process_blocklike(
+        self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]
+    ) -> None:
+        # TODO may need rethought to support multi-board assemblies
+        scope = self.scopes[path]  # including footprint and exports, and everything within a link
+        internal_scope = scope  # for internal blocks
 
-    if 'nets_packed' in block.meta.members.node and scope is not None:
-      # this connects the first source to all destinations, then asserts all the sources are equal
-      # this leaves the sources unconnected, to be connected externally and checked at the end
-      src_port_name = block.meta.members.node['nets_packed'].members.node['src'].text_leaf
-      dst_port_name = block.meta.members.node['nets_packed'].members.node['dst'].text_leaf
-      flat_srcs = list(self.flatten_port(path.append_port(src_port_name), edgir.pair_get(block.ports, src_port_name)))
-      flat_dsts = list(self.flatten_port(path.append_port(dst_port_name), edgir.pair_get(block.ports, dst_port_name)))
-      assert flat_srcs, "missing source port(s) for packed net"
-      for dst_path in flat_dsts:
-        scope.edges.setdefault(flat_srcs[0], []).append(dst_path)
-        scope.edges.setdefault(dst_path, []).append(flat_srcs[0])
-      for src_path in flat_srcs:  # assert all sources connected
-        for dst_path in flat_srcs:
-          scope.assert_connected.append((src_path, dst_path))
+        if isinstance(block, edgir.HierarchyBlock):
+            if "fp_is_wrapper" in block.meta.members.node:  # wrapper internal blocks ignored
+                internal_scope = None
+            for block_pair in block.blocks:
+                self.scopes[path.append_block(block_pair.name)] = internal_scope
+            for link_pair in block.links:  # links considered to be the same scope as self
+                self.scopes[path.append_link(link_pair.name)] = scope
 
-    if 'fp_is_footprint' in block.meta.members.node and scope is not None:
-      footprint_name = self.design.get_value(path.to_tuple() + ('fp_footprint',))
-      footprint_pinning = self.design.get_value(path.to_tuple() + ('fp_pinning',))
-      mfr = self.design.get_value(path.to_tuple() + ('fp_mfr',))
-      part = self.design.get_value(path.to_tuple() + ('fp_part',))
-      value = self.design.get_value(path.to_tuple() + ('fp_value',))
-      refdes = self.design.get_value(path.to_tuple() + ('fp_refdes',))
-      lcsc_part = self.design.get_value(path.to_tuple() + ('lcsc_part',))
+            # generate short paths for children first, for Blocks only
+            main_internal_blocks: Dict[str, edgir.BlockLike] = {}
+            other_internal_blocks: Dict[str, edgir.BlockLike] = {}
 
-      assert isinstance(footprint_name, str)
-      assert isinstance(footprint_pinning, list)
-      assert isinstance(mfr, str) or mfr is None
-      assert isinstance(part, str) or part is None
-      assert isinstance(value, str) or value is None
-      assert isinstance(lcsc_part, str) or lcsc_part is None
-      assert isinstance(refdes, str)
+            for block_pair in block.blocks:
+                subblock = block_pair.value
+                # ignore pseudoblocks like bridges and adapters that have no internals
+                if not subblock.hierarchy.blocks and "fp_is_footprint" not in subblock.hierarchy.meta.members.node:
+                    other_internal_blocks[block_pair.name] = block_pair.value
+                else:
+                    main_internal_blocks[block_pair.name] = block_pair.value
 
-      part_comps = [
-        part,
-        f"({mfr})" if mfr else ""
-      ]
-      part_str = " ".join(filter(None, part_comps))
-      value_str = value if value else (part if part else '')
-      scope.footprints[path] = NetBlock(
-        footprint_name,
-        refdes,
-        part_str,
-        value_str,
-        path,
-        self.short_paths[path],
-        self.class_paths[path]
-      )
+            short_path = self.short_paths[path]
+            class_path = self.class_paths[path]
 
-      for pin_spec in footprint_pinning:
-        assert isinstance(pin_spec, str)
-        pin_spec_split = pin_spec.split('=')
-        assert len(pin_spec_split) == 2
-        pin_name = pin_spec_split[0]
-        pin_port_path = edgir.LocalPathList(pin_spec_split[1].split('.'))
+            if len(main_internal_blocks) == 1 and short_path:  # never shorten top-level blocks
+                name = list(main_internal_blocks.keys())[0]
+                self.short_paths[path.append_block(name)] = short_path
+                self.class_paths[path.append_block(name)] = class_path
+            else:
+                for name, subblock in main_internal_blocks.items():
+                    self.short_paths[path.append_block(name)] = short_path + [name]
+                    self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
 
-        src_path = path.follow(pin_port_path, block)[0]
-        scope.edges.setdefault(src_path, [])  # make sure there is a port entry so single-pin nets are named
-        scope.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
+            for name, subblock in other_internal_blocks.items():
+                self.short_paths[path.append_block(name)] = short_path + [name]
+                self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
+        elif isinstance(block, (edgir.Link, edgir.LinkArray)):
+            for link_pair in block.links:
+                self.scopes[path.append_link(link_pair.name)] = scope
 
-    for constraint_pair in block.constraints:
-      if scope is not None:
-        if constraint_pair.value.HasField('connected'):
-          self.process_connected(path, block, scope, constraint_pair.value.connected)
-        elif constraint_pair.value.HasField('connectedArray'):
-          for expanded_connect in constraint_pair.value.connectedArray.expanded:
-            self.process_connected(path, block, scope, expanded_connect)
-        elif constraint_pair.value.HasField('exported'):
-          self.process_exported(path, block, scope, constraint_pair.value.exported)
-        elif constraint_pair.value.HasField('exportedArray'):
-          for expanded_export in constraint_pair.value.exportedArray.expanded:
-            self.process_exported(path, block, scope, expanded_export)
-        elif constraint_pair.value.HasField('exportedTunnel'):
-          self.process_exported(path, block, scope, constraint_pair.value.exportedTunnel)
+        if "nets" in block.meta.members.node and scope is not None:
+            # add self as a net
+            # list conversion to deal with iterable-once
+            flat_ports = list(
+                chain(
+                    *[self.flatten_port(path.append_port(port_pair.name), port_pair.value) for port_pair in block.ports]
+                )
+            )
+            scope.edges.setdefault(path, []).extend(flat_ports)
+            for port_path in flat_ports:
+                scope.edges.setdefault(port_path, []).append(path)
 
-  def process_connected(self, path: TransformUtil.Path, current: edgir.EltTypes, scope: BoardScope,
-                        constraint: edgir.ConnectedExpr) -> None:
-    if constraint.expanded:
-      assert len(constraint.expanded) == 1
-      self.process_connected(path, current, scope, constraint.expanded[0])
-      return
-    assert constraint.block_port.HasField('ref')
-    assert constraint.link_port.HasField('ref')
-    self.connect_ports(
-      scope,
-      path.follow(constraint.block_port.ref, current),
-      path.follow(constraint.link_port.ref, current))
+        if "nets_packed" in block.meta.members.node and scope is not None:
+            # this connects the first source to all destinations, then asserts all the sources are equal
+            # this leaves the sources unconnected, to be connected externally and checked at the end
+            src_port_name = block.meta.members.node["nets_packed"].members.node["src"].text_leaf
+            dst_port_name = block.meta.members.node["nets_packed"].members.node["dst"].text_leaf
+            flat_srcs = list(
+                self.flatten_port(path.append_port(src_port_name), edgir.pair_get(block.ports, src_port_name))
+            )
+            flat_dsts = list(
+                self.flatten_port(path.append_port(dst_port_name), edgir.pair_get(block.ports, dst_port_name))
+            )
+            assert flat_srcs, "missing source port(s) for packed net"
+            for dst_path in flat_dsts:
+                scope.edges.setdefault(flat_srcs[0], []).append(dst_path)
+                scope.edges.setdefault(dst_path, []).append(flat_srcs[0])
+            for src_path in flat_srcs:  # assert all sources connected
+                for dst_path in flat_srcs:
+                    scope.assert_connected.append((src_path, dst_path))
 
-  def process_exported(self, path: TransformUtil.Path, current: edgir.EltTypes, scope: BoardScope,
-                       constraint: edgir.ExportedExpr) -> None:
-    if constraint.expanded:
-      assert len(constraint.expanded) == 1
-      self.process_exported(path, current, scope, constraint.expanded[0])
-      return
-    assert constraint.internal_block_port.HasField('ref')
-    assert constraint.exterior_port.HasField('ref')
-    self.connect_ports(
-      scope,
-      path.follow(constraint.internal_block_port.ref, current),
-      path.follow(constraint.exterior_port.ref, current))
+        if "fp_is_footprint" in block.meta.members.node and scope is not None:
+            footprint_name = self.design.get_value(path.to_tuple() + ("fp_footprint",))
+            footprint_pinning = self.design.get_value(path.to_tuple() + ("fp_pinning",))
+            mfr = self.design.get_value(path.to_tuple() + ("fp_mfr",))
+            part = self.design.get_value(path.to_tuple() + ("fp_part",))
+            value = self.design.get_value(path.to_tuple() + ("fp_value",))
+            refdes = self.design.get_value(path.to_tuple() + ("fp_refdes",))
+            lcsc_part = self.design.get_value(path.to_tuple() + ("lcsc_part",))
 
-  def connect_ports(self, scope: BoardScope, elt1: Tuple[TransformUtil.Path, edgir.EltTypes],
-                    elt2: Tuple[TransformUtil.Path, edgir.EltTypes]) -> None:
-    """Recursively connect ports as applicable"""
-    if isinstance(elt1[1], edgir.Port) and isinstance(elt2[1], edgir.Port):
-      scope.edges.setdefault(elt1[0], []).append(elt2[0])
-      scope.edges.setdefault(elt2[0], []).append(elt1[0])
-    elif isinstance(elt1[1], edgir.Bundle) and isinstance(elt2[1], edgir.Bundle):
-      elt1_names = list(map(lambda pair: pair.name, elt1[1].ports))
-      elt2_names = list(map(lambda pair: pair.name, elt2[1].ports))
-      assert elt1_names == elt2_names, f"mismatched bundle types {elt1}, {elt2}"
-      for key in elt2_names:
+            assert isinstance(footprint_name, str)
+            assert isinstance(footprint_pinning, list)
+            assert isinstance(mfr, str) or mfr is None
+            assert isinstance(part, str) or part is None
+            assert isinstance(value, str) or value is None
+            assert isinstance(lcsc_part, str) or lcsc_part is None
+            assert isinstance(refdes, str)
+
+            part_comps = [part, f"({mfr})" if mfr else ""]
+            part_str = " ".join(filter(None, part_comps))
+            value_str = value if value else (part if part else "")
+            scope.footprints[path] = NetBlock(
+                footprint_name, refdes, part_str, value_str, path, self.short_paths[path], self.class_paths[path]
+            )
+
+            for pin_spec in footprint_pinning:
+                assert isinstance(pin_spec, str)
+                pin_spec_split = pin_spec.split("=")
+                assert len(pin_spec_split) == 2
+                pin_name = pin_spec_split[0]
+                pin_port_path = edgir.LocalPathList(pin_spec_split[1].split("."))
+
+                src_path = path.follow(pin_port_path, block)[0]
+                scope.edges.setdefault(src_path, [])  # make sure there is a port entry so single-pin nets are named
+                scope.pins.setdefault(src_path, []).append(NetPin(path, pin_name))
+
+        for constraint_pair in block.constraints:
+            if scope is not None:
+                if constraint_pair.value.HasField("connected"):
+                    self.process_connected(path, block, scope, constraint_pair.value.connected)
+                elif constraint_pair.value.HasField("connectedArray"):
+                    for expanded_connect in constraint_pair.value.connectedArray.expanded:
+                        self.process_connected(path, block, scope, expanded_connect)
+                elif constraint_pair.value.HasField("exported"):
+                    self.process_exported(path, block, scope, constraint_pair.value.exported)
+                elif constraint_pair.value.HasField("exportedArray"):
+                    for expanded_export in constraint_pair.value.exportedArray.expanded:
+                        self.process_exported(path, block, scope, expanded_export)
+                elif constraint_pair.value.HasField("exportedTunnel"):
+                    self.process_exported(path, block, scope, constraint_pair.value.exportedTunnel)
+
+    def process_connected(
+        self, path: TransformUtil.Path, current: edgir.EltTypes, scope: BoardScope, constraint: edgir.ConnectedExpr
+    ) -> None:
+        if constraint.expanded:
+            assert len(constraint.expanded) == 1
+            self.process_connected(path, current, scope, constraint.expanded[0])
+            return
+        assert constraint.block_port.HasField("ref")
+        assert constraint.link_port.HasField("ref")
         self.connect_ports(
-          scope,
-          (elt1[0].append_port(key), edgir.resolve_portlike(edgir.pair_get(elt1[1].ports, key))),
-          (elt2[0].append_port(key), edgir.resolve_portlike(edgir.pair_get(elt2[1].ports, key))))
-      # don't need to create the bundle connect, since Bundles can't be CircuitPorts
-    else:
-      raise ValueError(f"can't connect types {elt1}, {elt2}")
+            scope, path.follow(constraint.block_port.ref, current), path.follow(constraint.link_port.ref, current)
+        )
 
-  @override
-  def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
-    self.process_blocklike(context.path, block)
+    def process_exported(
+        self, path: TransformUtil.Path, current: edgir.EltTypes, scope: BoardScope, constraint: edgir.ExportedExpr
+    ) -> None:
+        if constraint.expanded:
+            assert len(constraint.expanded) == 1
+            self.process_exported(path, current, scope, constraint.expanded[0])
+            return
+        assert constraint.internal_block_port.HasField("ref")
+        assert constraint.exterior_port.HasField("ref")
+        self.connect_ports(
+            scope,
+            path.follow(constraint.internal_block_port.ref, current),
+            path.follow(constraint.exterior_port.ref, current),
+        )
 
-  @override
-  def visit_link(self, context: TransformUtil.TransformContext, link: edgir.Link) -> None:
-    self.process_blocklike(context.path, link)
-
-  @override
-  def visit_linkarray(self, context: TransformUtil.TransformContext, link: edgir.LinkArray) -> None:
-    self.process_blocklike(context.path, link)
-
-  @staticmethod
-  def name_net(net: Iterable[TransformUtil.Path], net_prefix: str) -> str:
-    """Names a net based on all the paths of ports and links that are part of the net."""
-    # higher criteria are preferred, True or larger number is preferred
-    CRITERIA: List[Callable[[TransformUtil.Path], Union[bool, int]]] = [
-      lambda pin: not (pin.blocks and pin.blocks[-1].startswith('(adapter)')),
-      lambda pin: not (pin.links and (pin.links[0].startswith('anon') or pin.links[0].startswith('_'))),
-      lambda pin: -len(pin.blocks),  # prefer shorter block paths
-      lambda pin: len(pin.links),  # prefer longer link paths
-      lambda pin: -len(pin.ports),  # prefer shorter (or no) port lengths
-      lambda pin: not(pin.ports and pin.ports[-1].isnumeric()),  # disprefer number-only ports
-    ]
-    def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:
-      assert not pin1.params and not pin2.params
-      for test in CRITERIA:
-        pin1_result = test(pin1)
-        pin2_result = test(pin2)
-        if pin1_result == pin2_result:
-          continue
-        if isinstance(pin1_result, bool) and isinstance(pin2_result, bool):
-          if pin1_result:
-            return -1
-          else:
-            return 1
-        elif isinstance(pin1_result, int) and isinstance(pin2_result, int):
-          return pin2_result - pin1_result
+    def connect_ports(
+        self,
+        scope: BoardScope,
+        elt1: Tuple[TransformUtil.Path, edgir.EltTypes],
+        elt2: Tuple[TransformUtil.Path, edgir.EltTypes],
+    ) -> None:
+        """Recursively connect ports as applicable"""
+        if isinstance(elt1[1], edgir.Port) and isinstance(elt2[1], edgir.Port):
+            scope.edges.setdefault(elt1[0], []).append(elt2[0])
+            scope.edges.setdefault(elt2[0], []).append(elt1[0])
+        elif isinstance(elt1[1], edgir.Bundle) and isinstance(elt2[1], edgir.Bundle):
+            elt1_names = list(map(lambda pair: pair.name, elt1[1].ports))
+            elt2_names = list(map(lambda pair: pair.name, elt2[1].ports))
+            assert elt1_names == elt2_names, f"mismatched bundle types {elt1}, {elt2}"
+            for key in elt2_names:
+                self.connect_ports(
+                    scope,
+                    (elt1[0].append_port(key), edgir.resolve_portlike(edgir.pair_get(elt1[1].ports, key))),
+                    (elt2[0].append_port(key), edgir.resolve_portlike(edgir.pair_get(elt2[1].ports, key))),
+                )
+            # don't need to create the bundle connect, since Bundles can't be CircuitPorts
         else:
-          raise ValueError("mismatched result types")
-      return 0
-    best_path = sorted(net, key=cmp_to_key(pin_name_goodness))[0]
+            raise ValueError(f"can't connect types {elt1}, {elt2}")
 
-    return net_prefix + str(best_path)
+    @override
+    def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
+        self.process_blocklike(context.path, block)
 
-  def scope_to_netlist(self, scope: BoardScope) -> Netlist:
-    # Convert to the netlist format
-    seen: Set[TransformUtil.Path] = set()
-    nets: List[List[TransformUtil.Path]] = []  # lists preserve ordering
+    @override
+    def visit_link(self, context: TransformUtil.TransformContext, link: edgir.Link) -> None:
+        self.process_blocklike(context.path, link)
 
-    for port, conns in scope.edges.items():
-      if port not in seen:
-        curr_net: List[TransformUtil.Path] = []
-        frontier: List[TransformUtil.Path] = [port]  # use BFS to maintain ordering instead of simpler DFS
-        while frontier:
-          pin = frontier.pop(0)
-          if pin not in seen:
-            seen.add(pin)
-            curr_net.append(pin)
-            frontier.extend(scope.edges[pin])
-        nets.append(curr_net)
+    @override
+    def visit_linkarray(self, context: TransformUtil.TransformContext, link: edgir.LinkArray) -> None:
+        self.process_blocklike(context.path, link)
 
-    pin_to_net: Dict[TransformUtil.Path, List[TransformUtil.Path]] = {}  # values share reference to nets
-    for net in nets:
-      for pin in net:
-        pin_to_net[pin] = net
+    @staticmethod
+    def name_net(net: Iterable[TransformUtil.Path], net_prefix: str) -> str:
+        """Names a net based on all the paths of ports and links that are part of the net."""
+        # higher criteria are preferred, True or larger number is preferred
+        CRITERIA: List[Callable[[TransformUtil.Path], Union[bool, int]]] = [
+            lambda pin: not (pin.blocks and pin.blocks[-1].startswith("(adapter)")),
+            lambda pin: not (pin.links and (pin.links[0].startswith("anon") or pin.links[0].startswith("_"))),
+            lambda pin: -len(pin.blocks),  # prefer shorter block paths
+            lambda pin: len(pin.links),  # prefer longer link paths
+            lambda pin: -len(pin.ports),  # prefer shorter (or no) port lengths
+            lambda pin: not (pin.ports and pin.ports[-1].isnumeric()),  # disprefer number-only ports
+        ]
 
-    for (connected1, connected2) in scope.assert_connected:
-      if pin_to_net[connected1] is not pin_to_net[connected2]:
-        raise InvalidPackingException(f"packed pins {connected1}, {connected2} not connected")
+        def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:
+            assert not pin1.params and not pin2.params
+            for test in CRITERIA:
+                pin1_result = test(pin1)
+                pin2_result = test(pin2)
+                if pin1_result == pin2_result:
+                    continue
+                if isinstance(pin1_result, bool) and isinstance(pin2_result, bool):
+                    if pin1_result:
+                        return -1
+                    else:
+                        return 1
+                elif isinstance(pin1_result, int) and isinstance(pin2_result, int):
+                    return pin2_result - pin1_result
+                else:
+                    raise ValueError("mismatched result types")
+            return 0
 
-    board_refdes_prefix = self.design.get_value(('refdes_prefix',))
-    if board_refdes_prefix is not None:
-      assert isinstance(board_refdes_prefix, str)
-      net_prefix = board_refdes_prefix
-    else:
-      net_prefix = ''
-    named_nets = {self.name_net(net, net_prefix): net for net in nets}
+        best_path = sorted(net, key=cmp_to_key(pin_name_goodness))[0]
 
-    def port_ignored_paths(path: TransformUtil.Path) -> bool:  # ignore link ports for netlisting
-      return bool(path.links) or any([block.startswith('(adapter)') or block.startswith('(bridge)') for block in path.blocks])
+        return net_prefix + str(best_path)
 
-    netlist_footprints = [footprint for path, footprint in scope.footprints.items()]
-    netlist_nets = [Net(name,
-                        list(chain(*[scope.pins[port] for port in net if port in scope.pins])),
-                        [port for port in net if not port_ignored_paths(port)])
-                    for name, net in named_nets.items()]
-    netlist_nets = [net for net in netlist_nets if net.pins]  # prune empty nets
+    def scope_to_netlist(self, scope: BoardScope) -> Netlist:
+        # Convert to the netlist format
+        seen: Set[TransformUtil.Path] = set()
+        nets: List[List[TransformUtil.Path]] = []  # lists preserve ordering
 
-    return Netlist(netlist_footprints, netlist_nets)
+        for port, conns in scope.edges.items():
+            if port not in seen:
+                curr_net: List[TransformUtil.Path] = []
+                frontier: List[TransformUtil.Path] = [port]  # use BFS to maintain ordering instead of simpler DFS
+                while frontier:
+                    pin = frontier.pop(0)
+                    if pin not in seen:
+                        seen.add(pin)
+                        curr_net.append(pin)
+                        frontier.extend(scope.edges[pin])
+                nets.append(curr_net)
 
-  def run(self) -> Netlist:
-    self.transform_design(self.design.design)
+        pin_to_net: Dict[TransformUtil.Path, List[TransformUtil.Path]] = {}  # values share reference to nets
+        for net in nets:
+            for pin in net:
+                pin_to_net[pin] = net
 
-    return self.scope_to_netlist(self.all_scopes[0])  # TODO support multiple scopes
+        for connected1, connected2 in scope.assert_connected:
+            if pin_to_net[connected1] is not pin_to_net[connected2]:
+                raise InvalidPackingException(f"packed pins {connected1}, {connected2} not connected")
+
+        board_refdes_prefix = self.design.get_value(("refdes_prefix",))
+        if board_refdes_prefix is not None:
+            assert isinstance(board_refdes_prefix, str)
+            net_prefix = board_refdes_prefix
+        else:
+            net_prefix = ""
+        named_nets = {self.name_net(net, net_prefix): net for net in nets}
+
+        def port_ignored_paths(path: TransformUtil.Path) -> bool:  # ignore link ports for netlisting
+            return bool(path.links) or any(
+                [block.startswith("(adapter)") or block.startswith("(bridge)") for block in path.blocks]
+            )
+
+        netlist_footprints = [footprint for path, footprint in scope.footprints.items()]
+        netlist_nets = [
+            Net(
+                name,
+                list(chain(*[scope.pins[port] for port in net if port in scope.pins])),
+                [port for port in net if not port_ignored_paths(port)],
+            )
+            for name, net in named_nets.items()
+        ]
+        netlist_nets = [net for net in netlist_nets if net.pins]  # prune empty nets
+
+        return Netlist(netlist_footprints, netlist_nets)
+
+    def run(self) -> Netlist:
+        self.transform_design(self.design.design)
+
+        return self.scope_to_netlist(self.all_scopes[0])  # TODO support multiple scopes

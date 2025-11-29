@@ -6,6 +6,7 @@ but do not make a valid compilation problem"""
 
 class TestLinkBase(Link):
     """Inheritance base for TestLink"""
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -18,8 +19,10 @@ class TestLink(TestLinkBase):
 
         self.float_param_sink_sum = self.Parameter(FloatExpr(self.sinks.sum(lambda p: p.float_param)))
         self.float_param_sink_range = self.Parameter(RangeExpr())
-        self.assign(self.float_param_sink_range,
-                    (self.sinks.min(lambda p: p.float_param), self.sinks.max(lambda p: p.float_param)))
+        self.assign(
+            self.float_param_sink_range,
+            (self.sinks.min(lambda p: p.float_param), self.sinks.max(lambda p: p.float_param)),
+        )
         self.range_param_sink_common = self.Parameter(RangeExpr(self.sinks.intersection(lambda p: p.range_limit)))
 
         self.require(self.float_param_sink_sum - self.source.float_param == 0)
@@ -36,7 +39,12 @@ class TestPortBase(Port[TestLink]):
 
 
 class TestPortSource(TestPortBase):
-    def __init__(self, float_param_limit: RangeLike = RangeExpr(), range_param: RangeLike = RangeExpr(), float_param: FloatLike = FloatExpr()) -> None:
+    def __init__(
+        self,
+        float_param_limit: RangeLike = RangeExpr(),
+        range_param: RangeLike = RangeExpr(),
+        float_param: FloatLike = FloatExpr(),
+    ) -> None:
         super().__init__(float_param)
         self.float_param_limit = self.Parameter(RangeExpr(float_param_limit))
         self.range_param = self.Parameter(RangeExpr(range_param))

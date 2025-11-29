@@ -7,6 +7,7 @@ Package : edg.lit
 
 Literals for assorted priitive types, i.e fixed constant values.
 """
+
 import builtins
 import collections.abc
 from .. import edgir
@@ -14,6 +15,7 @@ import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.message
 import sys
+
 if sys.version_info >= (3, 8):
     import typing as typing_extensions
 else:
@@ -25,15 +27,14 @@ class FloatLit(google.protobuf.message.Message):
     """* The core expression primitives we start with are the value
     literals that we can use
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     VAL_FIELD_NUMBER: builtins.int
     val: builtins.float
 
-    def __init__(self, *, val: builtins.float=...) -> None:
-        ...
+    def __init__(self, *, val: builtins.float = ...) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["val", b"val"]) -> None: ...
 
-    def ClearField(self, field_name: typing_extensions.Literal['val', b'val']) -> None:
-        ...
 global___FloatLit = FloatLit
 
 @typing_extensions.final
@@ -42,11 +43,9 @@ class IntLit(google.protobuf.message.Message):
     VAL_FIELD_NUMBER: builtins.int
     val: builtins.int
 
-    def __init__(self, *, val: builtins.int=...) -> None:
-        ...
+    def __init__(self, *, val: builtins.int = ...) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["val", b"val"]) -> None: ...
 
-    def ClearField(self, field_name: typing_extensions.Literal['val', b'val']) -> None:
-        ...
 global___IntLit = IntLit
 
 @typing_extensions.final
@@ -55,11 +54,9 @@ class BoolLit(google.protobuf.message.Message):
     VAL_FIELD_NUMBER: builtins.int
     val: builtins.bool
 
-    def __init__(self, *, val: builtins.bool=...) -> None:
-        ...
+    def __init__(self, *, val: builtins.bool = ...) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["val", b"val"]) -> None: ...
 
-    def ClearField(self, field_name: typing_extensions.Literal['val', b'val']) -> None:
-        ...
 global___BoolLit = BoolLit
 
 @typing_extensions.final
@@ -68,11 +65,9 @@ class TextLit(google.protobuf.message.Message):
     VAL_FIELD_NUMBER: builtins.int
     val: builtins.str
 
-    def __init__(self, *, val: builtins.str=...) -> None:
-        ...
+    def __init__(self, *, val: builtins.str = ...) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["val", b"val"]) -> None: ...
 
-    def ClearField(self, field_name: typing_extensions.Literal['val', b'val']) -> None:
-        ...
 global___TextLit = TextLit
 
 @typing_extensions.final
@@ -82,21 +77,17 @@ class RangeLit(google.protobuf.message.Message):
     MAXIMUM_FIELD_NUMBER: builtins.int
 
     @property
-    def minimum(self) -> global___ValueLit:
-        ...
-
+    def minimum(self) -> global___ValueLit: ...
     @property
-    def maximum(self) -> global___ValueLit:
-        ...
+    def maximum(self) -> global___ValueLit: ...
+    def __init__(self, *, minimum: global___ValueLit | None = ..., maximum: global___ValueLit | None = ...) -> None: ...
+    def HasField(
+        self, field_name: typing_extensions.Literal["maximum", b"maximum", "minimum", b"minimum"]
+    ) -> builtins.bool: ...
+    def ClearField(
+        self, field_name: typing_extensions.Literal["maximum", b"maximum", "minimum", b"minimum"]
+    ) -> None: ...
 
-    def __init__(self, *, minimum: global___ValueLit | None=..., maximum: global___ValueLit | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['maximum', b'maximum', 'minimum', b'minimum']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['maximum', b'maximum', 'minimum', b'minimum']) -> None:
-        ...
 global___RangeLit = RangeLit
 
 @typing_extensions.final
@@ -111,28 +102,18 @@ class StructLit(google.protobuf.message.Message):
         key: builtins.str
 
         @property
-        def value(self) -> global___ValueLit:
-            ...
+        def value(self) -> global___ValueLit: ...
+        def __init__(self, *, key: builtins.str = ..., value: global___ValueLit | None = ...) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
 
-        def __init__(self, *, key: builtins.str=..., value: global___ValueLit | None=...) -> None:
-            ...
-
-        def HasField(self, field_name: typing_extensions.Literal['value', b'value']) -> builtins.bool:
-            ...
-
-        def ClearField(self, field_name: typing_extensions.Literal['key', b'key', 'value', b'value']) -> None:
-            ...
     MEMBERS_FIELD_NUMBER: builtins.int
 
     @property
-    def members(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___ValueLit]:
-        ...
+    def members(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___ValueLit]: ...
+    def __init__(self, *, members: collections.abc.Mapping[builtins.str, global___ValueLit] | None = ...) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["members", b"members"]) -> None: ...
 
-    def __init__(self, *, members: collections.abc.Mapping[builtins.str, global___ValueLit] | None=...) -> None:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['members', b'members']) -> None:
-        ...
 global___StructLit = StructLit
 
 @typing_extensions.final
@@ -141,14 +122,10 @@ class ArrayLit(google.protobuf.message.Message):
     ELTS_FIELD_NUMBER: builtins.int
 
     @property
-    def elts(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ValueLit]:
-        ...
+    def elts(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ValueLit]: ...
+    def __init__(self, *, elts: collections.abc.Iterable[global___ValueLit] | None = ...) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["elts", b"elts"]) -> None: ...
 
-    def __init__(self, *, elts: collections.abc.Iterable[global___ValueLit] | None=...) -> None:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['elts', b'elts']) -> None:
-        ...
 global___ArrayLit = ArrayLit
 
 @typing_extensions.final
@@ -164,46 +141,81 @@ class ValueLit(google.protobuf.message.Message):
     META_FIELD_NUMBER: builtins.int
 
     @property
-    def floating(self) -> global___FloatLit:
-        ...
-
+    def floating(self) -> global___FloatLit: ...
     @property
-    def integer(self) -> global___IntLit:
-        ...
-
+    def integer(self) -> global___IntLit: ...
     @property
-    def boolean(self) -> global___BoolLit:
-        ...
-
+    def boolean(self) -> global___BoolLit: ...
     @property
-    def text(self) -> global___TextLit:
-        ...
-
+    def text(self) -> global___TextLit: ...
     @property
-    def struct(self) -> global___StructLit:
-        ...
-
+    def struct(self) -> global___StructLit: ...
     @property
-    def range(self) -> global___RangeLit:
-        ...
-
+    def range(self) -> global___RangeLit: ...
     @property
-    def array(self) -> global___ArrayLit:
-        ...
-
+    def array(self) -> global___ArrayLit: ...
     @property
-    def meta(self) -> edgir.common_pb2.Metadata:
-        ...
+    def meta(self) -> edgir.common_pb2.Metadata: ...
+    def __init__(
+        self,
+        *,
+        floating: global___FloatLit | None = ...,
+        integer: global___IntLit | None = ...,
+        boolean: global___BoolLit | None = ...,
+        text: global___TextLit | None = ...,
+        struct: global___StructLit | None = ...,
+        range: global___RangeLit | None = ...,
+        array: global___ArrayLit | None = ...,
+        meta: edgir.common_pb2.Metadata | None = ...,
+    ) -> None: ...
+    def HasField(
+        self,
+        field_name: typing_extensions.Literal[
+            "array",
+            b"array",
+            "boolean",
+            b"boolean",
+            "floating",
+            b"floating",
+            "integer",
+            b"integer",
+            "meta",
+            b"meta",
+            "range",
+            b"range",
+            "struct",
+            b"struct",
+            "text",
+            b"text",
+            "type",
+            b"type",
+        ],
+    ) -> builtins.bool: ...
+    def ClearField(
+        self,
+        field_name: typing_extensions.Literal[
+            "array",
+            b"array",
+            "boolean",
+            b"boolean",
+            "floating",
+            b"floating",
+            "integer",
+            b"integer",
+            "meta",
+            b"meta",
+            "range",
+            b"range",
+            "struct",
+            b"struct",
+            "text",
+            b"text",
+            "type",
+            b"type",
+        ],
+    ) -> None: ...
+    def WhichOneof(
+        self, oneof_group: typing_extensions.Literal["type", b"type"]
+    ) -> typing_extensions.Literal["floating", "integer", "boolean", "text", "struct", "range", "array"] | None: ...
 
-    def __init__(self, *, floating: global___FloatLit | None=..., integer: global___IntLit | None=..., boolean: global___BoolLit | None=..., text: global___TextLit | None=..., struct: global___StructLit | None=..., range: global___RangeLit | None=..., array: global___ArrayLit | None=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['array', b'array', 'boolean', b'boolean', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'struct', b'struct', 'text', b'text', 'type', b'type']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['array', b'array', 'boolean', b'boolean', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'struct', b'struct', 'text', b'text', 'type', b'type']) -> None:
-        ...
-
-    def WhichOneof(self, oneof_group: typing_extensions.Literal['type', b'type']) -> typing_extensions.Literal['floating', 'integer', 'boolean', 'text', 'struct', 'range', 'array'] | None:
-        ...
 global___ValueLit = ValueLit

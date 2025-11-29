@@ -19,6 +19,7 @@ from .DummyDevices import ForcedVoltageCurrentDraw
 class HalfBridge(PowerConditioner, Block):
     """Half bridge circuit with logic-level inputs and current draw calculated from the output node.
     Two power rails: logic power (which can be used to power gate drivers), and the power rail."""
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -47,8 +48,10 @@ class HalfBridgePwm(BlockInterfaceMixin[HalfBridge]):
 @abstract_block
 class FetHalfBridge(HalfBridge):
     """Implementation of a half-bridge with two NFETs and a gate driver."""
-    def __init__(self, frequency: RangeLike, fet_rds: RangeLike = (0, 1)*Ohm,
-                 gate_res: RangeLike = 22*Ohm(tol=0.05)):
+
+    def __init__(
+        self, frequency: RangeLike, fet_rds: RangeLike = (0, 1) * Ohm, gate_res: RangeLike = 22 * Ohm(tol=0.05)
+    ):
         super().__init__()
         self.frequency = self.ArgParameter(frequency)
         self.fet_rds = self.ArgParameter(fet_rds)
@@ -65,48 +68,62 @@ class FetHalfBridge(HalfBridge):
 
         gate_res_model = Resistor(self.gate_res)
 
-        self.low_fet = self.Block(SwitchFet.NFet(
-            drain_voltage=self.pwr.link().voltage,
-            drain_current=(0, self.out.link().current_drawn.upper()),
-            gate_voltage=self.driver.low_out.link().voltage,
-            rds_on=self.fet_rds,
-            frequency=self.frequency,
-            drive_current=self.driver.low_out.link().current_limits
-        ))
+        self.low_fet = self.Block(
+            SwitchFet.NFet(
+                drain_voltage=self.pwr.link().voltage,
+                drain_current=(0, self.out.link().current_drawn.upper()),
+                gate_voltage=self.driver.low_out.link().voltage,
+                rds_on=self.fet_rds,
+                frequency=self.frequency,
+                drive_current=self.driver.low_out.link().current_limits,
+            )
+        )
         self.connect(self.low_fet.source.adapt_to(Ground()), self.gnd)
         self.low_gate_res = self.Block(gate_res_model)
-        self.connect(self.low_gate_res.a.adapt_to(DigitalSink(
-            current_draw=self.low_fet.actual_gate_charge * self.frequency.hull((0, 0))
-        )), self.driver.low_out)
+        self.connect(
+            self.low_gate_res.a.adapt_to(
+                DigitalSink(current_draw=self.low_fet.actual_gate_charge * self.frequency.hull((0, 0)))
+            ),
+            self.driver.low_out,
+        )
         self.connect(self.low_gate_res.b, self.low_fet.gate)
 
-        self.high_fet = self.Block(SwitchFet.NFet(
-            drain_voltage=self.pwr.link().voltage,
-            drain_current=(0, self.out.link().current_drawn.upper()),
-            gate_voltage=self.driver.high_out.link().voltage - self.driver.high_gnd.link().voltage,
-            rds_on=self.fet_rds,
-            frequency=self.frequency,
-            drive_current=self.driver.high_out.link().current_limits
-        ))
-        self.connect(self.high_fet.drain.adapt_to(VoltageSink(
-            voltage_limits=self.high_fet.actual_drain_voltage_rating,
-            current_draw=self.out.link().current_drawn
-        )), self.pwr)
+        self.high_fet = self.Block(
+            SwitchFet.NFet(
+                drain_voltage=self.pwr.link().voltage,
+                drain_current=(0, self.out.link().current_drawn.upper()),
+                gate_voltage=self.driver.high_out.link().voltage - self.driver.high_gnd.link().voltage,
+                rds_on=self.fet_rds,
+                frequency=self.frequency,
+                drive_current=self.driver.high_out.link().current_limits,
+            )
+        )
+        self.connect(
+            self.high_fet.drain.adapt_to(
+                VoltageSink(
+                    voltage_limits=self.high_fet.actual_drain_voltage_rating, current_draw=self.out.link().current_drawn
+                )
+            ),
+            self.pwr,
+        )
         self.high_gate_res = self.Block(gate_res_model)
-        self.connect(self.high_gate_res.a.adapt_to(DigitalSink(
-            current_draw=self.high_fet.actual_gate_charge * self.frequency.hull((0, 0))
-        )), self.driver.high_out)
+        self.connect(
+            self.high_gate_res.a.adapt_to(
+                DigitalSink(current_draw=self.high_fet.actual_gate_charge * self.frequency.hull((0, 0)))
+            ),
+            self.driver.high_out,
+        )
         self.connect(self.high_gate_res.b, self.high_fet.gate)
 
         # to avoid tolerance stackup, model the switch node as a static voltage
         self.connect(self.low_fet.drain, self.high_fet.source)
-        self.connect(self.low_fet.drain.adapt_to(VoltageSource(
-            voltage_out=self.pwr.link().voltage)),
-            self.out)
-        self.connect(self.out.as_ground((0, 0)*Amp), self.driver.high_gnd)  # TODO model driver current
+        self.connect(self.low_fet.drain.adapt_to(VoltageSource(voltage_out=self.pwr.link().voltage)), self.out)
+        self.connect(self.out.as_ground((0, 0) * Amp), self.driver.high_gnd)  # TODO model driver current
 
-        self.assign(self.actual_current_limits, self.low_fet.actual_drain_current_rating.intersect(
-            self.high_fet.actual_drain_current_rating))
+        self.assign(
+            self.actual_current_limits,
+            self.low_fet.actual_drain_current_rating.intersect(self.high_fet.actual_drain_current_rating),
+        )
 
 
 class FetHalfBridgeIndependent(FetHalfBridge, HalfBridgeIndependent):
@@ -167,9 +184,16 @@ class RampLimiter(KiCadSchematicBlock):
     Additional more complex circuits
     https://electronics.stackexchange.com/questions/294061/p-channel-mosfet-inrush-current-limiting
     """
-    def __init__(self, *, cgd: RangeLike = 10*nFarad(tol=0.5), target_ramp: RangeLike = 1000*Volt(tol=0.25),
-                 target_vgs: RangeLike = (4, 10)*Volt, max_rds: FloatLike = 1*Ohm,
-                 _cdiv_vgs_factor: RangeLike = (0.05, 0.75)):
+
+    def __init__(
+        self,
+        *,
+        cgd: RangeLike = 10 * nFarad(tol=0.5),
+        target_ramp: RangeLike = 1000 * Volt(tol=0.25),
+        target_vgs: RangeLike = (4, 10) * Volt,
+        max_rds: FloatLike = 1 * Ohm,
+        _cdiv_vgs_factor: RangeLike = (0.05, 0.75),
+    ):
         super().__init__()
 
         self.gnd = self.Port(Ground.empty(), [Common])
@@ -188,49 +212,57 @@ class RampLimiter(KiCadSchematicBlock):
         super().contents()
 
         pwr_voltage = self.pwr_in.link().voltage
-        self.drv = self.Block(SwitchFet.PFet(
-            drain_voltage=pwr_voltage,
-            drain_current=self.pwr_out.link().current_drawn,
-            gate_voltage=(0 * Volt(tol=0)).hull(self.target_vgs.upper()),
-            gate_threshold_voltage=(0 * Volt(tol=0)).hull(self.target_vgs.lower()),
-            rds_on=(0, self.max_rds)
-        ))
+        self.drv = self.Block(
+            SwitchFet.PFet(
+                drain_voltage=pwr_voltage,
+                drain_current=self.pwr_out.link().current_drawn,
+                gate_voltage=(0 * Volt(tol=0)).hull(self.target_vgs.upper()),
+                gate_threshold_voltage=(0 * Volt(tol=0)).hull(self.target_vgs.lower()),
+                rds_on=(0, self.max_rds),
+            )
+        )
 
-        self.cap_gd = self.Block(Capacitor(
-            capacitance=self.cgd,
-            voltage=(0 * Volt(tol=0)).hull(self.pwr_in.link().voltage)
-        ))
+        self.cap_gd = self.Block(
+            Capacitor(capacitance=self.cgd, voltage=(0 * Volt(tol=0)).hull(self.pwr_in.link().voltage))
+        )
         # treat Cgs and Cgd as a capacitive divider with Cgs on the bottom
-        self.cap_gs = self.Block(Capacitor(
-            capacitance=(
-                    (1/(self.drv.actual_gate_drive.lower()*self._cdiv_vgs_factor)).shrink_multiply(self.pwr_in.link().voltage) - 1
-            ).shrink_multiply(
-                self.cap_gd.actual_capacitance
-            ),
-            voltage=(0 * Volt(tol=0)).hull(self.pwr_in.link().voltage)
-        ))
+        self.cap_gs = self.Block(
+            Capacitor(
+                capacitance=(
+                    (1 / (self.drv.actual_gate_drive.lower() * self._cdiv_vgs_factor)).shrink_multiply(
+                        self.pwr_in.link().voltage
+                    )
+                    - 1
+                ).shrink_multiply(self.cap_gd.actual_capacitance),
+                voltage=(0 * Volt(tol=0)).hull(self.pwr_in.link().voltage),
+            )
+        )
         # dV/dt over a capacitor is I / C => I = Cgd * dV/dt
         # then calculate to get the target I: Vgs,th = I * Reff => Reff = Vgs,th / I = Vgs,th / (Cgd * dV/dt)
         # we assume Vgs,th is exact, and only contributing sources come from elsewhere
-        self.div = self.Block(ResistiveDivider(ratio=self.target_vgs.shrink_multiply(1/self.pwr_in.link().voltage),
-                                               impedance=(1 / self.target_ramp).shrink_multiply(self.drv.actual_gate_drive.lower() / (self.cap_gd.actual_capacitance))
-                                               ))
-        div_current_draw = (self.pwr_in.link().voltage/self.div.actual_impedance).hull(0)
-        self.ctl_fet = self.Block(SwitchFet.NFet(
-            drain_voltage=pwr_voltage,
-            drain_current=div_current_draw,
-            gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper())
-        ))
+        self.div = self.Block(
+            ResistiveDivider(
+                ratio=self.target_vgs.shrink_multiply(1 / self.pwr_in.link().voltage),
+                impedance=(1 / self.target_ramp).shrink_multiply(
+                    self.drv.actual_gate_drive.lower() / (self.cap_gd.actual_capacitance)
+                ),
+            )
+        )
+        div_current_draw = (self.pwr_in.link().voltage / self.div.actual_impedance).hull(0)
+        self.ctl_fet = self.Block(
+            SwitchFet.NFet(
+                drain_voltage=pwr_voltage,
+                drain_current=div_current_draw,
+                gate_voltage=(self.control.link().output_thresholds.upper(), self.control.link().voltage.upper()),
+            )
+        )
 
         self.import_kicad(
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
-                'pwr_in': VoltageSink(
-                    current_draw=self.pwr_out.link().current_drawn + div_current_draw
-                ),
-                'pwr_out': VoltageSource(
-                    voltage_out=self.pwr_in.link().voltage
-                ),
-                'control': DigitalSink(),
-                'gnd': Ground(),
-            })
+                "pwr_in": VoltageSink(current_draw=self.pwr_out.link().current_drawn + div_current_draw),
+                "pwr_out": VoltageSource(voltage_out=self.pwr_in.link().voltage),
+                "control": DigitalSink(),
+                "gnd": Ground(),
+            },
+        )

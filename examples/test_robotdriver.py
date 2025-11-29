@@ -6,247 +6,243 @@ from edg import *
 
 
 class MotorConnector(Connector, Block):
-  def __init__(self, current_draw: RangeLike):
-    super().__init__()
-    self.conn = self.Block(PassiveConnector())
+    def __init__(self, current_draw: RangeLike):
+        super().__init__()
+        self.conn = self.Block(PassiveConnector())
 
-    self.a = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink(
-      current_draw=current_draw
-    )))
-    self.b = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink(
-      current_draw=current_draw
-    )))
+        self.a = self.Export(self.conn.pins.request("2").adapt_to(DigitalSink(current_draw=current_draw)))
+        self.b = self.Export(self.conn.pins.request("1").adapt_to(DigitalSink(current_draw=current_draw)))
 
 
 class PwmConnector(Connector, Block):
-  def __init__(self, current_draw: RangeLike):
-    super().__init__()
-    self.conn = self.Block(PinHeader254())
+    def __init__(self, current_draw: RangeLike):
+        super().__init__()
+        self.conn = self.Block(PinHeader254())
 
-    self.pwm = self.Export(self.conn.pins.request('1').adapt_to(DigitalSink()),
-                           [Input])
-    self.pwr = self.Export(self.conn.pins.request('2').adapt_to(VoltageSink(
-      current_draw=current_draw
-    )), [Power])
-    self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()),
-                           [Common])
+        self.pwm = self.Export(self.conn.pins.request("1").adapt_to(DigitalSink()), [Input])
+        self.pwr = self.Export(self.conn.pins.request("2").adapt_to(VoltageSink(current_draw=current_draw)), [Power])
+        self.gnd = self.Export(self.conn.pins.request("3").adapt_to(Ground()), [Common])
 
 
 class LedConnector(Connector, Block):
-  """Connector for external WS2812s."""
-  def __init__(self, num_leds: FloatLike = 0):
-    super().__init__()
-    self.conn = self.Block(PassiveConnector())
-    led_current = 36.6
+    """Connector for external WS2812s."""
 
-    self.vdd = self.Export(self.conn.pins.request('1').adapt_to(VoltageSink(
-      current_draw=(0*mAmp, led_current*num_leds))),
-      [Power])
-    self.din = self.Export(self.conn.pins.request('2').adapt_to(DigitalSink()), [Input])
-    self.gnd = self.Export(self.conn.pins.request('3').adapt_to(Ground()), [Common])
+    def __init__(self, num_leds: FloatLike = 0):
+        super().__init__()
+        self.conn = self.Block(PassiveConnector())
+        led_current = 36.6
+
+        self.vdd = self.Export(
+            self.conn.pins.request("1").adapt_to(VoltageSink(current_draw=(0 * mAmp, led_current * num_leds))), [Power]
+        )
+        self.din = self.Export(self.conn.pins.request("2").adapt_to(DigitalSink()), [Input])
+        self.gnd = self.Export(self.conn.pins.request("3").adapt_to(Ground()), [Common])
 
 
 class RobotDriver(JlcBoardTop):
-  """Robot driver that uses a ESP32 (non-C) chip and includes a few more blocks
-  to use the extra available IOs
-  """
-  @override
-  def contents(self) -> None:
-    super().contents()
+    """Robot driver that uses a ESP32 (non-C) chip and includes a few more blocks
+    to use the extra available IOs
+    """
 
-    self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2)*Volt))
+    @override
+    def contents(self) -> None:
+        super().contents()
 
-    # actually on the 3V3 domain but need the battery output here
-    self.isense = self.Block(OpampCurrentSensor(
-      resistance=0.05*Ohm(tol=0.01),
-      ratio=Range.from_tolerance(20, 0.05), input_impedance=10*kOhm(tol=0.05)
-    ))
-    self.connect(self.isense.pwr_in, self.batt.pwr)
-    self.vbatt = self.connect(self.isense.pwr_out)
+        self.batt = self.Block(LipoConnector(actual_voltage=(3.7, 4.2) * Volt))
 
-    self.gnd = self.connect(self.batt.gnd)
+        # actually on the 3V3 domain but need the battery output here
+        self.isense = self.Block(
+            OpampCurrentSensor(
+                resistance=0.05 * Ohm(tol=0.01),
+                ratio=Range.from_tolerance(20, 0.05),
+                input_impedance=10 * kOhm(tol=0.05),
+            )
+        )
+        self.connect(self.isense.pwr_in, self.batt.pwr)
+        self.vbatt = self.connect(self.isense.pwr_out)
 
-    self.tp_vbatt = self.Block(VoltageTestPoint()).connected(self.isense.pwr_out)
-    self.tp_gnd = self.Block(GroundTestPoint()).connected(self.batt.gnd)
+        self.gnd = self.connect(self.batt.gnd)
 
-    # POWER
-    with self.implicit_connect(
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
-        self.vbatt,
-        imp.Block(BuckConverter(output_voltage=3.3*Volt(tol=0.05))),
-        self.Block(VoltageTestPoint()),
-        imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9)*Volt))
-      )
-      self.v3v3 = self.connect(self.reg_3v3.pwr_out)
+        self.tp_vbatt = self.Block(VoltageTestPoint()).connected(self.isense.pwr_out)
+        self.tp_gnd = self.Block(GroundTestPoint()).connected(self.batt.gnd)
 
-    # 3V3 DOMAIN
-    with self.implicit_connect(
-        ImplicitConnect(self.v3v3, [Power]),
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.mcu = imp.Block(IoController())
-      self.i2c = self.mcu.i2c.request('i2c')
+        # POWER
+        with self.implicit_connect(
+            ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            (self.reg_3v3, self.tp_3v3, self.prot_3v3), _ = self.chain(
+                self.vbatt,
+                imp.Block(BuckConverter(output_voltage=3.3 * Volt(tol=0.05))),
+                self.Block(VoltageTestPoint()),
+                imp.Block(ProtectionZenerDiode(voltage=(3.45, 3.9) * Volt)),
+            )
+            self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-      self.tof = imp.Block(Vl53l0xArray(3))
-      (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
-        self.i2c,
-        imp.Block(I2cPullup()), imp.Block(I2cTestPoint()),
-        self.tof.i2c)
+        # 3V3 DOMAIN
+        with self.implicit_connect(
+            ImplicitConnect(self.v3v3, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            self.mcu = imp.Block(IoController())
+            self.i2c = self.mcu.i2c.request("i2c")
 
-      self.lcd = imp.Block(Er_Oled_091_3())
-      self.connect(self.mcu.spi.request('spi'), self.lcd.spi)
-      self.connect(self.lcd.cs, self.mcu.gpio.request('lcd_cs'))
-      self.connect(self.lcd.reset, self.mcu.gpio.request('lcd_reset'))
-      self.connect(self.lcd.dc, self.mcu.gpio.request('lcd_dc'))
+            self.tof = imp.Block(Vl53l0xArray(3))
+            (self.i2c_pull, self.i2c_tp), self.i2c_chain = self.chain(
+                self.i2c, imp.Block(I2cPullup()), imp.Block(I2cTestPoint()), self.tof.i2c
+            )
 
-      # IMU
-      self.imu = imp.Block(Lsm6ds3trc())
-      self.connect(self.i2c, self.imu.i2c)
+            self.lcd = imp.Block(Er_Oled_091_3())
+            self.connect(self.mcu.spi.request("spi"), self.lcd.spi)
+            self.connect(self.lcd.cs, self.mcu.gpio.request("lcd_cs"))
+            self.connect(self.lcd.reset, self.mcu.gpio.request("lcd_reset"))
+            self.connect(self.lcd.dc, self.mcu.gpio.request("lcd_dc"))
 
-      # Current sensor
-      self.connect(self.isense.pwr, self.v3v3)
-      self.connect(self.isense.gnd, self.gnd)
-      self.connect(self.isense.ref, self.batt.gnd.as_analog_source())
-      self.connect(self.isense.out, self.mcu.adc.request('isense'))
+            # IMU
+            self.imu = imp.Block(Lsm6ds3trc())
+            self.connect(self.i2c, self.imu.i2c)
 
-      self.expander = imp.Block(Pcf8574(0))
-      self.connect(self.i2c, self.expander.i2c)
-      self.connect(self.expander.io.request_vector('tof_reset'), self.tof.reset)
+            # Current sensor
+            self.connect(self.isense.pwr, self.v3v3)
+            self.connect(self.isense.gnd, self.gnd)
+            self.connect(self.isense.ref, self.batt.gnd.as_analog_source())
+            self.connect(self.isense.out, self.mcu.adc.request("isense"))
 
-      self.leds = imp.Block(IndicatorSinkLedArray(4))
-      self.connect(self.expander.io.request_vector('led'), self.leds.signals)
+            self.expander = imp.Block(Pcf8574(0))
+            self.connect(self.i2c, self.expander.i2c)
+            self.connect(self.expander.io.request_vector("tof_reset"), self.tof.reset)
 
-    # SPEAKER AND LOW POWER VBATT DOMAIN
-    with self.implicit_connect(
+            self.leds = imp.Block(IndicatorSinkLedArray(4))
+            self.connect(self.expander.io.request_vector("led"), self.leds.signals)
+
+        # SPEAKER AND LOW POWER VBATT DOMAIN
+        with self.implicit_connect(
             ImplicitConnect(self.vbatt, [Power]),
             ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      (self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
-        self.mcu.with_mixin(IoControllerDac()).dac.request('spk'),
-        self.Block(AnalogTestPoint()),
-        imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
-        self.Block(Speaker()))
+        ) as imp:
+            (self.spk_tp, self.spk_drv, self.spk), self.spk_chain = self.chain(
+                self.mcu.with_mixin(IoControllerDac()).dac.request("spk"),
+                self.Block(AnalogTestPoint()),
+                imp.Block(Tpa2005d1(gain=Range.from_tolerance(10, 0.2))),
+                self.Block(Speaker()),
+            )
 
-      self.ws2812bArray = imp.Block(NeopixelArray(5))
-      self.connect(self.mcu.gpio.request('ledArray'), self.ws2812bArray.din)
+            self.ws2812bArray = imp.Block(NeopixelArray(5))
+            self.connect(self.mcu.gpio.request("ledArray"), self.ws2812bArray.din)
 
-      self.led_pixel = imp.Block(LedConnector())
-      self.connect(self.ws2812bArray.dout, self.led_pixel.din)
+            self.led_pixel = imp.Block(LedConnector())
+            self.connect(self.ws2812bArray.dout, self.led_pixel.din)
 
-    # MOTORS AND SERVOS
-    with self.implicit_connect(
+        # MOTORS AND SERVOS
+        with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      self.motor_driver1 = imp.Block(Drv8833())
-      self.connect(self.vbatt, self.motor_driver1.pwr)
-      self.connect(self.mcu.gpio.request('motor_1a1'), self.motor_driver1.ain1)
-      self.connect(self.mcu.gpio.request('motor_1a2'), self.motor_driver1.ain2)
-      self.connect(self.mcu.gpio.request('motor_1b1'), self.motor_driver1.bin1)
-      self.connect(self.mcu.gpio.request('motor_1b2'), self.motor_driver1.bin2)
+        ) as imp:
+            self.motor_driver1 = imp.Block(Drv8833())
+            self.connect(self.vbatt, self.motor_driver1.pwr)
+            self.connect(self.mcu.gpio.request("motor_1a1"), self.motor_driver1.ain1)
+            self.connect(self.mcu.gpio.request("motor_1a2"), self.motor_driver1.ain2)
+            self.connect(self.mcu.gpio.request("motor_1b1"), self.motor_driver1.bin1)
+            self.connect(self.mcu.gpio.request("motor_1b2"), self.motor_driver1.bin2)
 
-      self.m1_a = self.Block(MotorConnector((-600, 600)*mAmp))
-      self.connect(self.m1_a.a, self.motor_driver1.aout1)
-      self.connect(self.m1_a.b, self.motor_driver1.aout2)
-      self.m1_b = self.Block(MotorConnector((-600, 600)*mAmp))
-      self.connect(self.m1_b.a, self.motor_driver1.bout1)
-      self.connect(self.m1_b.b, self.motor_driver1.bout2)
+            self.m1_a = self.Block(MotorConnector((-600, 600) * mAmp))
+            self.connect(self.m1_a.a, self.motor_driver1.aout1)
+            self.connect(self.m1_a.b, self.motor_driver1.aout2)
+            self.m1_b = self.Block(MotorConnector((-600, 600) * mAmp))
+            self.connect(self.m1_b.a, self.motor_driver1.bout1)
+            self.connect(self.m1_b.b, self.motor_driver1.bout2)
 
-      self.motor_driver2 = imp.Block(Drv8833())
-      self.connect(self.vbatt, self.motor_driver2.pwr)
-      self.connect(self.mcu.gpio.request('motor_2a1'), self.motor_driver2.ain1)
-      self.connect(self.mcu.gpio.request('motor_2a2'), self.motor_driver2.ain2)
-      self.connect(self.mcu.gpio.request('motor_2b1'), self.motor_driver2.bin1)
-      self.connect(self.mcu.gpio.request('motor_2b2'), self.motor_driver2.bin2)
-      self.connect(self.motor_driver1.sleep, self.motor_driver2.sleep, self.isense.pwr_out.as_digital_source())
+            self.motor_driver2 = imp.Block(Drv8833())
+            self.connect(self.vbatt, self.motor_driver2.pwr)
+            self.connect(self.mcu.gpio.request("motor_2a1"), self.motor_driver2.ain1)
+            self.connect(self.mcu.gpio.request("motor_2a2"), self.motor_driver2.ain2)
+            self.connect(self.mcu.gpio.request("motor_2b1"), self.motor_driver2.bin1)
+            self.connect(self.mcu.gpio.request("motor_2b2"), self.motor_driver2.bin2)
+            self.connect(self.motor_driver1.sleep, self.motor_driver2.sleep, self.isense.pwr_out.as_digital_source())
 
-      self.m2_a = self.Block(MotorConnector((-600, 600)*mAmp))
-      self.connect(self.m2_a.a, self.motor_driver2.aout1)
-      self.connect(self.m2_a.b, self.motor_driver2.aout2)
-      self.m2_b = self.Block(MotorConnector((-600, 600)*mAmp))
-      self.connect(self.m2_b.a, self.motor_driver2.bout1)
-      self.connect(self.m2_b.b, self.motor_driver2.bout2)
+            self.m2_a = self.Block(MotorConnector((-600, 600) * mAmp))
+            self.connect(self.m2_a.a, self.motor_driver2.aout1)
+            self.connect(self.m2_a.b, self.motor_driver2.aout2)
+            self.m2_b = self.Block(MotorConnector((-600, 600) * mAmp))
+            self.connect(self.m2_b.a, self.motor_driver2.bout1)
+            self.connect(self.m2_b.b, self.motor_driver2.bout2)
 
-    self.servo = self.Block(PwmConnector((0, 0)*mAmp))  # TODO current modeling
-    self.connect(self.vbatt, self.servo.pwr)
-    self.connect(self.gnd, self.servo.gnd)
-    self.connect(self.mcu.gpio.request('pwm'), self.servo.pwm)
+        self.servo = self.Block(PwmConnector((0, 0) * mAmp))  # TODO current modeling
+        self.connect(self.vbatt, self.servo.pwr)
+        self.connect(self.gnd, self.servo.gnd)
+        self.connect(self.mcu.gpio.request("pwm"), self.servo.pwm)
 
-  @override
-  def multipack(self) -> None:
-    self.led_res = self.PackedBlock(ResistorArray())
-    self.pack(self.led_res.elements.request('0'), ['leds', 'led[0]', 'res'])
-    self.pack(self.led_res.elements.request('1'), ['leds', 'led[1]', 'res'])
-    self.pack(self.led_res.elements.request('2'), ['leds', 'led[2]', 'res'])
-    self.pack(self.led_res.elements.request('3'), ['leds', 'led[3]', 'res'])
+    @override
+    def multipack(self) -> None:
+        self.led_res = self.PackedBlock(ResistorArray())
+        self.pack(self.led_res.elements.request("0"), ["leds", "led[0]", "res"])
+        self.pack(self.led_res.elements.request("1"), ["leds", "led[1]", "res"])
+        self.pack(self.led_res.elements.request("2"), ["leds", "led[2]", "res"])
+        self.pack(self.led_res.elements.request("3"), ["leds", "led[3]", "res"])
 
-  @override
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      instance_refinements=[
-        (['mcu'], Esp32_Wroom_32),
-        (['reg_3v3'], Ap3418),
-      ],
-      instance_values=[
-        (['mcu', 'pin_assigns'], [
-          'spi.miso=NC',
-          'i2c.scl=16',
-          'i2c.sda=14',
-
-          'spk=11',  # only 10 and 11 are DAC out
-
-          'lcd_cs=13',
-          'lcd_reset=12',
-          'lcd_dc=10',
-          'spi.sck=9',
-          'spi.mosi=8',
-
-          'ledArray=23',
-
-          'isense=4',  # use an input only pin
-
-          'motor_2a1=26',
-          'motor_2a2=27',
-          'motor_2b2=28',
-          'motor_2b1=29',
-          'motor_1a1=30',
-          'motor_1a2=31',
-          'motor_1b2=33',
-          'motor_1b1=36',
-
-          'pwm=37',
-        ]),
-        (['expander', 'pin_assigns'], [
-          'led_0=4',
-          'led_1=5',
-          'led_2=6',
-          'led_3=7',
-          'tof_reset_0=10',
-          'tof_reset_1=11',
-          'tof_reset_2=12',
-        ]),
-        (['isense', 'out', 'signal_out'], Range(0.1, 2.45)),  # trade range for resolution
-        (['isense', 'sense', 'res', 'res', 'footprint_spec'], 'Resistor_SMD:R_2512_6332Metric'),
-        (['isense', 'sense', 'res', 'res', 'require_basic_part'], False),
-
-        # JLC does not have frequency specs, must be checked TODO
-        (['reg_3v3', 'power_path', 'inductor', 'frequency'], Range(0, 0)),
-        (['reg_3v3', 'power_path', 'efficiency'], Range(1.0, 1.0)),  # waive this check
-      ],
-      class_refinements=[
-        (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
-        (Vl53l0x, Vl53l0xConnector),
-        (TestPoint, TeRc),
-        (Speaker, ConnectorSpeaker),
-        (Neopixel, Ws2812b),
-      ],
-      class_values=[
-        (Nonstrict3v3Compatible, ['nonstrict_3v3_compatible'], True),
-      ],
-    )
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            instance_refinements=[
+                (["mcu"], Esp32_Wroom_32),
+                (["reg_3v3"], Ap3418),
+            ],
+            instance_values=[
+                (
+                    ["mcu", "pin_assigns"],
+                    [
+                        "spi.miso=NC",
+                        "i2c.scl=16",
+                        "i2c.sda=14",
+                        "spk=11",  # only 10 and 11 are DAC out
+                        "lcd_cs=13",
+                        "lcd_reset=12",
+                        "lcd_dc=10",
+                        "spi.sck=9",
+                        "spi.mosi=8",
+                        "ledArray=23",
+                        "isense=4",  # use an input only pin
+                        "motor_2a1=26",
+                        "motor_2a2=27",
+                        "motor_2b2=28",
+                        "motor_2b1=29",
+                        "motor_1a1=30",
+                        "motor_1a2=31",
+                        "motor_1b2=33",
+                        "motor_1b1=36",
+                        "pwm=37",
+                    ],
+                ),
+                (
+                    ["expander", "pin_assigns"],
+                    [
+                        "led_0=4",
+                        "led_1=5",
+                        "led_2=6",
+                        "led_3=7",
+                        "tof_reset_0=10",
+                        "tof_reset_1=11",
+                        "tof_reset_2=12",
+                    ],
+                ),
+                (["isense", "out", "signal_out"], Range(0.1, 2.45)),  # trade range for resolution
+                (["isense", "sense", "res", "res", "footprint_spec"], "Resistor_SMD:R_2512_6332Metric"),
+                (["isense", "sense", "res", "res", "require_basic_part"], False),
+                # JLC does not have frequency specs, must be checked TODO
+                (["reg_3v3", "power_path", "inductor", "frequency"], Range(0, 0)),
+                (["reg_3v3", "power_path", "efficiency"], Range(1.0, 1.0)),  # waive this check
+            ],
+            class_refinements=[
+                (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified
+                (Vl53l0x, Vl53l0xConnector),
+                (TestPoint, TeRc),
+                (Speaker, ConnectorSpeaker),
+                (Neopixel, Ws2812b),
+            ],
+            class_values=[
+                (Nonstrict3v3Compatible, ["nonstrict_3v3_compatible"], True),
+            ],
+        )
 
 
 class RobotDriverTestCase(unittest.TestCase):
-  def test_design(self) -> None:
-    compile_board_inplace(RobotDriver)
+    def test_design(self) -> None:
+        compile_board_inplace(RobotDriver)

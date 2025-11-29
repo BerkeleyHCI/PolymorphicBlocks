@@ -8,374 +8,422 @@ from ..electronics_model import Block, abstract_block, InternalBlock
 
 @abstract_block
 class DiscreteApplication(Block):
-  """Subcircuit around a single discrete (and usually passive) component."""
-  pass
+    """Subcircuit around a single discrete (and usually passive) component."""
+
+    pass
 
 
 @abstract_block
 class Analog(Block):
-  """Analog blocks that don't fit into one of the other categories"""
-  pass
+    """Analog blocks that don't fit into one of the other categories"""
+
+    pass
 
 
 @abstract_block
 class OpampApplication(Analog):
-  """Opamp-based circuits, typically one that perform some function on signals"""
-  pass
+    """Opamp-based circuits, typically one that perform some function on signals"""
+
+    pass
 
 
 @abstract_block
 class Filter(Block):
-  """Signal conditioning subcircuit."""
-  pass
+    """Signal conditioning subcircuit."""
+
+    pass
 
 
 @abstract_block
 class AnalogFilter(Filter):
-  """Analog signal conditioning subcircuit."""
-  pass
+    """Analog signal conditioning subcircuit."""
+
+    pass
 
 
 @abstract_block
 class RfFilter(AnalogFilter):
-  """RF signal conditioning subcircuit."""
-  pass
+    """RF signal conditioning subcircuit."""
+
+    pass
 
 
 @abstract_block
 class DigitalFilter(Filter):
-  """Digital signal conditioning block."""
-  pass
+    """Digital signal conditioning block."""
+
+    pass
 
 
 @abstract_block
 class ProgrammableController(Block):
-  """General programmable controller."""
-  pass
+    """General programmable controller."""
+
+    pass
 
 
 @abstract_block
 class Microcontroller(ProgrammableController):
-  """Microcontroller (with embedded-class processor) with its surrounding application circuit."""
-  pass
+    """Microcontroller (with embedded-class processor) with its surrounding application circuit."""
+
+    pass
 
 
 @abstract_block
 class Fpga(ProgrammableController):
-  """FPGA with its surrounding application circuit."""
-  pass
+    """FPGA with its surrounding application circuit."""
+
+    pass
 
 
 @abstract_block
 class Memory(Block):
-  """Memory device (including sockets and card sockets) with its surrounding application circuit."""
-  pass
+    """Memory device (including sockets and card sockets) with its surrounding application circuit."""
+
+    pass
 
 
 @abstract_block
 class RealtimeClock(Block):
-  """Realtime clock device."""
-  pass
+    """Realtime clock device."""
+
+    pass
 
 
 @abstract_block
 class Interface(Block):
-  """Interface devices, eg CAN transceiver (CAN <-> SPI / I2C interface),
-  and including analog interfaces (ADCs, DACs)."""
-  pass
+    """Interface devices, eg CAN transceiver (CAN <-> SPI / I2C interface),
+    and including analog interfaces (ADCs, DACs)."""
+
+    pass
 
 
 @abstract_block
 class AnalogToDigital(Interface):
-  pass
+    pass
 
 
 @abstract_block
 class DigitalToAnalog(Interface):
-  pass
+    pass
 
 
 @abstract_block
 class SpeakerDriver(Interface):
-  pass
+    pass
 
 
 @abstract_block
 class IoExpander(Interface):
-  pass
+    pass
 
 
 @abstract_block
 class BitBangAdapter(Interface):
-  """Adapters that break out a structured Bundle to component wires, useful when bit-banging those protocols"""
-  pass
+    """Adapters that break out a structured Bundle to component wires, useful when bit-banging those protocols"""
+
+    pass
 
 
 @abstract_block
 class Radiofrequency(Block):
-  """Radiofrequency devices."""
-  pass
+    """Radiofrequency devices."""
+
+    pass
 
 
 @abstract_block
 class PowerConditioner(Block):
-  """Power conditioning circuits that provide a stable and/or safe power supply, eg voltage regulators"""
-  pass
+    """Power conditioning circuits that provide a stable and/or safe power supply, eg voltage regulators"""
+
+    pass
 
 
 @abstract_block
 class PowerSwitch(Block):
-  """Power switching circuits, eg FET switches and motor drivers"""
-  pass
+    """Power switching circuits, eg FET switches and motor drivers"""
+
+    pass
 
 
 @abstract_block
 class MotorDriver(PowerSwitch):
-  pass
+    pass
 
 
 @abstract_block
 class BrushedMotorDriver(MotorDriver):
-  """A brushed motor driver, or at least the power stage for one."""
-  pass
+    """A brushed motor driver, or at least the power stage for one."""
+
+    pass
 
 
 @abstract_block
 class BldcDriver(MotorDriver):
-  """A brushless motor driver, or at least the power stage for one - may be as simple a 3 half-bridges."""
-  pass
+    """A brushless motor driver, or at least the power stage for one - may be as simple a 3 half-bridges."""
+
+    pass
 
 
 @abstract_block
 class Connector(Block):
-  """Connectors, including card sockets."""
-  pass
+    """Connectors, including card sockets."""
+
+    pass
 
 
 @abstract_block
 class PowerSource(Block):
-  """Power sources, including connectors that also supply power."""
-  pass
+    """Power sources, including connectors that also supply power."""
+
+    pass
 
 
 @abstract_block
 class HumanInterface(Block):
-  """Devices for human interface, eg switches, displays, LEDs"""
-  pass
+    """Devices for human interface, eg switches, displays, LEDs"""
+
+    pass
 
 
 @abstract_block
 class Display(HumanInterface):
-  """Pixel displays."""
-  pass
+    """Pixel displays."""
+
+    pass
 
 
 @abstract_block
 class Lcd(Display):
-  """LCD display, where pixels absorb / reflect light, but do not directly emit light (eg, use a backlight, or are transflective)."""
-  pass
+    """LCD display, where pixels absorb / reflect light, but do not directly emit light (eg, use a backlight, or are transflective)."""
+
+    pass
 
 
 @abstract_block
 class Oled(Display):
-  """OLED display, with the pixel density of an LCD but with infinite contrast and no backlight."""
-  pass
+    """OLED display, with the pixel density of an LCD but with infinite contrast and no backlight."""
+
+    pass
 
 
 @abstract_block
 class EInk(Display):
-  """E-ink display, which retains the image after power is removed."""
-  pass
+    """E-ink display, which retains the image after power is removed."""
+
+    pass
 
 
 @abstract_block
 class Light(HumanInterface):
-  """Discrete lights."""
-  pass
+    """Discrete lights."""
+
+    pass
 
 
 @abstract_block
 class Sensor(Block):
-  """Any kind of sensor with any interface. Multi-packed sensors may inherit from multiple categories"""
-  pass
+    """Any kind of sensor with any interface. Multi-packed sensors may inherit from multiple categories"""
+
+    pass
 
 
 @abstract_block
 class CurrentSensor(Sensor):
-  pass
+    pass
 
 
 @abstract_block
 class Accelerometer(Sensor):
-  pass
+    pass
 
 
 @abstract_block
 class Gyroscope(Sensor):
-  pass
+    pass
 
 
 @abstract_block
 class EnvironmentalSensor(Sensor):
-  pass
+    pass
 
 
 @abstract_block
 class TemperatureSensor(EnvironmentalSensor):
-  pass
+    pass
 
 
 @abstract_block
 class HumiditySensor(EnvironmentalSensor):
-  pass
+    pass
 
 
 @abstract_block
 class PressureSensor(EnvironmentalSensor):
-  """Sensors measuring ambient pressure"""
-  pass
+    """Sensors measuring ambient pressure"""
+
+    pass
 
 
 @abstract_block
 class GasSensor(EnvironmentalSensor):
-  """Sensors measuring gas concentration, including non-particle IAQ, TVOC, eCO2, and CO2 sensors."""
-  pass
+    """Sensors measuring gas concentration, including non-particle IAQ, TVOC, eCO2, and CO2 sensors."""
+
+    pass
 
 
 @abstract_block
 class LightSensor(Sensor):
-  pass
+    pass
 
 
 @abstract_block
 class MagneticSensor(Sensor):
-  pass
+    pass
 
 
 @abstract_block
 class MagneticSwitch(MagneticSensor):
-  """A switch that is activated by a magnetic field, including omnipolar and bipolar devices."""
-  pass
+    """A switch that is activated by a magnetic field, including omnipolar and bipolar devices."""
+
+    pass
 
 
 @abstract_block
 class Magnetometer(MagneticSensor):
-  """Linear response magnetic field sensor, potentially with multiple axes"""
-  pass
+    """Linear response magnetic field sensor, potentially with multiple axes"""
+
+    pass
 
 
 @abstract_block
 class Microphone(Sensor):
-  pass
+    pass
 
 
 @abstract_block
 class Camera(Sensor):
-  """Imaging sensors, including visible / RGB, IR, and thermal."""
-  pass
+    """Imaging sensors, including visible / RGB, IR, and thermal."""
+
+    pass
 
 
 @abstract_block
 class DistanceSensor(Sensor):
-  pass
+    pass
 
 
 @abstract_block
 class Protection(Block):
-  """Circuit protection elements, eg TVS diodes, fuses"""
-  pass
+    """Circuit protection elements, eg TVS diodes, fuses"""
+
+    pass
 
 
 @abstract_block
 class Testing(Block):
-  """Blocks for testing (eg, test points) and programming (eg, programming headers)."""
-  pass
+    """Blocks for testing (eg, test points) and programming (eg, programming headers)."""
+
+    pass
 
 
 @abstract_block
 class MultipackDevice(Block):
-  """A multipack device (e.g., dualpack opamp, quadpack resistor array) which blocks across the design
-  can be merged into."""
-  pass
+    """A multipack device (e.g., dualpack opamp, quadpack resistor array) which blocks across the design
+    can be merged into."""
+
+    pass
 
 
 @abstract_block
 class ProgrammingConnector(Connector, Testing):
-  """Programming / debug / JTAG connectors."""
-  pass
+    """Programming / debug / JTAG connectors."""
+
+    pass
 
 
 @abstract_block
 class TypedTestPoint(Testing):
-  """Test point with a typed port (eg, VoltageSink, instead of Passive)."""
-  pass
+    """Test point with a typed port (eg, VoltageSink, instead of Passive)."""
+
+    pass
 
 
 @abstract_block
 class TypedJumper(Testing):
-  """Jumper with typed ports (eg, VoltageSource-VoltageSink, instead of Passive)."""
-  pass
+    """Jumper with typed ports (eg, VoltageSource-VoltageSink, instead of Passive)."""
+
+    pass
 
 
 @abstract_block
 class InternalSubcircuit(InternalBlock):
-  """Internal blocks that are primarily an implementation detail or not re-usable"""
-  pass
+    """Internal blocks that are primarily an implementation detail or not re-usable"""
+
+    pass
 
 
 @abstract_block
 class DiscreteComponent(InternalBlock):
-  """Discrete component that typically provides untyped ports (not to be be used directly), as a component to be used in an application circuit."""
-  pass
+    """Discrete component that typically provides untyped ports (not to be be used directly), as a component to be used in an application circuit."""
+
+    pass
 
 
 @abstract_block
 class DiscreteSemiconductor(DiscreteComponent):
-  """Discrete semiconductor product, eg diodes and FETs, typically used as part of an application circuit."""
-  pass
+    """Discrete semiconductor product, eg diodes and FETs, typically used as part of an application circuit."""
+
+    pass
 
 
 @abstract_block
 class PassiveComponent(DiscreteComponent):
-  """Passives components, typically used as part of an application circuit."""
-  pass
+    """Passives components, typically used as part of an application circuit."""
+
+    pass
 
 
 @abstract_block
 class DummyDevice(InternalBlock):
-  """Non-physical "device" used to affect parameters."""
-  pass
+    """Non-physical "device" used to affect parameters."""
+
+    pass
 
 
 @abstract_block
 class IdealModel(InternalBlock):
-  """Ideal model device that can be used as a placeholder to get a design compiling
-  but has no physical implementation."""
-  def __init__(self, *args: Any, allow_ideal: BoolLike = False, **kwargs: Any) -> None:
-    super().__init__(*args, **kwargs)
-    self.allow_ideal = self.ArgParameter(allow_ideal)
+    """Ideal model device that can be used as a placeholder to get a design compiling
+    but has no physical implementation."""
 
-  @override
-  def contents(self) -> None:
-    super().contents()
-    self.require(self.allow_ideal, "ideal model")
+    def __init__(self, *args: Any, allow_ideal: BoolLike = False, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.allow_ideal = self.ArgParameter(allow_ideal)
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.require(self.allow_ideal, "ideal model")
 
 
 @abstract_block
 class DeprecatedBlock(InternalBlock):
-  """Base class for blocks that are deprecated and planned to be removed"""
-  pass
+    """Base class for blocks that are deprecated and planned to be removed"""
+
+    pass
 
 
 @abstract_block
 class Label(DeprecatedBlock):
-  """DEPRECATED: non-circuit footprints should be added in layout as non-schematic items.
-  Nonfunctional footprint, including copper and silkscreen labels."""
-  pass
+    """DEPRECATED: non-circuit footprints should be added in layout as non-schematic items.
+    Nonfunctional footprint, including copper and silkscreen labels."""
+
+    pass
 
 
 @abstract_block
 class Mechanical(DeprecatedBlock):
-  """DEPRECATED: non-circuit footprints should be added in layout as non-schematic items.
-  Nonelectrical footprint, including plated and NPTH mounting holes."""
-  pass
+    """DEPRECATED: non-circuit footprints should be added in layout as non-schematic items.
+    Nonelectrical footprint, including plated and NPTH mounting holes."""
+
+    pass

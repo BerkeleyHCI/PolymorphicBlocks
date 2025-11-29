@@ -6,11 +6,13 @@ from . import *
 
 class DescriptionBlock(Block):
     """Block with a float parameter and description"""
+
     def __init__(self) -> None:
         super().__init__()
         self.variable = self.Parameter(FloatExpr(5.0))
         self.description = DescriptionString(
-            "Test variable = ", DescriptionString.FormatUnits(self.variable, "Units"), ".")
+            "Test variable = ", DescriptionString.FormatUnits(self.variable, "Units"), "."
+        )
 
 
 class DescriptionBlockProtoTestCase(unittest.TestCase):
@@ -19,9 +21,9 @@ class DescriptionBlockProtoTestCase(unittest.TestCase):
 
         self.assertEqual(len(pb.description), 3)
 
-        self.assertEqual(pb.description[0].text, 'Test variable = ')
+        self.assertEqual(pb.description[0].text, "Test variable = ")
         expected_ref = edgir.LocalPath()
-        expected_ref.steps.add().name = 'variable'
+        expected_ref.steps.add().name = "variable"
         self.assertEqual(pb.description[1].param.path, expected_ref)
-        self.assertEqual(pb.description[1].param.unit, 'Units')
-        self.assertEqual(pb.description[2].text, '.')
+        self.assertEqual(pb.description[1].param.unit, "Units")
+        self.assertEqual(pb.description[2].text, ".")

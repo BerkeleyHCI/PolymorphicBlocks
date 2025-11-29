@@ -10,23 +10,20 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock)
         self.addr_lsb = self.ArgParameter(addr_lsb)
         self.generator_param(self.addr_lsb)
 
-        self.vs = self.Port(VoltageSink(
-            voltage_limits=(3, 5.5) * Volt,
-            current_draw=(6 * uAmp, 1 * mAmp)
-        ))
+        self.vs = self.Port(VoltageSink(voltage_limits=(3, 5.5) * Volt, current_draw=(6 * uAmp, 1 * mAmp)))
         self.gnd = self.Port(Ground())
 
         self.i2c = self.Port(I2cTarget(DigitalBidir.empty(), addresses=[0x40 + self.addr_lsb]))
-        self.i2c.sda.init_from(DigitalBidir.from_supply(
-            self.gnd, self.vs,
-            voltage_limit_abs=(-0.3, 6.0) * Volt,
-            input_threshold_factor=(0.3, 0.7)
-        ))
-        self.i2c.scl.init_from(DigitalSink.from_supply(
-            self.gnd, self.vs,
-            voltage_limit_tolerance=(-0.3, 0.3) * Volt,
-            input_threshold_factor=(0.3, 0.7)
-        ))
+        self.i2c.sda.init_from(
+            DigitalBidir.from_supply(
+                self.gnd, self.vs, voltage_limit_abs=(-0.3, 6.0) * Volt, input_threshold_factor=(0.3, 0.7)
+            )
+        )
+        self.i2c.scl.init_from(
+            DigitalSink.from_supply(
+                self.gnd, self.vs, voltage_limit_tolerance=(-0.3, 0.3) * Volt, input_threshold_factor=(0.3, 0.7)
+            )
+        )
 
         self.in_pos = self.Port(AnalogSink(voltage_limits=(-0.3, 26) * Volt))
         self.in_neg = self.Port(AnalogSink(voltage_limits=(-0.3, 26) * Volt))
@@ -55,19 +52,21 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock)
         }[self.get(self.addr_lsb)]
 
         self.footprint(
-            'U', 'Package_TO_SOT_SMD:SOT-23-8',
+            "U",
+            "Package_TO_SOT_SMD:SOT-23-8",
             {
-                '1': self.in_pos,
-                '2': self.in_neg,
-                '3': self.gnd,
-                '4': self.vs,
-                '5': self.i2c.scl,
-                '6': self.i2c.sda,
-                '7': sa0_pin,
-                '8': sa1_pin,
+                "1": self.in_pos,
+                "2": self.in_neg,
+                "3": self.gnd,
+                "4": self.vs,
+                "5": self.i2c.scl,
+                "6": self.i2c.sda,
+                "7": sa0_pin,
+                "8": sa1_pin,
             },
-            mfr='Texas Instruments', part='INA219AIDCNR',
-            datasheet='https://www.ti.com/lit/ds/symlink/ina219.pdf'
+            mfr="Texas Instruments",
+            part="INA219AIDCNR",
+            datasheet="https://www.ti.com/lit/ds/symlink/ina219.pdf",
         )
         self.assign(self.lcsc_part, "C87469")
         self.assign(self.actual_basic_part, False)
@@ -85,9 +84,11 @@ class Ina219(CurrentSensor, Block):
 
         self.vs_cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
-        self.Rs = self.Block(CurrentSenseResistor(
-            resistance=shunt_resistor,
-        ))
+        self.Rs = self.Block(
+            CurrentSenseResistor(
+                resistance=shunt_resistor,
+            )
+        )
 
         self.sense_pos = self.Export(self.Rs.pwr_in)
         self.sense_neg = self.Export(self.Rs.pwr_out)

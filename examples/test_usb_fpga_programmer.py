@@ -6,76 +6,81 @@ from edg import *
 
 
 class FpgaProgrammingHeader(Connector, Block):
-  """Custom programming header for iCE40 loosely based on the SWD pinning"""
-  def __init__(self) -> None:
-    super().__init__()
-    self.pwr = self.Port(VoltageSink.empty(), optional=True)
-    self.gnd = self.Port(Ground.empty(), [Common])
-    self.spi = self.Port(SpiPeripheral.empty())
-    self.cs = self.Port(DigitalSink.empty())
-    self.reset = self.Port(DigitalSink.empty())
+    """Custom programming header for iCE40 loosely based on the SWD pinning"""
 
-  @override
-  def contents(self) -> None:
-    super().contents()
-    self.conn = self.Block(PinHeader127DualShrouded(10))
-    self.connect(self.pwr, self.conn.pins.request('1').adapt_to(VoltageSink()))
-    self.connect(self.gnd, self.conn.pins.request('3').adapt_to(Ground()),
-                 self.conn.pins.request('5').adapt_to(Ground()),
-                 self.conn.pins.request('9').adapt_to(Ground()))
-    self.connect(self.cs, self.conn.pins.request('2').adapt_to(DigitalSink()))  # swd: swdio
-    self.connect(self.spi.sck, self.conn.pins.request('4').adapt_to(DigitalSink()))  # swd: swclk
-    self.connect(self.spi.mosi, self.conn.pins.request('6').adapt_to(DigitalSink()))  # swd: swo
-    self.connect(self.spi.miso, self.conn.pins.request('8').adapt_to(DigitalSource()))  # swd: NC or jtag: tdi
-    self.connect(self.reset, self.conn.pins.request('10').adapt_to(DigitalSink()))
+    def __init__(self) -> None:
+        super().__init__()
+        self.pwr = self.Port(VoltageSink.empty(), optional=True)
+        self.gnd = self.Port(Ground.empty(), [Common])
+        self.spi = self.Port(SpiPeripheral.empty())
+        self.cs = self.Port(DigitalSink.empty())
+        self.reset = self.Port(DigitalSink.empty())
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.conn = self.Block(PinHeader127DualShrouded(10))
+        self.connect(self.pwr, self.conn.pins.request("1").adapt_to(VoltageSink()))
+        self.connect(
+            self.gnd,
+            self.conn.pins.request("3").adapt_to(Ground()),
+            self.conn.pins.request("5").adapt_to(Ground()),
+            self.conn.pins.request("9").adapt_to(Ground()),
+        )
+        self.connect(self.cs, self.conn.pins.request("2").adapt_to(DigitalSink()))  # swd: swdio
+        self.connect(self.spi.sck, self.conn.pins.request("4").adapt_to(DigitalSink()))  # swd: swclk
+        self.connect(self.spi.mosi, self.conn.pins.request("6").adapt_to(DigitalSink()))  # swd: swo
+        self.connect(self.spi.miso, self.conn.pins.request("8").adapt_to(DigitalSource()))  # swd: NC or jtag: tdi
+        self.connect(self.reset, self.conn.pins.request("10").adapt_to(DigitalSink()))
 
 
 class UsbFpgaProgrammer(JlcBoardTop):
-  """USB UART converter board"""
-  @override
-  def contents(self) -> None:
-    super().contents()
-    self.usb = self.Block(UsbCReceptacle())
+    """USB UART converter board"""
 
-    self.vusb = self.connect(self.usb.pwr)
-    self.gnd = self.connect(self.usb.gnd)
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.usb = self.Block(UsbCReceptacle())
 
-    # POWER
-    with self.implicit_connect(
-        ImplicitConnect(self.vusb, [Power]),
-        ImplicitConnect(self.gnd, [Common]),
-    ) as imp:
-      # since USB is 5.25 max, we can't use the 5.2v Zener that is a basic part =(
-      self.vusb_protect = imp.Block(ProtectionZenerDiode(voltage=(5.25, 6)*Volt))
+        self.vusb = self.connect(self.usb.pwr)
+        self.gnd = self.connect(self.usb.gnd)
 
-      self.ft232 = imp.Block(Ft232hl())
-      (self.usb_esd, ), self.usb_chain = self.chain(
-        self.usb.usb, imp.Block(UsbEsdDiode()), self.ft232.usb)
-      (self.led0, ), _ = self.chain(self.ft232.acbus.request('0'), imp.Block(IndicatorLed(Led.White)))  # TXDEN
-      (self.led1, ), _ = self.chain(self.ft232.acbus.request('3'), imp.Block(IndicatorLed(Led.Green)))  # RXLED
-      (self.led2, ), _ = self.chain(self.ft232.acbus.request('4'), imp.Block(IndicatorLed(Led.Yellow)))  # TXLED
+        # POWER
+        with self.implicit_connect(
+            ImplicitConnect(self.vusb, [Power]),
+            ImplicitConnect(self.gnd, [Common]),
+        ) as imp:
+            # since USB is 5.25 max, we can't use the 5.2v Zener that is a basic part =(
+            self.vusb_protect = imp.Block(ProtectionZenerDiode(voltage=(5.25, 6) * Volt))
 
-      self.out = imp.Block(FpgaProgrammingHeader())
-      self.connect(self.ft232.mpsse, self.out.spi)
-      self.connect(self.ft232.adbus.request('4'), self.out.cs)
-      self.connect(self.ft232.adbus.request('7'), self.out.reset)
+            self.ft232 = imp.Block(Ft232hl())
+            (self.usb_esd,), self.usb_chain = self.chain(self.usb.usb, imp.Block(UsbEsdDiode()), self.ft232.usb)
+            (self.led0,), _ = self.chain(self.ft232.acbus.request("0"), imp.Block(IndicatorLed(Led.White)))  # TXDEN
+            (self.led1,), _ = self.chain(self.ft232.acbus.request("3"), imp.Block(IndicatorLed(Led.Green)))  # RXLED
+            (self.led2,), _ = self.chain(self.ft232.acbus.request("4"), imp.Block(IndicatorLed(Led.Yellow)))  # TXLED
 
-  @override
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      instance_refinements=[
-      ],
-      instance_values=[
-        (['refdes_prefix'], 'F'),  # unique refdes for panelization
-      ],
-      class_refinements=[
-        (UsbEsdDiode, Pgb102st23),  # as recommended by the FT232H datasheet, also for the weird "sot-23" package
-      ],
-      class_values=[
-      ],
-    )
+            self.out = imp.Block(FpgaProgrammingHeader())
+            self.connect(self.ft232.mpsse, self.out.spi)
+            self.connect(self.ft232.adbus.request("4"), self.out.cs)
+            self.connect(self.ft232.adbus.request("7"), self.out.reset)
+
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            instance_refinements=[],
+            instance_values=[
+                (["refdes_prefix"], "F"),  # unique refdes for panelization
+            ],
+            class_refinements=[
+                (
+                    UsbEsdDiode,
+                    Pgb102st23,
+                ),  # as recommended by the FT232H datasheet, also for the weird "sot-23" package
+            ],
+            class_values=[],
+        )
 
 
 class UsbFpgaProgrammerTestCase(unittest.TestCase):
-  def test_design(self) -> None:
-    compile_board_inplace(UsbFpgaProgrammer)
+    def test_design(self) -> None:
+        compile_board_inplace(UsbFpgaProgrammer)

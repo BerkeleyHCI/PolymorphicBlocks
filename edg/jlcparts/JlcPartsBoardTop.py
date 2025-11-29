@@ -14,25 +14,26 @@ from .JlcPartsPptcFuse import JlcPartsPptcFuse
 
 
 class JlcPartsRefinements(DesignTop):
-  """List of refinements that use JlcParts - mix this into a BoardTop"""
-  @override
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      class_refinements=[
-        (Resistor, JlcPartsResistorSmd),
-        (Capacitor, JlcPartsMlcc),
-        (Inductor, JlcPartsInductor),
-        (Diode, JlcPartsDiode),
-        (ZenerDiode, JlcPartsZenerDiode),
-        (Led, JlcPartsLed),
-        (Bjt, JlcPartsBjt),
-        (Fet, JlcPartsFet),
-        (SwitchFet, JlcPartsSwitchFet),
-        (PptcFuse, JlcPartsPptcFuse),
-        (FerriteBead, JlcPartsFerriteBead)
-      ],
-      class_values=[  # realistically only RCs are going to likely be basic parts
-        (JlcPartsResistorSmd, ['require_basic_part'], True),
-        (JlcPartsMlcc, ['require_basic_part'], True),
-      ],
-    )
+    """List of refinements that use JlcParts - mix this into a BoardTop"""
+
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (Resistor, JlcPartsResistorSmd),
+                (Capacitor, JlcPartsMlcc),
+                (Inductor, JlcPartsInductor),
+                (Diode, JlcPartsDiode),
+                (ZenerDiode, JlcPartsZenerDiode),
+                (Led, JlcPartsLed),
+                (Bjt, JlcPartsBjt),
+                (Fet, JlcPartsFet),
+                (SwitchFet, JlcPartsSwitchFet),
+                (PptcFuse, JlcPartsPptcFuse),
+                (FerriteBead, JlcPartsFerriteBead),
+            ],
+            class_values=[  # realistically only RCs are going to likely be basic parts
+                (JlcPartsResistorSmd, ["require_basic_part"], True),
+                (JlcPartsMlcc, ["require_basic_part"], True),
+            ],
+        )

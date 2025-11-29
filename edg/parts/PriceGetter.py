@@ -15,8 +15,8 @@ class PartQuantityTransform(TransformUtil.Transform):
 
     @override
     def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
-        lcsc_part_number = self.design.get_value(context.path.to_tuple() + ('lcsc_part',))
-        part = self.design.get_value(context.path.to_tuple() + ('fp_part',))
+        lcsc_part_number = self.design.get_value(context.path.to_tuple() + ("lcsc_part",))
+        part = self.design.get_value(context.path.to_tuple() + ("fp_part",))
 
         if lcsc_part_number:  # non-None (value exists) and nonempty
             assert isinstance(lcsc_part_number, str)
@@ -42,13 +42,13 @@ class GeneratePrice(BaseBackend):
     @staticmethod
     def price_list_from_str(full_price_list: str) -> List[Tuple[int, float]]:
         # returns as [ [lower-bound_1, price_1], [lower-bound_2 (and the previous upperbound), price_2], ... ]
-        price_and_quantity_groups = full_price_list.split(',')
+        price_and_quantity_groups = full_price_list.split(",")
         value: List[Tuple[int, float]] = []
         for price_and_quantity in price_and_quantity_groups:
-            price_and_quantity_list = price_and_quantity.split(':')
+            price_and_quantity_list = price_and_quantity.split(":")
             # this has to be 2 because it will split the quantity range & the cost:
             assert len(price_and_quantity_list) == 2
-            quantity_range = price_and_quantity_list[0].split('-')
+            quantity_range = price_and_quantity_list[0].split("-")
             # when the length is 1, it's the minimum quantity for a price break (ex: 15000+)
             assert len(quantity_range) == 1 or len(quantity_range) == 2
             value.append((int(quantity_range[0]), float(price_and_quantity_list[1])))
@@ -59,19 +59,21 @@ class GeneratePrice(BaseBackend):
     @classmethod
     def get_price_table(cls) -> Dict[str, str]:
         if not GeneratePrice.PRICE_TABLE:
-            main_table = PartsTable.with_source_dir(['JLCPCB SMT Parts Library(20220419).csv'], 'resources')[0]
+            main_table = PartsTable.with_source_dir(["JLCPCB SMT Parts Library(20220419).csv"], "resources")[0]
             if not os.path.exists(main_table):
-                main_table = PartsTable.with_source_dir(['Pruned_JLCPCB SMT Parts Library(20220419).csv'], 'resources')[0]
+                main_table = PartsTable.with_source_dir(["Pruned_JLCPCB SMT Parts Library(20220419).csv"], "resources")[
+                    0
+                ]
             parts_tables = [main_table]
 
-            supplementary_table = PartsTable.with_source_dir(['supplemental_price.csv'], 'resources')[0]
+            supplementary_table = PartsTable.with_source_dir(["supplemental_price.csv"], "resources")[0]
             if os.path.exists(supplementary_table):
                 parts_tables.append(supplementary_table)
 
             for table in parts_tables:
-                with open(table, 'r', newline='', encoding='gb2312') as csv_file:
+                with open(table, "r", newline="", encoding="gb2312") as csv_file:
                     csv_reader = csv.reader(csv_file)
-                    next(csv_reader)    # to skip the header
+                    next(csv_reader)  # to skip the header
                     for row in csv_reader:
                         full_price_list = row[10]
                         if not full_price_list.strip():  # missing price, discard row
@@ -85,13 +87,13 @@ class GeneratePrice(BaseBackend):
             return None
         full_price_list = self.price_list_from_str(full_price_str)
         temp_price = full_price_list[0][1]  # sets price to initial amount (the lowest quantity bracket)
-        for (minimum_quantity, price) in full_price_list:
+        for minimum_quantity, price in full_price_list:
             if quantity >= minimum_quantity:
                 temp_price = price
         return quantity * temp_price
 
     @override
-    def run(self, design: CompiledDesign, args: Dict[str, str]={}) -> List[Tuple[edgir.LocalPath, str]]:
+    def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]:
         assert not args
         price_list = PartQuantityTransform(design).run()
         total_price: float = 0
@@ -103,6 +105,4 @@ class GeneratePrice(BaseBackend):
             else:
                 print(lcsc_part_number + " is missing from the price list.")
 
-        return [
-            (edgir.LocalPath(), str(round(total_price, 2)))
-        ]
+        return [(edgir.LocalPath(), str(round(total_price, 2)))]
