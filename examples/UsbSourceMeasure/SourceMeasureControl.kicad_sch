@@ -9786,7 +9786,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "ratio=10*Ratio(tol=0.05))"
+		(property "Value2" "ratio=5*Ratio(tol=0.05))"
 			(at 237.49 128.016 0)
 			(effects
 				(font

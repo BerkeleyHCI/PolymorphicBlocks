@@ -547,7 +547,7 @@ class UsbSourceMeasure(JlcBoardTop):
             (self.ramp, self.cap_conv), _ = self.chain(
                 self.vusb,
                 imp.Block(
-                    RampLimiter(target_vgs=(3.7, 19) * Volt)
+                    RampLimiter(target_vgs=(3.5, 17.5) * Volt)
                 ),  # avoid excess capacitance on VBus which may cause the PD source to reset
                 imp.Block(DecouplingCapacitor(47 * uFarad(tol=0.25))),
             )
