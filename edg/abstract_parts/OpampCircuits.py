@@ -363,8 +363,9 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
     From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Inverting_integrator:
     Vout = - 1/RC * int(Vin) (integrating over time)
 
-    1/RC is the integrator gain. One intuitive interpretation is, for a DC input,
-    the time it takes for the output voltage to change by the input voltage.
+    1/RC (in units 1/s or Hz) is the integrator gain.
+    One intuitive interpretation is, for a DC input, one period of the frequency
+    is the time it takes for the output voltage to change by the input voltage.
     """
 
     @override

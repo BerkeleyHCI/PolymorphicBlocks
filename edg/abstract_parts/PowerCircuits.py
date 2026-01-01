@@ -241,6 +241,8 @@ class RampLimiter(KiCadSchematicBlock):
         # because PMOS is source-referenced from vin, calculate the Vgs from GND by subtracting from Vin
         # however, we can't calculate a fixed Vgs range for all Vin, since it would be overly restrictive,
         # so instead we calculate ratios at the Vin corners, then take the intersection of the ratios
+        # this may generate intermediate negative ratios, but the intersection should clamp those
+        # for reasonable target_vgs
         vgs_ratio_low = (self.pwr_in.link().voltage.lower() - self.target_vgs) / self.pwr_in.link().voltage.lower()
         vgs_ratio_hi = (self.pwr_in.link().voltage.upper() - self.target_vgs) / self.pwr_in.link().voltage.upper()
 
