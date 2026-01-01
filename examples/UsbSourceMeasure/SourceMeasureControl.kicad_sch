@@ -6838,7 +6838,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "factor=1/4.7e-6*Ratio(tol=0.15),"
+		(property "Value2" "gain=100/4.7*kHertz(tol=0.15),"
 			(at 113.03 101.346 0)
 			(effects
 				(font
@@ -6846,7 +6846,7 @@
 				)
 			)
 		)
-		(property "Value3" "capacitance=1*nFarad(tol=0.1))"
+		(property "Value3" "capacitance=10*nFarad(tol=0.1))"
 			(at 113.03 103.632 0)
 			(effects
 				(font
@@ -9786,7 +9786,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "ratio=10*Ratio(tol=0.05))"
+		(property "Value2" "ratio=5*Ratio(tol=0.05))"
 			(at 237.49 128.016 0)
 			(effects
 				(font

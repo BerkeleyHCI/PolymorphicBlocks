@@ -363,8 +363,9 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
     From https://en.wikipedia.org/wiki/Operational_amplifier_applications#Inverting_integrator:
     Vout = - 1/RC * int(Vin) (integrating over time)
 
-    Series is lower and tolerance is higher because there's a cap involved
-    TODO - separate series for cap, and series and tolerance by decade?
+    1/RC (in units 1/s or Hz) is the integrator gain.
+    One intuitive interpretation is, for a DC input, one period of the frequency
+    is the time it takes for the output voltage to change by the input voltage.
     """
 
     @override
@@ -387,7 +388,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
         }
         return mapping[symbol_name]
 
-    def __init__(self, factor: RangeLike, capacitance: RangeLike, *, series: IntLike = 6, tolerance: FloatLike = 0.05):
+    def __init__(self, gain: RangeLike, capacitance: RangeLike):
         super().__init__()
 
         self.amp = self.Block(Opamp())
@@ -398,23 +399,23 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
         self.output = self.Port(AnalogSource.empty())
         self.reference = self.Port(AnalogSink.empty())  # negative reference for the input and output signals
 
-        self.factor = self.ArgParameter(factor)  # output scale factor, 1/RC in units of 1/s
+        self.gain = self.ArgParameter(gain)  # 1/RC in units of 1/s
         self.capacitance = self.ArgParameter(capacitance)
 
-        self.actual_factor = self.Parameter(RangeExpr())
+        self.actual_gain = self.Parameter(RangeExpr())
 
     @override
     def contents(self) -> None:
         super().contents()
 
         self.description = DescriptionString(
-            "<b>factor:</b> ",
-            DescriptionString.FormatUnits(self.actual_factor, ""),
+            "<b>gain:</b> ",
+            DescriptionString.FormatUnits(self.actual_gain, ""),
             " <b>of spec:</b> ",
-            DescriptionString.FormatUnits(self.factor, ""),
+            DescriptionString.FormatUnits(self.gain, ""),
         )
 
-        self.r = self.Block(Resistor((1 / self.factor).shrink_multiply(1 / self.capacitance)))
+        self.r = self.Block(Resistor((1 / self.gain).shrink_multiply(1 / self.capacitance)))
         self.c = self.Block(Capacitor(capacitance=self.capacitance, voltage=self.output.link().voltage))
 
         self.import_kicad(
@@ -427,7 +428,7 @@ class IntegratorInverting(OpampApplication, KiCadSchematicBlock, KiCadImportable
             },
         )
 
-        self.assign(self.actual_factor, 1 / self.r.actual_resistance / self.c.actual_capacitance)
+        self.assign(self.actual_gain, 1 / self.r.actual_resistance / self.c.actual_capacitance)
 
 
 class SummingAmplifier(OpampApplication):
