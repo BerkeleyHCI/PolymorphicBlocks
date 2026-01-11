@@ -4913,6 +4913,16 @@
 		)
 		(uuid "795eb628-568e-4a61-92d3-90e6ce6efd62")
 	)
+	(text "only for a bit of CMRR"
+		(exclude_from_sim no)
+		(at 197.358 116.078 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "9ecdc2c4-d5c2-42d2-a9ce-5963b3cba77e")
+	)
 	(text "Low-leakage TVS diodes\nto minimize interference\nwith current measurement"
 		(exclude_from_sim no)
 		(at 266.7 76.2 0)
@@ -7220,7 +7230,7 @@
 				)
 			)
 		)
-		(property "Value3" "cutoff_freq=(47, 470)*kHertz)"
+		(property "Value3" "cutoff_freq=(1, 10)*MHertz)"
 			(at 214.884 124.206 0)
 			(effects
 				(font
