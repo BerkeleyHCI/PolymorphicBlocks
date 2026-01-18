@@ -15,9 +15,11 @@ class CompensatorType2(OpampApplication, KiCadSchematicBlock, KiCadImportableBlo
 
     In simple terms, this can be thought of as a inverting integrator (Type I Compensator)
     with better high frequency stability. This adds a zero-pole pair centered around the
-    (parameter) crossover frequency, which provides phase boost near the crossover frequency to improve phase margin.
+    (parameter) crossover frequency fc, which provides phase boost near fc to improve phase margin.
+    In some cases, this target may be set lower than the actual crossover frequency to achieve better gain margin,
+    at the cost of phase margin.
 
-    K is defined as the ratio of the crossover frequency to the zero frequency.
+    K is defined as the ratio of the fc to the zero frequency fz, so fz=fc/K and fp=fc*K.
     Higher K (wider plateau in gain vs. frequency) provides more phase boost, but reduces the high-frequency
     gain roll-off which reduces noise.
     These Ks translate into these phase boosts:
@@ -26,15 +28,15 @@ class CompensatorType2(OpampApplication, KiCadSchematicBlock, KiCadImportableBlo
     K=3.7 => 60 degrees  (higher K: more damped response, more stable, more phase margin)
     K is not toleranced, instead it inherits tolerancing of the crossover frequency.
 
-    The crossover_gain is the target gain (as a ratio, NOT dB) of this circuit in isolation at the crossover frequency.
-    This is typically the reciprocal of the gain of the plant at that frequency,
-    leading to G=1 loop gain at the crossover frequency.
+    The crossover_gain is the target gain (as a ratio, NOT dB) of this circuit in isolation at fc.
+    This is usually the reciprocal of the plant gain at that frequency so loop gain is 1 at fc.
+    This parameter may be determined or tuned through simulation.
 
     The rin parameter sets the value of the input resistor (R1 in references). This is a degree of freedom
     and balances between power consumption (higher R1) and noise (lower R1). Typical values are in mid-kOhm range.
 
-    Real opamps have limited gain-bandwidth, ensure that the crossover frequency is well below the gain bandwidth
-    of the selected opamp.
+    Real opamps have limited gain-bandwidth, ensure that the crossover frequency is well below (roughly at least 10x)
+    the gain-bandwidth of the selected opamp.
 
     This current implementation omits the bias resistor (R4 in the TI formulation) and assumes the input is DC-based
     at the reference voltage.
@@ -47,10 +49,9 @@ class CompensatorType2(OpampApplication, KiCadSchematicBlock, KiCadImportableBlo
     "Demystifying Type II and Type III Compensators Using Op-Amp and OTA for DC/DC Converters"
     https://www.ti.com/lit/an/slva662/slva662.pdf
 
-    "Design Type II Compensation In A Systematic Way"
+    "Design Type II Compensation In A Systematic Way", Liyu Cao
     https://www.researchgate.net/profile/Liyu-Cao/publication/256455457_Design_Type_II_Compensation_In_A_Systematic_Way/links/0c960522ba2296f7b2000000/Design-Type-II-Compensation-In-A-Systematic-Way.pdf
-    this uses a different formulation and provides an alpha factor to shift the crossover frequency leftwards
-    to provide more gain margin (at the trade-off of some phase margin)
+    this formulation uses an alpha factor to shift the crossover frequency leftwards, for more gain margin
     """
 
     @override
