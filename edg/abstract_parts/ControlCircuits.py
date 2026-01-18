@@ -13,7 +13,7 @@ from .Categories import OpampApplication
 class CompensatorType2(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock):
     """A Type II Compensator circuit used in feedback control loops.
 
-    In simple terms, this can be thought of as a inverting integrator (Type I Compensator)
+    In simple terms, this can be thought of as an inverting integrator (Type I Compensator)
     with better high frequency stability. This adds a zero-pole pair centered around the
     (parameter) crossover frequency fc, which provides phase boost near fc to improve phase margin.
     In some cases, this target may be set lower than the actual crossover frequency to achieve better gain margin,
@@ -26,14 +26,16 @@ class CompensatorType2(OpampApplication, KiCadSchematicBlock, KiCadImportableBlo
     K=1.7 => 30 degrees  (lower K: faster response)
     K=2.4 => 45 degrees
     K=3.7 => 60 degrees  (higher K: more damped response, more stable, more phase margin)
-    K is not toleranced, instead it inherits tolerancing of the crossover frequency.
+
+    The tolerancing of fc affects the variance of the center frequency of the phase boost,
+    while the tolerancing of K affects variance in phase boost and plateau width.
 
     The crossover_gain is the target gain (as a ratio, NOT dB) of this circuit in isolation at fc.
     This is usually the reciprocal of the plant gain at that frequency so loop gain is 1 at fc.
     This parameter may be determined or tuned through simulation.
 
     The rin parameter sets the value of the input resistor (R1 in references). This is a degree of freedom
-    and balances between power consumption (higher R1) and noise (lower R1). Typical values are in mid-kOhm range.
+    and balances power consumption (higher R1) and noise (lower R1). Typical values are in mid-kOhm range.
 
     Real opamps have limited gain-bandwidth, ensure that the crossover frequency is well below (roughly at least 10x)
     the gain-bandwidth of the selected opamp.
@@ -44,7 +46,7 @@ class CompensatorType2(OpampApplication, KiCadSchematicBlock, KiCadImportableBlo
     References:
     "THE K FACTOR: A NEW MATHEMATICAL TOOL FOR STABILITY ANALYSIS AND SYNTHESIS", Venable Instruments
     https://4867466.fs1.hubspotusercontent-na2.net/hubfs/4867466/White%20Papers/Documents%20/The%20K%20Factor.pdf
-    (the implementation of this classes uses this formulation)
+    (the implementation of this class uses this formulation)
 
     "Demystifying Type II and Type III Compensators Using Op-Amp and OTA for DC/DC Converters"
     https://www.ti.com/lit/an/slva662/slva662.pdf
@@ -74,7 +76,7 @@ class CompensatorType2(OpampApplication, KiCadSchematicBlock, KiCadImportableBlo
         }
         return mapping[symbol_name]
 
-    def __init__(self, rin: RangeLike, crossover_freq: RangeLike, k: FloatLike, crossover_gain: FloatLike):
+    def __init__(self, rin: RangeLike, crossover_freq: RangeLike, k: RangeLike, crossover_gain: FloatLike):
         super().__init__()
 
         self.amp = self.Block(Opamp())
@@ -95,11 +97,23 @@ class CompensatorType2(OpampApplication, KiCadSchematicBlock, KiCadImportableBlo
         super().contents()
 
         self.r1 = self.Block(Resistor(self.rin))
-        self.c2 = self.Block(Capacitor(capacitance=1 / (2 * math.pi * self.crossover_freq * self.crossover_gain * self.k * self.r1.actual_resistance),
-                                       voltage=self.output.link().voltage))
-        self.c1 = self.Block(Capacitor(capacitance=self.c2.capacitance * (self.k * self.k - 1),
-                                       voltage=self.output.link().voltage))
-        self.r2 = self.Block(Resistor(self.k / (2 * math.pi * self.crossover_freq * self.c1.actual_capacitance)))
+        self.c2 = self.Block(
+            Capacitor(
+                capacitance=(1 / (2 * math.pi * self.crossover_freq * self.crossover_gain * self.k)).shrink_multiply(
+                    1 / self.r1.actual_resistance
+                ),
+                voltage=self.output.link().voltage,
+            )
+        )
+        self.c1 = self.Block(
+            Capacitor(
+                capacitance=(self.k * self.k - 1).shrink_multiply(self.c2.actual_capacitance),
+                voltage=self.output.link().voltage,
+            )
+        )
+        self.r2 = self.Block(
+            Resistor((self.k / (2 * math.pi * self.crossover_freq)).shrink_multiply(1 / self.c1.actual_capacitance))
+        )
 
         self.import_kicad(
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),

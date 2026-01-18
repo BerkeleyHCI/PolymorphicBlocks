@@ -6875,7 +6875,7 @@
 				)
 			)
 		)
-		(property "Value4" "k=2.4, crossover_gain=0.075)"
+		(property "Value4" "k=2.4*Ratio(tol=0.20), crossover_gain=0.1)"
 			(at 113.03 105.918 0)
 			(effects
 				(font

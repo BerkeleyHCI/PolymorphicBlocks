@@ -208,7 +208,7 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
         self.res = self.Block(
             Resistor(
                 resistance=resistance,
-                power=(0, max_opamp_current ** 2 * resistance.upper()),
+                power=(0, max_opamp_current**2 * resistance.upper()),
                 voltage=(0, max_clamp_voltage),
             )
         )
