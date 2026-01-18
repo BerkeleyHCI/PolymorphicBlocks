@@ -197,7 +197,9 @@ class EmitterFollower(InternalSubcircuit, KiCadSchematicBlock, KiCadImportableBl
                 power=self.pwr.link().voltage * self.current,
             )
         )
-        resistance = 110 * Ohm(tol=0.02)  # low enough for a fast slew on FET Ciss
+        # resistance is low enough to slew the FET Ciss,
+        # but high enough to allow the clamping zeners to control an overvoltage
+        resistance = 45 * Ohm(tol=0.02)
         max_opamp_current = 0.07  # amps
         max_clamp_voltage = (
             VoltageLink._supply_voltage_range(self.pwr_gate_neg, self.pwr_gate_pos).upper()
@@ -1050,7 +1052,7 @@ class UsbSourceMeasure(JlcBoardTop):
                 (["control", "isense", "ranges[0]", "isense", "res", "res", "require_basic_part"], False),
                 (["control", "isense", "ranges[1]", "isense", "res", "res", "require_basic_part"], False),
                 (["control", "isense", "ranges[2]", "isense", "res", "res", "require_basic_part"], False),
-                (["control", "driver", "res", "count"], 5),
+                (["control", "driver", "res", "count"], 3),
                 (["control", "driver", "high_fet", "footprint_spec"], "Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp"),
                 (["control", "driver", "high_fet", "part_spec"], "IRF540N"),
                 (["control", "driver", "low_fet", "footprint_spec"], "Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp"),

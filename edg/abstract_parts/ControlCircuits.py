@@ -1,3 +1,4 @@
+import math
 from typing import Dict
 
 from typing_extensions import override
@@ -92,17 +93,19 @@ class CompensatorType2(OpampApplication, KiCadSchematicBlock, KiCadImportableBlo
     def contents(self) -> None:
         super().contents()
 
-        # self.r1 = self.Block(Resistor((1 / self.gain).shrink_multiply(1 / self.capacitance)))
-        # self.c1 = self.Block(Capacitor(capacitance=self.capacitance, voltage=self.output.link().voltage))
-        # self.r1 = self.Block(Resistor((1 / self.gain).shrink_multiply(1 / self.capacitance)))
-        # self.c1 = self.Block(Capacitor(capacitance=self.capacitance, voltage=self.output.link().voltage))
+        self.r1 = self.Block(Resistor(self.rin))
+        self.c2 = self.Block(Capacitor(capacitance=1 / (2 * math.pi * self.crossover_freq * self.crossover_gain * self.k * self.r1.actual_resistance),
+                                       voltage=self.output.link().voltage))
+        self.c1 = self.Block(Capacitor(capacitance=self.c2.capacitance * (self.k * self.k - 1),
+                                       voltage=self.output.link().voltage))
+        self.r2 = self.Block(Resistor(self.k / (2 * math.pi * self.crossover_freq * self.c1.actual_capacitance)))
 
         self.import_kicad(
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
-                "r1.1": AnalogSink(impedance=self.r.actual_resistance),  # TODO very simplified and probably very wrong
+                "r1.1": AnalogSink(impedance=self.r1.actual_resistance),  # TODO very simplified and probably very wrong
                 # these model the opamp in- node
-                "r1.2": AnalogSource(voltage_out=self.amp.out.voltage_out, impedance=self.r.actual_resistance),
+                "r1.2": AnalogSource(voltage_out=self.amp.out.voltage_out, impedance=self.r1.actual_resistance),
                 "r2.1": AnalogSink(),
                 "c2.2": AnalogSink(),
                 # these model the opamp out node

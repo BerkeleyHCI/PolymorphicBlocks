@@ -6867,7 +6867,7 @@
 				)
 			)
 		)
-		(property "Value3" "crossover_freq=500*KHertz(tol=0.25),"
+		(property "Value3" "crossover_freq=100*kHertz(tol=0.10),"
 			(at 113.03 103.632 0)
 			(effects
 				(font
@@ -6875,7 +6875,7 @@
 				)
 			)
 		)
-		(property "Field7" "k=2.4, crossover_gain=100)"
+		(property "Value4" "k=2.4, crossover_gain=0.075)"
 			(at 113.03 105.918 0)
 			(effects
 				(font

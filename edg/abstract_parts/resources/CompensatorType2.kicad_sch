@@ -919,7 +919,7 @@
 				)
 			)
 		)
-		(property "Value" "${SIM.PARAMS}"
+		(property "Value" ""
 			(at 137.16 86.741 0)
 			(effects
 				(font
