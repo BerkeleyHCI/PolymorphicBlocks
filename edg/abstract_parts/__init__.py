@@ -111,6 +111,7 @@ from .AbstractSwitch import DirectionSwitch, DirectionSwitchCenter, DigitalDirec
 from .AbstractComparator import Comparator, VoltageComparator
 from .AbstractOpamp import Opamp, OpampElement, MultipackOpamp, MultipackOpampGenerator
 from .OpampCircuits import OpampFollower, Amplifier, DifferentialAmplifier, IntegratorInverting
+from .ControlCircuits import CompensatorType2
 from .AbstractSpiMemory import SpiMemory, SpiMemoryQspi
 from .OpampCurrentSensor import OpampCurrentSensor
 from .DigitalAmplifiers import HighSideSwitch, OpenDrainDriver
