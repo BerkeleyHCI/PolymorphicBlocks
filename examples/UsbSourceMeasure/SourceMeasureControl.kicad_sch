@@ -4870,6 +4870,17 @@
 		)
 		(uuid "ff60e0dd-6dc8-495e-9e19-e268f29160cb")
 	)
+	(text "plant parameters (crossover_gain)\ndetermined using SPICE, see analysis folder"
+		(exclude_from_sim no)
+		(at 100.076 112.014 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "0fdd7b93-ff6e-4737-af87-fe168ad3c93a")
+	)
 	(text "smaller ratio to keep the opamp input\nmostly within the 3.3v rail limits"
 		(exclude_from_sim no)
 		(at 63.754 63.5 0)
@@ -6813,7 +6824,7 @@
 				)
 			)
 		)
-		(property "Value" "#IntegratorInverting("
+		(property "Value" "#CompensatorType2("
 			(at 113.03 99.06 0)
 			(effects
 				(font
@@ -6848,7 +6859,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value2" "gain=100/4.7*kHertz(tol=0.15),"
+		(property "Value2" "rin=4.7*kOhm(tol=0.02),"
 			(at 113.03 101.346 0)
 			(effects
 				(font
@@ -6856,8 +6867,16 @@
 				)
 			)
 		)
-		(property "Value3" "capacitance=10*nFarad(tol=0.1))"
+		(property "Value3" "crossover_freq=500*KHertz(tol=0.25),"
 			(at 113.03 103.632 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Field7" "k=2.4, crossover_gain=100)"
+			(at 113.03 105.918 0)
 			(effects
 				(font
 					(size 1.27 1.27)
