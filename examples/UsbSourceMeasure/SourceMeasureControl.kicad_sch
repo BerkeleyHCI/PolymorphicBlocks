@@ -4870,7 +4870,7 @@
 		)
 		(uuid "ff60e0dd-6dc8-495e-9e19-e268f29160cb")
 	)
-	(text "plant parameters (crossover_gain)\ndetermined using SPICE, see analysis folder"
+	(text "CC mode DC gain at the 1-ohm range is 50\nthis is tuned for G=1/50 * 1.25x fudge factor"
 		(exclude_from_sim no)
 		(at 100.076 112.014 0)
 		(effects
@@ -6867,7 +6867,7 @@
 				)
 			)
 		)
-		(property "Value3" "crossover_freq=100*kHertz(tol=0.10),"
+		(property "Value3" "crossover_freq=75*kHertz(tol=0.10),"
 			(at 113.03 103.632 0)
 			(effects
 				(font
@@ -6875,7 +6875,7 @@
 				)
 			)
 		)
-		(property "Value4" "k=2.4*Ratio(tol=0.20), crossover_gain=0.1)"
+		(property "Value4" "k=2.4*Ratio(tol=0.20), crossover_gain=0.025)"
 			(at 113.03 105.918 0)
 			(effects
 				(font
