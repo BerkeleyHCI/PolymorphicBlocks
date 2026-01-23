@@ -596,8 +596,8 @@
   (property (name "edg_path") (value "drv.isen_res.res"))
   (property (name "edg_short_path") (value "drv.isen_res"))
   (property (name "edg_refdes") (value "RR11"))
-  (property (name "edg_part") (value "AS0606J022JT5E (UNI-ROYAL(Uniroyal Elec))"))
-  (property (name "edg_value") (value "±5% 600mW 200V -55℃~+155℃ 2.2Ω 1206 Chip Resistor - Surface Mount ROHS"))
+  (property (name "edg_part") (value "RTT06R620FTP (RALEC)"))
+  (property (name "edg_value") (value "±1% 1/3W ±200ppm/℃ 0.62Ω 1206 Chip Resistor - Surface Mount ROHS"))
   (sheetpath (names "/drv/") (tstamps "/0289014d/"))
   (tstamps "0f080359")))
 (nets
