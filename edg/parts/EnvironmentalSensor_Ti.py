@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
@@ -6,71 +8,68 @@ class Hdc1080_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
-        self.vdd = self.Port(VoltageSink(
-            voltage_limits=(2.7, 5.5)*Volt,
-            current_draw=(0.1, 300)*uAmp  # sleep to startup average
-        ))
-
-        dio_model = DigitalBidir.from_supply(
-            self.gnd, self.vdd,
-            input_threshold_factor=(0.3, 0.7)
+        self.vdd = self.Port(
+            VoltageSink(voltage_limits=(2.7, 5.5) * Volt, current_draw=(0.1, 300) * uAmp)  # sleep to startup average
         )
+
+        dio_model = DigitalBidir.from_supply(self.gnd, self.vdd, input_threshold_factor=(0.3, 0.7))
         self.i2c = self.Port(I2cTarget(dio_model, [0x40]))
 
+    @override
     def contents(self) -> None:
         super().contents()
         self.footprint(
-            'U', 'Package_SON:WSON-6-1EP_3x3mm_P0.95mm',
+            "U",
+            "Package_SON:WSON-6-1EP_3x3mm_P0.95mm",
             {
-                '1': self.i2c.sda,
-                '2': self.gnd,
+                "1": self.i2c.sda,
+                "2": self.gnd,
                 # 3, 4 are NC
-                '5': self.vdd,
-                '6': self.i2c.scl,
+                "5": self.vdd,
+                "6": self.i2c.scl,
                 # EP explicitly should be left floating
             },
-            mfr='Texas Instruments', part='HDC1080',
-            datasheet='https://www.ti.com/lit/ds/symlink/hdc1080.pdf'
+            mfr="Texas Instruments",
+            part="HDC1080",
+            datasheet="https://www.ti.com/lit/ds/symlink/hdc1080.pdf",
         )
-        self.assign(self.lcsc_part, 'C82227')
+        self.assign(self.lcsc_part, "C82227")
         self.assign(self.actual_basic_part, False)
 
 
 class Hdc1080(TemperatureSensor, HumiditySensor, Block):
     """Temperature and humidity sensor with +/- 0.2C and +/- 2% RH typical accuracy"""
-    def __init__(self):
+
+    def __init__(self) -> None:
         super().__init__()
         self.ic = self.Block(Hdc1080_Device())
         self.pwr = self.Export(self.ic.vdd, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c, [InOut])
 
-    def contents(self):
+    @override
+    def contents(self) -> None:
         super().contents()
         # X7R capacitor recommended
-        self.vdd_cap = self.Block(DecouplingCapacitor(0.1*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
+        self.vdd_cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
 
 
 class Tmp1075n_Device(InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBlock):
-    @init_in_parent
     def __init__(self, addr_lsb: IntLike) -> None:
         super().__init__()
         self.gnd = self.Port(Ground())
-        self.vdd = self.Port(VoltageSink(
-            voltage_limits=(1.62, 3.6)*Volt,
-            current_draw=(0.5, 85)*uAmp  # shutdown to serial active
-        ))
-
-        dio_model = DigitalBidir.from_supply(
-            self.gnd, self.vdd,
-            input_threshold_factor=(0.3, 0.7)
+        self.vdd = self.Port(
+            VoltageSink(voltage_limits=(1.62, 3.6) * Volt, current_draw=(0.5, 85) * uAmp)  # shutdown to serial active
         )
+
+        dio_model = DigitalBidir.from_supply(self.gnd, self.vdd, input_threshold_factor=(0.3, 0.7))
         self.i2c = self.Port(I2cTarget(dio_model, addresses=ArrayIntExpr()))
         self.alert = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True)
 
         self.addr_lsb = self.ArgParameter(addr_lsb)
         self.generator_param(self.addr_lsb)
 
+    @override
     def generate(self) -> None:
         super().generate()
         addr_lsb = self.get(self.addr_lsb)
@@ -79,25 +78,27 @@ class Tmp1075n_Device(InternalSubcircuit, FootprintBlock, JlcPart, GeneratorBloc
         self.assign(self.i2c.addresses, [0x48 | addr_lsb])
 
         self.footprint(
-            'U', 'Package_TO_SOT_SMD:SOT-563',
+            "U",
+            "Package_TO_SOT_SMD:SOT-563",
             {
-                '1': self.i2c.scl,
-                '2': self.gnd,
-                '3': self.alert,
-                '4': self.vdd if addr_lsb & 1 else self.gnd,  # A0
-                '5': self.vdd,
-                '6': self.i2c.sda,
+                "1": self.i2c.scl,
+                "2": self.gnd,
+                "3": self.alert,
+                "4": self.vdd if addr_lsb & 1 else self.gnd,  # A0
+                "5": self.vdd,
+                "6": self.i2c.sda,
             },
-            mfr='Texas Instruments', part='TMP1075N',
-            datasheet='https://www.ti.com/lit/ds/symlink/tmp1075.pdf'
+            mfr="Texas Instruments",
+            part="TMP1075N",
+            datasheet="https://www.ti.com/lit/ds/symlink/tmp1075.pdf",
         )
-        self.assign(self.lcsc_part, 'C3663690')
+        self.assign(self.lcsc_part, "C3663690")
         self.assign(self.actual_basic_part, False)
 
 
 class Tmp1075n(TemperatureSensor, Block):
     """Temperature sensor with 0.25C typical accuracy"""
-    @init_in_parent
+
     def __init__(self, addr_lsb: IntLike = 0):
         super().__init__()
         self.ic = self.Block(Tmp1075n_Device(addr_lsb))
@@ -107,6 +108,7 @@ class Tmp1075n(TemperatureSensor, Block):
         self.i2c = self.Export(self.ic.i2c, [InOut])
         self.alert = self.Export(self.ic.alert, optional=True, doc="Overtemperature SMBus alert")
 
-    def contents(self):
+    @override
+    def contents(self) -> None:
         super().contents()
-        self.vdd_cap = self.Block(DecouplingCapacitor(0.01*uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)
+        self.vdd_cap = self.Block(DecouplingCapacitor(0.01 * uFarad(tol=0.2))).connected(self.gnd, self.ic.vdd)

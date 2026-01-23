@@ -1,32 +1,37 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from typing import Dict, Optional, Tuple
 
 
 class CharlieplexedLedMatrix(Light, GeneratorBlock, SvgPcbTemplateBlock):
-  """A LED matrix that saves on IO pins by charlieplexing, only requiring max(rows + 1, cols) GPIOs to control.
-  Requires IOs that can tri-state, and requires scanning through rows (so not all LEDs are simultaneously on).
+    """A LED matrix that saves on IO pins by charlieplexing, only requiring max(rows + 1, cols) GPIOs to control.
+    Requires IOs that can tri-state, and requires scanning through rows (so not all LEDs are simultaneously on).
 
-  Anodes (columns) are directly connected to the IO line, while the cathodes (rows) are connected through a resistor.
-  A generalization of https://en.wikipedia.org/wiki/Charlieplexing#/media/File:3-pin_Charlieplexing_matrix_with_common_resistors.svg
-  """
-  def _svgpcb_fn_name_adds(self) -> Optional[str]:
-    return f"{self._svgpcb_get(self.ncols)}_{self._svgpcb_get(self.nrows)}"
+    Anodes (columns) are directly connected to the IO line, while the cathodes (rows) are connected through a resistor.
+    A generalization of https://en.wikipedia.org/wiki/Charlieplexing#/media/File:3-pin_Charlieplexing_matrix_with_common_resistors.svg
+    """
 
-  def _svgpcb_template(self) -> str:
-    led_block = self._svgpcb_footprint_block_path_of(['led[0_0]'])
-    res_block = self._svgpcb_footprint_block_path_of(['res[0]'])
-    led_reftype, led_refnum = self._svgpcb_refdes_of(['led[0_0]'])
-    res_reftype, res_refnum = self._svgpcb_refdes_of(['res[0]'])
-    assert led_block is not None and res_block is not None
-    led_footprint = self._svgpcb_footprint_of(led_block)
-    led_a_pin = self._svgpcb_pin_of(['led[0_0]'], ['a'])
-    led_k_pin = self._svgpcb_pin_of(['led[0_0]'], ['k'])
-    res_footprint = self._svgpcb_footprint_of(res_block)
-    res_a_pin = self._svgpcb_pin_of(['res[0]'], ['a'])
-    res_b_pin = self._svgpcb_pin_of(['res[0]'], ['b'])
-    assert all([pin is not None for pin in [led_a_pin, led_k_pin, res_a_pin, res_b_pin]])
+    @override
+    def _svgpcb_fn_name_adds(self) -> Optional[str]:
+        return f"{self._svgpcb_get(self.ncols)}_{self._svgpcb_get(self.nrows)}"
 
-    return f"""\
+    @override
+    def _svgpcb_template(self) -> str:
+        led_block = self._svgpcb_footprint_block_path_of(["led[0_0]"])
+        res_block = self._svgpcb_footprint_block_path_of(["res[0]"])
+        led_reftype, led_refnum = self._svgpcb_refdes_of(["led[0_0]"])
+        res_reftype, res_refnum = self._svgpcb_refdes_of(["res[0]"])
+        assert led_block is not None and res_block is not None
+        led_footprint = self._svgpcb_footprint_of(led_block)
+        led_a_pin = self._svgpcb_pin_of(["led[0_0]"], ["a"])
+        led_k_pin = self._svgpcb_pin_of(["led[0_0]"], ["k"])
+        res_footprint = self._svgpcb_footprint_of(res_block)
+        res_a_pin = self._svgpcb_pin_of(["res[0]"], ["a"])
+        res_b_pin = self._svgpcb_pin_of(["res[0]"], ["b"])
+        assert all([pin is not None for pin in [led_a_pin, led_k_pin, res_a_pin, res_b_pin]])
+
+        return f"""\
 function {self._svgpcb_fn_name()}(xy, colSpacing=0.2, rowSpacing=0.2) {{
   const kXCount = {self._svgpcb_get(self.ncols)}  // number of columns (x dimension)
   const kYCount = {self._svgpcb_get(self.nrows)}  // number of rows (y dimension)
@@ -160,79 +165,87 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.2, rowSpacing=0.2) {{
 }}
 """
 
-  def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
-    return (-1.0, -1.0,
-            self._svgpcb_get(self.ncols) * .2 * 25.4 + 1.0, (self._svgpcb_get(self.nrows) + 1) * .2 * 25.4 + 1.0)
+    @override
+    def _svgpcb_bbox(self) -> Tuple[float, float, float, float]:
+        return (
+            -1.0,
+            -1.0,
+            self._svgpcb_get(self.ncols) * 0.2 * 25.4 + 1.0,
+            (self._svgpcb_get(self.nrows) + 1) * 0.2 * 25.4 + 1.0,
+        )
 
-  @init_in_parent
-  def __init__(self, nrows: IntLike, ncols: IntLike,
-               color: LedColorLike = Led.Any, current_draw: RangeLike = (1, 10)*mAmp):
-    super().__init__()
+    def __init__(
+        self, nrows: IntLike, ncols: IntLike, color: LedColorLike = Led.Any, current_draw: RangeLike = (1, 10) * mAmp
+    ):
+        super().__init__()
 
-    self.current_draw = self.ArgParameter(current_draw)
-    self.color = self.ArgParameter(color)
+        self.current_draw = self.ArgParameter(current_draw)
+        self.color = self.ArgParameter(color)
 
-    # note that IOs supply both the positive and negative
-    self.ios = self.Port(Vector(DigitalSink.empty()))
+        # note that IOs supply both the positive and negative
+        self.ios = self.Port(Vector(DigitalSink.empty()))
 
-    self.nrows = self.ArgParameter(nrows)
-    self.ncols = self.ArgParameter(ncols)
-    self.generator_param(self.nrows, self.ncols)
+        self.nrows = self.ArgParameter(nrows)
+        self.ncols = self.ArgParameter(ncols)
+        self.generator_param(self.nrows, self.ncols)
 
-  def generate(self):
-    super().generate()
-    nrows = self.get(self.nrows)
-    ncols = self.get(self.ncols)
+    @override
+    def generate(self) -> None:
+        super().generate()
+        nrows = self.get(self.nrows)
+        ncols = self.get(self.ncols)
 
-    io_voltage = self.ios.hull(lambda x: x.link().voltage)
-    io_voltage_upper = io_voltage.upper()
-    io_voltage_lower = self.ios.hull(lambda x: x.link().output_thresholds).upper()
+        io_voltage = self.ios.hull(lambda x: x.link().voltage)
+        io_voltage_upper = io_voltage.upper()
+        io_voltage_lower = self.ios.hull(lambda x: x.link().output_thresholds).upper()
 
-    # internally, this uses passive ports on all the components, and only casts to a DigitalSink at the end
-    # which is necessary to account for that not all LEDs can be simultaneously on
-    passive_ios: Dict[int, Passive] = {}  # keeps the passive-side port for each boundary IO
-    def connect_passive_io(index: int, io: Passive):
-      # connects a Passive-typed IO to the index, handling the first and subsequent case
-      if index in passive_ios:
-        self.connect(passive_ios[index], io)  # subsequent case, actually do the connection
-      else:
-        passive_ios[index] = io  # first case, just bootstrap the data structure
+        # internally, this uses passive ports on all the components, and only casts to a DigitalSink at the end
+        # which is necessary to account for that not all LEDs can be simultaneously on
+        passive_ios: Dict[int, Passive] = {}  # keeps the passive-side port for each boundary IO
 
-    self.res = ElementDict[Resistor]()
-    res_model = Resistor(
-      resistance=(io_voltage_upper / self.current_draw.upper(),
-                  io_voltage_lower / self.current_draw.lower())
-    )
-    self.led = ElementDict[Led]()
-    led_model = Led(color=self.color)
+        def connect_passive_io(index: int, io: Passive) -> None:
+            # connects a Passive-typed IO to the index, handling the first and subsequent case
+            if index in passive_ios:
+                self.connect(passive_ios[index], io)  # subsequent case, actually do the connection
+            else:
+                passive_ios[index] = io  # first case, just bootstrap the data structure
 
-    # generate the resistor and LEDs for each column
-    for col in range(ncols):
-      # generate the cathode resistor, guaranteed one per column
-      self.res[str(col)] = res = self.Block(res_model)
-      connect_passive_io(col, res.b)
-      for row in range(nrows):
-        self.led[f"{row}_{col}"] = led = self.Block(led_model)
-        self.connect(led.k, res.a)
-        if row >= col:  # displaced by resistor
-          connect_passive_io(row + 1, led.a)
-        else:
-          connect_passive_io(row, led.a)
+        self.res = ElementDict[Resistor]()
+        res_model = Resistor(
+            resistance=(io_voltage_upper / self.current_draw.upper(), io_voltage_lower / self.current_draw.lower())
+        )
+        self.led = ElementDict[Led]()
+        led_model = Led(color=self.color)
 
-    # generate the adapters and connect the internal passive IO to external typed IO
-    for index, passive_io in passive_ios.items():
-      # if there is a cathode resistor attached to this index, then include the sunk current
-      if index < ncols:
-        sink_res = self.res[str(index)]
-        sink_current = -(io_voltage / sink_res.actual_resistance).upper() * ncols
-      else:
-        sink_current = 0 * mAmp
+        # generate the resistor and LEDs for each column
+        for col in range(ncols):
+            # generate the cathode resistor, guaranteed one per column
+            self.res[str(col)] = res = self.Block(res_model)
+            connect_passive_io(col, res.b)
+            for row in range(nrows):
+                self.led[f"{row}_{col}"] = led = self.Block(led_model)
+                self.connect(led.k, res.a)
+                if row >= col:  # displaced by resistor
+                    connect_passive_io(row + 1, led.a)
+                else:
+                    connect_passive_io(row, led.a)
 
-      # then add the maximum of the LED source currents, for the rest of the cathode lines
-      source_current = 0 * mAmp
-      for col in range(ncols):
-        col_res = self.res[str(col)]
-        source_current = (io_voltage / col_res.actual_resistance).upper().max(source_current)
+        # generate the adapters and connect the internal passive IO to external typed IO
+        for index, passive_io in passive_ios.items():
+            # if there is a cathode resistor attached to this index, then include the sunk current
+            if index < ncols:
+                sink_res = self.res[str(index)]
+                sink_current = -(io_voltage / sink_res.actual_resistance).upper() * ncols
+            else:
+                sink_current = 0 * mAmp
 
-      self.connect(self.ios.append_elt(DigitalSink.empty(), str(index)),
-                   passive_io.adapt_to(DigitalSink(current_draw=(sink_current, source_current))))
+            # then add the maximum of the LED source currents, for the rest of the cathode lines
+            source_current = 0 * mAmp
+            for col in range(ncols):
+                col_res = self.res[str(col)]
+                source_current = (io_voltage / col_res.actual_resistance).upper().max(source_current)
+
+            self.connect(
+                self.ios.append_elt(DigitalSink.empty(), str(index)),
+                passive_io.adapt_to(DigitalSink(current_draw=(sink_current, source_current))),
+            )

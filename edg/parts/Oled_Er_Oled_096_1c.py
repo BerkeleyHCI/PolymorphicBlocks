@@ -1,74 +1,102 @@
+from typing_extensions import override
+
 from ..abstract_parts import *
 from .PassiveConnector_Fpc import Fpc030Bottom
 
 
 class Er_Oled_096_1c_Outline(InternalSubcircuit, FootprintBlock):
     """Footprint for OLED panel outline"""
+
+    @override
     def contents(self) -> None:
         super().contents()
-        self.footprint('U', 'edg:Lcd_Er_Oled0.96_1c_Outline', {},
-                       'EastRising', 'ER-OLED0.96-1C',
-                       datasheet='https://www.buydisplay.com/download/manual/ER-OLED0.96-1C_Datasheet.pdf')
+        self.footprint(
+            "U",
+            "edg:Lcd_Er_Oled0.96_1c_Outline",
+            {},
+            "EastRising",
+            "ER-OLED0.96-1C",
+            datasheet="https://www.buydisplay.com/download/manual/ER-OLED0.96-1C_Datasheet.pdf",
+        )
 
 
 class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
     """31-pin FPC connector for the ER-OLED0.96-1C device"""
+
     def __init__(self) -> None:
         super().__init__()
 
         self.conn = self.Block(Fpc030Bottom(length=31))
 
-        vss_pin = self.conn.pins.request('7')
+        vss_pin = self.conn.pins.request("7")
         self.vss = self.Export(vss_pin.adapt_to(Ground()), [Common])
-        self.connect(vss_pin, self.conn.pins.request('1'), self.conn.pins.request('31'),  # VLSS
-                     self.conn.pins.request('26'))  # VLL
+        self.connect(
+            vss_pin, self.conn.pins.request("1"), self.conn.pins.request("31"), self.conn.pins.request("26")  # VLSS
+        )  # VLL
 
-        self.vdd = self.Export(self.conn.pins.request('8').adapt_to(VoltageSink(
-            voltage_limits=(1.65, 3.5)*Volt,  # abs max is 4v
-            current_draw=(10, 800)*uAmp  # sleep mode current to supply current from SSD1357 datasheet
-        )))
-        self.connect(self.vdd, self.conn.pins.request('17').adapt_to(VoltageSink()))
+        self.vdd = self.Export(
+            self.conn.pins.request("8").adapt_to(
+                VoltageSink(
+                    voltage_limits=(1.65, 3.5) * Volt,  # abs max is 4v
+                    current_draw=(10, 800) * uAmp,  # sleep mode current to supply current from SSD1357 datasheet
+                )
+            )
+        )
+        self.connect(self.vdd, self.conn.pins.request("17").adapt_to(VoltageSink()))
 
-        vcc_pin5 = self.conn.pins.request('5')
-        self.vcc = self.Export(vcc_pin5.adapt_to(VoltageSink(
-          voltage_limits=(14.5, 15.5)*Volt,  # abs max is 8-19v
-          current_draw=(0.010, 46)*mAmp  # sleep mode current to normal mode with all pixels on
-        )))
-        self.connect(vcc_pin5, self.conn.pins.request('27'))  # connection upstream of adapter
+        vcc_pin5 = self.conn.pins.request("5")
+        self.vcc = self.Export(
+            vcc_pin5.adapt_to(
+                VoltageSink(
+                    voltage_limits=(14.5, 15.5) * Volt,  # abs max is 8-19v
+                    current_draw=(0.010, 46) * mAmp,  # sleep mode current to normal mode with all pixels on
+                )
+            )
+        )
+        self.connect(vcc_pin5, self.conn.pins.request("27"))  # connection upstream of adapter
 
-        self.iref = self.Export(self.conn.pins.request('6'))
-        self.vcomh = self.Export(self.conn.pins.request('3').adapt_to(VoltageSource(
-            voltage_out=self.vcc.link().voltage * 0.86,  # selectable up to 0.86 Vcc by command BEh
-            current_limits=0*mAmp(tol=0)  # external draw not allowed
-        )))
-        self.connect(self.vcomh, self.conn.pins.request('29').adapt_to(VoltageSink()))
+        self.iref = self.Export(self.conn.pins.request("6"))
+        self.vcomh = self.Export(
+            self.conn.pins.request("3").adapt_to(
+                VoltageSource(
+                    voltage_out=self.vcc.link().voltage * 0.86,  # selectable up to 0.86 Vcc by command BEh
+                    current_limits=0 * mAmp(tol=0),  # external draw not allowed
+                )
+            )
+        )
+        self.connect(self.vcomh, self.conn.pins.request("29").adapt_to(VoltageSink()))
 
-        self.vsl = self.Export(self.conn.pins.request('2'))
-        self.connect(self.vsl, self.conn.pins.request('30'))
+        self.vsl = self.Export(self.conn.pins.request("2"))
+        self.connect(self.vsl, self.conn.pins.request("30"))
 
-        self.vp = self.Export(self.conn.pins.request('4').adapt_to(VoltageSource(
-            voltage_out=self.vcc.link().voltage * 0.5133,  # selectable up to 0.5133 Vcc by command BBh
-            current_limits=0*mAmp(tol=0)  # external draw not allowed
-        )))
-        self.connect(self.vp, self.conn.pins.request('28').adapt_to(VoltageSink()))
+        self.vp = self.Export(
+            self.conn.pins.request("4").adapt_to(
+                VoltageSource(
+                    voltage_out=self.vcc.link().voltage * 0.5133,  # selectable up to 0.5133 Vcc by command BBh
+                    current_limits=0 * mAmp(tol=0),  # external draw not allowed
+                )
+            )
+        )
+        self.connect(self.vp, self.conn.pins.request("28").adapt_to(VoltageSink()))
 
         din_model = DigitalSink.from_supply(
-            self.vss, self.vdd,
+            self.vss,
+            self.vdd,
             voltage_limit_tolerance=(-0.3, 0.3),  # SSD1357 datasheet, Table 7-1 and 8-1
-            input_threshold_factor=(0.2, 0.8)
+            input_threshold_factor=(0.2, 0.8),
         )
 
-        self.bs0 = self.Export(self.conn.pins.request('14').adapt_to(din_model))
-        self.bs1 = self.Export(self.conn.pins.request('13').adapt_to(din_model))
-        self.connect(self.conn.pins.request('12').adapt_to(Ground()), self.vss)  # BS2, 0 for any serial
+        self.bs0 = self.Export(self.conn.pins.request("14").adapt_to(din_model))
+        self.bs1 = self.Export(self.conn.pins.request("13").adapt_to(din_model))
+        self.connect(self.conn.pins.request("12").adapt_to(Ground()), self.vss)  # BS2, 0 for any serial
 
-        self.res = self.Export(self.conn.pins.request('9').adapt_to(din_model))
-        self.cs = self.Export(self.conn.pins.request('11').adapt_to(din_model))
-        self.dc = self.Export(self.conn.pins.request('10').adapt_to(din_model))
+        self.res = self.Export(self.conn.pins.request("9").adapt_to(din_model))
+        self.cs = self.Export(self.conn.pins.request("11").adapt_to(din_model))
+        self.dc = self.Export(self.conn.pins.request("10").adapt_to(din_model))
 
-        self.d0 = self.Export(self.conn.pins.request('18').adapt_to(din_model))
-        self.d1 = self.Export(self.conn.pins.request('19').adapt_to(din_model))
-        self.d2 = self.Export(self.conn.pins.request('20').adapt_to(din_model), optional=True)
+        self.d0 = self.Export(self.conn.pins.request("18").adapt_to(din_model))
+        self.d1 = self.Export(self.conn.pins.request("19").adapt_to(din_model))
+        self.d2 = self.Export(self.conn.pins.request("20").adapt_to(din_model), optional=True)
 
         for i in [16, 15] + list(range(21, 26)):  # RD, RW, DB3~DB7
             self.connect(vss_pin, self.conn.pins.request(str(i)))
@@ -76,6 +104,7 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
 
 class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):
     """SSD1357-based 0.96" 128x64 RGB OLED, in either I2C or SPI mode."""
+
     def __init__(self) -> None:
         super().__init__()
         self.device = self.Block(Er_Oled_096_1c_Device())
@@ -88,27 +117,31 @@ class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):
         self.i2c = self.Port(I2cSlave.empty(), optional=True)
         self.generator_param(self.spi.is_connected(), self.dc.is_connected(), self.i2c.is_connected())
 
-    def contents(self):
+    @override
+    def contents(self) -> None:
         super().contents()
         self.connect(self.reset, self.device.res)
         self.require(self.reset.is_connected())
 
         self.lcd = self.Block(Er_Oled_096_1c_Outline())  # for device outline
 
-        self.iref_res = self.Block(Resistor(resistance=1*MOhm(tol=0.05)))  # TODO dynamic sizing
+        self.iref_res = self.Block(Resistor(resistance=1 * MOhm(tol=0.05)))  # TODO dynamic sizing
         self.connect(self.iref_res.a, self.device.iref)
         self.connect(self.iref_res.b.adapt_to(Ground()), self.gnd)
-        self.vcomh_cap = self.Block(DecouplingCapacitor(4.7*uFarad(tol=0.2))).connected(self.gnd, self.device.vcomh)
-        self.vp_cap = self.Block(DecouplingCapacitor(1*uFarad(tol=0.2))).connected(self.gnd, self.device.vp)
+        self.vcomh_cap = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.device.vcomh)
+        self.vp_cap = self.Block(DecouplingCapacitor(1 * uFarad(tol=0.2))).connected(self.gnd, self.device.vp)
 
-        self.vdd_cap = self.Block(DecouplingCapacitor(capacitance=1*uFarad(tol=0.2)))\
-            .connected(self.gnd, self.device.vdd)
-        self.vcc_cap = self.Block(DecouplingCapacitor(capacitance=4.7*uFarad(tol=0.2)))\
-            .connected(self.gnd, self.device.vcc)
+        self.vdd_cap = self.Block(DecouplingCapacitor(capacitance=1 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.vdd
+        )
+        self.vcc_cap = self.Block(DecouplingCapacitor(capacitance=4.7 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.vcc
+        )
 
-        self.vsl_res = self.Block(Resistor(resistance=50*Ohm(tol=0.05)))
-        diode_model = Diode(reverse_voltage=(0, 0)*Volt, current=(0, 0)*Amp,
-                            voltage_drop=(0, 0.8)*Volt)  # arbitrary tolerance, reference is 0.7V
+        self.vsl_res = self.Block(Resistor(resistance=50 * Ohm(tol=0.05)))
+        diode_model = Diode(
+            reverse_voltage=(0, 0) * Volt, current=(0, 0) * Amp, voltage_drop=(0, 0.8) * Volt
+        )  # arbitrary tolerance, reference is 0.7V
         self.vsl_d1 = self.Block(diode_model)
         self.vsl_d2 = self.Block(diode_model)
         self.connect(self.device.vsl, self.vsl_res.a)
@@ -116,13 +149,16 @@ class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):
         self.connect(self.vsl_d1.cathode, self.vsl_d2.anode)
         self.connect(self.vsl_d2.cathode.adapt_to(Ground()), self.gnd)
 
-    def generate(self):
+    @override
+    def generate(self) -> None:
         super().generate()
 
         gnd_digital = self.gnd.as_digital_source()
 
         if self.get(self.i2c.is_connected()):
-            pwr_digital = self.pwr.as_digital_source()  # workaround for issue #259: if this is never used it creates a broken empty adapter
+            pwr_digital = (
+                self.pwr.as_digital_source()
+            )  # workaround for issue #259: if this is never used it creates a broken empty adapter
             self.connect(self.device.bs0, gnd_digital)
             self.connect(self.device.bs1, pwr_digital)
 
@@ -131,7 +167,7 @@ class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):
             self.connect(self.device.dc, gnd_digital)  # addr, TODO support I2C addr
             self.connect(self.device.cs, gnd_digital)
             self.require(~self.spi.is_connected() & ~self.cs.is_connected() & ~self.dc.is_connected())
-            self.assign(self.i2c.addresses, [0x3c])
+            self.assign(self.i2c.addresses, [0x3C])
         elif self.get(self.spi.is_connected()):
             self.connect(self.device.bs1, gnd_digital)
             self.connect(self.spi.sck, self.device.d0)

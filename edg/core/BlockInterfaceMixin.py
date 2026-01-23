@@ -1,11 +1,12 @@
-from typing import TypeVar, Generic, Type, List, Optional, get_args, get_origin, Tuple, Callable
+from typing import Generic, Type, List, Optional, get_args, get_origin, Tuple, Callable, Any
+from typing_extensions import TypeVar, override
 
 from .Core import non_library, HasMetadata
 from .Blocks import AbstractBlockProperty
 from .HdlUserExceptions import BlockDefinitionError
 from .HierarchyBlock import Block
 
-MixinBaseType = TypeVar('MixinBaseType', bound='Block')
+MixinBaseType = TypeVar("MixinBaseType", covariant=True, bound=Block, default=Block)
 
 
 @non_library
@@ -27,16 +28,19 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
     TODO: is this a good decision?
     TODO: what about cases where it's a bit mixed, e.g. HasI2s also needs to register the self.i2s port?
     """
-    BaseType = TypeVar('BaseType', bound=HasMetadata)
+
+    BaseType = TypeVar("BaseType", bound=HasMetadata)
+
     @classmethod
+    @override
     def _get_bases_of(cls, base_type: Type[BaseType]) -> Tuple[List[Type[BaseType]], List[Type[BaseType]]]:
         ordered_direct_bases, ordered_indirect_bases = super()._get_bases_of(base_type)
         if cls._is_mixin():  # adds the mixin base defined in MixinBaseType to the list of bases
             mixin_base = cls._get_mixin_base()
             all_bases = ordered_direct_bases + ordered_indirect_bases
-            all_bases_has_mixin_base = map(lambda bcls: issubclass(bcls, BlockInterfaceMixin) and
-                                                        bcls._get_mixin_base() == mixin_base,
-                                           all_bases)
+            all_bases_has_mixin_base = map(
+                lambda bcls: issubclass(bcls, BlockInterfaceMixin) and bcls._get_mixin_base() == mixin_base, all_bases
+            )
 
             if any(all_bases_has_mixin_base):  # mixin has been inherited, add mixin base to the end
                 ordered_indirect_bases.append(mixin_base)  # type: ignore
@@ -46,7 +50,7 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
         return ordered_direct_bases, ordered_indirect_bases
 
     @classmethod
-    def _get_mixin_base(cls) -> Type['BlockInterfaceMixin']:
+    def _get_mixin_base(cls) -> Type["BlockInterfaceMixin"]:
         mixin_base: Optional[Type[BlockInterfaceMixin]] = None
         for bcls in cls.__orig_bases__:  # type: ignore
             if get_origin(bcls) == BlockInterfaceMixin:
@@ -62,10 +66,11 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
 
     @classmethod
     def _is_mixin(cls) -> bool:
-        return BlockInterfaceMixin in cls.__bases__ or\
-            all(map(lambda bcls: issubclass(bcls, BlockInterfaceMixin) and bcls._is_mixin(), cls.__bases__))
+        return BlockInterfaceMixin in cls.__bases__ or all(
+            map(lambda bcls: issubclass(bcls, BlockInterfaceMixin) and bcls._is_mixin(), cls.__bases__)
+        )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         if self._is_mixin():  # all mixins must be abstract
             if (self.__class__, AbstractBlockProperty) not in self._elt_properties:
@@ -76,6 +81,7 @@ class BlockInterfaceMixin(Block, Generic[MixinBaseType]):
         """Wrap implementation definitions (where MixinBaseType is required) in this. This is only called
         in a concrete class, and ignored when the standalone mixin is instantiated."""
         if not self._is_mixin():
-            assert isinstance(self, self._get_mixin_base()),\
-                f"self {self.__class__} not instance of base {self._get_mixin_base()}"
+            assert isinstance(
+                self, self._get_mixin_base()
+            ), f"self {self.__class__} not instance of base {self._get_mixin_base()}"
             fn(self)  # type: ignore

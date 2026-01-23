@@ -10,11 +10,13 @@ There are three major classes of name in edg:
 - LocalNames, which help organize elements relative to each other.
 - LibraryNames, which we use to identify specific libraries.
 """
+
 import builtins
 from .. import edgir
 import google.protobuf.descriptor
 import google.protobuf.message
 import sys
+
 if sys.version_info >= (3, 8):
     import typing as typing_extensions
 else:
@@ -28,6 +30,7 @@ class Namespace(google.protobuf.message.Message):
     over items in the library. It lets us group elements in categories that
     are orthogonal to the usual Block, Port, Link, ontology.
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     BASIC_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
@@ -35,20 +38,18 @@ class Namespace(google.protobuf.message.Message):
     "* Basic namespaces are a way to organize library elements into a\n    useful hirearchy (e.g. 'Core.*' for the most primitive definitions\n    that we define, or 'NXP.*' for NXP made components.)\n\n    Basic namespaces should have the following properties:\n\n    - First char is a capital letter\n    - All other chars must be letters, numbers, '-', '<', '>'\n    - CamelCase is preffered, don't use any symbols in the name\n    if possible.\n    "
 
     @property
-    def meta(self) -> edgir.common_pb2.Metadata:
-        ...
+    def meta(self) -> edgir.common_pb2.Metadata: ...
+    def __init__(self, *, basic: builtins.str = ..., meta: edgir.common_pb2.Metadata | None = ...) -> None: ...
+    def HasField(
+        self, field_name: typing_extensions.Literal["basic", b"basic", "meta", b"meta", "namespace", b"namespace"]
+    ) -> builtins.bool: ...
+    def ClearField(
+        self, field_name: typing_extensions.Literal["basic", b"basic", "meta", b"meta", "namespace", b"namespace"]
+    ) -> None: ...
+    def WhichOneof(
+        self, oneof_group: typing_extensions.Literal["namespace", b"namespace"]
+    ) -> typing_extensions.Literal["basic"] | None: ...
 
-    def __init__(self, *, basic: builtins.str=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['basic', b'basic', 'meta', b'meta', 'namespace', b'namespace']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['basic', b'basic', 'meta', b'meta', 'namespace', b'namespace']) -> None:
-        ...
-
-    def WhichOneof(self, oneof_group: typing_extensions.Literal['namespace', b'namespace']) -> typing_extensions.Literal['basic'] | None:
-        ...
 global___Namespace = Namespace
 
 @typing_extensions.final
@@ -58,6 +59,7 @@ class LibraryName(google.protobuf.message.Message):
 
     This can be the initial element in a path or reference.
     """
+
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
     NAME_FIELD_NUMBER: builtins.int
     META_FIELD_NUMBER: builtins.int
@@ -65,15 +67,9 @@ class LibraryName(google.protobuf.message.Message):
     "* Since libraries allow for inheritance, we will often want to say\n    this element, defined in *this* particular library.\n\n    In those cases we want to be able to specify the relevant library\n    by its identifier.\n\n    Otherwise we assume it's somehow implicit which library we're\n    talking about.\n    "
 
     @property
-    def meta(self) -> edgir.common_pb2.Metadata:
-        ...
+    def meta(self) -> edgir.common_pb2.Metadata: ...
+    def __init__(self, *, name: builtins.str = ..., meta: edgir.common_pb2.Metadata | None = ...) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["meta", b"meta"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["meta", b"meta", "name", b"name"]) -> None: ...
 
-    def __init__(self, *, name: builtins.str=..., meta: edgir.common_pb2.Metadata | None=...) -> None:
-        ...
-
-    def HasField(self, field_name: typing_extensions.Literal['meta', b'meta']) -> builtins.bool:
-        ...
-
-    def ClearField(self, field_name: typing_extensions.Literal['meta', b'meta', 'name', b'name']) -> None:
-        ...
 global___LibraryName = LibraryName

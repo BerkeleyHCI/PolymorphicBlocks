@@ -1,4 +1,7 @@
 from typing import Any, Optional, Dict
+
+from typing_extensions import override
+
 from ..abstract_parts import *
 from ..parts.JlcCapacitor import JlcCapacitor, JlcDummyCapacitor
 from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
@@ -7,37 +10,41 @@ from .JlcPartsBase import JlcPartsBase, JlcPartsAttributes
 class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapacitor, CeramicCapacitor):
     _JLC_PARTS_FILE_NAMES = ["CapacitorsMultilayer_Ceramic_Capacitors_MLCC___SMDakaSMT"]
 
-    @init_in_parent
-    def __init__(self, *args, capacitance_minimum_size: BoolLike = True, **kwargs):
+    def __init__(self, *args: Any, capacitance_minimum_size: BoolLike = True, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.capacitance_minimum_size = self.ArgParameter(capacitance_minimum_size)
         self.generator_param(self.capacitance_minimum_size)
 
     @classmethod
-    def _entry_to_table_row(cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes) \
-            -> Optional[Dict[PartsTableColumn, Any]]:
+    @override
+    def _entry_to_table_row(
+        cls, row_dict: Dict[PartsTableColumn, Any], filename: str, package: str, attributes: JlcPartsAttributes
+    ) -> Optional[Dict[PartsTableColumn, Any]]:
         try:
             footprint = JlcCapacitor.PACKAGE_FOOTPRINT_MAP[package]
             row_dict[cls.KICAD_FOOTPRINT] = footprint
 
-            nominal_capacitance = attributes.get("Capacitance", float, sub='capacitance')
+            nominal_capacitance = attributes.get("Capacitance", float, sub="capacitance")
             # note, tolerance not specified for many devices
             row_dict[cls.CAPACITANCE] = PartParserUtil.parse_abs_tolerance(
-                attributes.get("Tolerance", str), nominal_capacitance, '')
+                attributes.get("Tolerance", str), nominal_capacitance, ""
+            )
             row_dict[cls.NOMINAL_CAPACITANCE] = nominal_capacitance
             row_dict[cls.VOLTAGE_RATING] = Range.from_abs_tolerance(  # voltage rating for ceramic caps is bidirectional
-                0, attributes.get("Allowable voltage", float, 0, sub='voltage'))
+                0, attributes.get("Allowable voltage", float, 0, sub="voltage")
+            )
             row_dict[cls.VOLTCO] = JlcCapacitor.DERATE_VOLTCO_MAP[footprint]
 
             # arbitrary filter - TODO parameterization
             tempco = attributes.get("Temperature coefficient", str)
-            if len(tempco) < 3 or tempco[0] not in ('X', 'C', 'N') or tempco[2] not in ('R', 'S', 'G', '0'):
+            if len(tempco) < 3 or tempco[0] not in ("X", "C", "N") or tempco[2] not in ("R", "S", "G", "0"):
                 return None
 
             return row_dict
         except (KeyError, TypeError, PartParserUtil.ParseError):
             return None
 
+    @override
     def _table_postprocess(self, table: PartsTable) -> PartsTable:
         # TODO deduplicate w/ JlcCapacitor
         def filter_minimum_size(row: PartsTableRow) -> Optional[Dict[PartsTableColumn, Any]]:
@@ -45,24 +52,27 @@ class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapac
             nominal_capacitance = row[self.NOMINAL_CAPACITANCE]
             footprint = row[self.KICAD_FOOTPRINT]
             if nominal_capacitance > 10e-6 and footprint not in [
-                'Capacitor_SMD:C_1206_3216Metric',
+                "Capacitor_SMD:C_1206_3216Metric",
             ]:
                 return None
             elif nominal_capacitance > 1e-6 and footprint not in [
-                'Capacitor_SMD:C_0805_2012Metric',
-                'Capacitor_SMD:C_1206_3216Metric',
+                "Capacitor_SMD:C_0805_2012Metric",
+                "Capacitor_SMD:C_1206_3216Metric",
             ]:
                 return None
             return {}
+
         table = super()._table_postprocess(table)
         if self.get(self.capacitance_minimum_size):
             table = table.map_new_columns(filter_minimum_size)
         return table
 
     @classmethod
+    @override
     def _row_sort_by(cls, row: PartsTableRow) -> Any:
         return [row[cls.PARALLEL_COUNT], super(JlcPartsMlcc, cls)._row_sort_by(row)]
 
+    @override
     def _row_generate(self, row: PartsTableRow) -> None:
         # see comment in TableCapacitor._row_generate for why this needs to be here
         if row[self.PARALLEL_COUNT] == 1:
@@ -72,14 +82,18 @@ class JlcPartsMlcc(PartsTableSelectorFootprint, JlcPartsBase, TableDeratingCapac
             self.assign(self.actual_basic_part, True)  # dummy value
             self._make_parallel_footprints(row)
 
+    @override
     def _make_parallel_footprints(self, row: PartsTableRow) -> None:
-        cap_model = JlcDummyCapacitor(set_lcsc_part=row[self.LCSC_COL],
-                                      set_basic_part=row[self.BASIC_PART_COL],
-                                      footprint=row[self.KICAD_FOOTPRINT],
-                                      manufacturer=row[self.MANUFACTURER_COL], part_number=row[self.PART_NUMBER_COL],
-                                      value=row[self.DESCRIPTION_COL],
-                                      capacitance=row[self.NOMINAL_CAPACITANCE],
-                                      voltage=self.voltage)
+        cap_model = JlcDummyCapacitor(
+            set_lcsc_part=row[self.LCSC_COL],
+            set_basic_part=row[self.BASIC_PART_COL],
+            footprint=row[self.KICAD_FOOTPRINT],
+            manufacturer=row[self.MANUFACTURER_COL],
+            part_number=row[self.PART_NUMBER_COL],
+            value=row[self.DESCRIPTION_COL],
+            capacitance=row[self.NOMINAL_CAPACITANCE],
+            voltage=self.voltage,
+        )
         self.c = ElementDict[JlcDummyCapacitor]()
         for i in range(row[self.PARALLEL_COUNT]):
             self.c[i] = self.Block(cap_model)

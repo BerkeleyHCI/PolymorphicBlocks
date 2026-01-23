@@ -3,10 +3,8 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart
 from .JlcBlackbox import KiCadJlcBlackbox
 
-from .GenericResistor import ESeriesResistor, GenericChipResistor, GenericAxialResistor, GenericAxialVerticalResistor
 from .JlcResistor import JlcResistor
 from .JlcResistorArray import JlcResistorArray
-from .GenericCapacitor import GenericMlcc
 from .JlcCapacitor import JlcCapacitor
 from .JlcElectrolyticCapacitor import JlcAluminumCapacitor
 from .JlcInductor import JlcInductor
@@ -16,8 +14,6 @@ from .JlcLed import JlcLed
 from .JlcDiode import JlcDiode, JlcZenerDiode
 from .JlcBjt import JlcBjt
 from .JlcFet import JlcFet, JlcSwitchFet
-from .CustomDiode import CustomDiode
-from .CustomFet import CustomFet
 from .Batteries import Cr2032, Li18650, AaBattery, AaBatteryStack
 from .Switches import SmtSwitch, SmtSwitchRa, KailhSocket
 from .Joystick_Xbox import XboxElite2Joystick
@@ -41,15 +37,38 @@ from .Opamp_Opax197 import Opa197, Opa2197
 from .Opamp_Opax189 import Opa189, Opa2189
 from .Opamp_Opax333 import Opa2333
 from .Opamp_Lmv321 import Lmv321
+from .Inamp_Ina826 import Ina826
 from .CeramicResonator_Cstne import Cstne
 
 from .PassiveConnector_Header import PinHeader254, PinHeader254Vertical, PinHeader254Horizontal, PinSocket254
 from .PassiveConnector_Header import PinHeader254DualShroudedInline
 from .PassiveConnector_Header import PinHeader127DualShrouded
-from .PassiveConnector_Header import JstXh, JstXhAHorizontal, JstXhAVertical, JstPh, JstPhKVertical, JstPhSmVertical,\
-    JstPhKHorizontal, JstPhSmVerticalJlc, JstShSmHorizontal, MolexSl, Picoblade, Picoblade53398, Picoblade53261
+from .PassiveConnector_Header import (
+    JstXh,
+    JstXhAHorizontal,
+    JstXhAVertical,
+    JstPh,
+    JstPhKVertical,
+    JstPhSmVertical,
+    JstPhKHorizontal,
+    JstPhSmVerticalJlc,
+    JstShSmHorizontal,
+    MolexSl,
+    Picoblade,
+    Picoblade53398,
+    Picoblade53261,
+)
 from .PassiveConnector_Fpc import Fpc030, Fpc030Top, Fpc030Bottom, Fpc030TopBottom, HiroseFh35cshw
-from .PassiveConnector_Fpc import Fpc050, Fpc050Top, Fpc050Bottom, Fpc050BottomFlip, HiroseFh12sh, Afc01, Afc07Top, Te1734839
+from .PassiveConnector_Fpc import (
+    Fpc050,
+    Fpc050Top,
+    Fpc050Bottom,
+    Fpc050BottomFlip,
+    HiroseFh12sh,
+    Afc01,
+    Afc07Top,
+    Te1734839,
+)
 from .PassiveConnector_TagConnect import TagConnect, TagConnectLegged, TagConnectNonLegged
 
 from .Jumpers import SolderJumperTriangular
@@ -70,7 +89,17 @@ from .BoostConverter_TexasInstruments import Tps61040, Lm2733
 from .SwitchedCap_TexasInstruments import Lm2664
 from .BuckConverter_Custom import CustomSyncBuckConverterIndependent
 from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverterPwm
-from .PowerConditioning import BufferedSupply, Supercap, SingleDiodePowerMerge, DiodePowerMerge, PriorityPowerOr, SoftPowerGate, SoftPowerSwitch, PmosReverseProtection, PmosChargerReverseProtection
+from .PowerConditioning import (
+    BufferedSupply,
+    Supercap,
+    SingleDiodePowerMerge,
+    DiodePowerMerge,
+    PriorityPowerOr,
+    SoftPowerGate,
+    SoftPowerSwitch,
+    PmosReverseProtection,
+    PmosChargerReverseProtection,
+)
 from .LedDriver_Al8861 import Al8861
 from .LedDriver_Tps92200 import Tps92200
 from .ResetGenerator_Apx803s import Apx803s
@@ -83,7 +112,12 @@ from .Microcontroller_Stm32g031 import Stm32g031_G
 from .Microcontroller_Stm32g431 import Stm32g431kb
 from .Microcontroller_Stm32l432 import Stm32l432k
 from .Microcontroller_nRF52840 import Holyiot_18010, Mdbt50q_1mv2, Feather_Nrf52840
-from .Microcontroller_Esp import EspProgrammingHeader, EspProgrammingAutoReset, EspProgrammingPinHeader254, EspProgrammingTc2030
+from .Microcontroller_Esp import (
+    EspProgrammingHeader,
+    EspProgrammingAutoReset,
+    EspProgrammingPinHeader254,
+    EspProgrammingTc2030,
+)
 from .Microcontroller_Esp import HasEspProgramming
 from .Microcontroller_Esp import EspAutoProgram
 from .Microcontroller_Esp32 import Esp32_Wroom_32, Freenove_Esp32_Wrover
@@ -116,7 +150,16 @@ from .DacI2c_Mcp4728 import Mcp4728
 
 from .Rtc_Pcf2129 import Pcf2129
 from .RfModules import Xbee_S3b, BlueSmirf
-from .Neopixel import Neopixel, Ws2812b, Sk6812Mini_E, Sk6805_Ec15, Sk6812_Side_A, NeopixelArray, NeopixelArrayCircular
+from .Neopixel import (
+    Neopixel,
+    Ws2812b,
+    Sk6812Mini_E,
+    Sk6805_Ec15,
+    Ws2812c_2020,
+    Sk6812_Side_A,
+    NeopixelArray,
+    NeopixelArrayCircular,
+)
 from .Lcd_Qt096t_if09 import Qt096t_if09
 from .Lcd_Ch280qv10_Ct import Ch280qv10_Ct
 from .Lcd_Er_Tft1_28_3 import Er_Tft_128_3
@@ -130,7 +173,8 @@ from .EInk_E2154fs091 import E2154fs091
 from .EInk_Er_Epd027_2 import Er_Epd027_2
 from .EInk_WaveshareDriver import Waveshare_Epd
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2
-from .SolidStateRelay_Toshiba import Tlp3545a
+from .SolidStateRelay_Toshiba import Tlp3545a, Tlp170am
+from .AnalogSwitch_7400 import Sn74lvc1g3157
 from .AnalogSwitch_Nlas4157 import Nlas4157
 from .AnalogSwitch_Dg468 import Dg468
 from .CanTransceiver_Iso1050 import Iso1050dub
@@ -149,7 +193,7 @@ from .SpiMemory_93Lc import E93Lc_B
 from .UsbUart_Cp2102 import Cp2102
 from .UsbInterface_Ft232h import Ft232hl
 from .Logic_74Ahct import L74Ahct1g125
-from .Logic_74Lvc import Sn74lvc1g74
+from .Logic_74Lvc import Sn74lvc1g74, Sn74lvc2g02
 from .Rf_Sx1262 import Sx1262
 from .Rf_Pn7160 import Pn7160
 from .Comparator_Lmv331 import Lmv331
@@ -190,13 +234,16 @@ from .Jacdac import JacdacDeviceTop
 # compatibility shims
 import deprecated as __deprecated  # not to be exported
 
+
 @__deprecated.deprecated("new naming convention")
 class Vl53l0xApplication(Vl53l0x, DeprecatedBlock):
     pass
 
+
 @__deprecated.deprecated("new naming convention")
 class Imu_Lsm6ds3trc(Lsm6ds3trc, DeprecatedBlock):
     pass
+
 
 @__deprecated.deprecated("new naming convention")
 class Mag_Qmc5883l(Qmc5883l, DeprecatedBlock):

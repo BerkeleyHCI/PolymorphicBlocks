@@ -1,131 +1,137 @@
+from typing_extensions import override
+
 from .parts import *
 
 
 class BaseBoardTop(DesignTop):
-  """Design top with refinements for intermediate-level (0603+ SMD), hand-solderable components."""
-  @init_in_parent
-  def __init__(self):
-    super().__init__()
-    self.refdes_prefix = self.Parameter(StringExpr())
-    self.assign(self.refdes_prefix, "")  # override with refinements
+    """Design top with refinements for intermediate-level (0603+ SMD), hand-solderable components."""
 
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      class_refinements=[
-        (Resistor, GenericChipResistor),
-        (ResistorArray, JlcResistorArray),  # TODO: replace with generic resistor array
-        (Capacitor, GenericMlcc),
-        (Inductor, JlcInductor),  # TODO: replace with generic inductor
-        (Switch, SmtSwitch),
-        (RotaryEncoder, Ec11j15WithSwitch),
-        (Diode, JlcDiode),  # TODO: replace with non-distributor parts list
-        (ZenerDiode, JlcZenerDiode),  # TODO: replace with non-distributor parts list
-        (Bjt, JlcBjt),  # TODO: replace with non-distributor parts list
-        (Fet, JlcFet),  # TODO: replace with non-distributor parts list
-        (SwitchFet, JlcSwitchFet),  # TODO: replace with non-distributor parts list
-        (Led, SmtLed),
-        (RgbLedCommonAnode, Smt0606RgbLed),
-        (Crystal, JlcCrystal),  # TODO: replace with non-distributor parts list
-        (Oscillator, JlcOscillator),  # TODO: replace with non-distributor parts list
+    def __init__(self) -> None:
+        super().__init__()
+        self.refdes_prefix = self.Parameter(StringExpr())
+        self.assign(self.refdes_prefix, "")  # override with refinements
 
-        (Jumper, SolderJumperTriangular),
-        (IndicatorSinkLed, IndicatorSinkLedResistor),
-
-        (Fpc050Bottom, HiroseFh12sh),
-        (UsbEsdDiode, Tpd2e009),
-        (CanEsdDiode, Pesd1can),
-        (Fuse, Nano2Fuseholder),
-        (TestPoint, TeRc),
-
-        (SwdCortexTargetConnector, SwdCortexTargetHeader),
-
-        (SpiMemory, W25q),
-
-        (Speaker, ConnectorSpeaker),
-      ], class_values=[
-        (SelectorArea, ['footprint_area'], Range.from_lower(4.0)),  # at least 0603
-      ]
-    )
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (Resistor, GenericChipResistor),
+                (ResistorArray, JlcResistorArray),  # TODO: replace with generic resistor array
+                (Capacitor, GenericMlcc),
+                (Inductor, JlcInductor),  # TODO: replace with generic inductor
+                (Switch, SmtSwitch),
+                (RotaryEncoder, Ec11j15WithSwitch),
+                (Diode, JlcDiode),  # TODO: replace with non-distributor parts list
+                (ZenerDiode, JlcZenerDiode),  # TODO: replace with non-distributor parts list
+                (Bjt, JlcBjt),  # TODO: replace with non-distributor parts list
+                (Fet, JlcFet),  # TODO: replace with non-distributor parts list
+                (SwitchFet, JlcSwitchFet),  # TODO: replace with non-distributor parts list
+                (Led, SmtLed),
+                (RgbLedCommonAnode, Smt0606RgbLed),
+                (Crystal, JlcCrystal),  # TODO: replace with non-distributor parts list
+                (Oscillator, JlcOscillator),  # TODO: replace with non-distributor parts list
+                (Jumper, SolderJumperTriangular),
+                (IndicatorSinkLed, IndicatorSinkLedResistor),
+                (Fpc050Bottom, HiroseFh12sh),
+                (UsbEsdDiode, Tpd2e009),
+                (CanEsdDiode, Pesd1can),
+                (Fuse, Nano2Fuseholder),
+                (TestPoint, TeRc),
+                (SwdCortexTargetConnector, SwdCortexTargetHeader),
+                (SpiMemory, W25q),
+                (Speaker, ConnectorSpeaker),
+            ],
+            class_values=[
+                (SelectorArea, ["footprint_area"], Range.from_lower(4.0)),  # at least 0603
+            ],
+        )
 
 
 class BoardTop(BaseBoardTop):
-  pass
+    pass
 
 
 class JlcToolingHole(InternalSubcircuit, FootprintBlock):
-  def contents(self):
-    super().contents()
-    self.footprint(
-      'H', 'edg:JlcToolingHole_1.152mm',
-      {},
-      datasheet='https://support.jlcpcb.com/article/92-how-to-add-tooling-holes-for-smt-assembly-order'
-    )
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.footprint(
+            "H",
+            "edg:JlcToolingHole_1.152mm",
+            {},
+            datasheet="https://support.jlcpcb.com/article/92-how-to-add-tooling-holes-for-smt-assembly-order",
+        )
 
 
 class JlcToolingHoles(InternalSubcircuit, Block):
-  def contents(self):
-    super().contents()
-    self.th1 = self.Block(JlcToolingHole())
-    self.th2 = self.Block(JlcToolingHole())
-    self.th3 = self.Block(JlcToolingHole())
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.th1 = self.Block(JlcToolingHole())
+        self.th2 = self.Block(JlcToolingHole())
+        self.th3 = self.Block(JlcToolingHole())
 
 
 class JlcTopRefinements(BaseBoardTop):
-  """Design top with refinements to use parts from JLC's assembly service"""
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      class_refinements=[
-        (Resistor, JlcResistor),
-        (Capacitor, JlcCapacitor),
-        (Inductor, JlcInductor),
-        (AluminumCapacitor, JlcAluminumCapacitor),
-        (FerriteBead, JlcFerriteBead),
-        (PptcFuse, JlcPptcFuse),
-        (ResistorArray, JlcResistorArray),
-        (Crystal, JlcCrystal),
-        (Oscillator, JlcOscillator),
+    """Design top with refinements to use parts from JLC's assembly service"""
 
-        (Switch, JlcSwitch),
-        (Led, JlcLed),
-        (ZenerDiode, JlcZenerDiode),
-        (Diode, JlcDiode),
-        (Bjt, JlcBjt),
-        (Fet, JlcFet),
-        (Antenna, JlcAntenna),
-
-        (Fpc050Bottom, Afc01),
-        (Fpc050Top, Afc07Top),
-        (Fpc030Bottom, HiroseFh35cshw),
-        (UsbEsdDiode, Pesd5v0x1bt),
-        (Comparator, Lmv331),
-        (Opamp, Lmv321),
-        (SpiMemory, W25q),  # 128M version is a basic part
-        (TestPoint, Keystone5015),  # this is larger, but is part of JLC's parts inventory
-        (UflConnector, Bwipx_1_001e),
-      ],
-      class_values=[  # realistically only RCs are going to likely be basic parts
-        (JlcResistor, ['require_basic_part'], True),
-        (JlcCapacitor, ['require_basic_part'], True),
-      ],
-    )
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (Resistor, JlcResistor),
+                (Capacitor, JlcCapacitor),
+                (Inductor, JlcInductor),
+                (AluminumCapacitor, JlcAluminumCapacitor),
+                (FerriteBead, JlcFerriteBead),
+                (PptcFuse, JlcPptcFuse),
+                (ResistorArray, JlcResistorArray),
+                (Crystal, JlcCrystal),
+                (Oscillator, JlcOscillator),
+                (Switch, JlcSwitch),
+                (Led, JlcLed),
+                (ZenerDiode, JlcZenerDiode),
+                (Diode, JlcDiode),
+                (Bjt, JlcBjt),
+                (Fet, JlcFet),
+                (Antenna, JlcAntenna),
+                (Fpc050Bottom, Afc01),
+                (Fpc050Top, Afc07Top),
+                (Fpc030Bottom, HiroseFh35cshw),
+                (UsbEsdDiode, Pesd5v0x1bt),
+                (Comparator, Lmv331),
+                (Opamp, Lmv321),
+                (SpiMemory, W25q),  # 128M version is a basic part
+                (TestPoint, Keystone5015),  # this is larger, but is part of JLC's parts inventory
+                (UflConnector, Bwipx_1_001e),
+            ],
+            class_values=[  # realistically only RCs are going to likely be basic parts
+                (JlcResistor, ["require_basic_part"], True),
+                (JlcCapacitor, ["require_basic_part"], True),
+            ],
+        )
 
 
 class JlcBoardTop(JlcTopRefinements):
-  """Design top with refinements to use parts from JLC's assembly service and including the tooling holes"""
-  def contents(self):
-    super().contents()
-    self.jlc_th = self.Block(JlcToolingHoles())
+    """Design top with refinements to use parts from JLC's assembly service and including the tooling holes"""
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.jlc_th = self.Block(JlcToolingHoles())
 
 
 class SimpleBoardTop(JlcTopRefinements):
-  """A BoardTop with refinements that make getting started easier but may not be desirable everywhere."""
-  def refinements(self) -> Refinements:
-    return super().refinements() + Refinements(
-      class_refinements=[
-        (PassiveConnector, PinHeader254),
-      ],
-      class_values=[
-        (Nonstrict3v3Compatible, ['nonstrict_3v3_compatible'], True),
-        (JlcInductor, ['manual_frequency_rating'], Range.all()),
-      ],
-    )
+    """A BoardTop with refinements that make getting started easier but may not be desirable everywhere."""
+
+    @override
+    def refinements(self) -> Refinements:
+        return super().refinements() + Refinements(
+            class_refinements=[
+                (PassiveConnector, PinHeader254),
+            ],
+            class_values=[
+                (Nonstrict3v3Compatible, ["nonstrict_3v3_compatible"], True),
+                (JlcInductor, ["manual_frequency_rating"], Range.all()),
+            ],
+        )

@@ -7,6 +7,7 @@ from .Units import Farad, uFarad, nFarad, pFarad, MOhm, kOhm, Ohm, mOhm, Henry, 
 from .Units import Volt, mVolt, Watt, Amp, mAmp, uAmp, nAmp, pAmp
 from .Units import Second, mSecond, uSecond, nSecond, Hertz, kHertz, MHertz, GHertz
 from .Units import Bit, kiBit, MiBit
+from .Units import Ratio
 from .Units import UnitUtils
 
 # Need to export link and bridge types for library auto-detection
@@ -38,6 +39,7 @@ from .PartParserUtil import PartParserUtil
 
 from .KiCadImportableBlock import KiCadImportableBlock, KiCadInstantiableBlock
 from .KiCadSchematicBlock import KiCadSchematicBlock
+
 # for power users to build custom blackbox handlers
 from .KiCadSchematicParser import KiCadSymbol, KiCadLibSymbol
 from .KiCadSchematicBlock import KiCadBlackbox, KiCadBlackboxBase

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+from typing_extensions import override
+
 from ..core import *
 from .CircuitBlock import CircuitPortBridge, CircuitPortAdapter, CircuitLink, CircuitPort
 from .Units import Volt, Ohm
@@ -13,10 +16,9 @@ if TYPE_CHECKING:
 
 class GroundLink(CircuitLink):
     @classmethod
-    def _voltage_range(cls, port: Port[GroundLink]):
+    def _voltage_range(cls, port: Port[GroundLink]) -> RangeExpr:
         if isinstance(port, Ground):
-            return port.is_connected().then_else(port.link().voltage,
-                                                 RangeExpr._to_expr_type(RangeExpr.ZERO))
+            return port.is_connected().then_else(port.link().voltage, RangeExpr._to_expr_type(RangeExpr.ZERO))
         elif isinstance(port, GroundReference):
             return port.voltage_out
         else:
@@ -31,16 +33,18 @@ class GroundLink(CircuitLink):
         self.voltage = self.Parameter(RangeExpr())
         self.voltage_limits = self.Parameter(RangeExpr())
 
+    @override
     def contents(self) -> None:
         super().contents()
 
         self.description = DescriptionString(
-            "<b>voltage</b>: ", DescriptionString.FormatUnits(self.voltage, "V"),
-            " <b>of limits</b>: ", DescriptionString.FormatUnits(self.voltage_limits, "V"))
+            "<b>voltage</b>: ",
+            DescriptionString.FormatUnits(self.voltage, "V"),
+            " <b>of limits</b>: ",
+            DescriptionString.FormatUnits(self.voltage_limits, "V"),
+        )
 
-        self.assign(self.voltage, self.ref.is_connected().then_else(
-            self.ref.voltage_out, (0, 0)*Volt
-        ))
+        self.assign(self.voltage, self.ref.is_connected().then_else(self.ref.voltage_out, (0, 0) * Volt))
         self.assign(self.voltage_limits, self.gnds.intersection(lambda x: x.voltage_limits))
         self.require(self.voltage_limits.contains(self.voltage), "overvoltage")
 
@@ -52,47 +56,52 @@ class GroundBridge(CircuitPortBridge):
         self.outer_port = self.Port(Ground())
         self.inner_link = self.Port(GroundReference(voltage_out=RangeExpr()))
 
+    @override
     def contents(self) -> None:
         super().contents()
 
         self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
 
 
-class GroundAdapterVoltageSource(CircuitPortAdapter['VoltageSource']):
-    @init_in_parent
-    def __init__(self):
+class GroundAdapterVoltageSource(CircuitPortAdapter["VoltageSource"]):
+    def __init__(self) -> None:
         from .VoltagePorts import VoltageSource
+
         super().__init__()
         self.src = self.Port(Ground())
-        self.dst = self.Port(VoltageSource(
-            voltage_out=self.src.link().voltage,
-        ))
+        self.dst = self.Port(
+            VoltageSource(
+                voltage_out=self.src.link().voltage,
+            )
+        )
 
 
-class GroundAdapterDigitalSource(CircuitPortAdapter['DigitalSource']):
-    @init_in_parent
-    def __init__(self):
+class GroundAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):
+    def __init__(self) -> None:
         from .DigitalPorts import DigitalSource
+
         super().__init__()
         self.src = self.Port(Ground())
-        self.dst = self.Port(DigitalSource(
-            voltage_out=self.src.link().voltage,
-            output_thresholds=(self.src.link().voltage.lower(), FloatExpr._to_expr_type(float('inf')))
-        ))
+        self.dst = self.Port(
+            DigitalSource(
+                voltage_out=self.src.link().voltage,
+                output_thresholds=(self.src.link().voltage.lower(), FloatExpr._to_expr_type(float("inf"))),
+            )
+        )
 
 
-class GroundAdapterAnalogSource(CircuitPortAdapter['AnalogSource']):
-    @init_in_parent
-    def __init__(self):
+class GroundAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
+    def __init__(self) -> None:
         from .AnalogPort import AnalogSource
 
         super().__init__()
         self.src = self.Port(Ground())
-        self.dst = self.Port(AnalogSource(
-            voltage_out=self.src.link().voltage,
-            signal_out=self.src.link().voltage,
-            impedance=(0, 0)*Ohm,
-        ))
+        self.dst = self.Port(
+            AnalogSource(
+                voltage_out=self.src.link().voltage,
+                signal_out=self.src.link().voltage,
+            )
+        )
 
 
 class Ground(CircuitPort[GroundLink]):
@@ -127,8 +136,10 @@ class GroundReference(CircuitPort[GroundLink]):
 
 
 from deprecated import deprecated
+
+
 @deprecated("Use Ground() or GroundReference(...), Ground is no longer directioned")
-def GroundSource(*args, **kwargs):
+def GroundSource(*args: Any, **kwargs: Any) -> Ground:
     return Ground()
 
 

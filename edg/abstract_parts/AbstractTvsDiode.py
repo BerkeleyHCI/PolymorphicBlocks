@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import *
 from .AbstractDiodes import BaseDiode
@@ -17,9 +19,8 @@ class TvsDiode(BaseDiode):
     TODO: model capacitance frequency? model breakdown and clamping voltage?
     TODO: how does this differ from Zener diodes?
     """
-    @init_in_parent
-    def __init__(self, working_voltage: RangeLike, *,
-                 capacitance: RangeLike = Range.all()) -> None:
+
+    def __init__(self, working_voltage: RangeLike, *, capacitance: RangeLike = Range.all()) -> None:
         super().__init__()
 
         self.working_voltage = self.ArgParameter(working_voltage)
@@ -32,7 +33,7 @@ class TvsDiode(BaseDiode):
 
 class ProtectionTvsDiode(Protection):
     """TVS diode across a power rail"""
-    @init_in_parent
+
     def __init__(self, working_voltage: RangeLike):
         super().__init__()
 
@@ -41,18 +42,24 @@ class ProtectionTvsDiode(Protection):
 
         self.working_voltage = self.ArgParameter(working_voltage)
 
-    def contents(self):
+    @override
+    def contents(self) -> None:
         super().contents()
         self.diode = self.Block(TvsDiode(working_voltage=self.working_voltage))
-        self.connect(self.diode.cathode.adapt_to(VoltageSink(
-            voltage_limits=self.diode.actual_breakdown_voltage,
-        )), self.pwr)
+        self.connect(
+            self.diode.cathode.adapt_to(
+                VoltageSink(
+                    voltage_limits=self.diode.actual_breakdown_voltage,
+                )
+            ),
+            self.pwr,
+        )
         self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
 
 
 class DigitalTvsDiode(Protection):
     """TVS diode protecting a signal line"""
-    @init_in_parent
+
     def __init__(self, working_voltage: RangeLike, *, capacitance: RangeLike = Range.all()):
         super().__init__()
 
@@ -62,10 +69,16 @@ class DigitalTvsDiode(Protection):
         self.working_voltage = self.ArgParameter(working_voltage)
         self.capacitance = self.ArgParameter(capacitance)
 
-    def contents(self):
+    @override
+    def contents(self) -> None:
         super().contents()
         self.diode = self.Block(TvsDiode(working_voltage=self.working_voltage, capacitance=self.capacitance))
-        self.connect(self.diode.cathode.adapt_to(DigitalSink(
-            voltage_limits=self.diode.actual_breakdown_voltage,
-        )), self.io)
+        self.connect(
+            self.diode.cathode.adapt_to(
+                DigitalSink(
+                    voltage_limits=self.diode.actual_breakdown_voltage,
+                )
+            ),
+            self.io,
+        )
         self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)

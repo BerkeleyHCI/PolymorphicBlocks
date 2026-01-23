@@ -3,6 +3,8 @@ import inspect
 import math
 from typing import List, Tuple, NamedTuple, Dict, Union, Set
 
+from typing_extensions import override
+
 from .. import edgir
 from .KicadFootprintData import FootprintDataTable
 from ..core import *
@@ -14,7 +16,8 @@ class PlacedBlock(NamedTuple):
     """A placement of a hierarchical block, including the coordinates of its immediate elements.
     Elements are placed in local space, with (0, 0) as the origin and elements moved as a group.
     Elements are indexed by name."""
-    elts: List[Tuple[Union['PlacedBlock', TransformUtil.Path], Tuple[float, float]]]  # name -> elt, (x, y)
+
+    elts: List[Tuple[Union["PlacedBlock", TransformUtil.Path], Tuple[float, float]]]  # name -> elt, (x, y)
     height: float
     width: float
 
@@ -24,8 +27,7 @@ class BlackBoxBlock(NamedTuple):
     bbox: Tuple[float, float, float, float]
 
 
-def arrange_blocks(blocks: List[NetBlock],
-                   additional_blocks: List[BlackBoxBlock] = []) -> PlacedBlock:
+def arrange_blocks(blocks: List[NetBlock], additional_blocks: List[BlackBoxBlock] = []) -> PlacedBlock:
     FOOTPRINT_BORDER = 1  # mm
     BLOCK_BORDER = 2  # mm
 
@@ -35,7 +37,7 @@ def arrange_blocks(blocks: List[NetBlock],
 
     # for here, we only group one level deep
     for block in blocks:
-        containing_path = block.full_path.blocks[0:min(len(block.full_path.blocks) - 1, 1)]
+        containing_path = block.full_path.blocks[0 : min(len(block.full_path.blocks) - 1, 1)]
         block_footprints.setdefault(containing_path, []).append(block)
         for i in range(len(containing_path)):
             subblocks_list = block_subblocks.setdefault(tuple(containing_path[:i]), list())
@@ -43,7 +45,7 @@ def arrange_blocks(blocks: List[NetBlock],
                 subblocks_list.append(containing_path[i])
 
     for blackbox in additional_blocks:
-        containing_path = blackbox.path.blocks[0:min(len(blackbox.path.blocks) - 1, 1)]
+        containing_path = blackbox.path.blocks[0 : min(len(blackbox.path.blocks) - 1, 1)]
         block_footprints.setdefault(containing_path, []).append(blackbox)
         for i in range(len(containing_path)):
             subblocks_list = block_subblocks.setdefault(tuple(containing_path[:i]), list())
@@ -56,7 +58,9 @@ def arrange_blocks(blocks: List[NetBlock],
         # TODO don't count borders as part of a block's width / height
         ASPECT_RATIO = 16 / 9
 
-        sub_placed: List[Tuple[float, float, Union[PlacedBlock, NetBlock, BlackBoxBlock]]] = []  # (width, height, entry)
+        sub_placed: List[Tuple[float, float, Union[PlacedBlock, NetBlock, BlackBoxBlock]]] = (
+            []
+        )  # (width, height, entry)
         for subblock in block_subblocks.get(root, list()):
             subplaced = arrange_hierarchy(root + (subblock,))
             sub_placed.append((subplaced.width + BLOCK_BORDER, subplaced.height + BLOCK_BORDER, subplaced))
@@ -116,15 +120,15 @@ def arrange_blocks(blocks: List[NetBlock],
             x_stack.append((next_x + width, next_y, next_y + height))
             x_max = max(x_max, next_x + width)
             y_max = max(y_max, next_y + height)
-        return PlacedBlock(
-            elts=elts, width=x_max, height=y_max
-        )
+        return PlacedBlock(elts=elts, width=x_max, height=y_max)
+
     return arrange_hierarchy(())
 
 
 def flatten_packed_block(block: PlacedBlock) -> Dict[TransformUtil.Path, Tuple[float, float]]:
     """Flatten a packed_block to a dict of individual components."""
     flattened: Dict[TransformUtil.Path, Tuple[float, float]] = {}
+
     def walk_group(block: PlacedBlock, x_pos: float, y_pos: float) -> None:
         for elt, (elt_x, elt_y) in block.elts:
             if isinstance(elt, PlacedBlock):
@@ -133,6 +137,7 @@ def flatten_packed_block(block: PlacedBlock) -> Dict[TransformUtil.Path, Tuple[f
                 flattened[elt] = (x_pos + elt_x, y_pos + elt_y)
             else:
                 raise TypeError
+
     walk_group(block, 0, 0)
     return flattened
 
@@ -146,27 +151,34 @@ class SvgPcbGeneratedBlock(NamedTuple):
 
 class SvgPcbTransform(TransformUtil.Transform):
     """Collects all SVGPCB blocks and initializes them."""
+
     def __init__(self, design: CompiledDesign, netlist: Netlist):
         self.design = design
         self.netlist = netlist
         self._svgpcb_blocks: List[SvgPcbGeneratedBlock] = []
 
+    @override
     def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
         # ignore root, bit of a heuristic hack since importing the toplevel script can be brittle
         if context.path == TransformUtil.Path.empty():
             return
 
         # TODO: dedup w/ class_from_library in edg_hdl_server
-        elt_split = block.self_class.target.name.split('.')
-        elt_module = importlib.import_module('.'.join(elt_split[:-1]))
+        elt_split = block.self_class.target.name.split(".")
+        elt_module = importlib.import_module(".".join(elt_split[:-1]))
         assert inspect.ismodule(elt_module)
         cls = getattr(elt_module, elt_split[-1])
         if issubclass(cls, SvgPcbTemplateBlock):
             generator_obj = cls()
             generator_obj._svgpcb_init(context.path, self.design, self.netlist)
-            self._svgpcb_blocks.append(SvgPcbGeneratedBlock(
-                context.path, generator_obj._svgpcb_fn_name(), generator_obj._svgpcb_template(), generator_obj._svgpcb_bbox()
-            ))
+            self._svgpcb_blocks.append(
+                SvgPcbGeneratedBlock(
+                    context.path,
+                    generator_obj._svgpcb_fn_name(),
+                    generator_obj._svgpcb_template(),
+                    generator_obj._svgpcb_bbox(),
+                )
+            )
         else:
             pass
 
@@ -176,24 +188,25 @@ class SvgPcbTransform(TransformUtil.Transform):
 
 
 class SvgPcbBackend(BaseBackend):
+    @override
     def run(self, design: CompiledDesign, args: Dict[str, str] = {}) -> List[Tuple[edgir.LocalPath, str]]:
         netlist = NetlistTransform(design).run()
         result = self._generate(design, netlist)
-        return [
-            (edgir.LocalPath(), result)
-        ]
+        return [(edgir.LocalPath(), result)]
 
     def _generate(self, design: CompiledDesign, netlist: Netlist) -> str:
         """Generates SVBPCB fragments as a structured result"""
-        def block_matches_prefixes(block: NetBlock, prefixes: List[Tuple[str, ...]]):
+
+        def block_matches_prefixes(block: NetBlock, prefixes: List[Tuple[str, ...]]) -> bool:
             for prefix in prefixes:
-                if block.full_path.blocks[0:min(len(block.full_path.blocks), len(prefix))] == prefix:
+                if block.full_path.blocks[0 : min(len(block.full_path.blocks), len(prefix))] == prefix:
                     return True
             return False
 
-        def filter_blocks_by_pathname(blocks: List[NetBlock], exclude_prefixes: List[Tuple[str, ...]]) -> List[NetBlock]:
-            return [block for block in blocks
-                    if not block_matches_prefixes(block, exclude_prefixes)]
+        def filter_blocks_by_pathname(
+            blocks: List[NetBlock], exclude_prefixes: List[Tuple[str, ...]]
+        ) -> List[NetBlock]:
+            return [block for block in blocks if not block_matches_prefixes(block, exclude_prefixes)]
 
         # handle blocks with svgpcb templates
         svgpcb_blocks = SvgPcbTransform(design, netlist).run()
@@ -230,7 +243,7 @@ const {net_block.refdes} = board.add({SvgPcbTemplateBlock._svgpcb_footprint_to_s
             pads_code = [f"""["{net_blocks_by_path[pin.block_path].refdes}", "{pin.pin_name}"]""" for pin in net.pins]
             netlist_code_entries.append(f"""{{name: "{net.name}", pads: [{', '.join(pads_code)}]}}""")
 
-        NEWLINE = '\n'
+        NEWLINE = "\n"
         full_code = f"""\
 const board = new PCB();
 

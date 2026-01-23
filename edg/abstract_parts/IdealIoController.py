@@ -1,25 +1,57 @@
+from typing_extensions import override
+
 from ..electronics_model import *
 from .Categories import IdealModel
 from .IoController import IoController
-from .IoControllerInterfaceMixins import IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, \
-    IoControllerCan, IoControllerUsb, IoControllerI2s, IoControllerWifi, IoControllerBluetooth, IoControllerBle
+from .IoControllerInterfaceMixins import (
+    IoControllerSpiPeripheral,
+    IoControllerI2cTarget,
+    IoControllerDac,
+    IoControllerCan,
+    IoControllerUsb,
+    IoControllerI2s,
+    IoControllerWifi,
+    IoControllerBluetooth,
+    IoControllerBle,
+)
 
 
-class IdealIoController(IoControllerSpiPeripheral, IoControllerI2cTarget, IoControllerDac, IoControllerCan,
-                        IoControllerUsb, IoControllerI2s, IoControllerWifi, IoControllerBluetooth, IoControllerBle,
-                        IoController, IdealModel, GeneratorBlock):
+class IdealIoController(
+    IoControllerSpiPeripheral,
+    IoControllerI2cTarget,
+    IoControllerDac,
+    IoControllerCan,
+    IoControllerUsb,
+    IoControllerI2s,
+    IoControllerWifi,
+    IoControllerBluetooth,
+    IoControllerBle,
+    IoController,
+    IdealModel,
+    GeneratorBlock,
+):
     """An ideal IO controller, with as many IOs as requested.
     Output have voltages at pwr/gnd, all other parameters are ideal."""
+
     def __init__(self) -> None:
         super().__init__()
-        self.generator_param(self.adc.requested(), self.dac.requested(), self.gpio.requested(), self.spi.requested(),
-                             self.spi_peripheral.requested(), self.i2c.requested(), self.i2c_target.requested(),
-                             self.uart.requested(), self.usb.requested(), self.can.requested(), self.i2s.requested())
+        self.generator_param(
+            self.adc.requested(),
+            self.dac.requested(),
+            self.gpio.requested(),
+            self.spi.requested(),
+            self.spi_peripheral.requested(),
+            self.i2c.requested(),
+            self.i2c_target.requested(),
+            self.uart.requested(),
+            self.usb.requested(),
+            self.can.requested(),
+            self.i2s.requested(),
+        )
 
+    @override
     def generate(self) -> None:
-        self.pwr.init_from(VoltageSink(
-            current_draw=RangeExpr()
-        ))
+        self.pwr.init_from(VoltageSink(current_draw=RangeExpr()))
         self.gnd.init_from(Ground())
 
         io_current_draw_builder = RangeExpr._to_expr_type(RangeExpr.ZERO)
@@ -31,19 +63,18 @@ class IdealIoController(IoControllerSpiPeripheral, IoControllerI2cTarget, IoCont
         for elt in self.get(self.dac.requested()):
             aout = self.dac.append_elt(AnalogSource.from_supply(self.gnd, self.pwr), elt)
             io_current_draw_builder = io_current_draw_builder + (
-                aout.link().current_drawn.lower().min(0), aout.link().current_drawn.upper().max(0)
+                aout.link().current_drawn.lower().min(0),
+                aout.link().current_drawn.upper().max(0),
             )
 
-        dio_model = DigitalBidir.from_supply(
-            self.gnd, self.pwr,
-            pullup_capable=True, pulldown_capable=True
-        )
+        dio_model = DigitalBidir.from_supply(self.gnd, self.pwr, pullup_capable=True, pulldown_capable=True)
 
         self.gpio.defined()
         for elt in self.get(self.gpio.requested()):
             dio = self.gpio.append_elt(dio_model, elt)
             io_current_draw_builder = io_current_draw_builder + (
-                dio.link().current_drawn.lower().min(0), dio.link().current_drawn.upper().max(0)
+                dio.link().current_drawn.lower().min(0),
+                dio.link().current_drawn.upper().max(0),
             )
 
         self.spi.defined()
