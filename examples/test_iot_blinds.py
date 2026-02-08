@@ -188,7 +188,10 @@ class MotorConnector(Block):
 class IotCurtainCrawler(JlcBoardTop):
     """IoT curtain crawler, drives a motor and has hall sensors integrated on the board, next to the motor.
     Motor: LS16PQQ-030  -183.5
-    ~2.7v min starting voltage; 40mA open current, 200mA stall current @ 4.0v
+    ~2.7v min starting voltage; 40mA open current, 200mA stall current @ 4.0v, ~500mA @ 10v
+
+    Note, motor driver appears to be fed off a booster, a chip labeled B6283y, which may be a SDB628 booster
+    with a feedback voltage of 0.6v. Feedback resistor divider produces 121.4mV for a 2.000V input, a ~10v target.
 
     Motor is a 2-pin PicoBlade 1.25mm connector, Molex_PicoBlade_53398-0271_1x02-1MP_P1.25mm_Vertical
 
@@ -264,7 +267,7 @@ class IotCurtainCrawler(JlcBoardTop):
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
             self.motor = self.Block(MotorConnector())
-            self.drv = imp.Block(Drv8870(current_trip=150 * mAmp(tol=0.1)))
+            self.drv = imp.Block(Drv8870(current_trip=550 * mAmp(tol=0.1)))
             self.connect(self.drv.vref, self.v3v3)
             self.connect(self.mcu.gpio.request("motor1"), self.drv.in1)
             self.connect(self.mcu.gpio.request("motor2"), self.drv.in2)
