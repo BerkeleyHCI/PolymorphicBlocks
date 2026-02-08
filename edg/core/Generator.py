@@ -17,7 +17,6 @@ from .Core import non_library, Refable
 from .HdlUserExceptions import *
 from .HierarchyBlock import Block
 
-
 CastableType = TypeVar("CastableType", bound=Any)
 
 

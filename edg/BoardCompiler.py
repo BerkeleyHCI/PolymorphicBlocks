@@ -12,7 +12,7 @@ from .electronics_model.BomBackend import GenerateBom
 
 def compile_board(design: Type[Block], target_dir_name: Optional[Tuple[str, str]]) -> CompiledDesign:
     if target_dir_name is not None:
-        (target_dir, target_name) = target_dir_name
+        target_dir, target_name = target_dir_name
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
         assert os.path.isdir(target_dir), f"target_dir {target_dir} to compile_board must be directory"

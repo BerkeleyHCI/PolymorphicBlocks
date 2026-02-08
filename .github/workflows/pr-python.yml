@@ -31,7 +31,7 @@ jobs:
           "examples/**.py"
         ]'
 
-  black_latest_3_11:
+  black_latest_3_13:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
     runs-on: ubuntu-latest
@@ -39,7 +39,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.11'
+          python-version: '3.13'
 
       - name: install mypy
         run: |
@@ -48,7 +48,7 @@ jobs:
       - name: black
         run: black --check .
 
-  mypy_latest_3_11:
+  mypy_latest_3_13:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
     runs-on: ubuntu-latest
@@ -56,7 +56,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.11'
+        python-version: '3.13'
 
     - name: install mypy
       run: |
@@ -66,7 +66,7 @@ jobs:
     - name: mypy
       run: mypy --install-types .
 
-  packagetest_latest_3_11:
+  packagetest_latest_3_13:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
     runs-on: ubuntu-latest
@@ -74,7 +74,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.11'
+          python-version: '3.13'
 
       - name: install dependencies
         run: pip install -r requirements.txt
@@ -85,7 +85,7 @@ jobs:
       - name: toptest
         run: cd examples && python test_blinky.py
 
-  unittest_latest_3_11:
+  unittest_latest_3_13:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
     runs-on: ubuntu-latest
@@ -93,14 +93,14 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.11'
+        python-version: '3.13'
 
     - name: install dependencies
       run: pip install -r requirements.txt
     - name: unittest
       run: python -m unittest discover
 
-  unittest_latest_3_9:
+  unittest_latest_3_10:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
     runs-on: ubuntu-latest
@@ -108,7 +108,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.9'
+          python-version: '3.10'
 
       - name: install dependencies
         run: pip install -r requirements.txt
