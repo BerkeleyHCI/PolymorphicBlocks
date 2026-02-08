@@ -60,5 +60,5 @@ class FootprintPassiveConnector(PassiveConnector, GeneratorBlock, FootprintBlock
         # TODO ideally this is require, but we don't support set ops in the IR
         assert length in self.allowed_pins, f"requested length {length} outside allowed length {self.allowed_pins}"
 
-        (footprint, mfr, part) = self.part_footprint_mfr_name(length)
+        footprint, mfr, part = self.part_footprint_mfr_name(length)
         self.footprint("J", footprint, {pin_name: pin_port for (pin_name, pin_port) in self.pins.items()}, mfr, part)

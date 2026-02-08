@@ -6,7 +6,6 @@ from typing import Any, Sequence, Optional, TypeVar, Tuple, List, Generic, Type,
 
 from ..electronics_model import *
 
-
 SeriesDefaultType = TypeVar("SeriesDefaultType")
 
 

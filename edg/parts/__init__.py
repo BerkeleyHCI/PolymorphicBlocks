@@ -230,7 +230,6 @@ from .Jacdac import JacdacEdgeConnector, JacdacDataInterface, Rclamp0521p
 from .Jacdac import JacdacMountingData1, JacdacMountingGnd2, JacdacMountingGnd4, JacdacMountingPwr3
 from .Jacdac import JacdacDeviceTop
 
-
 # compatibility shims
 import deprecated as __deprecated  # not to be exported
 

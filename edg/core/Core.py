@@ -10,7 +10,6 @@ from .Builder import builder
 from .IdentityDict import IdentityDict
 from .IdentitySet import IdentitySet
 
-
 ElementType = TypeVar("ElementType")
 
 

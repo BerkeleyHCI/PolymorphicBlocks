@@ -200,13 +200,13 @@ if __name__ == "__main__":
 
                 # correct offsets before applying rotation
                 if lcsc_opt is not None and lcsc_opt in PART_OFFSETS:
-                    (xoff, yoff) = PART_OFFSETS[lcsc_opt]
+                    xoff, yoff = PART_OFFSETS[lcsc_opt]
                     rot = math.radians(float(row[rot_index]))
                     row[x_index] = str((float(row[x_index]) + xoff * math.cos(rot) + yoff * math.sin(rot)))
                     row[y_index] = str((float(row[y_index]) + xoff * math.sin(rot) - yoff * math.cos(rot)))
                     print(f"correct offset for row {i+1} ref {refdes}, {lcsc_opt}")
                 elif package in PACKAGE_OFFSETS:
-                    (xoff, yoff) = PACKAGE_OFFSETS[package]
+                    xoff, yoff = PACKAGE_OFFSETS[package]
                     rot = math.radians(float(row[rot_index]))
                     row[x_index] = str((float(row[x_index]) + xoff * math.cos(rot) + yoff * math.sin(rot)))
                     row[y_index] = str((float(row[y_index]) + xoff * math.sin(rot) - yoff * math.cos(rot)))

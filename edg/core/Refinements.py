@@ -7,7 +7,6 @@ from .. import edgir
 from .. import edgrpc
 from .HierarchyBlock import Block
 
-
 DesignPath = Iterable[str]
 DesignPostfix = Iterable[str]
 
