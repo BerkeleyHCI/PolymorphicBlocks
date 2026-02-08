@@ -3,7 +3,6 @@ from typing_extensions import Self
 
 from ..electronics_model import *
 
-
 StandardPinningType = TypeVar("StandardPinningType", bound=Block)
 PinningFunction = Callable[[StandardPinningType], Dict[str, CircuitPort]]
 

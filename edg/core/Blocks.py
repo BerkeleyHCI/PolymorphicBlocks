@@ -106,7 +106,7 @@ class Connection:
         elif len(self.ports) == 2:
             is_export = self._is_export()
             if is_export:
-                (ext_port, int_port) = is_export
+                ext_port, int_port = is_export
                 initializers = ext_port._get_initializers([])
                 if initializers:
                     raise UnconnectableError(
@@ -198,7 +198,7 @@ class Connection:
 
         is_export = self._is_export()
         if is_export:
-            (ext_port, int_port) = is_export
+            ext_port, int_port = is_export
             return Connection.Export(isinstance(ext_port, BaseVector), ext_port, int_port)
 
         bridged_connects: List[Tuple[BasePort, edgir.LocalPath]] = []

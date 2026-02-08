@@ -6,7 +6,6 @@ from ..abstract_parts import *
 from .PassiveConnector_Header import PinHeader254
 from .PassiveConnector_TagConnect import TagConnect
 
-
 # contains common blocks for ESP microcontrollers
 
 
