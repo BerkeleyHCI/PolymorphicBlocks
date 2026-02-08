@@ -9,7 +9,6 @@ from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableSelector
 from .StandardFootprint import StandardFootprint, HasStandardFootprint
 
-
 LedColor = str  # type alias
 LedColorLike = StringLike  # type alias
 

@@ -3,7 +3,6 @@ from typing import TypeVar, Generic, Type, BinaryIO, Optional, IO
 import google.protobuf as protobuf
 import struct
 
-
 MessageType = TypeVar("MessageType", bound=protobuf.message.Message)
 kHeaderMagicByte = b"\xfe"
 

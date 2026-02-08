@@ -6,7 +6,6 @@ import sexpdata  # type: ignore
 # otherwise, this import fails since the root path is incorrect
 from edg.electronics_model.KiCadSchematicParser import group_by_car, parse_symbol, test_cast
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Update timestamps on a kicad_pcb file from a new netlist."

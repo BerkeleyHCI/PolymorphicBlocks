@@ -6,7 +6,6 @@ from typing_extensions import override
 from ..abstract_parts import *
 from .JlcPart import JlcPart
 
-
 # TODO: some of these are pretty general RF building blocks and can be moved into shared libraries
 # but until there are enough use cases they'll be buried here for now
 # TODO: this is a bit of a structural mess right now, as with the other RF blocks, and needs refactoring
