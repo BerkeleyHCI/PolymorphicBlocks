@@ -41,7 +41,7 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: install mypy
+      - name: install black
         run: |
           pip install -r requirements.txt
           pip install black
