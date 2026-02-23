@@ -19,14 +19,17 @@ keywords = ["PCB", "hardware description language"]
 dependencies = [
     "protobuf >= 3.20.0",
     "sexpdata==0.0.3",
-    "Deprecated",
+    "Deprecated==1.2.14",
     "typing_extensions >= 4.4.0",
+    "pydantic == 2.8.2",
 ]
 requires-python = ">=3.9"
 
 [project.optional-dependencies]
 dev = [
     "black",
+    "types-Deprecated==1.2.9.20240311",
+    "types-protobuf"
 ]
 
 [tool.setuptools]

@@ -1,7 +1,0 @@
-protobuf >= 3.20.0
-typing_extensions
-sexpdata==0.0.3
-Deprecated==1.2.14
-types-Deprecated==1.2.9.20240311
-types-protobuf
-pydantic == 2.8.2
