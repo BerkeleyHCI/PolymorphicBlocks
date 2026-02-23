@@ -44,7 +44,6 @@ jobs:
       - name: install black
         run: |
           pip install -e .[dev]
-          pip install black
       - name: black
         run: black --check .
 
