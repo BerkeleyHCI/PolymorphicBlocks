@@ -21,12 +21,16 @@ dependencies = [
     "sexpdata==0.0.3",
     "Deprecated",
     "typing_extensions >= 4.4.0",
+    "pydantic == 2.8.2",
 ]
 requires-python = ">=3.9"
 
 [project.optional-dependencies]
 dev = [
     "black",
+    "typing_extensions",
+    "types-Deprecated==1.2.9.20240311",
+    "types-protobuf"
 ]
 
 [tool.setuptools]

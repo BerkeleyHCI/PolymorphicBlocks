@@ -103,6 +103,8 @@ See the [setup documentation](setup.md), then work through building a blinky boa
 
 **Setup tl;dr**: install the Python package from pip: `pip install edg`, and optionally run the [IDE plugin with block diagram visualizer](setup.md#ide-setup).
 
+Building from source:  `pip install .` at the repository root. 
+
 
 ## Additional Notes 
 

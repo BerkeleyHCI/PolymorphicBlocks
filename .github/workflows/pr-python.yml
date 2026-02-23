@@ -43,7 +43,7 @@ jobs:
 
       - name: install black
         run: |
-          pip install -r requirements.txt
+          pip install -e .[dev]
           pip install black
       - name: black
         run: black --check .
@@ -60,7 +60,7 @@ jobs:
 
       - name: install mypy
         run: |
-          pip install -r requirements.txt
+          pip install -e .[dev]
           pip install mypy mypy-protobuf
           mypy --version
       - name: mypy
@@ -76,8 +76,6 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: install dependencies
-        run: pip install -r requirements.txt
       - name: package
         run: python -m pip install .
       - name: unittest
@@ -96,7 +94,7 @@ jobs:
           python-version: '3.13'
 
       - name: install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -e .
       - name: unittest
         run: python -m unittest discover
 
@@ -111,6 +109,6 @@ jobs:
           python-version: '3.10'
 
       - name: install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -e .
       - name: unittest
         run: python -m unittest discover
