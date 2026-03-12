@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from typing import Generic, Any, Optional, List, Mapping, Dict
 
 from typing_extensions import TypeVar, override
@@ -68,6 +69,7 @@ class FootprintBlock(Block):
         assembly"""
         from ..core.Blocks import BlockElaborationState, BlockDefinitionError
         from .VoltagePorts import CircuitPort
+        from .PassivePort import Passive
 
         if self._elaboration_state not in (
             BlockElaborationState.init,
@@ -85,7 +87,15 @@ class FootprintBlock(Block):
         pinning_array = []
         for pin_name, pin_port in pinning.items():
             if not isinstance(pin_port, CircuitPort):
-                raise EdgTypeError(f"Footprint(...) pin", pin_port, CircuitPort)
+                if hasattr(pin_port, 'net') and isinstance(pin_port.net, Passive):
+                    warnings.warn(
+                        "Use the internal passive .net port directly",
+                        DeprecationWarning,
+                        stacklevel=2  # Points the warning to the caller's code
+                    )
+                    pin_port = pin_port.net
+                else:
+                    raise EdgTypeError(f"Footprint(...) pin", pin_port, CircuitPort)
             pinning_array.append(f"{pin_name}={pin_port._name_from(self)}")
         self.assign(self.fp_pinning, pinning_array)
 

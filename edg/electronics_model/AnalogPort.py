@@ -5,12 +5,13 @@ from typing import Optional, Tuple
 from typing_extensions import override
 
 from ..core import *
-from .CircuitBlock import CircuitLink, CircuitPortAdapter
+from .PassivePort import Passive
+from .CircuitBlock import CircuitPortAdapter
 from .GroundPort import GroundLink
-from .VoltagePorts import CircuitPort, CircuitPortBridge, VoltageLink, VoltageSource
+from .VoltagePorts import VoltageLink, VoltageSource
 
 
-class AnalogLink(CircuitLink):
+class AnalogLink(Link):
     """Analog signal, a signal that carries information by varying voltage"""
 
     def __init__(self) -> None:
@@ -33,6 +34,8 @@ class AnalogLink(CircuitLink):
     @override
     def contents(self) -> None:
         super().contents()
+
+        self.net = self.connect(self.sinks.map_extract(lambda sink: sink.net), self.source.net, flatten=True)
 
         self.description = DescriptionString(
             "<b>voltage</b>: ",
@@ -64,7 +67,7 @@ class AnalogLink(CircuitLink):
         self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
 
 
-class AnalogBase(CircuitPort[AnalogLink]):
+class AnalogBase(Port[AnalogLink]):
     link_type = AnalogLink
 
     # these are here (instead of in AnalogSource) since the port may be on the other side of a bridge
@@ -72,7 +75,7 @@ class AnalogBase(CircuitPort[AnalogLink]):
         return self._convert(AnalogSourceAdapterVoltageSource())
 
 
-class AnalogSinkBridge(CircuitPortBridge):
+class AnalogSinkBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
 
@@ -94,6 +97,8 @@ class AnalogSinkBridge(CircuitPortBridge):
     def contents(self) -> None:
         super().contents()
 
+        self.connect(self.outer_port.net, self.inner_link.net)
+
         self.assign(self.outer_port.impedance, self.inner_link.link().sink_impedance)
         self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
         self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
@@ -103,7 +108,7 @@ class AnalogSinkBridge(CircuitPortBridge):
         self.assign(self.inner_link.signal_out, self.outer_port.link().signal)
 
 
-class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources look the same inside and outside
+class AnalogSourceBridge(PortBridge):  # basic passthrough port, sources look the same inside and outside
     def __init__(self) -> None:
         super().__init__()
 
@@ -130,6 +135,8 @@ class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources 
     def contents(self) -> None:
         super().contents()
 
+        self.connect(self.outer_port.net, self.inner_link.net)
+
         self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
         self.assign(self.outer_port.signal_out, self.inner_link.link().signal)
         self.assign(self.outer_port.impedance, self.inner_link.link().source_impedance)
@@ -141,7 +148,7 @@ class AnalogSourceBridge(CircuitPortBridge):  # basic passthrough port, sources 
         self.assign(self.inner_link.impedance, self.outer_port.link().sink_impedance)
 
 
-class AnalogSink(AnalogBase):
+class AnalogSink(AnalogBase, Bundle):
     bridge_type = AnalogSinkBridge
 
     @staticmethod
@@ -195,6 +202,8 @@ class AnalogSink(AnalogBase):
         """voltage_limits are the maximum recommended voltage levels of the device (before device damage occurs),
         signal_limits are for proper device functionality (e.g. non-RRIO opamps)"""
         super().__init__()
+        self.net = self.Port(Passive())
+
         self.voltage_limits = self.Parameter(RangeExpr(voltage_limits))
         self.signal_limits = self.Parameter(RangeExpr(signal_limits))
         self.current_draw = self.Parameter(RangeExpr(current_draw))
@@ -214,7 +223,7 @@ class AnalogSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
         self.assign(self.src.current_draw, self.dst.link().current_drawn)
 
 
-class AnalogSource(AnalogBase):
+class AnalogSource(AnalogBase, Bundle):
     bridge_type = AnalogSourceBridge
 
     @staticmethod
@@ -256,6 +265,8 @@ class AnalogSource(AnalogBase):
         """voltage_out is the total voltage range the device can output (typically limited by power rails)
         regardless of controls and including transients, while signal_out is the intended operating range"""
         super().__init__()
+        self.net = self.Port(Passive())
+
         self.voltage_out = self.Parameter(RangeExpr(voltage_out))
         self.signal_out = self.Parameter(RangeExpr(signal_out))
         self.current_limits = self.Parameter(RangeExpr(current_limits))

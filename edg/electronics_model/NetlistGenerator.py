@@ -67,7 +67,7 @@ ClassPaths = Dict[
 class NetlistTransform(TransformUtil.Transform):
     @staticmethod
     def flatten_port(path: TransformUtil.Path, port: edgir.PortLike) -> Iterable[TransformUtil.Path]:
-        if port.HasField("port"):
+        if port.HasField("port") or port.HasField("bundle"):
             return [path]
         elif port.HasField("array") and port.array.HasField("ports"):
             return chain(

@@ -2,12 +2,16 @@ from __future__ import annotations
 
 from typing import TypeVar, Type, Dict, Mapping
 
+from typing_extensions import TYPE_CHECKING
+
 from ..core import *
 from .GroundPort import Ground
-from .AnalogPort import AnalogSource, AnalogSink
 from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
 from .VoltagePorts import CircuitPort, VoltageSource, VoltageSink
+
+if TYPE_CHECKING:
+    from .AnalogPort import AnalogSource, AnalogSink
 
 
 class PassiveLink(CircuitLink):
@@ -127,7 +131,7 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
         )
 
 
-class PassiveAdapterAnalogSource(CircuitPortAdapter[AnalogSource]):
+class PassiveAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -136,6 +140,7 @@ class PassiveAdapterAnalogSource(CircuitPortAdapter[AnalogSource]):
         current_limits: RangeLike = RangeExpr.ALL,
         impedance: RangeLike = RangeExpr.ZERO,
     ):
+        from .AnalogPort import AnalogSource, AnalogSink
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(
@@ -145,7 +150,7 @@ class PassiveAdapterAnalogSource(CircuitPortAdapter[AnalogSource]):
         )
 
 
-class PassiveAdapterAnalogSink(CircuitPortAdapter[AnalogSink]):
+class PassiveAdapterAnalogSink(CircuitPortAdapter["AnalogSink"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -154,6 +159,7 @@ class PassiveAdapterAnalogSink(CircuitPortAdapter[AnalogSink]):
         current_draw: RangeLike = RangeExpr.ZERO,
         impedance: RangeLike = RangeExpr.INF,
     ):
+        from .AnalogPort import AnalogSource, AnalogSink
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(
@@ -175,30 +181,32 @@ class PassiveBridge(CircuitPortBridge):
 
 class Passive(CircuitPort[PassiveLink]):
     """Basic copper-only port, which can be adapted to a more strongly typed Voltage/Digital/Analog* port"""
-
-    adapter_type_map: Dict[Type[Port], Type[CircuitPortAdapter]] = {
-        Ground: PassiveAdapterGround,
-        VoltageSource: PassiveAdapterVoltageSource,
-        VoltageSink: PassiveAdapterVoltageSink,
-        DigitalSink: PassiveAdapterDigitalSink,
-        DigitalSource: PassiveAdapterDigitalSource,
-        DigitalBidir: PassiveAdapterDigitalBidir,
-        AnalogSink: PassiveAdapterAnalogSink,
-        AnalogSource: PassiveAdapterAnalogSource,
-    }
     link_type = PassiveLink
     bridge_type = PassiveBridge
 
     AdaptTargetType = TypeVar("AdaptTargetType", bound=CircuitPort)
 
     def adapt_to(self, that: AdaptTargetType) -> AdaptTargetType:
+        from .AnalogPort import AnalogSource, AnalogSink
+
+        ADAPTER_TYPE_MAP: Dict[Type[Port], Type[CircuitPortAdapter]] = {
+            Ground: PassiveAdapterGround,
+            VoltageSource: PassiveAdapterVoltageSource,
+            VoltageSink: PassiveAdapterVoltageSink,
+            DigitalSink: PassiveAdapterDigitalSink,
+            DigitalSource: PassiveAdapterDigitalSource,
+            DigitalBidir: PassiveAdapterDigitalBidir,
+            AnalogSink: PassiveAdapterAnalogSink,
+            AnalogSource: PassiveAdapterAnalogSource,
+        }
+
         # this is an experimental style that takes a port that has initializers but is not bound
         # and automatically creates an adapter from it, by matching the port parameter fields
         # with the adapter constructor argument fields by name
         assert isinstance(that, Port), "adapter target must be port"
         assert not that._is_bound(), "adapter target must be model only"
-        assert that.__class__ in self.adapter_type_map, f"no adapter to {that.__class__}"
-        adapter_cls = self.adapter_type_map[that.__class__]
+        assert that.__class__ in ADAPTER_TYPE_MAP, f"no adapter to {that.__class__}"
+        adapter_cls = ADAPTER_TYPE_MAP[that.__class__]
 
         # map initializers from that to constructor args
         adapter_init_kwargs = {}  # make everything kwargs for simplicity
