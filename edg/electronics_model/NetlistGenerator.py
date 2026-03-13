@@ -88,6 +88,22 @@ class NetlistTransform(TransformUtil.Transform):
 
         self.design = design
 
+    @classmethod
+    def _is_pseudoblock(cls, name: str, block: edgir.HierarchyBlock) -> bool:
+        """Returns whether a block is a pseudoblock, where:
+        - its name starts with (),
+        - all sub-block names (recursively) start with ()
+        - it contains no footprints, recursively
+        """
+        if not name.startswith('('):
+            return False
+        if "fp_is_footprint" in block.meta.members.node:
+            return False
+        for block_pair in block.blocks:
+            if not cls._is_pseudoblock(block_pair.name, block_pair.value.hierarchy):
+                return False
+        return True
+
     def process_blocklike(
         self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]
     ) -> None:
@@ -108,9 +124,8 @@ class NetlistTransform(TransformUtil.Transform):
             other_internal_blocks: Dict[str, edgir.BlockLike] = {}
 
             for block_pair in block.blocks:
-                subblock = block_pair.value
                 # ignore pseudoblocks like bridges and adapters that have no internals
-                if not subblock.hierarchy.blocks and "fp_is_footprint" not in subblock.hierarchy.meta.members.node:
+                if self._is_pseudoblock(block_pair.name, block_pair.value.hierarchy):
                     other_internal_blocks[block_pair.name] = block_pair.value
                 else:
                     main_internal_blocks[block_pair.name] = block_pair.value
