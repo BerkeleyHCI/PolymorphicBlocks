@@ -35,7 +35,7 @@ class AnalogLink(Link):
     def contents(self) -> None:
         super().contents()
 
-        self.net = self.connect(self.sinks.map_extract(lambda sink: sink.net), self.source.net, flatten=True)
+        self.net = self.connect(self.source.net, self.sinks.map_extract(lambda sink: sink.net), flatten=True)
 
         self.description = DescriptionString(
             "<b>voltage</b>: ",
@@ -221,6 +221,8 @@ class AnalogSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
             )
         )
         self.assign(self.src.current_draw, self.dst.link().current_drawn)
+
+        raise NotImplementedError  # TODO IMPLEMENT ME
 
 
 class AnalogSource(AnalogBase, Bundle):

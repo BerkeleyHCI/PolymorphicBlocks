@@ -148,6 +148,7 @@ class PassiveAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
                 voltage_out=voltage_out, signal_out=signal_out, current_limits=current_limits, impedance=impedance
             )
         )
+        self.connect(self.src, self.dst.net)
 
 
 class PassiveAdapterAnalogSink(CircuitPortAdapter["AnalogSink"]):
@@ -170,6 +171,7 @@ class PassiveAdapterAnalogSink(CircuitPortAdapter["AnalogSink"]):
                 impedance=impedance,
             )
         )
+        self.connect(self.src, self.dst.net)
 
 
 class PassiveBridge(CircuitPortBridge):
