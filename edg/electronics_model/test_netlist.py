@@ -19,7 +19,7 @@ def NetPin(block_path: List[str], pin_name: str) -> RawNetPin:
 
 
 def NetBlock(
-    footprint: str, refdes: str, part: str, value: str, full_path: List[str], class_path: List[str]
+    footprint: str, refdes: str, part: str, value: str, full_path: List[str], path_classes: List[str]
 ) -> RawNetBlock:
     return RawNetBlock(
         footprint,
@@ -27,7 +27,7 @@ def NetBlock(
         part,
         value,
         TransformUtil.Path(tuple(full_path), (), (), ()),
-        [edgir.libpath(cls) for cls in class_path],
+        [edgir.libpath(cls) for cls in path_classes],
     )
 
 

@@ -143,7 +143,7 @@ def gen_net_pin(block_name: str, pin_name: str) -> str:
     return "(node (ref {}) (pin {}))".format(block_name, pin_name)
 
 
-def net_exp(nets: List[Net], blocks: List[NetBlock], shortener: PathShortener, refdes_mode: RefdesMode) -> str:
+def net_exp(nets: List[Net], blocks: List[NetBlock]) -> str:
     """Given a dictionary of net names (strings) as keys and a list of connected Pins (namedtuples) as corresponding values
 
     Example:
@@ -180,7 +180,7 @@ def generate_netlist(netlist: Netlist, refdes_mode: RefdesMode) -> str:
         + "\n"
         + block_exp(netlist.blocks, shortener, refdes_mode)
         + "\n"
-        + net_exp(netlist.nets, netlist.blocks, shortener, refdes_mode)
+        + net_exp(netlist.nets, netlist.blocks)
         + "\n"
         + ")"
     )
