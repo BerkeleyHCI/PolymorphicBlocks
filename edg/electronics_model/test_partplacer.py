@@ -3,6 +3,7 @@ import unittest
 from . import TransformUtil
 from .NetlistGenerator import NetBlock
 from .SvgPcbBackend import arrange_blocks, flatten_packed_block, PlacedBlock, BlackBoxBlock
+from .. import edgir
 
 
 class PartPlacerTestCase(unittest.TestCase):
@@ -13,7 +14,7 @@ class PartPlacerTestCase(unittest.TestCase):
             part="",
             value="",
             full_path=TransformUtil.Path.empty().append_block("U1"),
-            path_classes=[],
+            path_classes=[edgir.LibraryPath()],
         )
         r1 = NetBlock(
             footprint="Resistor_SMD:R_0603_1608Metric",
@@ -21,7 +22,7 @@ class PartPlacerTestCase(unittest.TestCase):
             part="",
             value="",
             full_path=TransformUtil.Path.empty().append_block("R1"),
-            path_classes=[],
+            path_classes=[edgir.LibraryPath()],
         )
         r2 = NetBlock(
             footprint="Resistor_SMD:R_0603_1608Metric",
@@ -29,7 +30,7 @@ class PartPlacerTestCase(unittest.TestCase):
             part="",
             value="",
             full_path=TransformUtil.Path.empty().append_block("R2"),
-            path_classes=[],
+            path_classes=[edgir.LibraryPath()],
         )
         arranged = arrange_blocks([u1, r1, r2])
         self.assertEqual(arranged.elts[0][0], TransformUtil.Path.empty().append_block("U1"))
@@ -49,7 +50,10 @@ class PartPlacerTestCase(unittest.TestCase):
             part="",
             value="",
             full_path=TransformUtil.Path.empty().append_block("A").append_block("U1"),
-            path_classes=[],
+            path_classes=[
+                edgir.LibraryPath(),
+                edgir.LibraryPath(),
+            ],
         )
         r1 = NetBlock(
             footprint="Resistor_SMD:R_0603_1608Metric",
@@ -57,7 +61,10 @@ class PartPlacerTestCase(unittest.TestCase):
             part="",
             value="",
             full_path=TransformUtil.Path.empty().append_block("A").append_block("R1"),
-            path_classes=[],
+            path_classes=[
+                edgir.LibraryPath(),
+                edgir.LibraryPath(),
+            ],
         )
         r2 = NetBlock(
             footprint="Resistor_SMD:R_0603_1608Metric",
@@ -65,7 +72,10 @@ class PartPlacerTestCase(unittest.TestCase):
             part="",
             value="",
             full_path=TransformUtil.Path.empty().append_block("A").append_block("R2"),
-            path_classes=[],
+            path_classes=[
+                edgir.LibraryPath(),
+                edgir.LibraryPath(),
+            ],
         )
         r3 = NetBlock(
             footprint="Resistor_SMD:R_0603_1608Metric",
@@ -73,7 +83,10 @@ class PartPlacerTestCase(unittest.TestCase):
             part="",
             value="",
             full_path=TransformUtil.Path.empty().append_block("B").append_block("R3"),
-            path_classes=[],
+            path_classes=[
+                edgir.LibraryPath(),
+                edgir.LibraryPath(),
+            ],
         )
         arranged = arrange_blocks([u1, r1, r2, r3])
 
@@ -132,7 +145,7 @@ class PartPlacerTestCase(unittest.TestCase):
             part="",
             value="",
             full_path=TransformUtil.Path.empty().append_block("R1"),
-            path_classes=[],
+            path_classes=[edgir.LibraryPath()],
         )
         r2 = NetBlock(
             footprint="Resistor_SMD:R_0603_1608Metric",
@@ -140,7 +153,7 @@ class PartPlacerTestCase(unittest.TestCase):
             part="",
             value="",
             full_path=TransformUtil.Path.empty().append_block("R2"),
-            path_classes=[],
+            path_classes=[edgir.LibraryPath()],
         )
         arranged = arrange_blocks(
             [r1, r2], [BlackBoxBlock(TransformUtil.Path.empty().append_block("box"), (-5, -5, 5, 5))]
