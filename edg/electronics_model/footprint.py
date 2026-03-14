@@ -86,7 +86,7 @@ def gen_block_prop_edg(block: NetBlock, short_path: List[str]) -> str:
 
 
 def block_exp(blocks: List[NetBlock], shortener: PathShortener, refdes_mode: RefdesMode) -> str:
-    """Given a dictionary of block_names (strings) as keys and Blocks (namedtuples) as corresponding values
+    """Generate the blocks section of the netlist from a list of blocks.
 
     Example:
     (components
