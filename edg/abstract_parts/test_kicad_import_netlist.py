@@ -103,7 +103,6 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
                 "Sensor_Temperature:MCP9700AT-ETT",
                 "MCP9700AT-ETT",
                 ["dut", "U1"],
-                ["dut", "U1"],
                 [
                     "edg.electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock",
                     "edg.electronics_model.KiCadSchematicBlock.KiCadBlackbox",
@@ -119,7 +118,6 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
                 "Graphic:SYM_ESD_Small",
                 "SYM_ESD_Small",
                 ["dut", "SYM1"],
-                ["dut", "SYM1"],
                 [
                     "edg.electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock",
                     "edg.electronics_model.KiCadSchematicBlock.KiCadBlackbox",
@@ -133,7 +131,6 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
                 "R1",
                 "",
                 "",
-                ["dut", "res"],
                 ["dut", "res"],
                 [
                     "edg.electronics_model.test_kicad_import_blackbox.KiCadBlackboxBlock",
