@@ -85,22 +85,6 @@ class NetlistTransform(TransformUtil.Transform):
 
         self.design = design
 
-    @classmethod
-    def _is_pseudoblock(cls, name: str, block: edgir.HierarchyBlock) -> bool:
-        """Returns whether a block is a pseudoblock, where:
-        - its name starts with (),
-        - all sub-block names (recursively) start with ()
-        - it contains no footprints, recursively
-        """
-        if not name.startswith('('):
-            return False
-        if "fp_is_footprint" in block.meta.members.node:
-            return False
-        for block_pair in block.blocks:
-            if not cls._is_pseudoblock(block_pair.name, block_pair.value.hierarchy):
-                return False
-        return True
-
     def process_blocklike(
         self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]
     ) -> None:
@@ -118,7 +102,9 @@ class NetlistTransform(TransformUtil.Transform):
 
             class_path = self.class_paths[path]
             for block_pair in block.blocks:
-                self.class_paths[path.append_block(block_pair.name)] = class_path + [block_pair.value.hierarchy.self_class]
+                self.class_paths[path.append_block(block_pair.name)] = class_path + [
+                    block_pair.value.hierarchy.self_class
+                ]
 
         elif isinstance(block, (edgir.Link, edgir.LinkArray)):
             for link_pair in block.links:
@@ -175,9 +161,7 @@ class NetlistTransform(TransformUtil.Transform):
             part_comps = [part, f"({mfr})" if mfr else ""]
             part_str = " ".join(filter(None, part_comps))
             value_str = value if value else (part if part else "")
-            scope.footprints[path] = NetBlock(
-                footprint_name, refdes, part_str, value_str, path, self.class_paths[path]
-            )
+            scope.footprints[path] = NetBlock(footprint_name, refdes, part_str, value_str, path, self.class_paths[path])
 
             for pin_spec in footprint_pinning:
                 assert isinstance(pin_spec, str)
@@ -365,6 +349,7 @@ class NetlistTransform(TransformUtil.Transform):
 class PathShortener:
     """Given a bunch of blocks with full paths, determine path shortenings that eliminate
     path components that are the only footprint-containing internal block."""
+
     def __init__(self, blocks: List[NetBlock]) -> None:
         # construct list of children for each path
         # note since this is created from a list of footprints, all paths are guaranteed to contain footprints
@@ -378,7 +363,9 @@ class PathShortener:
                 if path_component not in parent_list:
                     parent_list.append(path_component)
 
-    def shorten(self, path: TransformUtil.Path, classes: List[edgir.LibraryPath]) -> Tuple[List[str], List[edgir.LibraryPath]]:
+    def shorten(
+        self, path: TransformUtil.Path, classes: List[edgir.LibraryPath]
+    ) -> Tuple[List[str], List[edgir.LibraryPath]]:
         assert len(path.blocks) == len(classes)
         new_blocks = []
         new_classes = []

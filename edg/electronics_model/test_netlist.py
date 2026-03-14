@@ -443,7 +443,10 @@ class NetlistTestCase(unittest.TestCase):
                 "",
                 "1k",
                 ["sink", "block"],
-                ["edg.electronics_model.test_netlist.TestFakeSinkHierarchy", "edg.electronics_model.test_netlist.TestFakeSink"],
+                [
+                    "edg.electronics_model.test_netlist.TestFakeSinkHierarchy",
+                    "edg.electronics_model.test_netlist.TestFakeSink",
+                ],
             ),
             net.blocks,
         )

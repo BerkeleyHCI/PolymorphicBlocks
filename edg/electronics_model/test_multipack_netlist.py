@@ -134,7 +134,10 @@ class MultipackNetlistTestCase(unittest.TestCase):
                 "",
                 "1k",
                 ["sink", "device"],
-                ["edg.electronics_model.test_multipack_netlist.TestPackedSink", "edg.electronics_model.test_netlist.TestFakeSink"],
+                [
+                    "edg.electronics_model.test_multipack_netlist.TestPackedSink",
+                    "edg.electronics_model.test_netlist.TestFakeSink",
+                ],
             ),
             net.blocks,
         )

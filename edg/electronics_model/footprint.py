@@ -24,6 +24,7 @@ def gen_header() -> str:
 
 """2. Generating Blocks"""
 
+
 def gen_block_comp(block_name: str) -> str:
     return f'(comp (ref "{block_name}")'
 
