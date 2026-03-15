@@ -289,7 +289,7 @@ class Compiler private (
 
     // Add sub-ports to the elaboration dependency graph, as appropriate
     toLinkPort match {
-      case toLinkPort: wir.Bundle =>
+      case toLinkPort: wir.Port =>
         for (portName <- toLinkPort.getPorts.keys) {
           elaboratePending.addNode(
             ElaborateRecord.Connect(
@@ -320,7 +320,7 @@ class Compiler private (
       // Returns the deepest applicable postfix, starting from a port
       def resolveRecursive(portPath: DesignPath, port: wir.PortLike, postfix: Seq[String]): Seq[String] = {
         port match {
-          case _: wir.Port | _: wir.Bundle | _: wir.PortLibrary => // don't recurse into these
+          case _: wir.Port | _: wir.PortLibrary => // don't recurse into these
             // note that libraries in arrays may not yet have been elaborated
             Seq()
           case port: wir.PortArray =>
@@ -432,9 +432,6 @@ class Compiler private (
     // Process and recurse as needed
     instantiated match {
       case port: wir.Port =>
-        constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), containerPath, "name")
-        processParamDeclarations(path, port)
-      case port: wir.Bundle =>
         constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), containerPath, "name")
         processParamDeclarations(path, port)
         for ((childPortName, childPort) <- port.getPorts) {
@@ -1196,7 +1193,7 @@ class Compiler private (
 
     // TODO refactor this out, ConnectedLink needs to be centralized
     def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
-      case _: wir.Port | _: wir.Bundle =>
+      case _: wir.Port =>
         constProp.setConnectedLink(path, portPath)
       case port: wir.PortArray =>
         port.getPorts.foreach { case (subPortName, subPort) =>

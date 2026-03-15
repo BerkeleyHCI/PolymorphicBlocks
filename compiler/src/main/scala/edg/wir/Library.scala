@@ -85,7 +85,6 @@ class EdgirLibrary(pb: schema.Library) extends Library {
     val libraryPath = ref.LibraryPath(target = Some(ref.LocalStep(step = ref.LocalStep.Step.Name(name))))
     member.`type` match {
       case schema.Library.NS.Val.Type.Port(_) => libraryPath -> member.`type`
-      case schema.Library.NS.Val.Type.Bundle(_) => libraryPath -> member.`type`
       case schema.Library.NS.Val.Type.HierarchyBlock(_) => libraryPath -> member.`type`
       case schema.Library.NS.Val.Type.Link(_) => libraryPath -> member.`type`
       case schema.Library.NS.Val.Type.Namespace(_) =>
@@ -100,7 +99,6 @@ class EdgirLibrary(pb: schema.Library) extends Library {
 
   override def allPorts: Map[ref.LibraryPath, IrPort] = elts.collect {
     case (path, schema.Library.NS.Val.Type.Port(port)) => (path, IrPort.Port(port))
-    case (path, schema.Library.NS.Val.Type.Bundle(port)) => (path, IrPort.Bundle(port))
   }
 
   override def allLinks: Map[ref.LibraryPath, elem.Link] = elts.collect {
@@ -123,7 +121,6 @@ class EdgirLibrary(pb: schema.Library) extends Library {
 
   override def getPort(path: ref.LibraryPath): Errorable[IrPort] = elts.get(path) match {
     case Some(schema.Library.NS.Val.Type.Port(member)) => Errorable.Success(IrPort.Port(member))
-    case Some(schema.Library.NS.Val.Type.Bundle(member)) => Errorable.Success(IrPort.Bundle(member))
     case Some(member) => Errorable.Error(s"Library element at $path not a port-like, got ${member.getClass}")
     case None => Errorable.Error(s"Library does not contain $path")
   }

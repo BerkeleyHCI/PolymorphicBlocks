@@ -33,9 +33,8 @@ class DesignAssertionCheck(compiler: Compiler)
     }
   }
 
-  override def mapPort(path: DesignPath, port: elem.Port): Unit = {}
+  override def mapPort(path: DesignPath, port: elem.Port, ports: SeqMap[String, Unit]): Unit = {}
   override def mapPortArray(path: DesignPath, port: elem.PortArray, ports: SeqMap[String, Unit]): Unit = {}
-  override def mapBundle(path: DesignPath, port: elem.Bundle, ports: SeqMap[String, Unit]): Unit = {}
   override def mapPortLibrary(path: DesignPath, port: ref.LibraryPath): Unit = {}
 
   override def mapBlock(

@@ -36,7 +36,6 @@ object BlockConnectivityAnalysis {
   def typeOfPortLike(portLike: elem.PortLike): ref.LibraryPath = portLike.is match {
     case elem.PortLike.Is.LibElem(lib) => lib
     case elem.PortLike.Is.Port(port) => port.getSelfClass
-    case elem.PortLike.Is.Bundle(port) => port.getSelfClass
     case elem.PortLike.Is.Array(port) => port.getSelfClass
     case other => throw new IllegalArgumentException(s"Unexpected PortLike ${other.getClass}")
   }

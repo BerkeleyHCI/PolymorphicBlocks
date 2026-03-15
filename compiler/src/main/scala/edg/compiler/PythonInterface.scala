@@ -395,7 +395,6 @@ class PythonInterfaceLibrary() extends Library {
 
   override def allPorts: Map[ref.LibraryPath, IrPort] = elts.collect {
     case (path, schema.Library.NS.Val.Type.Port(port)) => (path, IrPort.Port(port))
-    case (path, schema.Library.NS.Val.Type.Bundle(port)) => (path, IrPort.Bundle(port))
   }.toMap
 
   override def allLinks: Map[ref.LibraryPath, elem.Link] = elts.collect {
@@ -420,7 +419,6 @@ class PythonInterfaceLibrary() extends Library {
   override def getPort(path: ref.LibraryPath): Errorable[IrPort] = {
     getLibraryPartialMapped(path, "port") {
       case schema.Library.NS.Val.Type.Port(member) => IrPort.Port(member)
-      case schema.Library.NS.Val.Type.Bundle(member) => IrPort.Bundle(member)
     }
   }
 

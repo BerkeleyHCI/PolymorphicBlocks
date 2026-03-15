@@ -144,16 +144,12 @@ class DesignRefsValidate extends DesignMap[Unit, Unit, Unit] {
     }
   }
 
-  override def mapPort(path: DesignPath, port: elem.Port): Unit = {
+  override def mapPort(path: DesignPath, port: elem.Port, ports: SeqMap[String, Unit]): Unit = {
     port.params.asPairs.foreach { case (name, _) => paramDefs.add(path + name) }
     portDefs.add(path)
   }
   override def mapPortArray(path: DesignPath, port: elem.PortArray, ports: SeqMap[String, Unit]): Unit = {
     // do nothing
-  }
-  override def mapBundle(path: DesignPath, port: elem.Bundle, ports: SeqMap[String, Unit]): Unit = {
-    port.params.asPairs.foreach { case (name, _) => paramDefs.add(path + name) }
-    portDefs.add(path)
   }
   override def mapPortLibrary(path: DesignPath, port: ref.LibraryPath): Unit = {
     Seq(CompilerError.LibraryElement(path, port))

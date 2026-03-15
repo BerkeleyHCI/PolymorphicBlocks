@@ -12,8 +12,12 @@ import scala.collection.SeqMap
   *   - unelaborated library elements
   */
 class DesignStructuralValidate extends DesignMap[Seq[CompilerError], Seq[CompilerError], Seq[CompilerError]] {
-  override def mapPort(path: DesignPath, port: elem.Port): Seq[CompilerError] = {
-    Seq()
+  override def mapPort(
+      path: DesignPath,
+      port: elem.Port,
+      ports: SeqMap[String, Seq[CompilerError]]
+  ): Seq[CompilerError] = {
+    ports.values.flatten.toSeq
   }
   override def mapPortArray(
       path: DesignPath,
@@ -26,13 +30,6 @@ class DesignStructuralValidate extends DesignMap[Seq[CompilerError], Seq[Compile
       Seq()
     }
     undefinedError ++ ports.values.flatten.toSeq
-  }
-  override def mapBundle(
-      path: DesignPath,
-      port: elem.Bundle,
-      ports: SeqMap[String, Seq[CompilerError]]
-  ): Seq[CompilerError] = {
-    ports.values.flatten.toSeq
   }
   override def mapPortLibrary(path: DesignPath, port: ref.LibraryPath): Seq[CompilerError] = {
     Seq(CompilerError.LibraryElement(path, port))
