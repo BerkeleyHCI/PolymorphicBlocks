@@ -273,7 +273,7 @@ class Port(BasePort, Generic[PortLinkType]):
             if param.initializer is not None
         ]
         self._ports.finalize()
-        for (name, port) in self._ports.items():
+        for name, port in self._ports.items():
             initializers.extend(port._get_initializers(path_prefix + [name]))
         return initializers
 
@@ -316,6 +316,7 @@ class Port(BasePort, Generic[PortLinkType]):
         return elt
 
     T = TypeVar("T", bound="Port")
+
     def Port(self, tpe: T, *, desc: Optional[str] = None) -> T:
         """Registers a field for this Bundle"""
         if not isinstance(tpe, Port):
@@ -331,4 +332,3 @@ class Port(BasePort, Generic[PortLinkType]):
 @deprecated(reason="merged with Port, use Port instead")
 class Bundle(Port[PortLinkType], Generic[PortLinkType]):
     SelfType = TypeVar("SelfType", bound="Bundle")
-

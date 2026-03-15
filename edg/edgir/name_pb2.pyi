@@ -10,12 +10,14 @@ There are three major classes of name in edg:
 - LocalNames, which help organize elements relative to each other.
 - LibraryNames, which we use to identify specific libraries.
 """
+
 from edgir import common_pb2 as _common_pb2
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 import builtins as _builtins
 import sys
 import typing as _typing
+
 if sys.version_info >= (3, 10):
     from typing import TypeAlias as _TypeAlias
 else:
@@ -29,6 +31,7 @@ class Namespace(_message.Message):
     over items in the library. It lets us group elements in categories that
     are orthogonal to the usual Block, Port, Link, ontology.
     """
+
     DESCRIPTOR: _descriptor.Descriptor
     BASIC_FIELD_NUMBER: _builtins.int
     META_FIELD_NUMBER: _builtins.int
@@ -36,24 +39,19 @@ class Namespace(_message.Message):
     "* Basic namespaces are a way to organize library elements into a\n    useful hirearchy (e.g. 'Core.*' for the most primitive definitions\n    that we define, or 'NXP.*' for NXP made components.)\n\n    Basic namespaces should have the following properties:\n\n    - First char is a capital letter\n    - All other chars must be letters, numbers, '-', '<', '>'\n    - CamelCase is preffered, don't use any symbols in the name\n    if possible.\n    "
 
     @_builtins.property
-    def meta(self) -> _common_pb2.Metadata:
-        ...
+    def meta(self) -> _common_pb2.Metadata: ...
+    def __init__(self, *, basic: _builtins.str = ..., meta: _common_pb2.Metadata | None = ...) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["basic", b"basic", "meta", b"meta", "namespace", b"namespace"]
 
-    def __init__(self, *, basic: _builtins.str=..., meta: _common_pb2.Metadata | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['basic', b'basic', 'meta', b'meta', 'namespace', b'namespace']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["basic", b"basic", "meta", b"meta", "namespace", b"namespace"]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['basic', b'basic', 'meta', b'meta', 'namespace', b'namespace']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_namespace: _TypeAlias = _typing.Literal["basic"]
+    _WhichOneofArgType_namespace: _TypeAlias = _typing.Literal["namespace", b"namespace"]
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
-    _WhichOneofReturnType_namespace: _TypeAlias = _typing.Literal['basic']
-    _WhichOneofArgType_namespace: _TypeAlias = _typing.Literal['namespace', b'namespace']
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_namespace) -> _WhichOneofReturnType_namespace | None: ...
 
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_namespace) -> _WhichOneofReturnType_namespace | None:
-        ...
 Global___Namespace: _TypeAlias = Namespace
 
 @_typing.final
@@ -63,6 +61,7 @@ class LibraryName(_message.Message):
 
     This can be the initial element in a path or reference.
     """
+
     DESCRIPTOR: _descriptor.Descriptor
     NAME_FIELD_NUMBER: _builtins.int
     META_FIELD_NUMBER: _builtins.int
@@ -70,17 +69,13 @@ class LibraryName(_message.Message):
     "* Since libraries allow for inheritance, we will often want to say\n    this element, defined in *this* particular library.\n\n    In those cases we want to be able to specify the relevant library\n    by its identifier.\n\n    Otherwise we assume it's somehow implicit which library we're\n    talking about.\n    "
 
     @_builtins.property
-    def meta(self) -> _common_pb2.Metadata:
-        ...
+    def meta(self) -> _common_pb2.Metadata: ...
+    def __init__(self, *, name: _builtins.str = ..., meta: _common_pb2.Metadata | None = ...) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["meta", b"meta"]
 
-    def __init__(self, *, name: _builtins.str=..., meta: _common_pb2.Metadata | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["meta", b"meta", "name", b"name"]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta', 'name', b'name']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
 Global___LibraryName: _TypeAlias = LibraryName

@@ -11,12 +11,14 @@ creating a value.
 
 FIXME :: Does this make more sense in another file?
 """
+
 from edgir import common_pb2 as _common_pb2
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 import builtins as _builtins
 import sys
 import typing as _typing
+
 if sys.version_info >= (3, 10):
     from typing import TypeAlias as _TypeAlias
 else:
@@ -30,6 +32,7 @@ class ValInit(_message.Message):
     I think the frontend should have more type specific wrappers around
     this since the data required for each type can be different.
     """
+
     DESCRIPTOR: _descriptor.Descriptor
     FLOATING_FIELD_NUMBER: _builtins.int
     INTEGER_FIELD_NUMBER: _builtins.int
@@ -42,54 +45,89 @@ class ValInit(_message.Message):
     META_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def floating(self) -> _common_pb2.Empty:
-        ...
-
+    def floating(self) -> _common_pb2.Empty: ...
     @_builtins.property
-    def integer(self) -> _common_pb2.Empty:
-        ...
-
+    def integer(self) -> _common_pb2.Empty: ...
     @_builtins.property
-    def boolean(self) -> _common_pb2.Empty:
-        ...
-
+    def boolean(self) -> _common_pb2.Empty: ...
     @_builtins.property
-    def text(self) -> _common_pb2.Empty:
-        ...
-
+    def text(self) -> _common_pb2.Empty: ...
     @_builtins.property
-    def set(self) -> _common_pb2.Empty:
-        ...
-
+    def set(self) -> _common_pb2.Empty: ...
     @_builtins.property
-    def struct(self) -> _common_pb2.Empty:
-        ...
-
+    def struct(self) -> _common_pb2.Empty: ...
     @_builtins.property
-    def range(self) -> _common_pb2.Empty:
-        ...
-
+    def range(self) -> _common_pb2.Empty: ...
     @_builtins.property
-    def array(self) -> Global___ValInit:
-        ...
-
+    def array(self) -> Global___ValInit: ...
     @_builtins.property
-    def meta(self) -> _common_pb2.Metadata:
-        ...
+    def meta(self) -> _common_pb2.Metadata: ...
+    def __init__(
+        self,
+        *,
+        floating: _common_pb2.Empty | None = ...,
+        integer: _common_pb2.Empty | None = ...,
+        boolean: _common_pb2.Empty | None = ...,
+        text: _common_pb2.Empty | None = ...,
+        set: _common_pb2.Empty | None = ...,
+        struct: _common_pb2.Empty | None = ...,
+        range: _common_pb2.Empty | None = ...,
+        array: Global___ValInit | None = ...,
+        meta: _common_pb2.Metadata | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal[
+        "array",
+        b"array",
+        "boolean",
+        b"boolean",
+        "floating",
+        b"floating",
+        "integer",
+        b"integer",
+        "meta",
+        b"meta",
+        "range",
+        b"range",
+        "set",
+        b"set",
+        "struct",
+        b"struct",
+        "text",
+        b"text",
+        "val",
+        b"val",
+    ]
 
-    def __init__(self, *, floating: _common_pb2.Empty | None=..., integer: _common_pb2.Empty | None=..., boolean: _common_pb2.Empty | None=..., text: _common_pb2.Empty | None=..., set: _common_pb2.Empty | None=..., struct: _common_pb2.Empty | None=..., range: _common_pb2.Empty | None=..., array: Global___ValInit | None=..., meta: _common_pb2.Metadata | None=...) -> None:
-        ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal['array', b'array', 'boolean', b'boolean', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'set', b'set', 'struct', b'struct', 'text', b'text', 'val', b'val']
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "array",
+        b"array",
+        "boolean",
+        b"boolean",
+        "floating",
+        b"floating",
+        "integer",
+        b"integer",
+        "meta",
+        b"meta",
+        "range",
+        b"range",
+        "set",
+        b"set",
+        "struct",
+        b"struct",
+        "text",
+        b"text",
+        "val",
+        b"val",
+    ]
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
-        ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal['array', b'array', 'boolean', b'boolean', 'floating', b'floating', 'integer', b'integer', 'meta', b'meta', 'range', b'range', 'set', b'set', 'struct', b'struct', 'text', b'text', 'val', b'val']
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_val: _TypeAlias = _typing.Literal[
+        "floating", "integer", "boolean", "text", "set", "struct", "range", "array"
+    ]
+    _WhichOneofArgType_val: _TypeAlias = _typing.Literal["val", b"val"]
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None:
-        ...
-    _WhichOneofReturnType_val: _TypeAlias = _typing.Literal['floating', 'integer', 'boolean', 'text', 'set', 'struct', 'range', 'array']
-    _WhichOneofArgType_val: _TypeAlias = _typing.Literal['val', b'val']
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_val) -> _WhichOneofReturnType_val | None: ...
 
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_val) -> _WhichOneofReturnType_val | None:
-        ...
 Global___ValInit: _TypeAlias = ValInit
