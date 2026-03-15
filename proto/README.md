@@ -2,6 +2,7 @@ IR definition in protocol buffer format.
 
 You will need [mypy-protobuf](https://github.com/dropbox/mypy-protobuf) (to generate type stubs) and protoletariat (post-processing to use relative imports)
 ```commandline
+pip install grpcio-tools
 pip install mypy-protobuf
 pip install protoletariat
 ```

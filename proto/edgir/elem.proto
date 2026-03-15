@@ -51,23 +51,12 @@ message NamedLinkLike {
 message Port {
   repeated NamedValInit params = 40;
   repeated NamedValueExpr constraints = 41;
+  repeated NamedPortLike ports = 42;
 
   edgir.ref.LibraryPath self_class = 20;
   repeated edgir.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
   repeated edgir.ref.LibraryPath super_superclasses = 24;  // all (recursive) superclasses above superclasses
   // TODO: this provides type hierarchy data only, inheritance semantics are currently undefined
-
-  edgir.common.Metadata meta = 127;
-}
-
-message Bundle {
-  repeated NamedValInit params = 40;
-  repeated NamedPortLike ports = 41;
-  repeated NamedValueExpr constraints = 42;
-
-  edgir.ref.LibraryPath self_class = 20;
-  repeated edgir.ref.LibraryPath superclasses = 21;  // superclasses, may be empty
-  repeated edgir.ref.LibraryPath super_superclasses = 24;  // all (recursive) superclasses above superclasses
 
   edgir.common.Metadata meta = 127;
 }
@@ -98,8 +87,6 @@ message PortLike {
     /** 'port' disallowed w/in the library */
     Port       port   = 3;
     PortArray  array  = 4;
-    /** 'bundle' disallowed w/in the library */
-    Bundle     bundle = 6;
   }
 }
 

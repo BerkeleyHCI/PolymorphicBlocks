@@ -10,7 +10,7 @@ from .test_elaboration_common import TestPortBase, TestPortSource
 class PortProtoTestCase(unittest.TestCase):
     @override
     def setUp(self) -> None:
-        self.pb = cast(edgir.Port, TestPortBase()._def_to_proto())  # TODO eliminate cast
+        self.pb = TestPortBase()._def_to_proto()
 
     def test_contains_param(self) -> None:
         self.assertEqual(len(self.pb.params), 1)
@@ -21,7 +21,7 @@ class PortProtoTestCase(unittest.TestCase):
 class PortSourceProtoTestCase(unittest.TestCase):
     @override
     def setUp(self) -> None:
-        self.pb = cast(edgir.Port, TestPortSource()._def_to_proto())
+        self.pb = TestPortSource()._def_to_proto()
 
     def test_self_class(self) -> None:
         self.assertEqual(self.pb.self_class.target.name, "edg.core.test_elaboration_common.TestPortSource")

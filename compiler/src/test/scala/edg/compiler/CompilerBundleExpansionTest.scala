@@ -21,7 +21,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
           "param" -> ValInit.Integer,
         ),
       ),
-      Port.Bundle(
+      Port.Port(
         selfClass = "outerPort",
         params = SeqMap(
           "param" -> ValInit.Integer,
@@ -104,7 +104,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
             "outerParam" -> ValInit.Integer,
           ),
           ports = SeqMap(
-            "port" -> Port.Bundle(
+            "port" -> Port.Port(
               selfClass = "outerPort",
               params = SeqMap(
                 "param" -> ValInit.Integer,
@@ -132,7 +132,7 @@ class CompilerBundleExpansionTest extends AnyFlatSpec with CompilerTestUtil {
             "outerParam" -> ValInit.Integer,
           ),
           ports = SeqMap(
-            "outerPort" -> Port.Bundle(
+            "outerPort" -> Port.Port(
               selfClass = "outerPort",
               params = SeqMap(
                 "param" -> ValInit.Integer,

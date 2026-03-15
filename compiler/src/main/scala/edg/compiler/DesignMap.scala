@@ -16,14 +16,11 @@ trait DesignMap[PortType, BlockType, LinkType] {
 
   // These methods handle how nodes are processed must be overridden by the user where appropriate
   // (left default, they will exception out, which may be desired behavior on unexpected node types)
-  def mapPort(path: DesignPath, port: elem.Port): PortType = {
+  def mapPort(path: DesignPath, port: elem.Port, ports: SeqMap[String, PortType]): PortType = {
     throw new NotImplementedError(s"Undefined mapPort at $path")
   }
   def mapPortArray(path: DesignPath, port: elem.PortArray, ports: SeqMap[String, PortType]): PortType = {
     throw new NotImplementedError(s"Undefined mapPortArray at $path")
-  }
-  def mapBundle(path: DesignPath, port: elem.Bundle, ports: SeqMap[String, PortType]): PortType = {
-    throw new NotImplementedError(s"Undefined mapBundle at $path")
   }
   def mapPortLibrary(path: DesignPath, port: ref.LibraryPath): PortType = {
     throw new NotImplementedError(s"Undefined mapPortLibrary at $path")
@@ -64,11 +61,11 @@ trait DesignMap[PortType, BlockType, LinkType] {
 
   // These methods provide default recursive processing functionality for child sub-tree elements,
   // and may be (but are not required to be) optionally overridden
-  def wrapBundle(path: DesignPath, port: elem.Bundle): PortType = {
+  def wrapPort(path: DesignPath, port: elem.Port): PortType = {
     val ports = port.ports.toSeqMap.map { case (name, elt) =>
       name -> wrapPortlike(path + name, elt)
     }
-    mapBundle(path, port, ports)
+    mapPort(path, port, ports)
   }
 
   def wrapPortArray(path: DesignPath, port: elem.PortArray): PortType = {
@@ -80,8 +77,7 @@ trait DesignMap[PortType, BlockType, LinkType] {
 
   def wrapPortlike(path: DesignPath, portLike: elem.PortLike): PortType = {
     portLike.is match {
-      case elem.PortLike.Is.Port(port) => mapPort(path, port)
-      case elem.PortLike.Is.Bundle(port) => wrapBundle(path, port)
+      case elem.PortLike.Is.Port(port) => wrapPort(path, port)
       case elem.PortLike.Is.Array(port) => wrapPortArray(path, port)
       case elem.PortLike.Is.LibElem(port) => mapPortLibrary(path, port)
       case block => throw new NotImplementedError(s"Unknown BlockLike type at $path: $block")
@@ -150,9 +146,8 @@ trait DesignBlockMap[BlockType] extends DesignMap[Unit, BlockType, Unit] {
 
   // These methods handle how nodes are processed must be overridden by the user where appropriate
   // (left default, they will exception out, which may be desired behavior on unexpected node types)
-  final override def mapPort(path: DesignPath, port: elem.Port): Unit = {}
+  final override def mapPort(path: DesignPath, port: elem.Port, ports: SeqMap[String, Unit]): Unit = {}
   final override def mapPortArray(path: DesignPath, port: elem.PortArray, ports: SeqMap[String, Unit]): Unit = {}
-  final override def mapBundle(path: DesignPath, port: elem.Bundle, ports: SeqMap[String, Unit]): Unit = {}
   final override def mapPortLibrary(path: DesignPath, port: ref.LibraryPath): Unit = {}
 
   final override def mapBlock(

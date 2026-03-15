@@ -31,7 +31,7 @@ class CanLogicLink(Link):
         )
 
 
-class CanControllerPort(Bundle[CanLogicLink]):
+class CanControllerPort(Port[CanLogicLink]):
     link_type = CanLogicLink
 
     def __init__(self, model: Optional[DigitalBidir] = None) -> None:
@@ -42,7 +42,7 @@ class CanControllerPort(Bundle[CanLogicLink]):
         self.rxd = self.Port(DigitalSink.from_bidir(model))
 
 
-class CanTransceiverPort(Bundle[CanLogicLink]):
+class CanTransceiverPort(Port[CanLogicLink]):
     link_type = CanLogicLink
 
     def __init__(self, model: Optional[DigitalBidir] = None) -> None:
@@ -53,7 +53,7 @@ class CanTransceiverPort(Bundle[CanLogicLink]):
         self.rxd = self.Port(DigitalSource.from_bidir(model))
 
 
-class CanPassivePort(Bundle[CanLogicLink]):
+class CanPassivePort(Port[CanLogicLink]):
     link_type = CanLogicLink
 
     def __init__(self, model: Optional[DigitalBidir] = None) -> None:
@@ -102,7 +102,7 @@ class CanDiffBridge(PortBridge):
         self.connect(self.canl_bridge.inner_link, self.inner_link.canl)
 
 
-class CanDiffPort(Bundle[CanDiffLink]):
+class CanDiffPort(Port[CanDiffLink]):
     link_type = CanDiffLink
     bridge_type = CanDiffBridge
 

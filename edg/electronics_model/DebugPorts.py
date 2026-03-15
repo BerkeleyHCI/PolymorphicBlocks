@@ -26,7 +26,7 @@ class SwdLink(Link):
         )
 
 
-class SwdHostPort(Bundle[SwdLink]):
+class SwdHostPort(Port[SwdLink]):
     link_type = SwdLink
 
     def __init__(self, model: Optional[DigitalBidir] = None) -> None:
@@ -37,7 +37,7 @@ class SwdHostPort(Bundle[SwdLink]):
         self.swclk = self.Port(DigitalSource.from_bidir(model))
 
 
-class SwdTargetPort(Bundle[SwdLink]):
+class SwdTargetPort(Port[SwdLink]):
     link_type = SwdLink
 
     def __init__(self, model: Optional[DigitalBidir] = None) -> None:
@@ -48,7 +48,7 @@ class SwdTargetPort(Bundle[SwdLink]):
         self.swclk = self.Port(DigitalSink.from_bidir(model))
 
 
-class SwdPullPort(Bundle[SwdLink]):
+class SwdPullPort(Port[SwdLink]):
     link_type = SwdLink
 
     def __init__(self, model: Optional[DigitalSource] = None) -> None:

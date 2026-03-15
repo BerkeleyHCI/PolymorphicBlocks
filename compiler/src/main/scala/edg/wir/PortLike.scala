@@ -15,13 +15,6 @@ sealed trait PortLike extends Pathable {
 }
 
 object PortLike {
-  import edg.IrPort
-  def fromIrPort(irPort: IrPort): PortLike = irPort match {
-    case IrPort.Port(port) => new Port(port)
-    case IrPort.Bundle(bundle) => new Bundle(bundle)
-    case irPort => throw new NotImplementedError(s"Can't construct PortLike from $irPort")
-  }
-
   def fromLibraryPb(portLike: elem.PortLike): PortLike = portLike.`is` match {
     case elem.PortLike.Is.LibElem(like) => PortLibrary(like)
     case elem.PortLike.Is.Array(like) => new PortArray(like)
@@ -30,37 +23,11 @@ object PortLike {
 }
 
 class Port(pb: elem.Port) extends PortLike
-    with HasParams {
-  override def cloned: Port = this // immutable
-
-  override def isElaborated: Boolean = true
-
-  override def getSelfClass: LibraryPath = pb.getSelfClass
-  override def getDirectSuperclasses: Seq[LibraryPath] = pb.superclasses
-  override def getAllClasses: Seq[LibraryPath] = Seq(pb.selfClass, pb.superclasses, pb.superSuperclasses).flatten
-
-  override def getParams: SeqMap[String, init.ValInit] = pb.params.toSeqMap
-
-  override def resolve(suffix: Seq[String]): Pathable = suffix match {
-    case Seq() => this
-    case suffix => throw new InvalidPathException(s"No elements (of $suffix) in Port")
-  }
-
-  def toEltPb: elem.Port = {
-    pb
-  }
-
-  def toPb: elem.PortLike = {
-    elem.PortLike(`is` = elem.PortLike.Is.Port(toEltPb))
-  }
-}
-
-class Bundle(pb: elem.Bundle) extends PortLike
     with HasMutablePorts with HasParams {
   override protected val ports: mutable.SeqMap[String, PortLike] = parsePorts(pb.ports)
 
-  override def cloned: Bundle = {
-    val cloned = new Bundle(pb)
+  override def cloned: Port = {
+    val cloned = new Port(pb)
     cloned.ports.clear()
     cloned.ports.addAll(ports.map { case (name, port) => name -> port.cloned })
     cloned
@@ -80,18 +47,18 @@ class Bundle(pb: elem.Bundle) extends PortLike
       if (ports.contains(subname)) {
         ports(subname).resolve(tail)
       } else {
-        throw new InvalidPathException(s"No elements $subname (of $suffix) in Bundle ${pb.getSelfClass.toSimpleString}")
+        throw new InvalidPathException(s"No elements $subname (of $suffix) in Port ${pb.getSelfClass.toSimpleString}")
       }
   }
 
-  def toEltPb: elem.Bundle = {
+  def toEltPb: elem.Port = {
     pb.copy(
       ports = ports.view.mapValues(_.toPb).to(SeqMap).toPb,
     )
   }
 
   def toPb: elem.PortLike = {
-    elem.PortLike(`is` = elem.PortLike.Is.Bundle(toEltPb))
+    elem.PortLike(`is` = elem.PortLike.Is.Port(toEltPb))
   }
 }
 

@@ -1,7 +1,6 @@
 package edg.compiler
 
 import edg.EdgirUtils.SimpleLibraryPath
-import edg.IrPort
 import edg.util.{Errorable, QueueStream, timeExec}
 import edg.wir.{DesignPath, IndirectDesignPath, Library}
 import edgir.elem.elem
@@ -393,9 +392,8 @@ class PythonInterfaceLibrary() extends Library {
     case (path, schema.Library.NS.Val.Type.HierarchyBlock(block)) => (path, block)
   }.toMap
 
-  override def allPorts: Map[ref.LibraryPath, IrPort] = elts.collect {
-    case (path, schema.Library.NS.Val.Type.Port(port)) => (path, IrPort.Port(port))
-    case (path, schema.Library.NS.Val.Type.Bundle(port)) => (path, IrPort.Bundle(port))
+  override def allPorts: Map[ref.LibraryPath, elem.Port] = elts.collect {
+    case (path, schema.Library.NS.Val.Type.Port(port)) => (path, port)
   }.toMap
 
   override def allLinks: Map[ref.LibraryPath, elem.Link] = elts.collect {
@@ -417,10 +415,9 @@ class PythonInterfaceLibrary() extends Library {
       case schema.Library.NS.Val.Type.Link(member) => member
     }
   }
-  override def getPort(path: ref.LibraryPath): Errorable[IrPort] = {
+  override def getPort(path: ref.LibraryPath): Errorable[elem.Port] = {
     getLibraryPartialMapped(path, "port") {
-      case schema.Library.NS.Val.Type.Port(member) => IrPort.Port(member)
-      case schema.Library.NS.Val.Type.Bundle(member) => IrPort.Bundle(member)
+      case schema.Library.NS.Val.Type.Port(member) => member
     }
   }
 

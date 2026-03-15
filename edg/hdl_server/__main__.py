@@ -9,7 +9,7 @@ from .. import edgrpc
 from ..core import *
 from ..core.Core import NonLibraryProperty
 
-EDG_PROTO_VERSION = 7
+EDG_PROTO_VERSION = 8
 
 
 class LibraryElementIndexer:
@@ -73,10 +73,8 @@ def elaborate_class(elt_cls: Type[LibraryElementType]) -> Tuple[LibraryElementTy
         link_proto = builder.elaborate_toplevel(obj)
         assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
         return obj, edgir.Library.NS.Val(link=link_proto)
-    elif isinstance(obj, Bundle):  # TODO: note Bundle extends Port, so this must come first
-        return obj, edgir.Library.NS.Val(bundle=obj._def_to_proto())
     elif isinstance(obj, Port):
-        return obj, edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))
+        return obj, edgir.Library.NS.Val(port=obj._def_to_proto())
     else:
         raise RuntimeError(f"didn't match type of library element {elt_cls}")
 

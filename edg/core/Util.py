@@ -1,5 +1,5 @@
 from typing import Any, Union, Dict
-from .Ports import BasePort, Port, Bundle
+from .Ports import BasePort, Port
 from .Blocks import BaseBlock, Link
 from .HierarchyBlock import Block
 
@@ -9,16 +9,11 @@ def edg_obj_name(obj: Any) -> str:
 
 
 def edg_to_dict(obj: Union[BasePort, BaseBlock]) -> Dict[str, Any]:
-    if isinstance(obj, Bundle):
-        return {
-            "_": edg_obj_name(obj),
-            "params": obj._parameters,
-            "fields": {k: edg_to_dict(v) for k, v in obj._ports.items()},
-        }
-    elif isinstance(obj, Port):
+    if isinstance(obj, Port):
         result = {
             "_": edg_obj_name(obj),
             "params": obj._parameters,
+            "fields": {k: edg_to_dict(v) for k, v in obj._ports.items()},
         }
         if obj._link_instance is not None:
             result["link"] = edg_to_dict(obj._link_instance)

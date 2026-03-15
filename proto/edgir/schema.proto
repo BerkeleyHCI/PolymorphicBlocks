@@ -28,7 +28,6 @@ message Library {
     message Val {
       oneof type {
         edgir.elem.Port port = 10;
-        edgir.elem.Bundle bundle = 11;
         edgir.elem.HierarchyBlock hierarchy_block = 13;
         edgir.elem.Link link = 14;
         NS namespace = 20;

@@ -18,14 +18,14 @@ class CompilerLinkPortArrayExpansionTest extends AnyFlatSpec with CompilerTestUt
     ports = Seq(
       Port.Port("sourcePort"),
       Port.Port("sinkPort"),
-      Port.Bundle(
+      Port.Port(
         "outerSourcePort",
         ports = SeqMap(
           "a" -> Port.Library("sourcePort"),
           "b" -> Port.Library("sourcePort"),
         )
       ),
-      Port.Bundle(
+      Port.Port(
         "outerSinkPort",
         ports = SeqMap(
           "a" -> Port.Library("sinkPort"),

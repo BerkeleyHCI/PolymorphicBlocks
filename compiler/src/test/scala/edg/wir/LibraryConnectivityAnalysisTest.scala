@@ -15,7 +15,7 @@ class LibraryConnectivityAnalysisTest extends AnyFlatSpec {
     ports = Seq(
       Port.Port("innerSource"),
       Port.Port("innerSink"),
-      Port.Bundle(
+      Port.Port(
         "outerPort",
         ports = SeqMap(
           "inner" -> Port.Library("innerPort"),
