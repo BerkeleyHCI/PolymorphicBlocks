@@ -227,7 +227,7 @@ class NetlistTransform(TransformUtil.Transform):
         if isinstance(elt1[1], edgir.Port) and isinstance(elt2[1], edgir.Port):
             scope.edges.setdefault(elt1[0], []).append(elt2[0])
             scope.edges.setdefault(elt2[0], []).append(elt1[0])
-        elif isinstance(elt1[1], edgir.Bundle) and isinstance(elt2[1], edgir.Bundle):
+
             elt1_names = list(map(lambda pair: pair.name, elt1[1].ports))
             elt2_names = list(map(lambda pair: pair.name, elt2[1].ports))
             assert elt1_names == elt2_names, f"mismatched bundle types {elt1}, {elt2}"
@@ -237,7 +237,6 @@ class NetlistTransform(TransformUtil.Transform):
                     (elt1[0].append_port(key), edgir.resolve_portlike(edgir.pair_get(elt1[1].ports, key))),
                     (elt2[0].append_port(key), edgir.resolve_portlike(edgir.pair_get(elt2[1].ports, key))),
                 )
-            # don't need to create the bundle connect, since Bundles can't be CircuitPorts
         else:
             raise ValueError(f"can't connect types {elt1}, {elt2}")
 

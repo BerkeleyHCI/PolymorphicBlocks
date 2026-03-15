@@ -17,6 +17,7 @@ from .. import edgir
 
 if TYPE_CHECKING:
     from .Blocks import BaseBlock
+    from .Array import Vector
     from .Link import Link
     from .PortBlocks import PortBridge, PortAdapter
 
@@ -31,7 +32,7 @@ class InitializerContextMeta(type):
         return obj
 
 
-PortParentTypes = Union["Port", "BaseBlock"]
+PortParentTypes = Union["Port", "Vector[Any]", "BaseBlock"]
 
 
 @non_library
@@ -276,6 +277,19 @@ class Port(BasePort, Generic[PortLinkType]):
             initializers.extend(port._get_initializers(path_prefix + [name]))
         return initializers
 
+    def with_elt_initializers(self: SelfType, replace_elts: dict[str, "Port"]) -> SelfType:
+        """Clones model-typed self, except adding initializers to elements from the input dict.
+        Those elements must be empty."""
+        assert self._parent is None, "self must not be bound"
+        cloned = self._clone()
+        for name, replace_port in replace_elts.items():
+            assert replace_port._parent is None, "replace_elts must not be bound"
+            cloned_port = cloned._ports[name]
+            assert isinstance(replace_port, type(cloned_port))
+            assert not cloned_port._get_initializers([]), f"replace_elts sub-port {name} was not empty"
+            cloned_port._cloned_from(replace_port)
+        return cloned
+
     def is_connected(self) -> BoolExpr:
         return self._is_connected
 
@@ -317,18 +331,4 @@ class Port(BasePort, Generic[PortLinkType]):
 @deprecated(reason="merged with Port")
 class Bundle(Port[PortLinkType], Generic[PortLinkType]):
     SelfType = TypeVar("SelfType", bound="Bundle")
-
-    def with_elt_initializers(self: SelfType, replace_elts: dict[str, Port]) -> SelfType:
-        """Clones model-typed self, except adding initializers to elements from the input dict.
-        Those elements must be empty."""
-        assert self._parent is None, "self must not be bound"
-        cloned = self._clone()
-        for name, replace_port in replace_elts.items():
-            assert replace_port._parent is None, "replace_elts must not be bound"
-            cloned_port = cloned._ports[name]
-            assert isinstance(replace_port, type(cloned_port))
-            assert not cloned_port._get_initializers([]), f"replace_elts sub-port {name} was not empty"
-            cloned_port._cloned_from(replace_port)
-        return cloned
-
 

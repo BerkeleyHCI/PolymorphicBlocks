@@ -115,11 +115,11 @@ class Path(NamedTuple):  # internal helper type
             return None, (self, curr)
         elif steps[0].HasField("name"):
             name = steps[0].name
-            if isinstance(curr, (edgir.Port, edgir.Bundle, edgir.HierarchyBlock, edgir.Link)):
+            if isinstance(curr, (edgir.Port, edgir.HierarchyBlock, edgir.Link)):
                 param_opt = edgir.pair_get_opt(curr.params, name)
                 if param_opt is not None:
                     return self.append_param(name)._follow_partial_steps(steps[1:], param_opt)
-            if isinstance(curr, (edgir.Bundle, edgir.Link, edgir.HierarchyBlock, edgir.LinkArray)):
+            if isinstance(curr, (edgir.Port, edgir.Link, edgir.HierarchyBlock, edgir.LinkArray)):
                 port_opt = edgir.pair_get_opt(curr.ports, name)
                 if port_opt is not None:
                     return self.append_port(name)._follow_partial_steps(steps[1:], edgir.resolve_portlike(port_opt))
