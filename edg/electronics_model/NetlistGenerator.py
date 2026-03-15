@@ -265,6 +265,14 @@ class NetlistTransform(TransformUtil.Transform):
             lambda pin: not (pin.ports and pin.ports[-1].isnumeric()),  # disprefer number-only ports
         ]
 
+        def prune_net_component(path: TransformUtil.Path) -> TransformUtil.Path:
+            # prune out the net interior link, if it exists
+            if path.links and len(path.links) > 1 and path.links[-1] == "net":
+                return path._replace(links=path.links[:-1])
+            else:
+                return path
+        net = map(prune_net_component, net)
+
         def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:
             assert not pin1.params and not pin2.params
             for test in CRITERIA:
@@ -284,11 +292,6 @@ class NetlistTransform(TransformUtil.Transform):
             return 0
 
         best_path = sorted(net, key=cmp_to_key(pin_name_goodness))[0]
-
-        # prune out the net interior link, if it exists
-        if best_path.links and len(best_path.links) > 1 and best_path.links[-1] == "net":
-            best_path = best_path._replace(links=best_path.links[:-1])
-
         return net_prefix + str(best_path)
 
     def scope_to_netlist(self, scope: BoardScope) -> Netlist:
