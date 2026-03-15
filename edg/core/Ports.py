@@ -228,6 +228,7 @@ class Port(BasePort, Generic[PortLinkType]):
     @override
     def _def_to_proto(self) -> edgir.Port:
         self._parameters.finalize()
+        self._ports.finalize()
 
         pb = edgir.Port()
 
@@ -318,7 +319,7 @@ class Port(BasePort, Generic[PortLinkType]):
     T = TypeVar("T", bound="Port")
 
     def Port(self, tpe: T, *, desc: Optional[str] = None) -> T:
-        """Registers a field for this Bundle"""
+        """Registers a sub-Port for this Port"""
         if not isinstance(tpe, Port):
             raise EdgTypeError(f"param to Port(...)", tpe, Port)
 

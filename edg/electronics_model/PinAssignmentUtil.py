@@ -12,6 +12,7 @@ def leaf_circuit_ports(prefix: str, port: Port) -> Iterable[Tuple[str, CircuitPo
     if isinstance(port, CircuitPort):
         return [(prefix, port)]
     else:
+        assert port._ports, "must be CircuitPort or Port bundle with sub-Ports"
         return chain(*[leaf_circuit_ports(f"{prefix}.{name}", port) for (name, port) in port._ports.items()])
 
 

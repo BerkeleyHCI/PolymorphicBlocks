@@ -223,14 +223,14 @@ class NetlistTransform(TransformUtil.Transform):
         elt1: Tuple[TransformUtil.Path, edgir.EltTypes],
         elt2: Tuple[TransformUtil.Path, edgir.EltTypes],
     ) -> None:
-        """Recursively connect ports as applicable"""
+        """Recursively connect ports, including containers and leaf ports. Net-ness is ignored here."""
         if isinstance(elt1[1], edgir.Port) and isinstance(elt2[1], edgir.Port):
             scope.edges.setdefault(elt1[0], []).append(elt2[0])
             scope.edges.setdefault(elt2[0], []).append(elt1[0])
 
             elt1_names = list(map(lambda pair: pair.name, elt1[1].ports))
             elt2_names = list(map(lambda pair: pair.name, elt2[1].ports))
-            assert elt1_names == elt2_names, f"mismatched bundle types {elt1}, {elt2}"
+            assert elt1_names == elt2_names, f"mismatched port sub-ports in types {elt1}, {elt2}"
             for key in elt2_names:
                 self.connect_ports(
                     scope,
