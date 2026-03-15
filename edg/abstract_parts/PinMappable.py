@@ -413,7 +413,7 @@ class PinMapUtil:
                     ):  # apply transform to search for the resource type, if needed
                         inner_models[inner_name] = self.transforms[type(inner_model)][1](inner_models[inner_name])
                 sub_assignments.check_empty()
-                resource_model = resource_model.with_elt_initializers(inner_models)
+                resource_model = resource_model._with_elt_initializers(inner_models)
                 allocated_resource = AllocatedResource(resource_model, port_name, resource_name, inner_pin_map)
                 return allocated_resource
             else:

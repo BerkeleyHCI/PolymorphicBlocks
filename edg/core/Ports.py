@@ -277,7 +277,7 @@ class Port(BasePort, Generic[PortLinkType]):
             initializers.extend(port._get_initializers(path_prefix + [name]))
         return initializers
 
-    def with_elt_initializers(self: SelfType, replace_elts: dict[str, "Port"]) -> SelfType:
+    def _with_elt_initializers(self: SelfType, replace_elts: dict[str, "Port"]) -> SelfType:
         """Clones model-typed self, except adding initializers to elements from the input dict.
         Those elements must be empty."""
         assert self._parent is None, "self must not be bound"
