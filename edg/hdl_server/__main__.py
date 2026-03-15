@@ -73,8 +73,6 @@ def elaborate_class(elt_cls: Type[LibraryElementType]) -> Tuple[LibraryElementTy
         link_proto = builder.elaborate_toplevel(obj)
         assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
         return obj, edgir.Library.NS.Val(link=link_proto)
-    elif isinstance(obj, Bundle):  # TODO: note Bundle extends Port, so this must come first
-        return obj, edgir.Library.NS.Val(bundle=obj._def_to_proto())
     elif isinstance(obj, Port):
         return obj, edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))
     else:

@@ -11,7 +11,6 @@ from .elem_pb2 import (
     Port,
     PortArray,
     PortLike,
-    Bundle,
     HierarchyBlock,
     BlockLike,
     Link,
@@ -43,7 +42,7 @@ if TYPE_CHECKING:
     # TODO this should be a separate util in edg_core
     from ..core.Range import Range
 
-PortTypes = Union[Port, PortArray, Bundle]
+PortTypes = Union[Port, PortArray]
 BlockTypes = HierarchyBlock
 BlockLikeTypes = Union[BlockTypes, Link]
 LinkTypes = Union[Link, LinkArray]  # LinkArray is not block-like b/c it doesn't have a class and params
@@ -71,8 +70,6 @@ def resolve_portlike(port: PortLike) -> PortTypes:
         return port.port
     elif port.HasField("array"):
         return port.array
-    elif port.HasField("bundle"):
-        return port.bundle
     else:
         raise ValueError(f"bad portlike {port}")
 

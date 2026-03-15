@@ -226,9 +226,7 @@ class Transform:
         if elt.HasField("lib_elem"):
             raise ValueError(f"unresolved lib at {context}")
         elif elt.HasField("port"):
-            pass  # nothing to recurse into
-        elif elt.HasField("bundle"):
-            for port_pair in elt.bundle.ports:
+            for port_pair in elt.port.ports:
                 self._traverse_portlike(context.append_port(port_pair.name), port_pair.value)
         elif elt.HasField("array") and elt.array.HasField("ports"):
             for port_pair in elt.array.ports.ports:

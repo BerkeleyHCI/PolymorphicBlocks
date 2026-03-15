@@ -18,7 +18,7 @@ class TestBundleLink(Link):
         self.b_net = self.connect(self.source.b, self.sinks.map_extract(lambda x: x.b), flatten=True)
 
 
-class TestBundleSource(Bundle[TestBundleLink]):
+class TestBundleSource(Port[TestBundleLink]):
     link_type = TestBundleLink
 
     def __init__(self) -> None:
@@ -28,7 +28,7 @@ class TestBundleSource(Bundle[TestBundleLink]):
         self.b = self.Port(TestPortSource())
 
 
-class TestBundleSink(Bundle[TestBundleLink]):
+class TestBundleSink(Port[TestBundleLink]):
     link_type = TestBundleLink
 
     def __init__(self) -> None:

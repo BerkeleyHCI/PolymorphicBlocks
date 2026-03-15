@@ -6,7 +6,7 @@ from . import *
 from .test_elaboration_common import TestPortSink
 
 
-class TestBundle(Bundle):
+class TestBundle(Port):
     def __init__(
         self,
         float_param: FloatLike = FloatExpr(),
