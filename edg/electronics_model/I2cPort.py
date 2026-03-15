@@ -46,7 +46,7 @@ class I2cLink(Link):
         )
 
 
-class I2cPullupPort(Bundle[I2cLink]):
+class I2cPullupPort(Port[I2cLink]):
     link_type = I2cLink
 
     def __init__(self) -> None:
@@ -55,7 +55,7 @@ class I2cPullupPort(Bundle[I2cLink]):
         self.sda = self.Port(DigitalSource(low_driver=False, high_driver=False, pullup_capable=True))
 
 
-class I2cController(Bundle[I2cLink]):
+class I2cController(Port[I2cLink]):
     link_type = I2cLink
 
     def __init__(self, model: Optional[DigitalBidir] = None, has_pullup: BoolLike = False) -> None:
@@ -92,7 +92,7 @@ class I2cTargetBridge(PortBridge):
         self.connect(self.sda_bridge.inner_link, self.inner_link.sda)
 
 
-class I2cTarget(Bundle[I2cLink]):
+class I2cTarget(Port[I2cLink]):
     link_type = I2cLink
     bridge_type = I2cTargetBridge
 

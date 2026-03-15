@@ -176,7 +176,7 @@ class KiCadSchematicBlock(Block):
                     return root
                 else:
                     return None  # invalid type
-            elif hasattr(root, components[0]) and isinstance(root, (Bundle, Block)):
+            elif hasattr(root, components[0]) and isinstance(root, (Port, Block)):
                 return inner(getattr(root, components[0]), components[1:])
             else:
                 return None

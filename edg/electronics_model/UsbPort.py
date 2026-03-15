@@ -26,7 +26,7 @@ class UsbLink(Link):
         )
 
 
-class UsbHostPort(Bundle[UsbLink]):
+class UsbHostPort(Port[UsbLink]):
     link_type = UsbLink
 
     def __init__(self) -> None:
@@ -56,7 +56,7 @@ class UsbDeviceBridge(PortBridge):
         self.connect(self.dp_bridge.inner_link, self.inner_link.dp)
 
 
-class UsbDevicePort(Bundle[UsbLink]):
+class UsbDevicePort(Port[UsbLink]):
     link_type = UsbLink
     bridge_type = UsbDeviceBridge
 
@@ -68,7 +68,7 @@ class UsbDevicePort(Bundle[UsbLink]):
         self.dm = self.Port(model)
 
 
-class UsbPassivePort(Bundle[UsbLink]):
+class UsbPassivePort(Port[UsbLink]):
     link_type = UsbLink
 
     def __init__(self) -> None:
@@ -95,7 +95,7 @@ class UsbCcLink(Link):
         self.cc2 = self.connect(self.a.cc2, self.b.cc2)
 
 
-class UsbCcPort(Bundle[UsbCcLink]):
+class UsbCcPort(Port[UsbCcLink]):
     link_type = UsbCcLink
 
     def __init__(self, pullup_capable: BoolLike = False) -> None:

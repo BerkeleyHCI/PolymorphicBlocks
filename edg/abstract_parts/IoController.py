@@ -138,10 +138,7 @@ class BaseIoController(PinMappable, Block):
                     io_port.link().current_drawn.lower().min(0),
                     io_port.link().current_drawn.upper().max(0),
                 )
-            elif isinstance(io_port, Bundle):
-                pass  # TODO: don't assume signal bundles have zero current draw
-            else:
-                raise NotImplementedError(f"unknown port type {io_port}")
+            # TODO: recurse into bundles, really needs a more unified way of handling current draw
 
             if isinstance(allocation.pin, str):
                 assert isinstance(io_port, CircuitPort)
@@ -149,7 +146,6 @@ class BaseIoController(PinMappable, Block):
             elif allocation.pin is None:
                 assert isinstance(io_port, CircuitPort)  # otherwise discarded
             elif isinstance(allocation.pin, dict):
-                assert isinstance(io_port, Bundle)
                 for subport_name, (pin_name, pin_resource) in allocation.pin.items():
                     subport = getattr(io_port, subport_name)
                     assert isinstance(subport, CircuitPort), f"bad sub-port {pin_name} {subport}"

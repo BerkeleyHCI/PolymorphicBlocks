@@ -11,10 +11,8 @@ from .VoltagePorts import CircuitPort
 def leaf_circuit_ports(prefix: str, port: Port) -> Iterable[Tuple[str, CircuitPort]]:
     if isinstance(port, CircuitPort):
         return [(prefix, port)]
-    elif isinstance(port, Bundle):
-        return chain(*[leaf_circuit_ports(f"{prefix}.{name}", port) for (name, port) in port._ports.items()])
     else:
-        raise ValueError(f"unable to flatten {port}")
+        return chain(*[leaf_circuit_ports(f"{prefix}.{name}", port) for (name, port) in port._ports.items()])
 
 
 class SpecialPin:

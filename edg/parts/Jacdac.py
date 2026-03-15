@@ -25,7 +25,7 @@ class JacdacDataLink(Link):
         self.require(self.nodes.length() > 1, "jd_data connection required")
 
 
-class JacdacDataPort(Bundle[JacdacDataLink]):
+class JacdacDataPort(Port[JacdacDataLink]):
     link_type = JacdacDataLink
 
     def __init__(self, model: Optional[DigitalBidir] = None) -> None:
@@ -35,7 +35,7 @@ class JacdacDataPort(Bundle[JacdacDataLink]):
         self.jd_data = self.Port(model)
 
 
-class JacdacPassivePort(Bundle[JacdacDataLink]):
+class JacdacPassivePort(Port[JacdacDataLink]):
     link_type = JacdacDataLink
 
     def __init__(self) -> None:

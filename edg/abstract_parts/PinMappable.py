@@ -76,10 +76,10 @@ class PinResource(BaseLeafPinMapResource):
 
 
 class PeripheralFixedPin(BaseLeafPinMapResource):
-    """A resource for a peripheral as a Bundle port, where the internal ports are fixed. No allocation happens.
+    """A resource for a peripheral as a bundle port, where the internal ports are fixed. No allocation happens.
     The internal port model must be fully defined here."""
 
-    def __init__(self, name: str, port_model: Bundle, inner_allowed_pins: Dict[str, str]):
+    def __init__(self, name: str, port_model: Port, inner_allowed_pins: Dict[str, str]):
         self.name = name
         self.port_model = port_model
         self.inner_allowed_pins = inner_allowed_pins
@@ -100,12 +100,12 @@ class PeripheralFixedPin(BaseLeafPinMapResource):
 
 
 class PeripheralAnyResource(BaseDelegatingPinMapResource):
-    """A resource for a peripheral as a Bundle port, where the internal ports must be delegated to another resource,
+    """A resource for a peripheral as a bundle port, where the internal ports must be delegated to another resource,
     any resource of matching type. Used for chips with a full switch matrix.
     The port model here should have empty models for the internal ports, so the models can be assigned from the inner
     resource. This allows things like digital IOs in a peripheral to inherit from the pin-level definition."""
 
-    def __init__(self, name: str, port_model: Bundle):
+    def __init__(self, name: str, port_model: Port):
         self.name = name
         self.port_model = port_model
 
@@ -122,13 +122,13 @@ class PeripheralAnyResource(BaseDelegatingPinMapResource):
 
 
 class PeripheralFixedResource(BaseDelegatingPinMapResource):
-    """A resource for a peripheral as a Bundle port, where the internal ports must be delegated to another resource,
+    """A resource for a peripheral as a bundle port, where the internal ports must be delegated to another resource,
     of a fixed list per pin by resource name. Used for chips which have alternate pin functionality
     (sort of a very limited switch matrix).
     The port model here should have empty models for the internal ports, so the models can be assigned from the inner
     resource. This allows things like digital IOs in a peripheral to inherit from the pin-level definition."""
 
-    def __init__(self, name: str, port_model: Bundle, inner_allowed_names: Dict[str, List[str]]):
+    def __init__(self, name: str, port_model: Port, inner_allowed_names: Dict[str, List[str]]):
         self.name = name
         self.port_model = port_model
         self.inner_allowed_names = inner_allowed_names

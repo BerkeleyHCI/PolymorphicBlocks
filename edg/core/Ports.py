@@ -328,7 +328,7 @@ class Port(BasePort, Generic[PortLinkType]):
 
 
 @non_library
-@deprecated(reason="merged with Port")
+@deprecated(reason="merged with Port, use Port instead")
 class Bundle(Port[PortLinkType], Generic[PortLinkType]):
     SelfType = TypeVar("SelfType", bound="Bundle")
 

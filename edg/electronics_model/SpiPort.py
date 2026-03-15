@@ -35,7 +35,7 @@ class SpiLink(Link):
         )
 
 
-class SpiController(Bundle[SpiLink]):
+class SpiController(Port[SpiLink]):
     link_type = SpiLink
 
     def __init__(self, model: Optional[DigitalBidir] = None, frequency: RangeLike = RangeExpr.ZERO) -> None:
@@ -50,7 +50,7 @@ class SpiController(Bundle[SpiLink]):
         self.mode = self.Parameter(RangeExpr())  # modes supported, in [0, 3]  TODO: what about sparse modes?
 
 
-class SpiPeripheral(Bundle[SpiLink]):
+class SpiPeripheral(Port[SpiLink]):
     link_type = SpiLink
 
     def __init__(self, model: Optional[DigitalBidir] = None, frequency_limit: RangeLike = RangeExpr.ALL) -> None:
