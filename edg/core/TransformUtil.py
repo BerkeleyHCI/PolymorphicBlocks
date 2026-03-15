@@ -115,11 +115,11 @@ class Path(NamedTuple):  # internal helper type
             return None, (self, curr)
         elif steps[0].HasField("name"):
             name = steps[0].name
-            if isinstance(curr, (edgir.Port, edgir.Bundle, edgir.HierarchyBlock, edgir.Link)):
+            if isinstance(curr, (edgir.Port, edgir.HierarchyBlock, edgir.Link)):
                 param_opt = edgir.pair_get_opt(curr.params, name)
                 if param_opt is not None:
                     return self.append_param(name)._follow_partial_steps(steps[1:], param_opt)
-            if isinstance(curr, (edgir.Bundle, edgir.Link, edgir.HierarchyBlock, edgir.LinkArray)):
+            if isinstance(curr, (edgir.Port, edgir.Link, edgir.HierarchyBlock, edgir.LinkArray)):
                 port_opt = edgir.pair_get_opt(curr.ports, name)
                 if port_opt is not None:
                     return self.append_port(name)._follow_partial_steps(steps[1:], edgir.resolve_portlike(port_opt))
@@ -226,9 +226,7 @@ class Transform:
         if elt.HasField("lib_elem"):
             raise ValueError(f"unresolved lib at {context}")
         elif elt.HasField("port"):
-            pass  # nothing to recurse into
-        elif elt.HasField("bundle"):
-            for port_pair in elt.bundle.ports:
+            for port_pair in elt.port.ports:
                 self._traverse_portlike(context.append_port(port_pair.name), port_pair.value)
         elif elt.HasField("array") and elt.array.HasField("ports"):
             for port_pair in elt.array.ports.ports:

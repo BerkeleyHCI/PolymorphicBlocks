@@ -139,7 +139,7 @@ class TestPortConstPropBundleLink(Link):
         self.elt2_link = self.connect(self.a.elt2, self.b.elt2)
 
 
-class TestPortConstPropBundle(Bundle[TestPortConstPropBundleLink]):
+class TestPortConstPropBundle(Port[TestPortConstPropBundleLink]):
     link_type = TestPortConstPropBundleLink
 
     def __init__(self) -> None:

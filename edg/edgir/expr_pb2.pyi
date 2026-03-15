@@ -26,34 +26,34 @@ I don't think we should be using sorts at all in this module, but it's
 defined for the sake on completeness.
 """
 
-import builtins
-import collections.abc
-from .. import edgir
-import google.protobuf.descriptor
-import google.protobuf.internal.containers
-import google.protobuf.internal.enum_type_wrapper
-import google.protobuf.message
+from collections import abc as _abc
+from edgir import common_pb2 as _common_pb2
+from edgir import lit_pb2 as _lit_pb2
+from edgir import ref_pb2 as _ref_pb2
+from google.protobuf import descriptor as _descriptor
+from google.protobuf import message as _message
+from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
+import builtins as _builtins
 import sys
-import typing
+import typing as _typing
 
 if sys.version_info >= (3, 10):
-    import typing as typing_extensions
+    from typing import TypeAlias as _TypeAlias
 else:
-    import typing_extensions
-DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
+    from typing_extensions import TypeAlias as _TypeAlias
+DESCRIPTOR: _descriptor.FileDescriptor
 
-@typing_extensions.final
-class UnaryExpr(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+@_typing.final
+class UnaryExpr(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
 
     class _Op:
-        ValueType = typing.NewType("ValueType", builtins.int)
-        V: typing_extensions.TypeAlias = ValueType
+        ValueType = _typing.NewType("ValueType", _builtins.int)
+        V: _TypeAlias = ValueType
 
-    class _OpEnumTypeWrapper(
-        google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[UnaryExpr._Op.ValueType], builtins.type
-    ):
-        DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
+    class _OpEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[UnaryExpr._Op.ValueType], _builtins.type):
+        DESCRIPTOR: _descriptor.EnumDescriptor
         UNDEFINED: UnaryExpr._Op.ValueType
         NEGATE: UnaryExpr._Op.ValueType
         "* Negate :: Numeric a =>       a -> a\n        :: Numeric a => Range a -> Range a\n        "
@@ -86,30 +86,32 @@ class UnaryExpr(google.protobuf.message.Message):
     "* Center :: Range a -> a"
     WIDTH: UnaryExpr.Op.ValueType
     "* Width :: Range a -> a"
-    OP_FIELD_NUMBER: builtins.int
-    VAL_FIELD_NUMBER: builtins.int
-    op: global___UnaryExpr.Op.ValueType
+    OP_FIELD_NUMBER: _builtins.int
+    VAL_FIELD_NUMBER: _builtins.int
+    op: Global___UnaryExpr.Op.ValueType
 
-    @property
-    def val(self) -> global___ValueExpr: ...
-    def __init__(self, *, op: global___UnaryExpr.Op.ValueType = ..., val: global___ValueExpr | None = ...) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["val", b"val"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["op", b"op", "val", b"val"]) -> None: ...
+    @_builtins.property
+    def val(self) -> Global___ValueExpr: ...
+    def __init__(self, *, op: Global___UnaryExpr.Op.ValueType = ..., val: Global___ValueExpr | None = ...) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["val", b"val"]
 
-global___UnaryExpr = UnaryExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["op", b"op", "val", b"val"]
 
-@typing_extensions.final
-class UnarySetExpr(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___UnaryExpr: _TypeAlias = UnaryExpr
+
+@_typing.final
+class UnarySetExpr(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
 
     class _Op:
-        ValueType = typing.NewType("ValueType", builtins.int)
-        V: typing_extensions.TypeAlias = ValueType
+        ValueType = _typing.NewType("ValueType", _builtins.int)
+        V: _TypeAlias = ValueType
 
-    class _OpEnumTypeWrapper(
-        google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[UnarySetExpr._Op.ValueType], builtins.type
-    ):
-        DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
+    class _OpEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[UnarySetExpr._Op.ValueType], _builtins.type):
+        DESCRIPTOR: _descriptor.EnumDescriptor
         UNDEFINED: UnarySetExpr._Op.ValueType
         SUM: UnarySetExpr._Op.ValueType
         "* Sum :: (Numeric a) => Set a -> a\n        :: (Numeric a) => Set (Range a) -> Range a\n\n        Sum({}) = 0\n        "
@@ -166,32 +168,34 @@ class UnarySetExpr(google.protobuf.message.Message):
     "* Invert :: Set Float         -> Set Float\n    :: Set (Range Float) -> Set (Range Float)\n\n    Pointwise Invert\n    "
     FLATTEN: UnarySetExpr.Op.ValueType
     "Flatten[A] : Set[Set[A]] -> Set[A]\n    Given an array of array of elements, flattens the inner array.\n    Alternatively stated, concatenates all of the elements of the outer arrary\n    "
-    OP_FIELD_NUMBER: builtins.int
-    VALS_FIELD_NUMBER: builtins.int
-    op: global___UnarySetExpr.Op.ValueType
+    OP_FIELD_NUMBER: _builtins.int
+    VALS_FIELD_NUMBER: _builtins.int
+    op: Global___UnarySetExpr.Op.ValueType
 
-    @property
-    def vals(self) -> global___ValueExpr: ...
+    @_builtins.property
+    def vals(self) -> Global___ValueExpr: ...
     def __init__(
-        self, *, op: global___UnarySetExpr.Op.ValueType = ..., vals: global___ValueExpr | None = ...
+        self, *, op: Global___UnarySetExpr.Op.ValueType = ..., vals: Global___ValueExpr | None = ...
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["vals", b"vals"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["op", b"op", "vals", b"vals"]) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["vals", b"vals"]
 
-global___UnarySetExpr = UnarySetExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["op", b"op", "vals", b"vals"]
 
-@typing_extensions.final
-class BinaryExpr(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___UnarySetExpr: _TypeAlias = UnarySetExpr
+
+@_typing.final
+class BinaryExpr(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
 
     class _Op:
-        ValueType = typing.NewType("ValueType", builtins.int)
-        V: typing_extensions.TypeAlias = ValueType
+        ValueType = _typing.NewType("ValueType", _builtins.int)
+        V: _TypeAlias = ValueType
 
-    class _OpEnumTypeWrapper(
-        google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[BinaryExpr._Op.ValueType], builtins.type
-    ):
-        DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
+    class _OpEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[BinaryExpr._Op.ValueType], _builtins.type):
+        DESCRIPTOR: _descriptor.EnumDescriptor
         UNDEFINED: BinaryExpr._Op.ValueType
         ADD: BinaryExpr._Op.ValueType
         "* Add :: Numeric a => (lhs ::       a, rhs ::       a) -> a\n        :: Numeric a => (lhs ::       a, rhs :: Range a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs ::       a) -> Range a\n        :: Numeric a => (lhs :: Range a, rhs :: Range a) -> Range a\n        "
@@ -272,39 +276,41 @@ class BinaryExpr(google.protobuf.message.Message):
     "INTERSECTS = 52;\n\n    * Within :: (Numeric a) => (lhs :: Range a, rhs :: Range a) -> Bool\n    :: (Numeric a) => (lhs ::       a, rhs :: Range a) -> Bool\n\n    Whether the lhs range or point is entirely within (contained by) the rhs.\n    Used to be named SUBSET changed to a name that doesn't also imply a set op.\n    "
     RANGE: BinaryExpr.Op.ValueType
     "* Range :: (Comparable a) => (lower :: a, upper :: a) -> Range a"
-    OP_FIELD_NUMBER: builtins.int
-    LHS_FIELD_NUMBER: builtins.int
-    RHS_FIELD_NUMBER: builtins.int
-    op: global___BinaryExpr.Op.ValueType
+    OP_FIELD_NUMBER: _builtins.int
+    LHS_FIELD_NUMBER: _builtins.int
+    RHS_FIELD_NUMBER: _builtins.int
+    op: Global___BinaryExpr.Op.ValueType
 
-    @property
-    def lhs(self) -> global___ValueExpr: ...
-    @property
-    def rhs(self) -> global___ValueExpr: ...
+    @_builtins.property
+    def lhs(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def rhs(self) -> Global___ValueExpr: ...
     def __init__(
         self,
         *,
-        op: global___BinaryExpr.Op.ValueType = ...,
-        lhs: global___ValueExpr | None = ...,
-        rhs: global___ValueExpr | None = ...,
+        op: Global___BinaryExpr.Op.ValueType = ...,
+        lhs: Global___ValueExpr | None = ...,
+        rhs: Global___ValueExpr | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["lhs", b"lhs", "rhs", b"rhs"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["lhs", b"lhs", "op", b"op", "rhs", b"rhs"]) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["lhs", b"lhs", "rhs", b"rhs"]
 
-global___BinaryExpr = BinaryExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["lhs", b"lhs", "op", b"op", "rhs", b"rhs"]
 
-@typing_extensions.final
-class BinarySetExpr(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___BinaryExpr: _TypeAlias = BinaryExpr
+
+@_typing.final
+class BinarySetExpr(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
 
     class _Op:
-        ValueType = typing.NewType("ValueType", builtins.int)
-        V: typing_extensions.TypeAlias = ValueType
+        ValueType = _typing.NewType("ValueType", _builtins.int)
+        V: _TypeAlias = ValueType
 
-    class _OpEnumTypeWrapper(
-        google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[BinarySetExpr._Op.ValueType], builtins.type
-    ):
-        DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
+    class _OpEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[BinarySetExpr._Op.ValueType], _builtins.type):
+        DESCRIPTOR: _descriptor.EnumDescriptor
         UNDEFINED: BinarySetExpr._Op.ValueType
         ADD: BinarySetExpr._Op.ValueType
         "* Add :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a\n        :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)\n        :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)\n        :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)\n        "
@@ -321,163 +327,173 @@ class BinarySetExpr(google.protobuf.message.Message):
     "* Mult :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a\n    :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)\n    :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)\n    :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)\n    "
     CONCAT: BinarySetExpr.Op.ValueType
     "String concatenate operator\n    Concatenate : (lhs: String, rhss: Set[String]) -> Set[String] (prepend lhs to all elements)\n                : (lhss: Set[String], rhs: String) -> Set[String] (append rhs to all elements)\n    "
-    OP_FIELD_NUMBER: builtins.int
-    LHSET_FIELD_NUMBER: builtins.int
-    RHS_FIELD_NUMBER: builtins.int
-    op: global___BinarySetExpr.Op.ValueType
+    OP_FIELD_NUMBER: _builtins.int
+    LHSET_FIELD_NUMBER: _builtins.int
+    RHS_FIELD_NUMBER: _builtins.int
+    op: Global___BinarySetExpr.Op.ValueType
 
-    @property
-    def lhset(self) -> global___ValueExpr: ...
-    @property
-    def rhs(self) -> global___ValueExpr: ...
+    @_builtins.property
+    def lhset(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def rhs(self) -> Global___ValueExpr: ...
     def __init__(
         self,
         *,
-        op: global___BinarySetExpr.Op.ValueType = ...,
-        lhset: global___ValueExpr | None = ...,
-        rhs: global___ValueExpr | None = ...,
+        op: Global___BinarySetExpr.Op.ValueType = ...,
+        lhset: Global___ValueExpr | None = ...,
+        rhs: Global___ValueExpr | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["lhset", b"lhset", "rhs", b"rhs"]) -> builtins.bool: ...
-    def ClearField(
-        self, field_name: typing_extensions.Literal["lhset", b"lhset", "op", b"op", "rhs", b"rhs"]
-    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["lhset", b"lhset", "rhs", b"rhs"]
 
-global___BinarySetExpr = BinarySetExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["lhset", b"lhset", "op", b"op", "rhs", b"rhs"]
 
-@typing_extensions.final
-class ArrayExpr(google.protobuf.message.Message):
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___BinarySetExpr: _TypeAlias = BinarySetExpr
+
+@_typing.final
+class ArrayExpr(_message.Message):
     """* Creates an array from element exprs"""
 
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    VALS_FIELD_NUMBER: builtins.int
+    DESCRIPTOR: _descriptor.Descriptor
+    VALS_FIELD_NUMBER: _builtins.int
 
-    @property
-    def vals(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ValueExpr]: ...
-    def __init__(self, *, vals: collections.abc.Iterable[global___ValueExpr] | None = ...) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["vals", b"vals"]) -> None: ...
+    @_builtins.property
+    def vals(self) -> _containers.RepeatedCompositeFieldContainer[Global___ValueExpr]: ...
+    def __init__(self, *, vals: _abc.Iterable[Global___ValueExpr] | None = ...) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["vals", b"vals"]
 
-global___ArrayExpr = ArrayExpr
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-@typing_extensions.final
-class RangeExpr(google.protobuf.message.Message):
+Global___ArrayExpr: _TypeAlias = ArrayExpr
+
+@_typing.final
+class RangeExpr(_message.Message):
     """* Ranges have an expression form, allowing you to constrain them without
     specifying them fully
     """
 
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    MINIMUM_FIELD_NUMBER: builtins.int
-    MAXIMUM_FIELD_NUMBER: builtins.int
+    DESCRIPTOR: _descriptor.Descriptor
+    MINIMUM_FIELD_NUMBER: _builtins.int
+    MAXIMUM_FIELD_NUMBER: _builtins.int
 
-    @property
-    def minimum(self) -> global___ValueExpr: ...
-    @property
-    def maximum(self) -> global___ValueExpr: ...
+    @_builtins.property
+    def minimum(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def maximum(self) -> Global___ValueExpr: ...
     def __init__(
-        self, *, minimum: global___ValueExpr | None = ..., maximum: global___ValueExpr | None = ...
+        self, *, minimum: Global___ValueExpr | None = ..., maximum: Global___ValueExpr | None = ...
     ) -> None: ...
-    def HasField(
-        self, field_name: typing_extensions.Literal["maximum", b"maximum", "minimum", b"minimum"]
-    ) -> builtins.bool: ...
-    def ClearField(
-        self, field_name: typing_extensions.Literal["maximum", b"maximum", "minimum", b"minimum"]
-    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["maximum", b"maximum", "minimum", b"minimum"]
 
-global___RangeExpr = RangeExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["maximum", b"maximum", "minimum", b"minimum"]
 
-@typing_extensions.final
-class StructExpr(google.protobuf.message.Message):
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___RangeExpr: _TypeAlias = RangeExpr
+
+@_typing.final
+class StructExpr(_message.Message):
     """* Structs have an expression form, allowing you to constrain them without
     specifying them fully
     """
 
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+    DESCRIPTOR: _descriptor.Descriptor
 
-    @typing_extensions.final
-    class ValsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.str
+    @_typing.final
+    class ValsEntry(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+        KEY_FIELD_NUMBER: _builtins.int
+        VALUE_FIELD_NUMBER: _builtins.int
+        key: _builtins.str
 
-        @property
-        def value(self) -> global___ValueExpr: ...
-        def __init__(self, *, key: builtins.str = ..., value: global___ValueExpr | None = ...) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
+        @_builtins.property
+        def value(self) -> Global___ValueExpr: ...
+        def __init__(self, *, key: _builtins.str = ..., value: Global___ValueExpr | None = ...) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["value", b"value"]
 
-    VALS_FIELD_NUMBER: builtins.int
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["key", b"key", "value", b"value"]
 
-    @property
-    def vals(self) -> google.protobuf.internal.containers.MessageMap[builtins.str, global___ValueExpr]: ...
-    def __init__(self, *, vals: collections.abc.Mapping[builtins.str, global___ValueExpr] | None = ...) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["vals", b"vals"]) -> None: ...
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-global___StructExpr = StructExpr
+    VALS_FIELD_NUMBER: _builtins.int
 
-@typing_extensions.final
-class IfThenElseExpr(google.protobuf.message.Message):
+    @_builtins.property
+    def vals(self) -> _containers.MessageMap[_builtins.str, Global___ValueExpr]: ...
+    def __init__(self, *, vals: _abc.Mapping[_builtins.str, Global___ValueExpr] | None = ...) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["vals", b"vals"]
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___StructExpr: _TypeAlias = StructExpr
+
+@_typing.final
+class IfThenElseExpr(_message.Message):
     """* IfThenElse :: (cond :: Bool, tru :: a, fal :: a) -> a"""
 
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    COND_FIELD_NUMBER: builtins.int
-    TRU_FIELD_NUMBER: builtins.int
-    FAL_FIELD_NUMBER: builtins.int
-    META_FIELD_NUMBER: builtins.int
+    DESCRIPTOR: _descriptor.Descriptor
+    COND_FIELD_NUMBER: _builtins.int
+    TRU_FIELD_NUMBER: _builtins.int
+    FAL_FIELD_NUMBER: _builtins.int
+    META_FIELD_NUMBER: _builtins.int
 
-    @property
-    def cond(self) -> global___ValueExpr: ...
-    @property
-    def tru(self) -> global___ValueExpr: ...
-    @property
-    def fal(self) -> global___ValueExpr: ...
-    @property
-    def meta(self) -> edgir.common_pb2.Metadata: ...
+    @_builtins.property
+    def cond(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def tru(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def fal(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def meta(self) -> _common_pb2.Metadata: ...
     def __init__(
         self,
         *,
-        cond: global___ValueExpr | None = ...,
-        tru: global___ValueExpr | None = ...,
-        fal: global___ValueExpr | None = ...,
-        meta: edgir.common_pb2.Metadata | None = ...,
+        cond: Global___ValueExpr | None = ...,
+        tru: Global___ValueExpr | None = ...,
+        fal: Global___ValueExpr | None = ...,
+        meta: _common_pb2.Metadata | None = ...,
     ) -> None: ...
-    def HasField(
-        self, field_name: typing_extensions.Literal["cond", b"cond", "fal", b"fal", "meta", b"meta", "tru", b"tru"]
-    ) -> builtins.bool: ...
-    def ClearField(
-        self, field_name: typing_extensions.Literal["cond", b"cond", "fal", b"fal", "meta", b"meta", "tru", b"tru"]
-    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["cond", b"cond", "fal", b"fal", "meta", b"meta", "tru", b"tru"]
 
-global___IfThenElseExpr = IfThenElseExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["cond", b"cond", "fal", b"fal", "meta", b"meta", "tru", b"tru"]
 
-@typing_extensions.final
-class ExtractExpr(google.protobuf.message.Message):
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___IfThenElseExpr: _TypeAlias = IfThenElseExpr
+
+@_typing.final
+class ExtractExpr(_message.Message):
     """* Extract :: (container :: Array a           , index :: Int) -> a
     Extract :: (container :: Struct{index :: a}, index :: string)     -> a
     Extract :: (container :: Range a           , index :: {"minimum"|"maximum"}) -> a
     """
 
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    CONTAINER_FIELD_NUMBER: builtins.int
-    INDEX_FIELD_NUMBER: builtins.int
+    DESCRIPTOR: _descriptor.Descriptor
+    CONTAINER_FIELD_NUMBER: _builtins.int
+    INDEX_FIELD_NUMBER: _builtins.int
 
-    @property
-    def container(self) -> global___ValueExpr: ...
-    @property
-    def index(self) -> global___ValueExpr: ...
+    @_builtins.property
+    def container(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def index(self) -> Global___ValueExpr: ...
     def __init__(
-        self, *, container: global___ValueExpr | None = ..., index: global___ValueExpr | None = ...
+        self, *, container: Global___ValueExpr | None = ..., index: Global___ValueExpr | None = ...
     ) -> None: ...
-    def HasField(
-        self, field_name: typing_extensions.Literal["container", b"container", "index", b"index"]
-    ) -> builtins.bool: ...
-    def ClearField(
-        self, field_name: typing_extensions.Literal["container", b"container", "index", b"index"]
-    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["container", b"container", "index", b"index"]
 
-global___ExtractExpr = ExtractExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["container", b"container", "index", b"index"]
 
-@typing_extensions.final
-class MapExtractExpr(google.protobuf.message.Message):
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___ExtractExpr: _TypeAlias = ExtractExpr
+
+@_typing.final
+class MapExtractExpr(_message.Message):
     """/** MapExtract :: (container :: Array a , path :: LocalRef{from :: a, to :: b}) -> Array b
     MapExtract :: (container :: Set   a , path :: LocalRef{from :: a, to :: b}) -> Set   b
 
@@ -485,42 +501,44 @@ class MapExtractExpr(google.protobuf.message.Message):
     the relevant subexpression determined by a path. */
     """
 
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    CONTAINER_FIELD_NUMBER: builtins.int
-    PATH_FIELD_NUMBER: builtins.int
+    DESCRIPTOR: _descriptor.Descriptor
+    CONTAINER_FIELD_NUMBER: _builtins.int
+    PATH_FIELD_NUMBER: _builtins.int
 
-    @property
-    def container(self) -> global___ValueExpr: ...
-    @property
-    def path(self) -> edgir.ref_pb2.LocalPath: ...
+    @_builtins.property
+    def container(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def path(self) -> _ref_pb2.LocalPath: ...
     def __init__(
-        self, *, container: global___ValueExpr | None = ..., path: edgir.ref_pb2.LocalPath | None = ...
+        self, *, container: Global___ValueExpr | None = ..., path: _ref_pb2.LocalPath | None = ...
     ) -> None: ...
-    def HasField(
-        self, field_name: typing_extensions.Literal["container", b"container", "path", b"path"]
-    ) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["container", b"container", "path", b"path"]) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["container", b"container", "path", b"path"]
 
-global___MapExtractExpr = MapExtractExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["container", b"container", "path", b"path"]
 
-@typing_extensions.final
-class ConnectedExpr(google.protobuf.message.Message):
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MapExtractExpr: _TypeAlias = MapExtractExpr
+
+@_typing.final
+class ConnectedExpr(_message.Message):
     """* isConnected :: Port -> Port -> Bool
 
     This tells us whether the specified ports are connected
     """
 
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    BLOCK_PORT_FIELD_NUMBER: builtins.int
-    LINK_PORT_FIELD_NUMBER: builtins.int
-    EXPANDED_FIELD_NUMBER: builtins.int
+    DESCRIPTOR: _descriptor.Descriptor
+    BLOCK_PORT_FIELD_NUMBER: _builtins.int
+    LINK_PORT_FIELD_NUMBER: _builtins.int
+    EXPANDED_FIELD_NUMBER: _builtins.int
 
-    @property
-    def block_port(self) -> global___ValueExpr: ...
-    @property
-    def link_port(self) -> global___ValueExpr: ...
-    @property
-    def expanded(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ConnectedExpr]:
+    @_builtins.property
+    def block_port(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def link_port(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def expanded(self) -> _containers.RepeatedCompositeFieldContainer[Global___ConnectedExpr]:
         """During compilation, ConnectedExpr may be expanded (allocate replaced with concrete path indices,
         and arrays replaced with individual element connects).
         The expanded forms are stored here (including multiple elements in the array case),
@@ -530,158 +548,159 @@ class ConnectedExpr(google.protobuf.message.Message):
     def __init__(
         self,
         *,
-        block_port: global___ValueExpr | None = ...,
-        link_port: global___ValueExpr | None = ...,
-        expanded: collections.abc.Iterable[global___ConnectedExpr] | None = ...,
+        block_port: Global___ValueExpr | None = ...,
+        link_port: Global___ValueExpr | None = ...,
+        expanded: _abc.Iterable[Global___ConnectedExpr] | None = ...,
     ) -> None: ...
-    def HasField(
-        self, field_name: typing_extensions.Literal["block_port", b"block_port", "link_port", b"link_port"]
-    ) -> builtins.bool: ...
-    def ClearField(
-        self,
-        field_name: typing_extensions.Literal[
-            "block_port", b"block_port", "expanded", b"expanded", "link_port", b"link_port"
-        ],
-    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["block_port", b"block_port", "link_port", b"link_port"]
 
-global___ConnectedExpr = ConnectedExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "block_port", b"block_port", "expanded", b"expanded", "link_port", b"link_port"
+    ]
 
-@typing_extensions.final
-class ExportedExpr(google.protobuf.message.Message):
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___ConnectedExpr: _TypeAlias = ConnectedExpr
+
+@_typing.final
+class ExportedExpr(_message.Message):
     """* isExported :: Port -> Port -> Bool
 
     This tells us whether the specified port is exported to the hierarchy block exterior port
     """
 
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    EXTERIOR_PORT_FIELD_NUMBER: builtins.int
-    INTERNAL_BLOCK_PORT_FIELD_NUMBER: builtins.int
-    EXPANDED_FIELD_NUMBER: builtins.int
+    DESCRIPTOR: _descriptor.Descriptor
+    EXTERIOR_PORT_FIELD_NUMBER: _builtins.int
+    INTERNAL_BLOCK_PORT_FIELD_NUMBER: _builtins.int
+    EXPANDED_FIELD_NUMBER: _builtins.int
 
-    @property
-    def exterior_port(self) -> global___ValueExpr: ...
-    @property
-    def internal_block_port(self) -> global___ValueExpr: ...
-    @property
-    def expanded(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ExportedExpr]:
+    @_builtins.property
+    def exterior_port(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def internal_block_port(self) -> Global___ValueExpr: ...
+    @_builtins.property
+    def expanded(self) -> _containers.RepeatedCompositeFieldContainer[Global___ExportedExpr]:
         """see comment in ConnectedExpr"""
 
     def __init__(
         self,
         *,
-        exterior_port: global___ValueExpr | None = ...,
-        internal_block_port: global___ValueExpr | None = ...,
-        expanded: collections.abc.Iterable[global___ExportedExpr] | None = ...,
+        exterior_port: Global___ValueExpr | None = ...,
+        internal_block_port: Global___ValueExpr | None = ...,
+        expanded: _abc.Iterable[Global___ExportedExpr] | None = ...,
     ) -> None: ...
-    def HasField(
-        self,
-        field_name: typing_extensions.Literal[
-            "exterior_port", b"exterior_port", "internal_block_port", b"internal_block_port"
-        ],
-    ) -> builtins.bool: ...
-    def ClearField(
-        self,
-        field_name: typing_extensions.Literal[
-            "expanded", b"expanded", "exterior_port", b"exterior_port", "internal_block_port", b"internal_block_port"
-        ],
-    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal[
+        "exterior_port", b"exterior_port", "internal_block_port", b"internal_block_port"
+    ]
 
-global___ExportedExpr = ExportedExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "expanded", b"expanded", "exterior_port", b"exterior_port", "internal_block_port", b"internal_block_port"
+    ]
 
-@typing_extensions.final
-class AssignExpr(google.protobuf.message.Message):
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___ExportedExpr: _TypeAlias = ExportedExpr
+
+@_typing.final
+class AssignExpr(_message.Message):
     """Variable assignment (from an expression value), which allows dataflow to be directioned and explicit.
     Assignments should not be cyclic.
     """
 
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    DST_FIELD_NUMBER: builtins.int
-    SRC_FIELD_NUMBER: builtins.int
+    DESCRIPTOR: _descriptor.Descriptor
+    DST_FIELD_NUMBER: _builtins.int
+    SRC_FIELD_NUMBER: _builtins.int
 
-    @property
-    def dst(self) -> edgir.ref_pb2.LocalPath: ...
-    @property
-    def src(self) -> global___ValueExpr: ...
-    def __init__(self, *, dst: edgir.ref_pb2.LocalPath | None = ..., src: global___ValueExpr | None = ...) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["dst", b"dst", "src", b"src"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["dst", b"dst", "src", b"src"]) -> None: ...
+    @_builtins.property
+    def dst(self) -> _ref_pb2.LocalPath: ...
+    @_builtins.property
+    def src(self) -> Global___ValueExpr: ...
+    def __init__(self, *, dst: _ref_pb2.LocalPath | None = ..., src: Global___ValueExpr | None = ...) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["dst", b"dst", "src", b"src"]
 
-global___AssignExpr = AssignExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["dst", b"dst", "src", b"src"]
 
-@typing_extensions.final
-class ValueExpr(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    LITERAL_FIELD_NUMBER: builtins.int
-    BINARY_FIELD_NUMBER: builtins.int
-    BINARY_SET_FIELD_NUMBER: builtins.int
-    UNARY_FIELD_NUMBER: builtins.int
-    UNARY_SET_FIELD_NUMBER: builtins.int
-    ARRAY_FIELD_NUMBER: builtins.int
-    STRUCT_FIELD_NUMBER: builtins.int
-    RANGE_FIELD_NUMBER: builtins.int
-    IFTHENELSE_FIELD_NUMBER: builtins.int
-    EXTRACT_FIELD_NUMBER: builtins.int
-    MAP_EXTRACT_FIELD_NUMBER: builtins.int
-    CONNECTED_FIELD_NUMBER: builtins.int
-    EXPORTED_FIELD_NUMBER: builtins.int
-    CONNECTEDARRAY_FIELD_NUMBER: builtins.int
-    EXPORTEDARRAY_FIELD_NUMBER: builtins.int
-    ASSIGN_FIELD_NUMBER: builtins.int
-    EXPORTEDTUNNEL_FIELD_NUMBER: builtins.int
-    ASSIGNTUNNEL_FIELD_NUMBER: builtins.int
-    REF_FIELD_NUMBER: builtins.int
-    META_FIELD_NUMBER: builtins.int
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
-    @property
-    def literal(self) -> edgir.lit_pb2.ValueLit: ...
-    @property
-    def binary(self) -> global___BinaryExpr: ...
-    @property
-    def binary_set(self) -> global___BinarySetExpr: ...
-    @property
-    def unary(self) -> global___UnaryExpr: ...
-    @property
-    def unary_set(self) -> global___UnarySetExpr: ...
-    @property
-    def array(self) -> global___ArrayExpr:
+Global___AssignExpr: _TypeAlias = AssignExpr
+
+@_typing.final
+class ValueExpr(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+    LITERAL_FIELD_NUMBER: _builtins.int
+    BINARY_FIELD_NUMBER: _builtins.int
+    BINARY_SET_FIELD_NUMBER: _builtins.int
+    UNARY_FIELD_NUMBER: _builtins.int
+    UNARY_SET_FIELD_NUMBER: _builtins.int
+    ARRAY_FIELD_NUMBER: _builtins.int
+    STRUCT_FIELD_NUMBER: _builtins.int
+    RANGE_FIELD_NUMBER: _builtins.int
+    IFTHENELSE_FIELD_NUMBER: _builtins.int
+    EXTRACT_FIELD_NUMBER: _builtins.int
+    MAP_EXTRACT_FIELD_NUMBER: _builtins.int
+    CONNECTED_FIELD_NUMBER: _builtins.int
+    EXPORTED_FIELD_NUMBER: _builtins.int
+    CONNECTEDARRAY_FIELD_NUMBER: _builtins.int
+    EXPORTEDARRAY_FIELD_NUMBER: _builtins.int
+    ASSIGN_FIELD_NUMBER: _builtins.int
+    EXPORTEDTUNNEL_FIELD_NUMBER: _builtins.int
+    ASSIGNTUNNEL_FIELD_NUMBER: _builtins.int
+    REF_FIELD_NUMBER: _builtins.int
+    META_FIELD_NUMBER: _builtins.int
+
+    @_builtins.property
+    def literal(self) -> _lit_pb2.ValueLit: ...
+    @_builtins.property
+    def binary(self) -> Global___BinaryExpr: ...
+    @_builtins.property
+    def binary_set(self) -> Global___BinarySetExpr: ...
+    @_builtins.property
+    def unary(self) -> Global___UnaryExpr: ...
+    @_builtins.property
+    def unary_set(self) -> Global___UnarySetExpr: ...
+    @_builtins.property
+    def array(self) -> Global___ArrayExpr:
         """SetExpr          set         = 5;"""
 
-    @property
-    def struct(self) -> global___StructExpr: ...
-    @property
-    def range(self) -> global___RangeExpr: ...
-    @property
-    def ifThenElse(self) -> global___IfThenElseExpr: ...
-    @property
-    def extract(self) -> global___ExtractExpr: ...
-    @property
-    def map_extract(self) -> global___MapExtractExpr: ...
-    @property
-    def connected(self) -> global___ConnectedExpr:
+    @_builtins.property
+    def struct(self) -> Global___StructExpr: ...
+    @_builtins.property
+    def range(self) -> Global___RangeExpr: ...
+    @_builtins.property
+    def ifThenElse(self) -> Global___IfThenElseExpr: ...
+    @_builtins.property
+    def extract(self) -> Global___ExtractExpr: ...
+    @_builtins.property
+    def map_extract(self) -> Global___MapExtractExpr: ...
+    @_builtins.property
+    def connected(self) -> Global___ConnectedExpr:
         """single port to single port connect"""
 
-    @property
-    def exported(self) -> global___ExportedExpr:
+    @_builtins.property
+    def exported(self) -> Global___ExportedExpr:
         """single port to single port export"""
 
-    @property
-    def connectedArray(self) -> global___ConnectedExpr:
+    @_builtins.property
+    def connectedArray(self) -> Global___ConnectedExpr:
         """array to array connect, where allocate means allocate a subarray"""
 
-    @property
-    def exportedArray(self) -> global___ExportedExpr:
+    @_builtins.property
+    def exportedArray(self) -> Global___ExportedExpr:
         """array to array export, where allocate means allocate a subarray"""
 
-    @property
-    def assign(self) -> global___AssignExpr: ...
-    @property
-    def exportedTunnel(self) -> global___ExportedExpr:
+    @_builtins.property
+    def assign(self) -> Global___AssignExpr: ...
+    @_builtins.property
+    def exportedTunnel(self) -> Global___ExportedExpr:
         """These Exprs support cross-hierarchy operations
         single port to single port tunneling (cross-hierarchy) export:
         """
 
-    @property
-    def assignTunnel(self) -> global___AssignExpr:
+    @_builtins.property
+    def assignTunnel(self) -> Global___AssignExpr:
         """- the exterior port may be a top-level port on any (recursive) sub-block
           for the exterior port, all path components except the last must be block
           references, and the last must be a top-level port
@@ -694,151 +713,149 @@ class ValueExpr(google.protobuf.message.Message):
         parameter assignment which may be cross-hierarchy
         """
 
-    @property
-    def ref(self) -> edgir.ref_pb2.LocalPath: ...
-    @property
-    def meta(self) -> edgir.common_pb2.Metadata: ...
+    @_builtins.property
+    def ref(self) -> _ref_pb2.LocalPath: ...
+    @_builtins.property
+    def meta(self) -> _common_pb2.Metadata: ...
     def __init__(
         self,
         *,
-        literal: edgir.lit_pb2.ValueLit | None = ...,
-        binary: global___BinaryExpr | None = ...,
-        binary_set: global___BinarySetExpr | None = ...,
-        unary: global___UnaryExpr | None = ...,
-        unary_set: global___UnarySetExpr | None = ...,
-        array: global___ArrayExpr | None = ...,
-        struct: global___StructExpr | None = ...,
-        range: global___RangeExpr | None = ...,
-        ifThenElse: global___IfThenElseExpr | None = ...,
-        extract: global___ExtractExpr | None = ...,
-        map_extract: global___MapExtractExpr | None = ...,
-        connected: global___ConnectedExpr | None = ...,
-        exported: global___ExportedExpr | None = ...,
-        connectedArray: global___ConnectedExpr | None = ...,
-        exportedArray: global___ExportedExpr | None = ...,
-        assign: global___AssignExpr | None = ...,
-        exportedTunnel: global___ExportedExpr | None = ...,
-        assignTunnel: global___AssignExpr | None = ...,
-        ref: edgir.ref_pb2.LocalPath | None = ...,
-        meta: edgir.common_pb2.Metadata | None = ...,
+        literal: _lit_pb2.ValueLit | None = ...,
+        binary: Global___BinaryExpr | None = ...,
+        binary_set: Global___BinarySetExpr | None = ...,
+        unary: Global___UnaryExpr | None = ...,
+        unary_set: Global___UnarySetExpr | None = ...,
+        array: Global___ArrayExpr | None = ...,
+        struct: Global___StructExpr | None = ...,
+        range: Global___RangeExpr | None = ...,
+        ifThenElse: Global___IfThenElseExpr | None = ...,
+        extract: Global___ExtractExpr | None = ...,
+        map_extract: Global___MapExtractExpr | None = ...,
+        connected: Global___ConnectedExpr | None = ...,
+        exported: Global___ExportedExpr | None = ...,
+        connectedArray: Global___ConnectedExpr | None = ...,
+        exportedArray: Global___ExportedExpr | None = ...,
+        assign: Global___AssignExpr | None = ...,
+        exportedTunnel: Global___ExportedExpr | None = ...,
+        assignTunnel: Global___AssignExpr | None = ...,
+        ref: _ref_pb2.LocalPath | None = ...,
+        meta: _common_pb2.Metadata | None = ...,
     ) -> None: ...
-    def HasField(
-        self,
-        field_name: typing_extensions.Literal[
-            "array",
-            b"array",
-            "assign",
-            b"assign",
-            "assignTunnel",
-            b"assignTunnel",
-            "binary",
-            b"binary",
-            "binary_set",
-            b"binary_set",
-            "connected",
-            b"connected",
-            "connectedArray",
-            b"connectedArray",
-            "exported",
-            b"exported",
-            "exportedArray",
-            b"exportedArray",
-            "exportedTunnel",
-            b"exportedTunnel",
-            "expr",
-            b"expr",
-            "extract",
-            b"extract",
-            "ifThenElse",
-            b"ifThenElse",
-            "literal",
-            b"literal",
-            "map_extract",
-            b"map_extract",
-            "meta",
-            b"meta",
-            "range",
-            b"range",
-            "ref",
-            b"ref",
-            "struct",
-            b"struct",
-            "unary",
-            b"unary",
-            "unary_set",
-            b"unary_set",
-        ],
-    ) -> builtins.bool: ...
-    def ClearField(
-        self,
-        field_name: typing_extensions.Literal[
-            "array",
-            b"array",
-            "assign",
-            b"assign",
-            "assignTunnel",
-            b"assignTunnel",
-            "binary",
-            b"binary",
-            "binary_set",
-            b"binary_set",
-            "connected",
-            b"connected",
-            "connectedArray",
-            b"connectedArray",
-            "exported",
-            b"exported",
-            "exportedArray",
-            b"exportedArray",
-            "exportedTunnel",
-            b"exportedTunnel",
-            "expr",
-            b"expr",
-            "extract",
-            b"extract",
-            "ifThenElse",
-            b"ifThenElse",
-            "literal",
-            b"literal",
-            "map_extract",
-            b"map_extract",
-            "meta",
-            b"meta",
-            "range",
-            b"range",
-            "ref",
-            b"ref",
-            "struct",
-            b"struct",
-            "unary",
-            b"unary",
-            "unary_set",
-            b"unary_set",
-        ],
-    ) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["expr", b"expr"]) -> (
-        typing_extensions.Literal[
-            "literal",
-            "binary",
-            "binary_set",
-            "unary",
-            "unary_set",
-            "array",
-            "struct",
-            "range",
-            "ifThenElse",
-            "extract",
-            "map_extract",
-            "connected",
-            "exported",
-            "connectedArray",
-            "exportedArray",
-            "assign",
-            "exportedTunnel",
-            "assignTunnel",
-            "ref",
-        ]
-        | None
-    ): ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal[
+        "array",
+        b"array",
+        "assign",
+        b"assign",
+        "assignTunnel",
+        b"assignTunnel",
+        "binary",
+        b"binary",
+        "binary_set",
+        b"binary_set",
+        "connected",
+        b"connected",
+        "connectedArray",
+        b"connectedArray",
+        "exported",
+        b"exported",
+        "exportedArray",
+        b"exportedArray",
+        "exportedTunnel",
+        b"exportedTunnel",
+        "expr",
+        b"expr",
+        "extract",
+        b"extract",
+        "ifThenElse",
+        b"ifThenElse",
+        "literal",
+        b"literal",
+        "map_extract",
+        b"map_extract",
+        "meta",
+        b"meta",
+        "range",
+        b"range",
+        "ref",
+        b"ref",
+        "struct",
+        b"struct",
+        "unary",
+        b"unary",
+        "unary_set",
+        b"unary_set",
+    ]
 
-global___ValueExpr = ValueExpr
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal[
+        "array",
+        b"array",
+        "assign",
+        b"assign",
+        "assignTunnel",
+        b"assignTunnel",
+        "binary",
+        b"binary",
+        "binary_set",
+        b"binary_set",
+        "connected",
+        b"connected",
+        "connectedArray",
+        b"connectedArray",
+        "exported",
+        b"exported",
+        "exportedArray",
+        b"exportedArray",
+        "exportedTunnel",
+        b"exportedTunnel",
+        "expr",
+        b"expr",
+        "extract",
+        b"extract",
+        "ifThenElse",
+        b"ifThenElse",
+        "literal",
+        b"literal",
+        "map_extract",
+        b"map_extract",
+        "meta",
+        b"meta",
+        "range",
+        b"range",
+        "ref",
+        b"ref",
+        "struct",
+        b"struct",
+        "unary",
+        b"unary",
+        "unary_set",
+        b"unary_set",
+    ]
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_expr: _TypeAlias = _typing.Literal[
+        "literal",
+        "binary",
+        "binary_set",
+        "unary",
+        "unary_set",
+        "array",
+        "struct",
+        "range",
+        "ifThenElse",
+        "extract",
+        "map_extract",
+        "connected",
+        "exported",
+        "connectedArray",
+        "exportedArray",
+        "assign",
+        "exportedTunnel",
+        "assignTunnel",
+        "ref",
+    ]
+    _WhichOneofArgType_expr: _TypeAlias = _typing.Literal["expr", b"expr"]
+
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_expr) -> _WhichOneofReturnType_expr | None: ...
+
+Global___ValueExpr: _TypeAlias = ValueExpr

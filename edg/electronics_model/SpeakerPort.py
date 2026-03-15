@@ -20,7 +20,7 @@ class SpeakerLink(Link):
         self.b = self.connect(self.source.b, self.sink.b)
 
 
-class SpeakerDriverPort(Bundle[SpeakerLink]):
+class SpeakerDriverPort(Port[SpeakerLink]):
     link_type = SpeakerLink
 
     def __init__(self, model: Optional[AnalogSource] = None) -> None:
@@ -32,7 +32,7 @@ class SpeakerDriverPort(Bundle[SpeakerLink]):
         self.b = self.Port(model)
 
 
-class SpeakerPort(Bundle[SpeakerLink]):
+class SpeakerPort(Port[SpeakerLink]):
     link_type = SpeakerLink
 
     def __init__(self, model: Optional[AnalogSink] = None) -> None:

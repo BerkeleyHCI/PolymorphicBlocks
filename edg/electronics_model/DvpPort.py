@@ -34,7 +34,7 @@ class Dvp8Link(Link):
         self.y7 = self.connect(self.host.y7, self.cam.y7)
 
 
-class Dvp8Host(Bundle[Dvp8Link]):
+class Dvp8Host(Port[Dvp8Link]):
     link_type = Dvp8Link
 
     def __init__(self, model: Optional[DigitalBidir] = None) -> None:
@@ -59,7 +59,7 @@ class Dvp8Host(Bundle[Dvp8Link]):
         self.y7 = self.Port(sink_model)
 
 
-class Dvp8Camera(Bundle[Dvp8Link]):
+class Dvp8Camera(Port[Dvp8Link]):
     link_type = Dvp8Link
 
     def __init__(self, model: Optional[DigitalBidir] = None) -> None:

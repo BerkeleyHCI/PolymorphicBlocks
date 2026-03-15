@@ -4,6 +4,7 @@ import itertools
 from abc import abstractmethod
 from typing import Generic, Optional, Dict, Hashable, List
 
+from deprecated import deprecated
 from typing_extensions import TypeVar, override
 
 from .Binding import ParamBinding, IsConnectedBinding, NameBinding
@@ -16,6 +17,7 @@ from .. import edgir
 
 if TYPE_CHECKING:
     from .Blocks import BaseBlock
+    from .Array import Vector
     from .Link import Link
     from .PortBlocks import PortBridge, PortAdapter
 
@@ -30,7 +32,7 @@ class InitializerContextMeta(type):
         return obj
 
 
-PortParentTypes = Union["BaseContainerPort", "BaseBlock"]
+PortParentTypes = Union["Port", "Vector[Any]", "BaseBlock"]
 
 
 @non_library
@@ -114,11 +116,6 @@ class BasePort(HasMetadata, metaclass=InitializerContextMeta):
         raise NotImplementedError
 
 
-@non_library
-class BaseContainerPort(BasePort):  # TODO can this be removed?
-    pass
-
-
 PortLinkType = TypeVar("PortLinkType", bound="Link", covariant=True, default="Link")  # TODO: this breaks w/ selftypes
 
 
@@ -152,8 +149,8 @@ class Port(BasePort, Generic[PortLinkType]):
         self._bridge_instance: Optional[PortBridge] = None  # internal only
         self._adapter_count: int = 0
 
-        # TODO delete type ignore after https://github.com/python/mypy/issues/5374
         self._parameters: SubElementDict[ConstraintExpr] = self.manager.new_dict(ConstraintExpr)
+        self._ports: SubElementDict[Port] = self.manager.new_dict(Port)
 
         self.manager_ignored.update(["_is_connected", "_name"])
         self._is_connected = BoolExpr()._bind(IsConnectedBinding(self))
@@ -163,6 +160,9 @@ class Port(BasePort, Generic[PortLinkType]):
         self._parameters.finalize()
         for name, param in self._parameters.items():
             param.initializer = None
+        self._ports.finalize()
+        for name, port in self._ports.items():
+            port._clear_initializers()
 
     @override
     def _cloned_from(self: SelfType, other: SelfType) -> None:
@@ -172,6 +172,11 @@ class Port(BasePort, Generic[PortLinkType]):
             other_param = other._parameters[name]
             assert isinstance(other_param, type(param))
             param.initializer = other_param.initializer
+        self._ports.finalize()
+        for name, port in self._ports.items():
+            other_port = other._ports[name]
+            assert isinstance(other_port, type(port))
+            port._cloned_from(other_port)
 
     def init_from(self: SelfType, other: SelfType) -> None:
         assert self._parent is not None, "may only init_from on an bound port"
@@ -221,8 +226,9 @@ class Port(BasePort, Generic[PortLinkType]):
         pb.lib_elem.target.name = self._get_def_name()
 
     @override
-    def _def_to_proto(self) -> edgir.PortTypes:
+    def _def_to_proto(self) -> edgir.Port:
         self._parameters.finalize()
+        self._ports.finalize()
 
         pb = edgir.Port()
 
@@ -236,6 +242,8 @@ class Port(BasePort, Generic[PortLinkType]):
 
         for name, param in self._parameters.items():
             param._populate_decl_proto(edgir.add_pair(pb.params, name))
+        for name, port in self._ports.items():
+            port._populate_portlike_proto(edgir.add_pair(pb.ports, name))
 
         self._populate_metadata(pb.meta, self._metadata, IdentityDict())  # TODO use ref map
 
@@ -252,17 +260,36 @@ class Port(BasePort, Generic[PortLinkType]):
         ref_map[self.name()] = edgir.localpath_concat(prefix, edgir.NAME)
         for name, param in self._parameters.items():
             param._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
+        for name, port in self._ports.items():
+            port._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
         if self._link_instance is not None:
             self._link_instance._build_ref_map(ref_map, edgir.localpath_concat(prefix, edgir.CONNECTED_LINK))
 
     @override
     def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
         self._parameters.finalize()
-        return [
+        initializers: List[Tuple[ConstraintExpr, List[str], ConstraintExpr]] = [
             (param, path_prefix + [name], param.initializer)
             for (name, param) in self._parameters.items()
             if param.initializer is not None
         ]
+        self._ports.finalize()
+        for name, port in self._ports.items():
+            initializers.extend(port._get_initializers(path_prefix + [name]))
+        return initializers
+
+    def _with_elt_initializers(self: SelfType, replace_elts: dict[str, "Port"]) -> SelfType:
+        """Clones model-typed self, except adding initializers to elements from the input dict.
+        Those elements must be empty."""
+        assert self._parent is None, "self must not be bound"
+        cloned = self._clone()
+        for name, replace_port in replace_elts.items():
+            assert replace_port._parent is None, "replace_elts must not be bound"
+            cloned_port = cloned._ports[name]
+            assert isinstance(replace_port, type(cloned_port))
+            assert not cloned_port._get_initializers([]), f"replace_elts sub-port {name} was not empty"
+            cloned_port._cloned_from(replace_port)
+        return cloned
 
     def is_connected(self) -> BoolExpr:
         return self._is_connected
@@ -289,93 +316,20 @@ class Port(BasePort, Generic[PortLinkType]):
         self._parameters.register(elt)
         return elt
 
-
-@non_library
-class Bundle(Port[PortLinkType], BaseContainerPort, Generic[PortLinkType]):
-    SelfType = TypeVar("SelfType", bound="Bundle")
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._ports: SubElementDict[Port] = self.manager.new_dict(Port)
-
-    @override
-    def _clear_initializers(self) -> None:
-        super()._clear_initializers()
-        self._ports.finalize()
-        for name, port in self._ports.items():
-            port._clear_initializers()
-
-    @override
-    def _cloned_from(self: SelfType, other: SelfType) -> None:
-        super()._cloned_from(other)
-        for name, port in self._ports.items():
-            other_port = other._ports[name]
-            assert isinstance(other_port, type(port))
-            port._cloned_from(other_port)
-
-    def with_elt_initializers(self: SelfType, replace_elts: dict[str, Port]) -> SelfType:
-        """Clones model-typed self, except adding initializers to elements from the input dict.
-        Those elements must be empty."""
-        assert self._parent is None, "self must not be bound"
-        cloned = self._clone()
-        for name, replace_port in replace_elts.items():
-            assert replace_port._parent is None, "replace_elts must not be bound"
-            cloned_port = cloned._ports[name]
-            assert isinstance(replace_port, type(cloned_port))
-            assert not cloned_port._get_initializers([]), f"replace_elts sub-port {name} was not empty"
-            cloned_port._cloned_from(replace_port)
-        return cloned
-
-    @override
-    def _def_to_proto(self) -> edgir.Bundle:
-        self._parameters.finalize()
-        self._ports.finalize()
-
-        pb = edgir.Bundle()
-
-        pb.self_class.target.name = self._get_def_name()
-
-        direct_bases, indirect_bases = self._get_bases_of(Bundle)
-        for cls in direct_bases:
-            pb.superclasses.add().target.name = cls._static_def_name()
-        for cls in indirect_bases:
-            pb.super_superclasses.add().target.name = cls._static_def_name()
-
-        for name, param in self._parameters.items():
-            param._populate_decl_proto(edgir.add_pair(pb.params, name))
-        for name, port in self._ports.items():
-            port._populate_portlike_proto(edgir.add_pair(pb.ports, name))
-
-        self._populate_metadata(pb.meta, self._metadata, IdentityDict())  # TODO use ref map
-
-        return pb
-
-    @override
-    def _build_ref_map(self, ref_map: Refable.RefMapType, prefix: edgir.LocalPath) -> None:
-        super()._build_ref_map(ref_map, prefix)
-        for name, field in self._ports.items():
-            field._build_ref_map(ref_map, edgir.localpath_concat(prefix, name))
-
-    @override
-    def _get_initializers(self, path_prefix: List[str]) -> List[Tuple[ConstraintExpr, List[str], ConstraintExpr]]:
-        self_initializers = super()._get_initializers(path_prefix)
-        self._ports.finalize()
-        return list(
-            itertools.chain(
-                self_initializers,
-                *[port._get_initializers(path_prefix + [name]) for (name, port) in self._ports.items()],
-            )
-        )
-
-    T = TypeVar("T", bound=Port)
+    T = TypeVar("T", bound="Port")
 
     def Port(self, tpe: T, *, desc: Optional[str] = None) -> T:
-        """Registers a field for this Bundle"""
+        """Registers a sub-Port for this Port"""
         if not isinstance(tpe, Port):
-            raise EdgTypeError(f"param to Field(...)", tpe, Port)
+            raise EdgTypeError(f"param to Port(...)", tpe, Port)
 
         elt = tpe._bind(self)
         self._ports.register(elt)
 
         return elt
+
+
+@non_library
+@deprecated(reason="merged with Port, use Port instead")
+class Bundle(Port[PortLinkType], Generic[PortLinkType]):
+    SelfType = TypeVar("SelfType", bound="Bundle")

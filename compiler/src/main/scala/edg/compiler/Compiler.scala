@@ -117,7 +117,7 @@ class AssignNamer() {
 }
 
 object Compiler {
-  final val kExpectedProtoVersion = 7
+  final val kExpectedProtoVersion = 8
 }
 
 /** Compiler for a particular design, with an associated library to elaborate references from.
@@ -289,7 +289,7 @@ class Compiler private (
 
     // Add sub-ports to the elaboration dependency graph, as appropriate
     toLinkPort match {
-      case toLinkPort: wir.Bundle =>
+      case toLinkPort: wir.Port =>
         for (portName <- toLinkPort.getPorts.keys) {
           elaboratePending.addNode(
             ElaborateRecord.Connect(
@@ -320,7 +320,7 @@ class Compiler private (
       // Returns the deepest applicable postfix, starting from a port
       def resolveRecursive(portPath: DesignPath, port: wir.PortLike, postfix: Seq[String]): Seq[String] = {
         port match {
-          case _: wir.Port | _: wir.Bundle | _: wir.PortLibrary => // don't recurse into these
+          case _: wir.Port | _: wir.PortLibrary => // don't recurse into these
             // note that libraries in arrays may not yet have been elaborated
             Seq()
           case port: wir.PortArray =>
@@ -416,12 +416,11 @@ class Compiler private (
         val portPb = library.getPort(libraryPath) match {
           case Errorable.Success(portPb) => portPb
           case Errorable.Error(err) =>
-            import edg.IrPort
             import edgir.elem.elem
             errors += CompilerError.LibraryError(path, libraryPath, err)
-            IrPort.Port(elem.Port())
+            elem.Port()
         }
-        val newPort = wir.PortLike.fromIrPort(portPb)
+        val newPort = new wir.Port(portPb)
         container.elaborate(path.lastString, newPort)
         newPort
       case port: wir.PortArray => port // no instantiation needed
@@ -432,9 +431,6 @@ class Compiler private (
     // Process and recurse as needed
     instantiated match {
       case port: wir.Port =>
-        constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), containerPath, "name")
-        processParamDeclarations(path, port)
-      case port: wir.Bundle =>
         constProp.addAssignValue(path.asIndirect + IndirectStep.Name, TextValue(path.toString), containerPath, "name")
         processParamDeclarations(path, port)
         for ((childPortName, childPort) <- port.getPorts) {
@@ -1135,7 +1131,7 @@ class Compiler private (
 
                 case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
               }
-            case _ => // non-array, eg Port or Bundle
+            case _ => // non-array, eg Port
               connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
                 case PortConnections.ArrayConnect(constrName, constr) => constr.expr match {
                     case expr.ValueExpr.Expr.ConnectedArray(connected) =>
@@ -1196,7 +1192,7 @@ class Compiler private (
 
     // TODO refactor this out, ConnectedLink needs to be centralized
     def setConnectedLink(portPath: DesignPath, port: PortLike): Unit = (port: @unchecked) match {
-      case _: wir.Port | _: wir.Bundle =>
+      case _: wir.Port =>
         constProp.setConnectedLink(path, portPath)
       case port: wir.PortArray =>
         port.getPorts.foreach { case (subPortName, subPort) =>
@@ -1404,7 +1400,7 @@ class Compiler private (
       link.getModelPorts(portPostfix(1)) match {
         case _: wir.PortArray =>
           (portPostfix.init, (constrName, constr)) // drop the array index
-        case _ => // non-array like Port and Bundle
+        case _ => // non-array like Port
           (portPostfix, (constrName, constr))
       }
     }.groupBy(_._1).foreach { case (portPostfix, elts) => // actually resolve (delayed if array)
@@ -1420,7 +1416,7 @@ class Compiler private (
               ElaborateRecord.ElaboratePortArray(path ++ portPostfix)
             )
           )
-        case _ => // non-array like Port and Bundle
+        case _ => // non-array like Port
           val Seq((constrName, constr)) = constrNamesConstrs // can only be one element
           resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
       }

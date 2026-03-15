@@ -221,31 +221,16 @@ object ElemBuilder {
     def Port(
         selfClass: String,
         params: SeqMap[String, init.ValInit] = SeqMap(),
-        constraints: SeqMap[String, expr.ValueExpr] = SeqMap(),
-    ): elem.PortLike = elem.PortLike(`is` =
-      elem.PortLike.Is.Port(elem.Port(
-        params = params.toPb,
-        constraints = constraints.toPb,
-        selfClass = selfClass match {
-          case "" => None
-          case selfClass => Some(LibraryPath(selfClass))
-        }
-      ))
-    )
-
-    def Bundle(
-        selfClass: String,
-        params: SeqMap[String, init.ValInit] = SeqMap(),
         ports: SeqMap[String, elem.PortLike] = SeqMap(),
         constraints: SeqMap[String, expr.ValueExpr] = SeqMap(),
     ): elem.PortLike = elem.PortLike(`is` =
-      elem.PortLike.Is.Bundle(elem.Bundle(
+      elem.PortLike.Is.Port(elem.Port(
         params = params.toPb,
         ports = ports.toPb,
         constraints = constraints.toPb,
         selfClass = selfClass match {
           case "" => None
-          case superclass => Some(LibraryPath(superclass))
+          case selfClass => Some(LibraryPath(selfClass))
         }
       ))
     )
@@ -306,10 +291,6 @@ object ElemBuilder {
             _.`is` match {
               case elem.PortLike.Is.Port(port) =>
                 port.getSelfClass.toFullString -> schema.Library.NS.Val(`type` = schema.Library.NS.Val.Type.Port(port))
-              case elem.PortLike.Is.Bundle(bundle) =>
-                bundle.getSelfClass.toFullString -> schema.Library.NS.Val(`type` =
-                  schema.Library.NS.Val.Type.Bundle(bundle)
-                )
               case port => throw new NotImplementedError(s"Unknown PortLike in library $port")
             }
           }.toMap

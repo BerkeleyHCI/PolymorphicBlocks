@@ -27,7 +27,7 @@ from .Builder import builder
 from .ConstraintExpr import BoolExpr, ConstraintExpr, FloatExpr, RangeExpr, StringExpr, IntExpr, Binding
 from .Core import Refable, non_library
 from .HdlUserExceptions import EdgTypeError
-from .Ports import BaseContainerPort, BasePort, Port
+from .Ports import BasePort, Port
 from .. import edgir
 
 
@@ -64,7 +64,7 @@ class FlattenBinding(Binding):
 
 
 @non_library
-class BaseVector(BaseContainerPort):
+class BaseVector(BasePort):
     @abstractmethod
     def _get_elt_sample(self) -> BasePort: ...
 

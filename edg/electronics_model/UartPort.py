@@ -20,7 +20,7 @@ class UartLink(Link):
         self.b_tx = self.connect(self.b.tx, self.a.rx)
 
 
-class UartPort(Bundle[UartLink]):
+class UartPort(Port[UartLink]):
     link_type = UartLink
 
     def __init__(self, model: Optional[DigitalBidir] = None) -> None:

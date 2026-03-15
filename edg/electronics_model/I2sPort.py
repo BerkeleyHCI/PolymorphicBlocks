@@ -21,7 +21,7 @@ class I2sLink(Link):
         self.sd = self.connect(self.controller.sd, self.target_receiver.sd)
 
 
-class I2sController(Bundle[I2sLink]):
+class I2sController(Port[I2sLink]):
     """Controller is both controller (drives SCK and WS lines) and transmitter (SD is output)"""
 
     link_type = I2sLink
@@ -35,7 +35,7 @@ class I2sController(Bundle[I2sLink]):
         self.sd = self.Port(model)  # bidirectional
 
 
-class I2sTargetReceiver(Bundle[I2sLink]):
+class I2sTargetReceiver(Port[I2sLink]):
     """Target means SCK and WS are inputs, receiver means SD is input"""
 
     link_type = I2sLink
