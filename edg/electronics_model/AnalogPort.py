@@ -225,7 +225,7 @@ class AnalogSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
         raise NotImplementedError  # TODO IMPLEMENT ME
 
 
-class AnalogSource(AnalogBase, Bundle):
+class AnalogSource(AnalogBase):
     bridge_type = AnalogSourceBridge
 
     @staticmethod
