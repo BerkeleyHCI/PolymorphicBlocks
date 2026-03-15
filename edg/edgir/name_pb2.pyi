@@ -10,66 +10,77 @@ There are three major classes of name in edg:
 - LocalNames, which help organize elements relative to each other.
 - LibraryNames, which we use to identify specific libraries.
 """
-
-import builtins
-from .. import edgir
-import google.protobuf.descriptor
-import google.protobuf.message
+from edgir import common_pb2 as _common_pb2
+from google.protobuf import descriptor as _descriptor
+from google.protobuf import message as _message
+import builtins as _builtins
 import sys
-
-if sys.version_info >= (3, 8):
-    import typing as typing_extensions
+import typing as _typing
+if sys.version_info >= (3, 10):
+    from typing import TypeAlias as _TypeAlias
 else:
-    import typing_extensions
-DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
+    from typing_extensions import TypeAlias as _TypeAlias
+DESCRIPTOR: _descriptor.FileDescriptor
 
-@typing_extensions.final
-class Namespace(google.protobuf.message.Message):
+@_typing.final
+class Namespace(_message.Message):
     """*
     A namespace allows us to define a more useful organizational structure
     over items in the library. It lets us group elements in categories that
     are orthogonal to the usual Block, Port, Link, ontology.
     """
-
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    BASIC_FIELD_NUMBER: builtins.int
-    META_FIELD_NUMBER: builtins.int
-    basic: builtins.str
+    DESCRIPTOR: _descriptor.Descriptor
+    BASIC_FIELD_NUMBER: _builtins.int
+    META_FIELD_NUMBER: _builtins.int
+    basic: _builtins.str
     "* Basic namespaces are a way to organize library elements into a\n    useful hirearchy (e.g. 'Core.*' for the most primitive definitions\n    that we define, or 'NXP.*' for NXP made components.)\n\n    Basic namespaces should have the following properties:\n\n    - First char is a capital letter\n    - All other chars must be letters, numbers, '-', '<', '>'\n    - CamelCase is preffered, don't use any symbols in the name\n    if possible.\n    "
 
-    @property
-    def meta(self) -> edgir.common_pb2.Metadata: ...
-    def __init__(self, *, basic: builtins.str = ..., meta: edgir.common_pb2.Metadata | None = ...) -> None: ...
-    def HasField(
-        self, field_name: typing_extensions.Literal["basic", b"basic", "meta", b"meta", "namespace", b"namespace"]
-    ) -> builtins.bool: ...
-    def ClearField(
-        self, field_name: typing_extensions.Literal["basic", b"basic", "meta", b"meta", "namespace", b"namespace"]
-    ) -> None: ...
-    def WhichOneof(
-        self, oneof_group: typing_extensions.Literal["namespace", b"namespace"]
-    ) -> typing_extensions.Literal["basic"] | None: ...
+    @_builtins.property
+    def meta(self) -> _common_pb2.Metadata:
+        ...
 
-global___Namespace = Namespace
+    def __init__(self, *, basic: _builtins.str=..., meta: _common_pb2.Metadata | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['basic', b'basic', 'meta', b'meta', 'namespace', b'namespace']
 
-@typing_extensions.final
-class LibraryName(google.protobuf.message.Message):
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['basic', b'basic', 'meta', b'meta', 'namespace', b'namespace']
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
+    _WhichOneofReturnType_namespace: _TypeAlias = _typing.Literal['basic']
+    _WhichOneofArgType_namespace: _TypeAlias = _typing.Literal['namespace', b'namespace']
+
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_namespace) -> _WhichOneofReturnType_namespace | None:
+        ...
+Global___Namespace: _TypeAlias = Namespace
+
+@_typing.final
+class LibraryName(_message.Message):
     """* A library name is a way to identify a specific library from a
     set of parent libraries.
 
     This can be the initial element in a path or reference.
     """
-
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    NAME_FIELD_NUMBER: builtins.int
-    META_FIELD_NUMBER: builtins.int
-    name: builtins.str
+    DESCRIPTOR: _descriptor.Descriptor
+    NAME_FIELD_NUMBER: _builtins.int
+    META_FIELD_NUMBER: _builtins.int
+    name: _builtins.str
     "* Since libraries allow for inheritance, we will often want to say\n    this element, defined in *this* particular library.\n\n    In those cases we want to be able to specify the relevant library\n    by its identifier.\n\n    Otherwise we assume it's somehow implicit which library we're\n    talking about.\n    "
 
-    @property
-    def meta(self) -> edgir.common_pb2.Metadata: ...
-    def __init__(self, *, name: builtins.str = ..., meta: edgir.common_pb2.Metadata | None = ...) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["meta", b"meta"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["meta", b"meta", "name", b"name"]) -> None: ...
+    @_builtins.property
+    def meta(self) -> _common_pb2.Metadata:
+        ...
 
-global___LibraryName = LibraryName
+    def __init__(self, *, name: _builtins.str=..., meta: _common_pb2.Metadata | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta']
+
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta', 'name', b'name']
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
+Global___LibraryName: _TypeAlias = LibraryName

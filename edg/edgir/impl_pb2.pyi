@@ -10,67 +10,98 @@ stored.
 
 Fuck if I know what that will look like, so for now you just get a metadata block.
 """
-
-import builtins
-from .. import edgir
-import google.protobuf.descriptor
-import google.protobuf.message
+from edgir import common_pb2 as _common_pb2
+from google.protobuf import descriptor as _descriptor
+from google.protobuf import message as _message
+import builtins as _builtins
 import sys
-
-if sys.version_info >= (3, 8):
-    import typing as typing_extensions
+import typing as _typing
+if sys.version_info >= (3, 10):
+    from typing import TypeAlias as _TypeAlias
 else:
-    import typing_extensions
-DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
+    from typing_extensions import TypeAlias as _TypeAlias
+DESCRIPTOR: _descriptor.FileDescriptor
 
-@typing_extensions.final
-class BlockImpl(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    META_FIELD_NUMBER: builtins.int
+@_typing.final
+class BlockImpl(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+    META_FIELD_NUMBER: _builtins.int
 
-    @property
-    def meta(self) -> edgir.common_pb2.Metadata: ...
-    def __init__(self, *, meta: edgir.common_pb2.Metadata | None = ...) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["meta", b"meta"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["meta", b"meta"]) -> None: ...
+    @_builtins.property
+    def meta(self) -> _common_pb2.Metadata:
+        ...
 
-global___BlockImpl = BlockImpl
+    def __init__(self, *, meta: _common_pb2.Metadata | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta']
 
-@typing_extensions.final
-class PortImpl(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    META_FIELD_NUMBER: builtins.int
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta']
 
-    @property
-    def meta(self) -> edgir.common_pb2.Metadata: ...
-    def __init__(self, *, meta: edgir.common_pb2.Metadata | None = ...) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["meta", b"meta"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["meta", b"meta"]) -> None: ...
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
+Global___BlockImpl: _TypeAlias = BlockImpl
 
-global___PortImpl = PortImpl
+@_typing.final
+class PortImpl(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+    META_FIELD_NUMBER: _builtins.int
 
-@typing_extensions.final
-class LinkImpl(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    META_FIELD_NUMBER: builtins.int
+    @_builtins.property
+    def meta(self) -> _common_pb2.Metadata:
+        ...
 
-    @property
-    def meta(self) -> edgir.common_pb2.Metadata: ...
-    def __init__(self, *, meta: edgir.common_pb2.Metadata | None = ...) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["meta", b"meta"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["meta", b"meta"]) -> None: ...
+    def __init__(self, *, meta: _common_pb2.Metadata | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta']
 
-global___LinkImpl = LinkImpl
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta']
 
-@typing_extensions.final
-class EnvironmentImpl(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor
-    META_FIELD_NUMBER: builtins.int
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
+Global___PortImpl: _TypeAlias = PortImpl
 
-    @property
-    def meta(self) -> edgir.common_pb2.Metadata: ...
-    def __init__(self, *, meta: edgir.common_pb2.Metadata | None = ...) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["meta", b"meta"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["meta", b"meta"]) -> None: ...
+@_typing.final
+class LinkImpl(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+    META_FIELD_NUMBER: _builtins.int
 
-global___EnvironmentImpl = EnvironmentImpl
+    @_builtins.property
+    def meta(self) -> _common_pb2.Metadata:
+        ...
+
+    def __init__(self, *, meta: _common_pb2.Metadata | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta']
+
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta']
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
+Global___LinkImpl: _TypeAlias = LinkImpl
+
+@_typing.final
+class EnvironmentImpl(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+    META_FIELD_NUMBER: _builtins.int
+
+    @_builtins.property
+    def meta(self) -> _common_pb2.Metadata:
+        ...
+
+    def __init__(self, *, meta: _common_pb2.Metadata | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta']
+
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta']
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
+Global___EnvironmentImpl: _TypeAlias = EnvironmentImpl
