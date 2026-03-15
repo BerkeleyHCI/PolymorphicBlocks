@@ -148,7 +148,7 @@ class AnalogSourceBridge(PortBridge):  # basic passthrough port, sources look th
         self.assign(self.inner_link.impedance, self.outer_port.link().sink_impedance)
 
 
-class AnalogSink(AnalogBase, Bundle):
+class AnalogSink(AnalogBase):
     bridge_type = AnalogSinkBridge
 
     @staticmethod
