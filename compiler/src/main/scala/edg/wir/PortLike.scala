@@ -15,12 +15,6 @@ sealed trait PortLike extends Pathable {
 }
 
 object PortLike {
-  import edg.IrPort
-  def fromIrPort(irPort: IrPort): PortLike = irPort match {
-    case IrPort.Port(port) => new Port(port)
-    case irPort => throw new NotImplementedError(s"Can't construct PortLike from $irPort")
-  }
-
   def fromLibraryPb(portLike: elem.PortLike): PortLike = portLike.`is` match {
     case elem.PortLike.Is.LibElem(like) => PortLibrary(like)
     case elem.PortLike.Is.Array(like) => new PortArray(like)
@@ -53,7 +47,7 @@ class Port(pb: elem.Port) extends PortLike
       if (ports.contains(subname)) {
         ports(subname).resolve(tail)
       } else {
-        throw new InvalidPathException(s"No elements $subname (of $suffix) in Bundle ${pb.getSelfClass.toSimpleString}")
+        throw new InvalidPathException(s"No elements $subname (of $suffix) in Port ${pb.getSelfClass.toSimpleString}")
       }
   }
 

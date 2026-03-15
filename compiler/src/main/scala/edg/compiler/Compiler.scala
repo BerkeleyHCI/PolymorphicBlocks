@@ -117,7 +117,7 @@ class AssignNamer() {
 }
 
 object Compiler {
-  final val kExpectedProtoVersion = 7
+  final val kExpectedProtoVersion = 8
 }
 
 /** Compiler for a particular design, with an associated library to elaborate references from.
@@ -416,12 +416,11 @@ class Compiler private (
         val portPb = library.getPort(libraryPath) match {
           case Errorable.Success(portPb) => portPb
           case Errorable.Error(err) =>
-            import edg.IrPort
             import edgir.elem.elem
             errors += CompilerError.LibraryError(path, libraryPath, err)
-            IrPort.Port(elem.Port())
+            elem.Port()
         }
-        val newPort = wir.PortLike.fromIrPort(portPb)
+        val newPort = new wir.Port(portPb)
         container.elaborate(path.lastString, newPort)
         newPort
       case port: wir.PortArray => port // no instantiation needed
@@ -1132,7 +1131,7 @@ class Compiler private (
 
                 case connects => throw new IllegalArgumentException(s"invalid connections to array $connects")
               }
-            case _ => // non-array, eg Port or Bundle
+            case _ => // non-array, eg Port
               connectedConstraints.connectionsByLinkPort(portPostfix, false) match {
                 case PortConnections.ArrayConnect(constrName, constr) => constr.expr match {
                     case expr.ValueExpr.Expr.ConnectedArray(connected) =>
@@ -1401,7 +1400,7 @@ class Compiler private (
       link.getModelPorts(portPostfix(1)) match {
         case _: wir.PortArray =>
           (portPostfix.init, (constrName, constr)) // drop the array index
-        case _ => // non-array like Port and Bundle
+        case _ => // non-array like Port
           (portPostfix, (constrName, constr))
       }
     }.groupBy(_._1).foreach { case (portPostfix, elts) => // actually resolve (delayed if array)
@@ -1417,7 +1416,7 @@ class Compiler private (
               ElaborateRecord.ElaboratePortArray(path ++ portPostfix)
             )
           )
-        case _ => // non-array like Port and Bundle
+        case _ => // non-array like Port
           val Seq((constrName, constr)) = constrNamesConstrs // can only be one element
           resolvePortConnectivity(path, portPostfix, Some(constrName, constr))
       }

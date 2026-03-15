@@ -1,7 +1,6 @@
 package edg.wir
 
 import edg.EdgirUtils.SimpleLibraryPath
-import edg.IrPort
 import edg.compiler.ExprValue
 import edg.util.Errorable
 import edg.wir.ProtoUtil.{
@@ -30,11 +29,11 @@ trait Library {
   // subclass relations
   def getBlock(path: ref.LibraryPath, ignoreRefinements: Boolean = false): Errorable[elem.HierarchyBlock]
   def getLink(path: ref.LibraryPath): Errorable[elem.Link]
-  def getPort(path: ref.LibraryPath): Errorable[IrPort]
+  def getPort(path: ref.LibraryPath): Errorable[elem.Port]
 
   // Returns all elements of the specified type and their path.
   // If the library has a mutable backing, this may change over time.
-  def allPorts: Map[ref.LibraryPath, IrPort]
+  def allPorts: Map[ref.LibraryPath, elem.Port]
   def allBlocks: Map[ref.LibraryPath, elem.HierarchyBlock]
   def allLinks: Map[ref.LibraryPath, elem.Link]
 
@@ -97,8 +96,8 @@ class EdgirLibrary(pb: schema.Library) extends Library {
     case (path, schema.Library.NS.Val.Type.HierarchyBlock(block)) => (path, block)
   }
 
-  override def allPorts: Map[ref.LibraryPath, IrPort] = elts.collect {
-    case (path, schema.Library.NS.Val.Type.Port(port)) => (path, IrPort.Port(port))
+  override def allPorts: Map[ref.LibraryPath, elem.Port] = elts.collect {
+    case (path, schema.Library.NS.Val.Type.Port(port)) => (path, port)
   }
 
   override def allLinks: Map[ref.LibraryPath, elem.Link] = elts.collect {
@@ -119,8 +118,8 @@ class EdgirLibrary(pb: schema.Library) extends Library {
     case None => Errorable.Error(s"Library does not contain $path")
   }
 
-  override def getPort(path: ref.LibraryPath): Errorable[IrPort] = elts.get(path) match {
-    case Some(schema.Library.NS.Val.Type.Port(member)) => Errorable.Success(IrPort.Port(member))
+  override def getPort(path: ref.LibraryPath): Errorable[elem.Port] = elts.get(path) match {
+    case Some(schema.Library.NS.Val.Type.Port(member)) => Errorable.Success(member)
     case Some(member) => Errorable.Error(s"Library element at $path not a port-like, got ${member.getClass}")
     case None => Errorable.Error(s"Library does not contain $path")
   }
