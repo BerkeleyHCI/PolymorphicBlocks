@@ -226,7 +226,7 @@ class Port(BasePort, Generic[PortLinkType]):
         pb.lib_elem.target.name = self._get_def_name()
 
     @override
-    def _def_to_proto(self) -> edgir.PortTypes:
+    def _def_to_proto(self) -> edgir.Port:
         self._parameters.finalize()
 
         pb = edgir.Port()

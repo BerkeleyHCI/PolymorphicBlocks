@@ -74,7 +74,7 @@ def elaborate_class(elt_cls: Type[LibraryElementType]) -> Tuple[LibraryElementTy
         assert isinstance(link_proto, edgir.Link)  # TODO this needs to be cleaned up
         return obj, edgir.Library.NS.Val(link=link_proto)
     elif isinstance(obj, Port):
-        return obj, edgir.Library.NS.Val(port=cast(edgir.Port, obj._def_to_proto()))
+        return obj, edgir.Library.NS.Val(port=obj._def_to_proto())
     else:
         raise RuntimeError(f"didn't match type of library element {elt_cls}")
 
