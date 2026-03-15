@@ -56,7 +56,6 @@ class NetlistWrapperTestCase(unittest.TestCase):
                 "",
                 "100",
                 ["sink"],
-                ["sink"],
                 ["edg.electronics_model.test_netlist_wrapper.SinkWrapperBlock"],
             ),
             net.blocks,

@@ -14,9 +14,7 @@ class NetlistBackend(BaseBackend):
         if set(args.keys()) - {"RefdesMode"} != set():
             raise ValueError("Invalid argument found in args")
         refdes_mode_arg = args.get("RefdesMode", "refdesPathNameValue")
-        if refdes_mode_arg == "pathName":
-            refdes_mode = kicad.RefdesMode.Pathname
-        elif refdes_mode_arg == "refdes":
+        if refdes_mode_arg == "refdes":
             refdes_mode = kicad.RefdesMode.Conventional
         elif refdes_mode_arg == "refdesPathNameValue":
             refdes_mode = kicad.RefdesMode.PathnameAsValue

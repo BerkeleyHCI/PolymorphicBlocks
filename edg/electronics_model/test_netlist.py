@@ -19,7 +19,7 @@ def NetPin(block_path: List[str], pin_name: str) -> RawNetPin:
 
 
 def NetBlock(
-    footprint: str, refdes: str, part: str, value: str, full_path: List[str], path: List[str], class_path: List[str]
+    footprint: str, refdes: str, part: str, value: str, full_path: List[str], path_classes: List[str]
 ) -> RawNetBlock:
     return RawNetBlock(
         footprint,
@@ -27,8 +27,7 @@ def NetBlock(
         part,
         value,
         TransformUtil.Path(tuple(full_path), (), (), ()),
-        path,
-        [edgir.libpath(cls) for cls in class_path],
+        [edgir.libpath(cls) for cls in path_classes],
     )
 
 
@@ -214,7 +213,6 @@ class NetlistTestCase(unittest.TestCase):
                 "",
                 "1uF",
                 ["source"],
-                ["source"],
                 ["edg.electronics_model.test_netlist.TestFakeSource"],
             ),
             net.blocks,
@@ -252,7 +250,6 @@ class NetlistTestCase(unittest.TestCase):
                 "",
                 "1uF",
                 ["source"],
-                ["source"],
                 ["edg.electronics_model.test_netlist.TestFakeSource"],
             ),
             net.blocks,
@@ -263,7 +260,6 @@ class NetlistTestCase(unittest.TestCase):
                 "R1",
                 "",
                 "1k",
-                ["sink"],
                 ["sink"],
                 ["edg.electronics_model.test_netlist.TestFakeSink"],
             ),
@@ -304,7 +300,6 @@ class NetlistTestCase(unittest.TestCase):
                 "",
                 "1uF",
                 ["source"],
-                ["source"],
                 ["edg.electronics_model.test_netlist.TestFakeSource"],
             ),
             net.blocks,
@@ -316,7 +311,6 @@ class NetlistTestCase(unittest.TestCase):
                 "",
                 "1k",
                 ["sink1"],
-                ["sink1"],
                 ["edg.electronics_model.test_netlist.TestFakeSink"],
             ),
             net.blocks,
@@ -327,7 +321,6 @@ class NetlistTestCase(unittest.TestCase):
                 "R2",
                 "",
                 "1k",
-                ["sink2"],
                 ["sink2"],
                 ["edg.electronics_model.test_netlist.TestFakeSink"],
             ),
@@ -378,7 +371,6 @@ class NetlistTestCase(unittest.TestCase):
                 "",
                 "1uF",
                 ["source"],
-                ["source"],
                 ["edg.electronics_model.test_netlist.TestFakeSource"],
             ),
             net.blocks,
@@ -390,7 +382,6 @@ class NetlistTestCase(unittest.TestCase):
                 "",
                 "LD1117V33",
                 ["adapter"],
-                ["adapter"],
                 ["edg.electronics_model.test_netlist.TestFakeAdapter"],
             ),
             net.blocks,
@@ -401,7 +392,6 @@ class NetlistTestCase(unittest.TestCase):
                 "R1",
                 "",
                 "1k",
-                ["sink"],
                 ["sink"],
                 ["edg.electronics_model.test_netlist.TestFakeSink"],
             ),
@@ -442,7 +432,6 @@ class NetlistTestCase(unittest.TestCase):
                 "",
                 "1uF",
                 ["source"],
-                ["source"],
                 ["edg.electronics_model.test_netlist.TestFakeSource"],
             ),
             net.blocks,
@@ -454,8 +443,10 @@ class NetlistTestCase(unittest.TestCase):
                 "",
                 "1k",
                 ["sink", "block"],
-                ["sink"],
-                ["edg.electronics_model.test_netlist.TestFakeSinkHierarchy"],
+                [
+                    "edg.electronics_model.test_netlist.TestFakeSinkHierarchy",
+                    "edg.electronics_model.test_netlist.TestFakeSink",
+                ],
             ),
             net.blocks,
         )
@@ -496,7 +487,6 @@ class NetlistTestCase(unittest.TestCase):
                 "",
                 "1uF",
                 ["source"],
-                ["source"],
                 ["edg.electronics_model.test_netlist.TestFakeSource"],
             ),
             net.blocks,
@@ -507,7 +497,6 @@ class NetlistTestCase(unittest.TestCase):
                 "R1",
                 "",
                 "1k",
-                ["sink", "block1"],
                 ["sink", "block1"],
                 [
                     "edg.electronics_model.test_netlist.TestFakeDualSinkHierarchy",
@@ -522,7 +511,6 @@ class NetlistTestCase(unittest.TestCase):
                 "R2",
                 "",
                 "1k",
-                ["sink", "block2"],
                 ["sink", "block2"],
                 [
                     "edg.electronics_model.test_netlist.TestFakeDualSinkHierarchy",

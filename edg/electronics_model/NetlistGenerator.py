@@ -22,8 +22,7 @@ class NetBlock(NamedTuple):
     part: str
     value: str  # gets written directly to footprint
     full_path: TransformUtil.Path  # full path to this footprint
-    path: List[str]  # short path to this footprint
-    class_path: List[edgir.LibraryPath]  # classes on short path to this footprint
+    path_classes: List[edgir.LibraryPath]  # all classes on the full path, index-aligned with full_path
 
 
 class NetPin(NamedTuple):
@@ -82,8 +81,6 @@ class NetlistTransform(TransformUtil.Transform):
     def __init__(self, design: CompiledDesign):
         self.all_scopes = [BoardScope.empty(TransformUtil.Path.empty())]  # list of unique scopes
         self.scopes: Scopes = {TransformUtil.Path.empty(): self.all_scopes[0]}
-
-        self.short_paths: Dict[TransformUtil.Path, List[str]] = {TransformUtil.Path.empty(): []}  # seed root
         self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
 
         self.design = design
@@ -103,33 +100,12 @@ class NetlistTransform(TransformUtil.Transform):
             for link_pair in block.links:  # links considered to be the same scope as self
                 self.scopes[path.append_link(link_pair.name)] = scope
 
-            # generate short paths for children first, for Blocks only
-            main_internal_blocks: Dict[str, edgir.BlockLike] = {}
-            other_internal_blocks: Dict[str, edgir.BlockLike] = {}
-
-            for block_pair in block.blocks:
-                subblock = block_pair.value
-                # ignore pseudoblocks like bridges and adapters that have no internals
-                if not subblock.hierarchy.blocks and "fp_is_footprint" not in subblock.hierarchy.meta.members.node:
-                    other_internal_blocks[block_pair.name] = block_pair.value
-                else:
-                    main_internal_blocks[block_pair.name] = block_pair.value
-
-            short_path = self.short_paths[path]
             class_path = self.class_paths[path]
+            for block_pair in block.blocks:
+                self.class_paths[path.append_block(block_pair.name)] = class_path + [
+                    block_pair.value.hierarchy.self_class
+                ]
 
-            if len(main_internal_blocks) == 1 and short_path:  # never shorten top-level blocks
-                name = list(main_internal_blocks.keys())[0]
-                self.short_paths[path.append_block(name)] = short_path
-                self.class_paths[path.append_block(name)] = class_path
-            else:
-                for name, subblock in main_internal_blocks.items():
-                    self.short_paths[path.append_block(name)] = short_path + [name]
-                    self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
-
-            for name, subblock in other_internal_blocks.items():
-                self.short_paths[path.append_block(name)] = short_path + [name]
-                self.class_paths[path.append_block(name)] = class_path + [subblock.hierarchy.self_class]
         elif isinstance(block, (edgir.Link, edgir.LinkArray)):
             for link_pair in block.links:
                 self.scopes[path.append_link(link_pair.name)] = scope
@@ -185,9 +161,7 @@ class NetlistTransform(TransformUtil.Transform):
             part_comps = [part, f"({mfr})" if mfr else ""]
             part_str = " ".join(filter(None, part_comps))
             value_str = value if value else (part if part else "")
-            scope.footprints[path] = NetBlock(
-                footprint_name, refdes, part_str, value_str, path, self.short_paths[path], self.class_paths[path]
-            )
+            scope.footprints[path] = NetBlock(footprint_name, refdes, part_str, value_str, path, self.class_paths[path])
 
             for pin_spec in footprint_pinning:
                 assert isinstance(pin_spec, str)
@@ -370,3 +344,39 @@ class NetlistTransform(TransformUtil.Transform):
         self.transform_design(self.design.design)
 
         return self.scope_to_netlist(self.all_scopes[0])  # TODO support multiple scopes
+
+
+class PathShortener:
+    """Given a bunch of blocks with full paths, determine path shortenings that eliminate
+    path components that are the only footprint-containing internal block."""
+
+    def __init__(self, blocks: List[NetBlock]) -> None:
+        # construct list of children for each path
+        # note since this is created from a list of footprints, all paths are guaranteed to contain footprints
+        self._block_children: Dict[Tuple[str, ...], List[str]] = {}
+        for block in blocks:
+            block_path = block.full_path.blocks
+            for i in range(len(block_path)):
+                parent_path = block_path[:i]
+                path_component = block_path[i]
+                parent_list = self._block_children.setdefault(parent_path, [])
+                if path_component not in parent_list:
+                    parent_list.append(path_component)
+
+    def shorten(
+        self, path: TransformUtil.Path, classes: List[edgir.LibraryPath]
+    ) -> Tuple[List[str], List[edgir.LibraryPath]]:
+        assert len(path.blocks) == len(classes)
+        new_blocks = []
+        new_classes = []
+        block_path = path.blocks
+        for i, path_comp in enumerate(block_path):
+            # test whether to add component i
+            # always keep rootmost component
+            full_parent_path = tuple(block_path[:i])
+            if i > 0 and len(self._block_children.get(full_parent_path, [])) <= 1:  # only one child, so can shorten
+                continue
+            else:
+                new_blocks.append(path_comp)
+                new_classes.append(classes[i])
+        return new_blocks, new_classes
