@@ -93,6 +93,11 @@ class Path(NamedTuple):  # internal helper type
             assert self.links
         return Path(self.blocks, self.links, (), ())
 
+    def port_component(self, must_have_port: bool = True) -> Path:
+        if must_have_port:
+            assert self.ports
+        return Path(self.blocks, self.links, self.ports, ())
+
     def to_tuple(self) -> Tuple[str, ...]:
         return self.blocks + self.links + self.ports + self.params
 

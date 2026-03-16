@@ -82,14 +82,14 @@ class NetlistTransform(TransformUtil.Transform):
         self.all_scopes = [BoardScope.empty(TransformUtil.Path.empty())]  # list of unique scopes
         self.scopes: Scopes = {TransformUtil.Path.empty(): self.all_scopes[0]}
         self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
-        self.block_link_order: List[TransformUtil.Path] = []
+        self.path_traverse_order: List[TransformUtil.Path] = []
 
         self.design = design
 
     def process_blocklike(
         self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]
     ) -> None:
-        self.block_link_order.append(path)
+        self.path_traverse_order.append(path)
 
         # TODO may need rethought to support multi-board assemblies
         scope = self.scopes[path]  # including footprint and exports, and everything within a link
@@ -255,6 +255,10 @@ class NetlistTransform(TransformUtil.Transform):
     def visit_linkarray(self, context: TransformUtil.TransformContext, link: edgir.LinkArray) -> None:
         self.process_blocklike(context.path, link)
 
+    @override
+    def visit_portlike(self, context: TransformUtil.TransformContext, port: edgir.PortLike) -> None:
+        self.path_traverse_order.append(context.path)
+
     @staticmethod
     def name_net(net: Iterable[TransformUtil.Path]) -> TransformUtil.Path:
         """Names a net based on all the paths of ports and links that are part of the net."""
@@ -291,7 +295,7 @@ class NetlistTransform(TransformUtil.Transform):
         return best_path
 
     def scope_to_netlist(self, scope: BoardScope) -> Netlist:
-        path_ordering = {path: i for i, path in enumerate(self.block_link_order)}
+        path_ordering = {path: i for i, path in enumerate(self.path_traverse_order)}
 
         # Convert to the netlist format
         seen: Set[TransformUtil.Path] = set()
@@ -320,7 +324,7 @@ class NetlistTransform(TransformUtil.Transform):
 
         named_nets = sorted(
             [(self.name_net(net), net) for net in nets],
-            key=lambda pair: path_ordering[pair[0].link_component(must_have_link=False)],
+            key=lambda pair: path_ordering[pair[0].port_component(must_have_port=False)],
         )
 
         board_refdes_prefix = self.design.get_value(("refdes_prefix",))
