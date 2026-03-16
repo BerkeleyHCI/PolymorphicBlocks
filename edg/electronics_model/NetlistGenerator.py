@@ -261,7 +261,7 @@ class NetlistTransform(TransformUtil.Transform):
         self.path_traverse_order.append(context.path)
 
     @staticmethod
-    def name_net(net: Iterable[TransformUtil.Path]) -> TransformUtil.Path:
+    def name_net(net: Iterable[TransformUtil.Path], path_ordering: Dict[TransformUtil.Path, int]) -> TransformUtil.Path:
         """Names a net based on all the paths of ports and links that are part of the net."""
         # higher criteria are preferred, True or larger number is preferred
         CRITERIA: List[Callable[[TransformUtil.Path], Union[bool, int]]] = [
@@ -271,6 +271,7 @@ class NetlistTransform(TransformUtil.Transform):
             lambda pin: len(pin.links),  # prefer longer link paths
             lambda pin: -len(pin.ports),  # prefer shorter (or no) port lengths
             lambda pin: not (pin.ports and pin.ports[-1].isnumeric()),  # disprefer number-only ports
+            lambda pin: -path_ordering.get(pin.port_component(must_have_port=False), len(path_ordering)),  # prefer earlier paths
         ]
 
         def prune_net_component(path: TransformUtil.Path) -> TransformUtil.Path:
@@ -331,7 +332,7 @@ class NetlistTransform(TransformUtil.Transform):
                 raise InvalidPackingException(f"packed pins {connected1}, {connected2} not connected")
 
         named_nets = sorted(
-            [(self.name_net(net), net) for net in nets],
+            [(self.name_net(net, path_ordering), net) for net in nets],
             key=lambda pair: path_ordering[pair[0].port_component(must_have_port=False)],
         )
 
