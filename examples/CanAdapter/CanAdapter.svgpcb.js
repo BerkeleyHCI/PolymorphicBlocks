@@ -157,28 +157,28 @@ const OR9 = board.add(R_0603_1608Metric, {
 })
 
 board.setNetlist([
-  {name: "Ognd", pads: [["OU1", "5"], ["OU2", "1"], ["OD1", "2"], ["OU3", "9"], ["OU3", "19"], ["OU4", "2"], ["OU4", "8"], ["OR6", "2"], ["OR7", "2"], ["OR9", "2"], ["OC1", "2"], ["OC5", "2"], ["OC6", "2"], ["OJ1", "5"], ["OC8", "2"], ["OR2", "2"], ["OC7", "2"], ["OC3", "2"], ["OC4", "2"]]},
-  {name: "Ovobd", pads: [["OFB1", "2"], ["OU2", "3"], ["OR8", "1"], ["OR3", "1"], ["OC1", "1"], ["OC3", "1"]]},
-  {name: "Ov3v3", pads: [["OD1", "1"], ["OU3", "1"], ["OU4", "3"], ["OD2", "2"], ["OR1", "1"], ["OU3", "7"], ["OU3", "16"], ["OC5", "1"], ["OC6", "1"], ["OJ1", "1"], ["OC8", "1"], ["OR4", "1"], ["OL1", "2"], ["OC4", "1"]]},
+  {name: "Ognd", pads: [["OU1", "5"], ["OU2", "1"], ["OR2", "2"], ["OC1", "2"], ["OC3", "2"], ["OC4", "2"], ["OD1", "2"], ["OU3", "19"], ["OU3", "9"], ["OC5", "2"], ["OC6", "2"], ["OJ1", "5"], ["OC7", "2"], ["OU4", "2"], ["OU4", "8"], ["OC8", "2"], ["OR6", "2"], ["OR7", "2"], ["OR9", "2"]]},
+  {name: "Ovobd", pads: [["OFB1", "2"], ["OU2", "3"], ["OC1", "1"], ["OC3", "1"], ["OR3", "1"], ["OR8", "1"]]},
+  {name: "Ov3v3", pads: [["OR1", "1"], ["OL1", "2"], ["OC4", "1"], ["OD1", "1"], ["OU3", "1"], ["OU3", "16"], ["OU3", "7"], ["OC5", "1"], ["OC6", "1"], ["OJ1", "1"], ["OR4", "1"], ["OU4", "3"], ["OC8", "1"], ["OD2", "2"]]},
   {name: "Oobd.pwr", pads: [["OU1", "16"], ["OFB1", "1"]]},
-  {name: "Ocan.can.canh", pads: [["OU4", "7"], ["OU1", "6"]]},
-  {name: "Ocan.can.canl", pads: [["OU4", "6"], ["OU1", "14"]]},
-  {name: "Ocan.controller.txd", pads: [["OU4", "1"], ["OU3", "6"]]},
-  {name: "Ocan.controller.rxd", pads: [["OU4", "4"], ["OU3", "5"]]},
-  {name: "Omcu.program_boot_node", pads: [["OR5", "2"], ["OU3", "8"], ["OJ1", "2"]]},
-  {name: "Oledg.signal", pads: [["OU3", "13"], ["OD3", "2"]]},
-  {name: "Oledw.signal", pads: [["OU3", "14"], ["OD4", "2"]]},
-  {name: "Ovobd_sense.output", pads: [["OU3", "3"], ["OR8", "2"], ["OR9", "1"]]},
   {name: "Oreg_3v3.fb.output", pads: [["OU2", "4"], ["OR1", "2"], ["OR2", "1"]]},
-  {name: "Oreg_3v3.boot_cap.neg", pads: [["OC2", "2"], ["OU2", "2"], ["OL1", "1"]]},
-  {name: "Oreg_3v3.boot_cap.pos", pads: [["OC2", "1"], ["OU2", "6"]]},
-  {name: "Oreg_3v3.en_res.b", pads: [["OR3", "2"], ["OU2", "5"]]},
+  {name: "Oreg_3v3.boot_cap.neg", pads: [["OU2", "2"], ["OC2", "2"], ["OL1", "1"]]},
+  {name: "Oreg_3v3.boot_cap.pos", pads: [["OU2", "6"], ["OC2", "1"]]},
+  {name: "Oreg_3v3.en_res.b", pads: [["OU2", "5"], ["OR3", "2"]]},
   {name: "Omcu.program_uart_node.a_tx", pads: [["OU3", "12"], ["OJ1", "3"]]},
   {name: "Omcu.program_uart_node.b_tx", pads: [["OU3", "11"], ["OJ1", "4"]]},
   {name: "Omcu.program_en_node", pads: [["OU3", "2"], ["OJ1", "6"], ["OR4", "2"], ["OC7", "1"]]},
-  {name: "Oledr.res.a", pads: [["OR5", "1"], ["OD2", "1"]]},
-  {name: "Oledg.res.a", pads: [["OR6", "1"], ["OD3", "1"]]},
-  {name: "Oledw.res.a", pads: [["OR7", "1"], ["OD4", "1"]]}
+  {name: "Omcu.program_boot_node", pads: [["OU3", "8"], ["OJ1", "2"], ["OR5", "2"]]},
+  {name: "Ocan.can.canh", pads: [["OU1", "6"], ["OU4", "7"]]},
+  {name: "Ocan.can.canl", pads: [["OU1", "14"], ["OU4", "6"]]},
+  {name: "Ocan.controller.txd", pads: [["OU3", "6"], ["OU4", "1"]]},
+  {name: "Ocan.controller.rxd", pads: [["OU3", "5"], ["OU4", "4"]]},
+  {name: "Oledr.res.a", pads: [["OD2", "1"], ["OR5", "1"]]},
+  {name: "Oledg.signal", pads: [["OU3", "13"], ["OD3", "2"]]},
+  {name: "Oledg.res.a", pads: [["OD3", "1"], ["OR6", "1"]]},
+  {name: "Oledw.signal", pads: [["OU3", "14"], ["OD4", "2"]]},
+  {name: "Oledw.res.a", pads: [["OD4", "1"], ["OR7", "1"]]},
+  {name: "Ovobd_sense.output", pads: [["OU3", "3"], ["OR8", "2"], ["OR9", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);

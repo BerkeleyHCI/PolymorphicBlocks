@@ -87,27 +87,27 @@ const C4 = board.add(C_0603_1608Metric, {
 })
 
 board.setNetlist([
-  {name: "gnd", pads: [["J1", "4"], ["U1", "2"], ["U1", "5"], ["U2", "16"], ["U2", "32"], ["U2", "33"], ["C2", "2"], ["U2", "15"], ["U2", "3"], ["C1", "2"], ["J2", "5"], ["C4", "2"], ["C3", "2"]]},
-  {name: "v3v3", pads: [["U1", "1"], ["U2", "17"], ["U2", "1"], ["U2", "5"], ["D1", "1"], ["J2", "1"], ["C4", "1"], ["C3", "1"]]},
-  {name: "usb.pwr", pads: [["J1", "1"], ["U1", "4"], ["U1", "3"], ["C1", "1"]]},
-  {name: "usb.usb.dp", pads: [["U2", "22"], ["J1", "3"]]},
-  {name: "usb.usb.dm", pads: [["U2", "21"], ["J1", "2"]]},
-  {name: "rgb.signals.red", pads: [["U2", "7"], ["R1", "2"]]},
-  {name: "rgb.signals.green", pads: [["U2", "8"], ["R2", "2"]]},
-  {name: "rgb.signals.blue", pads: [["U2", "9"], ["R3", "2"]]},
-  {name: "ts1.io", pads: [["U2", "27"], ["R4", "1"]]},
-  {name: "ts2.io", pads: [["U2", "28"], ["R5", "1"]]},
-  {name: "tss.io", pads: [["U2", "29"], ["C2", "1"]]},
-  {name: "mcu.swd_node.swdio", pads: [["U2", "23"], ["J2", "2"]]},
-  {name: "mcu.swd_node.swclk", pads: [["U2", "24"], ["J2", "4"]]},
+  {name: "gnd", pads: [["J1", "4"], ["U1", "2"], ["U1", "5"], ["C1", "2"], ["J2", "5"], ["U2", "15"], ["U2", "16"], ["U2", "3"], ["U2", "32"], ["U2", "33"], ["C2", "2"], ["C3", "2"], ["C4", "2"]]},
+  {name: "v3v3", pads: [["U1", "1"], ["J2", "1"], ["U2", "1"], ["U2", "17"], ["U2", "5"], ["D1", "1"], ["C3", "1"], ["C4", "1"]]},
+  {name: "usb.pwr", pads: [["J1", "1"], ["U1", "3"], ["U1", "4"], ["C1", "1"]]},
+  {name: "usb.usb.dp", pads: [["J1", "3"], ["U2", "22"]]},
+  {name: "usb.usb.dm", pads: [["J1", "2"], ["U2", "21"]]},
+  {name: "mcu.swd_node.swdio", pads: [["J2", "2"], ["U2", "23"]]},
+  {name: "mcu.swd_node.swclk", pads: [["J2", "4"], ["U2", "24"]]},
   {name: "mcu.swd.reset", pads: [["J2", "3"]]},
   {name: "mcu.swd.swo", pads: [["J2", "6"]]},
   {name: "mcu.ic.nrst", pads: [["U2", "4"]]},
-  {name: "rgb.red_res.a", pads: [["R1", "1"], ["D1", "2"]]},
-  {name: "rgb.green_res.a", pads: [["R2", "1"], ["D1", "3"]]},
-  {name: "rgb.blue_res.a", pads: [["R3", "1"], ["D1", "4"]]},
+  {name: "rgb.signals.red", pads: [["U2", "7"], ["R1", "2"]]},
+  {name: "rgb.signals.green", pads: [["U2", "8"], ["R2", "2"]]},
+  {name: "rgb.signals.blue", pads: [["U2", "9"], ["R3", "2"]]},
+  {name: "rgb.red_res.a", pads: [["D1", "2"], ["R1", "1"]]},
+  {name: "rgb.green_res.a", pads: [["D1", "3"], ["R2", "1"]]},
+  {name: "rgb.blue_res.a", pads: [["D1", "4"], ["R3", "1"]]},
+  {name: "ts1.io", pads: [["U2", "27"], ["R4", "1"]]},
   {name: "ts1.res.b", pads: [["R4", "2"]]},
-  {name: "ts2.res.b", pads: [["R5", "2"]]}
+  {name: "ts2.io", pads: [["U2", "28"], ["R5", "1"]]},
+  {name: "ts2.res.b", pads: [["R5", "2"]]},
+  {name: "tss.io", pads: [["U2", "29"], ["C2", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);

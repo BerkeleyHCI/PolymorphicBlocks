@@ -17,11 +17,11 @@ const R1 = board.add(R_0603_1608Metric, {
 })
 
 board.setNetlist([
-  {name: "led.signal", pads: [["U1", "10"], ["D1", "2"]]},
-  {name: "mcu.gnd", pads: [["U1", "4"], ["U1", "17"], ["R1", "2"]]},
+  {name: "mcu.gnd", pads: [["U1", "17"], ["U1", "4"], ["R1", "2"]]},
   {name: "mcu.pwr_out", pads: [["U1", "29"]]},
   {name: "mcu.vusb_out", pads: [["U1", "19"]]},
-  {name: "led.res.a", pads: [["R1", "1"], ["D1", "1"]]}
+  {name: "led.signal", pads: [["U1", "10"], ["D1", "2"]]},
+  {name: "led.res.a", pads: [["D1", "1"], ["R1", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
