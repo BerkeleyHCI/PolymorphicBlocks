@@ -318,7 +318,10 @@ class NetlistTransform(TransformUtil.Transform):
             if pin_to_net[connected1] is not pin_to_net[connected2]:
                 raise InvalidPackingException(f"packed pins {connected1}, {connected2} not connected")
 
-        named_nets = {self.name_net(net): net for net in nets}
+        named_nets = sorted(
+            [(self.name_net(net), net) for net in nets],
+            key=lambda pair: path_ordering[pair[0].link_component(must_have_link=False)],
+        )
 
         board_refdes_prefix = self.design.get_value(("refdes_prefix",))
         if board_refdes_prefix is not None:
@@ -336,10 +339,13 @@ class NetlistTransform(TransformUtil.Transform):
         netlist_nets = [
             Net(
                 net_prefix + str(name),
-                list(chain(*[scope.pins[port] for port in net if port in scope.pins])),
+                sorted(
+                    list(chain(*[scope.pins[port] for port in net if port in scope.pins])),
+                    key=lambda pin: ((path_ordering[pin.block_path]), pin.pin_name),
+                ),
                 [port for port in net if not port_ignored_paths(port)],
             )
-            for name, net in named_nets.items()
+            for name, net in named_nets
         ]
         netlist_nets = [net for net in netlist_nets if net.pins]  # prune empty nets
 
