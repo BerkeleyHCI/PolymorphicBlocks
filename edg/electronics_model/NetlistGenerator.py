@@ -279,7 +279,7 @@ class NetlistTransform(TransformUtil.Transform):
                 pin1_result = test(pin1)
                 pin2_result = test(pin2)
                 if pin1_result == pin2_result:
-                    continue
+                    break
                 if isinstance(pin1_result, bool) and isinstance(pin2_result, bool):
                     if pin1_result:
                         return -1
@@ -290,9 +290,8 @@ class NetlistTransform(TransformUtil.Transform):
                 else:
                     raise ValueError("mismatched result types")
             # else fallback to path ordering
-            return (
-                path_ordering.get(pin1.port_component(must_have_port=False), float("inf"))
-                - path_ordering.get(pin2.port_component(must_have_port=False), float("inf"))
+            return path_ordering.get(pin1.port_component(must_have_port=False), len(path_ordering)) - path_ordering.get(
+                pin2.port_component(must_have_port=False), len(path_ordering)
             )
 
         best_path = sorted(net, key=cmp_to_key(pin_name_goodness))[0]
