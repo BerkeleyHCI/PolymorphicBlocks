@@ -48,7 +48,7 @@
 (net (code 4) (name "led.signal")
   (node (ref U1) (pin 10))
   (node (ref D1) (pin 2)))
-(net (code 5) (name "led.res.a")
+(net (code 5) (name "led.package.k")
   (node (ref D1) (pin 1))
   (node (ref R1) (pin 1))))
 )
