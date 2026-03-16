@@ -271,6 +271,7 @@ class NetlistTransform(TransformUtil.Transform):
             lambda pin: len(pin.links),  # prefer longer link paths
             lambda pin: -len(pin.ports),  # prefer shorter (or no) port lengths
             lambda pin: not (pin.ports and pin.ports[-1].isnumeric()),  # disprefer number-only ports
+            lambda pin: -path_ordering.get(pin.port_component(must_have_port=False), len(path_ordering)),  # prefer earlier paths
         ]
 
         def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:
@@ -279,7 +280,7 @@ class NetlistTransform(TransformUtil.Transform):
                 pin1_result = test(pin1)
                 pin2_result = test(pin2)
                 if pin1_result == pin2_result:
-                    break
+                    continue
                 if isinstance(pin1_result, bool) and isinstance(pin2_result, bool):
                     if pin1_result:
                         return -1
@@ -289,13 +290,9 @@ class NetlistTransform(TransformUtil.Transform):
                     return pin2_result - pin1_result
                 else:
                     raise ValueError("mismatched result types")
-            # else fallback to path ordering
-            return path_ordering.get(pin1.port_component(must_have_port=False), len(path_ordering)) - path_ordering.get(
-                pin2.port_component(must_have_port=False), len(path_ordering)
-            )
+            return 0
 
         best_path = sorted(net, key=cmp_to_key(pin_name_goodness))[0]
-
         return best_path
 
     def scope_to_netlist(self, scope: BoardScope) -> Netlist:
