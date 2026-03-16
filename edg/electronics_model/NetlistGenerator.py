@@ -276,7 +276,9 @@ class NetlistTransform(TransformUtil.Transform):
 
         def prune_net_component(path: TransformUtil.Path) -> TransformUtil.Path:
             # prune out the net interior link, if it exists
-            if path.links and len(path.links) > 1 and path.links[-1] == "net":
+            if path.ports and len(path.ports) > 1 and path.ports[-1] == "net":
+                return path._replace(ports=path.ports[:-1])
+            elif path.links and len(path.links) > 1 and path.links[-1] == "net":
                 return path._replace(links=path.links[:-1])
             else:
                 return path
