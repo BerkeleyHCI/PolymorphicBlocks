@@ -27,9 +27,9 @@
 (nets
 (net (code 1) (name "gnd.gnd")
   (node (ref R1) (pin 2)))
-(net (code 2) (name "led.signal")
+(net (code 2) (name "src.io")
   (node (ref D1) (pin 2)))
-(net (code 3) (name "led.res.a")
+(net (code 3) (name "led.package.k")
   (node (ref D1) (pin 1))
   (node (ref R1) (pin 1))))
 )

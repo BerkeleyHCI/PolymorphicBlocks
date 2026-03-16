@@ -21,7 +21,7 @@ board.setNetlist([
   {name: "mcu.pwr_out", pads: [["U1", "29"]]},
   {name: "mcu.vusb_out", pads: [["U1", "19"]]},
   {name: "led.signal", pads: [["U1", "10"], ["D1", "2"]]},
-  {name: "led.res.a", pads: [["D1", "1"], ["R1", "1"]]}
+  {name: "led.package.k", pads: [["D1", "1"], ["R1", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);

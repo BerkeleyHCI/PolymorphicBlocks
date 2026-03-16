@@ -297,7 +297,7 @@
   (node (ref UU1) (pin 6))
   (node (ref UU1) (pin 9))
   (node (ref UC3) (pin 1)))
-(net (code 19) (name "Uled.res.a")
+(net (code 19) (name "Uled.package.k")
   (node (ref UD2) (pin 1))
   (node (ref UR3) (pin 1))))
 )
