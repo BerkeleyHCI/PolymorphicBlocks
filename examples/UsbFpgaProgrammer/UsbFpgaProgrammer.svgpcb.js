@@ -205,10 +205,10 @@ board.setNetlist([
   {name: "Fft232.acbus.9", pads: [["FU1", "33"]]},
   {name: "Fft232.ic.vregin", pads: [["FU1", "40"], ["FFB1", "2"], ["FC1", "1"], ["FC2", "1"]]},
   {name: "Fft232.ic.vccd", pads: [["FU1", "12"], ["FU1", "24"], ["FU1", "34"], ["FU1", "39"], ["FU1", "46"], ["FFB2", "1"], ["FFB3", "1"], ["FC7", "1"], ["FC8", "1"], ["FC9", "1"], ["FC10", "1"], ["FU2", "6"], ["FC13", "1"], ["FR4", "1"]]},
-  {name: "Fft232.ic.vphy", pads: [["FU1", "3"], ["FFB2", "2"], ["FC3", "1"]]},
-  {name: "Fft232.ic.vpll", pads: [["FU1", "8"], ["FFB3", "2"], ["FC4", "1"]]},
   {name: "Fft232.ic.vcccore", pads: [["FU1", "38"], ["FC5", "1"]]},
   {name: "Fft232.ic.vcca", pads: [["FU1", "37"], ["FC6", "1"]]},
+  {name: "Fft232.ic.vphy", pads: [["FU1", "3"], ["FFB2", "2"], ["FC3", "1"]]},
+  {name: "Fft232.ic.vpll", pads: [["FU1", "8"], ["FFB3", "2"], ["FC4", "1"]]},
   {name: "Fft232.ic.adbus.3", pads: [["FU1", "16"]]},
   {name: "Fft232.ic.adbus.5", pads: [["FU1", "18"]]},
   {name: "Fft232.ic.adbus.6", pads: [["FU1", "19"]]},
@@ -225,9 +225,9 @@ board.setNetlist([
   {name: "Fled1.res.a", pads: [["FD3", "1"], ["FR7", "1"]]},
   {name: "Fled2.signal", pads: [["FU1", "28"], ["FD4", "2"]]},
   {name: "Fled2.res.a", pads: [["FD4", "1"], ["FR8", "1"]]},
+  {name: "Fout.pwr", pads: [["FJ2", "1"]]},
   {name: "Fout.cs", pads: [["FU1", "17"], ["FJ2", "2"]]},
-  {name: "Fout.reset", pads: [["FU1", "20"], ["FJ2", "10"]]},
-  {name: "Fout.pwr", pads: [["FJ2", "1"]]}
+  {name: "Fout.reset", pads: [["FU1", "20"], ["FJ2", "10"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
