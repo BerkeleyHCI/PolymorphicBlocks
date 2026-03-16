@@ -482,8 +482,8 @@ board.setNetlist([
   {name: "Iusb.cc.cc1", pads: [["IJ1", "A5"], ["IU4", "10"], ["IU4", "11"]]},
   {name: "Iusb.cc.cc2", pads: [["IJ1", "B5"], ["IU4", "1"], ["IU4", "14"]]},
   {name: "Ireg_3v3.fb.output", pads: [["IU1", "4"], ["IR1", "2"], ["IR2", "1"]]},
-  {name: "Ireg_3v3.boot_cap.neg", pads: [["IU1", "2"], ["IC2", "2"], ["IL1", "1"]]},
   {name: "Ireg_3v3.boot_cap.pos", pads: [["IU1", "6"], ["IC2", "1"]]},
+  {name: "Ireg_3v3.boot_cap.neg", pads: [["IU1", "2"], ["IC2", "2"], ["IL1", "1"]]},
   {name: "Ireg_3v3.en_res.b", pads: [["IU1", "5"], ["IR3", "2"]]},
   {name: "Imcu.program_uart_node.a_tx", pads: [["IU3", "37"], ["IJ2", "3"]]},
   {name: "Imcu.program_uart_node.b_tx", pads: [["IU3", "36"], ["IJ2", "4"]]},
@@ -498,8 +498,8 @@ board.setNetlist([
   {name: "Ienc.b", pads: [["IU3", "9"], ["ISW1", "B"]]},
   {name: "Ienc.sw", pads: [["IU3", "8"], ["ISW1", "S1"]]},
   {name: "Ioled.reset", pads: [["IU3", "11"], ["IJ3", "14"]]},
-  {name: "Ioled.device.vcomh", pads: [["IJ3", "27"], ["IC16", "1"]]},
   {name: "Ioled.device.vcc", pads: [["IJ3", "28"], ["IC19", "1"]]},
+  {name: "Ioled.device.vcomh", pads: [["IJ3", "27"], ["IC16", "1"]]},
   {name: "Ioled.c1_cap.pos", pads: [["IJ3", "4"], ["IC14", "1"]]},
   {name: "Ioled.c1_cap.neg", pads: [["IJ3", "5"], ["IC14", "2"]]},
   {name: "Ioled.c2_cap.pos", pads: [["IJ3", "2"], ["IC15", "1"]]},
@@ -529,8 +529,8 @@ board.setNetlist([
   {name: "Itp_i.output", pads: [["IU3", "7"], ["IR23", "2"], ["IC30", "1"], ["ITP9", "1"]]},
   {name: "Itamp.input_positive", pads: [["IJ5", "3"], ["IR25", "1"], ["ITP10", "1"]]},
   {name: "Itamp.output", pads: [["IU3", "12"], ["IR26", "1"], ["IU11", "7"]]},
-  {name: "Ipacked_opamp.inn.0", pads: [["IR21", "2"], ["IR22", "1"], ["IU11", "2"]]},
   {name: "Ipacked_opamp.inp.1", pads: [["IR25", "2"], ["IR27", "2"], ["IU11", "5"]]},
+  {name: "Ipacked_opamp.inn.0", pads: [["IR21", "2"], ["IR22", "1"], ["IU11", "2"]]},
   {name: "Ipacked_opamp.inn.1", pads: [["IR24", "2"], ["IR26", "2"], ["IU11", "6"]]}
 ])
 
