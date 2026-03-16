@@ -89,8 +89,6 @@ class NetlistTransform(TransformUtil.Transform):
     def process_blocklike(
         self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]
     ) -> None:
-        self.path_traverse_order.append(path)
-
         # TODO may need rethought to support multi-board assemblies
         scope = self.scopes[path]  # including footprint and exports, and everything within a link
         internal_scope = scope  # for internal blocks
@@ -245,14 +243,17 @@ class NetlistTransform(TransformUtil.Transform):
 
     @override
     def visit_block(self, context: TransformUtil.TransformContext, block: edgir.BlockTypes) -> None:
+        self.path_traverse_order.append(context.path)
         self.process_blocklike(context.path, block)
 
     @override
     def visit_link(self, context: TransformUtil.TransformContext, link: edgir.Link) -> None:
+        self.path_traverse_order.append(context.path)
         self.process_blocklike(context.path, link)
 
     @override
     def visit_linkarray(self, context: TransformUtil.TransformContext, link: edgir.LinkArray) -> None:
+        self.path_traverse_order.append(context.path)
         self.process_blocklike(context.path, link)
 
     @override
