@@ -13,8 +13,8 @@ const R1 = board.add(R_0603_1608Metric, {
 
 board.setNetlist([
   {name: "gnd.gnd", pads: [["R1", "2"]]},
-  {name: "led.signal", pads: [["D1", "2"]]},
-  {name: "led.res.a", pads: [["D1", "1"], ["R1", "1"]]}
+  {name: "src.io", pads: [["D1", "2"]]},
+  {name: "led.package.k", pads: [["D1", "1"], ["R1", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);

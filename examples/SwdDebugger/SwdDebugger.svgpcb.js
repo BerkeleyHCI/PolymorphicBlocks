@@ -215,6 +215,7 @@ board.setNetlist([
   {name: "Susb_chain_0.d_N", pads: [["SJ1", "A7"], ["SJ1", "B7"], ["SU3", "32"], ["SU5", "1"]]},
   {name: "Susb.conn.cc.cc1", pads: [["SJ1", "A5"], ["SR1", "2"]]},
   {name: "Susb.conn.cc.cc2", pads: [["SJ1", "B5"], ["SR2", "2"]]},
+  {name: "Starget_reg.reset", pads: [["SU2", "3"], ["SU3", "28"], ["SR6", "2"]]},
   {name: "Smcu.xtal_node.xi", pads: [["SU3", "5"], ["SU4", "1"]]},
   {name: "Smcu.xtal_node.xo", pads: [["SU3", "6"], ["SU4", "3"]]},
   {name: "Smcu.swd_node.swdio", pads: [["SJ2", "2"], ["SU3", "34"]]},
@@ -223,10 +224,10 @@ board.setNetlist([
   {name: "Smcu.swd.tdi", pads: [["SJ2", "8"]]},
   {name: "Smcu.swd.swo", pads: [["SJ2", "6"], ["SU3", "39"]]},
   {name: "Sled_tgt.signal", pads: [["SU3", "30"], ["SD2", "2"]]},
-  {name: "Sled_tgt.res.a", pads: [["SD2", "1"], ["SR4", "1"]]},
+  {name: "Sled_tgt.package.k", pads: [["SD2", "1"], ["SR4", "1"]]},
   {name: "Sled_usb.signal", pads: [["SU3", "42"], ["SD3", "2"]]},
-  {name: "Sled_usb.res.a", pads: [["SD3", "1"], ["SR5", "1"]]},
-  {name: "Sen_pull.io", pads: [["SU2", "3"], ["SU3", "28"], ["SR6", "2"]]},
+  {name: "Sled_usb.package.k", pads: [["SD3", "1"], ["SR5", "1"]]},
+  {name: "Starget_drv.reset_in", pads: [["SU3", "18"], ["SR10", "1"], ["SR12", "2"], ["SSW1", "1"]]},
   {name: "Starget_drv.swclk_in", pads: [["SU3", "26"], ["SR7", "1"]]},
   {name: "Starget_drv.swdio_in", pads: [["SU3", "25"], ["SR9", "1"]]},
   {name: "Starget_drv.swdio_out", pads: [["SU3", "27"], ["SR8", "1"], ["SR9", "2"]]},
@@ -235,9 +236,8 @@ board.setNetlist([
   {name: "Starget_drv.swd.swdio", pads: [["SR8", "2"], ["SJ3", "2"]]},
   {name: "Starget_drv.swd.swclk", pads: [["SR7", "2"], ["SJ3", "4"]]},
   {name: "Starget_drv.swo_in", pads: [["SR11", "2"], ["SJ3", "6"]]},
-  {name: "Sreset_pull.io", pads: [["SU3", "18"], ["SR10", "1"], ["SR12", "2"], ["SSW1", "1"]]},
   {name: "Starget.tdi", pads: [["SJ3", "8"]]},
-  {name: "Sled_target.res.a", pads: [["SD4", "1"], ["SR13", "1"]]},
+  {name: "Sled_target.package.k", pads: [["SD4", "1"], ["SR13", "1"]]},
   {name: "Starget_sense.output", pads: [["SU3", "10"], ["SR14", "2"], ["SR15", "1"]]}
 ])
 
