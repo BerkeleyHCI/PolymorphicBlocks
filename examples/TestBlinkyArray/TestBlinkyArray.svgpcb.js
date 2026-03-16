@@ -137,30 +137,30 @@ const R9 = board.add(R_0603_1608Metric, {
 })
 
 board.setNetlist([
-  {name: "usb.gnd", pads: [["J1", "A1"], ["J1", "B12"], ["J1", "B1"], ["J1", "A12"], ["U1", "1"], ["U2", "1"], ["U2", "15"], ["U2", "38"], ["U2", "39"], ["SW2", "2"], ["J1", "S1"], ["C1", "2"], ["C5", "2"], ["C6", "2"], ["J2", "4"], ["SW1", "2"], ["R6", "2"], ["R7", "2"], ["R8", "2"], ["R9", "2"], ["R4", "2"], ["C7", "2"], ["R1", "1"], ["R2", "1"], ["C3", "2"], ["C4", "2"]]},
-  {name: "usb.pwr", pads: [["J1", "A4"], ["J1", "B9"], ["J1", "B4"], ["J1", "A9"], ["U1", "3"], ["U1", "5"], ["C1", "1"], ["C3", "1"]]},
-  {name: "reg.pwr_out", pads: [["U2", "2"], ["R3", "1"], ["C5", "1"], ["C6", "1"], ["J2", "1"], ["R5", "1"], ["L1", "2"], ["C4", "1"]]},
-  {name: "sw.out", pads: [["U2", "8"], ["SW2", "1"]]},
-  {name: "mcu.gpio.led_0", pads: [["U2", "26"], ["D1", "2"]]},
-  {name: "mcu.gpio.led_1", pads: [["U2", "27"], ["D2", "2"]]},
-  {name: "mcu.gpio.led_2", pads: [["U2", "28"], ["D3", "2"]]},
-  {name: "mcu.gpio.led_3", pads: [["U2", "29"], ["D4", "2"]]},
+  {name: "usb.gnd", pads: [["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["R1", "1"], ["R2", "1"], ["U1", "1"], ["R4", "2"], ["C1", "2"], ["C3", "2"], ["C4", "2"], ["U2", "1"], ["U2", "15"], ["U2", "38"], ["U2", "39"], ["C5", "2"], ["C6", "2"], ["J2", "4"], ["SW1", "2"], ["C7", "2"], ["SW2", "2"], ["R6", "2"], ["R7", "2"], ["R8", "2"], ["R9", "2"]]},
+  {name: "usb.pwr", pads: [["J1", "A4"], ["J1", "A9"], ["J1", "B4"], ["J1", "B9"], ["U1", "3"], ["U1", "5"], ["C1", "1"], ["C3", "1"]]},
   {name: "usb.usb.dp", pads: [["J1", "A6"], ["J1", "B6"]]},
   {name: "usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"]]},
   {name: "usb.conn.cc.cc1", pads: [["J1", "A5"], ["R1", "2"]]},
   {name: "usb.conn.cc.cc2", pads: [["J1", "B5"], ["R2", "2"]]},
+  {name: "reg.pwr_out", pads: [["R3", "1"], ["L1", "2"], ["C4", "1"], ["U2", "2"], ["C5", "1"], ["C6", "1"], ["J2", "1"], ["R5", "1"]]},
   {name: "reg.fb.output", pads: [["U1", "4"], ["R3", "2"], ["R4", "1"]]},
-  {name: "reg.vbst_cap.neg", pads: [["C2", "2"], ["U1", "2"], ["L1", "1"]]},
-  {name: "reg.vbst_cap.pos", pads: [["C2", "1"], ["U1", "6"]]},
+  {name: "reg.vbst_cap.neg", pads: [["U1", "2"], ["C2", "2"], ["L1", "1"]]},
+  {name: "reg.vbst_cap.pos", pads: [["U1", "6"], ["C2", "1"]]},
+  {name: "mcu.gpio.led_0", pads: [["U2", "26"], ["D1", "2"]]},
+  {name: "mcu.gpio.led_1", pads: [["U2", "27"], ["D2", "2"]]},
+  {name: "mcu.gpio.led_2", pads: [["U2", "28"], ["D3", "2"]]},
+  {name: "mcu.gpio.led_3", pads: [["U2", "29"], ["D4", "2"]]},
   {name: "mcu.program_uart_node.a_tx", pads: [["U2", "35"], ["J2", "2"]]},
   {name: "mcu.program_uart_node.b_tx", pads: [["U2", "34"], ["J2", "3"]]},
   {name: "mcu.program_en_node", pads: [["U2", "3"], ["R5", "2"], ["C7", "1"]]},
   {name: "mcu.program_boot_node", pads: [["U2", "25"], ["SW1", "1"]]},
   {name: "mcu.ic.io2", pads: [["U2", "24"]]},
-  {name: "led.led[0].res.a", pads: [["R6", "1"], ["D1", "1"]]},
-  {name: "led.led[1].res.a", pads: [["R7", "1"], ["D2", "1"]]},
-  {name: "led.led[2].res.a", pads: [["R8", "1"], ["D3", "1"]]},
-  {name: "led.led[3].res.a", pads: [["R9", "1"], ["D4", "1"]]}
+  {name: "sw.out", pads: [["U2", "8"], ["SW2", "1"]]},
+  {name: "led.led[0].res.a", pads: [["D1", "1"], ["R6", "1"]]},
+  {name: "led.led[1].res.a", pads: [["D2", "1"], ["R7", "1"]]},
+  {name: "led.led[2].res.a", pads: [["D3", "1"], ["R8", "1"]]},
+  {name: "led.led[3].res.a", pads: [["D4", "1"], ["R9", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
