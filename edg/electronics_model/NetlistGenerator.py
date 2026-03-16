@@ -82,12 +82,15 @@ class NetlistTransform(TransformUtil.Transform):
         self.all_scopes = [BoardScope.empty(TransformUtil.Path.empty())]  # list of unique scopes
         self.scopes: Scopes = {TransformUtil.Path.empty(): self.all_scopes[0]}
         self.class_paths: ClassPaths = {TransformUtil.Path.empty(): []}  # seed root
+        self.block_link_order: List[TransformUtil.Path] = []
 
         self.design = design
 
     def process_blocklike(
         self, path: TransformUtil.Path, block: Union[edgir.Link, edgir.LinkArray, edgir.HierarchyBlock]
     ) -> None:
+        self.block_link_order.append(path)
+
         # TODO may need rethought to support multi-board assemblies
         scope = self.scopes[path]  # including footprint and exports, and everything within a link
         internal_scope = scope  # for internal blocks
@@ -253,7 +256,7 @@ class NetlistTransform(TransformUtil.Transform):
         self.process_blocklike(context.path, link)
 
     @staticmethod
-    def name_net(net: Iterable[TransformUtil.Path], net_prefix: str) -> str:
+    def name_net(net: Iterable[TransformUtil.Path]) -> TransformUtil.Path:
         """Names a net based on all the paths of ports and links that are part of the net."""
         # higher criteria are preferred, True or larger number is preferred
         CRITERIA: List[Callable[[TransformUtil.Path], Union[bool, int]]] = [
@@ -285,9 +288,11 @@ class NetlistTransform(TransformUtil.Transform):
 
         best_path = sorted(net, key=cmp_to_key(pin_name_goodness))[0]
 
-        return net_prefix + str(best_path)
+        return best_path
 
     def scope_to_netlist(self, scope: BoardScope) -> Netlist:
+        path_ordering = {path: i for i, path in enumerate(self.block_link_order)}
+
         # Convert to the netlist format
         seen: Set[TransformUtil.Path] = set()
         nets: List[List[TransformUtil.Path]] = []  # lists preserve ordering
@@ -313,13 +318,17 @@ class NetlistTransform(TransformUtil.Transform):
             if pin_to_net[connected1] is not pin_to_net[connected2]:
                 raise InvalidPackingException(f"packed pins {connected1}, {connected2} not connected")
 
+        named_nets = sorted(
+            [(self.name_net(net), net) for net in nets],
+            key=lambda pair: path_ordering[pair[0].link_component(must_have_link=False)],
+        )
+
         board_refdes_prefix = self.design.get_value(("refdes_prefix",))
         if board_refdes_prefix is not None:
             assert isinstance(board_refdes_prefix, str)
             net_prefix = board_refdes_prefix
         else:
             net_prefix = ""
-        named_nets = {self.name_net(net, net_prefix): net for net in nets}
 
         def port_ignored_paths(path: TransformUtil.Path) -> bool:  # ignore link ports for netlisting
             return bool(path.links) or any(
@@ -329,11 +338,14 @@ class NetlistTransform(TransformUtil.Transform):
         netlist_footprints = [footprint for path, footprint in scope.footprints.items()]
         netlist_nets = [
             Net(
-                name,
-                list(chain(*[scope.pins[port] for port in net if port in scope.pins])),
+                net_prefix + str(name),
+                sorted(
+                    list(chain(*[scope.pins[port] for port in net if port in scope.pins])),
+                    key=lambda pin: ((path_ordering[pin.block_path]), pin.pin_name),
+                ),
                 [port for port in net if not port_ignored_paths(port)],
             )
-            for name, net in named_nets.items()
+            for name, net in named_nets
         ]
         netlist_nets = [net for net in netlist_nets if net.pins]  # prune empty nets
 

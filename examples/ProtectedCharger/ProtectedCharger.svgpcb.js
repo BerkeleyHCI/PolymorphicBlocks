@@ -107,19 +107,19 @@ const J3 = board.add(JST_PH_S3B_PH_K_1x03_P2_00mm_Horizontal, {
 })
 
 board.setNetlist([
-  {name: "vusb", pads: [["J1", "A4"], ["J1", "B9"], ["J1", "B4"], ["J1", "A9"], ["U1", "4"], ["D1", "2"], ["C1", "1"]]},
-  {name: "gnd", pads: [["J1", "A1"], ["J1", "B12"], ["J1", "B1"], ["J1", "A12"], ["J3", "1"], ["J3", "3"], ["J2", "1"], ["TP1", "1"], ["R3", "2"], ["U1", "2"], ["Q3", "1"], ["J1", "S1"], ["R5", "2"], ["C1", "2"], ["C2", "2"], ["R1", "1"], ["R2", "1"]]},
-  {name: "batt.pwr", pads: [["J2", "2"], ["TP2", "1"], ["R4", "2"], ["Q1", "1"], ["Q2", "3"]]},
-  {name: "charger.pwr_bat", pads: [["U1", "3"], ["Q1", "2"], ["Q2", "2"], ["R4", "1"], ["C2", "1"], ["Q3", "3"]]},
-  {name: "charge_led.signal", pads: [["U1", "1"], ["R6", "2"]]},
-  {name: "pmos_load.pwr_out", pads: [["J3", "2"], ["Q3", "2"]]},
+  {name: "vusb", pads: [["J1", "A4"], ["J1", "A9"], ["J1", "B4"], ["J1", "B9"], ["U1", "4"], ["C1", "1"], ["D1", "2"]]},
+  {name: "gnd", pads: [["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["R1", "1"], ["R2", "1"], ["J2", "1"], ["TP1", "1"], ["R3", "2"], ["U1", "2"], ["C1", "2"], ["C2", "2"], ["R5", "2"], ["Q3", "1"], ["J3", "1"], ["J3", "3"]]},
   {name: "usb.usb.dp", pads: [["J1", "A6"], ["J1", "B6"]]},
   {name: "usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"]]},
   {name: "usb.conn.cc.cc1", pads: [["J1", "A5"], ["R1", "2"]]},
   {name: "usb.conn.cc.cc2", pads: [["J1", "B5"], ["R2", "2"]]},
+  {name: "batt.pwr", pads: [["J2", "2"], ["TP2", "1"], ["R4", "2"], ["Q1", "1"], ["Q2", "3"]]},
   {name: "pmos.r1.a", pads: [["R3", "1"], ["Q1", "3"], ["Q2", "1"]]},
-  {name: "charger.prog_res.a", pads: [["R5", "1"], ["U1", "5"]]},
-  {name: "charge_led.res.a", pads: [["R6", "1"], ["D1", "1"]]}
+  {name: "charger.pwr_bat", pads: [["R4", "1"], ["Q1", "2"], ["Q2", "2"], ["U1", "3"], ["C2", "1"], ["Q3", "3"]]},
+  {name: "charger.prog_res.a", pads: [["U1", "5"], ["R5", "1"]]},
+  {name: "charge_led.signal", pads: [["U1", "1"], ["R6", "2"]]},
+  {name: "charge_led.res.a", pads: [["D1", "1"], ["R6", "1"]]},
+  {name: "pmos_load.pwr_out", pads: [["Q3", "2"], ["J3", "2"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
