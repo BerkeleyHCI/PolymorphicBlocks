@@ -114,11 +114,11 @@ board.setNetlist([
   {name: "usb.conn.cc.cc1", pads: [["J1", "A5"], ["R1", "2"]]},
   {name: "usb.conn.cc.cc2", pads: [["J1", "B5"], ["R2", "2"]]},
   {name: "batt.pwr", pads: [["J2", "2"], ["TP2", "1"], ["R4", "2"], ["Q1", "1"], ["Q2", "3"]]},
+  {name: "pmos.pwr_out", pads: [["R4", "1"], ["Q1", "2"], ["Q2", "2"], ["U1", "3"], ["C2", "1"], ["Q3", "3"]]},
   {name: "pmos.r1.a", pads: [["R3", "1"], ["Q1", "3"], ["Q2", "1"]]},
-  {name: "charger.pwr_bat", pads: [["R4", "1"], ["Q1", "2"], ["Q2", "2"], ["U1", "3"], ["C2", "1"], ["Q3", "3"]]},
-  {name: "charger.prog_res.a", pads: [["U1", "5"], ["R5", "1"]]},
-  {name: "charge_led.signal", pads: [["U1", "1"], ["R6", "2"]]},
-  {name: "charge_led.res.a", pads: [["D1", "1"], ["R6", "1"]]},
+  {name: "charger.stat", pads: [["U1", "1"], ["R6", "2"]]},
+  {name: "charger.ic.prog", pads: [["U1", "5"], ["R5", "1"]]},
+  {name: "charge_led.package.k", pads: [["D1", "1"], ["R6", "1"]]},
   {name: "pmos_load.pwr_out", pads: [["Q3", "2"], ["J3", "2"]]}
 ])
 

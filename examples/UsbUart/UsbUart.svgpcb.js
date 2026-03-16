@@ -110,7 +110,7 @@ board.setNetlist([
   {name: "Uusbconv.rts", pads: [["UU1", "24"]]},
   {name: "Uusbconv.cts", pads: [["UU1", "23"]]},
   {name: "Uusbconv.ic.vdd", pads: [["UU1", "6"], ["UU1", "9"], ["UC3", "1"]]},
-  {name: "Uled.res.a", pads: [["UD2", "1"], ["UR3", "1"]]}
+  {name: "Uled.package.k", pads: [["UD2", "1"], ["UR3", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);

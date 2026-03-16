@@ -271,7 +271,9 @@ class NetlistTransform(TransformUtil.Transform):
             lambda pin: len(pin.links),  # prefer longer link paths
             lambda pin: -len(pin.ports),  # prefer shorter (or no) port lengths
             lambda pin: not (pin.ports and pin.ports[-1].isnumeric()),  # disprefer number-only ports
-            lambda pin: -path_ordering.get(pin.port_component(must_have_port=False), len(path_ordering)),  # prefer earlier paths
+            lambda pin: -path_ordering.get(
+                pin.port_component(must_have_port=False), len(path_ordering)
+            ),  # prefer earlier paths
         ]
 
         def prune_net_component(path: TransformUtil.Path) -> TransformUtil.Path:

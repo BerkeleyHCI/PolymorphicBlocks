@@ -280,16 +280,16 @@ board.setNetlist([
   {name: "Tusb.pwr", pads: [["TJ1", "A4"], ["TJ1", "A9"], ["TJ1", "B4"], ["TJ1", "B9"], ["TFB1", "1"]]},
   {name: "Tusb.conn.cc.cc1", pads: [["TJ1", "A5"], ["TR1", "2"]]},
   {name: "Tusb.conn.cc.cc2", pads: [["TJ1", "B5"], ["TR2", "2"]]},
-  {name: "Treg_3v3.fb.output", pads: [["TU1", "4"], ["TR3", "2"], ["TR4", "1"]]},
-  {name: "Treg_3v3.boot_cap.pos", pads: [["TU1", "6"], ["TC2", "1"]]},
-  {name: "Treg_3v3.boot_cap.neg", pads: [["TU1", "2"], ["TC2", "2"], ["TL1", "1"]]},
-  {name: "Treg_3v3.en_res.b", pads: [["TU1", "5"], ["TR5", "2"]]},
+  {name: "Treg_3v3.ic.sw", pads: [["TU1", "2"], ["TC2", "2"], ["TL1", "1"]]},
+  {name: "Treg_3v3.ic.fb", pads: [["TU1", "4"], ["TR3", "2"], ["TR4", "1"]]},
+  {name: "Treg_3v3.ic.boot", pads: [["TU1", "6"], ["TC2", "1"]]},
+  {name: "Treg_3v3.ic.en", pads: [["TU1", "5"], ["TR5", "2"]]},
   {name: "Tmcu.program_uart_node.a_tx", pads: [["TU5", "37"], ["TJ2", "3"]]},
   {name: "Tmcu.program_uart_node.b_tx", pads: [["TU5", "36"], ["TJ2", "4"]]},
   {name: "Tmcu.program_en_node", pads: [["TU5", "3"], ["TJ2", "6"], ["TR6", "2"], ["TC13", "1"]]},
   {name: "Tmcu.program_boot_node", pads: [["TU5", "27"], ["TJ2", "2"], ["TD2", "2"]]},
   {name: "Ttouch_duck.pad", pads: [["TU5", "6"], ["TU7", "1"]]},
-  {name: "Tledr.res.a", pads: [["TD2", "1"], ["TR9", "1"]]},
+  {name: "Tledr.package.k", pads: [["TD2", "1"], ["TR9", "1"]]},
   {name: "Tcam.dvp8.xclk", pads: [["TU5", "21"], ["TJ3", "13"]]},
   {name: "Tcam.dvp8.pclk", pads: [["TU5", "19"], ["TJ3", "17"], ["TC16", "1"]]},
   {name: "Tcam.dvp8.href", pads: [["TU5", "24"], ["TJ3", "9"]]},
@@ -312,7 +312,7 @@ board.setNetlist([
   {name: "Tflir.spi.miso", pads: [["TU5", "4"], ["TU8", "12"]]},
   {name: "Tflir.cs", pads: [["TU5", "38"], ["TU8", "14"]]},
   {name: "Tflir.vsync", pads: [["TU5", "7"], ["TU8", "2"]]},
-  {name: "Tflir.mclk.out", pads: [["TU8", "26"], ["TX1", "3"]]}
+  {name: "Tflir.ic.master_clk", pads: [["TU8", "26"], ["TX1", "3"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);

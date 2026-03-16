@@ -140,12 +140,12 @@ board.setNetlist([
   {name: "Uusbconv.rts", pads: [["UU1", "24"], ["UQ1", "2"], ["UR4", "1"], ["UR6", "2"]]},
   {name: "Uusbconv.cts", pads: [["UU1", "23"]]},
   {name: "Uusbconv.ic.vdd", pads: [["UU1", "6"], ["UU1", "9"], ["UC3", "1"]]},
-  {name: "Uauto.en", pads: [["UJ2", "6"], ["UQ1", "3"]]},
-  {name: "Uauto.boot", pads: [["UJ2", "2"], ["UQ2", "3"]]},
-  {name: "Uauto.dtr_res.b", pads: [["UQ1", "1"], ["UR3", "2"]]},
-  {name: "Uauto.rts_res.b", pads: [["UQ2", "1"], ["UR4", "2"]]},
-  {name: "Uled.res.a", pads: [["UD2", "1"], ["UR5", "1"]]},
-  {name: "Uled_en.res.a", pads: [["UD3", "1"], ["UR6", "1"]]}
+  {name: "Uout.en", pads: [["UJ2", "6"], ["UQ1", "3"]]},
+  {name: "Uout.boot", pads: [["UJ2", "2"], ["UQ2", "3"]]},
+  {name: "Uauto.q_en.base", pads: [["UQ1", "1"], ["UR3", "2"]]},
+  {name: "Uauto.q_boot.base", pads: [["UQ2", "1"], ["UR4", "2"]]},
+  {name: "Uled.package.k", pads: [["UD2", "1"], ["UR5", "1"]]},
+  {name: "Uled_en.package.k", pads: [["UD3", "1"], ["UR6", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);

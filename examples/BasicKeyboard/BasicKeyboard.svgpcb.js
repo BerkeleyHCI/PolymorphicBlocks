@@ -16,12 +16,12 @@ board.setNetlist([
   {name: "mcu.gnd", pads: [["U1", "13"]]},
   {name: "mcu.pwr_out", pads: [["U1", "12"]]},
   {name: "mcu.vusb_out", pads: [["U1", "14"]]},
-  {name: "sw.d[0,0].cathode", pads: [["SW1", "1"], ["D1", "1"]]},
-  {name: "sw.d[0,1].cathode", pads: [["SW2", "1"], ["D2", "1"]]},
-  {name: "sw.d[0,2].cathode", pads: [["SW3", "1"], ["D3", "1"]]},
-  {name: "sw.d[1,0].cathode", pads: [["SW4", "1"], ["D4", "1"]]},
-  {name: "sw.d[1,1].cathode", pads: [["SW5", "1"], ["D5", "1"]]},
-  {name: "sw.d[1,2].cathode", pads: [["SW6", "1"], ["D6", "1"]]}
+  {name: "sw.sw[0,0].sw", pads: [["SW1", "1"], ["D1", "1"]]},
+  {name: "sw.sw[0,1].sw", pads: [["SW2", "1"], ["D2", "1"]]},
+  {name: "sw.sw[0,2].sw", pads: [["SW3", "1"], ["D3", "1"]]},
+  {name: "sw.sw[1,0].sw", pads: [["SW4", "1"], ["D4", "1"]]},
+  {name: "sw.sw[1,1].sw", pads: [["SW5", "1"], ["D5", "1"]]},
+  {name: "sw.sw[1,2].sw", pads: [["SW6", "1"], ["D6", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);
