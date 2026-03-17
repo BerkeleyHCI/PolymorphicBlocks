@@ -396,7 +396,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
         self.r1 = self.Block(Resistor(resistance=self.r1_val))
         self.r2 = self.Block(Resistor(resistance=self.r2_val))
 
-        batt_voltage = self.pwr_in.link().voltage.hull(self.chg_in.link().voltage).hull(self.gnd.link().voltage)
+        batt_voltage = self.pwr_in.link().voltage.hull(self.chg_in.link().voltage)
 
         # taking the max of the current for the both direction. 0 lower bound
         batt_current = self.pwr_out.link().current_drawn.hull(self.chg_out.link().current_drawn).hull((0, 0))
