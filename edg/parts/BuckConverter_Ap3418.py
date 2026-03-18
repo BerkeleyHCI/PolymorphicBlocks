@@ -1,3 +1,4 @@
+from deprecated import deprecated
 from typing_extensions import override
 
 from ..abstract_parts import *
@@ -43,6 +44,7 @@ class Ap3418_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
+@deprecated("obsolete part")
 class Ap3418(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
     """Adjustable synchronous buck converter in SOT-23-5 with integrated switch"""
 
