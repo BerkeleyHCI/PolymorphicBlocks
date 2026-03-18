@@ -8,26 +8,29 @@ class Max17048_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
     def __init__(self) -> None:
         super().__init__()
-        self.vdd = self.Port(VoltageSink(
-            voltage_limits=Range(2.5, 4.5),
-            current_draw=(0, 100) * uAmp,  # ~23 uA typ, margin included
-        ))
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=Range(2.5, 4.5),
+                current_draw=(0, 100) * uAmp,  # ~23 uA typ, margin included
+            )
+        )
         self.gnd = self.Port(Ground())
 
         # I2C target interface
         # I/O tolerant to 5.5 V independent of VDD (per datasheet)
         dio_model = DigitalBidir.from_supply(
-            self.gnd, self.vdd,
-            voltage_limit_abs=(-0.5 * Volt, 5.5 * Volt),
-            input_threshold_factor=(0.3, 0.7)
+            self.gnd, self.vdd, voltage_limit_abs=(-0.5 * Volt, 5.5 * Volt), input_threshold_factor=(0.3, 0.7)
         )
         self.i2c = self.Port(I2cTarget(dio_model, addresses=ArrayIntExpr()))
 
-        self.alrt = self.Port(DigitalSingleSource(
-            voltage_out=Range(0, 5.5),
-            output_thresholds=Range(0, 5.5),
-            pullup_capable=True,
-        ), optional=True)
+        self.alrt = self.Port(
+            DigitalSingleSource(
+                voltage_out=Range(0, 5.5),
+                output_thresholds=Range(0, 5.5),
+                pullup_capable=True,
+            ),
+            optional=True,
+        )
 
         self.qstrt = self.Port(Passive())
 
@@ -35,21 +38,23 @@ class Max17048_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def contents(self) -> None:
         super().contents()
         self.footprint(
-            'U', 'Package_DFN_QFN:DFN-8-1EP_2x2mm_P0.5mm_EP0.8x1.6mm',
+            "U",
+            "Package_DFN_QFN:DFN-8-1EP_2x2mm_P0.5mm_EP0.8x1.6mm",
             {
-                '1': self.gnd,
-                '3': self.vdd,
-                '4': self.gnd,
-                '5': self.alrt,
-                '6': self.qstrt,
-                '7': self.i2c.scl,
-                '8': self.i2c.sda,
-                '9': self.gnd,
+                "1": self.gnd,
+                "3": self.vdd,
+                "4": self.gnd,
+                "5": self.alrt,
+                "6": self.qstrt,
+                "7": self.i2c.scl,
+                "8": self.i2c.sda,
+                "9": self.gnd,
             },
-            mfr='Analog Devices (Maxim)', part='MAX17048',
-            datasheet='https://www.analog.com/media/en/technical-documentation/data-sheets/MAX17048-MAX17049.pdf'
+            mfr="Analog Devices (Maxim)",
+            part="MAX17048",
+            datasheet="https://www.analog.com/media/en/technical-documentation/data-sheets/MAX17048-MAX17049.pdf",
         )
-        self.assign(self.lcsc_part, 'C2682616')
+        self.assign(self.lcsc_part, "C2682616")
         self.assign(self.actual_basic_part, False)
 
 
