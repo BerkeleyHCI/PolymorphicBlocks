@@ -17,11 +17,14 @@ class Max17048_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         # I2C target interface
         # I/O tolerant to 5.5 V independent of pwr (per datasheet)
         dio_model = DigitalBidir.from_supply(
-            self.gnd, self.pwr, voltage_limit_abs=(-0.3, 5.5) * Volt, input_threshold_abs=(0.5, 1.4)*Volt
+            self.gnd, self.pwr, voltage_limit_abs=(-0.3, 5.5) * Volt, input_threshold_abs=(0.5, 1.4) * Volt
         )
         self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x36]))
 
-        self.alrt = self.Port(DigitalSource.low_from_supply(self.gnd), optional=True,)
+        self.alrt = self.Port(
+            DigitalSource.low_from_supply(self.gnd),
+            optional=True,
+        )
 
         self.qstrt = self.Port(Passive())
 
@@ -70,4 +73,3 @@ class Max17048(DefaultExportBlock):
 
         # Tie QSTRT to ground unless otherwise needed
         self.connect(self.ic.qstrt.adapt_to(Ground()), self.gnd)
-
