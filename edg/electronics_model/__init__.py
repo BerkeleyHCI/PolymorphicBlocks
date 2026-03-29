@@ -40,6 +40,11 @@ from .PartParserUtil import PartParserUtil
 from .KiCadImportableBlock import KiCadImportableBlock, KiCadInstantiableBlock
 from .KiCadSchematicBlock import KiCadSchematicBlock
 
+# model-breaking constructs, including for unit testing
+from .DummyDevice import DummyDevice
+from .GroundDummyDevice import DummyGround
+from .VoltageDummyDevice import DummyVoltageSource, DummyVoltageSink
+
 # for power users to build custom blackbox handlers
 from .KiCadSchematicParser import KiCadSymbol, KiCadLibSymbol
 from .KiCadSchematicBlock import KiCadBlackbox, KiCadBlackboxBase

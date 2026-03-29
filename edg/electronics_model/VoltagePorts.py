@@ -41,6 +41,12 @@ class VoltageLink(CircuitLink):
         self.current_drawn = self.Parameter(RangeExpr())
         self.current_limits = self.Parameter(RangeExpr())
 
+        self.has_reverse_voltage = self.Parameter(BoolExpr())
+        self.reverse_voltage = self.Parameter(RangeExpr())
+        self.reverse_voltage_limits = self.Parameter(RangeExpr())
+        self.reverse_current_drawn = self.Parameter(RangeExpr())
+        self.reverse_current_limits = self.Parameter(RangeExpr())
+
     @override
     def contents(self) -> None:
         super().contents()
@@ -58,11 +64,31 @@ class VoltageLink(CircuitLink):
 
         self.assign(self.voltage, self.source.voltage_out)
         self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
-        self.require(self.voltage_limits.contains(self.voltage), "overvoltage")
+        self.require(self.voltage_limits.contains(self.voltage), "voltage out of limits")
         self.assign(self.current_limits, self.source.current_limits)
-
         self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
-        self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
+        self.require(self.current_limits.contains(self.current_drawn), "current draw out of limits")
+
+        # TODO limit to one reverse voltage source
+        self.assign(self.has_reverse_voltage, self.reverse_voltage != RangeExpr.EMPTY)
+        self.assign(self.reverse_voltage, self.sinks.hull(lambda x: x.reverse_voltage_out))
+        self.assign(self.reverse_voltage_limits, self.source.reverse_voltage_limits)
+        # use implications to gate the reverse voltage requirements, since not all sources will support reverse voltage
+        self.require(
+            self.has_reverse_voltage.implies(self.reverse_voltage_limits != RangeExpr.EMPTY),
+            "reverse voltage source must have reverse voltage sink",
+        )
+        self.require(
+            self.has_reverse_voltage.implies(self.reverse_voltage_limits.contains(self.reverse_voltage)),
+            "reverse voltage limits out of range",
+        )
+
+        self.assign(self.reverse_current_drawn, self.source.reverse_current_draw)
+        self.assign(self.reverse_current_limits, self.sinks.hull(lambda x: x.reverse_current_limits))
+        self.require(
+            self.has_reverse_voltage.implies(self.reverse_current_limits.contains(self.reverse_current_drawn)),
+            "reverse current out of limits",
+        )
 
 
 class VoltageSinkBridge(CircuitPortBridge):
@@ -139,10 +165,19 @@ class VoltageSink(VoltageBase):
     ) -> "VoltageSink":
         return VoltageSink(voltage_limits=gnd.link().voltage + voltage_limits, current_draw=current_draw)
 
-    def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL, current_draw: RangeLike = RangeExpr.ZERO) -> None:
+    def __init__(
+        self,
+        voltage_limits: RangeLike = RangeExpr.ALL,
+        current_draw: RangeLike = RangeExpr.ZERO,
+        reverse_voltage_out: RangeLike = RangeExpr.EMPTY,
+        reverse_current_limits: RangeLike = RangeExpr.EMPTY,
+    ) -> None:
         super().__init__()
         self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
         self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
+
+        self.reverse_voltage_out: RangeExpr = self.Parameter(RangeExpr(reverse_voltage_out))
+        self.reverse_current_limits: RangeExpr = self.Parameter(RangeExpr(reverse_current_limits))
 
 
 class VoltageSinkAdapterGroundReference(CircuitPortAdapter["GroundReference"]):
@@ -194,10 +229,19 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
 class VoltageSource(VoltageBase):
     bridge_type = VoltageSourceBridge
 
-    def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO, current_limits: RangeLike = RangeExpr.ALL) -> None:
+    def __init__(
+        self,
+        voltage_out: RangeLike = RangeExpr.ZERO,
+        current_limits: RangeLike = RangeExpr.ALL,
+        reverse_voltage_limits: RangeLike = RangeExpr.EMPTY,
+        reverse_current_draw: RangeLike = RangeExpr.EMPTY,
+    ) -> None:
         super().__init__()
         self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
         self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
+
+        self.reverse_voltage_limits: RangeExpr = self.Parameter(RangeExpr(reverse_voltage_limits))
+        self.reverse_current_draw: RangeExpr = self.Parameter(RangeExpr(reverse_current_draw))
 
 
 Power = PortTag(VoltageSink)  # General positive voltage port, should only be mutually exclusive with the below
