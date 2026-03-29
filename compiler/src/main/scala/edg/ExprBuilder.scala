@@ -34,6 +34,9 @@ object ExprBuilder {
     def Literal(valueMin: Double, valueMax: Double): expr.ValueExpr = // convenience method
       Literal(valueMin.toFloat, valueMax.toFloat)
 
+    def LiteralRangeEmpty(): expr.ValueExpr =
+      Literal(Float.NaN, Float.NaN)
+
     def BinOp(op: expr.BinaryExpr.Op, lhs: expr.ValueExpr, rhs: expr.ValueExpr): expr.ValueExpr = expr.ValueExpr(
       expr = expr.ValueExpr.Expr.Binary(expr.BinaryExpr(op = op, lhs = Some(lhs), rhs = Some(rhs)))
     )
