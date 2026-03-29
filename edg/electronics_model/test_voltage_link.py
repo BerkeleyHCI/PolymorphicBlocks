@@ -50,15 +50,71 @@ class ReverseVoltageTestTop(DesignTop):
 
     def __init__(self) -> None:
         super().__init__()
+        self.src = self.Block(
+            DummyVoltageSource(
+                voltage_out=5 * Volt(tol=0),
+                current_limits=(0, 1) * Amp,
+                reverse_voltage_limits=5 * Volt(tol=0.1),
+                reverse_current_draw=0 * Amp,
+            )
+        )
+        self.sink = self.Block(
+            DummyVoltageSink(
+                voltage_limit=5 * Volt(tol=0.1),
+                current_draw=0 * Amp,
+                reverse_voltage_out=5 * Volt(tol=0),
+                reverse_current_limits=(0, 1) * Amp,
+            )
+        )
+        self.connect(self.src.pwr, self.sink.pwr)
 
 
-class NoReverseSinkVoltageTest(DesignTop):
+class ReverseMultiSourceTestTop(DesignTop):
+    """Test design with (invalid) multiple reverse voltage sources"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.src = self.Block(
+            DummyVoltageSource(
+                voltage_out=5 * Volt(tol=0),
+                current_limits=(0, 1) * Amp,
+                reverse_voltage_limits=5 * Volt(tol=0.1),
+                reverse_current_draw=0 * Amp,
+            )
+        )
+        self.sink1 = self.Block(
+            DummyVoltageSink(
+                voltage_limit=5 * Volt(tol=0.1),
+                current_draw=0 * Amp,
+                reverse_voltage_out=5 * Volt(tol=0),
+                reverse_current_limits=(0, 1) * Amp,
+            )
+        )
+        self.sink2 = self.Block(
+            DummyVoltageSink(
+                voltage_limit=5 * Volt(tol=0.1),
+                current_draw=0 * Amp,
+                reverse_voltage_out=5 * Volt(tol=0),
+                reverse_current_limits=(0, 1) * Amp,
+            )
+        )
+        self.connect(self.src.pwr, self.sink1.pwr, self.sink2.pwr)
+
+
+class ReverseNoSinkTest(DesignTop):
     """Test design with reverse voltage source but no sink"""
 
     def __init__(self) -> None:
         super().__init__()
         self.src = self.Block(DummyVoltageSource(voltage_out=5 * Volt(tol=0), current_limits=(0, 1) * Amp))
-        self.sink = self.Block(DummyVoltageSink(voltage_limit=3.3 * Volt(tol=0.1), current_draw=1 * Amp(tol=0)))
+        self.sink = self.Block(
+            DummyVoltageSink(
+                voltage_limit=5 * Volt(tol=0.1),
+                current_draw=0 * Amp,
+                reverse_voltage_out=5 * Volt(tol=0),
+                reverse_current_limits=(0, 1) * Amp,
+            )
+        )
         self.connect(self.src.pwr, self.sink.pwr)
 
 
@@ -81,6 +137,10 @@ class VoltageLinkTestCase(unittest.TestCase):
     def test_reverse_voltage(self) -> None:
         ScalaCompiler.compile(ReverseVoltageTestTop)
 
-    def test_no_reverse_sink(self) -> None:
+    def test_reverse_mult_source(self) -> None:
         with self.assertRaises(CompilerCheckError):
-            ScalaCompiler.compile(NoReverseSinkVoltageTest)
+            ScalaCompiler.compile(ReverseMultiSourceTestTop)
+
+    def test_reverse_no_sink(self) -> None:
+        with self.assertRaises(CompilerCheckError):
+            ScalaCompiler.compile(ReverseNoSinkTest)

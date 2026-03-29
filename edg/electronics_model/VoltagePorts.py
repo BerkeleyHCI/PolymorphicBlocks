@@ -82,6 +82,11 @@ class VoltageLink(CircuitLink):
             self.has_reverse_voltage.implies(self.reverse_voltage_limits.contains(self.reverse_voltage)),
             "reverse voltage limits out of range",
         )
+        # this is a heuristic check, assuming that each source is non-zero-volts
+        self.require(
+            self.has_reverse_voltage.implies(self.reverse_voltage == self.sinks.sum(lambda x: x.reverse_voltage_out)),
+            "may not have multiple reverse voltage sources",
+        )
 
         self.assign(self.reverse_current_drawn, self.source.reverse_current_draw)
         self.assign(self.reverse_current_limits, self.sinks.hull(lambda x: x.reverse_current_limits))
