@@ -305,8 +305,8 @@ object ExprEvaluate {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.sum, valMaxs.sum)
           case ArrayValue.UnpackRange.RangeWithEmpty(_, _) => RangeEmpty
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
-          // The implicit initial value of sum is 0
-          case ArrayValue.UnpackRange.EmptyArray() => RangeValue(0, 0)
+          case ArrayValue.UnpackRange.EmptyArray() =>
+            RangeValue(0, 0) // unreachable in practice, superseded by float 0 case
         }
 
       case (Op.ALL_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
