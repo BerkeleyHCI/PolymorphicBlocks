@@ -168,8 +168,8 @@ object ExprEvaluate {
         }
 
       case Op.INTERSECTION => (lhs, rhs) match {
-          case (RangeEmpty, _) => RangeEmpty // anything intersecting with empty is empty
-          case (_, RangeEmpty) => RangeEmpty
+          case (RangeEmpty, _: RangeType) => RangeEmpty // anything intersecting with empty is empty
+          case (_: RangeType, RangeEmpty) => RangeEmpty
           case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
             val (minMax, maxMin) = (math.min(lhsMax, rhsMax), math.max(lhsMin, rhsMin))
             if (maxMin <= minMax) {
@@ -305,7 +305,8 @@ object ExprEvaluate {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.sum, valMaxs.sum)
           case ArrayValue.UnpackRange.RangeWithEmpty(_, _) => RangeEmpty
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
-          case _ => ErrorValue("unpack_range(empty) is undefined")
+          // The implicit initial value of sum is 0
+          case ArrayValue.UnpackRange.EmptyArray() => RangeValue(0, 0)
         }
 
       case (Op.ALL_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
@@ -340,8 +341,9 @@ object ExprEvaluate {
             } else { // does not intersect, null set
               ErrorValue(f"intersection($extracted) produces empty set")
             }
+          case ArrayValue.UnpackRange.RangeWithEmpty(_, _) => RangeEmpty
+          case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
           // The implicit initial value of intersect is the full range
-          // TODO are these good semantics?
           case ArrayValue.UnpackRange.EmptyArray() => RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
           case _ => ErrorValue(f"intersection($vals) is undefined")
         }
@@ -350,8 +352,8 @@ object ExprEvaluate {
       case (Op.HULL, ArrayValue.UnpackRange(extracted)) => extracted match {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
           case ArrayValue.UnpackRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
-          case ArrayValue.UnpackRange.EmptyArray() => RangeEmpty // TODO: should this be an error?
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
+          case ArrayValue.UnpackRange.EmptyArray() => RangeEmpty // TODO: should this be an error?
         }
       case (Op.HULL, ArrayValue.ExtractFloat(vals)) => RangeValue(vals.min, vals.max)
 
