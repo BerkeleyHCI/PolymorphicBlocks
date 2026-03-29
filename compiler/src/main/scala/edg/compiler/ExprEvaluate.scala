@@ -21,9 +21,8 @@ object ExprEvaluate {
           case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
             val all = Seq(lhsMin + rhsMin, lhsMin + rhsMax, lhsMax + rhsMin, lhsMax + rhsMax)
             RangeValue(all.min, all.max)
-          case (RangeEmpty, RangeEmpty) => RangeEmpty
-          case (lhs: RangeValue, RangeEmpty) => lhs
-          case (RangeEmpty, rhs: RangeValue) => rhs
+          case (_: RangeType, RangeEmpty) => RangeEmpty
+          case (RangeEmpty, _: RangeType) => RangeEmpty
           case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
             RangeValue(lhsMin + rhs, lhsMax + rhs)
           case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>
@@ -39,9 +38,8 @@ object ExprEvaluate {
           case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
             val all = Seq(lhsMin * rhsMin, lhsMin * rhsMax, lhsMax * rhsMin, lhsMax * rhsMax)
             RangeValue(all.min, all.max)
-          case (RangeEmpty, RangeEmpty) => RangeEmpty
-          case (lhs: RangeValue, RangeEmpty) => RangeEmpty
-          case (RangeEmpty, rhs: RangeValue) => RangeEmpty
+          case (_: RangeType, RangeEmpty) => RangeEmpty
+          case (RangeEmpty, _: RangeType) => RangeEmpty
           case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) if rhs >= 0 =>
             RangeValue(lhsMin * rhs, lhsMax * rhs)
           case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) if rhs < 0 =>
@@ -170,8 +168,8 @@ object ExprEvaluate {
         }
 
       case Op.INTERSECTION => (lhs, rhs) match {
-          case (RangeEmpty, _) => RangeEmpty // anything intersecting with empty is empty
-          case (_, RangeEmpty) => RangeEmpty
+          case (RangeEmpty, _: RangeType) => RangeEmpty // anything intersecting with empty is empty
+          case (_: RangeType, RangeEmpty) => RangeEmpty
           case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
             val (minMax, maxMin) = (math.min(lhsMax, rhsMax), math.max(lhsMin, rhsMin))
             if (maxMin <= minMax) {
@@ -305,7 +303,10 @@ object ExprEvaluate {
       case (Op.SUM, ArrayValue.ExtractBoolean(vals)) => IntValue(vals.count(_ == true))
       case (Op.SUM, ArrayValue.UnpackRange(extracted)) => extracted match {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.sum, valMaxs.sum)
-          case _ => ErrorValue("unpack_range(empty) is undefined")
+          case ArrayValue.UnpackRange.RangeWithEmpty(_, _) => RangeEmpty
+          case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
+          case ArrayValue.UnpackRange.EmptyArray() =>
+            RangeValue(0, 0) // unreachable in practice, superseded by float 0 case
         }
 
       case (Op.ALL_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
@@ -340,8 +341,9 @@ object ExprEvaluate {
             } else { // does not intersect, null set
               ErrorValue(f"intersection($extracted) produces empty set")
             }
+          case ArrayValue.UnpackRange.RangeWithEmpty(_, _) => RangeEmpty
+          case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
           // The implicit initial value of intersect is the full range
-          // TODO are these good semantics?
           case ArrayValue.UnpackRange.EmptyArray() => RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
           case _ => ErrorValue(f"intersection($vals) is undefined")
         }
@@ -350,8 +352,8 @@ object ExprEvaluate {
       case (Op.HULL, ArrayValue.UnpackRange(extracted)) => extracted match {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
           case ArrayValue.UnpackRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
-          case ArrayValue.UnpackRange.EmptyArray() => RangeEmpty // TODO: should this be an error?
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
+          case ArrayValue.UnpackRange.EmptyArray() => RangeEmpty // TODO: should this be an error?
         }
       case (Op.HULL, ArrayValue.ExtractFloat(vals)) => RangeValue(vals.min, vals.max)
 
