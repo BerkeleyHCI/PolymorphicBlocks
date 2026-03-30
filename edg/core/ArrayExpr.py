@@ -128,12 +128,20 @@ class ArrayExpr(
     def hull(self) -> ArrayEltType:
         return self._create_unary_set_op(RangeSetOp.hull)
 
+    def elts_equals(self, other: ConstraintExpr[Any, None]) -> ArrayBoolExpr:
+        """Returns an ArrayBoolExpr of equality between each element of this and single-element other."""
+        assert self._is_bound() and other._is_bound()
+        return ArrayBoolExpr()._new_bind(BinarySetOpBinding(self, other, EqOp.all_equal))
+
 
 ArrayBoolLike = Union["ArrayBoolExpr", Sequence[BoolLike]]
 
 
 class ArrayBoolExpr(ArrayExpr[BoolExpr, List[bool], ArrayBoolLike]):
     _elt_type = BoolExpr
+
+    def __invert__(self) -> ArrayBoolExpr:
+        return self._new_bind(UnarySetOpBinding(self, BoolOp.op_not))
 
     def any(self) -> BoolExpr:
         return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_or))
