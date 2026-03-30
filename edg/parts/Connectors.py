@@ -75,7 +75,7 @@ class LipoConnector(Connector, Battery):
     def __getattr__(self, item: str) -> Any:
         if item == "chg":
             warnings.warn(
-                f"pwr is sink-capable (bidirectional) and chg is no longer needed",
+                f"Use pwr instead. pwr is sink-capable (bidirectional) and chg is unnecessary.",
                 DeprecationWarning,
                 stacklevel=2,
             )
