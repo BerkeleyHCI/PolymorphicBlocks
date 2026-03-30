@@ -22,9 +22,9 @@ class Mcp73831_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             DigitalSource.from_supply(self.vss, self.vdd, current_limits=(-25, 35) * mAmp), optional=True
         )
         self.vbat = self.Port(
-            VoltageSource(
-                voltage_out=(4.168, 4.232) * Volt,  # -2 variant
-                current_limits=self.actual_charging_current.hull(0 * Amp(tol=0)),
+            VoltageSink(
+                reverse_voltage_out=(4.168, 4.232) * Volt,  # -2 variant
+                reverse_current_limits=self.actual_charging_current.hull(0 * Amp(tol=0)),
             )
         )
         self.prog = self.Port(Passive())

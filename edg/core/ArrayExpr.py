@@ -135,6 +135,9 @@ ArrayBoolLike = Union["ArrayBoolExpr", Sequence[BoolLike]]
 class ArrayBoolExpr(ArrayExpr[BoolExpr, List[bool], ArrayBoolLike]):
     _elt_type = BoolExpr
 
+    def __invert__(self) -> ArrayBoolExpr:
+        return self._new_bind(UnarySetOpBinding(self, BoolOp.op_not))
+
     def any(self) -> BoolExpr:
         return BoolExpr()._new_bind(UnarySetOpBinding(self, BoolOp.op_or))
 
@@ -178,6 +181,11 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
         return self._create_binary_set_op(
             self._create_unary_set_op(NumericOp.invert), RangeExpr._to_expr_type(other), NumericOp.mul
         )
+
+    def elts_equals(self, other: RangeLike) -> ArrayBoolExpr:
+        """Returns an ArrayBoolExpr of equality between each element of this and single-element other.
+        TODO: generalize to equality for other array types, needs some generic version of _to_expr_type"""
+        return ArrayBoolExpr()._new_bind(BinarySetOpBinding(self, RangeExpr._to_expr_type(other), EqOp.all_equal))
 
 
 ArrayStringLike = Union["ArrayStringExpr", Sequence[StringLike]]

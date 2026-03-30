@@ -11,7 +11,6 @@ from .PartsTablePart import (
     PartsTableSelectorFootprint,
 )
 
-from .Categories import DummyDevice
 from .Categories import DiscreteComponent, DiscreteSemiconductor, PassiveComponent
 from .Categories import DiscreteApplication
 from .Categories import Analog, OpampApplication

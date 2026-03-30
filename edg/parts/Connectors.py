@@ -1,3 +1,4 @@
+import warnings
 from typing import Any
 
 from typing_extensions import override
@@ -71,17 +72,28 @@ class LipoConnector(Connector, Battery):
 
     Connector type not specified, up to the user through a refinement."""
 
+    def __getattr__(self, item: str) -> Any:
+        if item == "chg":
+            warnings.warn(
+                f"Use pwr instead. pwr is sink-capable (bidirectional) and chg is unnecessary.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self.pwr
+        else:
+            raise AttributeError(
+                item
+            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
+
     def __init__(
         self,
         voltage: RangeLike = (2.5, 4.2) * Volt,
         *args: Any,
         actual_voltage: RangeLike = (2.5, 4.2) * Volt,
+        charge_tolerance: RangeLike = (1.0, 1.01) * Ratio,
         **kwargs: Any,
     ) -> None:
-        from ..electronics_model.PassivePort import PassiveAdapterVoltageSink
-
         super().__init__(voltage, *args, **kwargs)
-        self.chg = self.Port(VoltageSink.empty(), optional=True)  # ideal port for charging
         self.conn = self.Block(PassiveConnector())
 
         self.connect(self.gnd, self.conn.pins.request("1").adapt_to(Ground()))
@@ -92,12 +104,11 @@ class LipoConnector(Connector, Battery):
                 VoltageSource(
                     voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
                     current_limits=(0, 5.5) * Amp,  # arbitrary assuming low capacity, 10 C discharge
+                    reverse_voltage_limits=actual_voltage * RangeExpr._to_expr_type(charge_tolerance),
+                    reverse_current_draw=(0, 0) * Amp,
                 )
             ),
         )
-        self.chg_adapter = self.Block(PassiveAdapterVoltageSink())
-        self.connect(pwr_pin, self.chg_adapter.src)
-        self.connect(self.chg, self.chg_adapter.dst)
         self.assign(self.actual_capacity, (500, 600) * mAmp)  # arbitrary
 
 

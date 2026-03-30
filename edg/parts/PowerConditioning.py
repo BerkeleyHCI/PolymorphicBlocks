@@ -1,4 +1,5 @@
-from typing import Optional, cast
+import warnings
+from typing import Optional, cast, Any
 
 from typing_extensions import override
 
@@ -317,6 +318,7 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
 class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
     """Reverse polarity protection using a PMOS. This method has lower power loss over diode-based protection.
     100R-330R is good but 1k-50k can be used for continuous load.
+    Not reverse / bidirectional current flow capable (eg, can't charge a battery through this).
     Ref: https://components101.com/articles/design-guide-pmos-mosfet-for-reverse-voltage-polarity-protection
     """
 
@@ -360,11 +362,34 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
 
 
 class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
-    """Charging capable a battery reverse protection using PMOS transistors. The highest battery voltage is bounded by the
-    transistors' Vgs/Vds. There is also a rare case when this circuit being disconnected when a charger is connected first.
+    """PMOS-based reverse voltage protection, with charging (reverse / bidirectional flow) capability
+    using additional FETs.
+
+    The highest battery voltage is bounded by the transistors' Vgs/Vds.
+    There is also a rare case when this circuit being disconnected when a charger is connected first.
     But always reverse protect. R1 and R2 are the pullup bias resistors for mp1 and mp2 PFet.
     More info at: https://www.edn.com/reverse-voltage-protection-for-battery-chargers/
     """
+
+    def __getattr__(self, item: str) -> Any:
+        if item == "chg_in":
+            warnings.warn(
+                f"Use pwr_out instead. pwr_out is sink-capable (bidirectional) and chg_in is unnecessary.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self.pwr_out
+        elif item == "chg_out":
+            warnings.warn(
+                f"Use pwr_in instead. pwr_in is source-capable (bidirectional) and chg_out is unnecessary.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self.pwr_in
+        else:
+            raise AttributeError(
+                item
+            )  # ideally we'd use super().__getattr__(...), but that's not defined in base classes
 
     def __init__(
         self,
@@ -375,15 +400,12 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
         super().__init__()
 
         self.gnd = self.Port(Ground.empty(), [Common])
+        self.pwr_in = self.Port(VoltageSink.empty(), [Input], doc="Power input from the battery")
+
         self.pwr_out = self.Port(
-            VoltageSource.empty(), doc="Power output for a load which will be also reverse protected from the battery"
-        )
-        self.pwr_in = self.Port(VoltageSink.empty(), doc="Power input from the battery")
-        self.chg_in = self.Port(
-            VoltageSink.empty(), doc="Charger input to charge the battery. Must be connected to pwr_out."
-        )
-        self.chg_out = self.Port(
-            VoltageSource.empty(), doc="Charging output to the battery chg port. Must be connected to pwr_in,"
+            VoltageSource.empty(),
+            [Output],
+            doc="Power output for a load which will be also reverse protected from the battery",
         )
 
         self.r1_val = self.ArgParameter(r1_val)
@@ -396,10 +418,10 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
         self.r1 = self.Block(Resistor(resistance=self.r1_val))
         self.r2 = self.Block(Resistor(resistance=self.r2_val))
 
-        batt_voltage = self.pwr_in.link().voltage.hull(self.chg_in.link().voltage)
+        # use the maximum voltages and currents accounting for both directions
+        batt_voltage = self.pwr_in.link().voltage.hull(self.pwr_out.link().reverse_voltage)
+        batt_current = self.pwr_out.link().current_drawn.hull(self.pwr_in.link().reverse_current_drawn)
 
-        # taking the max of the current for the both direction. 0 lower bound
-        batt_current = self.pwr_out.link().current_drawn.hull(self.chg_out.link().current_drawn).hull((0, 0))
         power = batt_current * batt_current * self.rds_on
         r1_current = batt_voltage / self.r1.resistance
 
@@ -422,21 +444,19 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
             )
         )
 
-        chg_in_adapter = self.Block(PassiveAdapterVoltageSink())
-        setattr(self, "(adapter)chg_in", chg_in_adapter)  # hack so the netlister recognizes this as an adapter
-        self.connect(self.mp1.source, chg_in_adapter.src)
-        self.connect(self.chg_in, chg_in_adapter.dst)
-
-        chg_out_adapter = self.Block(PassiveAdapterVoltageSource())
-        setattr(self, "(adapter)chg_out", chg_out_adapter)  # hack so the netlister recognizes this as an adapter
-        self.connect(self.r2.b, chg_out_adapter.src)
-        self.connect(self.chg_out, chg_out_adapter.dst)
-
         self.import_kicad(
             self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
-                "pwr_in": VoltageSink(current_draw=batt_current),
-                "pwr_out": VoltageSource(voltage_out=batt_voltage),
+                "pwr_in": VoltageSink(
+                    current_draw=batt_current,
+                    reverse_voltage_out=self.pwr_out.link().reverse_voltage,
+                    reverse_current_limits=RangeExpr.ALL,
+                ),
+                "pwr_out": VoltageSource(
+                    voltage_out=batt_voltage,
+                    reverse_voltage_limits=self.pwr_in.link().reverse_voltage_limits,
+                    reverse_current_draw=self.pwr_in.link().reverse_current_drawn,
+                ),
                 "gnd": Ground(),
             },
         )

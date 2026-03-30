@@ -21,9 +21,8 @@ object ExprEvaluate {
           case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
             val all = Seq(lhsMin + rhsMin, lhsMin + rhsMax, lhsMax + rhsMin, lhsMax + rhsMax)
             RangeValue(all.min, all.max)
-          case (RangeEmpty, RangeEmpty) => RangeEmpty
-          case (lhs: RangeValue, RangeEmpty) => lhs
-          case (RangeEmpty, rhs: RangeValue) => rhs
+          case (_: RangeType, RangeEmpty) => RangeEmpty
+          case (RangeEmpty, _: RangeType) => RangeEmpty
           case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) =>
             RangeValue(lhsMin + rhs, lhsMax + rhs)
           case (FloatPromotable(lhs), RangeValue(rhsMin, rhsMax)) =>
@@ -39,9 +38,8 @@ object ExprEvaluate {
           case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
             val all = Seq(lhsMin * rhsMin, lhsMin * rhsMax, lhsMax * rhsMin, lhsMax * rhsMax)
             RangeValue(all.min, all.max)
-          case (RangeEmpty, RangeEmpty) => RangeEmpty
-          case (lhs: RangeValue, RangeEmpty) => RangeEmpty
-          case (RangeEmpty, rhs: RangeValue) => RangeEmpty
+          case (_: RangeType, RangeEmpty) => RangeEmpty
+          case (RangeEmpty, _: RangeType) => RangeEmpty
           case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) if rhs >= 0 =>
             RangeValue(lhsMin * rhs, lhsMax * rhs)
           case (RangeValue(lhsMin, lhsMax), FloatPromotable(rhs)) if rhs < 0 =>
@@ -170,8 +168,8 @@ object ExprEvaluate {
         }
 
       case Op.INTERSECTION => (lhs, rhs) match {
-          case (RangeEmpty, _) => RangeEmpty // anything intersecting with empty is empty
-          case (_, RangeEmpty) => RangeEmpty
+          case (RangeEmpty, _: RangeType) => RangeEmpty // anything intersecting with empty is empty
+          case (_: RangeType, RangeEmpty) => RangeEmpty
           case (RangeValue(lhsMin, lhsMax), RangeValue(rhsMin, rhsMax)) =>
             val (minMax, maxMin) = (math.min(lhsMax, rhsMax), math.max(lhsMin, rhsMin))
             if (maxMin <= minMax) {
@@ -226,6 +224,16 @@ object ExprEvaluate {
     binarySet.op match {
       // Note promotion rules: range takes precedence, then float, then int
       // TODO: can we deduplicate these cases to delegate them to evalBinary?
+      case Op.EQ => (lhs, rhs) match {
+          case (lhss: ArrayValue[ExprValue] @unchecked, rhs: ExprValue) =>
+            val resultElts = lhss.values.map { arrayElt =>
+              evalBinary(expr.BinaryExpr(op = expr.BinaryExpr.Op.EQ), arrayElt, rhs)
+            }
+            ArrayValue(resultElts)
+          case _ => throw new ExprEvaluateException(
+              s"Unknown binary set operand types in $lhs ${binarySet.op} $rhs from $binarySet"
+            )
+        }
       case Op.ADD => (lhs, rhs) match {
           case (ArrayValue.ExtractRange(arrayElts), rhs: RangeType) =>
             val resultElts = arrayElts.map { arrayElt =>
@@ -305,7 +313,10 @@ object ExprEvaluate {
       case (Op.SUM, ArrayValue.ExtractBoolean(vals)) => IntValue(vals.count(_ == true))
       case (Op.SUM, ArrayValue.UnpackRange(extracted)) => extracted match {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.sum, valMaxs.sum)
-          case _ => ErrorValue("unpack_range(empty) is undefined")
+          case ArrayValue.UnpackRange.RangeWithEmpty(_, _) => RangeEmpty
+          case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
+          case ArrayValue.UnpackRange.EmptyArray() =>
+            RangeValue(0, 0) // unreachable in practice, superseded by float 0 case
         }
 
       case (Op.ALL_TRUE, ArrayValue.Empty(_)) => BooleanValue(true)
@@ -340,8 +351,9 @@ object ExprEvaluate {
             } else { // does not intersect, null set
               ErrorValue(f"intersection($extracted) produces empty set")
             }
+          case ArrayValue.UnpackRange.RangeWithEmpty(_, _) => RangeEmpty
+          case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
           // The implicit initial value of intersect is the full range
-          // TODO are these good semantics?
           case ArrayValue.UnpackRange.EmptyArray() => RangeValue(Float.NegativeInfinity, Float.PositiveInfinity)
           case _ => ErrorValue(f"intersection($vals) is undefined")
         }
@@ -350,8 +362,8 @@ object ExprEvaluate {
       case (Op.HULL, ArrayValue.UnpackRange(extracted)) => extracted match {
           case ArrayValue.UnpackRange.FullRange(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
           case ArrayValue.UnpackRange.RangeWithEmpty(valMins, valMaxs) => RangeValue(valMins.min, valMaxs.max)
-          case ArrayValue.UnpackRange.EmptyArray() => RangeEmpty // TODO: should this be an error?
           case ArrayValue.UnpackRange.EmptyRange() => RangeEmpty
+          case ArrayValue.UnpackRange.EmptyArray() => RangeEmpty // TODO: should this be an error?
         }
       case (Op.HULL, ArrayValue.ExtractFloat(vals)) => RangeValue(vals.min, vals.max)
 
@@ -361,6 +373,8 @@ object ExprEvaluate {
               evalUnary(expr.UnaryExpr(op = expr.UnaryExpr.Op.NEGATE), arrayElt)
             }
             ArrayValue(resultElts)
+          case ArrayValue.ExtractBoolean(arrayElts) =>
+            ArrayValue(arrayElts.map { arrayElt => BooleanValue(!arrayElt) })
           case _ => throw new ExprEvaluateException(s"Unknown unary set operand in ${unarySet.op} $vals from $unarySet")
         }
 

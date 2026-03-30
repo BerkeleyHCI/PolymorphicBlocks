@@ -30,10 +30,9 @@ class ProtectedCharger(JlcBoardTop):
         ) as imp:
             self.tp = self.Block(VoltageTestPoint()).connected(self.batt.pwr)
             self.pmos = imp.Block(PmosChargerReverseProtection())
-
-            (self.charger,), _ = self.chain(self.vusb, imp.Block(Mcp73831(200 * mAmp(tol=0.2))), self.pmos.chg_in)
             self.connect(self.pmos.pwr_in, self.batt.pwr)
-            self.connect(self.pmos.chg_out, self.batt.chg)
+
+            (self.charger,), _ = self.chain(self.vusb, imp.Block(Mcp73831(200 * mAmp(tol=0.2))), self.pmos.pwr_out)
 
             (self.charge_led,), _ = self.chain(self.Block(IndicatorSinkLed(Led.Yellow)), self.charger.stat)
             self.connect(self.vusb, self.charge_led.pwr)

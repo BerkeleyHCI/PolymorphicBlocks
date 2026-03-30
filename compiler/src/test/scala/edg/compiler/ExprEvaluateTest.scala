@@ -12,8 +12,6 @@ class ExprEvaluateTest extends AnyFlatSpec {
   val constProp = new ConstProp()
   val evalTest = new ExprEvaluate(constProp, DesignPath())
 
-  // TODO: add array tests once there is an array literal
-
   it should "handle literals" in {
     evalTest.map(ValueExpr.Literal(Literal.Floating(2.0))) should equal(FloatValue(2.0))
     evalTest.map(ValueExpr.Literal(Literal.Integer(42))) should equal(IntValue(42))
@@ -97,6 +95,17 @@ class ExprEvaluateTest extends AnyFlatSpec {
 
   it should "handle binary range ops" in {
     import edgir.expr.expr.BinaryExpr.Op
+
+    evalTest.map(
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(4.0, 6.0), ValueExpr.Literal(5.0, 7.0))
+    ) should equal(RangeValue(9.0, 13.0))
+    evalTest.map(
+      ValueExpr.BinOp(Op.ADD, ValueExpr.Literal(5.0, 7.0), ValueExpr.LiteralRangeEmpty())
+    ) should equal(RangeEmpty)
+    evalTest.map(
+      ValueExpr.BinOp(Op.ADD, ValueExpr.LiteralRangeEmpty(), ValueExpr.LiteralRangeEmpty())
+    ) should equal(RangeEmpty)
+
     evalTest.map(
       ValueExpr.BinOp(Op.INTERSECTION, ValueExpr.Literal(4.0, 6.0), ValueExpr.Literal(5.0, 7.0))
     ) should equal(RangeValue(5.0, 6.0))
@@ -109,7 +118,12 @@ class ExprEvaluateTest extends AnyFlatSpec {
     evalTest.map(
       ValueExpr.BinOp(Op.INTERSECTION, ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(8.0, 10.0))
     ) should equal(RangeEmpty)
-    // TODO test with empty ranges?
+    evalTest.map(
+      ValueExpr.BinOp(Op.INTERSECTION, ValueExpr.Literal(5.0, 7.0), ValueExpr.LiteralRangeEmpty())
+    ) should equal(RangeEmpty)
+    evalTest.map(
+      ValueExpr.BinOp(Op.INTERSECTION, ValueExpr.LiteralRangeEmpty(), ValueExpr.LiteralRangeEmpty())
+    ) should equal(RangeEmpty)
 
     evalTest.map(ValueExpr.BinOp(Op.HULL, ValueExpr.Literal(4.0, 6.0), ValueExpr.Literal(5.0, 7.0))) should equal(
       RangeValue(4.0, 7.0)
@@ -123,7 +137,12 @@ class ExprEvaluateTest extends AnyFlatSpec {
     evalTest.map(ValueExpr.BinOp(Op.HULL, ValueExpr.Literal(5.0, 7.0), ValueExpr.Literal(8.0, 10.0))) should equal(
       RangeValue(5.0, 10.0)
     )
-    // TODO test with empty ranges?
+    evalTest.map(
+      ValueExpr.BinOp(Op.HULL, ValueExpr.Literal(5.0, 7.0), ValueExpr.LiteralRangeEmpty())
+    ) should equal(RangeValue(5.0, 7.0))
+    evalTest.map(
+      ValueExpr.BinOp(Op.HULL, ValueExpr.LiteralRangeEmpty(), ValueExpr.LiteralRangeEmpty())
+    ) should equal(RangeEmpty)
 
     evalTest.map(ValueExpr.BinOp(Op.WITHIN, ValueExpr.Literal(6.0), ValueExpr.Literal(5.0, 7.0))) should equal(
       BooleanValue(true)
@@ -149,6 +168,13 @@ class ExprEvaluateTest extends AnyFlatSpec {
     )
     evalTest.map(ValueExpr.BinOp(Op.WITHIN, ValueExpr.Literal(5.5, 7.5), ValueExpr.Literal(5.0, 7.0))) should equal(
       BooleanValue(false)
+    )
+
+    evalTest.map(ValueExpr.BinOp(Op.WITHIN, ValueExpr.Literal(5.5, 7.5), ValueExpr.LiteralRangeEmpty())) should equal(
+      BooleanValue(false)
+    )
+    evalTest.map(ValueExpr.BinOp(Op.WITHIN, ValueExpr.LiteralRangeEmpty(), ValueExpr.Literal(5.0, 7.0))) should equal(
+      BooleanValue(true)
     )
   }
 
@@ -276,6 +302,17 @@ class ExprEvaluateTest extends AnyFlatSpec {
     import edgir.expr.expr.UnarySetExpr.Op
     evalTest.map(
       ValueExpr.UnarySetOp(
+        Op.NEGATE,
+        ValueExpr.Literal(Seq(
+          Literal.Boolean(false),
+          Literal.Boolean(true),
+          Literal.Boolean(false),
+        ))
+      )
+    ) should equal(ArrayValue(Seq(BooleanValue(true), BooleanValue(false), BooleanValue(true))))
+
+    evalTest.map(
+      ValueExpr.UnarySetOp(
         Op.FLATTEN,
         ValueExpr.Literal(Seq(
           Literal.Array(Seq(Literal.Integer(0), Literal.Integer(1))),
@@ -301,6 +338,21 @@ class ExprEvaluateTest extends AnyFlatSpec {
   it should "handle array-value (broadcast) ops" in {
     import edg.ExprBuilder.Literal
     import edgir.expr.expr.BinarySetExpr.Op
+    evalTest.map(
+      ValueExpr.BinSetOp(
+        Op.EQ,
+        ValueExpr.Literal(Seq(Literal.Range(0, 10), Literal.Range(1, 11))),
+        ValueExpr.Literal(0, 10)
+      )
+    ) should equal(ArrayValue(Seq(BooleanValue(true), BooleanValue(false))))
+    evalTest.map(
+      ValueExpr.BinSetOp(
+        Op.EQ,
+        ValueExpr.Literal(Seq(Literal.Range(0, 10), Literal.RangeEmpty())),
+        ValueExpr.LiteralRangeEmpty()
+      )
+    ) should equal(ArrayValue(Seq(BooleanValue(false), BooleanValue(true))))
+
     evalTest.map(
       ValueExpr.BinSetOp(
         Op.ADD,
