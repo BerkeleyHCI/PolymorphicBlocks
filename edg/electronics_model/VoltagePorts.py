@@ -77,12 +77,20 @@ class VoltageLink(CircuitLink):
             "reverse voltage source must have reverse voltage sink",
         )
         self.require(
-            has_reverse_voltage.implies(self.reverse_voltage_limits.contains(self.reverse_voltage)),
-            "reverse voltage limits out of range",
+            self.sinks.count(lambda x: x._is_reverse_voltage) <= 1, "multiple reverse voltage sources not allows"
         )
         self.require(
-            self.sinks.count(lambda x: x._is_reverse_voltage) <= 1, "multiple reverse voltage sources not allows"
-        ),
+            has_reverse_voltage.implies(self.reverse_voltage_limits.contains(self.reverse_voltage)),
+            "reverse voltage out of range",
+        )
+        self.require(
+            has_reverse_voltage.implies(self.voltage_limits.contains(self.reverse_voltage)),
+            "reverse voltage out of range of voltage limits",
+        )
+        self.require(
+            has_reverse_voltage.implies(self.reverse_voltage_limits.contains(self.voltage)),
+            "voltage out of range of reverse voltage limits",
+        )
 
         self.assign(self.reverse_current_drawn, self.source.reverse_current_draw)
         self.assign(self.reverse_current_limits, self.sinks.hull(lambda x: x.reverse_current_limits))
