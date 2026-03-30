@@ -68,7 +68,6 @@ class VoltageLink(CircuitLink):
         self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
         self.require(self.current_limits.contains(self.current_drawn), "current draw out of limits")
 
-        # TODO limit to one reverse voltage source
         has_reverse_voltage = self.reverse_voltage != RangeExpr.EMPTY
         self.assign(self.reverse_voltage, self.sinks.hull(lambda x: x.reverse_voltage_out))
         self.assign(self.reverse_voltage_limits, self.source.reverse_voltage_limits)
@@ -81,6 +80,9 @@ class VoltageLink(CircuitLink):
             has_reverse_voltage.implies(self.reverse_voltage_limits.contains(self.reverse_voltage)),
             "reverse voltage limits out of range",
         )
+        self.require(
+            self.sinks.count(lambda x: x._is_reverse_voltage) <= 1, "multiple reverse voltage sources not allows"
+        ),
 
         self.assign(self.reverse_current_drawn, self.source.reverse_current_draw)
         self.assign(self.reverse_current_limits, self.sinks.hull(lambda x: x.reverse_current_limits))
@@ -177,6 +179,8 @@ class VoltageSink(VoltageBase):
 
         self.reverse_voltage_out: RangeExpr = self.Parameter(RangeExpr(reverse_voltage_out))
         self.reverse_current_limits: RangeExpr = self.Parameter(RangeExpr(reverse_current_limits))
+        # needed to check for multiple sinks, since we don't have arbitrary lambdas to do a map on reverse_voltage_out
+        self._is_reverse_voltage: BoolExpr = self.Parameter(BoolExpr(reverse_voltage_out != RangeExpr.EMPTY))
 
 
 class VoltageSinkAdapterGroundReference(CircuitPortAdapter["GroundReference"]):
