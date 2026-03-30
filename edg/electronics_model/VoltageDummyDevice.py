@@ -1,6 +1,6 @@
 from .DummyDevice import DummyDevice
 from .VoltagePorts import VoltageSource, VoltageSink, Power
-from ..core import RangeExpr, RangeLike, InOut
+from ..core import BoolExpr, RangeExpr, RangeLike, InOut
 
 
 class DummyVoltageSource(DummyDevice):
@@ -25,6 +25,7 @@ class DummyVoltageSource(DummyDevice):
 
         self.current_drawn = self.Parameter(RangeExpr(self.pwr.link().current_drawn))
         self.voltage_limits = self.Parameter(RangeExpr(self.pwr.link().voltage_limits))
+        self.reverse_voltage = self.Parameter(RangeExpr(self.pwr.link().reverse_voltage))
 
 
 class DummyVoltageSink(DummyDevice):

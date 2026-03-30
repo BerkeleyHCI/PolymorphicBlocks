@@ -41,7 +41,6 @@ class VoltageLink(CircuitLink):
         self.current_drawn = self.Parameter(RangeExpr())
         self.current_limits = self.Parameter(RangeExpr())
 
-        self.has_reverse_voltage = self.Parameter(BoolExpr())
         self.reverse_voltage = self.Parameter(RangeExpr())
         self.reverse_voltage_limits = self.Parameter(RangeExpr())
         self.reverse_current_drawn = self.Parameter(RangeExpr())
@@ -70,28 +69,23 @@ class VoltageLink(CircuitLink):
         self.require(self.current_limits.contains(self.current_drawn), "current draw out of limits")
 
         # TODO limit to one reverse voltage source
-        self.assign(self.has_reverse_voltage, self.reverse_voltage != RangeExpr.EMPTY)
+        has_reverse_voltage = self.reverse_voltage != RangeExpr.EMPTY
         self.assign(self.reverse_voltage, self.sinks.hull(lambda x: x.reverse_voltage_out))
         self.assign(self.reverse_voltage_limits, self.source.reverse_voltage_limits)
         # use implications to gate the reverse voltage requirements, since not all sources will support reverse voltage
         self.require(
-            self.has_reverse_voltage.implies(self.reverse_voltage_limits != RangeExpr.EMPTY),
+            has_reverse_voltage.implies(self.reverse_voltage_limits != RangeExpr.EMPTY),
             "reverse voltage source must have reverse voltage sink",
         )
         self.require(
-            self.has_reverse_voltage.implies(self.reverse_voltage_limits.contains(self.reverse_voltage)),
+            has_reverse_voltage.implies(self.reverse_voltage_limits.contains(self.reverse_voltage)),
             "reverse voltage limits out of range",
-        )
-        # this is a heuristic check, assuming that each source is non-zero-volts
-        self.require(
-            self.has_reverse_voltage.implies(self.reverse_voltage == self.sinks.sum(lambda x: x.reverse_voltage_out)),
-            "may not have multiple reverse voltage sources",
         )
 
         self.assign(self.reverse_current_drawn, self.source.reverse_current_draw)
         self.assign(self.reverse_current_limits, self.sinks.hull(lambda x: x.reverse_current_limits))
         self.require(
-            self.has_reverse_voltage.implies(self.reverse_current_limits.contains(self.reverse_current_drawn)),
+            has_reverse_voltage.implies(self.reverse_current_limits.contains(self.reverse_current_drawn)),
             "reverse current out of limits",
         )
 

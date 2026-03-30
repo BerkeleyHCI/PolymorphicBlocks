@@ -66,7 +66,14 @@ class ReverseVoltageTestTop(DesignTop):
                 reverse_current_limits=(0, 1) * Amp,
             )
         )
-        self.connect(self.src.pwr, self.sink.pwr)
+        self.sink2 = self.Block(
+            DummyVoltageSink(
+                voltage_limit=5 * Volt(tol=0.1),
+                current_draw=0 * Amp,
+            )
+        )
+        self.connect(self.src.pwr, self.sink.pwr, self.sink2.pwr)
+        self.require(self.src.reverse_voltage == 5 * Volt(tol=0))
 
 
 class ReverseMultiSourceTestTop(DesignTop):
@@ -137,7 +144,7 @@ class VoltageLinkTestCase(unittest.TestCase):
     def test_reverse_voltage(self) -> None:
         ScalaCompiler.compile(ReverseVoltageTestTop)
 
-    def test_reverse_mult_source(self) -> None:
+    def test_reverse_multi_source(self) -> None:
         with self.assertRaises(CompilerCheckError):
             ScalaCompiler.compile(ReverseMultiSourceTestTop)
 
