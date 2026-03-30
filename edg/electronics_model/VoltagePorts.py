@@ -77,8 +77,17 @@ class VoltageLink(CircuitLink):
             "reverse voltage source must have reverse voltage sink",
         )
         self.require(
-            self.sinks.count(lambda x: x._is_reverse_voltage) <= 1, "multiple reverse voltage sources not allows"
+            (
+                ~(
+                    self.sinks.map_extract(lambda x: x.reverse_voltage_out).elts_equals(
+                        RangeExpr._to_expr_type(RangeExpr.EMPTY)
+                    )
+                )
+            ).count()
+            <= 1,
+            "multiple reverse voltage sinks not allowed",
         )
+
         self.require(
             has_reverse_voltage.implies(self.reverse_voltage_limits.contains(self.reverse_voltage)),
             "reverse voltage out of range",
@@ -187,8 +196,6 @@ class VoltageSink(VoltageBase):
 
         self.reverse_voltage_out: RangeExpr = self.Parameter(RangeExpr(reverse_voltage_out))
         self.reverse_current_limits: RangeExpr = self.Parameter(RangeExpr(reverse_current_limits))
-        # needed to check for multiple sinks, since we don't have arbitrary lambdas to do a map on reverse_voltage_out
-        self._is_reverse_voltage: BoolExpr = self.Parameter(BoolExpr(reverse_voltage_out != RangeExpr.EMPTY))
 
 
 class VoltageSinkAdapterGroundReference(CircuitPortAdapter["GroundReference"]):
