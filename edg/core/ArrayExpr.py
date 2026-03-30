@@ -182,7 +182,7 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
             self._create_unary_set_op(NumericOp.invert), RangeExpr._to_expr_type(other), NumericOp.mul
         )
 
-    def elts_equals(self, other: RangeExpr) -> ArrayBoolExpr:
+    def elts_equals(self, other: RangeLike) -> ArrayBoolExpr:
         """Returns an ArrayBoolExpr of equality between each element of this and single-element other.
         TODO: generalize to equality for other array types, needs some generic version of _to_expr_type"""
         return ArrayBoolExpr()._new_bind(BinarySetOpBinding(self, RangeExpr._to_expr_type(other), EqOp.all_equal))

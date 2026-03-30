@@ -55,13 +55,13 @@ class ReverseVoltageTestTop(DesignTop):
                 voltage_out=5 * Volt(tol=0),
                 current_limits=(0, 1) * Amp,
                 reverse_voltage_limits=5 * Volt(tol=0.1),
-                reverse_current_draw=0 * Amp,
+                reverse_current_draw=0 * Amp(tol=0),
             )
         )
         self.sink = self.Block(
             DummyVoltageSink(
                 voltage_limit=5 * Volt(tol=0.1),
-                current_draw=0 * Amp,
+                current_draw=0 * Amp(tol=0),
                 reverse_voltage_out=5 * Volt(tol=0),
                 reverse_current_limits=(0, 1) * Amp,
             )
@@ -69,7 +69,7 @@ class ReverseVoltageTestTop(DesignTop):
         self.sink2 = self.Block(
             DummyVoltageSink(
                 voltage_limit=5 * Volt(tol=0.1),
-                current_draw=0 * Amp,
+                current_draw=0 * Amp(tol=0),
             )
         )
         self.connect(self.src.pwr, self.sink.pwr, self.sink2.pwr)
@@ -86,13 +86,13 @@ class ReverseMultiSourceTestTop(DesignTop):
                 voltage_out=5 * Volt(tol=0),
                 current_limits=(0, 1) * Amp,
                 reverse_voltage_limits=5 * Volt(tol=0.1),
-                reverse_current_draw=0 * Amp,
+                reverse_current_draw=0 * Amp(tol=0),
             )
         )
         self.sink1 = self.Block(
             DummyVoltageSink(
                 voltage_limit=5 * Volt(tol=0.1),
-                current_draw=0 * Amp,
+                current_draw=0 * Amp(tol=0),
                 reverse_voltage_out=5 * Volt(tol=0),
                 reverse_current_limits=(0, 1) * Amp,
             )
@@ -100,7 +100,7 @@ class ReverseMultiSourceTestTop(DesignTop):
         self.sink2 = self.Block(
             DummyVoltageSink(
                 voltage_limit=5 * Volt(tol=0.1),
-                current_draw=0 * Amp,
+                current_draw=0 * Amp(tol=0),
                 reverse_voltage_out=5 * Volt(tol=0),
                 reverse_current_limits=(0, 1) * Amp,
             )
@@ -117,7 +117,7 @@ class ReverseNoSinkTest(DesignTop):
         self.sink = self.Block(
             DummyVoltageSink(
                 voltage_limit=5 * Volt(tol=0.1),
-                current_draw=0 * Amp,
+                current_draw=0 * Amp(tol=0),
                 reverse_voltage_out=5 * Volt(tol=0),
                 reverse_current_limits=(0, 1) * Amp,
             )
@@ -135,13 +135,13 @@ class ReverseOvervoltageTestTop(DesignTop):
                 voltage_out=3.3 * Volt(tol=0),
                 current_limits=(0, 1) * Amp,
                 reverse_voltage_limits=3.3 * Volt(tol=0.1),
-                reverse_current_draw=0 * Amp,
+                reverse_current_draw=0 * Amp(tol=0),
             )
         )
         self.sink = self.Block(
             DummyVoltageSink(
                 voltage_limit=(0, 14) * Volt,
-                current_draw=0 * Amp,
+                current_draw=0 * Amp(tol=0),
                 reverse_voltage_out=5 * Volt(tol=0),
                 reverse_current_limits=(0, 1) * Amp,
             )
@@ -160,13 +160,13 @@ class ReverseForwardOvervoltageTestTop(DesignTop):
                 voltage_out=5 * Volt(tol=0),
                 current_limits=(0, 1) * Amp,
                 reverse_voltage_limits=(0, 14) * Volt,
-                reverse_current_draw=0 * Amp,
+                reverse_current_draw=0 * Amp(tol=0),
             )
         )
         self.sink = self.Block(
             DummyVoltageSink(
                 voltage_limit=5 * Volt(tol=0.1),
-                current_draw=0 * Amp,
+                current_draw=0 * Amp(tol=0),
                 reverse_voltage_out=12 * Volt(tol=0),
                 reverse_current_limits=(0, 1) * Amp,
             )
