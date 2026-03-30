@@ -385,7 +385,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
                 DeprecationWarning,
                 stacklevel=2,
             )
-            return self.pwr_out
+            return self.pwr_in
         else:
             raise AttributeError(
                 item
@@ -454,7 +454,7 @@ class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block)
                 ),
                 "pwr_out": VoltageSource(
                     voltage_out=batt_voltage,
-                    reverse_voltage_limits=RangeExpr.ALL,
+                    reverse_voltage_limits=self.pwr_in.link().reverse_voltage_limits,
                     reverse_current_draw=self.pwr_in.link().reverse_current_drawn,
                 ),
                 "gnd": Ground(),

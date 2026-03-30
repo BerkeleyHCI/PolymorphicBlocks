@@ -78,7 +78,7 @@ class VoltageLink(CircuitLink):
         )
         self.require(
             (~(self.sinks.map_extract(lambda x: x.reverse_voltage_out).elts_equals(RangeExpr.EMPTY))).count() <= 1,
-            "multiple reverse voltage sinks not allowed",
+            "multiple reverse voltage sources not allowed",
         )
 
         self.require(
