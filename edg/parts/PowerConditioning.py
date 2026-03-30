@@ -318,6 +318,7 @@ class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
 class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
     """Reverse polarity protection using a PMOS. This method has lower power loss over diode-based protection.
     100R-330R is good but 1k-50k can be used for continuous load.
+    Not reverse / bidirectional current flow capable (eg, can't charge a battery through this).
     Ref: https://components101.com/articles/design-guide-pmos-mosfet-for-reverse-voltage-polarity-protection
     """
 
@@ -361,8 +362,11 @@ class PmosReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
 
 
 class PmosChargerReverseProtection(PowerConditioner, KiCadSchematicBlock, Block):
-    """Charging capable a battery reverse protection using PMOS transistors. The highest battery voltage is bounded by the
-    transistors' Vgs/Vds. There is also a rare case when this circuit being disconnected when a charger is connected first.
+    """PMOS-based reverse voltage protection, with charging (reverse / bidirectional flow) capability
+    using additional FETs.
+
+    The highest battery voltage is bounded by the transistors' Vgs/Vds.
+    There is also a rare case when this circuit being disconnected when a charger is connected first.
     But always reverse protect. R1 and R2 are the pullup bias resistors for mp1 and mp2 PFet.
     More info at: https://www.edn.com/reverse-voltage-protection-for-battery-chargers/
     """
