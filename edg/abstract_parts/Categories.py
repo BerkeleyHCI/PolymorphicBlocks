@@ -385,13 +385,6 @@ class PassiveComponent(DiscreteComponent):
 
 
 @abstract_block
-class DummyDevice(InternalBlock):
-    """Non-physical "device" used to affect parameters."""
-
-    pass
-
-
-@abstract_block
 class IdealModel(InternalBlock):
     """Ideal model device that can be used as a placeholder to get a design compiling
     but has no physical implementation."""

@@ -314,6 +314,7 @@ class UnarySetOpBinding(Binding):
             NumericOp.sum: edgir.UnarySetExpr.SUM,
             BoolOp.op_and: edgir.UnarySetExpr.ALL_TRUE,
             BoolOp.op_or: edgir.UnarySetExpr.ANY_TRUE,
+            BoolOp.op_not: edgir.UnarySetExpr.NEGATE,
             EqOp.all_equal: edgir.UnarySetExpr.ALL_EQ,
             EqOp.all_unique: edgir.UnarySetExpr.ALL_UNIQUE,
             RangeSetOp.min: edgir.UnarySetExpr.MINIMUM,
@@ -391,11 +392,12 @@ class BinarySetOpBinding(Binding):
     def __repr__(self) -> str:
         return f"BinaryOp({self.op}, ...)"
 
-    def __init__(self, lhset: ConstraintExpr, rhs: ConstraintExpr, op: NumericOp):
+    def __init__(self, lhset: ConstraintExpr, rhs: ConstraintExpr, op: Union[NumericOp, EqOp]):
         self.op_map = {
             # Numeric
             NumericOp.add: edgir.BinarySetExpr.ADD,
             NumericOp.mul: edgir.BinarySetExpr.MULT,
+            EqOp.all_equal: edgir.BinarySetExpr.EQ,
         }
 
         super().__init__()

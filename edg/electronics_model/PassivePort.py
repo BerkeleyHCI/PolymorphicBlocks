@@ -27,18 +27,44 @@ class PassiveAdapterGround(CircuitPortAdapter[Ground]):
 
 class PassiveAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
     # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
-    def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO, current_limits: RangeLike = RangeExpr.ALL):
+    def __init__(
+        self,
+        voltage_out: RangeLike = RangeExpr.ZERO,
+        current_limits: RangeLike = RangeExpr.ALL,
+        reverse_voltage_limits: RangeLike = RangeExpr.EMPTY,
+        reverse_current_draw: RangeLike = RangeExpr.EMPTY,
+    ):
         super().__init__()
         self.src = self.Port(Passive())
-        self.dst = self.Port(VoltageSource(voltage_out=voltage_out, current_limits=current_limits))
+        self.dst = self.Port(
+            VoltageSource(
+                voltage_out=voltage_out,
+                current_limits=current_limits,
+                reverse_voltage_limits=reverse_voltage_limits,
+                reverse_current_draw=reverse_current_draw,
+            )
+        )
 
 
 class PassiveAdapterVoltageSink(CircuitPortAdapter[VoltageSink]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
-    def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL, current_draw: RangeLike = RangeExpr.ZERO):
+    def __init__(
+        self,
+        voltage_limits: RangeLike = RangeExpr.ALL,
+        current_draw: RangeLike = RangeExpr.ZERO,
+        reverse_voltage_out: RangeLike = RangeExpr.EMPTY,
+        reverse_current_limits: RangeLike = RangeExpr.EMPTY,
+    ):
         super().__init__()
         self.src = self.Port(Passive())
-        self.dst = self.Port(VoltageSink(voltage_limits=voltage_limits, current_draw=current_draw))
+        self.dst = self.Port(
+            VoltageSink(
+                voltage_limits=voltage_limits,
+                current_draw=current_draw,
+                reverse_voltage_out=reverse_voltage_out,
+                reverse_current_limits=reverse_current_limits,
+            )
+        )
 
 
 class PassiveAdapterDigitalSource(CircuitPortAdapter[DigitalSource]):

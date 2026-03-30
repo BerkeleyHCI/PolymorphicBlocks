@@ -318,6 +318,8 @@ class BinarySetExpr(_message.Message):
         "* Mult :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a\n        :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)\n        :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)\n        :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)\n        "
         CONCAT: BinarySetExpr._Op.ValueType
         "String concatenate operator\n        Concatenate : (lhs: String, rhss: Set[String]) -> Set[String] (prepend lhs to all elements)\n                    : (lhss: Set[String], rhs: String) -> Set[String] (append rhs to all elements)\n        "
+        EQ: BinarySetExpr._Op.ValueType
+        "Equality operator\n        (lhss: Set[A], elt: A) -> Set[Bool] (pointwise equality of all elements in the set to the element)\n        "
 
     class Op(_Op, metaclass=_OpEnumTypeWrapper): ...
     UNDEFINED: BinarySetExpr.Op.ValueType
@@ -327,6 +329,8 @@ class BinarySetExpr(_message.Message):
     "* Mult :: Numeric a => (lhset :         Set a, rhs :       a) -> Set a\n    :: Numeric a => (lhset :         Set a, rhs : Range a) -> Set (Range a)\n    :: Numeric a => (lhset : Set (Range a), rhs :       a) -> Set (Range a)\n    :: Numeric a => (lhset : Set (Range a), rhs : Range a) -> Set (Range a)\n    "
     CONCAT: BinarySetExpr.Op.ValueType
     "String concatenate operator\n    Concatenate : (lhs: String, rhss: Set[String]) -> Set[String] (prepend lhs to all elements)\n                : (lhss: Set[String], rhs: String) -> Set[String] (append rhs to all elements)\n    "
+    EQ: BinarySetExpr.Op.ValueType
+    "Equality operator\n    (lhss: Set[A], elt: A) -> Set[Bool] (pointwise equality of all elements in the set to the element)\n    "
     OP_FIELD_NUMBER: _builtins.int
     LHSET_FIELD_NUMBER: _builtins.int
     RHS_FIELD_NUMBER: _builtins.int

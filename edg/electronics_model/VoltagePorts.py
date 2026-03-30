@@ -41,6 +41,11 @@ class VoltageLink(CircuitLink):
         self.current_drawn = self.Parameter(RangeExpr())
         self.current_limits = self.Parameter(RangeExpr())
 
+        self.reverse_voltage = self.Parameter(RangeExpr())
+        self.reverse_voltage_limits = self.Parameter(RangeExpr())
+        self.reverse_current_drawn = self.Parameter(RangeExpr())
+        self.reverse_current_limits = self.Parameter(RangeExpr())
+
     @override
     def contents(self) -> None:
         super().contents()
@@ -58,24 +63,71 @@ class VoltageLink(CircuitLink):
 
         self.assign(self.voltage, self.source.voltage_out)
         self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
-        self.require(self.voltage_limits.contains(self.voltage), "overvoltage")
+        self.require(self.voltage_limits.contains(self.voltage), "voltage out of limits")
         self.assign(self.current_limits, self.source.current_limits)
-
         self.assign(self.current_drawn, self.sinks.sum(lambda x: x.current_draw))
-        self.require(self.current_limits.contains(self.current_drawn), "overcurrent")
+        self.require(self.current_limits.contains(self.current_drawn), "current draw out of limits")
+
+        has_reverse_voltage = self.reverse_voltage != RangeExpr.EMPTY
+        self.assign(self.reverse_voltage, self.sinks.hull(lambda x: x.reverse_voltage_out))
+        self.assign(self.reverse_voltage_limits, self.source.reverse_voltage_limits)
+        # use implications to gate the reverse voltage requirements, since not all sources will support reverse voltage
+        self.require(
+            has_reverse_voltage.implies(self.reverse_voltage_limits != RangeExpr.EMPTY),
+            "reverse voltage source must have reverse voltage sink",
+        )
+        self.require(
+            (~(self.sinks.map_extract(lambda x: x.reverse_voltage_out).elts_equals(RangeExpr.EMPTY))).count() <= 1,
+            "multiple reverse voltage sources not allowed",
+        )
+
+        self.require(
+            has_reverse_voltage.implies(self.reverse_voltage_limits.contains(self.reverse_voltage)),
+            "reverse voltage out of range",
+        )
+        self.require(
+            has_reverse_voltage.implies(self.voltage_limits.contains(self.reverse_voltage)),
+            "reverse voltage out of range of voltage limits",
+        )
+        self.require(
+            has_reverse_voltage.implies(self.reverse_voltage_limits.contains(self.voltage)),
+            "voltage out of range of reverse voltage limits",
+        )
+
+        self.assign(self.reverse_current_drawn, self.source.reverse_current_draw)
+        self.assign(self.reverse_current_limits, self.sinks.hull(lambda x: x.reverse_current_limits))
+        self.require(
+            has_reverse_voltage.implies(self.reverse_current_limits.contains(self.reverse_current_drawn)),
+            "reverse current out of limits",
+        )
 
 
 class VoltageSinkBridge(CircuitPortBridge):
     def __init__(self) -> None:
         super().__init__()
 
-        self.outer_port = self.Port(VoltageSink(current_draw=RangeExpr(), voltage_limits=RangeExpr()))
+        self.outer_port = self.Port(
+            VoltageSink(
+                current_draw=RangeExpr(),
+                voltage_limits=RangeExpr(),
+                reverse_voltage_out=RangeExpr(),
+                reverse_current_limits=RangeExpr(),
+            )
+        )
 
         # Here we ignore the current_limits of the inner port, instead relying on the main link to handle it
         # The outer port's voltage_limits is untouched and should be defined in the port def.
         # TODO: it's a slightly optimization to handle them here. Should it be done?
         # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-        self.inner_link = self.Port(VoltageSource(current_limits=RangeExpr.ALL, voltage_out=RangeExpr()))
+        # However, reverse_voltage_limit is assigned explicitly since it determines reverse sink support
+        self.inner_link = self.Port(
+            VoltageSource(
+                current_limits=RangeExpr.ALL,
+                voltage_out=RangeExpr(),
+                reverse_voltage_limits=RangeExpr(),
+                reverse_current_draw=RangeExpr(),
+            )
+        )
 
     @override
     def contents(self) -> None:
@@ -83,21 +135,39 @@ class VoltageSinkBridge(CircuitPortBridge):
 
         self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
         self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
+        self.assign(self.outer_port.reverse_voltage_out, self.inner_link.link().reverse_voltage)
+        self.assign(self.outer_port.reverse_current_limits, self.inner_link.link().reverse_current_limits)
 
         self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
+        self.assign(self.inner_link.reverse_voltage_limits, self.outer_port.link().reverse_voltage_limits)
+        self.assign(self.inner_link.reverse_current_draw, self.outer_port.link().reverse_current_drawn)
 
 
 class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources look the same inside and outside
     def __init__(self) -> None:
         super().__init__()
 
-        self.outer_port = self.Port(VoltageSource(voltage_out=RangeExpr(), current_limits=RangeExpr()))
+        self.outer_port = self.Port(
+            VoltageSource(
+                voltage_out=RangeExpr(),
+                current_limits=RangeExpr(),
+                reverse_voltage_limits=RangeExpr(),
+                reverse_current_draw=RangeExpr(),
+            )
+        )
 
         # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
         # The outer port's current_limits is untouched and should be defined in tte port def.
         # TODO: it's a slightly optimization to handle them here. Should it be done?
         # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-        self.inner_link = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL, current_draw=RangeExpr()))
+        self.inner_link = self.Port(
+            VoltageSink(
+                voltage_limits=RangeExpr.ALL,
+                current_draw=RangeExpr(),
+                reverse_voltage_out=RangeExpr(),
+                reverse_current_limits=RangeExpr.ALL,
+            )
+        )
 
     @override
     def contents(self) -> None:
@@ -107,8 +177,11 @@ class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources
         self.assign(
             self.outer_port.current_limits, self.inner_link.link().current_limits
         )  # TODO adjust for inner current drawn
+        self.assign(self.outer_port.reverse_voltage_limits, self.inner_link.link().reverse_voltage_limits)
+        self.assign(self.outer_port.reverse_current_draw, self.inner_link.link().reverse_current_drawn)
 
         self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
+        self.assign(self.inner_link.reverse_voltage_out, self.outer_port.link().reverse_voltage)
 
 
 class VoltageBase(CircuitPort[VoltageLink]):
@@ -139,10 +212,19 @@ class VoltageSink(VoltageBase):
     ) -> "VoltageSink":
         return VoltageSink(voltage_limits=gnd.link().voltage + voltage_limits, current_draw=current_draw)
 
-    def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL, current_draw: RangeLike = RangeExpr.ZERO) -> None:
+    def __init__(
+        self,
+        voltage_limits: RangeLike = RangeExpr.ALL,
+        current_draw: RangeLike = RangeExpr.ZERO,
+        reverse_voltage_out: RangeLike = RangeExpr.EMPTY,
+        reverse_current_limits: RangeLike = RangeExpr.EMPTY,
+    ) -> None:
         super().__init__()
         self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
         self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
+
+        self.reverse_voltage_out: RangeExpr = self.Parameter(RangeExpr(reverse_voltage_out))
+        self.reverse_current_limits: RangeExpr = self.Parameter(RangeExpr(reverse_current_limits))
 
 
 class VoltageSinkAdapterGroundReference(CircuitPortAdapter["GroundReference"]):
@@ -194,10 +276,19 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
 class VoltageSource(VoltageBase):
     bridge_type = VoltageSourceBridge
 
-    def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO, current_limits: RangeLike = RangeExpr.ALL) -> None:
+    def __init__(
+        self,
+        voltage_out: RangeLike = RangeExpr.ZERO,
+        current_limits: RangeLike = RangeExpr.ALL,
+        reverse_voltage_limits: RangeLike = RangeExpr.EMPTY,
+        reverse_current_draw: RangeLike = RangeExpr.EMPTY,
+    ) -> None:
         super().__init__()
         self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
         self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
+
+        self.reverse_voltage_limits: RangeExpr = self.Parameter(RangeExpr(reverse_voltage_limits))
+        self.reverse_current_draw: RangeExpr = self.Parameter(RangeExpr(reverse_current_draw))
 
 
 Power = PortTag(VoltageSink)  # General positive voltage port, should only be mutually exclusive with the below

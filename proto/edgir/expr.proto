@@ -283,6 +283,10 @@ message BinarySetExpr {
     // Concatenate : (lhs: String, rhss: Set[String]) -> Set[String] (prepend lhs to all elements)
     //             : (lhss: Set[String], rhs: String) -> Set[String] (append rhs to all elements)
     CONCAT = 20;
+
+    // Equality operator
+    // (lhss: Set[A], elt: A) -> Set[Bool] (pointwise equality of all elements in the set to the element)
+    EQ = 30;
   }
   Op op = 1;
   ValueExpr lhset = 2;

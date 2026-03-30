@@ -71,7 +71,7 @@ class PcbBot(JlcBoardTop):
             )
             self.v3v3 = self.connect(self.reg_3v3.pwr_out)
 
-            (self.charger,), _ = self.chain(self.vusb, imp.Block(Mcp73831(200 * mAmp(tol=0.2))), self.batt.chg)
+            (self.charger,), _ = self.chain(self.vusb, imp.Block(Mcp73831(200 * mAmp(tol=0.2))), self.batt.pwr)
             (self.charge_led,), _ = self.chain(self.Block(IndicatorSinkLed(Led.Yellow)), self.charger.stat)
             self.connect(self.vusb, self.charge_led.pwr)
 

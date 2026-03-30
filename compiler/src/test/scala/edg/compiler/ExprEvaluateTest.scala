@@ -302,6 +302,17 @@ class ExprEvaluateTest extends AnyFlatSpec {
     import edgir.expr.expr.UnarySetExpr.Op
     evalTest.map(
       ValueExpr.UnarySetOp(
+        Op.NEGATE,
+        ValueExpr.Literal(Seq(
+          Literal.Boolean(false),
+          Literal.Boolean(true),
+          Literal.Boolean(false),
+        ))
+      )
+    ) should equal(ArrayValue(Seq(BooleanValue(true), BooleanValue(false), BooleanValue(true))))
+
+    evalTest.map(
+      ValueExpr.UnarySetOp(
         Op.FLATTEN,
         ValueExpr.Literal(Seq(
           Literal.Array(Seq(Literal.Integer(0), Literal.Integer(1))),
@@ -327,6 +338,21 @@ class ExprEvaluateTest extends AnyFlatSpec {
   it should "handle array-value (broadcast) ops" in {
     import edg.ExprBuilder.Literal
     import edgir.expr.expr.BinarySetExpr.Op
+    evalTest.map(
+      ValueExpr.BinSetOp(
+        Op.EQ,
+        ValueExpr.Literal(Seq(Literal.Range(0, 10), Literal.Range(1, 11))),
+        ValueExpr.Literal(0, 10)
+      )
+    ) should equal(ArrayValue(Seq(BooleanValue(true), BooleanValue(false))))
+    evalTest.map(
+      ValueExpr.BinSetOp(
+        Op.EQ,
+        ValueExpr.Literal(Seq(Literal.Range(0, 10), Literal.RangeEmpty())),
+        ValueExpr.LiteralRangeEmpty()
+      )
+    ) should equal(ArrayValue(Seq(BooleanValue(false), BooleanValue(true))))
+
     evalTest.map(
       ValueExpr.BinSetOp(
         Op.ADD,
