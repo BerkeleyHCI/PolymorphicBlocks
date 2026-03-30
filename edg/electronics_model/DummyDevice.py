@@ -1,4 +1,4 @@
-from ..electronics_model import abstract_block, InternalBlock
+from ..core import abstract_block, InternalBlock
 
 
 @abstract_block
