@@ -90,7 +90,7 @@ class LipoConnector(Connector, Battery):
         voltage: RangeLike = (2.5, 4.2) * Volt,
         *args: Any,
         actual_voltage: RangeLike = (2.5, 4.2) * Volt,
-        charge_voltage: RangeLike = (2.5, 4.2 * 1.01) * Volt,
+        charge_tolerance: RangeLike = (1.0, 1.01) * Ratio,
         **kwargs: Any,
     ) -> None:
         super().__init__(voltage, *args, **kwargs)
@@ -104,7 +104,7 @@ class LipoConnector(Connector, Battery):
                 VoltageSource(
                     voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
                     current_limits=(0, 5.5) * Amp,  # arbitrary assuming low capacity, 10 C discharge
-                    reverse_voltage_limits=charge_voltage,
+                    reverse_voltage_limits=actual_voltage * RangeExpr._to_expr_type(charge_tolerance),
                     reverse_current_draw=(0, 0) * Amp,
                 )
             ),
