@@ -119,7 +119,7 @@ class VoltageSinkBridge(CircuitPortBridge):
         # The outer port's voltage_limits is untouched and should be defined in the port def.
         # TODO: it's a slightly optimization to handle them here. Should it be done?
         # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-        # However, revesre_voltage_limit is assigned explicitly since it determines reverse sink support
+        # However, reverse_voltage_limit is assigned explicitly since it determines reverse sink support
         self.inner_link = self.Port(
             VoltageSource(
                 current_limits=RangeExpr.ALL,
