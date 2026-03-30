@@ -128,11 +128,6 @@ class ArrayExpr(
     def hull(self) -> ArrayEltType:
         return self._create_unary_set_op(RangeSetOp.hull)
 
-    def elts_equals(self, other: ConstraintExpr[Any, None]) -> ArrayBoolExpr:
-        """Returns an ArrayBoolExpr of equality between each element of this and single-element other."""
-        assert self._is_bound() and other._is_bound()
-        return ArrayBoolExpr()._new_bind(BinarySetOpBinding(self, other, EqOp.all_equal))
-
 
 ArrayBoolLike = Union["ArrayBoolExpr", Sequence[BoolLike]]
 
@@ -186,6 +181,11 @@ class ArrayRangeExpr(ArrayExpr[RangeExpr, List[Range], ArrayRangeLike]):
         return self._create_binary_set_op(
             self._create_unary_set_op(NumericOp.invert), RangeExpr._to_expr_type(other), NumericOp.mul
         )
+
+    def elts_equals(self, other: RangeExpr) -> ArrayBoolExpr:
+        """Returns an ArrayBoolExpr of equality between each element of this and single-element other.
+        TODO: generalize to equality for other array types, needs some generic version of _to_expr_type"""
+        return ArrayBoolExpr()._new_bind(BinarySetOpBinding(self, RangeExpr._to_expr_type(other), EqOp.all_equal))
 
 
 ArrayStringLike = Union["ArrayStringExpr", Sequence[StringLike]]
