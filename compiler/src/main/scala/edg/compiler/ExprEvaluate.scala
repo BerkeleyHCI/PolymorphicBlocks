@@ -363,6 +363,8 @@ object ExprEvaluate {
               evalUnary(expr.UnaryExpr(op = expr.UnaryExpr.Op.NEGATE), arrayElt)
             }
             ArrayValue(resultElts)
+          case ArrayValue.ExtractBoolean(arrayElts) =>
+            ArrayValue(arrayElts.map { arrayElt => BooleanValue(!arrayElt) })
           case _ => throw new ExprEvaluateException(s"Unknown unary set operand in ${unarySet.op} $vals from $unarySet")
         }
 

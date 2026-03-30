@@ -302,6 +302,17 @@ class ExprEvaluateTest extends AnyFlatSpec {
     import edgir.expr.expr.UnarySetExpr.Op
     evalTest.map(
       ValueExpr.UnarySetOp(
+        Op.NEGATE,
+        ValueExpr.Literal(Seq(
+          Literal.Boolean(false),
+          Literal.Boolean(true),
+          Literal.Boolean(false),
+        ))
+      )
+    ) should equal(ArrayValue(Seq(BooleanValue(true), BooleanValue(false), BooleanValue(true))))
+
+    evalTest.map(
+      ValueExpr.UnarySetOp(
         Op.FLATTEN,
         ValueExpr.Literal(Seq(
           Literal.Array(Seq(Literal.Integer(0), Literal.Integer(1))),
