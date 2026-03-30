@@ -82,6 +82,7 @@ class ExprToString() extends ValueExprMap[String] {
     import expr.BinarySetExpr.Op
     object InfixOp {
       def unapply(op: Op): Option[String] = op match {
+        case Op.EQ => Some("==")
         case Op.ADD => Some("+")
         case Op.MULT => Some("×")
         case Op.CONCAT => None
@@ -91,7 +92,7 @@ class ExprToString() extends ValueExprMap[String] {
     object PrefixOp {
       def unapply(op: Op): Option[String] = op match {
         case Op.CONCAT => Some("concat")
-        case Op.ADD | Op.MULT => None
+        case Op.EQ | Op.ADD | Op.MULT => None
         case Op.UNDEFINED | Op.Unrecognized(_) => None
       }
     }

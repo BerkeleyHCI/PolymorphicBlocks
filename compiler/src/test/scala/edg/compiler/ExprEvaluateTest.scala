@@ -340,6 +340,21 @@ class ExprEvaluateTest extends AnyFlatSpec {
     import edgir.expr.expr.BinarySetExpr.Op
     evalTest.map(
       ValueExpr.BinSetOp(
+        Op.EQ,
+        ValueExpr.Literal(Seq(Literal.Range(0, 10), Literal.Range(1, 11))),
+        ValueExpr.Literal(0, 10)
+      )
+    ) should equal(ArrayValue(Seq(BooleanValue(true), BooleanValue(false))))
+    evalTest.map(
+      ValueExpr.BinSetOp(
+        Op.EQ,
+        ValueExpr.Literal(Seq(Literal.Range(0, 10), Literal.RangeEmpty())),
+        ValueExpr.LiteralRangeEmpty()
+      )
+    ) should equal(ArrayValue(Seq(BooleanValue(false), BooleanValue(true))))
+
+    evalTest.map(
+      ValueExpr.BinSetOp(
         Op.ADD,
         ValueExpr.Literal(Seq(Literal.Range(0, 10), Literal.Range(1, 11))),
         ValueExpr.Literal(100, 200)

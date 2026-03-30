@@ -11,7 +11,6 @@ referencing different elements in a designs or libraries.
 We enforce certain structural properties by having a series of nested
 'steps' that determine the next step in a path reference.
 """
-
 from collections import abc as _abc
 from edgir import common_pb2 as _common_pb2
 from edgir import name_pb2 as _name_pb2
@@ -22,7 +21,6 @@ from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 import builtins as _builtins
 import sys
 import typing as _typing
-
 if sys.version_info >= (3, 10):
     from typing import TypeAlias as _TypeAlias
 else:
@@ -30,42 +28,41 @@ else:
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class _Reserved:
-    ValueType = _typing.NewType("ValueType", _builtins.int)
+    ValueType = _typing.NewType('ValueType', _builtins.int)
     V: _TypeAlias = ValueType
 
 class _ReservedEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_Reserved.ValueType], _builtins.type):
     DESCRIPTOR: _descriptor.EnumDescriptor
     UNDEFINED: _Reserved.ValueType
     CONNECTED_LINK: _Reserved.ValueType
-    "* Directions we could move"
+    '* Directions we could move'
     IS_CONNECTED: _Reserved.ValueType
-    "* reserved parameters\n    true implies CONNECTED_LINK resolves; not available on PortArray\n    "
+    '* reserved parameters\n    true implies CONNECTED_LINK resolves; not available on PortArray\n    '
     LENGTH: _Reserved.ValueType
-    " EXISTS = 41;\n    available on PortArray and LinkArray\n    "
+    ' EXISTS = 41;\n    available on PortArray and LinkArray\n    '
     NAME: _Reserved.ValueType
     ELEMENTS: _Reserved.ValueType
-    "available on PortArray and LinkArray, returns a list of string of element names"
+    'available on PortArray and LinkArray, returns a list of string of element names'
     ALLOCATED: _Reserved.ValueType
-    "cannot be used as a generator dependency\n    available on PortArray, returns a list of string of incoming connection names,\n    "
+    'cannot be used as a generator dependency\n    available on PortArray, returns a list of string of incoming connection names,\n    '
 
 class Reserved(_Reserved, metaclass=_ReservedEnumTypeWrapper):
     """* These are reserved terms that we'll end up using in various places.
     I'd rather have these in the block/link/bridges where they're going
     to exist, but that's not possible without polymorphism protibuf doesn't have
     """
-
 UNDEFINED: Reserved.ValueType
 CONNECTED_LINK: Reserved.ValueType
-"* Directions we could move"
+'* Directions we could move'
 IS_CONNECTED: Reserved.ValueType
-"* reserved parameters\ntrue implies CONNECTED_LINK resolves; not available on PortArray\n"
+'* reserved parameters\ntrue implies CONNECTED_LINK resolves; not available on PortArray\n'
 LENGTH: Reserved.ValueType
-" EXISTS = 41;\navailable on PortArray and LinkArray\n"
+' EXISTS = 41;\navailable on PortArray and LinkArray\n'
 NAME: Reserved.ValueType
 ELEMENTS: Reserved.ValueType
-"available on PortArray and LinkArray, returns a list of string of element names"
+'available on PortArray and LinkArray, returns a list of string of element names'
 ALLOCATED: Reserved.ValueType
-"cannot be used as a generator dependency\navailable on PortArray, returns a list of string of incoming connection names,\n"
+'cannot be used as a generator dependency\navailable on PortArray, returns a list of string of incoming connection names,\n'
 Global___Reserved: _TypeAlias = Reserved
 
 @_typing.final
@@ -76,39 +73,31 @@ class LocalStep(_message.Message):
     The directions encode the type of thing we are referencing,
     but to the user all of these look just like local variables
     """
-
     DESCRIPTOR: _descriptor.Descriptor
     RESERVED_PARAM_FIELD_NUMBER: _builtins.int
     ALLOCATE_FIELD_NUMBER: _builtins.int
     NAME_FIELD_NUMBER: _builtins.int
     reserved_param: Global___Reserved.ValueType
     allocate: _builtins.str
-    "Allocates a new element in an array, valid for arrays only.\n    Empty string means automatically allocated, while a non-empty string is a suggested name.\n    "
+    'Allocates a new element in an array, valid for arrays only.\n    Empty string means automatically allocated, while a non-empty string is a suggested name.\n    '
     name: _builtins.str
     "*\n    A local name is what something is called in the context of its parent,\n    whether that parent is a namespace (as in the library) or some other\n    element (as in a design or heirarchy block).\n\n    localNames should have the following properties:\n\n    - First char is a lower case letter\n    - All other chars must be letters, numbers, '-', '<', '>'\n    - lowerCamelCase is preffered, don't use any symbols in the name\n    if possible.\n\n    These are style guidelines, literally any string will work.\n    "
 
-    def __init__(
-        self,
-        *,
-        reserved_param: Global___Reserved.ValueType = ...,
-        allocate: _builtins.str = ...,
-        name: _builtins.str = ...,
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal[
-        "allocate", b"allocate", "name", b"name", "reserved_param", b"reserved_param", "step", b"step"
-    ]
+    def __init__(self, *, reserved_param: Global___Reserved.ValueType=..., allocate: _builtins.str=..., name: _builtins.str=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['allocate', b'allocate', 'name', b'name', 'reserved_param', b'reserved_param', 'step', b'step']
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal[
-        "allocate", b"allocate", "name", b"name", "reserved_param", b"reserved_param", "step", b"step"
-    ]
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['allocate', b'allocate', 'name', b'name', 'reserved_param', b'reserved_param', 'step', b'step']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-    _WhichOneofReturnType_step: _TypeAlias = _typing.Literal["reserved_param", "allocate", "name"]
-    _WhichOneofArgType_step: _TypeAlias = _typing.Literal["step", b"step"]
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
+    _WhichOneofReturnType_step: _TypeAlias = _typing.Literal['reserved_param', 'allocate', 'name']
+    _WhichOneofArgType_step: _TypeAlias = _typing.Literal['step', b'step']
 
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_step) -> _WhichOneofReturnType_step | None: ...
-
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_step) -> _WhichOneofReturnType_step | None:
+        ...
 Global___LocalStep: _TypeAlias = LocalStep
 
 @_typing.final
@@ -116,25 +105,28 @@ class LocalPath(_message.Message):
     """* This is a path from a local context to some other local context.
     To be used as a reference.
     """
-
     DESCRIPTOR: _descriptor.Descriptor
     STEPS_FIELD_NUMBER: _builtins.int
     META_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def steps(self) -> _containers.RepeatedCompositeFieldContainer[Global___LocalStep]: ...
+    def steps(self) -> _containers.RepeatedCompositeFieldContainer[Global___LocalStep]:
+        ...
+
     @_builtins.property
-    def meta(self) -> _common_pb2.Metadata: ...
-    def __init__(
-        self, *, steps: _abc.Iterable[Global___LocalStep] | None = ..., meta: _common_pb2.Metadata | None = ...
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["meta", b"meta"]
+    def meta(self) -> _common_pb2.Metadata:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["meta", b"meta", "steps", b"steps"]
+    def __init__(self, *, steps: _abc.Iterable[Global___LocalStep] | None=..., meta: _common_pb2.Metadata | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta', 'steps', b'steps']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___LocalPath: _TypeAlias = LocalPath
 
 @_typing.final
@@ -142,7 +134,6 @@ class LibraryPath(_message.Message):
     """* This is a path to an element within a library from the root of
     a library. To be used as a way to reference such elements.
     """
-
     DESCRIPTOR: _descriptor.Descriptor
     START_FIELD_NUMBER: _builtins.int
     STEPS_FIELD_NUMBER: _builtins.int
@@ -150,28 +141,29 @@ class LibraryPath(_message.Message):
     META_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def start(self) -> _name_pb2.LibraryName: ...
-    @_builtins.property
-    def steps(self) -> _containers.RepeatedCompositeFieldContainer[_name_pb2.Namespace]: ...
-    @_builtins.property
-    def target(self) -> Global___LocalStep: ...
-    @_builtins.property
-    def meta(self) -> _common_pb2.Metadata: ...
-    def __init__(
-        self,
-        *,
-        start: _name_pb2.LibraryName | None = ...,
-        steps: _abc.Iterable[_name_pb2.Namespace] | None = ...,
-        target: Global___LocalStep | None = ...,
-        meta: _common_pb2.Metadata | None = ...,
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["meta", b"meta", "start", b"start", "target", b"target"]
+    def start(self) -> _name_pb2.LibraryName:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal[
-        "meta", b"meta", "start", b"start", "steps", b"steps", "target", b"target"
-    ]
+    @_builtins.property
+    def steps(self) -> _containers.RepeatedCompositeFieldContainer[_name_pb2.Namespace]:
+        ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    @_builtins.property
+    def target(self) -> Global___LocalStep:
+        ...
 
+    @_builtins.property
+    def meta(self) -> _common_pb2.Metadata:
+        ...
+
+    def __init__(self, *, start: _name_pb2.LibraryName | None=..., steps: _abc.Iterable[_name_pb2.Namespace] | None=..., target: Global___LocalStep | None=..., meta: _common_pb2.Metadata | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta', 'start', b'start', 'target', b'target']
+
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['meta', b'meta', 'start', b'start', 'steps', b'steps', 'target', b'target']
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___LibraryPath: _TypeAlias = LibraryPath

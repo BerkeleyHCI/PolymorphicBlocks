@@ -133,6 +133,15 @@ object ExprBuilder {
       )
     }
 
+    def RangeEmpty(): lit.ValueLit = {
+      lit.ValueLit(`type` =
+        lit.ValueLit.Type.Range(lit.RangeLit(
+          minimum = Some(Floating(Float.NaN)),
+          maximum = Some(Floating(Float.NaN))
+        ))
+      )
+    }
+
     def Array(values: Seq[lit.ValueLit]): lit.ValueLit = {
       lit.ValueLit(`type` =
         lit.ValueLit.Type.Array(lit.ArrayLit(

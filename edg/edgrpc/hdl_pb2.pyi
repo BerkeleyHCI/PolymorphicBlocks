@@ -4,7 +4,6 @@ isort:skip_file
 * Defines messages for a service provided in Python that exposes
 HDL-to-edgir elaboration for a compiler in a different process / language.
 """
-
 from collections import abc as _abc
 from edgir import elem_pb2 as _elem_pb2
 from edgir import lit_pb2 as _lit_pb2
@@ -16,7 +15,6 @@ from google.protobuf.internal import containers as _containers
 import builtins as _builtins
 import sys
 import typing as _typing
-
 if sys.version_info >= (3, 10):
     from typing import TypeAlias as _TypeAlias
 else:
@@ -35,32 +33,32 @@ class Refinements(_message.Message):
         REPLACEMENT_FIELD_NUMBER: _builtins.int
 
         @_builtins.property
-        def path(self) -> _ref_pb2.LocalPath: ...
+        def path(self) -> _ref_pb2.LocalPath:
+            ...
+
         @_builtins.property
-        def cls(self) -> _ref_pb2.LibraryPath: ...
+        def cls(self) -> _ref_pb2.LibraryPath:
+            ...
+
         @_builtins.property
-        def replacement(self) -> _ref_pb2.LibraryPath: ...
-        def __init__(
-            self,
-            *,
-            path: _ref_pb2.LocalPath | None = ...,
-            cls: _ref_pb2.LibraryPath | None = ...,
-            replacement: _ref_pb2.LibraryPath | None = ...,
-        ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal[
-            "cls", b"cls", "path", b"path", "replacement", b"replacement", "source", b"source"
-        ]
+        def replacement(self) -> _ref_pb2.LibraryPath:
+            ...
 
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal[
-            "cls", b"cls", "path", b"path", "replacement", b"replacement", "source", b"source"
-        ]
+        def __init__(self, *, path: _ref_pb2.LocalPath | None=..., cls: _ref_pb2.LibraryPath | None=..., replacement: _ref_pb2.LibraryPath | None=...) -> None:
+            ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal['cls', b'cls', 'path', b'path', 'replacement', b'replacement', 'source', b'source']
 
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        _WhichOneofReturnType_source: _TypeAlias = _typing.Literal["path", "cls"]
-        _WhichOneofArgType_source: _TypeAlias = _typing.Literal["source", b"source"]
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+            ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal['cls', b'cls', 'path', b'path', 'replacement', b'replacement', 'source', b'source']
 
-        def WhichOneof(self, oneof_group: _WhichOneofArgType_source) -> _WhichOneofReturnType_source | None: ...
+        def ClearField(self, field_name: _ClearFieldArgType) -> None:
+            ...
+        _WhichOneofReturnType_source: _TypeAlias = _typing.Literal['path', 'cls']
+        _WhichOneofArgType_source: _TypeAlias = _typing.Literal['source', b'source']
+
+        def WhichOneof(self, oneof_group: _WhichOneofArgType_source) -> _WhichOneofReturnType_source | None:
+            ...
 
     @_typing.final
     class Value(_message.Message):
@@ -73,28 +71,36 @@ class Refinements(_message.Message):
             PARAM_PATH_FIELD_NUMBER: _builtins.int
 
             @_builtins.property
-            def cls(self) -> _ref_pb2.LibraryPath: ...
+            def cls(self) -> _ref_pb2.LibraryPath:
+                ...
+
             @_builtins.property
-            def param_path(self) -> _ref_pb2.LocalPath: ...
-            def __init__(
-                self, *, cls: _ref_pb2.LibraryPath | None = ..., param_path: _ref_pb2.LocalPath | None = ...
-            ) -> None: ...
-            _HasFieldArgType: _TypeAlias = _typing.Literal["cls", b"cls", "param_path", b"param_path"]
+            def param_path(self) -> _ref_pb2.LocalPath:
+                ...
 
-            def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-            _ClearFieldArgType: _TypeAlias = _typing.Literal["cls", b"cls", "param_path", b"param_path"]
+            def __init__(self, *, cls: _ref_pb2.LibraryPath | None=..., param_path: _ref_pb2.LocalPath | None=...) -> None:
+                ...
+            _HasFieldArgType: _TypeAlias = _typing.Literal['cls', b'cls', 'param_path', b'param_path']
 
-            def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+            def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+                ...
+            _ClearFieldArgType: _TypeAlias = _typing.Literal['cls', b'cls', 'param_path', b'param_path']
 
+            def ClearField(self, field_name: _ClearFieldArgType) -> None:
+                ...
         PATH_FIELD_NUMBER: _builtins.int
         CLS_PARAM_FIELD_NUMBER: _builtins.int
         EXPR_FIELD_NUMBER: _builtins.int
         PARAM_FIELD_NUMBER: _builtins.int
 
         @_builtins.property
-        def path(self) -> _ref_pb2.LocalPath: ...
+        def path(self) -> _ref_pb2.LocalPath:
+            ...
+
         @_builtins.property
-        def cls_param(self) -> Global___Refinements.Value.ClassParamPath: ...
+        def cls_param(self) -> Global___Refinements.Value.ClassParamPath:
+            ...
+
         @_builtins.property
         def expr(self) -> _lit_pb2.ValueLit:
             """set to a specific value"""
@@ -103,73 +109,45 @@ class Refinements(_message.Message):
         def param(self) -> _ref_pb2.LocalPath:
             """set to a value of another parameter - invalid for classes for now"""
 
-        def __init__(
-            self,
-            *,
-            path: _ref_pb2.LocalPath | None = ...,
-            cls_param: Global___Refinements.Value.ClassParamPath | None = ...,
-            expr: _lit_pb2.ValueLit | None = ...,
-            param: _ref_pb2.LocalPath | None = ...,
-        ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal[
-            "cls_param",
-            b"cls_param",
-            "expr",
-            b"expr",
-            "param",
-            b"param",
-            "path",
-            b"path",
-            "source",
-            b"source",
-            "value",
-            b"value",
-        ]
+        def __init__(self, *, path: _ref_pb2.LocalPath | None=..., cls_param: Global___Refinements.Value.ClassParamPath | None=..., expr: _lit_pb2.ValueLit | None=..., param: _ref_pb2.LocalPath | None=...) -> None:
+            ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal['cls_param', b'cls_param', 'expr', b'expr', 'param', b'param', 'path', b'path', 'source', b'source', 'value', b'value']
 
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal[
-            "cls_param",
-            b"cls_param",
-            "expr",
-            b"expr",
-            "param",
-            b"param",
-            "path",
-            b"path",
-            "source",
-            b"source",
-            "value",
-            b"value",
-        ]
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+            ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal['cls_param', b'cls_param', 'expr', b'expr', 'param', b'param', 'path', b'path', 'source', b'source', 'value', b'value']
 
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        _WhichOneofReturnType_source: _TypeAlias = _typing.Literal["path", "cls_param"]
-        _WhichOneofArgType_source: _TypeAlias = _typing.Literal["source", b"source"]
-        _WhichOneofReturnType_value: _TypeAlias = _typing.Literal["expr", "param"]
-        _WhichOneofArgType_value: _TypeAlias = _typing.Literal["value", b"value"]
+        def ClearField(self, field_name: _ClearFieldArgType) -> None:
+            ...
+        _WhichOneofReturnType_source: _TypeAlias = _typing.Literal['path', 'cls_param']
+        _WhichOneofArgType_source: _TypeAlias = _typing.Literal['source', b'source']
+        _WhichOneofReturnType_value: _TypeAlias = _typing.Literal['expr', 'param']
+        _WhichOneofArgType_value: _TypeAlias = _typing.Literal['value', b'value']
 
         @_typing.overload
-        def WhichOneof(self, oneof_group: _WhichOneofArgType_source) -> _WhichOneofReturnType_source | None: ...
-        @_typing.overload
-        def WhichOneof(self, oneof_group: _WhichOneofArgType_value) -> _WhichOneofReturnType_value | None: ...
+        def WhichOneof(self, oneof_group: _WhichOneofArgType_source) -> _WhichOneofReturnType_source | None:
+            ...
 
+        @_typing.overload
+        def WhichOneof(self, oneof_group: _WhichOneofArgType_value) -> _WhichOneofReturnType_value | None:
+            ...
     SUBCLASSES_FIELD_NUMBER: _builtins.int
     VALUES_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def subclasses(self) -> _containers.RepeatedCompositeFieldContainer[Global___Refinements.Subclass]: ...
+    def subclasses(self) -> _containers.RepeatedCompositeFieldContainer[Global___Refinements.Subclass]:
+        ...
+
     @_builtins.property
-    def values(self) -> _containers.RepeatedCompositeFieldContainer[Global___Refinements.Value]: ...
-    def __init__(
-        self,
-        *,
-        subclasses: _abc.Iterable[Global___Refinements.Subclass] | None = ...,
-        values: _abc.Iterable[Global___Refinements.Value] | None = ...,
-    ) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["subclasses", b"subclasses", "values", b"values"]
+    def values(self) -> _containers.RepeatedCompositeFieldContainer[Global___Refinements.Value]:
+        ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def __init__(self, *, subclasses: _abc.Iterable[Global___Refinements.Subclass] | None=..., values: _abc.Iterable[Global___Refinements.Value] | None=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['subclasses', b'subclasses', 'values', b'values']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___Refinements: _TypeAlias = Refinements
 
 @_typing.final
@@ -178,11 +156,12 @@ class ModuleName(_message.Message):
     NAME_FIELD_NUMBER: _builtins.int
     name: _builtins.str
 
-    def __init__(self, *, name: _builtins.str = ...) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name"]
+    def __init__(self, *, name: _builtins.str=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['name', b'name']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___ModuleName: _TypeAlias = ModuleName
 
 @_typing.final
@@ -191,12 +170,15 @@ class IndexResponse(_message.Message):
     INDEXED_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def indexed(self) -> _containers.RepeatedCompositeFieldContainer[_ref_pb2.LibraryPath]: ...
-    def __init__(self, *, indexed: _abc.Iterable[_ref_pb2.LibraryPath] | None = ...) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["indexed", b"indexed"]
+    def indexed(self) -> _containers.RepeatedCompositeFieldContainer[_ref_pb2.LibraryPath]:
+        ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def __init__(self, *, indexed: _abc.Iterable[_ref_pb2.LibraryPath] | None=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['indexed', b'indexed']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___IndexResponse: _TypeAlias = IndexResponse
 
 @_typing.final
@@ -208,14 +190,16 @@ class LibraryRequest(_message.Message):
     def element(self) -> _ref_pb2.LibraryPath:
         """library element asked for"""
 
-    def __init__(self, *, element: _ref_pb2.LibraryPath | None = ...) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["element", b"element"]
+    def __init__(self, *, element: _ref_pb2.LibraryPath | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['element', b'element']
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["element", b"element"]
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['element', b'element']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___LibraryRequest: _TypeAlias = LibraryRequest
 
 @_typing.final
@@ -225,21 +209,23 @@ class LibraryResponse(_message.Message):
     REFINEMENTS_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def element(self) -> _schema_pb2.Library.NS.Val: ...
+    def element(self) -> _schema_pb2.Library.NS.Val:
+        ...
+
     @_builtins.property
     def refinements(self) -> Global___Refinements:
         """only valid if element is a top-level block"""
 
-    def __init__(
-        self, *, element: _schema_pb2.Library.NS.Val | None = ..., refinements: Global___Refinements | None = ...
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["element", b"element", "refinements", b"refinements"]
+    def __init__(self, *, element: _schema_pb2.Library.NS.Val | None=..., refinements: Global___Refinements | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['element', b'element', 'refinements', b'refinements']
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["element", b"element", "refinements", b"refinements"]
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['element', b'element', 'refinements', b'refinements']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___LibraryResponse: _TypeAlias = LibraryResponse
 
 @_typing.final
@@ -249,17 +235,23 @@ class ExprValue(_message.Message):
     VALUE_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def path(self) -> _ref_pb2.LocalPath: ...
+    def path(self) -> _ref_pb2.LocalPath:
+        ...
+
     @_builtins.property
-    def value(self) -> _lit_pb2.ValueLit: ...
-    def __init__(self, *, path: _ref_pb2.LocalPath | None = ..., value: _lit_pb2.ValueLit | None = ...) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["path", b"path", "value", b"value"]
+    def value(self) -> _lit_pb2.ValueLit:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["path", b"path", "value", b"value"]
+    def __init__(self, *, path: _ref_pb2.LocalPath | None=..., value: _lit_pb2.ValueLit | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['path', b'path', 'value', b'value']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['path', b'path', 'value', b'value']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___ExprValue: _TypeAlias = ExprValue
 
 @_typing.final
@@ -273,17 +265,19 @@ class GeneratorRequest(_message.Message):
         """path of library element containing the generator"""
 
     @_builtins.property
-    def values(self) -> _containers.RepeatedCompositeFieldContainer[Global___ExprValue]: ...
-    def __init__(
-        self, *, element: _ref_pb2.LibraryPath | None = ..., values: _abc.Iterable[Global___ExprValue] | None = ...
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["element", b"element"]
+    def values(self) -> _containers.RepeatedCompositeFieldContainer[Global___ExprValue]:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["element", b"element", "values", b"values"]
+    def __init__(self, *, element: _ref_pb2.LibraryPath | None=..., values: _abc.Iterable[Global___ExprValue] | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['element', b'element']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['element', b'element', 'values', b'values']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___GeneratorRequest: _TypeAlias = GeneratorRequest
 
 @_typing.final
@@ -292,15 +286,19 @@ class GeneratorResponse(_message.Message):
     GENERATED_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def generated(self) -> _elem_pb2.HierarchyBlock: ...
-    def __init__(self, *, generated: _elem_pb2.HierarchyBlock | None = ...) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["generated", b"generated"]
+    def generated(self) -> _elem_pb2.HierarchyBlock:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["generated", b"generated"]
+    def __init__(self, *, generated: _elem_pb2.HierarchyBlock | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['generated', b'generated']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['generated', b'generated']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___GeneratorResponse: _TypeAlias = GeneratorResponse
 
 @_typing.final
@@ -308,34 +306,33 @@ class RefinementRequest(_message.Message):
     """Runs a refinement pass - something that takes a full design and solved values and
     generates additional values, eg for refdes assignment
     """
-
     DESCRIPTOR: _descriptor.Descriptor
     REFINEMENT_PASS_FIELD_NUMBER: _builtins.int
     DESIGN_FIELD_NUMBER: _builtins.int
     SOLVEDVALUES_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def refinement_pass(self) -> _ref_pb2.LibraryPath: ...
+    def refinement_pass(self) -> _ref_pb2.LibraryPath:
+        ...
+
     @_builtins.property
-    def design(self) -> _schema_pb2.Design: ...
+    def design(self) -> _schema_pb2.Design:
+        ...
+
     @_builtins.property
-    def solvedValues(self) -> _containers.RepeatedCompositeFieldContainer[Global___ExprValue]: ...
-    def __init__(
-        self,
-        *,
-        refinement_pass: _ref_pb2.LibraryPath | None = ...,
-        design: _schema_pb2.Design | None = ...,
-        solvedValues: _abc.Iterable[Global___ExprValue] | None = ...,
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["design", b"design", "refinement_pass", b"refinement_pass"]
+    def solvedValues(self) -> _containers.RepeatedCompositeFieldContainer[Global___ExprValue]:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal[
-        "design", b"design", "refinement_pass", b"refinement_pass", "solvedValues", b"solvedValues"
-    ]
+    def __init__(self, *, refinement_pass: _ref_pb2.LibraryPath | None=..., design: _schema_pb2.Design | None=..., solvedValues: _abc.Iterable[Global___ExprValue] | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['design', b'design', 'refinement_pass', b'refinement_pass']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['design', b'design', 'refinement_pass', b'refinement_pass', 'solvedValues', b'solvedValues']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___RefinementRequest: _TypeAlias = RefinementRequest
 
 @_typing.final
@@ -344,12 +341,15 @@ class RefinementResponse(_message.Message):
     NEWVALUES_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def newValues(self) -> _containers.RepeatedCompositeFieldContainer[Global___ExprValue]: ...
-    def __init__(self, *, newValues: _abc.Iterable[Global___ExprValue] | None = ...) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["newValues", b"newValues"]
+    def newValues(self) -> _containers.RepeatedCompositeFieldContainer[Global___ExprValue]:
+        ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def __init__(self, *, newValues: _abc.Iterable[Global___ExprValue] | None=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['newValues', b'newValues']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___RefinementResponse: _TypeAlias = RefinementResponse
 
 @_typing.final
@@ -357,7 +357,6 @@ class BackendRequest(_message.Message):
     """Runs a backend - something that generates fabrication artifacts from a compiled design tree
     eg, generate KiCad netlist, or generate microcontroller firmware pinmap headers
     """
-
     DESCRIPTOR: _descriptor.Descriptor
 
     @_typing.final
@@ -368,41 +367,43 @@ class BackendRequest(_message.Message):
         key: _builtins.str
         value: _builtins.str
 
-        def __init__(self, *, key: _builtins.str = ..., value: _builtins.str = ...) -> None: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["key", b"key", "value", b"value"]
+        def __init__(self, *, key: _builtins.str=..., value: _builtins.str=...) -> None:
+            ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal['key', b'key', 'value', b'value']
 
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
+        def ClearField(self, field_name: _ClearFieldArgType) -> None:
+            ...
     BACKEND_FIELD_NUMBER: _builtins.int
     DESIGN_FIELD_NUMBER: _builtins.int
     SOLVEDVALUES_FIELD_NUMBER: _builtins.int
     ARGUMENTS_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def backend(self) -> _ref_pb2.LibraryPath: ...
-    @_builtins.property
-    def design(self) -> _schema_pb2.Design: ...
-    @_builtins.property
-    def solvedValues(self) -> _containers.RepeatedCompositeFieldContainer[Global___ExprValue]: ...
-    @_builtins.property
-    def arguments(self) -> _containers.ScalarMap[_builtins.str, _builtins.str]: ...
-    def __init__(
-        self,
-        *,
-        backend: _ref_pb2.LibraryPath | None = ...,
-        design: _schema_pb2.Design | None = ...,
-        solvedValues: _abc.Iterable[Global___ExprValue] | None = ...,
-        arguments: _abc.Mapping[_builtins.str, _builtins.str] | None = ...,
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["backend", b"backend", "design", b"design"]
+    def backend(self) -> _ref_pb2.LibraryPath:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal[
-        "arguments", b"arguments", "backend", b"backend", "design", b"design", "solvedValues", b"solvedValues"
-    ]
+    @_builtins.property
+    def design(self) -> _schema_pb2.Design:
+        ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    @_builtins.property
+    def solvedValues(self) -> _containers.RepeatedCompositeFieldContainer[Global___ExprValue]:
+        ...
 
+    @_builtins.property
+    def arguments(self) -> _containers.ScalarMap[_builtins.str, _builtins.str]:
+        ...
+
+    def __init__(self, *, backend: _ref_pb2.LibraryPath | None=..., design: _schema_pb2.Design | None=..., solvedValues: _abc.Iterable[Global___ExprValue] | None=..., arguments: _abc.Mapping[_builtins.str, _builtins.str] | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['backend', b'backend', 'design', b'design']
+
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['arguments', b'arguments', 'backend', b'backend', 'design', b'design', 'solvedValues', b'solvedValues']
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___BackendRequest: _TypeAlias = BackendRequest
 
 @_typing.final
@@ -415,50 +416,56 @@ class BackendResponse(_message.Message):
         PATH_FIELD_NUMBER: _builtins.int
         TEXT_FIELD_NUMBER: _builtins.int
         text: _builtins.str
-        "for now, only text supported, for KiCad netlisting"
+        'for now, only text supported, for KiCad netlisting'
 
         @_builtins.property
         def path(self) -> _ref_pb2.LocalPath:
             """path of corresponding element in design tree"""
 
-        def __init__(self, *, path: _ref_pb2.LocalPath | None = ..., text: _builtins.str = ...) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["path", b"path", "result", b"result", "text", b"text"]
+        def __init__(self, *, path: _ref_pb2.LocalPath | None=..., text: _builtins.str=...) -> None:
+            ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal['path', b'path', 'result', b'result', 'text', b'text']
 
-        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["path", b"path", "result", b"result", "text", b"text"]
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+            ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal['path', b'path', 'result', b'result', 'text', b'text']
 
-        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["text"]
-        _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]
+        def ClearField(self, field_name: _ClearFieldArgType) -> None:
+            ...
+        _WhichOneofReturnType_result: _TypeAlias = _typing.Literal['text']
+        _WhichOneofArgType_result: _TypeAlias = _typing.Literal['result', b'result']
 
-        def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
-
+        def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None:
+            ...
     RESULTS_FIELD_NUMBER: _builtins.int
 
     @_builtins.property
-    def results(self) -> _containers.RepeatedCompositeFieldContainer[Global___BackendResponse.Result]: ...
-    def __init__(self, *, results: _abc.Iterable[Global___BackendResponse.Result] | None = ...) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["results", b"results"]
+    def results(self) -> _containers.RepeatedCompositeFieldContainer[Global___BackendResponse.Result]:
+        ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def __init__(self, *, results: _abc.Iterable[Global___BackendResponse.Result] | None=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['results', b'results']
 
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___BackendResponse: _TypeAlias = BackendResponse
 
 @_typing.final
 class ErrorResponse(_message.Message):
     """catch all error response"""
-
     DESCRIPTOR: _descriptor.Descriptor
     ERROR_FIELD_NUMBER: _builtins.int
     TRACEBACK_FIELD_NUMBER: _builtins.int
     error: _builtins.str
     traceback: _builtins.str
 
-    def __init__(self, *, error: _builtins.str = ..., traceback: _builtins.str = ...) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["error", b"error", "traceback", b"traceback"]
+    def __init__(self, *, error: _builtins.str=..., traceback: _builtins.str=...) -> None:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['error', b'error', 'traceback', b'traceback']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
 Global___ErrorResponse: _TypeAlias = ErrorResponse
 
 @_typing.final
@@ -471,7 +478,7 @@ class HdlRequest(_message.Message):
     RUN_BACKEND_FIELD_NUMBER: _builtins.int
     GET_PROTO_VERSION_FIELD_NUMBER: _builtins.int
     get_proto_version: _builtins.int
-    "no data"
+    'no data'
 
     @_builtins.property
     def index_module(self) -> Global___ModuleName:
@@ -486,67 +493,28 @@ class HdlRequest(_message.Message):
         """returns the elaborated IR"""
 
     @_builtins.property
-    def run_refinement(self) -> Global___RefinementRequest: ...
+    def run_refinement(self) -> Global___RefinementRequest:
+        ...
+
     @_builtins.property
-    def run_backend(self) -> Global___BackendRequest: ...
-    def __init__(
-        self,
-        *,
-        index_module: Global___ModuleName | None = ...,
-        get_library_element: Global___LibraryRequest | None = ...,
-        elaborate_generator: Global___GeneratorRequest | None = ...,
-        run_refinement: Global___RefinementRequest | None = ...,
-        run_backend: Global___BackendRequest | None = ...,
-        get_proto_version: _builtins.int = ...,
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal[
-        "elaborate_generator",
-        b"elaborate_generator",
-        "get_library_element",
-        b"get_library_element",
-        "get_proto_version",
-        b"get_proto_version",
-        "index_module",
-        b"index_module",
-        "request",
-        b"request",
-        "run_backend",
-        b"run_backend",
-        "run_refinement",
-        b"run_refinement",
-    ]
+    def run_backend(self) -> Global___BackendRequest:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal[
-        "elaborate_generator",
-        b"elaborate_generator",
-        "get_library_element",
-        b"get_library_element",
-        "get_proto_version",
-        b"get_proto_version",
-        "index_module",
-        b"index_module",
-        "request",
-        b"request",
-        "run_backend",
-        b"run_backend",
-        "run_refinement",
-        b"run_refinement",
-    ]
+    def __init__(self, *, index_module: Global___ModuleName | None=..., get_library_element: Global___LibraryRequest | None=..., elaborate_generator: Global___GeneratorRequest | None=..., run_refinement: Global___RefinementRequest | None=..., run_backend: Global___BackendRequest | None=..., get_proto_version: _builtins.int=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['elaborate_generator', b'elaborate_generator', 'get_library_element', b'get_library_element', 'get_proto_version', b'get_proto_version', 'index_module', b'index_module', 'request', b'request', 'run_backend', b'run_backend', 'run_refinement', b'run_refinement']
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-    _WhichOneofReturnType_request: _TypeAlias = _typing.Literal[
-        "index_module",
-        "get_library_element",
-        "elaborate_generator",
-        "run_refinement",
-        "run_backend",
-        "get_proto_version",
-    ]
-    _WhichOneofArgType_request: _TypeAlias = _typing.Literal["request", b"request"]
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['elaborate_generator', b'elaborate_generator', 'get_library_element', b'get_library_element', 'get_proto_version', b'get_proto_version', 'index_module', b'index_module', 'request', b'request', 'run_backend', b'run_backend', 'run_refinement', b'run_refinement']
 
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_request) -> _WhichOneofReturnType_request | None: ...
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
+    _WhichOneofReturnType_request: _TypeAlias = _typing.Literal['index_module', 'get_library_element', 'elaborate_generator', 'run_refinement', 'run_backend', 'get_proto_version']
+    _WhichOneofArgType_request: _TypeAlias = _typing.Literal['request', b'request']
 
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_request) -> _WhichOneofReturnType_request | None:
+        ...
 Global___HdlRequest: _TypeAlias = HdlRequest
 
 @_typing.final
@@ -566,77 +534,38 @@ class HdlResponse(_message.Message):
         """list of contained library elements"""
 
     @_builtins.property
-    def get_library_element(self) -> Global___LibraryResponse: ...
-    @_builtins.property
-    def elaborate_generator(self) -> Global___GeneratorResponse: ...
-    @_builtins.property
-    def run_refinement(self) -> Global___RefinementResponse: ...
-    @_builtins.property
-    def run_backend(self) -> Global___BackendResponse: ...
-    @_builtins.property
-    def error(self) -> Global___ErrorResponse: ...
-    def __init__(
-        self,
-        *,
-        index_module: Global___IndexResponse | None = ...,
-        get_library_element: Global___LibraryResponse | None = ...,
-        elaborate_generator: Global___GeneratorResponse | None = ...,
-        run_refinement: Global___RefinementResponse | None = ...,
-        run_backend: Global___BackendResponse | None = ...,
-        get_proto_version: _builtins.int = ...,
-        error: Global___ErrorResponse | None = ...,
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal[
-        "elaborate_generator",
-        b"elaborate_generator",
-        "error",
-        b"error",
-        "get_library_element",
-        b"get_library_element",
-        "get_proto_version",
-        b"get_proto_version",
-        "index_module",
-        b"index_module",
-        "response",
-        b"response",
-        "run_backend",
-        b"run_backend",
-        "run_refinement",
-        b"run_refinement",
-    ]
+    def get_library_element(self) -> Global___LibraryResponse:
+        ...
 
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal[
-        "elaborate_generator",
-        b"elaborate_generator",
-        "error",
-        b"error",
-        "get_library_element",
-        b"get_library_element",
-        "get_proto_version",
-        b"get_proto_version",
-        "index_module",
-        b"index_module",
-        "response",
-        b"response",
-        "run_backend",
-        b"run_backend",
-        "run_refinement",
-        b"run_refinement",
-    ]
+    @_builtins.property
+    def elaborate_generator(self) -> Global___GeneratorResponse:
+        ...
 
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-    _WhichOneofReturnType_response: _TypeAlias = _typing.Literal[
-        "index_module",
-        "get_library_element",
-        "elaborate_generator",
-        "run_refinement",
-        "run_backend",
-        "get_proto_version",
-        "error",
-    ]
-    _WhichOneofArgType_response: _TypeAlias = _typing.Literal["response", b"response"]
+    @_builtins.property
+    def run_refinement(self) -> Global___RefinementResponse:
+        ...
 
-    def WhichOneof(self, oneof_group: _WhichOneofArgType_response) -> _WhichOneofReturnType_response | None: ...
+    @_builtins.property
+    def run_backend(self) -> Global___BackendResponse:
+        ...
 
+    @_builtins.property
+    def error(self) -> Global___ErrorResponse:
+        ...
+
+    def __init__(self, *, index_module: Global___IndexResponse | None=..., get_library_element: Global___LibraryResponse | None=..., elaborate_generator: Global___GeneratorResponse | None=..., run_refinement: Global___RefinementResponse | None=..., run_backend: Global___BackendResponse | None=..., get_proto_version: _builtins.int=..., error: Global___ErrorResponse | None=...) -> None:
+        ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal['elaborate_generator', b'elaborate_generator', 'error', b'error', 'get_library_element', b'get_library_element', 'get_proto_version', b'get_proto_version', 'index_module', b'index_module', 'response', b'response', 'run_backend', b'run_backend', 'run_refinement', b'run_refinement']
+
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool:
+        ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal['elaborate_generator', b'elaborate_generator', 'error', b'error', 'get_library_element', b'get_library_element', 'get_proto_version', b'get_proto_version', 'index_module', b'index_module', 'response', b'response', 'run_backend', b'run_backend', 'run_refinement', b'run_refinement']
+
+    def ClearField(self, field_name: _ClearFieldArgType) -> None:
+        ...
+    _WhichOneofReturnType_response: _TypeAlias = _typing.Literal['index_module', 'get_library_element', 'elaborate_generator', 'run_refinement', 'run_backend', 'get_proto_version', 'error']
+    _WhichOneofArgType_response: _TypeAlias = _typing.Literal['response', b'response']
+
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_response) -> _WhichOneofReturnType_response | None:
+        ...
 Global___HdlResponse: _TypeAlias = HdlResponse

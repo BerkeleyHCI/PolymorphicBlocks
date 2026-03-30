@@ -224,6 +224,16 @@ object ExprEvaluate {
     binarySet.op match {
       // Note promotion rules: range takes precedence, then float, then int
       // TODO: can we deduplicate these cases to delegate them to evalBinary?
+      case Op.EQ => (lhs, rhs) match {
+          case (lhss: ArrayValue[ExprValue] @unchecked, rhs: ExprValue) =>
+            val resultElts = lhss.values.map { arrayElt =>
+              evalBinary(expr.BinaryExpr(op = expr.BinaryExpr.Op.EQ), arrayElt, rhs)
+            }
+            ArrayValue(resultElts)
+          case _ => throw new ExprEvaluateException(
+              s"Unknown binary set operand types in $lhs ${binarySet.op} $rhs from $binarySet"
+            )
+        }
       case Op.ADD => (lhs, rhs) match {
           case (ArrayValue.ExtractRange(arrayElts), rhs: RangeType) =>
             val resultElts = arrayElts.map { arrayElt =>
