@@ -106,13 +106,27 @@ class VoltageSinkBridge(CircuitPortBridge):
     def __init__(self) -> None:
         super().__init__()
 
-        self.outer_port = self.Port(VoltageSink(current_draw=RangeExpr(), voltage_limits=RangeExpr()))
+        self.outer_port = self.Port(
+            VoltageSink(
+                current_draw=RangeExpr(),
+                voltage_limits=RangeExpr(),
+                reverse_voltage_out=RangeExpr(),
+                reverse_current_limits=RangeExpr(),
+            )
+        )
 
         # Here we ignore the current_limits of the inner port, instead relying on the main link to handle it
         # The outer port's voltage_limits is untouched and should be defined in the port def.
         # TODO: it's a slightly optimization to handle them here. Should it be done?
         # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-        self.inner_link = self.Port(VoltageSource(current_limits=RangeExpr.ALL, voltage_out=RangeExpr()))
+        self.inner_link = self.Port(
+            VoltageSource(
+                current_limits=RangeExpr.ALL,
+                voltage_out=RangeExpr(),
+                reverse_voltage_limits=RangeExpr.ALL,
+                reverse_current_draw=RangeExpr(),
+            )
+        )
 
     @override
     def contents(self) -> None:
@@ -120,21 +134,38 @@ class VoltageSinkBridge(CircuitPortBridge):
 
         self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
         self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
+        self.assign(self.outer_port.reverse_voltage_out, self.inner_link.link().reverse_voltage)
+        self.assign(self.outer_port.reverse_current_limits, self.inner_link.link().reverse_current_limits)
 
         self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
+        self.assign(self.inner_link.reverse_current_draw, self.outer_port.link().reverse_current_drawn)
 
 
 class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources look the same inside and outside
     def __init__(self) -> None:
         super().__init__()
 
-        self.outer_port = self.Port(VoltageSource(voltage_out=RangeExpr(), current_limits=RangeExpr()))
+        self.outer_port = self.Port(
+            VoltageSource(
+                voltage_out=RangeExpr(),
+                current_limits=RangeExpr(),
+                reverse_voltage_limits=RangeExpr(),
+                reverse_current_draw=RangeExpr(),
+            )
+        )
 
         # Here we ignore the voltage_limits of the inner port, instead relying on the main link to handle it
         # The outer port's current_limits is untouched and should be defined in tte port def.
         # TODO: it's a slightly optimization to handle them here. Should it be done?
         # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-        self.inner_link = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL, current_draw=RangeExpr()))
+        self.inner_link = self.Port(
+            VoltageSink(
+                voltage_limits=RangeExpr.ALL,
+                current_draw=RangeExpr(),
+                reverse_voltage_out=RangeExpr(),
+                reverse_current_limits=RangeExpr.ALL,
+            )
+        )
 
     @override
     def contents(self) -> None:
@@ -144,8 +175,11 @@ class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources
         self.assign(
             self.outer_port.current_limits, self.inner_link.link().current_limits
         )  # TODO adjust for inner current drawn
+        self.assign(self.outer_port.reverse_voltage_limits, self.inner_link.link().reverse_voltage_limits)
+        self.assign(self.outer_port.reverse_current_draw, self.inner_link.link().reverse_current_drawn)
 
         self.assign(self.inner_link.current_draw, self.outer_port.link().current_drawn)
+        self.assign(self.inner_link.reverse_voltage_out, self.outer_port.link().reverse_voltage)
 
 
 class VoltageBase(CircuitPort[VoltageLink]):
