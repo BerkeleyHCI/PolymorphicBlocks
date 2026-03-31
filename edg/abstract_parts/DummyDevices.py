@@ -113,25 +113,24 @@ class ForcedVoltageCurrent(DummyDevice, NetBlock):
         self.pwr_out = self.Port(VoltageSource(voltage_out=forced_voltage), [Output])
 
 
-class ForcedAnalogVoltage(DummyDevice, NetBlock):
+class ForcedAnalogVoltage(DummyDevice):
     def __init__(self, forced_voltage: RangeLike = RangeExpr()) -> None:
         super().__init__()
 
         self.signal_in = self.Port(AnalogSink(current_draw=RangeExpr()), [Input])
-
         self.signal_out = self.Port(
             AnalogSource(voltage_out=forced_voltage, signal_out=self.signal_in.link().signal), [Output]
         )
 
         self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+        self.connect(self.signal_in.net, self.signal_out.net)
 
 
-class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice, NetBlock):
+class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice):
     def __init__(self, forced_signal: RangeLike = RangeExpr()) -> None:
         super().__init__()
 
         self.signal_in = self.Port(AnalogSink(current_draw=RangeExpr()), [Input])
-
         self.signal_out = self.Port(
             AnalogSource(
                 voltage_out=self.signal_in.link().voltage,
@@ -142,6 +141,7 @@ class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice, NetBlock):
         )
 
         self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
+        self.connect(self.signal_in.net, self.signal_out.net)
 
     @override
     def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
