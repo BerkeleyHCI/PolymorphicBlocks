@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 from typing_extensions import override
 
 from ..core import *
-from .PassivePort import Passive
+from .PassivePort import HasPassivePort
 from .CircuitBlock import CircuitPortAdapter
 from .GroundPort import GroundLink
 from .VoltagePorts import VoltageLink, VoltageSource
@@ -148,7 +148,7 @@ class AnalogSourceBridge(PortBridge):  # basic passthrough port, sources look th
         self.assign(self.inner_link.impedance, self.outer_port.link().sink_impedance)
 
 
-class AnalogSink(AnalogBase):
+class AnalogSink(AnalogBase, HasPassivePort):
     bridge_type = AnalogSinkBridge
 
     @staticmethod
@@ -202,7 +202,6 @@ class AnalogSink(AnalogBase):
         """voltage_limits are the maximum recommended voltage levels of the device (before device damage occurs),
         signal_limits are for proper device functionality (e.g. non-RRIO opamps)"""
         super().__init__()
-        self.net = self.Port(Passive())
 
         self.voltage_limits = self.Parameter(RangeExpr(voltage_limits))
         self.signal_limits = self.Parameter(RangeExpr(signal_limits))
@@ -225,7 +224,7 @@ class AnalogSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
         raise NotImplementedError  # TODO IMPLEMENT ME
 
 
-class AnalogSource(AnalogBase):
+class AnalogSource(AnalogBase, HasPassivePort):
     bridge_type = AnalogSourceBridge
 
     @staticmethod
@@ -267,7 +266,6 @@ class AnalogSource(AnalogBase):
         """voltage_out is the total voltage range the device can output (typically limited by power rails)
         regardless of controls and including transients, while signal_out is the intended operating range"""
         super().__init__()
-        self.net = self.Port(Passive())
 
         self.voltage_out = self.Parameter(RangeExpr(voltage_out))
         self.signal_out = self.Parameter(RangeExpr(signal_out))

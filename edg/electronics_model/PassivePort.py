@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from typing import TypeVar, Type, Dict, Mapping
+from typing import TypeVar, Type, Dict
 
 from typing_extensions import TYPE_CHECKING
 
 from ..core import *
-from .GroundPort import Ground
-from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
-from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
-from .VoltagePorts import CircuitPort, VoltageSource, VoltageSink
+from .CircuitBlock import CircuitPort, CircuitLink, CircuitPortBridge, CircuitPortAdapter
 
 if TYPE_CHECKING:
+    from .GroundPort import Ground
+    from .VoltagePorts import VoltageSource, VoltageSink
+    from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
     from .AnalogPort import AnalogSource, AnalogSink
 
 
@@ -22,14 +22,16 @@ class PassiveLink(CircuitLink):
         self.passives = self.Port(Vector(Passive()))
 
 
-class PassiveAdapterGround(CircuitPortAdapter[Ground]):
+class PassiveAdapterGround(CircuitPortAdapter["Ground"]):
     def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL):
+        from .GroundPort import Ground
+
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(Ground(voltage_limits=voltage_limits))
 
 
-class PassiveAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
+class PassiveAdapterVoltageSource(CircuitPortAdapter["VoltageSource"]):
     # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
     def __init__(
         self,
@@ -38,6 +40,8 @@ class PassiveAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
         reverse_voltage_limits: RangeLike = RangeExpr.EMPTY,
         reverse_current_draw: RangeLike = RangeExpr.EMPTY,
     ):
+        from .VoltagePorts import VoltageSource
+
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(
@@ -50,7 +54,7 @@ class PassiveAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
         )
 
 
-class PassiveAdapterVoltageSink(CircuitPortAdapter[VoltageSink]):
+class PassiveAdapterVoltageSink(CircuitPortAdapter["VoltageSink"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -59,6 +63,8 @@ class PassiveAdapterVoltageSink(CircuitPortAdapter[VoltageSink]):
         reverse_voltage_out: RangeLike = RangeExpr.EMPTY,
         reverse_current_limits: RangeLike = RangeExpr.EMPTY,
     ):
+        from .VoltagePorts import VoltageSink
+
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(
@@ -71,7 +77,7 @@ class PassiveAdapterVoltageSink(CircuitPortAdapter[VoltageSink]):
         )
 
 
-class PassiveAdapterDigitalSource(CircuitPortAdapter[DigitalSource]):
+class PassiveAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -84,6 +90,8 @@ class PassiveAdapterDigitalSource(CircuitPortAdapter[DigitalSource]):
         low_driver: BoolLike = True,
         _bridged_internal: BoolLike = False,
     ):
+        from .DigitalPorts import DigitalSource
+
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(
@@ -100,7 +108,7 @@ class PassiveAdapterDigitalSource(CircuitPortAdapter[DigitalSource]):
         )
 
 
-class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
+class PassiveAdapterDigitalSink(CircuitPortAdapter["DigitalSink"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -111,6 +119,8 @@ class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
         pulldown_capable: BoolLike = False,
         _bridged_internal: BoolLike = False,
     ):
+        from .DigitalPorts import DigitalSink
+
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(
@@ -125,7 +135,7 @@ class PassiveAdapterDigitalSink(CircuitPortAdapter[DigitalSink]):
         )
 
 
-class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
+class PassiveAdapterDigitalBidir(CircuitPortAdapter["DigitalBidir"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -140,6 +150,8 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter[DigitalBidir]):
         pulldown_capable: BoolLike = False,
         _bridged_internal: BoolLike = False,
     ):
+        from .DigitalPorts import DigitalBidir
+
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(
@@ -167,6 +179,7 @@ class PassiveAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
         impedance: RangeLike = RangeExpr.ZERO,
     ):
         from .AnalogPort import AnalogSource, AnalogSink
+
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(
@@ -187,6 +200,7 @@ class PassiveAdapterAnalogSink(CircuitPortAdapter["AnalogSink"]):
         impedance: RangeLike = RangeExpr.INF,
     ):
         from .AnalogPort import AnalogSource, AnalogSink
+
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(
@@ -207,14 +221,19 @@ class PassiveBridge(CircuitPortBridge):
         self.inner_link = self.Port(Passive())
 
 
+# TODO this should replace CircuitPort and should be the lowest level of abstraction port
 class Passive(CircuitPort[PassiveLink]):
     """Basic copper-only port, which can be adapted to a more strongly typed Voltage/Digital/Analog* port"""
+
     link_type = PassiveLink
     bridge_type = PassiveBridge
 
     AdaptTargetType = TypeVar("AdaptTargetType", bound=CircuitPort)
 
     def adapt_to(self, that: AdaptTargetType) -> AdaptTargetType:
+        from .GroundPort import Ground
+        from .VoltagePorts import VoltageSource, VoltageSink
+        from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
         from .AnalogPort import AnalogSource, AnalogSink
 
         ADAPTER_TYPE_MAP: Dict[Type[Port], Type[CircuitPortAdapter]] = {
@@ -243,3 +262,12 @@ class Passive(CircuitPort[PassiveLink]):
             adapter_init_kwargs[param_name] = param.initializer
 
         return self._convert(adapter_cls(**adapter_init_kwargs))  # type: ignore
+
+
+class HasPassivePort(Port[Link]):
+    """A port that contains a single net as a passive port.
+    Some functionality may provide convenience functions on this to use the internal net."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = self.Port(Passive())
