@@ -8,7 +8,7 @@ from typing_extensions import override
 from ..core import *
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
-from .PassivePort import Passive
+from .PassivePort import Passive, HasPassivePort
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import (
     KiCadSchematic,
@@ -324,8 +324,16 @@ class KiCadSchematicBlock(Block):
                     and isinstance(boundary_port, CircuitPort)
                     and not isinstance(boundary_port, Passive)
                 ):
+                    # TODO remove after full compositional passive refactor #114
                     adapted = cast(Passive, net_ports[0]).adapt_to(boundary_port.__class__())
                     self.connect(adapted, boundary_port)
+                elif (
+                    auto_adapt
+                    and can_adapt
+                    and isinstance(boundary_port, HasPassivePort)
+                    and not isinstance(boundary_port, Passive)
+                ):
+                    self.connect(net_ports[0], boundary_port.net)
                 else:
                     self.connect(connection, boundary_port)
 

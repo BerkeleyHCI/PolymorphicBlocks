@@ -593,7 +593,7 @@ board.setNetlist([
   {name: "spk_drv.inp_res.a", pads: [["R15", "1"], ["C13", "1"]]},
   {name: "spk_drv.inn_res.a", pads: [["R16", "1"], ["C14", "1"]]},
   {name: "ref_div.output", pads: [["R17", "2"], ["R18", "1"], ["U8", "3"]]},
-  {name: "inn_merge", pads: [["J5", "1"], ["U9", "4"], ["U12", "4"], ["U14", "6"]]},
+  {name: "inn.port", pads: [["J5", "1"], ["U9", "4"], ["U12", "4"], ["U14", "6"]]},
   {name: "inp.port", pads: [["J6", "1"], ["R19", "1"], ["D7", "1"]]},
   {name: "measure.range.switch.sw[0_0].com", pads: [["U10", "4"], ["U12", "3"]]},
   {name: "measure.range.switch.sw[0_1].com", pads: [["U11", "4"], ["U12", "1"]]},
