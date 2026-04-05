@@ -260,7 +260,7 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
         from .AnalogPort import AnalogSource
 
         super().__init__()
-        self.src = self.Port(VoltageSink(current_draw=RangeExpr()))
+        self.src = self.Port(VoltageSink.empty())
         self.dst = self.Port(
             AnalogSource(
                 voltage_out=self.src.link().voltage,
@@ -268,9 +268,7 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
                 impedance=(0, 0) * Ohm,  # TODO not actually true, but pretty darn low?
             )
         )
-
-        # TODO might be an overestimate
-        self.assign(self.src.current_draw, self.dst.link().current_drawn)
+        self.connect(self.dst.net.adapt_to(VoltageSink(current_draw=self.dst.link().current_drawn)), self.src)
 
 
 class VoltageSource(VoltageBase):
