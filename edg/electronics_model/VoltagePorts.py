@@ -5,7 +5,7 @@ from typing import *
 from typing_extensions import override
 
 from ..core import *
-from .CircuitBlock import CircuitPort, CircuitPortBridge, CircuitLink, CircuitPortAdapter
+from .CircuitBlock import CircuitPort, CircuitPortBridge, CircuitLink, CircuitPortAdapter, KicadImportablePortAdapter
 from .GroundPort import GroundLink, GroundReference
 from .Units import Volt, Ohm, Amp
 
@@ -255,7 +255,7 @@ class VoltageSinkAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):
         self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
 
 
-class VoltageSinkAdapterAnalogSource(PortAdapter["AnalogSource"]):
+class VoltageSinkAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
     def __init__(self) -> None:
         from .AnalogPort import AnalogSource
 

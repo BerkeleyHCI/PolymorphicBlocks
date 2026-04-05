@@ -5,7 +5,7 @@ from typing import TypeVar, Type, Dict, Union
 from typing_extensions import TYPE_CHECKING
 
 from ..core import *
-from .CircuitBlock import CircuitPort, CircuitLink, CircuitPortBridge, CircuitPortAdapter
+from .CircuitBlock import CircuitPort, CircuitLink, CircuitPortBridge, CircuitPortAdapter, KicadImportablePortAdapter
 
 if TYPE_CHECKING:
     from .GroundPort import Ground
@@ -169,7 +169,7 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter["DigitalBidir"]):
         )
 
 
-class PassiveAdapterAnalogSource(PortAdapter["AnalogSource"]):
+class PassiveAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -190,7 +190,7 @@ class PassiveAdapterAnalogSource(PortAdapter["AnalogSource"]):
         self.connect(self.src, self.dst.net)
 
 
-class PassiveAdapterAnalogSink(PortAdapter["AnalogSink"]):
+class PassiveAdapterAnalogSink(KicadImportablePortAdapter["AnalogSink"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,

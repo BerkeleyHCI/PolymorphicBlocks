@@ -143,22 +143,27 @@ class CircuitPortBridge(NetBaseBlock, PortBridge):
         self.net()
 
 
-AdapterDstType = TypeVar("AdapterDstType", covariant=True, bound="CircuitPort", default="CircuitPort")
+AdapterDstType = TypeVar("AdapterDstType", covariant=True, bound=Port, default=Port)
 
 
-@abstract_block
-class CircuitPortAdapter(KiCadImportableBlock, NetBaseBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
+@non_library
+class KicadImportablePortAdapter(KiCadImportableBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
     @override
     def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
         assert symbol_name == "edg_importable:Adapter"
         return {"1": self.src, "2": self.dst}
 
+
+# TODO remove me once compositional passive refactoring complete, #114
+@abstract_block
+class CircuitPortAdapter(KicadImportablePortAdapter[AdapterDstType], NetBaseBlock, Generic[AdapterDstType]):
     @override
     def contents(self) -> None:
         super().contents()
         self.net()
 
 
+# TODO remove me once compositional passive refactoring complete, #114
 @non_library  # TODO make abstract instead?
 class CircuitLink(NetBaseBlock, Link):
     @override

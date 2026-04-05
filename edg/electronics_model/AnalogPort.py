@@ -6,7 +6,7 @@ from typing_extensions import override
 
 from ..core import *
 from .PassivePort import HasPassivePort
-from .CircuitBlock import CircuitPortAdapter
+from .CircuitBlock import CircuitPortAdapter, KicadImportablePortAdapter
 from .GroundPort import GroundLink
 from .VoltagePorts import VoltageLink, VoltageSource
 
@@ -209,7 +209,7 @@ class AnalogSink(AnalogBase, HasPassivePort):
         self.impedance = self.Parameter(RangeExpr(impedance))
 
 
-class AnalogSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
+class AnalogSourceAdapterVoltageSource(KicadImportablePortAdapter[VoltageSource]):
     def __init__(self) -> None:
         super().__init__()
         self.src = self.Port(AnalogSink(current_draw=RangeExpr()))  # otherwise ideal
