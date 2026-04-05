@@ -154,20 +154,18 @@ class LowPassRcDac(DigitalToAnalog, Block):
     def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
         super().__init__()
         self.input = self.Port(DigitalSink.empty(), [Input])
-        self.output = self.Port(AnalogSource.empty(), [Output])
+        self.output = self.Port(
+            AnalogSource(
+                voltage_out=self.input.link().voltage,
+                signal_out=self.input.link().voltage,
+                impedance=impedance,  # TODO use selected resistance from RC filter
+            ),
+            [Output],
+        )
 
         self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq, voltage=self.input.link().voltage))
         self.connect(self.input, self.rc.input.adapt_to(DigitalSink(current_draw=self.output.link().current_drawn)))
-        self.connect(
-            self.output,
-            self.rc.output.adapt_to(
-                AnalogSource(
-                    voltage_out=self.input.link().voltage,
-                    signal_out=self.input.link().voltage,
-                    impedance=impedance,  # TODO use selected resistance from RC filter
-                )
-            ),
-        )
+        self.connect(self.output.net, self.rc.output)
 
         self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
 

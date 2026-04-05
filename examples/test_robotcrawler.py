@@ -23,15 +23,14 @@ class ServoFeedbackConnector(Connector, Block):
         )
         self.gnd = self.Export(self.conn.pins.request("3").adapt_to(Ground()), [Common])
 
-        self.fb = self.Export(
-            self.conn.pins.request("4").adapt_to(
-                AnalogSource(  # no specs given
-                    voltage_out=(0.9, 2.1)
-                    * Volt,  # from https://www.pololu.com/blog/814/new-products-special-servos-with-position-feedback
-                    signal_out=(0.9, 2.1) * Volt,
-                )
+        self.fb = self.Port(
+            AnalogSource(  # no specs given
+                voltage_out=(0.9, 2.1)
+                * Volt,  # from https://www.pololu.com/blog/814/new-products-special-servos-with-position-feedback
+                signal_out=(0.9, 2.1) * Volt,
             )
         )
+        self.connect(self.fb.net, self.conn.pins.request("4"))
 
 
 @abstract_block
