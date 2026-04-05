@@ -284,6 +284,7 @@ class NetlistTransform(TransformUtil.Transform):
                 return path._replace(links=path.links[:-1])
             else:
                 return path
+
         net = map(prune_net_component, net)
 
         def pin_name_goodness(pin1: TransformUtil.Path, pin2: TransformUtil.Path) -> int:
