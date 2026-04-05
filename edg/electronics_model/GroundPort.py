@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any
 
 from typing_extensions import override
 
-from .PassivePort import PassiveAdapterGround
 from ..core import *
 from .CircuitBlock import CircuitPortBridge, CircuitPortAdapter, CircuitLink, CircuitPort, KicadImportablePortAdapter
 from .Units import Volt, Ohm

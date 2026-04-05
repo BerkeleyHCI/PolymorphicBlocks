@@ -178,7 +178,7 @@ class PassiveAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
         current_limits: RangeLike = RangeExpr.ALL,
         impedance: RangeLike = RangeExpr.ZERO,
     ):
-        from .AnalogPort import AnalogSource, AnalogSink
+        from .AnalogPort import AnalogSource
 
         super().__init__()
         self.src = self.Port(Passive())
@@ -199,7 +199,7 @@ class PassiveAdapterAnalogSink(KicadImportablePortAdapter["AnalogSink"]):
         current_draw: RangeLike = RangeExpr.ZERO,
         impedance: RangeLike = RangeExpr.INF,
     ):
-        from .AnalogPort import AnalogSource, AnalogSink
+        from .AnalogPort import AnalogSink
 
         super().__init__()
         self.src = self.Port(Passive())
