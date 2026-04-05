@@ -1,9 +1,7 @@
-from typing import Dict, Any
+from typing import Dict
 from deprecated import deprecated
-from typing_extensions import override
 
 from ..electronics_model import *
-from .DummyDevices import ForcedAnalogVoltage
 from .Categories import *
 from .PartsTable import PartsTableColumn, PartsTableRow
 from .PartsTablePart import PartsTableSelector
@@ -222,27 +220,24 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
     def __init__(self, voltage: RangeLike):
         super().__init__()
 
-        self.signal_in = self.Port(AnalogSink.empty(), [Input])
-        self.signal_out = self.Port(AnalogSource.empty(), [Output])
+        self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
+
         self.gnd = self.Port(Ground.empty(), [Common])
+        self.signal_in = self.Port(AnalogSink(), [Input])
+        self.signal_out = self.Port(
+            AnalogSource(
+                voltage_out=self.signal_in.link().voltage.intersect(
+                    self.gnd.link().voltage + (0, self.diode.actual_zener_voltage.upper())
+                ),
+                signal_out=self.signal_in.link().signal,
+            ),
+            [Output],
+        )
+        self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
 
         self.voltage = self.ArgParameter(voltage)
 
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
-
-        self.forced = self.Block(
-            ForcedAnalogVoltage(
-                forced_voltage=self.signal_in.link().voltage.intersect(
-                    self.gnd.link().voltage + (0, self.diode.actual_zener_voltage.upper())
-                )
-            )
-        )
-        self.connect(self.signal_in, self.forced.signal_in)
-        self.connect(self.signal_out, self.forced.signal_out, self.diode.cathode.adapt_to(AnalogSink()))
+        self.connect(self.signal_in.net, self.signal_out.net, self.diode.cathode)
         self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
 
     @override

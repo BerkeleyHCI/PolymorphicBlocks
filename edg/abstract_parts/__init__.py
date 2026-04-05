@@ -203,7 +203,6 @@ from .DummyDevices import (
     ForcedVoltageCurrentLimit,
     ForcedVoltage,
     ForcedVoltageCurrent,
-    ForcedAnalogVoltage,
     ForcedAnalogSignal,
     ForcedDigitalSinkCurrentDraw,
 )
