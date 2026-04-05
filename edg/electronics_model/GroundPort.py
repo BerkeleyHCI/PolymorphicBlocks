@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from typing_extensions import override
 
+from .PassivePort import PassiveAdapterGround
 from ..core import *
 from .CircuitBlock import CircuitPortBridge, CircuitPortAdapter, CircuitLink, CircuitPort
 from .Units import Volt, Ohm
@@ -95,13 +96,14 @@ class GroundAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
         from .AnalogPort import AnalogSource
 
         super().__init__()
-        self.src = self.Port(Ground())
+        self.src = self.Port(Ground.empty())
         self.dst = self.Port(
             AnalogSource(
                 voltage_out=self.src.link().voltage,
                 signal_out=self.src.link().voltage,
             )
         )
+        self.connect(self.dst.net.adapt_to(Ground()), self.src)
 
 
 class Ground(CircuitPort[GroundLink]):

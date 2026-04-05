@@ -213,15 +213,17 @@ class AnalogSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
     def __init__(self) -> None:
         super().__init__()
         self.src = self.Port(AnalogSink(current_draw=RangeExpr()))  # otherwise ideal
-        self.dst = self.Port(
-            VoltageSource(
-                voltage_out=(self.src.link().voltage.upper(), self.src.link().voltage.upper()),
-                current_limits=(-float("inf"), float("inf")),
-            )
-        )
+        self.dst = self.Port(VoltageSource.empty())
         self.assign(self.src.current_draw, self.dst.link().current_drawn)
-
-        raise NotImplementedError  # TODO IMPLEMENT ME
+        self.connect(
+            self.src.net.adapt_to(
+                VoltageSource(
+                    voltage_out=(self.src.link().voltage.upper(), self.src.link().voltage.upper()),
+                    current_limits=(-float("inf"), float("inf")),
+                )
+            ),
+            self.dst,
+        )
 
 
 class AnalogSource(AnalogBase, HasPassivePort):
