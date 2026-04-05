@@ -6,7 +6,7 @@ from typing_extensions import override
 
 from ..core import *
 from .PassivePort import HasPassivePort
-from .CircuitBlock import CircuitPortAdapter, KicadImportablePortAdapter
+from .CircuitBlock import KicadImportablePortAdapter
 from .GroundPort import GroundLink
 from .VoltagePorts import VoltageLink, VoltageSource
 
@@ -148,7 +148,7 @@ class AnalogSourceBridge(PortBridge):  # basic passthrough port, sources look th
         self.assign(self.inner_link.impedance, self.outer_port.link().sink_impedance)
 
 
-class AnalogSink(AnalogBase, HasPassivePort):
+class AnalogSink(HasPassivePort, AnalogBase):
     bridge_type = AnalogSinkBridge
 
     @staticmethod
@@ -226,7 +226,7 @@ class AnalogSourceAdapterVoltageSource(KicadImportablePortAdapter[VoltageSource]
         )
 
 
-class AnalogSource(AnalogBase, HasPassivePort):
+class AnalogSource(HasPassivePort, AnalogBase):
     bridge_type = AnalogSourceBridge
 
     @staticmethod
