@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import List, Dict, Tuple, Type, Optional, Any
+from typing import List, Dict, Tuple, Type, Optional, Any, Union
 
 from deprecated import deprecated
 from typing_extensions import override
@@ -98,12 +98,12 @@ class BaseIoController(PinMappable, Block):
     @staticmethod
     def _instantiate_from(
         ios: List[BasePort], allocations: List[AllocatedResource]
-    ) -> Tuple[Dict[str, CircuitPort], RangeExpr]:
+    ) -> Tuple[Dict[str, Union[CircuitPort, HasPassivePort]], RangeExpr]:
         """Given a mapping of port types to IO ports and allocated resources from PinMapUtil,
         instantiate vector elements (if a vector) or init the port model (if a port)
         for the allocated resources using their data model and return the pin mapping."""
         ios_by_type = {io.elt_type() if isinstance(io, Vector) else type(io): io for io in ios}
-        pinmap: Dict[str, CircuitPort] = {}
+        pinmap: Dict[str, Union[CircuitPort, HasPassivePort]] = {}
 
         ports_assigned = IdentitySet[Port]()
         io_current_draw_builder = RangeExpr._to_expr_type(RangeExpr.ZERO)
@@ -184,7 +184,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
         """Implement me. Defines the assignable IO pinmaps."""
         raise NotImplementedError
 
-    def _make_pinning(self) -> Dict[str, CircuitPort]:
+    def _make_pinning(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
         allocation_list = []
         for io_port in self._io_ports:
             if isinstance(io_port, Vector):  # derive Vector connections from requested

@@ -255,7 +255,7 @@ class VoltageSinkAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):
         self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
 
 
-class VoltageSinkAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
+class VoltageSinkAdapterAnalogSource(PortAdapter["AnalogSource"]):
     def __init__(self) -> None:
         from .AnalogPort import AnalogSource
 

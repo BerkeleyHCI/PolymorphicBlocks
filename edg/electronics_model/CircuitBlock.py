@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from typing import Generic, Any, Optional, List, Mapping, Dict
+from typing import Generic, Any, Optional, List, Mapping, Dict, Union, TYPE_CHECKING
 
 from typing_extensions import TypeVar, override
 
 from .KiCadImportableBlock import KiCadImportableBlock
 from ..core import *
 from ..core.HdlUserExceptions import EdgTypeError
+
+if TYPE_CHECKING:
+    from .PassivePort import HasPassivePort
 
 CircuitLinkType = TypeVar("CircuitLinkType", bound=Link, covariant=True, default=Link)
 
@@ -57,7 +60,7 @@ class FootprintBlock(Block):
         self,
         refdes: StringLike,
         footprint: StringLike,
-        pinning: Mapping[str, CircuitPort],
+        pinning: Mapping[str, Union[CircuitPort, "HasPassivePort"]],
         mfr: Optional[StringLike] = None,
         part: Optional[StringLike] = None,
         value: Optional[StringLike] = None,

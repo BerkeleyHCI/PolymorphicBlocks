@@ -1,5 +1,5 @@
 from math import ceil, log10
-from typing import List, Tuple, Dict, Mapping
+from typing import List, Tuple, Dict, Mapping, Union
 
 from typing_extensions import override
 
@@ -11,6 +11,7 @@ from .AbstractOpamp import Opamp
 from .Categories import OpampApplication
 from .DummyDevices import ForcedAnalogSignal
 from .ESeriesUtil import ESeriesRatioUtil, ESeriesUtil, ESeriesRatioValue
+from ..electronics_model.PassivePort import HasPassivePort
 
 
 class OpampFollower(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock):
@@ -156,8 +157,10 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
         self.r2 = self.Block(Resistor(Range.from_tolerance(bottom_resistance, self.get(self.tolerance))))
 
         if self.get(self.reference.is_connected()):
-            reference_type: CircuitPort = AnalogSink(impedance=self.r1.actual_resistance + self.r2.actual_resistance)
-            reference_node: CircuitPort = self.reference
+            reference_type: Union[CircuitPort, HasPassivePort] = AnalogSink(
+                impedance=self.r1.actual_resistance + self.r2.actual_resistance
+            )
+            reference_node: Union[CircuitPort, HasPassivePort] = self.reference
             reference_range = self.reference.link().signal
         else:
             reference_type = Ground()
@@ -310,7 +313,7 @@ class DifferentialAmplifier(OpampApplication, KiCadSchematicBlock, KiCadImportab
         if self.get(self.output_reference.is_connected()):
             output_neg_signal = self.output_reference.link().signal
             output_neg_voltage = self.output_reference.link().voltage
-            output_neg_node: CircuitPort = self.output_reference
+            output_neg_node: Union[CircuitPort, HasPassivePort] = self.output_reference
         else:
             output_neg_voltage = output_neg_signal = self.gnd.link().voltage
             output_neg_node = self.gnd.as_analog_source()

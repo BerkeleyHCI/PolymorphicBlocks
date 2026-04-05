@@ -4,6 +4,7 @@ from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dic
 from typing_extensions import override
 
 from ..electronics_model import *
+from ..electronics_model.PassivePort import HasPassivePort
 
 
 @non_library
@@ -55,7 +56,7 @@ class BaseDelegatingPinMapResource(BasePinMapResource):
 class PinResource(BaseLeafPinMapResource):
     """A resource for a single chip pin, which can be one of several port types (eg, an ADC and DIO sharing a pin)."""
 
-    def __init__(self, pin: str, name_models: Dict[str, CircuitPort]):
+    def __init__(self, pin: str, name_models: Mapping[str, Union[CircuitPort, HasPassivePort]]):
         self.pin = pin
         self.name_models = name_models
 

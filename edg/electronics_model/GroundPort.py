@@ -91,7 +91,7 @@ class GroundAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):
         )
 
 
-class GroundAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
+class GroundAdapterAnalogSource(PortAdapter["AnalogSource"]):
     def __init__(self) -> None:
         from .AnalogPort import AnalogSource
 

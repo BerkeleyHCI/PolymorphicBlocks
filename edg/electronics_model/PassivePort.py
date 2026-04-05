@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar, Type, Dict
+from typing import TypeVar, Type, Dict, Union
 
 from typing_extensions import TYPE_CHECKING
 
@@ -169,7 +169,7 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter["DigitalBidir"]):
         )
 
 
-class PassiveAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
+class PassiveAdapterAnalogSource(PortAdapter["AnalogSource"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -190,7 +190,7 @@ class PassiveAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
         self.connect(self.src, self.dst.net)
 
 
-class PassiveAdapterAnalogSink(CircuitPortAdapter["AnalogSink"]):
+class PassiveAdapterAnalogSink(PortAdapter["AnalogSink"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -221,6 +221,15 @@ class PassiveBridge(CircuitPortBridge):
         self.inner_link = self.Port(Passive())
 
 
+class HasPassivePort(Port[Link]):
+    """A port that contains a single net as a passive port.
+    Some functionality may provide convenience functions on this to use the internal net."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = self.Port(Passive())
+
+
 # TODO this should replace CircuitPort and should be the lowest level of abstraction port, #114
 class Passive(CircuitPort[PassiveLink]):
     """Basic copper-only port, which can be adapted to a more strongly typed Voltage/Digital/Analog* port"""
@@ -228,7 +237,7 @@ class Passive(CircuitPort[PassiveLink]):
     link_type = PassiveLink
     bridge_type = PassiveBridge
 
-    AdaptTargetType = TypeVar("AdaptTargetType", bound=CircuitPort)
+    AdaptTargetType = TypeVar("AdaptTargetType", bound=Union[CircuitPort, HasPassivePort])
 
     def adapt_to(self, that: AdaptTargetType) -> AdaptTargetType:
         from .GroundPort import Ground
@@ -236,7 +245,7 @@ class Passive(CircuitPort[PassiveLink]):
         from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir
         from .AnalogPort import AnalogSource, AnalogSink
 
-        ADAPTER_TYPE_MAP: Dict[Type[Port], Type[CircuitPortAdapter]] = {
+        ADAPTER_TYPE_MAP: Dict[Type[Port], Type[PortAdapter]] = {
             Ground: PassiveAdapterGround,
             VoltageSource: PassiveAdapterVoltageSource,
             VoltageSink: PassiveAdapterVoltageSink,
@@ -262,12 +271,3 @@ class Passive(CircuitPort[PassiveLink]):
             adapter_init_kwargs[param_name] = param.initializer
 
         return self._convert(adapter_cls(**adapter_init_kwargs))  # type: ignore
-
-
-class HasPassivePort(Port[Link]):
-    """A port that contains a single net as a passive port.
-    Some functionality may provide convenience functions on this to use the internal net."""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.net = self.Port(Passive())
