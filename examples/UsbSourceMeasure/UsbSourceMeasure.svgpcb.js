@@ -1435,22 +1435,22 @@ const C96 = board.add(C_0805_2012Metric, {
   translate: pt(1.539, 4.033), rotate: 0,
   id: 'C96'
 })
-// dac.out_cap[0]
+// dac.out_cap[0].cap
 const C97 = board.add(C_0603_1608Metric, {
   translate: pt(1.396, 4.201), rotate: 0,
   id: 'C97'
 })
-// dac.out_cap[1]
+// dac.out_cap[1].cap
 const C98 = board.add(C_0603_1608Metric, {
   translate: pt(1.552, 4.201), rotate: 0,
   id: 'C98'
 })
-// dac.out_cap[2]
+// dac.out_cap[2].cap
 const C99 = board.add(C_0603_1608Metric, {
   translate: pt(1.240, 4.298), rotate: 0,
   id: 'C99'
 })
-// dac.out_cap[3]
+// dac.out_cap[3].cap
 const C100 = board.add(C_0603_1608Metric, {
   translate: pt(1.396, 4.298), rotate: 0,
   id: 'C100'

@@ -76,17 +76,15 @@ class AnalogLowPassRc(DigitalFilter, Block):
 
     def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
         super().__init__()
-        self.input = self.Port(AnalogSink.empty(), [Input])
-        self.output = self.Port(AnalogSource.empty(), [Output])
+        self.input = self.Port(AnalogSink(current_draw=RangeExpr()), [Input])
+        self.output = self.Port(
+            AnalogSource(voltage_out=self.input.link().voltage, signal_out=self.input.link().signal), [Output]
+        )
+        self.assign(self.input.current_draw, self.output.link().current_drawn)
 
         self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq, voltage=self.input.link().voltage))
-        self.connect(self.input, self.rc.input.adapt_to(AnalogSink(current_draw=self.output.link().current_drawn)))
-        self.connect(
-            self.output,
-            self.rc.output.adapt_to(
-                AnalogSource(voltage_out=self.input.link().voltage, signal_out=self.input.link().signal)
-            ),
-        )
+        self.connect(self.input.net, self.rc.input)
+        self.connect(self.output.net, self.rc.output)
 
         self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
 

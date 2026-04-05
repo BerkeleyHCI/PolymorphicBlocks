@@ -109,6 +109,6 @@ class Mcp4728(DigitalToAnalog, GeneratorBlock):
             self.out_cap = ElementDict[Capacitor]()
             for i, out_port in [(0, self.out0), (1, self.out1), (2, self.out2), (3, self.out3)]:
                 if self.get(out_port.is_connected()):
-                    self.out_cap[i] = out_cap = self.Block(Capacitor(0.1 * uFarad(tol=0.2), out_port.link().voltage))
-                    self.connect(out_cap.pos.adapt_to(AnalogSink()), out_port)
-                    self.connect(out_cap.neg.adapt_to(Ground()), self.gnd)
+                    self.out_cap[i] = self.Block(AnalogCapacitor(0.1 * uFarad(tol=0.2))).connected(
+                        gnd=self.gnd, io=out_port
+                    )
