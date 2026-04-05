@@ -21,9 +21,8 @@ class Lm4871_Device(InternalSubcircuit, FootprintBlock):
         self.inp = self.Port(Passive())  # TODO these aren't actually documented w/ specs =(
         self.inm = self.Port(Passive())
 
-        speaker_port = AnalogSource()
-        self.vo1 = self.Port(speaker_port)
-        self.vo2 = self.Port(speaker_port)
+        self.vo1 = self.Port(Passive())
+        self.vo2 = self.Port(Passive())
 
         self.byp = self.Port(Passive())
 
@@ -58,7 +57,7 @@ class Lm4871(SpeakerDriver, Block):
         self.gnd = self.Export(self.ic.gnd, [Common])
 
         self.sig = self.Port(AnalogSink(), [Input])
-        self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
+        self.spk = self.Port(SpeakerDriverPort(AnalogSource()), [Output])
 
     @override
     def contents(self) -> None:
@@ -89,8 +88,8 @@ class Lm4871(SpeakerDriver, Block):
         self.connect(self.sig.net, self.sig_cap.neg)
         self.connect(self.sig_cap.pos, self.sig_res.a)
         self.connect(self.sig_res.b, self.fb_res.a, self.ic.inm)
-        self.connect(self.spk.a, self.ic.vo1, self.fb_res.b.adapt_to(AnalogSink()))
-        self.connect(self.spk.b, self.ic.vo2)
+        self.connect(self.spk.a.net, self.ic.vo1, self.fb_res.b)
+        self.connect(self.spk.b.net, self.ic.vo2)
 
         self.connect(self.byp_cap.pos, self.ic.inp, self.ic.byp)
 
@@ -118,11 +117,11 @@ class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.inp = self.Port(input_port)
         self.inn = self.Port(input_port)
 
-        speaker_port = AnalogSource(
-            impedance=RangeExpr.ZERO  # TODO output impedance not given, but maximum Rl of 3.2-6.4ohm
+        self.vo = self.Port(
+            SpeakerDriverPort(
+                AnalogSource(impedance=RangeExpr.ZERO)  # TODO output impedance not given, but maximum Rl of 3.2-6.4ohm
+            )
         )
-        self.vo1 = self.Port(speaker_port)
-        self.vo2 = self.Port(speaker_port)
 
     @override
     def contents(self) -> None:
@@ -137,8 +136,8 @@ class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                 "1": self.pwr,  # /SHDN
                 "9": self.gnd,  # exposed pad, "must be soldered to a grounded pad"
                 "6": self.pwr,
-                "8": self.vo1,
-                "5": self.vo2,
+                "8": self.vo.a,  # vo1
+                "5": self.vo.b,  # vo2
             },
             mfr="Texas Instruments",
             part="TPA2005D1",
@@ -161,7 +160,7 @@ class Tpa2005d1(SpeakerDriver, Block):
         self.gnd = self.Export(self.ic.gnd, [Common])
 
         self.sig = self.Port(AnalogSink(), [Input])
-        self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
+        self.spk = self.Export(self.ic.vo, [Output])
 
         self.gain = self.ArgParameter(gain)
 
@@ -215,9 +214,6 @@ class Tpa2005d1(SpeakerDriver, Block):
         self.connect(self.inn_cap.pos, self.inn_res.a)
         self.connect(self.inn_res.b.adapt_to(AnalogSource()), self.ic.inn)
 
-        self.connect(self.spk.a, self.ic.vo1)
-        self.connect(self.spk.b, self.ic.vo2)
-
 
 class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self) -> None:
@@ -238,11 +234,11 @@ class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.inp = self.Port(input_port)
         self.inn = self.Port(input_port)
 
-        speaker_port = AnalogSource(
-            impedance=RangeExpr.ZERO  # TODO output impedance not given, but maximum Rl of 3.2-6.4ohm
+        self.vo = self.Port(
+            SpeakerDriverPort(
+                AnalogSource(impedance=RangeExpr.ZERO)  # TODO output impedance not given, but maximum Rl of 3.2-6.4ohm
+            )
         )
-        self.vop = self.Port(speaker_port)
-        self.von = self.Port(speaker_port)
 
     @override
     def contents(self) -> None:
@@ -254,10 +250,10 @@ class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                 # pin 2 is NC
                 "3": self.inp,
                 "4": self.inn,
-                "5": self.vop,
+                "5": self.vo.a,  # vop
                 "6": self.pwr,
                 "7": self.gnd,
-                "8": self.von,
+                "8": self.vo.b,  # von
             },
             mfr="Diodes Incorporated",
             part="PAM8302AASCR",
@@ -278,7 +274,7 @@ class Pam8302a(SpeakerDriver, Block):
         self.gnd = self.Export(self.ic.gnd, [Common])
 
         self.sig = self.Port(AnalogSink.empty(), [Input])
-        self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
+        self.spk = self.Export(self.ic.vo, [Output])
 
     @override
     def contents(self) -> None:
@@ -302,6 +298,3 @@ class Pam8302a(SpeakerDriver, Block):
         self.inn_cap = self.Block(in_cap_model)
         self.connect(self.gnd, self.inn_cap.neg.adapt_to(Ground()))
         self.connect(self.inn_cap.pos.adapt_to(AnalogSource()), self.ic.inn)
-
-        self.connect(self.spk.a, self.ic.vop)
-        self.connect(self.spk.b, self.ic.von)

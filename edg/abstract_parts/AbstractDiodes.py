@@ -220,7 +220,7 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
     def __init__(self, voltage: RangeLike):
         super().__init__()
 
-        self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
+        self.diode = self.Block(ZenerDiode(zener_voltage=voltage))
 
         self.gnd = self.Port(Ground.empty(), [Common])
         self.signal_in = self.Port(AnalogSink(), [Input])
@@ -234,8 +234,6 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
             [Output],
         )
         self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
-
-        self.voltage = self.ArgParameter(voltage)
 
         self.connect(self.signal_in.net, self.signal_out.net, self.diode.cathode)
         self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
