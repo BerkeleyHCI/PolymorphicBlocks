@@ -7,6 +7,7 @@ from typing_extensions import override
 from ..electronics_model import *
 from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
 from .Categories import ProgrammableController
+from ..electronics_model.PassivePort import HasPassivePort
 
 
 @non_library
@@ -141,12 +142,14 @@ class BaseIoController(PinMappable, Block):
             # TODO: recurse into bundles, really needs a more unified way of handling current draw
 
             if isinstance(allocation.pin, str):
+                assert isinstance(io_port, (CircuitPort, HasPassivePort))
                 pinmap[allocation.pin] = io_port
             elif allocation.pin is None:
-                pass # discarded
+                assert isinstance(io_port, (CircuitPort, HasPassivePort))  # otherwise discarded
             elif isinstance(allocation.pin, dict):
                 for subport_name, (pin_name, pin_resource) in allocation.pin.items():
                     subport = getattr(io_port, subport_name)
+                    assert isinstance(subport, (CircuitPort, HasPassivePort)), f"bad sub-port {pin_name} {subport}"
                     pinmap[pin_name] = subport
             else:
                 raise NotImplementedError(f"unknown allocation pin type {allocation.pin}")

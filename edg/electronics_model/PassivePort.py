@@ -221,7 +221,7 @@ class PassiveBridge(CircuitPortBridge):
         self.inner_link = self.Port(Passive())
 
 
-# TODO this should replace CircuitPort and should be the lowest level of abstraction port
+# TODO this should replace CircuitPort and should be the lowest level of abstraction port, #114
 class Passive(CircuitPort[PassiveLink]):
     """Basic copper-only port, which can be adapted to a more strongly typed Voltage/Digital/Analog* port"""
 

@@ -31,7 +31,7 @@ class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             {
                 "1": self.sw,
                 "2": self.gnd,
-                "3": self.fb.net,
+                "3": self.fb,
                 "4": self.nshdn,
                 "5": self.pwr_in,
             },

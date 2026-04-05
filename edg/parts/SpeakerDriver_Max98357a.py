@@ -42,7 +42,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
                 "4": self.vdd,  # hard tied to left mode only TODO selectable SD_MODE
                 "7": self.vdd,
                 "8": self.vdd,
-                "9": self.out.a.net,  # outp
+                "9": self.out.a,  # outp
                 "1": self.i2s.sd,
                 # '2': gain_slot,  # TODO: configurable gain, open = 9dB
                 "10": self.out.b,  # outn
@@ -63,10 +63,10 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
             pinning = {
                 "A1": self.vdd,  # hard tied to left mode only TODO selectable SD_MODE
                 "A2": self.vdd,
-                "A3": self.out.a.net,  # outp
+                "A3": self.out.a,  # outp
                 "B1": self.i2s.sd,
                 # 'B2': gain_slot,  # TODO: configurable gain, open = 9dB
-                "B3": self.out.b.net,  # outn
+                "B3": self.out.b,  # outn
                 "C1": self.i2s.sck,
                 "C2": self.gnd,
                 "C3": self.i2s.ws,
