@@ -74,9 +74,9 @@ class Tps61040(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
             self.connect(self.fb.output, self.ic.fb)
 
             # TODO 10pF is the datasheet-suggested starting, point, but equation also available
-            self.cff = self.Block(Capacitor(10 * pFarad(tol=0.2), voltage=self.pwr_in.link().voltage))
-            self.connect(self.cff.pos.adapt_to(VoltageSink()), self.pwr_out)
-            self.connect(self.cff.neg.adapt_to(AnalogSink()), self.ic.fb)
+            self.cff = self.Block(AnalogCapacitor(10 * pFarad(tol=0.2))).connected(
+                gnd=self.pwr_out.as_ground(), io=self.ic.fb
+            )
 
         # power path calculation here - we don't use BoostConverterPowerPath since this IC operates in DCM
         # and has different component sizing guidelines
@@ -261,13 +261,10 @@ class Lm2733(VoltageRegulatorEnableWrapper, DiscreteBoostConverter):
             self.connect(self.power_path.switch, self.ic.sw)
 
             self.cf = self.Block(
-                Capacitor(  # arbitrary target tolerance for zero location for capacitance flexibility
+                AnalogCapacitor(  # arbitrary target tolerance for zero location for capacitance flexibility
                     capacitance=(1 / (8000 * Ohm(tol=0.35))).shrink_multiply(1 / (2 * math.pi * self.fb.actual_rtop)),
-                    voltage=self.pwr_out.voltage_out,
                 )
-            )
-            self.connect(self.cf.neg.adapt_to(AnalogSink()), self.ic.fb)
-            self.connect(self.cf.pos.adapt_to(VoltageSink()), self.pwr_out)
+            ).connected(gnd=self.pwr_out.as_ground(), io=self.ic.fb)
 
             self.rect = self.Block(
                 Diode(

@@ -57,7 +57,7 @@ class Lm4871(SpeakerDriver, Block):
         self.pwr = self.Export(self.ic.pwr, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
 
-        self.sig = self.Port(AnalogSink.empty(), [Input])
+        self.sig = self.Port(AnalogSink(), [Input])
         self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
     @override
@@ -86,7 +86,7 @@ class Lm4871(SpeakerDriver, Block):
         )
         self.sig_res = self.Block(Resistor(resistance=20 * kOhm(tol=0.2)))
         self.fb_res = self.Block(Resistor(resistance=20 * kOhm(tol=0.2)))
-        self.connect(self.sig, self.sig_cap.neg.adapt_to(AnalogSink()))
+        self.connect(self.sig.net, self.sig_cap.neg)
         self.connect(self.sig_cap.pos, self.sig_res.a)
         self.connect(self.sig_res.b, self.fb_res.a, self.ic.inm)
         self.connect(self.spk.a, self.ic.vo1, self.fb_res.b.adapt_to(AnalogSink()))
@@ -160,7 +160,7 @@ class Tpa2005d1(SpeakerDriver, Block):
         self.pwr = self.Export(self.ic.pwr, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
 
-        self.sig = self.Port(AnalogSink.empty(), [Input])
+        self.sig = self.Port(AnalogSink(), [Input])
         self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
         self.gain = self.ArgParameter(gain)
@@ -198,7 +198,7 @@ class Tpa2005d1(SpeakerDriver, Block):
                 voltage=self.sig.link().voltage,
             )
         )
-        self.connect(self.sig, self.inp_cap.neg.adapt_to(AnalogSink()))
+        self.connect(self.sig.net, self.inp_cap.neg)
         self.connect(self.inp_cap.pos, self.inp_res.a)
         self.connect(self.inp_res.b.adapt_to(AnalogSource()), self.ic.inp)
 

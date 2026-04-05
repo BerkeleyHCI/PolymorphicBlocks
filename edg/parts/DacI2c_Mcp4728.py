@@ -106,7 +106,7 @@ class Mcp4728(DigitalToAnalog, GeneratorBlock):
         self.vdd_cap[1] = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
 
         if self.get(self.output_caps):
-            self.out_cap = ElementDict[Capacitor]()
+            self.out_cap = ElementDict[AnalogCapacitor]()
             for i, out_port in [(0, self.out0), (1, self.out1), (2, self.out2), (3, self.out3)]:
                 if self.get(out_port.is_connected()):
                     self.out_cap[i] = self.Block(AnalogCapacitor(0.1 * uFarad(tol=0.2))).connected(
