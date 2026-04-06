@@ -16,8 +16,9 @@ class ConnectorSpeaker(Speaker):
 
     def __init__(self, impedance: RangeLike = 8 * Ohm(tol=0)):
         super().__init__()
+        self.input.init_from(SpeakerPort(AnalogSink(impedance=impedance)))
 
         self.conn = self.Block(PassiveConnector())
 
-        self.connect(self.input.a, self.conn.pins.request("1").adapt_to(AnalogSink(impedance=impedance)))
-        self.connect(self.input.b, self.conn.pins.request("2").adapt_to(AnalogSink(impedance=impedance)))
+        self.connect(self.input.a.net, self.conn.pins.request("1"))
+        self.connect(self.input.b.net, self.conn.pins.request("2"))

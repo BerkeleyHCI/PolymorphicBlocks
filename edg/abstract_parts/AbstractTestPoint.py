@@ -120,8 +120,8 @@ class AnalogTestPoint(BaseTypedTestPoint, Block):
 
     def __init__(self, *args: Any) -> None:
         super().__init__(*args)
-        self.io = self.Port(AnalogSink.empty(), [InOut])
-        self.connect(self.io, self.tp.io.adapt_to(AnalogSink()))
+        self.io: AnalogSink = self.Port(AnalogSink(), [InOut])
+        self.connect(self.io.net, self.tp.io)
 
     def connected(self, io: Port[AnalogLink]) -> "AnalogTestPoint":
         cast(Block, builder.get_enclosing_block()).connect(io, self.io)
@@ -135,7 +135,8 @@ class AnalogCoaxTestPoint(BaseRfTestPoint, Block):
 
     def __init__(self, *args: Any) -> None:
         super().__init__(*args)
-        self.io = self.Export(self.conn.sig.adapt_to(AnalogSink()), [InOut])
+        self.io: AnalogSink = self.Port(AnalogSink(), [InOut])
+        self.connect(self.io.net, self.conn.sig)
 
     def connected(self, io: Port[AnalogLink]) -> "AnalogCoaxTestPoint":
         cast(Block, builder.get_enclosing_block()).connect(io, self.io)

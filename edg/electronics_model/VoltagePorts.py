@@ -5,7 +5,7 @@ from typing import *
 from typing_extensions import override
 
 from ..core import *
-from .CircuitBlock import CircuitPort, CircuitPortBridge, CircuitLink, CircuitPortAdapter
+from .CircuitBlock import CircuitPort, CircuitPortBridge, CircuitLink, CircuitPortAdapter, KicadImportablePortAdapter
 from .GroundPort import GroundLink, GroundReference
 from .Units import Volt, Ohm, Amp
 
@@ -190,7 +190,7 @@ class VoltageBase(CircuitPort[VoltageLink]):
     # TODO: support isolation domains and offset grounds
 
     # these are here (instead of in VoltageSource) since the port may be on the other side of a bridge
-    def as_ground(self, current_draw: RangeLike) -> GroundReference:
+    def as_ground(self, current_draw: RangeLike = RangeExpr.ZERO) -> GroundReference:
         """Adapts this port to a ground. Current draw is the current drawn from this port, and is required
         since ground does not model current draw.
         """
@@ -255,12 +255,12 @@ class VoltageSinkAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):
         self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
 
 
-class VoltageSinkAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
+class VoltageSinkAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
     def __init__(self) -> None:
         from .AnalogPort import AnalogSource
 
         super().__init__()
-        self.src = self.Port(VoltageSink(current_draw=RangeExpr()))
+        self.src = self.Port(VoltageSink.empty())
         self.dst = self.Port(
             AnalogSource(
                 voltage_out=self.src.link().voltage,
@@ -268,9 +268,7 @@ class VoltageSinkAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
                 impedance=(0, 0) * Ohm,  # TODO not actually true, but pretty darn low?
             )
         )
-
-        # TODO might be an overestimate
-        self.assign(self.src.current_draw, self.dst.link().current_drawn)
+        self.connect(self.dst.net.adapt_to(VoltageSink(current_draw=self.dst.link().current_drawn)), self.src)
 
 
 class VoltageSource(VoltageBase):

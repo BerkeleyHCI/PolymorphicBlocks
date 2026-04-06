@@ -392,13 +392,20 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
     ):
         super().__init__()
 
-        self.signal_in = self.Port(AnalogSink.empty(), [Input])
-        self.signal_out = self.Port(AnalogSource.empty(), [Output])
-
         self.clamp_target = self.ArgParameter(clamp_target)
         self.clamp_current = self.ArgParameter(clamp_current)
         self.protection_voltage = self.ArgParameter(protection_voltage)
         self.zero_out = self.ArgParameter(zero_out)
+
+        self.signal_in = self.Port(AnalogSink(), [Input])
+        self.signal_out = self.Port(
+            AnalogSource(
+                voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
+                signal_out=self.signal_in.link().signal,
+                impedance=RangeExpr(),
+            ),
+            [Output],
+        )
 
     @override
     def contents(self) -> None:
@@ -415,17 +422,9 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
                 )
             )
         )
-        self.connect(self.res.a.adapt_to(AnalogSink()), self.signal_in)
-        self.connect(
-            self.res.b.adapt_to(
-                AnalogSource(
-                    voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
-                    signal_out=self.signal_in.link().signal,
-                    impedance=self.signal_in.link().source_impedance + self.res.actual_resistance,
-                )
-            ),
-            self.signal_out,
-        )
+        self.connect(self.res.a, self.signal_in.net)
+        self.connect(self.res.b, self.signal_out.net)
+        self.assign(self.signal_out.impedance, self.signal_in.link().source_impedance + self.res.actual_resistance)
 
     @override
     def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:

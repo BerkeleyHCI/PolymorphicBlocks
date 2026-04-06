@@ -38,9 +38,9 @@ class MagneticEncoder(Connector, Magnetometer, Block):
             [Power],
         )
         self.gnd = self.Export(self.conn.pins.request("3").adapt_to(Ground()), [Common])
-        self.out = self.Export(
-            self.conn.pins.request("2").adapt_to(AnalogSource.from_supply(self.gnd, self.pwr)), [Output]
-        )
+        self.out = self.Export(AnalogSource.from_supply(self.gnd, self.pwr), [Output])
+
+        self.connect(self.out.net, self.conn.pins.request("2"))
 
 
 class I2cConnector(Connector, Block):

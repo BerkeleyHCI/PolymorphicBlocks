@@ -176,14 +176,12 @@ class BaseVoltageDivider(KiCadImportableBlock):
         output_voltage = ResistiveDivider.divider_output(
             self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio
         )
-        self.output = self.Export(
-            self.div.center.adapt_to(
-                AnalogSource(
-                    voltage_out=output_voltage,
-                    signal_out=output_voltage,
-                    current_limits=RangeExpr.ALL,
-                    impedance=self.div.actual_impedance,
-                )
+        self.output = self.Port(
+            AnalogSource(
+                voltage_out=output_voltage,
+                signal_out=output_voltage,
+                current_limits=RangeExpr.ALL,
+                impedance=self.div.actual_impedance,
             ),
             [Output],
         )
@@ -193,6 +191,7 @@ class BaseVoltageDivider(KiCadImportableBlock):
                 VoltageSink(current_draw=self.output.link().current_drawn, voltage_limits=RangeExpr.ALL)
             ),
         )
+        self.connect(self.output.net, self.div.center)
 
         self.actual_rtop = self.Parameter(RangeExpr(self.div.actual_rtop))
         self.actual_rbot = self.Parameter(RangeExpr(self.div.actual_rbot))
@@ -269,22 +268,20 @@ class SignalDivider(Analog, KiCadImportableBlock, Block):
 
         self.div = self.Block(ResistiveDivider(ratio=ratio, impedance=impedance))
         self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])
-        self.input = self.Port(AnalogSink.empty(), [Input])  # forward declaration
+        self.input = self.Port(
+            AnalogSink(
+                impedance=self.div.actual_series_impedance,
+                current_draw=RangeExpr(),
+            ),
+            [Input],
+        )  # forward declaration
         output_voltage = ResistiveDivider.divider_output(
             self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio
         )
-        self.output = self.Export(
-            self.div.center.adapt_to(
-                AnalogSource(voltage_out=output_voltage, signal_out=output_voltage, impedance=self.div.actual_impedance)
-            ),
+        self.output = self.Port(
+            AnalogSource(voltage_out=output_voltage, signal_out=output_voltage, impedance=self.div.actual_impedance),
             [Output],
         )
-        self.connect(
-            self.input,
-            self.div.top.adapt_to(
-                AnalogSink(
-                    impedance=self.div.actual_series_impedance,
-                    current_draw=self.output.link().current_drawn,
-                )
-            ),
-        )
+        self.assign(self.input.current_draw, self.output.link().current_drawn)
+        self.connect(self.output.net, self.div.center)
+        self.connect(self.input.net, self.div.top)

@@ -69,7 +69,7 @@ class MergedDigitalSource(DummyDevice, NetBlock, GeneratorBlock):
         return self
 
 
-class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorBlock):
+class MergedAnalogSource(KiCadImportableBlock, DummyDevice, GeneratorBlock):
     @override
     def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
         assert symbol_name.startswith("edg_importable:Merge")  # can be any merge
@@ -89,10 +89,11 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, NetBlock, GeneratorB
         super().generate()
         self.inputs.defined()
         for in_request in self.get(self.inputs.requested()):
-            self.inputs.append_elt(
+            elt_port = self.inputs.append_elt(
                 AnalogSink(current_draw=self.output.link().current_drawn, impedance=self.output.link().sink_impedance),
                 in_request,
             )
+            self.connect(self.output.net, elt_port.net)
 
         self.assign(self.output.voltage_out, self.inputs.hull(lambda x: x.link().voltage))
         self.assign(self.output.signal_out, self.inputs.hull(lambda x: x.link().signal))

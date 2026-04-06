@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 from typing_extensions import override
 
 from ..core import *
-from .CircuitBlock import CircuitPortBridge, CircuitPortAdapter, CircuitLink, CircuitPort
+from .CircuitBlock import CircuitPortBridge, CircuitPortAdapter, CircuitLink, CircuitPort, KicadImportablePortAdapter
 from .Units import Volt, Ohm
 
 if TYPE_CHECKING:
@@ -90,18 +90,19 @@ class GroundAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):
         )
 
 
-class GroundAdapterAnalogSource(CircuitPortAdapter["AnalogSource"]):
+class GroundAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
     def __init__(self) -> None:
         from .AnalogPort import AnalogSource
 
         super().__init__()
-        self.src = self.Port(Ground())
+        self.src = self.Port(Ground.empty())
         self.dst = self.Port(
             AnalogSource(
                 voltage_out=self.src.link().voltage,
                 signal_out=self.src.link().voltage,
             )
         )
+        self.connect(self.dst.net.adapt_to(Ground()), self.src)
 
 
 class Ground(CircuitPort[GroundLink]):

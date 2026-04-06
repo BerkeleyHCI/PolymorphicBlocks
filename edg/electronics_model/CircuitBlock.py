@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from typing import Generic, Any, Optional, List, Mapping, Dict
+from typing import Generic, Any, Optional, List, Mapping, Dict, Union, TYPE_CHECKING
 
 from typing_extensions import TypeVar, override
 
 from .KiCadImportableBlock import KiCadImportableBlock
 from ..core import *
 from ..core.HdlUserExceptions import EdgTypeError
+
+if TYPE_CHECKING:
+    from .PassivePort import HasPassivePort
 
 CircuitLinkType = TypeVar("CircuitLinkType", bound=Link, covariant=True, default=Link)
 
@@ -57,7 +60,7 @@ class FootprintBlock(Block):
         self,
         refdes: StringLike,
         footprint: StringLike,
-        pinning: Mapping[str, CircuitPort],
+        pinning: Mapping[str, Union[CircuitPort, "HasPassivePort"]],
         mfr: Optional[StringLike] = None,
         part: Optional[StringLike] = None,
         value: Optional[StringLike] = None,
@@ -66,6 +69,7 @@ class FootprintBlock(Block):
         """Creates a footprint in this circuit block.
         Value is a one-line description of the part, eg 680R, 0.01uF, LPC1549, to be used as a aid during layout or
         assembly"""
+        from .PassivePort import HasPassivePort
         from ..core.Blocks import BlockElaborationState, BlockDefinitionError
         from .VoltagePorts import CircuitPort
 
@@ -84,6 +88,8 @@ class FootprintBlock(Block):
 
         pinning_array = []
         for pin_name, pin_port in pinning.items():
+            if isinstance(pin_port, HasPassivePort):
+                pin_port = pin_port.net
             if not isinstance(pin_port, CircuitPort):
                 raise EdgTypeError(f"Footprint(...) pin", pin_port, CircuitPort)
             pinning_array.append(f"{pin_name}={pin_port._name_from(self)}")
@@ -137,22 +143,27 @@ class CircuitPortBridge(NetBaseBlock, PortBridge):
         self.net()
 
 
-AdapterDstType = TypeVar("AdapterDstType", covariant=True, bound="CircuitPort", default="CircuitPort")
+AdapterDstType = TypeVar("AdapterDstType", covariant=True, bound=Port, default=Port)
 
 
-@abstract_block
-class CircuitPortAdapter(KiCadImportableBlock, NetBaseBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
+@non_library
+class KicadImportablePortAdapter(KiCadImportableBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
     @override
     def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
         assert symbol_name == "edg_importable:Adapter"
         return {"1": self.src, "2": self.dst}
 
+
+# TODO remove me once compositional passive refactoring complete, #114
+@abstract_block
+class CircuitPortAdapter(KicadImportablePortAdapter[AdapterDstType], NetBaseBlock, Generic[AdapterDstType]):
     @override
     def contents(self) -> None:
         super().contents()
         self.net()
 
 
+# TODO remove me once compositional passive refactoring complete, #114
 @non_library  # TODO make abstract instead?
 class CircuitLink(NetBaseBlock, Link):
     @override

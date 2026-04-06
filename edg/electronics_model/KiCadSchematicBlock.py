@@ -1,14 +1,14 @@
 import inspect
 import os
 from abc import abstractmethod
-from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, TypeVar, cast
+from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, TypeVar, cast, Union
 
 from typing_extensions import override
 
 from ..core import *
 from .CircuitBlock import FootprintBlock
 from .VoltagePorts import CircuitPort
-from .PassivePort import Passive
+from .PassivePort import Passive, HasPassivePort
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import (
     KiCadSchematic,
@@ -123,7 +123,7 @@ class KiCadSchematicBlock(Block):
 
     @staticmethod
     def _port_from_pin(
-        pin: KiCadPin, mapping: Mapping[str, BasePort], conversions: Mapping[str, CircuitPort]
+        pin: KiCadPin, mapping: Mapping[str, BasePort], conversions: Mapping[str, Union[CircuitPort, HasPassivePort]]
     ) -> BasePort:
         """Returns the Port from a symbol's pin, using the provided mapping and applying conversions as needed."""
         from .PassivePort import Passive
@@ -153,7 +153,7 @@ class KiCadSchematicBlock(Block):
                 f"mapping defined for both number ${pin.pin_number} and name ${pin.pin_name}"
             )
         elif f"{pin.refdes}.{pin.pin_number}" in conversions:
-            conversion: Optional[CircuitPort] = conversions[f"{pin.refdes}.{pin.pin_number}"]
+            conversion: Optional[Union[CircuitPort, HasPassivePort]] = conversions[f"{pin.refdes}.{pin.pin_number}"]
         elif f"{pin.refdes}.{pin.pin_name}" in conversions:
             conversion = conversions[f"{pin.refdes}.{pin.pin_name}"]
         else:
@@ -203,7 +203,7 @@ class KiCadSchematicBlock(Block):
         locals: Mapping[str, Any] = {},
         *,
         nodes: Mapping[str, Optional[BasePort]] = {},
-        conversions: Mapping[str, CircuitPort] = {},
+        conversions: Mapping[str, Union[CircuitPort, HasPassivePort]] = {},
         auto_adapt: bool = False,
     ) -> None:
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
@@ -324,8 +324,16 @@ class KiCadSchematicBlock(Block):
                     and isinstance(boundary_port, CircuitPort)
                     and not isinstance(boundary_port, Passive)
                 ):
+                    # TODO remove after full compositional passive refactor #114
                     adapted = cast(Passive, net_ports[0]).adapt_to(boundary_port.__class__())
                     self.connect(adapted, boundary_port)
+                elif (
+                    auto_adapt
+                    and can_adapt
+                    and isinstance(boundary_port, HasPassivePort)
+                    and not isinstance(boundary_port, Passive)
+                ):
+                    self.connect(net_ports[0], boundary_port.net)
                 else:
                     self.connect(connection, boundary_port)
 

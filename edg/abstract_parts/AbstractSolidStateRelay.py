@@ -111,14 +111,22 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
     def __init__(self) -> None:
         super().__init__()
 
+        self.ic = self.Block(SolidStateRelay())
+
         self.signal = self.Port(DigitalSink.empty())
         self.gnd = self.Port(Ground.empty(), [Common])
 
         self.apull = self.Port(AnalogSink.empty())
-        self.ain = self.Port(AnalogSink.empty())
+        self.ain = self.Port(
+            AnalogSink(
+                voltage_limits=RangeExpr(),
+                impedance=RangeExpr(),
+            )
+        )
         self.aout = self.Port(AnalogSource.empty())
+        self.assign(self.ain.voltage_limits, self.apull.link().voltage + self.ic.load_voltage_limit)
+        self.assign(self.ain.impedance, self.aout.link().sink_impedance + self.ic.load_resistance)
 
-        self.ic = self.Block(SolidStateRelay())
         self.res = self.Block(
             Resistor(
                 resistance=(
@@ -134,15 +142,7 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         self.connect(self.res.a, self.ic.ledk)
         self.connect(self.res.b.adapt_to(Ground()), self.gnd)
 
-        self.connect(
-            self.ain,
-            self.ic.feta.adapt_to(
-                AnalogSink(
-                    voltage_limits=self.apull.link().voltage + self.ic.load_voltage_limit,
-                    impedance=self.aout.link().sink_impedance + self.ic.load_resistance,
-                )
-            ),
-        )
+        self.connect(self.ain.net, self.ic.feta)
         self.pull_merge = self.Block(MergedAnalogSource()).connected_from(
             self.apull,
             self.ic.fetb.adapt_to(

@@ -122,8 +122,9 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
 
         expected_conn = edgir.ValueExpr()
         expected_conn.exported.exterior_port.ref.steps.add().name = "out"
-        expected_conn.exported.internal_block_port.ref.steps.add().name = "(adapter)res.b"
-        expected_conn.exported.internal_block_port.ref.steps.add().name = "dst"
+        expected_conn.exported.exterior_port.ref.steps.add().name = "net"
+        expected_conn.exported.internal_block_port.ref.steps.add().name = "res"
+        expected_conn.exported.internal_block_port.ref.steps.add().name = "b"
         self.assertIn(expected_conn, constraints)
 
         # blackbox definition not checked again

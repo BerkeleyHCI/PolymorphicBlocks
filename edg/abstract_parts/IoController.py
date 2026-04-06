@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import List, Dict, Tuple, Type, Optional, Any
+from typing import List, Dict, Tuple, Type, Optional, Any, Union
 
 from deprecated import deprecated
 from typing_extensions import override
@@ -7,6 +7,7 @@ from typing_extensions import override
 from ..electronics_model import *
 from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
 from .Categories import ProgrammableController
+from ..electronics_model.PassivePort import HasPassivePort
 
 
 @non_library
@@ -97,12 +98,12 @@ class BaseIoController(PinMappable, Block):
     @staticmethod
     def _instantiate_from(
         ios: List[BasePort], allocations: List[AllocatedResource]
-    ) -> Tuple[Dict[str, CircuitPort], RangeExpr]:
+    ) -> Tuple[Dict[str, Union[CircuitPort, HasPassivePort]], RangeExpr]:
         """Given a mapping of port types to IO ports and allocated resources from PinMapUtil,
         instantiate vector elements (if a vector) or init the port model (if a port)
         for the allocated resources using their data model and return the pin mapping."""
         ios_by_type = {io.elt_type() if isinstance(io, Vector) else type(io): io for io in ios}
-        pinmap: Dict[str, CircuitPort] = {}
+        pinmap: Dict[str, Union[CircuitPort, HasPassivePort]] = {}
 
         ports_assigned = IdentitySet[Port]()
         io_current_draw_builder = RangeExpr._to_expr_type(RangeExpr.ZERO)
@@ -141,14 +142,14 @@ class BaseIoController(PinMappable, Block):
             # TODO: recurse into bundles, really needs a more unified way of handling current draw
 
             if isinstance(allocation.pin, str):
-                assert isinstance(io_port, CircuitPort)
+                assert isinstance(io_port, (CircuitPort, HasPassivePort))
                 pinmap[allocation.pin] = io_port
             elif allocation.pin is None:
-                assert isinstance(io_port, CircuitPort)  # otherwise discarded
+                assert isinstance(io_port, (CircuitPort, HasPassivePort))  # otherwise discarded
             elif isinstance(allocation.pin, dict):
                 for subport_name, (pin_name, pin_resource) in allocation.pin.items():
                     subport = getattr(io_port, subport_name)
-                    assert isinstance(subport, CircuitPort), f"bad sub-port {pin_name} {subport}"
+                    assert isinstance(subport, (CircuitPort, HasPassivePort)), f"bad sub-port {pin_name} {subport}"
                     pinmap[pin_name] = subport
             else:
                 raise NotImplementedError(f"unknown allocation pin type {allocation.pin}")
@@ -183,7 +184,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
         """Implement me. Defines the assignable IO pinmaps."""
         raise NotImplementedError
 
-    def _make_pinning(self) -> Dict[str, CircuitPort]:
+    def _make_pinning(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
         allocation_list = []
         for io_port in self._io_ports:
             if isinstance(io_port, Vector):  # derive Vector connections from requested
