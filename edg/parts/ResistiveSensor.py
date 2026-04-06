@@ -36,11 +36,7 @@ class ConnectorResistiveSensor(Analog, Block):
         self.assign(self.output.voltage_out, output_voltage)
         self.assign(self.output.signal_out, output_voltage)
         self.assign(self.output.impedance, self.actual_impedance)
-        self.connect(
-            self.output.net,
-            self.top.b,
-            self.bot.pins.request("1"),
-        )
+        self.connect(self.output.net, self.top.b, self.bot.pins.request("1"))
         self.connect(self.gnd, self.bot.pins.request("2").adapt_to(Ground()))
 
         self.assign(self.actual_impedance, 1 / (1 / self.top.actual_resistance + 1 / self.resistance_range))
