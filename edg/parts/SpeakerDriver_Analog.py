@@ -288,10 +288,11 @@ class Pam8302a(SpeakerDriver, Block):
             )
         ).connected(self.gnd, self.pwr)
 
-        in_cap_model = Capacitor(capacitance=0.1 * uFarad(tol=0.2), voltage=self.sig.link().voltage)
-        self.inp_cap = self.Block(in_cap_model)
-        self.connect(self.sig, self.inp_cap.neg.adapt_to(AnalogSink()))
-        self.connect(self.inp_cap.pos.adapt_to(AnalogSource()), self.ic.inp)
-        self.inn_cap = self.Block(in_cap_model)
-        self.connect(self.gnd, self.inn_cap.neg.adapt_to(Ground()))
-        self.connect(self.inn_cap.pos.adapt_to(AnalogSource()), self.ic.inn)
+        bias_voltage = self.pwr.link().voltage / 2
+        self.inp_cap = self.Block(
+            AnalogSeriesCapacitor(capacitance=0.1 * uFarad(tol=0.2), output_bias=bias_voltage)
+        ).connected(self.sig, self.ic.inp)
+
+        self.inn_cap = self.Block(AnalogCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
+        self._inn_bias = self.Block(DummyAnalogSource(voltage_out=bias_voltage))
+        self.chain(self._inn_bias, self.inn_cap, self.ic.inn)
