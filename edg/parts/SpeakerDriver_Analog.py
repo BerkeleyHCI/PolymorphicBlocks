@@ -202,14 +202,14 @@ class Tpa2005d1(SpeakerDriver, Block):
 
         self.inn_res = self.Block(in_res_model)
         self.inn_cap = self.Block(
-            AnalogCapacitor(
+            AnalogSeriesCapacitor(
                 capacitance=(1 / (2 * math.pi * fc))
                 .shrink_multiply(1 / self.inn_res.actual_resistance)
                 .intersect((1 * 0.8, float("inf")) * uFarad),
+                output_bias=in_bias_voltage,
             )
-        ).connected(self.gnd)
-        self._inn_bias = self.Block(DummyAnalogSource(voltage_out=in_bias_voltage, signal_out=in_bias_voltage))
-        self.chain(self._inn_bias, self.inn_cap, self.inn_res, self.ic.inn)
+        )
+        self.chain(self.gnd.as_analog_source(), self.inn_cap, self.inn_res, self.ic.inn)
 
 
 class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):
@@ -288,11 +288,8 @@ class Pam8302a(SpeakerDriver, Block):
             )
         ).connected(self.gnd, self.pwr)
 
-        bias_voltage = self.pwr.link().voltage / 2
-        self.inp_cap = self.Block(
-            AnalogSeriesCapacitor(capacitance=0.1 * uFarad(tol=0.2), output_bias=bias_voltage)
-        ).connected(self.sig, self.ic.inp)
-
-        self.inn_cap = self.Block(AnalogCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
-        self._inn_bias = self.Block(DummyAnalogSource(voltage_out=bias_voltage))
-        self.chain(self._inn_bias, self.inn_cap, self.ic.inn)
+        input_cap_model = AnalogSeriesCapacitor(
+            capacitance=0.1 * uFarad(tol=0.2), output_bias=self.pwr.link().voltage / 2
+        )
+        self.inp_cap = self.Block(input_cap_model).connected(self.sig, self.ic.inp)
+        self.inn_cap = self.Block(input_cap_model).connected(self.gnd.as_analog_source(), self.ic.inn)
