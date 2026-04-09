@@ -211,22 +211,22 @@ const DC14 = board.add(C_0805_2012Metric, {
   translate: pt(0.352, 3.279), rotate: 0,
   id: 'DC14'
 })
-// spk_drv.inp_res
+// spk_drv.inp_res.res
 const DR10 = board.add(R_0603_1608Metric, {
   translate: pt(0.214, 3.446), rotate: 0,
   id: 'DR10'
 })
-// spk_drv.inp_cap
+// spk_drv.inp_cap.cap
 const DC15 = board.add(C_0603_1608Metric, {
   translate: pt(0.370, 3.446), rotate: 0,
   id: 'DC15'
 })
-// spk_drv.inn_res
+// spk_drv.inn_res.res
 const DR11 = board.add(R_0603_1608Metric, {
   translate: pt(0.058, 3.543), rotate: 0,
   id: 'DR11'
 })
-// spk_drv.inn_cap
+// spk_drv.inn_cap.cap
 const DC16 = board.add(C_0603_1608Metric, {
   translate: pt(0.214, 3.543), rotate: 0,
   id: 'DC16'
@@ -353,8 +353,8 @@ board.setNetlist([
   {name: "Doled.device.c2n", pads: [["DJ3", "28"], ["DC7", "2"]]},
   {name: "Dspk_drv.ic.inp", pads: [["DU4", "4"], ["DR10", "2"]]},
   {name: "Dspk_drv.ic.inn", pads: [["DU4", "3"], ["DR11", "2"]]},
-  {name: "Dspk_drv.inp_res.a", pads: [["DR10", "1"], ["DC15", "1"]]},
-  {name: "Dspk_drv.inn_res.a", pads: [["DR11", "1"], ["DC16", "1"]]},
+  {name: "Dspk_drv.inp_res.input", pads: [["DR10", "1"], ["DC15", "1"]]},
+  {name: "Dspk_drv.inn_res.input", pads: [["DR11", "1"], ["DC16", "1"]]},
   {name: "Dnpx_shift.lv_io", pads: [["DU2", "6"], ["DQ3", "2"]]},
   {name: "Dnpx_shift.hv_io", pads: [["DQ3", "3"], ["DR12", "2"], ["DTP5", "1"], ["DD9", "4"]]},
   {name: "Dnpx.dout", pads: [["DD14", "2"]]},

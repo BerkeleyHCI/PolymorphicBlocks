@@ -318,12 +318,12 @@ const KC54 = board.add(C_0805_2012Metric, {
   translate: pt(6.121, 2.334), rotate: 0,
   id: 'KC54'
 })
-// spk_drv.inp_cap
+// spk_drv.inp_cap.cap
 const KC55 = board.add(C_0603_1608Metric, {
   translate: pt(6.113, 2.441), rotate: 0,
   id: 'KC55'
 })
-// spk_drv.inn_cap
+// spk_drv.inn_cap.cap
 const KC56 = board.add(C_0603_1608Metric, {
   translate: pt(6.269, 2.441), rotate: 0,
   id: 'KC56'

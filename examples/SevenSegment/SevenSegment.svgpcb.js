@@ -835,22 +835,22 @@ const CC73 = board.add(C_0805_2012Metric, {
   translate: pt(2.628, 1.779), rotate: 0,
   id: 'CC73'
 })
-// spk_drv.inp_res
+// spk_drv.inp_res.res
 const CR9 = board.add(R_0603_1608Metric, {
   translate: pt(2.490, 1.946), rotate: 0,
   id: 'CR9'
 })
-// spk_drv.inp_cap
+// spk_drv.inp_cap.cap
 const CC74 = board.add(C_0603_1608Metric, {
   translate: pt(2.646, 1.946), rotate: 0,
   id: 'CC74'
 })
-// spk_drv.inn_res
+// spk_drv.inn_res.res
 const CR10 = board.add(R_0603_1608Metric, {
   translate: pt(2.334, 2.043), rotate: 0,
   id: 'CR10'
 })
-// spk_drv.inn_cap
+// spk_drv.inn_cap.cap
 const CC75 = board.add(C_0603_1608Metric, {
   translate: pt(2.490, 2.043), rotate: 0,
   id: 'CC75'
@@ -960,8 +960,8 @@ board.setNetlist([
   {name: "Cmeta.led[0].dout", pads: [["CD63", "3"], ["CD64", "1"]]},
   {name: "Cspk_drv.ic.inp", pads: [["CU6", "4"], ["CR9", "2"]]},
   {name: "Cspk_drv.ic.inn", pads: [["CU6", "3"], ["CR10", "2"]]},
-  {name: "Cspk_drv.inp_res.a", pads: [["CR9", "1"], ["CC74", "1"]]},
-  {name: "Cspk_drv.inn_res.a", pads: [["CR10", "1"], ["CC75", "1"]]},
+  {name: "Cspk_drv.inp_res.input", pads: [["CR9", "1"], ["CC74", "1"]]},
+  {name: "Cspk_drv.inn_res.input", pads: [["CR10", "1"], ["CC75", "1"]]},
   {name: "Cv5v_sense.output", pads: [["CU2", "7"], ["CR11", "2"], ["CR12", "1"]]}
 ])
 

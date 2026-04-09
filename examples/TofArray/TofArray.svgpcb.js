@@ -320,22 +320,22 @@ const C24 = board.add(C_0805_2012Metric, {
   translate: pt(0.817, 0.832), rotate: 0,
   id: 'C24'
 })
-// spk_drv.inp_res
+// spk_drv.inp_res.res
 const R7 = board.add(R_0603_1608Metric, {
   translate: pt(0.679, 1.000), rotate: 0,
   id: 'R7'
 })
-// spk_drv.inp_cap
+// spk_drv.inp_cap.cap
 const C25 = board.add(C_0603_1608Metric, {
   translate: pt(0.835, 1.000), rotate: 0,
   id: 'C25'
 })
-// spk_drv.inn_res
+// spk_drv.inn_res.res
 const R8 = board.add(R_0603_1608Metric, {
   translate: pt(0.523, 1.096), rotate: 0,
   id: 'R8'
 })
-// spk_drv.inn_cap
+// spk_drv.inn_cap.cap
 const C26 = board.add(C_0603_1608Metric, {
   translate: pt(0.679, 1.096), rotate: 0,
   id: 'C26'
@@ -408,8 +408,8 @@ board.setNetlist([
   {name: "tof.elt[4].ic.gpio1", pads: [["U7", "7"]]},
   {name: "spk_drv.ic.inp", pads: [["U11", "4"], ["R7", "2"]]},
   {name: "spk_drv.ic.inn", pads: [["U11", "3"], ["R8", "2"]]},
-  {name: "spk_drv.inp_res.a", pads: [["R7", "1"], ["C25", "1"]]},
-  {name: "spk_drv.inn_res.a", pads: [["R8", "1"], ["C26", "1"]]},
+  {name: "spk_drv.inp_res.input", pads: [["R7", "1"], ["C25", "1"]]},
+  {name: "spk_drv.inn_res.input", pads: [["R8", "1"], ["C26", "1"]]},
   {name: "res1.a.0", pads: [["D2", "1"], ["RN1", "1"]]},
   {name: "res1.a.1", pads: [["D3", "1"], ["RN1", "2"]]},
   {name: "res1.a.2", pads: [["RN1", "3"], ["D7", "3"]]},

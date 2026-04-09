@@ -275,22 +275,22 @@ const C12 = board.add(C_0805_2012Metric, {
   translate: pt(3.494, 1.724), rotate: 0,
   id: 'C12'
 })
-// spk_drv.inp_res
+// spk_drv.inp_res.res
 const R15 = board.add(R_0603_1608Metric, {
   translate: pt(3.356, 1.891), rotate: 0,
   id: 'R15'
 })
-// spk_drv.inp_cap
+// spk_drv.inp_cap.cap
 const C13 = board.add(C_0603_1608Metric, {
   translate: pt(3.512, 1.891), rotate: 0,
   id: 'C13'
 })
-// spk_drv.inn_res
+// spk_drv.inn_res.res
 const R16 = board.add(R_0603_1608Metric, {
   translate: pt(3.200, 1.988), rotate: 0,
   id: 'R16'
 })
-// spk_drv.inn_cap
+// spk_drv.inn_cap.cap
 const C14 = board.add(C_0603_1608Metric, {
   translate: pt(3.356, 1.988), rotate: 0,
   id: 'C14'
@@ -590,8 +590,8 @@ board.setNetlist([
   {name: "lcd.device.leda", pads: [["J3", "1"], ["R13", "2"]]},
   {name: "spk_drv.ic.inp", pads: [["U7", "4"], ["R15", "2"]]},
   {name: "spk_drv.ic.inn", pads: [["U7", "3"], ["R16", "2"]]},
-  {name: "spk_drv.inp_res.a", pads: [["R15", "1"], ["C13", "1"]]},
-  {name: "spk_drv.inn_res.a", pads: [["R16", "1"], ["C14", "1"]]},
+  {name: "spk_drv.inp_res.input", pads: [["R15", "1"], ["C13", "1"]]},
+  {name: "spk_drv.inn_res.input", pads: [["R16", "1"], ["C14", "1"]]},
   {name: "ref_div.output", pads: [["R17", "2"], ["R18", "1"], ["U8", "3"]]},
   {name: "inn.port", pads: [["J5", "1"], ["U9", "4"], ["U12", "4"], ["U14", "6"]]},
   {name: "inp.port", pads: [["J6", "1"], ["R19", "1"], ["D7", "1"]]},
