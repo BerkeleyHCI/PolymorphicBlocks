@@ -397,9 +397,12 @@ class AnalogSeriesResistor(DiscreteApplication, KiCadImportableBlock):
         )
 
         self.assign(
-            self.res.power, self.input.link().current_draw * self.input.link().current_draw * self.res.resistance
+            self.res.power, self.input.link().current_drawn * self.input.link().current_drawn * self.res.resistance
         )
         self.assign(self.input.impedance, self.output.link().sink_impedance)
+
+        self.connect(self.input.net, self.res.a)
+        self.connect(self.output.net, self.res.b)
 
     def connected(
         self, input: Optional[Port[AnalogLink]] = None, output: Optional[Port[AnalogLink]] = None

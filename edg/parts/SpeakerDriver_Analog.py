@@ -159,7 +159,7 @@ class Tpa2005d1(SpeakerDriver, Block):
         self.pwr = self.Export(self.ic.pwr, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
 
-        self.sig = self.Port(AnalogSink(), [Input])
+        self.sig = self.Port(AnalogSink.empty(), [Input])
         self.spk = self.Export(self.ic.vo, [Output])
 
         self.gain = self.ArgParameter(gain)
@@ -185,32 +185,31 @@ class Tpa2005d1(SpeakerDriver, Block):
 
         # Note, gain = 2 * (142k to 158k)/Ri, recommended gain < 20V/V
         res_value = (1 / self.gain).shrink_multiply(2 * Range(142e3, 158e3))
-        in_res_model = Resistor(res_value)
+        in_res_model = AnalogSeriesResistor(res_value)
         fc = (1, 20) * Hertz  # for highpass filter, arbitrary, 20Hz right on the edge of audio frequency
+        in_bias_voltage = self.pwr.link().voltage / 2  # assumed input bias point
 
-        self.inp_res = self.Block(AnalogSeriesResistor(res_value))
+        self.inp_res = self.Block(in_res_model)
         self.inp_cap = self.Block(
             AnalogSeriesCapacitor(
                 capacitance=(1 / (2 * math.pi * fc))
                 .shrink_multiply(1 / self.inp_res.actual_resistance)
                 .intersect((1 * 0.8, float("inf")) * uFarad),
-                output_bias=self.pwr.link().voltage / 2,  # assumed input bias point
+                output_bias=in_bias_voltage,
             )
         )
         self.chain(self.sig, self.inp_cap, self.inp_res, self.ic.inp)
 
         self.inn_res = self.Block(in_res_model)
         self.inn_cap = self.Block(
-            Capacitor(
+            AnalogCapacitor(
                 capacitance=(1 / (2 * math.pi * fc))
                 .shrink_multiply(1 / self.inn_res.actual_resistance)
                 .intersect((1 * 0.8, float("inf")) * uFarad),
-                voltage=self.sig.link().voltage,
             )
-        )
-        self.connect(self.gnd, self.inn_cap.neg.adapt_to(Ground()))
-        self.connect(self.inn_cap.pos, self.inn_res.a)
-        self.connect(self.inn_res.b.adapt_to(AnalogSource()), self.ic.inn)
+        ).connected(self.gnd)
+        self._inn_bias = self.Block(DummyAnalogSource(voltage_out=in_bias_voltage, signal_out=in_bias_voltage))
+        self.chain(self._inn_bias, self.inn_cap, self.inn_res, self.ic.inn)
 
 
 class Pam8302a_Device(InternalSubcircuit, JlcPart, FootprintBlock):

@@ -438,11 +438,11 @@ class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
             AnalogSource(voltage_out=RangeExpr(), signal_out=RangeExpr(), impedance=self.input.link().source_impedance),
             [Output],
         )
-        self.output_bias = self.ArgParameter(RangeExpr(output_bias))
+        self.output_bias = self.ArgParameter(output_bias)
 
         self.assign(self.cap.voltage, self.input.link().voltage - self.output.link().voltage)
-        self.connect(self.input.net, self.cap.pos)
-        self.connect(self.output.net, self.cap.neg)
+        self.connect(self.input.net, self.cap.neg)
+        self.connect(self.output.net, self.cap.pos)
 
     def contents(self) -> None:
         super().contents()
@@ -454,7 +454,7 @@ class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
         )
         signal_halfspan = (self.input.link().signal.upper() - self.input.link().signal.lower()) / 2
         self.assign(
-            self.output.voltage_out,
+            self.output.signal_out,
             (self.output_bias.lower() - signal_halfspan, self.output_bias.upper() + signal_halfspan),
         )
 
