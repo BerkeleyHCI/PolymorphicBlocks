@@ -188,18 +188,16 @@ class Tpa2005d1(SpeakerDriver, Block):
         in_res_model = Resistor(res_value)
         fc = (1, 20) * Hertz  # for highpass filter, arbitrary, 20Hz right on the edge of audio frequency
 
-        self.inp_res = self.Block(in_res_model)
+        self.inp_res = self.Block(AnalogSeriesResistor(res_value))
         self.inp_cap = self.Block(
-            Capacitor(
+            AnalogSeriesCapacitor(
                 capacitance=(1 / (2 * math.pi * fc))
                 .shrink_multiply(1 / self.inp_res.actual_resistance)
                 .intersect((1 * 0.8, float("inf")) * uFarad),
-                voltage=self.sig.link().voltage,
+                output_bias=self.pwr.link().voltage / 2,  # assumed input bias point
             )
         )
-        self.connect(self.sig.net, self.inp_cap.neg)
-        self.connect(self.inp_cap.pos, self.inp_res.a)
-        self.connect(self.inp_res.b.adapt_to(AnalogSource()), self.ic.inp)
+        self.chain(self.sig, self.inp_cap, self.inp_res, self.ic.inp)
 
         self.inn_res = self.Block(in_res_model)
         self.inn_cap = self.Block(

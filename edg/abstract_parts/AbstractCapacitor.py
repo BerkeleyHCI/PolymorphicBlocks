@@ -421,6 +421,54 @@ class AnalogCapacitor(DiscreteApplication, KiCadImportableBlock):
         return self
 
 
+class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
+    """Series DC-blocking capacitor for an analog signal."""
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name in ("Device:C", "Device:C_Small", "Device:C_Polarized", "Device:C_Polarized_Small")
+        return {"1": self.input, "2": self.output}
+
+    def __init__(self, capacitance: RangeLike, output_bias: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
+        super().__init__()
+
+        self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
+        self.input = self.Port(AnalogSink(impedance=RangeExpr()), [Input])
+        self.output = self.Port(
+            AnalogSource(voltage_out=RangeExpr(), signal_out=RangeExpr(), impedance=self.input.link().source_impedance),
+            [Output],
+        )
+        self.output_bias = self.ArgParameter(RangeExpr(output_bias))
+
+        self.assign(self.cap.voltage, self.input.link().voltage - self.output.link().voltage)
+        self.connect(self.input.net, self.cap.pos)
+        self.connect(self.output.net, self.cap.neg)
+
+    def contents(self) -> None:
+        super().contents()
+        self.assign(self.input.impedance, self.output.link().sink_impedance)  # assumed high frequency
+        voltage_halfspan = (self.input.link().voltage.upper() - self.input.link().voltage.lower()) / 2
+        self.assign(
+            self.output.voltage_out,
+            (self.output_bias.lower() - voltage_halfspan, self.output_bias.upper() + voltage_halfspan),
+        )
+        signal_halfspan = (self.input.link().signal.upper() - self.input.link().signal.lower()) / 2
+        self.assign(
+            self.output.voltage_out,
+            (self.output_bias.lower() - signal_halfspan, self.output_bias.upper() + signal_halfspan),
+        )
+
+    def connected(
+        self, input: Optional[Port[AnalogLink]] = None, output: Optional[Port[AnalogLink]] = None
+    ) -> "AnalogCapacitor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name."""
+        if input is not None:
+            cast(Block, builder.get_enclosing_block()).connect(input, self.input)
+        if output is not None:
+            cast(Block, builder.get_enclosing_block()).connect(output, self.output)
+        return self
+
+
 class CombinedCapacitorElement(Capacitor):  # to avoid an abstract part error
     @override
     def contents(self) -> None:
