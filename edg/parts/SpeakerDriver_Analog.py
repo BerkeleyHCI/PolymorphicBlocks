@@ -152,7 +152,7 @@ class Tpa2005d1(SpeakerDriver, Block):
     """TPA2005D1 configured in single-ended input mode.
     Possible semi-pin-compatible with PAM8302AASCR (C113367), but which has internal resistor."""
 
-    def __init__(self, gain: RangeLike = Range.from_tolerance(20, 0.2)):
+    def __init__(self, gain: RangeLike = 20 * Ratio(tol=0.2)):
         super().__init__()
         # TODO should be a SpeakerDriver abstract part
 
