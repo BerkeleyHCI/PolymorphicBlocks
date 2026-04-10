@@ -378,7 +378,7 @@ class AnalogSeriesResistor(DiscreteApplication, KiCadImportableBlock):
     @override
     def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
         assert symbol_name in ("Device:R", "Device:R_Small")
-        return {"1": self.pwr_in, "2": self.pwr_out}
+        return {"1": self.input, "2": self.output}
 
     def __init__(self, resistance: RangeLike) -> None:
         super().__init__()

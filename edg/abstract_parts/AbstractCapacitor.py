@@ -448,6 +448,7 @@ class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
             )
         )
 
+    @override
     def contents(self) -> None:
         super().contents()
 
@@ -468,7 +469,7 @@ class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
 
     def connected(
         self, input: Optional[Port[AnalogLink]] = None, output: Optional[Port[AnalogLink]] = None
-    ) -> "AnalogCapacitor":
+    ) -> "AnalogSeriesCapacitor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if input is not None:
             cast(Block, builder.get_enclosing_block()).connect(input, self.input)
