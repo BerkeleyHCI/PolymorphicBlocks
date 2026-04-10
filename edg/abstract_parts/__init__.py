@@ -52,7 +52,7 @@ from .AbstractConnector import (
     SmaMConnector,
     SmaFConnector,
 )
-from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor, SeriesResistor
+from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor, SeriesResistor, AnalogSeriesResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
 from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor, AnalogClampResistor, DigitalClampResistor
 from .AbstractResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
@@ -65,7 +65,13 @@ from .AbstractCapacitor import (
     TableCapacitor,
     TableDeratingCapacitor,
 )
-from .AbstractCapacitor import DummyCapacitorFootprint, DecouplingCapacitor, AnalogCapacitor, CombinedCapacitor
+from .AbstractCapacitor import (
+    DummyCapacitorFootprint,
+    DecouplingCapacitor,
+    AnalogCapacitor,
+    AnalogSeriesCapacitor,
+    CombinedCapacitor,
+)
 from .AbstractInductor import Inductor, TableInductor, SeriesPowerInductor
 from .AbstractFerriteBead import FerriteBead, FerriteBeadStandardFootprint, TableFerriteBead, SeriesPowerFerriteBead
 from .ResistiveDivider import ResistiveDivider, VoltageDivider, VoltageSenseDivider

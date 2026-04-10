@@ -229,6 +229,10 @@ class RobotDriver(JlcBoardTop):
                 # JLC does not have frequency specs, must be checked TODO
                 (["reg_3v3", "power_path", "inductor", "frequency"], Range(0, 0)),
                 (["reg_3v3", "power_path", "efficiency"], Range(1.0, 1.0)),  # waive this check
+                (
+                    ["mcu", "dac", "spk", "signal_out"],
+                    Range(0.65, 2.65),
+                ),  # restrict the range to the speaker driver limits,
             ],
             class_refinements=[
                 (PassiveConnector, JstPhKVertical),  # default connector series unless otherwise specified

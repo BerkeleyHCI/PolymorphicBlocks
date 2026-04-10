@@ -372,6 +372,49 @@ class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorB
         return {"1": self.pwr_in, "2": self.pwr_out, "sense_in": self.sense_in, "sense_out": self.sense_out}
 
 
+class AnalogSeriesResistor(DiscreteApplication, KiCadImportableBlock):
+    """Analog passthrough series resistor"""
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
+        assert symbol_name in ("Device:R", "Device:R_Small")
+        return {"1": self.input, "2": self.output}
+
+    def __init__(self, resistance: RangeLike) -> None:
+        super().__init__()
+
+        self.res = self.Block(Resistor(resistance=resistance, power=RangeExpr()))
+        self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
+
+        self.input = self.Port(AnalogSink(impedance=RangeExpr()), [Input])
+        self.output = self.Port(
+            AnalogSource(
+                voltage_out=self.input.link().voltage,
+                signal_out=self.input.link().signal,
+                impedance=self.input.link().source_impedance + self.res.actual_resistance,
+            ),
+            [Output],
+        )
+
+        self.assign(self.input.impedance, self.output.link().sink_impedance + self.res.actual_resistance)
+
+        self.assign(
+            self.res.power, self.input.link().current_drawn * self.input.link().current_drawn * self.res.resistance
+        )
+        self.connect(self.input.net, self.res.a)
+        self.connect(self.output.net, self.res.b)
+
+    def connected(
+        self, input: Optional[Port[AnalogLink]] = None, output: Optional[Port[AnalogLink]] = None
+    ) -> "AnalogSeriesResistor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name."""
+        if input is not None:
+            cast(Block, builder.get_enclosing_block()).connect(input, self.input)
+        if output is not None:
+            cast(Block, builder.get_enclosing_block()).connect(output, self.output)
+        return self
+
+
 class AnalogClampResistor(Protection, KiCadImportableBlock):
     """Inline resistor that limits the current (to a parameterized amount) which works in concert
     with ESD diodes in the downstream device to clamp the signal voltage to allowable levels.

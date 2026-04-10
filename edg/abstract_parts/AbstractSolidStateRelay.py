@@ -99,14 +99,14 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
     The ports are not tagged with Input/Output/InOut, because of potential for confusion between
     the digital side and the analog side.
 
-    A separate output-side pull port allows modeling the output switch standoff voltage
-    when the switch is off.
+    The output is modeled as if the switch is closed. A weak pull-up (or down) could be modeled by
+    combining this device's output with a MergedAnalogSource.
     """
 
     @override
     def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
         assert symbol_name == "edg_importable:AnalogIsolatedSwitch"
-        return {"in": self.signal, "gnd": self.gnd, "ain": self.ain, "apull": self.apull, "aout": self.aout}
+        return {"in": self.signal, "gnd": self.gnd, "ain": self.ain, "aout": self.aout}
 
     def __init__(self) -> None:
         super().__init__()
@@ -116,15 +116,27 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         self.signal = self.Port(DigitalSink.empty())
         self.gnd = self.Port(Ground.empty(), [Common])
 
-        self.apull = self.Port(AnalogSink.empty())
         self.ain = self.Port(
             AnalogSink(
                 voltage_limits=RangeExpr(),
                 impedance=RangeExpr(),
             )
         )
-        self.aout = self.Port(AnalogSource.empty())
-        self.assign(self.ain.voltage_limits, self.apull.link().voltage + self.ic.load_voltage_limit)
+        self.aout = self.Port(
+            AnalogSource(
+                voltage_out=self.ain.link().voltage,
+                signal_out=self.ain.link().signal,
+                current_limits=self.ic.load_current_limit,
+                impedance=self.ain.link().source_impedance + self.ic.load_resistance,
+            )
+        )
+        self.assign(
+            self.ain.voltage_limits,
+            (
+                self.aout.link().voltage.lower() + self.ic.load_voltage_limit.upper(),
+                self.aout.link().voltage.upper() - self.ic.load_voltage_limit.lower(),
+            ),
+        )
         self.assign(self.ain.impedance, self.aout.link().sink_impedance + self.ic.load_resistance)
 
         self.res = self.Block(
@@ -143,15 +155,4 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         self.connect(self.res.b.adapt_to(Ground()), self.gnd)
 
         self.connect(self.ain.net, self.ic.feta)
-        self.pull_merge = self.Block(MergedAnalogSource()).connected_from(
-            self.apull,
-            self.ic.fetb.adapt_to(
-                AnalogSource(
-                    voltage_out=self.ain.link().voltage,
-                    signal_out=self.ain.link().signal,
-                    current_limits=self.ic.load_current_limit,
-                    impedance=self.ain.link().source_impedance + self.ic.load_resistance,
-                )
-            ),
-        )
-        self.connect(self.pull_merge.output, self.aout)
+        self.connect(self.aout.net, self.ic.fetb)

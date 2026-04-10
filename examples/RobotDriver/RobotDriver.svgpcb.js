@@ -290,22 +290,22 @@ const C18 = board.add(C_0805_2012Metric, {
   translate: pt(0.933, 2.627), rotate: 0,
   id: 'C18'
 })
-// spk_drv.inp_res
+// spk_drv.inp_res.res
 const R12 = board.add(R_0603_1608Metric, {
   translate: pt(0.795, 2.794), rotate: 0,
   id: 'R12'
 })
-// spk_drv.inp_cap
+// spk_drv.inp_cap.cap
 const C19 = board.add(C_0603_1608Metric, {
   translate: pt(0.951, 2.794), rotate: 0,
   id: 'C19'
 })
-// spk_drv.inn_res
+// spk_drv.inn_res.res
 const R13 = board.add(R_0603_1608Metric, {
   translate: pt(0.639, 2.891), rotate: 0,
   id: 'R13'
 })
-// spk_drv.inn_cap
+// spk_drv.inn_cap.cap
 const C20 = board.add(C_0603_1608Metric, {
   translate: pt(0.795, 2.891), rotate: 0,
   id: 'C20'
@@ -462,8 +462,8 @@ board.setNetlist([
   {name: "expander.io.led_3", pads: [["U6", "7"], ["RN1", "5"]]},
   {name: "spk_drv.ic.inp", pads: [["U7", "4"], ["R12", "2"]]},
   {name: "spk_drv.ic.inn", pads: [["U7", "3"], ["R13", "2"]]},
-  {name: "spk_drv.inp_res.a", pads: [["R12", "1"], ["C19", "1"]]},
-  {name: "spk_drv.inn_res.a", pads: [["R13", "1"], ["C20", "1"]]},
+  {name: "spk_drv.inp_res.input", pads: [["R12", "1"], ["C19", "1"]]},
+  {name: "spk_drv.inn_res.input", pads: [["R13", "1"], ["C20", "1"]]},
   {name: "ws2812bArray.din", pads: [["U3", "23"], ["D6", "4"]]},
   {name: "ws2812bArray.dout", pads: [["D10", "2"], ["J8", "2"]]},
   {name: "ws2812bArray.led[0].dout", pads: [["D6", "2"], ["D7", "4"]]},
