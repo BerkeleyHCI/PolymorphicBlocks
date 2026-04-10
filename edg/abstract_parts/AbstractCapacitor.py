@@ -432,20 +432,28 @@ class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
     def __init__(self, capacitance: RangeLike, output_bias: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
         super().__init__()
 
-        self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
+        self.output_bias = self.ArgParameter(output_bias)
+
         self.input = self.Port(AnalogSink(impedance=RangeExpr()), [Input])
         self.output = self.Port(
             AnalogSource(voltage_out=RangeExpr(), signal_out=RangeExpr(), impedance=self.input.link().source_impedance),
             [Output],
         )
-        self.output_bias = self.ArgParameter(output_bias)
 
-        self.assign(self.cap.voltage, self.input.link().voltage - self.output.link().voltage)
-        self.connect(self.input.net, self.cap.neg)
-        self.connect(self.output.net, self.cap.pos)
+        self.cap = self.Block(
+            Capacitor(
+                capacitance,
+                voltage=self.input.link().voltage - self.output.link().voltage,
+                exact_capacitance=exact_capacitance,
+            )
+        )
 
     def contents(self) -> None:
         super().contents()
+
+        self.connect(self.input.net, self.cap.neg)
+        self.connect(self.output.net, self.cap.pos)
+
         self.assign(self.input.impedance, self.output.link().sink_impedance)  # assumed high frequency
         voltage_halfspan = (self.input.link().voltage.upper() - self.input.link().voltage.lower()) / 2
         self.assign(

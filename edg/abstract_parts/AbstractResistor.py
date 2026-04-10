@@ -383,9 +383,6 @@ class AnalogSeriesResistor(DiscreteApplication, KiCadImportableBlock):
     def __init__(self, resistance: RangeLike) -> None:
         super().__init__()
 
-        self.res = self.Block(Resistor(resistance=resistance, power=RangeExpr()))
-        self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
-
         self.input = self.Port(AnalogSink(impedance=RangeExpr()), [Input])
         self.output = self.Port(
             AnalogSource(
@@ -396,11 +393,13 @@ class AnalogSeriesResistor(DiscreteApplication, KiCadImportableBlock):
             [Output],
         )
 
+        self.assign(self.input.impedance, self.output.link().sink_impedance)
+
+        self.res = self.Block(Resistor(resistance=resistance, power=RangeExpr()))
+        self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
         self.assign(
             self.res.power, self.input.link().current_drawn * self.input.link().current_drawn * self.res.resistance
         )
-        self.assign(self.input.impedance, self.output.link().sink_impedance)
-
         self.connect(self.input.net, self.res.a)
         self.connect(self.output.net, self.res.b)
 
