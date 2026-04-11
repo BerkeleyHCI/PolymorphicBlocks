@@ -366,7 +366,6 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
         super().__init__()
 
         self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
-        self.gnd = self.Export(self.cap.neg.adapt_to(Ground()), [Common])
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Export(
             self.cap.pos.adapt_to(
