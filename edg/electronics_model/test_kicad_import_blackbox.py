@@ -99,8 +99,10 @@ class KiCadImportBlackboxTestCase(unittest.TestCase):
 
         expected_conn = edgir.ValueExpr()
         expected_conn.exported.exterior_port.ref.steps.add().name = "gnd"
-        expected_conn.exported.internal_block_port.ref.steps.add().name = "(adapter)U1.ports.3"
-        expected_conn.exported.internal_block_port.ref.steps.add().name = "dst"
+        expected_conn.exported.exterior_port.ref.steps.add().name = "net"
+        expected_conn.exported.internal_block_port.ref.steps.add().name = "U1"
+        expected_conn.exported.internal_block_port.ref.steps.add().name = "ports"
+        expected_conn.exported.internal_block_port.ref.steps.add().allocate = "3"
         self.assertIn(expected_conn, constraints)
 
         expected_conn = edgir.ValueExpr()  # this one should be unchanged
