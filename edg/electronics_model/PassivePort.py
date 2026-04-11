@@ -29,6 +29,7 @@ class PassiveAdapterGround(CircuitPortAdapter["Ground"]):
         super().__init__()
         self.src = self.Port(Passive())
         self.dst = self.Port(Ground(voltage_limits=voltage_limits))
+        self.connect(self.src, self.dst.net)
 
 
 class PassiveAdapterVoltageSource(CircuitPortAdapter["VoltageSource"]):
