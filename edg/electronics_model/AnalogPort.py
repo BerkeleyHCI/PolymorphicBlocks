@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 from typing_extensions import override
 
 from ..core import *
-from .PassivePort import HasPassivePort
+from .PassivePort import HasPassivePort, Passive
 from .CircuitBlock import CircuitPortAdapter, KicadImportablePortAdapter
 from .GroundPort import GroundLink
 from .VoltagePorts import VoltageLink, VoltageSource
@@ -148,7 +148,7 @@ class AnalogSourceBridge(PortBridge):  # basic passthrough port, sources look th
         self.assign(self.inner_link.impedance, self.outer_port.link().sink_impedance)
 
 
-class AnalogSink(AnalogBase, HasPassivePort):
+class AnalogSink(HasPassivePort, AnalogBase):
     bridge_type = AnalogSinkBridge
 
     @staticmethod
@@ -203,6 +203,8 @@ class AnalogSink(AnalogBase, HasPassivePort):
         signal_limits are for proper device functionality (e.g. non-RRIO opamps)"""
         super().__init__()
 
+        self.net = self.Port(Passive())
+
         self.voltage_limits = self.Parameter(RangeExpr(voltage_limits))
         self.signal_limits = self.Parameter(RangeExpr(signal_limits))
         self.current_draw = self.Parameter(RangeExpr(current_draw))
@@ -226,7 +228,7 @@ class AnalogSourceAdapterVoltageSource(KicadImportablePortAdapter[VoltageSource]
         )
 
 
-class AnalogSource(AnalogBase, HasPassivePort):
+class AnalogSource(HasPassivePort, AnalogBase):
     bridge_type = AnalogSourceBridge
 
     @staticmethod
@@ -268,6 +270,8 @@ class AnalogSource(AnalogBase, HasPassivePort):
         """voltage_out is the total voltage range the device can output (typically limited by power rails)
         regardless of controls and including transients, while signal_out is the intended operating range"""
         super().__init__()
+
+        self.net = self.Port(Passive())
 
         self.voltage_out = self.Parameter(RangeExpr(voltage_out))
         self.signal_out = self.Parameter(RangeExpr(signal_out))

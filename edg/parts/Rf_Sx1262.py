@@ -127,7 +127,7 @@ class Sx1262BalunLike(InternalSubcircuit, GeneratorBlock):
         current: RangeLike,
     ):
         super().__init__()
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.input = self.Port(Passive.empty())
         self.rfi_n = self.Port(Passive.empty())
         self.rfi_p = self.Port(Passive.empty())
@@ -161,7 +161,7 @@ class Sx1262BalunLike(InternalSubcircuit, GeneratorBlock):
         self.connect(self.input, self.c.pos)
         self.connect(self.rfi_n, self.c.neg, self.l.a)
         self.connect(self.rfi_p, self.c_p.pos, self.l.b)
-        self.connect(self.gnd, self.c_p.neg.adapt_to(Ground()))
+        self.connect(self.gnd.net, self.c_p.neg)
 
 
 class Sx1262_Device(InternalSubcircuit, FootprintBlock, JlcPart):

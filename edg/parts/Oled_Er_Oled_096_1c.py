@@ -28,10 +28,13 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
 
         self.conn = self.Block(Fpc030Bottom(length=31))
 
-        vss_pin = self.conn.pins.request("7")
-        self.vss = self.Export(vss_pin.adapt_to(Ground()), [Common])
+        self.vss = self.Port(Ground(), [Common])
         self.connect(
-            vss_pin, self.conn.pins.request("1"), self.conn.pins.request("31"), self.conn.pins.request("26")  # VLSS
+            self.vss.net,
+            self.conn.pins.request("7"),
+            self.conn.pins.request("1"),
+            self.conn.pins.request("31"),
+            self.conn.pins.request("26"),  # VLSS
         )  # VLL
 
         self.vdd = self.Export(
@@ -88,7 +91,7 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
 
         self.bs0 = self.Export(self.conn.pins.request("14").adapt_to(din_model))
         self.bs1 = self.Export(self.conn.pins.request("13").adapt_to(din_model))
-        self.connect(self.conn.pins.request("12").adapt_to(Ground()), self.vss)  # BS2, 0 for any serial
+        self.connect(self.conn.pins.request("12"), self.vss.net)  # BS2, 0 for any serial
 
         self.res = self.Export(self.conn.pins.request("9").adapt_to(din_model))
         self.cs = self.Export(self.conn.pins.request("11").adapt_to(din_model))
@@ -99,7 +102,7 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
         self.d2 = self.Export(self.conn.pins.request("20").adapt_to(din_model), optional=True)
 
         for i in [16, 15] + list(range(21, 26)):  # RD, RW, DB3~DB7
-            self.connect(vss_pin, self.conn.pins.request(str(i)))
+            self.connect(self.vss.net, self.conn.pins.request(str(i)))
 
 
 class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar, Type, Dict, Union
+from typing import TypeVar, Type, Dict, Union, Generic
 
 from typing_extensions import TYPE_CHECKING
 
@@ -222,13 +222,13 @@ class PassiveBridge(CircuitPortBridge):
         self.inner_link = self.Port(Passive())
 
 
-class HasPassivePort(Port[Link]):
+class HasPassivePort:
     """A port that contains a single net as a passive port.
     Some functionality may provide convenience functions on this to use the internal net."""
 
     def __init__(self) -> None:
         super().__init__()
-        self.net = self.Port(Passive())
+        self.net: Passive
 
 
 # TODO this should replace CircuitPort and should be the lowest level of abstraction port, #114

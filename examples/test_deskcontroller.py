@@ -12,7 +12,7 @@ class JiecangConnector(Block):
     def __init__(self) -> None:
         super().__init__()
         self.conn = self.Block(PassiveConnector(length=6))
-        self.gnd = self.Export(self.conn.pins.request("2").adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Export(
             self.conn.pins.request("4").adapt_to(
                 VoltageSource(voltage_out=5 * Volt(tol=0), current_limits=(0, 300) * mAmp)
@@ -23,6 +23,8 @@ class JiecangConnector(Block):
         self.pwr_io = self.Port(VoltageSink.empty())
         self.dtx_shift = self.Block(BidirectionaLevelShifter(hv_res=RangeExpr.INF, src_hint="hv"))
         self.htx_shift = self.Block(BidirectionaLevelShifter(hv_res=RangeExpr.INF, src_hint="lv"))
+
+        self.connect(self.gnd.net, self.conn.pins.request("2"))
         self.connect(self.pwr, self.dtx_shift.hv_pwr, self.htx_shift.hv_pwr)
         self.connect(self.pwr_io, self.dtx_shift.lv_pwr, self.htx_shift.lv_pwr)
         self.connect(

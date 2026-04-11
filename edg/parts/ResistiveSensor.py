@@ -18,7 +18,7 @@ class ConnectorResistiveSensor(Analog, Block):
         self.output = self.Port(
             AnalogSource(voltage_out=RangeExpr(), signal_out=RangeExpr(), impedance=RangeExpr()), [Output]
         )
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
         # TODO deduplicate with ResistiveDivider class
         self.actual_ratio = self.Parameter(RangeExpr())
@@ -37,7 +37,7 @@ class ConnectorResistiveSensor(Analog, Block):
         self.assign(self.output.signal_out, output_voltage)
         self.assign(self.output.impedance, self.actual_impedance)
         self.connect(self.output.net, self.top.b, self.bot.pins.request("1"))
-        self.connect(self.gnd, self.bot.pins.request("2").adapt_to(Ground()))
+        self.connect(self.gnd.net, self.bot.pins.request("2"))
 
         self.assign(self.actual_impedance, 1 / (1 / self.top.actual_resistance + 1 / self.resistance_range))
         self.assign(self.actual_series_impedance, self.top.actual_resistance + self.resistance_range)

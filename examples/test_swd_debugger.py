@@ -10,7 +10,7 @@ class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
         super().__init__()
 
         self.pwr = self.Port(VoltageSink.empty(), [Power])
-        self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
+        self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
         self.swd = self.Port(SwdTargetPort.empty(), [Input])
         self.reset = self.Port(DigitalSink.empty(), optional=True)
         self.swo = self.Port(DigitalBidir.empty(), optional=True)
@@ -23,10 +23,7 @@ class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
 
         self.connect(self.pwr, self.conn.pins.request("1").adapt_to(VoltageSink()))
         self.connect(
-            self.gnd,
-            self.conn.pins.request("3").adapt_to(Ground()),
-            self.conn.pins.request("5").adapt_to(Ground()),
-            self.conn.pins.request("9").adapt_to(Ground()),
+            self.gnd.net, self.conn.pins.request("3"), self.conn.pins.request("5"), self.conn.pins.request("9")
         )
         self.connect(self.swd.swdio, self.conn.pins.request("2").adapt_to(DigitalBidir()))
         self.connect(self.swd.swclk, self.conn.pins.request("4").adapt_to(DigitalSink()))
@@ -40,7 +37,7 @@ class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
         super().__init__()
 
         self.pwr = self.Port(VoltageSink.empty(), [Power])
-        self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
+        self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
         self.swd = self.Port(SwdTargetPort.empty(), [Input])
         self.reset = self.Port(DigitalSink.empty(), optional=True)
         self.swo = self.Port(DigitalBidir.empty(), optional=True)
@@ -54,7 +51,7 @@ class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
         self.connect(self.swd.swdio, self.conn.pins.request("2").adapt_to(DigitalBidir()))  # also TMS
         self.connect(self.reset, self.conn.pins.request("3").adapt_to(DigitalSink()))
         self.connect(self.swd.swclk, self.conn.pins.request("4").adapt_to(DigitalSink()))
-        self.connect(self.gnd, self.conn.pins.request("5").adapt_to(Ground()))
+        self.connect(self.gnd.net, self.conn.pins.request("5"))
         self.connect(self.swo, self.conn.pins.request("6").adapt_to(DigitalBidir()))
 
 

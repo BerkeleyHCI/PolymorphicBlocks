@@ -19,9 +19,11 @@ class PwmConnector(Connector, Block):
         super().__init__()
         self.conn = self.Block(PinHeader254())
 
-        self.pwm = self.Export(self.conn.pins.request("1").adapt_to(DigitalSink()), [Input])
+        self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Export(self.conn.pins.request("2").adapt_to(VoltageSink(current_draw=current_draw)), [Power])
-        self.gnd = self.Export(self.conn.pins.request("3").adapt_to(Ground()), [Common])
+        self.pwm = self.Export(self.conn.pins.request("1").adapt_to(DigitalSink()), [Input])
+
+        self.connect(self.gnd.net, self.conn.pins.request("3"))
 
 
 class LedConnector(Connector, Block):
@@ -32,11 +34,13 @@ class LedConnector(Connector, Block):
         self.conn = self.Block(PassiveConnector())
         led_current = 36.6
 
+        self.gnd = self.Port(Ground(), [Common])
         self.vdd = self.Export(
             self.conn.pins.request("1").adapt_to(VoltageSink(current_draw=(0 * mAmp, led_current * num_leds))), [Power]
         )
         self.din = self.Export(self.conn.pins.request("2").adapt_to(DigitalSink()), [Input])
-        self.gnd = self.Export(self.conn.pins.request("3").adapt_to(Ground()), [Common])
+
+        self.connect(self.gnd.net, self.conn.pins.request("3"))
 
 
 class RobotDriver(JlcBoardTop):

@@ -28,6 +28,8 @@ class MagneticEncoder(Connector, Magnetometer, Block):
         super().__init__()
         self.conn = self.Block(PassiveConnector())
 
+        self.gnd = self.Port(Ground(), [Common])
+
         self.pwr = self.Export(
             self.conn.pins.request("1").adapt_to(
                 VoltageSink(
@@ -37,9 +39,9 @@ class MagneticEncoder(Connector, Magnetometer, Block):
             ),
             [Power],
         )
-        self.gnd = self.Export(self.conn.pins.request("3").adapt_to(Ground()), [Common])
-        self.out = self.Export(AnalogSource.from_supply(self.gnd, self.pwr), [Output])
+        self.out = self.Port(AnalogSource.from_supply(self.gnd, self.pwr), [Output])
 
+        self.connect(self.gnd.net, self.conn.pins.request("3"))
         self.connect(self.out.net, self.conn.pins.request("2"))
 
 
@@ -50,10 +52,11 @@ class I2cConnector(Connector, Block):
         super().__init__()
         self.conn = self.Block(PassiveConnector())
 
-        self.gnd = self.Export(self.conn.pins.request("1").adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Export(self.conn.pins.request("2").adapt_to(VoltageSink()), [Power])
-
         self.i2c = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
+
+        self.connect(self.gnd.net, self.conn.pins.request("1"))
         self.connect(self.i2c.sda, self.conn.pins.request("3").adapt_to(DigitalBidir()))
         self.connect(self.i2c.scl, self.conn.pins.request("4").adapt_to(DigitalBidir()))
 
@@ -65,6 +68,7 @@ class BldcHallSensor(Connector, Block):
         super().__init__()
         self.conn = self.Block(PassiveConnector())
 
+        self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Export(
             self.conn.pins.request("1").adapt_to(
                 VoltageSink(
@@ -73,9 +77,9 @@ class BldcHallSensor(Connector, Block):
             ),
             [Power],
         )
-        self.gnd = self.Export(self.conn.pins.request("5").adapt_to(Ground()), [Common])
-
         self.phases = self.Port(Vector(DigitalSource.empty()))
+
+        self.connect(self.gnd.net, self.conn.pins.request("5"))
         phase_model = DigitalSource.low_from_supply(self.gnd)
         for pin, name in [("2", "u"), ("3", "v"), ("4", "w")]:
             phase = self.phases.append_elt(DigitalSource.empty(), name)

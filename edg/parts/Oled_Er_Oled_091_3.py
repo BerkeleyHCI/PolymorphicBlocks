@@ -65,7 +65,8 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
                 )
             )
         )
-        self.vss = self.Export(self.conn.pins.request("6").adapt_to(Ground()), [Common])
+        self.vss = self.Port(Ground(), [Common])
+        self.connect(self.vss.net, self.conn.pins.request("6"))
 
         din_model = DigitalSink.from_supply(
             self.vss,

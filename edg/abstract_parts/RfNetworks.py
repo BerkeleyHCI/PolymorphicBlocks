@@ -199,7 +199,7 @@ class PiLowPassFilter(GeneratorBlock, RfFilter):
         super().__init__()
         self.input = self.Port(Passive.empty(), [Input])
         self.output = self.Port(Passive.empty(), [Output])
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
         self.frequency = self.ArgParameter(frequency)
         self.src_resistance = self.ArgParameter(src_resistance)
@@ -233,4 +233,4 @@ class PiLowPassFilter(GeneratorBlock, RfFilter):
         self.l = self.Block(Inductor(inductance=l * Henry(tol=tolerance), current=self.current))
         self.connect(self.input, self.c1.pos, self.l.a)
         self.connect(self.l.b, self.c2.pos, self.output)
-        self.connect(self.gnd, self.c1.neg.adapt_to(Ground()), self.c2.neg.adapt_to(Ground()))
+        self.connect(self.gnd.net, self.c1.neg, self.c2.neg)
