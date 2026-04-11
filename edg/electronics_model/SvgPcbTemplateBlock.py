@@ -78,7 +78,11 @@ class SvgPcbTemplateBlock(Block):
         be connected to one of its pins, returns the footprint pin that the port is connected to."""
         footprint_path = self._svgpcb_footprint_block_path_of(block_ref)
         port_path = footprint_path.append_port(*pin_ref)
-        candidate_nets = [net for net in self._svgpcb_netlist.nets if port_path in net.ports]
+        candidate_nets = [
+            net
+            for net in self._svgpcb_netlist.nets
+            if port_path in net.ports or port_path.append_port("net") in net.ports
+        ]
         assert len(candidate_nets) == 1
         candidate_pins = [pin for pin in candidate_nets[0].pins if pin.block_path == footprint_path]
         assert len(candidate_pins) == 1
