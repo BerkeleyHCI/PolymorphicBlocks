@@ -325,100 +325,105 @@ const C32 = board.add(C_0603_1608Metric, {
   translate: pt(0.934, 2.196), rotate: 0,
   id: 'C32'
 })
-// eink.ic
-const U11 = board.add(Hirose_FH12_24S_0_5SH_1x24_1MP_P0_50mm_Horizontal, {
+// eink.ic.device.conn
+const J6 = board.add(Hirose_FH12_24S_0_5SH_1x24_1MP_P0_50mm_Horizontal, {
   translate: pt(2.644, 1.032), rotate: 0,
-  id: 'U11'
+  id: 'J6'
 })
-// eink.boost_sw
+// eink.ic.vdd_cap.cap
+const C33 = board.add(C_0603_1608Metric, {
+  translate: pt(3.016, 1.335), rotate: 0,
+  id: 'C33'
+})
+// eink.ic.vdd1v8_cap.cap
+const C34 = board.add(C_0603_1608Metric, {
+  translate: pt(3.172, 1.335), rotate: 0,
+  id: 'C34'
+})
+// eink.ic.vgl_cap.cap
+const C35 = board.add(C_0603_1608Metric, {
+  translate: pt(2.346, 1.452), rotate: 0,
+  id: 'C35'
+})
+// eink.ic.vgh_cap.cap
+const C36 = board.add(C_0805_2012Metric, {
+  translate: pt(2.354, 1.228), rotate: 0,
+  id: 'C36'
+})
+// eink.ic.vsh_cap.cap
+const C37 = board.add(C_0805_2012Metric, {
+  translate: pt(2.528, 1.228), rotate: 0,
+  id: 'C37'
+})
+// eink.ic.vsl_cap.cap
+const C38 = board.add(C_0805_2012Metric, {
+  translate: pt(2.701, 1.228), rotate: 0,
+  id: 'C38'
+})
+// eink.ic.vcom_cap.cap
+const C39 = board.add(C_0603_1608Metric, {
+  translate: pt(2.502, 1.452), rotate: 0,
+  id: 'C39'
+})
+// eink.ic.boost.fet
 const Q2 = board.add(SOT_23, {
   translate: pt(3.115, 0.906), rotate: 0,
   id: 'Q2'
 })
-// eink.boost_ind
-const L2 = board.add(L_0805_2012Metric, {
-  translate: pt(2.979, 1.223), rotate: 0,
+// eink.ic.boost.inductor
+const L2 = board.add(L_1210_3225Metric, {
+  translate: pt(3.129, 1.075), rotate: 0,
   id: 'L2'
 })
-// eink.boost_res
+// eink.ic.boost.sense
 const R13 = board.add(R_0603_1608Metric, {
-  translate: pt(3.146, 1.219), rotate: 0,
+  translate: pt(2.658, 1.452), rotate: 0,
   id: 'R13'
 })
-// eink.boot_cap
-const C33 = board.add(C_0805_2012Metric, {
-  translate: pt(2.804, 1.228), rotate: 0,
-  id: 'C33'
-})
-// eink.vdd_cap0.cap
-const C34 = board.add(C_0603_1608Metric, {
-  translate: pt(2.346, 1.348), rotate: 0,
-  id: 'C34'
-})
-// eink.vdd_cap1.cap
-const C35 = board.add(C_0603_1608Metric, {
-  translate: pt(2.502, 1.348), rotate: 0,
-  id: 'C35'
-})
-// eink.vslr_cap
-const C36 = board.add(C_0603_1608Metric, {
-  translate: pt(2.658, 1.348), rotate: 0,
-  id: 'C36'
-})
-// eink.vdhr_cap
-const C37 = board.add(C_0603_1608Metric, {
-  translate: pt(2.813, 1.348), rotate: 0,
-  id: 'C37'
-})
-// eink.vddd_cap
-const C38 = board.add(C_0603_1608Metric, {
-  translate: pt(2.969, 1.348), rotate: 0,
-  id: 'C38'
-})
-// eink.vdh_cap
-const C39 = board.add(C_0603_1608Metric, {
-  translate: pt(3.125, 1.348), rotate: 0,
-  id: 'C39'
-})
-// eink.vgh_cap
-const C40 = board.add(C_0603_1608Metric, {
-  translate: pt(2.346, 1.445), rotate: 0,
+// eink.ic.boost.in_cap.cap
+const C40 = board.add(C_0805_2012Metric, {
+  translate: pt(2.874, 1.228), rotate: 0,
   id: 'C40'
 })
-// eink.vdl_cap
-const C41 = board.add(C_0603_1608Metric, {
-  translate: pt(2.502, 1.445), rotate: 0,
-  id: 'C41'
-})
-// eink.vgl_cap
-const C42 = board.add(C_0603_1608Metric, {
-  translate: pt(2.658, 1.445), rotate: 0,
-  id: 'C42'
-})
-// eink.vcom_cap
-const C43 = board.add(C_0603_1608Metric, {
-  translate: pt(2.813, 1.445), rotate: 0,
-  id: 'C43'
-})
-// eink.boost_dio
-const D3 = board.add(D_SOD_123, {
-  translate: pt(3.132, 1.058), rotate: 0,
+// eink.ic.boost.diode
+const D3 = board.add(D_SOD_323, {
+  translate: pt(2.524, 1.344), rotate: 0,
   id: 'D3'
 })
-// eink.vgl_dio
-const D4 = board.add(D_SOD_123, {
-  translate: pt(2.380, 1.235), rotate: 0,
+// eink.ic.boost.boot_neg_diode
+const D4 = board.add(D_SOD_323, {
+  translate: pt(2.690, 1.344), rotate: 0,
   id: 'D4'
 })
-// eink.boot_dio
-const D5 = board.add(D_SOD_123, {
-  translate: pt(2.605, 1.235), rotate: 0,
+// eink.ic.boost.boot_gnd_diode
+const D5 = board.add(D_SOD_323, {
+  translate: pt(2.856, 1.344), rotate: 0,
   id: 'D5'
 })
+// eink.ic.boost.boot_cap
+const C41 = board.add(C_0805_2012Metric, {
+  translate: pt(3.047, 1.228), rotate: 0,
+  id: 'C41'
+})
+// eink.ic.boost.out_cap.cap
+const C42 = board.add(C_0805_2012Metric, {
+  translate: pt(3.220, 1.228), rotate: 0,
+  id: 'C42'
+})
+// eink.ic.boost.neg_out_cap.cap
+const C43 = board.add(C_0805_2012Metric, {
+  translate: pt(2.354, 1.345), rotate: 0,
+  id: 'C43'
+})
+// eink.ic.gate_pdr
+const R14 = board.add(R_0603_1608Metric, {
+  translate: pt(2.813, 1.452), rotate: 0,
+  id: 'R14'
+})
 // ext
-const U12 = board.add(PinHeader_1x06_P2_54mm_Vertical, {
-  translate: pt(3.414, 1.410), rotate: 0,
-  id: 'U12'
+const U11 = board.add(PinHeader_1x06_P2_54mm_Vertical, {
+  translate: pt(3.476, 1.410), rotate: 0,
+  id: 'U11'
 })
 // rgb1.package
 const D6 = board.add(LED_LiteOn_LTST_C19HE1WT, {
@@ -426,19 +431,19 @@ const D6 = board.add(LED_LiteOn_LTST_C19HE1WT, {
   id: 'D6'
 })
 // rgb1.red_res
-const R14 = board.add(R_0603_1608Metric, {
-  translate: pt(3.397, 1.731), rotate: 0,
-  id: 'R14'
-})
-// rgb1.green_res
 const R15 = board.add(R_0603_1608Metric, {
-  translate: pt(3.275, 1.881), rotate: 0,
+  translate: pt(3.397, 1.731), rotate: 0,
   id: 'R15'
 })
-// rgb1.blue_res
+// rgb1.green_res
 const R16 = board.add(R_0603_1608Metric, {
-  translate: pt(3.431, 1.881), rotate: 0,
+  translate: pt(3.275, 1.881), rotate: 0,
   id: 'R16'
+})
+// rgb1.blue_res
+const R17 = board.add(R_0603_1608Metric, {
+  translate: pt(3.431, 1.881), rotate: 0,
+  id: 'R17'
 })
 // rgb2.package
 const D7 = board.add(LED_LiteOn_LTST_C19HE1WT, {
@@ -446,19 +451,19 @@ const D7 = board.add(LED_LiteOn_LTST_C19HE1WT, {
   id: 'D7'
 })
 // rgb2.red_res
-const R17 = board.add(R_0603_1608Metric, {
-  translate: pt(0.180, 2.385), rotate: 0,
-  id: 'R17'
-})
-// rgb2.green_res
 const R18 = board.add(R_0603_1608Metric, {
-  translate: pt(0.058, 2.535), rotate: 0,
+  translate: pt(0.180, 2.385), rotate: 0,
   id: 'R18'
 })
-// rgb2.blue_res
+// rgb2.green_res
 const R19 = board.add(R_0603_1608Metric, {
-  translate: pt(0.214, 2.535), rotate: 0,
+  translate: pt(0.058, 2.535), rotate: 0,
   id: 'R19'
+})
+// rgb2.blue_res
+const R20 = board.add(R_0603_1608Metric, {
+  translate: pt(0.214, 2.535), rotate: 0,
+  id: 'R20'
 })
 // rgb3.package
 const D8 = board.add(LED_LiteOn_LTST_C19HE1WT, {
@@ -466,19 +471,19 @@ const D8 = board.add(LED_LiteOn_LTST_C19HE1WT, {
   id: 'D8'
 })
 // rgb3.red_res
-const R20 = board.add(R_0603_1608Metric, {
-  translate: pt(0.571, 2.385), rotate: 0,
-  id: 'R20'
-})
-// rgb3.green_res
 const R21 = board.add(R_0603_1608Metric, {
-  translate: pt(0.449, 2.535), rotate: 0,
+  translate: pt(0.571, 2.385), rotate: 0,
   id: 'R21'
 })
-// rgb3.blue_res
+// rgb3.green_res
 const R22 = board.add(R_0603_1608Metric, {
-  translate: pt(0.605, 2.535), rotate: 0,
+  translate: pt(0.449, 2.535), rotate: 0,
   id: 'R22'
+})
+// rgb3.blue_res
+const R23 = board.add(R_0603_1608Metric, {
+  translate: pt(0.605, 2.535), rotate: 0,
+  id: 'R23'
 })
 // sw1.package
 const SW1 = board.add(SW_Push_SPST_NO_Alps_SKRK, {
@@ -486,9 +491,9 @@ const SW1 = board.add(SW_Push_SPST_NO_Alps_SKRK, {
   id: 'SW1'
 })
 // sw1_pull.res
-const R23 = board.add(R_0603_1608Metric, {
+const R24 = board.add(R_0603_1608Metric, {
   translate: pt(2.956, 2.385), rotate: 0,
-  id: 'R23'
+  id: 'R24'
 })
 // sw2.package
 const SW2 = board.add(SW_Push_SPST_NO_Alps_SKRK, {
@@ -496,46 +501,46 @@ const SW2 = board.add(SW_Push_SPST_NO_Alps_SKRK, {
   id: 'SW2'
 })
 // sw2_pull.res
-const R24 = board.add(R_0603_1608Metric, {
-  translate: pt(3.191, 2.385), rotate: 0,
-  id: 'R24'
-})
-// v12sense.div.top_res
 const R25 = board.add(R_0603_1608Metric, {
-  translate: pt(1.348, 2.385), rotate: 0,
+  translate: pt(3.191, 2.385), rotate: 0,
   id: 'R25'
 })
-// v12sense.div.bottom_res
+// v12sense.div.top_res
 const R26 = board.add(R_0603_1608Metric, {
-  translate: pt(1.348, 2.482), rotate: 0,
+  translate: pt(1.348, 2.385), rotate: 0,
   id: 'R26'
 })
-// v5sense.div.top_res
+// v12sense.div.bottom_res
 const R27 = board.add(R_0603_1608Metric, {
-  translate: pt(1.583, 2.385), rotate: 0,
+  translate: pt(1.348, 2.482), rotate: 0,
   id: 'R27'
 })
-// v5sense.div.bottom_res
+// v5sense.div.top_res
 const R28 = board.add(R_0603_1608Metric, {
-  translate: pt(1.583, 2.482), rotate: 0,
+  translate: pt(1.583, 2.385), rotate: 0,
   id: 'R28'
 })
-// vscsense.div.top_res
+// v5sense.div.bottom_res
 const R29 = board.add(R_0603_1608Metric, {
-  translate: pt(1.818, 2.385), rotate: 0,
+  translate: pt(1.583, 2.482), rotate: 0,
   id: 'R29'
 })
-// vscsense.div.bottom_res
+// vscsense.div.top_res
 const R30 = board.add(R_0603_1608Metric, {
-  translate: pt(1.818, 2.482), rotate: 0,
+  translate: pt(1.818, 2.385), rotate: 0,
   id: 'R30'
+})
+// vscsense.div.bottom_res
+const R31 = board.add(R_0603_1608Metric, {
+  translate: pt(1.818, 2.482), rotate: 0,
+  id: 'R31'
 })
 
 board.setNetlist([
-  {name: "gnd", pads: [["J1", "1"], ["J1", "3"], ["J2", "A1"], ["J2", "A12"], ["J2", "B1"], ["J2", "B12"], ["J2", "S1"], ["R1", "1"], ["R2", "1"], ["U1", "2"], ["U2", "1"], ["R4", "2"], ["C1", "2"], ["C3", "2"], ["C4", "2"], ["R7", "2"], ["U3", "2"], ["C5", "2"], ["C6", "2"], ["U4", "1"], ["C7", "2"], ["C8", "2"], ["J3", "3"], ["J3", "5"], ["J3", "9"], ["U5", "14"], ["U5", "21"], ["U5", "26"], ["U5", "27"], ["U5", "55"], ["U5", "56"], ["R9", "1"], ["C9", "2"], ["C10", "2"], ["C11", "2"], ["C12", "2"], ["C13", "2"], ["C14", "2"], ["C15", "2"], ["C16", "2"], ["C17", "2"], ["C18", "2"], ["C19", "2"], ["C20", "2"], ["X1", "2"], ["X1", "4"], ["C21", "2"], ["C22", "2"], ["U8", "4"], ["C25", "2"], ["J5", "3"], ["J5", "6"], ["J5", "SH"], ["U9", "10"], ["U9", "14"], ["C27", "2"], ["C28", "2"], ["R11", "2"], ["U10", "5"], ["U10", "8"], ["C29", "2"], ["C30", "2"], ["C31", "2"], ["C32", "2"], ["U11", "17"], ["U11", "8"], ["R13", "2"], ["C34", "2"], ["C35", "2"], ["C36", "2"], ["C37", "2"], ["C38", "2"], ["C39", "2"], ["C40", "2"], ["C41", "2"], ["C42", "2"], ["C43", "2"], ["D5", "1"], ["U12", "3"], ["SW1", "2"], ["SW2", "2"], ["R26", "2"], ["R28", "2"], ["R30", "2"]]},
-  {name: "vin", pads: [["J1", "2"], ["U2", "3"], ["U2", "5"], ["C1", "1"], ["C3", "1"], ["R25", "1"]]},
-  {name: "v5", pads: [["J2", "A4"], ["J2", "A9"], ["J2", "B4"], ["J2", "B9"], ["R3", "1"], ["L1", "2"], ["C4", "1"], ["R5", "1"], ["D1", "1"], ["R6", "1"], ["U3", "5"], ["U3", "6"], ["C5", "1"], ["U4", "3"], ["C7", "1"], ["R27", "1"]]},
-  {name: "v3v3", pads: [["U4", "2"], ["C8", "1"], ["J3", "1"], ["U5", "13"], ["U5", "18"], ["U5", "20"], ["U5", "22"], ["U5", "37"], ["U5", "41"], ["U5", "52"], ["U5", "57"], ["R8", "1"], ["C9", "1"], ["C10", "1"], ["C11", "1"], ["C12", "1"], ["C13", "1"], ["C14", "1"], ["C15", "1"], ["C16", "1"], ["C17", "1"], ["C18", "1"], ["C19", "1"], ["C20", "1"], ["U8", "1"], ["C25", "1"], ["J5", "4"], ["R10", "1"], ["U9", "1"], ["C27", "1"], ["C28", "1"], ["R12", "1"], ["U11", "10"], ["U11", "9"], ["L2", "1"], ["C34", "1"], ["C35", "1"], ["U12", "2"], ["D6", "2"], ["D7", "2"], ["D8", "2"], ["R23", "1"], ["R24", "1"]]},
+  {name: "gnd", pads: [["J1", "1"], ["J1", "3"], ["J2", "A1"], ["J2", "A12"], ["J2", "B1"], ["J2", "B12"], ["J2", "S1"], ["R1", "1"], ["R2", "1"], ["U1", "2"], ["U2", "1"], ["R4", "2"], ["C1", "2"], ["C3", "2"], ["C4", "2"], ["R7", "2"], ["U3", "2"], ["C5", "2"], ["C6", "2"], ["U4", "1"], ["C7", "2"], ["C8", "2"], ["J3", "3"], ["J3", "5"], ["J3", "9"], ["U5", "14"], ["U5", "21"], ["U5", "26"], ["U5", "27"], ["U5", "55"], ["U5", "56"], ["R9", "1"], ["C9", "2"], ["C10", "2"], ["C11", "2"], ["C12", "2"], ["C13", "2"], ["C14", "2"], ["C15", "2"], ["C16", "2"], ["C17", "2"], ["C18", "2"], ["C19", "2"], ["C20", "2"], ["X1", "2"], ["X1", "4"], ["C21", "2"], ["C22", "2"], ["U8", "4"], ["C25", "2"], ["J5", "3"], ["J5", "6"], ["J5", "SH"], ["U9", "10"], ["U9", "14"], ["C27", "2"], ["C28", "2"], ["R11", "2"], ["U10", "5"], ["U10", "8"], ["C29", "2"], ["C30", "2"], ["C31", "2"], ["C32", "2"], ["J6", "17"], ["J6", "8"], ["C33", "2"], ["C34", "2"], ["C35", "2"], ["C36", "2"], ["C37", "2"], ["C38", "2"], ["C39", "2"], ["R13", "2"], ["C40", "2"], ["D5", "1"], ["C42", "2"], ["C43", "2"], ["R14", "2"], ["U11", "3"], ["SW1", "2"], ["SW2", "2"], ["R27", "2"], ["R29", "2"], ["R31", "2"]]},
+  {name: "vin", pads: [["J1", "2"], ["U2", "3"], ["U2", "5"], ["C1", "1"], ["C3", "1"], ["R26", "1"]]},
+  {name: "v5", pads: [["J2", "A4"], ["J2", "A9"], ["J2", "B4"], ["J2", "B9"], ["R3", "1"], ["L1", "2"], ["C4", "1"], ["R5", "1"], ["D1", "1"], ["R6", "1"], ["U3", "5"], ["U3", "6"], ["C5", "1"], ["U4", "3"], ["C7", "1"], ["R28", "1"]]},
+  {name: "v3v3", pads: [["U4", "2"], ["C8", "1"], ["J3", "1"], ["U5", "13"], ["U5", "18"], ["U5", "20"], ["U5", "22"], ["U5", "37"], ["U5", "41"], ["U5", "52"], ["U5", "57"], ["R8", "1"], ["C9", "1"], ["C10", "1"], ["C11", "1"], ["C12", "1"], ["C13", "1"], ["C14", "1"], ["C15", "1"], ["C16", "1"], ["C17", "1"], ["C18", "1"], ["C19", "1"], ["C20", "1"], ["U8", "1"], ["C25", "1"], ["J5", "4"], ["R10", "1"], ["U9", "1"], ["C27", "1"], ["C28", "1"], ["R12", "1"], ["J6", "15"], ["J6", "16"], ["C33", "1"], ["L2", "1"], ["C40", "1"], ["U11", "2"], ["D6", "2"], ["D7", "2"], ["D8", "2"], ["R24", "1"], ["R25", "1"]]},
   {name: "usb_conn.usb.dp", pads: [["J2", "A6"], ["J2", "B6"], ["U5", "47"]]},
   {name: "usb_conn.usb.dm", pads: [["J2", "A7"], ["J2", "B7"], ["U5", "48"]]},
   {name: "usb_conn.conn.cc.cc1", pads: [["J2", "A5"], ["R1", "2"]]},
@@ -544,19 +549,19 @@ board.setNetlist([
   {name: "pwr_5v.ic.sw", pads: [["U2", "2"], ["C2", "2"], ["L1", "1"]]},
   {name: "pwr_5v.ic.fb", pads: [["U2", "4"], ["R3", "2"], ["R4", "1"]]},
   {name: "pwr_5v.ic.vbst", pads: [["U2", "6"], ["C2", "1"]]},
-  {name: "buffer.sc_out", pads: [["Q1", "2"], ["D1", "2"], ["C6", "1"], ["R29", "1"]]},
+  {name: "buffer.sc_out", pads: [["Q1", "2"], ["D1", "2"], ["C6", "1"], ["R30", "1"]]},
   {name: "buffer.sense.b", pads: [["R5", "2"], ["Q1", "3"], ["U3", "4"]]},
   {name: "buffer.fet.gate", pads: [["Q1", "1"], ["U3", "1"]]},
   {name: "buffer.set.output", pads: [["R6", "2"], ["R7", "1"], ["U3", "3"]]},
-  {name: "mcu.gpio.rgb1_red", pads: [["U5", "31"], ["R14", "2"]]},
-  {name: "mcu.gpio.rgb1_green", pads: [["U5", "32"], ["R15", "2"]]},
-  {name: "mcu.gpio.rgb1_blue", pads: [["U5", "30"], ["R16", "2"]]},
-  {name: "mcu.gpio.rgb2_red", pads: [["U5", "28"], ["R17", "2"]]},
-  {name: "mcu.gpio.rgb2_green", pads: [["U5", "29"], ["R18", "2"]]},
-  {name: "mcu.gpio.rgb2_blue", pads: [["U5", "25"], ["R19", "2"]]},
-  {name: "mcu.gpio.rgb3_red", pads: [["U5", "46"], ["R20", "2"]]},
-  {name: "mcu.gpio.rgb3_green", pads: [["U5", "39"], ["R21", "2"]]},
-  {name: "mcu.gpio.rgb3_blue", pads: [["U5", "34"], ["R22", "2"]]},
+  {name: "mcu.gpio.rgb1_red", pads: [["U5", "31"], ["R15", "2"]]},
+  {name: "mcu.gpio.rgb1_green", pads: [["U5", "32"], ["R16", "2"]]},
+  {name: "mcu.gpio.rgb1_blue", pads: [["U5", "30"], ["R17", "2"]]},
+  {name: "mcu.gpio.rgb2_red", pads: [["U5", "28"], ["R18", "2"]]},
+  {name: "mcu.gpio.rgb2_green", pads: [["U5", "29"], ["R19", "2"]]},
+  {name: "mcu.gpio.rgb2_blue", pads: [["U5", "25"], ["R20", "2"]]},
+  {name: "mcu.gpio.rgb3_red", pads: [["U5", "46"], ["R21", "2"]]},
+  {name: "mcu.gpio.rgb3_green", pads: [["U5", "39"], ["R22", "2"]]},
+  {name: "mcu.gpio.rgb3_blue", pads: [["U5", "34"], ["R23", "2"]]},
   {name: "mcu.xtal_node.xi", pads: [["U5", "36"], ["X1", "1"], ["C21", "1"]]},
   {name: "mcu.xtal_node.xo", pads: [["U5", "35"], ["X1", "3"], ["C22", "1"]]},
   {name: "mcu.swd_node.swdio", pads: [["J3", "2"], ["U5", "44"], ["R8", "2"]]},
@@ -585,48 +590,48 @@ board.setNetlist([
   {name: "xbee.rssi", pads: [["U9", "6"]]},
   {name: "xbee.associate", pads: [["U9", "15"], ["D2", "2"]]},
   {name: "xbee_assoc.package.k", pads: [["D2", "1"], ["R11", "1"]]},
-  {name: "rtc.spi.sck", pads: [["U5", "5"], ["U10", "1"], ["U11", "12"]]},
-  {name: "rtc.spi.mosi", pads: [["U5", "6"], ["U10", "2"], ["U11", "11"]]},
+  {name: "rtc.spi.sck", pads: [["U5", "5"], ["U10", "1"], ["J6", "13"]]},
+  {name: "rtc.spi.mosi", pads: [["U5", "6"], ["U10", "2"], ["J6", "14"]]},
   {name: "rtc.spi.miso", pads: [["U5", "7"], ["U10", "3"]]},
   {name: "rtc.cs", pads: [["U5", "64"], ["U10", "4"]]},
   {name: "rtc.clkout", pads: [["U10", "7"]]},
   {name: "rtc.int", pads: [["U10", "13"]]},
   {name: "rtc.ic.pwr", pads: [["U10", "16"], ["R12", "2"], ["C29", "1"], ["C30", "1"]]},
   {name: "rtc.ic.bbs", pads: [["U10", "14"], ["C32", "1"]]},
-  {name: "eink.busy", pads: [["U5", "1"], ["U11", "16"]]},
-  {name: "eink.reset", pads: [["U5", "2"], ["U11", "15"]]},
-  {name: "eink.dc", pads: [["U5", "3"], ["U11", "14"]]},
-  {name: "eink.cs", pads: [["U5", "4"], ["U11", "13"]]},
-  {name: "eink.ic.gdr", pads: [["U11", "23"], ["Q2", "1"]]},
-  {name: "eink.ic.rese", pads: [["U11", "22"], ["Q2", "2"], ["R13", "1"]]},
-  {name: "eink.ic.vslr", pads: [["U11", "21"], ["C36", "1"]]},
-  {name: "eink.ic.vdhr", pads: [["U11", "20"], ["C37", "1"]]},
-  {name: "eink.ic.vddd", pads: [["U11", "7"], ["C38", "1"]]},
-  {name: "eink.ic.vdh", pads: [["U11", "5"], ["C39", "1"]]},
-  {name: "eink.ic.vgh", pads: [["U11", "4"], ["C40", "1"], ["D3", "1"]]},
-  {name: "eink.ic.vdl", pads: [["U11", "3"], ["C41", "1"]]},
-  {name: "eink.ic.vgl", pads: [["U11", "2"], ["C42", "1"], ["D4", "2"]]},
-  {name: "eink.ic.vcom", pads: [["U11", "1"], ["C43", "1"]]},
-  {name: "eink.boost_sw.drain", pads: [["Q2", "3"], ["L2", "2"], ["C33", "1"], ["D3", "2"]]},
-  {name: "eink.boot_cap.neg", pads: [["C33", "2"], ["D4", "1"], ["D5", "2"]]},
-  {name: "ext.data.tx", pads: [["U5", "61"], ["U12", "4"]]},
-  {name: "ext.data.rx", pads: [["U5", "60"], ["U12", "5"]]},
-  {name: "ext.cts", pads: [["U5", "62"], ["U12", "1"]]},
-  {name: "ext.rts", pads: [["U5", "59"], ["U12", "6"]]},
-  {name: "rgb1.package.k_red", pads: [["D6", "3"], ["R14", "1"]]},
-  {name: "rgb1.package.k_green", pads: [["D6", "4"], ["R15", "1"]]},
-  {name: "rgb1.package.k_blue", pads: [["D6", "1"], ["R16", "1"]]},
-  {name: "rgb2.package.k_red", pads: [["D7", "3"], ["R17", "1"]]},
-  {name: "rgb2.package.k_green", pads: [["D7", "4"], ["R18", "1"]]},
-  {name: "rgb2.package.k_blue", pads: [["D7", "1"], ["R19", "1"]]},
-  {name: "rgb3.package.k_red", pads: [["D8", "3"], ["R20", "1"]]},
-  {name: "rgb3.package.k_green", pads: [["D8", "4"], ["R21", "1"]]},
-  {name: "rgb3.package.k_blue", pads: [["D8", "1"], ["R22", "1"]]},
-  {name: "sw1.out", pads: [["U5", "33"], ["SW1", "1"], ["R23", "2"]]},
-  {name: "sw2.out", pads: [["U5", "23"], ["SW2", "1"], ["R24", "2"]]},
-  {name: "v12sense.output", pads: [["U5", "10"], ["R25", "2"], ["R26", "1"]]},
-  {name: "v5sense.output", pads: [["U5", "9"], ["R27", "2"], ["R28", "1"]]},
-  {name: "vscsense.output", pads: [["U5", "8"], ["R29", "2"], ["R30", "1"]]}
+  {name: "eink.busy", pads: [["U5", "1"], ["J6", "9"]]},
+  {name: "eink.reset", pads: [["U5", "2"], ["J6", "10"]]},
+  {name: "eink.dc", pads: [["U5", "3"], ["J6", "11"]]},
+  {name: "eink.cs", pads: [["U5", "4"], ["J6", "12"]]},
+  {name: "eink.ic.device.vdd1v8", pads: [["J6", "18"], ["C34", "1"]]},
+  {name: "eink.ic.device.gdr", pads: [["J6", "2"], ["Q2", "1"], ["R14", "1"]]},
+  {name: "eink.ic.device.rese", pads: [["J6", "3"], ["Q2", "2"], ["R13", "1"]]},
+  {name: "eink.ic.device.vgl", pads: [["J6", "4"], ["C35", "1"]]},
+  {name: "eink.ic.device.vgh", pads: [["J6", "5"], ["C36", "1"]]},
+  {name: "eink.ic.device.vsh", pads: [["J6", "20"], ["C37", "1"]]},
+  {name: "eink.ic.device.vsl", pads: [["J6", "22"], ["C38", "1"]]},
+  {name: "eink.ic.device.prevgh", pads: [["J6", "21"], ["D3", "1"], ["C42", "1"]]},
+  {name: "eink.ic.device.prevgl", pads: [["J6", "23"], ["D4", "2"], ["C43", "1"]]},
+  {name: "eink.ic.device.vcom", pads: [["J6", "24"], ["C39", "1"]]},
+  {name: "eink.ic.boost.fet.drain", pads: [["Q2", "3"], ["L2", "2"], ["D3", "2"], ["C41", "1"]]},
+  {name: "eink.ic.boost.boot_neg_diode.cathode", pads: [["D4", "1"], ["D5", "2"], ["C41", "2"]]},
+  {name: "ext.data.tx", pads: [["U5", "61"], ["U11", "4"]]},
+  {name: "ext.data.rx", pads: [["U5", "60"], ["U11", "5"]]},
+  {name: "ext.cts", pads: [["U5", "62"], ["U11", "1"]]},
+  {name: "ext.rts", pads: [["U5", "59"], ["U11", "6"]]},
+  {name: "rgb1.package.k_red", pads: [["D6", "3"], ["R15", "1"]]},
+  {name: "rgb1.package.k_green", pads: [["D6", "4"], ["R16", "1"]]},
+  {name: "rgb1.package.k_blue", pads: [["D6", "1"], ["R17", "1"]]},
+  {name: "rgb2.package.k_red", pads: [["D7", "3"], ["R18", "1"]]},
+  {name: "rgb2.package.k_green", pads: [["D7", "4"], ["R19", "1"]]},
+  {name: "rgb2.package.k_blue", pads: [["D7", "1"], ["R20", "1"]]},
+  {name: "rgb3.package.k_red", pads: [["D8", "3"], ["R21", "1"]]},
+  {name: "rgb3.package.k_green", pads: [["D8", "4"], ["R22", "1"]]},
+  {name: "rgb3.package.k_blue", pads: [["D8", "1"], ["R23", "1"]]},
+  {name: "sw1.out", pads: [["U5", "33"], ["SW1", "1"], ["R24", "2"]]},
+  {name: "sw2.out", pads: [["U5", "23"], ["SW2", "1"], ["R25", "2"]]},
+  {name: "v12sense.output", pads: [["U5", "10"], ["R26", "2"], ["R27", "1"]]},
+  {name: "v5sense.output", pads: [["U5", "9"], ["R28", "2"], ["R29", "1"]]},
+  {name: "vscsense.output", pads: [["U5", "8"], ["R30", "2"], ["R31", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);

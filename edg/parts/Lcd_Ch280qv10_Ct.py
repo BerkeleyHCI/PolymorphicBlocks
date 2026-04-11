@@ -64,7 +64,8 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
             )
         )
 
-        self.ledk = self.Export(self.conn.pins.request("1"))
+        self.ledk = self.Port(Ground())
+        self.connect(self.ledk.net, self.conn.pins.request("1"))
         self.leda1 = self.Export(self.conn.pins.request("2"))
         self.leda2 = self.Export(self.conn.pins.request("3"))
         self.leda3 = self.Export(self.conn.pins.request("4"))
@@ -147,7 +148,7 @@ class Ch280qv10_Ct(Lcd, Resettable, Block):
         self.connect(self.spi.mosi, self.device.sdi)
         self.connect(self.spi.miso, self.device.sdo)
 
-        self.connect(self.device.ledk.adapt_to(Ground()), self.gnd)
+        self.connect(self.device.ledk, self.gnd)
         self.led_res = ElementDict[Resistor]()
         for i, leda in [
             ("1", self.device.leda1),
