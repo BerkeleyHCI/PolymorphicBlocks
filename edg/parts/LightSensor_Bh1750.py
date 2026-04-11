@@ -7,14 +7,16 @@ from .JlcPart import JlcPart
 class Bh1750_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
+        self.gnd = self.Port(Ground())
         self.vcc = self.Port(
             VoltageSink(
                 voltage_limits=(2.4, 3.6) * Volt,
                 current_draw=(0.01 * uAmp, 190 * uAmp),  # typ powerdown to max supply current
             )
         )
-        self.dvi = self.Port(Passive())  # some kind of reset pin
-        self.gnd = self.Port(Ground())
+        self.dvi = self.Port(
+            DigitalSink.from_supply(self.gnd, self.vcc, input_threshold_abs=(0.4, 0.4) * Volt)
+        )  # reset pin
 
         dio_model = DigitalBidir.from_supply(self.gnd, self.vcc, input_threshold_factor=(0.3, 0.7))
         self.i2c = self.Port(I2cTarget(dio_model, [0x23]))
@@ -40,7 +42,7 @@ class Bh1750_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Bh1750(LightSensor, Block):
+class Bh1750(Resettable, LightSensor, GeneratorBlock):
     """16-bit ambient light sensor, 1-65535 lx"""
 
     def __init__(self) -> None:
@@ -50,13 +52,17 @@ class Bh1750(LightSensor, Block):
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c)
 
+
     @override
-    def contents(self) -> None:
-        super().contents()  # capacitors from shuttle board example
+    def generate(self) -> None:
+        super().generate()
+
         self.vcc_cap = self.Block(DecouplingCapacitor(100 * nFarad(tol=0.2))).connected(self.gnd, self.ic.vcc)
-        self.dvi_res = self.Block(Resistor(1 * kOhm(tol=0.05)))
-        self.connect(self.dvi_res.a.adapt_to(VoltageSink()), self.pwr)
-        self.connect(self.dvi_res.b, self.ic.dvi)
-        self.dvi_cap = self.Block(Capacitor(1 * uFarad(tol=0.2), self.pwr.link().voltage))
-        self.connect(self.dvi_cap.pos, self.ic.dvi)
-        self.connect(self.dvi_cap.neg.adapt_to(Ground()), self.gnd)
+
+        if self.get(self.reset.is_connected()):
+            self.connect(self.reset, self.ic.dvi)
+            self.dvi_cap = self.Block(DigitalCapacitor(0.1 * uFarad(tol=0.05))).connected(gnd=self.gnd, io=self.ic.dvi)
+        else:
+            self.dvi_pull = self.Block(PullupDelayRc(1 * kOhm(tol=0.05), 1 * mSecond(tol=0.2))).connected(
+                gnd=self.gnd, pwr=self.pwr, io=self.ic.dvi
+            )

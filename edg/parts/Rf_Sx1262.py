@@ -251,6 +251,22 @@ class Sx1262_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
+class DirectCrystal(OscillatorReference):
+    """Direct crystal, where the capacitors are integrated into the driver."""
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+
+        self.package = self.Block(Crystal(self.frequency))
+
+        self.gnd.init_from(Ground())
+        self.crystal.init_from(CrystalPort(self.package.actual_frequency))
+        self.connect(self.crystal.xtal_in, self.package.xtal_in)
+        self.connect(self.crystal.xtal_out, self.package.xtal_out)
+        self.connect(self.gnd.net, self.package.gnd)
+
+
 class Sx1262(Resettable, DiscreteRfWarning, Block):
     """Sub-GHZ (150-960MHz) RF transceiver with LoRa support, with discrete RF frontend and parameterized by frequency.
     Up to 62.5kb/s in LoRa mode and 300kb/s in FSK mode.
@@ -277,7 +293,7 @@ class Sx1262(Resettable, DiscreteRfWarning, Block):
         self.connect(self.ic.vbat_io, self.pwr)
 
         with self.implicit_connect(ImplicitConnect(self.gnd, [Common])) as imp:
-            self.xtal = imp.Block(Crystal(32 * MHertz(tol=30e-6)))  # 30ppm for LoRaWAN systems
+            self.xtal = imp.Block(DirectCrystal(32 * MHertz(tol=30e-6)))  # 30ppm for LoRaWAN systems
             self.connect(self.xtal.crystal, self.ic.xtal)
 
             self.vreg_cap = imp.Block(DecouplingCapacitor(470 * nFarad(tol=0.2))).connected(pwr=self.ic.vreg)

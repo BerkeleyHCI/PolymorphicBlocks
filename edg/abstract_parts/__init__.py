@@ -70,6 +70,7 @@ from .AbstractCapacitor import (
     DecouplingCapacitor,
     AnalogCapacitor,
     AnalogSeriesCapacitor,
+    DigitalCapacitor,
     CombinedCapacitor,
 )
 from .AbstractInductor import Inductor, TableInductor, SeriesPowerInductor

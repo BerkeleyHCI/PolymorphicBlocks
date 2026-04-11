@@ -353,7 +353,7 @@
   (footprint "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm")
   (property (name "Sheetname") (value "lora"))
   (property (name "Sheetfile") (value "edg.parts.Rf_Sx1262.Sx1262"))
-  (property (name "edg_path") (value "lora.xtal"))
+  (property (name "edg_path") (value "lora.xtal.package"))
   (property (name "edg_short_path") (value "lora.xtal"))
   (property (name "edg_refdes") (value "LX1"))
   (property (name "edg_part") (value "X322532MOB4SI (Yangxing Tech)"))

@@ -145,7 +145,7 @@ const LU4 = board.add(QFN_24_1EP_4x4mm_P0_5mm_EP2_6x2_6mm, {
   translate: pt(0.480, 1.843), rotate: 0,
   id: 'LU4'
 })
-// lora.xtal
+// lora.xtal.package
 const LX1 = board.add(Crystal_SMD_3225_4Pin_3_2x2_5mm, {
   translate: pt(0.705, 1.807), rotate: 0,
   id: 'LX1'

@@ -180,12 +180,12 @@ const CC8 = board.add(C_0603_1608Metric, {
   translate: pt(0.876, 2.374), rotate: 0,
   id: 'CC8'
 })
-// als.dvi_res
+// als.dvi_pull.rc.r
 const CR7 = board.add(R_0603_1608Metric, {
   translate: pt(0.698, 2.496), rotate: 0,
   id: 'CR7'
 })
-// als.dvi_cap
+// als.dvi_pull.rc.c
 const CC9 = board.add(C_0603_1608Metric, {
   translate: pt(0.854, 2.496), rotate: 0,
   id: 'CC9'

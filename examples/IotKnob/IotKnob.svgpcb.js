@@ -188,12 +188,12 @@ const KC6 = board.add(C_0603_1608Metric, {
   translate: pt(5.009, 3.437), rotate: 0,
   id: 'KC6'
 })
-// als.dvi_res
+// als.dvi_pull.rc.r
 const KR8 = board.add(R_0603_1608Metric, {
   translate: pt(4.831, 3.559), rotate: 0,
   id: 'KR8'
 })
-// als.dvi_cap
+// als.dvi_pull.rc.c
 const KC7 = board.add(C_0603_1608Metric, {
   translate: pt(4.987, 3.559), rotate: 0,
   id: 'KC7'
