@@ -503,7 +503,7 @@ class Hx711(KiCadSchematicBlock):
         super().__init__()
 
         self.pwr = self.Port(VoltageSink.empty(), [Power])
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
         self.dout = self.Port(DigitalSource.empty())
         self.sck = self.Port(DigitalSink.empty())
