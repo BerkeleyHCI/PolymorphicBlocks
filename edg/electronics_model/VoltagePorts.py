@@ -227,16 +227,15 @@ class VoltageSink(VoltageBase):
         self.reverse_current_limits: RangeExpr = self.Parameter(RangeExpr(reverse_current_limits))
 
 
-class VoltageSinkAdapterGroundReference(CircuitPortAdapter["GroundReference"]):
+class VoltageSinkAdapterGroundReference(PortAdapter["GroundReference"]):
     def __init__(self, current_draw: RangeLike):
         super().__init__()
         from .GroundPort import GroundReference
 
-        self.src = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL * Volt, current_draw=current_draw))
-        self.dst = self.Port(
-            GroundReference(
-                voltage_out=self.src.link().voltage,
-            )
+        self.src = self.Port(VoltageSink.empty())
+        self.dst = self.Port(GroundReference(voltage_out=self.src.link().voltage))
+        self.connect(
+            self.src, self.dst.net.adapt_to(VoltageSink(voltage_limits=RangeExpr.ALL * Volt, current_draw=current_draw))
         )
 
 
