@@ -94,7 +94,7 @@ class DigitalSwitch(HumanInterface):
     def __init__(self) -> None:
         super().__init__()
 
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.out = self.Port(DigitalSource.empty(), [Output])
 
     @override
@@ -103,7 +103,7 @@ class DigitalSwitch(HumanInterface):
         self.package = self.Block(Switch(current=self.out.link().current_drawn, voltage=self.out.link().voltage))
 
         self.connect(self.out, self.package.sw.adapt_to(DigitalSource.low_from_supply(self.gnd)))
-        self.connect(self.gnd, self.package.com.adapt_to(Ground()))
+        self.connect(self.gnd.net, self.package.com)
 
 
 @abstract_block_default(lambda: DigitalWrapperRotaryEncoder)
@@ -134,7 +134,8 @@ class DigitalWrapperRotaryEncoder(DigitalRotaryEncoder):
         dio_model = DigitalSource.low_from_supply(self.gnd)
         self.connect(self.a, self.package.a.adapt_to(dio_model))
         self.connect(self.b, self.package.b.adapt_to(dio_model))
-        self.connect(self.gnd, self.package.com.adapt_to(Ground()))
+        self.gnd.init_from(Ground())
+        self.connect(self.gnd.net, self.package.com)
 
 
 @abstract_block_default(lambda: DigitalWrapperRotaryEncoderWithSwitch)
@@ -194,7 +195,8 @@ class DigitalWrapperDirectionSwitch(DigitalDirectionSwitch):
         self.connect(self.b, self.package.b.adapt_to(dio_model))
         self.connect(self.c, self.package.c.adapt_to(dio_model))
         self.connect(self.d, self.package.d.adapt_to(dio_model))
-        self.connect(self.gnd, self.package.com.adapt_to(Ground()))
+        self.gnd.init_from(Ground())
+        self.connect(self.gnd.net, self.package.com)
 
 
 @abstract_block_default(lambda: DigitalWrapperDirectionSwitchWithCenter)

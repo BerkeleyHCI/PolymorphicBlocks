@@ -13,7 +13,8 @@ class Waveshare_Epd_Device(InternalSubcircuit, Block):
 
         self.conn = self.Block(Fpc050Bottom(length=24))
 
-        self.vss = self.Export(self.conn.pins.request("17").adapt_to(Ground()), [Common])
+        self.vss = self.Port(Ground(), [Common])
+        self.connect(self.vss.net, self.conn.pins.request("17"))
         self.vdd = self.Export(
             self.conn.pins.request("16").adapt_to(
                 VoltageSink(

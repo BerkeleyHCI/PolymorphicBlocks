@@ -202,7 +202,7 @@ class JacdacDataInterface(JacdacSubcircuit, Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(VoltageSink.empty(), [Power])
 
         self.signal = self.Port(DigitalBidir.empty(), [Input])
@@ -233,7 +233,7 @@ class JacdacDataInterface(JacdacSubcircuit, Block):
         )
         self.connect(self.ferrite.b, self.rc.output)
         self.connect(self.rc.input, self.clamp_hi.anode, self.clamp_lo.cathode)
-        self.connect(self.gnd, self.rc.gnd.adapt_to(Ground()), self.clamp_lo.anode.adapt_to(Ground()))
+        self.connect(self.gnd.net, self.rc.gnd, self.clamp_lo.anode)
         self.connect(self.pwr, self.clamp_hi.cathode.adapt_to(VoltageSink()))
         # inner port is ideal to avoid circular parameter dependencies
         self.connect(self.signal, self.rc.input.adapt_to(DigitalBidir()))

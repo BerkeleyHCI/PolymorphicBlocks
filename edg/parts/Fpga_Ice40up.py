@@ -13,7 +13,7 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
         self.pwr = self.Port(VoltageSink.empty(), [Power])  # in practice this can power the target
-        self.gnd = self.Port(Ground.empty(), [Common])  # TODO pin at 0v
+        self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
         self.spi = self.Port(SpiController.empty())
         self.cs = self.Port(DigitalSource.empty())
         self.reset = self.Port(DigitalSource.empty())
@@ -24,10 +24,7 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
         self.conn = self.Block(PinHeader127DualShrouded(10))
         self.connect(self.pwr, self.conn.pins.request("1").adapt_to(VoltageSink()))
         self.connect(
-            self.gnd,
-            self.conn.pins.request("3").adapt_to(Ground()),
-            self.conn.pins.request("5").adapt_to(Ground()),
-            self.conn.pins.request("9").adapt_to(Ground()),
+            self.gnd.net, self.conn.pins.request("3"), self.conn.pins.request("5"), self.conn.pins.request("9")
         )
         self.connect(self.cs, self.conn.pins.request("2").adapt_to(DigitalSource()))  # swd: swdio
         self.connect(self.spi.sck, self.conn.pins.request("4").adapt_to(DigitalSource()))  # swd: swclk

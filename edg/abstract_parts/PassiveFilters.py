@@ -50,7 +50,8 @@ class PullupDelayRc(DigitalFilter, Block):
                 impedance=impedance, cutoff_freq=1 / (2 * pi * self.time_constant), voltage=self.pwr.link().voltage
             )
         )
-        self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
+        self.connect(self.gnd.net, self.rc.gnd)
         self.connect(self.pwr, self.rc.input.adapt_to(VoltageSink()))
         self.io = self.Export(self.rc.output.adapt_to(DigitalSource.pullup_from_supply(self.pwr)), [Output])
 
@@ -86,7 +87,8 @@ class AnalogLowPassRc(DigitalFilter, Block):
         self.connect(self.input.net, self.rc.input)
         self.connect(self.output.net, self.rc.output)
 
-        self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
+        self.connect(self.gnd.net, self.rc.gnd)
 
 
 class DigitalLowPassRc(DigitalFilter, Block):
@@ -112,7 +114,8 @@ class DigitalLowPassRc(DigitalFilter, Block):
             ),
         )
 
-        self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
+        self.connect(self.gnd.net, self.rc.gnd)
 
 
 class DigitalLowPassRcArray(DigitalFilter, GeneratorBlock):
@@ -167,7 +170,8 @@ class LowPassRcDac(DigitalToAnalog, Block):
         self.connect(self.input, self.rc.input.adapt_to(DigitalSink(current_draw=self.output.link().current_drawn)))
         self.connect(self.output.net, self.rc.output)
 
-        self.gnd = self.Export(self.rc.gnd.adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
+        self.connect(self.gnd.net, self.rc.gnd)
 
 
 class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock):

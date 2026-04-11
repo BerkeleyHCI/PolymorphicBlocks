@@ -228,8 +228,10 @@ class PulldownResistor(DiscreteApplication):
 
         self.res = self.Block(Resistor(resistance, 0 * Watt(tol=0)))  # TODO automatically calculate power
 
-        self.gnd = self.Export(self.res.a.adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.io = self.Export(self.res.b.adapt_to(DigitalSource.pulldown_from_supply(self.gnd)), [InOut])
+
+        self.connect(self.gnd.net, self.res.a)
 
     def connected(
         self, gnd: Optional[Port[GroundLink]] = None, io: Optional[Port[DigitalLink]] = None

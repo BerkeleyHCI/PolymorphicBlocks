@@ -10,8 +10,10 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
 
         self.conn = self.Block(Fpc050Bottom(length=24))
 
-        self.dgnd = self.Export(self.conn.pins.request("10").adapt_to(Ground()))
-        self.agnd = self.Export(self.conn.pins.request("23").adapt_to(Ground()))
+        self.dgnd = self.Port(Ground())
+        self.connect(self.dgnd.net, self.conn.pins.request("10"))
+        self.agnd = self.Port(Ground())
+        self.connect(self.agnd.net, self.conn.pins.request("23"))
         self.dovdd = self.Export(
             self.conn.pins.request("14").adapt_to(
                 VoltageSink(

@@ -367,6 +367,7 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
 
         self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
         self.gnd = self.Export(self.cap.neg.adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Export(
             self.cap.pos.adapt_to(
                 VoltageSink.from_gnd(
@@ -375,7 +376,7 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
             ),
             [Power, InOut],
         )
-
+        self.connect(self.gnd.net, self.cap.neg)
         self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
 
         # TODO there should be a way to forward the description string of the inner element
@@ -403,11 +404,11 @@ class AnalogCapacitor(DiscreteApplication, KiCadImportableBlock):
         super().__init__()
 
         self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.io = self.Port(AnalogSink(), [InOut])  # ideal open port
 
         self.assign(self.cap.voltage, self.io.link().voltage - self.gnd.link().voltage)
-        self.connect(self.cap.neg.adapt_to(Ground()), self.gnd)  # TODO refactor #114
+        self.connect(self.gnd.net, self.cap.neg)
         self.connect(self.io.net, self.cap.pos)
 
     def connected(

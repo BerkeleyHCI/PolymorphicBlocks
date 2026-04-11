@@ -59,8 +59,8 @@ class GroundTestPoint(BaseTypedTestPoint, Block):
 
     def __init__(self, *args: Any) -> None:
         super().__init__(*args)
-        self.io = self.Port(Ground.empty(), [InOut])
-        self.connect(self.io, self.tp.io.adapt_to(Ground()))
+        self.io = self.Port(Ground(), [InOut])
+        self.connect(self.io.net, self.tp.io)
 
     def connected(self, io: Port[GroundLink]) -> "GroundTestPoint":
         cast(Block, builder.get_enclosing_block()).connect(io, self.io)

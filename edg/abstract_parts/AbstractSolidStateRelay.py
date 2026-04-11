@@ -51,7 +51,7 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         super().__init__()
 
         self.signal = self.Port(DigitalSink.empty())
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
         self.pwr_in = self.Port(VoltageSink.empty())
         self.pwr_out = self.Port(VoltageSource.empty())
@@ -70,7 +70,7 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
             self.ic.leda.adapt_to(DigitalSink(current_draw=self.signal.link().voltage / self.res.actual_resistance)),
         )
         self.connect(self.res.a, self.ic.ledk)
-        self.connect(self.res.b.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd.net, self.res.b)
 
         self.connect(
             self.pwr_in,
@@ -114,7 +114,7 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         self.ic = self.Block(SolidStateRelay())
 
         self.signal = self.Port(DigitalSink.empty())
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
         self.ain = self.Port(
             AnalogSink(
@@ -152,7 +152,7 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
             self.ic.leda.adapt_to(DigitalSink(current_draw=self.signal.link().voltage / self.res.actual_resistance)),
         )
         self.connect(self.res.a, self.ic.ledk)
-        self.connect(self.res.b.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd.net, self.res.b)
 
         self.connect(self.ain.net, self.ic.feta)
         self.connect(self.aout.net, self.ic.fetb)

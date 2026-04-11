@@ -92,7 +92,7 @@ class LLowPassFilterWith2HNotch(GeneratorBlock, RfFilter):
         super().__init__()
         self.input = self.Port(Passive.empty(), [Input])
         self.output = self.Port(Passive.empty(), [Output])
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
         self.frequency = self.ArgParameter(frequency)
         self.src_resistance = self.ArgParameter(src_resistance)
@@ -122,7 +122,7 @@ class LLowPassFilterWith2HNotch(GeneratorBlock, RfFilter):
 
         self.connect(self.input, self.l.a, self.c_lc.neg)
         self.connect(self.l.b, self.c_lc.pos, self.c.pos, self.output)
-        self.connect(self.gnd, self.c.neg.adapt_to(Ground()))
+        self.connect(self.gnd.net, self.c.neg)
 
 
 class LHighPassFilter:

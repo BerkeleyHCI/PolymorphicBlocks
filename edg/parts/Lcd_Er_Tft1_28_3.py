@@ -39,7 +39,8 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
             )
         )
 
-        self.gnd = self.Export(self.conn.pins.request("15").adapt_to(Ground()))
+        self.gnd = self.Port(Ground())
+        self.connect(self.gnd.net, self.conn.pins.request("15"))
         # Backlight control
         self.ledk = self.Export(self.conn.pins.request("14"))
         self.leda = self.Export(self.conn.pins.request("13"))
@@ -72,7 +73,7 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
             )
         )
 
-        self.connect(self.gnd, self.conn.pins.request("5").adapt_to(Ground()))
+        self.connect(self.gnd.net, self.conn.pins.request("5"))
 
         self.ctp_rst = self.Export(self.conn.pins.request("4").adapt_to(DigitalSink.from_bidir(dio_model)))
         self.ctp_int = self.Export(self.conn.pins.request("3").adapt_to(DigitalSink.from_bidir(dio_model)))
