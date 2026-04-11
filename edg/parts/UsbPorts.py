@@ -47,7 +47,7 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.gnd = self.Port(Ground())
 
         self.usb = self.Port(UsbHostPort(), optional=True)
-        self.shield = self.Port(Passive(), optional=True)
+        self.shield = self.Port(Ground(), optional=True)
 
         self.cc = self.Port(UsbCcPort(pullup_capable=cc_pullup_capable), optional=True)
 
@@ -122,7 +122,7 @@ class UsbCReceptacle(UsbDeviceConnector, GeneratorBlock):
             # should sense the voltage at CC to determine the amount of current allowed
 
         # TODO there does not seem to be full agreement on what to do with the shield pin, we arbitrarily ground it
-        self.connect(self.gnd, self.conn.shield.adapt_to(Ground()))
+        self.connect(self.gnd, self.conn.shield)
 
 
 class UsbAPlugPads(UsbDeviceConnector, FootprintBlock):
