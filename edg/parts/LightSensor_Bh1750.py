@@ -52,6 +52,7 @@ class Bh1750(Resettable, LightSensor, GeneratorBlock):
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.i2c = self.Export(self.ic.i2c)
 
+        self.generator_param(self.reset.is_connected())
 
     @override
     def generate(self) -> None:
