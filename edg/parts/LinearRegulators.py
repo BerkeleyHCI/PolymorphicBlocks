@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Union
 
 from typing_extensions import override
 
@@ -577,7 +577,7 @@ class Lp5907_Device(
 
         self.assign(self.pwr_out.voltage_out, part_output_voltage)
         if footprint == "Package_TO_SOT_SMD:SOT-23-5":
-            pinning: Dict[str, CircuitPort] = {
+            pinning: Dict[str, Union[CircuitPort, HasPassivePort]] = {
                 "1": self.pwr_in,
                 "2": self.gnd,
                 "3": self.en,

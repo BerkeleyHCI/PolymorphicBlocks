@@ -78,7 +78,7 @@ class EspProgrammingTc2030(EspProgrammingAutoReset, EspProgrammingHeader):
         super().contents()
 
         self.conn = self.Block(TagConnect(6))
-        self.gnd.init_from(Ground(0))
+        self.gnd.init_from(Ground())
 
         self.connect(self.pwr, self.conn.pins.request("1").adapt_to(VoltageSink()))
         self.connect(self.uart.rx, self.conn.pins.request("3").adapt_to(DigitalSink()))

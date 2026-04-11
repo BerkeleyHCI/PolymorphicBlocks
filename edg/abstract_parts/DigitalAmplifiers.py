@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Union
 
 from typing_extensions import override
 
@@ -87,7 +87,7 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
             )
         )
 
-        conversions: Dict[str, CircuitPort] = {
+        conversions: Dict[str, Union[CircuitPort, HasPassivePort]] = {
             "pwr": VoltageSink(current_draw=self.output.link().current_drawn),
             "output": VoltageSource(
                 voltage_out=self.pwr.link().voltage,

@@ -4,7 +4,6 @@ from typing import List, Type, Tuple, Optional, Union, NamedTuple, Callable, Dic
 from typing_extensions import override
 
 from ..electronics_model import *
-from ..electronics_model.PassivePort import HasPassivePort
 
 
 @non_library

@@ -110,7 +110,9 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
         self.spi_config_cs = self.Port(self._dpio1_model)
 
     @override
-    def _system_pinmap(self) -> Dict[str, CircuitPort]:  # names consistent with pinout spreadsheet
+    def _system_pinmap(
+        self,
+    ) -> Dict[str, Union[CircuitPort, HasPassivePort]]:  # names consistent with pinout spreadsheet
         return VariantPinRemapper(
             {
                 "VCCPLL": self.vcc_pll,

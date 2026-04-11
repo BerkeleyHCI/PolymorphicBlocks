@@ -280,7 +280,7 @@ class Rp2040_Device(
 
     # Pin/peripheral resource definitions (table 3)
     @override
-    def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
         return {
             "51": self.qspi_sd3,
             "52": self.qspi.sck,
@@ -469,7 +469,7 @@ class Xiao_Rp2040(
             return self.pwr_out
 
     @override
-    def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
         if self.get(self.pwr.is_connected()):  # board sinks power
             return VariantPinRemapper(
                 {

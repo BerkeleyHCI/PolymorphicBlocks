@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Dict, Any
+from typing import Dict, Any, Union
 
 from typing_extensions import override
 
@@ -59,7 +59,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
             ]
         )
 
-        ic_pins: Dict[str, CircuitPort] = {
+        ic_pins: Dict[str, Union[CircuitPort, HasPassivePort]] = {
             "1": self.vdd if addr_lsb & 1 else self.gnd,  # A0
             "2": self.vdd if addr_lsb & 2 else self.gnd,  # A1
             "3": self.vdd if addr_lsb & 4 else self.gnd,  # A2

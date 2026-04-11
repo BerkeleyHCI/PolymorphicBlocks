@@ -4,7 +4,6 @@ from typing_extensions import override
 
 from ..abstract_parts import *
 from .JlcPart import JlcPart
-from ..electronics_model.PassivePort import HasPassivePort
 
 
 class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTablePart, GeneratorBlock, FootprintBlock):

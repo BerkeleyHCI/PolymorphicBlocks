@@ -7,7 +7,6 @@ from typing_extensions import override
 from ..electronics_model import *
 from .PinMappable import AllocatedResource, PinMappable, PinMapUtil
 from .Categories import ProgrammableController
-from ..electronics_model.PassivePort import HasPassivePort
 
 
 @non_library
@@ -176,7 +175,7 @@ class BaseIoControllerPinmapGenerator(BaseIoController, GeneratorBlock):
             else:
                 raise NotImplementedError(f"unknown port type {io_port}")
 
-    def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
         """Implement me. Defines the fixed pin mappings from pin number to port."""
         raise NotImplementedError
 

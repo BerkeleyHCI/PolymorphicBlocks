@@ -170,7 +170,7 @@ class Esp32s3_Base(Esp32s3_Ios, GeneratorBlock):
         return self.pwr
 
     @override
-    def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
         return VariantPinRemapper(
             {
                 "VDD": self.pwr,  # including VDD3V3, VDD3P3_RTC, VDD_SPI, VDD3P3_CPU
@@ -373,7 +373,7 @@ class Freenove_Esp32s3_Wroom(
             return self.pwr_out
 
     @override
-    def _system_pinmap(self) -> Dict[str, CircuitPort]:
+    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
         if self.get(self.pwr.is_connected()):  # board sinks power
             self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
             self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")
