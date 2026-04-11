@@ -8,6 +8,7 @@ from .GroundPort import Ground, GroundReference
 from .VoltagePorts import VoltageSource, VoltageSink
 
 
+# TODO remove after #114 completed, unified into PackedPassive
 @abstract_block
 class NetPackingBlock(InternalBlock, Block):
     def packed(self, elts: BasePort, merged: BasePort) -> None:
