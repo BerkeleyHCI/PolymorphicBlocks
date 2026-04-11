@@ -15,22 +15,22 @@ const C1 = board.add(C_0603_1608Metric, {
   translate: pt(1.158, 1.163), rotate: 0,
   id: 'C1'
 })
-// spk_drv.byp_cap
+// spk_drv.byp_cap.cap
 const C2 = board.add(C_0603_1608Metric, {
   translate: pt(1.158, 1.259), rotate: 0,
   id: 'C2'
 })
-// spk_drv.sig_cap
+// spk_drv.sig_cap.cap
 const C3 = board.add(C_0603_1608Metric, {
   translate: pt(0.828, 1.415), rotate: 0,
   id: 'C3'
 })
-// spk_drv.sig_res
+// spk_drv.sig_res.res
 const R1 = board.add(R_0603_1608Metric, {
   translate: pt(0.983, 1.415), rotate: 0,
   id: 'R1'
 })
-// spk_drv.fb_res
+// spk_drv.fb_res.res
 const R2 = board.add(R_0603_1608Metric, {
   translate: pt(1.139, 1.415), rotate: 0,
   id: 'R2'
@@ -215,11 +215,11 @@ board.setNetlist([
   {name: "mcu.gpio.rgb_green", pads: [["U1", "14"], ["R4", "2"]]},
   {name: "mcu.gpio.rgb_blue", pads: [["U1", "13"], ["R5", "2"]]},
   {name: "spk_drv.sig", pads: [["U1", "24"], ["C3", "2"]]},
-  {name: "spk_drv.spk.a", pads: [["U2", "5"], ["R2", "2"], ["J1", "1"]]},
+  {name: "spk_drv.spk.a", pads: [["U2", "5"], ["R2", "1"], ["J1", "1"]]},
   {name: "spk_drv.spk.b", pads: [["U2", "8"], ["J1", "2"]]},
   {name: "spk_drv.ic.inp", pads: [["U2", "2"], ["U2", "3"], ["C2", "1"]]},
-  {name: "spk_drv.ic.inm", pads: [["U2", "4"], ["R1", "2"], ["R2", "1"]]},
-  {name: "spk_drv.sig_cap.pos", pads: [["C3", "1"], ["R1", "1"]]},
+  {name: "spk_drv.ic.inm", pads: [["U2", "4"], ["R1", "2"], ["R2", "2"]]},
+  {name: "spk_drv.sig_cap.output", pads: [["C3", "1"], ["R1", "1"]]},
   {name: "rgb.package.k_red", pads: [["D1", "3"], ["R3", "1"]]},
   {name: "rgb.package.k_green", pads: [["D1", "4"], ["R4", "1"]]},
   {name: "rgb.package.k_blue", pads: [["D1", "1"], ["R5", "1"]]},
