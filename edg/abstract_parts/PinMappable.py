@@ -311,7 +311,7 @@ class PinMapUtil:
     @staticmethod
     def _resource_port_types(resource: BasePinMapResource) -> List[Type[Port]]:
         if isinstance(resource, PinResource):
-            return [type(model) for resource_name, model in resource.name_models.items()]
+            return [type(model) for resource_name, model in resource.name_models.items()]  # type: ignore
         elif isinstance(resource, (PeripheralFixedPin, PeripheralAnyResource, PeripheralFixedResource)):
             return [type(resource.port_model)]
         else:
