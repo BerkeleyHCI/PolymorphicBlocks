@@ -495,12 +495,12 @@ const RC37 = board.add(C_0603_1608Metric, {
   translate: pt(1.617, 2.953), rotate: 0,
   id: 'RC37'
 })
-// cam.reset_cap
+// cam.reset_cap.cap
 const RC38 = board.add(C_0603_1608Metric, {
   translate: pt(1.773, 2.953), rotate: 0,
   id: 'RC38'
 })
-// cam.pclk_cap
+// cam.pclk_cap.cap
 const RC39 = board.add(C_0603_1608Metric, {
   translate: pt(1.929, 2.953), rotate: 0,
   id: 'RC39'

@@ -67,7 +67,7 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.href = self.Export(self.conn.pins.request("16").adapt_to(do_model))
         self.pwdn = self.Export(self.conn.pins.request("17").adapt_to(di_model))  # typically pulled down / grounded
         self.vsync = self.Export(self.conn.pins.request("18").adapt_to(do_model))
-        self.reset = self.Export(self.conn.pins.request("19").adapt_to(di_model))
+        self.reset = self.Export(self.conn.pins.request("19").adapt_to(dio_model))
 
         # formally this is SCCB (serial camera control bus), but is I2C compatible
         # https://e2e.ti.com/support/processors-group/processors/f/processors-forum/6092/sccb-vs-i2c
@@ -115,14 +115,15 @@ class Ov2640_Fpc24(Ov2640, GeneratorBlock):
             self.device.dgnd, self.device.dovdd
         )
 
-        self.reset_cap = self.Block(Capacitor(capacitance=0.1 * uFarad(tol=0.2), voltage=self.pwr.link().voltage))
-        self.connect(self.reset_cap.neg.adapt_to(Ground()), self.gnd)
-        self.connect(self.reset_cap.pos.adapt_to(DigitalSink()), self.device.reset)
+        self.reset_cap = self.Block(DigitalCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(
+            self.gnd, self.device.reset
+        )
 
         self.connect(self.dvp8.xclk, self.device.xclk)
-        self.pclk_cap = self.Block(Capacitor(capacitance=15 * pFarad(tol=0.2), voltage=self.device.pclk.link().voltage))
-        self.connect(self.pclk_cap.neg.adapt_to(Ground()), self.gnd)
-        self.connect(self.dvp8.pclk, self.pclk_cap.pos.adapt_to(DigitalSink()), self.device.pclk)
+        self.pclk_cap = self.Block(DigitalCapacitor(capacitance=15 * pFarad(tol=0.2))).connected(
+            self.gnd, self.device.pclk
+        )
+        self.connect(self.dvp8.pclk, self.device.pclk)
         self.connect(self.dvp8.href, self.device.href)
         self.connect(self.dvp8.vsync, self.device.vsync)
         self.connect(self.dvp8.y0, self.device.y.request("2"))
