@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from typing_extensions import override
 
@@ -106,7 +106,7 @@ class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
         super().generate()
 
         if self.get(self.jd_pwr_src.is_connected()):
-            pwr_node: CircuitPort = self.jd_pwr_src
+            pwr_node: Union[VoltageSource, VoltageSink] = self.jd_pwr_src
         else:
             pwr_node = self.jd_pwr_sink
 

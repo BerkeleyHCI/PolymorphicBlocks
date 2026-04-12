@@ -30,7 +30,7 @@ class Mcp4728_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
             input_threshold_factor=(0.3, 0.7),  # for Vdd >= 2.7v
         )
         self.i2c = self.Port(I2cTarget(dio_model, addresses=[0x60]))  # TODO 3LSBs EEPROM programmable
-        self.ldac = self.Port(DigitalSink.from_bidir(dio_model), optional=True)
+        self.ldac = self.Port(DigitalSink.from_bidir(dio_model))
         self.rdy = self.Port(DigitalSource.low_from_supply(self.vss), optional=True)
 
         self.generator_param(self.ldac.is_connected())
@@ -39,11 +39,6 @@ class Mcp4728_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
     def generate(self) -> None:
         super().generate()
 
-        if self.get(self.ldac.is_connected()):
-            ldac_pin: CircuitPort = self.ldac
-        else:
-            ldac_pin = self.vdd
-
         self.footprint(
             "U",
             "Package_SO:MSOP-10_3x3mm_P0.5mm",
@@ -51,7 +46,7 @@ class Mcp4728_Device(InternalSubcircuit, FootprintBlock, GeneratorBlock, JlcPart
                 "1": self.vdd,
                 "2": self.i2c.scl,
                 "3": self.i2c.sda,
-                "4": ldac_pin,
+                "4": self.ldac,
                 "5": self.rdy,  # float if not connected
                 "6": self.vout0,
                 "7": self.vout1,
@@ -85,7 +80,7 @@ class Mcp4728(DigitalToAnalog, GeneratorBlock):
         self.out3 = self.Export(self.ic.vout3, optional=True)
 
         self.i2c = self.Export(self.ic.i2c)
-        self.ldac = self.Export(self.ic.ldac, optional=True)  # can update per-channel by i2c
+        self.ldac = self.Port(DigitalSink.empty(), optional=True)  # can update per-channel by i2c
         self.rdy = self.Export(self.ic.rdy, optional=True)  # can be read from i2c
 
         self.output_caps = self.ArgParameter(output_caps)
@@ -95,6 +90,7 @@ class Mcp4728(DigitalToAnalog, GeneratorBlock):
             self.out1.is_connected(),
             self.out2.is_connected(),
             self.out3.is_connected(),
+            self.ldac.is_connected(),
         )
 
     @override
@@ -112,3 +108,8 @@ class Mcp4728(DigitalToAnalog, GeneratorBlock):
                     self.out_cap[i] = self.Block(AnalogCapacitor(0.1 * uFarad(tol=0.2))).connected(
                         gnd=self.gnd, io=out_port
                     )
+
+        if self.get(self.ldac.is_connected()):
+            self.connect(self.ldac, self.ic.ldac)
+        else:
+            self.connect(self.pwr.as_digital_source(), self.ic.ldac)
