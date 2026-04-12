@@ -329,7 +329,7 @@ class SeriesPowerResistor(DiscreteApplication, KiCadImportableBlock):
 
 
 class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorBlock):
-    """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
+    """Current sense resistor with a power passthrough resistor and positive and negative sense terminals."""
 
     def __init__(self, resistance: RangeLike, sense_in_reqd: BoolLike = True) -> None:
         super().__init__()
