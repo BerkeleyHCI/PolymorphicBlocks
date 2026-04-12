@@ -54,7 +54,13 @@ from .AbstractConnector import (
 )
 from .AbstractResistor import Resistor, ResistorStandardFootprint, TableResistor, SeriesResistor, AnalogSeriesResistor
 from .AbstractResistor import PulldownResistor, PullupResistor, PulldownResistorArray, PullupResistorArray
-from .AbstractResistor import SeriesPowerResistor, CurrentSenseResistor, AnalogClampResistor, DigitalClampResistor
+from .AbstractResistor import (
+    SeriesPowerResistor,
+    CurrentSenseResistor,
+    AnalogClampResistor,
+    DigitalClampResistor,
+    AnalogSetpointResistor,
+)
 from .AbstractResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
 from .AbstractCapacitor import (
     UnpolarizedCapacitor,
@@ -70,6 +76,7 @@ from .AbstractCapacitor import (
     DecouplingCapacitor,
     AnalogCapacitor,
     AnalogSeriesCapacitor,
+    DigitalCapacitor,
     CombinedCapacitor,
 )
 from .AbstractInductor import Inductor, TableInductor, SeriesPowerInductor

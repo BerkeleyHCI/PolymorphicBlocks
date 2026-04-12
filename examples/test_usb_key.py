@@ -26,7 +26,7 @@ class StTscReference(Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.io = self.Port(DigitalBidir.empty(), [Input])
 
     @override
@@ -34,7 +34,7 @@ class StTscReference(Block):
         super().contents()
         self.cap = self.Block(Capacitor(10 * nFarad(tol=0.2), voltage=self.io.link().voltage))
         self.connect(self.cap.pos.adapt_to(DigitalBidir()), self.io)
-        self.connect(self.cap.neg.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd.net, self.cap.neg)
 
 
 class UsbKey(JlcBoardTop):

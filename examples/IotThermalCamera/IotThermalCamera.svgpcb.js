@@ -225,12 +225,12 @@ const TC14 = board.add(C_0603_1608Metric, {
   translate: pt(0.595, 2.070), rotate: 0,
   id: 'TC14'
 })
-// cam.reset_cap
+// cam.reset_cap.cap
 const TC15 = board.add(C_0603_1608Metric, {
   translate: pt(0.751, 2.070), rotate: 0,
   id: 'TC15'
 })
-// cam.pclk_cap
+// cam.pclk_cap.cap
 const TC16 = board.add(C_0603_1608Metric, {
   translate: pt(0.907, 2.070), rotate: 0,
   id: 'TC16'

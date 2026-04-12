@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from typing_extensions import override
 
+from .PassivePort import HasPassivePort, Passive
 from ..core import *
 from .CircuitBlock import CircuitPortBridge, CircuitPortAdapter, CircuitLink, CircuitPort, KicadImportablePortAdapter
 from .Units import Volt, Ohm
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
     from .AnalogPort import AnalogSource
 
 
-class GroundLink(CircuitLink):
+class GroundLink(Link):
     @classmethod
     def _voltage_range(cls, port: Port[GroundLink]) -> RangeExpr:
         if isinstance(port, Ground):
@@ -37,6 +38,8 @@ class GroundLink(CircuitLink):
     def contents(self) -> None:
         super().contents()
 
+        self.net = self.connect(self.ref.net, self.gnds.map_extract(lambda gnd: gnd.net), flatten=True)
+
         self.description = DescriptionString(
             "<b>voltage</b>: ",
             DescriptionString.FormatUnits(self.voltage, "V"),
@@ -49,7 +52,7 @@ class GroundLink(CircuitLink):
         self.require(self.voltage_limits.contains(self.voltage), "overvoltage")
 
 
-class GroundBridge(CircuitPortBridge):
+class GroundBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
 
@@ -60,33 +63,42 @@ class GroundBridge(CircuitPortBridge):
     def contents(self) -> None:
         super().contents()
 
+        self.connect(self.outer_port.net, self.inner_link.net)
         self.assign(self.inner_link.voltage_out, self.outer_port.link().voltage)
 
 
-class GroundAdapterVoltageSource(CircuitPortAdapter["VoltageSource"]):
+class GroundAdapterVoltageSource(PortAdapter["VoltageSource"]):
     def __init__(self) -> None:
         from .VoltagePorts import VoltageSource
 
         super().__init__()
         self.src = self.Port(Ground())
-        self.dst = self.Port(
-            VoltageSource(
-                voltage_out=self.src.link().voltage,
-            )
+        self.dst = self.Port(VoltageSource.empty())
+        self.connect(
+            self.src.net.adapt_to(
+                VoltageSource(
+                    voltage_out=self.src.link().voltage,
+                )
+            ),
+            self.dst,
         )
 
 
-class GroundAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):
+class GroundAdapterDigitalSource(PortAdapter["DigitalSource"]):
     def __init__(self) -> None:
         from .DigitalPorts import DigitalSource
 
         super().__init__()
         self.src = self.Port(Ground())
-        self.dst = self.Port(
-            DigitalSource(
-                voltage_out=self.src.link().voltage,
-                output_thresholds=(self.src.link().voltage.lower(), FloatExpr._to_expr_type(float("inf"))),
-            )
+        self.dst = self.Port(DigitalSource.empty())
+        self.connect(
+            self.src.net.adapt_to(
+                DigitalSource(
+                    voltage_out=self.src.link().voltage,
+                    output_thresholds=(self.src.link().voltage.lower(), FloatExpr._to_expr_type(float("inf"))),
+                )
+            ),
+            self.dst,
         )
 
 
@@ -95,17 +107,17 @@ class GroundAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
         from .AnalogPort import AnalogSource
 
         super().__init__()
-        self.src = self.Port(Ground.empty())
+        self.src = self.Port(Ground())
         self.dst = self.Port(
             AnalogSource(
                 voltage_out=self.src.link().voltage,
                 signal_out=self.src.link().voltage,
             )
         )
-        self.connect(self.dst.net.adapt_to(Ground()), self.src)
+        self.connect(self.dst.net, self.src.net)
 
 
-class Ground(CircuitPort[GroundLink]):
+class Ground(HasPassivePort, Port[GroundLink]):
     link_type = GroundLink
     bridge_type = GroundBridge
 
@@ -125,14 +137,16 @@ class Ground(CircuitPort[GroundLink]):
 
     def __init__(self, voltage_limits: RangeLike = Range.all()) -> None:
         super().__init__()
+        self.net = self.Port(Passive())
         self.voltage_limits = self.Parameter(RangeExpr(voltage_limits))
 
 
-class GroundReference(CircuitPort[GroundLink]):
+class GroundReference(HasPassivePort, Port[GroundLink]):
     link_type = GroundLink
 
     def __init__(self, voltage_out: RangeLike = RangeExpr.ZERO) -> None:
         super().__init__()
+        self.net = self.Port(Passive())
         self.voltage_out = self.Parameter(RangeExpr(voltage_out))
 
 

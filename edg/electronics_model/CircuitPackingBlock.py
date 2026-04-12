@@ -8,6 +8,7 @@ from .GroundPort import Ground, GroundReference
 from .VoltagePorts import VoltageSource, VoltageSink
 
 
+# TODO remove after #114 completed, unified into PackedPassive
 @abstract_block
 class NetPackingBlock(InternalBlock, Block):
     def packed(self, elts: BasePort, merged: BasePort) -> None:
@@ -31,7 +32,7 @@ class PackedPassive(NetPackingBlock, GeneratorBlock):
             self.elts.append_elt(Passive(), request)
 
 
-class PackedGround(NetPackingBlock, GeneratorBlock):
+class PackedGround(GeneratorBlock):
     """Takes in several Ground connections that are of the same net (asserted in netlister),
     and provides a single Ground."""
 
@@ -44,15 +45,17 @@ class PackedGround(NetPackingBlock, GeneratorBlock):
             )
         )
         self.generator_param(self.gnd_ins.requested())
-        self.packed(self.gnd_ins, self.gnd_out)
 
     @override
     def generate(self) -> None:
         super().generate()
+        self.packed = self.Block(PackedPassive())
+
         self.gnd_ins.defined()
         for in_request in self.get(self.gnd_ins.requested()):
-            self.gnd_ins.append_elt(Ground(), in_request)
-
+            in_port = self.gnd_ins.append_elt(Ground(), in_request)
+            self.connect(in_port.net, self.packed.elts.request(in_request))
+        self.connect(self.packed.merged, self.gnd_out.net)
         self.assign(self.gnd_out.voltage_out, self.gnd_ins.hull(lambda x: x.link().voltage))
 
 

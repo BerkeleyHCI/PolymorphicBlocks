@@ -38,7 +38,7 @@ class ProtectionTvsDiode(Protection):
         super().__init__()
 
         self.pwr = self.Port(VoltageSink.empty(), [Power, InOut])
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
         self.working_voltage = self.ArgParameter(working_voltage)
 
@@ -54,7 +54,7 @@ class ProtectionTvsDiode(Protection):
             ),
             self.pwr,
         )
-        self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd.net, self.diode.anode)
 
 
 class DigitalTvsDiode(Protection):
@@ -64,7 +64,7 @@ class DigitalTvsDiode(Protection):
         super().__init__()
 
         self.io = self.Port(DigitalSink.empty(), [InOut])
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
         self.working_voltage = self.ArgParameter(working_voltage)
         self.capacitance = self.ArgParameter(capacitance)
@@ -81,4 +81,4 @@ class DigitalTvsDiode(Protection):
             ),
             self.io,
         )
-        self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd.net, self.diode.anode)

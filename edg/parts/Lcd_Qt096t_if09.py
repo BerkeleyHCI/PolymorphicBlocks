@@ -19,7 +19,8 @@ class Qt096t_if09_Device(InternalSubcircuit, Block):
                 )
             )
         )
-        self.gnd = self.Export(self.conn.pins.request("2").adapt_to(Ground()))
+        self.gnd = self.Port(Ground())
+        self.connect(self.gnd.net, self.conn.pins.request("2"))
 
         io_model = DigitalSink.from_supply(
             self.gnd,

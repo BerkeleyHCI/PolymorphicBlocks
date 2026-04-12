@@ -228,8 +228,10 @@ class PulldownResistor(DiscreteApplication):
 
         self.res = self.Block(Resistor(resistance, 0 * Watt(tol=0)))  # TODO automatically calculate power
 
-        self.gnd = self.Export(self.res.a.adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.io = self.Export(self.res.b.adapt_to(DigitalSource.pulldown_from_supply(self.gnd)), [InOut])
+
+        self.connect(self.gnd.net, self.res.a)
 
     def connected(
         self, gnd: Optional[Port[GroundLink]] = None, io: Optional[Port[DigitalLink]] = None
@@ -327,7 +329,7 @@ class SeriesPowerResistor(DiscreteApplication, KiCadImportableBlock):
 
 
 class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorBlock):
-    """Current sense resistor with a power passthrough resistor and positive and negative sense temrinals."""
+    """Current sense resistor with a power passthrough resistor and positive and negative sense terminals."""
 
     def __init__(self, resistance: RangeLike, sense_in_reqd: BoolLike = True) -> None:
         super().__init__()
@@ -370,6 +372,39 @@ class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorB
     def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
         assert symbol_name == "edg_importable:CurrentSenseResistor"
         return {"1": self.pwr_in, "2": self.pwr_out, "sense_in": self.sense_in, "sense_out": self.sense_out}
+
+
+class AnalogSetpointResistor(DiscreteApplication, KiCadImportableBlock):
+    """AnalogSink-typed resistor that acts as a setpoint, aka bias or programming resistor"""
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
+        assert symbol_name in ("Device:R", "Device:R_Small")
+        return {"1": self.io, "2": self.gnd}
+
+    def __init__(self, resistance: RangeLike) -> None:
+        super().__init__()
+
+        self.gnd = self.Port(Ground())
+        self.io = self.Port(AnalogSink(impedance=RangeExpr()), [InOut])
+
+        voltage = self.io.link().voltage - self.gnd.link().voltage
+        self.res = self.Block(Resistor(resistance=resistance, power=voltage * voltage / resistance))
+        self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
+
+        self.assign(self.io.impedance, self.res.actual_resistance)
+        self.connect(self.gnd.net, self.res.a)
+        self.connect(self.io.net, self.res.b)
+
+    def connected(
+        self, gnd: Optional[Port[GroundLink]] = None, io: Optional[Port[AnalogLink]] = None
+    ) -> "AnalogSetpointResistor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name."""
+        if gnd is not None:
+            cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+        if io is not None:
+            cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+        return self
 
 
 class AnalogSeriesResistor(DiscreteApplication, KiCadImportableBlock):

@@ -171,7 +171,7 @@ class BaseVoltageDivider(KiCadImportableBlock):
         self.ratio = self.Parameter(RangeExpr())  # "internal" forward-declared parameter
         self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=impedance))
 
-        self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.input = self.Port(VoltageSink.empty(), [Input])  # forward declaration only
         output_voltage = ResistiveDivider.divider_output(
             self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio
@@ -185,6 +185,8 @@ class BaseVoltageDivider(KiCadImportableBlock):
             ),
             [Output],
         )
+
+        self.connect(self.gnd.net, self.div.bottom)
         self.connect(
             self.input,
             self.div.top.adapt_to(
@@ -267,7 +269,7 @@ class SignalDivider(Analog, KiCadImportableBlock, Block):
         super().__init__()
 
         self.div = self.Block(ResistiveDivider(ratio=ratio, impedance=impedance))
-        self.gnd = self.Export(self.div.bottom.adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.input = self.Port(
             AnalogSink(
                 impedance=self.div.actual_series_impedance,
@@ -283,5 +285,6 @@ class SignalDivider(Analog, KiCadImportableBlock, Block):
             [Output],
         )
         self.assign(self.input.current_draw, self.output.link().current_drawn)
+        self.connect(self.gnd.net, self.div.bottom)
         self.connect(self.output.net, self.div.center)
         self.connect(self.input.net, self.div.top)

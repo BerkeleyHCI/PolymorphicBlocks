@@ -1,3 +1,5 @@
+from typing import Tuple, Union
+
 from typing_extensions import override
 
 from ..abstract_parts import *
@@ -61,8 +63,8 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock)
                 "4": self.vs,
                 "5": self.i2c.scl,
                 "6": self.i2c.sda,
-                "7": sa0_pin,
-                "8": sa1_pin,
+                "7": sa0_pin,  # type: ignore
+                "8": sa1_pin,  # type: ignore
             },
             mfr="Texas Instruments",
             part="INA219AIDCNR",

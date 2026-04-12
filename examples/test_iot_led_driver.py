@@ -9,7 +9,7 @@ class PowerInConnector(Connector):
     def __init__(self) -> None:
         super().__init__()
         self.conn = self.Block(JstShSmHorizontal())
-        self.gnd = self.Export(self.conn.pins.request("1").adapt_to(Ground()))
+        self.gnd = self.Port(Ground())
         self.pwr = self.Export(
             self.conn.pins.request("2").adapt_to(
                 VoltageSource(
@@ -18,6 +18,8 @@ class PowerInConnector(Connector):
                 )
             )
         )
+
+        self.connect(self.gnd.net, self.conn.pins.request("1"))
 
 
 # note, sent to fabrication with JlcPartsRefinements

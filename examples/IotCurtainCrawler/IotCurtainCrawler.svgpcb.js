@@ -205,12 +205,12 @@ const RC11 = board.add(C_0603_1608Metric, {
   translate: pt(1.821, 1.674), rotate: 0,
   id: 'RC11'
 })
-// als.dvi_res
+// als.dvi_pull.rc.r
 const RR10 = board.add(R_0603_1608Metric, {
   translate: pt(1.644, 1.796), rotate: 0,
   id: 'RR10'
 })
-// als.dvi_cap
+// als.dvi_pull.rc.c
 const RC12 = board.add(C_0603_1608Metric, {
   translate: pt(1.800, 1.796), rotate: 0,
   id: 'RC12'

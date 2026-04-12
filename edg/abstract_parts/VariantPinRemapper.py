@@ -1,14 +1,14 @@
-from typing import Dict, List, Union, Set
+from typing import Dict, List, Union, Set, Mapping
 
 from ..electronics_model import *
 
 
 class VariantPinRemapper:
-    def __init__(self, mapping: Dict[str, CircuitPort]):
+    def __init__(self, mapping: Mapping[str, Union[CircuitPort, HasPassivePort]]):
         self.mapping = mapping
 
-    def remap(self, remap: Dict[str, Union[str, List[str]]]) -> Dict[str, CircuitPort]:
-        output_dict: Dict[str, CircuitPort] = {}
+    def remap(self, remap: Dict[str, Union[str, List[str]]]) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+        output_dict: Dict[str, Union[CircuitPort, HasPassivePort]] = {}
         remapped_names: Set[str] = set()
         for orig_name, orig_port in self.mapping.items():
             assert orig_name in remap, f"missing remap rule for {orig_name}"

@@ -141,7 +141,7 @@ class DifferentialLcLowpassFilter(GeneratorBlock, RfFilter):
         self.in2 = self.Port(Passive())
         self.out1 = self.Port(Passive())
         self.out2 = self.Port(Passive())
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
     @override
     def generate(self) -> None:
@@ -160,7 +160,7 @@ class DifferentialLcLowpassFilter(GeneratorBlock, RfFilter):
         self.connect(self.l1.b, self.c1.pos, self.out1)
         self.connect(self.in2, self.l2.a)
         self.connect(self.l2.b, self.c2.pos, self.out2)
-        self.connect(self.c1.neg.adapt_to(Ground()), self.c2.neg.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd.net, self.c1.neg, self.c2.neg)
 
         impedance = NfcAntenna.impedance_from_lrc(
             self.get(self.freq), self.get(self.inductance), self.get(self.input_res), capacitance
@@ -200,7 +200,7 @@ class DifferentialLLowPassFilter(GeneratorBlock, RfFilter):
         self.in2 = self.Port(Passive())
         self.out1 = self.Port(Passive())
         self.out2 = self.Port(Passive())
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
     @override
     def generate(self) -> None:
@@ -221,7 +221,7 @@ class DifferentialLLowPassFilter(GeneratorBlock, RfFilter):
         self.connect(self.cs1.neg, self.cp1.pos, self.out1)
         self.connect(self.in2, self.cs2.pos)
         self.connect(self.cs2.neg, self.cp2.pos, self.out2)
-        self.connect(self.cp1.neg.adapt_to(Ground()), self.cp2.neg.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd.net, self.cp1.neg, self.cp2.neg)
 
 
 class Pn7160RxFilter(InternalSubcircuit, Block):

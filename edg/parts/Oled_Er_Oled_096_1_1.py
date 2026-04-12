@@ -28,10 +28,13 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
 
         self.conn = self.Block(Fpc050Bottom(length=30))
 
-        vss_pin = self.conn.pins.request("8")
-        self.vss = self.Export(vss_pin.adapt_to(Ground()), [Common])
+        self.vss = self.Port(Ground(), [Common])
         self.connect(
-            vss_pin, self.conn.pins.request("1"), self.conn.pins.request("30"), self.conn.pins.request("29")  # NC/GND
+            self.vss.net,
+            self.conn.pins.request("8"),
+            self.conn.pins.request("1"),
+            self.conn.pins.request("30"),
+            self.conn.pins.request("29"),  # NC/GND
         )  # VLSS
 
         self.vdd = self.Export(
@@ -51,7 +54,8 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
             )
         )
 
-        self.iref = self.Export(self.conn.pins.request("26"))
+        self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
+        self.connect(self.iref.net, self.conn.pins.request("26"))
         self.vcomh = self.Export(
             self.conn.pins.request("27").adapt_to(
                 VoltageSource(
@@ -85,7 +89,7 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
 
         self.bs0 = self.Export(self.conn.pins.request("10").adapt_to(din_model))
         self.bs1 = self.Export(self.conn.pins.request("11").adapt_to(din_model))
-        self.connect(self.conn.pins.request("12").adapt_to(Ground()), self.vss)  # BS2, 0 for any serial
+        self.connect(self.vss.net, self.conn.pins.request("12"))  # BS2, 0 for any serial
 
         self.res = self.Export(self.conn.pins.request("14").adapt_to(din_model))
         self.cs = self.Export(self.conn.pins.request("13").adapt_to(din_model))
@@ -96,7 +100,7 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.d2 = self.Export(self.conn.pins.request("20").adapt_to(din_model), optional=True)
 
         for i in [17, 16] + list(range(21, 26)):  # RW, ER, DB3~DB7
-            self.connect(vss_pin, self.conn.pins.request(str(i)))
+            self.connect(self.vss.net, self.conn.pins.request(str(i)))
 
 
 class Er_Oled_096_1_1(Oled, Resettable, GeneratorBlock):
@@ -128,9 +132,9 @@ class Er_Oled_096_1_1(Oled, Resettable, GeneratorBlock):
         self.c2_cap = self.Block(Capacitor(1 * uFarad(tol=0.2), (0, 6.3) * Volt))
         self.connect(self.c2_cap.pos, self.device.c2p)
         self.connect(self.c2_cap.neg, self.device.c2n)
-        self.iref_res = self.Block(Resistor(resistance=390 * kOhm(tol=0.05)))  # TODO dynamic sizing
-        self.connect(self.iref_res.a, self.device.iref)
-        self.connect(self.iref_res.b.adapt_to(Ground()), self.gnd)
+        self.iref_res = self.Block(AnalogSetpointResistor(resistance=390 * kOhm(tol=0.05))).connected(
+            self.gnd, self.device.iref
+        )  # TODO dynamic sizing
         self.vcomh_cap = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.device.vcomh)
 
         self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=1 * uFarad(tol=0.2))).connected(

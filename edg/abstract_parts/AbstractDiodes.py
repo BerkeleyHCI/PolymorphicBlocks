@@ -194,7 +194,7 @@ class ProtectionZenerDiode(Protection):
         super().__init__()
 
         self.pwr = self.Port(VoltageSink.empty(), [Power, InOut])
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
         self.voltage = self.ArgParameter(voltage)
 
@@ -210,7 +210,7 @@ class ProtectionZenerDiode(Protection):
             ),
             self.pwr,
         )
-        self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd.net, self.diode.anode)
 
 
 @deprecated("Use AnalogClampResistor, which should be cheaper and cause less signal distortion")
@@ -222,7 +222,7 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
 
         self.diode = self.Block(ZenerDiode(zener_voltage=voltage))
 
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.signal_in = self.Port(AnalogSink(), [Input])
         self.signal_out = self.Port(
             AnalogSource(
@@ -236,7 +236,7 @@ class AnalogClampZenerDiode(Protection, KiCadImportableBlock):
         self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
 
         self.connect(self.signal_in.net, self.signal_out.net, self.diode.cathode)
-        self.connect(self.diode.anode.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd.net, self.diode.anode)
 
     @override
     def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:

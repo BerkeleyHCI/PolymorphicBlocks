@@ -80,7 +80,7 @@ const C2 = board.add(C_0805_2012Metric, {
   translate: pt(0.067, 0.778), rotate: 0,
   id: 'C2'
 })
-// charger.prog_res
+// charger.prog_res.res
 const R5 = board.add(R_0603_1608Metric, {
   translate: pt(0.231, 0.769), rotate: 0,
   id: 'R5'
@@ -108,7 +108,7 @@ const J3 = board.add(JST_PH_S3B_PH_K_1x03_P2_00mm_Horizontal, {
 
 board.setNetlist([
   {name: "vusb", pads: [["J1", "A4"], ["J1", "A9"], ["J1", "B4"], ["J1", "B9"], ["U1", "4"], ["C1", "1"], ["D1", "2"]]},
-  {name: "gnd", pads: [["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["R1", "1"], ["R2", "1"], ["J2", "1"], ["TP1", "1"], ["R3", "2"], ["U1", "2"], ["C1", "2"], ["C2", "2"], ["R5", "2"], ["Q3", "1"], ["J3", "1"], ["J3", "3"]]},
+  {name: "gnd", pads: [["J1", "A1"], ["J1", "A12"], ["J1", "B1"], ["J1", "B12"], ["J1", "S1"], ["R1", "1"], ["R2", "1"], ["J2", "1"], ["TP1", "1"], ["R3", "2"], ["U1", "2"], ["C1", "2"], ["C2", "2"], ["R5", "1"], ["Q3", "1"], ["J3", "1"], ["J3", "3"]]},
   {name: "usb.usb.dp", pads: [["J1", "A6"], ["J1", "B6"]]},
   {name: "usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"]]},
   {name: "usb.conn.cc.cc1", pads: [["J1", "A5"], ["R1", "2"]]},
@@ -117,7 +117,7 @@ board.setNetlist([
   {name: "pmos.pwr_out", pads: [["R4", "1"], ["Q1", "2"], ["Q2", "2"], ["U1", "3"], ["C2", "1"], ["Q3", "3"]]},
   {name: "pmos.r1.a", pads: [["R3", "1"], ["Q1", "3"], ["Q2", "1"]]},
   {name: "charger.stat", pads: [["U1", "1"], ["R6", "2"]]},
-  {name: "charger.ic.prog", pads: [["U1", "5"], ["R5", "1"]]},
+  {name: "charger.ic.prog", pads: [["U1", "5"], ["R5", "2"]]},
   {name: "charge_led.package.k", pads: [["D1", "1"], ["R6", "1"]]},
   {name: "pmos_load.pwr_out", pads: [["Q3", "2"], ["J3", "2"]]}
 ])

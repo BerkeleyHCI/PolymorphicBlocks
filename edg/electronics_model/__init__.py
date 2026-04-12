@@ -11,7 +11,7 @@ from .Units import Ratio
 from .Units import UnitUtils
 
 # Need to export link and bridge types for library auto-detection
-from .PassivePort import Passive, PassiveLink
+from .PassivePort import Passive, PassiveLink, HasPassivePort
 from .GroundPort import Ground, GroundSource, GroundReference, GroundLink, Common
 from .VoltagePorts import VoltageSource, VoltageSink, Power, VoltageLink
 from .DigitalPorts import DigitalSource, DigitalSink, DigitalBidir, DigitalSingleSource, DigitalLink

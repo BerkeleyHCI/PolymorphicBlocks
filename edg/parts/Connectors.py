@@ -96,11 +96,11 @@ class LipoConnector(Connector, Battery):
         super().__init__(voltage, *args, **kwargs)
         self.conn = self.Block(PassiveConnector())
 
-        self.connect(self.gnd, self.conn.pins.request("1").adapt_to(Ground()))
-        pwr_pin = self.conn.pins.request("2")
+        self.gnd.init_from(Ground())
+        self.connect(self.gnd.net, self.conn.pins.request("1"))
         self.connect(
             self.pwr,
-            pwr_pin.adapt_to(
+            self.conn.pins.request("2").adapt_to(
                 VoltageSource(
                     voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
                     current_limits=(0, 5.5) * Amp,  # arbitrary assuming low capacity, 10 C discharge
@@ -119,7 +119,7 @@ class QwiicTarget(Connector):
     def __init__(self) -> None:
         super().__init__()
         self.conn = self.Block(JstShSmHorizontal(4))
-        self.gnd = self.Export(self.conn.pins.request("1").adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Export(
             self.conn.pins.request("2").adapt_to(
                 VoltageSink(
@@ -132,3 +132,5 @@ class QwiicTarget(Connector):
         self.i2c = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
         self.connect(self.i2c.sda, self.conn.pins.request("3").adapt_to(DigitalBidir()))
         self.connect(self.i2c.scl, self.conn.pins.request("4").adapt_to(DigitalBidir()))
+
+        self.connect(self.gnd.net, self.conn.pins.request("1"))

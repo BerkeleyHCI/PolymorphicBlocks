@@ -163,7 +163,7 @@ class KiCadSchematicBlock(Block):
             assert isinstance(
                 port, Passive
             ), f"conversion only allowed on Passive ports, got {pin.refdes}.{pin.pin_number}: {port.__class__.__name__}"
-            port = port.adapt_to(conversion)
+            port = port.adapt_to(conversion)  # type: ignore
 
         return port
 
@@ -317,7 +317,7 @@ class KiCadSchematicBlock(Block):
                 if boundary_port_name in conversions:
                     assert can_adapt, "conversion to boundary port only allowed for Passive ports"
                     adapted = cast(Passive, net_ports[0]).adapt_to(conversions[boundary_port_name])
-                    self.connect(adapted, boundary_port)
+                    self.connect(adapted, boundary_port)  # type: ignore
                 elif (
                     auto_adapt
                     and can_adapt

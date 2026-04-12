@@ -13,7 +13,8 @@ class Waveshare_Epd_Device(InternalSubcircuit, Block):
 
         self.conn = self.Block(Fpc050Bottom(length=24))
 
-        self.vss = self.Export(self.conn.pins.request("17").adapt_to(Ground()), [Common])
+        self.vss = self.Port(Ground(), [Common])
+        self.connect(self.vss.net, self.conn.pins.request("17"))
         self.vdd = self.Export(
             self.conn.pins.request("16").adapt_to(
                 VoltageSink(
@@ -40,8 +41,11 @@ class Waveshare_Epd_Device(InternalSubcircuit, Block):
 
         din_model = DigitalSink.from_supply(self.vss, self.vddio, input_threshold_factor=(0.2, 0.8))
 
-        self.gdr = self.Export(self.conn.pins.request("2"))
-        self.rese = self.Export(self.conn.pins.request("3"))
+        self.gdr = self.Export(
+            self.conn.pins.request("2").adapt_to(DigitalSource.from_supply(self.vss, self.vdd))
+        )  # assumed
+        self.rese = self.Port(AnalogSink())
+        self.connect(self.rese.net, self.conn.pins.request("3"))
 
         self.vgl = self.Export(
             self.conn.pins.request("4").adapt_to(
@@ -162,9 +166,7 @@ class Waveshare_Epd(EInk, GeneratorBlock):
         self.connect(self.gnd, self.boost.gnd)
         self.connect(self.pwr, self.boost.pwr_in)
         self.connect(self.device.gdr, self.boost.gate)
-        self.gate_pdr = self.Block(Resistor(10 * kOhm(tol=0.05)))
-        self.connect(self.gate_pdr.a, self.boost.gate)
-        self.connect(self.gate_pdr.b.adapt_to(Ground()), self.gnd)
+        self.gate_pdr = self.Block(PulldownResistor(10 * kOhm(tol=0.05))).connected(self.gnd, self.boost.gate)
         self.connect(self.device.rese, self.boost.isense)
         self.connect(self.boost.pos_out, self.device.prevgh)
         self.connect(self.boost.neg_out, self.device.prevgl)

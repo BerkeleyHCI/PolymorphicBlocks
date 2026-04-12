@@ -54,7 +54,7 @@ class Ft232hl_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.osc = self.Port(
             CrystalDriver(frequency_limits=12 * MHertz(tol=30e-6), voltage_out=self.vccd.link().voltage)
         )  # assumed
-        self.ref = self.Port(Passive())  # connect 12k 1% resistor to GND
+        self.ref = self.Port(AnalogSource.from_supply(self.gnd, self.vcca))  # assumed, connect 12k 1% resistor to GND
         self.usb = self.Port(UsbDevicePort())
 
         self._dio_model = DigitalBidir.from_supply(  # except USB pins which are not 5v tolerant
@@ -231,9 +231,7 @@ class Ft232hl(Interface, GeneratorBlock):
         self.vccio_cap1 = self.Block(cap_model).connected(self.gnd, self.ic.vccio)
         self.vccio_cap2 = self.Block(cap_model).connected(self.gnd, self.ic.vccio)
 
-        self.ref_res = self.Block(Resistor(12 * kOhm(tol=0.01)))
-        self.connect(self.ref_res.a, self.ic.ref)
-        self.connect(self.ref_res.b.adapt_to(Ground()), self.gnd)
+        self.ref_res = self.Block(AnalogSetpointResistor(12 * kOhm(tol=0.01))).connected(self.gnd, self.ic.ref)
 
         self.connect(self.ic.vccd.as_digital_source(), self.ic.nreset)  # in concept driven by VccIO
 

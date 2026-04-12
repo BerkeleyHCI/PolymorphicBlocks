@@ -98,7 +98,7 @@ class IndicatorLed(Light):
         self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
         self.signal = self.Port(DigitalSink.empty(), [InOut])
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
         self.require(self.signal.current_draw.within((0, self.target_current_draw.upper())))
 
@@ -118,7 +118,7 @@ class IndicatorLed(Light):
         )
 
         self.connect(self.res.a, self.package.k)
-        self.connect(self.res.b.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd.net, self.res.b)
 
 
 class IndicatorLedArray(Light, GeneratorBlock):
@@ -227,7 +227,7 @@ class VoltageIndicatorLed(Light):
         self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
         self.signal = self.Port(VoltageSink.empty(), [Power, InOut])
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
 
         self.require(self.signal.current_draw.within(current_draw))
 
@@ -246,7 +246,7 @@ class VoltageIndicatorLed(Light):
             self.package.a.adapt_to(VoltageSink(current_draw=self.signal.link().voltage / self.res.actual_resistance)),
         )
         self.connect(self.res.a, self.package.k)
-        self.connect(self.res.b.adapt_to(Ground()), self.gnd)
+        self.connect(self.gnd.net, self.res.b)
 
 
 # TODO should there be some kind of abstract LED class, that works for both CA and CC type LEDs?

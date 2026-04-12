@@ -27,10 +27,13 @@ class Er_Oled022_1_Device(InternalSubcircuit, Block):
 
         self.conn = self.Block(Fpc050Bottom(length=24))
 
-        vss_pin = self.conn.pins.request("3")
-        self.vss = self.Export(vss_pin.adapt_to(Ground()), [Common])
+        self.vss = self.Port(Ground(), [Common])
         self.connect(
-            vss_pin, self.conn.pins.request("1"), self.conn.pins.request("24"), self.conn.pins.request("2")  # NC/GND
+            self.vss.net,
+            self.conn.pins.request("3"),
+            self.conn.pins.request("1"),
+            self.conn.pins.request("24"),
+            self.conn.pins.request("2"),  # NC/GND
         )  # VLSS, connect to VSS externally
 
         self.vdd = self.Export(
@@ -50,7 +53,8 @@ class Er_Oled022_1_Device(InternalSubcircuit, Block):
             )
         )
 
-        self.iref = self.Export(self.conn.pins.request("21"))
+        self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
+        self.connect(self.iref.net, self.conn.pins.request("21"))
         self.vcomh = self.Export(
             self.conn.pins.request("22").adapt_to(
                 VoltageSource(
@@ -78,7 +82,7 @@ class Er_Oled022_1_Device(InternalSubcircuit, Block):
         self.dc = self.Export(self.conn.pins.request("10").adapt_to(din_model))
 
         for i in [12, 11] + list(range(16, 21)):  # RW, ER, DB3~DB7
-            self.connect(vss_pin, self.conn.pins.request(str(i)))
+            self.connect(self.vss.net, self.conn.pins.request(str(i)))
 
 
 class Er_Oled022_1(Oled, Resettable, GeneratorBlock):
@@ -104,9 +108,9 @@ class Er_Oled022_1(Oled, Resettable, GeneratorBlock):
 
         self.lcd = self.Block(Er_Oled022_1_Outline())  # for device outline
 
-        self.iref_res = self.Block(Resistor(resistance=910 * kOhm(tol=0.05)))  # TODO dynamic sizing
-        self.connect(self.iref_res.a, self.device.iref)
-        self.connect(self.iref_res.b.adapt_to(Ground()), self.gnd)
+        self.iref_res = self.Block(AnalogSetpointResistor(resistance=910 * kOhm(tol=0.05))).connected(
+            self.gnd, self.device.iref
+        )  # TODO dynamic sizing
         self.vcomh_cap = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.device.vcomh)
 
         self.vdd_cap1 = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(

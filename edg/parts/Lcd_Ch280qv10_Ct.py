@@ -31,9 +31,14 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
 
         self.conn = self.Block(Fpc050Bottom(length=50))
 
-        gnd_pin = self.conn.pins.request("43")
-        self.gnd = self.Export(gnd_pin.adapt_to(Ground()), [Common])
-        self.connect(gnd_pin, self.conn.pins.request("48"), self.conn.pins.request("49"), self.conn.pins.request("50"))
+        self.gnd = self.Port(Ground(), [Common])
+        self.connect(
+            self.gnd.net,
+            self.conn.pins.request("43"),
+            self.conn.pins.request("48"),
+            self.conn.pins.request("49"),
+            self.conn.pins.request("50"),
+        )
 
         iovcc_pin = self.conn.pins.request("40")
         self.iovcc = self.Export(
@@ -59,21 +64,22 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
             )
         )
 
-        self.ledk = self.Export(self.conn.pins.request("1"))
+        self.ledk = self.Port(Ground())
+        self.connect(self.ledk.net, self.conn.pins.request("1"))
         self.leda1 = self.Export(self.conn.pins.request("2"))
         self.leda2 = self.Export(self.conn.pins.request("3"))
         self.leda3 = self.Export(self.conn.pins.request("4"))
         self.leda4 = self.Export(self.conn.pins.request("5"))
 
         self.connect(
-            gnd_pin,  # per ILI9341 datasheet, fix to VDDI or VSS for pins not in use
+            self.gnd.net,  # per ILI9341 datasheet, fix to VDDI or VSS for pins not in use
             self.conn.pins.request("11"),  # VSYNC
             self.conn.pins.request("12"),  # HSYNC
             self.conn.pins.request("13"),  # DOTCLK
             self.conn.pins.request("14"),  # DC
         )
-        for i in range(15, 33):  # DB0-17 pins unused, must be fixed to VSS lelvel
-            self.connect(gnd_pin, self.conn.pins.request(str(i)))
+        for i in range(15, 33):  # DB0-17 pins unused, must be fixed to VSS level
+            self.connect(self.gnd.net, self.conn.pins.request(str(i)))
         self.connect(
             iovcc_pin,  # per ILI9341 datasheet, must be fixed to VDDI level
             self.conn.pins.request("35"),  # RDX
@@ -142,7 +148,7 @@ class Ch280qv10_Ct(Lcd, Resettable, Block):
         self.connect(self.spi.mosi, self.device.sdi)
         self.connect(self.spi.miso, self.device.sdo)
 
-        self.connect(self.device.ledk.adapt_to(Ground()), self.gnd)
+        self.connect(self.device.ledk, self.gnd)
         self.led_res = ElementDict[Resistor]()
         for i, leda in [
             ("1", self.device.leda1),

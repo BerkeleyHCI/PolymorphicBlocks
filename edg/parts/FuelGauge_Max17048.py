@@ -26,7 +26,7 @@ class Max17048_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             optional=True,
         )
 
-        self.qstrt = self.Port(Passive())
+        self.qstrt = self.Port(DigitalSink.from_bidir(dio_model))  # typically unused
 
     @override
     def contents(self) -> None:
@@ -72,4 +72,4 @@ class Max17048(DefaultExportBlock):
         self.pwr_cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(self.gnd, self.ic.pwr)
 
         # Tie QSTRT to ground unless otherwise needed
-        self.connect(self.ic.qstrt.adapt_to(Ground()), self.gnd)
+        self.connect(self.ic.qstrt, self.gnd.as_digital_source())

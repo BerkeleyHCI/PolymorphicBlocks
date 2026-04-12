@@ -37,31 +37,32 @@ class Nhd_312_25664uc_Device(InternalSubcircuit, FootprintBlock):
     def contents(self) -> None:
         super().contents()
 
-        pinning: Dict[str, CircuitPort] = {
-            "1": self.vss,
-            "2": self.vdd,
-            # '3':  # no connect
-            "4": self.dc,
-            "5": self.vss,  # R/nW in parallel interface
-            "6": self.vss,  # E/nRD in parallel interface
-            "7": self.sclk,
-            "8": self.sdin,
-            # '9'  # no connect  # DB2 in parallel interface
-            "10": self.vss,  # DB3 in parallel interface
-            "11": self.vss,  # DB4 in parallel interface
-            "12": self.vss,  # DB5 in parallel interface
-            "13": self.vss,  # DB6 in parallel interface
-            "14": self.vss,  # DB7 in parallel interface
-            # '15':  # no connect
-            "16": self.nres,
-            "17": self.ncs,
-            # '18':  # no connect
-            "19": self.vss,  # BS1 parallel (1) / serial (0) mode
-            "20": self.vss,  # BS0 4-wire serial mode
-        }
-
         self.footprint(
-            "U", "calisco:NHD-3.12-25664UCB2", pinning, part="20-pin header, NHD-3.12-25664UCB2"  # TODO multiple parts
+            "U",
+            "calisco:NHD-3.12-25664UCB2",
+            {
+                "1": self.vss,
+                "2": self.vdd,
+                # '3':  # no connect
+                "4": self.dc,
+                "5": self.vss,  # R/nW in parallel interface
+                "6": self.vss,  # E/nRD in parallel interface
+                "7": self.sclk,
+                "8": self.sdin,
+                # '9'  # no connect  # DB2 in parallel interface
+                "10": self.vss,  # DB3 in parallel interface
+                "11": self.vss,  # DB4 in parallel interface
+                "12": self.vss,  # DB5 in parallel interface
+                "13": self.vss,  # DB6 in parallel interface
+                "14": self.vss,  # DB7 in parallel interface
+                # '15':  # no connect
+                "16": self.nres,
+                "17": self.ncs,
+                # '18':  # no connect
+                "19": self.vss,  # BS1 parallel (1) / serial (0) mode
+                "20": self.vss,  # BS0 4-wire serial mode
+            },
+            part="20-pin header, NHD-3.12-25664UCB2",  # TODO multiple parts
         )
 
 

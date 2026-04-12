@@ -18,13 +18,14 @@ class Lm4871_Device(InternalSubcircuit, FootprintBlock):
         )
         self.gnd = self.Port(Ground(), [Common])
 
-        self.inp = self.Port(Passive())  # TODO these aren't actually documented w/ specs =(
-        self.inm = self.Port(Passive())
+        self.inp = self.Port(AnalogSink())  # specs not actually documented
+        self.inm = self.Port(AnalogSink())
 
-        self.vo1 = self.Port(Passive())
-        self.vo2 = self.Port(Passive())
+        self.vo1 = self.Port(AnalogSource())
+        self.vo2 = self.Port(AnalogSource())
 
-        self.byp = self.Port(Passive())
+        half_vdd = (self.pwr.link().voltage - self.gnd.link().voltage) / 2 + self.gnd.link().voltage
+        self.byp = self.Port(AnalogSource(voltage_out=half_vdd, signal_out=half_vdd))
 
     @override
     def contents(self) -> None:
@@ -56,42 +57,29 @@ class Lm4871(SpeakerDriver, Block):
         self.pwr = self.Export(self.ic.pwr, [Power])
         self.gnd = self.Export(self.ic.gnd, [Common])
 
-        self.sig = self.Port(AnalogSink(), [Input])
-        self.spk = self.Port(SpeakerDriverPort(AnalogSource()), [Output])
+        self.sig = self.Port(AnalogSink.empty(), [Input])
+        self.spk = self.Port(SpeakerDriverPort(AnalogSource.empty()), [Output])
 
     @override
     def contents(self) -> None:
         super().contents()
         # TODO size component based on higher level input?
 
-        self.in_cap = self.Block(
-            DecouplingCapacitor(
-                capacitance=1.0 * uFarad(tol=0.2),
-            )
-        ).connected(self.gnd, self.pwr)
-
-        self.byp_cap = self.Block(
-            Capacitor(  # TODO bypass should be a pseudo source pin, this can be a DecouplingCap
-                capacitance=1.0 * uFarad(tol=0.2),
-                voltage=self.pwr.link().voltage,  # TODO actually half the voltage, but needs const prop
-            )
-        )
-        self.connect(self.gnd, self.byp_cap.neg.adapt_to(Ground()))
+        self.in_cap = self.Block(DecouplingCapacitor(capacitance=1.0 * uFarad(tol=0.2))).connected(self.gnd, self.pwr)
+        self.byp_cap = self.Block(AnalogCapacitor(capacitance=1.0 * uFarad(tol=0.2))).connected(self.gnd, self.ic.byp)
+        self.connect(self.ic.byp, self.ic.inp)
 
         self.sig_cap = self.Block(
-            Capacitor(  # TODO replace with dc-block filter
-                capacitance=0.47 * uFarad(tol=0.2), voltage=self.sig.link().voltage
-            )
+            AnalogSeriesCapacitor(capacitance=0.47 * uFarad(tol=0.2), output_bias=self.ic.byp.link().voltage)
         )
-        self.sig_res = self.Block(Resistor(resistance=20 * kOhm(tol=0.2)))
-        self.fb_res = self.Block(Resistor(resistance=20 * kOhm(tol=0.2)))
-        self.connect(self.sig.net, self.sig_cap.neg)
-        self.connect(self.sig_cap.pos, self.sig_res.a)
-        self.connect(self.sig_res.b, self.fb_res.a, self.ic.inm)
-        self.connect(self.spk.a.net, self.ic.vo1, self.fb_res.b)
-        self.connect(self.spk.b.net, self.ic.vo2)
+        self.sig_res = self.Block(AnalogSeriesResistor(resistance=20 * kOhm(tol=0.2)))
+        self.chain(self.sig, self.sig_cap, self.sig_res)
+        self.fb_res = self.Block(AnalogSeriesResistor(resistance=20 * kOhm(tol=0.2)))
+        self.inm_merge = self.Block(MergedAnalogSource()).connected_from(self.sig_res.output, self.fb_res.output)
+        self.connect(self.ic.inm, self.inm_merge.output)
 
-        self.connect(self.byp_cap.pos, self.ic.inp, self.ic.byp)
+        self.connect(self.spk.a, self.ic.vo1, self.fb_res.input)
+        self.connect(self.spk.b, self.ic.vo2)
 
 
 class Tpa2005d1_Device(InternalSubcircuit, JlcPart, FootprintBlock):

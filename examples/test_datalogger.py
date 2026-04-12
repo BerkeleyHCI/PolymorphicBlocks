@@ -180,11 +180,9 @@ class Datalogger(BoardTop):
                 (["can", "can_fuse", "fuse", "actual_hold_current"], Range(0.1, 0.1)),
                 # JLC does not have frequency specs, must be checked TODO
                 (["pwr_5v", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
-                (["eink", "boost_ind", "manual_frequency_rating"], Range.all()),
-                # JLC does not have gate voltage tolerance specs, and the inferred one is low
-                (["eink", "boost_sw", "gate_voltage"], Range(3, 10)),
                 # keep netlist footprints as libraries change
                 (["buffer", "fet", "footprint_spec"], "Package_TO_SOT_SMD:SOT-223-3_TabPin2"),
+                (["eink", "ic", "boost", "sense", "resistance"], Range.from_tolerance(3.3, 0.05)),  # 3R not standard
             ],
             class_refinements=[(Fuse, CanFuse)],
         )

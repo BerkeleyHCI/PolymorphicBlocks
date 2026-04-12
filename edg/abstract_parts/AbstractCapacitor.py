@@ -366,7 +366,7 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
         super().__init__()
 
         self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
-        self.gnd = self.Export(self.cap.neg.adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Export(
             self.cap.pos.adapt_to(
                 VoltageSink.from_gnd(
@@ -375,7 +375,7 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
             ),
             [Power, InOut],
         )
-
+        self.connect(self.gnd.net, self.cap.neg)
         self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
 
         # TODO there should be a way to forward the description string of the inner element
@@ -403,11 +403,11 @@ class AnalogCapacitor(DiscreteApplication, KiCadImportableBlock):
         super().__init__()
 
         self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
-        self.gnd = self.Port(Ground.empty(), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.io = self.Port(AnalogSink(), [InOut])  # ideal open port
 
         self.assign(self.cap.voltage, self.io.link().voltage - self.gnd.link().voltage)
-        self.connect(self.cap.neg.adapt_to(Ground()), self.gnd)  # TODO refactor #114
+        self.connect(self.gnd.net, self.cap.neg)
         self.connect(self.io.net, self.cap.pos)
 
     def connected(
@@ -475,6 +475,36 @@ class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
             cast(Block, builder.get_enclosing_block()).connect(input, self.input)
         if output is not None:
             cast(Block, builder.get_enclosing_block()).connect(output, self.output)
+        return self
+
+
+class DigitalCapacitor(DiscreteApplication, KiCadImportableBlock):
+    """Capacitor attached to a digital line, that presents as an open model-wise."""
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name in ("Device:C", "Device:C_Small", "Device:C_Polarized", "Device:C_Polarized_Small")
+        return {"1": self.io, "2": self.gnd}
+
+    def __init__(self, capacitance: RangeLike, *, exact_capacitance: BoolLike = False) -> None:
+        super().__init__()
+
+        self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
+        self.gnd = self.Port(Ground(), [Common])
+        self.io = self.Port(DigitalSink.empty(), [InOut])  # ideal open port
+
+        self.assign(self.cap.voltage, self.io.link().voltage - self.gnd.link().voltage)
+        self.connect(self.gnd.net, self.cap.neg)
+        self.connect(self.io, self.cap.pos.adapt_to(DigitalSink()))
+
+    def connected(
+        self, gnd: Optional[Port[GroundLink]] = None, io: Optional[Port[DigitalLink]] = None
+    ) -> "DigitalCapacitor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name."""
+        if gnd is not None:
+            cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+        if io is not None:
+            cast(Block, builder.get_enclosing_block()).connect(io, self.io)
         return self
 
 

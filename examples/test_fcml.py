@@ -13,8 +13,10 @@ class PowerOutConnector(Connector, Block):
     def __init__(self, current: RangeLike):
         super().__init__()
         self.conn = self.Block(PassiveConnector())
-        self.gnd = self.Export(self.conn.pins.request("1").adapt_to(Ground()), [Common])
+        self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Export(self.conn.pins.request("2").adapt_to(VoltageSink(current_draw=current)), [Power])
+
+        self.connect(self.gnd.net, self.conn.pins.request("1"))
 
 
 class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):

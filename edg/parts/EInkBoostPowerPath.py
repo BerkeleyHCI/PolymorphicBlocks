@@ -24,8 +24,8 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
         self.pos_out = self.Port(VoltageSource.empty())
         self.neg_out = self.Port(VoltageSource.empty())
 
-        self.gate = self.Port(Passive.empty())
-        self.isense = self.Port(Passive.empty(), optional=True)
+        self.gate = self.Port(DigitalSink.empty())
+        self.isense = self.Port(AnalogSource.empty(), optional=True)
 
         self.voltage_out = self.ArgParameter(voltage_out)
         self.current = self.ArgParameter(current)
@@ -43,7 +43,7 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
             Fet.NFet(
                 drain_voltage=self.voltage_out.hull((0, 0) * Volt),
                 drain_current=self.current,
-                gate_voltage=(0, 5) * Volt,
+                gate_voltage=self.gate.link().voltage,
                 rds_on=(0, 400) * mOhm,
             )
         )
@@ -78,5 +78,7 @@ class EInkBoostPowerPath(Interface, KiCadSchematicBlock):
                 ),
                 "boot_gnd_diode.K": Ground(),
                 "sense.2": Ground(),
+                "gate": DigitalSink(),
+                "isense": AnalogSource(),
             },
         )
