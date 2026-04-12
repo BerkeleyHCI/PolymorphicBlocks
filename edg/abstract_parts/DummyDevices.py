@@ -60,7 +60,7 @@ class DummyAnalogSink(DummyDevice):
         )
 
 
-class ForcedVoltageCurrentDraw(DummyDevice, NetBlock):
+class ForcedVoltageCurrentDraw(DummyDevice):
     """Forces some input current draw regardless of the output's actual current draw value"""
 
     def __init__(self, forced_current_draw: RangeLike) -> None:
@@ -74,7 +74,7 @@ class ForcedVoltageCurrentDraw(DummyDevice, NetBlock):
         self.connect(self.pwr_in.net, self.pwr_out.net)
 
 
-class ForcedVoltageCurrentLimit(DummyDevice, NetBlock):
+class ForcedVoltageCurrentLimit(DummyDevice):
     """Forces some output current limit, which should be tighter than the input's actual current draw."""
 
     def __init__(self, forced_current_limit: RangeLike) -> None:
@@ -103,7 +103,7 @@ class ForcedVoltage(DummyDevice):
         self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
 
 
-class ForcedVoltageCurrent(DummyDevice, NetBlock):
+class ForcedVoltageCurrent(DummyDevice):
     """Forces some voltage and current on the output regardless of the input's actual parameters."""
 
     def __init__(self, forced_voltage: RangeLike, forced_current: RangeLike) -> None:

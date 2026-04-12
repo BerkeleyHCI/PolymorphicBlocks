@@ -22,7 +22,7 @@ class PassiveLink(CircuitLink):
         self.passives = self.Port(Vector(Passive()))
 
 
-class PassiveAdapterGround(CircuitPortAdapter["Ground"]):
+class PassiveAdapterGround(PortAdapter["Ground"]):
     def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL):
         from .GroundPort import Ground
 

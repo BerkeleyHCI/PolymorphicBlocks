@@ -6,7 +6,7 @@ from typing_extensions import override
 
 from .PassivePort import HasPassivePort, Passive
 from ..core import *
-from .CircuitBlock import CircuitPortBridge, CircuitPortAdapter, CircuitLink, CircuitPort, KicadImportablePortAdapter
+from .CircuitBlock import KicadImportablePortAdapter
 from .Units import Volt, Ohm
 
 if TYPE_CHECKING:

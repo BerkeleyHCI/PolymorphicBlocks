@@ -7,7 +7,7 @@ from ..abstract_parts import *
 
 # These adapters are needed to properly orient the boost-side switch, since it outputs on the high side
 # and inputs in the center
-class VoltageSinkConnector(DummyDevice, NetBlock):
+class VoltageSinkConnector(DummyDevice):
     """Connects two voltage sinks together (FET top sink to exterior source)."""
 
     def __init__(self, voltage_out: RangeLike, a_current_limits: RangeLike, b_current_limits: RangeLike) -> None:
@@ -18,9 +18,10 @@ class VoltageSinkConnector(DummyDevice, NetBlock):
         self.b = self.Port(
             VoltageSource(voltage_out=voltage_out, current_limits=b_current_limits), [Output]
         )  # exterior source: set output voltage + Ilim
+        self.connect(self.a.net, self.b.net)
 
 
-class VoltageSourceConnector(DummyDevice, NetBlock):
+class VoltageSourceConnector(DummyDevice):
     """Connects two voltage sources together (inductor output to FET center 'source')."""
 
     def __init__(self, a_current_draw: RangeLike, b_current_draw: RangeLike) -> None:
@@ -31,6 +32,7 @@ class VoltageSourceConnector(DummyDevice, NetBlock):
         self.b = self.Port(
             VoltageSink(current_draw=b_current_draw), [Output]
         )  # exterior source: set output voltage + Ilim
+        self.connect(self.a.net, self.b.net)
 
 
 class CustomSyncBuckBoostConverterPwm(DiscreteBoostConverter, Resettable):
