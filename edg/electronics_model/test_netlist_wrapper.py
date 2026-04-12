@@ -68,8 +68,8 @@ class NetlistWrapperTestCase(unittest.TestCase):
                 "vpos",
                 [NetPin(["source"], "1"), NetPin(["sink"], "1")],  # ensure extraneous nets not generated
                 [
-                    TransformUtil.Path.empty().append_block("source").append_port("pos").append_port("net"),
-                    TransformUtil.Path.empty().append_block("sink").append_port("pos").append_port("net"),
+                    TransformUtil.Path.empty().append_block("source").append_port("pos", "net"),
+                    TransformUtil.Path.empty().append_block("sink").append_port("pos", "net"),
                 ],
             ),
             net.nets,
@@ -79,8 +79,8 @@ class NetlistWrapperTestCase(unittest.TestCase):
                 "gnd",
                 [NetPin(["source"], "2"), NetPin(["sink"], "2")],
                 [
-                    TransformUtil.Path.empty().append_block("source").append_port("neg").append_port("net"),
-                    TransformUtil.Path.empty().append_block("sink").append_port("neg").append_port("net"),
+                    TransformUtil.Path.empty().append_block("source").append_port("neg", "net"),
+                    TransformUtil.Path.empty().append_block("sink").append_port("neg", "net"),
                 ],
             ),
             net.nets,
