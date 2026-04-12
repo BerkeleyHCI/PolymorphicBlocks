@@ -14,7 +14,7 @@ class ConnectorResistiveSensor(Analog, Block):
         self.resistance_range = self.ArgParameter(resistance_range)
         self.fixed_resistance = self.ArgParameter(fixed_resistance)
 
-        self.input = self.Port(VoltageSink.empty(), [Power])
+        self.input = self.Port(VoltageSink(current_draw=RangeExpr()), [Power])
         self.output = self.Port(
             AnalogSource(voltage_out=RangeExpr(), signal_out=RangeExpr(), impedance=RangeExpr()), [Output]
         )
@@ -29,7 +29,8 @@ class ConnectorResistiveSensor(Analog, Block):
     def contents(self) -> None:
         self.top = self.Block(Resistor(self.fixed_resistance, voltage=self.input.link().voltage))
         self.bot = self.Block(PassiveConnector(2))
-        self.connect(self.input, self.top.a.adapt_to(VoltageSink(current_draw=self.output.link().current_drawn)))
+        self.connect(self.input.net, self.top.a)
+        self.assign(self.input.current_draw, self.output.link().current_drawn)
         output_voltage = ResistiveDivider.divider_output(
             self.input.link().voltage, self.gnd.link().voltage, self.actual_ratio
         )

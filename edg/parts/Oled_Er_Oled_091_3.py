@@ -29,44 +29,41 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
 
         self.conn = self.Block(Fpc050Bottom(length=15))
 
-        self.vcc = self.Export(
-            self.conn.pins.request("15").adapt_to(
-                VoltageSource(
-                    voltage_out=(6.4, 9) * Volt,
-                    current_limits=0 * mAmp(tol=0),  # external draw not allowed, probably does 10-16mA
-                )
-            )
-        )
-        self.vcomh = self.Export(
-            self.conn.pins.request("14").adapt_to(
-                VoltageSource(
-                    voltage_out=self.vcc.voltage_out,  # can program Vcomh to be fractions of Vcc
-                    current_limits=0 * mAmp(tol=0),  # external draw not allowed
-                )
-            )
-        )
-        self.vdd = self.Export(
-            self.conn.pins.request("7").adapt_to(
-                VoltageSink(
-                    voltage_limits=self.nonstrict_3v3_compatible.then_else(
-                        (1.65, 3.6) * Volt, (1.65, 3.3) * Volt  # abs max is 4v
-                    ),
-                    current_draw=(1, 300) * uAmp,
-                )
-            )
-        )
-        self.vbat = self.Export(
-            self.conn.pins.request("5").adapt_to(
-                VoltageSink(
-                    voltage_limits=self.nonstrict_3v3_compatible.then_else(
-                        (3.1, 4.2) * Volt, (3.3, 4.2) * Volt  # technically out of spec, works in practice near 3.3v
-                    ),  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
-                    current_draw=(23, 29) * mAmp,
-                )
-            )
-        )
         self.vss = self.Port(Ground(), [Common])
         self.connect(self.vss.net, self.conn.pins.request("6"))
+
+        self.vcc = self.Port(
+            VoltageSource(
+                voltage_out=(6.4, 9) * Volt,
+                current_limits=0 * mAmp(tol=0),  # external draw not allowed, probably does 10-16mA
+            )
+        )
+        self.connect(self.vcc.net, self.conn.pins.request("15"))
+        self.vcomh = self.Port(
+            VoltageSource(
+                voltage_out=self.vcc.voltage_out,  # can program Vcomh to be fractions of Vcc
+                current_limits=0 * mAmp(tol=0),  # external draw not allowed
+            )
+        )
+        self.connect(self.vcomh.net, self.conn.pins.request("14"))
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (1.65, 3.6) * Volt, (1.65, 3.3) * Volt  # abs max is 4v
+                ),
+                current_draw=(1, 300) * uAmp,
+            )
+        )
+        self.connect(self.vdd.net, self.conn.pins.request("7"))
+        self.vbat = self.Port(
+            VoltageSink(
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (3.1, 4.2) * Volt, (3.3, 4.2) * Volt  # technically out of spec, works in practice near 3.3v
+                ),  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
+                current_draw=(23, 29) * mAmp,
+            )
+        )
+        self.connect(self.vbat.net, self.conn.pins.request("5"))
 
         din_model = DigitalSink.from_supply(
             self.vss,

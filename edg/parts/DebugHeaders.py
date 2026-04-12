@@ -12,13 +12,11 @@ class SwdCortexTargetHeader(
     def contents(self) -> None:
         super().contents()
 
+        self.pwr.init_from(VoltageSink())
         self.gnd.init_from(Ground())
-        self.conn = self.Block(PinHeader127DualShrouded(10))
 
-        self.connect(self.pwr, self.conn.pins.request("1").adapt_to(VoltageSink()))
-        self.connect(
-            self.gnd.net, self.conn.pins.request("3"), self.conn.pins.request("5"), self.conn.pins.request("9")
-        )
+        self.conn = self.Block(PinHeader127DualShrouded(10)).connected({"1": self.pwr, ("3", "5", "9"): self.gnd})
+
         self.connect(self.swd.swdio, self.conn.pins.request("2").adapt_to(DigitalBidir()))
         self.connect(self.swd.swclk, self.conn.pins.request("4").adapt_to(DigitalSource()))
         self.connect(self.swo, self.conn.pins.request("6").adapt_to(DigitalBidir()))

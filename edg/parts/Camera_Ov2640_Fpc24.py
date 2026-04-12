@@ -14,32 +14,29 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.connect(self.dgnd.net, self.conn.pins.request("10"))
         self.agnd = self.Port(Ground())
         self.connect(self.agnd.net, self.conn.pins.request("23"))
-        self.dovdd = self.Export(
-            self.conn.pins.request("14").adapt_to(
-                VoltageSink(
-                    voltage_limits=self.nonstrict_3v3_compatible.then_else(
-                        (1.71, 4.5) * Volt, (1.71, 3.3) * Volt  # Table 6, absolute maximum (Table 5) is 4.5v
-                    ),
-                    current_draw=(6, 15) * mAmp,  # active typ to max
-                )
+        self.dovdd = self.Port(
+            VoltageSink(
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (1.71, 4.5) * Volt, (1.71, 3.3) * Volt  # Table 6, absolute maximum (Table 5) is 4.5v
+                ),
+                current_draw=(6, 15) * mAmp,  # active typ to max
             )
         )
-        self.dvdd = self.Export(
-            self.conn.pins.request("15").adapt_to(
-                VoltageSink(
-                    voltage_limits=(1.14, 1.26) * Volt,  # Table 6
-                    current_draw=(30, 60) * mAmp,  # active typ YUV to max compressed
-                )
+        self.connect(self.dovdd.net, self.conn.pins.request("14"))
+        self.dvdd = self.Port(
+            VoltageSink(
+                voltage_limits=(1.14, 1.26) * Volt,  # Table 6
+                current_draw=(30, 60) * mAmp,  # active typ YUV to max compressed
             )
         )
-        self.avdd = self.Export(
-            self.conn.pins.request("21").adapt_to(
-                VoltageSink(
-                    voltage_limits=(2.5, 3.0) * Volt,  # Table 6, absolute maximum (Table 5) is 4.5v
-                    current_draw=(30, 40) * mAmp,  # active max
-                )
+        self.connect(self.dvdd.net, self.conn.pins.request("15"))
+        self.avdd = self.Port(
+            VoltageSink(
+                voltage_limits=(2.5, 3.0) * Volt,  # Table 6, absolute maximum (Table 5) is 4.5v
+                current_draw=(30, 40) * mAmp,  # active max
             )
         )
+        self.connect(self.avdd.net, self.conn.pins.request("21"))
 
         dio_model = DigitalBidir.from_supply(
             self.dgnd,
