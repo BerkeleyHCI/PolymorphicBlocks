@@ -24,7 +24,7 @@ class Lm4871_Device(InternalSubcircuit, FootprintBlock):
         self.vo1 = self.Port(AnalogSource())
         self.vo2 = self.Port(AnalogSource())
 
-        half_vdd = self.pwr.link().voltage / 2 - self.gnd.link().voltage
+        half_vdd = (self.pwr.link().voltage - self.gnd.link().voltage) / 2 + self.gnd.link().voltage
         self.byp = self.Port(AnalogSource(voltage_out=half_vdd, signal_out=half_vdd))
 
     @override
