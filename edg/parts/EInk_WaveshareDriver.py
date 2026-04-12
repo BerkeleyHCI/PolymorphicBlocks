@@ -11,76 +11,82 @@ class Waveshare_Epd_Device(InternalSubcircuit, Block):
     def __init__(self) -> None:
         super().__init__()
 
-        self.conn = self.Block(Fpc050Bottom(length=24))
-
         self.vss = self.Port(Ground(), [Common])
-        self.connect(self.vss.net, self.conn.pins.request("17"))
-        self.vdd = self.Export(
-            self.conn.pins.request("16").adapt_to(
-                VoltageSink(
-                    voltage_limits=(2.5, 3.7) * Volt,  # VCI specs, assumed for all logic
-                    current_draw=(0.001, 2.1) * mAmp,  # sleep max to operating typ
-                )
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=(2.5, 3.7) * Volt,  # VCI specs, assumed for all logic
+                current_draw=(0.001, 2.1) * mAmp,  # sleep max to operating typ
             )
         )
-        self.vddio = self.Export(
-            self.conn.pins.request("15").adapt_to(
-                VoltageSink(
-                    voltage_limits=(2.5, 3.7) * Volt,  # VCI specs, assumed for all logic
-                )
+        self.vddio = self.Port(
+            VoltageSink(
+                voltage_limits=(2.5, 3.7) * Volt,  # VCI specs, assumed for all logic
             )
         )
-        self.vdd1v8 = self.Export(
-            self.conn.pins.request("18").adapt_to(
-                VoltageSource(
-                    voltage_out=1.8 * Volt(tol=0),  # specs not given
-                    current_limits=0 * mAmp(tol=0),  # only for external capacitor
-                )
+        self.vdd1v8 = self.Port(
+            VoltageSource(
+                voltage_out=1.8 * Volt(tol=0),  # specs not given
+                current_limits=0 * mAmp(tol=0),  # only for external capacitor
             )
         )
 
         din_model = DigitalSink.from_supply(self.vss, self.vddio, input_threshold_factor=(0.2, 0.8))
 
+        self.rese = self.Port(AnalogSink())
+
+        self.vgl = self.Port(
+            VoltageSource(
+                voltage_out=(-15, -2.5) * Volt,  # inferred from power selection register
+                current_limits=0 * mAmp(tol=0),  # only for external capacitor
+            )
+        )
+        self.vgh = self.Port(
+            VoltageSource(voltage_out=(2.5, 15) * Volt, current_limits=0 * mAmp(tol=0))  # only for external capacitor
+        )
+        self.vsh = self.Port(
+            VoltageSource(
+                voltage_out=(2.4, 15) * Volt,  # inferred from power selection register
+                current_limits=0 * mAmp(tol=0),  # only for external capacitor
+            )
+        )
+        self.vsl = self.Port(
+            VoltageSource(
+                voltage_out=(-15, -2.4) * Volt,  # inferred from power selection register
+                current_limits=0 * mAmp(tol=0),  # only for external capacitor
+            )
+        )
+
+        self.prevgh = self.Port(VoltageSink(voltage_limits=(13, 20) * Volt))
+        self.prevgl = self.Port(VoltageSink(voltage_limits=(-20, -13) * Volt))
+
+        self.vcom = self.Port(
+            VoltageSource(
+                voltage_out=(2.4, 20) * Volt,  # configurable up to VGH
+                current_limits=0 * mAmp(tol=0),  # only for external capacitor
+            )
+        )
+
+        self.conn = self.Block(Fpc050Bottom(length=24)).connected(
+            {
+                "17": self.vss,
+                "16": self.vdd,
+                "15": self.vddio,
+                "18": self.vdd1v8,
+                "3": self.rese,
+                "4": self.vgl,
+                "5": self.vgh,
+                "20": self.vsh,
+                "22": self.vsl,
+                "21": self.prevgh,
+                "23": self.prevgl,
+                "24": self.vcom,
+            }
+        )
+
+        # TODO move to above rese once DigitalSource refactored, #114
         self.gdr = self.Export(
             self.conn.pins.request("2").adapt_to(DigitalSource.from_supply(self.vss, self.vdd))
         )  # assumed
-        self.rese = self.Port(AnalogSink())
-        self.connect(self.rese.net, self.conn.pins.request("3"))
-
-        self.vgl = self.Export(
-            self.conn.pins.request("4").adapt_to(
-                VoltageSource(
-                    voltage_out=(-15, -2.5) * Volt,  # inferred from power selection register
-                    current_limits=0 * mAmp(tol=0),  # only for external capacitor
-                )
-            )
-        )
-        self.vgh = self.Export(
-            self.conn.pins.request("5").adapt_to(
-                VoltageSource(
-                    voltage_out=(2.5, 15) * Volt, current_limits=0 * mAmp(tol=0)  # only for external capacitor
-                )
-            )
-        )
-        self.vsh = self.Export(
-            self.conn.pins.request("20").adapt_to(
-                VoltageSource(
-                    voltage_out=(2.4, 15) * Volt,  # inferred from power selection register
-                    current_limits=0 * mAmp(tol=0),  # only for external capacitor
-                )
-            )
-        )
-        self.vsl = self.Export(
-            self.conn.pins.request("22").adapt_to(
-                VoltageSource(
-                    voltage_out=(-15, -2.4) * Volt,  # inferred from power selection register
-                    current_limits=0 * mAmp(tol=0),  # only for external capacitor
-                )
-            )
-        )
-
-        self.prevgh = self.Export(self.conn.pins.request("21").adapt_to(VoltageSink(voltage_limits=(13, 20) * Volt)))
-        self.prevgl = self.Export(self.conn.pins.request("23").adapt_to(VoltageSink(voltage_limits=(-20, -13) * Volt)))
 
         self.bs = self.Export(self.conn.pins.request("8").adapt_to(din_model))
         self.busy = self.Export(self.conn.pins.request("9").adapt_to(din_model), optional=True)
@@ -93,15 +99,6 @@ class Waveshare_Epd_Device(InternalSubcircuit, Block):
         self.connect(self.spi.mosi, self.conn.pins.request("14").adapt_to(din_model))  # SDA
         self.miso_nc = self.Block(DigitalBidirNotConnected())
         self.connect(self.spi.miso, self.miso_nc.port)
-
-        self.vcom = self.Export(
-            self.conn.pins.request("24").adapt_to(
-                VoltageSource(
-                    voltage_out=(2.4, 20) * Volt,  # configurable up to VGH
-                    current_limits=0 * mAmp(tol=0),  # only for external capacitor
-                )
-            )
-        )
 
 
 class Waveshare_Epd(EInk, GeneratorBlock):

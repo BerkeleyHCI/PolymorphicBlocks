@@ -7,12 +7,18 @@ from ..abstract_parts import *
 from .JlcPart import JlcPart
 
 
-class Pe4259_Device(InternalSubcircuit, FootprintBlock, JlcPart):
+class Pe4259_Device(InternalSubcircuit, Nonstrict3v3Compatible, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
 
         self.gnd = self.Port(Ground())
-        self.vdd = self.Port(Passive())  # modeled in container, series resistor recommended
+        self.vdd = self.Port(
+            VoltageSink.from_gnd(
+                self.gnd,
+                voltage_limits=self.nonstrict_3v3_compatible.then_else((1.8, 4.0) * Volt, (1.8, 3.3) * Volt),
+                current_draw=(9, 20) * uAmp,
+            )
+        )  # series resistor recommended
 
         self.rf1 = self.Port(Passive())
         self.rf2 = self.Port(Passive())
@@ -53,7 +59,7 @@ class Pe4259_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.assign(self.actual_basic_part, False)
 
 
-class Pe4259(Nonstrict3v3Compatible, Block):
+class Pe4259(Block):
     """RF switch between 10 MHz to 3000 MHz, 1.8-3.3v input.
     Requires all RF pins be held at 0v or are DC-blocked with a series cap.
     TODO: perhaps a RfSwitch base class? maybe some relation to AnalogSwitch? (though not valid at DC)
@@ -63,28 +69,18 @@ class Pe4259(Nonstrict3v3Compatible, Block):
         super().__init__()
         self.ic = self.Block(Pe4259_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
+        self.vdd = self.Port(VoltageSink.empty(), [Power])
         self.rf1 = self.Export(self.ic.rf1)  # connected when CTRL high
         self.rf2 = self.Export(self.ic.rf2)  # connected when CTRL low
         self.rfc = self.Export(self.ic.rfc)
         self.ctrl = self.Port(DigitalSink.empty())
-        self.vdd = self.Port(VoltageSink.empty(), [Power])
 
     @override
     def contents(self) -> None:
         super().contents()
 
         self.vdd_res = self.Block(Resistor(1 * kOhm(tol=0.05)))
-        self.connect(self.vdd_res.b, self.ic.vdd)
-        self.connect(
-            self.vdd_res.a.adapt_to(
-                VoltageSink.from_gnd(
-                    self.gnd,
-                    voltage_limits=self.nonstrict_3v3_compatible.then_else((1.8, 4.0) * Volt, (1.8, 3.3) * Volt),
-                    current_draw=(9, 20) * uAmp,
-                )
-            ),
-            self.vdd,
-        )
+        self.vdd_res = self.Block(SeriesPowerResistor(1 * kOhm(tol=0.05))).connected(self.vdd, self.ic.vdd)
 
         self.ctrl_res = self.Block(Resistor(1 * kOhm(tol=0.05)))
         self.connect(self.ctrl_res.b, self.ic.ctrl)
