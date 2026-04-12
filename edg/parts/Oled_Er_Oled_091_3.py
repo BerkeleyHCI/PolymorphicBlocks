@@ -27,10 +27,7 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
     def __init__(self) -> None:
         super().__init__()
 
-        self.conn = self.Block(Fpc050Bottom(length=15))
-
         self.vss = self.Port(Ground(), [Common])
-        self.connect(self.vss.net, self.conn.pins.request("6"))
 
         self.vcc = self.Port(
             VoltageSource(
@@ -38,14 +35,12 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
                 current_limits=0 * mAmp(tol=0),  # external draw not allowed, probably does 10-16mA
             )
         )
-        self.connect(self.vcc.net, self.conn.pins.request("15"))
         self.vcomh = self.Port(
             VoltageSource(
                 voltage_out=self.vcc.voltage_out,  # can program Vcomh to be fractions of Vcc
                 current_limits=0 * mAmp(tol=0),  # external draw not allowed
             )
         )
-        self.connect(self.vcomh.net, self.conn.pins.request("14"))
         self.vdd = self.Port(
             VoltageSink(
                 voltage_limits=self.nonstrict_3v3_compatible.then_else(
@@ -54,7 +49,6 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
                 current_draw=(1, 300) * uAmp,
             )
         )
-        self.connect(self.vdd.net, self.conn.pins.request("7"))
         self.vbat = self.Port(
             VoltageSink(
                 voltage_limits=self.nonstrict_3v3_compatible.then_else(
@@ -63,7 +57,16 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
                 current_draw=(23, 29) * mAmp,
             )
         )
-        self.connect(self.vbat.net, self.conn.pins.request("5"))
+
+        self.conn = self.Block(Fpc050Bottom(length=15)).connected(
+            {
+                "6": self.vss,
+                "15": self.vcc,
+                "14": self.vcomh,
+                "7": self.vdd,
+                "5": self.vbat,
+            }
+        )
 
         din_model = DigitalSink.from_supply(
             self.vss,

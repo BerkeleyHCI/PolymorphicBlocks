@@ -21,10 +21,11 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
     @override
     def contents(self) -> None:
         super().contents()
-        self.conn = self.Block(PinHeader127DualShrouded(10))
-        self.connect(self.pwr.net, self.conn.pins.request("1"))
-        self.connect(
-            self.gnd.net, self.conn.pins.request("3"), self.conn.pins.request("5"), self.conn.pins.request("9")
+        self.conn = self.Block(PinHeader127DualShrouded(10)).connected(
+            {
+                "1": self.pwr,
+                ("3", "5", "9"): self.gnd,
+            }
         )
         self.connect(self.cs, self.conn.pins.request("2").adapt_to(DigitalSource()))  # swd: swdio
         self.connect(self.spi.sck, self.conn.pins.request("4").adapt_to(DigitalSource()))  # swd: swclk
