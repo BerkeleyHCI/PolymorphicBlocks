@@ -94,21 +94,19 @@ class LipoConnector(Connector, Battery):
         **kwargs: Any,
     ) -> None:
         super().__init__(voltage, *args, **kwargs)
-        self.conn = self.Block(PassiveConnector())
 
         self.gnd.init_from(Ground())
-        self.connect(self.gnd.net, self.conn.pins.request("1"))
-        self.connect(
-            self.pwr,
-            self.conn.pins.request("2").adapt_to(
-                VoltageSource(
-                    voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
-                    current_limits=(0, 5.5) * Amp,  # arbitrary assuming low capacity, 10 C discharge
-                    reverse_voltage_limits=actual_voltage * RangeExpr._to_expr_type(charge_tolerance),
-                    reverse_current_draw=(0, 0) * Amp,
-                )
-            ),
+        self.pwr.init_from(
+            VoltageSource(
+                voltage_out=actual_voltage,  # arbitrary from https://www.mouser.com/catalog/additional/Adafruit_3262.pdf
+                current_limits=(0, 5.5) * Amp,  # arbitrary assuming low capacity, 10 C discharge
+                reverse_voltage_limits=actual_voltage * RangeExpr._to_expr_type(charge_tolerance),
+                reverse_current_draw=(0, 0) * Amp,
+            )
         )
+
+        self.conn = self.Block(PassiveConnector()).connected({"1": self.gnd, "2": self.pwr})
+
         self.assign(self.actual_capacity, (500, 600) * mAmp)  # arbitrary
 
 
@@ -118,19 +116,18 @@ class QwiicTarget(Connector):
 
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(JstShSmHorizontal(4))
+
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Export(
-            self.conn.pins.request("2").adapt_to(
-                VoltageSink(
-                    voltage_limits=3.3 * Volt(tol=0.05),  # required 3.3v per the spec, tolerance assumed
-                    current_draw=(0, 226) * mAmp,  # per the Qwiic FAQ, max current for the cable
-                )
+        self.pwr = self.Port(
+            VoltageSink(
+                voltage_limits=3.3 * Volt(tol=0.05),  # required 3.3v per the spec, tolerance assumed
+                current_draw=(0, 226) * mAmp,  # per the Qwiic FAQ, max current for the cable
             ),
             [Power],
         )
+
+        self.conn = self.Block(JstShSmHorizontal(4)).connected({"1": self.gnd, "2": self.pwr})
+
         self.i2c = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
         self.connect(self.i2c.sda, self.conn.pins.request("3").adapt_to(DigitalBidir()))
         self.connect(self.i2c.scl, self.conn.pins.request("4").adapt_to(DigitalBidir()))
-
-        self.connect(self.gnd.net, self.conn.pins.request("1"))

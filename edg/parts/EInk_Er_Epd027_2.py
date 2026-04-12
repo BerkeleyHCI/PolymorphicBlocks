@@ -51,8 +51,8 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
             )
         )
 
-        self.gdr = self.Export(Passive())
-        self.rese = self.Export(Passive())
+        self.gdr = self.Port(Passive())
+        self.rese = self.Port(Passive())
         # pin 4 is NC for this part
         self.vshr = self.Port(
             VoltageSource(

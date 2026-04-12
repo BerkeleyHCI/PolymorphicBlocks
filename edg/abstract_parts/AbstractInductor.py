@@ -192,20 +192,19 @@ class SeriesPowerInductor(DiscreteApplication):
     ) -> None:
         super().__init__()
 
-        self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
-        self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
+        self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()), [Power, Input])
+        self.pwr_out = self.Port(
+            VoltageSource(
+                voltage_out=self.pwr_in.link().voltage,
+            ),
+            [Output],
+        )
 
         self.ind = self.Block(Inductor(inductance=inductance, current=current, frequency=frequency))
 
-        self.connect(self.pwr_in, self.ind.a.adapt_to(VoltageSink(current_draw=self.pwr_out.link().current_drawn)))
-        self.connect(
-            self.pwr_out,
-            self.ind.b.adapt_to(
-                VoltageSource(
-                    voltage_out=self.pwr_in.link().voltage,
-                )
-            ),
-        )
+        self.connect(self.pwr_in.net, self.ind.a)
+        self.connect(self.pwr_out.net, self.ind.b)
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
 
     def connected(
         self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None

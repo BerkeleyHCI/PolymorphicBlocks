@@ -215,17 +215,14 @@ class AnalogSourceAdapterVoltageSource(KicadImportablePortAdapter[VoltageSource]
     def __init__(self) -> None:
         super().__init__()
         self.src = self.Port(AnalogSink(current_draw=RangeExpr()))  # otherwise ideal
-        self.dst = self.Port(VoltageSource.empty())
-        self.assign(self.src.current_draw, self.dst.link().current_drawn)
-        self.connect(
-            self.src.net.adapt_to(
-                VoltageSource(
-                    voltage_out=(self.src.link().voltage.upper(), self.src.link().voltage.upper()),
-                    current_limits=(-float("inf"), float("inf")),
-                )
-            ),
-            self.dst,
+        self.dst = self.Port(
+            VoltageSource(
+                voltage_out=(self.src.link().voltage.upper(), self.src.link().voltage.upper()),
+                current_limits=(-float("inf"), float("inf")),
+            )
         )
+        self.assign(self.src.current_draw, self.dst.link().current_drawn)
+        self.connect(self.src.net, self.dst.net)
 
 
 class AnalogSource(HasPassivePort, AnalogBase):

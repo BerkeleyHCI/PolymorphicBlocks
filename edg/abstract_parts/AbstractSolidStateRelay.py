@@ -50,11 +50,20 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
     def __init__(self) -> None:
         super().__init__()
 
-        self.signal = self.Port(DigitalSink.empty())
         self.gnd = self.Port(Ground(), [Common])
-
-        self.pwr_in = self.Port(VoltageSink.empty())
-        self.pwr_out = self.Port(VoltageSource.empty())
+        self.pwr_in = self.Port(
+            VoltageSink(
+                voltage_limits=RangeExpr(),
+                current_draw=RangeExpr(),
+            )
+        )
+        self.pwr_out = self.Port(
+            VoltageSource(
+                voltage_out=self.pwr_in.link().voltage,
+                current_limits=RangeExpr(),
+            )
+        )
+        self.signal = self.Port(DigitalSink.empty())
 
         self.ic = self.Block(SolidStateRelay())
         self.res = self.Block(
@@ -71,25 +80,12 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         )
         self.connect(self.res.a, self.ic.ledk)
         self.connect(self.gnd.net, self.res.b)
+        self.connect(self.pwr_in.net, self.ic.feta)
+        self.connect(self.pwr_out.net, self.ic.fetb)
 
-        self.connect(
-            self.pwr_in,
-            self.ic.feta.adapt_to(
-                VoltageSink(
-                    voltage_limits=self.ic.load_voltage_limit,  # TODO: assumed magic ground
-                    current_draw=self.pwr_out.link().current_drawn,
-                )
-            ),
-        )
-        self.connect(
-            self.pwr_out,
-            self.ic.fetb.adapt_to(
-                VoltageSource(
-                    voltage_out=self.pwr_in.link().voltage,
-                    current_limits=self.ic.load_current_limit,
-                )
-            ),
-        )
+        self.assign(self.pwr_in.voltage_limits, self.ic.load_voltage_limit)  # TODO: assumed magic ground
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_out.current_limits, self.ic.load_current_limit)
 
 
 class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):

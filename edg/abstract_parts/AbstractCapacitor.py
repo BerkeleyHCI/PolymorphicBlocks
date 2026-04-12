@@ -367,15 +367,13 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
 
         self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Export(
-            self.cap.pos.adapt_to(
-                VoltageSink.from_gnd(
-                    self.gnd, voltage_limits=self.cap.actual_voltage_rating, current_draw=0 * Amp(tol=0)
-                )
-            ),
+        self.pwr = self.Port(
+            VoltageSink.from_gnd(self.gnd, voltage_limits=self.cap.actual_voltage_rating, current_draw=0 * Amp(tol=0)),
             [Power, InOut],
         )
+
         self.connect(self.gnd.net, self.cap.neg)
+        self.connect(self.pwr.net, self.cap.pos)
         self.assign(self.cap.voltage, self.pwr.link().voltage - self.gnd.link().voltage)
 
         # TODO there should be a way to forward the description string of the inner element

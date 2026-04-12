@@ -29,60 +29,50 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
     def __init__(self) -> None:
         super().__init__()
 
-        self.conn = self.Block(Fpc050Bottom(length=50))
-
         self.gnd = self.Port(Ground(), [Common])
-        self.connect(
-            self.gnd.net,
-            self.conn.pins.request("43"),
-            self.conn.pins.request("48"),
-            self.conn.pins.request("49"),
-            self.conn.pins.request("50"),
-        )
-
-        iovcc_pin = self.conn.pins.request("40")
-        self.iovcc = self.Export(
-            iovcc_pin.adapt_to(
-                VoltageSink.from_gnd(
-                    self.gnd,
-                    voltage_limits=self.nonstrict_3v3_compatible.then_else(
-                        (1.65, 3.6) * Volt, (1.65, 3.3) * Volt  # extended range, abs max up to 4.6v
-                    ),  # typ 1.8/2.8
-                )
+        self.iovcc = self.Port(
+            VoltageSink.from_gnd(
+                self.gnd,
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (1.65, 3.6) * Volt, (1.65, 3.3) * Volt  # extended range, abs max up to 4.6v
+                ),  # typ 1.8/2.8
             )
         )
-        self.connect(iovcc_pin, self.conn.pins.request("41"))
-
-        self.vci = self.Export(
-            self.conn.pins.request("42").adapt_to(
-                VoltageSink.from_gnd(
-                    self.gnd,
-                    voltage_limits=self.nonstrict_3v3_compatible.then_else(
-                        (2.5, 3.6) * Volt, (2.5, 3.3) * Volt  # extended range, abs max up to 4.6v
-                    ),  # typ 2.8
-                )
+        self.vci = self.Port(
+            VoltageSink.from_gnd(
+                self.gnd,
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (2.5, 3.6) * Volt, (2.5, 3.3) * Volt  # extended range, abs max up to 4.6v
+                ),  # typ 2.8
             )
         )
 
         self.ledk = self.Port(Ground())
-        self.connect(self.ledk.net, self.conn.pins.request("1"))
-        self.leda1 = self.Export(self.conn.pins.request("2"))
-        self.leda2 = self.Export(self.conn.pins.request("3"))
-        self.leda3 = self.Export(self.conn.pins.request("4"))
-        self.leda4 = self.Export(self.conn.pins.request("5"))
+        self.leda1 = self.Port(Passive())
+        self.leda2 = self.Port(Passive())
+        self.leda3 = self.Port(Passive())
+        self.leda4 = self.Port(Passive())
 
-        self.connect(
-            self.gnd.net,  # per ILI9341 datasheet, fix to VDDI or VSS for pins not in use
-            self.conn.pins.request("11"),  # VSYNC
-            self.conn.pins.request("12"),  # HSYNC
-            self.conn.pins.request("13"),  # DOTCLK
-            self.conn.pins.request("14"),  # DC
+        self.conn = self.Block(Fpc050Bottom(length=50)).connected(
+            {
+                ("43", "48", "49", "50"): self.gnd,
+                ("40", "41"): self.iovcc,
+                "42": self.vci,
+                "1": self.ledk,
+                "2": self.leda1,
+                "3": self.leda2,
+                "4": self.leda3,
+                "5": self.leda4,
+            }
         )
-        for i in range(15, 33):  # DB0-17 pins unused, must be fixed to VSS level
-            self.connect(self.gnd.net, self.conn.pins.request(str(i)))
-        self.connect(
-            iovcc_pin,  # per ILI9341 datasheet, must be fixed to VDDI level
-            self.conn.pins.request("35"),  # RDX
+
+        self.conn.connected(
+            {
+                # per ILI9341 datasheet, fix to VDDI or VSS for pins not in use
+                ("11", "12", "13", "14"): self.gnd,  # VSYNC, HSYNC, DOTCLK, DC
+                (str(x) for x in range(15, 33)): self.gnd,  # DB0-17 unused, must be fixed to VSS level
+                "35": self.iovcc,  # RDX
+            }
         )
 
         dio_model = DigitalBidir.from_supply(self.gnd, self.iovcc, input_threshold_factor=(0.3, 0.7))

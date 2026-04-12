@@ -72,8 +72,8 @@ class VoltageTestPoint(BaseTypedTestPoint, Block):
 
     def __init__(self, *args: Any) -> None:
         super().__init__(*args)
-        self.io = self.Port(VoltageSink.empty(), [InOut])
-        self.connect(self.io, self.tp.io.adapt_to(VoltageSink()))
+        self.io: VoltageSink = self.Port(VoltageSink(), [InOut])
+        self.connect(self.io.net, self.tp.io)
 
     def connected(self, io: Port[VoltageLink]) -> "VoltageTestPoint":
         cast(Block, builder.get_enclosing_block()).connect(io, self.io)

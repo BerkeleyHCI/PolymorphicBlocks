@@ -206,8 +206,10 @@ class PullupResistor(DiscreteApplication):
 
         self.res = self.Block(Resistor(resistance, 0 * Watt(tol=0)))  # TODO automatically calculate power
 
-        self.pwr = self.Export(self.res.a.adapt_to(VoltageSink()), [Power])
+        self.pwr = self.Port(VoltageSink(), [Power])
         self.io = self.Export(self.res.b.adapt_to(DigitalSource.pullup_from_supply(self.pwr)), [InOut])
+
+        self.connect(self.pwr.net, self.res.a)
 
     def connected(
         self, pwr: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None
@@ -297,21 +299,18 @@ class SeriesPowerResistor(DiscreteApplication, KiCadImportableBlock):
 
         self.resistance = self.ArgParameter(resistance)
 
-        self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
-        self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
+        self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()), [Power, Input])
+        self.pwr_out = self.Port(
+            VoltageSource(voltage_out=self.pwr_in.link().voltage),  # ignore voltage drop
+            [Output],
+        )
         current_draw = self.pwr_out.link().current_drawn.abs()
 
         self.res = self.Block(Resistor(resistance=self.resistance, power=current_draw * current_draw * self.resistance))
 
-        self.connect(self.pwr_in, self.res.a.adapt_to(VoltageSink(current_draw=self.pwr_out.link().current_drawn)))
-        self.connect(
-            self.pwr_out,
-            self.res.b.adapt_to(
-                VoltageSource(
-                    voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
-                )
-            ),
-        )
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.connect(self.pwr_in.net, self.res.a)
+        self.connect(self.pwr_out.net, self.res.b)
 
         self.actual_power = self.Parameter(RangeExpr(current_draw * current_draw * self.res.actual_resistance))
         self.require(self.actual_power.within(self.res.actual_power_rating))
