@@ -1,8 +1,10 @@
-from typing import Tuple, Iterable
+from typing import Tuple, Iterable, TypeVar, Mapping, Union, cast
 
 from typing_extensions import override
 
 from ..abstract_parts import *
+
+PassiveConnectorSelfType = TypeVar("PassiveConnectorSelfType", bound="PassiveConnector")
 
 
 @abstract_block
@@ -23,6 +25,15 @@ class PassiveConnector(DiscreteComponent, Block):
         self.actual_length = self.Parameter(IntExpr())
 
         self.length = self.ArgParameter(length)
+
+    def connected(
+        self: PassiveConnectorSelfType, pins: Mapping[str, Union[CircuitPort, "HasPassivePort"]]
+    ) -> PassiveConnectorSelfType:
+        """Connects the given pins to this connector, and returns self to allow chaining.
+        Similar API to pinning in footprint."""
+        for pin_name, pin_port in pins.items():
+            cast(Block, builder.get_enclosing_block()).connect(pin_port, self.pins.request(pin_name))
+        return self
 
 
 @abstract_block
