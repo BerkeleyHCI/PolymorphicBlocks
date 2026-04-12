@@ -6,9 +6,9 @@ from deprecated import deprecated
 from typing_extensions import override
 
 from ..core import *
-from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
+from .CircuitBlock import CircuitPort, CircuitLink, CircuitPortBridge, CircuitPortAdapter
 from .GroundPort import GroundLink
-from .VoltagePorts import CircuitPort, VoltageLink, VoltageSource
+from .VoltagePorts import VoltageLink, VoltageSource
 from .Units import Volt
 
 
