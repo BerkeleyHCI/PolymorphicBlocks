@@ -4,7 +4,9 @@ from .EInk_WaveshareDriver import Waveshare_Epd
 from ..abstract_parts import *
 
 
-@deprecated("replaced with Waveshare EPD which has better compatibility")
+@deprecated(
+    "replaced with Waveshare EPD which has better compatibility - note this part used to have a 0.47 ohm resistor while the Waveshare subcircuitmay use a 3 ohm resistor"
+)
 class E2154fs091(EInk):
     def __init__(self) -> None:
         super().__init__()
