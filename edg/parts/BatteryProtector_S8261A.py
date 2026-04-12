@@ -13,7 +13,7 @@ class S8261A_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             VoltageSink.from_gnd(self.vss, voltage_limits=(-0.3, 12) * Volt, current_draw=(0.7, 5.5) * uAmp)
         )
 
-        self.vm = self.Port(Passive())
+        self.vm = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
         self.do = self.Port(Passive())
         self.co = self.Port(Passive())
 
@@ -92,6 +92,4 @@ class S8261A(PowerConditioner, Block):
         self.connect(self.gnd_out, self.co_fet.source.adapt_to(Ground()))
         self.connect(self.ic.co, self.co_fet.gate)
 
-        self.vm_res = self.Block(Resistor(2 * kOhm(tol=0.10)))
-        self.connect(self.vm_res.a.adapt_to(Ground()), self.gnd_out)
-        self.connect(self.vm_res.b, self.ic.vm)
+        self.vm_res = self.Block(AnalogSetpointResistor(2 * kOhm(tol=0.10))).connected(self.gnd_out, self.ic.vm)
