@@ -101,7 +101,8 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
         self.cs = self.Export(self.conn.pins.request("19").adapt_to(din_model))
         self.res = self.Export(self.conn.pins.request("20").adapt_to(din_model))
         # pin 21 FR disconnected
-        self.iref = self.Export(self.conn.pins.request("22"))
+        self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
+        self.connect(self.iref.net, self.conn.pins.request("22"))
         self.vsl = self.Export(self.conn.pins.request("27"))
 
 
@@ -129,9 +130,9 @@ class Er_Oled028_1(Oled, Resettable, GeneratorBlock):
 
         self.lcd = self.Block(Er_Oled028_1_Outline())  # for device outline
 
-        self.iref_res = self.Block(Resistor(resistance=680 * kOhm(tol=0.05)))  # TODO dynamic sizing
-        self.connect(self.iref_res.a, self.device.iref)
-        self.connect(self.iref_res.b.adapt_to(Ground()), self.gnd)
+        self.iref_res = self.Block(AnalogSetpointResistor(resistance=680 * kOhm(tol=0.05))).connected(
+            self.gnd, self.device.iref
+        )  # TODO dynamic sizing
         self.vcomh_cap = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.device.vcomh)
 
         self.vdd_cap = self.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(

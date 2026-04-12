@@ -27,7 +27,7 @@ class Qmc5883l_Device(InternalSubcircuit, FootprintBlock, JlcPart):
 
         self.setp = self.Port(Passive())
         self.setc = self.Port(Passive())
-        self.c1 = self.Port(Passive())
+        self.c1 = self.Port(VoltageSource(voltage_out=self.vdd.link().voltage, current_limits=(0, 0) * Amp))  # assumed
 
     @override
     def contents(self) -> None:
@@ -81,6 +81,4 @@ class Qmc5883l(Magnetometer, DefaultExportBlock):
         self.set_cap = self.Block(Capacitor(0.22 * uFarad(tol=0.2), voltage=self.pwr.link().voltage))
         self.connect(self.set_cap.pos, self.ic.setp)
         self.connect(self.set_cap.neg, self.ic.setc)
-        self.c1 = self.Block(Capacitor(4.7 * uFarad(tol=0.2), voltage=self.pwr.link().voltage))
-        self.connect(self.c1.pos, self.ic.c1)
-        self.connect(self.c1.neg.adapt_to(Ground()), self.gnd)
+        self.c1 = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.ic.c1)

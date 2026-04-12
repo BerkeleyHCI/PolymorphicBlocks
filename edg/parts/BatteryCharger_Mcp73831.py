@@ -27,7 +27,7 @@ class Mcp73831_Device(InternalSubcircuit, JlcPart, FootprintBlock):
                 reverse_current_limits=self.actual_charging_current.hull(0 * Amp(tol=0)),
             )
         )
-        self.prog = self.Port(Passive())
+        self.prog = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
 
     @override
     def contents(self) -> None:
@@ -80,10 +80,10 @@ class Mcp73831(PowerConditioner, Block):
         ).connected(self.gnd, self.pwr_bat)
 
         self.prog_res = self.Block(
-            Resistor(resistance=(1 / self.charging_current).shrink_multiply(Range.from_tolerance(1000, 0.1)))
-        )
-        self.connect(self.prog_res.a, self.ic.prog)
-        self.connect(self.prog_res.b.adapt_to(Ground()), self.gnd)
+            AnalogSetpointResistor(
+                resistance=(1 / self.charging_current).shrink_multiply(Range.from_tolerance(1000, 0.1))
+            )
+        ).connected(self.gnd, self.ic.prog)
         # tolerance is a guess
         self.assign(self.ic.actual_charging_current, 1000 * Volt(tol=0.1) / self.prog_res.actual_resistance)
         self.require(

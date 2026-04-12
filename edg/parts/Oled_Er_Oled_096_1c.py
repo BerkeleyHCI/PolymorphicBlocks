@@ -58,7 +58,8 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
         )
         self.connect(vcc_pin5, self.conn.pins.request("27"))  # connection upstream of adapter
 
-        self.iref = self.Export(self.conn.pins.request("6"))
+        self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
+        self.connect(self.iref.net, self.conn.pins.request("6"))
         self.vcomh = self.Export(
             self.conn.pins.request("3").adapt_to(
                 VoltageSource(
@@ -128,9 +129,9 @@ class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):
 
         self.lcd = self.Block(Er_Oled_096_1c_Outline())  # for device outline
 
-        self.iref_res = self.Block(Resistor(resistance=1 * MOhm(tol=0.05)))  # TODO dynamic sizing
-        self.connect(self.iref_res.a, self.device.iref)
-        self.connect(self.iref_res.b.adapt_to(Ground()), self.gnd)
+        self.iref_res = self.Block(AnalogSetpointResistor(resistance=1 * MOhm(tol=0.05))).connected(
+            self.gnd, self.device.iref
+        )  # TODO dynamic sizing
         self.vcomh_cap = self.Block(DecouplingCapacitor(4.7 * uFarad(tol=0.2))).connected(self.gnd, self.device.vcomh)
         self.vp_cap = self.Block(DecouplingCapacitor(1 * uFarad(tol=0.2))).connected(self.gnd, self.device.vp)
 

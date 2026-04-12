@@ -26,7 +26,7 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
         self.cp1 = self.Port(Passive())
         self.cp2 = self.Port(Passive())
 
-        self.rosc = self.Port(Passive())
+        self.rosc = self.Port(AnalogSource.from_supply(self.gnd, self.vdd))
         self.ref = self.Port(
             AnalogSink(
                 voltage_limits=(0, 5.5) * Volt,
@@ -162,9 +162,9 @@ class A4988(GeneratorBlock):
         self.connect(self.vcp_cap.pos, self.ic.vcp)
         self.connect(self.vcp_cap.neg.adapt_to(VoltageSink()), self.ic.vbb1, self.ic.vbb2)
 
-        self.rosc = self.Block(Resistor(10 * kOhm(tol=0.05)))  # arbitrary, from Pololu breakout board
-        self.connect(self.rosc.a.adapt_to(Ground()), self.gnd)
-        self.connect(self.rosc.b, self.ic.rosc)
+        self.rosc = self.Block(AnalogSetpointResistor(10 * kOhm(tol=0.05))).connected(
+            self.gnd, self.ic.rosc
+        )  # arbitrary, from Pololu breakout board
 
         self.ref_div = self.Block(VoltageDivider(output_voltage=self.itrip_vref * 8, impedance=(1, 10) * kOhm))
         self.connect(self.ref_div.gnd, self.gnd)
