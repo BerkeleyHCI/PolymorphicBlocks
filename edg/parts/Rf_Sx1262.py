@@ -79,7 +79,6 @@ class Pe4259(Block):
     def contents(self) -> None:
         super().contents()
 
-        self.vdd_res = self.Block(Resistor(1 * kOhm(tol=0.05)))
         self.vdd_res = self.Block(SeriesPowerResistor(1 * kOhm(tol=0.05))).connected(self.vdd, self.ic.vdd)
 
         self.ctrl_res = self.Block(Resistor(1 * kOhm(tol=0.05)))
