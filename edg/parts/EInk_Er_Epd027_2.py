@@ -51,8 +51,7 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
             )
         )
 
-        self.gdr = self.Port(Passive())
-        self.rese = self.Port(Passive())
+        self.rese = self.Port(AnalogSink())
         # pin 4 is NC for this part
         self.vshr = self.Port(
             VoltageSource(
@@ -83,7 +82,7 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
                 "15": self.vddio,
                 "18": self.vdd1v8,
                 "24": self.vcom,
-                "2": self.gdr,
+                # "2": self.gdr,
                 "3": self.rese,
                 "5": self.vshr,
                 "20": self.vsh,
@@ -92,6 +91,9 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
                 "23": self.vgl,
             }
         )
+
+        # TODO move to above rese once DigitalSource refactored, #114
+        self.gdr = self.Export(self.conn.pins.request("2").adapt_to(DigitalSource.from_supply(self.vss, self.vdd)))
 
         din_model = DigitalSink.from_supply(self.vss, self.vddio, input_threshold_factor=(0.2, 0.8))
         self.bs = self.Export(self.conn.pins.request("8").adapt_to(din_model))

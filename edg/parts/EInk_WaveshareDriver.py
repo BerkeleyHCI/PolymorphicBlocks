@@ -72,6 +72,7 @@ class Waveshare_Epd_Device(InternalSubcircuit, Block):
                 "16": self.vdd,
                 "15": self.vddio,
                 "18": self.vdd1v8,
+                # "2": self.gdr,
                 "3": self.rese,
                 "4": self.vgl,
                 "5": self.vgh,

@@ -113,7 +113,7 @@
   (footprint "Capacitor_SMD:C_0603_1608Metric")
   (property (name "Sheetname") (value "pwr_5v"))
   (property (name "Sheetfile") (value "edg.parts.BuckConverter_TexasInstruments.Tps561201"))
-  (property (name "edg_path") (value "pwr_5v.vbst_cap"))
+  (property (name "edg_path") (value "pwr_5v.vbst_cap.cap"))
   (property (name "edg_short_path") (value "pwr_5v.vbst_cap"))
   (property (name "edg_refdes") (value "C2"))
   (property (name "edg_part") (value ""))
