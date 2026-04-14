@@ -11,7 +11,11 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         self.pwr_in = self.Port(VoltageSink(voltage_limits=(4.5, 17) * Volt, current_draw=RangeExpr()), [Power])
         self.sw = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage.hull(self.gnd.link().voltage)))
         self.fb = self.Port(AnalogSink(impedance=(8000, float("inf")) * kOhm))  # based on input current spec
-        self.vbst = self.Port(VoltageSink(voltage_limits=(0, 23) * Volt))  # only 6v from Vsw
+        self.vbst = self.Port(
+            VoltageSink(
+                voltage_limits=(0, 23) * Volt, reverse_voltage_out=(3.6, 6) * Volt, reverse_current_limits=(0, 0)
+            )
+        )  # boost voltage assumed from UVLO to BST-SW abs max
         self.en = self.Port(DigitalSink(voltage_limits=(-0.1, 17) * Volt, input_thresholds=(0.8, 1.6) * Volt))
 
     @override
@@ -68,10 +72,9 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
 
             self.hf_in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))  # Datasheet 8.2.2.4
 
-            self.vbst_cap = self.Block(
-                BootstrapCapacitor(capacitance=0.1 * uFarad(tol=0.2), external_boost_voltage=(3.3, 6) * Volt)
-            ).connected(self.ic.sw, self.ic.vbst)
-            # external voltage assumed between UVLO and SW-BOOST abs max
+            self.vbst_cap = self.Block(BootstrapCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(
+                self.ic.sw, self.ic.vbst
+            )
 
             # TODO: the control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3
             self.power_path = imp.Block(

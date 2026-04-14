@@ -208,22 +208,24 @@ class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
 
 class BootstrapCapacitor(Block):
     """A Capacitor wrapper for bootstrap capacitors, with a negative VoltageSink and a positive VoltageSource.
-    The boost voltage is not modeled through the port, but instead given as a parameter.
-    In reality, the output port is both a sink (for charging the cap) and a source (providing the boosted voltage),
-    though it is modeled as a source only here for simplicity.
+    This is meant to be connected to a negative switching node (as a VoltageSink, which models the entire switching
+    voltage range) and a positive in/out node (which models the boosted voltage as a VoltageSource and
+    the charging voltage as its reverse voltage).
+    """
 
-    TODO: another option would be to take the boost voltage using the reverse voltage of the positive VoltageSource port.
-    More physically real, but more complicated and also requires the low state of the neg node."""
-
-    def __init__(self, capacitance: RangeLike, external_boost_voltage: RangeLike):
+    def __init__(self, capacitance: RangeLike):
         super().__init__()
 
-        self.external_boost_voltage = self.ArgParameter(external_boost_voltage)
-
-        self.cap = self.Block(Capacitor(capacitance=capacitance, voltage=external_boost_voltage))
-
         self.neg = self.Port(VoltageSink())
-        self.pos = self.Port(VoltageSource(voltage_out=self.neg.link().voltage + external_boost_voltage))
+        self.pos = self.Port(
+            VoltageSource(
+                voltage_out=RangeExpr(), reverse_voltage_limits=RangeExpr.ALL, reverse_current_draw=(0, 0) * Amp
+            )
+        )
+        boost_voltage = self.pos.link().reverse_voltage - self.neg.link().voltage.lower()
+
+        self.cap = self.Block(Capacitor(capacitance=capacitance, voltage=boost_voltage))
+        self.assign(self.pos.voltage_out, self.neg.link().voltage + boost_voltage)
         self.connect(self.pos.net, self.cap.pos)
         self.connect(self.neg.net, self.cap.neg)
 
