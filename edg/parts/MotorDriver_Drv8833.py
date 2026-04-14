@@ -15,7 +15,12 @@ class Drv8833_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 current_limits=0 * mAmp(tol=0),  # external draw not allowed
             )
         )
-        self.vcp = self.Port(Passive())
+        self.vcp = self.Port(
+            VoltageSource(  # assumed charge pump is 2x Vm
+                voltage_out=(self.vm.link().voltage - self.gnd.link().voltage) * 2 + self.gnd.link().voltage,
+                current_limits=0 * mAmp(tol=0),  # external draw not allowed
+            )
+        )
 
         din_model = DigitalSink(  # all pins pulled down by default
             voltage_limits=(-0.3, 5.75) * Volt, input_thresholds=(0.7, 2)
@@ -122,9 +127,9 @@ class Drv8833(BrushedMotorDriver, GeneratorBlock):
         # the upper tolerable range of these caps is extended to allow search flexibility when voltage derating
         self.vm_cap = self.Block(DecouplingCapacitor((10 * 0.8, 100) * uFarad)).connected(self.gnd, self.ic.vm)
         self.vint_cap = self.Block(DecouplingCapacitor((2.2 * 0.8, 10) * uFarad)).connected(self.gnd, self.ic.vint)
-        self.vcp_cap = self.Block(Capacitor(0.01 * uFarad(tol=0.2), (0, 16) * Volt))
-        self.connect(self.vcp_cap.pos, self.ic.vcp)
-        self.connect(self.vcp_cap.neg.adapt_to(VoltageSink()), self.ic.vm)
+        self.vcp_cap = self.Block(DecouplingCapacitor(0.01 * uFarad(tol=0.2))).connected(
+            self.ic.vm.as_ground(), self.ic.vcp
+        )
 
     @override
     def generate(self) -> None:
@@ -133,6 +138,4 @@ class Drv8833(BrushedMotorDriver, GeneratorBlock):
             self.connect(self.sleep, self.ic.nsleep)
         else:  # generate default pullup, note chip is internal pulldown (disabled)
             # TODO can direct connect if pwr voltage is <5.75v
-            self.sleep_pull = self.Block(Resistor(47 * kOhm(tol=0.05)))
-            self.connect(self.sleep_pull.a.adapt_to(VoltageSink()), self.pwr)
-            self.connect(self.sleep_pull.b.adapt_to(DigitalSource()), self.ic.nsleep)
+            self.sleep_pull = self.Block(PullupResistor(47 * kOhm(tol=0.05))).connected(self.pwr, self.ic.nsleep)

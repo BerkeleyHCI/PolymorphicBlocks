@@ -10,16 +10,20 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self, charging_current: RangeLike):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
-        self.sw = self.Port(
-            VoltageSource(current_limits=(0, 5) * Amp)  # up to 5A charge / system current
-        )  # internal switch specs not defined, only bulk current limit defined
         self.vin = self.Port(
             VoltageSink(
                 voltage_limits=(3.9, 26) * Volt,  # abs max up to 26v, UV threshold up to 3.45
-                current_draw=self.sw.link().current_drawn,  # TODO quiescent current
+                current_draw=RangeExpr(),
             ),
             [Power],
         )
+        self.sw = self.Port(
+            VoltageSource(
+                voltage_out=self.vin.link().voltage.hull(self.gnd.link().voltage), current_limits=(0, 5) * Amp
+            )  # up to 5A charge / system current
+        )  # internal switch specs not defined, only bulk current limit defined
+        self.assign(self.vin.current_draw, self.sw.link().current_drawn)  # TODO quiescent current
+
         self.pmid = self.Port(
             VoltageSource(
                 voltage_out=self.vin.link().voltage,  # 5.08-5.22v in boost
@@ -27,8 +31,10 @@ class Mp2722_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             )
         )
         self.bst = self.Port(
-            VoltageSource(
-                voltage_out=self.sw.link().voltage + (0, 5) * Volt, current_limits=0 * Amp(tol=0)  # decoupling only
+            VoltageSink(
+                voltage_limits=self.sw.link().voltage + (-0.3, 5) * Volt,
+                reverse_voltage_out=5 * Volt(tol=0),
+                reverse_current_limits=0 * Amp(tol=0),
             )
         )
 
@@ -160,9 +166,9 @@ class Mp2722(DiscreteBuckConverter):
         with self.implicit_connect(
             ImplicitConnect(self.gnd, [Common]),
         ) as imp:
-            self.vbst_cap = self.Block(Capacitor(capacitance=22 * nFarad(tol=0.2), voltage=(0, 5) * Volt))
-            self.connect(self.vbst_cap.neg.adapt_to(VoltageSink()), self.ic.sw)
-            self.connect(self.vbst_cap.pos.adapt_to(VoltageSink()), self.ic.bst)
+            self.vbst_cap = self.Block(BootstrapCapacitor(capacitance=22 * nFarad(tol=0.2))).connected(
+                self.ic.sw, self.ic.bst
+            )
 
             # decouple to PMID, BATT to PGND
             self.pmid_cap = imp.Block(DecouplingCapacitor((10 * 0.8, float("inf")) * uFarad)).connected(
