@@ -129,6 +129,7 @@ from .OpampCurrentSensor import OpampCurrentSensor
 from .DigitalAmplifiers import HighSideSwitch, OpenDrainDriver
 from .AbstractPowerConverters import VoltageRegulator, VoltageRegulatorEnableWrapper
 from .AbstractPowerConverters import LinearRegulator, VoltageReference, LinearRegulatorDevice, SwitchingVoltageRegulator
+from .AbstractPowerConverters import BootstrapCapacitor
 from .AbstractPowerConverters import BuckConverter, DiscreteBuckConverter, BoostConverter, DiscreteBoostConverter
 from .AbstractPowerConverters import BuckConverterPowerPath, BoostConverterPowerPath, BuckBoostConverterPowerPath
 from .PowerCircuits import (

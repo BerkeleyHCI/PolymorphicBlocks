@@ -1,10 +1,10 @@
 from abc import abstractmethod
-from typing import Optional, NamedTuple, Any, Callable
+from typing import Optional, NamedTuple, Any, Callable, cast
 
 from deprecated import deprecated
 from typing_extensions import override
 
-from .AbstractCapacitor import DecouplingCapacitor
+from .AbstractCapacitor import DecouplingCapacitor, Capacitor
 from .AbstractInductor import Inductor, TableInductor
 from .Categories import *
 from .PartsTable import PartsTableRow, ExperimentalUserFnPartsTable
@@ -204,6 +204,38 @@ class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
         )
         self.pwr_out.init_from(VoltageSource(voltage_out=effective_output_voltage))
         self.reset.init_from(DigitalSink())
+
+
+class BootstrapCapacitor(Block):
+    """A Capacitor wrapper for bootstrap capacitors, with a negative VoltageSink and a positive VoltageSource.
+    The boost voltage is not modeled through the port, but instead given as a parameter.
+    In reality, the output port is both a sink (for charging the cap) and a source (providing the boosted voltage),
+    though it is modeled as a source only here for simplicity.
+
+    TODO: another option would be to take the boost voltage using the reverse voltage of the positive VoltageSource port.
+    More physically real, but more complicated and also requires the low state of the neg node."""
+
+    def __init__(self, capacitance: RangeLike, external_boost_voltage: RangeLike):
+        super().__init__()
+
+        self.external_boost_voltage = self.ArgParameter(external_boost_voltage)
+
+        self.cap = self.Block(Capacitor(capacitance=capacitance, voltage=external_boost_voltage))
+
+        self.neg = self.Port(VoltageSink())
+        self.pos = self.Port(VoltageSource(voltage_out=self.neg.link().voltage + external_boost_voltage))
+        self.connect(self.pos.net, self.cap.pos)
+        self.connect(self.neg.net, self.cap.neg)
+
+    def connected(
+        self, neg: Optional[Port[VoltageLink]] = None, pos: Optional[Port[VoltageLink]] = None
+    ) -> "BootstrapCapacitor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name."""
+        if neg is not None:
+            cast(Block, builder.get_enclosing_block()).connect(neg, self.neg)
+        if pos is not None:
+            cast(Block, builder.get_enclosing_block()).connect(pos, self.pos)
+        return self
 
 
 class BuckConverterPowerPath(InternalSubcircuit, GeneratorBlock):
