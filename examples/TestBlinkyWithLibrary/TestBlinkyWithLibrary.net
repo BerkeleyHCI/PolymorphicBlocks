@@ -89,7 +89,7 @@
   (footprint "Capacitor_SMD:C_0603_1608Metric")
   (property (name "Sheetname") (value "reg"))
   (property (name "Sheetfile") (value "edg.parts.BuckConverter_TexasInstruments.Tps561201"))
-  (property (name "edg_path") (value "reg.vbst_cap"))
+  (property (name "edg_path") (value "reg.vbst_cap.cap"))
   (property (name "edg_short_path") (value "reg.vbst_cap"))
   (property (name "edg_refdes") (value "C2"))
   (property (name "edg_part") (value "CC0603KRX7R9BB104 (YAGEO)"))

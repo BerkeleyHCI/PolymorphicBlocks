@@ -45,7 +45,7 @@ const C1 = board.add(C_0603_1608Metric, {
   translate: pt(2.385, 2.104), rotate: 0,
   id: 'C1'
 })
-// pwr_5v.vbst_cap
+// pwr_5v.vbst_cap.cap
 const C2 = board.add(C_0603_1608Metric, {
   translate: pt(2.541, 2.104), rotate: 0,
   id: 'C2'

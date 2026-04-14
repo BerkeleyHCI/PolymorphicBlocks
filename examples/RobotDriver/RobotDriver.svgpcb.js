@@ -360,7 +360,7 @@ const C22 = board.add(C_0805_2012Metric, {
   translate: pt(3.662, 2.037), rotate: 0,
   id: 'C22'
 })
-// motor_driver1.vcp_cap
+// motor_driver1.vcp_cap.cap
 const C23 = board.add(C_0603_1608Metric, {
   translate: pt(3.826, 2.027), rotate: 0,
   id: 'C23'
@@ -390,7 +390,7 @@ const C25 = board.add(C_0805_2012Metric, {
   translate: pt(0.240, 2.883), rotate: 0,
   id: 'C25'
 })
-// motor_driver2.vcp_cap
+// motor_driver2.vcp_cap.cap
 const C26 = board.add(C_0603_1608Metric, {
   translate: pt(0.405, 2.873), rotate: 0,
   id: 'C26'

@@ -45,7 +45,7 @@ const JU1 = board.add(MPS_QFN_22_2_5x3_5mm_P0_4mm, {
   translate: pt(1.924, 0.280), rotate: 0,
   id: 'JU1'
 })
-// mp2722.vbst_cap
+// mp2722.vbst_cap.cap
 const JC1 = board.add(C_0603_1608Metric, {
   translate: pt(1.826, 0.309), rotate: 0,
   id: 'JC1'

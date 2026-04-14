@@ -115,7 +115,7 @@ const C5 = board.add(C_0603_1608Metric, {
   translate: pt(2.001, 3.800), rotate: 0,
   id: 'C5'
 })
-// reg_v5.boot_cap
+// reg_v5.boot_cap.cap
 const C6 = board.add(C_0603_1608Metric, {
   translate: pt(2.157, 3.800), rotate: 0,
   id: 'C6'
@@ -165,7 +165,7 @@ const C9 = board.add(C_0603_1608Metric, {
   translate: pt(5.221, 2.180), rotate: 0,
   id: 'C9'
 })
-// reg_3v3.boot_cap
+// reg_3v3.boot_cap.cap
 const C10 = board.add(C_0603_1608Metric, {
   translate: pt(5.377, 2.180), rotate: 0,
   id: 'C10'

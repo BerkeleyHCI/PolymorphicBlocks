@@ -70,7 +70,7 @@ const BC1 = board.add(C_0603_1608Metric, {
   translate: pt(0.214, 1.498), rotate: 0,
   id: 'BC1'
 })
-// reg_3v3.boot_cap
+// reg_3v3.boot_cap.cap
 const BC2 = board.add(C_0603_1608Metric, {
   translate: pt(0.370, 1.498), rotate: 0,
   id: 'BC2'

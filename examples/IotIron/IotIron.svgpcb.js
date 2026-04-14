@@ -50,7 +50,7 @@ const IC1 = board.add(C_0603_1608Metric, {
   translate: pt(2.361, 2.156), rotate: 0,
   id: 'IC1'
 })
-// reg_3v3.boot_cap
+// reg_3v3.boot_cap.cap
 const IC2 = board.add(C_0603_1608Metric, {
   translate: pt(2.517, 2.156), rotate: 0,
   id: 'IC2'

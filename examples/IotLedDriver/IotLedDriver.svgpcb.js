@@ -50,7 +50,7 @@ const LC1 = board.add(C_0402_1005Metric, {
   translate: pt(1.316, 0.321), rotate: 0,
   id: 'LC1'
 })
-// reg_3v3.boot_cap
+// reg_3v3.boot_cap.cap
 const LC2 = board.add(C_0402_1005Metric, {
   translate: pt(0.892, 0.418), rotate: 0,
   id: 'LC2'
@@ -260,7 +260,7 @@ const LC20 = board.add(C_0402_1005Metric, {
   translate: pt(1.662, 0.365), rotate: 0,
   id: 'LC20'
 })
-// led_drv[0].boot_cap
+// led_drv[0].boot_cap.cap
 const LC21 = board.add(C_0402_1005Metric, {
   translate: pt(1.773, 0.365), rotate: 0,
   id: 'LC21'
@@ -295,7 +295,7 @@ const LC24 = board.add(C_0402_1005Metric, {
   translate: pt(0.192, 1.029), rotate: 0,
   id: 'LC24'
 })
-// led_drv[1].boot_cap
+// led_drv[1].boot_cap.cap
 const LC25 = board.add(C_0402_1005Metric, {
   translate: pt(0.303, 1.029), rotate: 0,
   id: 'LC25'
@@ -330,7 +330,7 @@ const LC28 = board.add(C_0402_1005Metric, {
   translate: pt(0.692, 1.029), rotate: 0,
   id: 'LC28'
 })
-// led_drv[2].boot_cap
+// led_drv[2].boot_cap.cap
 const LC29 = board.add(C_0402_1005Metric, {
   translate: pt(0.803, 1.029), rotate: 0,
   id: 'LC29'
@@ -365,7 +365,7 @@ const LC32 = board.add(C_0402_1005Metric, {
   translate: pt(1.192, 1.029), rotate: 0,
   id: 'LC32'
 })
-// led_drv[3].boot_cap
+// led_drv[3].boot_cap.cap
 const LC33 = board.add(C_0402_1005Metric, {
   translate: pt(1.303, 1.029), rotate: 0,
   id: 'LC33'
