@@ -184,9 +184,9 @@ class DiodePowerMerge(PowerConditioner, Block):
     def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = (0, float("inf"))) -> None:
         super().__init__()
 
-        self.pwr_in1 = self.Port(VoltageSink.empty())
-        self.pwr_in2 = self.Port(VoltageSink.empty())
-        self.pwr_out = self.Port(VoltageSource.empty())
+        self.pwr_in1 = self.Port(VoltageSink(current_draw=RangeExpr()))
+        self.pwr_in2 = self.Port(VoltageSink(current_draw=RangeExpr()))
+        self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr()))
 
         output_lower = (
             self.pwr_in1.link().voltage.lower().min(self.pwr_in2.link().voltage.lower())
@@ -209,32 +209,23 @@ class DiodePowerMerge(PowerConditioner, Block):
             )
         )
 
-        self.merge = self.Block(MergedVoltageSource()).connected_from(
-            self.diode1.cathode.adapt_to(
-                VoltageSource(
-                    voltage_out=(
-                        self.pwr_in1.link().voltage.lower() - self.diode1.voltage_drop.upper(),
-                        self.pwr_in1.link().voltage.upper(),
-                    )
-                )
-            ),
-            self.diode2.cathode.adapt_to(
-                VoltageSource(
-                    voltage_out=(
-                        self.pwr_in2.link().voltage.lower() - self.diode2.voltage_drop.upper(),
-                        self.pwr_in2.link().voltage.upper(),
-                    )
-                )
+        self.assign(
+            self.pwr_out.voltage_out,
+            (
+                (self.pwr_in1.link().voltage.lower() - self.diode1.actual_voltage_drop.upper()).min(
+                    self.pwr_in2.link().voltage.lower() - self.diode2.actual_voltage_drop.upper()
+                ),
+                (self.pwr_in1.link().voltage.upper() - self.diode1.actual_voltage_drop.lower()).max(
+                    self.pwr_in2.link().voltage.upper() - self.diode2.actual_voltage_drop.lower()
+                ),
             ),
         )
-        self.connect(
-            self.diode1.anode.adapt_to(VoltageSink(current_draw=self.pwr_out.link().current_drawn)), self.pwr_in1
-        )
-        self.connect(
-            self.diode2.anode.adapt_to(VoltageSink(current_draw=self.pwr_out.link().current_drawn)), self.pwr_in2
-        )
+        self.assign(self.pwr_in1.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in2.current_draw, self.pwr_out.link().current_drawn)
 
-        self.connect(self.merge.pwr_out, self.pwr_out)
+        self.connect(self.pwr_in1.net, self.diode1.anode)
+        self.connect(self.pwr_in2.net, self.diode2.anode)
+        self.connect(self.pwr_out.net, self.diode1.cathode, self.diode2.cathode)
 
 
 class PriorityPowerOr(PowerConditioner, KiCadSchematicBlock, Block):
