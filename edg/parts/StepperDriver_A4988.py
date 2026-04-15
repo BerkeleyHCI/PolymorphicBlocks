@@ -22,7 +22,11 @@ class A4988_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 current_limits=0 * Amp(tol=0),  # regulator decoupling terminal only
             )
         )
-        self.vcp = self.Port(Passive())
+        self.vcp = self.Port(
+            VoltageSource(  # assumed this doubles vbb (worst case), arbitrarily connected to vbb1
+                voltage_out=self.vbb1.link().voltage * 2 - self.gnd.link().voltage, current_limits=0 * Amp(tol=0)
+            )
+        )
         self.cp1 = self.Port(Passive())
         self.cp2 = self.Port(Passive())
 
@@ -128,6 +132,7 @@ class A4988(GeneratorBlock):
         self.ic = self.Block(A4988_Device())
         self.gnd = self.Export(self.ic.gnd, [Common])
         self.pwr = self.Export(self.ic.vbb1)
+        self.connect(self.ic.vbb1, self.ic.vbb2)
         self.pwr_logic = self.Export(self.ic.vdd)
 
         self.step = self.Export(self.ic.step)
@@ -158,9 +163,9 @@ class A4988(GeneratorBlock):
         )  # voltage a wild guess, no specs given
         self.connect(self.vcpi_cap.pos, self.ic.cp1)
         self.connect(self.vcpi_cap.neg, self.ic.cp2)
-        self.vcp_cap = self.Block(Capacitor(0.1 * uFarad(tol=0.2), (0, 16) * Volt))
-        self.connect(self.vcp_cap.pos, self.ic.vcp)
-        self.connect(self.vcp_cap.neg.adapt_to(VoltageSink()), self.ic.vbb1, self.ic.vbb2)
+        self.vcp_cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(
+            self.ic.vbb1.as_ground(), self.ic.vcp
+        )
 
         self.rosc = self.Block(AnalogSetpointResistor(10 * kOhm(tol=0.05))).connected(
             self.gnd, self.ic.rosc
