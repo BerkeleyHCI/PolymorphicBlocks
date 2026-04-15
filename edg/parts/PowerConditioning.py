@@ -142,9 +142,9 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
     def __init__(self, voltage_drop: RangeLike, reverse_recovery_time: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
 
-        self.pwr_in = self.Port(VoltageSink.empty())  # high-priority source
-        self.pwr_in_diode = self.Port(VoltageSink.empty())  # low-priority source
-        self.pwr_out = self.Port(VoltageSource.empty())
+        self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()))  # high-priority source
+        self.pwr_in_diode = self.Port(VoltageSink(current_draw=RangeExpr()))  # low-priority source
+        self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr()))
 
         self.diode = self.Block(
             Diode(
@@ -159,23 +159,18 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
             self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower()
             <= self.pwr_in.link().voltage.lower()
         )
-
-        self.connect(
-            self.pwr_in_diode, self.diode.anode.adapt_to(VoltageSink(current_draw=self.pwr_out.link().current_drawn))
-        )
-
-        self.merge = self.Block(MergedVoltageSource()).connected_from(
-            self.pwr_in,
-            self.diode.cathode.adapt_to(
-                VoltageSource(
-                    voltage_out=(
-                        self.pwr_in_diode.link().voltage.lower() - self.diode.voltage_drop.upper(),
-                        self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower(),
-                    )
-                )
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_in_diode.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(
+            self.pwr_out.voltage_out,
+            self.pwr_in.link().voltage.hull(
+                self.pwr_in_diode.link().voltage.lower() - self.diode.voltage_drop.upper(),
+                self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower(),
             ),
         )
-        self.connect(self.merge.pwr_out, self.pwr_out)
+
+        self.connect(self.pwr_in_diode.net, self.diode.anode)
+        self.connect(self.pwr_out.net, self.pwr_in.net, self.diode.cathode)
 
 
 class DiodePowerMerge(PowerConditioner, Block):
