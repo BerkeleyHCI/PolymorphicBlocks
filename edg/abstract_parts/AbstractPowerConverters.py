@@ -208,9 +208,11 @@ class IdealBuckConverter(Resettable, DiscreteBuckConverter, IdealModel):
 
 class BootstrapCapacitor(Block):
     """A Capacitor wrapper for bootstrap capacitors, with a negative VoltageSink and a positive VoltageSource.
-    This is meant to be connected to a negative switching node (as a VoltageSink, which models the entire switching
-    voltage range) and a positive in/out node (which models the boosted voltage as a VoltageSource and
-    the charging voltage as its reverse voltage).
+    This is meant to be used only with bootstrap pins on power conversion chips, that source some voltage and sink the
+    boosted voltage. This is not meant to be general-purpose and will not function standalone.
+    The negative node is a pure VoltageSink, where the source must model the entire switching voltage range.
+    The positive node is a VoltageSource, where the source voltage models the boosted voltage, and the
+    reverse voltage models the charging voltage.
     """
 
     def __init__(self, capacitance: RangeLike):
