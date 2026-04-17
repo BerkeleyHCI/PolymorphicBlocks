@@ -26,25 +26,28 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
     def __init__(self) -> None:
         super().__init__()
 
-        self.conn = self.Block(Fpc050Bottom(length=15))  # Pin numbering in the doc is flipped in the footprint
-
         # Power pins
-        self.vdd = self.Export(
-            self.conn.pins.request("12").adapt_to(
-                VoltageSink(
-                    voltage_limits=self.nonstrict_3v3_compatible.then_else(
-                        (2.5, 3.6) * Volt, (2.5, 3.3) * Volt  # abs max is 4.6v
-                    ),
-                )
+        self.gnd = self.Port(Ground())
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (2.5, 3.6) * Volt, (2.5, 3.3) * Volt  # abs max is 4.6v
+                ),
             )
         )
-
-        self.gnd = self.Port(Ground())
-        self.connect(self.gnd.net, self.conn.pins.request("15"))
         # Backlight control
         self.ledk = self.Port(Ground())
-        self.connect(self.ledk.net, self.conn.pins.request("14"))
-        self.leda = self.Export(self.conn.pins.request("13"))
+        self.leda = self.Port(Passive())
+
+        self.conn = self.Block(Fpc050Bottom(length=15)).connected(
+            {
+                # Pin numbering in the doc is flipped in the footprint
+                "15": self.gnd,
+                "12": self.vdd,
+                "14": self.ledk,
+                "13": self.leda,
+            }
+        )
 
         dio_model = DigitalBidir.from_supply(
             self.gnd, self.vdd, voltage_limit_tolerance=(-0.3, 0.3) * Volt, input_threshold_factor=(0.3, 0.7)
@@ -64,17 +67,12 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.rst = self.Export(self.conn.pins.request("7").adapt_to(DigitalSink.from_bidir(dio_model)))
 
         # Capacitive Touch Panel (CTP)
+        self.ctp_vdd = self.Port(VoltageSink(voltage_limits=(2.7, 3.6) * Volt, current_draw=(5 * uAmp, 2.5 * mAmp)))
         self.ctp_i2c = self.Port(
             I2cTarget(DigitalBidir.empty(), addresses=[0x15]),
         )
 
-        self.ctp_vdd = self.Export(
-            self.conn.pins.request("6").adapt_to(
-                VoltageSink(voltage_limits=(2.7, 3.6) * Volt, current_draw=(5 * uAmp, 2.5 * mAmp))
-            )
-        )
-
-        self.connect(self.gnd.net, self.conn.pins.request("5"))
+        self.conn.connected({"5": self.gnd, "6": self.ctp_vdd})
 
         self.ctp_rst = self.Export(self.conn.pins.request("4").adapt_to(DigitalSink.from_bidir(dio_model)))
         self.ctp_int = self.Export(self.conn.pins.request("3").adapt_to(DigitalSink.from_bidir(dio_model)))

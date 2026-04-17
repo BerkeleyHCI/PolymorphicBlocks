@@ -8,18 +8,15 @@ from edg import *
 class PowerInConnector(Connector):
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(JstShSmHorizontal())
         self.gnd = self.Port(Ground())
-        self.pwr = self.Export(
-            self.conn.pins.request("2").adapt_to(
-                VoltageSource(
-                    voltage_out=(10, 16) * Volt,
-                    current_limits=(0, 3) * Amp,
-                )
+        self.pwr = self.Port(
+            VoltageSource(
+                voltage_out=(10, 16) * Volt,
+                current_limits=(0, 3) * Amp,
             )
         )
 
-        self.connect(self.gnd.net, self.conn.pins.request("1"))
+        self.conn = self.Block(JstShSmHorizontal()).connected({"1": self.gnd, "2": self.pwr})
 
 
 # note, sent to fabrication with JlcPartsRefinements

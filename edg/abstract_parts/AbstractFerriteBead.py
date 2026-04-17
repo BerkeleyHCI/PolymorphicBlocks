@@ -118,29 +118,26 @@ class SeriesPowerFerriteBead(DiscreteApplication, KiCadImportableBlock):
     def __init__(self, hf_impedance: RangeLike = RangeExpr.ALL, dc_resistance: RangeLike = RangeExpr.ALL) -> None:
         super().__init__()
 
-        self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
-        self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
+        self.pwr_in = self.Port(VoltageSink(voltage_limits=Range.all(), current_draw=RangeExpr()), [Power, Input])
+        self.pwr_out = self.Port(
+            VoltageSource(
+                voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
+                current_limits=RangeExpr(),
+            ),
+            [Output],
+        )
 
         self.fb = self.Block(
             FerriteBead(
                 current=self.pwr_out.link().current_drawn, hf_impedance=hf_impedance, dc_resistance=dc_resistance
             )
         )
-        self.connect(
-            self.pwr_in,
-            self.fb.a.adapt_to(
-                VoltageSink(voltage_limits=Range.all(), current_draw=self.pwr_out.link().current_drawn)  # ideal
-            ),
-        )
-        self.connect(
-            self.pwr_out,
-            self.fb.b.adapt_to(
-                VoltageSource(
-                    voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
-                    current_limits=self.fb.actual_current_rating,
-                )
-            ),
-        )
+
+        self.connect(self.pwr_in.net, self.fb.a)
+        self.connect(self.pwr_out.net, self.fb.b)
+
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_out.current_limits, self.fb.actual_current_rating)
 
     def connected(
         self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None

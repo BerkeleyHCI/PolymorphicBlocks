@@ -5,7 +5,7 @@ from itertools import chain
 from typing_extensions import override
 
 from ..core import *
-from .VoltagePorts import CircuitPort
+from .CircuitBlock import CircuitPort
 
 
 def leaf_circuit_ports(prefix: str, port: Port) -> Iterable[Tuple[str, CircuitPort]]:

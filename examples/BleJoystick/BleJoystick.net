@@ -113,7 +113,7 @@
   (footprint "Capacitor_SMD:C_0603_1608Metric")
   (property (name "Sheetname") (value "mp2722"))
   (property (name "Sheetfile") (value "edg.parts.BuckConverter_Mps.Mp2722"))
-  (property (name "edg_path") (value "mp2722.vbst_cap"))
+  (property (name "edg_path") (value "mp2722.vbst_cap.cap"))
   (property (name "edg_short_path") (value "mp2722.vbst_cap"))
   (property (name "edg_refdes") (value "JC1"))
   (property (name "edg_part") (value "CL10B223KB8NNNC (Samsung Electro-Mechanics)"))

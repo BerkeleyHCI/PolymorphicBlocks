@@ -50,7 +50,7 @@ const FC1 = board.add(C_0603_1608Metric, {
   translate: pt(1.238, 1.183), rotate: 0,
   id: 'FC1'
 })
-// reg_5v.boot_cap
+// reg_5v.boot_cap.cap
 const FC2 = board.add(C_0603_1608Metric, {
   translate: pt(1.394, 1.183), rotate: 0,
   id: 'FC2'

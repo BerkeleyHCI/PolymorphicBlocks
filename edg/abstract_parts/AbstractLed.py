@@ -179,11 +179,8 @@ class IndicatorSinkLedResistor(IndicatorSinkLed):
             )
         )
 
-        self.connect(
-            self.package.a.adapt_to(VoltageSink(current_draw=self.signal.link().voltage / self.res.actual_resistance)),
-            self.pwr,
-        )
-
+        self.pwr.init_from(VoltageSink(current_draw=self.signal.link().voltage / self.res.actual_resistance))
+        self.connect(self.package.a, self.pwr.net)
         self.connect(self.res.a, self.package.k)
         self.connect(
             self.res.b.adapt_to(DigitalSink(current_draw=-self.signal.link().voltage / self.res.actual_resistance)),
@@ -226,7 +223,7 @@ class VoltageIndicatorLed(Light):
 
         self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
-        self.signal = self.Port(VoltageSink.empty(), [Power, InOut])
+        self.signal = self.Port(VoltageSink(current_draw=RangeExpr()), [Power, InOut])
         self.gnd = self.Port(Ground(), [Common])
 
         self.require(self.signal.current_draw.within(current_draw))
@@ -241,10 +238,9 @@ class VoltageIndicatorLed(Light):
             )
         )
 
-        self.connect(
-            self.signal,
-            self.package.a.adapt_to(VoltageSink(current_draw=self.signal.link().voltage / self.res.actual_resistance)),
-        )
+        self.assign(self.signal.current_draw, self.signal.link().voltage / self.res.actual_resistance)
+
+        self.connect(self.signal.net, self.package.a)
         self.connect(self.res.a, self.package.k)
         self.connect(self.gnd.net, self.res.b)
 
@@ -259,7 +255,7 @@ class IndicatorSinkRgbLed(Light):
         # TODO: support brightness
         super().__init__()
 
-        self.pwr = self.Port(VoltageSink.empty(), [Power])
+        self.pwr = self.Port(VoltageSink(current_draw=RangeExpr()), [Power])
         self.signals = self.Port(Vector(DigitalSink.empty()), [InOut])
         signal_red = self.signals.append_elt(DigitalSink.empty(), "red")
         signal_green = self.signals.append_elt(DigitalSink.empty(), "green")
@@ -329,16 +325,11 @@ class IndicatorSinkRgbLed(Light):
             signal_blue,
         )
 
-        self.connect(
-            self.pwr,
-            self.package.a.adapt_to(
-                VoltageSink(
-                    current_draw=signal_red.current_draw * -1
-                    + signal_green.current_draw * -1
-                    + signal_blue.current_draw * -1
-                )
-            ),
+        self.assign(
+            self.pwr.current_draw,
+            signal_red.current_draw * -1 + signal_green.current_draw * -1 + signal_blue.current_draw * -1,
         )
+        self.connect(self.pwr.net, self.package.a)
 
 
 class IndicatorSinkPackedRgbLedElement(IndicatorSinkLed):

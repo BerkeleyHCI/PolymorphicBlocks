@@ -7,21 +7,23 @@ from .JlcPart import JlcPart
 class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.sw = self.Port(VoltageSource())  # internal switch specs not defined, only bulk current limit defined
-        self.pwr_in = self.Port(
-            VoltageSink(
-                voltage_limits=(4.5, 17) * Volt, current_draw=self.sw.link().current_drawn  # TODO quiescent current
-            ),
-            [Power],
-        )
         self.gnd = self.Port(Ground(), [Common])
+        self.pwr_in = self.Port(VoltageSink(voltage_limits=(4.5, 17) * Volt, current_draw=RangeExpr()), [Power])
+        self.sw = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage.hull(self.gnd.link().voltage)))
         self.fb = self.Port(AnalogSink(impedance=(8000, float("inf")) * kOhm))  # based on input current spec
-        self.vbst = self.Port(VoltageSource())
+        self.vbst = self.Port(
+            VoltageSink(
+                voltage_limits=(0, 23) * Volt,
+                reverse_voltage_out=(3.6, 6) * Volt,  # assumed from UVLO to BST-SW abs max
+                reverse_current_limits=0 * Amp(tol=0),
+            )
+        )
         self.en = self.Port(DigitalSink(voltage_limits=(-0.1, 17) * Volt, input_thresholds=(0.8, 1.6) * Volt))
 
     @override
     def contents(self) -> None:
         super().contents()
+        self.assign(self.pwr_in.current_draw, self.sw.link().current_drawn)  # TODO quiescent current
         self.footprint(
             "U",
             "Package_TO_SOT_SMD:SOT-23-6",
@@ -72,9 +74,9 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
 
             self.hf_in_cap = imp.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))  # Datasheet 8.2.2.4
 
-            self.vbst_cap = self.Block(Capacitor(capacitance=0.1 * uFarad(tol=0.2), voltage=(0, 6) * Volt))
-            self.connect(self.vbst_cap.neg.adapt_to(VoltageSink()), self.ic.sw)
-            self.connect(self.vbst_cap.pos.adapt_to(VoltageSink()), self.ic.vbst)
+            self.vbst_cap = self.Block(BootstrapCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(
+                self.ic.sw, self.ic.vbst
+            )
 
             # TODO: the control mechanism requires a specific capacitor / inductor selection, datasheet 8.2.2.3
             self.power_path = imp.Block(
@@ -99,20 +101,28 @@ class Tps561201(VoltageRegulatorEnableWrapper, DiscreteBuckConverter):
 class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
-        self.sw = self.Port(
-            VoltageSource(
-                current_limits=(0, 2) * Amp  # most conservative figures, low-side limited. TODO: better ones?
-            )
-        )  # internal switch specs not defined, only bulk current limit defined
+
+        self.gnd = self.Port(Ground(), [Common])
         self.pwr_in = self.Port(
-            VoltageSink(
-                voltage_limits=(4.5, 28) * Volt, current_draw=self.sw.link().current_drawn  # TODO quiescent current
-            ),
+            VoltageSink(voltage_limits=(4.5, 28) * Volt, current_draw=RangeExpr()),
             [Power],
         )
-        self.gnd = self.Port(Ground(), [Common])
+        self.sw = self.Port(
+            VoltageSource(
+                voltage_out=self.pwr_in.link().voltage.hull(self.gnd.link().voltage),
+                current_limits=(0, 2) * Amp,  # most conservative figures, low-side limited. TODO: better ones?
+            )
+        )  # internal switch specs not defined, only bulk current limit defined
+        self.assign(self.pwr_in.current_draw, self.sw.link().current_drawn)  # TODO quiescent current)
+
         self.fb = self.Port(AnalogSink())  # no impedance specs
-        self.boot = self.Port(VoltageSource())
+        self.boot = self.Port(
+            VoltageSink(
+                voltage_limits=self.sw.link().voltage + (-0.3, 7) * Volt,
+                reverse_voltage_out=(4.5, 7) * Volt,  # assumed from Vin,min to BST-SW abs max
+                reverse_current_limits=0 * Amp(tol=0),
+            )
+        )
         self.en = self.Port(
             DigitalSink(  # must be connected, floating is disable
                 voltage_limits=(-0.1, 7) * Volt, input_thresholds=(1.16, 1.35) * Volt
@@ -174,9 +184,9 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
                 DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2))
             )  # Datasheet 8.2.3.1, "optional"?
 
-            self.boot_cap = self.Block(Capacitor(capacitance=0.1 * uFarad(tol=0.2), voltage=(0, 6) * Volt))
-            self.connect(self.boot_cap.neg.adapt_to(VoltageSink()), self.ic.sw)
-            self.connect(self.boot_cap.pos.adapt_to(VoltageSink()), self.ic.boot)
+            self.boot_cap = self.Block(BootstrapCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(
+                self.ic.sw, self.ic.boot
+            )
 
             self.power_path = imp.Block(
                 BuckConverterPowerPath(

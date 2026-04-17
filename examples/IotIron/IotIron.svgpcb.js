@@ -50,7 +50,7 @@ const IC1 = board.add(C_0603_1608Metric, {
   translate: pt(2.361, 2.156), rotate: 0,
   id: 'IC1'
 })
-// reg_3v3.boot_cap
+// reg_3v3.boot_cap.cap
 const IC2 = board.add(C_0603_1608Metric, {
   translate: pt(2.517, 2.156), rotate: 0,
   id: 'IC2'
@@ -513,12 +513,12 @@ board.setNetlist([
   {name: "Iledr.package.k", pads: [["ID2", "1"], ["IR10", "1"]]},
   {name: "Iconv.pwm_low", pads: [["IU9", "6"], ["IR14", "2"], ["IC27", "1"], ["ITP6", "1"]]},
   {name: "Iconv.pwm_high", pads: [["IU9", "5"], ["IR16", "2"], ["IC28", "1"], ["ITP7", "1"]]},
+  {name: "Iconv.power_path.switch", pads: [["IL2", "1"], ["IU9", "4"], ["IC26", "2"], ["IQ1", "5"], ["IQ1", "6"], ["IQ1", "7"], ["IQ1", "8"], ["IQ2", "1"], ["IQ2", "2"], ["IQ2", "3"]]},
   {name: "Iconv.sw.driver.low_out", pads: [["IU9", "8"], ["IR11", "1"]]},
   {name: "Iconv.sw.driver.high_out", pads: [["IU9", "3"], ["IR12", "1"]]},
   {name: "Iconv.sw.driver.ic.hb", pads: [["IU9", "2"], ["IC26", "1"]]},
   {name: "Iconv.sw.low_fet.gate", pads: [["IQ1", "4"], ["IR11", "2"]]},
   {name: "Iconv.sw.high_fet.gate", pads: [["IQ2", "4"], ["IR12", "2"]]},
-  {name: "Iconv.sw_out_force", pads: [["IL2", "1"], ["IU9", "4"], ["IC26", "2"], ["IQ1", "5"], ["IQ1", "6"], ["IQ1", "7"], ["IQ1", "8"], ["IQ2", "1"], ["IQ2", "2"], ["IQ2", "3"]]},
   {name: "Ilow_pull.io", pads: [["IU3", "4"], ["IR13", "2"], ["IR14", "1"]]},
   {name: "Ihigh_pull.io", pads: [["IU3", "5"], ["IR15", "2"], ["IR16", "1"]]},
   {name: "Itouch_sink.pad", pads: [["IU3", "15"], ["IU10", "1"]]},

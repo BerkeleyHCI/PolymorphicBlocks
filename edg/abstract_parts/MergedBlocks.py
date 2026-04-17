@@ -6,12 +6,12 @@ from ..electronics_model import *
 from .Categories import *
 
 
-class MergedVoltageSource(DummyDevice, NetBlock, GeneratorBlock):
+class MergedVoltageSource(DummyDevice, GeneratorBlock):
     def __init__(self) -> None:
         super().__init__()
 
         self.pwr_ins = self.Port(Vector(VoltageSink.empty()))
-        self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr(), current_limits=RangeExpr.ALL))
+        self.pwr_out = self.Port(VoltageSource(voltage_out=RangeExpr()))
         self.generator_param(self.pwr_ins.requested())
 
     @override
@@ -19,9 +19,8 @@ class MergedVoltageSource(DummyDevice, NetBlock, GeneratorBlock):
         super().generate()
         self.pwr_ins.defined()
         for in_request in self.get(self.pwr_ins.requested()):
-            self.pwr_ins.append_elt(
-                VoltageSink(voltage_limits=RangeExpr.ALL, current_draw=self.pwr_out.link().current_drawn), in_request
-            )
+            elt_port = self.pwr_ins.append_elt(VoltageSink(current_draw=self.pwr_out.link().current_drawn), in_request)
+            self.connect(self.pwr_out.net, elt_port.net)
 
         self.assign(self.pwr_out.voltage_out, self.pwr_ins.hull(lambda x: x.link().voltage))
 

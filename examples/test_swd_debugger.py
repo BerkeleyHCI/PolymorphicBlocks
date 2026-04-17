@@ -9,7 +9,7 @@ class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
 
-        self.pwr = self.Port(VoltageSink.empty(), [Power])
+        self.pwr = self.Port(VoltageSink(), [Power])
         self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
         self.swd = self.Port(SwdTargetPort.empty(), [Input])
         self.reset = self.Port(DigitalSink.empty(), optional=True)
@@ -19,12 +19,8 @@ class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
     @override
     def contents(self) -> None:
         super().contents()
-        self.conn = self.Block(PinHeader127DualShrouded(10))
+        self.conn = self.Block(PinHeader127DualShrouded(10)).connected({"1": self.pwr, ("3", "5", "9"): self.gnd})
 
-        self.connect(self.pwr, self.conn.pins.request("1").adapt_to(VoltageSink()))
-        self.connect(
-            self.gnd.net, self.conn.pins.request("3"), self.conn.pins.request("5"), self.conn.pins.request("9")
-        )
         self.connect(self.swd.swdio, self.conn.pins.request("2").adapt_to(DigitalBidir()))
         self.connect(self.swd.swclk, self.conn.pins.request("4").adapt_to(DigitalSink()))
         self.connect(self.swo, self.conn.pins.request("6").adapt_to(DigitalBidir()))
@@ -36,7 +32,7 @@ class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
     def __init__(self) -> None:
         super().__init__()
 
-        self.pwr = self.Port(VoltageSink.empty(), [Power])
+        self.pwr = self.Port(VoltageSink(), [Power])
         self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
         self.swd = self.Port(SwdTargetPort.empty(), [Input])
         self.reset = self.Port(DigitalSink.empty(), optional=True)
@@ -46,12 +42,10 @@ class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
     def contents(self) -> None:
         super().contents()
 
-        self.conn = self.Block(PinHeader254DualShroudedInline(6))
-        self.connect(self.pwr, self.conn.pins.request("1").adapt_to(VoltageSink()))
+        self.conn = self.Block(PinHeader254DualShroudedInline(6)).connected({"1": self.pwr, "5": self.gnd})
         self.connect(self.swd.swdio, self.conn.pins.request("2").adapt_to(DigitalBidir()))  # also TMS
         self.connect(self.reset, self.conn.pins.request("3").adapt_to(DigitalSink()))
         self.connect(self.swd.swclk, self.conn.pins.request("4").adapt_to(DigitalSink()))
-        self.connect(self.gnd.net, self.conn.pins.request("5"))
         self.connect(self.swo, self.conn.pins.request("6").adapt_to(DigitalBidir()))
 
 

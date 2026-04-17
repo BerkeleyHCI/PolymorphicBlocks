@@ -16,11 +16,8 @@ class IronConnector(Connector, Block):
         self, *, isense_resistance: RangeLike = 22 * mOhm(tol=0.05), current_draw: RangeLike = (0, 3.25) * Amp
     ):
         super().__init__()
-        self.conn = self.Block(PinHeader254(3))
-        self.isense_res = self.Block(CurrentSenseResistor(resistance=isense_resistance, sense_in_reqd=False))
-
         self.gnd = self.Port(Ground.empty(), [Common])
-        self.pwr = self.Export(self.conn.pins.request("2").adapt_to(VoltageSink(current_draw=current_draw)))
+        self.pwr = self.Port(VoltageSink(current_draw=current_draw))
         self.thermocouple = self.Port(
             AnalogSource(
                 voltage_out=self.gnd.link().voltage + (0, 14.3) * mVolt,
@@ -29,12 +26,14 @@ class IronConnector(Connector, Block):
             optional=True,
         )
 
+        self.conn = self.Block(PinHeader254(3)).connected({"2": self.pwr, "3": self.thermocouple})
+        self.isense_res = self.Block(CurrentSenseResistor(resistance=isense_resistance, sense_in_reqd=False))
+
         self.isense = self.Export(self.isense_res.sense_out)
         self.connect(
             self.conn.pins.request("1").adapt_to(VoltageSink(current_draw=current_draw)), self.isense_res.pwr_out
         )
         self.connect(self.gnd.as_voltage_source(), self.isense_res.pwr_in)
-        self.connect(self.thermocouple.net, self.conn.pins.request("3"))
 
 
 class IotIron(JlcBoardTop):

@@ -185,7 +185,7 @@ const LU5 = board.add(SOT_363_SC_70_6, {
   translate: pt(0.890, 1.795), rotate: 0,
   id: 'LU5'
 })
-// lora.rf_sw.vdd_res
+// lora.rf_sw.vdd_res.res
 const LR7 = board.add(R_0603_1608Metric, {
   translate: pt(0.748, 2.110), rotate: 0,
   id: 'LR7'

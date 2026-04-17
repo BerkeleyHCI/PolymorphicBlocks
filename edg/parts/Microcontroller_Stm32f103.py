@@ -275,11 +275,11 @@ class Stm32f103_48_Device(Stm32f103Base_Device):
 class UsbDpPullUp(InternalSubcircuit, Block):
     def __init__(self, resistance: RangeLike):
         super().__init__()
-        self.pwr = self.Port(VoltageSink.empty(), [Power])
+        self.pwr = self.Port(VoltageSink(), [Power])
         self.usb = self.Port(UsbPassivePort.empty(), [InOut])
 
         self.dp = self.Block(Resistor(resistance))
-        self.connect(self.dp.a.adapt_to(VoltageSink()), self.pwr)
+        self.connect(self.pwr.net, self.dp.a)
         self.connect(self.usb.dp, self.dp.b.adapt_to(DigitalBidir()))  # ideal
         self.usb.dm.init_from(DigitalBidir())  # ideal
 

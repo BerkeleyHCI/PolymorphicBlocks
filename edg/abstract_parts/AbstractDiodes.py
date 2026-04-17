@@ -193,7 +193,10 @@ class ProtectionZenerDiode(Protection):
     def __init__(self, voltage: RangeLike):
         super().__init__()
 
-        self.pwr = self.Port(VoltageSink.empty(), [Power, InOut])
+        self.pwr = self.Port(
+            VoltageSink(voltage_limits=RangeExpr()),
+            [Power, InOut],
+        )
         self.gnd = self.Port(Ground(), [Common])
 
         self.voltage = self.ArgParameter(voltage)
@@ -202,15 +205,9 @@ class ProtectionZenerDiode(Protection):
     def contents(self) -> None:
         super().contents()
         self.diode = self.Block(ZenerDiode(zener_voltage=self.voltage))
-        self.connect(
-            self.diode.cathode.adapt_to(
-                VoltageSink(
-                    voltage_limits=(0, self.diode.actual_zener_voltage.lower()),
-                )
-            ),
-            self.pwr,
-        )
+        self.connect(self.pwr.net, self.diode.cathode)
         self.connect(self.gnd.net, self.diode.anode)
+        self.assign(self.pwr.voltage_limits, (0, self.diode.actual_zener_voltage.lower()))
 
 
 @deprecated("Use AnalogClampResistor, which should be cheaper and cause less signal distortion")

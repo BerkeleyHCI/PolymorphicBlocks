@@ -12,11 +12,10 @@ class PowerOutConnector(Connector, Block):
 
     def __init__(self, current: RangeLike):
         super().__init__()
-        self.conn = self.Block(PassiveConnector())
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Export(self.conn.pins.request("2").adapt_to(VoltageSink(current_draw=current)), [Power])
+        self.pwr = self.Port(VoltageSink(current_draw=current), [Power])
 
-        self.connect(self.gnd.net, self.conn.pins.request("1"))
+        self.conn = self.Block(PassiveConnector()).connected({"1": self.gnd, "2": self.pwr})
 
 
 class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
@@ -30,25 +29,20 @@ class SeriesPowerDiode(DiscreteApplication, KiCadImportableBlock):
     def __init__(self, reverse_voltage: RangeLike, current: RangeLike, voltage_drop: RangeLike) -> None:
         super().__init__()
 
-        self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
-        self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
+        self.pwr_in = self.Port(
+            VoltageSink(voltage_limits=(-float("inf"), float("inf")), current_draw=RangeExpr()),
+            [Power, Input],
+        )
+        self.pwr_out = self.Port(
+            VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=Range.all()), [Output]
+        )  # ignore voltage drop
 
         self.diode = self.Block(Diode(reverse_voltage=reverse_voltage, current=current, voltage_drop=voltage_drop))
 
-        self.connect(
-            self.pwr_in,
-            self.diode.anode.adapt_to(
-                VoltageSink(
-                    voltage_limits=(-float("inf"), float("inf")), current_draw=self.pwr_out.link().current_drawn
-                )
-            ),
-        )
-        self.connect(
-            self.pwr_out,
-            self.diode.cathode.adapt_to(
-                VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=Range.all())  # ignore voltage drop
-            ),
-        )
+        self.connect(self.pwr_in.net, self.diode.anode)
+        self.connect(self.pwr_out.net, self.diode.cathode)
+
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
 
 
 class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, GeneratorBlock):
@@ -280,11 +274,7 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
 
         self.connect(
             self.switch,
-            self.inductor.a.adapt_to(
-                VoltageSink(
-                    voltage_limits=RangeExpr.ALL, current_draw=self.pwr_out.link().current_drawn * values.dutycycle
-                )
-            ),
+            self.inductor.a.adapt_to(VoltageSink(current_draw=self.pwr_out.link().current_drawn * values.dutycycle)),
         )
         self.connect(
             self.pwr_out,

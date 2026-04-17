@@ -24,16 +24,10 @@ class SourceMeasureDutConnector(Connector):
 class SourceMeasureFan(Connector):
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(JstPhKVertical(2))
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Export(
-            self.conn.pins.request("2").adapt_to(
-                VoltageSink(voltage_limits=5 * Volt(tol=0.1), current_draw=200 * mAmp(tol=0))
-            ),
-            [Power],
-        )
+        self.pwr = self.Port(VoltageSink(voltage_limits=5 * Volt(tol=0.1), current_draw=200 * mAmp(tol=0)), [Power])
 
-        self.connect(self.gnd.net, self.conn.pins.request("1"))
+        self.conn = self.Block(JstPhKVertical(2)).connected({"1": self.gnd, "2": self.pwr})
 
 
 class SourceMeasureRangingCell(Interface, KiCadSchematicBlock):

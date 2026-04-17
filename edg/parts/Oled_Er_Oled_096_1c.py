@@ -26,62 +26,48 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
     def __init__(self) -> None:
         super().__init__()
 
-        self.conn = self.Block(Fpc030Bottom(length=31))
-
         self.vss = self.Port(Ground(), [Common])
-        self.connect(
-            self.vss.net,
-            self.conn.pins.request("7"),
-            self.conn.pins.request("1"),
-            self.conn.pins.request("31"),
-            self.conn.pins.request("26"),  # VLSS
-        )  # VLL
 
-        self.vdd = self.Export(
-            self.conn.pins.request("8").adapt_to(
-                VoltageSink(
-                    voltage_limits=(1.65, 3.5) * Volt,  # abs max is 4v
-                    current_draw=(10, 800) * uAmp,  # sleep mode current to supply current from SSD1357 datasheet
-                )
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=(1.65, 3.5) * Volt,  # abs max is 4v
+                current_draw=(10, 800) * uAmp,  # sleep mode current to supply current from SSD1357 datasheet
             )
         )
-        self.connect(self.vdd, self.conn.pins.request("17").adapt_to(VoltageSink()))
-
-        vcc_pin5 = self.conn.pins.request("5")
-        self.vcc = self.Export(
-            vcc_pin5.adapt_to(
-                VoltageSink(
-                    voltage_limits=(14.5, 15.5) * Volt,  # abs max is 8-19v
-                    current_draw=(0.010, 46) * mAmp,  # sleep mode current to normal mode with all pixels on
-                )
+        self.vcc = self.Port(
+            VoltageSink(
+                voltage_limits=(14.5, 15.5) * Volt,  # abs max is 8-19v
+                current_draw=(0.010, 46) * mAmp,  # sleep mode current to normal mode with all pixels on
             )
         )
-        self.connect(vcc_pin5, self.conn.pins.request("27"))  # connection upstream of adapter
 
         self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
-        self.connect(self.iref.net, self.conn.pins.request("6"))
-        self.vcomh = self.Export(
-            self.conn.pins.request("3").adapt_to(
-                VoltageSource(
-                    voltage_out=self.vcc.link().voltage * 0.86,  # selectable up to 0.86 Vcc by command BEh
-                    current_limits=0 * mAmp(tol=0),  # external draw not allowed
-                )
+        self.vcomh = self.Port(
+            VoltageSource(
+                voltage_out=self.vcc.link().voltage * 0.86,  # selectable up to 0.86 Vcc by command BEh
+                current_limits=0 * mAmp(tol=0),  # external draw not allowed
             )
         )
-        self.connect(self.vcomh, self.conn.pins.request("29").adapt_to(VoltageSink()))
-
-        self.vsl = self.Export(self.conn.pins.request("2"))
-        self.connect(self.vsl, self.conn.pins.request("30"))
-
-        self.vp = self.Export(
-            self.conn.pins.request("4").adapt_to(
-                VoltageSource(
-                    voltage_out=self.vcc.link().voltage * 0.5133,  # selectable up to 0.5133 Vcc by command BBh
-                    current_limits=0 * mAmp(tol=0),  # external draw not allowed
-                )
+        self.vsl = self.Port(Passive())
+        self.vp = self.Port(
+            VoltageSource(
+                voltage_out=self.vcc.link().voltage * 0.5133,  # selectable up to 0.5133 Vcc by command BBh
+                current_limits=0 * mAmp(tol=0),  # external draw not allowed
             )
         )
-        self.connect(self.vp, self.conn.pins.request("28").adapt_to(VoltageSink()))
+
+        self.conn = self.Block(Fpc030Bottom(length=31)).connected(
+            {
+                ("7", "1", "31"): self.vss,
+                "26": self.vss,  # VLSS
+                ("8", "17"): self.vdd,
+                ("5", "27"): self.vcc,
+                "6": self.iref,
+                ("3", "29"): self.vcomh,
+                ("2", "30"): self.vsl,
+                ("4", "28"): self.vp,
+            }
+        )
 
         din_model = DigitalSink.from_supply(
             self.vss,
@@ -102,8 +88,12 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
         self.d1 = self.Export(self.conn.pins.request("19").adapt_to(din_model))
         self.d2 = self.Export(self.conn.pins.request("20").adapt_to(din_model), optional=True)
 
-        for i in [16, 15] + list(range(21, 26)):  # RD, RW, DB3~DB7
-            self.connect(self.vss.net, self.conn.pins.request(str(i)))
+        self.conn.connected(
+            {
+                ("16", "15"): self.vss,  # RD, RW
+                (str(x) for x in range(21, 26)): self.vss,  # DB3~DB7
+            }
+        )
 
 
 class Er_Oled_096_1c(Oled, Resettable, GeneratorBlock):

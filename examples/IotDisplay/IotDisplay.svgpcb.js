@@ -60,7 +60,7 @@ const C1 = board.add(C_0603_1608Metric, {
   translate: pt(3.332, 1.261), rotate: 0,
   id: 'C1'
 })
-// reg_3v3.boot_cap
+// reg_3v3.boot_cap.cap
 const C2 = board.add(C_0603_1608Metric, {
   translate: pt(3.488, 1.261), rotate: 0,
   id: 'C2'
@@ -407,10 +407,10 @@ board.setNetlist([
   {name: "vbat_sense.output", pads: [["U2", "7"], ["R9", "2"], ["R10", "1"]]},
   {name: "touch_duck.pad", pads: [["U2", "21"], ["U4", "1"]]},
   {name: "touch_lemur.pad", pads: [["U2", "22"], ["U5", "1"]]},
-  {name: "epd_gate.control", pads: [["U2", "10"], ["Q4", "1"]]},
   {name: "epd_gate.output", pads: [["Q4", "3"], ["J4", "10"], ["J4", "9"], ["C8", "1"], ["L2", "1"], ["C15", "1"]]},
-  {name: "mem_gate.control", pads: [["U2", "23"], ["Q5", "1"]]},
+  {name: "epd_gate.control", pads: [["U2", "10"], ["Q4", "1"]]},
   {name: "mem_gate.output", pads: [["Q5", "3"], ["J5", "4"], ["U6", "3"], ["U6", "7"], ["U6", "8"], ["C19", "1"]]},
+  {name: "mem_gate.control", pads: [["U2", "23"], ["Q5", "1"]]},
   {name: "epd.reset", pads: [["U2", "8"], ["J4", "15"], ["TP7", "1"]]},
   {name: "epd.spi.sck", pads: [["U2", "33"], ["J4", "12"], ["TP4", "1"]]},
   {name: "epd.spi.mosi", pads: [["U2", "35"], ["J4", "11"], ["TP5", "1"]]},
@@ -419,7 +419,6 @@ board.setNetlist([
   {name: "epd.dc", pads: [["U2", "31"], ["J4", "14"], ["TP8", "1"]]},
   {name: "epd.busy", pads: [["U2", "9"], ["J4", "16"], ["TP10", "1"]]},
   {name: "epd.device.vdd1v8", pads: [["J4", "7"], ["C9", "1"]]},
-  {name: "epd.device.gdr", pads: [["J4", "23"], ["Q6", "1"], ["R12", "2"]]},
   {name: "epd.device.rese", pads: [["J4", "22"], ["Q6", "2"], ["R11", "1"]]},
   {name: "epd.device.vgl", pads: [["J4", "21"], ["C10", "1"]]},
   {name: "epd.device.vgh", pads: [["J4", "20"], ["C11", "1"]]},
@@ -428,6 +427,7 @@ board.setNetlist([
   {name: "epd.device.prevgh", pads: [["J4", "4"], ["D4", "1"], ["C17", "1"]]},
   {name: "epd.device.prevgl", pads: [["J4", "2"], ["D5", "2"], ["C18", "1"]]},
   {name: "epd.device.vcom", pads: [["J4", "1"], ["C14", "1"]]},
+  {name: "epd.device.gdr", pads: [["J4", "23"], ["Q6", "1"], ["R12", "2"]]},
   {name: "epd.boost.fet.drain", pads: [["Q6", "3"], ["L2", "2"], ["D4", "2"], ["C16", "1"]]},
   {name: "epd.boost.boot_neg_diode.cathode", pads: [["D5", "1"], ["D6", "2"], ["C16", "2"]]},
   {name: "sd.spi.sck", pads: [["U2", "17"], ["J5", "5"], ["U6", "6"], ["TP11", "1"]]},

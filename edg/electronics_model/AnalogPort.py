@@ -89,9 +89,7 @@ class AnalogSinkBridge(PortBridge):
         # The outer port's voltage_limits is untouched and should be defined in the port def.
         # TODO: it's a slightly optimization to handle them here. Should it be done?
         # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
-        self.inner_link = self.Port(
-            AnalogSource(voltage_out=RangeExpr(), signal_out=RangeExpr(), current_limits=RangeExpr.ALL)
-        )
+        self.inner_link = self.Port(AnalogSource(voltage_out=RangeExpr(), signal_out=RangeExpr()))
 
     @override
     def contents(self) -> None:
@@ -125,8 +123,6 @@ class AnalogSourceBridge(PortBridge):  # basic passthrough port, sources look th
         self.inner_link = self.Port(
             AnalogSink(
                 current_draw=RangeExpr(),
-                voltage_limits=RangeExpr.ALL,
-                signal_limits=RangeExpr.ALL,
                 impedance=RangeExpr(),
             )
         )
@@ -215,17 +211,13 @@ class AnalogSourceAdapterVoltageSource(KicadImportablePortAdapter[VoltageSource]
     def __init__(self) -> None:
         super().__init__()
         self.src = self.Port(AnalogSink(current_draw=RangeExpr()))  # otherwise ideal
-        self.dst = self.Port(VoltageSource.empty())
-        self.assign(self.src.current_draw, self.dst.link().current_drawn)
-        self.connect(
-            self.src.net.adapt_to(
-                VoltageSource(
-                    voltage_out=(self.src.link().voltage.upper(), self.src.link().voltage.upper()),
-                    current_limits=(-float("inf"), float("inf")),
-                )
-            ),
-            self.dst,
+        self.dst = self.Port(
+            VoltageSource(
+                voltage_out=(self.src.link().voltage.upper(), self.src.link().voltage.upper()),
+            )
         )
+        self.assign(self.src.current_draw, self.dst.link().current_drawn)
+        self.connect(self.src.net, self.dst.net)
 
 
 class AnalogSource(HasPassivePort, AnalogBase):

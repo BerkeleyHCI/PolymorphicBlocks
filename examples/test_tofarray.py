@@ -9,21 +9,17 @@ class CanConnector(Connector):
     def __init__(self) -> None:
         super().__init__()
 
-        self.pwr = self.Port(VoltageSource.empty(), optional=True)
+        self.pwr = self.Port(
+            VoltageSource(
+                voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
+                current_limits=(0, 0.15) * Amp,  # TODO get actual limits from ???
+            ),
+            optional=True,
+        )
         self.gnd = self.Port(Ground())
         self.differential = self.Port(CanDiffPort.empty(), [Output])
 
-        self.conn = self.Block(PassiveConnector())
-        self.connect(
-            self.pwr,
-            self.conn.pins.request("2").adapt_to(
-                VoltageSource(
-                    voltage_out=(7, 14) * Volt,  # TODO get limits from CAN power brick?
-                    current_limits=(0, 0.15) * Amp,  # TODO get actual limits from ???
-                )
-            ),
-        )
-        self.connect(self.gnd.net, self.conn.pins.request("3"))
+        self.conn = self.Block(PassiveConnector()).connected({"2": self.pwr, "3": self.gnd})
         self.connect(self.differential.canh, self.conn.pins.request("4").adapt_to(DigitalSource()))
         self.connect(self.differential.canl, self.conn.pins.request("5").adapt_to(DigitalSource()))
 

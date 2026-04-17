@@ -26,55 +26,46 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
     def __init__(self) -> None:
         super().__init__()
 
-        self.conn = self.Block(Fpc050Bottom(length=30))
-
         self.vss = self.Port(Ground(), [Common])
-        self.connect(
-            self.vss.net,
-            self.conn.pins.request("8"),
-            self.conn.pins.request("1"),
-            self.conn.pins.request("30"),
-            self.conn.pins.request("29"),  # NC/GND
-        )  # VLSS
-
-        self.vdd = self.Export(
-            self.conn.pins.request("9").adapt_to(
-                VoltageSink(
-                    voltage_limits=self.nonstrict_3v3_compatible.then_else(
-                        (1.65, 3.6) * Volt, (1.65, 3.3) * Volt  # abs max is 4v
-                    ),
-                    current_draw=(1, 300) * uAmp,  # sleep to operating
-                )
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (1.65, 3.6) * Volt, (1.65, 3.3) * Volt  # abs max is 4v
+                ),
+                current_draw=(1, 300) * uAmp,  # sleep to operating
             )
         )
-
-        self.vcc = self.Export(
-            self.conn.pins.request("28").adapt_to(
-                VoltageSource(voltage_out=(7, 7.5) * Volt, current_limits=0 * mAmp(tol=0))
-            )
-        )
+        self.vcc = self.Port(VoltageSource(voltage_out=(7, 7.5) * Volt, current_limits=0 * mAmp(tol=0)))
 
         self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
-        self.connect(self.iref.net, self.conn.pins.request("26"))
-        self.vcomh = self.Export(
-            self.conn.pins.request("27").adapt_to(
-                VoltageSource(
-                    voltage_out=self.vcc.voltage_out,  # can program Vcomh to be fractions of Vcc
-                    current_limits=0 * mAmp(tol=0),  # external draw not allowed
-                )
+        self.vcomh = self.Port(
+            VoltageSource(
+                voltage_out=self.vcc.voltage_out,  # can program Vcomh to be fractions of Vcc
+                current_limits=0 * mAmp(tol=0),  # external draw not allowed
             )
         )
 
-        self.vbat = self.Export(
-            self.conn.pins.request("6").adapt_to(
-                VoltageSink(
-                    voltage_limits=self.nonstrict_3v3_compatible.then_else(
-                        (3.1, 4.2) * Volt, (3.3, 4.2) * Volt  # technically out of spec, works in practice near 3.3v
-                    ),  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
-                    current_draw=(18.8, 32.0) * mAmp,  # typ @ 50% on to max @ 100% on
-                )
+        self.vbat = self.Port(
+            VoltageSink(
+                voltage_limits=self.nonstrict_3v3_compatible.then_else(
+                    (3.1, 4.2) * Volt, (3.3, 4.2) * Volt  # technically out of spec, works in practice near 3.3v
+                ),  # 3.3 lower from SSD1306 datasheet v1.6, panel datasheet more restrictive
+                current_draw=(18.8, 32.0) * mAmp,  # typ @ 50% on to max @ 100% on
             )
         )
+
+        self.conn = self.Block(Fpc050Bottom(length=30)).connected(
+            {
+                ("8", "1", "30"): self.vss,  # VLSS
+                "29": self.vss,  # NC/GND
+                "9": self.vdd,
+                "28": self.vcc,
+                "26": self.iref,
+                "27": self.vcomh,
+            }
+        )
+
+        self.connect(self.vbat.net, self.conn.pins.request("6"))
         self.c1p = self.Export(self.conn.pins.request("4"))
         self.c1n = self.Export(self.conn.pins.request("5"))
         self.c2p = self.Export(self.conn.pins.request("2"))
@@ -99,8 +90,12 @@ class Er_Oled_096_1_1_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.d1 = self.Export(self.conn.pins.request("19").adapt_to(din_model))
         self.d2 = self.Export(self.conn.pins.request("20").adapt_to(din_model), optional=True)
 
-        for i in [17, 16] + list(range(21, 26)):  # RW, ER, DB3~DB7
-            self.connect(self.vss.net, self.conn.pins.request(str(i)))
+        self.conn.connected(
+            {
+                ("17", "16"): self.vss,  # RW, ER
+                (str(x) for x in range(21, 26)): self.vss,  # DB3~DB7
+            }
+        )
 
 
 class Er_Oled_096_1_1(Oled, Resettable, GeneratorBlock):

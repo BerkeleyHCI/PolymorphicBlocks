@@ -42,7 +42,7 @@ class PullupDelayRc(DigitalFilter, Block):
 
     def __init__(self, impedance: RangeLike, time_constant: RangeLike):
         super().__init__()
-        self.pwr = self.Port(VoltageSink.empty(), [Power])
+        self.pwr = self.Port(VoltageSink(), [Power])
         self.time_constant = self.ArgParameter(time_constant)
 
         self.rc = self.Block(
@@ -52,7 +52,7 @@ class PullupDelayRc(DigitalFilter, Block):
         )
         self.gnd = self.Port(Ground(), [Common])
         self.connect(self.gnd.net, self.rc.gnd)
-        self.connect(self.pwr, self.rc.input.adapt_to(VoltageSink()))
+        self.connect(self.pwr.net, self.rc.input)
         self.io = self.Export(self.rc.output.adapt_to(DigitalSource.pullup_from_supply(self.pwr)), [Output])
 
     def connected(

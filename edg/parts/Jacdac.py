@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from typing_extensions import override
 
@@ -106,7 +106,7 @@ class JacdacEdgeConnectorBare(JacdacSubcircuit, FootprintBlock, GeneratorBlock):
         super().generate()
 
         if self.get(self.jd_pwr_src.is_connected()):
-            pwr_node: CircuitPort = self.jd_pwr_src
+            pwr_node: Union[VoltageSource, VoltageSink] = self.jd_pwr_src
         else:
             pwr_node = self.jd_pwr_sink
 
@@ -203,7 +203,7 @@ class JacdacDataInterface(JacdacSubcircuit, Block):
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Port(VoltageSink.empty(), [Power])
+        self.pwr = self.Port(VoltageSink(), [Power])
 
         self.signal = self.Port(DigitalBidir.empty(), [Input])
         self.jd_data = self.Port(JacdacDataPort.empty(), [Output])
@@ -234,7 +234,7 @@ class JacdacDataInterface(JacdacSubcircuit, Block):
         self.connect(self.ferrite.b, self.rc.output)
         self.connect(self.rc.input, self.clamp_hi.anode, self.clamp_lo.cathode)
         self.connect(self.gnd.net, self.rc.gnd, self.clamp_lo.anode)
-        self.connect(self.pwr, self.clamp_hi.cathode.adapt_to(VoltageSink()))
+        self.connect(self.pwr.net, self.clamp_hi.cathode)
         # inner port is ideal to avoid circular parameter dependencies
         self.connect(self.signal, self.rc.input.adapt_to(DigitalBidir()))
 

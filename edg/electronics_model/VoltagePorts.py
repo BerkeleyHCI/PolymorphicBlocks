@@ -4,8 +4,9 @@ from typing import *
 
 from typing_extensions import override
 
+from .PassivePort import HasPassivePort, Passive
 from ..core import *
-from .CircuitBlock import CircuitPort, CircuitPortBridge, CircuitLink, CircuitPortAdapter, KicadImportablePortAdapter
+from .CircuitBlock import KicadImportablePortAdapter
 from .GroundPort import GroundLink, GroundReference
 from .Units import Volt, Ohm, Amp
 
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
     from .AnalogPort import AnalogSource
 
 
-class VoltageLink(CircuitLink):
+class VoltageLink(Link):
     @classmethod
     def _voltage_range(cls, port: Port[VoltageLink]) -> RangeExpr:
         """Returns the voltage for a Voltage port, either sink or source"""
@@ -61,6 +62,8 @@ class VoltageLink(CircuitLink):
             DescriptionString.FormatUnits(self.current_limits, "A"),
         )
 
+        self.net = self.connect(self.source.net, self.sinks.map_extract(lambda x: x.net), flatten=True)
+
         self.assign(self.voltage, self.source.voltage_out)
         self.assign(self.voltage_limits, self.sinks.intersection(lambda x: x.voltage_limits))
         self.require(self.voltage_limits.contains(self.voltage), "voltage out of limits")
@@ -102,7 +105,7 @@ class VoltageLink(CircuitLink):
         )
 
 
-class VoltageSinkBridge(CircuitPortBridge):
+class VoltageSinkBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
 
@@ -122,7 +125,6 @@ class VoltageSinkBridge(CircuitPortBridge):
         # However, reverse_voltage_limit is assigned explicitly since it determines reverse sink support
         self.inner_link = self.Port(
             VoltageSource(
-                current_limits=RangeExpr.ALL,
                 voltage_out=RangeExpr(),
                 reverse_voltage_limits=RangeExpr(),
                 reverse_current_draw=RangeExpr(),
@@ -132,6 +134,8 @@ class VoltageSinkBridge(CircuitPortBridge):
     @override
     def contents(self) -> None:
         super().contents()
+
+        self.connect(self.outer_port.net, self.inner_link.net)
 
         self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
         self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
@@ -143,7 +147,7 @@ class VoltageSinkBridge(CircuitPortBridge):
         self.assign(self.inner_link.reverse_current_draw, self.outer_port.link().reverse_current_drawn)
 
 
-class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources look the same inside and outside
+class VoltageSourceBridge(PortBridge):  # basic passthrough port, sources look the same inside and outside
     def __init__(self) -> None:
         super().__init__()
 
@@ -162,7 +166,6 @@ class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources
         # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
         self.inner_link = self.Port(
             VoltageSink(
-                voltage_limits=RangeExpr.ALL,
                 current_draw=RangeExpr(),
                 reverse_voltage_out=RangeExpr(),
                 reverse_current_limits=RangeExpr.ALL,
@@ -172,6 +175,8 @@ class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources
     @override
     def contents(self) -> None:
         super().contents()
+
+        self.connect(self.outer_port.net, self.inner_link.net)
 
         self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
         self.assign(
@@ -184,7 +189,7 @@ class VoltageSourceBridge(CircuitPortBridge):  # basic passthrough port, sources
         self.assign(self.inner_link.reverse_voltage_out, self.outer_port.link().reverse_voltage)
 
 
-class VoltageBase(CircuitPort[VoltageLink]):
+class VoltageBase(Port[VoltageLink]):
     link_type = VoltageLink
 
     # TODO: support isolation domains and offset grounds
@@ -203,7 +208,7 @@ class VoltageBase(CircuitPort[VoltageLink]):
         return self._convert(VoltageSinkAdapterAnalogSource())
 
 
-class VoltageSink(VoltageBase):
+class VoltageSink(HasPassivePort, VoltageBase):
     bridge_type = VoltageSinkBridge
 
     @staticmethod
@@ -220,6 +225,9 @@ class VoltageSink(VoltageBase):
         reverse_current_limits: RangeLike = RangeExpr.EMPTY,
     ) -> None:
         super().__init__()
+
+        self.net = self.Port(Passive())
+
         self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
         self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
 
@@ -232,26 +240,29 @@ class VoltageSinkAdapterGroundReference(PortAdapter["GroundReference"]):
         super().__init__()
         from .GroundPort import GroundReference
 
-        self.src = self.Port(VoltageSink.empty())
+        self.src = self.Port(VoltageSink(current_draw=current_draw))
         self.dst = self.Port(GroundReference(voltage_out=self.src.link().voltage))
-        self.connect(
-            self.src, self.dst.net.adapt_to(VoltageSink(voltage_limits=RangeExpr.ALL * Volt, current_draw=current_draw))
-        )
+        self.connect(self.src.net, self.dst.net)
 
 
-class VoltageSinkAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):
+class VoltageSinkAdapterDigitalSource(PortAdapter["DigitalSource"]):
     def __init__(self) -> None:
         from .DigitalPorts import DigitalSource
 
         super().__init__()
-        self.src = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL * Volt, current_draw=RangeExpr()))
-        self.dst = self.Port(
-            DigitalSource(
-                voltage_out=self.src.link().voltage,
-                output_thresholds=(FloatExpr._to_expr_type(-float("inf")), self.src.link().voltage.upper()),
-            )
-        )
+        self.src = self.Port(VoltageSink(current_draw=RangeExpr()))
+        self.dst = self.Port(DigitalSource.empty())
         self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
+
+        self.connect(
+            self.dst,
+            self.src.net.adapt_to(
+                DigitalSource(
+                    voltage_out=self.src.link().voltage,
+                    output_thresholds=(FloatExpr._to_expr_type(-float("inf")), self.src.link().voltage.upper()),
+                )
+            ),
+        )
 
 
 class VoltageSinkAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
@@ -259,7 +270,7 @@ class VoltageSinkAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"])
         from .AnalogPort import AnalogSource
 
         super().__init__()
-        self.src = self.Port(VoltageSink.empty())
+        self.src = self.Port(VoltageSink(current_draw=RangeExpr()))
         self.dst = self.Port(
             AnalogSource(
                 voltage_out=self.src.link().voltage,
@@ -267,10 +278,11 @@ class VoltageSinkAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"])
                 impedance=(0, 0) * Ohm,  # TODO not actually true, but pretty darn low?
             )
         )
-        self.connect(self.dst.net.adapt_to(VoltageSink(current_draw=self.dst.link().current_drawn)), self.src)
+        self.assign(self.src.current_draw, self.dst.link().current_drawn)
+        self.connect(self.dst.net, self.src.net)
 
 
-class VoltageSource(VoltageBase):
+class VoltageSource(HasPassivePort, VoltageBase):
     bridge_type = VoltageSourceBridge
 
     def __init__(
@@ -281,6 +293,9 @@ class VoltageSource(VoltageBase):
         reverse_current_draw: RangeLike = RangeExpr.EMPTY,
     ) -> None:
         super().__init__()
+
+        self.net = self.Port(Passive())
+
         self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
         self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
 

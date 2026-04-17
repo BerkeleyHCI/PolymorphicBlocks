@@ -8,19 +8,16 @@ class Qt096t_if09_Device(InternalSubcircuit, Block):
     def __init__(self) -> None:
         super().__init__()
 
-        self.conn = self.Block(Fpc050Bottom(length=8))
-
         # both Vdd and VddI
-        self.vdd = self.Export(
-            self.conn.pins.request("7").adapt_to(
-                VoltageSink(
-                    voltage_limits=(2.5, 4.8) * Volt,  # 2.75v typ
-                    current_draw=(0.02, 2.02) * mAmp,  # ST7735S Table 7.3, IDDI + IDD, typ - max
-                )
+        self.gnd = self.Port(Ground())
+        self.vdd = self.Port(
+            VoltageSink(
+                voltage_limits=(2.5, 4.8) * Volt,  # 2.75v typ
+                current_draw=(0.02, 2.02) * mAmp,  # ST7735S Table 7.3, IDDI + IDD, typ - max
             )
         )
-        self.gnd = self.Port(Ground())
-        self.connect(self.gnd.net, self.conn.pins.request("2"))
+
+        self.conn = self.Block(Fpc050Bottom(length=8)).connected({"7": self.vdd, "2": self.gnd})
 
         io_model = DigitalSink.from_supply(
             self.gnd,
@@ -38,8 +35,7 @@ class Qt096t_if09_Device(InternalSubcircuit, Block):
         self.connect(self.spi.sck, self.conn.pins.request("6").adapt_to(io_model))  # scl
         self.connect(self.spi.mosi, self.conn.pins.request("5").adapt_to(io_model))  # sda
 
-        self.miso_nc = self.Block(DigitalBidirNotConnected())
-        self.connect(self.spi.miso, self.miso_nc.port)
+        self.miso_nc = self.Block(DigitalBidirNotConnected()).connected(self.spi.miso)
 
         self.leda = self.Export(self.conn.pins.request("1"))  # TODO maybe something else?
 

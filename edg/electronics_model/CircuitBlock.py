@@ -71,7 +71,6 @@ class FootprintBlock(Block):
         assembly"""
         from .PassivePort import HasPassivePort
         from ..core.Blocks import BlockElaborationState, BlockDefinitionError
-        from .VoltagePorts import CircuitPort
 
         if self._elaboration_state not in (
             BlockElaborationState.init,

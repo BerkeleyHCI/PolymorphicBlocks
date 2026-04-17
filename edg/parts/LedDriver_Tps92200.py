@@ -24,8 +24,14 @@ class Tps92200_Device(InternalSubcircuit, JlcPart, FootprintBlock):
         )
         self.fb = self.Port(AnalogSink.from_supply(self.gnd, self.vin, voltage_limit_abs=(-0.1, 6) * Volt))
 
-        self.sw = self.Port(VoltageSource())
-        self.boot = self.Port(Passive())
+        self.sw = self.Port(VoltageSource(voltage_out=self.vin.link().voltage.hull(self.gnd.link().voltage)))
+        self.boot = self.Port(
+            VoltageSink(
+                voltage_limits=self.sw.link().voltage + (-0.1, 6) * Volt,
+                reverse_voltage_out=(4, 6) * Volt,  # assumed from IN min to BOOT-SW abs max
+                reverse_current_limits=0 * Amp(tol=0),
+            )
+        )
 
     @override
     def contents(self) -> None:
@@ -82,9 +88,9 @@ class Tps92200(LedDriverPwm, LedDriver, GeneratorBlock):
         ) as imp:
             self.cap = imp.Block(DecouplingCapacitor(capacitance=0.1 * uFarad(tol=0.2)))
 
-            self.boot_cap = self.Block(Capacitor(capacitance=0.1 * uFarad(tol=0.2), voltage=(0, 7) * Volt))
-            self.connect(self.boot_cap.neg.adapt_to(VoltageSink()), self.ic.sw)
-            self.connect(self.boot_cap.pos, self.ic.boot)
+            self.boot_cap = self.Block(BootstrapCapacitor(capacitance=0.1 * uFarad(tol=0.2))).connected(
+                self.ic.sw, self.ic.boot
+            )
 
             isense_ref = Range(0.096, 0.102)
             self.rsense = self.Block(

@@ -235,7 +235,7 @@ const C7 = board.add(C_0603_1608Metric, {
   translate: pt(0.214, 0.660), rotate: 0,
   id: 'C7'
 })
-// bldc_drv.vcp_cap
+// bldc_drv.vcp_cap.cap
 const C8 = board.add(C_0603_1608Metric, {
   translate: pt(0.370, 0.660), rotate: 0,
   id: 'C8'

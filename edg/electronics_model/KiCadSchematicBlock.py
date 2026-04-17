@@ -6,8 +6,7 @@ from typing import Type, Any, Optional, Mapping, Dict, List, Callable, Tuple, Ty
 from typing_extensions import override
 
 from ..core import *
-from .CircuitBlock import FootprintBlock
-from .VoltagePorts import CircuitPort
+from .CircuitBlock import CircuitPort, FootprintBlock
 from .PassivePort import Passive, HasPassivePort
 from .KiCadImportableBlock import KiCadInstantiableBlock, KiCadImportableBlock
 from .KiCadSchematicParser import (

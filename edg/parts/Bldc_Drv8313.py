@@ -10,6 +10,7 @@ from .JlcPart import JlcPart
 class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
     def __init__(self) -> None:
         super().__init__()
+        self.gnd = self.Port(Ground())
         self.vm = self.Port(
             VoltageSink(  # one 0.1uF capacitor per supply pin and a bulk Vm capacitor
                 voltage_limits=(8, 60) * Volt,  # Table 6.3 Vm
@@ -22,8 +23,12 @@ class Drv8313_Device(InternalSubcircuit, FootprintBlock, JlcPart):
                 current_limits=(0, 10) * mAmp,  # Table 6.3 max V3P3 load current
             )
         )
-        self.vcp = self.Port(Passive())  # charge pump, 16V 0.1uF capacitor to Vm
-        self.gnd = self.Port(Ground())
+        self.vcp = self.Port(
+            VoltageSource(
+                voltage_out=self.vm.link().voltage + 12 * Volt(tol=0.2),  # assumed, from Vcp abs max ratings
+                current_limits=0 * Amp(tol=0),
+            )
+        )  # charge pump, 16V 0.1uF capacitor to Vm
 
         self.ens = self.Port(Vector(DigitalSink.empty()))
         self.ins = self.Port(Vector(DigitalSink.empty()))
@@ -139,9 +144,9 @@ class Drv8313(BldcDriver, GeneratorBlock):
         self.connect(self.cp_cap.pos, self.ic.cph)
         self.connect(self.cp_cap.neg, self.ic.cpl)
 
-        self.vcp_cap = self.Block(Capacitor(0.1 * uFarad(tol=0.2), (0, 16) * Volt))
-        self.connect(self.vcp_cap.pos, self.ic.vcp)
-        self.connect(self.vcp_cap.neg.adapt_to(VoltageSink()), self.ic.vm)
+        self.vcp_cap = self.Block(DecouplingCapacitor(0.1 * uFarad(tol=0.2))).connected(
+            self.ic.vm.as_ground(), self.ic.vcp
+        )
 
         self.nsleep_default = self.Block(DigitalSourceConnected()).out_with_default(
             self.ic.nsleep, self.nsleep, self.ic.v3p3.as_digital_source()

@@ -26,23 +26,18 @@ class MagneticEncoder(Connector, Magnetometer, Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(PassiveConnector())
 
         self.gnd = self.Port(Ground(), [Common])
-
-        self.pwr = self.Export(
-            self.conn.pins.request("1").adapt_to(
-                VoltageSink(
-                    voltage_limits=(3.0, 5.5),  # 3.0-3.6 for 3.3v mode, 4.5-5.5 for 5v mode
-                    current_draw=(1.5, 6.5) * mAmp,  # supply current LPM3-NOM, excluding burn-in
-                )
+        self.pwr = self.Port(
+            VoltageSink(
+                voltage_limits=(3.0, 5.5),  # 3.0-3.6 for 3.3v mode, 4.5-5.5 for 5v mode
+                current_draw=(1.5, 6.5) * mAmp,  # supply current LPM3-NOM, excluding burn-in
             ),
             [Power],
         )
         self.out = self.Port(AnalogSource.from_supply(self.gnd, self.pwr), [Output])
 
-        self.connect(self.gnd.net, self.conn.pins.request("3"))
-        self.connect(self.out.net, self.conn.pins.request("2"))
+        self.conn = self.Block(PassiveConnector()).connected({"3": self.gnd, "1": self.pwr, "2": self.out})
 
 
 class I2cConnector(Connector, Block):
@@ -50,13 +45,12 @@ class I2cConnector(Connector, Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(PassiveConnector())
 
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Export(self.conn.pins.request("2").adapt_to(VoltageSink()), [Power])
+        self.pwr = self.Port(VoltageSink(), [Power])
         self.i2c = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
 
-        self.connect(self.gnd.net, self.conn.pins.request("1"))
+        self.conn = self.Block(PassiveConnector()).connected({"1": self.gnd, "2": self.pwr})
         self.connect(self.i2c.sda, self.conn.pins.request("3").adapt_to(DigitalBidir()))
         self.connect(self.i2c.scl, self.conn.pins.request("4").adapt_to(DigitalBidir()))
 
@@ -66,20 +60,18 @@ class BldcHallSensor(Connector, Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(PassiveConnector())
 
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Export(
-            self.conn.pins.request("1").adapt_to(
-                VoltageSink(
-                    voltage_limits=5 * Volt(tol=0.1),
-                )
+        self.pwr = self.Port(
+            VoltageSink(
+                voltage_limits=5 * Volt(tol=0.1),
             ),
             [Power],
         )
         self.phases = self.Port(Vector(DigitalSource.empty()))
 
-        self.connect(self.gnd.net, self.conn.pins.request("5"))
+        self.conn = self.Block(PassiveConnector()).connected({"1": self.pwr, "5": self.gnd})
+
         phase_model = DigitalSource.low_from_supply(self.gnd)
         for pin, name in [("2", "u"), ("3", "v"), ("4", "w")]:
             phase = self.phases.append_elt(DigitalSource.empty(), name)

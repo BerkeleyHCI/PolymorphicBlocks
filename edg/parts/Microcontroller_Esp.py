@@ -53,14 +53,14 @@ class EspProgrammingPinHeader254(EspProgrammingHeader):
     def contents(self) -> None:
         super().contents()
 
-        self.conn = self.Block(PinHeader254())
         self.gnd.init_from(Ground())
+        self.pwr.init_from(VoltageSink())
 
-        self.connect(self.pwr, self.conn.pins.request("1").adapt_to(VoltageSink()))
+        self.conn = self.Block(PinHeader254()).connected({"1": self.pwr, "4": self.gnd})
+
         # RXD, TXD reversed to reflect the programmer's side view
         self.connect(self.uart.rx, self.conn.pins.request("2").adapt_to(DigitalSink()))
         self.connect(self.uart.tx, self.conn.pins.request("3").adapt_to(DigitalSource()))
-        self.connect(self.gnd.net, self.conn.pins.request("4"))
 
 
 class EspProgrammingTc2030(EspProgrammingAutoReset, EspProgrammingHeader):
@@ -77,13 +77,13 @@ class EspProgrammingTc2030(EspProgrammingAutoReset, EspProgrammingHeader):
     def contents(self) -> None:
         super().contents()
 
-        self.conn = self.Block(TagConnect(6))
         self.gnd.init_from(Ground())
+        self.pwr.init_from(VoltageSink())
 
-        self.connect(self.pwr, self.conn.pins.request("1").adapt_to(VoltageSink()))
+        self.conn = self.Block(TagConnect(6)).connected({"1": self.pwr, "5": self.gnd})
+
         self.connect(self.uart.rx, self.conn.pins.request("3").adapt_to(DigitalSink()))
         self.connect(self.uart.tx, self.conn.pins.request("4").adapt_to(DigitalSource()))
-        self.connect(self.gnd.net, self.conn.pins.request("5"))
 
         # TODO: pulldown is a hack to prevent driver conflict warnings, this should be a active low (open drain) driver
         self.connect(self.en, self.conn.pins.request("6").adapt_to(DigitalSource.pulldown_from_supply(self.gnd)))  # RTS

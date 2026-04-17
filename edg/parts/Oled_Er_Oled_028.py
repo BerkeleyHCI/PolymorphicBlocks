@@ -25,56 +25,40 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
     def __init__(self) -> None:
         super().__init__()
 
-        self.conn = self.Block(Fpc050Bottom(length=30))
-
         self.vss = self.Port(Ground(), [Common])
-        self.connect(
-            self.vss.net,
-            self.conn.pins.request("2"),
-            self.conn.pins.request("1"),
-            self.conn.pins.request("30"),  # NC/GND
-            self.conn.pins.request("5"),
-            self.conn.pins.request("28"),
-        )  # VLSS, connect to VSS externally
-
-        vcc3_pin = self.conn.pins.request("3")
-        self.connect(vcc3_pin, self.conn.pins.request("29"))
-        self.vcc = self.Export(
-            vcc3_pin.adapt_to(
-                VoltageSink(
-                    voltage_limits=(11.5, 12.5) * Volt, current_draw=(15.6, 60) * mAmp  # typ 30% display to abs max
-                )
+        self.vcc = self.Port(
+            VoltageSink(
+                voltage_limits=(11.5, 12.5) * Volt, current_draw=(15.6, 60) * mAmp  # typ 30% display to abs max
+            )
+        )
+        self.vcomh = self.Port(
+            VoltageSource(
+                voltage_out=self.vcc.link().voltage, current_limits=0 * mAmp(tol=0)  # only for external capacitor
+            )
+        )
+        self.vdd = self.Port(
+            VoltageSource(voltage_out=(2.4, 2.6) * Volt, current_limits=0 * mAmp(tol=0))  # only for external capacitor
+        )
+        self.vci = self.Port(
+            VoltageSink(voltage_limits=(2.4, 3.5) * Volt, current_draw=(20, 300) * uAmp)  # typ sleep to max operating
+        )
+        self.vddio = self.Port(
+            VoltageSink(
+                voltage_limits=(1.65 * Volt, self.vci.link().voltage.upper()),
+                current_draw=(2, 10) * uAmp,  # typ sleep to max sleep, no operating draw given
             )
         )
 
-        self.vcomh = self.Export(
-            self.conn.pins.request("4").adapt_to(
-                VoltageSource(
-                    voltage_out=self.vcc.link().voltage, current_limits=0 * mAmp(tol=0)  # only for external capacitor
-                )
-            )
-        )
-        self.vdd = self.Export(
-            self.conn.pins.request("25").adapt_to(
-                VoltageSource(
-                    voltage_out=(2.4, 2.6) * Volt, current_limits=0 * mAmp(tol=0)  # only for external capacitor
-                )
-            )
-        )
-        self.vci = self.Export(
-            self.conn.pins.request("26").adapt_to(
-                VoltageSink(
-                    voltage_limits=(2.4, 3.5) * Volt, current_draw=(20, 300) * uAmp  # typ sleep to max operating
-                )
-            )
-        )
-        self.vddio = self.Export(
-            self.conn.pins.request("24").adapt_to(
-                VoltageSink(
-                    voltage_limits=(1.65 * Volt, self.vci.link().voltage.upper()),
-                    current_draw=(2, 10) * uAmp,  # typ sleep to max sleep, no operating draw given
-                )
-            )
+        self.conn = self.Block(Fpc050Bottom(length=30)).connected(
+            {
+                ("2", "1", "5", "20"): self.vss,  # VLSS, connect to VSS externally
+                "30": self.vss,  # NC/GND
+                ("3", "29"): self.vcc,
+                "4": self.vcomh,
+                "25": self.vdd,
+                "26": self.vci,
+                "24": self.vddio,
+            }
         )
 
         din_model = DigitalSink.from_supply(

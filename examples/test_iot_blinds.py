@@ -8,12 +8,10 @@ from edg import *
 class IotRollerBlindsConnector(Block):
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(JstXh(length=6))
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Export(
-            self.conn.pins.request("1").adapt_to(VoltageSink.from_gnd(self.gnd, voltage_limits=(4.5, 25) * Volt)),
-            [Power],
-        )
+        self.pwr = self.Port(VoltageSink.from_gnd(self.gnd, voltage_limits=(4.5, 25) * Volt), [Power])
+
+        self.conn = self.Block(JstXh(length=6)).connected({"4": self.gnd, "1": self.pwr})
 
         self.enca = self.Export(self.conn.pins.request("2").adapt_to(DigitalSource.low_from_supply(self.gnd)))
         self.encb = self.Export(self.conn.pins.request("3").adapt_to(DigitalSource.low_from_supply(self.gnd)))
@@ -21,34 +19,23 @@ class IotRollerBlindsConnector(Block):
         self.motor2 = self.Export(self.conn.pins.request("5").adapt_to(DigitalSink(current_draw=(0, 0.5) * Amp)))
         self.motor1 = self.Export(self.conn.pins.request("6").adapt_to(DigitalSink(current_draw=(0, 0.5) * Amp)))
 
-        self.connect(self.gnd.net, self.conn.pins.request("4"))
-
 
 class PowerInConnector(Connector):
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(JstPh())
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Export(
-            self.conn.pins.request("2").adapt_to(
-                VoltageSource(
-                    voltage_out=(10, 25) * Volt,
-                    current_limits=(0, 1) * Amp,
-                )
-            )
-        )
+        self.pwr = self.Port(VoltageSource(voltage_out=(10, 25) * Volt, current_limits=(0, 1) * Amp))
 
-        self.connect(self.gnd.net, self.conn.pins.request("1"))
+        self.conn = self.Block(JstPh()).connected({"1": self.gnd, "2": self.pwr})
 
 
 class PowerOutConnector(Connector):
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(JstPh())
         self.gnd = self.Port(Ground())
-        self.pwr = self.Export(self.conn.pins.request("2").adapt_to(VoltageSink()))
+        self.pwr = self.Port(VoltageSink())
 
-        self.connect(self.gnd.net, self.conn.pins.request("1"))
+        self.conn = self.Block(JstPh()).connected({"1": self.gnd, "2": self.pwr})
 
 
 class IotRollerBlinds(JlcBoardTop):

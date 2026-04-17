@@ -17,13 +17,13 @@ class MotorConnector(Connector, Block):
 class PwmConnector(Connector, Block):
     def __init__(self, current_draw: RangeLike):
         super().__init__()
-        self.conn = self.Block(PinHeader254())
 
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Export(self.conn.pins.request("2").adapt_to(VoltageSink(current_draw=current_draw)), [Power])
-        self.pwm = self.Export(self.conn.pins.request("1").adapt_to(DigitalSink()), [Input])
+        self.pwr = self.Port(VoltageSink(current_draw=current_draw), [Power])
 
-        self.connect(self.gnd.net, self.conn.pins.request("3"))
+        self.conn = self.Block(PinHeader254()).connected({"3": self.gnd, "2": self.pwr})
+
+        self.pwm = self.Export(self.conn.pins.request("1").adapt_to(DigitalSink()), [Input])
 
 
 class LedConnector(Connector, Block):
@@ -31,16 +31,13 @@ class LedConnector(Connector, Block):
 
     def __init__(self, num_leds: FloatLike = 0):
         super().__init__()
-        self.conn = self.Block(PassiveConnector())
         led_current = 36.6
 
         self.gnd = self.Port(Ground(), [Common])
-        self.vdd = self.Export(
-            self.conn.pins.request("1").adapt_to(VoltageSink(current_draw=(0 * mAmp, led_current * num_leds))), [Power]
-        )
-        self.din = self.Export(self.conn.pins.request("2").adapt_to(DigitalSink()), [Input])
+        self.vdd = self.Port(VoltageSink(current_draw=(0 * mAmp, led_current * num_leds)), [Power])
 
-        self.connect(self.gnd.net, self.conn.pins.request("3"))
+        self.conn = self.Block(PassiveConnector()).connected({"3": self.gnd, "1": self.vdd})
+        self.din = self.Export(self.conn.pins.request("2").adapt_to(DigitalSink()), [Input])
 
 
 class RobotDriver(JlcBoardTop):

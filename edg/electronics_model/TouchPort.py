@@ -1,6 +1,5 @@
 from ..core import *
-from .CircuitBlock import CircuitLink
-from .VoltagePorts import CircuitPort
+from .CircuitBlock import CircuitPort, CircuitLink
 
 
 class TouchLink(CircuitLink):

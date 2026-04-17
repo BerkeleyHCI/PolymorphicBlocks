@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, cast
 
 from deprecated import deprecated
 from typing_extensions import override
 
 from ..core import *
-from .CircuitBlock import CircuitLink, CircuitPortBridge, CircuitPortAdapter
+from .CircuitBlock import CircuitPort, CircuitLink, CircuitPortBridge, CircuitPortAdapter
 from .GroundPort import GroundLink
-from .VoltagePorts import CircuitPort, VoltageLink, VoltageSource
+from .VoltagePorts import VoltageLink, VoltageSource
 from .Units import Volt
 
 
@@ -482,6 +482,10 @@ class DigitalBidirNotConnected(InternalBlock, Block):
     def __init__(self) -> None:
         super().__init__()
         self.port = self.Port(DigitalBidir(), [InOut])
+
+    def connected(self, port: Port[DigitalLink]) -> DigitalBidirNotConnected:
+        cast(Block, builder.get_enclosing_block()).connect(port, self.port)
+        return self
 
 
 class DigitalBidir(DigitalBase):

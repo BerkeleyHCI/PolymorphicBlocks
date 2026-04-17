@@ -10,15 +10,11 @@ class UartConnector(Connector, Block):
 
     def __init__(self, *, pwr_current_draw: RangeLike = (0, 0) * mAmp):
         super().__init__()
-        self.conn = self.Block(PassiveConnector())
-
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Export(
-            self.conn.pins.request("4").adapt_to(VoltageSink(current_draw=pwr_current_draw)), [Power]
-        )
+        self.pwr = self.Port(VoltageSink(current_draw=pwr_current_draw), [Power])
         self.uart = self.Port(UartPort.empty(), [InOut])
 
-        self.connect(self.gnd.net, self.conn.pins.request("3"))
+        self.conn = self.Block(PassiveConnector()).connected({"3": self.gnd, "4": self.pwr})
         # note that RX and TX here are from the connected device, so they're flipped from the CP2102's view
         self.connect(self.uart.rx, self.conn.pins.request("1").adapt_to(DigitalSink()))
         self.connect(self.uart.tx, self.conn.pins.request("2").adapt_to(DigitalSource()))

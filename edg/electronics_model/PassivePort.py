@@ -22,7 +22,7 @@ class PassiveLink(CircuitLink):
         self.passives = self.Port(Vector(Passive()))
 
 
-class PassiveAdapterGround(CircuitPortAdapter["Ground"]):
+class PassiveAdapterGround(PortAdapter["Ground"]):
     def __init__(self, voltage_limits: RangeLike = RangeExpr.ALL):
         from .GroundPort import Ground
 
@@ -32,7 +32,7 @@ class PassiveAdapterGround(CircuitPortAdapter["Ground"]):
         self.connect(self.src, self.dst.net)
 
 
-class PassiveAdapterVoltageSource(CircuitPortAdapter["VoltageSource"]):
+class PassiveAdapterVoltageSource(PortAdapter["VoltageSource"]):
     # TODO we can't use **kwargs b/c init_in_parent needs the initializer list
     def __init__(
         self,
@@ -53,9 +53,10 @@ class PassiveAdapterVoltageSource(CircuitPortAdapter["VoltageSource"]):
                 reverse_current_draw=reverse_current_draw,
             )
         )
+        self.connect(self.src, self.dst.net)
 
 
-class PassiveAdapterVoltageSink(CircuitPortAdapter["VoltageSink"]):
+class PassiveAdapterVoltageSink(PortAdapter["VoltageSink"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -76,6 +77,7 @@ class PassiveAdapterVoltageSink(CircuitPortAdapter["VoltageSink"]):
                 reverse_current_limits=reverse_current_limits,
             )
         )
+        self.connect(self.src, self.dst.net)
 
 
 class PassiveAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):

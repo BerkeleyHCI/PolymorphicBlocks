@@ -14,10 +14,12 @@ class PmosHighSideSwitch(PowerSwitch):
     def __init__(self, frequency: RangeLike = RangeExpr.ZERO, max_rds: FloatLike = 1 * Ohm) -> None:
         super().__init__()
 
-        self.pwr = self.Port(VoltageSink.empty(), [Power])
-
+        self.pwr = self.Port(VoltageSink(current_draw=RangeExpr()), [Power])
+        self.output = self.Port(
+            VoltageSource(voltage_out=self.pwr.link().voltage, current_limits=RangeExpr()),
+            [Output],
+        )
         self.control = self.Port(DigitalSink.empty(), [Input])
-        self.output = self.Port(VoltageSource.empty(), [Output])
 
         self.frequency = self.ArgParameter(frequency)
         self.max_rds = self.ArgParameter(max_rds)
@@ -38,17 +40,12 @@ class PmosHighSideSwitch(PowerSwitch):
             )
         )
 
-        self.connect(self.pwr, self.drv.source.adapt_to(VoltageSink(current_draw=self.output.link().current_drawn)))
-        self.connect(
-            self.output,
-            self.drv.drain.adapt_to(
-                VoltageSource(
-                    voltage_out=self.pwr.link().voltage,
-                    current_limits=self.drv.actual_drain_current_rating,
-                )
-            ),
-        )
+        self.connect(self.pwr.net, self.drv.source)
+        self.connect(self.output.net, self.drv.drain)
         self.connect(self.control, self.drv.gate.adapt_to(DigitalSink()))
+
+        self.assign(self.pwr.current_draw, self.output.link().current_drawn)
+        self.assign(self.output.current_limits, self.drv.actual_drain_current_rating)
 
 
 class IotDisplay(JlcBoardTop):

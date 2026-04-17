@@ -85,8 +85,14 @@ class SeriesPowerFuse(Protection):
     def __init__(self, trip_current: RangeLike) -> None:
         super().__init__()
 
-        self.pwr_out = self.Port(VoltageSource.empty(), [Output])  # forward declaration
-        self.pwr_in = self.Port(VoltageSink.empty(), [Power, Input])  # forward declaration
+        self.pwr_in = self.Port(
+            VoltageSink(voltage_limits=RangeExpr(), current_draw=RangeExpr()),
+            [Power, Input],
+        )
+        self.pwr_out = self.Port(
+            VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=RangeExpr()),  # ignore voltage drop
+            [Output],
+        )
 
         self.fuse = self.Block(
             self.FUSE_TYPE(
@@ -95,24 +101,12 @@ class SeriesPowerFuse(Protection):
                 voltage=self.pwr_in.link().voltage,
             )
         )
-        self.connect(
-            self.pwr_in,
-            self.fuse.a.adapt_to(
-                VoltageSink(
-                    voltage_limits=self.fuse.actual_voltage_rating,  # TODO: eventually needs a ground ref
-                    current_draw=self.pwr_out.link().current_drawn,
-                )
-            ),
-        )
-        self.connect(
-            self.pwr_out,
-            self.fuse.b.adapt_to(
-                VoltageSource(
-                    voltage_out=self.pwr_in.link().voltage,  # ignore voltage drop
-                    current_limits=(0, self.fuse.actual_hold_current.lower()),
-                )
-            ),
-        )
+        self.connect(self.pwr_in.net, self.fuse.a)
+        self.connect(self.pwr_out.net, self.fuse.b)
+
+        self.assign(self.pwr_in.voltage_limits, self.fuse.actual_voltage_rating)  # TODO: eventually needs a ground ref
+        self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
+        self.assign(self.pwr_out.current_limits, (0, self.fuse.actual_hold_current.lower()))
 
     def connected(
         self, pwr_in: Optional[Port[VoltageLink]] = None, pwr_out: Optional[Port[VoltageLink]] = None
