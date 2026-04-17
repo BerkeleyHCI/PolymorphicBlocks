@@ -172,7 +172,7 @@ class BaseVoltageDivider(KiCadImportableBlock):
         self.div = self.Block(ResistiveDivider(ratio=self.ratio, impedance=impedance))
 
         self.gnd = self.Port(Ground(), [Common])
-        self.input = self.Port(VoltageSink(current_draw=RangeExpr(), voltage_limits=RangeExpr.ALL), [Input])
+        self.input = self.Port(VoltageSink(current_draw=RangeExpr()), [Input])
         output_voltage = ResistiveDivider.divider_output(
             self.input.link().voltage, self.gnd.link().voltage, self.div.actual_ratio
         )
@@ -180,7 +180,6 @@ class BaseVoltageDivider(KiCadImportableBlock):
             AnalogSource(
                 voltage_out=output_voltage,
                 signal_out=output_voltage,
-                current_limits=RangeExpr.ALL,
                 impedance=self.div.actual_impedance,
             ),
             [Output],

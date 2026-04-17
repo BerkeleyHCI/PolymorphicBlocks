@@ -274,11 +274,7 @@ class FcmlPowerPath(InternalSubcircuit, GeneratorBlock):
 
         self.connect(
             self.switch,
-            self.inductor.a.adapt_to(
-                VoltageSink(
-                    voltage_limits=RangeExpr.ALL, current_draw=self.pwr_out.link().current_drawn * values.dutycycle
-                )
-            ),
+            self.inductor.a.adapt_to(VoltageSink(current_draw=self.pwr_out.link().current_drawn * values.dutycycle)),
         )
         self.connect(
             self.pwr_out,

@@ -66,10 +66,8 @@ class ForcedVoltageCurrentDraw(DummyDevice):
     def __init__(self, forced_current_draw: RangeLike) -> None:
         super().__init__()
 
-        self.pwr_in = self.Port(VoltageSink(current_draw=forced_current_draw, voltage_limits=RangeExpr.ALL), [Input])
-        self.pwr_out = self.Port(
-            VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=RangeExpr.ALL), [Output]
-        )
+        self.pwr_in = self.Port(VoltageSink(current_draw=forced_current_draw), [Input])
+        self.pwr_out = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage), [Output])
 
         self.connect(self.pwr_in.net, self.pwr_out.net)
 
@@ -80,7 +78,7 @@ class ForcedVoltageCurrentLimit(DummyDevice):
     def __init__(self, forced_current_limit: RangeLike) -> None:
         super().__init__()
 
-        self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr(), voltage_limits=RangeExpr.ALL), [Input])
+        self.pwr_in = self.Port(VoltageSink(current_draw=RangeExpr()), [Input])
         self.pwr_out = self.Port(
             VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=forced_current_limit), [Output]
         )

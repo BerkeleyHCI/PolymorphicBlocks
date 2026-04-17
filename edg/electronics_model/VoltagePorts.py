@@ -125,7 +125,6 @@ class VoltageSinkBridge(PortBridge):
         # However, reverse_voltage_limit is assigned explicitly since it determines reverse sink support
         self.inner_link = self.Port(
             VoltageSource(
-                current_limits=RangeExpr.ALL,
                 voltage_out=RangeExpr(),
                 reverse_voltage_limits=RangeExpr(),
                 reverse_current_draw=RangeExpr(),
@@ -167,7 +166,6 @@ class VoltageSourceBridge(PortBridge):  # basic passthrough port, sources look t
         # TODO: or maybe current_limits / voltage_limits shouldn't be a port, but rather a block property?
         self.inner_link = self.Port(
             VoltageSink(
-                voltage_limits=RangeExpr.ALL,
                 current_draw=RangeExpr(),
                 reverse_voltage_out=RangeExpr(),
                 reverse_current_limits=RangeExpr.ALL,
@@ -242,7 +240,7 @@ class VoltageSinkAdapterGroundReference(PortAdapter["GroundReference"]):
         super().__init__()
         from .GroundPort import GroundReference
 
-        self.src = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL * Volt, current_draw=current_draw))
+        self.src = self.Port(VoltageSink(current_draw=current_draw))
         self.dst = self.Port(GroundReference(voltage_out=self.src.link().voltage))
         self.connect(self.src.net, self.dst.net)
 
@@ -252,7 +250,7 @@ class VoltageSinkAdapterDigitalSource(PortAdapter["DigitalSource"]):
         from .DigitalPorts import DigitalSource
 
         super().__init__()
-        self.src = self.Port(VoltageSink(voltage_limits=RangeExpr.ALL * Volt, current_draw=RangeExpr()))
+        self.src = self.Port(VoltageSink(current_draw=RangeExpr()))
         self.dst = self.Port(DigitalSource.empty())
         self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
 

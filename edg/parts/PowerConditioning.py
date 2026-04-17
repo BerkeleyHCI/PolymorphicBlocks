@@ -526,11 +526,9 @@ class SoftPowerGate(PowerSwitch, KiCadSchematicBlock, Block):  # migrate from th
             conversions={
                 "pwr_in": VoltageSink(
                     current_draw=self.pwr_out.link().current_drawn,
-                    voltage_limits=RangeExpr.ALL,
                 ),
                 "pwr_out": VoltageSource(
                     voltage_out=self.pwr_in.link().voltage,
-                    current_limits=RangeExpr.ALL,
                 ),
                 "control": DigitalSink(),  # TODO more modeling here?
                 "gnd": Ground(),

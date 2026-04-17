@@ -73,11 +73,7 @@ class GroundAdapterVoltageSource(PortAdapter["VoltageSource"]):
 
         super().__init__()
         self.src = self.Port(Ground())
-        self.dst = self.Port(
-            VoltageSource(
-                voltage_out=self.src.link().voltage,
-            )
-        )
+        self.dst = self.Port(VoltageSource(voltage_out=self.src.link().voltage))
         self.connect(self.src.net, self.dst.net)
 
 
