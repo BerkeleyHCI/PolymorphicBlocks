@@ -164,8 +164,10 @@ class SingleDiodePowerMerge(PowerConditioner, Block):
         self.assign(
             self.pwr_out.voltage_out,
             self.pwr_in.link().voltage.hull(
-                self.pwr_in_diode.link().voltage.lower() - self.diode.voltage_drop.upper(),
-                self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower(),
+                (
+                    self.pwr_in_diode.link().voltage.lower() - self.diode.voltage_drop.upper(),
+                    self.pwr_in_diode.link().voltage.upper() - self.diode.voltage_drop.lower(),
+                )
             ),
         )
 
