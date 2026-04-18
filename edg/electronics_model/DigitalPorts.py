@@ -61,6 +61,7 @@ class DigitalLink(Link):
             self.sources.map_extract(lambda x: x.net),
             self.sinks.map_extract(lambda x: x.net),
             self.bidirs.map_extract(lambda x: x.net),
+            flatten=True,
         )
 
         self.description = DescriptionString(
