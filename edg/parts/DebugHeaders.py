@@ -14,15 +14,24 @@ class SwdCortexTargetHeader(
 
         self.pwr.init_from(VoltageSink())
         self.gnd.init_from(Ground())
+        self.swd.init_from(SwdHostPort())
+        self.swo.init_from(DigitalBidir())
+        self.tdi.init_from(DigitalBidir())
+        self.reset.init_from(
+            DigitalSource.pulldown_from_supply(self.gnd)
+        )  # pulldown to not conflict with other drivers
 
-        self.conn = self.Block(PinHeader127DualShrouded(10)).connected({"1": self.pwr, ("3", "5", "9"): self.gnd})
-
-        self.connect(self.swd.swdio, self.conn.pins.request("2").adapt_to(DigitalBidir()))
-        self.connect(self.swd.swclk, self.conn.pins.request("4").adapt_to(DigitalSource()))
-        self.connect(self.swo, self.conn.pins.request("6").adapt_to(DigitalBidir()))
-        self.connect(self.tdi, self.conn.pins.request("8").adapt_to(DigitalBidir()))
-        # TODO: pulldown is a hack to prevent driver conflict warnings, this should be a active low (open drain) driver
-        self.connect(self.reset, self.conn.pins.request("10").adapt_to(DigitalSource.pulldown_from_supply(self.gnd)))
+        self.conn = self.Block(PinHeader127DualShrouded(10)).connected(
+            {
+                "1": self.pwr,
+                ("3", "5", "9"): self.gnd,
+                "2": self.swd.swdio,
+                "4": self.swd.swclk,
+                "6": self.swo,
+                "8": self.tdi,
+                "10": self.reset,
+            }
+        )
 
 
 class SwdCortexTargetTagConnect(SwdCortexTargetConnector, SwdCortexTargetConnectorReset, SwdCortexTargetConnectorSwo):
@@ -35,20 +44,23 @@ class SwdCortexTargetTagConnect(SwdCortexTargetConnector, SwdCortexTargetConnect
 
         self.gnd.init_from(Ground())
         self.pwr.init_from(VoltageSink())
+        self.swd.init_from(SwdHostPort())
+        self.swo.init_from(DigitalBidir())
+        self.reset.init_from(
+            DigitalSource.pulldown_from_supply(self.gnd)
+        )  # pulldown to not conflict with other drivers
 
-        self.conn = self.Block(TagConnect(6)).connected({"1": self.pwr, "5": self.gnd})
-
-        self.connect(self.swd.swdio, self.conn.pins.request("2").adapt_to(DigitalBidir()))  # also TMS
-        # TODO: pulldown is a hack to prevent driver conflict warnings, this should be a active low (open drain) driver
-        self.connect(self.reset, self.conn.pins.request("3").adapt_to(DigitalSource.pulldown_from_supply(self.gnd)))
-        self.connect(self.swd.swclk, self.conn.pins.request("4").adapt_to(DigitalSource()))
-        self.connect(self.swo, self.conn.pins.request("6").adapt_to(DigitalBidir()))
+        self.conn = self.Block(TagConnect(6)).connected(
+            {"1": self.pwr, "2": self.swd.swdio, "3": self.reset, "4": self.swd.swclk, "5": self.gnd, "6": self.swo}
+        )
 
 
 class SwdCortexTargetTc2050(
     SwdCortexTargetConnector, SwdCortexTargetConnectorReset, SwdCortexTargetConnectorSwo, SwdCortexTargetConnectorTdi
 ):
-    """UNOFFICIAL tag connect SWD header, maintaining physical pin compatibility with the 2x05 1.27mm header."""
+    """UNOFFICIAL tag connect SWD header, maintaining physical pin compatibility with the 2x05 1.27mm header.
+    NOT RECOMMENDED for use, this is a legacy artifact and will be removed.
+    Use one of the official pinnings instead."""
 
     @override
     def contents(self) -> None:
@@ -56,12 +68,21 @@ class SwdCortexTargetTc2050(
 
         self.gnd.init_from(Ground())
         self.pwr.init_from(VoltageSink())
+        self.swd.init_from(SwdHostPort())
+        self.swo.init_from(DigitalBidir())
+        self.tdi.init_from(DigitalBidir())
+        self.reset.init_from(
+            DigitalSource.pulldown_from_supply(self.gnd)
+        )  # pulldown to not conflict with other drivers
 
-        self.conn = self.Block(TagConnect(10)).connected({"1": self.pwr, ("2", "3", "5"): self.gnd})
-
-        self.connect(self.swd.swdio, self.conn.pins.request("10").adapt_to(DigitalBidir()))
-        self.connect(self.swd.swclk, self.conn.pins.request("9").adapt_to(DigitalSource()))
-        self.connect(self.swo, self.conn.pins.request("8").adapt_to(DigitalBidir()))
-        self.connect(self.tdi, self.conn.pins.request("7").adapt_to(DigitalBidir()))
-        # TODO: pulldown is a hack to prevent driver conflict warnings, this should be a active low (open drain) driver
-        self.connect(self.reset, self.conn.pins.request("6").adapt_to(DigitalSource.pulldown_from_supply(self.gnd)))
+        self.conn = self.Block(TagConnect(10)).connected(
+            {
+                "1": self.pwr,
+                ("2", "3", "5"): self.gnd,
+                "10": self.swd.swdio,
+                "9": self.swd.swclk,
+                "8": self.swo,
+                "7": self.tdi,
+                "6": self.reset,
+            }
+        )

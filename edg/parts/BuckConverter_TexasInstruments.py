@@ -213,7 +213,9 @@ class Tps54202h(Resettable, DiscreteBuckConverter, GeneratorBlock):
             self.connect(self.reset, self.ic.en)
         else:  # by default tie high to enable regulator
             # an internal 6.9v Zener clamps the enable voltage, datasheet recommends at 510k resistor
-            # a pull-up resistor isn't used because
-            self.en_res = self.Block(Resistor(resistance=510 * kOhm(tol=0.05), power=0 * Amp(tol=0)))
-            self.connect(self.pwr_in, self.en_res.a.adapt_to(VoltageSink()))
-            self.connect(self.en_res.b.adapt_to(DigitalSource()), self.ic.en)
+            # TODO this should model clamping the input voltage, but doesn't matter since the VDD UVLO handles this case
+            self.pwr_in_zener_clamp = self.Block(ForcedVoltage(6.9 * Volt(tol=0)))
+            self.connect(self.pwr_in, self.pwr_in_zener_clamp.pwr_in)
+            self.en_res = self.Block(PullupResistor(resistance=510 * kOhm(tol=0.05))).connected(
+                self.pwr_in_zener_clamp.pwr_out, self.ic.en
+            )

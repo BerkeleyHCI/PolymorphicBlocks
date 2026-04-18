@@ -128,7 +128,7 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         )
         self.assign(self.signal.current_draw, self.signal.link().voltage / self.res.actual_resistance)
 
-        self.connect(self.signal, self.ic.leda)
+        self.connect(self.signal.net, self.ic.leda)
         self.connect(self.res.a, self.ic.ledk)
         self.connect(self.gnd.net, self.res.b)
 
