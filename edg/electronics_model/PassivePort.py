@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import TypeVar, Type, Dict, Union, Generic
+from typing import TypeVar, Type, Dict, Union
 
 from typing_extensions import TYPE_CHECKING
 
 from ..core import *
-from .CircuitBlock import CircuitPort, CircuitLink, CircuitPortBridge, CircuitPortAdapter, KicadImportablePortAdapter
+from .CircuitBlock import CircuitPort, CircuitLink, CircuitPortBridge, KicadImportablePortAdapter
 
 if TYPE_CHECKING:
     from .GroundPort import Ground
@@ -80,7 +80,7 @@ class PassiveAdapterVoltageSink(PortAdapter["VoltageSink"]):
         self.connect(self.src, self.dst.net)
 
 
-class PassiveAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):
+class PassiveAdapterDigitalSource(PortAdapter["DigitalSource"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -109,9 +109,10 @@ class PassiveAdapterDigitalSource(CircuitPortAdapter["DigitalSource"]):
                 _bridged_internal=_bridged_internal,
             )
         )
+        self.connect(self.src, self.dst.net)
 
 
-class PassiveAdapterDigitalSink(CircuitPortAdapter["DigitalSink"]):
+class PassiveAdapterDigitalSink(PortAdapter["DigitalSink"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -136,9 +137,10 @@ class PassiveAdapterDigitalSink(CircuitPortAdapter["DigitalSink"]):
                 _bridged_internal=_bridged_internal,
             )
         )
+        self.connect(self.src, self.dst.net)
 
 
-class PassiveAdapterDigitalBidir(CircuitPortAdapter["DigitalBidir"]):
+class PassiveAdapterDigitalBidir(PortAdapter["DigitalBidir"]):
     # TODO we can't use **kwargs b/c the init hook needs an initializer list
     def __init__(
         self,
@@ -170,6 +172,7 @@ class PassiveAdapterDigitalBidir(CircuitPortAdapter["DigitalBidir"]):
                 _bridged_internal=_bridged_internal,
             )
         )
+        self.connect(self.src, self.dst.net)
 
 
 class PassiveAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):
