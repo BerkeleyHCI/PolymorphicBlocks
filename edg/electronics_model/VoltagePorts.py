@@ -251,18 +251,15 @@ class VoltageSinkAdapterDigitalSource(PortAdapter["DigitalSource"]):
 
         super().__init__()
         self.src = self.Port(VoltageSink(current_draw=RangeExpr()))
-        self.dst = self.Port(DigitalSource.empty())
+        self.dst = self.Port(
+            DigitalSource(
+                voltage_out=self.src.link().voltage,
+                output_thresholds=(FloatExpr._to_expr_type(-float("inf")), self.src.link().voltage.upper()),
+            )
+        )
         self.assign(self.src.current_draw, self.dst.link().current_drawn)  # TODO might be an overestimate
 
-        self.connect(
-            self.dst,
-            self.src.net.adapt_to(
-                DigitalSource(
-                    voltage_out=self.src.link().voltage,
-                    output_thresholds=(FloatExpr._to_expr_type(-float("inf")), self.src.link().voltage.upper()),
-                )
-            ),
-        )
+        self.connect(self.dst.net, self.src.net)
 
 
 class VoltageSinkAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):

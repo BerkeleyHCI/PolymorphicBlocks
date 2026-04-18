@@ -5,14 +5,14 @@ from typing import Optional, Tuple, cast
 from deprecated import deprecated
 from typing_extensions import override
 
+from .PassivePort import HasPassivePort, Passive
 from ..core import *
-from .CircuitBlock import CircuitPort, CircuitLink, CircuitPortBridge, CircuitPortAdapter
 from .GroundPort import GroundLink
 from .VoltagePorts import VoltageLink, VoltageSource
 from .Units import Volt
 
 
-class DigitalLink(CircuitLink):
+class DigitalLink(Link):
     """A link for digital IOs. Because of the wide variations on digital IOs, this is kind of a beast.
 
     Overall, this means a port that deals with signals that can be driven to two levels, high or low.
@@ -56,6 +56,12 @@ class DigitalLink(CircuitLink):
     @override
     def contents(self) -> None:
         super().contents()
+
+        self.net = self.connect(
+            self.sources.map_extract(lambda x: x.net),
+            self.sinks.map_extract(lambda x: x.net),
+            self.bidirs.map_extract(lambda x: x.net),
+        )
 
         self.description = DescriptionString(
             "<b>voltage</b>: ",
@@ -157,11 +163,11 @@ class DigitalLink(CircuitLink):
         )
 
 
-class DigitalBase(CircuitPort[DigitalLink]):
+class DigitalBase(Port[DigitalLink]):
     link_type = DigitalLink
 
 
-class DigitalSinkBridge(CircuitPortBridge):
+class DigitalSinkBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
 
@@ -184,6 +190,8 @@ class DigitalSinkBridge(CircuitPortBridge):
     def contents(self) -> None:
         super().contents()
 
+        self.connect(self.outer_port.net, self.inner_link.net)
+
         self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
         self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
         self.assign(self.outer_port.input_thresholds, self.inner_link.link().input_thresholds)
@@ -192,7 +200,7 @@ class DigitalSinkBridge(CircuitPortBridge):
         self.assign(self.inner_link.output_thresholds, self.outer_port.link().output_thresholds)
 
 
-class DigitalSink(DigitalBase):
+class DigitalSink(HasPassivePort, DigitalBase):
     bridge_type = DigitalSinkBridge
 
     @staticmethod
@@ -261,6 +269,9 @@ class DigitalSink(DigitalBase):
         _bridged_internal: BoolLike = False,
     ) -> None:
         super().__init__()
+
+        self.net = self.Port(Passive())
+
         self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
         self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
         self.input_thresholds: RangeExpr = self.Parameter(RangeExpr(input_thresholds))
@@ -270,7 +281,7 @@ class DigitalSink(DigitalBase):
         self._bridged_internal: BoolExpr = self.Parameter(BoolExpr(_bridged_internal))
 
 
-class DigitalSourceBridge(CircuitPortBridge):
+class DigitalSourceBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
 
@@ -297,6 +308,8 @@ class DigitalSourceBridge(CircuitPortBridge):
     def contents(self) -> None:
         super().contents()
 
+        self.connect(self.outer_port.net, self.inner_link.net)
+
         self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
         self.assign(
             self.outer_port.current_limits, self.inner_link.link().current_limits
@@ -306,7 +319,7 @@ class DigitalSourceBridge(CircuitPortBridge):
         self.assign(self.outer_port.output_thresholds, self.inner_link.link().output_thresholds)
 
 
-class DigitalSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
+class DigitalSourceAdapterVoltageSource(PortAdapter[VoltageSource]):
     def __init__(self) -> None:
         super().__init__()
         self.src = self.Port(DigitalSink(current_draw=RangeExpr()))  # otherwise ideal
@@ -314,9 +327,10 @@ class DigitalSourceAdapterVoltageSource(CircuitPortAdapter[VoltageSource]):
             VoltageSource(voltage_out=(self.src.link().output_thresholds.upper(), self.src.link().voltage.upper()))
         )
         self.assign(self.src.current_draw, self.dst.link().current_drawn)
+        self.connect(self.src.net, self.dst.net)
 
 
-class DigitalSource(DigitalBase):
+class DigitalSource(HasPassivePort, DigitalBase):
     bridge_type = DigitalSourceBridge
 
     @staticmethod
@@ -369,6 +383,9 @@ class DigitalSource(DigitalBase):
         _bridged_internal: BoolLike = False,
     ) -> None:
         super().__init__()
+
+        self.net = self.Port(Passive())
+
         self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
         self.current_limits: RangeExpr = self.Parameter(RangeExpr(current_limits))
         self.output_thresholds: RangeExpr = self.Parameter(RangeExpr(output_thresholds))
@@ -432,7 +449,7 @@ class DigitalSource(DigitalBase):
         return self._convert(DigitalSourceAdapterVoltageSource())
 
 
-class DigitalBidirBridge(CircuitPortBridge):
+class DigitalBidirBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
 
@@ -463,6 +480,8 @@ class DigitalBidirBridge(CircuitPortBridge):
     def contents(self) -> None:
         super().contents()
 
+        self.connect(self.outer_port.net, self.inner_link.net)
+
         self.assign(self.outer_port.voltage_out, self.inner_link.link().voltage)
         self.assign(self.outer_port.current_draw, self.inner_link.link().current_drawn)
         self.assign(self.outer_port.voltage_limits, self.inner_link.link().voltage_limits)
@@ -488,7 +507,7 @@ class DigitalBidirNotConnected(InternalBlock, Block):
         return self
 
 
-class DigitalBidir(DigitalBase):
+class DigitalBidir(HasPassivePort, DigitalBase):
     bridge_type = DigitalBidirBridge
     not_connected_type = DigitalBidirNotConnected
 
@@ -572,6 +591,9 @@ class DigitalBidir(DigitalBase):
         _bridged_internal: BoolLike = False,
     ) -> None:
         super().__init__()
+
+        self.net = self.Port(Passive())
+
         self.voltage_limits: RangeExpr = self.Parameter(RangeExpr(voltage_limits))
         self.current_draw: RangeExpr = self.Parameter(RangeExpr(current_draw))
         self.voltage_out: RangeExpr = self.Parameter(RangeExpr(voltage_out))
