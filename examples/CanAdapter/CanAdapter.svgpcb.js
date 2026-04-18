@@ -65,7 +65,7 @@ const OC4 = board.add(C_0805_2012Metric, {
   translate: pt(0.287, 1.334), rotate: 0,
   id: 'OC4'
 })
-// reg_3v3.en_res
+// reg_3v3.en_res.res
 const OR3 = board.add(R_0603_1608Metric, {
   translate: pt(0.058, 1.551), rotate: 0,
   id: 'OR3'

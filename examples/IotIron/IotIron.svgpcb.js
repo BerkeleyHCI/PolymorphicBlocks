@@ -75,7 +75,7 @@ const IC5 = board.add(C_0805_2012Metric, {
   translate: pt(2.498, 2.035), rotate: 0,
   id: 'IC5'
 })
-// reg_3v3.en_res
+// reg_3v3.en_res.res
 const IR3 = board.add(R_0603_1608Metric, {
   translate: pt(2.049, 2.252), rotate: 0,
   id: 'IR3'
