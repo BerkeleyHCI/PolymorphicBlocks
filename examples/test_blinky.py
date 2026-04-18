@@ -505,13 +505,13 @@ class Hx711(KiCadSchematicBlock):
         self.pwr = self.Port(VoltageSink(), [Power])
         self.gnd = self.Port(Ground(), [Common])
 
-        self.dout = self.Port(DigitalSource.empty())
-        self.sck = self.Port(DigitalSink.empty())
+        self.dout = self.Port(DigitalSource())
+        self.sck = self.Port(DigitalSink())
 
-        self.ep = self.Port(Passive.empty())
-        self.en = self.Port(Passive.empty())
-        self.sp = self.Port(Passive.empty())
-        self.sn = self.Port(Passive.empty())
+        self.ep = self.Port(Passive())
+        self.en = self.Port(Passive())
+        self.sp = self.Port(Passive())
+        self.sn = self.Port(Passive())
 
     @override
     def contents(self) -> None:
