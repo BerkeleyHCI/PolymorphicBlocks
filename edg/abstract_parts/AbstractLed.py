@@ -97,7 +97,7 @@ class IndicatorLed(Light):
 
         self.target_current_draw = self.Parameter(RangeExpr(current_draw))
 
-        self.signal = self.Port(DigitalSink.empty(), [InOut])
+        self.signal = self.Port(DigitalSink(current_draw=RangeExpr()), [InOut])
         self.gnd = self.Port(Ground(), [Common])
 
         self.require(self.signal.current_draw.within((0, self.target_current_draw.upper())))
@@ -112,11 +112,8 @@ class IndicatorLed(Light):
             )
         )
 
-        self.connect(
-            self.signal,
-            self.package.a.adapt_to(DigitalSink(current_draw=self.signal.link().voltage / self.res.actual_resistance)),
-        )
-
+        self.assign(self.signal.current_draw, self.signal.link().voltage / self.res.actual_resistance)
+        self.connect(self.signal.net, self.package.a)
         self.connect(self.res.a, self.package.k)
         self.connect(self.gnd.net, self.res.b)
 

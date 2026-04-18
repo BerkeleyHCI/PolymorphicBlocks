@@ -42,18 +42,20 @@ class PullupDelayRc(DigitalFilter, Block):
 
     def __init__(self, impedance: RangeLike, time_constant: RangeLike):
         super().__init__()
+        self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(VoltageSink(), [Power])
-        self.time_constant = self.ArgParameter(time_constant)
+        self.io = self.Port(DigitalSource.pullup_from_supply(self.pwr), [Output])
 
+        self.time_constant = self.ArgParameter(time_constant)
         self.rc = self.Block(
             LowPassRc(
                 impedance=impedance, cutoff_freq=1 / (2 * pi * self.time_constant), voltage=self.pwr.link().voltage
             )
         )
-        self.gnd = self.Port(Ground(), [Common])
+
         self.connect(self.gnd.net, self.rc.gnd)
         self.connect(self.pwr.net, self.rc.input)
-        self.io = self.Export(self.rc.output.adapt_to(DigitalSource.pullup_from_supply(self.pwr)), [Output])
+        self.connect(self.io.net, self.rc.output)
 
     def connected(
         self,
@@ -98,24 +100,21 @@ class DigitalLowPassRc(DigitalFilter, Block):
 
     def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
         super().__init__()
-        self.input = self.Port(DigitalSink.empty(), [Input])
-        self.output = self.Port(DigitalSource.empty(), [Output])
+        self.gnd = self.Port(Ground(), [Common])
+        self.input = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
+        self.output = self.Port(
+            DigitalSource(
+                voltage_out=self.input.link().voltage,
+                output_thresholds=self.input.link().output_thresholds,
+            ),
+            [Output],
+        )
+        self.assign(self.input.current_draw, self.output.link().current_drawn)
 
         self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq, voltage=self.input.link().voltage))
-        self.connect(self.input, self.rc.input.adapt_to(DigitalSink(current_draw=self.output.link().current_drawn)))
-        self.connect(
-            self.output,
-            self.rc.output.adapt_to(
-                DigitalSource(
-                    current_limits=RangeExpr.ALL,
-                    voltage_out=self.input.link().voltage,
-                    output_thresholds=self.input.link().output_thresholds,
-                )
-            ),
-        )
-
-        self.gnd = self.Port(Ground(), [Common])
         self.connect(self.gnd.net, self.rc.gnd)
+        self.connect(self.input.net, self.rc.input)
+        self.connect(self.output.net, self.rc.output)
 
 
 class DigitalLowPassRcArray(DigitalFilter, GeneratorBlock):
@@ -156,7 +155,8 @@ class LowPassRcDac(DigitalToAnalog, Block):
 
     def __init__(self, impedance: RangeLike, cutoff_freq: RangeLike):
         super().__init__()
-        self.input = self.Port(DigitalSink.empty(), [Input])
+        self.gnd = self.Port(Ground(), [Common])
+        self.input = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
         self.output = self.Port(
             AnalogSource(
                 voltage_out=self.input.link().voltage,
@@ -165,13 +165,12 @@ class LowPassRcDac(DigitalToAnalog, Block):
             ),
             [Output],
         )
+        self.assign(self.input.current_draw, self.output.link().current_drawn)
 
         self.rc = self.Block(LowPassRc(impedance=impedance, cutoff_freq=cutoff_freq, voltage=self.input.link().voltage))
-        self.connect(self.input, self.rc.input.adapt_to(DigitalSink(current_draw=self.output.link().current_drawn)))
-        self.connect(self.output.net, self.rc.output)
-
-        self.gnd = self.Port(Ground(), [Common])
         self.connect(self.gnd.net, self.rc.gnd)
+        self.connect(self.input.net, self.rc.input)
+        self.connect(self.output.net, self.rc.output)
 
 
 class LowPassAnalogDifferentialRc(AnalogFilter, KiCadImportableBlock):

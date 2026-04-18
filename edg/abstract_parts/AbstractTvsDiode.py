@@ -57,8 +57,8 @@ class DigitalTvsDiode(Protection):
     def __init__(self, working_voltage: RangeLike, *, capacitance: RangeLike = Range.all()):
         super().__init__()
 
-        self.io = self.Port(DigitalSink.empty(), [InOut])
         self.gnd = self.Port(Ground(), [Common])
+        self.io = self.Port(DigitalSink(voltage_limits=RangeExpr()), [InOut])
 
         self.working_voltage = self.ArgParameter(working_voltage)
         self.capacitance = self.ArgParameter(capacitance)
@@ -67,12 +67,6 @@ class DigitalTvsDiode(Protection):
     def contents(self) -> None:
         super().contents()
         self.diode = self.Block(TvsDiode(working_voltage=self.working_voltage, capacitance=self.capacitance))
-        self.connect(
-            self.diode.cathode.adapt_to(
-                DigitalSink(
-                    voltage_limits=self.diode.actual_breakdown_voltage,
-                )
-            ),
-            self.io,
-        )
+        self.assign(self.io.voltage_limits, self.diode.actual_breakdown_voltage)
+        self.connect(self.io.net, self.diode.cathode)
         self.connect(self.gnd.net, self.diode.anode)

@@ -51,19 +51,9 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         super().__init__()
 
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr_in = self.Port(
-            VoltageSink(
-                voltage_limits=RangeExpr(),
-                current_draw=RangeExpr(),
-            )
-        )
-        self.pwr_out = self.Port(
-            VoltageSource(
-                voltage_out=self.pwr_in.link().voltage,
-                current_limits=RangeExpr(),
-            )
-        )
-        self.signal = self.Port(DigitalSink.empty())
+        self.pwr_in = self.Port(VoltageSink(voltage_limits=RangeExpr(), current_draw=RangeExpr()))
+        self.pwr_out = self.Port(VoltageSource(voltage_out=self.pwr_in.link().voltage, current_limits=RangeExpr()))
+        self.signal = self.Port(DigitalSink(current_draw=RangeExpr()))
 
         self.ic = self.Block(SolidStateRelay())
         self.res = self.Block(
@@ -74,10 +64,7 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
                 )
             )
         )
-        self.connect(
-            self.signal,
-            self.ic.leda.adapt_to(DigitalSink(current_draw=self.signal.link().voltage / self.res.actual_resistance)),
-        )
+        self.connect(self.signal.net, self.ic.leda)
         self.connect(self.res.a, self.ic.ledk)
         self.connect(self.gnd.net, self.res.b)
         self.connect(self.pwr_in.net, self.ic.feta)
@@ -86,6 +73,7 @@ class VoltageIsolatedSwitch(Interface, KiCadImportableBlock, Block):
         self.assign(self.pwr_in.voltage_limits, self.ic.load_voltage_limit)  # TODO: assumed magic ground
         self.assign(self.pwr_in.current_draw, self.pwr_out.link().current_drawn)
         self.assign(self.pwr_out.current_limits, self.ic.load_current_limit)
+        self.assign(self.signal.current_draw, self.signal.link().voltage / self.res.actual_resistance)
 
 
 class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
@@ -109,15 +97,10 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
 
         self.ic = self.Block(SolidStateRelay())
 
-        self.signal = self.Port(DigitalSink.empty())
+        self.signal = self.Port(DigitalSink(current_draw=RangeExpr()))
         self.gnd = self.Port(Ground(), [Common])
 
-        self.ain = self.Port(
-            AnalogSink(
-                voltage_limits=RangeExpr(),
-                impedance=RangeExpr(),
-            )
-        )
+        self.ain = self.Port(AnalogSink(voltage_limits=RangeExpr(), impedance=RangeExpr()))
         self.aout = self.Port(
             AnalogSource(
                 voltage_out=self.ain.link().voltage,
@@ -143,10 +126,9 @@ class AnalogIsolatedSwitch(Interface, KiCadImportableBlock, Block):
                 )
             )
         )
-        self.connect(
-            self.signal,
-            self.ic.leda.adapt_to(DigitalSink(current_draw=self.signal.link().voltage / self.res.actual_resistance)),
-        )
+        self.assign(self.signal.current_draw, self.signal.link().voltage / self.res.actual_resistance)
+
+        self.connect(self.signal, self.ic.leda)
         self.connect(self.res.a, self.ic.ledk)
         self.connect(self.gnd.net, self.res.b)
 

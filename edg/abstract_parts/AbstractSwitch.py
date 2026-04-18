@@ -95,14 +95,14 @@ class DigitalSwitch(HumanInterface):
         super().__init__()
 
         self.gnd = self.Port(Ground(), [Common])
-        self.out = self.Port(DigitalSource.empty(), [Output])
+        self.out = self.Port(DigitalSource.low_from_supply(self.gnd), [Output])
 
     @override
     def contents(self) -> None:
         super().contents()
         self.package = self.Block(Switch(current=self.out.link().current_drawn, voltage=self.out.link().voltage))
 
-        self.connect(self.out, self.package.sw.adapt_to(DigitalSource.low_from_supply(self.gnd)))
+        self.connect(self.out.net, self.package.sw)
         self.connect(self.gnd.net, self.package.com)
 
 

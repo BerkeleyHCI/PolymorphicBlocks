@@ -85,8 +85,8 @@ class DigitalTestPoint(BaseTypedTestPoint, Block):
 
     def __init__(self, *args: Any) -> None:
         super().__init__(*args)
-        self.io = self.Port(DigitalSink.empty(), [InOut])
-        self.connect(self.io, self.tp.io.adapt_to(DigitalSink()))
+        self.io: DigitalSink = self.Port(DigitalSink(), [InOut])
+        self.connect(self.io.net, self.tp.io)
 
     def connected(self, io: Port[DigitalLink]) -> "DigitalTestPoint":
         cast(Block, builder.get_enclosing_block()).connect(io, self.io)
