@@ -38,7 +38,7 @@ class PassiveConnector(DiscreteComponent, Block):
             elif isinstance(pin_port, HasPassivePort):
                 passive_port = pin_port.net
             elif isinstance(pin_port, CircuitPort):
-                passive_port = pin_port  # type: ignore
+                passive_port = cast(Passive, pin_port)
 
             if isinstance(pin_name, str):
                 pin_tuples: Tuple[str, ...] = (pin_name,)

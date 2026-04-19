@@ -156,9 +156,7 @@ class Amplifier(OpampApplication, KiCadSchematicBlock, KiCadImportableBlock, Gen
         self.r2 = self.Block(Resistor(Range.from_tolerance(bottom_resistance, self.get(self.tolerance))))
 
         if self.get(self.reference.is_connected()):
-            reference_type: Union[CircuitPort, HasPassivePort] = AnalogSink(
-                impedance=self.r1.actual_resistance + self.r2.actual_resistance
-            )
+            reference_type: HasPassivePort = AnalogSink(impedance=self.r1.actual_resistance + self.r2.actual_resistance)
             reference_node: Port = self.reference
             reference_range = self.reference.link().signal
         else:

@@ -4,11 +4,11 @@ from ..electronics_model import *
 
 
 class VariantPinRemapper:
-    def __init__(self, mapping: Mapping[str, Union[CircuitPort, HasPassivePort]]):
+    def __init__(self, mapping: Mapping[str, Union[Passive, HasPassivePort]]):
         self.mapping = mapping
 
-    def remap(self, remap: Dict[str, Union[str, List[str]]]) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
-        output_dict: Dict[str, Union[CircuitPort, HasPassivePort]] = {}
+    def remap(self, remap: Dict[str, Union[str, List[str]]]) -> Dict[str, Union[Passive, HasPassivePort]]:
+        output_dict: Dict[str, Union[Passive, HasPassivePort]] = {}
         remapped_names: Set[str] = set()
         for orig_name, orig_port in self.mapping.items():
             assert orig_name in remap, f"missing remap rule for {orig_name}"

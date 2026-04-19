@@ -118,7 +118,7 @@ class Esp32c3_Base(Esp32c3_Ios, BaseIoControllerPinmapGenerator):
         return self.pwr
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         return {
             "Vdd": self.pwr,
             "Vss": self.gnd,
@@ -167,7 +167,7 @@ class Esp32c3_Wroom02_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, J
     }
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         return VariantPinRemapper(super()._system_pinmap()).remap(
             {
                 "Vdd": "1",
@@ -294,7 +294,7 @@ class Esp32c3_Device(Esp32c3_Base, InternalSubcircuit, FootprintBlock, JlcPart):
     }
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         return VariantPinRemapper(super()._system_pinmap()).remap(
             {
                 "Vdd": ["31", "32"],  # VDDA
@@ -534,7 +534,7 @@ class Xiao_Esp32c3(IoControllerUsbOut, IoControllerPowerOut, Esp32c3_Ios, IoCont
             return self.pwr_out
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         if self.get(self.pwr.is_connected()):  # board sinks power
             self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
             self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")

@@ -58,7 +58,7 @@ class Lpc1549Base_Device(
         self._io_ports.insert(0, self.swd)
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         return VariantPinRemapper(
             {
                 "VddA": self.pwr,

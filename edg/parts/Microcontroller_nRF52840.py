@@ -288,7 +288,7 @@ class Nrf52840_Base(Nrf52840_Ios, GeneratorBlock):
         return self.pwr
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         return VariantPinRemapper(
             {
                 "Vdd": self.pwr,
@@ -602,7 +602,7 @@ class Feather_Nrf52840(
             return self.pwr_out
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         if self.get(self.pwr.is_connected()):  # board sinks power
             self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
             self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")

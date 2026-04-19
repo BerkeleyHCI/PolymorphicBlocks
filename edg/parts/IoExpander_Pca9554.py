@@ -60,7 +60,7 @@ class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
             ]
         )
 
-        ic_pins: Dict[str, Union[CircuitPort, HasPassivePort]] = {
+        ic_pins: Dict[str, Union[Passive, HasPassivePort]] = {
             "1": self.vdd if addr_lsb & 1 else self.gnd,  # A0
             "2": self.vdd if addr_lsb & 2 else self.gnd,  # A1
             "3": self.vdd if addr_lsb & 4 else self.gnd,  # A2
@@ -72,7 +72,7 @@ class Pca9554_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
         }
 
         allocated = pinmaps.allocate([(DigitalBidir, self.get(self.io.requested()))], self.get(self.pin_assigns))
-        io_pins: Dict[str, CircuitPort] = {
+        io_pins: Dict[str, Union[Passive, HasPassivePort]] = {
             allocation.pin: self.io.append_elt(dout_model, allocation.name) for allocation in allocated  # type: ignore
         }
         self.generator_set_allocation(allocated)

@@ -44,7 +44,7 @@ class Stm32g031Base_Device(
         self.nrst = self.Port(DigitalSink.empty(), optional=True)  # internally pulled up
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         return VariantPinRemapper(
             {  # Pin/peripheral resource definitions (section 4)
                 "Vdd": self.pwr,

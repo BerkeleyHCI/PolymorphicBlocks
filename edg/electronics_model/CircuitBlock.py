@@ -67,7 +67,7 @@ class FootprintBlock(Block):
             if isinstance(pin_port, HasPassivePort):
                 pin_port = pin_port.net
             if not isinstance(pin_port, (CircuitPort, Passive)):
-                raise EdgTypeError(f"Footprint(...) pin", pin_port, CircuitPort)
+                raise EdgTypeError(f"Footprint(...) pin", pin_port, Passive)
             pinning_array.append(f"{pin_name}={pin_port._name_from(self)}")
         self.assign(self.fp_pinning, pinning_array)
 
