@@ -524,9 +524,6 @@ class DigitalSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
     def __init__(self, resistance: RangeLike) -> None:
         super().__init__()
 
-        self.res = self.Block(Resistor(resistance=resistance, power=RangeExpr()))
-        self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
-
         self.input = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
         self.output = self.Port(
             DigitalSource(
@@ -535,12 +532,16 @@ class DigitalSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
             ),
             [Output],
         )
-
         self.assign(self.input.current_draw, self.output.link().current_drawn)
 
-        self.assign(
-            self.res.power, self.input.link().current_drawn * self.input.link().current_drawn * self.res.resistance
+        self.res = self.Block(
+            Resistor(
+                resistance=resistance,
+                power=self.input.link().current_drawn * self.input.link().current_drawn * resistance,
+            )
         )
+        self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
+
         self.connect(self.input.net, self.res.a)
         self.connect(self.output.net, self.res.b)
 
@@ -567,13 +568,10 @@ class DigitalBidirSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
     @override
     def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
         assert symbol_name in ("Device:R", "Device:R_Small")
-        return {"1": self.exterior, "2": self.exterior}
+        return {"1": self.interior, "2": self.exterior}
 
     def __init__(self, resistance: RangeLike) -> None:
         super().__init__()
-
-        self.res = self.Block(Resistor(resistance=resistance, power=RangeExpr()))
-        self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
 
         self.interior = self.Port(
             DigitalBidir(
@@ -597,9 +595,16 @@ class DigitalBidirSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
             [Input],
         )
 
-        self.assign(
-            self.res.power, self.interior.link().current_drawn * self.interior.link().current_drawn * resistance
+        self.res = self.Block(
+            Resistor(
+                resistance=resistance,
+                power=self.interior.link().current_drawn * self.interior.link().current_drawn * resistance,
+            )
         )
+        self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
+
+        self.connect(self.exterior.net, self.res.a)
+        self.connect(self.interior.net, self.res.b)
 
         self.assign(self.exterior.voltage_out, self.interior.link().voltage)
         self.assign(self.exterior.current_draw, self.interior.link().current_drawn)
@@ -613,12 +618,9 @@ class DigitalBidirSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         self.assign(self.exterior.pullup_capable, self.interior.link().pullup_capable)
         self.assign(self.exterior.pulldown_capable, self.interior.link().pulldown_capable)
 
-        self.connect(self.exterior.net, self.res.a)
-        self.connect(self.interior.net, self.res.b)
-
     def connected(
         self, interior: Optional[Port[DigitalLink]] = None, exterior: Optional[Port[DigitalLink]] = None
-    ) -> "DigitalSeriesResistor":
+    ) -> "DigitalBidirSeriesResistor":
         """Convenience function to connect both ports, returning this object so it can still be given a name.
         Ordering reflects dataflow direction."""
         if interior is not None:
