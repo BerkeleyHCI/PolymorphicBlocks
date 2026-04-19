@@ -4,6 +4,7 @@ from itertools import chain
 
 from typing_extensions import override
 
+from ..electronics_model import CircuitPort
 from ..electronics_model import Passive
 from ..core import *
 
@@ -11,6 +12,8 @@ from ..core import *
 def leaf_circuit_ports(prefix: str, port: Port) -> Iterable[Tuple[str, Passive]]:
     if isinstance(port, Passive):
         return [(prefix, port)]
+    elif isinstance(port, CircuitPort):
+        return [(prefix, port)]  # type: ignore
     else:
         assert port._ports, "must be Passive or Port bundle with sub-Ports"
         return chain(*[leaf_circuit_ports(f"{prefix}.{name}", port) for (name, port) in port._ports.items()])
