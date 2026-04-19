@@ -60,8 +60,9 @@ class BidirectionaLevelShifter(Interface, GeneratorBlock):
             )
         else:  # HV model is complete, can use its thresholds
             lv_io_model = DigitalBidir(
-                voltage_out=self.lv_pwr.link().voltage.hull(
-                    self.hv_io.link().voltage.upper().min(self.lv_pwr.link().voltage.upper())
+                voltage_out=(
+                    self.lv_pwr.link().voltage.lower(),
+                    self.lv_pwr.link().voltage.upper().min(self.hv_io.link().voltage.upper()),
                 ),
                 output_thresholds=(
                     self.hv_io.link().output_thresholds.lower(),

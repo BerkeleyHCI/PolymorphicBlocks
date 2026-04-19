@@ -17,9 +17,8 @@ class SwdCortexTargetHeader(
         self.swd.init_from(SwdHostPort())
         self.swo.init_from(DigitalBidir())
         self.tdi.init_from(DigitalBidir())
-        self.reset.init_from(
-            DigitalSource.pulldown_from_supply(self.gnd)
-        )  # pulldown to not conflict with other drivers
+        # reset modeled as pulldown to not conflict with other drivers, technically an open-drain
+        self.reset.init_from(DigitalSource.pulldown_from_supply(self.gnd))
 
         self.conn = self.Block(PinHeader127DualShrouded(10)).connected(
             {
@@ -46,9 +45,8 @@ class SwdCortexTargetTagConnect(SwdCortexTargetConnector, SwdCortexTargetConnect
         self.pwr.init_from(VoltageSink())
         self.swd.init_from(SwdHostPort())
         self.swo.init_from(DigitalBidir())
-        self.reset.init_from(
-            DigitalSource.pulldown_from_supply(self.gnd)
-        )  # pulldown to not conflict with other drivers
+        # reset modeled as pulldown to not conflict with other drivers, technically an open-drain
+        self.reset.init_from(DigitalSource.pulldown_from_supply(self.gnd))
 
         self.conn = self.Block(TagConnect(6)).connected(
             {"1": self.pwr, "2": self.swd.swdio, "3": self.reset, "4": self.swd.swclk, "5": self.gnd, "6": self.swo}
@@ -71,9 +69,8 @@ class SwdCortexTargetTc2050(
         self.swd.init_from(SwdHostPort())
         self.swo.init_from(DigitalBidir())
         self.tdi.init_from(DigitalBidir())
-        self.reset.init_from(
-            DigitalSource.pulldown_from_supply(self.gnd)
-        )  # pulldown to not conflict with other drivers
+        # reset modeled as pulldown to not conflict with other drivers, technically an open-drain
+        self.reset.init_from(DigitalSource.pulldown_from_supply(self.gnd))
 
         self.conn = self.Block(TagConnect(10)).connected(
             {
