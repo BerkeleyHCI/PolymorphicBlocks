@@ -6,7 +6,6 @@ from typing_extensions import override
 
 from ..electronics_model import Passive
 from ..core import *
-from .CircuitBlock import CircuitPort
 
 
 def leaf_circuit_ports(prefix: str, port: Port) -> Iterable[Tuple[str, Passive]]:
@@ -147,8 +146,8 @@ class PeripheralPinAssign(AssignablePinGroup):
 
 
 class PinAssignmentUtil:
-    """Utility for pin assignment, given a list of ports and assignable pin definitions, assigns each leaf CircuitPort
-    port to a pin."""
+    """Utility for pin assignment, given a list of ports and assignable pin definitions, assigns each leaf
+    Passive(-like) to a pin."""
 
     def __init__(self, *assignables: AssignablePinGroup) -> None:
         self.assignables_by_port = IdentityDict[Port, AssignablePinGroup]()

@@ -33,12 +33,9 @@ class PassiveConnector(DiscreteComponent, Block):
         """Connects the given pins to this connector, and returns self to allow chaining.
         Similar API to pinning in footprint."""
         for pin_name, pin_port in pins.items():
-            if isinstance(pin_port, Passive):
-                passive_port = pin_port
-            elif isinstance(pin_port, HasPassivePort):
-                passive_port = pin_port.net
-            elif isinstance(pin_port, CircuitPort):
-                passive_port = cast(Passive, pin_port)
+            if isinstance(pin_port, HasPassivePort):
+                passive_port: Passive = pin_port.net
+            assert isinstance(pin_port, Passive), "connected pin must be Passive or HasPassivePort"
 
             if isinstance(pin_name, str):
                 pin_tuples: Tuple[str, ...] = (pin_name,)
