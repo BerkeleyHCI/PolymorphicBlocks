@@ -19,7 +19,7 @@ class PmosHighSideSwitch(PowerSwitch):
             VoltageSource(voltage_out=self.pwr.link().voltage, current_limits=RangeExpr()),
             [Output],
         )
-        self.control = self.Port(DigitalSink.empty(), [Input])
+        self.control = self.Port(DigitalSink(), [Input])
 
         self.frequency = self.ArgParameter(frequency)
         self.max_rds = self.ArgParameter(max_rds)
@@ -42,7 +42,7 @@ class PmosHighSideSwitch(PowerSwitch):
 
         self.connect(self.pwr.net, self.drv.source)
         self.connect(self.output.net, self.drv.drain)
-        self.connect(self.control, self.drv.gate.adapt_to(DigitalSink()))
+        self.connect(self.control.net, self.drv.gate)
 
         self.assign(self.pwr.current_draw, self.output.link().current_drawn)
         self.assign(self.output.current_limits, self.drv.actual_drain_current_rating)

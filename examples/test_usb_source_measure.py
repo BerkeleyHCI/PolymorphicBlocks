@@ -13,12 +13,11 @@ from edg import *
 class SourceMeasureDutConnector(Connector):
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(PinHeader254Horizontal(3))
         self.gnd = self.Port(Ground(), [Common])
-        self.io0 = self.Export(self.conn.pins.request("2").adapt_to(DigitalBidir()))
-        self.io1 = self.Export(self.conn.pins.request("3").adapt_to(DigitalBidir()))
+        self.io0 = self.Port(DigitalBidir())
+        self.io1 = self.Port(DigitalBidir())
 
-        self.connect(self.gnd.net, self.conn.pins.request("1"))
+        self.conn = self.Block(PinHeader254Horizontal(3)).connected({"1": self.gnd, "2": self.io0, "3": self.io1})
 
 
 class SourceMeasureFan(Connector):

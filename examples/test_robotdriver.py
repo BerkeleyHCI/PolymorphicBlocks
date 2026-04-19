@@ -8,10 +8,9 @@ from edg import *
 class MotorConnector(Connector, Block):
     def __init__(self, current_draw: RangeLike):
         super().__init__()
-        self.conn = self.Block(PassiveConnector())
-
-        self.a = self.Export(self.conn.pins.request("2").adapt_to(DigitalSink(current_draw=current_draw)))
-        self.b = self.Export(self.conn.pins.request("1").adapt_to(DigitalSink(current_draw=current_draw)))
+        self.a = self.Port(DigitalSink(current_draw=current_draw))
+        self.b = self.Port(DigitalSink(current_draw=current_draw))
+        self.conn = self.Block(PassiveConnector()).connected({"1": self.b, "2": self.a})
 
 
 class PwmConnector(Connector, Block):
@@ -20,14 +19,14 @@ class PwmConnector(Connector, Block):
 
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(VoltageSink(current_draw=current_draw), [Power])
+        self.pwm = self.Port(DigitalSink(), [Input])
 
-        self.conn = self.Block(PinHeader254()).connected({"3": self.gnd, "2": self.pwr})
-
-        self.pwm = self.Export(self.conn.pins.request("1").adapt_to(DigitalSink()), [Input])
+        self.conn = self.Block(PinHeader254()).connected({"3": self.gnd, "2": self.pwr, "1": self.pwm})
 
 
 class LedConnector(Connector, Block):
-    """Connector for external WS2812s."""
+    """Connector for external WS2812s.
+    TODO: no power or digital model given, should find a mostly-common spec"""
 
     def __init__(self, num_leds: FloatLike = 0):
         super().__init__()
@@ -35,9 +34,9 @@ class LedConnector(Connector, Block):
 
         self.gnd = self.Port(Ground(), [Common])
         self.vdd = self.Port(VoltageSink(current_draw=(0 * mAmp, led_current * num_leds)), [Power])
+        self.din = self.Port(DigitalSink(), [Input])
 
-        self.conn = self.Block(PassiveConnector()).connected({"3": self.gnd, "1": self.vdd})
-        self.din = self.Export(self.conn.pins.request("2").adapt_to(DigitalSink()), [Input])
+        self.conn = self.Block(PassiveConnector()).connected({"3": self.gnd, "1": self.vdd, "2": self.din})
 
 
 class RobotDriver(JlcBoardTop):

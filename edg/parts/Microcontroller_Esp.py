@@ -55,12 +55,12 @@ class EspProgrammingPinHeader254(EspProgrammingHeader):
 
         self.gnd.init_from(Ground())
         self.pwr.init_from(VoltageSink())
-
-        self.conn = self.Block(PinHeader254()).connected({"1": self.pwr, "4": self.gnd})
+        self.uart.init_from(UartPort())
 
         # RXD, TXD reversed to reflect the programmer's side view
-        self.connect(self.uart.rx, self.conn.pins.request("2").adapt_to(DigitalSink()))
-        self.connect(self.uart.tx, self.conn.pins.request("3").adapt_to(DigitalSource()))
+        self.conn = self.Block(PinHeader254()).connected(
+            {"1": self.pwr, "4": self.gnd, "2": self.uart.rx, "3": self.uart.tx}
+        )
 
 
 class EspProgrammingTc2030(EspProgrammingAutoReset, EspProgrammingHeader):
@@ -79,17 +79,21 @@ class EspProgrammingTc2030(EspProgrammingAutoReset, EspProgrammingHeader):
 
         self.gnd.init_from(Ground())
         self.pwr.init_from(VoltageSink())
-
-        self.conn = self.Block(TagConnect(6)).connected({"1": self.pwr, "5": self.gnd})
-
-        self.connect(self.uart.rx, self.conn.pins.request("3").adapt_to(DigitalSink()))
-        self.connect(self.uart.tx, self.conn.pins.request("4").adapt_to(DigitalSource()))
-
+        self.uart.init_from(UartPort())
         # TODO: pulldown is a hack to prevent driver conflict warnings, this should be a active low (open drain) driver
-        self.connect(self.en, self.conn.pins.request("6").adapt_to(DigitalSource.pulldown_from_supply(self.gnd)))  # RTS
-        self.connect(
-            self.boot, self.conn.pins.request("2").adapt_to(DigitalSource.pulldown_from_supply(self.gnd))
-        )  # CTS
+        self.en.init_from(DigitalSource.pulldown_from_supply(self.gnd))
+        self.boot.init_from(DigitalSource.pulldown_from_supply(self.gnd))
+
+        self.conn = self.Block(TagConnect(6)).connected(
+            {
+                "1": self.pwr,
+                "5": self.gnd,
+                "3": self.uart.rx,
+                "4": self.uart.tx,
+                "6": self.en,  # RTS
+                "2": self.boot,  # CTS
+            }
+        )
 
 
 @non_library

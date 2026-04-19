@@ -245,7 +245,5 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.2, rowSpacing=0.2) {{
                 col_res = self.res[str(col)]
                 source_current = (io_voltage / col_res.actual_resistance).upper().max(source_current)
 
-            self.connect(
-                self.ios.append_elt(DigitalSink.empty(), str(index)),
-                passive_io.adapt_to(DigitalSink(current_draw=(sink_current, source_current))),
-            )
+            io_elt = self.ios.append_elt(DigitalSink(current_draw=(sink_current, source_current)), str(index))
+            self.connect(io_elt.net, passive_io)

@@ -12,12 +12,12 @@ class UartConnector(Connector, Block):
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(VoltageSink(current_draw=pwr_current_draw), [Power])
-        self.uart = self.Port(UartPort.empty(), [InOut])
+        self.uart = self.Port(UartPort(), [InOut])
 
-        self.conn = self.Block(PassiveConnector()).connected({"3": self.gnd, "4": self.pwr})
         # note that RX and TX here are from the connected device, so they're flipped from the CP2102's view
-        self.connect(self.uart.rx, self.conn.pins.request("1").adapt_to(DigitalSink()))
-        self.connect(self.uart.tx, self.conn.pins.request("2").adapt_to(DigitalSource()))
+        self.conn = self.Block(PassiveConnector()).connected(
+            {"3": self.gnd, "4": self.pwr, "1": self.uart.rx, "2": self.uart.tx}
+        )
 
 
 class UsbUart(JlcBoardTop):
