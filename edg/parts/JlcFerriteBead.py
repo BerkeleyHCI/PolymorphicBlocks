@@ -26,7 +26,7 @@ class JlcFerriteBead(PartsTableSelectorFootprint, JlcTableSelector, TableFerrite
 
     DESCRIPTION_PARSERS: List[DescriptionParser] = [
         (
-            re.compile("(\S+A) (?:\S+ )?(\S+Ω) (\S+Ω)@\S+Hz (±\S+%) .* Ferrite Beads.*"),
+            re.compile(r"(\S+A) (?:\S+ )?(\S+Ω) (\S+Ω)@\S+Hz (±\S+%) .* Ferrite Beads.*"),
             lambda match: {  # discard the HF impedance parameter
                 TableFerriteBead.CURRENT_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), "A")),
                 TableFerriteBead.DC_RESISTANCE: Range.exact(PartParserUtil.parse_value(match.group(2), "Ω")),

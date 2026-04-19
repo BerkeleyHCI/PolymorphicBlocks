@@ -16,11 +16,11 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
     _STANDARD_FOOTPRINT = lambda: ResistorStandardFootprint
 
     RESISTOR_REGEX = re.compile(
-        "^"
-        + f"([\d.{PartParserUtil.SI_PREFIXES}]+(?:\s*[{PartParserUtil.SI_PREFIXES}])?)\s*[RΩ]?"
-        + "\s*"
-        + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%?)?"
-        + "$"
+        r"^"
+        + rf"([\d.{PartParserUtil.SI_PREFIXES}]+(?:\s*[{PartParserUtil.SI_PREFIXES}])?)\s*[RΩ]?"
+        + r"\s*"
+        + r"((?:\+-|\+/-|±)?\s*[\d.]+\s*%?)?"
+        + r"$"
     )
     RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
 

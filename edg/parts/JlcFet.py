@@ -90,7 +90,7 @@ class JlcBaseFet(JlcTableSelector):
 
     DESCRIPTION_PARSERS: List[DescriptionParser] = [
         (
-            re.compile("(\S+V) (\S+A) (\S+W) (\S+Ω)@(\S+V),\S+A (\S+V)@\S+A.* ([PN]) Channel.* MOSFETs.*"),
+            re.compile(r"(\S+V) (\S+A) (\S+W) (\S+Ω)@(\S+V),\S+A (\S+V)@\S+A.* ([PN]) Channel.* MOSFETs.*"),
             lambda match: {
                 TableFet.CHANNEL: match.group(7),
                 TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), "V")),
@@ -108,7 +108,7 @@ class JlcBaseFet(JlcTableSelector):
         # some are more detailed
         (
             re.compile(
-                "(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A.* ([PN]) Channel.* (\S+C)@\S+V.* MOSFETs.*"
+                r"(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A.* ([PN]) Channel.* (\S+C)@\S+V.* MOSFETs.*"
             ),
             lambda match: {
                 TableFet.CHANNEL: match.group(7),
@@ -126,7 +126,7 @@ class JlcBaseFet(JlcTableSelector):
         ),
         # many still don't have the gate charge
         (
-            re.compile("(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A.* ([PN]) Channel.* MOSFETs.*"),
+            re.compile(r"(\S+V) (\S+A) (\S+Ω)@(\S+V),\S+A (\S+W) (\S+V)@\S+A.* ([PN]) Channel.* MOSFETs.*"),
             lambda match: {
                 TableFet.CHANNEL: match.group(7),
                 TableFet.VDS_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), "V")),

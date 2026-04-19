@@ -29,7 +29,7 @@ class JlcBaseDiode:
 class JlcDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode, TableDiode):
     DESCRIPTION_PARSERS: List[DescriptionParser] = [
         (
-            re.compile("(\S+V) (\S+V)@\S+A (\S+A) .* Schottky Barrier Diodes \(SBD\).*"),
+            re.compile(r"(\S+V) (\S+V)@\S+A (\S+A) .* Schottky Barrier Diodes \(SBD\).*"),
             lambda match: {
                 TableDiode.VOLTAGE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), "V")),
                 TableDiode.CURRENT_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(3), "A")),
@@ -38,7 +38,7 @@ class JlcDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode, Tabl
             },
         ),
         (
-            re.compile("(\S+A) (?:Single )?\S+A@\S+V (\S+?V) (\S+V)@\S+A .* General Purpose.*"),
+            re.compile(r"(\S+A) (?:Single )?\S+A@\S+V (\S+?V) (\S+V)@\S+A .* General Purpose.*"),
             lambda match: {
                 TableDiode.VOLTAGE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(2), "V")),
                 TableDiode.CURRENT_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), "A")),
@@ -48,7 +48,7 @@ class JlcDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode, Tabl
         ),
         (
             re.compile(
-                "(\S+V)@\S+A \S+A@\S+V (\S+s) (?:Single )?(\S+A) \S+ (\S+V) .* Diodes - Fast Recovery Rectifiers.*"
+                r"(\S+V)@\S+A \S+A@\S+V (\S+s) (?:Single )?(\S+A) \S+ (\S+V) .* Diodes - Fast Recovery Rectifiers.*"
             ),
             lambda match: {
                 TableDiode.VOLTAGE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), "V")),
@@ -58,7 +58,7 @@ class JlcDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode, Tabl
             },
         ),
         (
-            re.compile("(\S+V) .*\S+W (?:Single )?(\S+V)@\S+A (\S+s) (?:\S+A@\S+V )?(\S+A) .* Switching Diode.*"),
+            re.compile(r"(\S+V) .*\S+W (?:Single )?(\S+V)@\S+A (\S+s) (?:\S+A@\S+V )?(\S+A) .* Switching Diode.*"),
             lambda match: {
                 TableDiode.VOLTAGE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), "V")),
                 TableDiode.CURRENT_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(4), "A")),
@@ -97,7 +97,7 @@ class JlcDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode, Tabl
 class JlcZenerDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode, TableZenerDiode):
     DESCRIPTION_PARSERS: List[DescriptionParser] = [
         (
-            re.compile("\S+A@\S+V (±\S+%) \S+Ω (?:Single )?(\S+W) (\S+V).* Zener Diodes.*"),
+            re.compile(r"\S+A@\S+V (±\S+%) \S+Ω (?:Single )?(\S+W) (\S+V).* Zener Diodes.*"),
             lambda match: {
                 TableZenerDiode.ZENER_VOLTAGE: PartParserUtil.parse_abs_tolerance(
                     match.group(1), PartParserUtil.parse_value(match.group(3), "V"), "V"
@@ -106,7 +106,7 @@ class JlcZenerDiode(PartsTableSelectorFootprint, JlcTableSelector, JlcBaseDiode,
             },
         ),
         (
-            re.compile("\S+A@\S+V \S+Ω (?:Single )?(\S+V)~(\S+V) (\S+W) \S+V .* Zener Diodes.*"),
+            re.compile(r"\S+A@\S+V \S+Ω (?:Single )?(\S+V)~(\S+V) (\S+W) \S+V .* Zener Diodes.*"),
             lambda match: {
                 TableZenerDiode.ZENER_VOLTAGE: Range(
                     PartParserUtil.parse_value(match.group(1), "V"), PartParserUtil.parse_value(match.group(2), "V")

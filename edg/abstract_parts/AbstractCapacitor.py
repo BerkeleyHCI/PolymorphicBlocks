@@ -67,13 +67,13 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock, HasStandardFootpri
     _STANDARD_FOOTPRINT = lambda: CapacitorStandardFootprint
 
     CAPACITOR_REGEX = re.compile(
-        "^"
-        + f"([\d.{PartParserUtil.SI_PREFIXES}]+)\s*F?"
-        + "\s*"
-        + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?"
-        + "\s*"
-        + f"([\d.{PartParserUtil.SI_PREFIXES}]+\s*V)"
-        + "$"
+        r"^"
+        + rf"([\d.{PartParserUtil.SI_PREFIXES}]+)\s*F?"
+        + r"\s*"
+        + r"((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?"
+        + r"\s*"
+        + rf"([\d.{PartParserUtil.SI_PREFIXES}]+\s*V)"
+        + r"$"
     )
     CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
 
