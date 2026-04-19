@@ -309,7 +309,7 @@ class Datalogger(BoardTop):
                 (["pwr_5v", "power_path", "inductor", "manual_frequency_rating"], Range.all()),
                 # keep netlist footprints as libraries change
                 (["buffer", "fet", "footprint_spec"], "Package_TO_SOT_SMD:SOT-223-3_TabPin2"),
-                (["eink", "ic", "boost", "sense", "resistance"], Range.from_tolerance(3.3, 0.05)),  # 3R not standard
+                (["eink", "boost", "sense", "resistance"], Range.from_tolerance(3.3, 0.05)),  # 3R not standard
             ],
             class_refinements=[(Fuse, CanFuse)],
         )
