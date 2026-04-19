@@ -144,7 +144,7 @@ class Vector(BaseVector, Generic[VectorType]):
         Can only be called from the block defining this port (where this is a boundary port),
         and this port must be bound."""
         assert self._is_bound(), "not bound, can't create array elements"
-        assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
+        assert builder.block() is self._block_parent(), "can only create elts in block parent of array"
         assert self._elts is not None, "no elts defined"
         return self._elts[item]
 
@@ -231,7 +231,7 @@ class Vector(BaseVector, Generic[VectorType]):
         Can only be called from the block defining this port (where this is a boundary port),
         and this port must be bound."""
         assert self._is_bound(), "not bound, can't create array elements"
-        assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
+        assert builder.block() is self._block_parent(), "can only create elts in block parent of array"
 
         if self._elts is None:
             self._elts = {}
@@ -244,7 +244,7 @@ class Vector(BaseVector, Generic[VectorType]):
         Can only be called from the block defining this port (where this is a boundary port),
         and this port must be bound."""
         assert self._is_bound(), "not bound, can't create array elements"
-        assert builder.get_enclosing_block() is self._block_parent(), "can only create elts in block parent of array"
+        assert builder.block() is self._block_parent(), "can only create elts in block parent of array"
         assert type(tpe) is type(
             self._tpe
         ), f"created elts {type(tpe)} must be same type as array type {type(self._tpe)}"
@@ -275,7 +275,7 @@ class Vector(BaseVector, Generic[VectorType]):
         block_parent = self._block_parent()
         assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
         assert (
-            builder.get_enclosing_block() is block_parent._parent or builder.get_enclosing_block() is None
+            block_parent._parent is None or builder.block() is block_parent._parent
         ), "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
         # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
         allocated = type(self._tpe).empty()._bind(self)
@@ -298,7 +298,7 @@ class Vector(BaseVector, Generic[VectorType]):
         block_parent = self._block_parent()
         assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
         assert (
-            builder.get_enclosing_block() is block_parent._parent or builder.get_enclosing_block() is None
+            builder._current_block() is block_parent._parent or builder._current_block() is None
         ), "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
         # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
         allocated = Vector(type(self._tpe).empty())._bind(self)

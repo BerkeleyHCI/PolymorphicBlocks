@@ -55,8 +55,7 @@ class BaseConnectedGenerator(DefaultConnectionBlock, GeneratorBlock, Generic[Out
         self: SelfType, out: Port[LinkType], in_connected: Port[LinkType], in_default: Port[LinkType]
     ) -> SelfType:
         # note this runs in parent scope, so in_is_connected is valid
-        parent = builder.get_enclosing_block()
-        assert parent is not None
+        parent = builder.block()
         parent.connect(self.out, out)
         parent.connect(self.in_connected, in_connected)
         parent.connect(self.in_default, in_default)

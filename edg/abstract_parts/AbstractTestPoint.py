@@ -63,7 +63,7 @@ class GroundTestPoint(BaseTypedTestPoint, Block):
         self.connect(self.io.net, self.tp.io)
 
     def connected(self, io: Port[GroundLink]) -> "GroundTestPoint":
-        cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+        builder.block().connect(io, self.io)
         return self
 
 
@@ -76,7 +76,7 @@ class VoltageTestPoint(BaseTypedTestPoint, Block):
         self.connect(self.io.net, self.tp.io)
 
     def connected(self, io: Port[VoltageLink]) -> "VoltageTestPoint":
-        cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+        builder.block().connect(io, self.io)
         return self
 
 
@@ -89,7 +89,7 @@ class DigitalTestPoint(BaseTypedTestPoint, Block):
         self.connect(self.io.net, self.tp.io)
 
     def connected(self, io: Port[DigitalLink]) -> "DigitalTestPoint":
-        cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+        builder.block().connect(io, self.io)
         return self
 
 
@@ -124,7 +124,7 @@ class AnalogTestPoint(BaseTypedTestPoint, Block):
         self.connect(self.io.net, self.tp.io)
 
     def connected(self, io: Port[AnalogLink]) -> "AnalogTestPoint":
-        cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+        builder.block().connect(io, self.io)
         return self
 
 
@@ -139,7 +139,7 @@ class AnalogCoaxTestPoint(BaseRfTestPoint, Block):
         self.connect(self.io.net, self.conn.sig)
 
     def connected(self, io: Port[AnalogLink]) -> "AnalogCoaxTestPoint":
-        cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+        builder.block().connect(io, self.io)
         return self
 
 
@@ -161,7 +161,7 @@ class I2cTestPoint(TypedTestPoint, Block):
         self.connect(self.tp_sda.io, self.io.sda)
 
     def connected(self, io: Port[I2cLink]) -> "I2cTestPoint":
-        cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+        builder.block().connect(io, self.io)
         return self
 
 
@@ -185,7 +185,7 @@ class SpiTestPoint(TypedTestPoint, Block):
         self.connect(self.tp_miso.io, self.io.miso)
 
     def connected(self, io: Port[SpiLink]) -> "SpiTestPoint":
-        cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+        builder.block().connect(io, self.io)
         return self
 
 
@@ -207,7 +207,7 @@ class CanControllerTestPoint(TypedTestPoint, Block):
         self.connect(self.tp_rxd.io, self.io.rxd)
 
     def connected(self, io: Port[CanLogicLink]) -> "CanControllerTestPoint":
-        cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+        builder.block().connect(io, self.io)
         return self
 
 
@@ -229,5 +229,5 @@ class CanDiffTestPoint(TypedTestPoint, Block):
         self.connect(self.tp_canl.io, self.io.canl)
 
     def connected(self, io: Port[CanLogicLink]) -> "CanDiffTestPoint":
-        cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+        builder.block().connect(io, self.io)
         return self

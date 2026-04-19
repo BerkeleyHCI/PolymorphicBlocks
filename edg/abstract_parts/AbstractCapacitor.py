@@ -383,9 +383,9 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     ) -> "DecouplingCapacitor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if gnd is not None:
-            cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+            builder.block().connect(gnd, self.gnd)
         if pwr is not None:
-            cast(Block, builder.get_enclosing_block()).connect(pwr, self.pwr)
+            builder.block().connect(pwr, self.pwr)
         return self
 
 
@@ -413,9 +413,9 @@ class AnalogCapacitor(DiscreteApplication, KiCadImportableBlock):
     ) -> "AnalogCapacitor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if gnd is not None:
-            cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+            builder.block().connect(gnd, self.gnd)
         if io is not None:
-            cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+            builder.block().connect(io, self.io)
         return self
 
 
@@ -470,9 +470,9 @@ class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
     ) -> "AnalogSeriesCapacitor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if input is not None:
-            cast(Block, builder.get_enclosing_block()).connect(input, self.input)
+            builder.block().connect(input, self.input)
         if output is not None:
-            cast(Block, builder.get_enclosing_block()).connect(output, self.output)
+            builder.block().connect(output, self.output)
         return self
 
 
@@ -500,9 +500,9 @@ class DigitalCapacitor(DiscreteApplication, KiCadImportableBlock):
     ) -> "DigitalCapacitor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if gnd is not None:
-            cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+            builder.block().connect(gnd, self.gnd)
         if io is not None:
-            cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+            builder.block().connect(io, self.io)
         return self
 
 

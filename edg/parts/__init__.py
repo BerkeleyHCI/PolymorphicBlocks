@@ -90,8 +90,6 @@ from .SwitchedCap_TexasInstruments import Lm2664
 from .BuckConverter_Custom import CustomSyncBuckConverterIndependent
 from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverterPwm
 from .PowerConditioning import (
-    BufferedSupply,
-    Supercap,
     SingleDiodePowerMerge,
     DiodePowerMerge,
     PriorityPowerOr,

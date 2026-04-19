@@ -211,7 +211,7 @@ class SeriesPowerInductor(DiscreteApplication):
     ) -> "SeriesPowerInductor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if pwr_in is not None:
-            cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_in)
+            builder.block().connect(pwr_in, self.pwr_in)
         if pwr_out is not None:
-            cast(Block, builder.get_enclosing_block()).connect(pwr_out, self.pwr_out)
+            builder.block().connect(pwr_out, self.pwr_out)
         return self

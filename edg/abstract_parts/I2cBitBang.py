@@ -22,6 +22,6 @@ class I2cControllerBitBang(BitBangAdapter, Block):
         self.connect(self.i2c.sda, self.sda)
 
     def connected_from(self, scl: Port[DigitalLink], sda: Port[DigitalLink]) -> "I2cControllerBitBang":
-        cast(Block, builder.get_enclosing_block()).connect(scl, self.scl)
-        cast(Block, builder.get_enclosing_block()).connect(sda, self.sda)
+        builder.block().connect(scl, self.scl)
+        builder.block().connect(sda, self.sda)
         return self

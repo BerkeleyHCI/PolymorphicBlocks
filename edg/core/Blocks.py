@@ -27,7 +27,7 @@ class BaseBlockMeta(type):
 
     @override
     def __call__(cls, *args: Any, **kwargs: Any) -> Any:
-        block_context = builder.get_enclosing_block()
+        block_context = builder._current_block()
         obj = super().__call__(*args, **kwargs)
         if isinstance(obj, BaseBlock):  # ignore block prototypes
             obj._block_context = block_context
