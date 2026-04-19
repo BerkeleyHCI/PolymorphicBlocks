@@ -11,21 +11,25 @@ class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
 
         self.pwr = self.Port(VoltageSink(), [Power])
         self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
-        self.swd = self.Port(SwdTargetPort.empty(), [Input])
-        self.reset = self.Port(DigitalSink.empty(), optional=True)
-        self.swo = self.Port(DigitalBidir.empty(), optional=True)
-        self.tdi = self.Port(DigitalBidir.empty(), optional=True)
+        self.swd = self.Port(SwdTargetPort(), [Input])
+        self.reset = self.Port(DigitalSink(), optional=True)
+        self.swo = self.Port(DigitalBidir(), optional=True)
+        self.tdi = self.Port(DigitalBidir(), optional=True)
 
     @override
     def contents(self) -> None:
         super().contents()
-        self.conn = self.Block(PinHeader127DualShrouded(10)).connected({"1": self.pwr, ("3", "5", "9"): self.gnd})
-
-        self.connect(self.swd.swdio, self.conn.pins.request("2").adapt_to(DigitalBidir()))
-        self.connect(self.swd.swclk, self.conn.pins.request("4").adapt_to(DigitalSink()))
-        self.connect(self.swo, self.conn.pins.request("6").adapt_to(DigitalBidir()))
-        self.connect(self.tdi, self.conn.pins.request("8").adapt_to(DigitalBidir()))
-        self.connect(self.reset, self.conn.pins.request("10").adapt_to(DigitalSink()))
+        self.conn = self.Block(PinHeader127DualShrouded(10)).connected(
+            {
+                "1": self.pwr,
+                ("3", "5", "9"): self.gnd,
+                "2": self.swd.swdio,
+                "4": self.swd.swclk,
+                "6": self.swo,
+                "8": self.tdi,
+                "10": self.reset,
+            }
+        )
 
 
 class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
@@ -34,19 +38,24 @@ class SwdCortexSourceTagConnect(ProgrammingConnector, FootprintBlock):
 
         self.pwr = self.Port(VoltageSink(), [Power])
         self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
-        self.swd = self.Port(SwdTargetPort.empty(), [Input])
-        self.reset = self.Port(DigitalSink.empty(), optional=True)
-        self.swo = self.Port(DigitalBidir.empty(), optional=True)
+        self.swd = self.Port(SwdTargetPort(), [Input])
+        self.reset = self.Port(DigitalSink(), optional=True)
+        self.swo = self.Port(DigitalBidir(), optional=True)
 
     @override
     def contents(self) -> None:
         super().contents()
 
-        self.conn = self.Block(PinHeader254DualShroudedInline(6)).connected({"1": self.pwr, "5": self.gnd})
-        self.connect(self.swd.swdio, self.conn.pins.request("2").adapt_to(DigitalBidir()))  # also TMS
-        self.connect(self.reset, self.conn.pins.request("3").adapt_to(DigitalSink()))
-        self.connect(self.swd.swclk, self.conn.pins.request("4").adapt_to(DigitalSink()))
-        self.connect(self.swo, self.conn.pins.request("6").adapt_to(DigitalBidir()))
+        self.conn = self.Block(PinHeader254DualShroudedInline(6)).connected(
+            {
+                "1": self.pwr,
+                "5": self.gnd,
+                "2": self.swd.swdio,  # also TMS
+                "3": self.reset,
+                "4": self.swd.swclk,
+                "6": self.swo,
+            }
+        )
 
 
 class SwdSourceBitBang(InternalSubcircuit, Block):
@@ -66,25 +75,22 @@ class SwdSourceBitBang(InternalSubcircuit, Block):
     def contents(self) -> None:
         super().contents()
 
-        self.swclk_res = self.Block(Resistor(resistance=22 * Ohm(tol=0.05)))
-        self.swdio_res = self.Block(Resistor(resistance=22 * Ohm(tol=0.05)))
-        self.swdio_drv_res = self.Block(Resistor(resistance=100 * Ohm(tol=0.05)))
-
-        self.reset_res = self.Block(Resistor(resistance=22 * Ohm(tol=0.05)))
-        self.swo_res = self.Block(Resistor(resistance=22 * Ohm(tol=0.05)))
-
-        self.connect(self.swclk_res.a.adapt_to(DigitalSink()), self.swclk_in)
-        self.connect(self.swclk_res.b.adapt_to(DigitalSource()), self.swd.swclk)
-        self.connect(self.swdio_drv_res.a.adapt_to(DigitalSink()), self.swdio_in)
-        self.connect(
-            self.swdio_res.a.adapt_to(DigitalBidir()), self.swdio_drv_res.b.adapt_to(DigitalBidir()), self.swdio_out
+        self.swclk_res = self.Block(DigitalSeriesResistor(resistance=22 * Ohm(tol=0.05))).connected(
+            self.swclk_in, self.swd.swclk
         )
-        self.connect(self.swdio_res.b.adapt_to(DigitalSink()), self.swd.swdio)
+        self.swdio_res = self.Block(DigitalSeriesResistor(resistance=22 * Ohm(tol=0.05))).connected(
+            self.swdio_out, self.swd.swdio
+        )
+        self.swdio_drv_res = self.Block(DigitalSeriesResistor(resistance=100 * Ohm(tol=0.05))).connected(
+            self.swdio_in, self.swdio_out
+        )
 
-        self.connect(self.reset_res.a.adapt_to(DigitalSink()), self.reset_in)
-        self.connect(self.reset_res.b.adapt_to(DigitalSource()), self.reset_out)
-        self.connect(self.swo_res.a.adapt_to(DigitalSource()), self.swo_out)
-        self.connect(self.swo_res.b.adapt_to(DigitalSink()), self.swo_in)
+        self.reset_res = self.Block(DigitalSeriesResistor(resistance=22 * Ohm(tol=0.05))).connected(
+            self.reset_in, self.reset_out
+        )
+        self.swo_res = self.Block(DigitalSeriesResistor(resistance=22 * Ohm(tol=0.05))).connected(
+            self.swo_in, self.swo_out
+        )
 
 
 class SwdDebugger(JlcBoardTop):

@@ -53,6 +53,30 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.leda3 = self.Port(Passive())
         self.leda4 = self.Port(Passive())
 
+        dio_model = DigitalBidir.from_supply(self.gnd, self.iovcc, input_threshold_factor=(0.3, 0.7))
+        din_model = DigitalSink.from_bidir(dio_model)
+        dout_model = DigitalSource.from_bidir(dio_model)
+
+        self.reset = self.Port(din_model)
+
+        self.im0 = self.Port(din_model)
+        self.im1 = self.Port(din_model)
+        self.im2 = self.Port(din_model)
+        self.im3 = self.Port(din_model)
+
+        self.sdo = self.Port(dout_model)
+        self.sdi = self.Port(din_model)
+        self.wr_rs = self.Port(din_model)
+        self.rs_scl = self.Port(din_model)
+        self.cs = self.Port(din_model)
+        # pin 39 TE out unused
+
+        ctp_dio_model = DigitalBidir.from_supply(self.gnd, self.iovcc, input_threshold_abs=(1.0, 1.9) * Volt)
+        self.ctp_i2c = self.Port(I2cTarget(ctp_dio_model, [0x38]), optional=True)
+        # pin 46 is CTQ IRQ, unused (semantics not defined)
+        self.ctp_res = self.Port(DigitalSink.from_bidir(ctp_dio_model))
+        self.require(self.ctp_i2c.is_connected().implies(self.ctp_res.is_connected()))
+
         self.conn = self.Block(Fpc050Bottom(length=50)).connected(
             {
                 ("43", "48", "49", "50"): self.gnd,
@@ -63,6 +87,19 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
                 "3": self.leda2,
                 "4": self.leda3,
                 "5": self.leda4,
+                "10": self.reset,
+                "6": self.im0,
+                "7": self.im1,
+                "8": self.im2,
+                "9": self.im3,
+                "33": self.sdo,
+                "34": self.sdi,
+                "36": self.wr_rs,
+                "37": self.rs_scl,
+                "38": self.cs,
+                "44": self.ctp_i2c.scl,
+                "45": self.ctp_i2c.sda,
+                "47": self.ctp_res,
             }
         )
 
@@ -74,32 +111,6 @@ class Ch280qv10_Ct_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
                 "35": self.iovcc,  # RDX
             }
         )
-
-        dio_model = DigitalBidir.from_supply(self.gnd, self.iovcc, input_threshold_factor=(0.3, 0.7))
-        din_model = DigitalSink.from_bidir(dio_model)
-        dout_model = DigitalSource.from_bidir(dio_model)
-
-        self.reset = self.Export(self.conn.pins.request("10").adapt_to(din_model))
-
-        self.im0 = self.Export(self.conn.pins.request("6").adapt_to(din_model))
-        self.im1 = self.Export(self.conn.pins.request("7").adapt_to(din_model))
-        self.im2 = self.Export(self.conn.pins.request("8").adapt_to(din_model))
-        self.im3 = self.Export(self.conn.pins.request("9").adapt_to(din_model))
-
-        self.sdo = self.Export(self.conn.pins.request("33").adapt_to(dout_model))
-        self.sdi = self.Export(self.conn.pins.request("34").adapt_to(din_model))
-        self.wr_rs = self.Export(self.conn.pins.request("36").adapt_to(din_model))
-        self.rs_scl = self.Export(self.conn.pins.request("37").adapt_to(din_model))
-        self.cs = self.Export(self.conn.pins.request("38").adapt_to(din_model))
-        # pin 39 TE out unused
-
-        ctp_dio_model = DigitalBidir.from_supply(self.gnd, self.iovcc, input_threshold_abs=(1.0, 1.9) * Volt)
-        self.ctp_i2c = self.Port(I2cTarget(DigitalBidir.empty(), [0x38]), optional=True)
-        self.connect(self.conn.pins.request("44").adapt_to(din_model), self.ctp_i2c.scl)
-        self.connect(self.conn.pins.request("45").adapt_to(dio_model), self.ctp_i2c.sda)
-        # pin 46 is CTQ IRQ, unused (semantics not defined)
-        self.ctp_res = self.Export(self.conn.pins.request("47").adapt_to(DigitalSink.from_bidir(ctp_dio_model)))
-        self.require(self.ctp_i2c.is_connected().implies(self.ctp_res.is_connected()))
 
 
 class Ch280qv10_Ct(Lcd, Resettable, Block):

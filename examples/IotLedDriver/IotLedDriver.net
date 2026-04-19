@@ -173,7 +173,7 @@
   (footprint "Resistor_SMD:R_0402_1005Metric")
   (property (name "Sheetname") (value "reg_3v3"))
   (property (name "Sheetfile") (value "edg.parts.BuckConverter_TexasInstruments.Tps54202h"))
-  (property (name "edg_path") (value "reg_3v3.en_res"))
+  (property (name "edg_path") (value "reg_3v3.en_res.res"))
   (property (name "edg_short_path") (value "reg_3v3.en_res"))
   (property (name "edg_refdes") (value "LR3"))
   (property (name "edg_part") (value "0402WGF2203TCE (UNI-ROYAL(Uniroyal Elec))"))

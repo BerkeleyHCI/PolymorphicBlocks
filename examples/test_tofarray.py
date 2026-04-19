@@ -17,11 +17,11 @@ class CanConnector(Connector):
             optional=True,
         )
         self.gnd = self.Port(Ground())
-        self.differential = self.Port(CanDiffPort.empty(), [Output])
+        self.differential = self.Port(CanDiffPort(), [Output])
 
-        self.conn = self.Block(PassiveConnector()).connected({"2": self.pwr, "3": self.gnd})
-        self.connect(self.differential.canh, self.conn.pins.request("4").adapt_to(DigitalSource()))
-        self.connect(self.differential.canl, self.conn.pins.request("5").adapt_to(DigitalSource()))
+        self.conn = self.Block(PassiveConnector()).connected(
+            {"2": self.pwr, "3": self.gnd, "4": self.differential.canh, "5": self.differential.canl}
+        )
 
 
 class TofArray(JlcBoardTop):

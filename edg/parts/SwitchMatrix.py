@@ -131,18 +131,29 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
     @override
     def generate(self) -> None:
         super().generate()
-        row_ports = {}
-        for row in range(self.get(self.nrows)):
-            row_ports[row] = self.rows.append_elt(DigitalSource.empty(), str(row))
 
+        # generate row (output) ports with forward declaration
+        for row in range(self.get(self.nrows)):
+            self.rows.append_elt(
+                DigitalSource(  # modeled as low-side driver
+                    voltage_out=RangeExpr(),
+                    output_thresholds=RangeExpr(),
+                    low_driver=True,
+                    high_driver=False,
+                ),
+                str(row),
+            )
+
+        # generate parts and column (input) ports and aggregate parameters for row ports
         self.sw = ElementDict[Switch]()
         self.d = ElementDict[Diode]()
+        row_voltages = [RangeExpr._to_expr_type(RangeExpr.EMPTY)] * self.get(self.nrows)
+        row_thresholds = [FloatExpr._to_expr_type(float("-inf"))] * self.get(self.nrows)
         for col in range(self.get(self.ncols)):
-            col_port = self.cols.append_elt(DigitalSink.empty(), str(col))
-            col_port_model = (
-                DigitalSink()
-            )  # ideal, negligible current draw (assumed) and thresholds checked at other side
-            for row, row_port in row_ports.items():
+            # ideal, negligible current draw (assumed) and thresholds checked at other side
+            col_port = self.cols.append_elt(DigitalSink(), str(col))
+            for row in range(self.get(self.nrows)):
+                row_port = self.rows[str(row)]
                 sw = self.sw[f"{col},{row}"] = self.Block(
                     Switch(voltage=row_port.link().voltage, current=row_port.link().current_drawn)
                 )
@@ -156,19 +167,15 @@ function {self._svgpcb_fn_name()}(xy, colSpacing=0.5, rowSpacing=0.5, diodeOffse
                 )
                 lowest_output = col_port.link().voltage.lower() + d.actual_voltage_drop.lower()
                 highest_output = col_port.link().output_thresholds.lower() + d.actual_voltage_drop.upper()
-                self.connect(
-                    d.anode.adapt_to(
-                        DigitalSource(
-                            voltage_out=(lowest_output, highest_output),
-                            output_thresholds=(highest_output, float("inf")),
-                            low_driver=True,
-                            high_driver=False,
-                        )
-                    ),
-                    row_port,
-                )
+                row_voltages[row] = row_voltages[row].hull((lowest_output, highest_output))
+                row_thresholds[row] = row_thresholds[row].max(highest_output)
+                self.connect(d.anode, row_port.net)
                 self.connect(d.cathode, sw.sw)
-                self.connect(sw.com.adapt_to(col_port_model), col_port)
+                self.connect(sw.com, col_port.net)
+
+        for row in range(self.get(self.nrows)):
+            self.assign(self.rows[str(row)].voltage_out, row_voltages[row])
+            self.assign(self.rows[str(row)].output_thresholds, (row_thresholds[row], float("inf")))
 
         self.rows.defined()
         self.cols.defined()

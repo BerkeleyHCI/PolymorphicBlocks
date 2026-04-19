@@ -31,16 +31,6 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
             )
         )
 
-        self.conn = self.Block(Fpc050Bottom(length=24)).connected(
-            {
-                "10": self.dgnd,
-                "23": self.agnd,
-                "14": self.dovdd,
-                "15": self.dvdd,
-                "21": self.avdd,
-            }
-        )
-
         dio_model = DigitalBidir.from_supply(
             self.dgnd,
             self.dovdd,
@@ -51,30 +41,48 @@ class Ov2640_Fpc24_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         di_model = DigitalSink.from_bidir(dio_model)
 
         self.y = self.Port(Vector(DigitalSource.empty()))
-        self.connect(self.y.append_elt(DigitalSource.empty(), "0"), self.conn.pins.request("1").adapt_to(do_model))
-        self.connect(self.y.append_elt(DigitalSource.empty(), "1"), self.conn.pins.request("2").adapt_to(do_model))
-        self.connect(self.y.append_elt(DigitalSource.empty(), "4"), self.conn.pins.request("3").adapt_to(do_model))
-        self.connect(self.y.append_elt(DigitalSource.empty(), "3"), self.conn.pins.request("4").adapt_to(do_model))
-        self.connect(self.y.append_elt(DigitalSource.empty(), "5"), self.conn.pins.request("5").adapt_to(do_model))
-        self.connect(self.y.append_elt(DigitalSource.empty(), "2"), self.conn.pins.request("6").adapt_to(do_model))
-        self.connect(self.y.append_elt(DigitalSource.empty(), "6"), self.conn.pins.request("7").adapt_to(do_model))
-        self.connect(self.y.append_elt(DigitalSource.empty(), "7"), self.conn.pins.request("9").adapt_to(do_model))
-        self.connect(self.y.append_elt(DigitalSource.empty(), "8"), self.conn.pins.request("11").adapt_to(do_model))
-        self.connect(self.y.append_elt(DigitalSource.empty(), "9"), self.conn.pins.request("13").adapt_to(do_model))
+        for i in range(10):
+            self.y.append_elt(do_model, str(i))
 
-        self.pclk = self.Export(self.conn.pins.request("8").adapt_to(do_model))  # tacked on a 15pF cap
-        self.xclk = self.Export(self.conn.pins.request("12").adapt_to(di_model))
-        self.href = self.Export(self.conn.pins.request("16").adapt_to(do_model))
-        self.pwdn = self.Export(self.conn.pins.request("17").adapt_to(di_model))  # typically pulled down / grounded
-        self.vsync = self.Export(self.conn.pins.request("18").adapt_to(do_model))
-        self.reset = self.Export(self.conn.pins.request("19").adapt_to(dio_model))
+        self.pclk = self.Port(do_model)  # tacked on a 15pF cap
+        self.xclk = self.Port(di_model)
+        self.href = self.Port(do_model)
+        self.pwdn = self.Port(di_model)  # typically pulled down / grounded
+        self.vsync = self.Port(do_model)
+        self.reset = self.Port(dio_model)
 
         # formally this is SCCB (serial camera control bus), but is I2C compatible
         # https://e2e.ti.com/support/processors-group/processors/f/processors-forum/6092/sccb-vs-i2c
         # 0x60 for write, 0x61 for read, translated to the 7-bit address
-        self.sio = self.Port(I2cTarget(DigitalBidir.empty(), [0x30]))
-        self.connect(self.sio.scl, self.conn.pins.request("20").adapt_to(dio_model))
-        self.connect(self.sio.sda, self.conn.pins.request("22").adapt_to(dio_model))
+        self.sio = self.Port(I2cTarget(dio_model, [0x30]))
+
+        self.conn = self.Block(Fpc050Bottom(length=24)).connected(
+            {
+                "10": self.dgnd,
+                "23": self.agnd,
+                "14": self.dovdd,
+                "15": self.dvdd,
+                "21": self.avdd,
+                "1": self.y["0"],
+                "2": self.y["1"],
+                "3": self.y["4"],
+                "4": self.y["3"],
+                "5": self.y["5"],
+                "6": self.y["2"],
+                "7": self.y["6"],
+                "9": self.y["7"],
+                "11": self.y["8"],
+                "13": self.y["9"],
+                "8": self.pclk,
+                "12": self.xclk,
+                "16": self.href,
+                "17": self.pwdn,
+                "18": self.vsync,
+                "19": self.reset,
+                "20": self.sio.scl,
+                "22": self.sio.sda,
+            }
+        )
 
 
 @abstract_block_default(lambda: Ov2640_Fpc24)

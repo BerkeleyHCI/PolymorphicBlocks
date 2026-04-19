@@ -207,9 +207,10 @@ class PullupResistor(DiscreteApplication):
         self.res = self.Block(Resistor(resistance, 0 * Watt(tol=0)))  # TODO automatically calculate power
 
         self.pwr = self.Port(VoltageSink(), [Power])
-        self.io = self.Export(self.res.b.adapt_to(DigitalSource.pullup_from_supply(self.pwr)), [InOut])
+        self.io = self.Port(DigitalSource.pullup_from_supply(self.pwr), [InOut])
 
         self.connect(self.pwr.net, self.res.a)
+        self.connect(self.io.net, self.res.b)
 
     def connected(
         self, pwr: Optional[Port[VoltageLink]] = None, io: Optional[Port[DigitalLink]] = None
@@ -231,9 +232,10 @@ class PulldownResistor(DiscreteApplication):
         self.res = self.Block(Resistor(resistance, 0 * Watt(tol=0)))  # TODO automatically calculate power
 
         self.gnd = self.Port(Ground(), [Common])
-        self.io = self.Export(self.res.b.adapt_to(DigitalSource.pulldown_from_supply(self.gnd)), [InOut])
+        self.io = self.Port(DigitalSource.pulldown_from_supply(self.gnd), [InOut])
 
         self.connect(self.gnd.net, self.res.a)
+        self.connect(self.io.net, self.res.b)
 
     def connected(
         self, gnd: Optional[Port[GroundLink]] = None, io: Optional[Port[DigitalLink]] = None
@@ -406,8 +408,9 @@ class AnalogSetpointResistor(DiscreteApplication, KiCadImportableBlock):
         return self
 
 
-class AnalogSeriesResistor(DiscreteApplication, KiCadImportableBlock):
-    """Analog passthrough series resistor"""
+class AnalogSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
+    """Analog passthrough series resistor.
+    Generally an utility component in subcircuits and not used at the top level."""
 
     @override
     def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
@@ -509,6 +512,124 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
         return {"1": self.signal_in, "2": self.signal_out}
 
 
+class DigitalSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
+    """Digital passthrough series resistor, with source / sink (directioned) ports.
+    Generally an utility component in subcircuits and not used at the top level."""
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
+        assert symbol_name in ("Device:R", "Device:R_Small")
+        return {"1": self.input, "2": self.output}
+
+    def __init__(self, resistance: RangeLike) -> None:
+        super().__init__()
+
+        self.input = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
+        self.output = self.Port(
+            DigitalSource(
+                voltage_out=self.input.link().voltage,
+                output_thresholds=self.input.link().output_thresholds,
+            ),
+            [Output],
+        )
+        self.assign(self.input.current_draw, self.output.link().current_drawn)
+
+        self.res = self.Block(
+            Resistor(
+                resistance=resistance,
+                power=self.input.link().current_drawn * self.input.link().current_drawn * resistance,
+            )
+        )
+        self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
+
+        self.connect(self.input.net, self.res.a)
+        self.connect(self.output.net, self.res.b)
+
+    def connected(
+        self, input: Optional[Port[DigitalLink]] = None, output: Optional[Port[DigitalLink]] = None
+    ) -> "DigitalSeriesResistor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name."""
+        if input is not None:
+            cast(Block, builder.get_enclosing_block()).connect(input, self.input)
+        if output is not None:
+            cast(Block, builder.get_enclosing_block()).connect(output, self.output)
+        return self
+
+
+class DigitalBidirSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
+    """Digital passthrough series resistor, with DigitalBidir ports on both sides,
+    but with exterior and interior directions since the electronics model is strictly directioned.
+    Data propagates from the interior to the exterior, with the interior port being presented as ideal.
+    This behaves the same as DigitalBidirBridge, see its documentation for more details.
+
+    Generally an utility component in subcircuits and not used at the top level.
+    """
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
+        assert symbol_name in ("Device:R", "Device:R_Small")
+        return {"1": self.interior, "2": self.exterior}
+
+    def __init__(self, resistance: RangeLike) -> None:
+        super().__init__()
+
+        self.interior = self.Port(
+            DigitalBidir(
+                pullup_capable=False,
+                pulldown_capable=False,  # don't create a loop
+                _bridged_internal=True,
+            ),
+            [Output],
+        )
+        self.exterior = self.Port(
+            DigitalBidir(
+                voltage_out=RangeExpr(),
+                current_draw=RangeExpr(),
+                voltage_limits=RangeExpr(),
+                current_limits=RangeExpr(),
+                output_thresholds=RangeExpr(),
+                input_thresholds=RangeExpr(),
+                pulldown_capable=BoolExpr(),
+                pullup_capable=BoolExpr(),
+            ),
+            [Input],
+        )
+
+        self.res = self.Block(
+            Resistor(
+                resistance=resistance,
+                power=self.interior.link().current_drawn * self.interior.link().current_drawn * resistance,
+            )
+        )
+        self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
+
+        self.connect(self.exterior.net, self.res.a)
+        self.connect(self.interior.net, self.res.b)
+
+        self.assign(self.exterior.voltage_out, self.interior.link().voltage)
+        self.assign(self.exterior.current_draw, self.interior.link().current_drawn)
+        self.assign(self.exterior.voltage_limits, self.interior.link().voltage_limits)
+        self.assign(
+            self.exterior.current_limits, self.interior.link().current_limits
+        )  # TODO compensate for internal current draw
+
+        self.assign(self.exterior.output_thresholds, self.interior.link().output_thresholds)
+        self.assign(self.exterior.input_thresholds, self.interior.link().input_thresholds)
+        self.assign(self.exterior.pullup_capable, self.interior.link().pullup_capable)
+        self.assign(self.exterior.pulldown_capable, self.interior.link().pulldown_capable)
+
+    def connected(
+        self, interior: Optional[Port[DigitalLink]] = None, exterior: Optional[Port[DigitalLink]] = None
+    ) -> "DigitalBidirSeriesResistor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name.
+        Ordering reflects dataflow direction."""
+        if interior is not None:
+            cast(Block, builder.get_enclosing_block()).connect(interior, self.interior)
+        if exterior is not None:
+            cast(Block, builder.get_enclosing_block()).connect(exterior, self.exterior)
+        return self
+
+
 class DigitalClampResistor(Protection, KiCadImportableBlock):
     """Inline resistor that limits the current (to a parameterized amount) which works in concert
     with ESD diodes in the downstream device to clamp the signal voltage to allowable levels.
@@ -529,19 +650,26 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
     ):
         super().__init__()
 
-        self.signal_in = self.Port(DigitalSink.empty(), [Input])
-        self.signal_out = self.Port(DigitalSource.empty(), [Output])
-
         self.clamp_target = self.ArgParameter(clamp_target)
         self.clamp_current = self.ArgParameter(clamp_current)
         self.protection_voltage = self.ArgParameter(protection_voltage)
         self.zero_out = self.ArgParameter(zero_out)
+
+        self.signal_in = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
+        self.signal_out = self.Port(
+            DigitalSource(
+                voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
+                output_thresholds=self.signal_in.link().output_thresholds,
+            ),
+            [Output],
+        )
 
     @override
     def contents(self) -> None:
         super().contents()
 
         # TODO bidirectional clamping calcs?
+        self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
         self.res = self.Block(
             Resistor(
                 resistance=1
@@ -552,20 +680,26 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
                 )
             )
         )
-        self.connect(
-            self.res.a.adapt_to(DigitalSink(current_draw=self.signal_out.link().current_drawn)), self.signal_in
-        )
-        self.connect(
-            self.res.b.adapt_to(
-                DigitalSource(
-                    voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
-                    output_thresholds=self.signal_in.link().output_thresholds,
-                )
-            ),
-            self.signal_out,
-        )
+        self.connect(self.res.a, self.signal_in.net)
+        self.connect(self.res.b, self.signal_out.net)
 
     @override
     def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
         assert symbol_name == "Device:R"
         return {"1": self.signal_in, "2": self.signal_out}
+
+
+class UsbSeriesResistor(InternalSubcircuit, Block):
+    """Inline resistor on DM and DP lines, sometimes needed by microcontrollers."""
+
+    def __init__(self, resistance: RangeLike) -> None:
+        super().__init__()
+        self.resistance = self.ArgParameter(resistance)
+        self.interior = self.Port(UsbHostPort.empty(), [Input])
+        self.exterior = self.Port(UsbDevicePort.empty(), [Output])
+
+    @override
+    def contents(self) -> None:
+        super().contents()
+        self.dp = self.Block(DigitalBidirSeriesResistor(self.resistance)).connected(self.interior.dp, self.exterior.dp)
+        self.dm = self.Block(DigitalBidirSeriesResistor(self.resistance)).connected(self.interior.dm, self.exterior.dm)

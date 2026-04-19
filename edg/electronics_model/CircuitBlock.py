@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Generic, Any, Optional, List, Mapping, Dict, Union, TYPE_CHECKING
 
+from deprecated import deprecated
 from typing_extensions import TypeVar, override
 
 from .KiCadImportableBlock import KiCadImportableBlock
@@ -127,6 +128,7 @@ class WrapperFootprintBlock(FootprintBlock):
 
 
 @abstract_block
+@deprecated("Use compositional passive and connect nets instead of inheriting")
 class NetBlock(InternalBlock, NetBaseBlock, Block):
     @override
     def contents(self) -> None:
@@ -135,6 +137,7 @@ class NetBlock(InternalBlock, NetBaseBlock, Block):
 
 
 @abstract_block
+@deprecated("Use compositional passive and connect nets instead of inheriting")
 class CircuitPortBridge(NetBaseBlock, PortBridge):
     @override
     def contents(self) -> None:
@@ -153,8 +156,8 @@ class KicadImportablePortAdapter(KiCadImportableBlock, PortAdapter[AdapterDstTyp
         return {"1": self.src, "2": self.dst}
 
 
-# TODO remove me once compositional passive refactoring complete, #114
 @abstract_block
+@deprecated("Use compositional passive and connect nets instead of inheriting")
 class CircuitPortAdapter(KicadImportablePortAdapter[AdapterDstType], NetBaseBlock, Generic[AdapterDstType]):
     @override
     def contents(self) -> None:
@@ -162,8 +165,8 @@ class CircuitPortAdapter(KicadImportablePortAdapter[AdapterDstType], NetBaseBloc
         self.net()
 
 
-# TODO remove me once compositional passive refactoring complete, #114
-@non_library  # TODO make abstract instead?
+@non_library
+@deprecated("Use compositional passive and connect nets instead of inheriting")
 class CircuitLink(NetBaseBlock, Link):
     @override
     def contents(self) -> None:

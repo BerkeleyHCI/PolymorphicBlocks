@@ -51,6 +51,7 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
             )
         )
 
+        self.gdr = self.Port(DigitalSource.from_supply(self.vss, self.vdd))
         self.rese = self.Port(AnalogSink())
         # pin 4 is NC for this part
         self.vshr = self.Port(
@@ -75,6 +76,16 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
         self.vgh = self.Port(VoltageSink(voltage_limits=(13, 20) * Volt))
         self.vgl = self.Port(VoltageSink(voltage_limits=(-20, -13) * Volt))
 
+        dio_model = DigitalBidir.from_supply(self.vss, self.vddio, input_threshold_factor=(0.2, 0.8))
+        din_model = DigitalSink.from_bidir(dio_model)
+        self.bs = self.Port(din_model)
+        self.busy = self.Port(din_model, optional=True)
+        self.rst = self.Port(din_model)
+        self.dc = self.Port(din_model, optional=True)
+        self.csb = self.Port(din_model)
+
+        self.spi = self.Port(SpiPeripheral(dio_model))
+
         self.conn = self.Block(Fpc050Bottom(length=24)).connected(
             {
                 "17": self.vss,
@@ -82,30 +93,22 @@ class Er_Epd027_2_Device(InternalSubcircuit, Block):
                 "15": self.vddio,
                 "18": self.vdd1v8,
                 "24": self.vcom,
-                # "2": self.gdr,
+                "2": self.gdr,
                 "3": self.rese,
                 "5": self.vshr,
                 "20": self.vsh,
                 "22": self.vsl,
                 "21": self.vgh,
                 "23": self.vgl,
+                "8": self.bs,
+                "9": self.busy,
+                "10": self.rst,
+                "11": self.dc,
+                "12": self.csb,
+                "13": self.spi.sck,
+                "14": self.spi.mosi,
             }
         )
-
-        # TODO move to above rese once DigitalSource refactored, #114
-        self.gdr = self.Export(self.conn.pins.request("2").adapt_to(DigitalSource.from_supply(self.vss, self.vdd)))
-
-        din_model = DigitalSink.from_supply(self.vss, self.vddio, input_threshold_factor=(0.2, 0.8))
-        self.bs = self.Export(self.conn.pins.request("8").adapt_to(din_model))
-        self.busy = self.Export(self.conn.pins.request("9").adapt_to(din_model), optional=True)
-        self.rst = self.Export(self.conn.pins.request("10").adapt_to(din_model))
-        self.dc = self.Export(self.conn.pins.request("11").adapt_to(din_model), optional=True)
-        self.csb = self.Export(self.conn.pins.request("12").adapt_to(din_model))
-
-        self.spi = self.Port(SpiPeripheral.empty())
-        self.connect(self.spi.sck, self.conn.pins.request("13").adapt_to(din_model))  # SCL
-        self.connect(self.spi.mosi, self.conn.pins.request("14").adapt_to(din_model))  # SDA
-        self.miso_nc = self.Block(DigitalBidirNotConnected()).connected(self.spi.miso)
 
 
 class Er_Epd027_2(EInk, GeneratorBlock):

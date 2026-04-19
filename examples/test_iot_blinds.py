@@ -11,13 +11,22 @@ class IotRollerBlindsConnector(Block):
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(VoltageSink.from_gnd(self.gnd, voltage_limits=(4.5, 25) * Volt), [Power])
 
-        self.conn = self.Block(JstXh(length=6)).connected({"4": self.gnd, "1": self.pwr})
+        self.enca = self.Port(DigitalSource.low_from_supply(self.gnd))
+        self.encb = self.Port(DigitalSource.low_from_supply(self.gnd))
 
-        self.enca = self.Export(self.conn.pins.request("2").adapt_to(DigitalSource.low_from_supply(self.gnd)))
-        self.encb = self.Export(self.conn.pins.request("3").adapt_to(DigitalSource.low_from_supply(self.gnd)))
+        self.motor2 = self.Port(DigitalSink(current_draw=(0, 0.5) * Amp))
+        self.motor1 = self.Port(DigitalSink(current_draw=(0, 0.5) * Amp))
 
-        self.motor2 = self.Export(self.conn.pins.request("5").adapt_to(DigitalSink(current_draw=(0, 0.5) * Amp)))
-        self.motor1 = self.Export(self.conn.pins.request("6").adapt_to(DigitalSink(current_draw=(0, 0.5) * Amp)))
+        self.conn = self.Block(JstXh(length=6)).connected(
+            {
+                "4": self.gnd,
+                "1": self.pwr,
+                "2": self.enca,
+                "3": self.encb,
+                "5": self.motor2,
+                "6": self.motor1,
+            }
+        )
 
 
 class PowerInConnector(Connector):
@@ -174,9 +183,14 @@ class IotRollerBlinds(JlcBoardTop):
 class MotorConnector(Block):
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(Picoblade(length=2))
-        self.motor1 = self.Export(self.conn.pins.request("1").adapt_to(DigitalSink(current_draw=(0, 0.5) * Amp)))
-        self.motor2 = self.Export(self.conn.pins.request("2").adapt_to(DigitalSink(current_draw=(0, 0.5) * Amp)))
+        self.motor1 = self.Port(DigitalSink(current_draw=(0, 0.5) * Amp))
+        self.motor2 = self.Port(DigitalSink(current_draw=(0, 0.5) * Amp))
+        self.conn = self.Block(Picoblade(length=2)).connected(
+            {
+                "1": self.motor1,
+                "2": self.motor2,
+            }
+        )
 
 
 class IotCurtainCrawler(JlcBoardTop):

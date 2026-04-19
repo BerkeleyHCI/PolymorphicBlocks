@@ -30,8 +30,10 @@ class Waveshare_Epd_Device(InternalSubcircuit, Block):
             )
         )
 
-        din_model = DigitalSink.from_supply(self.vss, self.vddio, input_threshold_factor=(0.2, 0.8))
+        dio_model = DigitalBidir.from_supply(self.vss, self.vddio, input_threshold_factor=(0.2, 0.8))
+        din_model = DigitalSink.from_bidir(dio_model)
 
+        self.gdr = self.Port(DigitalSource.from_supply(self.vss, self.vdd))  # assumed
         self.rese = self.Port(AnalogSink())
 
         self.vgl = self.Port(
@@ -66,13 +68,21 @@ class Waveshare_Epd_Device(InternalSubcircuit, Block):
             )
         )
 
+        self.bs = self.Port(din_model)
+        self.busy = self.Port(din_model, optional=True)
+        self.rst = self.Port(din_model)
+        self.dc = self.Port(din_model, optional=True)
+        self.csb = self.Port(din_model)
+
+        self.spi = self.Port(SpiPeripheral(dio_model))
+
         self.conn = self.Block(Fpc050Bottom(length=24)).connected(
             {
                 "17": self.vss,
                 "16": self.vdd,
                 "15": self.vddio,
                 "18": self.vdd1v8,
-                # "2": self.gdr,
+                "2": self.gdr,
                 "3": self.rese,
                 "4": self.vgl,
                 "5": self.vgh,
@@ -81,25 +91,15 @@ class Waveshare_Epd_Device(InternalSubcircuit, Block):
                 "21": self.prevgh,
                 "23": self.prevgl,
                 "24": self.vcom,
+                "8": self.bs,
+                "9": self.busy,
+                "10": self.rst,
+                "11": self.dc,
+                "12": self.csb,
+                "13": self.spi.sck,  # SCL
+                "14": self.spi.mosi,  # SDA
             }
         )
-
-        # TODO move to above rese once DigitalSource refactored, #114
-        self.gdr = self.Export(
-            self.conn.pins.request("2").adapt_to(DigitalSource.from_supply(self.vss, self.vdd))
-        )  # assumed
-
-        self.bs = self.Export(self.conn.pins.request("8").adapt_to(din_model))
-        self.busy = self.Export(self.conn.pins.request("9").adapt_to(din_model), optional=True)
-        self.rst = self.Export(self.conn.pins.request("10").adapt_to(din_model))
-        self.dc = self.Export(self.conn.pins.request("11").adapt_to(din_model), optional=True)
-        self.csb = self.Export(self.conn.pins.request("12").adapt_to(din_model))
-
-        self.spi = self.Port(SpiPeripheral.empty())
-        self.connect(self.spi.sck, self.conn.pins.request("13").adapt_to(din_model))  # SCL
-        self.connect(self.spi.mosi, self.conn.pins.request("14").adapt_to(din_model))  # SDA
-        self.miso_nc = self.Block(DigitalBidirNotConnected())
-        self.connect(self.spi.miso, self.miso_nc.port)
 
 
 class Waveshare_Epd(EInk, GeneratorBlock):

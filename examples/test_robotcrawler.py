@@ -16,9 +16,7 @@ class ServoFeedbackConnector(Connector, Block):
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(VoltageSink(current_draw=(5, 800) * mAmp), [Power])  # idle @ 4.8v to stall @ 6v
 
-        self.conn = self.Block(PinHeader254(4)).connected({"3": self.gnd, "2": self.pwr})
-
-        self.pwm = self.Export(self.conn.pins.request("1").adapt_to(DigitalSink()), [Input])  # no specs given
+        self.pwm = self.Port(DigitalSink(), [Input])  # no specs given
         self.fb = self.Port(
             AnalogSource(  # no specs given
                 voltage_out=(0.9, 2.1)
@@ -26,7 +24,8 @@ class ServoFeedbackConnector(Connector, Block):
                 signal_out=(0.9, 2.1) * Volt,
             )
         )
-        self.conn.connected({"4": self.fb})
+
+        self.conn = self.Block(PinHeader254(4)).connected({"3": self.gnd, "2": self.pwr, "1": self.pwm, "4": self.fb})
 
 
 @abstract_block

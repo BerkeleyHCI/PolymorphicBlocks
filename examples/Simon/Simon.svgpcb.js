@@ -226,8 +226,11 @@ board.setNetlist([
   {name: "sw.out", pads: [["U1", "27"], ["SW1", "1"], ["R6", "2"]]},
   {name: "btn[0].led_a", pads: [["J2", "1"], ["Q2", "2"]]},
   {name: "btn[0].sw1", pads: [["U1", "6"], ["J2", "3"], ["R7", "2"]]},
+  {name: "btn[1].led_a", pads: [["J3", "1"], ["Q4", "2"]]},
   {name: "btn[1].sw1", pads: [["U1", "8"], ["J3", "3"], ["R8", "2"]]},
+  {name: "btn[2].led_a", pads: [["J4", "1"], ["Q6", "2"]]},
   {name: "btn[2].sw1", pads: [["U1", "10"], ["J4", "3"], ["R9", "2"]]},
+  {name: "btn[3].led_a", pads: [["J5", "1"], ["Q8", "2"]]},
   {name: "btn[3].sw1", pads: [["U1", "12"], ["J5", "3"], ["R10", "2"]]},
   {name: "pwr.ic.sw", pads: [["U3", "1"], ["L1", "2"], ["D2", "2"]]},
   {name: "pwr.ic.fb", pads: [["U3", "3"], ["R11", "2"], ["R12", "1"]]},
@@ -235,13 +238,10 @@ board.setNetlist([
   {name: "btn_drv[0].pre.drain", pads: [["Q1", "3"], ["R13", "2"], ["Q2", "1"]]},
   {name: "btn_drv[1].control", pads: [["U1", "7"], ["Q3", "1"]]},
   {name: "btn_drv[1].pre.drain", pads: [["Q3", "3"], ["R14", "2"], ["Q4", "1"]]},
-  {name: "btn_zeroed_current[1]", pads: [["J3", "1"], ["Q4", "2"]]},
   {name: "btn_drv[2].control", pads: [["U1", "9"], ["Q5", "1"]]},
   {name: "btn_drv[2].pre.drain", pads: [["Q5", "3"], ["R15", "2"], ["Q6", "1"]]},
-  {name: "btn_zeroed_current[2]", pads: [["J4", "1"], ["Q6", "2"]]},
   {name: "btn_drv[3].control", pads: [["U1", "11"], ["Q7", "1"]]},
-  {name: "btn_drv[3].pre.drain", pads: [["Q7", "3"], ["R16", "2"], ["Q8", "1"]]},
-  {name: "btn_zeroed_current[3]", pads: [["J5", "1"], ["Q8", "2"]]}
+  {name: "btn_drv[3].pre.drain", pads: [["Q7", "3"], ["R16", "2"], ["Q8", "1"]]}
 ])
 
 const limit0 = pt(-0.07874015748031496, -0.07874015748031496);

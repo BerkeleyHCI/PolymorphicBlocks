@@ -170,12 +170,12 @@ const C7 = board.add(C_0805_2012Metric, {
   translate: pt(0.596, 0.728), rotate: 0,
   id: 'C7'
 })
-// mcu.usb_res.res_dp
+// mcu.usb_res.dp.res
 const R6 = board.add(R_0603_1608Metric, {
   translate: pt(0.588, 0.834), rotate: 0,
   id: 'R6'
 })
-// mcu.usb_res.res_dm
+// mcu.usb_res.dm.res
 const R7 = board.add(R_0603_1608Metric, {
   translate: pt(0.744, 0.834), rotate: 0,
   id: 'R7'
@@ -550,8 +550,8 @@ board.setNetlist([
   {name: "meas_chain_0", pads: [["R19", "2"], ["R20", "1"], ["R21", "1"], ["R22", "1"], ["U13", "3"]]},
   {name: "meas_chain_1", pads: [["U13", "1"], ["U13", "4"], ["TP5", "1"], ["U14", "5"]]},
   {name: "data_usb.pwr", pads: [["J1", "A4"], ["J1", "A9"], ["J1", "B4"], ["J1", "B9"], ["U5", "32"], ["C8", "1"]]},
-  {name: "data_usb.usb.dp", pads: [["J1", "A6"], ["J1", "B6"], ["R6", "2"], ["U6", "2"]]},
-  {name: "data_usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"], ["R7", "2"], ["U6", "1"]]},
+  {name: "data_usb.usb.dp", pads: [["J1", "A6"], ["J1", "B6"], ["R6", "1"], ["U6", "2"]]},
+  {name: "data_usb.usb.dm", pads: [["J1", "A7"], ["J1", "B7"], ["R7", "1"], ["U6", "1"]]},
   {name: "data_usb.conn.cc.cc1", pads: [["J1", "A5"], ["R1", "2"]]},
   {name: "data_usb.conn.cc.cc2", pads: [["J1", "B5"], ["R2", "2"]]},
   {name: "gate.pwr_out", pads: [["Q1", "3"], ["U2", "3"], ["L1", "1"], ["C1", "1"], ["R5", "1"], ["R8", "1"]]},
@@ -572,8 +572,8 @@ board.setNetlist([
   {name: "mcu.swd_node.swdio", pads: [["U5", "51"], ["J2", "10"]]},
   {name: "mcu.swd_node.swclk", pads: [["U5", "53"], ["J2", "9"]]},
   {name: "mcu.reset_node", pads: [["U5", "40"], ["J2", "6"]]},
-  {name: "mcu.usb_chain_0.d_P", pads: [["U5", "35"], ["R6", "1"]]},
-  {name: "mcu.usb_chain_0.d_N", pads: [["U5", "34"], ["R7", "1"]]},
+  {name: "mcu.usb_chain_0.d_P", pads: [["U5", "35"], ["R6", "2"]]},
+  {name: "mcu.usb_chain_0.d_N", pads: [["U5", "34"], ["R7", "2"]]},
   {name: "mcu.swd.tdi", pads: [["J2", "7"]]},
   {name: "mcu.swd.swo", pads: [["U5", "47"], ["J2", "8"]]},
   {name: "vbatsense.output", pads: [["U5", "9"], ["R8", "2"], ["R9", "1"]]},

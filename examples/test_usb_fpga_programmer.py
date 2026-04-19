@@ -12,19 +12,24 @@ class FpgaProgrammingHeader(Connector, Block):
         super().__init__()
         self.pwr = self.Port(VoltageSink(), optional=True)
         self.gnd = self.Port(Ground(), [Common])
-        self.spi = self.Port(SpiPeripheral.empty())
-        self.cs = self.Port(DigitalSink.empty())
-        self.reset = self.Port(DigitalSink.empty())
+        self.spi = self.Port(SpiPeripheral())
+        self.cs = self.Port(DigitalSink())
+        self.reset = self.Port(DigitalSink())
 
     @override
     def contents(self) -> None:
         super().contents()
-        self.conn = self.Block(PinHeader127DualShrouded(10)).connected({"1": self.pwr, ("3", "5", "9"): self.gnd})
-        self.connect(self.cs, self.conn.pins.request("2").adapt_to(DigitalSink()))  # swd: swdio
-        self.connect(self.spi.sck, self.conn.pins.request("4").adapt_to(DigitalSink()))  # swd: swclk
-        self.connect(self.spi.mosi, self.conn.pins.request("6").adapt_to(DigitalSink()))  # swd: swo
-        self.connect(self.spi.miso, self.conn.pins.request("8").adapt_to(DigitalSource()))  # swd: NC or jtag: tdi
-        self.connect(self.reset, self.conn.pins.request("10").adapt_to(DigitalSink()))
+        self.conn = self.Block(PinHeader127DualShrouded(10)).connected(
+            {
+                "1": self.pwr,
+                ("3", "5", "9"): self.gnd,
+                "2": self.cs,  # swd: swdio
+                "4": self.spi.sck,  # swd: swclk
+                "6": self.spi.mosi,  # swd: swo
+                "8": self.spi.miso,  # swd: NC or jtag: tdi
+                "10": self.reset,
+            }
+        )
 
 
 class UsbFpgaProgrammer(JlcBoardTop):

@@ -20,19 +20,16 @@ class Jumper(DiscreteComponent, Block):
 class DigitalJumper(TypedJumper, Block):
     def __init__(self) -> None:
         super().__init__()
-        self.input = self.Port(DigitalSink.empty(), [Input])
-        self.output = self.Port(DigitalSource.empty(), [Output])
+        self.input = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
+        self.output = self.Port(
+            DigitalSource(voltage_out=self.input.link().voltage, output_thresholds=self.input.link().output_thresholds),
+            [Output],
+        )
 
     @override
     def contents(self) -> None:
         super().contents()
         self.device = self.Block(Jumper())
-        self.connect(self.input, self.device.a.adapt_to(DigitalSink(current_draw=self.output.link().current_drawn)))
-        self.connect(
-            self.output,
-            self.device.b.adapt_to(
-                DigitalSource(
-                    voltage_out=self.input.link().voltage, output_thresholds=self.input.link().output_thresholds
-                )
-            ),
-        )
+        self.assign(self.input.current_draw, self.output.link().current_drawn)  # for model purposes, treat as connected
+        self.connect(self.input.net, self.device.a)
+        self.connect(self.output.net, self.device.b)

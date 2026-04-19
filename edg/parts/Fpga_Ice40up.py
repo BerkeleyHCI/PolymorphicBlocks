@@ -14,9 +14,9 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
         super().__init__()
         self.pwr = self.Port(VoltageSink(), [Power])  # in practice this can power the target
         self.gnd = self.Port(Ground(), [Common])  # TODO pin at 0v
-        self.spi = self.Port(SpiController.empty())
-        self.cs = self.Port(DigitalSource.empty())
-        self.reset = self.Port(DigitalSource.empty())
+        self.spi = self.Port(SpiController())
+        self.cs = self.Port(DigitalSource())
+        self.reset = self.Port(DigitalSource())
 
     @override
     def contents(self) -> None:
@@ -24,14 +24,14 @@ class Ice40TargetHeader(ProgrammingConnector, FootprintBlock):
         self.conn = self.Block(PinHeader127DualShrouded(10)).connected(
             {
                 "1": self.pwr,
+                "2": self.cs,  # swd: swdio
                 ("3", "5", "9"): self.gnd,
+                "4": self.spi.sck,  # swd: swclk
+                "6": self.spi.mosi,  # swd: swo
+                "8": self.spi.miso,  # swd: NC or jtag: tdi
+                "10": self.reset,
             }
         )
-        self.connect(self.cs, self.conn.pins.request("2").adapt_to(DigitalSource()))  # swd: swdio
-        self.connect(self.spi.sck, self.conn.pins.request("4").adapt_to(DigitalSource()))  # swd: swclk
-        self.connect(self.spi.mosi, self.conn.pins.request("6").adapt_to(DigitalSource()))  # swd: swo
-        self.connect(self.spi.miso, self.conn.pins.request("8").adapt_to(DigitalSink()))  # swd: NC or jtag: tdi
-        self.connect(self.reset, self.conn.pins.request("10").adapt_to(DigitalSource()))
 
 
 @abstract_block

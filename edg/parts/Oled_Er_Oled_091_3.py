@@ -58,6 +58,25 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
             )
         )
 
+        dio_model = DigitalBidir.from_supply(
+            self.vss,
+            self.vdd,
+            voltage_limit_tolerance=(-0.3, 0.3),  # SSD1306 datasheet, Table 11-1
+            input_threshold_factor=(0.2, 0.8),
+        )
+        din_model = DigitalSink.from_bidir(dio_model)
+
+        self.spi = self.Port(SpiPeripheral(dio_model))
+        self.dc = self.Port(din_model)
+        self.res = self.Port(din_model)
+        self.cs = self.Port(din_model)
+
+        self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
+        self.c2p = self.Port(Passive())
+        self.c2n = self.Port(Passive())
+        self.c1p = self.Port(Passive())
+        self.c1n = self.Port(Passive())
+
         self.conn = self.Block(Fpc050Bottom(length=15)).connected(
             {
                 "6": self.vss,
@@ -65,33 +84,18 @@ class Er_Oled_091_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
                 "14": self.vcomh,
                 "7": self.vdd,
                 "5": self.vbat,
+                "11": self.spi.sck,
+                "12": self.spi.mosi,
+                "10": self.dc,
+                "9": self.res,
+                "8": self.cs,
+                "13": self.iref,
+                "1": self.c2p,
+                "2": self.c2n,
+                "3": self.c1p,
+                "4": self.c1n,
             }
         )
-
-        din_model = DigitalSink.from_supply(
-            self.vss,
-            self.vdd,
-            voltage_limit_tolerance=(-0.3, 0.3),  # SSD1306 datasheet, Table 11-1
-            input_threshold_factor=(0.2, 0.8),
-        )
-
-        self.spi = self.Port(SpiPeripheral.empty())
-        self.connect(self.spi.sck, self.conn.pins.request("11").adapt_to(din_model))
-        self.connect(self.spi.mosi, self.conn.pins.request("12").adapt_to(din_model))
-
-        self.miso_nc = self.Block(DigitalBidirNotConnected())
-        self.connect(self.spi.miso, self.miso_nc.port)
-
-        self.dc = self.Export(self.conn.pins.request("10").adapt_to(din_model))
-        self.res = self.Export(self.conn.pins.request("9").adapt_to(din_model))
-        self.cs = self.Export(self.conn.pins.request("8").adapt_to(din_model))
-
-        self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
-        self.connect(self.iref.net, self.conn.pins.request("13"))
-        self.c2p = self.Export(self.conn.pins.request("1"))
-        self.c2n = self.Export(self.conn.pins.request("2"))
-        self.c1p = self.Export(self.conn.pins.request("3"))
-        self.c1n = self.Export(self.conn.pins.request("4"))
 
 
 class Er_Oled_091_3(Oled, Resettable, Block):

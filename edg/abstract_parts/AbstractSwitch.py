@@ -95,14 +95,14 @@ class DigitalSwitch(HumanInterface):
         super().__init__()
 
         self.gnd = self.Port(Ground(), [Common])
-        self.out = self.Port(DigitalSource.empty(), [Output])
+        self.out = self.Port(DigitalSource.low_from_supply(self.gnd), [Output])
 
     @override
     def contents(self) -> None:
         super().contents()
         self.package = self.Block(Switch(current=self.out.link().current_drawn, voltage=self.out.link().voltage))
 
-        self.connect(self.out, self.package.sw.adapt_to(DigitalSource.low_from_supply(self.gnd)))
+        self.connect(self.out.net, self.package.sw)
         self.connect(self.gnd.net, self.package.com)
 
 
@@ -124,17 +124,20 @@ class DigitalWrapperRotaryEncoder(DigitalRotaryEncoder):
     @override
     def contents(self) -> None:
         super().contents()
+
+        self.gnd.init_from(Ground())
+        dio_model = DigitalSource.low_from_supply(self.gnd)
+        self.a.init_from(dio_model)
+        self.b.init_from(dio_model)
+
         self.package = self.Block(
             RotaryEncoder(
                 current=self.a.link().current_drawn.hull(self.b.link().current_drawn),
                 voltage=self.a.link().voltage.hull(self.b.link().voltage),
             )
         )
-
-        dio_model = DigitalSource.low_from_supply(self.gnd)
-        self.connect(self.a, self.package.a.adapt_to(dio_model))
-        self.connect(self.b, self.package.b.adapt_to(dio_model))
-        self.gnd.init_from(Ground())
+        self.connect(self.a.net, self.package.a)
+        self.connect(self.b.net, self.package.b)
         self.connect(self.gnd.net, self.package.com)
 
 
@@ -158,9 +161,9 @@ class DigitalWrapperRotaryEncoderWithSwitch(DigitalRotaryEncoderSwitch, DigitalW
     def generate(self) -> None:
         super().generate()
         if self.get(self.sw.is_connected()):
+            self.sw.init_from(DigitalSource.low_from_supply(self.gnd))
             package_sw = self.package.with_mixin(RotaryEncoderSwitch())
-            dio_model = DigitalSource.low_from_supply(self.gnd)
-            self.connect(self.sw, package_sw.sw.adapt_to(dio_model))
+            self.connect(self.sw.net, package_sw.sw)
 
 
 @abstract_block_default(lambda: DigitalWrapperDirectionSwitch)
@@ -183,19 +186,24 @@ class DigitalWrapperDirectionSwitch(DigitalDirectionSwitch):
     @override
     def contents(self) -> None:
         super().contents()
+
+        self.gnd.init_from(Ground())
+        dio_model = DigitalSource.low_from_supply(self.gnd)
+        self.a.init_from(dio_model)
+        self.b.init_from(dio_model)
+        self.c.init_from(dio_model)
+        self.d.init_from(dio_model)
+
         self.package = self.Block(
             DirectionSwitch(
                 current=self.a.link().current_drawn.hull(self.b.link().current_drawn),
                 voltage=self.a.link().voltage.hull(self.b.link().voltage),
             )
         )
-
-        dio_model = DigitalSource.low_from_supply(self.gnd)
-        self.connect(self.a, self.package.a.adapt_to(dio_model))
-        self.connect(self.b, self.package.b.adapt_to(dio_model))
-        self.connect(self.c, self.package.c.adapt_to(dio_model))
-        self.connect(self.d, self.package.d.adapt_to(dio_model))
-        self.gnd.init_from(Ground())
+        self.connect(self.a.net, self.package.a)
+        self.connect(self.b.net, self.package.b)
+        self.connect(self.c.net, self.package.c)
+        self.connect(self.d.net, self.package.d)
         self.connect(self.gnd.net, self.package.com)
 
 
@@ -221,6 +229,6 @@ class DigitalWrapperDirectionSwitchWithCenter(
     def generate(self) -> None:
         super().generate()
         if self.get(self.center.is_connected()):
+            self.center.init_from(DigitalSource.low_from_supply(self.gnd))
             package_sw = self.package.with_mixin(DirectionSwitchCenter())
-            dio_model = DigitalSource.low_from_supply(self.gnd)
-            self.connect(self.center, package_sw.center.adapt_to(dio_model))
+            self.connect(self.center.net, package_sw.center)

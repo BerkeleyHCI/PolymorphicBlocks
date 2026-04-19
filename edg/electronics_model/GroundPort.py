@@ -83,16 +83,13 @@ class GroundAdapterDigitalSource(PortAdapter["DigitalSource"]):
 
         super().__init__()
         self.src = self.Port(Ground())
-        self.dst = self.Port(DigitalSource.empty())
-        self.connect(
-            self.src.net.adapt_to(
-                DigitalSource(
-                    voltage_out=self.src.link().voltage,
-                    output_thresholds=(self.src.link().voltage.lower(), FloatExpr._to_expr_type(float("inf"))),
-                )
-            ),
-            self.dst,
+        self.dst = self.Port(
+            DigitalSource(
+                voltage_out=self.src.link().voltage,
+                output_thresholds=(self.src.link().voltage.lower(), FloatExpr._to_expr_type(float("inf"))),
+            )
         )
+        self.connect(self.src.net, self.dst.net)
 
 
 class GroundAdapterAnalogSource(KicadImportablePortAdapter["AnalogSource"]):

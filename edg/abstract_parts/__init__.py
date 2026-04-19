@@ -58,8 +58,11 @@ from .AbstractResistor import (
     SeriesPowerResistor,
     CurrentSenseResistor,
     AnalogClampResistor,
+    DigitalSeriesResistor,
+    DigitalBidirSeriesResistor,
     DigitalClampResistor,
     AnalogSetpointResistor,
+    UsbSeriesResistor,
 )
 from .AbstractResistorArray import ResistorArray, ResistorArrayStandardFootprint, TableResistorArray
 from .AbstractCapacitor import (

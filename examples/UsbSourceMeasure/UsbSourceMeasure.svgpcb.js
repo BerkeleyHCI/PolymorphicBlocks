@@ -135,7 +135,7 @@ const C8 = board.add(C_1206_3216Metric, {
   translate: pt(1.877, 3.687), rotate: 0,
   id: 'C8'
 })
-// reg_v5.en_res
+// reg_v5.en_res.res
 const R6 = board.add(R_0603_1608Metric, {
   translate: pt(2.313, 3.800), rotate: 0,
   id: 'R6'
@@ -190,7 +190,7 @@ const C13 = board.add(C_0805_2012Metric, {
   translate: pt(5.359, 2.059), rotate: 0,
   id: 'C13'
 })
-// reg_3v3.en_res
+// reg_3v3.en_res.res
 const R9 = board.add(R_0603_1608Metric, {
   translate: pt(4.909, 2.276), rotate: 0,
   id: 'R9'

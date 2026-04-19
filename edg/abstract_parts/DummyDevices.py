@@ -136,7 +136,7 @@ class ForcedAnalogSignal(KiCadImportableBlock, DummyDevice):
         return {"1": self.signal_in, "2": self.signal_out}
 
 
-class ForcedDigitalSinkCurrentDraw(DummyDevice, NetBlock):
+class ForcedDigitalSinkCurrentDraw(DummyDevice):
     def __init__(self, forced_current_draw: RangeLike = RangeExpr()) -> None:
         super().__init__()
 
@@ -155,3 +155,5 @@ class ForcedDigitalSinkCurrentDraw(DummyDevice, NetBlock):
             ),
             [Output],
         )
+
+        self.connect(self.pwr_in.net, self.pwr_out.net)

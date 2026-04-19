@@ -85,7 +85,7 @@ const TC4 = board.add(C_1206_3216Metric, {
   translate: pt(2.631, 0.942), rotate: 0,
   id: 'TC4'
 })
-// reg_3v3.en_res
+// reg_3v3.en_res.res
 const TR5 = board.add(R_0603_1608Metric, {
   translate: pt(2.598, 1.152), rotate: 0,
   id: 'TR5'

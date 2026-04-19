@@ -24,7 +24,11 @@ class Pe4259_Device(InternalSubcircuit, Nonstrict3v3Compatible, FootprintBlock, 
         self.rf2 = self.Port(Passive())
         self.rfc = self.Port(Passive())
 
-        self.ctrl = self.Port(Passive())  # modeled in container, series resistor recommended
+        self.ctrl = self.Port(
+            DigitalSink.from_supply(
+                self.gnd, self.vdd, voltage_limit_tolerance=(-0.3, 0.3) * Volt, input_threshold_factor=(0.3, 0.7)
+            )
+        )  # series resistor recommended
 
         self.restricted_availiability = self.Parameter(BoolExpr(True))
         self.require(
@@ -80,17 +84,7 @@ class Pe4259(Block):
         super().contents()
 
         self.vdd_res = self.Block(SeriesPowerResistor(1 * kOhm(tol=0.05))).connected(self.vdd, self.ic.vdd)
-
-        self.ctrl_res = self.Block(Resistor(1 * kOhm(tol=0.05)))
-        self.connect(self.ctrl_res.b, self.ic.ctrl)
-        self.connect(
-            self.ctrl_res.a.adapt_to(
-                DigitalSink.from_supply(
-                    self.gnd, self.vdd, voltage_limit_tolerance=(-0.3, 0.3) * Volt, input_threshold_factor=(0.3, 0.7)
-                )
-            ),
-            self.ctrl,
-        )
+        self.ctrl_res = self.Block(DigitalSeriesResistor(1 * kOhm(tol=0.05))).connected(self.ctrl, self.ic.ctrl)
 
 
 class Sx1262BalunLike(InternalSubcircuit, GeneratorBlock):

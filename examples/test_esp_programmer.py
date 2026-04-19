@@ -13,15 +13,21 @@ class EspProgrammerTc2030Inline(Connector, Block):
 
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(VoltageSink(current_draw=pwr_current_draw), [Power])
-        self.uart = self.Port(UartPort.empty(), [InOut])
-
-        self.conn = self.Block(PinHeader254DualShroudedInline(6)).connected({"1": self.pwr, "5": self.gnd})
+        self.uart = self.Port(UartPort(), [InOut])
+        self.en = self.Port(DigitalSink())
+        self.boot = self.Port(DigitalSink())
 
         # note that RX and TX here are from the connected device, so they're flipped from the CP2102's view
-        self.connect(self.uart.rx, self.conn.pins.request("4").adapt_to(DigitalSink()))
-        self.connect(self.uart.tx, self.conn.pins.request("3").adapt_to(DigitalSource()))
-        self.en = self.Export(self.conn.pins.request("6").adapt_to(DigitalSink()))  # RTS
-        self.boot = self.Export(self.conn.pins.request("2").adapt_to(DigitalSink()))  # CTS
+        self.conn = self.Block(PinHeader254DualShroudedInline(6)).connected(
+            {
+                "1": self.pwr,
+                "5": self.gnd,
+                "4": self.uart.rx,
+                "3": self.uart.tx,
+                "6": self.en,  # RTS
+                "2": self.boot,  # CTS
+            }
+        )
 
 
 class EspProgrammer(JlcBoardTop):

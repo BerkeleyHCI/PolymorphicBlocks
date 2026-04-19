@@ -70,7 +70,7 @@ const LC4 = board.add(C_1206_3216Metric, {
   translate: pt(1.167, 0.219), rotate: 0,
   id: 'LC4'
 })
-// reg_3v3.en_res
+// reg_3v3.en_res.res
 const LR3 = board.add(R_0402_1005Metric, {
   translate: pt(1.204, 0.322), rotate: 0,
   id: 'LR3'

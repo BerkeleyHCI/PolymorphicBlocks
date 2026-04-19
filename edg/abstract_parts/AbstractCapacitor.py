@@ -489,11 +489,11 @@ class DigitalCapacitor(DiscreteApplication, KiCadImportableBlock):
 
         self.cap = self.Block(Capacitor(capacitance, voltage=RangeExpr(), exact_capacitance=exact_capacitance))
         self.gnd = self.Port(Ground(), [Common])
-        self.io = self.Port(DigitalSink.empty(), [InOut])  # ideal open port
+        self.io = self.Port(DigitalSink(), [InOut])  # ideal open port
 
         self.assign(self.cap.voltage, self.io.link().voltage - self.gnd.link().voltage)
         self.connect(self.gnd.net, self.cap.neg)
-        self.connect(self.io, self.cap.pos.adapt_to(DigitalSink()))
+        self.connect(self.io.net, self.cap.pos)
 
     def connected(
         self, gnd: Optional[Port[GroundLink]] = None, io: Optional[Port[DigitalLink]] = None

@@ -125,9 +125,8 @@ class QwiicTarget(Connector):
             ),
             [Power],
         )
+        self.i2c = self.Port(I2cTarget(), [InOut])
 
-        self.conn = self.Block(JstShSmHorizontal(4)).connected({"1": self.gnd, "2": self.pwr})
-
-        self.i2c = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
-        self.connect(self.i2c.sda, self.conn.pins.request("3").adapt_to(DigitalBidir()))
-        self.connect(self.i2c.scl, self.conn.pins.request("4").adapt_to(DigitalBidir()))
+        self.conn = self.Block(JstShSmHorizontal(4)).connected(
+            {"1": self.gnd, "2": self.pwr, "3": self.i2c.sda, "4": self.i2c.scl}
+        )

@@ -140,7 +140,7 @@ const FR4 = board.add(R_0603_1608Metric, {
   translate: pt(0.838, 0.570), rotate: 0,
   id: 'FR4'
 })
-// ft232.eeprom_spi.do_res
+// ft232.eeprom_spi.do_res.res
 const FR5 = board.add(R_0603_1608Metric, {
   translate: pt(0.058, 0.667), rotate: 0,
   id: 'FR5'

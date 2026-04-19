@@ -163,16 +163,7 @@ class Ft232EepromDriver(InternalSubcircuit, Block):
         self.connect(self.eeclk, self.spi.sck)
         self.connect(self.eedata, self.spi.mosi)
         self.do_pull = self.Block(PullupResistor(10 * kOhm(tol=0.05))).connected(self.pwr, self.spi.miso)
-        self.do_res = self.Block(Resistor(2 * kOhm(tol=0.05)))
-        self.connect(self.spi.miso, self.do_res.a.adapt_to(DigitalSink()))  # sink side port is ideal
-        self.connect(
-            self.eedata,
-            self.do_res.b.adapt_to(
-                DigitalSource(
-                    voltage_out=self.spi.miso.link().voltage, output_thresholds=self.spi.miso.link().output_thresholds
-                )
-            ),
-        )
+        self.do_res = self.Block(DigitalSeriesResistor(2 * kOhm(tol=0.05))).connected(self.spi.miso, self.eedata)
 
 
 class Ft232hl(Interface, GeneratorBlock):

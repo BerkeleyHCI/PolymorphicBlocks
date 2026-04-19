@@ -39,6 +39,25 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
         self.ledk = self.Port(Ground())
         self.leda = self.Port(Passive())
 
+        dio_model = DigitalBidir.from_supply(
+            self.gnd, self.vdd, voltage_limit_tolerance=(-0.3, 0.3) * Volt, input_threshold_factor=(0.3, 0.7)
+        )
+        din_model = DigitalSink.from_bidir(dio_model)
+
+        self.rs = self.Port(din_model)
+
+        # Control pins
+        self.spi = self.Port(SpiPeripheral(dio_model))
+        self.cs = self.Port(din_model)
+        self.rst = self.Port(din_model)
+
+        # Capacitive Touch Panel (CTP)
+        self.ctp_vdd = self.Port(VoltageSink(voltage_limits=(2.7, 3.6) * Volt, current_draw=(5 * uAmp, 2.5 * mAmp)))
+        self.ctp_i2c = self.Port(I2cTarget(dio_model, addresses=[0x15]))
+
+        self.ctp_rst = self.Port(din_model)
+        self.ctp_int = self.Port(din_model)
+
         self.conn = self.Block(Fpc050Bottom(length=15)).connected(
             {
                 # Pin numbering in the doc is flipped in the footprint
@@ -46,38 +65,19 @@ class Er_Tft_128_3_Device(InternalSubcircuit, Nonstrict3v3Compatible, Block):
                 "12": self.vdd,
                 "14": self.ledk,
                 "13": self.leda,
+                "11": self.rs,
+                "10": self.cs,
+                "9": self.spi.sck,
+                "8": self.spi.mosi,
+                "7": self.rst,
+                "6": self.ctp_vdd,
+                "5": self.gnd,
+                "4": self.ctp_rst,
+                "3": self.ctp_int,
+                "2": self.ctp_i2c.sda,
+                "1": self.ctp_i2c.scl,
             }
         )
-
-        dio_model = DigitalBidir.from_supply(
-            self.gnd, self.vdd, voltage_limit_tolerance=(-0.3, 0.3) * Volt, input_threshold_factor=(0.3, 0.7)
-        )
-
-        self.rs = self.Export(self.conn.pins.request("11").adapt_to(DigitalSink.from_bidir(dio_model)))
-
-        # Control pins
-        self.spi = self.Port(SpiPeripheral.empty())
-        self.cs = self.Export(self.conn.pins.request("10").adapt_to(DigitalSink.from_bidir(dio_model)))
-        self.connect(self.spi.sck, self.conn.pins.request("9").adapt_to(DigitalSink.from_bidir(dio_model)))
-        self.connect(self.spi.mosi, self.conn.pins.request("8").adapt_to(DigitalSink.from_bidir(dio_model)))
-
-        self.miso_nc = self.Block(DigitalBidirNotConnected())
-        self.connect(self.spi.miso, self.miso_nc.port)
-
-        self.rst = self.Export(self.conn.pins.request("7").adapt_to(DigitalSink.from_bidir(dio_model)))
-
-        # Capacitive Touch Panel (CTP)
-        self.ctp_vdd = self.Port(VoltageSink(voltage_limits=(2.7, 3.6) * Volt, current_draw=(5 * uAmp, 2.5 * mAmp)))
-        self.ctp_i2c = self.Port(
-            I2cTarget(DigitalBidir.empty(), addresses=[0x15]),
-        )
-
-        self.conn.connected({"5": self.gnd, "6": self.ctp_vdd})
-
-        self.ctp_rst = self.Export(self.conn.pins.request("4").adapt_to(DigitalSink.from_bidir(dio_model)))
-        self.ctp_int = self.Export(self.conn.pins.request("3").adapt_to(DigitalSink.from_bidir(dio_model)))
-        self.connect(self.ctp_i2c.sda, self.conn.pins.request("2").adapt_to(dio_model))
-        self.connect(self.ctp_i2c.scl, self.conn.pins.request("1").adapt_to(DigitalSink.from_bidir(dio_model)))
 
 
 class Er_Tft_128_3(Lcd, Resettable, Block):

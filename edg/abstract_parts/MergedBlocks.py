@@ -30,7 +30,7 @@ class MergedVoltageSource(DummyDevice, GeneratorBlock):
         return self
 
 
-class MergedDigitalSource(DummyDevice, NetBlock, GeneratorBlock):
+class MergedDigitalSource(DummyDevice, GeneratorBlock):
     def __init__(self) -> None:
         super().__init__()
 
@@ -50,12 +50,8 @@ class MergedDigitalSource(DummyDevice, NetBlock, GeneratorBlock):
         super().generate()
         self.ins.defined()
         for in_request in self.get(self.ins.requested()):
-            self.ins.append_elt(
-                DigitalSink(
-                    current_draw=self.out.link().current_drawn,
-                ),
-                in_request,
-            )
+            elt_port = self.ins.append_elt(DigitalSink(current_draw=self.out.link().current_drawn), in_request)
+            self.connect(self.out.net, elt_port.net)
 
         self.assign(self.out.voltage_out, self.ins.hull(lambda x: x.link().voltage))
         self.assign(self.out.output_thresholds, self.ins.intersection(lambda x: x.link().output_thresholds))

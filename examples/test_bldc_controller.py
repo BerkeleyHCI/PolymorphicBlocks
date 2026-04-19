@@ -48,11 +48,11 @@ class I2cConnector(Connector, Block):
 
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(VoltageSink(), [Power])
-        self.i2c = self.Port(I2cTarget(DigitalBidir.empty()), [InOut])
+        self.i2c = self.Port(I2cTarget(DigitalBidir()), [InOut])
 
-        self.conn = self.Block(PassiveConnector()).connected({"1": self.gnd, "2": self.pwr})
-        self.connect(self.i2c.sda, self.conn.pins.request("3").adapt_to(DigitalBidir()))
-        self.connect(self.i2c.scl, self.conn.pins.request("4").adapt_to(DigitalBidir()))
+        self.conn = self.Block(PassiveConnector()).connected(
+            {"1": self.gnd, "2": self.pwr, "3": self.i2c.sda, "4": self.i2c.scl}
+        )
 
 
 class BldcHallSensor(Connector, Block):

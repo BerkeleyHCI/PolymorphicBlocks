@@ -49,45 +49,54 @@ class Er_Oled028_1_Device(InternalSubcircuit, Block):
             )
         )
 
-        self.conn = self.Block(Fpc050Bottom(length=30)).connected(
-            {
-                ("2", "1", "5", "20"): self.vss,  # VLSS, connect to VSS externally
-                "30": self.vss,  # NC/GND
-                ("3", "29"): self.vcc,
-                "4": self.vcomh,
-                "25": self.vdd,
-                "26": self.vci,
-                "24": self.vddio,
-            }
-        )
-
-        din_model = DigitalSink.from_supply(
+        dio_model = DigitalBidir.from_supply(
             self.vss,
             self.vddio,
             voltage_limit_tolerance=(-0.5, 0.3),  # assumed +0.3 tolerance
             input_threshold_factor=(0.2, 0.8),
         )
+        din_model = DigitalSink.from_bidir(dio_model)
 
-        self.bs0 = self.Export(self.conn.pins.request("16").adapt_to(din_model))  # 3-wire (1) / 4-wire (0) serial
-        self.connect(self.vss.net, self.conn.pins.request("17"))  # BS1, 0 for any serial
+        self.bs0 = self.Port(din_model)  # 3-wire (1) / 4-wire (0) serial
 
-        self.spi = self.Port(SpiPeripheral.empty())
-        self.connect(self.spi.sck, self.conn.pins.request("13").adapt_to(din_model))  # DB0
-        self.connect(self.spi.mosi, self.conn.pins.request("12").adapt_to(din_model))  # DB1
+        self.spi = self.Port(SpiPeripheral(dio_model))
 
-        self.miso_nc = self.Block(DigitalBidirNotConnected())
-        self.connect(self.spi.miso, self.miso_nc.port)
-
-        for i in list(range(6, 11)) + [15, 14]:  # DB7~DB3, RW, ER
-            self.connect(self.vss.net, self.conn.pins.request(str(i)))
-
-        self.dc = self.Export(self.conn.pins.request("18").adapt_to(din_model))  # ground if unused
-        self.cs = self.Export(self.conn.pins.request("19").adapt_to(din_model))
-        self.res = self.Export(self.conn.pins.request("20").adapt_to(din_model))
+        self.dc = self.Port(din_model)  # ground if unused
+        self.cs = self.Port(din_model)
+        self.res = self.Port(din_model)
         # pin 21 FR disconnected
         self.iref = self.Port(AnalogSource.from_supply(self.vss, self.vdd))
-        self.connect(self.iref.net, self.conn.pins.request("22"))
-        self.vsl = self.Export(self.conn.pins.request("27"))
+        self.vsl = self.Port(Passive())
+
+        self.conn = (
+            self.Block(Fpc050Bottom(length=30))
+            .connected(
+                {
+                    ("2", "1", "5", "20"): self.vss,  # VLSS, connect to VSS externally
+                    "30": self.vss,  # NC/GND
+                    ("3", "29"): self.vcc,
+                    "4": self.vcomh,
+                    "25": self.vdd,
+                    "26": self.vci,
+                    "24": self.vddio,
+                    "16": self.bs0,
+                    "17": self.vss,  # BS1, 0 for any serial
+                    "13": self.spi.sck,  # DB0
+                    "12": self.spi.mosi,  # DB1
+                    "18": self.dc,
+                    "19": self.cs,
+                    "20": self.res,
+                    "22": self.iref,
+                    "27": self.vsl,
+                }
+            )
+            .connected(
+                {
+                    ("15", "14"): self.vss,  # RW, ER
+                    (str(x) for x in range(6, 11)): self.vss,  # DB3~DB7
+                }
+            )
+        )
 
 
 class Er_Oled028_1(Oled, Resettable, GeneratorBlock):

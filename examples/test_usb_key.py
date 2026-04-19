@@ -10,13 +10,13 @@ class StTscSenseChannel(Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self.io = self.Port(DigitalBidir.empty(), [Input])
+        self.io = self.Port(DigitalBidir(), [Input])
 
     @override
     def contents(self) -> None:
         super().contents()
         self.res = self.Block(Resistor(resistance=10 * kOhm(tol=0.05)))  # recommended by ST
-        self.connect(self.io, self.res.a.adapt_to(DigitalBidir()))  # ideal
+        self.connect(self.io.net, self.res.a)  # ideal
         self.load = self.Block(DummyPassive())  # avoid ERC
         self.connect(self.res.b, self.load.io)
 
@@ -27,13 +27,13 @@ class StTscReference(Block):
     def __init__(self) -> None:
         super().__init__()
         self.gnd = self.Port(Ground(), [Common])
-        self.io = self.Port(DigitalBidir.empty(), [Input])
+        self.io = self.Port(DigitalBidir(), [Input])
 
     @override
     def contents(self) -> None:
         super().contents()
         self.cap = self.Block(Capacitor(10 * nFarad(tol=0.2), voltage=self.io.link().voltage))
-        self.connect(self.cap.pos.adapt_to(DigitalBidir()), self.io)
+        self.connect(self.io.net, self.cap.pos)
         self.connect(self.gnd.net, self.cap.neg)
 
 

@@ -70,7 +70,7 @@ const FC4 = board.add(C_1206_3216Metric, {
   translate: pt(1.335, 1.070), rotate: 0,
   id: 'FC4'
 })
-// reg_5v.en_res
+// reg_5v.en_res.res
 const FR3 = board.add(R_0603_1608Metric, {
   translate: pt(1.082, 1.280), rotate: 0,
   id: 'FR3'

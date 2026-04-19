@@ -43,17 +43,6 @@ class Er_Oled022_1_Device(InternalSubcircuit, Block):
             )
         )
 
-        self.conn = self.Block(Fpc050Bottom(length=24)).connected(
-            {
-                ("3", "1", "24"): self.vss,  # VLSS, connect to VSS externally
-                "2": self.vss,  # NC/GND
-                "5": self.vdd,
-                "23": self.vcc,
-                "21": self.iref,
-                "22": self.vcomh,
-            }
-        )
-
         din_model = DigitalSink.from_supply(
             self.vss,
             self.vdd,
@@ -61,22 +50,43 @@ class Er_Oled022_1_Device(InternalSubcircuit, Block):
             input_threshold_factor=(0.2, 0.8),
         )
 
-        self.bs1 = self.Export(self.conn.pins.request("6").adapt_to(din_model))
-        self.bs2 = self.Export(self.conn.pins.request("7").adapt_to(din_model))
+        self.bs1 = self.Port(din_model)
+        self.bs2 = self.Port(din_model)
 
-        self.d0 = self.Export(self.conn.pins.request("13").adapt_to(din_model))
-        self.d1 = self.Export(self.conn.pins.request("14").adapt_to(din_model))
-        self.d2 = self.Export(self.conn.pins.request("15").adapt_to(din_model), optional=True)
+        self.d0 = self.Port(din_model)
+        self.d1 = self.Port(din_model)
+        self.d2 = self.Port(din_model, optional=True)
 
-        self.res = self.Export(self.conn.pins.request("9").adapt_to(din_model))
-        self.cs = self.Export(self.conn.pins.request("8").adapt_to(din_model))
-        self.dc = self.Export(self.conn.pins.request("10").adapt_to(din_model))
+        self.res = self.Port(din_model)
+        self.cs = self.Port(din_model)
+        self.dc = self.Port(din_model)
 
-        self.conn.connected(
-            {
-                ("12", "11"): self.vss,  # RW, ER
-                (str(x) for x in range(16, 21)): self.vss,  # DB3~DB7
-            }
+        self.conn = (
+            self.Block(Fpc050Bottom(length=24))
+            .connected(
+                {
+                    ("3", "1", "24"): self.vss,  # VLSS, connect to VSS externally
+                    "2": self.vss,  # NC/GND
+                    "5": self.vdd,
+                    "23": self.vcc,
+                    "21": self.iref,
+                    "22": self.vcomh,
+                    "6": self.bs1,
+                    "7": self.bs2,
+                    "13": self.d0,
+                    "14": self.d1,
+                    "15": self.d2,
+                    "9": self.res,
+                    "8": self.cs,
+                    "10": self.dc,
+                }
+            )
+            .connected(
+                {
+                    ("12", "11"): self.vss,  # RW, ER
+                    (str(x) for x in range(16, 21)): self.vss,  # DB3~DB7
+                }
+            )
         )
 
 
