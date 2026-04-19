@@ -12,7 +12,7 @@ from ..core import *
 def leaf_circuit_ports(prefix: str, port: Port) -> Iterable[Tuple[str, Passive]]:
     if isinstance(port, Passive):
         return [(prefix, port)]
-    elif isinstance(port, CircuitPort):
+    elif isinstance(port, CircuitPort):  # best-effort backwards compatibility
         return [(prefix, port)]  # type: ignore
     else:
         assert port._ports, "must be Passive or Port bundle with sub-Ports"
