@@ -190,7 +190,7 @@ const LR7 = board.add(R_0603_1608Metric, {
   translate: pt(0.748, 2.110), rotate: 0,
   id: 'LR7'
 })
-// lora.rf_sw.ctrl_res
+// lora.rf_sw.ctrl_res.res
 const LR8 = board.add(R_0603_1608Metric, {
   translate: pt(0.904, 2.110), rotate: 0,
   id: 'LR8'
