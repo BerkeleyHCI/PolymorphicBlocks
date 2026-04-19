@@ -10,9 +10,7 @@ from ..core import *
 from ..core.HdlUserExceptions import EdgTypeError
 
 if TYPE_CHECKING:
-    from .PassivePort import HasPassivePort
-
-CircuitLinkType = TypeVar("CircuitLinkType", bound=Link, covariant=True, default=Link)
+    from .PassivePort import HasPassivePort, Passive
 
 
 @non_library
@@ -39,7 +37,7 @@ class FootprintBlock(Block):
         self,
         refdes: StringLike,
         footprint: StringLike,
-        pinning: Mapping[str, Union[CircuitPort, "HasPassivePort"]],
+        pinning: Mapping[str, Union["Passive", "HasPassivePort"]],
         mfr: Optional[StringLike] = None,
         part: Optional[StringLike] = None,
         value: Optional[StringLike] = None,
@@ -48,7 +46,7 @@ class FootprintBlock(Block):
         """Creates a footprint in this circuit block.
         Value is a one-line description of the part, eg 680R, 0.01uF, LPC1549, to be used as a aid during layout or
         assembly"""
-        from .PassivePort import HasPassivePort
+        from .PassivePort import HasPassivePort, Passive
         from ..core.Blocks import BlockElaborationState, BlockDefinitionError
 
         if self._elaboration_state not in (
@@ -68,7 +66,7 @@ class FootprintBlock(Block):
         for pin_name, pin_port in pinning.items():
             if isinstance(pin_port, HasPassivePort):
                 pin_port = pin_port.net
-            if not isinstance(pin_port, CircuitPort):
+            if not isinstance(pin_port, (CircuitPort, Passive)):
                 raise EdgTypeError(f"Footprint(...) pin", pin_port, CircuitPort)
             pinning_array.append(f"{pin_name}={pin_port._name_from(self)}")
         self.assign(self.fp_pinning, pinning_array)
@@ -114,6 +112,9 @@ class KicadImportablePortAdapter(KiCadImportableBlock, PortAdapter[AdapterDstTyp
     def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
         assert symbol_name == "edg_importable:Adapter"
         return {"1": self.src, "2": self.dst}
+
+
+CircuitLinkType = TypeVar("CircuitLinkType", bound=Link, covariant=True, default=Link)
 
 
 @deprecated("Use compositional Passive sub-port instead")

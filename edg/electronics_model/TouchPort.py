@@ -1,5 +1,5 @@
 from ..core import *
-from .PassivePort import HasPassivePort
+from .PassivePort import HasPassivePort, Passive
 
 
 class TouchLink(Link):
@@ -24,7 +24,7 @@ class TouchDriver(HasPassivePort, Port[TouchLink]):
 
     def __init__(self) -> None:
         super().__init__()
-        self.net = self.link().net
+        self.net = self.Port(Passive())
 
 
 class TouchPadPort(HasPassivePort, Port[TouchLink]):
@@ -34,4 +34,4 @@ class TouchPadPort(HasPassivePort, Port[TouchLink]):
 
     def __init__(self) -> None:
         super().__init__()
-        self.net = self.link().net
+        self.net = self.Port(Passive())
