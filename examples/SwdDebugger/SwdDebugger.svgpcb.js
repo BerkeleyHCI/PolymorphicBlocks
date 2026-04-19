@@ -145,27 +145,27 @@ const SR6 = board.add(R_0402_1005Metric, {
   translate: pt(0.037, 1.485), rotate: 0,
   id: 'SR6'
 })
-// target_drv.swclk_res
+// target_drv.swclk_res.res
 const SR7 = board.add(R_0402_1005Metric, {
   translate: pt(0.037, 1.177), rotate: 0,
   id: 'SR7'
 })
-// target_drv.swdio_res
+// target_drv.swdio_res.res
 const SR8 = board.add(R_0402_1005Metric, {
   translate: pt(0.149, 1.177), rotate: 0,
   id: 'SR8'
 })
-// target_drv.swdio_drv_res
+// target_drv.swdio_drv_res.res
 const SR9 = board.add(R_0402_1005Metric, {
   translate: pt(0.037, 1.253), rotate: 0,
   id: 'SR9'
 })
-// target_drv.reset_res
+// target_drv.reset_res.res
 const SR10 = board.add(R_0402_1005Metric, {
   translate: pt(0.149, 1.253), rotate: 0,
   id: 'SR10'
 })
-// target_drv.swo_res
+// target_drv.swo_res.res
 const SR11 = board.add(R_0402_1005Metric, {
   translate: pt(0.037, 1.330), rotate: 0,
   id: 'SR11'
@@ -232,10 +232,10 @@ board.setNetlist([
   {name: "Starget_drv.swdio_in", pads: [["SU3", "25"], ["SR9", "1"]]},
   {name: "Starget_drv.swdio_out", pads: [["SU3", "27"], ["SR8", "1"], ["SR9", "2"]]},
   {name: "Starget_drv.reset_out", pads: [["SR10", "2"], ["SJ3", "10"]]},
-  {name: "Starget_drv.swo_out", pads: [["SU3", "31"], ["SR11", "1"]]},
+  {name: "Starget_drv.swo_out", pads: [["SU3", "31"], ["SR11", "2"]]},
   {name: "Starget_drv.swd.swdio", pads: [["SR8", "2"], ["SJ3", "2"]]},
   {name: "Starget_drv.swd.swclk", pads: [["SR7", "2"], ["SJ3", "4"]]},
-  {name: "Starget_drv.swo_in", pads: [["SR11", "2"], ["SJ3", "6"]]},
+  {name: "Starget_drv.swo_in", pads: [["SR11", "1"], ["SJ3", "6"]]},
   {name: "Starget.tdi", pads: [["SJ3", "8"]]},
   {name: "Sled_target.package.k", pads: [["SD4", "1"], ["SR13", "1"]]},
   {name: "Starget_sense.output", pads: [["SU3", "10"], ["SR14", "2"], ["SR15", "1"]]}
