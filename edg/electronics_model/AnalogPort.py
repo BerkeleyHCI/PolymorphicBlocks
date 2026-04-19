@@ -6,7 +6,7 @@ from typing_extensions import override
 
 from ..core import *
 from .PassivePort import HasPassivePort, Passive
-from .CircuitBlock import CircuitPortAdapter, KicadImportablePortAdapter
+from .CircuitBlock import KicadImportablePortAdapter
 from .GroundPort import GroundLink
 from .VoltagePorts import VoltageLink, VoltageSource
 

@@ -15,28 +15,6 @@ if TYPE_CHECKING:
 CircuitLinkType = TypeVar("CircuitLinkType", bound=Link, covariant=True, default=Link)
 
 
-class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
-    """Electrical connection that represents a single port into a single copper net"""
-
-    pass
-
-
-T = TypeVar("T", bound=BasePort)
-
-
-class CircuitArrayReduction(Generic[T]):
-    def __init__(self, steps: List[Vector[Any]], port: T):
-        self.port = port
-        self.steps = steps  # reduction steps
-
-
-@non_library
-class NetBaseBlock(BaseBlock):
-    def net(self) -> None:
-        """Defines all ports on this block as copper-connected"""
-        self.nets = self.Metadata({"_": "_"})  # TODO should be empty
-
-
 @non_library
 class FootprintBlock(Block):
     """Block that represents a component that has part(s) and trace(s) on the PCB.
@@ -127,6 +105,32 @@ class WrapperFootprintBlock(FootprintBlock):
         self.fp_is_wrapper = self.Metadata("A")  # TODO replace with not metadata, eg superclass inspection
 
 
+AdapterDstType = TypeVar("AdapterDstType", covariant=True, bound=Port, default=Port)
+
+
+@non_library
+class KicadImportablePortAdapter(KiCadImportableBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name == "edg_importable:Adapter"
+        return {"1": self.src, "2": self.dst}
+
+
+@deprecated("Use compositional Passive sub-port instead")
+class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
+    """Electrical connection that represents a single port into a single copper net"""
+
+    pass
+
+
+@non_library
+@deprecated("Use compositional passive and connect nets instead of inheriting")
+class NetBaseBlock(BaseBlock):
+    def net(self) -> None:
+        """Defines all ports on this block as copper-connected"""
+        self.nets = self.Metadata({"_": "_"})  # TODO should be empty
+
+
 @abstract_block
 @deprecated("Use compositional passive and connect nets instead of inheriting")
 class NetBlock(InternalBlock, NetBaseBlock, Block):
@@ -143,17 +147,6 @@ class CircuitPortBridge(NetBaseBlock, PortBridge):
     def contents(self) -> None:
         super().contents()
         self.net()
-
-
-AdapterDstType = TypeVar("AdapterDstType", covariant=True, bound=Port, default=Port)
-
-
-@non_library
-class KicadImportablePortAdapter(KiCadImportableBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
-    @override
-    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
-        assert symbol_name == "edg_importable:Adapter"
-        return {"1": self.src, "2": self.dst}
 
 
 @abstract_block
