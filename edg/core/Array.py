@@ -298,7 +298,7 @@ class Vector(BaseVector, Generic[VectorType]):
         block_parent = self._block_parent()
         assert isinstance(block_parent, Block), "can only allocate from ports of a Block"
         assert (
-            builder._current_block() is block_parent._parent or builder._current_block() is None
+            block_parent._parent is None or builder.block() is block_parent._parent
         ), "can only allocate ports of internal blocks"  # None case is to allow elaborating in unit tests
         # self._elts is ignored, since that defines the inner-facing behavior, which this is outer-facing behavior
         allocated = Vector(type(self._tpe).empty())._bind(self)

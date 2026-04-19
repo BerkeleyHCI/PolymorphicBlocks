@@ -4,6 +4,7 @@ from typing import *
 
 from deprecated import deprecated
 
+from .HdlUserExceptions import EdgContextError
 from .. import edgir
 
 if TYPE_CHECKING:
@@ -43,7 +44,7 @@ class Builder:
         """Returns the current block context, throwing an error if there is no block context."""
         current_block = self._current_block()
         if current_block is None:
-            raise Exception("no block context")
+            raise EdgContextError("no block context")
         return current_block
 
     @deprecated("use asserting block() instead")
