@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import TypeVar, Type, Dict, Union
+from typing import TypeVar, Type, Dict
 
 from typing_extensions import TYPE_CHECKING
 
 from ..core import *
-from .CircuitBlock import CircuitPort, CircuitLink, CircuitPortBridge, KicadImportablePortAdapter
+from .CircuitBlock import KicadImportablePortAdapter
 
 if TYPE_CHECKING:
     from .GroundPort import Ground
@@ -14,12 +14,13 @@ if TYPE_CHECKING:
     from .AnalogPort import AnalogSource, AnalogSink
 
 
-class PassiveLink(CircuitLink):
+class PassiveLink(Link):
     """Copper-only connection"""
 
     def __init__(self) -> None:
         super().__init__()
         self.passives = self.Port(Vector(Passive()))
+        self.nets = self.Metadata({"_": "_"})  # marks all ports as connected to netlister
 
 
 class PassiveAdapterGround(PortAdapter["Ground"]):
@@ -220,11 +221,12 @@ class PassiveAdapterAnalogSink(KicadImportablePortAdapter["AnalogSink"]):
         self.connect(self.src, self.dst.net)
 
 
-class PassiveBridge(CircuitPortBridge):
+class PassiveBridge(PortBridge):
     def __init__(self) -> None:
         super().__init__()
         self.outer_port = self.Port(Passive())
         self.inner_link = self.Port(Passive())
+        self.nets = self.Metadata({"_": "_"})  # marks all ports as connected to netlister
 
 
 class HasPassivePort:
@@ -236,14 +238,13 @@ class HasPassivePort:
         self.net: Passive
 
 
-# TODO this should replace CircuitPort and should be the lowest level of abstraction port, #114
-class Passive(CircuitPort[PassiveLink]):
+class Passive(Port[PassiveLink]):
     """Basic copper-only port, which can be adapted to a more strongly typed Voltage/Digital/Analog* port"""
 
     link_type = PassiveLink
     bridge_type = PassiveBridge
 
-    AdaptTargetType = TypeVar("AdaptTargetType", bound=Union[CircuitPort, HasPassivePort])
+    AdaptTargetType = TypeVar("AdaptTargetType", bound=HasPassivePort)
 
     def adapt_to(self, that: AdaptTargetType) -> AdaptTargetType:
         from .GroundPort import Ground
@@ -276,4 +277,4 @@ class Passive(CircuitPort[PassiveLink]):
             assert param.initializer is not None, f"missing initializer for {param_name}"
             adapter_init_kwargs[param_name] = param.initializer
 
-        return self._convert(adapter_cls(**adapter_init_kwargs))  # type: ignore
+        return self._convert(adapter_cls(**adapter_init_kwargs))

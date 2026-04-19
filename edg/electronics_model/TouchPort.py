@@ -1,8 +1,8 @@
 from ..core import *
-from .CircuitBlock import CircuitPort, CircuitLink
+from .PassivePort import HasPassivePort, Passive
 
 
-class TouchLink(CircuitLink):
+class TouchLink(Link):
     """Touch sensor link, consisting of one sensor (typically a PCB copper pattern) and one driver.
     These contain no modeling."""
 
@@ -11,8 +11,10 @@ class TouchLink(CircuitLink):
         self.driver = self.Port(TouchDriver())
         self.pad = self.Port(TouchPadPort())
 
+        self.net = self.connect(self.driver.net, self.pad.net)
 
-class TouchDriver(CircuitPort[TouchLink]):
+
+class TouchDriver(HasPassivePort, Port[TouchLink]):
     """Touch sensor driver-side port, typically attached to a microcontroller pin.
     Internal to this port should be any circuitry needed to make the sensor work.
     Separately from the port, the microcontroller should generate additionally needed circuits,
@@ -20,8 +22,16 @@ class TouchDriver(CircuitPort[TouchLink]):
 
     link_type = TouchLink
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = self.Port(Passive())
 
-class TouchPadPort(CircuitPort[TouchLink]):
+
+class TouchPadPort(HasPassivePort, Port[TouchLink]):
     """Touch sensor-side port, typically attached to a copper pad."""
 
     link_type = TouchLink
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = self.Port(Passive())

@@ -63,7 +63,7 @@ class Stm32f103Base_Device(
         self._io_ports.insert(0, self.swd)
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         return VariantPinRemapper(
             {  # Pin/peripheral resource definitions (table 3)
                 "Vbat": self.pwr,

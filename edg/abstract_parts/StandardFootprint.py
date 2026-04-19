@@ -4,7 +4,7 @@ from typing_extensions import Self
 from ..electronics_model import *
 
 StandardPinningType = TypeVar("StandardPinningType", bound=Block)
-PinningFunction = Callable[[StandardPinningType], Dict[str, CircuitPort]]
+PinningFunction = Callable[[StandardPinningType], Dict[str, Union[Passive, HasPassivePort]]]
 
 
 class StandardFootprint(Generic[StandardPinningType]):
@@ -38,7 +38,7 @@ class StandardFootprint(Generic[StandardPinningType]):
         return cls._EXPANDED_FOOTPRINT_PINNING_MAP
 
     @classmethod
-    def _make_pinning(cls, block: StandardPinningType, footprint: str) -> Dict[str, CircuitPort]:
+    def _make_pinning(cls, block: StandardPinningType, footprint: str) -> Dict[str, Union[Passive, HasPassivePort]]:
         """Returns the pinning for a footprint for a specific block's pins"""
         return cls._footprint_pinning_map()[footprint](block)
 

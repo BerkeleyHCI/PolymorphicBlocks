@@ -183,7 +183,7 @@ class Stm32f303_Device(Stm32f303_Ios, IoController, InternalSubcircuit, Generato
     SYSTEM_PIN_REMAP: Dict[str, Union[str, List[str]]]
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         return VariantPinRemapper(
             {
                 # 'Vbat': self.vdd,
@@ -242,7 +242,7 @@ class Nucleo_F303k8(
             return self.pwr_out, self.pwr_out
 
     @override
-    def _system_pinmap(self) -> Dict[str, Union[CircuitPort, HasPassivePort]]:
+    def _system_pinmap(self) -> Dict[str, Union[Passive, HasPassivePort]]:
         if self.get(self.pwr.is_connected()):  # board sinks power
             self.require(~self.vusb_out.is_connected(), "can't source USB power if power input connected")
             self.require(~self.pwr_out.is_connected(), "can't source 3v3 power if power input connected")

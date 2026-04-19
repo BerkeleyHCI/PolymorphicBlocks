@@ -38,7 +38,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
             or self.get(self.footprint_spec) == "Package_DFN_QFN:QFN-16-1EP_3x3mm_P0.5mm_EP1.45x1.45mm"
         ):
             footprint = "Package_DFN_QFN:QFN-16-1EP_3x3mm_P0.5mm_EP1.45x1.45mm"
-            pinning: Dict[str, Union[CircuitPort, HasPassivePort]] = {
+            pinning: Dict[str, Union[Passive, HasPassivePort]] = {
                 "4": self.vdd,  # hard tied to left mode only TODO selectable SD_MODE
                 "7": self.vdd,
                 "8": self.vdd,

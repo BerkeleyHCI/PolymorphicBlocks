@@ -10,31 +10,7 @@ from ..core import *
 from ..core.HdlUserExceptions import EdgTypeError
 
 if TYPE_CHECKING:
-    from .PassivePort import HasPassivePort
-
-CircuitLinkType = TypeVar("CircuitLinkType", bound=Link, covariant=True, default=Link)
-
-
-class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
-    """Electrical connection that represents a single port into a single copper net"""
-
-    pass
-
-
-T = TypeVar("T", bound=BasePort)
-
-
-class CircuitArrayReduction(Generic[T]):
-    def __init__(self, steps: List[Vector[Any]], port: T):
-        self.port = port
-        self.steps = steps  # reduction steps
-
-
-@non_library
-class NetBaseBlock(BaseBlock):
-    def net(self) -> None:
-        """Defines all ports on this block as copper-connected"""
-        self.nets = self.Metadata({"_": "_"})  # TODO should be empty
+    from .PassivePort import HasPassivePort, Passive
 
 
 @non_library
@@ -61,7 +37,7 @@ class FootprintBlock(Block):
         self,
         refdes: StringLike,
         footprint: StringLike,
-        pinning: Mapping[str, Union[CircuitPort, "HasPassivePort"]],
+        pinning: Mapping[str, Union["Passive", "HasPassivePort"]],
         mfr: Optional[StringLike] = None,
         part: Optional[StringLike] = None,
         value: Optional[StringLike] = None,
@@ -70,7 +46,7 @@ class FootprintBlock(Block):
         """Creates a footprint in this circuit block.
         Value is a one-line description of the part, eg 680R, 0.01uF, LPC1549, to be used as a aid during layout or
         assembly"""
-        from .PassivePort import HasPassivePort
+        from .PassivePort import HasPassivePort, Passive
         from ..core.Blocks import BlockElaborationState, BlockDefinitionError
 
         if self._elaboration_state not in (
@@ -90,8 +66,8 @@ class FootprintBlock(Block):
         for pin_name, pin_port in pinning.items():
             if isinstance(pin_port, HasPassivePort):
                 pin_port = pin_port.net
-            if not isinstance(pin_port, CircuitPort):
-                raise EdgTypeError(f"Footprint(...) pin", pin_port, CircuitPort)
+            if not isinstance(pin_port, (CircuitPort, Passive)):
+                raise EdgTypeError(f"Footprint(...) pin", pin_port, Passive)
             pinning_array.append(f"{pin_name}={pin_port._name_from(self)}")
         self.assign(self.fp_pinning, pinning_array)
 
@@ -127,6 +103,35 @@ class WrapperFootprintBlock(FootprintBlock):
         self.fp_is_wrapper = self.Metadata("A")  # TODO replace with not metadata, eg superclass inspection
 
 
+AdapterDstType = TypeVar("AdapterDstType", covariant=True, bound=Port, default=Port)
+
+
+@non_library
+class KicadImportablePortAdapter(KiCadImportableBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
+        assert symbol_name == "edg_importable:Adapter"
+        return {"1": self.src, "2": self.dst}
+
+
+CircuitLinkType = TypeVar("CircuitLinkType", bound=Link, covariant=True, default=Link)
+
+
+@deprecated("Use compositional Passive sub-port instead")
+class CircuitPort(Port[CircuitLinkType], Generic[CircuitLinkType]):
+    """Electrical connection that represents a single port into a single copper net"""
+
+    pass
+
+
+@non_library
+@deprecated("Use compositional passive and connect nets instead of inheriting")
+class NetBaseBlock(BaseBlock):
+    def net(self) -> None:
+        """Defines all ports on this block as copper-connected"""
+        self.nets = self.Metadata({"_": "_"})  # TODO should be empty
+
+
 @abstract_block
 @deprecated("Use compositional passive and connect nets instead of inheriting")
 class NetBlock(InternalBlock, NetBaseBlock, Block):
@@ -143,17 +148,6 @@ class CircuitPortBridge(NetBaseBlock, PortBridge):
     def contents(self) -> None:
         super().contents()
         self.net()
-
-
-AdapterDstType = TypeVar("AdapterDstType", covariant=True, bound=Port, default=Port)
-
-
-@non_library
-class KicadImportablePortAdapter(KiCadImportableBlock, PortAdapter[AdapterDstType], Generic[AdapterDstType]):
-    @override
-    def symbol_pinning(self, symbol_name: str) -> Dict[str, BasePort]:
-        assert symbol_name == "edg_importable:Adapter"
-        return {"1": self.src, "2": self.dst}
 
 
 @abstract_block

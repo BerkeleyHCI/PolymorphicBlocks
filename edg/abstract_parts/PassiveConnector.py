@@ -28,15 +28,17 @@ class PassiveConnector(DiscreteComponent, Block):
 
     def connected(
         self: PassiveConnectorSelfType,
-        pins: Mapping[Union[Iterable[str], str], Union[CircuitPort, "HasPassivePort"]],
+        pins: Mapping[Union[Iterable[str], str], Union[Passive, HasPassivePort]],
     ) -> PassiveConnectorSelfType:
         """Connects the given pins to this connector, and returns self to allow chaining.
         Similar API to pinning in footprint."""
         for pin_name, pin_port in pins.items():
             if isinstance(pin_port, HasPassivePort):
-                passive_port: CircuitPort = pin_port.net
+                passive_port: Passive = pin_port.net
             else:
+                assert isinstance(pin_port, Passive), "connected pin must be Passive or HasPassivePort"
                 passive_port = pin_port
+
             if isinstance(pin_name, str):
                 pin_tuples: Tuple[str, ...] = (pin_name,)
             else:

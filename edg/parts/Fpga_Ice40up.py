@@ -113,7 +113,7 @@ class Ice40up_Device(BaseIoControllerPinmapGenerator, InternalSubcircuit, Genera
     @override
     def _system_pinmap(
         self,
-    ) -> Dict[str, Union[CircuitPort, HasPassivePort]]:  # names consistent with pinout spreadsheet
+    ) -> Dict[str, Union[Passive, HasPassivePort]]:  # names consistent with pinout spreadsheet
         return VariantPinRemapper(
             {
                 "VCCPLL": self.vcc_pll,
