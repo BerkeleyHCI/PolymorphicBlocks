@@ -11,30 +11,44 @@ class JiecangConnector(Block):
 
     def __init__(self) -> None:
         super().__init__()
-        self.conn = self.Block(PassiveConnector(length=6))
         self.gnd = self.Port(Ground(), [Common])
-        self.pwr = self.Export(
-            self.conn.pins.request("4").adapt_to(
-                VoltageSource(voltage_out=5 * Volt(tol=0), current_limits=(0, 300) * mAmp)
-            )
+        self.pwr = self.Port(
+            VoltageSource(voltage_out=5 * Volt(tol=0), current_limits=(0, 300) * mAmp)
         )  # reportedly drives at least 300mA
-        self.uart = self.Port(UartPort.empty())
-        # UART pins internally pulled up to 5v, need a level shifter
-        self.pwr_io = self.Port(VoltageSink.empty())
-        self.dtx_shift = self.Block(BidirectionaLevelShifter(hv_res=RangeExpr.INF, src_hint="hv"))
-        self.htx_shift = self.Block(BidirectionaLevelShifter(hv_res=RangeExpr.INF, src_hint="lv"))
+        self.uart = self.Port(UartPort(DigitalBidir.from_supply(self.gnd, self.pwr)))
 
-        self.connect(self.gnd.net, self.conn.pins.request("2"))
-        self.connect(self.pwr, self.dtx_shift.hv_pwr, self.htx_shift.hv_pwr)
-        self.connect(self.pwr_io, self.dtx_shift.lv_pwr, self.htx_shift.lv_pwr)
-        self.connect(
-            self.dtx_shift.hv_io, self.conn.pins.request("3").adapt_to(DigitalSource.from_supply(self.gnd, self.pwr))
-        )  # DTX, controller -> handset
-        self.connect(self.dtx_shift.lv_io, self.uart.tx)
-        self.connect(
-            self.htx_shift.hv_io, self.conn.pins.request("5").adapt_to(DigitalSink.from_supply(self.gnd, self.pwr))
-        )  # HTX, handset -> controller
-        self.connect(self.htx_shift.lv_io, self.uart.rx)
+        self.conn = self.Block(PassiveConnector(length=6)).connected(
+            {
+                "2": self.gnd,
+                "4": self.pwr,
+                "3": self.uart.tx,  # DTX, controller -> handset
+                "5": self.uart.rx,  # HTX, handset -> controller
+            }
+        )
+
+
+class UartLevelShifter(Block):
+    """Level shifter for UART port, using a pair of BidirectionalLevelShifter internally."""
+
+    def __init__(
+        self,
+        lv_res: RangeLike = 4.7 * kOhm(tol=0.05),
+        hv_res: RangeLike = 4.7 * kOhm(tol=0.05),
+    ) -> None:
+        super().__init__()
+        self.lv_pwr = self.Port(VoltageSink.empty())
+        self.lv_uart = self.Port(UartPort.empty())
+        self.hv_pwr = self.Port(VoltageSink.empty())
+        self.hv_uart = self.Port(UartPort.empty())
+
+        self.hv_tx_shift = self.Block(BidirectionaLevelShifter(lv_res=lv_res, hv_res=hv_res, src_hint="hv"))
+        self.lv_tx_shift = self.Block(BidirectionaLevelShifter(lv_res=lv_res, hv_res=hv_res, src_hint="lv"))
+        self.connect(self.hv_pwr, self.hv_tx_shift.hv_pwr, self.lv_tx_shift.hv_pwr)
+        self.connect(self.lv_pwr, self.hv_tx_shift.lv_pwr, self.lv_tx_shift.lv_pwr)
+        self.connect(self.hv_tx_shift.hv_io, self.hv_uart.tx)
+        self.connect(self.lv_tx_shift.hv_io, self.hv_uart.rx)
+        self.connect(self.hv_tx_shift.lv_io, self.lv_uart.tx)
+        self.connect(self.lv_tx_shift.lv_io, self.lv_uart.rx)
 
 
 class DeskController(JlcBoardTop):
@@ -48,6 +62,11 @@ class DeskController(JlcBoardTop):
 
         self.conn = self.Block(JiecangConnector())
         self.gnd = self.connect(self.conn.gnd)
+
+        self.conn_shift = self.Block(UartLevelShifter(hv_res=RangeExpr.INF))
+        self.connect(self.conn.pwr, self.conn_shift.hv_pwr)
+        self.connect(self.conn.uart, self.conn_shift.hv_uart)
+
         self.tp_gnd = self.Block(GroundTestPoint()).connected(self.conn.gnd)
 
         with self.implicit_connect(  # POWER
@@ -73,8 +92,8 @@ class DeskController(JlcBoardTop):
             self.mcu = imp.Block(IoController())
             self.mcu.with_mixin(IoControllerWifi())
 
-            self.connect(self.conn.pwr_io, self.v3v3)
-            self.connect(self.mcu.uart.request("ctl"), self.conn.uart)
+            self.connect(self.v3v3, self.conn_shift.lv_pwr)
+            self.connect(self.mcu.uart.request("ctl"), self.conn_shift.lv_uart)
 
             self.sw = self.Block(SwitchMatrix(nrows=3, ncols=2))
             self.connect(self.sw.cols, self.mcu.gpio.request_vector("swc"))
