@@ -205,8 +205,18 @@ class JacdacDataInterface(JacdacSubcircuit, Block):
         self.gnd = self.Port(Ground(), [Common])
         self.pwr = self.Port(VoltageSink(), [Power])
 
-        self.signal = self.Port(DigitalBidir.empty(), [Input])
-        self.jd_data = self.Port(JacdacDataPort.empty(), [Output])
+        self.signal = self.Port(DigitalBidir(), [Input])
+        self.jd_data = self.Port(
+            JacdacDataPort(
+                DigitalBidir(
+                    voltage_out=self.signal.link().voltage,
+                    voltage_limits=self.signal.link().voltage_limits,
+                    input_thresholds=self.signal.link().input_thresholds,
+                    output_thresholds=self.signal.link().output_thresholds,
+                )
+            ),
+            [Output],
+        )
 
     @override
     def contents(self) -> None:
@@ -220,23 +230,13 @@ class JacdacDataInterface(JacdacSubcircuit, Block):
         self.clamp_hi = self.Block(clamp_diode_model)
         self.clamp_lo = self.Block(clamp_diode_model)
 
-        self.connect(
-            self.jd_data.jd_data,
-            self.ferrite.a.adapt_to(
-                DigitalBidir(
-                    voltage_out=self.signal.link().voltage,
-                    voltage_limits=self.signal.link().voltage_limits,
-                    input_thresholds=self.signal.link().input_thresholds,
-                    output_thresholds=self.signal.link().output_thresholds,
-                )
-            ),
-        )
+        self.connect(self.jd_data.jd_data.net, self.ferrite.a)
         self.connect(self.ferrite.b, self.rc.output)
         self.connect(self.rc.input, self.clamp_hi.anode, self.clamp_lo.cathode)
         self.connect(self.gnd.net, self.rc.gnd, self.clamp_lo.anode)
         self.connect(self.pwr.net, self.clamp_hi.cathode)
         # inner port is ideal to avoid circular parameter dependencies
-        self.connect(self.signal, self.rc.input.adapt_to(DigitalBidir()))
+        self.connect(self.signal.net, self.rc.input)
 
 
 class JacdacMountingData1(JacdacSubcircuit, FootprintBlock):

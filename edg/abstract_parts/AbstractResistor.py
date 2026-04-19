@@ -531,19 +531,26 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
     ):
         super().__init__()
 
-        self.signal_in = self.Port(DigitalSink.empty(), [Input])
-        self.signal_out = self.Port(DigitalSource.empty(), [Output])
-
         self.clamp_target = self.ArgParameter(clamp_target)
         self.clamp_current = self.ArgParameter(clamp_current)
         self.protection_voltage = self.ArgParameter(protection_voltage)
         self.zero_out = self.ArgParameter(zero_out)
+
+        self.signal_in = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
+        self.signal_out = self.Port(
+            DigitalSource(
+                voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
+                output_thresholds=self.signal_in.link().output_thresholds,
+            ),
+            [Output],
+        )
 
     @override
     def contents(self) -> None:
         super().contents()
 
         # TODO bidirectional clamping calcs?
+        self.assign(self.signal_in.current_draw, self.signal_out.link().current_drawn)
         self.res = self.Block(
             Resistor(
                 resistance=1
@@ -554,18 +561,8 @@ class DigitalClampResistor(Protection, KiCadImportableBlock):
                 )
             )
         )
-        self.connect(
-            self.res.a.adapt_to(DigitalSink(current_draw=self.signal_out.link().current_drawn)), self.signal_in
-        )
-        self.connect(
-            self.res.b.adapt_to(
-                DigitalSource(
-                    voltage_out=self.signal_in.link().voltage.intersect(self.clamp_target),
-                    output_thresholds=self.signal_in.link().output_thresholds,
-                )
-            ),
-            self.signal_out,
-        )
+        self.connect(self.res.a, self.signal_in.net)
+        self.connect(self.res.b, self.signal_out.net)
 
     @override
     def symbol_pinning(self, symbol_name: str) -> Dict[str, Port]:
