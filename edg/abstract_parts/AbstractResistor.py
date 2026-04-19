@@ -511,6 +511,48 @@ class AnalogClampResistor(Protection, KiCadImportableBlock):
         return {"1": self.signal_in, "2": self.signal_out}
 
 
+class DigitalSeriesResistor(DiscreteApplication, KiCadImportableBlock):
+    """Digital passthrough series resistor, with source / sink (directioned) ports"""
+
+    @override
+    def symbol_pinning(self, symbol_name: str) -> Mapping[str, BasePort]:
+        assert symbol_name in ("Device:R", "Device:R_Small")
+        return {"1": self.input, "2": self.output}
+
+    def __init__(self, resistance: RangeLike) -> None:
+        super().__init__()
+
+        self.res = self.Block(Resistor(resistance=resistance, power=RangeExpr()))
+        self.actual_resistance = self.Parameter(RangeExpr(self.res.actual_resistance))
+
+        self.input = self.Port(DigitalSink(current_draw=RangeExpr()), [Input])
+        self.output = self.Port(
+            DigitalSource(
+                voltage_out=self.input.link().voltage,
+                output_thresholds=self.input.link().output_thresholds,
+            ),
+            [Output],
+        )
+
+        self.assign(self.input.current_draw, self.output.link().current_drawn)
+
+        self.assign(
+            self.res.power, self.input.link().current_drawn * self.input.link().current_drawn * self.res.resistance
+        )
+        self.connect(self.input.net, self.res.a)
+        self.connect(self.output.net, self.res.b)
+
+    def connected(
+        self, input: Optional[Port[DigitalLink]] = None, output: Optional[Port[DigitalLink]] = None
+    ) -> "DigitalSeriesResistor":
+        """Convenience function to connect both ports, returning this object so it can still be given a name."""
+        if input is not None:
+            cast(Block, builder.get_enclosing_block()).connect(input, self.input)
+        if output is not None:
+            cast(Block, builder.get_enclosing_block()).connect(output, self.output)
+        return self
+
+
 class DigitalClampResistor(Protection, KiCadImportableBlock):
     """Inline resistor that limits the current (to a parameterized amount) which works in concert
     with ESD diodes in the downstream device to clamp the signal voltage to allowable levels.

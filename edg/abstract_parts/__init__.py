@@ -58,6 +58,7 @@ from .AbstractResistor import (
     SeriesPowerResistor,
     CurrentSenseResistor,
     AnalogClampResistor,
+    DigitalSeriesResistor,
     DigitalClampResistor,
     AnalogSetpointResistor,
 )

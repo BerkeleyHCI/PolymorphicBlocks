@@ -75,26 +75,22 @@ class SwdSourceBitBang(InternalSubcircuit, Block):
     def contents(self) -> None:
         super().contents()
 
-        # TODO add DigitalSeriesResistor
-        self.swclk_res = self.Block(Resistor(resistance=22 * Ohm(tol=0.05)))
-        self.swdio_res = self.Block(Resistor(resistance=22 * Ohm(tol=0.05)))
-        self.swdio_drv_res = self.Block(Resistor(resistance=100 * Ohm(tol=0.05)))
-
-        self.reset_res = self.Block(Resistor(resistance=22 * Ohm(tol=0.05)))
-        self.swo_res = self.Block(Resistor(resistance=22 * Ohm(tol=0.05)))
-
-        self.connect(self.swclk_res.a.adapt_to(DigitalSink()), self.swclk_in)
-        self.connect(self.swclk_res.b.adapt_to(DigitalSource()), self.swd.swclk)
-        self.connect(self.swdio_drv_res.a.adapt_to(DigitalSink()), self.swdio_in)
-        self.connect(
-            self.swdio_res.a.adapt_to(DigitalBidir()), self.swdio_drv_res.b.adapt_to(DigitalBidir()), self.swdio_out
+        self.swclk_res = self.Block(DigitalSeriesResistor(resistance=22 * Ohm(tol=0.05))).connected(
+            self.swclk_in, self.swd.swclk
         )
-        self.connect(self.swdio_res.b.adapt_to(DigitalSink()), self.swd.swdio)
+        self.swdio_res = self.Block(DigitalSeriesResistor(resistance=22 * Ohm(tol=0.05))).connected(
+            self.swdio_out, self.swd.swdio
+        )
+        self.swdio_drv_res = self.Block(DigitalSeriesResistor(resistance=100 * Ohm(tol=0.05))).connected(
+            self.swdio_in, self.swdio_out
+        )
 
-        self.connect(self.reset_res.a.adapt_to(DigitalSink()), self.reset_in)
-        self.connect(self.reset_res.b.adapt_to(DigitalSource()), self.reset_out)
-        self.connect(self.swo_res.a.adapt_to(DigitalSource()), self.swo_out)
-        self.connect(self.swo_res.b.adapt_to(DigitalSink()), self.swo_in)
+        self.reset_res = self.Block(DigitalSeriesResistor(resistance=22 * Ohm(tol=0.05))).connected(
+            self.reset_in, self.reset_out
+        )
+        self.swo_res = self.Block(DigitalSeriesResistor(resistance=22 * Ohm(tol=0.05))).connected(
+            self.swo_in, self.swo_out
+        )
 
 
 class SwdDebugger(JlcBoardTop):
