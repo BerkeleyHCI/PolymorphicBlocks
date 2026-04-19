@@ -17,27 +17,33 @@ class Qt096t_if09_Device(InternalSubcircuit, Block):
             )
         )
 
-        self.conn = self.Block(Fpc050Bottom(length=8)).connected({"7": self.vdd, "2": self.gnd})
-
-        io_model = DigitalSink.from_supply(
+        dio_model = DigitalBidir.from_supply(
             self.gnd,
             self.vdd,
             voltage_limit_tolerance=(-0.3, 0.3) * Volt,
             current_draw=0 * mAmp(tol=0),
             input_threshold_factor=(0.3, 0.7),
         )
-        self.reset = self.Export(self.conn.pins.request("3").adapt_to(io_model))
-        # data / command selection pin
-        self.rs = self.Export(self.conn.pins.request("4").adapt_to(io_model))
-        self.cs = self.Export(self.conn.pins.request("8").adapt_to(io_model))
+        din_model = DigitalSink.from_bidir(dio_model)
+        self.reset = self.Port(din_model)
+        self.rs = self.Port(din_model)  # data / command selection pin
+        self.cs = self.Port(din_model)
 
-        self.spi = self.Port(SpiPeripheral.empty())
-        self.connect(self.spi.sck, self.conn.pins.request("6").adapt_to(io_model))  # scl
-        self.connect(self.spi.mosi, self.conn.pins.request("5").adapt_to(io_model))  # sda
+        self.spi = self.Port(SpiPeripheral(dio_model))
+        self.leda = self.Port(Passive())
 
-        self.miso_nc = self.Block(DigitalBidirNotConnected()).connected(self.spi.miso)
-
-        self.leda = self.Export(self.conn.pins.request("1"))  # TODO maybe something else?
+        self.conn = self.Block(Fpc050Bottom(length=8)).connected(
+            {
+                "7": self.vdd,
+                "2": self.gnd,
+                "3": self.reset,
+                "4": self.rs,
+                "8": self.cs,
+                "6": self.spi.sck,  # scl
+                "5": self.spi.mosi,  # sda
+                "1": self.leda,
+            }
+        )
 
 
 class Qt096t_if09(Lcd, Resettable, Block):
