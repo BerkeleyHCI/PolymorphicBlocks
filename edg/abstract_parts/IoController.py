@@ -142,7 +142,7 @@ class BaseIoController(PinMappable, Block):
 
             if isinstance(allocation.pin, str):
                 assert isinstance(io_port, (CircuitPort, Passive, HasPassivePort))
-                pinmap[allocation.pin] = io_port
+                pinmap[allocation.pin] = io_port  # type: ignore
             elif allocation.pin is None:
                 assert isinstance(io_port, (CircuitPort, Passive, HasPassivePort))  # otherwise discarded
             elif isinstance(allocation.pin, dict):
@@ -151,7 +151,7 @@ class BaseIoController(PinMappable, Block):
                     assert isinstance(
                         subport, (CircuitPort, Passive, HasPassivePort)
                     ), f"bad sub-port {pin_name} {subport}"
-                    pinmap[pin_name] = subport
+                    pinmap[pin_name] = subport  # type: ignore
             else:
                 raise NotImplementedError(f"unknown allocation pin type {allocation.pin}")
 

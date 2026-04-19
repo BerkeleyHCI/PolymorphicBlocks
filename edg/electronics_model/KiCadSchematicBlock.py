@@ -202,7 +202,7 @@ class KiCadSchematicBlock(Block):
         locals: Mapping[str, Any] = {},
         *,
         nodes: Mapping[str, Optional[BasePort]] = {},
-        conversions: Mapping[str, Union[Passive, HasPassivePort]] = {},
+        conversions: Mapping[str, HasPassivePort] = {},
         auto_adapt: bool = False,
     ) -> None:
         # ideally SYMBOL_MAP would be a class variable, but this causes a import loop with Opamp,
@@ -315,16 +315,7 @@ class KiCadSchematicBlock(Block):
             for boundary_port, boundary_port_name in boundary_ports:  # generate adapters as needed, port by port
                 if boundary_port_name in conversions:
                     assert can_adapt, "conversion to boundary port only allowed for Passive ports"
-                    adapted = cast(Passive, net_ports[0]).adapt_to(conversions[boundary_port_name])
-                    self.connect(adapted, boundary_port)  # type: ignore
-                elif (
-                    auto_adapt
-                    and can_adapt
-                    and isinstance(boundary_port, CircuitPort)
-                    and not isinstance(boundary_port, Passive)
-                ):
-                    # TODO remove after full compositional passive refactor #114
-                    adapted = cast(Passive, net_ports[0]).adapt_to(boundary_port.__class__())
+                    adapted = cast(Port, cast(Passive, net_ports[0]).adapt_to(conversions[boundary_port_name]))
                     self.connect(adapted, boundary_port)
                 elif (
                     auto_adapt

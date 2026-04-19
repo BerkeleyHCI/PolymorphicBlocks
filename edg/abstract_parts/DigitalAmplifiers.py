@@ -87,7 +87,7 @@ class HighSideSwitch(PowerSwitch, KiCadSchematicBlock, GeneratorBlock):
             )
         )
 
-        conversions: Dict[str, Union[Passive, HasPassivePort]] = {
+        conversions: Dict[str, HasPassivePort] = {
             "pwr": VoltageSink(current_draw=self.output.link().current_drawn),
             "output": VoltageSource(
                 voltage_out=self.pwr.link().voltage,
