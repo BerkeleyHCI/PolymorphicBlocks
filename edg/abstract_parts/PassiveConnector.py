@@ -35,7 +35,9 @@ class PassiveConnector(DiscreteComponent, Block):
         for pin_name, pin_port in pins.items():
             if isinstance(pin_port, HasPassivePort):
                 passive_port: Passive = pin_port.net
-            assert isinstance(pin_port, Passive), "connected pin must be Passive or HasPassivePort"
+            else:
+                assert isinstance(pin_port, Passive), "connected pin must be Passive or HasPassivePort"
+                passive_port = pin_port
 
             if isinstance(pin_name, str):
                 pin_tuples: Tuple[str, ...] = (pin_name,)
