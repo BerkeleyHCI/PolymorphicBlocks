@@ -28,7 +28,9 @@ class JiecangConnector(Block):
 
 
 class UartLevelShifter(Block):
-    """Level shifter for UART port, using a pair of BidirectionalLevelShifter internally."""
+    """Level shifter for UART port, using a pair of BidirectionalLevelShifter internally.
+    Not necessarily the most efficient implementation, but is bidirectional on both channels
+    and not dependent on correct channel directionality."""
 
     def __init__(
         self,
