@@ -56,19 +56,6 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
             )
         )
 
-        self.conn = self.Block(Fpc030Bottom(length=31)).connected(
-            {
-                ("7", "1", "31"): self.vss,
-                "26": self.vss,  # VLSS
-                ("8", "17"): self.vdd,
-                ("5", "27"): self.vcc,
-                "6": self.iref,
-                ("3", "29"): self.vcomh,
-                ("2", "30"): self.vsl,
-                ("4", "28"): self.vp,
-            }
-        )
-
         din_model = DigitalSink.from_supply(
             self.vss,
             self.vdd,
@@ -76,23 +63,46 @@ class Er_Oled_096_1c_Device(InternalSubcircuit, Block):
             input_threshold_factor=(0.2, 0.8),
         )
 
-        self.bs0 = self.Export(self.conn.pins.request("14").adapt_to(din_model))
-        self.bs1 = self.Export(self.conn.pins.request("13").adapt_to(din_model))
-        self.connect(self.conn.pins.request("12"), self.vss.net)  # BS2, 0 for any serial
+        self.bs0 = self.Port(din_model)
+        self.bs1 = self.Port(din_model)
 
-        self.res = self.Export(self.conn.pins.request("9").adapt_to(din_model))
-        self.cs = self.Export(self.conn.pins.request("11").adapt_to(din_model))
-        self.dc = self.Export(self.conn.pins.request("10").adapt_to(din_model))
+        self.res = self.Port(din_model)
+        self.cs = self.Port(din_model)
+        self.dc = self.Port(din_model)
 
-        self.d0 = self.Export(self.conn.pins.request("18").adapt_to(din_model))
-        self.d1 = self.Export(self.conn.pins.request("19").adapt_to(din_model))
-        self.d2 = self.Export(self.conn.pins.request("20").adapt_to(din_model), optional=True)
+        self.d0 = self.Port(din_model)
+        self.d1 = self.Port(din_model)
+        self.d2 = self.Port(din_model, optional=True)
 
-        self.conn.connected(
-            {
-                ("16", "15"): self.vss,  # RD, RW
-                (str(x) for x in range(21, 26)): self.vss,  # DB3~DB7
-            }
+        self.conn = (
+            self.Block(Fpc030Bottom(length=31))
+            .connected(
+                {
+                    ("7", "1", "31"): self.vss,
+                    "26": self.vss,  # VLSS
+                    ("8", "17"): self.vdd,
+                    ("5", "27"): self.vcc,
+                    "6": self.iref,
+                    ("3", "29"): self.vcomh,
+                    ("2", "30"): self.vsl,
+                    ("4", "28"): self.vp,
+                    "14": self.bs0,
+                    "13": self.bs1,
+                    "12": self.vss,  # BS2, 0 for any serial
+                    "9": self.res,
+                    "11": self.cs,
+                    "10": self.dc,
+                    "18": self.d0,
+                    "19": self.d1,
+                    "20": self.d2,
+                }
+            )
+            .connected(
+                {
+                    ("16", "15"): self.vss,  # RD, RW
+                    (str(x) for x in range(21, 26)): self.vss,  # DB3~DB7
+                }
+            )
         )
 
 
