@@ -20,7 +20,7 @@ class PhotodiodeSensor(LightSensor, KiCadSchematicBlock, Block):
     def contents(self) -> None:
         super().contents()
         self.import_kicad(
-            self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+            self.file_path("RobotOwl", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
                 "pwr": VoltageSink(),
                 "gnd": Ground(),

@@ -517,7 +517,9 @@ class Hx711(KiCadSchematicBlock):
     def contents(self) -> None:
         super().contents()
         self.Q1 = self.Block(Bjt.Npn((0, 5) * Volt, 0 * Amp(tol=0)))
-        self.import_kicad(self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"), auto_adapt=True)
+        self.import_kicad(
+            self.file_path("TestBlinkyWithSchematicImport", f"{self.__class__.__name__}.kicad_sch"), auto_adapt=True
+        )
 
 
 class TestBlinkyWithSchematicImport(SimpleBoardTop):
@@ -574,7 +576,7 @@ class Hx711Modeled(KiCadSchematicBlock):
         super().contents()
         self.Q1 = self.Block(Bjt.Npn((0, 5) * Volt, 0 * Amp(tol=0)))
         self.import_kicad(
-            self.file_path("resources", "Hx711.kicad_sch"),
+            self.file_path("TestBlinkyWithSchematicImport", "Hx711.kicad_sch"),
             conversions={
                 "pwr": VoltageSink(
                     voltage_limits=(2.6, 5.5) * Volt, current_draw=(0.3 + 0.2, 1400 + 100) * uAmp

@@ -23,7 +23,7 @@ class JlcBjt(PartsTableSelectorFootprint, JlcTableSelector, TableBjt):
     DESCRIPTION_PARSERS: List[DescriptionParser] = [
         # the included table is differently formatted than the latest JLC description format
         (
-            re.compile("(\S+V) (\S+W) (\S+A) (\S+)@(?:\S+A,\S+V) .*(NPN|PNP).* Bipolar Transistors.*"),
+            re.compile(r"(\S+V) (\S+W) (\S+A) (\S+)@(?:\S+A,\S+V) .*(NPN|PNP).* Bipolar Transistors.*"),
             lambda match: {
                 TableBjt.CHANNEL: match.group(5),
                 TableBjt.VCE_RATING: Range.zero_to_upper(PartParserUtil.parse_value(match.group(1), "V")),

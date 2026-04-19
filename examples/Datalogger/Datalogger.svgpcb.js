@@ -325,97 +325,97 @@ const C32 = board.add(C_0603_1608Metric, {
   translate: pt(0.934, 2.196), rotate: 0,
   id: 'C32'
 })
-// eink.ic.device.conn
+// eink.device.conn
 const J6 = board.add(Hirose_FH12_24S_0_5SH_1x24_1MP_P0_50mm_Horizontal, {
   translate: pt(2.644, 1.032), rotate: 0,
   id: 'J6'
 })
-// eink.ic.vdd_cap.cap
+// eink.vdd_cap.cap
 const C33 = board.add(C_0603_1608Metric, {
   translate: pt(3.016, 1.335), rotate: 0,
   id: 'C33'
 })
-// eink.ic.vdd1v8_cap.cap
+// eink.vdd1v8_cap.cap
 const C34 = board.add(C_0603_1608Metric, {
   translate: pt(3.172, 1.335), rotate: 0,
   id: 'C34'
 })
-// eink.ic.vgl_cap.cap
+// eink.vgl_cap.cap
 const C35 = board.add(C_0603_1608Metric, {
   translate: pt(2.346, 1.452), rotate: 0,
   id: 'C35'
 })
-// eink.ic.vgh_cap.cap
+// eink.vgh_cap.cap
 const C36 = board.add(C_0805_2012Metric, {
   translate: pt(2.354, 1.228), rotate: 0,
   id: 'C36'
 })
-// eink.ic.vsh_cap.cap
+// eink.vsh_cap.cap
 const C37 = board.add(C_0805_2012Metric, {
   translate: pt(2.528, 1.228), rotate: 0,
   id: 'C37'
 })
-// eink.ic.vsl_cap.cap
+// eink.vsl_cap.cap
 const C38 = board.add(C_0805_2012Metric, {
   translate: pt(2.701, 1.228), rotate: 0,
   id: 'C38'
 })
-// eink.ic.vcom_cap.cap
+// eink.vcom_cap.cap
 const C39 = board.add(C_0603_1608Metric, {
   translate: pt(2.502, 1.452), rotate: 0,
   id: 'C39'
 })
-// eink.ic.boost.fet
+// eink.boost.fet
 const Q2 = board.add(SOT_23, {
   translate: pt(3.115, 0.906), rotate: 0,
   id: 'Q2'
 })
-// eink.ic.boost.inductor
+// eink.boost.inductor
 const L2 = board.add(L_1210_3225Metric, {
   translate: pt(3.129, 1.075), rotate: 0,
   id: 'L2'
 })
-// eink.ic.boost.sense
+// eink.boost.sense
 const R13 = board.add(R_0603_1608Metric, {
   translate: pt(2.658, 1.452), rotate: 0,
   id: 'R13'
 })
-// eink.ic.boost.in_cap.cap
+// eink.boost.in_cap.cap
 const C40 = board.add(C_0805_2012Metric, {
   translate: pt(2.874, 1.228), rotate: 0,
   id: 'C40'
 })
-// eink.ic.boost.diode
+// eink.boost.diode
 const D3 = board.add(D_SOD_323, {
   translate: pt(2.524, 1.344), rotate: 0,
   id: 'D3'
 })
-// eink.ic.boost.boot_neg_diode
+// eink.boost.boot_neg_diode
 const D4 = board.add(D_SOD_323, {
   translate: pt(2.690, 1.344), rotate: 0,
   id: 'D4'
 })
-// eink.ic.boost.boot_gnd_diode
+// eink.boost.boot_gnd_diode
 const D5 = board.add(D_SOD_323, {
   translate: pt(2.856, 1.344), rotate: 0,
   id: 'D5'
 })
-// eink.ic.boost.boot_cap
+// eink.boost.boot_cap
 const C41 = board.add(C_0805_2012Metric, {
   translate: pt(3.047, 1.228), rotate: 0,
   id: 'C41'
 })
-// eink.ic.boost.out_cap.cap
+// eink.boost.out_cap.cap
 const C42 = board.add(C_0805_2012Metric, {
   translate: pt(3.220, 1.228), rotate: 0,
   id: 'C42'
 })
-// eink.ic.boost.neg_out_cap.cap
+// eink.boost.neg_out_cap.cap
 const C43 = board.add(C_0805_2012Metric, {
   translate: pt(2.354, 1.345), rotate: 0,
   id: 'C43'
 })
-// eink.ic.gate_pdr.res
+// eink.gate_pdr.res
 const R14 = board.add(R_0603_1608Metric, {
   translate: pt(2.813, 1.452), rotate: 0,
   id: 'R14'
@@ -598,22 +598,22 @@ board.setNetlist([
   {name: "rtc.int", pads: [["U10", "13"]]},
   {name: "rtc.ic.pwr", pads: [["U10", "16"], ["R12", "2"], ["C29", "1"], ["C30", "1"]]},
   {name: "rtc.ic.bbs", pads: [["U10", "14"], ["C32", "1"]]},
-  {name: "eink.busy", pads: [["U5", "1"], ["J6", "9"]]},
   {name: "eink.reset", pads: [["U5", "2"], ["J6", "10"]]},
-  {name: "eink.dc", pads: [["U5", "3"], ["J6", "11"]]},
   {name: "eink.cs", pads: [["U5", "4"], ["J6", "12"]]},
-  {name: "eink.ic.device.vdd1v8", pads: [["J6", "18"], ["C34", "1"]]},
-  {name: "eink.ic.device.gdr", pads: [["J6", "2"], ["Q2", "1"], ["R14", "2"]]},
-  {name: "eink.ic.device.rese", pads: [["J6", "3"], ["Q2", "2"], ["R13", "1"]]},
-  {name: "eink.ic.device.vgl", pads: [["J6", "4"], ["C35", "1"]]},
-  {name: "eink.ic.device.vgh", pads: [["J6", "5"], ["C36", "1"]]},
-  {name: "eink.ic.device.vsh", pads: [["J6", "20"], ["C37", "1"]]},
-  {name: "eink.ic.device.vsl", pads: [["J6", "22"], ["C38", "1"]]},
-  {name: "eink.ic.device.prevgh", pads: [["J6", "21"], ["D3", "1"], ["C42", "1"]]},
-  {name: "eink.ic.device.prevgl", pads: [["J6", "23"], ["D4", "2"], ["C43", "1"]]},
-  {name: "eink.ic.device.vcom", pads: [["J6", "24"], ["C39", "1"]]},
-  {name: "eink.ic.boost.fet.drain", pads: [["Q2", "3"], ["L2", "2"], ["D3", "2"], ["C41", "1"]]},
-  {name: "eink.ic.boost.boot_neg_diode.cathode", pads: [["D4", "1"], ["D5", "2"], ["C41", "2"]]},
+  {name: "eink.dc", pads: [["U5", "3"], ["J6", "11"]]},
+  {name: "eink.busy", pads: [["U5", "1"], ["J6", "9"]]},
+  {name: "eink.device.vdd1v8", pads: [["J6", "18"], ["C34", "1"]]},
+  {name: "eink.device.gdr", pads: [["J6", "2"], ["Q2", "1"], ["R14", "2"]]},
+  {name: "eink.device.rese", pads: [["J6", "3"], ["Q2", "2"], ["R13", "1"]]},
+  {name: "eink.device.vgl", pads: [["J6", "4"], ["C35", "1"]]},
+  {name: "eink.device.vgh", pads: [["J6", "5"], ["C36", "1"]]},
+  {name: "eink.device.vsh", pads: [["J6", "20"], ["C37", "1"]]},
+  {name: "eink.device.vsl", pads: [["J6", "22"], ["C38", "1"]]},
+  {name: "eink.device.prevgh", pads: [["J6", "21"], ["D3", "1"], ["C42", "1"]]},
+  {name: "eink.device.prevgl", pads: [["J6", "23"], ["D4", "2"], ["C43", "1"]]},
+  {name: "eink.device.vcom", pads: [["J6", "24"], ["C39", "1"]]},
+  {name: "eink.boost.fet.drain", pads: [["Q2", "3"], ["L2", "2"], ["D3", "2"], ["C41", "1"]]},
+  {name: "eink.boost.boot_neg_diode.cathode", pads: [["D4", "1"], ["D5", "2"], ["C41", "2"]]},
   {name: "ext.data.tx", pads: [["U5", "61"], ["U11", "4"]]},
   {name: "ext.data.rx", pads: [["U5", "60"], ["U11", "5"]]},
   {name: "ext.cts", pads: [["U5", "62"], ["U11", "1"]]},

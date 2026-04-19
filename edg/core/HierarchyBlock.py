@@ -318,7 +318,7 @@ class Block(BaseBlock, metaclass=BlockMeta):
             assert Block._next_bind is cls
             Block._next_bind = None
             return super().__new__(cls)
-        elif builder.get_enclosing_block() is None:  # always construct if top-level
+        elif builder._current_block() is None:  # always construct if top-level
             return super().__new__(cls)
         else:
             return BlockPrototype(cls, args, kwargs)  # type: ignore

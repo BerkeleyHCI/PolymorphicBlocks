@@ -90,8 +90,6 @@ from .SwitchedCap_TexasInstruments import Lm2664
 from .BuckConverter_Custom import CustomSyncBuckConverterIndependent
 from .BuckBoostConverter_Custom import CustomSyncBuckBoostConverterPwm
 from .PowerConditioning import (
-    BufferedSupply,
-    Supercap,
     SingleDiodePowerMerge,
     DiodePowerMerge,
     PriorityPowerOr,
@@ -169,7 +167,6 @@ from .Oled_Er_Oled_096_1c import Er_Oled_096_1c
 from .Oled_Er_Oled_022 import Er_Oled022_1
 from .Oled_Er_Oled_028 import Er_Oled028_1
 from .Oled_Nhd_312_25664uc import Nhd_312_25664uc
-from .EInk_E2154fs091 import E2154fs091
 from .EInk_Er_Epd027_2 import Er_Epd027_2
 from .EInk_WaveshareDriver import Waveshare_Epd
 from .SolidStateRelay_G3VM_61GR2 import G3VM_61GR2

@@ -15,7 +15,7 @@ class JlcCrystal(PartsTableSelectorFootprint, JlcTableSelector, TableCrystal):
 
     DESCRIPTION_PARSERS: List[DescriptionParser] = [
         (
-            re.compile("(\S+Hz) SMD Crystal Resonator (\S+F) (±\S+) .* Crystals .*"),
+            re.compile(r"(\S+Hz) SMD Crystal Resonator (\S+F) (±\S+) .* Crystals .*"),
             lambda match: {
                 TableCrystal.FREQUENCY: PartParserUtil.parse_abs_tolerance(
                     match.group(3), PartParserUtil.parse_value(match.group(1), "Hz"), "Hz"

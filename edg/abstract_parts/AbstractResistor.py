@@ -16,11 +16,11 @@ class Resistor(PassiveComponent, KiCadInstantiableBlock, HasStandardFootprint):
     _STANDARD_FOOTPRINT = lambda: ResistorStandardFootprint
 
     RESISTOR_REGEX = re.compile(
-        "^"
-        + f"([\d.{PartParserUtil.SI_PREFIXES}]+(?:\s*[{PartParserUtil.SI_PREFIXES}])?)\s*[RΩ]?"
-        + "\s*"
-        + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%?)?"
-        + "$"
+        r"^"
+        + rf"([\d.{PartParserUtil.SI_PREFIXES}]+(?:\s*[{PartParserUtil.SI_PREFIXES}])?)\s*[RΩ]?"
+        + r"\s*"
+        + r"((?:\+-|\+/-|±)?\s*[\d.]+\s*%?)?"
+        + r"$"
     )
     RESISTOR_DEFAULT_TOL = 0.05  # TODO this should be unified elsewhere
 
@@ -217,9 +217,9 @@ class PullupResistor(DiscreteApplication):
     ) -> "PullupResistor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if pwr is not None:
-            cast(Block, builder.get_enclosing_block()).connect(pwr, self.pwr)
+            builder.block().connect(pwr, self.pwr)
         if io is not None:
-            cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+            builder.block().connect(io, self.io)
         return self
 
 
@@ -242,9 +242,9 @@ class PulldownResistor(DiscreteApplication):
     ) -> "PulldownResistor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if gnd is not None:
-            cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+            builder.block().connect(gnd, self.gnd)
         if io is not None:
-            cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+            builder.block().connect(io, self.io)
         return self
 
 
@@ -323,9 +323,9 @@ class SeriesPowerResistor(DiscreteApplication, KiCadImportableBlock):
     ) -> "SeriesPowerResistor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if pwr_in is not None:
-            cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_in)
+            builder.block().connect(pwr_in, self.pwr_in)
         if pwr_out is not None:
-            cast(Block, builder.get_enclosing_block()).connect(pwr_out, self.pwr_out)
+            builder.block().connect(pwr_out, self.pwr_out)
         return self
 
 
@@ -364,9 +364,9 @@ class CurrentSenseResistor(DiscreteApplication, KiCadImportableBlock, GeneratorB
     ) -> "CurrentSenseResistor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if pwr_in is not None:
-            cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_in)
+            builder.block().connect(pwr_in, self.pwr_in)
         if pwr_out is not None:
-            cast(Block, builder.get_enclosing_block()).connect(pwr_out, self.pwr_out)
+            builder.block().connect(pwr_out, self.pwr_out)
         return self
 
     @override
@@ -402,9 +402,9 @@ class AnalogSetpointResistor(DiscreteApplication, KiCadImportableBlock):
     ) -> "AnalogSetpointResistor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if gnd is not None:
-            cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+            builder.block().connect(gnd, self.gnd)
         if io is not None:
-            cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+            builder.block().connect(io, self.io)
         return self
 
 
@@ -446,9 +446,9 @@ class AnalogSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
     ) -> "AnalogSeriesResistor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if input is not None:
-            cast(Block, builder.get_enclosing_block()).connect(input, self.input)
+            builder.block().connect(input, self.input)
         if output is not None:
-            cast(Block, builder.get_enclosing_block()).connect(output, self.output)
+            builder.block().connect(output, self.output)
         return self
 
 
@@ -550,9 +550,9 @@ class DigitalSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
     ) -> "DigitalSeriesResistor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if input is not None:
-            cast(Block, builder.get_enclosing_block()).connect(input, self.input)
+            builder.block().connect(input, self.input)
         if output is not None:
-            cast(Block, builder.get_enclosing_block()).connect(output, self.output)
+            builder.block().connect(output, self.output)
         return self
 
 
@@ -624,9 +624,9 @@ class DigitalBidirSeriesResistor(InternalSubcircuit, KiCadImportableBlock):
         """Convenience function to connect both ports, returning this object so it can still be given a name.
         Ordering reflects dataflow direction."""
         if interior is not None:
-            cast(Block, builder.get_enclosing_block()).connect(interior, self.interior)
+            builder.block().connect(interior, self.interior)
         if exterior is not None:
-            cast(Block, builder.get_enclosing_block()).connect(exterior, self.exterior)
+            builder.block().connect(exterior, self.exterior)
         return self
 
 

@@ -67,13 +67,13 @@ class Capacitor(UnpolarizedCapacitor, KiCadInstantiableBlock, HasStandardFootpri
     _STANDARD_FOOTPRINT = lambda: CapacitorStandardFootprint
 
     CAPACITOR_REGEX = re.compile(
-        "^"
-        + f"([\d.{PartParserUtil.SI_PREFIXES}]+)\s*F?"
-        + "\s*"
-        + "((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?"
-        + "\s*"
-        + f"([\d.{PartParserUtil.SI_PREFIXES}]+\s*V)"
-        + "$"
+        r"^"
+        + rf"([\d.{PartParserUtil.SI_PREFIXES}]+)\s*F?"
+        + r"\s*"
+        + r"((?:\+-|\+/-|±)?\s*[\d.]+\s*%)?"
+        + r"\s*"
+        + rf"([\d.{PartParserUtil.SI_PREFIXES}]+\s*V)"
+        + r"$"
     )
     CAPACITOR_DEFAULT_TOL = 0.20  # TODO this should be unified elsewhere
 
@@ -383,9 +383,9 @@ class DecouplingCapacitor(DiscreteApplication, KiCadImportableBlock):
     ) -> "DecouplingCapacitor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if gnd is not None:
-            cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+            builder.block().connect(gnd, self.gnd)
         if pwr is not None:
-            cast(Block, builder.get_enclosing_block()).connect(pwr, self.pwr)
+            builder.block().connect(pwr, self.pwr)
         return self
 
 
@@ -413,9 +413,9 @@ class AnalogCapacitor(DiscreteApplication, KiCadImportableBlock):
     ) -> "AnalogCapacitor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if gnd is not None:
-            cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+            builder.block().connect(gnd, self.gnd)
         if io is not None:
-            cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+            builder.block().connect(io, self.io)
         return self
 
 
@@ -470,9 +470,9 @@ class AnalogSeriesCapacitor(DiscreteApplication, KiCadImportableBlock):
     ) -> "AnalogSeriesCapacitor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if input is not None:
-            cast(Block, builder.get_enclosing_block()).connect(input, self.input)
+            builder.block().connect(input, self.input)
         if output is not None:
-            cast(Block, builder.get_enclosing_block()).connect(output, self.output)
+            builder.block().connect(output, self.output)
         return self
 
 
@@ -500,9 +500,9 @@ class DigitalCapacitor(DiscreteApplication, KiCadImportableBlock):
     ) -> "DigitalCapacitor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if gnd is not None:
-            cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+            builder.block().connect(gnd, self.gnd)
         if io is not None:
-            cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+            builder.block().connect(io, self.io)
         return self
 
 

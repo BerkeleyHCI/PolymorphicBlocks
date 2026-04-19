@@ -508,7 +508,7 @@ class DigitalBidirNotConnected(InternalBlock, Block):
         self.port = self.Port(DigitalBidir(), [InOut])
 
     def connected(self, port: Port[DigitalLink]) -> DigitalBidirNotConnected:
-        cast(Block, builder.get_enclosing_block()).connect(port, self.port)
+        builder.block().connect(port, self.port)
         return self
 
 

@@ -83,7 +83,7 @@ class MultimeterAnalog(KiCadSchematicBlock, Block):
 
         output_voltage = self.pwr.link().voltage.hull(self.gnd.link().voltage)
         self.import_kicad(
-            self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+            self.file_path("Multimeter", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
                 "input_positive": AnalogSink(),
                 "output": AnalogSource(  # assumed clamped by the switch in the resistor mux
@@ -155,7 +155,7 @@ class MultimeterCurrentDriver(KiCadSchematicBlock, Block):
         self.connect(self.sw.control.request(), self.enable)
 
         self.import_kicad(
-            self.file_path("resources", f"{self.__class__.__name__}.kicad_sch"),
+            self.file_path("Multimeter", f"{self.__class__.__name__}.kicad_sch"),
             conversions={
                 "fet.S": AnalogSink(),
                 "fet.G": AnalogSink(),

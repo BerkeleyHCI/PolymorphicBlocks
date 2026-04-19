@@ -26,7 +26,7 @@ class MergedVoltageSource(DummyDevice, GeneratorBlock):
 
     def connected_from(self, *pwr_ins: Port[VoltageLink]) -> "MergedVoltageSource":
         for pwr_in in pwr_ins:
-            cast(Block, builder.get_enclosing_block()).connect(pwr_in, self.pwr_ins.request())
+            builder.block().connect(pwr_in, self.pwr_ins.request())
         return self
 
 
@@ -60,7 +60,7 @@ class MergedDigitalSource(DummyDevice, GeneratorBlock):
 
     def connected_from(self, *ins: Port[DigitalLink]) -> "MergedDigitalSource":
         for in_port in ins:
-            cast(Block, builder.get_enclosing_block()).connect(in_port, self.ins.request())
+            builder.block().connect(in_port, self.ins.request())
         return self
 
 
@@ -101,7 +101,7 @@ class MergedAnalogSource(KiCadImportableBlock, DummyDevice, GeneratorBlock):
 
     def connected_from(self, *inputs: Port[AnalogLink]) -> "MergedAnalogSource":
         for input in inputs:
-            cast(Block, builder.get_enclosing_block()).connect(input, self.inputs.request())
+            builder.block().connect(input, self.inputs.request())
         return self
 
 
@@ -130,5 +130,5 @@ class MergedSpiController(DummyDevice, GeneratorBlock):
 
     def connected_from(self, *ins: Port[SpiLink]) -> "MergedSpiController":
         for in_port in ins:
-            cast(Block, builder.get_enclosing_block()).connect(in_port, self.ins.request())
+            builder.block().connect(in_port, self.ins.request())
         return self

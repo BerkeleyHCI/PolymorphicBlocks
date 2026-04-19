@@ -57,7 +57,7 @@ class JlcTableBase(PartsTableBase):
     def _parse_jlcpcb_common(cls, row: PartsTableRow) -> Dict[PartsTableColumn, Any]:
         """Returns a dict with the cost row, or errors out with KeyError."""
         # extracts out all the available prices for a given part by order quantity
-        price_list = re.findall(":(\d+\.\d*),", row[cls.COST_HEADER])
+        price_list = re.findall(r":(\d+\.\d*),", row[cls.COST_HEADER])
         float_array = [float(x) for x in price_list]
         if not float_array:
             cost = float("inf")  # disprefer heavily if no price listed

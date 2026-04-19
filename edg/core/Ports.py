@@ -44,7 +44,7 @@ class BasePort(HasMetadata, metaclass=InitializerContextMeta):
         self._parent: Optional[PortParentTypes]  # refined from Optional[Refable] in base LibraryElement
         self._block_context: Optional["Refable"]  # set by metaclass, as lexical scope available pre-binding
         self._initializer_args: Tuple[Tuple[Any, ...], Dict[str, Any]]  # set by metaclass
-        self._block_context = builder.get_enclosing_block()
+        self._block_context = builder._current_block()
 
         super().__init__()
 
@@ -92,8 +92,8 @@ class BasePort(HasMetadata, metaclass=InitializerContextMeta):
     def _bind(self: SelfType, parent: PortParentTypes) -> SelfType:
         """Returns a clone of this object with the specified binding. This object must be unbound."""
         assert (
-            builder.get_enclosing_block() is self._block_context
-        ), f"can't clone to different context, {builder.get_enclosing_block()} -> {self._block_context}"
+            self._block_context is None or builder.block() is self._block_context
+        ), f"can't clone to different context, {builder.block()} -> {self._block_context}"
         clone = self._clone()
         clone._bind_in_place(parent)
         return clone
@@ -207,7 +207,7 @@ class Port(BasePort, Generic[PortLinkType]):
         if block_parent is None:
             raise UnconnectableError(f"{self} must be bound to instantiate an adapter")
 
-        enclosing_block = builder.get_enclosing_block()
+        enclosing_block = builder.block()
         assert isinstance(enclosing_block, Block)
         if (block_parent is not enclosing_block) and (block_parent._parent is not enclosing_block):
             raise UnconnectableError(f"can only create adapters on own ports or subblock ports")

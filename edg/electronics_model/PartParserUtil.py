@@ -26,7 +26,7 @@ class PartParserUtil:
     }
     SI_PREFIXES = "".join(SI_PREFIX_DICT.keys())
 
-    VALUE_REGEX = re.compile(f"^([\d./]+)\s*([{SI_PREFIXES}]?)(.*)$")
+    VALUE_REGEX = re.compile(rf"^([\d./]+)\s*([{SI_PREFIXES}]?)(.*)$")
     DefaultType = TypeVar("DefaultType")
 
     @classmethod

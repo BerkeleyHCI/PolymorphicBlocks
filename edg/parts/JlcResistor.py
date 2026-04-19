@@ -25,10 +25,10 @@ class JlcResistor(PartsTableSelectorFootprint, JlcTableSelector, TableResistor):
     }
 
     RESISTOR_MATCHES = {
-        "resistance": re.compile("(^|\s)(\S+Ω)($|\s)"),
-        "tolerance": re.compile("(^|\s)(±\S+%)($|\s)"),
-        "power": re.compile("(^|\s)(\S+W)($|\s)"),
-        "voltage": re.compile("(^|\s)(\S+V)($|\s)"),
+        "resistance": re.compile(r"(^|\s)(\S+Ω)($|\s)"),
+        "tolerance": re.compile(r"(^|\s)(±\S+%)($|\s)"),
+        "power": re.compile(r"(^|\s)(\S+W)($|\s)"),
+        "voltage": re.compile(r"(^|\s)(\S+V)($|\s)"),
     }
 
     @classmethod

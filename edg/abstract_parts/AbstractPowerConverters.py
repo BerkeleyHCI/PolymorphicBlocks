@@ -236,9 +236,9 @@ class BootstrapCapacitor(Block):
     ) -> "BootstrapCapacitor":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if neg is not None:
-            cast(Block, builder.get_enclosing_block()).connect(neg, self.neg)
+            builder.block().connect(neg, self.neg)
         if pos is not None:
-            cast(Block, builder.get_enclosing_block()).connect(pos, self.pos)
+            builder.block().connect(pos, self.pos)
         return self
 
 

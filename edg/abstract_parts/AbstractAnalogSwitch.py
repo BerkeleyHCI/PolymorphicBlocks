@@ -165,9 +165,9 @@ class AnalogMuxer(Interface, KiCadImportableBlock, GeneratorBlock):
     ) -> "AnalogMuxer":
         if inputs is not None:
             for i, input_port in enumerate(inputs):
-                cast(Block, builder.get_enclosing_block()).connect(input_port, self.inputs.request(str(i)))
+                builder.block().connect(input_port, self.inputs.request(str(i)))
         if output is not None:
-            cast(Block, builder.get_enclosing_block()).connect(output, self.out)
+            builder.block().connect(output, self.out)
         return self
 
 
@@ -216,7 +216,7 @@ class AnalogDemuxer(Interface, GeneratorBlock):
     ) -> "AnalogDemuxer":
         if outputs is not None:
             for i, output in enumerate(outputs):
-                cast(Block, builder.get_enclosing_block()).connect(output, self.outputs.request(str(i)))
+                builder.block().connect(output, self.outputs.request(str(i)))
         if input is not None:
-            cast(Block, builder.get_enclosing_block()).connect(input, self.input)
+            builder.block().connect(input, self.input)
         return self

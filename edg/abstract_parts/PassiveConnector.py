@@ -44,7 +44,7 @@ class PassiveConnector(DiscreteComponent, Block):
             else:
                 pin_tuples = tuple(iter(pin_name))
             for pin_tuple_elt in pin_tuples:
-                cast(Block, builder.get_enclosing_block()).connect(passive_port, self.pins.request(pin_tuple_elt))
+                builder.block().connect(passive_port, self.pins.request(pin_tuple_elt))
         return self
 
 

@@ -66,11 +66,11 @@ class PullupDelayRc(DigitalFilter, Block):
     ) -> "PullupDelayRc":
         """Convenience function to connect both ports, returning this object so it can still be given a name."""
         if gnd is not None:
-            cast(Block, builder.get_enclosing_block()).connect(gnd, self.gnd)
+            builder.block().connect(gnd, self.gnd)
         if pwr is not None:
-            cast(Block, builder.get_enclosing_block()).connect(pwr, self.pwr)
+            builder.block().connect(pwr, self.pwr)
         if io is not None:
-            cast(Block, builder.get_enclosing_block()).connect(io, self.io)
+            builder.block().connect(io, self.io)
         return self
 
 

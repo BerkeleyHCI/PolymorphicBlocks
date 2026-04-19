@@ -139,7 +139,7 @@ class MultilevelSwitchingCell(InternalSubcircuit, KiCadSchematicBlock, Generator
         )
 
         self.import_kicad(
-            self.file_path("resources", f"{self.__class__.__name__}_{self.get(self.is_first)}.kicad_sch"),
+            self.file_path("Fcml", f"{self.__class__.__name__}_{self.get(self.is_first)}.kicad_sch"),
             locals={
                 "fet_model": Fet.NFet(
                     drain_voltage=self.in_voltage,
