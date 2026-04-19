@@ -451,6 +451,12 @@ class DigitalSource(HasPassivePort, DigitalBase):
 
 
 class DigitalBidirBridge(PortBridge):
+    """A bridge for DigitalBidir ports.
+    Since the electronics model is strictly directioned, this propagates data from the inner link to the outer port,
+    while presenting the interior port as ideal.
+    In concept, since ratings are propagated outwards, this should end up performing the same checks at the outer link.
+    """
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -469,8 +475,6 @@ class DigitalBidirBridge(PortBridge):
         # TODO can we actually define something here? as a pseudoport, this doesn't have limits
         self.inner_link = self.Port(
             DigitalBidir(
-                voltage_limits=RangeExpr.ALL,
-                current_limits=RangeExpr.ALL,
                 pullup_capable=False,
                 pulldown_capable=False,  # don't create a loop
                 _bridged_internal=True,

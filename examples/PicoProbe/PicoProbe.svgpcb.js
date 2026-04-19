@@ -140,12 +140,12 @@ const SC16 = board.add(C_0402_1005Metric, {
   translate: pt(0.369, 0.655), rotate: 0,
   id: 'SC16'
 })
-// mcu.usb_res.dp_res
+// mcu.usb_res.dp.res
 const SR3 = board.add(R_0603_1608Metric, {
   translate: pt(0.562, 0.393), rotate: 0,
   id: 'SR3'
 })
-// mcu.usb_res.dm_res
+// mcu.usb_res.dm.res
 const SR4 = board.add(R_0603_1608Metric, {
   translate: pt(0.718, 0.393), rotate: 0,
   id: 'SR4'
@@ -216,8 +216,8 @@ board.setNetlist([
   {name: "Sgnd", pads: [["SJ1", "A1"], ["SJ1", "A12"], ["SJ1", "B1"], ["SJ1", "B12"], ["SJ1", "S1"], ["SR1", "1"], ["SR2", "1"], ["SD1", "2"], ["SU1", "2"], ["SC1", "2"], ["SC2", "2"], ["SU2", "2"], ["SC3", "2"], ["SC4", "2"], ["SJ2", "5"], ["SU3", "19"], ["SU3", "57"], ["SC5", "2"], ["SC6", "2"], ["SC7", "2"], ["SC8", "2"], ["SC9", "2"], ["SC10", "2"], ["SC11", "2"], ["SC12", "2"], ["SU4", "4"], ["SC13", "2"], ["SC14", "2"], ["SC15", "2"], ["SC16", "2"], ["SU5", "2"], ["SU6", "3"], ["SR5", "2"], ["SR6", "2"], ["SJ3", "5"], ["SR8", "2"], ["SR10", "2"]]},
   {name: "Sv3v3", pads: [["SU1", "5"], ["SC2", "1"], ["SJ2", "1"], ["SU3", "1"], ["SU3", "10"], ["SU3", "22"], ["SU3", "33"], ["SU3", "42"], ["SU3", "43"], ["SU3", "44"], ["SU3", "48"], ["SU3", "49"], ["SC5", "1"], ["SC6", "1"], ["SC7", "1"], ["SC8", "1"], ["SC9", "1"], ["SC10", "1"], ["SC11", "1"], ["SC12", "1"], ["SU4", "8"], ["SC13", "1"], ["SR7", "1"]]},
   {name: "Svtarget", pads: [["SU2", "5"], ["SC4", "1"], ["SJ3", "1"], ["SD4", "2"], ["SR9", "1"]]},
-  {name: "Susb_chain_0.d_P", pads: [["SJ1", "A6"], ["SJ1", "B6"], ["SR3", "2"], ["SU6", "2"]]},
-  {name: "Susb_chain_0.d_N", pads: [["SJ1", "A7"], ["SJ1", "B7"], ["SR4", "2"], ["SU6", "1"]]},
+  {name: "Susb_chain_0.d_P", pads: [["SJ1", "A6"], ["SJ1", "B6"], ["SR3", "1"], ["SU6", "2"]]},
+  {name: "Susb_chain_0.d_N", pads: [["SJ1", "A7"], ["SJ1", "B7"], ["SR4", "1"], ["SU6", "1"]]},
   {name: "Susb.conn.cc.cc1", pads: [["SJ1", "A5"], ["SR1", "2"]]},
   {name: "Susb.conn.cc.cc2", pads: [["SJ1", "B5"], ["SR2", "2"]]},
   {name: "Starget_reg.reset", pads: [["SU2", "3"], ["SU3", "17"], ["SR7", "2"]]},
@@ -226,8 +226,8 @@ board.setNetlist([
   {name: "Smcu.swd_node.swdio", pads: [["SJ2", "2"], ["SU3", "25"]]},
   {name: "Smcu.swd_node.swclk", pads: [["SJ2", "4"], ["SU3", "24"]]},
   {name: "Smcu.reset_node", pads: [["SJ2", "3"], ["SU3", "26"]]},
-  {name: "Smcu.usb_chain_0.d_P", pads: [["SU3", "47"], ["SR3", "1"]]},
-  {name: "Smcu.usb_chain_0.d_N", pads: [["SU3", "46"], ["SR4", "1"]]},
+  {name: "Smcu.usb_chain_0.d_P", pads: [["SU3", "47"], ["SR3", "2"]]},
+  {name: "Smcu.usb_chain_0.d_N", pads: [["SU3", "46"], ["SR4", "2"]]},
   {name: "Smcu.swd.swo", pads: [["SJ2", "6"], ["SU3", "15"]]},
   {name: "Smcu.ic.dvdd", pads: [["SU3", "23"], ["SU3", "45"], ["SU3", "50"], ["SC14", "1"], ["SC15", "1"], ["SC16", "1"]]},
   {name: "Smcu.ic.qspi.sck", pads: [["SU3", "52"], ["SU4", "6"]]},

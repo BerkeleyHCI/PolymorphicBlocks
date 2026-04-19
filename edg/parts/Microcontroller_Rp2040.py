@@ -330,28 +330,6 @@ class Rp2040_Device(
         self.assign(self.actual_basic_part, False)
 
 
-class Rp2040Usb(InternalSubcircuit, Block):
-    """Supporting passives for USB for RP2040"""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.usb_rp = self.Port(UsbHostPort.empty(), [Input])
-        self.usb = self.Port(UsbDevicePort.empty(), [Output])
-
-    @override
-    def contents(self) -> None:
-        super().contents()
-
-        self.dp_res = self.Block(Resistor(27 * Ohm(tol=0.05)))
-        self.dm_res = self.Block(Resistor(27 * Ohm(tol=0.05)))
-
-        self.connect(self.usb_rp.dm, self.dm_res.a.adapt_to(DigitalBidir()))  # internal ports are ideal
-        self.connect(self.usb.dm, self.dm_res.b.adapt_to(UsbBitBang.digital_external_from_link(self.usb_rp.dm)))
-
-        self.connect(self.usb_rp.dp, self.dp_res.a.adapt_to(DigitalBidir()))
-        self.connect(self.usb.dp, self.dp_res.b.adapt_to(UsbBitBang.digital_external_from_link(self.usb_rp.dp)))
-
-
 class Rp2040(
     Resettable,
     Rp2040_Interfaces,
@@ -418,7 +396,9 @@ class Rp2040(
     ) -> Optional[str]:
         if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
             inner_io = inner_vector.request(name)
-            (self.usb_res,), self.usb_chain = self.chain(inner_io, self.Block(Rp2040Usb()), self_io)
+            (self.usb_res,), self.usb_chain = self.chain(
+                inner_io, self.Block(UsbSeriesResistor(27 * Ohm(tol=0.05))), self_io
+            )
             return assign
         return super()._make_export_vector(self_io, inner_vector, name, assign)
 

@@ -496,20 +496,6 @@ class Mdbt50q_1mv2_Device(Nrf52840_Base, InternalSubcircuit, JlcPart):
         )
 
 
-class Mdbt50q_UsbSeriesResistor(InternalSubcircuit, Block):
-    def __init__(self) -> None:
-        super().__init__()
-        # TODO propagate params - needs bridge mechanism
-        self.usb_inner = self.Port(UsbHostPort(), [Input])
-        self.usb_outer = self.Port(UsbDevicePort(), [Output])
-        self.res_dp = self.Block(Resistor(27 * Ohm(tol=0.01)))
-        self.res_dm = self.Block(Resistor(27 * Ohm(tol=0.01)))
-        self.connect(self.usb_inner.dp.net, self.res_dp.a)
-        self.connect(self.usb_outer.dp.net, self.res_dp.b)
-        self.connect(self.usb_inner.dm.net, self.res_dm.a)
-        self.connect(self.usb_outer.dm.net, self.res_dm.b)
-
-
 class Mdbt50q_1mv2(
     Microcontroller,
     Radiofrequency,
@@ -558,7 +544,9 @@ class Mdbt50q_1mv2(
     ) -> Optional[str]:
         if isinstance(self_io, UsbDevicePort):  # assumed at most one USB port generates
             inner_io = inner_vector.request(name)
-            (self.usb_res,), self.usb_chain = self.chain(inner_io, self.Block(Mdbt50q_UsbSeriesResistor()), self_io)
+            (self.usb_res,), self.usb_chain = self.chain(
+                inner_io, self.Block(UsbSeriesResistor(27 * Ohm(tol=0.05))), self_io
+            )
             self.vbus_cap = self.Block(DecouplingCapacitor(10 * uFarad(tol=0.2))).connected(self.gnd, self.pwr_usb)
             return assign
         return super()._make_export_vector(self_io, inner_vector, name, assign)
