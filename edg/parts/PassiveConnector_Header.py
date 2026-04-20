@@ -125,10 +125,9 @@ class JstPhKVertical(JstPh):
         return (f"Connector_JST:JST_PH_B{length}B-PH-K_1x{length:02d}_P2.00mm_Vertical", "JST", f"B{length}B-PH-K")
 
 
-"""JST S*B-PH-K series connector: 2.00mm shrouded and polarized, in horizontal (right-angle) through-hole."""
-
-
 class JstPhKHorizontal(JstPh, JlcPart):
+    """JST S*B-PH-K series connector: 2.00mm shrouded and polarized, in horizontal (right-angle) through-hole."""
+
     allowed_pins = range(2, 16 + 1)
     PART_NUMBERS = {  # white colored, -S part suffix
         2: "C173752",
