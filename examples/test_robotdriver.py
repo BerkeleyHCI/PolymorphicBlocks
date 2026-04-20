@@ -3,7 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
-from util import .test_board
+from .util import test_board
 
 
 class MotorConnector(Connector, Block):
