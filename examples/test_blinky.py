@@ -638,11 +638,11 @@ class BlinkyTestCase(unittest.TestCase):
 
     def test_design_incomplete(self) -> None:
         with self.assertRaises(CompilerCheckError):
-            run_test_board(TestBlinkyIncomplete, False)
+            compile_board_inplace(TestBlinkyIncomplete, False)
 
     def test_design_regulated(self) -> None:
         with self.assertRaises(CompilerCheckError):
-            run_test_board(TestBlinkyRegulated, False)
+            compile_board_inplace(TestBlinkyRegulated, False)
 
     def test_design_complete(self) -> None:
         run_test_board(TestBlinkyComplete)

@@ -3,7 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
-from .util import test_board
+from .util import run_test_board
 
 
 class MotorConnector(Connector, Block):
@@ -250,4 +250,4 @@ class RobotDriver(JlcBoardTop):
 
 class RobotDriverTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        test_board(RobotDriver)
+        run_test_board(RobotDriver)
