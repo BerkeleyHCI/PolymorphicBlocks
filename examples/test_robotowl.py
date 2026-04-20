@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 from .test_robotdriver import PwmConnector, LedConnector
 
@@ -161,4 +162,4 @@ class RobotOwl(JlcBoardTop):
 
 class RobotOwlTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(RobotOwl)
+        run_test_board(RobotOwl)

@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class EspProgrammerTc2030Inline(Connector, Block):
@@ -92,4 +93,4 @@ class EspProgrammer(JlcBoardTop):
 
 class EspProgrammerTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(EspProgrammer)
+        run_test_board(EspProgrammer)

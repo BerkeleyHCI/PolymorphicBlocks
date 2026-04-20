@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class DomeButtonConnector(Connector, FootprintBlock):
@@ -140,4 +141,4 @@ class Simon(BoardTop):
 
 class SimonTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(Simon)
+        run_test_board(Simon)

@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class EspLora(JlcBoardTop):
@@ -224,4 +225,4 @@ class EspLora(JlcBoardTop):
 
 class EspLoraTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(EspLora)
+        run_test_board(EspLora)

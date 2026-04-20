@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class FpgaProgrammingHeader(Connector, Block):
@@ -81,4 +82,4 @@ class UsbFpgaProgrammer(JlcBoardTop):
 
 class UsbFpgaProgrammerTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(UsbFpgaProgrammer)
+        run_test_board(UsbFpgaProgrammer)
