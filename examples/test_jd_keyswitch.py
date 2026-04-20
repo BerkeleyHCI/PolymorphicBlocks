@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
@@ -79,4 +80,4 @@ class JacdacKeyswitch(JacdacDeviceTop, JlcBoardTop):
 
 class JacdacKeyswitchTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(JacdacKeyswitch)
+        run_test_board(JacdacKeyswitch)

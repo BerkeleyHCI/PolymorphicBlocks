@@ -5,6 +5,7 @@ from typing_extensions import override
 
 from edg import *
 from edg.abstract_parts.PartsTable import ExperimentalUserFnPartsTable
+from .util import run_test_board
 
 
 class PowerOutConnector(Connector, Block):
@@ -599,4 +600,4 @@ class Fcml(JlcBoardTop):
 
 class FcmlTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(Fcml)
+        run_test_board(Fcml)

@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class BleJoystick(JlcBoardTop):
@@ -161,4 +162,4 @@ class BleJoystick(JlcBoardTop):
 
 class BleJoystickTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(BleJoystick)
+        run_test_board(BleJoystick)

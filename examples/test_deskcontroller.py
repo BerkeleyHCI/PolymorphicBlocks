@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class JiecangConnector(Block):
@@ -188,4 +189,4 @@ class DeskController(JlcBoardTop):
 
 class DeskControllerTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(DeskController)
+        run_test_board(DeskController)

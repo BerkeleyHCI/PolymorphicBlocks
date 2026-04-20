@@ -4,6 +4,7 @@ from typing import Dict
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class ResistorMux(Interface, KiCadImportableBlock, GeneratorBlock):
@@ -428,4 +429,4 @@ class Multimeter(JlcBoardTop):
 
 class MultimeterTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(Multimeter)
+        run_test_board(Multimeter)

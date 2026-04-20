@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class BldcConnector(Connector, Block):
@@ -260,4 +261,4 @@ class BldcController(JlcBoardTop):
 
 class BldcControllerTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(BldcController)
+        run_test_board(BldcController)

@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class PmosHighSideSwitch(PowerSwitch):
@@ -211,4 +212,4 @@ class IotDisplay(JlcBoardTop):
 
 class IotDisplayTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(IotDisplay)
+        run_test_board(IotDisplay)

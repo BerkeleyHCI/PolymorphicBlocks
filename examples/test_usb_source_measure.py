@@ -8,6 +8,7 @@ from edg.abstract_parts.ResistiveDivider import DividerValues
 from edg.electronics_model.VoltagePorts import VoltageSinkAdapterAnalogSource  # needed by imported schematic
 from edg.electronics_model.GroundPort import GroundAdapterAnalogSource  # needed by imported schematic
 from edg import *
+from .util import run_test_board
 
 
 class SourceMeasureDutConnector(Connector):
@@ -1117,4 +1118,4 @@ class UsbSourceMeasure(JlcBoardTop):
 
 class UsbSourceMeasureTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(UsbSourceMeasure)
+        run_test_board(UsbSourceMeasure)

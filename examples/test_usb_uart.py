@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class UartConnector(Connector, Block):
@@ -74,4 +75,4 @@ class UsbUart(JlcBoardTop):
 
 class UsbUartTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(UsbUart)
+        run_test_board(UsbUart)

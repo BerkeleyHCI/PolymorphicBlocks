@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class LedMatrix(JlcBoardTop):
@@ -72,4 +73,4 @@ class LedMatrix(JlcBoardTop):
 
 class LedMatrixTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(LedMatrix)
+        run_test_board(LedMatrix)

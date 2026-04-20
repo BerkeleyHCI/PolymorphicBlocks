@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class CanConnector(Connector):
@@ -166,4 +167,4 @@ class TofArray(JlcBoardTop):
 
 class TofArrayTestTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(TofArray)
+        run_test_board(TofArray)

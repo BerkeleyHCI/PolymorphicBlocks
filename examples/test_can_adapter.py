@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class Obd2Connector(FootprintBlock):
@@ -111,4 +112,4 @@ class CanAdapter(JlcBoardTop):
 
 class CanAdapterTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(CanAdapter)
+        run_test_board(CanAdapter)

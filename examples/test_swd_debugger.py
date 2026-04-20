@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class SwdCortexSourceHeader(ProgrammingConnector, FootprintBlock):
@@ -314,7 +315,7 @@ class PicoProbe(JlcBoardTop):
 
 class SwdDebuggerTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(SwdDebugger)
+        run_test_board(SwdDebugger)
 
     def test_picoprobe(self) -> None:
-        compile_board_inplace(PicoProbe)
+        run_test_board(PicoProbe)

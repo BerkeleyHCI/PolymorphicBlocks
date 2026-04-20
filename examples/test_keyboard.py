@@ -13,6 +13,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class Keyboard(SimpleBoardTop):
@@ -47,4 +48,4 @@ class Keyboard(SimpleBoardTop):
 
 class KeyboardTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(Keyboard)
+        run_test_board(Keyboard)
