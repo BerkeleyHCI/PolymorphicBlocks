@@ -18,4 +18,6 @@ def run_test_board(design: Type[Block]) -> None:
     ) as f:
         reference_netlist = f.read()
 
-    assert generated_netlist == reference_netlist, f"netlist differs from reference for {design.__name__}"
+    assert (
+        generated_netlist == reference_netlist
+    ), f"netlist differs from reference for {design.__name__}, if this is expected you may need to update the reference"
