@@ -4,6 +4,7 @@ __pycache__
 examples/*/*.net
 examples/*/*.edg
 examples/*/*.pdf
+examples/*/gerbers
 /*.net
 BlinkyExample/
 
