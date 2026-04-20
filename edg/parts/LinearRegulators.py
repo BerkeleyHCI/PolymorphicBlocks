@@ -393,6 +393,7 @@ class Xc6209_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
             mfr="Torex Semiconductor Ltd",
             part=part_number,
             datasheet="https://www.torexsemi.com/file/en/products/discontinued/-2016/53-XC6209_12.pdf",
+            pnp_rot=0,
         )
         self.assign(self.lcsc_part, lcsc_part)
         self.assign(self.actual_basic_part, False)

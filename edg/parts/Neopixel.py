@@ -162,6 +162,7 @@ class Sk6805_Ec15_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Opsco Optoelectronics",
             part="SK6805-EC15",
             datasheet="https://cdn-shop.adafruit.com/product-files/4492/Datasheet.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C2890035")
         self.assign(self.actual_basic_part, False)

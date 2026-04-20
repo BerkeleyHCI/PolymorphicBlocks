@@ -269,6 +269,8 @@ class Esp32_Wroom_32_Device(Esp32_Base, InternalSubcircuit, FootprintBlock, JlcP
             mfr="Espressif Systems",
             part="ESP32-WROOM-32",
             datasheet="https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf",
+            pnp_rot=-90,
+            pnp_offset=(0, 0.8),
         )
 
 

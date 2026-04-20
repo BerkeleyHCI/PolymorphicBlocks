@@ -1,4 +1,4 @@
-from typing import Tuple, Iterable, TypeVar, Mapping, Union, cast
+from typing import Tuple, Iterable, TypeVar, Mapping, Union, cast, Optional
 
 from typing_extensions import override
 
@@ -64,6 +64,14 @@ class FootprintPassiveConnector(PassiveConnector, GeneratorBlock, FootprintBlock
         Implementing classes must implement this method."""
         raise NotImplementedError
 
+    def part_footprint_pnp_rot(self, length: int) -> Optional[float]:
+        """Returns the pick and place rotation, passed into footprint."""
+        return None
+
+    def part_footprint_pnp_offset(self, length: int) -> Optional[Tuple[float, float]]:
+        """Returns the pick and place offset, passed into footprint."""
+        return None
+
     @override
     def generate(self) -> None:
         super().generate()
@@ -84,4 +92,12 @@ class FootprintPassiveConnector(PassiveConnector, GeneratorBlock, FootprintBlock
         assert length in self.allowed_pins, f"requested length {length} outside allowed length {self.allowed_pins}"
 
         footprint, mfr, part = self.part_footprint_mfr_name(length)
-        self.footprint("J", footprint, {pin_name: pin_port for (pin_name, pin_port) in self.pins.items()}, mfr, part)
+        self.footprint(
+            "J",
+            footprint,
+            {pin_name: pin_port for (pin_name, pin_port) in self.pins.items()},
+            mfr,
+            part,
+            pnp_rot=self.part_footprint_pnp_rot(length),
+            pnp_offset=self.part_footprint_pnp_offset(length),
+        )

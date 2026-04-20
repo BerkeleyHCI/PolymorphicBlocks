@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 from typing_extensions import override
 
@@ -153,6 +153,14 @@ class JstPhKHorizontal(JstPh, JlcPart):
         self.assign(self.lcsc_part, self.PART_NUMBERS[length])
         self.assign(self.actual_basic_part, False)
         return (f"Connector_JST:JST_PH_S{length}B-PH-K_1x{length:02d}_P2.00mm_Horizontal", "JST", f"S{length}B-PH-K")
+
+    @override
+    def part_footprint_pnp_rot(self, length: int) -> Optional[float]:
+        return 180
+
+    @override
+    def part_footprint_pnp_offset(self, length: int) -> Optional[Tuple[float, float]]:
+        return (length - 1.0, 0)
 
 
 class JstPhSmVertical(JstPh):

@@ -117,6 +117,7 @@ class Molex1040310811(MicroSdSocket, Connector, JlcPart, FootprintBlock):
             mfr="Molex",
             part="104031-0811",
             datasheet="https://www.molex.com/en-us/products/part-detail/1040310811?display=pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C585350")
         self.assign(self.actual_basic_part, False)

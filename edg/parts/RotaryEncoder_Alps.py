@@ -54,6 +54,7 @@ class Ec11j15WithSwitch(RotaryEncoderSwitch, RotaryEncoder, JlcPart, FootprintBl
             part="EC11J1525402",
             # datasheet / catalog doesn't appear to be available from the manufacturer like the PTH version
             datasheet="https://cdn-shop.adafruit.com/product-files/5454/5454_1837001.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C209762")
         self.assign(self.actual_basic_part, False)
@@ -78,6 +79,7 @@ class Ec05e(RotaryEncoder, JlcPart, FootprintBlock):
             mfr="Alps Alpine",
             part="EC05E1220401",
             datasheet="https://tech.alpsalpine.com/e/products/detail/EC05E1220401/",
+            pnp_offset=(0, 2.1),
         )
         self.assign(self.lcsc_part, "C116648")
         self.assign(self.actual_basic_part, False)

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 from typing_extensions import override
 
@@ -175,6 +175,14 @@ class Afc01(Fpc050Bottom, FootprintPassiveConnector, JlcPart):
             f"AFC01-S{length:02d}FC*-00",
         )  # CA is T&R packaging
 
+    @override
+    def part_footprint_pnp_rot(self, length: int) -> Optional[float]:
+        return 180
+
+    @override
+    def part_footprint_pnp_offset(self, length: int) -> Optional[Tuple[float, float]]:
+        return (0, -0.5)
+
 
 class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
     """Jushuo AFC07 series slide-lock top-contact 0.5mm-pitch FPC connectors, with partial JLC numbers for some parts
@@ -222,6 +230,14 @@ class Afc07Top(Fpc050Top, FootprintPassiveConnector, JlcPart):
             "Jushuo",
             f"AFC07-S{length:02d}EC*-00",
         )  # CA is packaging
+
+    @override
+    def part_footprint_pnp_rot(self, length: int) -> Optional[float]:
+        return 180
+
+    @override
+    def part_footprint_pnp_offset(self, length: int) -> Optional[Tuple[float, float]]:
+        return (0, -0.7)
 
 
 class Te1734839(Fpc050Top, FootprintPassiveConnector):

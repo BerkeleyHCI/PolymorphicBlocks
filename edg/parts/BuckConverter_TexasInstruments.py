@@ -146,6 +146,7 @@ class Tps54202h_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="TPS54202H",
             datasheet="https://www.ti.com/lit/ds/symlink/tps54202h.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C527684")
         self.assign(self.actual_basic_part, False)

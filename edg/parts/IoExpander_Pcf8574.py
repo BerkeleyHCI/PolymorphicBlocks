@@ -83,6 +83,7 @@ class Pcf8574_Device(PinMappable, InternalSubcircuit, FootprintBlock, JlcPart, G
             mfr="NXP",
             part="PCF8574AT",
             datasheet="https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C86832")
 

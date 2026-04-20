@@ -55,6 +55,7 @@ class Qmc5883l_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="QST",
             part="QMC5883L",
             datasheet="https://www.filipeflop.com/img/files/download/Datasheet-QMC5883L-1.0%20.pdf",  # first result on Google
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C976032")
         self.assign(self.actual_basic_part, False)

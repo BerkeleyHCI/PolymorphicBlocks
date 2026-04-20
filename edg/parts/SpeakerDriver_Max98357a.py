@@ -55,6 +55,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
             }
             part = "MAX98357AETE+T"
             jlc_part = "C910544"
+            pnp_rot = -90
         elif (
             self.get(self.footprint_spec)
             == "Package_BGA:Maxim_WLP-9_1.595x1.415_Layout3x3_P0.4mm_Ball0.27mm_Pad0.25mm_NSMD"
@@ -73,6 +74,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
             }
             part = "MAX98357AEWL+T"
             jlc_part = "C2682619"
+            pnp_rot = 180
         else:
             raise ValueError()
 
@@ -83,6 +85,7 @@ class Max98357a_Device(InternalSubcircuit, JlcPart, SelectorFootprint, PartsTabl
             mfr="Maxim Integrated",
             part=part,
             datasheet="https://www.analog.com/media/en/technical-documentation/data-sheets/MAX98357A-MAX98357B.pdf",
+            pnp_rot=pnp_rot,
         )
         self.assign(self.lcsc_part, jlc_part)
         self.assign(self.actual_basic_part, False)

@@ -21,6 +21,7 @@ class Bwipx_1_001e(RfConnectorTestPoint, UflConnector, JlcPart, FootprintBlock):
             mfr="BWIPX-1-001E",
             part="BAT WIRELESS",
             datasheet="https://datasheet.lcsc.com/lcsc/2012231509_BAT-WIRELESS-BWIPX-1-001E_C496552.pdf",
+            pnp_offset=(-0.3, 0),
         )
         self.assign(self.lcsc_part, "C496552")
         self.assign(self.actual_basic_part, False)

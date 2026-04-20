@@ -32,6 +32,10 @@ class FootprintBlock(Block):
         self.fp_refdes = self.Parameter(StringExpr())
         self.fp_refdes_prefix = self.Parameter(StringExpr())
 
+        self.fp_pnp_rot = self.Parameter(FloatExpr())
+        self.fp_pnp_offset_x = self.Parameter(FloatExpr())
+        self.fp_pnp_offset_y = self.Parameter(FloatExpr())
+
     # TODO: allow value to be taken from parameters, ideally w/ string concat from params
     def footprint(
         self,
@@ -42,10 +46,16 @@ class FootprintBlock(Block):
         part: Optional[StringLike] = None,
         value: Optional[StringLike] = None,
         datasheet: Optional[StringLike] = None,
+        pnp_rot: Optional[float] = None,
+        pnp_offset: Optional[tuple[float, float]] = None,
     ) -> None:
         """Creates a footprint in this circuit block.
-        Value is a one-line description of the part, eg 680R, 0.01uF, LPC1549, to be used as a aid during layout or
-        assembly"""
+        Value is a one-line description of the part, eg 680R, 0.01uF, LPC1549, to be used as an aid during layout or
+        assembly.
+        pnp_rot defines the rotation offset, in degrees, of the footprint for pick-and-place. This amount is added
+        (additional CCW rotation) to the rotation of the footprint..
+        pnp_offset defines the position offset, in mm, of the footprint for pick-and-place.
+        """
         from .PassivePort import HasPassivePort, Passive
         from ..core.Blocks import BlockElaborationState, BlockDefinitionError
 
@@ -89,6 +99,13 @@ class FootprintBlock(Block):
             self.assign(self.fp_datasheet, datasheet)
         else:
             self.assign(self.fp_datasheet, "")
+
+        # PNP rotation is left explicitly unassigned if not defined
+        if pnp_rot is not None:
+            self.assign(self.fp_pnp_rot, pnp_rot)
+        if pnp_offset is not None:
+            self.assign(self.fp_pnp_offset_x, pnp_offset[0])
+            self.assign(self.fp_pnp_offset_y, pnp_offset[1])
 
 
 @non_library

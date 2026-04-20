@@ -52,6 +52,7 @@ class Sn65hvd230_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="SN65HVD230DR",
             datasheet="www.ti.com/lit/ds/symlink/sn65hvd230.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C12084")
         self.assign(self.actual_basic_part, True)

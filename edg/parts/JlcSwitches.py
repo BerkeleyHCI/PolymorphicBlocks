@@ -37,6 +37,7 @@ class Skrtlae010(TactileSwitch, JlcPart, FootprintBlock):
             mfr="Alps Alpine",
             part="SKRTLAE010",
             datasheet="https://www.mouser.com/datasheet/2/15/SKRT-1370725.pdf",
+            pnp_offset=(0, 0.1),
         )
         self.assign(self.lcsc_part, "C110293")
         self.assign(self.actual_basic_part, False)

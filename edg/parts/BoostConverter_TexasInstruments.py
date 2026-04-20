@@ -38,6 +38,7 @@ class Tps61040_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="TPS61040DBVR",
             datasheet="https://www.ti.com/lit/ds/symlink/tps61040.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C7722")
         self.assign(self.actual_basic_part, False)

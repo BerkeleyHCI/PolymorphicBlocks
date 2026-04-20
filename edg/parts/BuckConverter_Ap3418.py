@@ -39,6 +39,7 @@ class Ap3418_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Diodes Incorporated",
             part="AP3418",
             datasheet="https://www.diodes.com/assets/Datasheets/products_inactive_data/AP3418.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C500769")
         self.assign(self.actual_basic_part, False)

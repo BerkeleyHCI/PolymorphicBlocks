@@ -24,60 +24,10 @@ args = parser.parse_args()
 PART_ROTATIONS = {
     "C425057": -90,  # resistor array 750ohm 4x0603
     "C20197": -90,  # resistor array 1k 4x0603
-    "C8734": -90,  # STM32F103C8T6
-    "C432211": 90,  # STM32G031GBU6
-    "C91199": 180,  # VL53L0X
-    "C27396": -90,  # TPA2005D1
-    "C12084": -90,  # SN65HVD230DR
-    "C264517": 180,  # 0606 RGB LED
-    "C158099": 90,  # 0404 RGB LED
-    "C86832": -90,  # PCF8574 IO expander
-    "C500769": -90,  # AP3418 buck converter
-    "C50506": -90,  # DRV8833 dual motor driver
-    "C92482": -90,  # DRV8313 BLDC driver
-    "C132291": -90,  # FUSB302B
-    "C508453": 180,  # FET
-    "C527684": -90,  # TPS54202H SOT-23-6
-    "C155534": -90,  # AL8861 MSOP-8
-    "C7722": -90,  # TPS61040 SOT-23-5
-    "C216623": 0,  # XC6209 1.5 SOT-23-5
-    "C216624": 0,  # XC6209 3.3 SOT-23-5
-    "C222571": 0,  # XC6209 5.0 SOT-23-5
-    "C86803": -90,  # PCA9554A TSSOP16
-    "C106912": -90,  # NLAS4157
-    "C3663690": 180,  # TMP1075N
-    "C70285": 180,  # SN74LVC1G74DCUR
-    "C2651906": -90,  # DG468
-    "C840095": 0,  # LM2664 SOT-23-6
-    "C2858491": 270,  # ESP32-C3H4 - seems really broken
-    "C2865497": 0,  # TPS92200D2DDCR SOT-23-6
-    "C7976": 180,  # LMV331IDCKR SOT-353
-    "C478093": -90,  # MCP4728T-E/UN
     "C2962219": -90,  # 2x5 1.27mm header shrouded
-    "C126830": 90,  # "SOT-23" USB ESD protector
-    "C6568": -90,  # CP2102 USB UART
-    "C976032": -90,  # LGA-16 QMC5883L
-    "C3303790": -90,  # PN7160 QFN
-    "C191341": -90,  # SX1262
-    "C470892": -90,  # PE4259
-    "C650309": -90,  # AD5941
-    "C424093": -90,  # MCP73831T
-    "C842287": -90,  # 74AHCT1G125
-    "C113367": -90,  # PAM8302
-    "C2890035": -90,  # SK6805-EC15
-    "C125972": 90,  # BME680
-    "C2682619": 180,  # MAX98357 BGA
-    "C910544": -90,  # MAX98357 QFN
-    "C262645": 180,  # AFC07 FPC 30
-    "C262669": 180,  # AFC01 FPC 24
-    "C424662": -90,  # FH35C 0.3mm FPC 31
-    "C209762": -90,  # EC11J15
-    "C585350": 180,  # Molex microSD 104031-0811
 }
 
 _FOOTPRINT_ROTATIONS = {
-    "Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11": 0,
-    "RF_Module:ESP32-WROOM-32": -90,
     "Package_TO_SOT_SMD:SOT-23": 180,
     "Package_TO_SOT_SMD:SOT-23-5": 180,
     "Package_TO_SOT_SMD:SOT-23-6": 180,
@@ -91,9 +41,6 @@ _FOOTPRINT_ROTATIONS = {
     "Package_SO:SOIC-8_5.23x5.23mm_P1.27mm": -90,
     "Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic": -90,
     "Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm": -90,
-    "OptoDevice:Osram_BPW34S-SMD": 180,
-    "Connector_Coaxial:BNC_Amphenol_B6252HB-NPP3G-50_Horizontal": 180,
-    "Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal": 180,
     # note, SMD e-cap are sometimes flipped but are not included here as it's inconsistent
 }
 
@@ -102,23 +49,10 @@ PACKAGE_ROTATIONS = {footprint.split(":")[-1]: rot for footprint, rot in _FOOTPR
 
 # translational offsets using KiCad coordinate conventions, -y is up
 # offsets estimated visually
-PART_OFFSETS: Dict[str, Tuple[float, float]] = {
-    "C262669": (0, -0.5),  # AFC01 FPC 24
-    "C262671": (0, -0.5),  # AFC01 FPC 30
-    "C262643": (0, -0.7),  # AFC07 FPC 24
-    "C262645": (0, -0.7),  # AFC07 FPC 30
-    "C110293": (0, 0.1),  # SKRTLAE010 R/A switch
-    "C116648": (0, 2.1),  # EC05E1220401
-    "C496552": (-0.3, 0),  # BWIPX-1-001E U.FL connector
-}
+PART_OFFSETS: Dict[str, Tuple[float, float]] = {}
 _FOOTPRINT_OFFSETS: Dict[str, Tuple[float, float]] = {
     "Package_TO_SOT_SMD:SOT-89-3": (-0.6, 0),
     "Package_TO_SOT_SMD:TO-252-2": (-2, 0),
-    "Connector_USB:USB_C_Receptacle_XKB_U262-16XN-4BVC11": (0, -1.25),
-    "RF_Module:ESP32-WROOM-32": (0, 0.8),
-    "Connector_Coaxial:BNC_Amphenol_B6252HB-NPP3G-50_Horizontal": (0, -2.5),
-    "Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal": (1, 0),
-    "Connector_JST:JST_PH_S6B-PH-K_1x06_P2.00mm_Horizontal": (5, 0),
 }
 PACKAGE_OFFSETS = {footprint.split(":")[-1]: offset for footprint, offset in _FOOTPRINT_OFFSETS.items()}
 

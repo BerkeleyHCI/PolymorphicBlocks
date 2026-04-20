@@ -49,6 +49,7 @@ class Smt0606RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
             },
             mfr="Everlight Electronics Co Ltd",
             part="EAST1616RGBB2",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C264517")
         self.assign(self.actual_basic_part, False)
@@ -69,6 +70,7 @@ class Smt0404RgbLed(RgbLedCommonAnode, JlcPart, FootprintBlock):
             },
             mfr="Foshan NationStar Optoelectronics",
             part="FC-B1010RGBT-HG",
+            pnp_rot=90,
         )
         self.assign(self.lcsc_part, "C158099")
         self.assign(self.actual_basic_part, False)
