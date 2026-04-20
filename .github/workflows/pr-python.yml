@@ -22,6 +22,7 @@ jobs:
         uses: fkirc/skip-duplicate-actions@master
         with:
           paths: '[
+            ".github/**",
             "compiler/**",
             "edg_core/**",
             "electronics_model/**",
