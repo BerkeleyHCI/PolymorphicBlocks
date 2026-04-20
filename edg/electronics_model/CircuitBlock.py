@@ -53,8 +53,9 @@ class FootprintBlock(Block):
         Value is a one-line description of the part, eg 680R, 0.01uF, LPC1549, to be used as an aid during layout or
         assembly.
         pnp_rot defines the rotation offset, in degrees, of the footprint for pick-and-place. This amount is added
-        (additional CCW rotation) to the rotation of the footprint..
-        pnp_offset defines the position offset, in mm, of the footprint for pick-and-place.
+        (additional CCW rotation) to the rotation of the footprint.
+        pnp_offset defines the position offset, in mm, of the footprint for pick-and-place. Offsets are applied before
+        rotation and are in Kicad space (-y is up).
         """
         from .PassivePort import HasPassivePort, Passive
         from ..core.Blocks import BlockElaborationState, BlockDefinitionError
