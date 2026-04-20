@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 from .test_high_switch import CalSolPowerConnector, CalSolCanBlock, CanFuse
 
 
@@ -317,4 +318,4 @@ class Datalogger(BoardTop):
 
 class DataloggerTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(Datalogger)
+        run_test_board(Datalogger)

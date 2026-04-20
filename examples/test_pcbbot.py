@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 from .test_robotdriver import PwmConnector
 
@@ -227,4 +228,4 @@ class PcbBot(JlcBoardTop):
 
 class PcbBotTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(PcbBot)
+        run_test_board(PcbBot)

@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class TestLed(SimpleBoardTop):
@@ -624,16 +625,16 @@ class TestBlinkyWithModeledSchematicImport(SimpleBoardTop):
 
 class BlinkyTestCase(unittest.TestCase):
     def test_led(self) -> None:
-        compile_board_inplace(TestLed)
+        run_test_board(TestLed)
 
     def test_design_basic(self) -> None:
-        compile_board_inplace(TestBlinkyBasic)  # generate this netlist as a test
+        run_test_board(TestBlinkyBasic)  # generate this netlist as a test
 
     def test_design_empty(self) -> None:
-        compile_board_inplace(TestBlinkyEmpty)
+        run_test_board(TestBlinkyEmpty)
 
     def test_design_battery(self) -> None:
-        compile_board_inplace(TestBlinkyBasicBattery)
+        run_test_board(TestBlinkyBasicBattery)
 
     def test_design_incomplete(self) -> None:
         with self.assertRaises(CompilerCheckError):
@@ -644,34 +645,34 @@ class BlinkyTestCase(unittest.TestCase):
             compile_board_inplace(TestBlinkyRegulated, False)
 
     def test_design_complete(self) -> None:
-        compile_board_inplace(TestBlinkyComplete)
+        run_test_board(TestBlinkyComplete)
 
     def test_design_expnaded(self) -> None:
-        compile_board_inplace(TestBlinkyExpanded)
+        run_test_board(TestBlinkyExpanded)
 
     def test_design_implicit(self) -> None:
-        compile_board_inplace(TestBlinkyImplicit)
+        run_test_board(TestBlinkyImplicit)
 
     def test_design_chain(self) -> None:
-        compile_board_inplace(TestBlinkyChain)  # generate this netlist as a test
+        run_test_board(TestBlinkyChain)  # generate this netlist as a test
 
     def test_design_micro(self) -> None:
-        compile_board_inplace(TestBlinkyMicro)
+        run_test_board(TestBlinkyMicro)
 
     def test_design_library(self) -> None:
-        compile_board_inplace(TestBlinkyWithLibrary)
+        run_test_board(TestBlinkyWithLibrary)
 
     def test_design_export(self) -> None:
-        compile_board_inplace(TestBlinkyWithLibraryExport)
+        run_test_board(TestBlinkyWithLibraryExport)
 
     def test_design_array(self) -> None:
-        compile_board_inplace(TestBlinkyArray)
+        run_test_board(TestBlinkyArray)
 
     def test_design_packed(self) -> None:
-        compile_board_inplace(TestBlinkyPacked)
+        run_test_board(TestBlinkyPacked)
 
     def test_design_schematic_import(self) -> None:
-        compile_board_inplace(TestBlinkyWithSchematicImport)
+        run_test_board(TestBlinkyWithSchematicImport)
 
     def test_design_schematic_import_modeled(self) -> None:
-        compile_board_inplace(TestBlinkyWithModeledSchematicImport)
+        run_test_board(TestBlinkyWithModeledSchematicImport)

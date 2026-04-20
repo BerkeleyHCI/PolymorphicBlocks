@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class SevenSegment(JlcBoardTop):
@@ -139,4 +140,4 @@ class SevenSegment(JlcBoardTop):
 
 class SevenSegmentTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(SevenSegment)
+        run_test_board(SevenSegment)

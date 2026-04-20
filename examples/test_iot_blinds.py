@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class IotRollerBlindsConnector(Block):
@@ -334,9 +335,9 @@ class IotCurtainCrawler(JlcBoardTop):
 
 class IotRollerBlindsTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(IotRollerBlinds)
+        run_test_board(IotRollerBlinds)
 
 
 class IotCurtainCrawlerTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(IotCurtainCrawler)
+        run_test_board(IotCurtainCrawler)

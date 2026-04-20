@@ -3,6 +3,7 @@ import unittest
 from typing_extensions import override
 
 from edg import *
+from .util import run_test_board
 
 
 class StTscSenseChannel(Block):
@@ -130,4 +131,4 @@ class UsbKey(JlcBoardTop):
 
 class UsbKeyTestCase(unittest.TestCase):
     def test_design(self) -> None:
-        compile_board_inplace(UsbKey)
+        run_test_board(UsbKey)
