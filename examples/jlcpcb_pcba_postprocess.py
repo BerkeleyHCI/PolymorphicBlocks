@@ -64,8 +64,6 @@ if __name__ == "__main__":
         else:
             return elt
 
-    refdes_lcsc_map: Dict[str, str] = {}  # refdes -> LCSC part number
-
     if args.merge_boms:
         if os.path.exists(f"{args.file_path_prefix}.csv"):  # remove previous one to avoid confusion
             os.remove(f"{args.file_path_prefix}.csv")
@@ -81,14 +79,21 @@ if __name__ == "__main__":
                     for row_dict in csv_dict_in:
                         merged_csv_out.writerow(row_dict)
 
-    # while we don't need to modify this file, we do need the JLC P/N to refdes map
-    # to apply the rotations, since that data isn't in the placement file
+    # while we don't need to modify the BoM, we do need the JLC P/N to refdes map and
+    # hdl-defined rotations / offsets (if specified)
+    refdes_lcsc_map: Dict[str, str] = {}  # refdes -> LCSC part number
+    refdes_rot_offset: Dict[str, float] = {}  # refdes -> rotational offset  (if specified)
+    refdes_offset: Dict[str, Tuple[float, float]] = {}  # refdes -> position offset (if specified)
+
     with open(f"{args.file_path_prefix}.csv", "r", newline="") as bom_in:
         csv_in = csv.reader(bom_in)
 
         rows = list(csv_in)
         refdes_list_index = rows[0].index("Designator")
         lcsc_index = rows[0].index("JLCPCB Part #")
+        pnp_rot_index = rows[0].index("PNP Rotation Offset")
+        pnp_offset_x_index = rows[0].index("PNP Offset X")
+        pnp_offset_y_index = rows[0].index("PNP Offset Y")
 
         for i, row in enumerate(rows[1:]):
             if not row[lcsc_index]:  # ignore rows without part number
@@ -97,6 +102,13 @@ if __name__ == "__main__":
             for refdes in refdes_list:
                 assert refdes not in refdes_lcsc_map, f"duplicate refdes {refdes} in row {i+1}"
                 refdes_lcsc_map[refdes] = row[lcsc_index]
+
+            if row[pnp_rot_index]:
+                for refdes in refdes_list:
+                    refdes_rot_offset[refdes] = float(row[pnp_rot_index])
+            if row[pnp_offset_x_index] and row[pnp_offset_y_index]:
+                for refdes in refdes_list:
+                    refdes_offset[refdes] = (float(row[pnp_offset_x_index]), float(row[pnp_offset_y_index]))
 
     print(f"read {args.file_path_prefix}.csv")
 
@@ -133,7 +145,13 @@ if __name__ == "__main__":
                 lcsc_opt = refdes_lcsc_map.get(refdes, None)
 
                 # correct offsets before applying rotation
-                if lcsc_opt is not None and lcsc_opt in PART_OFFSETS:
+                if refdes in refdes_offset:
+                    xoff, yoff = refdes_offset[refdes]
+                    rot = math.radians(float(row[rot_index]))
+                    row[x_index] = str((float(row[x_index]) + xoff * math.cos(rot) + yoff * math.sin(rot)))
+                    row[y_index] = str((float(row[y_index]) + xoff * math.sin(rot) - yoff * math.cos(rot)))
+                    print(f"correct BoM offset for row {i+1} ref {refdes}, {lcsc_opt}")
+                elif lcsc_opt is not None and lcsc_opt in PART_OFFSETS:
                     xoff, yoff = PART_OFFSETS[lcsc_opt]
                     rot = math.radians(float(row[rot_index]))
                     row[x_index] = str((float(row[x_index]) + xoff * math.cos(rot) + yoff * math.sin(rot)))
@@ -146,7 +164,10 @@ if __name__ == "__main__":
                     row[y_index] = str((float(row[y_index]) + xoff * math.sin(rot) - yoff * math.cos(rot)))
                     print(f"correct offset for row {i+1} ref {refdes}, {package}")
 
-                if lcsc_opt is not None and lcsc_opt in PART_ROTATIONS:
+                if refdes in refdes_rot_offset:
+                    row[rot_index] = str((float(row[rot_index]) + refdes_rot_offset[refdes]) % 360)
+                    print(f"correct BoM rotation for row {i+1} ref {refdes}, {lcsc_opt}")
+                elif lcsc_opt is not None and lcsc_opt in PART_ROTATIONS:
                     row[rot_index] = str((float(row[rot_index]) + PART_ROTATIONS[lcsc_opt]) % 360)
                     print(f"correct rotation for row {i+1} ref {refdes}, {lcsc_opt}")
                 elif package in PACKAGE_ROTATIONS:
