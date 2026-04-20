@@ -82,7 +82,7 @@ class UsbCReceptacle_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Sparkfun",
             part="COM-15111",
             datasheet="https://cdn.sparkfun.com/assets/8/6/b/4/5/A40-00119-A52-12.pdf",
-            pnp_rot=0
+            pnp_rot=0,
             pnp_offset=(0, -1.25),
         )
 
