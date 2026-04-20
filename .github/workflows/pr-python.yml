@@ -78,9 +78,9 @@ jobs:
       - name: package
         run: python -m pip install .
       - name: unittest
-        run: cd examples && python -m unittest test_blinky
+        run: python -m unittest examples.test_blinky
       - name: toptest
-        run: cd examples && python test_blinky.py
+        run: python blinky_skeleton.py
 
   unittest_latest_3_13:
     needs: pre_job
