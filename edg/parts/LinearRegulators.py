@@ -241,6 +241,7 @@ class Ap7215_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, Footprin
             part="AP7215-33YG-13",
             datasheet="https://www.diodes.com/assets/Datasheets/AP7215.pdf",
             pnp_rot=180,
+            pnp_offset=(-0.6, 0),
         )
         self.assign(self.lcsc_part, "C460367")
         self.assign(self.actual_basic_part, False)
@@ -784,6 +785,7 @@ class L78l_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, GeneratorB
             part=suitable_parts[0][4],
             datasheet="https://www.st.com/resource/en/datasheet/l78l.pdf",
             pnp_rot=180,
+            pnp_offset=(-0.6, 0),
         )
         self.assign(self.lcsc_part, suitable_parts[0][5])
         self.assign(self.actual_basic_part, False)
