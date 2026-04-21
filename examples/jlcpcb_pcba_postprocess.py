@@ -144,7 +144,7 @@ if __name__ == "__main__":
                     rot = math.radians(float(row[rot_index]))
                     row[x_index] = str((float(row[x_index]) + xoff * math.cos(rot) + yoff * math.sin(rot)))
                     row[y_index] = str((float(row[y_index]) + xoff * math.sin(rot) - yoff * math.cos(rot)))
-                    print(f"correct BoM offset for row {i+1} ref {refdes}, {lcsc_opt}")
+                    print(f"correct BoM offset for row {i+1} ref {refdes}")
                 elif lcsc_opt is not None and lcsc_opt in PART_OFFSETS:
                     xoff, yoff = PART_OFFSETS[lcsc_opt]
                     rot = math.radians(float(row[rot_index]))
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
                 if refdes in refdes_rot_offset:
                     row[rot_index] = str((float(row[rot_index]) + refdes_rot_offset[refdes]) % 360)
-                    print(f"correct BoM rotation for row {i+1} ref {refdes}, {lcsc_opt}")
+                    print(f"correct BoM rotation for row {i+1} ref {refdes}")
                 elif lcsc_opt is not None and lcsc_opt in PART_ROTATIONS:
                     row[rot_index] = str((float(row[rot_index]) + PART_ROTATIONS[lcsc_opt]) % 360)
                     print(f"correct rotation for row {i+1} ref {refdes}, {lcsc_opt}")
