@@ -41,6 +41,7 @@ class Ltc3429_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Linear Technology",
             part="LTC3429BES6#TRMPBF",
             datasheet="https://www.analog.com/media/en/technical-documentation/data-sheets/3429fa.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C684773")
         self.assign(self.actual_basic_part, False)

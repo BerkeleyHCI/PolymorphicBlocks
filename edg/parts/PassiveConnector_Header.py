@@ -84,6 +84,10 @@ class PinHeader127DualShrouded(FootprintPassiveConnector, JlcPart):
             f"PinHeader1.27 Shrouded 2x{length//2}",
         )
 
+    @override
+    def part_footprint_pnp_rot(self, length: int) -> Optional[float]:
+        return -90
+
 
 @abstract_block_default(lambda: JstXhAVertical)
 class JstXh(FootprintPassiveConnector):

@@ -38,6 +38,7 @@ class Ap3012_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Diodes Incorporated",
             part="AP3012K",
             datasheet="https://www.diodes.com/assets/Datasheets/AP3012.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C460356")
         self.assign(self.actual_basic_part, False)

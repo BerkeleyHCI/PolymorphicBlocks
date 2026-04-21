@@ -211,6 +211,7 @@ class Lm2733_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="LM2733X",  # X=1.6 MHz, Y=0.6 MHz
             datasheet="https://www.ti.com/lit/ds/symlink/lm2733.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C80169")
         self.assign(self.actual_basic_part, False)

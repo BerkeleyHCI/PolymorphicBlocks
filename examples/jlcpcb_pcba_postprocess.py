@@ -24,21 +24,15 @@ args = parser.parse_args()
 PART_ROTATIONS = {
     "C425057": -90,  # resistor array 750ohm 4x0603
     "C20197": -90,  # resistor array 1k 4x0603
-    "C2962219": -90,  # 2x5 1.27mm header shrouded
 }
 
 _FOOTPRINT_ROTATIONS = {
     "Package_TO_SOT_SMD:SOT-23": 180,
-    "Package_TO_SOT_SMD:SOT-23-5": 180,
-    "Package_TO_SOT_SMD:SOT-23-6": 180,
-    "Package_TO_SOT_SMD:SOT-23-8": 180,
     "Package_TO_SOT_SMD:SOT-89-3": 180,
     "Package_TO_SOT_SMD:SOT-323_SC-70": 180,
-    "Package_TO_SOT_SMD:SOT-363_SC-70-6": 180,
     "Package_TO_SOT_SMD:SOT-223-3_TabPin2": 180,
     "Package_TO_SOT_SMD:TO-252-2": 180,
     "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm": -90,
-    "Package_SO:SOIC-8_5.23x5.23mm_P1.27mm": -90,
     "Package_DFN_QFN:PQFN-8-EP_6x5mm_P1.27mm_Generic": -90,
     "Package_DFN_QFN:UDFN-4-1EP_1x1mm_P0.65mm_EP0.48x0.48mm": -90,
     # note, SMD e-cap are sometimes flipped but are not included here as it's inconsistent

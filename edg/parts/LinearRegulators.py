@@ -50,6 +50,7 @@ class Ld1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
             mfr="STMicroelectronics",
             part=part_number,
             datasheet="https://www.st.com/content/ccc/resource/technical/document/datasheet/99/3b/7d/91/91/51/4b/be/CD00000544.pdf/files/CD00000544.pdf/jcr:content/translations/en.CD00000544.pdf",
+            pnp_rot=180,
         )
 
 
@@ -110,6 +111,7 @@ class Ldl1117_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
             mfr="STMicroelectronics",
             part=part_number,
             datasheet="https://www.st.com/content/ccc/resource/technical/document/datasheet/group3/0e/5a/00/ca/10/1a/4f/a5/DM00366442/files/DM00366442.pdf/jcr:content/translations/en.DM00366442.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, jlc_number)
         self.assign(self.actual_basic_part, False)
@@ -189,6 +191,7 @@ class Ap2204k_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, 
             mfr="Diodes Incorporated",
             part=part_number,
             datasheet="https://www.diodes.com/assets/Datasheets/AP2204.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, jlc_number)
         self.assign(self.actual_basic_part, False)
@@ -237,6 +240,7 @@ class Ap7215_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, Footprin
             mfr="Diodes Incorporated",
             part="AP7215-33YG-13",
             datasheet="https://www.diodes.com/assets/Datasheets/AP7215.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C460367")
         self.assign(self.actual_basic_part, False)
@@ -470,6 +474,7 @@ class Ap2210_Device(InternalSubcircuit, LinearRegulatorDevice, GeneratorBlock, J
             mfr="Diodes Incorporated",
             part=part_number,
             datasheet="https://www.diodes.com/assets/Datasheets/AP2210.pdf",
+            pnp_rot=180,
         )
         if jlc_number is not None:
             self.assign(self.lcsc_part, jlc_number)
@@ -603,6 +608,7 @@ class Lp5907_Device(
             mfr="Texas Instruments",
             part=part_number,
             datasheet="https://www.ti.com/lit/ds/symlink/lp5907.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, jlc_number)
         self.assign(self.actual_basic_part, False)
@@ -689,6 +695,7 @@ class Tlv757p_Device(
             mfr="Texas Instruments",
             part=part_number,
             datasheet="https://www.ti.com/lit/ds/symlink/tlv757p.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, lcsc)
         self.assign(self.actual_basic_part, False)
@@ -776,6 +783,7 @@ class L78l_Device(InternalSubcircuit, LinearRegulatorDevice, JlcPart, GeneratorB
             mfr="STMicroelectronics",
             part=suitable_parts[0][4],
             datasheet="https://www.st.com/resource/en/datasheet/l78l.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, suitable_parts[0][5])
         self.assign(self.actual_basic_part, False)

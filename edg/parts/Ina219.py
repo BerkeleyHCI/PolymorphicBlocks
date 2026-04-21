@@ -69,6 +69,7 @@ class Ina219_Device(InternalSubcircuit, JlcPart, FootprintBlock, GeneratorBlock)
             mfr="Texas Instruments",
             part="INA219AIDCNR",
             datasheet="https://www.ti.com/lit/ds/symlink/ina219.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C87469")
         self.assign(self.actual_basic_part, False)

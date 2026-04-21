@@ -34,6 +34,7 @@ class S8261A_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="ABLIC",
             part="S-8261ABJMD-G3JT2S",
             datasheet="https://www.mouser.com/datasheet/2/360/S8200A_E-1365901.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C28081")
         self.assign(self.actual_basic_part, False)

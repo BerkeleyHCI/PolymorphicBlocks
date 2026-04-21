@@ -67,6 +67,7 @@ class Opa189_Device(Opax189_Base_Device, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="OPA189DR",
             datasheet="https://www.ti.com/lit/ds/symlink/opa4189.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C781811")
         self.assign(self.actual_basic_part, False)
@@ -127,6 +128,7 @@ class Opa2189_Device(Opax189_Base_Device, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="OPA2197IDR",
             datasheet="https://www.ti.com/lit/ds/symlink/opa4189.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C881489")
         self.assign(self.actual_basic_part, False)

@@ -45,6 +45,7 @@ class Lm4871_Device(InternalSubcircuit, FootprintBlock):
             mfr="Texas Instruments",
             part="LM4871MX",
             datasheet="https://www.ti.com/lit/ds/symlink/lm4871.pdf",
+            pnp_rot=-90,
         )
 
 

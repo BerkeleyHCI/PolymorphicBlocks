@@ -38,6 +38,7 @@ class Tps561201_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="TPS561201",
             datasheet="https://www.ti.com/lit/ds/symlink/tps561201.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C220433")
         self.assign(self.actual_basic_part, False)

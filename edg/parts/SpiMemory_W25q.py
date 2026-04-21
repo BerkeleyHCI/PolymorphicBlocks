@@ -89,6 +89,7 @@ class W25q_Device(InternalSubcircuit, GeneratorBlock, JlcPart, FootprintBlock):
             mfr="Winbond Electronics",
             part=part_pn,
             datasheet=part_datasheet,
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, part_lcsc)
         self.assign(self.actual_basic_part, part_lcsc_basic)

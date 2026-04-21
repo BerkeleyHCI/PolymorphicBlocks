@@ -56,6 +56,7 @@ class Tlv9152_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="TLV9152IDR",
             datasheet="https://www.ti.com/lit/ds/symlink/tlv9152.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C882649")
         self.assign(self.actual_basic_part, False)

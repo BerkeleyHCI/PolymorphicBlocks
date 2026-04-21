@@ -45,6 +45,7 @@ class Lmv321_Device(InternalSubcircuit, FootprintBlock, JlcPart):
             mfr="Texas Instruments",
             part="LMV321",
             datasheet="https://www.ti.com/lit/ds/symlink/lmv321.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C7972")
         self.assign(self.actual_basic_part, True)

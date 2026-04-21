@@ -47,6 +47,7 @@ class Tlv9061_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="TLV9061S",
             datasheet="https://www.ti.com/lit/ds/symlink/tlv9062-q1.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C2058350")
         self.assign(self.actual_basic_part, False)

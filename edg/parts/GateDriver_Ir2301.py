@@ -62,6 +62,7 @@ class Ir2301_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Infineon Technologies",
             part="IR2301",
             datasheet="https://www.infineon.com/dgdl/ir2301.pdf?fileId=5546d462533600a4015355c97bb216dc",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C413500")
         self.assign(self.actual_basic_part, False)

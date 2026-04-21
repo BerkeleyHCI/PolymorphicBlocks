@@ -55,6 +55,7 @@ class Ad8418a_Device(JlcPart, FootprintBlock, InternalSubcircuit):
             mfr="Analog Devices",
             part="AD8418AWBRZ",
             datasheet="https://www.analog.com/media/en/technical-documentation/data-sheets/ad8418.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C462197")
         self.assign(self.actual_basic_part, False)

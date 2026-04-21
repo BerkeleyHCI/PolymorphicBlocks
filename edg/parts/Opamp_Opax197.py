@@ -67,6 +67,7 @@ class Opa197_Device(Opa197_Base_Device, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="OPA197IDR",
             datasheet="https://www.ti.com/lit/ds/symlink/opa197.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C79274")
         self.assign(self.actual_basic_part, False)
@@ -130,6 +131,7 @@ class Opa2197_Device(Opa197_Base_Device, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="OPA2197IDR",
             datasheet="https://www.ti.com/lit/ds/symlink/opa197.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C139363")
         self.assign(self.actual_basic_part, False)

@@ -45,6 +45,7 @@ class Mcp6001_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Microchip Technology",
             part="MCP6001T-I/OT",
             datasheet="https://ww1.microchip.com/downloads/en/DeviceDoc/21733j.pdf",
+            pnp_rot=180,
         )
         self.assign(self.lcsc_part, "C116490")
         self.assign(self.actual_basic_part, False)

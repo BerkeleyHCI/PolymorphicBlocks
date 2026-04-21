@@ -64,6 +64,7 @@ class Ina826_Device(InternalSubcircuit, JlcPart, FootprintBlock):
             mfr="Texas Instruments",
             part="INA826AIDR",
             datasheet="https://www.ti.com/lit/ds/symlink/ina826.pdf",
+            pnp_rot=-90,
         )
         self.assign(self.lcsc_part, "C38433")
         self.assign(self.actual_basic_part, False)
